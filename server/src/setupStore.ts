@@ -53,6 +53,9 @@ const SELECT_ROWS = `SELECT s.id, s.owner_id AS ownerId, a.display_name AS owner
     NOT EXISTS (SELECT 1 FROM setups n WHERE n.previous_id = s.id) AS latest
   FROM setups s JOIN accounts a ON a.id = s.owner_id`;
 
+/** Setup ids looked up per statement by `ballot`. */
+const BALLOT_CHUNK = 50;
+
 const parseJson = (text: string): unknown => {
   try {
     return JSON.parse(text);
@@ -162,6 +165,27 @@ export class SetupStore {
       if (setup) listed.push({ ownerId: row.ownerId, setup });
     }
     return listed;
+  }
+
+  /**
+   * Those of `ids` that are on the ballot (#236): a setup's newest version that still validates, as `list` has it. The
+   * standard setup isn't stored, so it is never among them; the caller adds it.
+   */
+  async ballot(ids: readonly string[]): Promise<Setup[]> {
+    const onBallot: Setup[] = [];
+    // A chunk at a time: D1 binds at most 100 parameters per statement.
+    for (let i = 0; i < ids.length; i += BALLOT_CHUNK) {
+      const chunk = ids.slice(i, i + BALLOT_CHUNK);
+      const { results } = await this.db
+        .prepare(`${SELECT_ROWS} WHERE s.id IN (${chunk.map(() => "?").join(", ")}) AND NOT EXISTS (SELECT 1 FROM setups n WHERE n.previous_id = s.id)`)
+        .bind(...chunk)
+        .all<Row>();
+      for (const row of results) {
+        const setup = strict(row);
+        if (setup) onBallot.push(setup);
+      }
+    }
+    return onBallot;
   }
 
   /** Any version by ID, whether or not it still validates. */

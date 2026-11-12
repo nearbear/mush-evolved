@@ -1351,7 +1351,8 @@ describe("GameRoom joining (pre-selection)", () => {
     const first = await room.join("Ann", "chao", custom);
     if (!first.ok) throw new Error(first.error);
     // 14:10 GMT is cycle 15 of 24 with 1-hour cycles: day 2's last cycle starts at 23:00 the next day.
-    expect(first).toMatchObject({ seats: 6, closesAt: Date.UTC(2026, 9, 20, 23) });
+    expect(first).toMatchObject({ seats: 6, closesAt: Date.UTC(2026, 9, 20, 23), setupId: "s1" });
+    expect(room.status().setupId).toBe("s1");
     const config = gameOf(room).config;
     expect(config).toMatchObject({ setupId: "s1", cycleHours: 1, cyclesPerDay: 24, sharedSpots: false });
     expect(config.preselection).toMatchObject({ seats: 6, mushCount: 3, endsOn: { day: 2, cycle: 24 } });
@@ -1366,7 +1367,7 @@ describe("GameRoom joining (pre-selection)", () => {
     const room = asRoom(new FakeStorage());
     await joinOk(room, "Ann", "chao");
     const second = await room.join("Bob", "chun", custom);
-    expect(second).toMatchObject({ ok: true, seats: PRESELECTION.seats });
+    expect(second).toMatchObject({ ok: true, seats: PRESELECTION.seats, setupId: "standard" });
     expect(gameOf(room).config).toMatchObject({ setupId: "standard", cycleHours: 3, sharedSpots: true });
   });
 
@@ -1374,7 +1375,8 @@ describe("GameRoom joining (pre-selection)", () => {
     const room = asRoom(new FakeStorage());
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const bad = { ...custom, knobs: { ...custom.knobs, seats: 40 } };
-    expect(await room.join("Ann", "chao", bad)).toMatchObject({ ok: true, seats: PRESELECTION.seats });
+    // The matchmaker is told the setup it really has (#236).
+    expect(await room.join("Ann", "chao", bad)).toMatchObject({ ok: true, seats: PRESELECTION.seats, setupId: "standard" });
     expect(gameOf(room).config).toMatchObject({ setupId: "standard", cycleHours: 3, sharedSpots: true });
     // Claiming the standard id doesn't bring other knobs along.
     const impostor = asRoom(new FakeStorage());

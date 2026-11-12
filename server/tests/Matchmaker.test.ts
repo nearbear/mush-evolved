@@ -1,7 +1,8 @@
-import { PRESELECTION, type MatchmakerServerMessage } from "@mush2/shared";
+import { PRESELECTION, type MatchmakerServerMessage, type Setup, type SetupKnobs, STANDARD_KNOBS, STANDARD_SETUP_ID } from "@mush2/shared";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { AccountStore } from "../src/accountStore.ts";
-import type { JoinResult, SeatAccount } from "../src/GameRoom.ts";
+import { AccountStore, type SqlDatabase } from "../src/accountStore.ts";
+import { SetupStore } from "../src/setupStore.ts";
+import type { JoinResult, SeatAccount, ShipStatus } from "../src/GameRoom.ts";
 import { FakeConnection, FakeServer, FakeStorage } from "../src/testing/fakes.ts";
 import { migratedDatabase } from "./sqliteD1.ts";
 
@@ -15,6 +16,10 @@ interface FakeShip {
   unavailable?: boolean;
   /** Resume tokens handed out, by session key. */
   resumed?: string[];
+  /** The setup the launching join gave it. */
+  setup?: Setup;
+  /** It launched with the standard setup instead, as GameRoom does with one that doesn't validate. */
+  fellBack?: boolean;
 }
 const ships = new Map<string, FakeShip>();
 /** Single-player games launched, by room id. */
@@ -26,18 +31,20 @@ const SEATS = 4;
 vi.mock("partyserver", () => ({
   Server: FakeServer,
   getServerByName: async (_ns: unknown, roomId: string) => ({
-    join: async (name: string, character: string, _setup: unknown, account?: SeatAccount): Promise<JoinResult> => {
-      const ship = ships.get(roomId) ?? { crew: [], closed: false };
+    join: async (name: string, character: string, setup: Setup, account?: SeatAccount): Promise<JoinResult> => {
+      const ship = ships.get(roomId) ?? { crew: [], closed: false, setup, fellBack: fallBack };
       ships.set(roomId, ship);
       if (ship.closed || ship.crew.length >= SEATS) return { ok: false, error: "ship_closed" };
       if (ship.crew.some((c) => c.character === character)) return { ok: false, error: "character_taken" };
       ship.crew.push({ name, character, accountId: account?.accountId });
       const full = ship.crew.length >= SEATS;
-      return { ok: true, token: `${roomId}:${name}`, aboard: ship.crew.length, seats: SEATS, taken: ship.crew.map((c) => c.character), closesAt: full ? null : CLOSES_AT };
+      return { ok: true, token: `${roomId}:${name}`, ...shipStatus(ship), closesAt: full ? null : CLOSES_AT };
     },
     status: async () => {
       const ship = ships.get(roomId)!;
-      return { aboard: ship.crew.length, seats: SEATS, taken: ship.crew.map((c) => c.character), closesAt: CLOSES_AT };
+      const status = shipStatus(ship);
+      await statusDelay;
+      return status;
     },
     resume: async (accountId: string, sessionKey: string) => {
       const ship = ships.get(roomId);
@@ -56,6 +63,17 @@ vi.mock("partyserver", () => ({
 }));
 const { Matchmaker } = await import("../src/Matchmaker.ts");
 
+/** Set to make the next ship launched take the standard setup instead of the one it was given. */
+let fallBack = false;
+/** Awaited by every `status` call after it reads the ship, to hold refreshes in flight. */
+let statusDelay: Promise<void> = Promise.resolve();
+
+function shipStatus(ship: FakeShip): ShipStatus {
+  const open = !ship.closed && !ship.ended && ship.crew.length < SEATS;
+  const setupId = ship.fellBack ? STANDARD_SETUP_ID : (ship.setup?.id ?? STANDARD_SETUP_ID);
+  return { aboard: ship.crew.length, seats: SEATS, taken: ship.crew.map((c) => c.character), closesAt: open ? CLOSES_AT : null, setupId };
+}
+
 type Conn = FakeConnection<{ joined: boolean }>;
 
 let storage: FakeStorage;
@@ -69,6 +87,8 @@ beforeEach(async () => {
   ships.clear();
   solos.clear();
   n = 0;
+  fallBack = false;
+  statusDelay = Promise.resolve();
   storage = new FakeStorage();
   const db = migratedDatabase();
   store = new AccountStore(db);
@@ -98,6 +118,9 @@ async function connectAs(as: string | null, room: InstanceType<typeof Matchmaker
 const connect = (): Promise<Conn> => connectAs(`P${n}`);
 const queue = (c: Conn, name: string, character: string) => mm.onMessage(c as never, JSON.stringify({ type: "queue", name, character }));
 const msgs = (c: Conn) => c.messages<MatchmakerServerMessage>();
+/** The last message of this type the socket got. */
+const last = <T extends MatchmakerServerMessage["type"]>(c: Conn, type: T) =>
+  msgs(c).findLast((m) => m.type === type) as Extract<MatchmakerServerMessage, { type: T }> | undefined;
 const matched = (c: Conn) => msgs(c).find((m) => m.type === "matched") as { roomId: string; token: string } | undefined;
 /** Boards `count` players with distinct characters; returns their connections. */
 async function board(count: number, from = 0): Promise<Conn[]> {
@@ -112,7 +135,7 @@ describe("Matchmaker joining", () => {
     const [a] = await board(1);
     const m = matched(a!)!;
     expect(ships.get(m.roomId)!.crew).toEqual([{ name: "P0", character: "chao", accountId: expect.any(String) }]);
-    expect(msgs(a!).at(-1)).toEqual({ type: "queued", waiting: 1, seats: SEATS, taken: [expect.any(String)] });
+    expect(last(a!, "queued")).toEqual({ type: "queued", waiting: 1, seats: SEATS, taken: [expect.any(String)], openSetupId: STANDARD_SETUP_ID });
     expect(storage.alarm).toBe(CLOSES_AT);
   });
 
@@ -120,7 +143,7 @@ describe("Matchmaker joining", () => {
     const watcher = await connect();
     const [a, b] = await board(2);
     expect(matched(b!)!.roomId).toBe(matched(a!)!.roomId);
-    expect(msgs(watcher).at(-1)).toEqual({ type: "queued", waiting: 2, seats: SEATS, taken: [expect.any(String), expect.any(String)] });
+    expect(last(watcher, "queued")).toEqual({ type: "queued", waiting: 2, seats: SEATS, taken: [expect.any(String), expect.any(String)], openSetupId: STANDARD_SETUP_ID });
   });
 
   it("starts a new ship once the open one is full", async () => {
@@ -160,7 +183,7 @@ describe("Matchmaker joining", () => {
     } finally {
       vi.useRealTimers();
     }
-    expect(msgs(watcher).at(-1)).toMatchObject({ waiting: 0 });
+    expect(last(watcher, "queued")).toMatchObject({ waiting: 0, openSetupId: null });
     expect(await storage.get("open")).toBeUndefined();
   });
 
@@ -411,5 +434,210 @@ describe("Matchmaker resume (#320)", () => {
     expect(msgs(again).at(-1)).toEqual({ type: "error", message: "join_failed" });
     await resume(again);
     expect(matched(again)).toBeDefined();
+  });
+});
+
+describe("Matchmaker vote round (#236)", () => {
+  /** Posts a setup (or a new version of `previousId`) as the account "Owner". */
+  async function post(knobs: Partial<SetupKnobs> = {}, previousId?: string): Promise<Setup> {
+    const { accountId } = await signIn("Owner");
+    const input = { text: { en: { name: "Fast", description: "" } }, knobs: { ...STANDARD_KNOBS, ...knobs }, ...(previousId && { previousId }) };
+    const result = await new SetupStore(env.DB as SqlDatabase).post(accountId, input, "dev", Date.now());
+    if (!result.ok) throw new Error(result.reason);
+    return result.setup;
+  }
+  const vote = (c: Conn, setupId: string) => mm.onMessage(c as never, JSON.stringify({ type: "vote", setupId }));
+  const roomOf = (c: Conn) => ships.get(matched(c)!.roomId)!;
+  async function at<T>(now: number, run: () => Promise<T>): Promise<T> {
+    vi.useFakeTimers({ now, toFake: ["Date"] });
+    try {
+      return await run();
+    } finally {
+      vi.useRealTimers();
+    }
+  }
+
+  it("counts a signed-in vote, sends everyone only totals and the voter's account its own vote, and replaces it on a new vote", async () => {
+    const x = await post();
+    const watcher = await connectAs(null);
+    const a = await connectAs("Ana");
+    const otherTab = await connectAs("Ana");
+    const bo = await connectAs("Bo");
+    expect(last(a, "myVote")).toEqual({ type: "myVote", setupId: null });
+    expect(last(watcher, "votes")).toEqual({ type: "votes", counts: {}, closesAt: null, nextSetupId: STANDARD_SETUP_ID });
+    await vote(a, x.id);
+    expect(last(watcher, "votes")).toEqual({ type: "votes", counts: { [x.id]: 1 }, closesAt: null, nextSetupId: STANDARD_SETUP_ID });
+    expect(last(a, "myVote")).toEqual({ type: "myVote", setupId: x.id });
+    expect(last(otherTab, "myVote")).toEqual({ type: "myVote", setupId: x.id });
+    expect(last(watcher, "myVote")).toBeUndefined();
+    // Another account hears only the totals, never Ana's own vote.
+    expect(bo.sent.filter((m) => m.includes('"myVote"'))).toEqual([JSON.stringify({ type: "myVote", setupId: null })]);
+    await vote(otherTab, STANDARD_SETUP_ID);
+    expect(last(watcher, "votes")!.counts).toEqual({ [STANDARD_SETUP_ID]: 1 });
+    expect(last(a, "myVote")).toEqual({ type: "myVote", setupId: STANDARD_SETUP_ID });
+    // No socket ever gets an account ID, a session or another account's vote.
+    const { accountId } = await signIn("Ana");
+    for (const c of [watcher, a, otherTab, bo]) expect(c.sent.join("\n")).not.toContain(accountId);
+    expect([...storage.data.keys()].filter((k) => k.startsWith("vote:"))).toEqual([`vote:${accountId}`]);
+  });
+
+  it("refuses a vote without an account, for an unknown setup, or for a setup with a newer version", async () => {
+    const x = await post();
+    const guest = await connectAs(null);
+    await vote(guest, x.id);
+    expect(last(guest, "voteRefused")).toEqual({ type: "voteRefused", reason: "sign_in_required" });
+    const a = await connectAs("Ana");
+    await vote(a, "no-such-setup");
+    expect(last(a, "voteRefused")).toEqual({ type: "voteRefused", reason: "unknown_setup" });
+    await post({ seats: 8 }, x.id);
+    await vote(a, x.id);
+    expect(msgs(a).at(-1)).toEqual({ type: "voteRefused", reason: "unknown_setup" });
+    expect(last(a, "votes")!.counts).toEqual({});
+  });
+
+  it("refuses a vote from a session that ended after the socket opened", async () => {
+    const x = await post();
+    const conn: Conn = new FakeConnection(`c${n++}`);
+    (mm as unknown as FakeServer).connections.add(conn as never);
+    const { cookie } = await signIn("Ana");
+    await mm.onConnect(conn as never, { request: new Request("https://mush.test/parties/matchmaker/en", { headers: { Cookie: cookie } }) } as never);
+    await store.deleteSession(cookie.split("=")[1]!);
+    await vote(conn, x.id);
+    expect(last(conn, "voteRefused")).toEqual({ type: "voteRefused", reason: "sign_in_required" });
+  });
+
+  it("lets a player vote after joining", async () => {
+    const x = await post();
+    const [a] = await board(1);
+    await vote(a!, x.id);
+    expect(last(a!, "myVote")).toEqual({ type: "myVote", setupId: x.id });
+  });
+
+  it("closes the round when the open ship fills: the winner is the next ship's setup, from the store", async () => {
+    const x = await post({ seats: 6 });
+    const voter = await connectAs("Voter");
+    await vote(voter, x.id);
+    const crew = await board(SEATS);
+    // Launched before the round closed: standard.
+    expect(roomOf(crew[0]!).setup).toEqual(expect.objectContaining({ id: STANDARD_SETUP_ID }));
+    expect(last(voter, "votes")).toEqual({ type: "votes", counts: {}, closesAt: null, nextSetupId: x.id });
+    expect(last(voter, "myVote")).toEqual({ type: "myVote", setupId: null });
+    expect(last(voter, "queued")).toEqual({ type: "queued", waiting: 0, seats: 6, taken: [], openSetupId: null });
+    expect(await storage.get("open")).toBeUndefined();
+    expect([...storage.data.keys()].some((k) => k.startsWith("vote:"))).toBe(false);
+    const [late] = await board(1, SEATS);
+    expect(roomOf(late!).setup).toEqual(x);
+    expect(last(late!, "queued")).toMatchObject({ openSetupId: x.id });
+    // A new round, for the ship after this one, closing with it.
+    expect(last(voter, "votes")).toEqual({ type: "votes", counts: {}, closesAt: CLOSES_AT, nextSetupId: null });
+  });
+
+  it("closes the round when the deadline alarm fires", async () => {
+    const x = await post();
+    const [a] = await board(1);
+    await vote(a!, x.id);
+    expect(last(a!, "votes")).toEqual({ type: "votes", counts: { [x.id]: 1 }, closesAt: CLOSES_AT, nextSetupId: null });
+    await at(CLOSES_AT, () => mm.onAlarm());
+    expect(last(a!, "votes")).toEqual({ type: "votes", counts: {}, closesAt: null, nextSetupId: x.id });
+    expect(storage.alarm).toBeNull();
+  });
+
+  it("closes a round whose deadline passed before its alarm fired: a late vote goes to the new round, and a join launches with the winner", async () => {
+    const [x, y] = [await post(), await post()];
+    const [a] = await board(1);
+    await vote(a!, x.id);
+    const late = await connectAs("Late");
+    await at(CLOSES_AT, async () => {
+      await vote(late, y.id);
+      expect(last(late, "votes")).toEqual({ type: "votes", counts: { [y.id]: 1 }, closesAt: null, nextSetupId: x.id });
+      await queue(late, "Late", "chun");
+    });
+    expect(matched(late)!.roomId).not.toBe(matched(a!)!.roomId);
+    expect(roomOf(late).setup).toEqual(x);
+  });
+
+  it("closes the round before a join launches the next ship when the deadline passed with no other message", async () => {
+    const x = await post();
+    const [a] = await board(1);
+    await vote(a!, x.id);
+    const late = await connectAs("Late");
+    await at(CLOSES_AT, () => queue(late, "Late", "chun"));
+    expect(roomOf(late).setup).toEqual(x);
+  });
+
+  it("counts a round once when two refreshes see the ship close together, keeping the winner", async () => {
+    const x = await post();
+    const [a] = await board(1);
+    await vote(a!, x.id);
+    roomOf(a!).closed = true;
+    let release!: () => void;
+    statusDelay = new Promise((resolve) => (release = resolve));
+    const both = Promise.all([connectAs("W1"), connectAs("W2")]);
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    release();
+    const [w1, w2] = await both;
+    for (const w of [w1, w2, a!]) expect(last(w, "votes")).toEqual({ type: "votes", counts: {}, closesAt: null, nextSetupId: x.id });
+    expect(await storage.get<Setup>("nextSetup")).toEqual(x);
+  });
+
+  it("breaks a tie at random among the tied setups", async () => {
+    const [x, y] = [await post(), await post()];
+    const [first, second] = [x.id, y.id].sort();
+    await vote(await connectAs("V1"), x.id);
+    await vote(await connectAs("V2"), y.id);
+    mm.random = () => 0.99;
+    const [a] = await board(SEATS, 2);
+    expect(last(a!, "votes")!.nextSetupId).toBe(second);
+    await vote(await connectAs("V1"), x.id);
+    await vote(await connectAs("V2"), y.id);
+    mm.random = () => 0;
+    await board(1, SEATS + 2);
+    await at(CLOSES_AT, () => mm.onAlarm());
+    expect(last(a!, "votes")!.nextSetupId).toBe(first);
+  });
+
+  it("ignores votes for a setup that got a newer version before the round closed", async () => {
+    const x = await post();
+    await vote(await connectAs("V1"), x.id);
+    await post({ seats: 8 }, x.id);
+    const [a] = await board(SEATS, 1);
+    expect(last(a!, "votes")!.nextSetupId).toBe(STANDARD_SETUP_ID);
+  });
+
+  it("reports the setup the ship really launched with when it fell back to the standard one", async () => {
+    const x = await post();
+    await vote(await connectAs("V1"), x.id);
+    await board(SEATS, 1);
+    fallBack = true;
+    const [a] = await board(1, SEATS + 1);
+    expect(roomOf(a!).setup).toEqual(x);
+    expect(last(a!, "queued")!.openSetupId).toBe(STANDARD_SETUP_ID);
+  });
+
+  it("keeps the votes and the next ship's setup across a restart", async () => {
+    const [x, y] = [await post(), await post()];
+    await vote(await connectAs("V1"), x.id);
+    await board(SEATS, 1);
+    await vote(await connectAs("V2"), y.id);
+    mm = new Matchmaker({ storage } as never, env as never);
+    (mm as unknown as { name: string }).name = "en";
+    await mm.onStart();
+    const again = await connectAs("V2");
+    expect(last(again, "votes")).toEqual({ type: "votes", counts: { [y.id]: 1 }, closesAt: null, nextSetupId: x.id });
+    expect(last(again, "myVote")).toEqual({ type: "myVote", setupId: y.id });
+    const [late] = await board(1, SEATS + 1);
+    expect(roomOf(late!).setup).toEqual(x);
+  });
+
+  it("carries the votes over and launches the standard setup when the store can't be read at the close", async () => {
+    const x = await post();
+    await vote(await connectAs("V1"), x.id);
+    vi.spyOn(SetupStore.prototype, "ballot").mockRejectedValueOnce(new Error("D1 down"));
+    vi.spyOn(console, "warn").mockImplementationOnce(() => {});
+    const [a] = await board(SEATS, 1);
+    expect(last(a!, "votes")).toEqual({ type: "votes", counts: { [x.id]: 1 }, closesAt: null, nextSetupId: STANDARD_SETUP_ID });
+    // Counted at the next close instead.
+    await board(SEATS, 1 + SEATS);
+    expect(last(a!, "votes")).toEqual({ type: "votes", counts: {}, closesAt: null, nextSetupId: x.id });
   });
 });

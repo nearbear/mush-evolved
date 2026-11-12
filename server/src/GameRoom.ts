@@ -24,6 +24,7 @@ import {
   resolveConfig,
   setupOverrides,
   STANDARD_SETUP,
+  STANDARD_SETUP_ID,
   validateSetup,
   singlePlayerGame,
   SINGLE_PLAYER_HUMAN,
@@ -125,7 +126,7 @@ const REPLAY_RETRY_MAX_MS = 60 * 60_000;
  */
 export function shipOverrides(setup: unknown): ConfigOverrides {
   const valid = validateSetup(setup);
-  // Nothing tells the matchmaker yet (#236 will need to know the ship's real setup).
+  // The matchmaker learns the setup the ship really has from `status().setupId` (#236).
   if (!valid) console.warn("A ship's setup didn't validate; it launches with the standard setup.");
   const used = valid ?? STANDARD_SETUP;
   return { ...setupOverrides(used.knobs), setupId: used.id };
@@ -198,9 +199,18 @@ export interface SeatAccount {
   sessionKey: string;
 }
 
+/** What `status` tells the matchmaker about a ship. */
+export interface ShipStatus {
+  aboard: number;
+  seats: number;
+  taken: CharacterId[];
+  closesAt: number | null;
+  setupId: string;
+}
+
 /** What `join` tells the matchmaker. */
 export type JoinResult =
-  | { ok: true; token: string; aboard: number; seats: number; taken: CharacterId[]; closesAt: number | null }
+  | ({ ok: true; token: string } & ShipStatus)
   /** The rules' error code: `character_taken`, or `ship_closed` once it is full or Mush are chosen. */
   | { ok: false; error: string };
 
@@ -645,10 +655,14 @@ export class GameRoom extends Server<Env> {
     }
   }
 
-  /** How full the ship is and when it stops taking crew (null once closed): lets the matchmaker catch up with a dev fill. */
-  status(): { aboard: number; seats: number; taken: CharacterId[]; closesAt: number | null } {
+  /**
+   * How full the ship is, when it stops taking crew (null once closed), and the setup it launched with (the standard
+   * one if the setup it was given didn't validate, #236): lets the matchmaker catch up with a dev fill.
+   */
+  status(): ShipStatus {
     const seats = this.game?.config.preselection?.seats ?? 0;
-    return { aboard: this.game?.players.length ?? 0, seats, taken: this.takenCharacters(), closesAt: this.closesAt() };
+    const setupId = this.game?.config.setupId ?? STANDARD_SETUP_ID;
+    return { aboard: this.game?.players.length ?? 0, seats, taken: this.takenCharacters(), closesAt: this.closesAt(), setupId };
   }
 
   /** The characters chosen aboard (public: the picker grays them out). */

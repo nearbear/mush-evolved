@@ -109,6 +109,7 @@ it("runs every setup store statement on D1", async () => {
   expect((await setups.list()).map((l) => l.setup.version)).toEqual([2]);
   expect(await setups.get(v1.setup.id)).toMatchObject({ latest: false, knobs: input.knobs });
   expect(await setups.counts(owner)).toEqual({ setups: 1, posts: 2 });
+  expect((await setups.ballot([v1.setup.id, v2.ok ? v2.setup.id : "", "standard"])).map((s) => s.version)).toEqual([2]);
 }, 30_000);
 
 it("runs every game store statement on D1", async () => {

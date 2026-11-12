@@ -7,12 +7,15 @@ import {
   MUSH_COUNTS,
   STANDARD_KNOBS,
   STANDARD_SETUP,
+  STANDARD_SETUP_ID,
+  countVotes,
   cyclesPerDayFor,
   knobsDiff,
   moderateSetupTexts,
   parsePostSetup,
   parseSetupKnobs,
   setupOverrides,
+  tallyVotes,
   validateSetup,
   type Setup,
   type SetupKnobs,
@@ -252,5 +255,51 @@ describe("knobsDiff", () => {
   it("is empty for the standard and lists the changed knobs in order", () => {
     expect(knobsDiff(STANDARD_KNOBS)).toEqual([]);
     expect(knobsDiff(knobs({ sharedSpots: false, seats: 8 }) as SetupKnobs)).toEqual(["seats", "sharedSpots"]);
+  });
+});
+
+describe("tallyVotes (#236)", () => {
+  const ballot = new Set(["a", "b", "c"]);
+  const never = () => {
+    throw new Error("No draw without a tie");
+  };
+
+  it("counts votes per setup", () => {
+    expect(countVotes(["a", "b", "a"])).toEqual({ a: 2, b: 1 });
+    expect(countVotes([])).toEqual({});
+  });
+
+  it("picks the setup with the most votes", () => {
+    expect(tallyVotes(["a", "b", "b", "c"], ballot, never)).toBe("b");
+    expect(tallyVotes(["standard", "standard", "a"], ballot, never)).toBe(STANDARD_SETUP_ID);
+  });
+
+  it("gives the standard setup when nobody voted", () => {
+    expect(tallyVotes([], ballot, never)).toBe(STANDARD_SETUP_ID);
+  });
+
+  it("ignores votes for setups off the ballot, even when they have the most", () => {
+    expect(tallyVotes(["gone", "gone", "gone", "a"], ballot, never)).toBe("a");
+    expect(tallyVotes(["gone", "gone"], ballot, never)).toBe(STANDARD_SETUP_ID);
+  });
+
+  it("always has the standard setup on the ballot", () => {
+    expect(tallyVotes(["standard"], new Set(), never)).toBe(STANDARD_SETUP_ID);
+  });
+
+  it("breaks a tie uniformly at random among the tied setups only, whatever order the votes came in", () => {
+    const votes = ["c", "a", "b", "a", "c", "b", "standard"];
+    // Tied at 2: a, b and c, drawn in sorted order. The standard setup has 1 and is never drawn.
+    expect(tallyVotes(votes, ballot, () => 0)).toBe("a");
+    expect(tallyVotes(votes, ballot, () => 0.34)).toBe("b");
+    expect(tallyVotes(votes, ballot, () => 0.99)).toBe("c");
+    expect(tallyVotes([...votes].reverse(), ballot, () => 0.34)).toBe("b");
+    // A draw at the top of the range still lands on the last tied setup.
+    expect(tallyVotes(votes, ballot, () => 1)).toBe("c");
+  });
+
+  it("breaks a tie with the standard setup in either direction", () => {
+    expect(tallyVotes(["a", "standard"], ballot, () => 0)).toBe("a");
+    expect(tallyVotes(["a", "standard"], ballot, () => 0.5)).toBe(STANDARD_SETUP_ID);
   });
 });

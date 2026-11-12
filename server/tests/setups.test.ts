@@ -116,6 +116,25 @@ describe("SetupStore", () => {
     expect(await setups.get(id)).toMatchObject({ id, text: en("Old rules"), ownerName: "Ann", knobs: null, latest: true });
   });
 
+  it("finds which setups are on the ballot: each one's newest version, if it still validates (#236)", async () => {
+    const ann = await account("Ann");
+    const v1 = await post(ann, "Fast");
+    const v2 = await post(ann, "Fast", v1);
+    const other = await post(ann, "Other");
+    const broken = await post(ann, "Old rules");
+    await db.prepare("UPDATE setups SET knobs = ? WHERE id = ?").bind(JSON.stringify({ ...knobs(), cycleHours: 5 }), broken).run();
+    const ids = async (asked: string[]) => (await setups.ballot(asked)).map((s) => s.id).sort();
+    expect(await ids([v1, v2, other, broken, "standard", "nope"])).toEqual([v2, other].sort());
+    expect(await setups.ballot([])).toEqual([]);
+    expect((await setups.ballot([v2]))[0]).toEqual((await setups.list()).find((l) => l.setup.id === v2)?.setup);
+    // More ids than one statement takes.
+    const many = [];
+    for (const owner of [await account("Bo"), await account("Cy"), await account("Di")]) {
+      for (let i = 0; i < 40; i++) many.push(await post(owner, `S${i}`));
+    }
+    expect(await ids([...many, v2])).toEqual([...many, v2].sort());
+  });
+
   it("shows the owner's current display name", async () => {
     const ann = await account("Ann");
     const id = await post(ann, "Fast");

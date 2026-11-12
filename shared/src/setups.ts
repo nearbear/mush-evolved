@@ -2,8 +2,9 @@
 // Decided 2026-10-24/25 (docs/rules/rules-design.md, "Setups and ship voting"; #226, #227). A setup is a few coarse knobs
 // that players post and vote on for their language's next ship. Everything in a setup is public by design. This
 // module is the schema: strict validation, the `ConfigOverrides` a setup gives a game, the moderation of a setup's
-// text, and the shapes of the setup routes. Storage and posting live in the server (`server/src/setupStore.ts` and
-// `setupRoutes.ts`, #233); voting is #236.
+// text, the shapes of the setup routes, and the count of a vote round. Storage and posting live in the server
+// (`server/src/setupStore.ts` and `setupRoutes.ts`, #233); vote rounds in each language's matchmaker
+// (`server/src/Matchmaker.ts`, #236).
 //
 // A setup made for an older rules version drops off the ballot when it no longer validates; `rulesVersion` is stored
 // for display only (`RULES_VERSION` is "dev" for now).
@@ -15,7 +16,7 @@ import { MAX_THREAD_NAME_LENGTH } from "./chat.ts";
 import { PRESELECTION } from "./config.ts";
 import { isRecord } from "./helpers.ts";
 import { BLOCKED_WORDS, moderateChat } from "./moderation.ts";
-import { LOBBY_LANGUAGES, type LobbyLanguage, MAX_NAME_LENGTH } from "./protocol.ts";
+import { LOBBY_LANGUAGES, type LobbyLanguage, MAX_NAME_LENGTH, MAX_SETUP_ID_LENGTH } from "./protocol.ts";
 import type { ConfigOverrides } from "./types.ts";
 
 export const MIN_SEATS = 4;
@@ -31,7 +32,6 @@ export const MUSH_SEAT_MARGIN = 2;
 // Lengths for the free-text fields; their content goes through moderation when posted (#48, #233).
 export const MAX_SETUP_NAME_LENGTH = MAX_THREAD_NAME_LENGTH;
 export const MAX_SETUP_DESCRIPTION_LENGTH = 500;
-export const MAX_SETUP_ID_LENGTH = 64;
 export const MAX_RULES_VERSION_LENGTH = 32;
 
 export type SetupMushCount = (typeof MUSH_COUNTS)[number];
@@ -286,4 +286,31 @@ export interface SetupRecord extends Omit<Setup, "knobs"> {
 /** `GET /api/setups/<id>`; 404 with `{ error: "not_found" }` for an unknown ID. */
 export interface SetupLookupResponse {
   setup: SetupRecord;
+}
+
+// ---- Voting (#236)
+//
+// One vote round per language queue (owner, 2026-10-25; one vote per account, 2026-10-29). The round open while a ship
+// is in pre-selection closes when that ship leaves it (fills or reaches its deadline) and picks the next ship's setup.
+
+/** How many votes each setup has. */
+export function countVotes(votes: Iterable<string>): Record<string, number> {
+  const counts: Record<string, number> = {};
+  for (const id of votes) counts[id] = (counts[id] ?? 0) + 1;
+  return counts;
+}
+
+/**
+ * The setup a closing round picks: the one on `ballot` with the most votes, a tie broken uniformly at random among the
+ * tied setups with `random` (in [0, 1)), and the standard setup when no vote counts. Votes for setups off the ballot
+ * (a newer version was posted, or it stopped validating) are ignored. The standard setup is always on the ballot.
+ */
+export function tallyVotes(votes: Iterable<string>, ballot: ReadonlySet<string>, random: () => number): string {
+  const counts = Object.entries(countVotes(votes)).filter(([id]) => id === STANDARD_SETUP_ID || ballot.has(id));
+  const most = Math.max(0, ...counts.map(([, n]) => n));
+  if (most === 0) return STANDARD_SETUP_ID;
+  // Sorted, so the draw alone decides among the tied, whatever order the votes came in.
+  const tied = counts.filter(([, n]) => n === most).map(([id]) => id).sort();
+  if (tied.length === 1) return tied[0]!;
+  return tied[Math.min(tied.length - 1, Math.floor(random() * tied.length))]!;
 }

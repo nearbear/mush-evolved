@@ -3163,6 +3163,12 @@ Owner asked for an honest verdict on the scratchpad mental-health plan (stressor
 - Looking at the sprite (cropped with the repo's own PNG decoder, since PIL isn't installed) showed it carries its own shadow. A sine bob of the whole frame would have bobbed the shadow too, so `describeScene` splits the frame into two pictures: a still shadow and a floating body (`SceneSprite.bob`, which Pixi animates, 2px in whole pixels, off with reduced motion). The split broke the 1:1 placed-to-sprite indexing that fire slots relied on; caught while writing it and fixed with a `firstSprite` map plus a test.
 - `verify` couldn't go green: another session was editing Matchmaker/protocol in the same checkout at the same time. Checked my part per package instead (shared, web, tools tests; web typecheck; lint; build).
 
+### 2026-11-11: Per-language vote round in the matchmaker (#236)
+
+- The issue's plan (2026-10-25) was partly superseded by later decisions: votes are per account (no browser token, no `hello`), and setups live in D1 (#233), so the ballot check and the winner come from `SetupStore.ballot`, never a client. Built over the matchmaker socket as planned: `vote`, `votes` (totals only), `myVote`, `voteRefused`, `queued.openSetupId`; `GameRoom.status`/`join` now report the setup a ship really took (the #232 review's request).
+- Concurrency was the real work. Instead of the plan's stored "round closed for ship X" marker, `shipClosed` drops the open ship and swaps out the votes synchronously before any await, so no other handler can see the ship open or count it again, and a vote cast mid-count lands in the new round; launches wait on a `closing` promise. Mutation checks (removing the `refresh` bail-out, removing `closeIfExpired` from messages and boarding) each failed the intended tests.
+- Readings not asked, flagged to the owner: a vote for a setup superseded by a newer version before the close is ignored; no vote withdrawal; a D1 failure at the close gives the standard setup and carries the votes over; `nextSetupId` is set only while no ship is open.
+- Ran alongside another session editing the same checkout; `verify` happened to pass with both sets of changes in.
 
 ## 2026-11-11: UI coherence step 3 (part): hover tooltips wear the original tooltip art
 

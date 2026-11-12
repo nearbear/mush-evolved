@@ -28,6 +28,8 @@ import {
 } from "./types.ts";
 
 export const MAX_NAME_LENGTH = 24;
+/** A setup's id (setups.ts): a UUID, or "standard". */
+export const MAX_SETUP_ID_LENGTH = 64;
 
 export const LOBBY_LANGUAGES = ["en", "fr", "es"] as const;
 export type LobbyLanguage = (typeof LOBBY_LANGUAGES)[number];
@@ -41,9 +43,27 @@ export type LobbyLanguage = (typeof LOBBY_LANGUAGES)[number];
 // the error `not_aboard` when it isn't on one any more (the game ended, the ship was retired, or it died), or
 // `ship_unavailable` when it is aboard a ship this build can't read (#384; also sent for `queue`, and the game socket
 // closes with code 4002).
-export type MatchmakerClientMessage = { type: "queue" | "singlePlayer"; name: string; character: CharacterId } | { type: "resume" };
+//
+// Vote round (#236, setups.ts "Voting"). `vote` casts or changes the signed-in account's vote for a setup on the ballot
+// (the standard setup, or a listed setup's newest version), for its lobby's queue; it works after joining too. Refused
+// with `voteRefused`: `sign_in_required`, `unknown_setup` (not on the ballot), or `vote_failed` (the server couldn't
+// check it; try again). Every connection gets `votes` on connect and whenever the counts or the round change: the
+// counts per setup id (only ever totals, never who voted what), when the round closes (the open ship's deadline, or
+// earlier if it fills; null while no ship is open: the round then closes with the next ship launched), and
+// `nextSetupId`, the setup already picked for the next ship to launch when no ship is open (null while one is: the
+// round under way picks it). `myVote` is the account's own vote, sent only to its connections: on connect when signed
+// in, when it votes, and null when a round closes (unless it has already voted in the new one). `queued` carries the
+// open ship's setup id (`openSetupId`, null when none is open), and `seats` is the next ship's when none is open.
+export type MatchmakerClientMessage =
+  | { type: "queue" | "singlePlayer"; name: string; character: CharacterId }
+  | { type: "resume" }
+  | { type: "vote"; setupId: string };
+export type VoteRefusal = "sign_in_required" | "unknown_setup" | "vote_failed";
 export type MatchmakerServerMessage =
-  | { type: "queued"; waiting: number; seats: number; taken: CharacterId[] }
+  | { type: "queued"; waiting: number; seats: number; taken: CharacterId[]; openSetupId: string | null }
+  | { type: "votes"; counts: Record<string, number>; closesAt: number | null; nextSetupId: string | null }
+  | { type: "myVote"; setupId: string | null }
+  | { type: "voteRefused"; reason: VoteRefusal }
   | { type: "characterTaken" }
   | { type: "matched"; roomId: string; token: string }
   | { type: "error"; message: string };
@@ -126,6 +146,10 @@ export type GameServerMessage =
 export function parseMatchmakerMessage(raw: string): MatchmakerClientMessage | null {
   const msg = parseJson(raw);
   if (msg?.type === "resume") return { type: "resume" };
+  if (msg?.type === "vote") {
+    const { setupId } = msg;
+    return typeof setupId === "string" && setupId !== "" && setupId.length <= MAX_SETUP_ID_LENGTH ? { type: "vote", setupId } : null;
+  }
   if ((msg?.type !== "queue" && msg?.type !== "singlePlayer") || typeof msg.name !== "string" || !isCharacterId(msg.character)) return null;
   const name = msg.name.trim().slice(0, MAX_NAME_LENGTH);
   if (!name) return null;

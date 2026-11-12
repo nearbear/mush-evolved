@@ -3,7 +3,7 @@ import type { ActionOf, ActionType } from "../src/actions.ts";
 import { BIOS_OPTIONS } from "../src/bios.ts";
 import { MAX_CHAT_LENGTH } from "../src/chat.ts";
 import { CHEATS, ROLE_CHEATS } from "../src/cheats.ts";
-import { MAX_NAME_LENGTH, parseGameMessage, parseMatchmakerMessage } from "../src/protocol.ts";
+import { MAX_NAME_LENGTH, MAX_SETUP_ID_LENGTH, parseGameMessage, parseMatchmakerMessage } from "../src/protocol.ts";
 import { MAX_SHARED_PLANET_LENGTH } from "../src/sharedPlanets.ts";
 import { MUSH_SKILLS, SKILLS } from "../src/skills.ts";
 import { MAX_SPOT_CELL } from "../src/spot.ts";
@@ -45,6 +45,14 @@ describe("Wire parsers: raw input boundary (#107)", () => {
 });
 
 describe("parseMatchmakerMessage (#107)", () => {
+  it("parses a vote for a setup id, and refuses a missing, empty, overlong or non-string one (#236)", () => {
+    expect(parseMatchmaker({ type: "vote", setupId: "standard" })).toEqual({ type: "vote", setupId: "standard" });
+    expect(parseMatchmaker({ type: "vote", setupId: "x".repeat(MAX_SETUP_ID_LENGTH) })).toEqual({ type: "vote", setupId: "x".repeat(MAX_SETUP_ID_LENGTH) });
+    for (const setupId of [undefined, "", "x".repeat(MAX_SETUP_ID_LENGTH + 1), 3, null, ["standard"]]) {
+      expect(parseMatchmaker({ type: "vote", setupId })).toBeNull();
+    }
+  });
+
   it("parses resume, queue, and singlePlayer", () => {
     expect(parseMatchmaker({ type: "resume" })).toEqual({ type: "resume" });
     expect(parseMatchmakerMessage('{"type":"resume"}')).toEqual({ type: "resume" });
