@@ -11,6 +11,7 @@ import { AccountSection, CharacterPickerSection } from "./LobbySections.tsx";
 import { EndingsSection, ITrackieSection, PatrolSection, SignalSection, TerminalBodiesSection } from "./GameSections.tsx";
 import { InspectSection, InventorySection, ItemAttrIconsSection, PeekBarSection, RoomCornerSection, ShipOverlaySection, StatusIconsSection, TopBarSection } from "./HudSections.tsx";
 import { noop } from "./KitSection.tsx";
+import { SurfaceSection } from "./SurfaceSection.tsx";
 import { freshView, humanView, lethargyView, mushView } from "./samples.ts";
 import "./mush2Kit.css";
 
@@ -29,6 +30,7 @@ const highlights: ShipCardHighlight[] = [
 
 /** The header nav, in page order. */
 const NAV: [id: string, label: string][] = [
+  ["surfaces", "Surface ramps"],
   ["ship-card", "Ship card"],
   ["terminal", "Terminal frame"],
   ["terminal-bodies", "Terminals"],
@@ -65,6 +67,7 @@ export default function Mush2Kit() {
         </nav>
       </header>
       <main>
+        <SurfaceSection />
         <section id="ship-card">
           <h2>Ship card</h2>
           <p>

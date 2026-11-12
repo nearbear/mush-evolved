@@ -16,6 +16,7 @@ look is checked once, in the context it has in the game. Sections live in `Mush2
 
 | Section | Component | Also shows |
 |---|---|---|
+| Surface ramps | `designKit/SurfaceSection.tsx`: today's chrome beside ramps D and E (UI coherence step 2; E chosen for now, not yet applied to `tokens.css`) | `TopBar`, `InspectPanel`, `SelfHud`, `SelfPoints`, `ITrackie` together on the page background |
 | Ship card | `games/ShipCard.tsx` | |
 | Terminal frame | `hud/TerminalFrame.tsx` | `TabOutline` (`"cut"`) |
 | Terminals | `TerminalBody` (exported from `hud/TerminalDialog.tsx` for this), one per terminal, and the turret again with hunters | research/project lists, PILGRED, `PlanetList` → `SharePlanetDialog`, `CommandTerminal` (`ShipNavigation`, `UnavailableButton`, `ConfirmPanel`), `CommsCenter`, `BiosTerminal`, `TurretPanel` (`HunterList`), `RelayDetails`, `ActionButton`, `ActionLabel` |

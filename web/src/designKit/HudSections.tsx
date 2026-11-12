@@ -22,7 +22,7 @@ const self = (view: PlayerView): Target => ({ kind: "player", id: view.you.id })
 /** Twenty minutes from page load, so the countdown has something to count. */
 const NEXT_CYCLE = Date.now() + 20 * 60_000;
 
-function SampleTopBar({ view, ...rest }: { view: PlayerView } & Partial<Parameters<typeof TopBar>[0]>) {
+export function SampleTopBar({ view, ...rest }: { view: PlayerView } & Partial<Parameters<typeof TopBar>[0]>) {
   return (
     <TopBar
       view={view}
@@ -92,7 +92,7 @@ export function ShipOverlaySection() {
   );
 }
 
-function SampleInspect({ view, target }: { view: PlayerView; target: Target }) {
+export function SampleInspect({ view, target }: { view: PlayerView; target: Target }) {
   const layout = useShipLayout();
   return (
     <div className="m2k-inspect">

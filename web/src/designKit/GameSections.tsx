@@ -126,7 +126,7 @@ export function PatrolSection() {
   );
 }
 
-const CHANNELS = { onCreate: noop, onInvite: noop, onLeave: noop };
+export const CHANNELS = { onCreate: noop, onInvite: noop, onLeave: noop };
 
 export function ITrackieSection() {
   return (
