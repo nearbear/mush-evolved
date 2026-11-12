@@ -3065,6 +3065,10 @@ The owner asked for a review of `docs/plans/bot-goals.md` against a new goal: a 
   - `web/src/hud/recency.ts` & `RecencyStamp.tsx`: Updated comments.
 - **Verified:** `npm test -w web -- recency`, `npm test -w web -- hud`, `npm run build`, and `npm run verify` (all tests pass).
 
+## 2026-11-11: log line stamp stacked under its marker
+
+Owner asked whether the recency stamp on ship/room log lines could sit under the log-type icon instead of beside it. Claude pointed out the side-by-side `auto` column also made each row's body start at a different x (stamp widths vary), and proposed a fixed 32px column matching chat entries' sprite column so log and chat bodies share one left edge. Cost noted up front: single-line entries grow a little taller. CSS-only change in `web/src/styles/chat.css` (marker becomes a column flex; stamp at 0.7rem so "1d12h" fits 32px). No visual check run yet.
+
 ## 2026-11-11: Fire drawn at the right depth, spread like noise
 
 - Problem: fire particles were one Pixi layer between the floor and every sprite, so flames in front of furniture drew behind it.
