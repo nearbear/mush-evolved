@@ -178,6 +178,33 @@ export function prepareScene(layout: ShipLayout, rooms: SceneRooms): PreparedSce
  * paint order `placeScene` gives, without redoing what only depends on the tiles.
  */
 export function placeActors(prepared: PreparedScene, actors: readonly (readonly Actor[])[]): PlacedSprite[] {
+  return placeWithSlots(prepared, actors, []).sprites;
+}
+
+/**
+ * Where something drawn on one floor cell of the first room (fire) goes in the paint order: before
+ * the sprite whose `order` is `order` (after everything when it equals the sprite count).
+ */
+export interface CellSlot {
+  cell: { x: number; y: number };
+  order: number;
+}
+
+/**
+ * The screen box a cell's slot is sorted with, from the cell's anchor: about a cell and a half wide
+ * and rising three cells, which covers fire drifting over its cell and the smoke going up from it.
+ */
+const SLOT_BOX = { dx: -24, dy: -40, width: 48, height: 56 } as const;
+
+/**
+ * `placeActors`, plus a slot in the paint order for each of `cells` (floor cells of the first room,
+ * on its own grid). Each is sorted after the sprites are, as a one-cell thing on the floor would be
+ * against what overlaps it on screen, so it moves nothing else: it goes right after the last sprite
+ * that must be behind it. Someone standing on the cell is drawn over it. If what must be behind
+ * and what must be in front cross (sprites the sort didn't have to order), it goes before the first
+ * that must be in front, so walls and furniture cover it rather than it covering them.
+ */
+export function placeWithSlots(prepared: PreparedScene, actors: readonly (readonly Actor[])[], cells: readonly { x: number; y: number }[]): { sprites: PlacedSprite[]; slots: CellSlot[] } {
   const { layout, rooms, statics, plain, edges, byLeft, maxWidth } = prepared;
   const people = rooms.flatMap((r, scene) => actorSortables(layout, r, scene, actors[scene] ?? [])).sort(baseOrder);
   // Merge the two sorted lists. A static wins a tie: it came first in the original's stable sort.
@@ -203,7 +230,62 @@ export function placeActors(prepared: PreparedScene, actors: readonly (readonly 
   });
   const ordered = paintOrder(base, pairs);
   markOccluded(ordered);
-  return ordered.map((s, order) => ({ ...(plain.get(s) ?? unsorted(s)), order }));
+  const slots = cells.length ? cellSlots(ordered, people, statics, byLeft, lefts, maxWidth, cells) : [];
+  return { sprites: ordered.map((s, order) => ({ ...(plain.get(s) ?? unsorted(s)), order })), slots };
+}
+
+function cellSlots(
+  ordered: readonly (PlacedSprite & Sortable)[],
+  people: readonly (PlacedSprite & Sortable)[],
+  statics: readonly (PlacedSprite & Sortable)[],
+  byLeft: readonly number[],
+  lefts: readonly number[],
+  maxWidth: number,
+  cells: readonly { x: number; y: number }[],
+): CellSlot[] {
+  const at = new Map<PlacedSprite & Sortable, number>();
+  for (const [i, s] of ordered.entries()) at.set(s, i);
+  return cells.map(({ x, y }) => {
+    const anchor = gridToPx(x, y);
+    const v: PlacedSprite & Sortable = {
+      key: "",
+      room: "",
+      kind: "actor",
+      cell: { x, y },
+      left: anchor.x + SLOT_BOX.dx,
+      top: anchor.y + SLOT_BOX.dy,
+      width: SLOT_BOX.width,
+      height: SLOT_BOX.height,
+      slice: "",
+      sheet: "",
+      sx: 0,
+      sy: 0,
+      flipX: false,
+      flipY: false,
+      order: 0,
+      pass: PASS.entity,
+      depth: x + y,
+      prio: PRIO.entity,
+      stage: 0,
+      screenX: anchor.x,
+      scene: 0,
+      box: { x0: x, x1: x, y0: y, y1: y },
+      shape: "solid",
+    };
+    let lo = 0, hi = ordered.length;
+    const against = (s: PlacedSprite & Sortable) => {
+      if (s.left >= v.left + v.width || v.left >= s.left + s.width || s.top >= v.top + v.height || v.top >= s.top + s.height) return;
+      let c = compare(v, s);
+      // Someone standing on the cell (or lying on it) is drawn over what burns there.
+      if (c === 0 && s.kind === "actor" && boxesOverlap(v, s)) c = -1;
+      const i = at.get(s)!;
+      if (c > 0) lo = Math.max(lo, i + 1);
+      else if (c < 0) hi = Math.min(hi, i);
+    };
+    for (let q = lowerBound(lefts, v.left - maxWidth); q < lefts.length && lefts[q]! < v.left + v.width; q++) against(statics[byLeft[q]!]!);
+    for (const p of people) against(p);
+    return { cell: { x, y }, order: lo <= hi ? lo : hi };
+  });
 }
 
 /** A sprite without the fields only sorting uses. */

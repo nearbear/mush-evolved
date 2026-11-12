@@ -1,37 +1,67 @@
-// Room fire particle effect (CellFire), matching the original Flash/Haxe iso client:
-// Mush/clients/iso/src/fx/CellFire.hx and Mush/clients/iso/src/Grid.hx:940-975.
+// Room fire particles, after the original Flash/Haxe iso client's CellFire
+// (Mush/clients/iso/src/fx/CellFire.hx and Mush/clients/iso/src/Grid.hx:940-975), but spread over the
+// whole floor rather than from a few tiles: each floor cell burns as hard as a smooth noise field says
+// (`fireWeights`), and flames start anywhere inside the cells. The amount of fire is the original's: as
+// many flames a tick as its emitters made (`emitterCount`, 8 to 30 by floor size, 5 to 8 each).
 //
-// When a room catches fire, random ground tiles (at least 8, or ~20% of the room's ground tiles, up
-// to 30) get a CellFire emitter. Each emitter spawns upward-drifting flame particles from an
-// object pool using the 3x3 pixel slices FX_FIRE_X and FX_FIRE_X2 from fx.png. Particles age through
-// 4 temperature stages (yellow -> orange -> red -> smoke) before dissipating.
+// Each cell has its own layer, which the renderer puts at the cell's place in the paint order
+// (`Scene.fire`), so furniture and walls in front of a cell cover what burns on it, and what burns on it
+// covers what is behind. A flame stays in the layer of the cell it started in: it drifts up, not across.
+// Particles are 3x3 slices FX_FIRE_X and FX_FIRE_X2 of fx.png, aging yellow, orange, red, then smoke.
 
 import { Container, Sprite, type Texture } from "pixi.js";
 
-/** Lateral spread in grid units (CellFire.hx RED_X_MIN). */
-export const RED_X_MIN = 1.2;
-
 export type Temperature = "yellow" | "orange" | "red" | "smoke";
 
-export interface GroundTilePos {
+/** A point in a cell's layer, in pixels from the cell's centre. */
+export interface Offset {
   x: number;
   y: number;
 }
 
+/** A burning cell as the renderer is given it: its grid cell and its centre in the scene. */
+export interface FireCell {
+  cell: { x: number; y: number };
+  x: number;
+  y: number;
+}
+
+/** How many emitters the original lit for a floor this size (Grid.hx:954): at least 8 (all, if fewer), ~20%, at most 30. */
+export function emitterCount(cells: number): number {
+  return Math.min(cells, 30, Math.max(8, Math.round(cells * 0.2)));
+}
+
+/** A hash of a lattice point to [0, 1). */
+function lattice(x: number, y: number, seed: number): number {
+  let h = Math.imul(x, 374761393) ^ Math.imul(y, 668265263) ^ Math.imul(seed, 2246822519);
+  h = Math.imul(h ^ (h >>> 13), 1274126177);
+  return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+}
+
+/** Smooth value noise in [0, 1), with lattice points `scale` cells apart. */
+function valueNoise(x: number, y: number, scale: number, seed: number): number {
+  const fx = x / scale, fy = y / scale;
+  const ix = Math.floor(fx), iy = Math.floor(fy);
+  const s = (t: number) => t * t * (3 - 2 * t);
+  const tx = s(fx - ix), ty = s(fy - iy);
+  const a = lattice(ix, iy, seed), b = lattice(ix + 1, iy, seed), c = lattice(ix, iy + 1, seed), d = lattice(ix + 1, iy + 1, seed);
+  return a + (b - a) * tx + (c - a) * ty + (a - b - c + d) * tx * ty;
+}
+
+/** Noise below this burns nothing, so the fire comes in patches with calm floor between. */
+const CALM = 0.35;
+
 /**
- * Picks random ground tiles for the room's fire emitters without replacement (Grid.hx:954).
- * At least 8 (or all ground tiles if fewer), ~20% of the room's ground tiles, capped at 30.
+ * How hard each cell burns, from 0 (not at all) to 1: two octaves of value noise (patches about four
+ * cells across, broken up at two), cut off below `CALM`. The same seed gives the same fire; if the
+ * cut leaves nothing burning, every cell burns alike.
  */
-export function pickFireTiles(groundTiles: readonly GroundTilePos[]): GroundTilePos[] {
-  if (groundTiles.length === 0) return [];
-  const maxNb = Math.min(groundTiles.length, Math.min(30, Math.max(8, Math.round(groundTiles.length * 0.2))));
-  const pool = [...groundTiles];
-  const chosen: GroundTilePos[] = [];
-  for (let i = 0; i < maxNb && pool.length > 0; i++) {
-    const idx = Math.floor(Math.random() * pool.length);
-    chosen.push(pool.splice(idx, 1)[0]!);
-  }
-  return chosen;
+export function fireWeights(cells: readonly { x: number; y: number }[], seed: number): number[] {
+  const weights = cells.map(({ x, y }) => {
+    const n = (2 * valueNoise(x, y, 4, seed) + valueNoise(x, y, 2, seed + 1)) / 3;
+    return Math.max(0, (n - CALM) / (1 - CALM));
+  });
+  return weights.some((w) => w > 0) ? weights : cells.map(() => 1);
 }
 
 /**
@@ -43,15 +73,13 @@ export class Part {
   temperature: Temperature | null = null;
   tempChange = false;
   speedZ = 0;
-  tile: GroundTilePos = { x: 0, y: 0 };
-  dx = 0;
-  dy = 0;
+  at: Offset = { x: 0, y: 0 };
   pz = 0;
 
   constructor(readonly sprite: Sprite) {}
 
-  reset(tile: GroundTilePos, textures: readonly Texture[]): void {
-    this.tile = tile;
+  reset(at: Offset, textures: readonly Texture[]): void {
+    this.at = at;
     this.startLife = this.life = 0.5 + Math.random() * 0.5;
     this.temperature = null;
 
@@ -65,9 +93,6 @@ export class Part {
       this.speedZ = 0;
       this.tempChange = false;
     }
-
-    this.dx = 0.6 * ((Math.random() * 2 - 1) * RED_X_MIN);
-    this.dy = 0.5 * ((Math.random() * 2 - 1) * RED_X_MIN);
 
     this.changeStage("yellow", textures);
     this.updatePosition();
@@ -103,10 +128,8 @@ export class Part {
   }
 
   private updatePosition(): void {
-    // Iso projection: (dx - dy) * 16 along x, (dx + dy) * 8 along y, minus pz * 8 vertically (CellFire.hx:83-84)
-    const px = this.tile.x + (this.dx - this.dy) * 16;
-    const py = this.tile.y + (this.dx + this.dy) * 8 - this.pz * 8;
-    this.sprite.position.set(Math.round(px), Math.round(py));
+    // Rising pz * 8 pixels up the screen (CellFire.hx:83-84).
+    this.sprite.position.set(Math.round(this.at.x), Math.round(this.at.y - this.pz * 8));
   }
 
   update(dt: number, textures: readonly Texture[]): void {
@@ -134,7 +157,8 @@ export class Part {
 }
 
 /**
- * Object pool for Part instances to prevent GC churn during active fires.
+ * Object pool for Part instances to prevent GC churn during active fires. One per cell layer: a
+ * particle's sprite stays a child of its layer, so reusing it never moves it between layers.
  */
 export class PartPool {
   private readonly free: Part[] = [];
@@ -146,7 +170,7 @@ export class PartPool {
     return this.active.length;
   }
 
-  obtain(tile: GroundTilePos, textures: readonly Texture[]): Part {
+  obtain(at: Offset, textures: readonly Texture[]): Part {
     let p = this.free.pop();
     if (!p) {
       const sprite = new Sprite(textures[0]);
@@ -155,7 +179,7 @@ export class PartPool {
       this.container.addChild(sprite);
       p = new Part(sprite);
     }
-    p.reset(tile, textures);
+    p.reset(at, textures);
     this.active.push(p);
     return p;
   }
@@ -186,85 +210,123 @@ export class PartPool {
     }
     this.active.length = writeIdx;
   }
+}
 
-  destroy(): void {
-    this.recycleAll();
-    this.free.length = 0;
-  }
+/** One burning cell's layer and the particles in it. */
+interface CellLayer {
+  readonly container: Container;
+  readonly pool: PartPool;
+}
+
+const cellKey = (c: { x: number; y: number }) => `${c.x},${c.y}`;
+
+/** A random point inside a cell's diamond, from its centre: half a cell either way along each grid axis. */
+function pointInCell(): Offset {
+  const u = Math.random() - 0.5, v = Math.random() - 0.5;
+  return { x: (u - v) * 16, y: (u + v) * 8 };
 }
 
 /**
- * Emitter attached to one ground tile (CellFire.hx).
- */
-export class CellFireEmitter {
-  private spawnTimer = 0;
-
-  constructor(readonly tile: GroundTilePos) {}
-
-  update(dt: number, pool: PartPool, textures: readonly Texture[], reducedMotion: boolean): void {
-    if (textures.length < 6) return;
-    this.spawnTimer += dt;
-    // Spawns on 30 Hz tick interval, matching original Flash timing
-    while (this.spawnTimer >= 1 / 30) {
-      this.spawnTimer -= 1 / 30;
-      let count = 5 + Math.floor(Math.random() * 4); // Dice.roll(5, 8)
-      if (reducedMotion) count >>= 1;
-      for (let i = 0; i < count; i++) {
-        pool.obtain(this.tile, textures);
-      }
-    }
-  }
-}
-
-/**
- * Manages the isometric room fire particle emitters and particle pool for PixiRenderer.
+ * The fire in the room being viewed: a layer per floor cell (`layerFor`, for the renderer to put in
+ * the paint order), and the flames spawned into them on the original's 30 Hz tick.
  */
 export class RoomFire {
-  readonly container = new Container();
-  private emitters: CellFireEmitter[] = [];
-  private readonly pool: PartPool;
+  private readonly layers = new Map<string, CellLayer>();
+  /** The burning cells' layers and how hard each burns, summed, to pick where each flame starts. */
+  private burning: CellLayer[] = [];
+  private cumulative: number[] = [];
+  private perTick = 0;
+  private spawnTimer = 0;
   private textures: Texture[] = [];
-  private currentRoom: string | null = null;
+  private room: string | null = null;
+  private cellsKey = "";
   active = false;
-
-  constructor() {
-    this.pool = new PartPool(this.container);
-  }
 
   setTextures(textures: Texture[]): void {
     this.textures = textures;
   }
 
-  setFire(room: string, groundTiles: readonly GroundTilePos[], reducedMotion: boolean): void {
-    if (this.currentRoom === room && this.emitters.length > 0) return;
-    this.unsetFire();
-    this.currentRoom = room;
-    const chosen = pickFireTiles(groundTiles);
-    for (const tile of chosen) {
-      this.emitters.push(new CellFireEmitter(tile));
+  /**
+   * The room's floor cells while it is on fire. A new room, or new cells, lights a new fire (a new
+   * noise seed); the same ones only move the layers, should the scene's origin have moved.
+   */
+  setFire(room: string, cells: readonly FireCell[]): void {
+    const key = cells.map((c) => cellKey(c.cell)).join(";");
+    if (room !== this.room || key !== this.cellsKey) {
+      this.unsetFire();
+      this.room = room;
+      this.cellsKey = key;
+      const weights = fireWeights(
+        cells.map((c) => c.cell),
+        Math.floor(Math.random() * 2 ** 31),
+      );
+      let sum = 0;
+      cells.forEach((c, i) => {
+        const container = new Container();
+        const layer = { container, pool: new PartPool(container) };
+        this.layers.set(cellKey(c.cell), layer);
+        if (weights[i]! <= 0) return;
+        sum += weights[i]!;
+        this.burning.push(layer);
+        this.cumulative.push(sum);
+      });
+      this.perTick = emitterCount(cells.length);
+      this.active = this.burning.length > 0;
     }
-    this.active = this.emitters.length > 0;
+    for (const c of cells) this.layers.get(cellKey(c.cell))!.container.position.set(Math.round(c.x), Math.round(c.y));
+  }
+
+  /** The layer drawing what burns on a cell, while the room is on fire. */
+  layerFor(cell: { x: number; y: number }): Container | undefined {
+    return this.layers.get(cellKey(cell))?.container;
   }
 
   unsetFire(): void {
-    this.emitters = [];
-    this.currentRoom = null;
-    this.pool.recycleAll();
+    for (const { container } of this.layers.values()) {
+      container.removeFromParent();
+      container.destroy({ children: true });
+    }
+    this.layers.clear();
+    this.burning = [];
+    this.cumulative = [];
+    this.perTick = 0;
+    this.spawnTimer = 0;
+    this.room = null;
+    this.cellsKey = "";
     this.active = false;
+  }
+
+  /** A burning cell, picked by how hard it burns. */
+  private pick(): CellLayer {
+    const total = this.cumulative[this.cumulative.length - 1]!;
+    const r = Math.random() * total;
+    let lo = 0, hi = this.cumulative.length - 1;
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1;
+      if (this.cumulative[mid]! <= r) lo = mid + 1;
+      else hi = mid;
+    }
+    return this.burning[lo]!;
   }
 
   update(dt: number, reducedMotion: boolean): void {
     if (!this.active) return;
-    for (const emitter of this.emitters) {
-      emitter.update(dt, this.pool, this.textures, reducedMotion);
+    if (this.textures.length >= 6) {
+      this.spawnTimer += dt;
+      // Spawns on a 30 Hz tick, as the original did: 5 to 8 flames per emitter it would have had.
+      while (this.spawnTimer >= 1 / 30) {
+        this.spawnTimer -= 1 / 30;
+        for (let e = 0; e < this.perTick; e++) {
+          let count = 5 + Math.floor(Math.random() * 4); // Dice.roll(5, 8)
+          if (reducedMotion) count >>= 1;
+          for (let i = 0; i < count; i++) this.pick().pool.obtain(pointInCell(), this.textures);
+        }
+      }
     }
-    this.pool.update(dt, this.textures);
-    this.active = this.emitters.length > 0 || this.pool.activeCount > 0;
+    for (const layer of this.burning) layer.pool.update(dt, this.textures);
   }
 
   destroy(): void {
     this.unsetFire();
-    this.pool.destroy();
-    this.container.destroy({ children: true });
   }
 }

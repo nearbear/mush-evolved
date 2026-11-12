@@ -3064,3 +3064,10 @@ The owner asked for a review of `docs/plans/bot-goals.md` against a new goal: a 
   - `web/src/locales/{en,es,fr}.json`: Concise unit timestamp strings.
   - `web/src/hud/recency.ts` & `RecencyStamp.tsx`: Updated comments.
 - **Verified:** `npm test -w web -- recency`, `npm test -w web -- hud`, `npm run build`, and `npm run verify` (all tests pass).
+
+## 2026-11-11: Fire drawn at the right depth, spread like noise
+
+- Problem: fire particles were one Pixi layer between the floor and every sprite, so flames in front of furniture drew behind it.
+- Owner chose noise-spread fire over per-tile emitters. Built: `placeWithSlots` (placement.ts) gives each floor cell a slot in the paint order *after* the topological sort, comparing a virtual one-cell sprite against what overlaps it, so it never perturbs the real order or its cycle breaking (adding nodes to the sort itself could). `describeScene` turns slots into `Scene.fire` indices; the Pixi renderer interleaves one container per cell; flames are spawned anywhere on the floor by a seeded value-noise weight, at the original's total rate.
+- What worked: a flame never changes cell (it only rises), so no per-frame re-bucketing; per-cell pools keep sprites in their container. Slot by `order` value rather than index survived IsoRoom filtering out cameras.
+- Correction: a first test assumed every slot comes after every floor; slots only follow floors that overlap them on screen (fine, since floors are their own layer). Measured cost: up to +2.6 ms per re-placement in the engine room (382 cells), only while burning; under the estimate's "1-2 ms" in most rooms, over it there.

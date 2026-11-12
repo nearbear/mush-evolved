@@ -14,6 +14,7 @@ import {
   placeActors,
   placeRoom,
   placeScene,
+  placeWithSlots,
   prepareScene,
   spreadActors,
   standSpot,
@@ -113,6 +114,44 @@ describe("placeRoom", () => {
   });
 });
 
+describe("placeWithSlots", () => {
+  // A 4x4 floor with a two-cell table across (1,1)-(2,1).
+  const floor: RoomLayout = {
+    id: "BURNING",
+    label: "Burning",
+    equipment: [],
+    tiles: [
+      ...[0, 1, 2, 3].flatMap((x) => [0, 1, 2, 3].map((y) => ({ x, y, kind: "ground" as const, layer: 0, slice: "floor", frame: 0 }))),
+      { x: 2, y: 1, kind: "entity", layer: 2, slice: "table", frame: 0 },
+    ],
+  };
+  const prepared = prepareScene(layout, [{ room: floor, dx: 0, dy: 0 }]);
+  const person = [{ id: "p", cell: { x: 3, y: 3 }, width: 32, height: 48 }];
+  const cells = [{ x: 1, y: 0 }, { x: 1, y: 2 }, { x: 3, y: 3 }];
+  const { sprites, slots } = placeWithSlots(prepared, [person], cells);
+  const slot = (x: number, y: number) => slots.find((s) => s.cell.x === x && s.cell.y === y)!.order;
+  const order = (pick: (s: (typeof sprites)[number]) => boolean) => sprites.find(pick)!.order;
+
+  it("places the sprites as placeActors does, untouched by the slots", () => {
+    expect(sprites).toEqual(placeActors(prepared, [person]));
+    expect(placeWithSlots(prepared, [person], []).slots).toEqual([]);
+  });
+
+  it("puts a cell behind furniture under it, and one in front over it", () => {
+    const table = order((s) => s.slice === "table");
+    expect(slot(1, 0)).toBeLessThanOrEqual(table);
+    expect(slot(1, 2)).toBeGreaterThan(table);
+  });
+
+  it("draws someone standing on a burning cell over it", () => {
+    expect(slot(3, 3)).toBeLessThanOrEqual(order((s) => s.kind === "actor"));
+  });
+
+  it("puts every slot after its cell's floor", () => {
+    for (const s of slots) expect(s.order).toBeGreaterThan(order((p) => p.kind === "ground" && p.cell.x === s.cell.x && p.cell.y === s.cell.y));
+  });
+});
+
 describe("walkableCells / spreadActors", () => {
   it("excludes floor under entity and door footprints", () => {
     // The table at (2,0) covers (2,0) and (1,0); the door at (0,2) covers (0,1).
@@ -191,6 +230,15 @@ describe("the real ship", () => {
       const people = [actors, ...rooms.slice(1).map((r, i) => (i % 2 ? [] : [{ id: `${r.room.id}-p`, cell: walkableCells(ship, r.room)[0]!, width: 32, height: 48 }]))];
       expect(placeActors(prepared, people)).toEqual(placeScene(ship, rooms.map((r, i) => ({ ...r, actors: people[i]! }))));
     }
+  });
+
+  it("draws fire on the floor in front of the wide console over it, and under someone standing there", () => {
+    const command = ship.rooms.find((r) => r.id === "COMMAND_CENTER")!;
+    const prepared = prepareScene(ship, [{ room: command, dx: 0, dy: 0 }, ...neighborRooms(ship, command)]);
+    const { sprites, slots } = placeWithSlots(prepared, [[{ id: "p", cell: { x: 10, y: 22 }, width: 32, height: 48 }]], [{ x: 10, y: 22 }]);
+    const console = sprites.find((s) => s.room === "COMMAND_CENTER" && s.slice === "pilot_astro_right")!.order;
+    expect(slots[0]!.order).toBeGreaterThan(console);
+    expect(slots[0]!.order).toBeLessThanOrEqual(sprites.find((s) => s.kind === "actor")!.order);
   });
 
   it("hides lockers behind the wall of the room in front", () => {

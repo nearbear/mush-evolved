@@ -53,7 +53,7 @@ import {
   doorSpot,
   hitTest,
   neighborRooms,
-  placeActors,
+  placeWithSlots,
   prepareScene,
   spreadActors,
   lyingPose,
@@ -422,8 +422,8 @@ export function IsoRoom({
   // whichever is in front covers the other. Display only: where people stand isn't game state.
   const nearbyKey = JSON.stringify(Object.entries(nearby).map(([r, os]) => [r, os?.map((o) => o.id)]));
   // biome-ignore lint/correctness/useExhaustiveDependencies: occupantKey, corpseKey, nearbyKey, walkersKey, flownKey and leavers stand in for occupants, corpses, nearby, walkers, flown ships and those walking out: positions only change when who or what is where changes.
-  const { scene, sprites, neighborSprites, neighbors, box, ownCells } = useMemo(() => {
-    if (!roomLayout || !prepared) return { scene: [], sprites: [], neighborSprites: [], neighbors: [], box: bounds([]), ownCells: new Set<string>() };
+  const { scene, sprites, neighborSprites, neighbors, box, ownCells, fireSlots } = useMemo(() => {
+    if (!roomLayout || !prepared) return { scene: [], sprites: [], neighborSprites: [], neighbors: [], box: bounds([]), ownCells: new Set<string>(), fireSlots: undefined };
     const flown = new Set(flownKey.split(","));
     const actors = [
       ...drawnPeople.map((o, i) => ({
@@ -441,7 +441,11 @@ export function IsoRoom({
       const actors = people.map((o, i) => ({ id: o.id, cell: spots[i] ?? { x: 0, y: 0 }, width: 32, height: 48 }));
       return { actors, id: n.id as RoomId, people, ring };
     });
-    const scene = placeActors(prepared.scene, [actors, ...neighbors.map((n) => n.actors)])
+    const floorCells = new Set(roomLayout.tiles.filter((t) => t.kind === "ground").map((t) => `${t.x},${t.y}`));
+    // A room on fire burns all over its floor, each cell at its own place in the paint order.
+    const burning = onFire ? [...floorCells].map((c) => c.split(",").map(Number)).map(([x, y]) => ({ x: x!, y: y! })) : [];
+    const placed = placeWithSlots(prepared.scene, [actors, ...neighbors.map((n) => n.actors)], burning);
+    const scene = placed.sprites
       .filter((s) => !CAMERA_SLICES.has(s.slice) || (hasCamera && s.room === room))
       .filter((s) => s.room !== room || !flown.has(s.key))
       // A walker facing right is drawn mirrored; hit-testing mirrors with it.
@@ -454,14 +458,13 @@ export function IsoRoom({
     const sprites = scene.filter((s) => s.room === room);
     const neighborSprites = scene.filter((s) => s.room !== room);
     // Cells next to this room's floor: a neighbour's wall drawn there (beside a door, say) is this room's wall.
-    const floorCells = new Set(roomLayout.tiles.filter((t) => t.kind === "ground").map((t) => `${t.x},${t.y}`));
     const ownCells = new Set<string>();
     for (const c of floorCells) {
       const [x, y] = c.split(",").map(Number) as [number, number];
       for (const [ax, ay] of [[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]] as const) ownCells.add(`${ax},${ay}`);
     }
-    return { scene, sprites, neighborSprites, neighbors, box: bounds(sprites), ownCells };
-  }, [prepared, spots, walkersKey, occupantKey, corpseKey, nearbyKey, hasCamera, flownKey, leavers]);
+    return { scene, sprites, neighborSprites, neighbors, box: bounds(sprites), ownCells, fireSlots: onFire ? placed.slots : undefined };
+  }, [prepared, spots, walkersKey, occupantKey, corpseKey, nearbyKey, hasCamera, flownKey, leavers, onFire]);
 
   // Sprites draw at exactly one screen pixel per source pixel, so art stays crisp.
   // The camera always keeps you centred, even near a room's edges (the neighbours fill the space
@@ -586,9 +589,9 @@ export function IsoRoom({
         pace,
         planet,
         turn,
-        onFire,
+        fireSlots,
       }),
-    [scene, box, walkersKey, walkersLook, doorsKey, seatsKey, occupants, nearby, corpses, equipmentByKey, reachable, selected, selectedDoor, hoverKey, ownCells, looks, pace, planet, turn, onFire],
+    [scene, box, walkersKey, walkersLook, doorsKey, seatsKey, occupants, nearby, corpses, equipmentByKey, reachable, selected, selectedDoor, hoverKey, ownCells, looks, pace, planet, turn, fireSlots],
   );
   // Badges and bubbles go over the people in this room.
   const anchors = drawn.sprites.flatMap((s): Anchor[] => {

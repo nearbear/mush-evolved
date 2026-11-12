@@ -88,19 +88,27 @@ describe("describeScene", () => {
     expect([s.width, s.height]).toEqual([400, 300]);
   });
 
-  it("includes room onFire and extracts unique ground tile centers", () => {
-    const g1 = placed({ room: HERE, kind: "ground", cell: { x: 0, y: 0 } });
-    const g2 = placed({ room: HERE, kind: "ground", cell: { x: 1, y: 0 } });
-    const g3 = placed({ room: HERE, kind: "ground", cell: { x: 0, y: 0 } });
-    const g4 = placed({ room: NEXT, kind: "ground", cell: { x: 2, y: 0 } });
+  it("has no fire when the room isn't burning", () => {
+    expect(scene([placed({ kind: "ground" })]).fire).toEqual([]);
+  });
 
-    const s = scene([g1, g2, g3, g4], { onFire: true });
-    expect(s.onFire).toBe(true);
-    expect(s.room).toBe(HERE);
-    expect(s.groundTiles.length).toBe(2);
-    expect(s.groundTiles[0]).toEqual({ x: 100, y: 58 });
-    expect(s.sprites[0]?.kind).toBe("ground");
-    expect(s.sprites[0]?.slice).toBe("floor");
+  it("puts each burning cell at its centre, before the first sprite at or past its slot", () => {
+    const g = placed({ key: "t0", kind: "ground", order: 0 });
+    const table = placed({ key: "t1", kind: "entity", order: 1 });
+    // t2 (order 2) was left out of the scene, as IsoRoom does with cameras: a slot there goes before t3.
+    const person = placed({ key: "a:p", kind: "actor", order: 3 });
+    const s = scene([g, table, person], {
+      fireSlots: [
+        { cell: { x: 0, y: 0 }, order: 1 },
+        { cell: { x: 1, y: 0 }, order: 2 },
+        { cell: { x: 2, y: 0 }, order: 4 },
+      ],
+    });
+    expect(s.fire).toEqual([
+      { cell: { x: 0, y: 0 }, x: 100, y: 58, at: 1 },
+      { cell: { x: 1, y: 0 }, x: 116, y: 66, at: 2 },
+      { cell: { x: 2, y: 0 }, x: 132, y: 74, at: 3 },
+    ]);
   });
 
   it("fogs other rooms, lifting a selected or hovered reachable room", () => {

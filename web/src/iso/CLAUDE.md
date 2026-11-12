@@ -106,10 +106,16 @@ Loaded when working on the isometric view. The UI rules in `web/CLAUDE.md` still
   draws a tile as another slice of the same size: `core_pilgred` becomes the animated
   `core_pilgred_upgrade` once the view's public `pilgredRepaired` is true, and `human_tank`
   becomes `human_tank_full` once `humanTankFull` is true (a Mush has died on the ship).
-- Room fire particles (`CellFire`, `pixi/fire.ts`): when a room is on fire (`PlayerView.roomOnFire`),
-  the Pixi renderer attaches dynamic particle emitters to random ground tiles of the room (at least 8,
-  or ~20%, up to 30, from `Grid.hx`) using slices `FX_FIRE_X` and `FX_FIRE_X2` from `fx.png`, aging
-  particles through four stages: yellow, orange, red, and smoke.
+- Room fire (`pixi/fire.ts`, after the original's `CellFire`): when the room is on fire (`PlayerView.roomOnFire`),
+  every floor cell gets a slot in the paint order (`placeWithSlots`: sorted after the sprites, as a one-cell
+  thing would be against what overlaps it, so it moves nothing else; someone standing on the cell is drawn
+  over it), passed through `describeScene` as `Scene.fire` (each cell's index into `sprites`). The Pixi
+  renderer puts one layer per cell there, so furniture and walls in front cover the flames. Flames start
+  anywhere on the floor, as hard as a seeded value-noise field says (`fireWeights`: patches, calm floor
+  between), at the original's rate (`emitterCount` emitters' worth, 5-8 each per 30 Hz tick), and age
+  yellow, orange, red, smoke (`FX_FIRE_X`/`FX_FIRE_X2` in `fx.png`). A flame stays in its cell's layer.
+  The slots cost up to about 2.6 ms per re-placement (the engine room, 382 cells), only while burning.
+  The DOM renderer draws no fire.
 
 ## Where the animations are
 

@@ -13,7 +13,7 @@ import { lyingFrame, sittingFrame, spriteStrip } from "../art/assets.ts";
 import type { Bar } from "../scene/ActionBar.tsx";
 import { atlasUrl } from "./shipLayout.ts";
 import { CAMERA_SLICES } from "./equipmentTiles.ts";
-import { frameRect, gridToPx, type PlacedSprite } from "./placement.ts";
+import { type CellSlot, frameRect, gridToPx, type PlacedSprite } from "./placement.ts";
 import type { Walker } from "./useWalkers.ts";
 
 export interface Occupant {
@@ -248,10 +248,21 @@ export interface Scene {
   turn: ShipTurn | null;
   /** The room being viewed. */
   room: RoomId;
-  /** Whether the room is currently on fire. */
-  onFire: boolean;
-  /** Center of each ground tile in this room in scene coordinates, for fire emitters. */
-  groundTiles: readonly { x: number; y: number }[];
+  /** The burning room's floor cells, each with its place in the paint order; empty when it isn't on fire. */
+  fire: readonly SceneFireCell[];
+}
+
+/** A cell's centre below its anchor (its top corner), in pixels. */
+const CELL_CENTER_Y = 8;
+
+/** One floor cell of a room on fire: what burns there is drawn just before `sprites[at]` (after them all when `at` is their count). */
+export interface SceneFireCell {
+  /** The cell on the room's grid, for a renderer that spreads the fire over the floor. */
+  cell: { x: number; y: number };
+  /** The cell's centre in the scene. */
+  x: number;
+  y: number;
+  at: number;
 }
 
 /** Per animation frame, between renders: where the camera puts the world, and how far each walker is from where the scene placed them. */
@@ -309,8 +320,8 @@ export interface SceneInput {
   planet?: string | null;
   /** The ship's latest turn (`Scene.turn`); none when not given. */
   turn?: ShipTurn | null;
-  /** Whether the room is currently on fire. */
-  onFire?: boolean;
+  /** The room is on fire: its floor cells' places in the paint order (`placeWithSlots`, orders into `placed`). */
+  fireSlots?: readonly CellSlot[];
 }
 
 /** The corpse an actor sprite draws, if it is one. */
@@ -452,21 +463,17 @@ export function describeScene(input: SceneInput): Scene {
     }
     sprites.push({ ...tile(), anim, role: "tile", kind: s.kind, slice: s.slice });
   }
-  const groundTiles: { x: number; y: number }[] = [];
-  const seenCells = new Set<string>();
-  for (const s of placed) {
-    if (s.room === room && s.kind === "ground") {
-      const cellKey = `${s.cell.x},${s.cell.y}`;
-      if (!seenCells.has(cellKey)) {
-        seenCells.add(cellKey);
-        const anchor = gridToPx(s.cell.x, s.cell.y);
-        groundTiles.push({
-          x: anchor.x - box.minX,
-          y: anchor.y - box.minY + 8,
-        });
-      }
+  // `placed` is in paint order and keeps its orders when some are left out, so each slot goes before the first sprite at or past it.
+  const fire = (input.fireSlots ?? []).map(({ cell, order }) => {
+    const anchor = gridToPx(cell.x, cell.y);
+    let at = 0, hi = placed.length;
+    while (at < hi) {
+      const mid = (at + hi) >> 1;
+      if (placed[mid]!.order < order) at = mid + 1;
+      else hi = mid;
     }
-  }
+    return { cell, x: anchor.x - box.minX, y: anchor.y - box.minY + CELL_CENTER_Y, at };
+  });
   return {
     width: box.width,
     height: box.height,
@@ -476,7 +483,6 @@ export function describeScene(input: SceneInput): Scene {
     planet: input.planet ?? null,
     turn: input.turn ?? null,
     room,
-    onFire: !!input.onFire,
-    groundTiles,
+    fire,
   };
 }

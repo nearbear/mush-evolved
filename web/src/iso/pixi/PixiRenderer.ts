@@ -204,7 +204,7 @@ export class PixiRenderer {
     }
     // Pixi's own input handling is unused: IsoRoom hit-tests against the art itself.
     this.app.stage.eventMode = "none";
-    this.world.addChild(this.ground, this.fire.container, this.sprites, this.outlines);
+    this.world.addChild(this.ground, this.sprites, this.outlines);
     void imageTexture(FX_SHEET, false).then((base) => {
       if (this.destroyed) return;
       const fireTextures = Array.from({ length: 6 }, (_, i) => frameTexture(base, `fx_fire_${i}`, 5 + i * 3, 0, 3, 3));
@@ -270,11 +270,9 @@ export class PixiRenderer {
     const ground = this.sync(groundPics, "", this.ground, this.groundOrder, seen, (d, s) => this.paintSprite(d, s));
     const sprites = this.sync(spritePics, "", this.sprites, this.order, seen, (d, s) => this.paintSprite(d, s));
     const outlines = this.sync(scene.outlines, OUTLINE, this.outlines, this.outlineOrder, seen, (d, o) => this.paintOutline(d, o));
-    if (scene.onFire && scene.groundTiles?.length) {
-      this.fire.setFire(scene.room, scene.groundTiles, this.reducedMotion.matches);
-    } else {
-      this.fire.unsetFire();
-    }
+    if (scene.fire.length) this.fire.setFire(scene.room, scene.fire);
+    else this.fire.unsetFire();
+    this.arrange(this.sprites, this.withFire(scene, sprites));
     for (const [key, d] of this.drawn) {
       if (seen.has(key)) continue;
       d.sprite.destroy();
@@ -311,12 +309,41 @@ export class PixiRenderer {
       this.place(d, { x: 0, y: 0 });
       next.push(d);
     }
-    // Paint order is child order; re-add only when it changed.
-    if (next.length !== prev.length || next.some((d, i) => d !== prev[i])) {
-      layer.removeChildren();
-      if (next.length) layer.addChild(...next.map((d) => d.sprite));
-    }
+    if (layer !== this.sprites) this.arrange(layer, next.map((d) => d.sprite));
     return next;
+  }
+
+  /**
+   * The sprites layer's children: its sprites, with each burning cell's fire layer before the sprite it
+   * goes under. A fire cell's place counts every scene sprite, floors included, which draw in their own layer.
+   */
+  private withFire(scene: Scene, sprites: readonly Drawn[]): Container[] {
+    if (!scene.fire.length) return sprites.map((d) => d.sprite);
+    // The index among the non-floor sprites of each scene sprite position.
+    const upTo = new Int32Array(scene.sprites.length + 1);
+    scene.sprites.forEach((s, i) => {
+      upTo[i + 1] = upTo[i]! + (s.kind === "ground" ? 0 : 1);
+    });
+    const before = new Map<number, Container[]>();
+    for (const c of scene.fire) {
+      const layer = this.fire.layerFor(c.cell);
+      if (!layer) continue;
+      const i = upTo[c.at]!;
+      before.set(i, [...(before.get(i) ?? []), layer]);
+    }
+    const out: Container[] = [];
+    sprites.forEach((d, i) => {
+      out.push(...(before.get(i) ?? []), d.sprite);
+    });
+    out.push(...(before.get(sprites.length) ?? []));
+    return out;
+  }
+
+  /** Paint order is child order; re-add only when it changed. */
+  private arrange(layer: Container, children: readonly Container[]) {
+    if (children.length === layer.children.length && children.every((c, i) => c === layer.children[i])) return;
+    layer.removeChildren();
+    if (children.length) layer.addChild(...children);
   }
 
   setFrame(frame: FrameUpdate) {
