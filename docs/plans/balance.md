@@ -1,6 +1,8 @@
 # Balance and tuning
 
-**Status:** draft, 2026-11-04, corrected 2026-11-05, design pillars added 2026-11-05. The goals are the owner's own words. The directions below are the owner's (recorded in `docs/rules/rules-design.md`); the targets and remaining levers are still proposals. The open questions are listed at the end.
+**Status:** draft, 2026-11-04, corrected 2026-11-05, design pillars added 2026-11-05, brought up to date 2026-11-11 (Chun, MycoScan, the spore holding limit, Fertile for every Mush, the countdown length). The goals are the owner's own words. The directions below are the owner's (recorded in `docs/rules/rules-design.md`); the targets and remaining levers are still proposals. The open questions are listed at the end.
+
+This is the record. `docs/plans/balance-review.md` (2026-11-10) is commentary on it: a queue of proposals, few of them decided. When one of its questions is decided, the outcome moves here.
 
 ## Goals (owner, 2026-11-04)
 
@@ -16,7 +18,7 @@ From a design Q&A on social deduction failure modes (Among Us is the cautionary 
 
 - **The feel.** Humans: paranoid detective work with a few big reveals. Mush: a tense double life with a few big swings.
 - **Close beats even.** An even win rate matters less than both sides always having something meaningful to do. This covers "no lockout" and "no Mush snowball": the main measure is whether the losing side still had a real path to winning late in the game.
-- **No incidental proof of humanity.** Only mechanics designed for it may prove someone human: Chun (who can't be Mush), and a serum injection, after which the target is human. Any other mechanic that happens to prove humanity is a bug in the design (eMush's example: becoming visibly sick proves you human). The same goes for proving someone Mush: the only proofs are designed ones such as the List, a death message, or real detective work (below).
+- **No incidental proof of humanity.** Only mechanics designed for it may prove someone human: Chun's immunity, and a serum injection, after which the target is human. Chun's proof is partial: she can never be converted, but `rules-design.md` (2026-10-18) lets her start as Mush, so she is not certified from the first minute (an earlier version of this line said she can't be Mush; `balance-review.md` decision 9 recommends keeping the rules-design entry). Any other mechanic that happens to prove humanity is a bug in the design (eMush's example: becoming visibly sick proves you human). The same goes for proving someone Mush: the only proofs are designed ones such as the List, a death message, or real detective work (below).
 - **Deduction comes from detective work.** Proof is allowed when it comes from collecting clues about a hostile act and narrowing the suspects. Getting those clues should involve some luck, and the Mush should have counterplay (example: a Mush sets off a myco alarm, then uses the Defacer skill, eMushpedia "Dialoguiste", to muddy the record).
 - **A quiet setup.** Day 1 doesn't need to give humans anything to deduce from. The Mush work unseen to build up an advantage they cash in one of two ways:
   - **Explosive rampage**, which should push the humans to **return to Sol** fast;
@@ -71,17 +73,17 @@ The numbers are placeholders to argue about; what matters is that each goal has 
 
 "Confirmed" and "hostile action" need exact definitions before any of this is measured, since the telemetry ([#62](https://github.com/nearbear/mush2/issues/62)) has to count them.
 
-## Where the game stands (2026-11-05)
+## Where the game stands (2026-11-05, updated 2026-11-11)
 
-Read from `shared/src/config.ts` and `docs/rules/implemented-rules.md`.
+Read from `shared/src/config.ts` and `docs/rules/implemented-rules.md`. Written before the spore holding limit (2026-11-10) and Fertile for every Mush (2026-11-11); both are folded in below.
 
 ### The AP economy
 
 - **Everyone:** start 8 AP, +1 per cycle (8 a day with 3-hour cycles), cap 12, carried over.
 - **Humans on top of that:** food. Rations give 4 AP (5 with Sirius), coffee 2 AP, a banana 1 AP, limited by satiety (full belly at 3, a ration gives 4) and by supply (32 rations, the coffee machine once a day, bananas from botany).
-- **Mush:** no AP from food at all. The only Mush AP source beyond regeneration is **Phagocytosis**: extraction costs 1 AP for 1 spore, eating it gives 4 AP and 4 HP, so **net +3 AP per spore**, up to the faction's 4 spores a day. The brakes are the cap, the skill slot, and the `dirty` status from extraction (a soft tell, washed off in the shower).
+- **Mush:** no AP from food at all. The only Mush AP source beyond regeneration is **Phagocytosis**: extraction costs 1 AP for 1 spore, eating it gives 4 AP and 4 HP, so **net +3 AP per spore**, up to the faction's 4 spores a day. Each Mush's first extraction of the day will cost 0 AP (net +4), since every Mush gets Fertile's effect (decided 2026-11-11, not built). A Mush holds at most **2 spores** (built 2026-11-10), so a bank is worth at most 8 AP and 8 HP. The brakes are the daily cap, the holding limit, the Phagocytosis skill slot, and the `dirty` status from extraction (a soft tell, washed off in the shower).
 
-So the price of stealth is already in place: a Mush who never extracts spores has a human's regeneration and none of a human's food AP. A Mush who wants to keep pace has to extract spores, which leaves traces.
+So a price of stealth is in place: a Mush who never extracts spores has a human's regeneration and none of a human's food AP. A Mush who wants to keep pace has to extract spores, which leaves traces, though free daily extraction makes keeping pace cheaper than when this was written. `balance-review.md` ("What makes it worse here") argues the price is real but small next to the payoff of waiting: a passive Mush still wins by default while Eden isn't a human win with Mush alive.
 
 ### What pushes the Mush to act
 
@@ -98,18 +100,18 @@ So the price of stealth is already in place: a Mush who never extracts spores ha
 | Tool | What it gives | Scarce? |
 |---|---|---|
 | Myco alarms (research) | An anonymous ring when a `spore`-tagged action happens in their room | Three alarms; placed in rooms |
-| MycoScan (research) | Checking **your own** spore level, once a day | Self only; not a test of others |
+| MycoScan (research) | Checking **your own** spore level, once a day | Self only, but free and daily: a new spore can be traced to the few people you were alone with |
 | Anti-Mush serum (research) | Vaccinating someone; the user gets a private "worked / did nothing" | **A real test**, but one serum, used up |
 | Mush-eating bacteria (research) | Humans' contamination capacity goes from 3 to 4 | Slows conversion; reveals nothing |
 | Interrogate (Torturer) and action history | The names of a target's recent actions | Skill-gated |
 | Cameras, room logs, `dirty` | Who was where, and who got dirty | Soft information |
 | The List (Tracker) | Not built; see below | One per game |
 
-The serum is a test of exactly the kind the goals allow: scarce, deliberate, and costly to waste. MycoScan is not a test, because it reads only your own level.
+The serum is a test of exactly the kind the goals allow: scarce, deliberate, and costly to waste. MycoScan was listed here as not a test, because it reads only your own level. That undersold it (`balance-review.md` decision 6): a free daily check dates each new spore, and the room log narrows it to whoever you were alone with, which can name a Mush outright. Noise, a cost or a delay are the candidate fixes; not decided.
 
 ### The List
 
-To be built as in eMush (eMushpedia "LA Liste", "Traqueur"). Eleesha's Tracker skill can print one document per game at the Tabulator. It holds the name of **one character who started the game as Mush**, padded with random names to the list's size. The size starts at **8 names and drops by one per completed day**, so a list printed on day 7 names the Mush outright. It can never contain Chun, and it may include the second alpha Mush by chance. It can be torn up.
+To be built as in eMush (eMushpedia "LA Liste", "Traqueur"). Eleesha's Tracker skill can print one document per game at the Tabulator. It holds the name of **one character who started the game as Mush**, padded with random names to the list's size. The size starts at **8 names and drops by one per completed day**, so a list printed on day 7 names the Mush outright. It can never contain Chun (whether a Mush Chun may be on it is open, `balance-review.md` decision 9), and it may include the second alpha Mush by chance. It can be torn up.
 
 It fits the goals closely:
 
@@ -123,8 +125,8 @@ Other scarce tests can follow the same pattern: one use, a cost, and accuracy th
 
 | Loop | Brake today | Concern |
 |---|---|---|
-| Spores → Phagocytosis → AP → more spikes → conversions | Faction cap of 4 spores a day; `dirty`; a Mush skill slot | The cap is the main brake; watch it if Mush skills add spore sources |
-| Conversions → more Mush bodies → more actions | Each convert brings a human's regeneration but loses food AP; the spore cap is per faction, not per Mush | Good: the cap doesn't grow with converts |
+| Spores → Phagocytosis → AP → more spikes → conversions | Faction cap of 4 spores a day; holding limit of 2 per Mush; `dirty`; a Mush skill slot | The daily cap is the main brake on the rate, the holding limit on a single burst; watch it if Mush skills add spore sources (Fertile makes extraction cheaper, not more plentiful) |
+| Conversions → more Mush bodies → more actions | Each convert brings a human's regeneration but loses food AP; the daily spore cap is per faction, not per Mush | Good: the daily cap doesn't grow with converts. The holding limit is per Mush, so the faction's total bank does (2 per Mush), and every convert gets free daily extraction |
 | Research → detection tools → Mush found | Assays at 25/50/75/100% let contaminated samples spoil (`research-sabotage.md`) | A rush is the Mush's clock running fast |
 | Humans busy on research → ship neglected | Incident points rise by day (#184); hunters | Not tuned yet; this is the natural tax on a rush |
 
@@ -139,12 +141,13 @@ Other scarce tests can follow the same pattern: one use, a cost, and accuracy th
 
 ### Snowball brakes
 
-- Keep every Mush-side cap per faction, not per Mush.
+- Keep every Mush-side rate cap per faction, not per Mush. The spore holding limit (2 per Mush, 2026-11-10) is a deliberate exception: it bounds one Mush's burst, while the faction's daily cap still bounds the rate.
 - Watch for any reward from converting that scales with the number of Mush.
 
 ### Price of stealth
 
 - Already set by food: compare a passive Mush's AP with a fed human's, and a spore-extracting Mush's with both. If passive Mush still win often, the gap is too small or detection is too slow.
+- Since 2026-11-11 every Mush's first extraction each day is free, which narrows the gap for a Mush who extracts only to eat. `balance-review.md` argues the lever is the payoff of waiting rather than the price of hiding (its decision 1, Eden as a human win with Mush alive).
 
 ## Method
 
@@ -166,12 +169,12 @@ A design for the Eden endgame, worked out with the owner on 2026-11-06. It assum
 - **One reading per crew member per star (owner, 2026-11-06).** Once taken, a reading stays privately available to that player for the rest of the game. This stops a proven human with spare AP (Chun with Lethargy) from buying the whole vote, and limits each Mush to one lie per star: claiming two readings on one star breaks a known rule. A Mush can still claim a reading without taking it, saving that one reading's AP; that asymmetry is small enough to accept.
 - **Noise.** Each star map fragment loaded in the calculator raises the chance a reading names the right star. Fragments aren't used up. There is a noise floor (accuracy never reaches 100%), so a contradicted claim is never proof. The noise floor replaces a separate wild-reading chance: with discrete readings, a wild reading is just a wrong one. Without fragments readings are near chance, so a fragment-less crew can still try Eden but wastes AP on dead ends: Eden becomes a gambit. The more fragments the crew has, the harder it is to trick them into False Eden, so how much the Mush fear the Eden route scales with fragments.
 - **Lying.** The Mush lie about their readings and push their branch openly. Lying costs no extra AP: the counter is the crew killing someone they suspect, seeing the role, and dropping that player's readings. Converts are more readers who can back each other's lies.
-- **The jump.** The Commander spends 2 AP at the Command terminal. It needs PILGRED repaired and the **ready light**: some leaf reached N and hasn't been tried. The Commander picks which computed leaf to go to, so the endgame is about convincing the Commander. The jump starts a **countdown of 4 cycles** (below) before it lands. Nobody knows the outcome until a cutscene plays: the route traced on the star map, then the arrival. True Eden: humans win. False Eden: Mush win (it needs its own arrival art; look in `Mush/` first, no generated art).
+- **The jump.** The Commander spends 2 AP at the Command terminal. It needs PILGRED repaired and the **ready light**: some leaf reached N and hasn't been tried. The Commander picks which computed leaf to go to, so the endgame is about convincing the Commander. The jump starts a **countdown** (below; drafted as 4 cycles, now thought too long) before it lands. Nobody knows the outcome until a cutscene plays: the route traced on the star map, then the arrival. True Eden: humans win. False Eden: Mush win (it needs its own arrival art; look in `Mush/` first, no generated art).
 - **Dead ends fizzle.** The jump fails and NERON mocks the crew. It costs nothing beyond the AP already spent: that leaf closes (shown to everyone), and all computation stays.
-- **The countdown (owner, 2026-11-06, stopgap for a Mush Commander).** Any jump, PILGRED to Sol or the Eden jump, starts a public countdown of 4 cycles, with stars whizzing past to show the endgame is under way. 4 cycles is the owner's minimum for giving the whole crew a chance to respond to a critical event, the same window botany gives for disease; adjust after playtests. A jump the crew didn't agree to all but outs the Commander, which turns a Mush Commander's instant win (or a Transfer into the Commander) into a public reveal. Three ways to stop it, all at the Command terminal: kill the Commander so the next in line can stop it; use the hacker kit; or the Politician skill, taking on the Commander's powers (not built). The Mush can use the same methods to stop a True Eden jump.
+- **The countdown (owner, 2026-11-06, stopgap for a Mush Commander).** Any jump, PILGRED to Sol or the Eden jump, starts a public countdown of 4 cycles, with stars whizzing past to show the endgame is under way. 4 cycles was the owner's minimum for giving the whole crew a chance to respond to a critical event, the same window botany gives for disease. **Too long (owner, 2026-11-11, agreeing with a player); the length is open.** `balance-review.md` decision 2 proposes replacing this single-Commander stopgap with three keys from title holders, any of whom can cancel the countdown by withdrawing their key. A jump the crew didn't agree to all but outs the Commander, which turns a Mush Commander's instant win (or a Transfer into the Commander) into a public reveal. Three ways to stop it, all at the Command terminal: kill the Commander so the next in line can stop it; use the hacker kit; or the Politician skill, taking on the Commander's powers (not built). The Mush can use the same methods to stop a True Eden jump.
 - **Sabotage is separate.** Calculator AP isn't spent keeping the ship alive while the PvE gets harder, so a smart Mush sabotages when the crew has sunk its reserves into the calculator. No amplifier for now (owner, 2026-11-06); an idea for later, tied to the incident work ([#331](https://github.com/nearbear/mush2/issues/331)), was AP spent at the calculator adding more incident points than other actions.
 - **First pass is small.** One or two forks and four to six leaves, enough to test whether the trust game is fun before building the full tree.
-- **Placeholders for `config.ts`:** tree depth and branching, N, reading and computing AP costs, accuracy per fragment, the noise floor, the countdown length (4 cycles).
+- **Placeholders for `config.ts`:** tree depth and branching, N, reading and computing AP costs, accuracy per fragment, the noise floor, the countdown length (drafted as 4 cycles; too long, see above).
 
 **Reading model (2026-11-06, `npm run sim-readings -w tools`, `tools/src/sims/readings.ts`).** At the fork where True and False Eden split: honest readers name the right child with probability p and otherwise a random wrong one, each Mush names the False Eden child, and the crew follows the most-claimed star. Chance the crew picks True Eden / False Eden, from 40,000 trials per cell:
 
@@ -187,11 +190,11 @@ What it shows: honest turnout matters as much as accuracy. With full turnout and
 
 **Considered and dropped (2026-11-06):** fragments used up by reading (the calculator should be a large AP sink); a binary corrupted-or-not clue (owner wants graded noise); hidden computation decided by a tug of war at each fork (computation is public now, the deception is in the readings); a countdown when a route completes (the Commander's jump replaces it); noise tied to ship condition (sabotage and Eden stay orthogonal); a public line for taking a reading.
 
-**Parked:** fragments revealing part of the map (it would force the divergence point past the revealed area, or the Mush never get a chance at False Eden). The Mush Commander picking False Eden is the same problem as unfair Sol rushes; the 4-cycle countdown above is the stopgap for both, and False Eden shouldn't ship without it.
+**Parked:** fragments revealing part of the map (it would force the divergence point past the revealed area, or the Mush never get a chance at False Eden). The Mush Commander picking False Eden is the same problem as unfair Sol rushes; the countdown above is the stopgap for both, and False Eden shouldn't ship without it.
 
 ## Open questions
 
-- **The sneaky PILGRED win (owner, 2026-11-05: "not a fun way to lose").** Two Mush can repair PILGRED quietly, using Phagocytosis for the AP, and don't even need the Commander on their side: they can Transfer into the Commander. The owner is not resolving this yet. Candidate fixes raised: a public, abortable countdown once PILGRED is repaired (parked on 2026-11-05; on 2026-11-06 the owner proposed it as a stopgap: 4 cycles, for Sol and Eden alike, see "The countdown" under False Eden); NERON announcing progress milestones; requiring several crew to go home. Barring Phagocytosis AP from PILGRED is dropped (owner, 2026-11-05: never; the refusal would itself prove someone Mush).
+- **The sneaky PILGRED win (owner, 2026-11-05: "not a fun way to lose").** Two Mush can repair PILGRED quietly, using Phagocytosis for the AP, and don't even need the Commander on their side: they can Transfer into the Commander. The owner is not resolving this yet. Candidate fixes raised: a public, abortable countdown once PILGRED is repaired (parked on 2026-11-05; on 2026-11-06 the owner proposed it as a stopgap: 4 cycles, for Sol and Eden alike, see "The countdown" under False Eden; 4 cycles is now thought too long, and `balance-review.md` decision 2 proposes three keys instead); NERON announcing progress milestones; requiring several crew to go home. Barring Phagocytosis AP from PILGRED is dropped (owner, 2026-11-05: never; the refusal would itself prove someone Mush).
 - **Eden as a human win even with Mush alive (owner's proposal, 2026-11-05, not decided).** It would replace the current rule, under which Eden is decided like Sol. The idea is two kinds of game:
   - **Short and explosive, ending at Sol.** The Mush rampage. The crew kills them but loses many people doing it, and with too few left to reach Eden, they go home early.
   - **Slow burn, ending at Eden.** The Mush stay quiet. Going home is too risky while they might be alive, so the crew heads for Eden instead. Since reaching Eden would be a human win, the Mush have to act before the ship gets there. Their way to win the slow game would be a NERON majority before arrival.

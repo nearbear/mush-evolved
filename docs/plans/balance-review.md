@@ -318,6 +318,7 @@ In eMush, a Transfer needs the same room and one spore, leaves no log, and reset
 
 - **Corrected (2026-11-10):** the food gap, which an earlier pass called negligible (see "Food"); `balance.md`'s "MycoScan is not a test" (decision 6).
 - **Corrected (2026-11-11):** the human win conditions (Eden counts too), one player's quote presented as what "players call" it, the definition of a passive Mush, and the skill-slot test (decision 5).
+- **Applied to `balance.md` (2026-11-11):** the Chun pillar, MycoScan, the spore holding limit and Fertile in "Where the game stands" and the levers, and the 4-cycle countdown marked too long.
 - **Not checked:** whether eMush's death message reveals the role.
 - **Not checked:** how patrol-ship flight with stolen items plays in this ruleset.
 - **Not modelled:** the readings game with AP budgets, converts arriving mid-game, and a crew that discounts suspects.
