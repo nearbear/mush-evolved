@@ -211,24 +211,20 @@ button.space-hunter:focus-visible {
   outline-offset: 1px;
 }
 
-/* The controls: the charges at the top, Shoot flanked by the target-cycling arrows, then the ship's other actions
-   side by side. On desktop it is centred, clear of the AP and MP bars (bottom left) and the sack (bottom right). */
+/* The controls (TechnoBox): the charges at the top, Shoot flanked by the target-cycling arrows, then the ship's other
+   actions side by side. On desktop it is centred, clear of the AP and MP bars (bottom left) and the sack (bottom right). */
 .space-bar {
   position: relative;
   align-self: center;
   box-sizing: border-box;
   width: min(26rem, 100% - 13rem);
   margin-bottom: var(--space-2);
-  padding: var(--space-2);
   display: flex;
   flex-direction: column;
   align-items: stretch;
   gap: var(--space-2);
   text-align: center;
   font-size: 0.85rem;
-  background: rgb(9 9 45 / 0.85);
-  border: 1px solid var(--glow-rim);
-  border-radius: 6px;
 }
 .space-bar button {
   margin: 0;

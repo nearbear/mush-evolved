@@ -3174,3 +3174,9 @@ Owner asked for an honest verdict on the scratchpad mental-health plan (stressor
 
 - The owner chose to keep the `tipbg` art for hover tooltips (the plan's step 3 had asked whether to drop it) and to restyle panels in a later session. Every hover tooltip and hover card already shared one `.tooltip` rule (`web/src/styles/itrackie.css`), so the change is that one rule: the flat bordered box becomes `tipbg` as a three-sliced `border-image` body with `tiptop`/`tipbottom` as 16px caps in `::before`/`::after`, the same build `.panel` uses off the game screen. Vertical padding went up so a one-line tooltip is at least as tall as both caps.
 - Worked: grepping Popup class names first showed there was a single place to change, so no component was touched.
+
+### 2026-11-11: Patrol cockpit bar uses TechnoBox
+
+- Owner asked for the space combat UI's bottom cockpit panel (`.space-bar` in `web/src/hud/PatrolCockpit.tsx` and `web/src/styles/space.css`) to use the chamfered card style and background colour of the minimap (`TechnoBox`).
+- Needed correction: I first asked about `.hud-card` (`self-hud.css`) before the owner clarified that "chamfered card style (same bg color)" referred to what the minimap uses (`TechnoBox`, `Mush/derived/techno-box.png`).
+- Switched `.space-bar` to `<TechnoBox className="space-bar">` and dropped its own padding, background, border, and border-radius so `.techno-box` provides the 9-sliced frame, fill, and inset padding.

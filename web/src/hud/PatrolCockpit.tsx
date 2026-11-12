@@ -21,6 +21,7 @@ import { FxSprite } from "./FxSprite.tsx";
 import { NO_FORMATION, aimedSlot, hunterIn, stepAim, track } from "./hunterSlots.ts";
 import { spaceSky } from "./spaceSky.ts";
 import { optionsOn } from "./targets.ts";
+import { TechnoBox } from "./TechnoBox.tsx";
 
 interface Props {
   view: PlayerView;
@@ -110,7 +111,7 @@ export function PatrolCockpit({ view, ship, layout, onAction }: Props) {
         )}
       </div>
 
-      <div className="space-bar">
+      <TechnoBox className="space-bar">
         {ship.charges !== null && (
           <div className="space-charges">
             <IconStack slice={FX_CHARGE} count={ship.charges} />
@@ -150,7 +151,7 @@ export function PatrolCockpit({ view, ship, layout, onAction }: Props) {
             ))}
           </div>
         )}
-      </div>
+      </TechnoBox>
     </section>
   );
 }
