@@ -1,4 +1,4 @@
-// A button for an offered action. When you only lack the AP or MP for it (or are too dirty), it shows disabled and a card
+// A button for an offered action. When you only lack the AP or MP for it (or are too dirty, or there's no debris to collect...), it shows disabled and a card
 // says why (on hover, focus, or tap). It uses aria-disabled rather than disabled so it can still be hovered,
 // focused and tapped to read the reason.
 
@@ -44,7 +44,11 @@ export function DisabledActionButton({ view, blocked, children, className, hint 
   const { t } = useTranslation();
   const { cost, lacks } = blocked;
   const reason =
-    lacks[0] === "clean"
+    lacks[0] === "debris"
+      ? t("patrol.noDebris")
+      : lacks[0] === "pasiphae"
+      ? t("actions.lacksPasiphae")
+      : lacks[0] === "clean"
       ? t("actions.lacksClean")
       : lacks[0] === "capacity"
       ? t("actions.atCapacity")

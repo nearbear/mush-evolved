@@ -331,9 +331,9 @@ export interface PlayerView {
   /**
    * The patrol ship you are flying (its room id) with its armor and charges (null for the Pasiphae, which can't shoot),
    * while you are alive aboard (patrol.ts); otherwise null. `debris` is how many pieces float around the Daedalus, not
-   * which (owner, 2026-10-28).
+   * which (owner, 2026-10-28), and null in a patrol ship while the Pasiphae exists, since it can't collect (owner, 2026-11-11).
    */
-  patrolShip: { id: string; armor: number; maxArmor: number; charges: number | null; debris: number } | null;
+  patrolShip: { id: string; armor: number; maxArmor: number; charges: number | null; debris: number | null } | null;
   /** Every title in `TITLE_IDS` order, public to everyone (owner, 2026-10-20). */
   titles: TitleView[];
   /**
@@ -367,8 +367,11 @@ export interface ActionOption {
   chance: number;
   /** What kind of action it is (aggressive, spore), so the UI can mark it. Fixed per action type. */
   tags: ActionTag[];
-  /** Empty when you can do it now; otherwise the points, the inventory space, or the cleanliness ("clean": you are dirty) you lack. See `affordable`. */
-  lacks: ("ap" | "mp" | "space" | "cooldown" | "capacity" | "clean")[];
+  /**
+   * Empty when you can do it now; otherwise the points, the inventory space, or the cleanliness ("clean": you are dirty)
+   * you lack, or for Collect scrap, "debris" (none out there) or "pasiphae" (a patrol ship can't while the Pasiphae exists). See `affordable`.
+   */
+  lacks: ("ap" | "mp" | "space" | "cooldown" | "capacity" | "clean" | "debris" | "pasiphae")[];
   /** Cycles until it is ready, when `lacks` has "cooldown". */
   cooldown?: number;
 }

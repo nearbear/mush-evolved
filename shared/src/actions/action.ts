@@ -24,6 +24,12 @@ export const COOLDOWN = "cooldown";
 /** The `validate` code for an action you must be clean for: shown disabled, with "take a shower" (`unaffordableActions`). */
 export const DIRTY = "dirty";
 
+/** The `validate` code for Collect scrap with no debris out there: shown disabled, not hidden (`unaffordableActions`). */
+export const NO_DEBRIS = "no_debris";
+
+/** The `validate` code for Collect scrap from a patrol ship while the Pasiphae still exists: shown disabled (`unaffordableActions`). */
+export const PASIPHAE_INTACT = "pasiphae_intact";
+
 /**
  * Who learns of an action, for the label on its button (the log entries themselves come from `log.ts`).
  * Declared per action and kept in step with the log call in its `apply`.

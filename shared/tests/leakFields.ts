@@ -78,7 +78,7 @@ export const GAME_STATE_FIELDS: Record<string, FieldRule> = {
   pendingFires: { reach: "never", test: "leaks.test.ts", note: "Rooms a Pyromaniac set to ignite at the next cycle change (2026-11-03)." },
   fires: { reach: "room", test: "incidents.test.ts", note: "Only as `roomOnFire` to the living in the room, or `burningRooms` to the living when Fire Detectors is complete (owner, 2026-11-02)." },
   patrolShips: { reach: "room", test: "patrol.test.ts", note: "`out` to the living in the ship's bay, on its interface, with `armor` while docked (owner, 2026-10-28, so Renovate's offer reveals nothing); `armor` in flight and `charges` to its pilot only, aboard (leaks.test.ts); `onPlanet` never as such (phase 5, #359: the public expedition status names the ship and its pilot; expeditions.test.ts)." },
-  space: { reach: "never", test: "leaks.test.ts", note: "Only its length, to a pilot aboard (`patrolShip.debris`); the pieces never." },
+  space: { reach: "never", test: "leaks.test.ts", note: "Only its length, to a pilot aboard a ship that may collect (`patrolShip.debris`; not a patrol ship while the Pasiphae exists); the pieces never." },
   now: { reach: "never", test: "leaks.test.ts", note: "The rules' clock; offers' expiry times reach their owner only." },
 };
 

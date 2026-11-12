@@ -6,7 +6,8 @@
 // their hp underneath the sprite. The ship and the hunters each weave on their own beat, the ship a moment behind, so it
 // reads as a chase. The bar under the scene has the ship's charges at the top (stacked like the shields), Shoot flanked
 // by the two target-cycling arrow buttons (a patrol ship only; the Pasiphae can't shoot), and the ship's other actions
-// (Land, Collect scrap: whatever the view offers on its command, less Examine).
+// (Land, Collect scrap: whatever the view offers on its command, less Examine). Collect scrap's tooltip says how much
+// debris floats nearby (the view leaves the count out while a patrol ship can't collect); when the rules refuse it (no debris, or a patrol ship while the Pasiphae exists) it shows disabled with why.
 
 import { actionVisibility, patrolShip, type Action, type PlayerView, type ShipLayout } from "@mush2/shared";
 import { useState, type CSSProperties, type KeyboardEvent } from "react";
@@ -137,7 +138,13 @@ export function PatrolCockpit({ view, ship, layout, onAction }: Props) {
         {shipOptions.length > 0 && (
           <div className="space-actions">
             {shipOptions.map((option) => (
-              <ActionButton key={JSON.stringify(option.action)} view={view} option={option} onAction={onAction}>
+              <ActionButton
+                key={JSON.stringify(option.action)}
+                view={view}
+                option={option}
+                onAction={onAction}
+                hint={option.action.type === "collect_scrap" && ship.debris ? t("patrol.debris", { count: ship.debris }) : undefined}
+              >
                 <ActionLabel text={names.action(option.action.type)} cost={option.cost} chance={option.chance} visibility={actionVisibility(option.action.type)} />
               </ActionButton>
             ))}

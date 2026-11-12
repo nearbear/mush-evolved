@@ -79,6 +79,14 @@ export const shipsInFlight = (state: Readonly<GameState>): PatrolShip[] =>
     return ship.out && !ship.destroyed && ship.onPlanet === null;
   });
 
+/**
+ * Whether `ship` may collect scrap at all: the Pasiphae always, a patrol ship only once the Pasiphae is destroyed (owner,
+ * 2026-11-11). Its pilot sees the debris count only then. The Pasiphae's destruction is public (announced, or shown in its bay),
+ * except that a pilot in flight can infer a loss on a planet with death announcements off (see the leak-check, 2026-11-11).
+ */
+export const canScavenge = (state: Readonly<GameState>, ship: Readonly<PatrolShip>): boolean =>
+  ship.kind === "pasiphae" || PATROL_SHIPS.every((s) => s.kind !== "pasiphae" || state.patrolShips[s.id]!.destroyed);
+
 /** Whether this ship sits on the orbited planet (owner, 2026-11-09, #359): nothing flies it until it docks. */
 export const onPlanet = (state: Readonly<GameState>, ship: Readonly<PatrolShip>): boolean => state.patrolShips[ship.id]!.onPlanet !== null;
 

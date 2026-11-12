@@ -365,6 +365,7 @@
     "onCooldown_many": "Lista de nuevo en {{count}} ciclos.",
     "lacksSpace": "Tu inventario está lleno.",
     "lacksClean": "No puedes hacer esto con la suciedad encima. Dúchate primero.",
+    "lacksPasiphae": "Una nave patrulla solo puede recoger restos cuando el Pasiphae ha sido destruido.",
     "lacksMp": "No tienes suficientes PM: cuesta {{need}} y tienes {{have}}.",
     "lacksBoth": "No tienes suficientes PA ni PM: cuesta {{needAp}} PA y {{needMp}} PM, y tienes {{haveAp}} PA y {{haveMp}} PM.",
     "returnToSol": "Volver a Sol",
@@ -743,8 +744,8 @@
       "inactive": "No se ha conectado en 24 horas. No puede tener ningún título, no puede sufrir una Transferencia, y un puñetazo le acierta el 90 % de las veces. Termina en cuanto se conecta.",
       "super_inactive": "No se ha conectado en 48 horas. Logística también lo ignora. Termina en cuanto se conecta.",
       "focused": "Está en un terminal, mirando su pantalla. Termina cuando lo cierra, se aleja o sale de la sala.",
-      "contaminated": "Un humano que has contaminado. Al llegar a su capacidad se vuelve Mush."
-      "hopeless": "Con 0 de moral. Cualquier ganancia de moral lo termina. Un humano que siga Sin esperanza al acabar el ciclo muere.",
+      "contaminated": "Un humano que has contaminado. Al llegar a su capacidad se vuelve Mush.",
+      "hopeless": "Con 0 de moral. Cualquier ganancia de moral lo termina. Un humano que siga Sin esperanza al acabar el ciclo muere."
     }
   },
   "itemAttr": {

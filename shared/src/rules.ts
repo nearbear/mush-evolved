@@ -10,7 +10,7 @@ import { expirePlans, plansView, strikeSlots } from "./plans.ts";
 import { bindPerformAction } from "./actions/summon.ts";
 import { applyCheats, makeHuman, shipInvincible, type Cheat, type RoleCheat } from "./cheats.ts";
 import { ACTIONS, type ActionDef } from "./actions.ts";
-import { AT_CAPACITY, COOLDOWN, DIRTY, NO_SPACE } from "./actions/action.ts";
+import { AT_CAPACITY, COOLDOWN, DIRTY, NO_DEBRIS, NO_SPACE, PASIPHAE_INTACT } from "./actions/action.ts";
 import { getUp } from "./actions/lie_down.ts";
 import { researchNeedsView } from "./actions/research.ts";
 import { equipmentHere } from "./equipment.ts";
@@ -51,7 +51,7 @@ import { burnOxygen, shipView, startShip } from "./ship.ts";
 import { allTurrets, huntersCycle, newHunters, startHunters, turretCharges, turretsHere } from "./hunters.ts";
 import { expeditionReturnAt, lostPlayers, withCrew } from "./expeditions.ts";
 import { ICARUS_EQUIPMENT } from "./actions/icarus_takeoff.ts";
-import { interfaceId, isLostPlace, newPatrolShips, PATROL_INTERFACE, PATROL_SHIPS, shipAboard } from "./patrol.ts";
+import { canScavenge, interfaceId, isLostPlace, newPatrolShips, PATROL_INTERFACE, PATROL_SHIPS, shipAboard } from "./patrol.ts";
 import { preselectionCycle } from "./preselection.ts";
 import { SUCCESSION, TITLE_IDS, assignTitles, noTitles } from "./titles.ts";
 import type {
@@ -238,7 +238,7 @@ export function legalActions(state: GameState, playerId: PlayerId): Action[] {
 }
 
 /**
- * Actions that fail only on cost (`cant_afford`), on room in the inventory (`NO_SPACE`), on a cooldown (`COOLDOWN`), on a shared limit (`AT_CAPACITY`) or on being dirty (`DIRTY`), with the cost and what falls
+ * Actions that fail only on cost (`cant_afford`), on room in the inventory (`NO_SPACE`), on a cooldown (`COOLDOWN`), on a shared limit (`AT_CAPACITY`), on being dirty (`DIRTY`) or, for Collect scrap, on no debris (`NO_DEBRIS`) or the Pasiphae still existing (`PASIPHAE_INTACT`), with the cost and what falls
  * short. For showing them disabled.
  * Moves are left out: an unaffordable move has no cost to report, and doors aren't action buttons.
  */
@@ -249,9 +249,9 @@ export function unaffordableActions(state: GameState, playerId: PlayerId): Actio
     def.candidates(state, p).flatMap((a): ActionOption[] => {
       if (a.type === "move") return [];
       const refused = def.check(state, p, a);
-      if (refused !== "cant_afford" && refused !== NO_SPACE && refused !== COOLDOWN && refused !== AT_CAPACITY && refused !== DIRTY) return [];
+      if (refused !== "cant_afford" && refused !== NO_SPACE && refused !== COOLDOWN && refused !== AT_CAPACITY && refused !== DIRTY && refused !== NO_DEBRIS && refused !== PASIPHAE_INTACT) return [];
       const cost = def.cost(state, p, a);
-      const lacks: ActionOption["lacks"] = [...(refused === DIRTY ? (["clean"] as const) : []), ...(refused === NO_SPACE ? (["space"] as const) : []), ...(refused === COOLDOWN ? (["cooldown"] as const) : []), ...(refused === AT_CAPACITY ? (["capacity"] as const) : []), ...(p.ap < cost.ap ? (["ap"] as const) : []), ...(p.mp < cost.mp ? (["mp"] as const) : [])];
+      const lacks: ActionOption["lacks"] = [...(refused === NO_DEBRIS ? (["debris"] as const) : []), ...(refused === PASIPHAE_INTACT ? (["pasiphae"] as const) : []), ...(refused === DIRTY ? (["clean"] as const) : []), ...(refused === NO_SPACE ? (["space"] as const) : []), ...(refused === COOLDOWN ? (["cooldown"] as const) : []), ...(refused === AT_CAPACITY ? (["capacity"] as const) : []), ...(p.ap < cost.ap ? (["ap"] as const) : []), ...(p.mp < cost.mp ? (["mp"] as const) : [])];
       const option: ActionOption = { action: a, cost, chance: def.chance(state, p, a), tags: [...def.tagsFor(state, a)], lacks };
       if (refused === COOLDOWN) option.cooldown = def.cooldownLeft(state, p, a);
       return [option];
@@ -386,9 +386,9 @@ function chargesFor(config: DeepReadonly<GameConfig>, type: string): { charges?:
  * being ready (single player) has none, and no inactivity check: whoever ended it was there.
  */
 function advanceCycle(state: GameState, at?: number): void {
-  state.cycle += 1;
   // The ending cycle's Hopeless humans die first, so anyone this cycle change takes to 0 gets a full cycle (morale.ts).
   hopelessCycle(state);
+  state.cycle += 1;
   pruneLog(state);
   for (const p of state.players) {
     changeAP(state, p, apGain(state, p));
@@ -772,12 +772,12 @@ function expeditionView(state: GameState, you: PlayerState): PlayerView["expedit
   };
 }
 
-/** Your own ship's armor and charges, and how much debris is out there, while you fly it. */
+/** Your own ship's armor and charges, and how much debris is out there (only if it may collect), while you fly it. */
 function patrolShipView(state: GameState, you: PlayerState): PlayerView["patrolShip"] {
   const ship = you.alive ? shipAboard(you) : undefined;
   if (!ship) return null;
   const { armor, charges } = state.patrolShips[ship.id]!;
-  return { id: ship.id, armor, maxArmor: state.config.patrol.armor[ship.kind], charges: ship.kind === "pasiphae" ? null : charges, debris: state.space.length };
+  return { id: ship.id, armor, maxArmor: state.config.patrol.armor[ship.kind], charges: ship.kind === "pasiphae" ? null : charges, debris: canScavenge(state, ship) ? state.space.length : null };
 }
 
 /** Alive, not done for the cycle, and the game is running. */

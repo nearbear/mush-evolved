@@ -114,7 +114,7 @@ describe("in flight", () => {
     const types = new Set(offered(s, "p0").map((a) => a.type));
     expect(types.has("move")).toBe(false);
     expect(offered(s, "p0").filter((a) => a.type === "land")).toEqual([land()]);
-    expect(viewFor(s, "p0").patrolShip).toEqual({ id: LONGANE.id, armor: 10, maxArmor: 10, charges: 10, debris: 0 });
+    expect(viewFor(s, "p0").patrolShip).toEqual({ id: LONGANE.id, armor: 10, maxArmor: 10, charges: 10, debris: null }); // the Pasiphae is intact, so no count
     expect(viewFor(s, "p0").roomEquipment).toEqual([{ id: commandId(LONGANE), type: "PATROL_COMMAND" }]);
     expect(viewFor(s, "p1").patrolShip).toBeNull();
   });
@@ -415,8 +415,12 @@ describe("debris", () => {
     for (const type of types) s.space.push({ id: `debris-${s.space.length}`, type });
   };
   const inRoom = (s: GameState, room: string) => s.items.filter((i) => i.at.kind === "room" && i.at.id === room);
-  /** p0 flying Longane, no hunters left. */
-  const flying = (config: Partial<GameConfig> = {}) => mustApply(ship(config), "p0", takeoff());
+  /** p0 flying Longane, no hunters left, the Pasiphae destroyed (so a patrol ship may collect). */
+  const flying = (config: Partial<GameConfig> = {}) => {
+    const s = mustApply(ship(config), "p0", takeoff());
+    s.patrolShips[PASIPHAE.id]!.destroyed = true;
+    return s;
+  };
 
   it("a destroyed hunter drops 1 or 2 pieces, by the weights in config", () => {
     for (const [count, type] of [[1, "metal_scraps"], [2, "space_capsule"]] as const) {
@@ -438,14 +442,39 @@ describe("debris", () => {
     for (const id of ["p0", "p1", "p2"]) expect(JSON.stringify(viewFor(s, id))).not.toContain("debris-");
   });
 
-  it("collect is offered from the command only while there is debris, for 2 AP", () => {
+  it("collect is offered from the command for 2 AP, shown disabled while there is no debris", () => {
     const s = flying();
     expect(offered(s, "p0").some((a) => a.type === "collect_scrap")).toBe(false);
     expect(refusal(s, "p0", collect())).toBe("no_debris");
+    expect(option(s, "p0", collect())?.lacks).toEqual(["debris"]);
     debris(s, "metal_scraps");
+    expect(option(s, "p0", collect())?.lacks).toEqual([]);
     expect(offered(s, "p0").filter((a) => a.type === "collect_scrap")).toEqual([collect()]);
     expect(costOf(s, "p0", collect())).toEqual({ ap: s.config.patrol.collect.cost.ap, mp: 0 });
     expect(refusal(s, "p1", collect())).toBe("not_flying");
+  });
+
+  it("a patrol ship can't collect while the Pasiphae exists, docked or flying; the Pasiphae itself can (owner, 2026-11-11)", () => {
+    const s = mustApply(ship(), "p0", takeoff());
+    debris(s, "metal_scraps");
+    expect(s.patrolShips[PASIPHAE.id]).toMatchObject({ destroyed: false, out: false });
+    expect(offered(s, "p0").some((a) => a.type === "collect_scrap")).toBe(false);
+    expect(refusal(s, "p0", collect())).toBe("pasiphae_intact");
+    expect(option(s, "p0", collect())?.lacks).toEqual(["pasiphae"]);
+    // Nor does its pilot learn how much debris is out there.
+    expect(viewFor(s, "p0").patrolShip!.debris).toBeNull();
+    expect(applyAction(s, "p0", collect())).toEqual({ ok: false, error: "illegal_action" });
+
+    player(s, "p1").room = PASIPHAE.bay;
+    player(s, "p1").skills = ["pilot"];
+    const both = mustApply(s, "p1", { type: "takeoff", equipment: interfaceId(PASIPHAE) });
+    expect(refusal(both, "p0", collect())).toBe("pasiphae_intact");
+    expect(offered(both, "p1")).toContainEqual(collect(PASIPHAE));
+    expect(viewFor(both, "p1").patrolShip!.debris).toBe(1);
+
+    s.patrolShips[PASIPHAE.id]!.destroyed = true;
+    expect(offered(s, "p0")).toContainEqual(collect());
+    expect(viewFor(s, "p0").patrolShip!.debris).toBe(1);
   });
 
   it("brings pieces into the ship's room, privately; a try that catches nothing says so", () => {

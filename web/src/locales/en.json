@@ -360,6 +360,7 @@
     "onCooldown_other": "Ready again in {{count}} cycles.",
     "lacksSpace": "Your inventory is full.",
     "lacksClean": "You have to be clean to do this. Take a shower first.",
+    "lacksPasiphae": "A patrol ship can only collect scrap once the Pasiphae has been destroyed.",
     "lacksMp": "Not enough MP: it costs {{need}}, you have {{have}}.",
     "lacksBoth": "Not enough AP or MP: it costs {{needAp}} AP and {{needMp}} MP, you have {{haveAp}} AP and {{haveMp}} MP.",
     "returnToSol": "Return to Sol",
@@ -731,8 +732,8 @@
       "inactive": "Hasn't connected for 24 hours. Holds no title, can't be taken over by a Transfer, and a punch lands on them 90% of the time. Ends as soon as they connect.",
       "super_inactive": "Hasn't connected for 48 hours. Also skipped by the Logistics Expert. Ends as soon as they connect.",
       "focused": "At a terminal, looking at its screen. Ends when they close it, walk off or leave the room.",
-      "contaminated": "A human you have contaminated. At their capacity they turn Mush."
-      "hopeless": "At 0 morale. Any morale gain ends it. A human still Hopeless when the cycle ends dies.",
+      "contaminated": "A human you have contaminated. At their capacity they turn Mush.",
+      "hopeless": "At 0 morale. Any morale gain ends it. A human still Hopeless when the cycle ends dies."
     }
   },
   "itemAttr": {

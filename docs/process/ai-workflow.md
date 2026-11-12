@@ -3098,8 +3098,24 @@ Correction (owner, 2026-11-11): "the original" means Motion Twin's Mush (the `Mu
 ## 2026-11-11: Drug Dispenser terminal and `dispense_drug`
 Owner gave the rule in one line; I asked four questions (which drugs are offered, cost/limit, supply, structure) and the owner answered: one shared random list per reset (cycles 1 and 4), first N shown with N = 1 + Nurse + 2 x Biologist, one drug per reset from nothing, access plus a terminal action. The AP cost was left open, so it is a config placeholder of 0 AP. New state `drugDispenser` (added with a default, no version bump), `dispense_drug` action, a terminal panel in the client, en/fr/es text, tests in `shared/tests/drugDispenser.test.ts`.
 
+## 2026-11-11: balance.md brought up to date after the review
+
+At the owner's request, Claude updated `docs/plans/balance.md` where the balance review had made it stale, keeping it as the record and the review as a queue of proposals (a note in the status line now says so). Changed: the Chun pillar (she can start as Mush per `rules-design.md`, not "can't be Mush"), "MycoScan is not a test", "Where the game stands", the feedback loops and the snowball and stealth levers (the 2-spore holding limit and Fertile for every Mush folded in, the holding limit noted as a deliberate per-Mush exception), and the 4-cycle countdown marked too long with its length open. Nothing undecided was recorded as decided: the review's proposals are cited as proposals.
+
+### 2026-11-11: UI coherence step 2, surface ramp comparison in the design kit
+
+- Built a "Surface ramps" design-kit section (`designKit/SurfaceSection.tsx`) that scopes candidate chrome ramps to a miniature game screen made of the real components, instead of editing `tokens.css`, so the owner could choose before any game UI changed.
+- Round 1 offered three ramps (Graphite, Slate, Dusk). The owner liked Dusk but worried that greyer chrome would make the game feel unfamiliar to Mush players. Round 2 kept Dusk and added edge-only blue (D: top cap; E: edge glow from the tooltip art) and a darker same-hue ramp (Midnight). The owner kept D and E and chose E for now.
+- Needed correction: the tooltip art (`tipbg.png`) has its blue baked in at about 90% opacity, so no CSS ramp can darken it; the preview substitutes a flat fill, which ties step 2 to the step 3 frame decision. E's first glow was too faint to see in screenshots and had to be strengthened twice. The iTrackie preview didn't reach the bottom of the row (it is a fixed 560px in the game); fixed in the kit only.
+
 ## 2026-11-11: a contributor's friction after #384; union merge for this log
 The owner asked whether SawJester had struggled unnecessarily since #384. Reading his commits and merges: #384 itself worked (new state fields used `added()` with no version bump), but three things cost him time. Drawing the drugs on the shared `state.rng` at `createGame` shifted every seed-pinned test twice. He added an upgrade step for removing `drug_12` even though it had never been deployed, and a merge then dropped that step in favor of the owner's `upgradeTo115`. This log conflicted on almost every merge of `main` into his branch. Fixes: `.gitattributes` sets `merge=union` on `docs/process/ai-workflow.md` (tested in a scratch repo: both appended sections are kept, though the blank line between them can be lost). `STATE_VERSION`'s comment and `docs/ops/deploy.md` now say that something that never reached a deploy needs no step, with a `git merge-base --is-ancestor` check against `RULES_VERSION`. The RNG and Medlab-stock options for the seed churn are left to the owner.
+
+## 2026-11-11: UI coherence step 2, surface ramp E applied to the game
+
+- Owner chose: apply ramp E ("Dusk, tooltip glow") now; drop the tooltip-art frame on the game screen only (`main.game`), leaving the lobby, portaled dialogs and editor on the art; keep E's glow on every resting panel (over plan step 3's "glow for focus and alerts only").
+- `tokens.css` gained `--chrome-0/1/2`, `--chrome-rim`, `--chrome-line`; `--panel-fill`, `--panel-rim` and `--room-bg` now point at them globally, so plain token fills off the game screen (games list, replay, editor, tips) darken too. `layout.css` swaps the art for a flat fill and E's inset glow under `main.game`, and raises cards on the scene to `--chrome-2`. The design kit pins the old values on its "Today" figure so the comparison still holds.
+- Worked: the kit had already proven the recipe, so building it was mostly moving scoped rules up a level. Screenshots went to a `visual-check` subagent. It flagged the iTrackie frame, the minimap bevel and a lighter phone header; the first two are deliberately out of scope, and the third is E's 16px inner glow filling a short bar.
 
 ## 2026-11-11: Hopeless, death at 0 morale (built)
 
@@ -3109,3 +3125,27 @@ Owner asked for an honest verdict on the scratchpad mental-health plan (stressor
 
 - Owner asked for Collect scrap to show disabled when no debris is in space, with the debris count moved into its tooltip. The count line had been dropped when the cockpit became a space scene (`eaa74df5`), but its `patrol.debris`/`patrol.noDebris` strings were still in all three locales, so no new text was needed.
 - The rules don't offer `collect_scrap` with empty space, so the client can't take a disabled option from `view.actions`; the cockpit draws a disabled stand-in (no AP cost shown) only when the view's `patrolShip.debris` is 0, which is the one reason it's missing in flight. Not a legality computation: it never enables anything.
+
+## 2026-11-11: Inspect panel scrolls only its action list
+
+- Owner asked that the inspect panel scroll only for its actions. The panel used to scroll as a whole (`overflow: auto` on desktop, the whole `.three-panel` on phones). Now the panel clips, the target is fixed size, and `.inspect-actions` is the one scroll box (with 2px padding so it doesn't clip focus outlines).
+- Needed correction: the phone on its side (about 244px of panel) clipped the portrait once the panel stopped scrolling; the visual check caught it, and the portrait is now capped by viewport height in the short-landscape block. A throwaway Playwright probe (deleted after) listed every overflowing element in the panel at 1440x900, 1440x560, 360x740 and 740x360, which was faster and more exact than reading screenshots.
+- `npm run verify` timed out on a server test three times while another session's uncommitted work was in the tree; the server suite passed on its own (446 tests).
+
+### 2026-11-11: Collect scrap needs the Pasiphae destroyed; refusal reasons go in the view
+
+- Owner rule: a patrol ship can collect scrap only once the Pasiphae is destroyed (the Pasiphae itself always can). Owner asked whether the disabled state belonged in the view. It does, and the earlier client-side stand-in (drawn when `patrolShip.debris` was 0) was replaced: `collect_scrap` is now offered whenever in flight and refused with `no_debris` or `pasiphae_intact`, which `unaffordableActions` turns into `lacks` "debris"/"pasiphae", the same path as full hands or cooldowns. The client only maps the reason to text, and gets the real AP cost on the disabled button for free. Chose this over a separate boolean on `patrolShip` because it keeps the rule in `shared`, and bots already skip any option with a non-empty `lacks`.
+- Needed correction: the owner's dictated "passerby" was speech-to-text for "Pasiphae"; Claude searched for it as a game term before asking.
+
+## 2026-11-11: Separate RNG streams for setup draws, and "no lucky seeds"
+
+- **Decision:** `streamFor(seed, name)` in `rng.ts` gives a setup draw its own stream, so it no longer advances `state.rng`. The drugs (`"drugs"`) and the Medlab stock (`"medlab-stock"`) moved onto their own streams, one each. The stream start is hashed (FNV-1a, then murmur3 `fmix32`) rather than `seed + k`, because mulberry32 steps by a constant and offset seeds would replay overlapping sequences. The role shuffle and the first rebel call's window roll stay on the main stream until the owner decides about the rebel roll. `rng.test.ts` pins `createGame`'s main stream to exactly the shuffle plus that one roll. No state-shape or rule change, and the leak check was clean.
+- **Testing convention:** testing.md now has "No lucky seeds". For each of the five tests whose seeds had been re-picked, a seed sweep (1-25) showed what the seed was buying, and the test now forces that outcome: a panic attack (Mankind's Only Hope), dirty/injury rolls plus roll reassignment in the PILGRED pool, a second crew member getting lost (expeditions), hunters ending a 2-player game (Designer), and research soiling the bot (Shrink). Every one now passes on all 25 seeds.
+- **What worked:** sweeping a test's seed and reading the failures and logs found the real cause fast. Two of the five were not what the handoff guessed: the PILGRED "min gain" assertion was seed-dependent by design of the pool, and the expeditions seed was buying sector order.
+- **Needed correction:** `npm run verify` failed in the sandbox because Vitest's JSON reports go under the system `/tmp`. It passed with `TMPDIR` set to the scratchpad. One run also hit a 5s timeout in `replay.test.ts` while another session was editing at the same time. That test passed when rerun.
+- **Open:** about 199 other hard-coded seeds in 104 test files were not audited. A leak-check side note: the public Medlab stock (about 43 bits) may let a client brute-force the 32-bit game seed, and from it the Mush pick at the end of pre-selection. This weakness predates this change.
+- Follow-up (owner, same day): a patrol-ship pilot doesn't see the debris count while the Pasiphae exists. Done in `viewFor` (`patrolShip.debris` is null), not the UI, so the number never reaches the client; `canScavenge` in `patrol.ts` is the one check shared by the action and the view. The Pasiphae refusal is checked before the no-debris one, so `lacks` can't reveal whether debris exists either.
+
+### 2026-11-11: Collect scrap and the Pasiphae, leak check
+
+- The leak check on the Collect scrap / Pasiphae change found one narrow indirect leak: with death announcements off, a Pasiphae lost on a planet unlocks Collect scrap (and the debris count) for patrol-ship pilots without any announcement, so a pilot in flight can infer its pilot died. Owner accepted it (Claude's recommendation), since the bay already shows the loss; recorded in rules-design.md. It also caught that the new `canScavenge` doc comment had split `onPlanet` from its own, now fixed.
