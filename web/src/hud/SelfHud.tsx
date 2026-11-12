@@ -1,11 +1,13 @@
-// Everything about you on desktop, as a HUD over the room view. Top-left: one card led by an ID badge with your satiety under it (a button that opens you in
-// the inspect panel: your portrait, full name and faction) showing your portrait, given name and faction icon, then HP and morale; the room's name
-// is pushed down under it (self-hud.css). Bottom-left: AP and MP standing up with your other resources under them (SelfPoints), beside the action queue.
-// On phones the summary lives in the top bar instead (PlayerSummary). Items are in the room view's InventoryOverlay.
+// Everything about you on desktop, as a HUD over the room view. Top-left: your ID card (UI coherence step 7), a button that
+// opens you in the inspect panel: a header band in your faction's colour, your portrait and faction icon, your given name and
+// the titles you hold; beside it, on a plain strip, HP, morale and satiety. Bottom-left: AP and MP standing up with your other
+// resources under them (SelfPoints), beside the action queue. On phones the summary lives in the top bar instead
+// (PlayerSummary). Items are in the room view's InventoryOverlay.
 
 import { characterGivenName, characterName, type PlayerView } from "@mush2/shared";
 import { useTranslation } from "react-i18next";
 import { AP_PIP, FACTION_ICONS, HP_ICON, HP_PIP, MORALE_ICON, MORALE_PIP, MP_PIP, bustIcon } from "../art/assets.ts";
+import { useNames } from "../i18n/names.ts";
 import { Hint } from "./IconButton.tsx";
 import { PipBar } from "./PipBar.tsx";
 import { factionOf } from "./PlayerSummary.tsx";
@@ -15,34 +17,39 @@ import { StatInfo } from "./StatInfo.tsx";
 import { apColumnHeight } from "./apGauge.ts";
 
 export function SelfHud({ view, onInspect }: { view: PlayerView; onInspect: () => void }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const names = useNames();
   const { you } = view;
   const name = characterName(you.character);
+  // Titles are public (the top bar lists their holders); a seat can hold more than one in a small game.
+  const held = view.titles.filter((title) => title.holder === you.character).map((title) => names.title(title.id));
+  const titles = held.length === 0 ? t("idCard.noTitle") : new Intl.ListFormat(i18n.language, { type: "conjunction" }).format(held);
   return (
-    <div className={`self-hud-top hud-card ${you.role}`}>
-      {/*
-        An ID badge, not a button shape: framed portrait, name, faction as an icon (its name is in the badge's tooltip and
-        the inspect panel). Satiety sits under the name, outside the button (it opens its own card), laid over it by the grid.
-      */}
-      <div className="hud-id">
-        <Hint label={t(`faction.${factionOf(view)}.name`)}>
-          <button type="button" className="hud-plate" aria-label={t("inspect.self", { character: name })} onClick={onInspect}>
-            <span className="hud-portrait">
-              <img className="avatar" src={bustIcon(you.character)} alt="" />
-              <img className="hud-faction" src={FACTION_ICONS[factionOf(view)]} alt="" />
-            </span>
-            <strong className="hud-name">{characterGivenName(you.character)}</strong>
-          </button>
-        </Hint>
-        <SatietyInfo view={view} />
-      </div>
-      <div className="hud-bars">
+    <div className="self-hud-top">
+      {/* Your own faction, on your own screen, as the stripe showed before: the band's colour and its text. */}
+      <Hint label={t(`faction.${factionOf(view)}.name`)}>
+        <button type="button" className={`id-card hud-card ${you.role}`} aria-label={t("inspect.self", { character: name })} onClick={onInspect}>
+          <span className="id-band">{t(`idCard.band.${you.role}`)}</span>
+          <span className="id-portrait">
+            <img className="avatar" src={bustIcon(you.character)} alt="" />
+            <img className="id-faction" src={FACTION_ICONS[factionOf(view)]} alt="" />
+          </span>
+          <span className="id-fields">
+            <span className="id-caption">{t("idCard.name")}</span>
+            <strong className="id-value id-name">{characterGivenName(you.character)}</strong>
+            <span className="id-caption">{t("idCard.title")}</span>
+            <span className="id-value">{titles}</span>
+          </span>
+        </button>
+      </Hint>
+      <div className="hud-vitals hud-card">
         <StatInfo stat="hp" view={view} value={you.hp} max={view.maxHp}>
           <PipBar label={t("stat.hp")} value={you.hp} max={view.maxHp} pip={HP_PIP} icon={HP_ICON} bigIcon thin plainIcon />
         </StatInfo>
         <StatInfo stat="morale" view={view} value={you.morale} max={view.maxMorale}>
           <PipBar label={t("stat.morale")} value={you.morale} max={view.maxMorale} pip={MORALE_PIP} icon={MORALE_ICON} bigIcon thin plainIcon />
         </StatInfo>
+        <SatietyInfo view={view} />
       </div>
     </div>
   );

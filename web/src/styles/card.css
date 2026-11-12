@@ -61,7 +61,7 @@ main.game :is(.panel, .top-bar, .room-corner)::before {
 main.game :is(.panel, .top-bar, .room-corner)::after {
   inset: 1px 1px 1px var(--stripe, 1px);
   --k: 0.4px; /* keeps the rim about 1px thick across the bevels */
-  background: var(--panel-fill);
+  background: var(--card-fill, var(--panel-fill)); /* the ID card is light stock (self-hud.css) */
 }
 
 /* The panels and the top bar keep their inner blue glow (the tooltip art's line blue): the rim in that blue, and the glow

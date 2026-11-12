@@ -222,6 +222,15 @@
       "comms_officer": "Comms Officer"
     }
   },
+  "idCard": {
+    "band": {
+      "human": "Daedalus · Crew",
+      "mush": "Daedalus · Mush"
+    },
+    "name": "Name",
+    "title": "Title",
+    "noTitle": "—"
+  },
   "resources": {
     "other": "Other resources",
     "otherSummary": "Other resources: {{list}}",

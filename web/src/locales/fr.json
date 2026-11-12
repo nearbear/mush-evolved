@@ -226,6 +226,15 @@
       "comms_officer": "Responsable de Communications"
     }
   },
+  "idCard": {
+    "band": {
+      "human": "Daedalus · Équipage",
+      "mush": "Daedalus · Mush"
+    },
+    "name": "Nom",
+    "title": "Titre",
+    "noTitle": "—"
+  },
   "resources": {
     "other": "Autres ressources",
     "otherSummary": "Autres ressources : {{list}}",

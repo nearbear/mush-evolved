@@ -27,112 +27,147 @@
   font-weight: bold;
 }
 /*
- * Over the room view. Top-left: one card holding a big button (portrait, name, faction), then HP, morale and
- * resources. It has a fixed height, so the room's name can sit under it without measuring anything. Bottom-left:
- * AP and MP standing up, with the action queue beside them. The scene around them stays usable.
+ * Over the room view. Top-left: your ID card (UI coherence step 7) and, beside it on a plain strip, HP, morale and
+ * satiety. The card is light card stock, like the iTrackie: light surfaces are your own things, dark ones the ship.
+ * Bottom-left: AP and MP standing up, with the action queue beside them. The scene around them stays usable.
  */
 .room-view {
-  --hud-card: 56px; /* the card's height: two 22px bars, their gap, padding and border; the 40px button fits inside */
+  --hud-card: 56px; /* the bottom row's height, which the tip card clears (tips.css) */
+  --id-card: 6.5rem; /* the ID card's height; the fire notice goes under it */
 }
 .self-hud-top {
   position: absolute;
   top: 0.5rem;
   left: 0.5rem;
   z-index: 2; /* under the inventory popup (3), which may cover it */
-  box-sizing: border-box;
-  height: var(--hud-card);
   max-width: calc(100% - 1rem);
-  padding: 0 var(--space-4) 0 var(--space-2); /* the right end leaves room for the cut corners */
   display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  --faction: var(--human);
-  --stripe: 3px;
-  --cut-tr: 10px;
-  --cut-br: 10px;
-}
-.self-hud-top.mush {
-  --faction: var(--mush);
+  align-items: stretch;
+  gap: var(--space-1);
 }
 /*
- * The ID badge and your satiety: a two-by-two grid. The button spans all of it (portrait down the left, name top right)
- * through a subgrid; satiety, a sibling with its own card, sits bottom right on top of the button's empty corner.
+ * The card: about 1.6:1, one cut corner (top right) like a keycard. A button, but not a plain one, so it replaces the
+ * button art: the fill (card.css's --card-fill) is the faction band over the iTrackie's pale stock.
  */
-.hud-id {
+button.id-card {
+  --band: 15px;
+  --id-faction: var(--human);
+  --cut-tr: 12px;
+  --card-rim: var(--gold-edge);
+  --card-fill: linear-gradient(var(--id-faction) 0 var(--band), var(--terminal-bg) 0);
+  --text: #171b5c;
+  --muted: #4a5a8f;
+  position: relative;
   flex: none;
-  display: grid;
-  grid-template-columns: auto auto;
-  grid-template-rows: 1fr auto; /* the name takes what the 26px satiety row leaves */
-  column-gap: var(--space-2);
-  height: 44px;
-}
-/* A plain button (no 3-slice art) whose portrait frame and name light up on hover and focus. */
-button.hud-plate {
-  grid-area: 1 / 1 / 3 / 3;
-  display: grid;
-  grid-template-columns: subgrid;
-  grid-template-rows: subgrid;
+  box-sizing: border-box;
+  width: 10.5rem;
+  min-height: var(--id-card);
   height: auto;
   margin: 0;
-  padding: 0;
-  background: none;
+  padding: 0 var(--space-2) var(--space-2);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: calc(var(--band) + 1px) 1fr;
+  column-gap: var(--space-2);
+  row-gap: var(--space-2);
+  color: var(--text);
   font-weight: normal;
   text-align: left;
+  text-shadow: none;
 }
-.hud-portrait {
-  grid-area: 1 / 1 / 3 / 2;
+button.id-card.mush {
+  --id-faction: var(--mush);
+}
+/* Tiny tracked caps across the band, in the outline's dark ink. */
+.id-band {
+  grid-column: 1 / -1;
+  align-self: center;
+  padding-top: 1px;
+  padding-right: var(--space-3); /* clear of the cut corner */
+  overflow: hidden;
+  color: var(--gold-edge);
+  font-size: 9px;
+  font-weight: bold;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.id-portrait {
   position: relative;
+  align-self: start;
   box-sizing: border-box;
   width: 44px;
   height: 44px;
   display: grid;
   place-items: center;
   background: #0d0e2e;
-  border: 1px solid var(--panel-rim);
-  box-shadow: inset 0 0 6px rgb(0 0 0 / 0.6);
+  border: 1px solid var(--gold-edge);
 }
-.hud-plate .avatar {
+.id-card .avatar {
   width: 32px;
   height: 32px;
   image-rendering: pixelated;
 }
 /* Your faction's icon in a small faction-coloured frame, pinned to the portrait's bottom-right corner. */
-.hud-faction {
+.id-faction {
   position: absolute;
   right: -6px;
   bottom: -6px;
   padding: 1px;
   background: #0d0e2e;
-  border: 1px solid var(--faction);
+  border: 1px solid var(--id-faction);
   image-rendering: pixelated;
 }
-.hud-name {
-  grid-area: 1 / 2;
-  align-self: end;
+/* Labelled fields: a tiny muted caption over each value. */
+.id-fields {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.id-caption {
+  color: var(--muted);
+  font-size: 8px;
+  font-weight: bold;
+  line-height: 1.2;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.id-value {
+  font-size: 0.75rem;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+.id-value + .id-caption {
+  margin-top: var(--space-1);
+}
+.id-name {
   font-size: 0.85rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
 @media (hover: hover) {
-  button.hud-plate:hover .hud-portrait {
-    border-color: var(--faction);
-  }
-  button.hud-plate:hover .hud-name {
-    color: var(--faction);
+  button.id-card:hover .id-portrait {
+    border-color: var(--id-faction);
   }
 }
-button.hud-plate:focus-visible {
-  outline: none;
+button.id-card:focus-visible {
+  outline: 2px solid var(--id-faction);
+  outline-offset: 2px;
 }
-button.hud-plate:focus-visible .hud-portrait {
-  outline: 2px solid var(--faction);
-  outline-offset: 1px;
+/* HP, morale and satiety: a plain strip, no cut corners, the card's height. */
+.hud-vitals {
+  position: relative;
+  box-sizing: border-box;
+  padding: var(--space-1) var(--space-2);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
 }
-.hud-id > .satiety-info {
-  grid-area: 2 / 2;
+.hud-vitals > .satiety-info {
   align-self: start;
-  justify-self: start;
-  z-index: 1;
 }
 .hud-satiety {
   display: inline-flex;
@@ -151,23 +186,18 @@ button.hud-plate:focus-visible .hud-portrait {
 .satiety-info.hungry .hud-satiety {
   color: var(--mush);
 }
-.hud-bars {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.hud-bars .pip-bar {
+.hud-vitals .pip-bar {
   gap: 3px;
 }
-.hud-bars .pip-icon {
+.hud-vitals .pip-icon {
   margin-right: 2px;
 }
-.hud-bars .pip-icon.big {
+.hud-vitals .pip-icon.big {
   height: 26px; /* 2x the 11x13 heart and face, whole pixels */
   width: auto;
 }
 /* The value after the bar, like AP and MP; two digits wide so the bars don't shift as it changes. */
-.hud-bars .pip-bar .sub {
+.hud-vitals .pip-bar .sub {
   min-width: 2ch;
   margin-left: var(--space-1);
   font-size: 0.8rem;
@@ -234,7 +264,7 @@ button.hud-plate:focus-visible .hud-portrait {
   flex-wrap: wrap;
   gap: var(--space-3);
 }
-/* The fire notice goes under the nameplate. */
+/* The fire notice goes under the ID card. */
 .room-view:has(> .self-hud-top) .room-fire {
-  top: calc(0.5rem + var(--hud-card) + 0.35rem);
+  top: calc(0.5rem + var(--id-card) + var(--space-2));
 }
