@@ -163,7 +163,7 @@ async function desktopSteps(page: Page, step: Step): Promise<void> {
     const name = at.title;
     await page.mouse.click(at.x, at.y);
     await page.locator(".inspect-name", { hasText: name }).waitFor();
-    await page.locator(".inspect").getByRole("button", { name: "Examine" }).click();
+    await page.locator(".inspect").getByRole("button", { name: "Examine" }).click({ clickCount: 2 }); // actions take a double press
     await page.getByRole("tab", { name: "Room log" }).click();
     await page.getByText(`You examine the ${name}.`).waitFor();
     console.log(`      examined ${name}`);
@@ -198,7 +198,7 @@ async function desktopSteps(page: Page, step: Step): Promise<void> {
     const mine = inventory.filter({ hasText: "Inventory" }).locator(".item-tile:not(.empty)");
     const before = await mine.count();
     await inventory.filter({ hasText: "In this room" }).locator(".item-tile").first().click();
-    await inventory.getByRole("button", { name: "Take" }).click();
+    await inventory.getByRole("button", { name: "Take" }).click({ clickCount: 2 });
     if ((await mine.count()) <= before) await mine.nth(before).waitFor();
   });
 
@@ -280,6 +280,7 @@ async function mobileSteps(page: Page, step: Step): Promise<void> {
     if (!(await tiles.count())) throw new Skip("nothing to take or drop");
     await tiles.first().tap();
     await inventory.locator(".item-action").first().tap();
+    await inventory.locator(".item-action").first().tap(); // actions take a double tap
   });
 
   await step("m05c-resources", async () => {

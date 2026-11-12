@@ -29,14 +29,19 @@ async function openTerminal(page: Page, phone: boolean, name: string) {
     await page.touchscreen.tap(at.x, at.y);
     const peek = page.locator(".peek-bar");
     const access = peek.getByRole("button", { name: /^Access/ });
-    if (await access.count()) await access.first().tap();
+    // Actions take a double press (useDoublePress).
+    if (await access.count()) {
+      await access.first().tap();
+      await access.first().tap();
+    }
     else {
       await peek.getByRole("button", { name: "More" }).tap();
+      await page.locator(".inspect").getByRole("button", { name: /^Access/ }).tap();
       await page.locator(".inspect").getByRole("button", { name: /^Access/ }).tap();
     }
   } else {
     await page.mouse.click(at.x, at.y);
-    await page.locator(".inspect").getByRole("button", { name: /^Access/ }).click();
+    await page.locator(".inspect").getByRole("button", { name: /^Access/ }).click({ clickCount: 2 });
   }
   const dialog = page.getByRole("dialog");
   await dialog.waitFor();

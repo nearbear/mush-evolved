@@ -10,6 +10,7 @@ import { useNames } from "../i18n/names.ts";
 import { legalIn, type Action, type ItemView, type PlayerView, type Target } from "@mush2/shared";
 import { Hint } from "./IconButton.tsx";
 import { ConsumeEffects } from "./ConsumeEffects.tsx";
+import { DoublePressButton } from "./DoublePress.tsx";
 import { ItemFace } from "./ItemFace.tsx";
 import { ItemIcon } from "./ItemIcon.tsx";
 import { sameTarget } from "./targets.ts";
@@ -129,9 +130,9 @@ export function InventoryPanel({
           </button>
         </Hint>
         {isSelected && legal(type, item) && (
-          <button type="button" className="item-action" aria-label={`${zone === "room" ? t("actions.take") : t("actions.drop")} ${names.itemOf(item)}`} onClick={() => onAction({ type, item: item.id })}>
+          <DoublePressButton className="item-action" aria-label={`${zone === "room" ? t("actions.take") : t("actions.drop")} ${names.itemOf(item)}`} onPress={() => onAction({ type, item: item.id })}>
             {zone === "room" ? t("actions.take") : t("actions.drop")}
-          </button>
+          </DoublePressButton>
         )}
       </li>
     );

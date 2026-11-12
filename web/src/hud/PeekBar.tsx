@@ -8,6 +8,7 @@ import { useNames } from "../i18n/names.ts";
 import { actionVisibility, type Action, type ActionOption, type PlayerView, type RoomId, type Target } from "@mush2/shared";
 import { ActionLabel } from "./ActionLabel.tsx";
 import { ActionButton } from "./ActionButton.tsx";
+import { DoublePressButton } from "./DoublePress.tsx";
 import { useKeepFocus } from "./useKeepFocus.ts";
 import { attackWeapon, optionsOn, resolveTarget } from "./targets.ts";
 
@@ -44,7 +45,7 @@ export function PeekBar({
     const canGo = reachable.has(door);
     return (
       <Bar heading={t("peek.doorTo", { room: names.room(door) })} sub={canGo ? undefined : t("peek.noAccess")}>
-        {canGo && <button type="button" onClick={() => onMove(door)}>{t("common.go")}</button>}
+        {canGo && <DoublePressButton onPress={() => onMove(door)}>{t("common.go")}</DoublePressButton>}
       </Bar>
     );
   }

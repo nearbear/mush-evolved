@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import { type PlayerView, type RoomId, type ShipLayout, type Target } from "@mush2/shared";
 import { announce } from "../announce.ts";
 import { useNames } from "../i18n/names.ts";
+import { DoublePressButton } from "./DoublePress.tsx";
 
 export function RoomList({
   view,
@@ -101,6 +102,8 @@ export function RoomList({
             : t("roomList.doorOutOfReach", { room: names.room(to) }),
         // Focusable but inert, so a reader still hears the exit and why it does nothing.
         disabled: !reachable.has(to),
+        // A move is an action, so it takes a double press like every action button.
+        double: true,
         onClick: () => onMove(to),
       })),
     },
@@ -115,9 +118,13 @@ export function RoomList({
               <ul>
                 {g.entries.map((e) => (
                   <li key={e.key}>
-                    <button type="button" aria-disabled={"disabled" in e && e.disabled ? true : undefined} onClick={"disabled" in e && e.disabled ? undefined : e.onClick}>
-                      {e.label}
-                    </button>
+                    {"double" in e && !e.disabled ? (
+                      <DoublePressButton onPress={e.onClick}>{e.label}</DoublePressButton>
+                    ) : (
+                      <button type="button" aria-disabled={"disabled" in e && e.disabled ? true : undefined} onClick={"disabled" in e && e.disabled ? undefined : e.onClick}>
+                        {e.label}
+                      </button>
+                    )}
                   </li>
                 ))}
               </ul>

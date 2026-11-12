@@ -33,7 +33,8 @@ button {
     --btn-right: url("../../../Mush/www/img/design/butrightover.png");
   }
 }
-button:active:not(:disabled, .action-disabled) {
+button:active:not(:disabled, .action-disabled),
+button[data-armed] {
   --btn-left: url("../../../Mush/www/img/design/butleft_on.gif");
   --btn-mid: url("../../../Mush/www/img/design/butbg_on.gif");
   --btn-right: url("../../../Mush/www/img/design/butright_on.gif");
@@ -62,7 +63,8 @@ button.big {
     var(--btn-mid) center / calc(100% - 70px) 100% no-repeat;
 }
 button.big:hover:not(:disabled),
-button.big:active:not(:disabled) {
+button.big:active:not(:disabled),
+button.big[data-armed] {
   --btn-left: url("../../../Mush/www/img/design/but2leftover.png");
   --btn-mid: url("../../../Mush/www/img/design/but2bgover.png");
   --btn-right: url("../../../Mush/www/img/design/but2rightover.png");

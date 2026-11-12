@@ -68,7 +68,8 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 - `targets.ts`: finds the selection in the view (`resolveTarget`, `optionsOn`, which reads each action's target from its fields, `attackWeapon`).
 - `BottomNav.tsx`, `PeekBar.tsx` (phone only): panel switcher; tapped target with its actions.
 - `useKeepFocus.ts`: keeps focus in a panel (Inspect, peek bar, inventory) when the focused button is replaced by a new view.
-- `ActionButton.tsx`: the button for an offered action; when you only lack AP or MP it stays focusable (`aria-disabled`) and a card says why.
+- `ActionButton.tsx`: the button for an offered action; when you only lack AP or MP it stays focusable (`aria-disabled`) and a card says why. Fires on a double press (`DoublePress.tsx`).
+- `DoublePress.tsx`: `useDoublePress` and `DoublePressButton`; every action or move button fires on its second press within 500ms (1.5s from the keyboard), counted on `click` so taps and Enter work; the first press sets `data-armed`.
 - `ChatInput.tsx`: the chat text area (grows upward, send beside it; the markdown preview toggle is off, `TODO(preview)`).
 - `Thread.tsx`, `Threads.tsx`: a chat channel with its page bar (`« ‹ 1 2 … 6 7 › »`, `« ‹ 6 / 7 › »` on the phone; the latest page follows new messages, an older page stays put) and input, the "New messages" divider and unread bar (`useUnreadDivider`; pure placement in `hud/unreadDivider.ts`, with `MarkAllContext`, which Mark all read bumps to drop every divider; `active` says which feed is the one on screen), and the Threads tab (threads under global chat, newest first, with a form to start one).
 - `PrivateChannels.tsx`: the Private tab, one row per channel slot, with a create dialog.

@@ -184,6 +184,8 @@ async function keyboardRound(page: Page): Promise<void> {
   const examine = page.locator(".inspect-actions button").filter({ hasText: /examine/i }).first();
   if (!(await examine.count())) return; // nothing harmless to act with here; selection alone passed
   await examine.focus();
+  // Actions take a double press (useDoublePress): two Enters.
+  await page.keyboard.press("Enter");
   await page.keyboard.press("Enter");
   await page.waitForTimeout(500);
   focus = await inPage(page, FOCUS_NOW);

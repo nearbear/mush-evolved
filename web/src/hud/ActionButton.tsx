@@ -6,13 +6,20 @@ import { Popover } from "@base-ui/react/popover";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { ConsumeEffects } from "./ConsumeEffects.tsx";
+import { useDoublePress } from "./DoublePress.tsx";
 import { affordable, type Action, type ActionOption, type PlayerView } from "@mush2/shared";
 
-/** A button that does the action, or the disabled one with the reason when you lack the points. */
-export function ActionButton({ view, option, onAction, children, className, hint }: { view: PlayerView; option: ActionOption; onAction: (action: Action) => void; children: ReactNode; className?: string; hint?: string }) {
+/** A button that does the action on a double press (useDoublePress), or the disabled one with the reason when you lack the points. */
+export function ActionButton(props: { view: PlayerView; option: ActionOption; onAction: (action: Action) => void; children: ReactNode; className?: string; hint?: string }) {
+  const { view, option, children, className, hint } = props;
   if (!affordable(option)) return <DisabledActionButton view={view} blocked={option} className={className} hint={hint}>{children}</DisabledActionButton>;
+  return <EnabledActionButton {...props} />;
+}
+
+function EnabledActionButton({ view, option, onAction, children, className, hint }: { view: PlayerView; option: ActionOption; onAction: (action: Action) => void; children: ReactNode; className?: string | undefined; hint?: string | undefined }) {
+  const { onClick, armed } = useDoublePress(() => onAction(option.action));
   const button = (
-    <button type="button" className={className} onClick={() => onAction(option.action)}>
+    <button type="button" className={className} data-armed={armed ? "" : undefined} onClick={onClick}>
       {children}
     </button>
   );
