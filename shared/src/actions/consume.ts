@@ -35,8 +35,11 @@ export class ConsumeAction extends Action<ConsumeActionData> {
   override apply(state: GameState, player: PlayerState, target: ConsumeActionData): void {
     const item = removeItem(state, target.item);
     if (player.role !== "human") {
-      // Mush get no food effects, but the meal still fills them (owner, 2026-11-05).
+      // Mush get no food effects, but the meal still fills them (owner, 2026-11-05). The one exception is morale, the
+      // food's and a drug's, so a Mush's morale follows a human's and they never have to track it (owner, 2026-11-11).
       player.satiety += ITEM_TYPES[item.type]!.consume!.satiety;
+      gainMorale(state, player, ITEM_TYPES[item.type]!.consume!.morale ?? 0);
+      gainMorale(state, player, state.drugs[item.type]?.morale ?? 0);
       logSecret(state, player.id, "consumed", { name: player.character, item: item.type });
       return;
     }

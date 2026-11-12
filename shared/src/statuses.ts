@@ -1,5 +1,5 @@
 // Status effects. `dirty` is stored in `PlayerState.statuses`; `full_belly`, `hungry`,
-// `immune`, `immunity`, `pacifist`, `hyperactive`, `mankind_only_hope`, `wheelchair`, `accommodated`, `inactive`, `super_inactive` and `focused` are derived each time they are asked for (from satiety, skills
+// `immune`, `immunity`, `pacifist`, `hyperactive`, `mankind_only_hope`, `wheelchair`, `accommodated`, `inactive`, `super_inactive`, `focused` and `hopeless` are derived each time they are asked for (from satiety, skills
 // and traits), so they can't drift out of step with it. Public statuses show on the Inspect panel for
 // everyone in the room; private ones appear only in your own view.
 // Names and icons live in the client (i18n keys `status.<id>`).
@@ -34,9 +34,11 @@ const FIXED_STATUS_PUBLIC = {
   super_inactive: true,
   // Owner, 2026-11-07 (#192): at a terminal, sitting or standing, shown to the room. Cosmetic: no rule reads it.
   focused: true,
+  // Owner, 2026-11-11: at 0 morale; private, Mush included (a Mush never dies of it, so no one else may see it).
+  hopeless: false,
 } as const;
 
-export const STATUS_IDS = ["dirty", "full_belly", "hungry", "immune", "immunity", "pacifist", "hyperactive", "mankind_only_hope", "wheelchair", "accommodated", "outcast", "guardian", "broken_nose_injury", "genius", "inactive", "super_inactive", "focused"] as const;
+export const STATUS_IDS = ["dirty", "full_belly", "hungry", "immune", "immunity", "pacifist", "hyperactive", "mankind_only_hope", "wheelchair", "accommodated", "outcast", "guardian", "broken_nose_injury", "genius", "inactive", "super_inactive", "focused", "hopeless"] as const;
 export type StatusId = string;
 export function statusIdsFor(diseases: readonly string[]): string[] {
   return [...new Set([...STATUS_IDS, ...diseases])];
@@ -81,6 +83,11 @@ export function hasImmunityTrait(p: Readonly<PlayerState>): boolean {
   return p.modifiers.includes("immunity");
 }
 
+/** Hopeless: alive at 0 morale (owner, 2026-11-11). Any morale gain ends it; a human still Hopeless when a cycle ends dies (morale.ts). */
+export function isHopeless(p: Readonly<PlayerState>): boolean {
+  return p.alive && p.morale === 0;
+}
+
 /** Pacifist is a permanent modifier (Ian's), shown as a status so it can be inspected; it can never be removed. */
 export function isPacifist(p: Readonly<PlayerState>): boolean {
   return p.modifiers.includes("pacifist");
@@ -103,6 +110,7 @@ export function statusesOf(state: Readonly<Pick<GameState, "config" | "cycle">>,
     ...(inactivity !== null ? [inactivity] : []),
     // At a terminal with its window open (spot.ts, #192).
     ...(p.spot?.kind === "occupancy" ? ["focused"] : []),
+    ...(isHopeless(p) ? ["hopeless"] : []),
   ];
 }
 

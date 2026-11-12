@@ -721,6 +721,7 @@
     "super_inactive": "Grand inactif",
     "focused": "Concentré",
     "contaminated": "Contamination : {{level}}",
+    "hopeless": "Sans espoir",
     "desc": {
       "dirty": "Vous ne pouvez pas faire de recherche. Prendre une douche l'enlève.",
       "full_belly": "Vous ne pouvez plus manger tant que vous n'avez pas plus faim.",
@@ -743,6 +744,7 @@
       "super_inactive": "Ne s'est pas connecté depuis 48 heures. Logistique l'ignore aussi. Prend fin dès sa connexion.",
       "focused": "Accède à un terminal avec un air concentré. Prend fin quand il le ferme, s'éloigne ou quitte la salle.",
       "contaminated": "Un humain que vous avez contaminé. À sa capacité maximale, il devient Mush."
+      "hopeless": "À 0 de moral. Tout gain de moral y met fin. Un humain encore Sans espoir à la fin du cycle meurt.",
     }
   },
   "itemAttr": {

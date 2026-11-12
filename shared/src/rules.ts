@@ -18,6 +18,7 @@ import { jellyCycle, leakOxygen } from "./breakage.ts";
 import { projectDone } from "./projects.ts";
 import { fireCycle, ignitePending, isOnFire } from "./fire.ts";
 import { incidentsCycle } from "./incidents.ts";
+import { hopelessCycle } from "./morale.ts";
 import { relayView } from "./relayView.ts";
 import { itemsIn, rechargeMicrowaves, startCharges, visibleItemsIn } from "./items.ts";
 import { actionFailed, apGain, mpGain, carePointsGain, channelLimit, computerPointsCap, computerPointsGain, shootPointsGain, cycleChanged, designerPointsGain, engineerPointsGain, gardenPointsGain, dailyMoraleLoss, inventorySlots, movementRules, pilgredPointsGain, satietyLoss } from "./modifiers.ts";
@@ -385,6 +386,8 @@ function chargesFor(config: DeepReadonly<GameConfig>, type: string): { charges?:
  */
 function advanceCycle(state: GameState, at?: number): void {
   state.cycle += 1;
+  // The ending cycle's Hopeless humans die first, so anyone this cycle change takes to 0 gets a full cycle (morale.ts).
+  hopelessCycle(state);
   pruneLog(state);
   for (const p of state.players) {
     changeAP(state, p, apGain(state, p));

@@ -18,6 +18,8 @@ const config = {
   startItems: [],
   maxAp: 99,
   startAp: 50,
+  // These tests run many days; with the daily loss the crew would reach 0 morale and die Hopeless.
+  moralePerDay: 0,
 };
 
 /** p0 is Mush, the rest human. All in one room. */

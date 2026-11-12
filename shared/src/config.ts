@@ -454,6 +454,9 @@ export const DEFAULT_CONFIG: GameConfig = {
   startSkills: [],
   characterModifiers: { ian: ["pacifist"], chun: ["immunity", "mankind_only_hope"], terrence: ["wheelchair"], chao: ["hyperactive"] },
   mankindOnlyHope: { moraleLossCut: 1 },
+  // Owner, 2026-11-11: a human still at 0 morale (Hopeless) when a cycle ends dies, and each such death costs every
+  // living player, Mush included, 1 morale.
+  hopeless: { deathMorale: 1 },
   creative: { refundOdds: 0.5 },
   anticPerfume: { immuneCycles: 2 },
   // Owner, 2026-10-31 (#145): real time, not cycles.

@@ -709,6 +709,7 @@
     "super_inactive": "Super Inactive",
     "focused": "Focused",
     "contaminated": "Contamination: {{level}}",
+    "hopeless": "Hopeless",
     "desc": {
       "dirty": "Can't research. Taking a shower removes it.",
       "full_belly": "You can't eat more until you are hungrier.",
@@ -731,6 +732,7 @@
       "super_inactive": "Hasn't connected for 48 hours. Also skipped by the Logistics Expert. Ends as soon as they connect.",
       "focused": "At a terminal, looking at its screen. Ends when they close it, walk off or leave the room.",
       "contaminated": "A human you have contaminated. At their capacity they turn Mush."
+      "hopeless": "At 0 morale. Any morale gain ends it. A human still Hopeless when the cycle ends dies.",
     }
   },
   "itemAttr": {

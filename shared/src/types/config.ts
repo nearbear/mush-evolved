@@ -670,6 +670,7 @@ export interface GameConfig {
   startSkills: string[]; // Skills every player starts with (none since 2026-10-15; players pick their own).
   characterModifiers: Record<string, string[]>; // Modifiers a character starts with, by character id (traits: Ian pacifist, owner 2026-10-18; Chun immunity and mankind_only_hope, owner 2026-10-18; Terrence wheelchair, owner 2026-10-19; Chao hyperactive, owner 2026-11-08).
   mankindOnlyHope: { moraleLossCut: number }; // How much less morale the crew loses each day while a holder (Chun) is alive (owner, 2026-10-18).
+  hopeless: { deathMorale: number }; // Morale every living player loses for each human who dies Hopeless at a cycle's end (owner, 2026-11-11).
   startItems: { type: string; room: RoomId; builds?: string; teaches?: string; plant?: PlantState }[]; // Items placed in rooms at the start of the game. Types come from ITEM_TYPES in items.ts.
   startInventory: string[]; // Item types every player starts carrying (one of each).
   rooms: Record<RoomId, RoomId[]>; // Adjacency list. Movement is only allowed along these edges.

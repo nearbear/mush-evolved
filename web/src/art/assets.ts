@@ -309,7 +309,7 @@ export const ENDING_ART: Readonly<Record<Ending, string>> = {
 
 // Status effect icons (16x16 pixel art), keyed by status id (shared/src/statuses.ts).
 const statusIconFiles = urls(
-  import.meta.glob<string>("../../../Mush/www/img/icons/ui/status/{dirty,belly_full,hungry,immune,pacifist,hyperactive,guardian,disabled,paria,disease,hurt,sleepy,genius_idea,moduling}.png", { eager: true, query: "?url", import: "default" }),
+  import.meta.glob<string>("../../../Mush/www/img/icons/ui/status/{dirty,belly_full,hungry,immune,pacifist,hyperactive,guardian,disabled,paria,disease,hurt,sleepy,genius_idea,moduling,demoralized}.png", { eager: true, query: "?url", import: "default" }),
 );
 const diseaseStatusIcons = Object.fromEntries(DEFAULT_CONFIG.diseases.allDiseases.map((id) => [id, statusIconFiles["disease"]!]));
 // Mankind's Only Hope has no status icon in the original (it was a skill there), so its skill icon stands in.
@@ -338,6 +338,8 @@ export const STATUS_ICONS: Readonly<Record<string, string>> = {
   super_inactive: statusIconFiles["sleepy"]!,
   // The original's own status for using a terminal (MODULING, "Concentré"): a pair of glasses (#192).
   focused: statusIconFiles["moduling"]!,
+  // At 0 morale (owner, 2026-11-11): the original's worried face. Its `suicidal` icon is left out on purpose.
+  hopeless: statusIconFiles["demoralized"]!,
 };
 /**
  * A class for a status icon that is another status's art recoloured at render time (owner, 2026-10-31, #145): no new
