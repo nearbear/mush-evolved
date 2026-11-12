@@ -563,6 +563,23 @@
     "body": "Vous pouvez encore lire le chat général et les fils des fonctions, mais vous ne pouvez plus y écrire. Vous pouvez parler avec les autres morts dans le Cimetière.",
     "bodyMush": "Vous pouvez encore lire le chat général, les fils des fonctions et le canal Mush, mais vous ne pouvez plus y écrire. Vous pouvez parler avec les autres morts dans le Cimetière."
   },
+  "deathCause": {
+    "assassinated": "assassiné",
+    "injury": "blessures",
+    "starvation": "famine",
+    "burnt": "brûlé",
+    "metal_plate": "plaque de métal",
+    "electrocuted": "électrocuté",
+    "asphyxia": "plus d'oxygène",
+    "depression": "dépression fatale",
+    "patrol_ship_explosion": "patrouilleur pulvérisé",
+    "space_battle": "combat spatial",
+    "abandoned": "abandonné",
+    "exploration": "aventurier malchanceux",
+    "exploration_combat": "aventurier pas assez combatif",
+    "exploration_lost": "aventurier perdu",
+    "daedalus_destroyed": "Daedalus détruit"
+  },
   "itrackie": {
     "visibility": {
       "private": "Action privée : personne d'autre ne voit cette ligne.",
@@ -896,9 +913,9 @@
     "sabotageFailedItem": "{{name}} n'a pas réussi à saboter l'objet : {{item}}.",
     "showered": "Vous avez pris une douche.",
     "showeredMush": "Vous avez pris une douche. L'eau vous brûle.",
-    "died": "{{name}} a perdu la vie.",
-    "diedHuman": "{{name}} a perdu la vie. C'était un humain.",
-    "diedMush": "{{name}} a perdu la vie. C'était un Mush.",
+    "died": "{{name}} a perdu la vie ({{cause}}).",
+    "diedHuman": "{{name}} a perdu la vie ({{cause}}). C'était un humain.",
+    "diedMush": "{{name}} a perdu la vie ({{cause}}). C'était un Mush.",
     "leftThisWorld": "{{name}} a quitté ce monde, et cette discussion.",
     "researched": "{{name}} a travaillé sur {{research}} ({{percent}} %).",
     "researchCompleted": "La recherche {{research}} est terminée.",

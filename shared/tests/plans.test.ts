@@ -107,7 +107,7 @@ describe("posting a plan", () => {
     const { s, channel } = ship();
     s.research.STEROIDS = 100;
     s.pilgred.progress = 100;
-    killPlayer(s, player(s, "p4"));
+    killPlayer(s, player(s, "p4"), "injury");
     const task = (t: object) => postPlan(s, "p0", draft(channel, [{ kind: "task", task: t } as DraftSlot]));
     expect(error(task({ type: "research", research: "STEROIDS" }))).toBe("plan_task_invalid");
     expect(error(task({ type: "repair_pilgred" }))).toBe("plan_task_invalid");
@@ -250,7 +250,7 @@ describe("leaving and dying", () => {
     s = claim(claim(s, "p1", plan, 0), "p2", plan, 2);
     s = must(leaveChannel(s, "p1", channel));
     expect(s.plans[0]!.slots[0]!.holder).toBeNull();
-    killPlayer(s, player(s, "p2"));
+    killPlayer(s, player(s, "p2"), "injury");
     expect(s.plans[0]!.slots[2]!.holder).toBeNull();
     s = must(leaveChannel(s, "p3", channel));
     expect(s.plans[0]!.slots[1]).toEqual({ kind: "onCall", holder: null });
@@ -272,7 +272,7 @@ describe("leaving and dying", () => {
 
   it("the author dying does the same", () => {
     const { s } = planned();
-    killPlayer(s, player(s, "p0"));
+    killPlayer(s, player(s, "p0"), "injury");
     expect([s.plans[0]!.status, s.channels[0]!.planningClosed]).toEqual(["cancelled", true]);
   });
 
@@ -287,7 +287,7 @@ describe("leaving and dying", () => {
     let s = must(postPlan(base, "p0", draft(channel, [{ kind: "task", task: { type: "heal", target: "p4" } }])));
     const plan = s.plans[0]!.id;
     s = mustApply(claim(s, "p1", plan, 0), "p1", { type: "mark_done", plan, slot: 0 });
-    killPlayer(s, player(s, "p4"));
+    killPlayer(s, player(s, "p4"), "injury");
     expect(s.plans[0]!.slots[0]).toEqual({ kind: "task", task: { type: "heal", target: "p4" }, holder: "p1", done: true });
   });
 
@@ -296,7 +296,7 @@ describe("leaving and dying", () => {
     let s = must(postPlan(base, "p0", draft(channel, [onCall(), { kind: "task", task: { type: "heal", target: "p4" } }])));
     const plan = s.plans[0]!.id;
     s = claim(s, "p1", plan, 1);
-    killPlayer(s, player(s, "p4"));
+    killPlayer(s, player(s, "p4"), "injury");
     expect(s.plans[0]!.slots[1]).toMatchObject({ holder: "p1", struck: "target_died" });
     expect(applyAction(s, "p1", { type: "withdraw_slot", plan, slot: 1 }).ok).toBe(false);
     expect(applyAction(s, "p1", { type: "mark_done", plan, slot: 1 }).ok).toBe(false);
@@ -454,7 +454,7 @@ describe("plans in views", () => {
 
   it("the dead see no plans", () => {
     const { s } = planned();
-    killPlayer(s, player(s, "p1"));
+    killPlayer(s, player(s, "p1"), "injury");
     expect(viewFor(s, "p1").plans).toEqual([]);
   });
 });

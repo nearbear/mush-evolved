@@ -223,7 +223,7 @@ describe("any-skill cheat", () => {
     expect(s.players.every((p) => p.alive)).toBe(true);
     const p1 = player(s, "p1");
     const morale = p1.morale;
-    damage(s, p1, 99);
+    damage(s, p1, 99, "injury");
     gainMorale(s, p1, -5);
     expect(p1.alive).toBe(true);
     expect(p1.hp).toBe(p1.maxHp);

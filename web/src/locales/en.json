@@ -557,6 +557,23 @@
     "body": "You can still read global chat and the feature threads, but you can no longer post there. You can talk with the other dead in the Graveyard.",
     "bodyMush": "You can still read global chat, the feature threads and the Mush channel, but you can no longer post there. You can talk with the other dead in the Graveyard."
   },
+  "deathCause": {
+    "assassinated": "assassinated",
+    "injury": "injuries",
+    "starvation": "starvation",
+    "burnt": "burned",
+    "metal_plate": "steel plated",
+    "electrocuted": "electrocuted",
+    "asphyxia": "oxygen stocks exhausted",
+    "depression": "fatal depression",
+    "patrol_ship_explosion": "pulverized patrol ship",
+    "space_battle": "space combat",
+    "abandoned": "abandoned",
+    "exploration": "unfortunate adventurer",
+    "exploration_combat": "not cut out for combat",
+    "exploration_lost": "lost explorer",
+    "daedalus_destroyed": "Daedalus destroyed"
+  },
   "itrackie": {
     "visibility": {
       "private": "Private action: no one else sees this line.",
@@ -882,9 +899,9 @@
     "sabotageFailedItem": "{{name}} failed to sabotage the {{item}}.",
     "showered": "You showered.",
     "showeredMush": "You showered. The water burns.",
-    "died": "{{name}} has died.",
-    "diedHuman": "{{name}} has died. They were human.",
-    "diedMush": "{{name}} has died. They were Mush.",
+    "died": "{{name}} has died ({{cause}}).",
+    "diedHuman": "{{name}} has died ({{cause}}). They were human.",
+    "diedMush": "{{name}} has died ({{cause}}). They were Mush.",
     "leftThisWorld": "{{name}} has left this world, and this chat.",
     "researched": "{{name}} worked on {{research}} ({{percent}}%).",
     "researchCompleted": "Research {{research}} completed.",

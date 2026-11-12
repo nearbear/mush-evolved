@@ -14,7 +14,7 @@ import type { GameState } from "./types.ts";
 export function hopelessCycle(state: GameState): void {
   if (shipInvincible(state)) return;
   const dying = state.players.filter((p) => p.role === "human" && isHopeless(p) && !p.cheats.includes("infiniteMorale"));
-  for (const p of dying) killPlayer(state, p);
+  for (const p of dying) killPlayer(state, p, "depression");
   if (dying.length === 0) return;
   const loss = dying.length * state.config.hopeless.deathMorale;
   for (const p of state.players) if (p.alive) gainMorale(state, p, -loss);

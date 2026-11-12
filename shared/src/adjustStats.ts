@@ -45,14 +45,14 @@ export function updateMaxValues(state: GameState, player: PlayerState){
         player.morale = player.maxMorale;
     }
     if(player.maxMorale <= 0){
-      killPlayer(state, player);
+      killPlayer(state, player, "depression");
     }
     player.maxHp = maxHp(state, player, state.config.maxHp);
     if(player.hp > player.maxHp){
         player.hp = player.maxHp;
     }
     if(player.maxHp <= 0){
-      killPlayer(state, player);
+      killPlayer(state, player, "injury");
     }
 }
 

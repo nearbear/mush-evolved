@@ -224,7 +224,7 @@ describe("Chitchat with a Confident", () => {
 
   it("can't be had with a dead Confident", () => {
     const s = ship("confident");
-    killPlayer(s, player(s, "p0"));
+    killPlayer(s, player(s, "p0"), "injury");
     expect(applyAction(s, "p1", chitchat("p0")).ok).toBe(false);
   });
 

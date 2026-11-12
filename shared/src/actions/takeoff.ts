@@ -78,6 +78,6 @@ export function manoeuvre(state: GameState, pilot: PlayerState, ship: PatrolShip
   shipState.armor = Math.max(0, shipState.armor - rough.armor);
   state.ship.hull = Math.max(0, state.ship.hull - hull);
   logPrivate(state, pilot.id, "patrolRough", { hull, armor: rough.armor, hp });
-  damage(state, pilot, hp);
+  damage(state, pilot, hp, "patrol_ship_explosion");
   if (state.ship.hull === 0) destroyShip(state);
 }

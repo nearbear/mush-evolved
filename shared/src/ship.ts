@@ -40,7 +40,7 @@ export function burnOxygen(state: GameState): void {
       const i = rollInt(state, living.length);
       logPublic(state, undefined, "oxygenOut", undefined, "warning");
       const victim = living[i]!;
-      damage(state, victim, victim.hp);
+      damage(state, victim, victim.hp, "asphyxia");
     }
   }
   state.ship.oxygen = Math.max(0, state.ship.oxygen - state.config.ship.oxygen.perCycle);

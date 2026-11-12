@@ -16,7 +16,7 @@ const BAYS = ["SPACESHIP_BAY_A", "SPACESHIP_BAY_AA", "SPACESHIP_BAY_B", "ICARUS"
 function ship(room = "SPACESHIP_BAY_A"): { s: GameState; corpse: string; jettison: Action } {
   const s = createGame(seats, config, 3);
   for (const p of s.players) p.room = "REFECTORY";
-  killPlayer(s, player(s, "p2"));
+  killPlayer(s, player(s, "p2"), "injury");
   const corpse = s.items.find((i) => i.type === CORPSE_ITEM)!;
   corpse.at = { kind: "player", id: "p0" };
   player(s, "p0").room = room;

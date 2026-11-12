@@ -41,7 +41,7 @@ describe("titles", () => {
 
   it("passes a title to the next in line when its holder dies, announced in crew chat", () => {
     const s = everyone();
-    killPlayer(s, player(s, "p-jinsu"));
+    killPlayer(s, player(s, "p-jinsu"), "injury");
     expect(s.titles.commander).toBe("p-chao");
     expect(s.titles.neron_admin).toBe("p-janice");
     expect(systemKeys(s)).toContainEqual({ key: "titlePassed", params: { name: "chao", title: "commander" } });
@@ -51,30 +51,30 @@ describe("titles", () => {
 
   it("skips the dead and those not aboard", () => {
     const s = everyone();
-    killPlayer(s, player(s, "p-chao"));
-    killPlayer(s, player(s, "p-jinsu"));
+    killPlayer(s, player(s, "p-chao"), "injury");
+    killPlayer(s, player(s, "p-jinsu"), "injury");
     // Derek is next after Chao but isn't aboard.
     expect(s.titles.commander).toBe("p-gioele");
   });
 
   it("doesn't announce anything when a death changes no holder", () => {
     const s = everyone();
-    killPlayer(s, player(s, "p-ian"));
+    killPlayer(s, player(s, "p-ian"), "injury");
     expect(systemKeys(s).filter((m) => m?.key.startsWith("title"))).toEqual([]);
   });
 
   it("leaves a title vacant when the whole line is dead", () => {
     const s = createGame(crew("chao", "chun"), config, 1);
-    killPlayer(s, player(s, "p-chao"));
+    killPlayer(s, player(s, "p-chao"), "injury");
     expect(s.titles.commander).toBe("p-chun");
-    killPlayer(s, player(s, "p-chun"));
+    killPlayer(s, player(s, "p-chun"), "injury");
     expect(s.titles).toEqual({ commander: null, neron_admin: null, comms_officer: null });
     expect(systemKeys(s)).toContainEqual({ key: "titleVacant", params: { title: "commander" } });
   });
 
   it("shows every player the same holders and the line as it stands aboard", () => {
     const s = createGame(crew("chao", "chun", "eleesha", "frieda"), config, 1);
-    killPlayer(s, player(s, "p-chao"));
+    killPlayer(s, player(s, "p-chao"), "injury");
     const views = s.players.map((p) => viewFor(s, p.id).titles);
     for (const v of views) expect(v).toEqual(views[0]);
     expect(views[0]).toEqual([

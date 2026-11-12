@@ -70,13 +70,13 @@ export class AttackAction extends Action<AttackActionData> {
     const stats = state.config.weapons.types[type]!;
     if (stats.area) {
       logPublic(state, player.room, "attackedArea", { name: player.character, item: type });
-      for (const victim of peopleHere(state, player)) damage(state, victim, roll(state, stats.damage));
-      damage(state, player, roll(state, stats.area.selfDamage));
+      for (const victim of peopleHere(state, player)) damage(state, victim, roll(state, stats.damage), "assassinated");
+      damage(state, player, roll(state, stats.area.selfDamage), "assassinated");
       return;
     }
     const victim = state.players.find((o) => o.id === (target as { target: string }).target)!; // checked, so it exists
     logPublic(state, player.room, "attacked", { name: player.character, target: victim.character, item: type });
-    damage(state, victim, roll(state, victim.role === "mush" && stats.mushDamage ? stats.mushDamage : stats.damage));
+    damage(state, victim, roll(state, victim.role === "mush" && stats.mushDamage ? stats.mushDamage : stats.damage), "assassinated");
   }
 
   override fail(state: GameState, player: PlayerState, target: AttackActionData): void {

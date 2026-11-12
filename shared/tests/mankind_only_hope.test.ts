@@ -41,7 +41,7 @@ describe("Mankind's Only Hope", () => {
     for (const role of ["human", "mush"] as const) {
       const s0 = ship();
       player(s0, "p1").role = role;
-      killPlayer(s0, player(s0, "p1"));
+      killPlayer(s0, player(s0, "p1"), "injury");
       const before = player(s0, "p0").morale;
       const s = nextDay(s0);
       expect(player(s, "p0").morale).toBe(before - config.moralePerDay);

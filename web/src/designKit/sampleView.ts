@@ -188,7 +188,7 @@ export function addHunters(state: GameState, n: number): GameState {
 /** `id` dies (the rules' own `killPlayer`, on a copy). */
 export function kill(state: GameState, id: PlayerId = SAMPLE_SEAT): GameState {
   const next = structuredClone(state);
-  killPlayer(next, seat(next, id));
+  killPlayer(next, seat(next, id), "injury");
   return next;
 }
 

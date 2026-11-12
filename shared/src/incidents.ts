@@ -89,7 +89,7 @@ const INCIDENTS: Record<IncidentId, Incident> = {
     apply: (state) => {
       const room = pick(state, occupiedRooms(state));
       logPublic(state, room, "tremor");
-      for (const p of state.players.filter((o) => o.alive && o.room === room)) damage(state, p, roll(state, state.config.incidents.tremor.damage));
+      for (const p of state.players.filter((o) => o.alive && o.room === room)) damage(state, p, roll(state, state.config.incidents.tremor.damage), "injury");
     },
   },
   fire: {
@@ -119,7 +119,7 @@ const INCIDENTS: Record<IncidentId, Incident> = {
       // Owner, 2026-11-11 (#411): it also breaks the items of a type that says so (drones) lying on the floor, not carried
       // ones. NERON announces each, as it does the equipment.
       for (const item of itemsIn(state, { kind: "room", id: room }).filter((i) => isWorking(i) && ITEM_TYPES[i.type]?.breaksInOverload)) breakItem(state, item, true);
-      for (const p of state.players.filter((o) => o.alive && o.room === room)) damage(state, p, state.config.incidents.electricalOverload.damage);
+      for (const p of state.players.filter((o) => o.alive && o.room === room)) damage(state, p, state.config.incidents.electricalOverload.damage, "electrocuted");
     },
   },
   // One person aboard, once per cycle each.
@@ -129,7 +129,7 @@ const INCIDENTS: Record<IncidentId, Incident> = {
       const victim = pick(state, aboard(state).filter((p) => !plated.has(p.id)));
       plated.add(victim.id);
       logPublic(state, victim.room, "metalPlate", { name: victim.character });
-      damage(state, victim, roll(state, state.config.incidents.metalPlate.damage));
+      damage(state, victim, roll(state, state.config.incidents.metalPlate.damage), "metal_plate");
     },
   },
 };

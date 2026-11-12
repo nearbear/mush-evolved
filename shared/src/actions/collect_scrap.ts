@@ -56,6 +56,6 @@ export class CollectScrapAction extends Action<CollectScrapActionData> {
     shipState.armor = Math.max(0, shipState.armor - armorLoss);
     logPrivate(state, player.id, "scrapUnderFire", { armor: armorLoss, hp: hpLoss });
     if (shipState.armor === 0) destroyPatrolShip(state, ship, "patrolDestroyed");
-    else damage(state, player, hpLoss);
+    else damage(state, player, hpLoss, "space_battle");
   }
 }

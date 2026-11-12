@@ -85,7 +85,7 @@ export function selectMush(state: GameState): void {
   startHunters(state);
 
   if (aboard.length < rules.minPlayers) {
-    for (const p of aboard) if (p.role === "human") killPlayer(state, p);
+    for (const p of aboard) if (p.role === "human") killPlayer(state, p, "daedalus_destroyed");
     if (mushWinOnDeath(state)) endGame(state, "mush", "humans_dead");
   }
 }

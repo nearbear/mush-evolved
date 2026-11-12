@@ -150,11 +150,11 @@ describe("accommodating Terrence", () => {
   it("ends when either of them dies", () => {
     for (const who of ["p0", "p1"]) {
       const s = pushed();
-      killPlayer(s, player(s, who));
+      killPlayer(s, player(s, who), "injury");
       expect(player(s, "p0").pushedBy).toBeUndefined();
     }
     const s = mustApply(ship(), "p1", offer);
-    killPlayer(s, player(s, "p1"));
+    killPlayer(s, player(s, "p1"), "injury");
     expect(player(s, "p0").accommodationOffers).toBeUndefined();
   });
 });

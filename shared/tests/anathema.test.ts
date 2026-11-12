@@ -107,10 +107,10 @@ describe("Persecutor's Anathema", () => {
     const r = applyAction(s, "p0", curse("p1"));
     if (!r.ok) throw new Error(r.error);
     const a = structuredClone(r.state);
-    killPlayer(a, player(a, "p1"));
+    killPlayer(a, player(a, "p1"), "injury");
     expect(player(a, "p1").outcastBy).toBeUndefined();
     const b = structuredClone(r.state);
-    killPlayer(b, player(b, "p0"));
+    killPlayer(b, player(b, "p0"), "injury");
     expect(player(b, "p1").outcastBy).toBeUndefined();
     expect(viewFor(b, "p3").players.find((o) => o.id === "p1")?.statuses ?? []).not.toContain("outcast");
   });

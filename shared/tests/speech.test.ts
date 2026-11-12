@@ -47,7 +47,7 @@ describe("Leader's Fiery speech", () => {
     s = mustApply(s, "p0", fiery, fiery);
     expect(player(s, "p1").morale).toBe(base.maxMorale);
     expect(player(s, "p3").morale).toBe(5 + 2 * base.speech.fiery.morale);
-    killPlayer(s, player(s, "p3"));
+    killPlayer(s, player(s, "p3"), "injury");
     const dead = player(s, "p3").morale;
     s = mustApply(s, "p0", fiery);
     expect(player(s, "p3").morale).toBe(dead);

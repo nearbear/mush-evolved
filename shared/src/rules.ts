@@ -314,7 +314,7 @@ export function performAction(next: GameState, actor: PlayerState, action: Actio
       }
       else{
       logPrivate(next, actor.id, "randomInjury", { name: actor.character });
-      damage(next, actor, 2);
+      damage(next, actor, 2, "injury");
       }
     }
   }
@@ -434,7 +434,7 @@ function advanceCycle(state: GameState, at?: number): void {
       // Mush never count toward hunger.
       if (p.satiety === 0 && p.role === "human") p.satietyZeroSince = state.cycle;
     }
-    if (isHungry(state, p)) damage(state, p, state.config.hunger.hpPerCycle);
+    if (isHungry(state, p)) damage(state, p, state.config.hunger.hpPerCycle, "starvation");
   }
   for (const p of state.players) applyCheats(state, p);
   const { day } = dayOf(state);

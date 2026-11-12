@@ -157,7 +157,7 @@ export function destroyPatrolShip(state: GameState, ship: PatrolShip, key: "patr
   shipState.armor = 0;
   retargetHunters(state, ship, null);
   logPublic(state, undefined, key, { room: ship.id }, "warning");
-  for (const p of state.players) if (p.alive && p.room === ship.id) killPlayer(state, p);
+  for (const p of state.players) if (p.alive && p.room === ship.id) killPlayer(state, p, key === "patrolLost" ? "abandoned" : "space_battle");
   const wreck = { kind: "room", id: ship.id } as const;
   for (const { at: _at, hiddenBy: _hiddenBy, ...item } of state.items.filter((i) => sameContainer(i.at, wreck))) state.space.push(item);
   state.items = state.items.filter((i) => !sameContainer(i.at, wreck));
@@ -213,5 +213,5 @@ export function huntersFollow(state: GameState): void {
 export function destroyShip(state: GameState): void {
   logPublic(state, undefined, "shipDestroyed", undefined, "warning");
   endGame(state, "mush", "ship_destroyed");
-  for (const p of state.players) killPlayer(state, p);
+  for (const p of state.players) killPlayer(state, p, "daedalus_destroyed");
 }

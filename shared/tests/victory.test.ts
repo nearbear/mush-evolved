@@ -24,7 +24,7 @@ describe("arriving at Sol or Eden", () => {
   it("Mush win while any Mush lives, humans win once none do", () => {
     const s = ship();
     expect(winnerOnArrival(s)).toBe("mush");
-    killPlayer(s, player(s, "p0"));
+    killPlayer(s, player(s, "p0"), "injury");
     expect(winnerOnArrival(s)).toBe("humans");
   });
 
@@ -38,7 +38,7 @@ describe("arriving at Sol or Eden", () => {
 
   it("a death that leaves no human ends it as humans_dead", () => {
     const s = ship();
-    for (const id of ["p1", "p2", "p3"]) killPlayer(s, player(s, id));
+    for (const id of ["p1", "p2", "p3"]) killPlayer(s, player(s, id), "injury");
     expect([s.winner, s.ending]).toEqual(["mush", "humans_dead"]);
   });
 });
@@ -55,7 +55,7 @@ describe("the end screen reveal", () => {
 
   it("every view lists every seat's name, character, role and fate once it has ended", () => {
     const s = ship();
-    killPlayer(s, player(s, "p2"));
+    killPlayer(s, player(s, "p2"), "injury");
     endGame(s, "mush", "sol");
     for (const id of ["p0", "p1", "p2", "p3"]) {
       expect(viewFor(s, id).crew).toEqual(

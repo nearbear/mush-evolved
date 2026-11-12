@@ -45,7 +45,7 @@ export class PunchAction extends Action<PunchActionData> {
     const crit = rollFloat(state) < state.config.punch.crit.chance;
     const amount = roll(state, crit ? state.config.punch.crit.damage : state.config.punch.effect.damage);
     logPublic(state, player.room, crit ? "punchCrit" : "punched", { name: player.character, target: victim.character });
-    damage(state, victim, punchDamage(state, player, amount));
+    damage(state, victim, punchDamage(state, player, amount), "assassinated");
   }
 
   override fail(state: GameState, player: PlayerState, target: PunchActionData): void {

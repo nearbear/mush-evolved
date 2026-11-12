@@ -40,7 +40,7 @@ export class ShowerAction extends Action<ShowerActionData> {
     const burns = player.role === "mush" && !hasSkill(player, "water_resistant");
     logPrivate(state, player.id, burns ? "showeredMush" : "showered");
     showered(state, player);
-    if (burns) damage(state, player, state.config.shower.effect.mushDamage);
+    if (burns) damage(state, player, state.config.shower.effect.mushDamage, "injury");
   }
 
   showerCost(state: Readonly<GameState>, player: Readonly<PlayerState>): number {

@@ -68,6 +68,6 @@ export function fireCycle(state: GameState): void {
     }
     const present = state.players.filter((p) => p.alive && p.room === room);
     if (present.length > 0) logPublic(state, room, "fireBurns");
-    for (const p of present) damage(state, p, config.damage);
+    for (const p of present) damage(state, p, config.damage, "burnt");
   }
 }

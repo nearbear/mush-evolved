@@ -18,17 +18,40 @@ import { endGame, mushWinOnDeath } from "./victory.ts";
 import type { ChannelId, GameState, PlayerState } from "./types.ts";
 
 /**
- * The one way HP goes down. Floors at 0, and 0 kills. Mutates a state the
+ * How someone died (owner, 2026-11-11, #177), with upstream eMush's end-cause ids. The death messages carry it; the
+ * killer is never named. A Mush's fatal shower is `injury`, so the room line doesn't give the role away.
+ */
+export const DEATH_CAUSES = [
+  "assassinated",
+  "injury",
+  "starvation",
+  "burnt",
+  "metal_plate",
+  "electrocuted",
+  "asphyxia",
+  "depression",
+  "patrol_ship_explosion",
+  "space_battle",
+  "abandoned",
+  "exploration",
+  "exploration_combat",
+  "exploration_lost",
+  "daedalus_destroyed",
+] as const;
+export type DeathCause = (typeof DEATH_CAUSES)[number];
+
+/**
+ * The one way HP goes down. Floors at 0, and 0 kills, of `cause`. Mutates a state the
  * caller already cloned. The infiniteHp cheat (test tooling) keeps HP full.
  */
-export function damage(state: GameState, player: PlayerState, amount: number): void {
+export function damage(state: GameState, player: PlayerState, amount: number, cause: DeathCause): void {
   if (!player.alive || shipInvincible(state)) return;
   if (player.cheats.includes("infiniteHp")) {
     player.hp = player.maxHp;
     return;
   }
   player.hp = Math.max(0, player.hp - amount);
-  if (player.hp === 0) killPlayer(state, player);
+  if (player.hp === 0) killPlayer(state, player, cause);
 }
 
 /**
@@ -45,11 +68,8 @@ export function healDaily(state: GameState, player: PlayerState): void {
   heal(state, player, state.config.dailyHeal);
 }
 
-/**
- * Kills a player at once. Mutates a state the caller already cloned. Causes of
- * death (#177) will pass a cause through here once they are shown.
- */
-export function killPlayer(state: GameState, player: PlayerState): void {
+/** Kills a player at once, of `cause` (#177). Mutates a state the caller already cloned. */
+export function killPlayer(state: GameState, player: PlayerState, cause: DeathCause): void {
   if (!player.alive) return;
   player.alive = false;
   removeStatus(player, "guardian");
@@ -73,17 +93,19 @@ export function killPlayer(state: GameState, player: PlayerState): void {
   for (const other of state.players) if (other.outcastBy === player.id) delete other.outcastBy;
 
   for (const channel of state.channels.filter((c) => c.members.includes(player.id))) {
-    if (removeFromChannel(state, channel.id, player.id)) systemMessage(state, channel.id, "leftThisWorld", player.character);
+    if (removeFromChannel(state, channel.id, player.id)) systemMessage(state, channel.id, "leftThisWorld", { name: player.character });
   }
 
   // Task slots aimed at them are struck out on every card (plans.ts).
   strikeSlots(state);
 
   // The room always gets a line, without the role; NERON's crew-wide announcement reveals it, unless the BIOS has
-  // death announcements off (bios.ts).
+  // death announcements off (bios.ts). Both give the cause, never the killer (#177).
   loseShipOnPlanet(state, player);
-  logPublic(state, player.room, "died", { name: player.character });
-  if (state.bios.death_announcements) systemMessage(state, "global", player.role === "mush" ? "diedMush" : "diedHuman", player.character);
+  logPublic(state, player.room, "died", { name: player.character, cause });
+  if (state.bios.death_announcements) {
+    systemMessage(state, "global", player.role === "mush" ? "diedMush" : "diedHuman", { name: player.character, cause });
+  }
   refreshTitles(state);
   if (mushWinOnDeath(state)) endGame(state, "mush", "humans_dead");
 }
@@ -113,6 +135,6 @@ export function hasMushDied(state: Readonly<{ players: readonly PlayerState[] }>
   return state.players.some((p) => p.role === "mush" && !p.alive);
 }
 
-function systemMessage(state: GameState, channel: ChannelId, key: string, name: CharacterId): void {
-  pushChat(state, channel, { from: null, isBot: false, text: "", system: { key, params: { name } } });
+function systemMessage(state: GameState, channel: ChannelId, key: string, params: { name: CharacterId; cause?: DeathCause }): void {
+  pushChat(state, channel, { from: null, isBot: false, text: "", system: { key, params } });
 }

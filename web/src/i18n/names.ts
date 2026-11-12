@@ -163,7 +163,7 @@ export function useNames() {
       }),
     );
 
-  /** The text of a log entry. `room`, `item`, `research`, `project`, `equipment`, `action`, `title`, `skill`, `base` (a rebel base), `direction` (a heading) and `entry` (a Xyloph entry) params are ids and get translated; `drone` and `serial` make a drone's name; `name`, `target` and `body` are character ids; `tested` and `spoiledBy` are an assay's counts by character. */
+  /** The text of a log entry. `room`, `item`, `research`, `project`, `equipment`, `action`, `title`, `skill`, `base` (a rebel base), `direction` (a heading), `entry` (a Xyloph entry) and `cause` (a cause of death) params are ids and get translated; `drone` and `serial` make a drone's name; `name`, `target` and `body` are character ids; `tested` and `spoiledBy` are an assay's counts by character. */
   const logLine = ({ key, params = {} }: Pick<LogEntry, "key" | "params">): string => {
     const resolved: Record<string, string | number> = { ...params };
     if (typeof params.room === "string") resolved.room = room(params.room);
@@ -179,6 +179,8 @@ export function useNames() {
     // A drone's `drone` (its name) and `serial` (shared/src/drones.ts) come together as one name.
     if (typeof params.drone === "string" && typeof params.serial === "number") resolved.drone = drone(params.drone, params.serial);
     if (typeof params.entry === "string") resolved.entry = t(`comms.xyloph.${params.entry}` as never, { defaultValue: params.entry });
+    // A cause of death (shared/src/death.ts, #177).
+    if (typeof params.cause === "string") resolved.cause = t(`deathCause.${params.cause}` as never, { defaultValue: params.cause });
     for (const who of ["name", "target", "body"] as const) if (typeof params[who] === "string") resolved[who] = characterGivenName(params[who]);
     // An assay's "chun:3,paola:1" lists (shared/src/actions/research.ts): "Chun ×3, Paola ×1".
     for (const list of ["tested", "spoiledBy"] as const) if (typeof params[list] === "string") resolved[list] = sampleCounts(params[list]);

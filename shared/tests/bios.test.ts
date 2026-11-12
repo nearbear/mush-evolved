@@ -87,11 +87,11 @@ describe("NERON's BIOS", () => {
 
   it("with death announcements off, a death posts no global message but still logs in the room", () => {
     const s = must(applyAction(ship(), "p0", set("death_announcements", false)));
-    killPlayer(s, player(s, "p1"));
+    killPlayer(s, player(s, "p1"), "injury");
     expect(s.chat.some((m) => m.system?.key === "diedHuman" || m.system?.key === "diedMush")).toBe(false);
     expect(s.log.find((e) => e.key === "died")).toMatchObject({ room: "NEXUS_ROOM", visibleTo: "all" });
     s.bios.death_announcements = true;
-    killPlayer(s, player(s, "p2"));
+    killPlayer(s, player(s, "p2"), "injury");
     expect(s.chat.filter((m) => m.system?.key === "diedHuman" || m.system?.key === "diedMush")).toHaveLength(1);
   });
 
@@ -100,7 +100,7 @@ describe("NERON's BIOS", () => {
     expect(viewFor(s, "p1").bios).toEqual({ actopi: true, death_announcements: true, plasma_shield: true });
     player(s, "p1").room = "REFECTORY";
     expect(viewFor(s, "p1").bios).toBeNull();
-    killPlayer(s, player(s, "p2"));
+    killPlayer(s, player(s, "p2"), "injury");
     expect(viewFor(s, "p2").bios).toBeNull();
   });
 });

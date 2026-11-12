@@ -30,7 +30,7 @@
 import { endPushToLeave } from "./actions/accommodate.ts";
 import { dock } from "./actions/land.ts";
 import { board } from "./actions/takeoff.ts";
-import { damage, killPlayer } from "./death.ts";
+import { damage, killPlayer, type DeathCause } from "./death.ts";
 import { FAST_EXPEDITION_STEP_MS, fastExpeditions } from "./cheats.ts";
 import { soil } from "./dirt.ts";
 import { rebelContacted } from "./comms.ts";
@@ -310,7 +310,7 @@ function strandCrew(state: GameState): void {
   }
   for (const id of report.members) {
     const p = state.players.find((q) => q.id === id)!;
-    if (p.alive && p.room === craft) killPlayer(state, p);
+    if (p.alive && p.room === craft) killPlayer(state, p, "abandoned");
   }
   state.items = state.items.filter((i) => !sameContainer(i.at, { kind: "room", id: craft }));
 }
@@ -320,7 +320,7 @@ function strandCrew(state: GameState): void {
  * whatever is in their places (their items, their bodies) is gone with the planet. Mutates a cloned state.
  */
 function abandonLost(state: GameState): void {
-  for (const p of lostPlayers(state)) killPlayer(state, p);
+  for (const p of lostPlayers(state)) killPlayer(state, p, "abandoned");
   state.items = state.items.filter((i) => !(i.at.kind === "room" && isLostPlace(i.at.id)));
 }
 
@@ -395,7 +395,7 @@ function resolve(ctx: Ctx, sector: PlanetTag | typeof LANDING, table: readonly E
     case "back":
       break;
     case "fatigue":
-      hurt(ctx, event, new Map(living().map((p) => [p, rules.fatigue])));
+      hurt(ctx, event, new Map(living().map((p) => [p, rules.fatigue])), "exploration");
       break;
     case "accident": {
       const all = living();
@@ -404,11 +404,11 @@ function resolve(ctx: Ctx, sector: PlanetTag | typeof LANDING, table: readonly E
       // A rope spares its bearer in some sectors: the Accident happens, with no effect (owner, 2026-11-08).
       const { rope } = rules.gear;
       if (rope.tags.includes(sector) && carries(state, victim, rope.item)) event.avoided = { name: victim.character, item: rope.item };
-      else hurt(ctx, event, new Map([[victim, hp]]));
+      else hurt(ctx, event, new Map([[victim, hp]]), "exploration");
       break;
     }
     case "catastrophe":
-      hurt(ctx, event, new Map(living().map((p) => [p, roll(state, rules.catastrophe)])));
+      hurt(ctx, event, new Map(living().map((p) => [p, roll(state, rules.catastrophe)])), "exploration");
       break;
     case "oxygen": {
       const before = state.ship.oxygen;
@@ -555,7 +555,7 @@ function find(ctx: Ctx, event: ExpeditionEvent): void {
   const place = p.room;
   event.who = p.character;
   // Through `damage`, as Kill, so the dev infiniteHp cheat survives it (and is then found alive).
-  if (event.kind === "foundDead") damage(state, p, p.hp);
+  if (event.kind === "foundDead") damage(state, p, p.hp, "exploration_lost");
   const left = (i: ItemState) => i.at.kind === "room" && i.at.id === place;
   if (!p.alive && !state.config.expedition.deadKeepItems) state.items = state.items.filter((i) => !left(i) || i.type === CORPSE_ITEM);
   for (const item of state.items) if (left(item)) item.at = { kind: "room", id: craft };
@@ -636,7 +636,7 @@ function fight(ctx: Ctx, event: ExpeditionEvent, creature: string): void {
     const p = members[rollInt(state, members.length)]!;
     hits.set(p, (hits.get(p) ?? 0) + 1);
   }
-  if (hits.size > 0) hurt(ctx, event, new Map([...hits].sort(([a], [b]) => members.indexOf(a) - members.indexOf(b))));
+  if (hits.size > 0) hurt(ctx, event, new Map([...hits].sort(([a], [b]) => members.indexOf(a) - members.indexOf(b))), "exploration_combat");
 }
 
 /** The chance a crew of `crew` strength beats a creature of `strength` (owner, 2026-11-08; eMushpedia's `Combat`). */
@@ -660,7 +660,7 @@ function fightLoot(state: GameState, loot: Readonly<CreatureLoot>): { item: stri
 /** Kill and Kill all: these members die outright (Survival doesn't help), under the expedition's death rules. */
 function kill(ctx: Ctx, event: ExpeditionEvent, members: PlayerState[]): void {
   for (const p of members) {
-    damage(ctx.state, p, p.hp);
+    damage(ctx.state, p, p.hp, "exploration");
     if (!p.alive) died(ctx, event, p);
   }
 }
@@ -674,13 +674,13 @@ const usable = (state: Readonly<GameState>, item: Readonly<ItemState>): boolean 
  * event. A member who dies leaves a body in the Icarus, which comes back with it (death.ts); without `deadKeepItems`,
  * what they set out with is lost (the items `killPlayer` dropped on the floor are taken away).
  */
-function hurt(ctx: Ctx, event: ExpeditionEvent, amounts: Map<PlayerState, number>): void {
+function hurt(ctx: Ctx, event: ExpeditionEvent, amounts: Map<PlayerState, number>, cause: DeathCause): void {
   const { state } = ctx;
   const rules = state.config.expedition;
   for (const [p, amount] of amounts) {
     const hp = Math.max(0, amount - (hasSkill(p, "survival") ? rules.survivalReduction : 0));
     (event.hurt ??= []).push({ name: p.character, hp });
-    damage(state, p, hp);
+    damage(state, p, hp, cause);
     if (!p.alive) died(ctx, event, p);
   }
 }

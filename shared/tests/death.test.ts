@@ -2,10 +2,12 @@ import { describe, expect, it } from "vitest";
 import { createChannel, inviteToChannel, sendChat, toggleCheckbox } from "../src/chat.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { damage, hasMushDied, killPlayer } from "../src/death.ts";
+import { hopelessCycle } from "../src/morale.ts";
+import { burnOxygen } from "../src/ship.ts";
 import { CORPSE_ITEM, ITEM_TYPES, ITRACKIE_ITEM, itemsIn } from "../src/items.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { CHAT_CHANNELS, GRAVEYARD_CHANNEL, MUSH_CHANNEL, type Action, type GameState, type PlayerId } from "../src/types.ts";
-import { makeSeats, player, must, offered, withoutDrugs } from "./support.ts";
+import { makeSeats, player, must, nextCycle, offered, withoutDrugs } from "./support.ts";
 
 const seats = makeSeats(4);
 // Punches always land, so the deaths here don't hang on a lucky seed.
@@ -55,10 +57,10 @@ describe("death", () => {
   it("announces the death and role crew-wide, and logs it in the room without the role", () => {
     const s = punchToDeath(ship());
     const announcement = s.chat.filter((m) => m.channel === "global" && m.system);
-    expect(announcement.map((m) => m.system)).toEqual([{ key: "diedHuman", params: { name: "chun" } }]);
+    expect(announcement.map((m) => m.system)).toEqual([{ key: "diedHuman", params: { name: "chun", cause: "assassinated" } }]);
     const line = s.log.find((e) => e.key === "died")!;
     expect(line).toMatchObject({ room: "SICK_BAY", visibleTo: "all" });
-    expect(line.params).toEqual({ name: "chun" }); // no role in the room's line
+    expect(line.params).toEqual({ name: "chun", cause: "assassinated" }); // no role, and no killer
     // Someone across the ship reads the announcement but not the room's log.
     expect(viewFor(s, "p2").chat.some((m) => m.system?.key === "diedHuman")).toBe(true);
     expect(viewFor(s, "p2").log.some((e) => e.key === "died")).toBe(false);
@@ -67,8 +69,8 @@ describe("death", () => {
   it("names a dead Mush as Mush, and logs the room line even with nobody there", () => {
     const s = ship();
     player(s, "p0").room = "BEDROOM_A";
-    killPlayer(s, player(s, "p0"));
-    expect(s.chat.find((m) => m.system?.key === "diedMush")?.system?.params).toEqual({ name: "chao" });
+    killPlayer(s, player(s, "p0"), "injury");
+    expect(s.chat.find((m) => m.system?.key === "diedMush")?.system?.params).toEqual({ name: "chao", cause: "injury" });
     expect(s.log.find((e) => e.key === "died")).toMatchObject({ room: "BEDROOM_A", visibleTo: "all" });
     // Anyone who walks in later sees it in the room's history.
     player(s, "p2").room = "BEDROOM_A";
@@ -101,8 +103,8 @@ describe("death", () => {
     expect(applyAction(s, "p1", { type: "ready" }).ok).toBe(false);
     expect(offered(s, "p0").some((a) => a.type === "punch")).toBe(false);
     const before = JSON.stringify(s);
-    damage(s, player(s, "p1"), 5);
-    killPlayer(s, player(s, "p1"));
+    damage(s, player(s, "p1"), 5, "injury");
+    killPlayer(s, player(s, "p1"), "injury");
     expect(JSON.stringify(s)).toBe(before);
   });
 
@@ -119,7 +121,7 @@ describe("death", () => {
   it("the infiniteHp cheat keeps a player alive", () => {
     const s = ship();
     player(s, "p1").cheats = ["infiniteHp"];
-    damage(s, player(s, "p1"), 1000);
+    damage(s, player(s, "p1"), 1000, "injury");
     expect(player(s, "p1")).toMatchObject({ alive: true, hp: config.maxHp });
   });
 
@@ -148,8 +150,8 @@ describe("the dead player's view (#45)", () => {
 
   it("the graveyard is for the dead alone: they talk in it, the living neither read nor post", () => {
     const s = ship();
-    killPlayer(s, player(s, "p1"));
-    killPlayer(s, player(s, "p3"));
+    killPlayer(s, player(s, "p1"), "injury");
+    killPlayer(s, player(s, "p3"), "injury");
     const posted = must(sendChat(s, "p1", GRAVEYARD_CHANNEL, "anyone there?"));
     expect(viewFor(posted, "p3").chat.map((m) => m.text)).toContain("anyone there?");
     expect(sendChat(posted, "p3", GRAVEYARD_CHANNEL, "yes").ok).toBe(true);
@@ -164,8 +166,8 @@ describe("the dead player's view (#45)", () => {
 
   it("a dead Mush also reads the Mush channel, read-only; a dead human never does", () => {
     const s = ship();
-    killPlayer(s, player(s, "p0"));
-    killPlayer(s, player(s, "p2"));
+    killPlayer(s, player(s, "p0"), "injury");
+    killPlayer(s, player(s, "p2"), "injury");
     expect(viewFor(s, "p0").readChannels).toContain(MUSH_CHANNEL);
     expect(sendChat(s, "p0", MUSH_CHANNEL, "boo").ok).toBe(false);
     expect(viewFor(s, "p2").readChannels).not.toContain(MUSH_CHANNEL);
@@ -175,7 +177,7 @@ describe("the dead player's view (#45)", () => {
     const s = ship();
     s.contamination = { p1: 2 };
     s.items.push({ id: "floor", type: "wrench", at: { kind: "room", id: "SICK_BAY" } });
-    killPlayer(s, player(s, "p0")); // dies in the sick bay, beside p1
+    killPlayer(s, player(s, "p0"), "injury"); // dies in the sick bay, beside p1
     const v = viewFor(s, "p0");
     expect(v.roomItems).toEqual([]);
     expect(v.roomEquipment).toEqual([]);
@@ -216,13 +218,13 @@ describe("the dead player's view (#45)", () => {
     expect(viewFor(s, "p0").humanTankFull).toBe(false);
 
     // Killing a human keeps it false
-    killPlayer(s, player(s, "p1"));
+    killPlayer(s, player(s, "p1"), "injury");
     expect(hasMushDied(s)).toBe(false);
     expect(viewFor(s, "p0").humanTankFull).toBe(false);
     expect(viewFor(s, "p2").humanTankFull).toBe(false);
 
     // Killing the Mush turns it true for everyone
-    killPlayer(s, player(s, "p0"));
+    killPlayer(s, player(s, "p0"), "injury");
     expect(hasMushDied(s)).toBe(true);
     expect(viewFor(s, "p2").humanTankFull).toBe(true);
     expect(viewFor(s, "p3").humanTankFull).toBe(true);
@@ -232,7 +234,7 @@ describe("the dead player's view (#45)", () => {
 describe("Mush victory", () => {
   it("ends the game for the Mush when the last living human dies", () => {
     const s = ship();
-    for (const id of ["p2", "p3"]) killPlayer(s, player(s, id));
+    for (const id of ["p2", "p3"]) killPlayer(s, player(s, id), "injury");
     expect([s.phase, s.winner]).toEqual(["playing", null]);
     const after = punchToDeath(s);
     expect([after.phase, after.winner]).toEqual(["ended", "mush"]);
@@ -241,7 +243,65 @@ describe("Mush victory", () => {
 
   it("does not end while a human lives, and a dead Mush doesn't count as a human", () => {
     const s = ship();
-    killPlayer(s, player(s, "p0"));
+    killPlayer(s, player(s, "p0"), "injury");
     expect(s.phase).toBe("playing");
+  });
+});
+
+// Cause of death (owner, 2026-11-11, #177): both death messages give it, never the killer.
+describe("cause of death", () => {
+  /** The cause on the room line and on NERON's announcement for `who`. */
+  const causes = (s: GameState, who: string) => [
+    s.log.find((e) => e.key === "died" && e.params?.name === who)?.params?.cause,
+    s.chat.find((m) => m.system?.key.startsWith("died") && m.system.params?.name === who)?.system?.params?.cause,
+  ];
+
+  it("a punch is assassinated, and neither message names the killer", () => {
+    const s = punchToDeath(ship());
+    expect(causes(s, "chun")).toEqual(["assassinated", "assassinated"]);
+    const params = [s.log.find((e) => e.key === "died")!.params, s.chat.find((m) => m.system?.key === "diedHuman")!.system!.params];
+    for (const p of params) expect(Object.keys(p!).sort()).toEqual(["cause", "name"]);
+    expect(JSON.stringify(params)).not.toMatch(/p0|chao/);
+  });
+
+  it("a Mush's fatal shower is a plain injury, so the room line keeps the role hidden", () => {
+    const s = ship();
+    s.bios.death_announcements = false;
+    player(s, "p0").room = "BEDROOM_A";
+    player(s, "p0").statuses.push("dirty");
+    player(s, "p0").hp = 1;
+    player(s, "p1").room = "BEDROOM_A";
+    const after = must(applyAction(s, "p0", { type: "shower", equipment: "BEDROOM_A:SHOWER" }));
+    expect(player(after, "p0").alive).toBe(false);
+    expect(causes(after, "chao")).toEqual(["injury", undefined]);
+    const seen = viewFor(after, "p1");
+    expect(seen.log.find((e) => e.key === "died")?.params).toEqual({ name: "chao", cause: "injury" });
+    expect(seen.chat.some((m) => m.system?.key === "diedMush")).toBe(false);
+  });
+
+  it("hunger is starvation", () => {
+    let s = ship();
+    const p1 = player(s, "p1");
+    p1.satiety = 0;
+    p1.satietyZeroSince = s.cycle - config.hunger.hungryAfterCycles;
+    p1.hp = config.hunger.hpPerCycle;
+    s = nextCycle(s);
+    expect(player(s, "p1").alive).toBe(false);
+    expect(causes(s, "chun")).toEqual(["starvation", "starvation"]);
+  });
+
+  it("running out of oxygen is asphyxia", () => {
+    const s = ship();
+    s.ship.oxygen = 0;
+    burnOxygen(s);
+    const dead = s.players.find((p) => !p.alive)!;
+    expect(causes(s, dead.character)).toEqual(["asphyxia", "asphyxia"]);
+  });
+
+  it("dying Hopeless is depression", () => {
+    const s = ship();
+    player(s, "p2").morale = 0;
+    hopelessCycle(s);
+    expect(causes(s, player(s, "p2").character)).toEqual(["depression", "depression"]);
   });
 });

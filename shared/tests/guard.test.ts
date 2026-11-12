@@ -72,7 +72,7 @@ describe("guard", () => {
   it("can't guard twice, and death ends it", () => {
     const s = mustApply(ship(), "p0", { type: "guard" });
     expect(option(s, "p0", { type: "guard" })).toBeUndefined();
-    killPlayer(s, player(s, "p0"));
+    killPlayer(s, player(s, "p0"), "injury");
     expect(player(s, "p0").statuses).not.toContain("guardian");
     expect(moves(s, "p1").length).toBe(base.rooms[ROOM]!.length);
   });
