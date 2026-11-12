@@ -349,9 +349,26 @@
   color: var(--terminal-bg);
 }
 
+/* Only the action list scrolls: the panel and the target (portrait, item, equipment) never do. */
 .inspect {
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+}
+.inspect-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.inspect-target {
+  flex: none;
+}
+.inspect-actions {
+  min-height: 0;
+  overflow-y: auto;
+  /* Room for the buttons' focus outline, which the scroll box would clip. */
+  padding: 2px;
 }
 /* Deselect: in the heading row beside the title on desktop, centred under the portrait on phones. */
 .inspect .panel-head {

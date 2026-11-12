@@ -29,7 +29,6 @@
   .left-column > .inspect {
     flex: 1;
     min-height: 0;
-    overflow: auto;
   }
   .world > .room-view {
     flex: 1;
@@ -186,10 +185,14 @@
     flex: 1;
     min-height: 0;
   }
-  /* Inspect fills the panel top to bottom; a tall target still scrolls the panel. */
+  /* Inspect fills the panel top to bottom; only its action list scrolls (inspect.css). */
+  .three-panel[data-panel="inspect"] {
+    overflow: hidden;
+  }
   .left-column,
   .left-column > .inspect {
-    flex: 1 0 auto;
+    flex: 1;
+    min-height: 0;
   }
   .room-view {
     flex: 1;
@@ -300,6 +303,12 @@
   .bottom-nav-button {
     height: 32px;
   }
+  /* The inspect panel doesn't scroll, so the portrait shrinks to fit the short panel (top bar, nav and the name chip's overhang). */
+  .inspect-target .inspect-art {
+    width: auto;
+    max-width: 100%;
+    max-height: calc(100dvh - 10rem);
+  }
 }
 
 /*
@@ -322,7 +331,7 @@
       "card body";
   }
   .inspect-body {
-    display: flex;
+    flex-direction: row;
     gap: 0.75rem;
     align-items: flex-start;
   }
@@ -354,5 +363,6 @@
   }
   .inspect-body > .inspect-actions {
     flex: 30;
+    max-height: 100%;
   }
 }
