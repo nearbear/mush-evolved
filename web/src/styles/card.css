@@ -1,7 +1,7 @@
 /*
  * The shared chamfered card (UI coherence step 3): square corners, bevelled where --cut-* says, a 1px rim and a drop
  * shadow that follows the bevels. On it: the nameplate and AP/MP (self-hud.css), and on the game screen the panels
- * (inspect, the inventory popup), the top bar and the room plaque; and the iTrackie (itrackie.css). The pale card inside the
+ * (inspect, the inventory popup), the top bar and the location plate; and the iTrackie (itrackie.css). The pale card inside the
  * iTrackie (.cut-card) has its bottom corners cut parallel to it.
  *
  * clip-path would cut a border and a box-shadow off at the bevels, so the card is drawn in two clipped layers: ::before
@@ -10,7 +10,7 @@
  * must be positioned.
  */
 /* Defaults at zero specificity, so each card's own --cut-* wins wherever it is declared. */
-:where(.hud-card, main.game :is(.panel, .top-bar), main.game .room-title) {
+:where(.hud-card, main.game :is(.panel, .top-bar), main.game .room-corner) {
   --cut-tl: 0px;
   --cut-tr: 0px;
   --cut-br: 0px;
@@ -19,7 +19,7 @@
 }
 .hud-card,
 main.game :is(.panel, .top-bar),
-main.game .room-title {
+main.game .room-corner {
   isolation: isolate;
   background: none;
   border: 0;
@@ -30,8 +30,8 @@ main.game .room-title {
 }
 .hud-card::before,
 .hud-card::after,
-main.game :is(.panel, .top-bar, .room-title)::before,
-main.game :is(.panel, .top-bar, .room-title)::after {
+main.game :is(.panel, .top-bar, .room-corner)::before,
+main.game :is(.panel, .top-bar, .room-corner)::after {
   content: "";
   display: block;
   position: absolute;
@@ -53,12 +53,12 @@ main.game :is(.panel, .top-bar, .room-title)::after {
   );
 }
 .hud-card::before,
-main.game :is(.panel, .top-bar, .room-title)::before {
+main.game :is(.panel, .top-bar, .room-corner)::before {
   inset: 0;
   background: linear-gradient(90deg, var(--faction, var(--card-rim)) var(--stripe, 1px), var(--card-rim) 0);
 }
 .hud-card::after,
-main.game :is(.panel, .top-bar, .room-title)::after {
+main.game :is(.panel, .top-bar, .room-corner)::after {
   inset: 1px 1px 1px var(--stripe, 1px);
   --k: 0.4px; /* keeps the rim about 1px thick across the bevels */
   background: var(--panel-fill);
@@ -86,14 +86,20 @@ main.game .top-bar {
   --cut-bl: 10px;
 }
 /*
- * The amber-outline variant, for labels (the room plaque): the rim is the outline's gold line, and four 1px offset
+ * The amber-outline variant, for labels (the location plate: your room's name and the minimap, iso.css): the rim is the outline's gold line, and four 1px offset
  * shadows add its dark outer line along the bevel too. The dark inner line is the fill itself.
  */
-main.game .room-title {
+main.game .room-corner {
   --card-rim: var(--gold-mid);
-  --cut-br: 6px;
+  --cut-tl: 6px;
+  --cut-bl: 6px;
   filter: drop-shadow(1px 0 0 var(--gold-edge)) drop-shadow(-1px 0 0 var(--gold-edge)) drop-shadow(0 1px 0 var(--gold-edge))
     drop-shadow(0 -1px 0 var(--gold-edge)) drop-shadow(0 1px 3px var(--panel-shadow));
+}
+/* A hazard in your room (fire): the outline turns the alert colour, with the screen's one resting glow. */
+main.game .room-corner.alert {
+  --card-rim: var(--danger);
+  filter: drop-shadow(0 0 1px var(--danger)) drop-shadow(0 0 4px var(--danger)) drop-shadow(0 1px 3px var(--panel-shadow));
 }
 /* Phones: the top bar runs edge to edge under the screen's top, so only its bottom corners are cut. */
 @media (max-width: 1023px) {

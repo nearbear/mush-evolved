@@ -108,6 +108,7 @@ async function run(phone: boolean, character: number) {
       console.log(`  ${phone ? "phone" : "desktop"}: ${await exit.first().innerText()}`);
       await exit.first().dispatchEvent("click");
       await page.locator(".room-title", { hasText: room }).waitFor({ timeout: 60_000 });
+      await page.locator(".iso-room[data-leaving]").waitFor({ state: "detached", timeout: 60_000 });
       await waitForArt(page);
     }
     await openTerminal(page, phone, "NERON core");

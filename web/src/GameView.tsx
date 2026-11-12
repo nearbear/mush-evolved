@@ -1,7 +1,7 @@
 // Thin view layer: renders a PlayerView and emits intents. No game logic here;
 // the server decides what is legal and sends it in view.actions. No socket either: see GameScreen.
 
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
 import { CORPSE_ITEM, SUPPORT_DRONE_ITEM, isLostPlace, legalIn, type Action, type BotPause, type CharacterId, type Cheat, type GameClientMessage, type PlayerView, type RoleCheat, type RoomId, type Spot, type Target } from "@mush2/shared";
 import { useTranslation } from "react-i18next";
 import { ActionQueue } from "./hud/ActionQueue.tsx";
@@ -81,6 +81,7 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
   const [zoom, setZoom] = useState(1);
   const names = useNames();
   const layout = useShipLayout();
+  const roomTitleId = useId();
   /** UI-only state: what the inspect panel shows. Null means yourself. */
   const [selected, setSelected] = useState<Target | null>(null);
   // Phone layout only: which panel is on screen, and a door tapped in the room.
@@ -151,6 +152,8 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
 
   const { you } = view;
   const reachable = new Set(legalIn(view).flatMap((a) => (a.type === "move" ? [a.to] : [])));
+  /** The room view shows your room's scene (not death, the patrol cockpit, a lost place or Icarus), so it gets the name plate. */
+  const inRoom = you.alive && !(view.patrolShip && view.expedition?.report === undefined) && !isLostPlace(you.room) && view.expedition?.report === undefined;
   const occupant = (p: { id: string; isBot: boolean; character: CharacterId; statuses: string[]; busy?: Bar; lying?: string; spot?: Spot; pushedBy?: string }): Occupant => {
     const busy = p.id === you.id && you.current ? { bar: you.current, label: names.action(you.current.action.type) } : p.busy && { bar: p.busy };
     return {
@@ -244,6 +247,7 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
                 layout={layout}
                 room={you.room}
                 onFire={view.roomOnFire}
+                titleId={roomTitleId}
                 occupants={[you, ...view.players.filter((p) => p.room === you.room)]
                   .sort((a, b) => a.id.localeCompare(b.id))
                   .map(occupant)}
@@ -296,14 +300,22 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
             )}
             {you.alive && !readOnly && <TipCard view={view} />}
             {you.alive && <InventoryOverlay view={view} selected={target} onAction={act} onSelect={select} zoom={zoom} onZoom={setZoom} />}
-            <Minimap
-              here={you.room}
-              youId={you.id}
-              people={[you, ...view.players]}
-              unidentified={view.unidentified}
-              reachable={reachable}
-              burningRooms={view.burningRooms}
-            />
+            {/* Top-right: one card (amber, red when your room is on fire) holding your room's name with the minimap under it. */}
+            <div className={`room-corner${inRoom && view.roomOnFire ? " alert" : ""}`}>
+              {inRoom && (
+                <div className="room-title">
+                  <h2 id={roomTitleId}>{names.room(you.room)}</h2>
+                </div>
+              )}
+              <Minimap
+                here={you.room}
+                youId={you.id}
+                people={[you, ...view.players]}
+                unidentified={view.unidentified}
+                reachable={reachable}
+                burningRooms={view.burningRooms}
+              />
+            </div>
           </div>
         </div>
 

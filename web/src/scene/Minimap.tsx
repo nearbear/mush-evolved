@@ -15,7 +15,6 @@ import { useEffect, useMemo, useState, type CSSProperties, type PointerEvent } f
 import planJson from "@mush2/assets/derived/ship-plan.json";
 import type { OtherPlayerView, RoomId, ShipPlan } from "@mush2/shared";
 import { FIRE_ICON, MUSH_ICON, bustIcon } from "../art/assets.ts";
-import { TechnoBox } from "../hud/TechnoBox.tsx";
 import { cellsPath, iconSpots, runsPath } from "./plan.ts";
 
 const plan = planJson as ShipPlan;
@@ -104,8 +103,7 @@ export function Minimap({
   ].join(", ");
 
   return (
-    <TechnoBox
-      as="section"
+    <section
       className={`minimap${expanded ? " expanded" : ""}`}
       style={{ "--cols": plan.width } as CSSProperties}
       aria-label={t("minimap.title")}
@@ -204,6 +202,6 @@ export function Minimap({
           )}
         </div>
       )}
-    </TechnoBox>
+    </section>
   );
 }

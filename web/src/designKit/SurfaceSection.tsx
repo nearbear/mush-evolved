@@ -28,7 +28,11 @@ function Screen({ view }: { view: PlayerView }) {
         <SampleInspect view={view} target={{ kind: "player", id: view.you.id }} />
         <div className="room-view m2k-ramp-room">
           <SelfHud view={view} onInspect={noop} />
-          <h2 className="room-title">Laboratory</h2>
+          <div className="room-corner">
+            <div className="room-title">
+              <h2>Laboratory</h2>
+            </div>
+          </div>
           <div className="m2k-ramp-points">
             <SelfPoints view={view} />
           </div>

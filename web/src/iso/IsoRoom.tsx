@@ -18,7 +18,7 @@
 // a wall is drawn over (PlacedSprite.occluded) also gets a see-through outline
 // above everything. People in this room still take clicks through it.
 
-import { Suspense, lazy, useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type ComponentType, type MouseEvent, type PointerEvent } from "react";
+import { Suspense, lazy, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ComponentType, type MouseEvent, type PointerEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { createPortal } from "react-dom";
 import { CAMERA_EQUIPMENT, CORPSE_ITEM, EQUIPMENT_TYPES, SUPPORT_DRONE_ITEM, SUPER_CALC_EQUIPMENT, type EquipmentView, type RoomId, type RoomLayout, type ShipLayout, type Spot, type Target } from "@mush2/shared";
@@ -168,6 +168,7 @@ export function IsoRoom({
   planet,
   turn,
   onFire,
+  titleId,
 }: {
   layout: ShipLayout;
   room: RoomId;
@@ -194,6 +195,8 @@ export function IsoRoom({
   selectedDoor: RoomId | null;
   /** Whether the room is currently on fire (PlayerView.roomOnFire). */
   onFire?: boolean;
+  /** The id of the room's name, on the location plate over the room view (GameView): it labels the scene. */
+  titleId: string;
   /** What your latest action is on: you walk up to it when this changes (useActingOn). */
   actingOn: ActingOn | null;
   /** Changes whenever you send an action: you get up from your chair. */
@@ -250,7 +253,6 @@ export function IsoRoom({
   const corpseKey = corpses.map((c) => c.id).join(",");
   const droneKey = drones.map((d) => d.id).join(",");
   const viewportRef = useRef<HTMLDivElement>(null);
-  const titleId = useId();
   const rendererRef = useRef<FrameTarget | null>(null);
   const overlayRef = useRef<FrameTarget>(null);
   // Where you've clicked to walk, drawn at once. The server hears of it too (`onWalk`) and shows it to your
@@ -762,9 +764,9 @@ export function IsoRoom({
   const hoverTitle = hoveredNeighbor ? names.room(hoveredNeighbor.id) : hovered && interaction(hovered)?.title;
 
   return (
-    <section className="iso-room">
-      <h2 className="room-title" id={titleId}>{names.room(room)}</h2>
-      {/* The scroller is separate so the title stays put when a wide room scrolls. */}
+    // data-leaving marks the walk out of a room you have already left (tools wait for it to end).
+    <section className="iso-room" data-leaving={leavingTo ? "" : undefined}>
+      {/* The scroller clips the scene inside the frame. */}
       <div className="iso-scroll">
         <div
           ref={viewportRef}

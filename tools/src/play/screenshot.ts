@@ -208,6 +208,7 @@ async function desktopSteps(page: Page, step: Step): Promise<void> {
     const at = await firstHit(page, isReachableDoor);
     await page.mouse.dblclick(at.x, at.y);
     await page.locator(".room-title", { hasNotText: before }).waitFor();
+    await page.locator(".iso-room[data-leaving]").waitFor({ state: "detached" });
     await waitForArt(page);
     console.log(`      ${before} -> ${await page.locator(".room-title").innerText()}`);
   });
@@ -344,6 +345,7 @@ async function walkThroughDoor(page: Page): Promise<void> {
   await page.touchscreen.tap(at.x, at.y);
   await page.locator(".peek-bar").getByRole("button", { name: "Go" }).tap();
   await page.locator(".room-title", { hasNotText: before }).waitFor();
+  await page.locator(".iso-room[data-leaving]").waitFor({ state: "detached" });
   await waitForArt(page);
   console.log(`      ${before} -> ${await page.locator(".room-title").innerText()}`);
 }

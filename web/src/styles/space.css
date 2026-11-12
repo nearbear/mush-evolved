@@ -10,7 +10,7 @@
   margin: 0;
 }
 /* The ship's rooms are out of reach in flight, and nothing here zooms. */
-.room-view:has(> .patrol-cockpit) .minimap,
+.room-view:has(> .patrol-cockpit) .room-corner,
 .room-view:has(> .patrol-cockpit) .zoom-controls {
   display: none;
 }

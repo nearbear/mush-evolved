@@ -8,21 +8,15 @@
   /* Keeps the overlays' z-indexes (inventory, ship card) inside the room, so popovers portaled to the body draw over them. */
   isolation: isolate;
 }
+/* Placed by .room-corner (iso.css), under your room's name in the same card. */
 .minimap {
   --cell: 2px;
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  z-index: 2;
   width: calc(var(--cols) * var(--cell));
-  /* The techno frame (TechnoBox) pads 18px a side outside this width. */
-  max-width: calc(100% - 1rem - 36px);
+  max-width: 100%;
   transition: width 0.15s ease-out;
 }
 .minimap.expanded {
   --cell: 5px;
-  /* drop-shadow, not box-shadow, so the shadow follows the frame's cut corners. */
-  filter: drop-shadow(0 4px 8px rgb(0 0 0 / 0.6));
 }
 .minimap svg {
   display: block;
