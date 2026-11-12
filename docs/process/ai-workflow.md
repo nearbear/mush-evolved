@@ -3065,9 +3065,17 @@ The owner asked for a review of `docs/plans/bot-goals.md` against a new goal: a 
   - `web/src/hud/recency.ts` & `RecencyStamp.tsx`: Updated comments.
 - **Verified:** `npm test -w web -- recency`, `npm test -w web -- hud`, `npm run build`, and `npm run verify` (all tests pass).
 
+## 2026-11-11: Fact-fix pass on the balance review
+
+A player's review of `docs/plans/balance-review.md` caught real errors in the AI-written doc. Fixed: it said the humans' only win was Sol with no Mush alive, though `rules-design.md` (2026-10-22) also makes Eden a human win with no Mush alive; it turned one player's "feast or famine" into what "players call" it; it claimed a passive Mush has nothing to spend AP on, contradicting its own Food section; its skill-slot test ("a skill that answers one research never gets picked") was the reverse of practice, where survival skills that counter research crowd out the rest. Two tests ("the cheap, repeatable test the goals forbid", "detection is graded") were reworded because they dropped their antecedents. Added the Transfer/key tradeoff (a public key ejection reveals a Transfer; a key tied to the inserting mind does not). What needed correction: dense compressed prose that lost meaning, and quotes from a single thread generalised to "players". The owner still plans a human rewrite.
+
 ## 2026-11-11: log line stamp stacked under its marker
 
 Owner asked whether the recency stamp on ship/room log lines could sit under the log-type icon instead of beside it. Claude pointed out the side-by-side `auto` column also made each row's body start at a different x (stamp widths vary), and proposed a fixed 32px column matching chat entries' sprite column so log and chat bodies share one left edge. Cost noted up front: single-line entries grow a little taller. CSS-only change in `web/src/styles/chat.css` (marker becomes a column flex; stamp at 0.7rem so "1d12h" fits 32px). No visual check run yet.
+
+## 2026-11-11: Fertile for every Mush (decision recorded, not built)
+
+Owner decision after a player shared that eMush's developers are considering the same: every Mush, alpha and converted, gets Fertile's effect (first extraction each day costs 0 AP) without picking it, and Fertile leaves the Mush skill picker. Recorded in `rules-design.md` and balance-review decision 5; nothing built. The two open points (what happens to the skill, who gets it) were asked in one question rather than guessed. Claude had argued a free Mycelium Spirit for converts would speed up the snowball; the owner corrected that most Mush already pick it, so the marginal speed-up is small and the main effect is a freed slot. Also struck a stale "no per-Mush limit" line superseded by the spore holding limit.
 
 ## 2026-11-11: Fire drawn at the right depth, spread like noise
 
@@ -3075,3 +3083,9 @@ Owner asked whether the recency stamp on ship/room log lines could sit under the
 - Owner chose noise-spread fire over per-tile emitters. Built: `placeWithSlots` (placement.ts) gives each floor cell a slot in the paint order *after* the topological sort, comparing a virtual one-cell sprite against what overlaps it, so it never perturbs the real order or its cycle breaking (adding nodes to the sort itself could). `describeScene` turns slots into `Scene.fire` indices; the Pixi renderer interleaves one container per cell; flames are spawned anywhere on the floor by a seeded value-noise weight, at the original's total rate.
 - What worked: a flame never changes cell (it only rises), so no per-frame re-bucketing; per-cell pools keep sprites in their container. Slot by `order` value rather than index survived IsoRoom filtering out cameras.
 - Correction: a first test assumed every slot comes after every floor; slots only follow floors that overlap them on screen (fine, since floors are their own layer). Measured cost: up to +2.6 ms per re-placement in the engine room (382 cells), only while burning; under the estimate's "1-2 ms" in most rooms, over it there.
+
+## 2026-11-11: Editorial pass on the balance review
+
+At the owner's request, Claude edited `docs/plans/balance-review.md` for readability and concision, without changing its substance. Added a short "Terms" list for words the doc used undefined (the List, readings, forks and leaves, the sneaky Sol, passive Mush, "the original"); spelled out the reading-model figure (97 in 100 at 80% accuracy with full turnout); moved the fact-fix notes out of the status line into "Corrections and gaps"; replaced "upstream" with "the original" and settled on American spelling; split decision 5's long paragraph so the skill-slot argument and the Fertile decision stand apart. What worked: a glossary fixed most of the "what does this mean" questions players raised. Not added: the owner's agreement that a 4-cycle countdown is too long, which is content rather than editing.
+
+Correction (owner, 2026-11-11): "the original" means Motion Twin's Mush (the `Mush/` folder), not eMush, the remake whose source the project avoids copying and which eMushpedia documents. The editorial pass had defined "the original" as eMush; the review now says "eMush" everywhere it meant eMush and keeps "Mush" for Motion Twin's game.
