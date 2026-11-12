@@ -1,7 +1,7 @@
 // Everything about you on desktop, as a HUD over the room view. Top-left: your ID card (UI coherence step 7), a button that
 // opens you in the inspect panel: a header band in your faction's colour, your portrait and faction icon, your given name and
-// the titles you hold; beside it, on a plain strip, HP, morale and satiety. Bottom-left: AP and MP standing up with your other
-// resources under them (SelfPoints), beside the action queue. On phones the summary lives in the top bar instead
+// the titles you hold; under them, still on the card, HP and morale at half size. Bottom-left: AP and MP standing up with your
+// other resources (satiety first, as on phones) under them (SelfPoints), beside the action queue. On phones the summary lives in the top bar instead
 // (PlayerSummary). Items are in the room view's InventoryOverlay.
 
 import { characterGivenName, characterName, type PlayerView } from "@mush2/shared";
@@ -12,7 +12,6 @@ import { Hint } from "./IconButton.tsx";
 import { PipBar } from "./PipBar.tsx";
 import { factionOf } from "./PlayerSummary.tsx";
 import { CompactResourceChips } from "./ResourceChips.tsx";
-import { SatietyInfo } from "./SatietyInfo.tsx";
 import { StatInfo } from "./StatInfo.tsx";
 import { apColumnHeight } from "./apGauge.ts";
 
@@ -26,30 +25,32 @@ export function SelfHud({ view, onInspect }: { view: PlayerView; onInspect: () =
   const titles = held.length === 0 ? t("idCard.noTitle") : new Intl.ListFormat(i18n.language, { type: "conjunction" }).format(held);
   return (
     <div className="self-hud-top">
-      {/* Your own faction, on your own screen, as the stripe showed before: the band's colour and its text. */}
-      <Hint label={t(`faction.${factionOf(view)}.name`)}>
-        <button type="button" className={`id-card hud-card ${you.role}`} aria-label={t("inspect.self", { character: name })} onClick={onInspect}>
-          <span className="id-band">{t(`idCard.band.${you.role}`)}</span>
-          <span className="id-portrait">
-            <img className="avatar" src={bustIcon(you.character)} alt="" />
-            <img className="id-faction" src={FACTION_ICONS[factionOf(view)]} alt="" />
-          </span>
-          <span className="id-fields">
-            <span className="id-caption">{t("idCard.name")}</span>
-            <strong className="id-value id-name">{characterGivenName(you.character)}</strong>
-            <span className="id-caption">{t("idCard.title")}</span>
-            <span className="id-value">{titles}</span>
-          </span>
-        </button>
-      </Hint>
-      <div className="hud-vitals hud-card">
-        <StatInfo stat="hp" view={view} value={you.hp} max={view.maxHp}>
-          <PipBar label={t("stat.hp")} value={you.hp} max={view.maxHp} pip={HP_PIP} icon={HP_ICON} bigIcon thin plainIcon />
-        </StatInfo>
-        <StatInfo stat="morale" view={view} value={you.morale} max={view.maxMorale}>
-          <PipBar label={t("stat.morale")} value={you.morale} max={view.maxMorale} pip={MORALE_PIP} icon={MORALE_ICON} bigIcon thin plainIcon />
-        </StatInfo>
-        <SatietyInfo view={view} />
+      {/* The card isn't one button: HP and morale open their own cards, and a button can't hold other controls. */}
+      <div className={`id-card hud-card ${you.role}`}>
+        {/* Your own faction, on your own screen, as the stripe showed before: the band's colour and its text. */}
+        <Hint label={t(`faction.${factionOf(view)}.name`)}>
+          <button type="button" className="id-open" aria-label={t("inspect.self", { character: name })} onClick={onInspect}>
+            <span className="id-band">{t(`idCard.band.${you.role}`)}</span>
+            <span className="id-portrait">
+              <img className="avatar" src={bustIcon(you.character)} alt="" />
+              <img className="id-faction" src={FACTION_ICONS[factionOf(view)]} alt="" />
+            </span>
+            <span className="id-fields">
+              <span className="id-caption">{t("idCard.name")}</span>
+              <strong className="id-value id-name">{characterGivenName(you.character)}</strong>
+              <span className="id-caption">{t("idCard.title")}</span>
+              <span className="id-value">{titles}</span>
+            </span>
+          </button>
+        </Hint>
+        <span className="id-vitals">
+          <StatInfo stat="hp" view={view} value={you.hp} max={view.maxHp}>
+            <PipBar label={t("stat.hp")} value={you.hp} max={view.maxHp} pip={HP_PIP} icon={HP_ICON} bigIcon thin plainIcon />
+          </StatInfo>
+          <StatInfo stat="morale" view={view} value={you.morale} max={view.maxMorale}>
+            <PipBar label={t("stat.morale")} value={you.morale} max={view.maxMorale} pip={MORALE_PIP} icon={MORALE_ICON} bigIcon thin plainIcon />
+          </StatInfo>
+        </span>
       </div>
     </div>
   );
@@ -69,7 +70,7 @@ export function SelfPoints({ view }: { view: PlayerView }) {
           <PipBar label={t("stat.mp")} value={you.mp} max={view.maxMp} pip={MP_PIP} vertical />
         </StatInfo>
       </div>
-      {/* Home for resources that belong nowhere else (spores, free IT points, ...): two show, the card opens them all. */}
+      {/* Home for resources that belong nowhere else (satiety, spores, free IT points, ...): two show, the card opens them all. */}
       <CompactResourceChips view={view} stacked />
     </div>
   );

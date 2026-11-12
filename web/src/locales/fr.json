@@ -62,7 +62,6 @@
       "morale": "Tout le monde perd 2 points de moral au début de chaque jour (1 tant que Chun est en vie).\nRéconforter, l'action du Psy, donne 2 points de moral. Être allongé dans une pièce où se trouve un Psy donne 1 point de moral par cycle.\nLe Discours enflammé d'un Leader donne 2 points de moral à tous les autres occupants de la pièce.\nManger une Ration crue coûte 1 point de moral."
     },
     "satiety": "Satiété",
-    "satietyValue": "Satiété : {{value}}",
     "satietyInfo": {
       "emptyFor_one": "Votre estomac est vide depuis {{count}} cycle.",
       "emptyFor_many": "Votre estomac est vide depuis {{count}} cycles.",

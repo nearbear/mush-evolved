@@ -27,13 +27,12 @@
   font-weight: bold;
 }
 /*
- * Over the room view. Top-left: your ID card (UI coherence step 7) and, beside it on a plain strip, HP, morale and
- * satiety. The card is light card stock, like the iTrackie: light surfaces are your own things, dark ones the ship.
+ * Over the room view. Top-left: your ID card (UI coherence step 7), with HP and morale at half size along its foot. The card is light card stock, like the iTrackie: light surfaces are your own things, dark ones the ship.
  * Bottom-left: AP and MP standing up, with the action queue beside them. The scene around them stays usable.
  */
 .room-view {
   --hud-card: 56px; /* the bottom row's height, which the tip card clears (tips.css) */
-  --id-card: 6.5rem; /* the ID card's height; the fire notice goes under it */
+  --id-card: 8rem; /* the ID card's height; the fire notice goes under it */
 }
 .self-hud-top {
   position: absolute;
@@ -41,15 +40,12 @@
   left: 0.5rem;
   z-index: 2; /* under the inventory popup (3), which may cover it */
   max-width: calc(100% - 1rem);
-  display: flex;
-  align-items: stretch;
-  gap: var(--space-1);
 }
 /*
- * The card: about 1.6:1, one cut corner (top right) like a keycard. A button, but not a plain one, so it replaces the
- * button art: the fill (card.css's --card-fill) is the faction band over the iTrackie's pale stock.
+ * The card: one cut corner (top right) like a keycard. The fill (card.css's --card-fill) is the faction band over the
+ * iTrackie's pale stock. Its top (band, portrait, fields) is the button that opens you in Inspect; HP and morale sit under it.
  */
-button.id-card {
+.id-card {
   --band: 15px;
   --id-faction: var(--human);
   --cut-tr: 12px;
@@ -62,21 +58,33 @@ button.id-card {
   box-sizing: border-box;
   width: 10.5rem;
   min-height: var(--id-card);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-bottom: var(--space-2);
+  color: var(--text);
+}
+.id-card.mush {
+  --id-faction: var(--mush);
+}
+/* Not a plain button, so it drops the button art; the card behind it is the look. */
+.id-card .id-open {
+  flex: 1 0 auto;
+  box-sizing: border-box;
+  width: 100%;
   height: auto;
   margin: 0;
-  padding: 0 var(--space-2) var(--space-2);
+  padding: 0 var(--space-2);
+  background: none;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   grid-template-rows: calc(var(--band) + 1px) 1fr;
   column-gap: var(--space-2);
   row-gap: var(--space-2);
-  color: var(--text);
-  font-weight: normal;
+  color: inherit;
+  font: inherit;
   text-align: left;
   text-shadow: none;
-}
-button.id-card.mush {
-  --id-faction: var(--mush);
 }
 /* Tiny tracked caps across the band, in the outline's dark ink. */
 .id-band {
@@ -148,62 +156,41 @@ button.id-card.mush {
   letter-spacing: 0.06em;
 }
 @media (hover: hover) {
-  button.id-card:hover .id-portrait {
+  .id-open:hover .id-portrait {
     border-color: var(--id-faction);
   }
 }
-button.id-card:focus-visible {
+.id-open:focus-visible {
   outline: 2px solid var(--id-faction);
   outline-offset: 2px;
 }
-/* HP, morale and satiety: a plain strip, no cut corners, the card's height. */
-.hud-vitals {
-  position: relative;
-  box-sizing: border-box;
-  padding: var(--space-1) var(--space-2);
+/* HP and morale along the card's foot, at half the size they had beside it: 1x sprite pixels, dark ink on the pale stock. */
+.id-vitals {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  align-items: start;
+  gap: 2px;
+  padding: 0 var(--space-2);
+}
+.id-vitals .pip-bar {
+  --s: 1px;
   gap: 2px;
 }
-.hud-vitals > .satiety-info {
-  align-self: start;
+.id-vitals .pip-icon {
+  margin-right: 1px;
 }
-.hud-satiety {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  font-size: 0.8rem; /* the same as the HP and morale values */
-  font-weight: bold;
-  color: #fff;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
-}
-.hud-satiety img {
-  height: 26px; /* 2x the 13px sprite, whole pixels */
-  width: auto;
-  image-rendering: pixelated;
-}
-.satiety-info.hungry .hud-satiety {
-  color: var(--mush);
-}
-.hud-vitals .pip-bar {
-  gap: 3px;
-}
-.hud-vitals .pip-icon {
-  margin-right: 2px;
-}
-.hud-vitals .pip-icon.big {
-  height: 26px; /* 2x the 11x13 heart and face, whole pixels */
+.id-vitals .pip-icon.big {
+  height: 13px; /* 1x the 11x13 heart and face */
   width: auto;
 }
-/* The value after the bar, like AP and MP; two digits wide so the bars don't shift as it changes. */
-.hud-vitals .pip-bar .sub {
+/* The value after the bar; two digits wide so the bars don't shift as it changes. */
+.id-vitals .pip-bar .sub {
   min-width: 2ch;
   margin-left: var(--space-1);
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   font-weight: bold;
-  color: #fff;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
+  line-height: 1;
+  color: var(--text);
 }
 .pip-icon {
   image-rendering: pixelated;

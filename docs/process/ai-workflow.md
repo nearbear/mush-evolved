@@ -3234,3 +3234,9 @@ Owner asked that every action (Inspect panel, peek bar, room) take a double clic
 - **Measured before optimizing:** the time is in the rules (about 2.7 ms per `applyInput`, 1.7 ms per `viewFor`), not the harness, so the fix was parallel processes, not a faster loop.
 - **First baseline (50 seeds):** no ship past day 6 (median 3.7 days); oxygen out by day 3.5 and the hull by day 4 in 40 runs each; deaths mostly Daedalus destroyed, asphyxia, then fire. It points the first upkeep goal at oxygen, and shows `rest`/`explore` churning (about 34 and 13 starts per bot per day).
 - **Caught at wrap-up:** `--compare` with a relative path silently found nothing, because Vitest runs from `server/` and `npx` resets `INIT_CWD`; `run-trial.mjs` now passes the caller's folder as `TRIAL_CWD`. Rerunning seeds 1–5 against the saved baseline gave the same result on every seed, so runs reproduce across separate parallel batches. The minified baseline is committed in `docs/scratchpad/` at the owner's request.
+
+## 2026-11-12: HP and morale into the ID card, satiety into the resources
+
+- Owner asked to move HP and morale into the desktop ID card at half size and satiety into the bottom-left resources "the way mobile does it", dropping the strip beside the card.
+- The card was one `<button>`; HP and morale open their own popovers (`StatInfo`), and a button can't contain other controls. So the card became a `div.id-card` whose top (band, portrait, fields) is the `button.id-open` that opens Inspect, with the bars on the card's foot at 1x sprite pixels (`--s: 1px`, 13px icons) in the card's dark ink.
+- Satiety is now always the first resource chip (`useChips` lost its `withSatiety` flag); the desktop-only `SatietyInfo` component, its CSS and the `stat.satietyValue` string went, leaving `useSatietyLines`. Desktop loses the red "hungry" colour on the number, as phones never had it; the hungry line is still in its card.

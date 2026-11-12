@@ -62,7 +62,6 @@
       "morale": "Todos pierden 2 puntos de moral al comienzo de cada día (1 mientras Chun siga con vida).\nConsolar, la acción del Psicólogo, da 2 puntos de moral. Estar acostado en una sala con un Psicólogo da 1 punto de moral por ciclo.\nEl Discurso enardecido de un Líder da 2 puntos de moral a todos los demás en la sala.\nComer una Ración cruda cuesta 1 punto de moral."
     },
     "satiety": "Saciedad",
-    "satietyValue": "Saciedad: {{value}}",
     "satietyInfo": {
       "emptyFor_one": "Tu estómago lleva {{count}} ciclo vacío.",
       "emptyFor_many": "Tu estómago lleva {{count}} ciclos vacío.",

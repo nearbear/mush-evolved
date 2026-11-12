@@ -159,7 +159,7 @@ export default function Mush2Kit() {
           <h2>Self HUD</h2>
           <p>
             <code>hud/SelfHud.tsx</code>: the desktop ID card over the room view&apos;s top left (faction band,
-            portrait, name, held titles), with HP, morale and satiety on a plain strip beside it. It takes a real <code>PlayerView</code> from <code>designKit/sampleView.ts</code>; here it sits in
+            portrait, name, held titles), with HP and morale at half size along its foot. It takes a real <code>PlayerView</code> from <code>designKit/sampleView.ts</code>; here it sits in
             a stand-in <code>.room-view</code>, since it is positioned over the room.
           </p>
           <div className="m2k-row">
