@@ -1,6 +1,6 @@
 /*
  * The shared chamfered card (UI coherence step 3): square corners, bevelled where --cut-* says. Used by the nameplate and
- * AP/MP (self-hud.css) and the patrol cockpit's control bar (space.css). Needs a positioned element. clip-path would cut
+ * AP/MP (self-hud.css). Needs a positioned element. clip-path would cut
  * a border and a box-shadow off at the bevels, so the card is drawn in two clipped layers: ::before is the rim (with the
  * faction stripe, --stripe wide, down the left), ::after the fill 1px inside it, and the shadow is a drop-shadow, which
  * follows the clipped shape.

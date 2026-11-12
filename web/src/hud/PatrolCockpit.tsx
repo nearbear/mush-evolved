@@ -4,7 +4,7 @@
 // the rest wait in the lower left as one sprite per kind with a count (so 99 hunters take the room of one), and pressing
 // that sprite aims at the next. Both your ship and the targeted hunter show their name, a stack of shield icons and
 // their hp underneath the sprite. The ship and the hunters each weave on their own beat, the ship a moment behind, so it
-// reads as a chase. The bar under the scene (a chamfered card, styles/card.css) has the ship's charges at the top (the number centred, the charges alternating left and right of it), Shoot flanked
+// reads as a chase. The bar under the scene (a TechnoBox) has the ship's charges at the top (the number centred, the charges alternating left and right of it), Shoot flanked
 // by the two target-cycling arrow buttons (a patrol ship only; the Pasiphae can't shoot), and the ship's other actions
 // (Land, Collect scrap: whatever the view offers on its command, less Examine). Collect scrap's tooltip says how much
 // debris floats nearby (the view leaves the count out while a patrol ship can't collect); when the rules refuse it (no debris, or a patrol ship while the Pasiphae exists) it shows disabled with why.
@@ -21,6 +21,7 @@ import { FxSprite } from "./FxSprite.tsx";
 import { NO_FORMATION, aimedSlot, hunterIn, stepAim, track } from "./hunterSlots.ts";
 import { spaceSky } from "./spaceSky.ts";
 import { optionsOn } from "./targets.ts";
+import { TechnoBox } from "./TechnoBox.tsx";
 
 interface Props {
   view: PlayerView;
@@ -110,7 +111,7 @@ export function PatrolCockpit({ view, ship, layout, onAction }: Props) {
         )}
       </div>
 
-      <div className="space-bar hud-card">
+      <TechnoBox className="space-bar">
         {ship.charges !== null && (
           <div className="space-charges">
             <ChargeRow count={Math.ceil(ship.charges / 2)} />
@@ -151,7 +152,7 @@ export function PatrolCockpit({ view, ship, layout, onAction }: Props) {
             ))}
           </div>
         )}
-      </div>
+      </TechnoBox>
     </section>
   );
 }

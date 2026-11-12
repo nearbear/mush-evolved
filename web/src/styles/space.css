@@ -211,8 +211,7 @@ button.space-hunter:focus-visible {
   outline-offset: 1px;
 }
 
-/* The controls, on the chamfered card (card.css) with its top corners cut, like the AP and MP card beside it: the
-   charges at the top, Shoot flanked by the target-cycling arrows, then the ship's other actions side by side. On desktop
+/* The controls (TechnoBox): the charges at the top, Shoot flanked by the target-cycling arrows, then the ship's other actions side by side. On desktop
    it is centred, clear of the AP and MP bars (bottom left) and the sack (bottom right). */
 .space-bar {
   position: relative;
@@ -220,9 +219,6 @@ button.space-hunter:focus-visible {
   box-sizing: border-box;
   width: min(26rem, 100% - 13rem);
   margin-bottom: var(--space-2);
-  padding: var(--space-2) var(--space-3);
-  --cut-tl: 10px;
-  --cut-tr: 10px;
   display: flex;
   flex-direction: column;
   align-items: stretch;
