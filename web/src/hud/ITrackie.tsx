@@ -193,7 +193,7 @@ export function ITrackie({
 
   return (
     <MarkAllContext.Provider value={markedAll}>
-    <div className="kit-panel itrackie">
+    <div className="hud-card itrackie">
       <ExpeditionReportDialog report={view.expeditions.find((r) => r.id === report)} onClose={() => setReport(null)} canShare={view.canShareReports} onShare={onShareReport} />
       <Tabs.Root className="itrackie-tabs-root" value={activeTab} onValueChange={(v) => setTab(v as TabId)}>
         <Tabs.List className="itrackie-tabs">

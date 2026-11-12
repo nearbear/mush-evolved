@@ -1,4 +1,4 @@
-/* Shared by the iTrackie (itrackie.css) and the terminals (hud/terminal.css). Needs --cut from the enclosing .kit-panel and a --pad on it. */
+/* Shared by the iTrackie (itrackie.css) and the terminals (hud/terminal.css). Needs --cut from the enclosing frame (.kit-panel, or the iTrackie's card) and a --pad on it. */
 
 /*
  * A light outlined card (the iTrackie tab contents, the terminals) inside a .kit-panel frame, flex-filling it.

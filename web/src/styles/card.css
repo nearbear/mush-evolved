@@ -1,26 +1,45 @@
 /*
- * The shared chamfered card (UI coherence step 3): square corners, bevelled where --cut-* says. Used by the nameplate and
- * AP/MP (self-hud.css). Needs a positioned element. clip-path would cut
- * a border and a box-shadow off at the bevels, so the card is drawn in two clipped layers: ::before is the rim (with the
- * faction stripe, --stripe wide, down the left), ::after the fill 1px inside it, and the shadow is a drop-shadow, which
- * follows the clipped shape.
+ * The shared chamfered card (UI coherence step 3): square corners, bevelled where --cut-* says, a 1px rim and a drop
+ * shadow that follows the bevels. On it: the nameplate and AP/MP (self-hud.css), and on the game screen the panels
+ * (inspect, the inventory popup), the top bar and the room plaque; and the iTrackie (itrackie.css). The pale card inside the
+ * iTrackie (.cut-card) has its bottom corners cut parallel to it.
+ *
+ * clip-path would cut a border and a box-shadow off at the bevels, so the card is drawn in two clipped layers: ::before
+ * is the rim (--card-rim, with the faction stripe, --stripe wide, down the left), ::after the fill 1px inside it, and
+ * the shadow is a drop-shadow, which follows the clipped shape. The element itself has no background or border, and
+ * must be positioned.
  */
 /* Defaults at zero specificity, so each card's own --cut-* wins wherever it is declared. */
-:where(.hud-card) {
+:where(.hud-card, main.game :is(.panel, .top-bar), main.game .room-title) {
   --cut-tl: 0px;
   --cut-tr: 0px;
   --cut-br: 0px;
   --cut-bl: 0px;
+  --card-rim: var(--panel-rim);
 }
-.hud-card {
+.hud-card,
+main.game :is(.panel, .top-bar),
+main.game .room-title {
   isolation: isolate;
+  background: none;
+  border: 0;
+  border-image: none;
+  border-radius: 0;
+  box-shadow: none;
   filter: drop-shadow(0 0 3px var(--panel-shadow));
 }
 .hud-card::before,
-.hud-card::after {
+.hud-card::after,
+main.game :is(.panel, .top-bar, .room-title)::before,
+main.game :is(.panel, .top-bar, .room-title)::after {
   content: "";
+  display: block;
   position: absolute;
   z-index: -1;
+  height: auto;
+  border: 0;
+  border-image: none;
+  pointer-events: none;
   --k: 0px;
   clip-path: polygon(
     max(0px, var(--cut-tl) - var(--k)) 0,
@@ -33,12 +52,53 @@
     0 max(0px, var(--cut-tl) - var(--k))
   );
 }
-.hud-card::before {
+.hud-card::before,
+main.game :is(.panel, .top-bar, .room-title)::before {
   inset: 0;
-  background: linear-gradient(90deg, var(--faction, var(--panel-rim)) var(--stripe, 1px), var(--panel-rim) 0);
+  background: linear-gradient(90deg, var(--faction, var(--card-rim)) var(--stripe, 1px), var(--card-rim) 0);
 }
-.hud-card::after {
+.hud-card::after,
+main.game :is(.panel, .top-bar, .room-title)::after {
   inset: 1px 1px 1px var(--stripe, 1px);
   --k: 0.4px; /* keeps the rim about 1px thick across the bevels */
   background: var(--panel-fill);
+}
+
+/* The panels and the top bar keep their inner blue glow (the tooltip art's line blue): the rim in that blue, and the glow
+   on the fill layer, so it is clipped with it. */
+main.game :is(.panel, .top-bar) {
+  --card-rim: var(--chrome-line);
+}
+main.game :is(.panel, .top-bar)::after {
+  box-shadow:
+    inset 0 0 0 1px rgb(57 101 251 / 0.6),
+    inset 0 0 16px 3px rgb(57 101 251 / 0.7);
+}
+/* Where each game-screen card is cut: the panels take the iTrackie's 13px on their top corners. */
+main.game .panel {
+  --cut-tl: 13px;
+  --cut-tr: 13px;
+}
+main.game .top-bar {
+  --cut-tl: 10px;
+  --cut-tr: 10px;
+  --cut-br: 10px;
+  --cut-bl: 10px;
+}
+/*
+ * The amber-outline variant, for labels (the room plaque): the rim is the outline's gold line, and four 1px offset
+ * shadows add its dark outer line along the bevel too. The dark inner line is the fill itself.
+ */
+main.game .room-title {
+  --card-rim: var(--gold-mid);
+  --cut-br: 6px;
+  filter: drop-shadow(1px 0 0 var(--gold-edge)) drop-shadow(-1px 0 0 var(--gold-edge)) drop-shadow(0 1px 0 var(--gold-edge))
+    drop-shadow(0 -1px 0 var(--gold-edge)) drop-shadow(0 1px 3px var(--panel-shadow));
+}
+/* Phones: the top bar runs edge to edge under the screen's top, so only its bottom corners are cut. */
+@media (max-width: 1023px) {
+  main.game .top-bar {
+    --cut-tl: 0px;
+    --cut-tr: 0px;
+  }
 }
