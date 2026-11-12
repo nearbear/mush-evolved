@@ -2,9 +2,9 @@
 
 .inspect-card {
   display: flex;
-  gap: 0.6rem;
+  gap: var(--space-2);
   align-items: center;
-  margin: 0.75rem 0;
+  margin: var(--space-3) 0;
 }
 .inspect-portrait {
   width: 48px;
@@ -17,7 +17,7 @@
 .inspect-item {
   --tile: 96px;
   width: var(--tile);
-  margin: 0.75rem auto 0.5rem;
+  margin: var(--space-3) auto var(--space-2);
 }
 .inspect-charges {
   text-align: center;
@@ -27,7 +27,7 @@
   box-sizing: border-box;
   width: 100%;
   max-width: 210px;
-  margin: 0.75rem auto 0.5rem;
+  margin: var(--space-3) auto var(--space-2);
 }
 /* A character's portrait gets the iTrackie's gold outline (edge, gold, edge from the inside out); inset shadows would draw under the image, so the border, outline and a spread shadow make the three lines. */
 .inspect-figure-art .inspect-art {
@@ -36,13 +36,13 @@
   box-shadow: 0 0 0 2px var(--gold-edge);
 }
 .inspect-name {
-  margin: 0.75rem 0 0.5rem;
+  margin: var(--space-3) 0 var(--space-2);
 }
 .inspect-actions {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
-  margin-top: 0.75rem;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
 }
 .inspect-actions button {
   margin: 0;
@@ -56,7 +56,7 @@
   flex-wrap: wrap;
   gap: 4px;
   list-style: none;
-  margin: 0.4rem 0 0;
+  margin: var(--space-2) 0 0;
   padding: 0;
 }
 .status-icons img {
@@ -164,7 +164,7 @@
 .skill-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
-  gap: 0.6rem;
+  gap: var(--space-2);
   list-style: none;
   margin: 0;
   padding: 0;
@@ -172,10 +172,10 @@
 .skill-pick-card {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  gap: var(--space-2);
   box-sizing: border-box;
   height: 100%;
-  padding: 0 0 0.6rem;
+  padding: 0 0 var(--space-2);
   overflow: hidden;
   background: var(--panel-fill);
   border: 1px solid var(--panel-rim);
@@ -192,17 +192,17 @@
 .skill-pick-card header {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--space-2);
   align-self: stretch;
-  padding: 0.5rem 0.6rem;
+  padding: var(--space-2) var(--space-2);
   /* Same as the idle iTrackie tabs. */
   background: color-mix(in srgb, var(--panel-fill) 55%, black);
   border-bottom: 1px solid var(--panel-rim);
 }
 .skill-status {
   align-self: flex-start;
-  margin: 0 0.6rem;
-  padding: 0.1rem 0.45rem;
+  margin: 0 var(--space-2);
+  padding: 0.1rem var(--space-2);
   border: 1px solid currentColor;
   border-radius: 999px;
   font-size: 0.75rem;
@@ -221,21 +221,21 @@
 }
 .skill-pick-card ul {
   margin: 0;
-  padding: 0 0.6rem 0 1.7rem;
+  padding: 0 var(--space-2) 0 1.7rem;
   font-size: 0.8rem;
 }
 .skill-confirm {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--space-3);
 }
 .skill-confirm p {
   margin: 0;
 }
 .skill-confirm-buttons {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--space-2);
 }
 .settings-popup.skill-picker {
   width: min(56rem, calc(100vw - 2rem));
@@ -245,7 +245,7 @@
   max-width: min(18rem, calc(100vw - 2rem));
 }
 .skill-card ul {
-  margin: 0.4rem 0 0;
+  margin: var(--space-2) 0 0;
   padding-left: 1.1rem;
 }
 /* A status icon is a popover trigger; strip the global Mush button look. */
@@ -281,7 +281,7 @@
   transform: translateX(-50%);
   box-sizing: border-box;
   max-width: calc(100% - 0.6rem);
-  padding: 0 0.7rem;
+  padding: 0 var(--space-3);
   /* A plate in the iTrackie's gold outline, like the portrait's frame. */
   border: 1px solid var(--gold-edge);
   border-radius: 2px;
@@ -301,7 +301,7 @@
   --tile: 210px;
   /* A tall sprite (a shower) shrinks to fit a height cap instead of overflowing the panel; `--ratio` is its width over height. */
   --size: min(var(--tile), calc(40vh * var(--ratio, 1)));
-  margin: 0.75rem auto 0.5rem;
+  margin: var(--space-3) auto var(--space-2);
   max-width: 100%;
   width: var(--size);
 }
@@ -373,22 +373,22 @@
 /* Deselect: in the heading row beside the title on desktop, centred under the portrait on phones. */
 .inspect .panel-head {
   justify-content: flex-start;
-  gap: 0.75rem;
+  gap: var(--space-3);
 }
 .inspect-deselect {
   margin: 0;
-  padding: 0 0.6rem;
+  padding: 0 var(--space-2);
 }
 .inspect-target > .inspect-deselect {
   align-self: center;
-  margin: 0.25rem 0 0;
+  margin: var(--space-1) 0 0;
 }
 
 /* "Broken" under a piece of equipment's name (breakage.ts). */
 .inspect-broken {
   display: flex;
   align-items: center;
-  gap: 0.3rem;
+  gap: var(--space-1);
 }
 .inspect-broken img {
   image-rendering: pixelated;

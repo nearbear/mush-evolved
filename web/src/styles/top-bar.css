@@ -5,25 +5,25 @@
 .top-bar {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem 0.75rem;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
 }
 .top-bar .spacer {
   flex: 1;
 }
 .stats {
   display: flex;
-  gap: 0.75rem;
+  gap: var(--space-3);
   /* Match the nameplate's height; the stacks inside stretch to fill it. */
   align-self: stretch;
 }
 .cycle-under-name {
   display: none;
-  margin-left: 0.4rem;
+  margin-left: var(--space-2);
 }
 /* Shown until the Mush are chosen: a small Mush-style button that opens its explanation. */
 .preselection-tag {
-  margin-left: 0.5rem;
+  margin-left: var(--space-2);
 }
 .avatar {
   width: 40px;
@@ -44,8 +44,8 @@
 .nameplate {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.25rem 0.6rem 0.25rem 0.3rem;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-2) var(--space-1) var(--space-1);
 }
 /*
  * Outlined card, like MUI's: a 1px outline in the faction color, filled with the same
@@ -79,7 +79,7 @@
   max-width: 16rem;
 }
 .faction-goals p {
-  margin: 0.25rem 0 0;
+  margin: var(--space-1) 0 0;
 }
 /* Desktop: the portrait alone in the nameplate; name, faction, and goal are in its popover. */
 .portrait-card {
@@ -89,8 +89,8 @@
 .portrait-faction {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
-  margin-top: 0.25rem;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
   font-weight: bold;
   color: var(--human);
 }
@@ -115,7 +115,7 @@
   font-size: 0.7rem;
   font-weight: bold;
   color: var(--muted);
-  margin-right: 4px;
+  margin-right: var(--space-1);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -129,7 +129,7 @@
   height: 26px; /* 2x the 11x13 sprite, whole pixels */
 }
 .pip-bar .sub {
-  margin-left: 0.35rem;
+  margin-left: var(--space-2);
 }
 /* A stat (pip bar or phone chip) that opens how it is spent and regained (StatInfo.tsx). A box, not display: contents, so the popover has an anchor. */
 .stat-info {
@@ -151,7 +151,7 @@
   flex-direction: column;
   justify-content: center;
   gap: 3px;
-  padding: 0.25rem 0.5rem;
+  padding: var(--space-1) var(--space-2);
 }
 /* Labels and values: white with a dark shadow, since the muted gray is too faint on the slot blue. */
 .stat-stack .pip-label,
@@ -170,8 +170,8 @@
 .nameplate:has(.stat-chips) {
   position: relative;
   overflow: visible; /* the chips hang out of the card */
-  padding-bottom: 0.7rem; /* room for the half of the chips that sits inside the card */
-  margin-bottom: 0.6rem; /* and for the half that hangs out */
+  padding-bottom: var(--space-3); /* room for the half of the chips that sits inside the card */
+  margin-bottom: var(--space-2); /* and for the half that hangs out */
 }
 .stat-chips {
   align-items: center;
@@ -181,13 +181,13 @@
   bottom: 0;
   transform: translateY(50%);
   display: flex;
-  gap: 0.25rem;
+  gap: var(--space-1);
 }
 .stat-chip {
   display: inline-flex;
   align-items: center;
-  gap: 0.2rem;
-  padding: 0 0.35rem;
+  gap: var(--space-1);
+  padding: 0 var(--space-2);
   border-radius: 999px;
   background: #0d1424;
   border: 1px solid var(--panel-rim);
@@ -216,7 +216,7 @@
   cursor: pointer;
 }
 .stat-chip.resource-chip .resource-chip-part {
-  margin-right: 0.35rem;
+  margin-right: var(--space-2);
   vertical-align: middle;
 }
 .stat-chip.resource-chip .resource-chip-part:last-child {
@@ -225,7 +225,7 @@
 .resource-chip-part {
   display: inline-flex;
   align-items: center;
-  gap: 0.2rem;
+  gap: var(--space-1);
 }
 .stat-chip .resource-chip-part img {
   height: 16px;
@@ -236,7 +236,7 @@
   flex-direction: column;
   justify-content: center;
   gap: 2px;
-  padding: 0.25rem 0.5rem;
+  padding: var(--space-1) var(--space-2);
   font-size: 0.8rem;
   font-weight: bold;
   color: #fff;
@@ -244,7 +244,7 @@
   cursor: pointer;
 }
 .resource-stack .resource-chip-part {
-  gap: 0.35rem;
+  gap: var(--space-2);
 }
 .resource-stack .resource-chip-part img {
   image-rendering: pixelated;
@@ -256,13 +256,13 @@
 .resource-rest {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.4rem 0.75rem;
+  gap: var(--space-2) var(--space-3);
   max-width: 14rem;
 }
 /* Phone hamburger menu (End cycle, Leave). Buttons keep the global Mush style; only layout here. */
 .menu-button {
   margin: 0;
-  padding: 0 0.6rem;
+  padding: 0 var(--space-2);
 }
 .menu-positioner {
   z-index: 22;
@@ -270,8 +270,8 @@
 .menu-popup {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
-  padding: 0.4rem;
+  gap: var(--space-1);
+  padding: var(--space-2);
   background: #1b2a4a;
   border: 1px solid rgb(255 255 255 / 0.3);
   border-radius: 6px;
@@ -283,7 +283,7 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  gap: 0.4rem;
+  gap: var(--space-2);
   min-height: 2rem;
 }
 /* The art is drawn at its own size (they differ, 12-16px), never scaled. */
@@ -298,23 +298,23 @@
 /* Desktop ship resources card (oxygen, fuel, hull, plasma shield, alerts). Hidden on phones by TopBar. */
 .ship-resources {
   display: flex;
-  gap: 0.9rem;
+  gap: var(--space-4);
   margin: 0;
-  padding: 0.35rem 0.75rem;
+  padding: var(--space-2) var(--space-3);
   list-style: none;
 }
 /* The titles follow the counters, set off by a divider. */
 .ship-title:first-of-type {
-  margin-left: 0.2rem;
+  margin-left: var(--space-1);
 }
 .ship-title {
-  padding-left: 0.9rem;
+  padding-left: var(--space-4);
   border-left: 1px solid var(--panel-rim);
 }
 .ship-resource {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
+  gap: var(--space-1);
   cursor: help;
   font-size: 0.8rem;
   color: #fff;
@@ -326,7 +326,7 @@
 /* The orbited planet's name (public in orbit), after the counters with the titles' divider. */
 .ship-orbit {
   align-self: center;
-  padding-left: 0.9rem;
+  padding-left: var(--space-4);
   border-left: 1px solid var(--panel-rim);
   font-size: 0.8rem;
   color: #fff;

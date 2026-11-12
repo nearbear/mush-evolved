@@ -10,7 +10,7 @@
 }
 .toast {
   pointer-events: auto;
-  padding: 0.5rem 0.75rem;
+  padding: var(--space-2) var(--space-3);
   border: 1px solid var(--danger);
   border-radius: 4px;
   background: #1b1014;

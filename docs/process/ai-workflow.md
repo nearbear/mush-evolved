@@ -3149,3 +3149,11 @@ Owner asked for an honest verdict on the scratchpad mental-health plan (stressor
 ### 2026-11-11: Collect scrap and the Pasiphae, leak check
 
 - The leak check on the Collect scrap / Pasiphae change found one narrow indirect leak: with death announcements off, a Pasiphae lost on a planet unlocks Collect scrap (and the debris count) for patrol-ship pilots without any announcement, so a pilot in flight can infer its pilot died. Owner accepted it (Claude's recommendation), since the bay already shows the loss; recorded in rules-design.md. It also caught that the new `canScavenge` doc comment had split `onPlanet` from its own, now fixed.
+
+## 2026-11-11: UI coherence step 2b, spacing scale
+
+- Added `--space-1`..`--space-4` (0.25/0.5/0.75/1rem) to `web/src/styles/tokens.css` and converted gap/padding/margin in the 17 other stylesheets in `web/src/styles/` (about 200 declarations).
+- Workflow: the main session wrote one rounding table first (0.15–0.3rem to 1, 0.35–0.6 to 2, 0.7–0.75 to 3, 0.9–1 to 4; px left by default, only plainly generic 4/8/12/16px converted; em, calc, negatives and >=1.5rem left), then fanned the files out to five Sonnet subagents. A Python check over `git diff -U0` confirmed every changed value matched the table and only spacing properties changed.
+- Worked: the table made five parallel workers consistent; the mechanical diff check was cheaper and stricter than reading 400 lines. Needed care: subagents differed on borderline 4px values (one converted two, another left all nine), so "clearly generic" was too loose a rule for parallel work. Comment-arithmetic dependents (`--hud-card: 56px`, the top-bar chip overhang) had to be checked by hand.
+- Values off the scale were left in place and listed for the owner rather than forced.
+

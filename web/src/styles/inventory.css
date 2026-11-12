@@ -11,7 +11,7 @@
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 0.5rem;
+  gap: var(--space-2);
   /* The wrapper spans the room's width; only the popup and the button take clicks, the scene stays usable. */
   pointer-events: none;
 }
@@ -32,7 +32,7 @@
   overflow-y: auto;
 }
 .inventory-popup h2 {
-  margin: 0 0 0.5rem;
+  margin: 0 0 var(--space-2);
 }
 /* Square, sized for a finger; the 3-slice art stretches to fit. The icon stays at 1x. */
 button.inventory-toggle {
@@ -74,11 +74,11 @@ button.zoom-button {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 0.5rem;
+  gap: var(--space-2);
 }
 .ship-popup .ship-resources {
   flex-wrap: wrap;
-  gap: 0.5rem 0.9rem;
+  gap: var(--space-2) var(--space-4);
 }
 /* One title per line under the counters, without the top bar's divider. */
 .ship-popup .ship-title {
@@ -109,14 +109,14 @@ button.zoom-button {
 /* Item zones: room items filling | inventory, one row. */
 .self-cards {
   display: flex;
-  gap: 0.75rem;
+  gap: var(--space-3);
   flex: 1;
   min-width: 0;
 }
 .self-cards > .item-zone {
   min-width: 0;
   box-sizing: border-box;
-  padding: 0.5rem;
+  padding: var(--space-2);
   border: 1px solid var(--outline);
   border-radius: var(--panel-radius);
 }

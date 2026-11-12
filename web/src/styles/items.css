@@ -95,7 +95,7 @@
   top: 2px;
   right: 2px;
   margin: 0;
-  padding: 0 0.4rem;
+  padding: 0 var(--space-2);
   font-size: 0.7rem;
 }
 /* Desktop room zone: more items than fit one row drop to two rows of smaller tiles; beyond two rows it scrolls. */

@@ -3,7 +3,7 @@
 .resource {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: var(--space-2);
   font-size: 0.8rem;
   font-weight: bold;
   color: #fff;
@@ -13,14 +13,14 @@
   cursor: default;
 }
 .resource-card p {
-  margin: 0.25rem 0 0;
+  margin: var(--space-1) 0 0;
 }
 .resource img {
   image-rendering: pixelated;
 }
 /* A title's line of succession; the holder in bold. */
 .title-card ol {
-  margin: 0.25rem 0 0;
+  margin: var(--space-1) 0 0;
   padding-left: 1.5rem;
 }
 .title-card li.holder {
@@ -42,10 +42,10 @@
   box-sizing: border-box;
   height: var(--hud-card);
   max-width: calc(100% - 1rem);
-  padding: 0 1rem 0 0.45rem; /* the right end leaves room for the cut corners */
+  padding: 0 var(--space-4) 0 var(--space-2); /* the right end leaves room for the cut corners */
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: var(--space-2);
   --faction: var(--human);
   --stripe: 3px;
   --cut-tr: 10px;
@@ -63,7 +63,7 @@
   display: grid;
   grid-template-columns: auto auto;
   grid-template-rows: 1fr auto; /* the name takes what the 26px satiety row leaves */
-  column-gap: 0.5rem;
+  column-gap: var(--space-2);
   height: 44px;
 }
 /* A plain button (no 3-slice art) whose portrait frame and name light up on hover and focus. */
@@ -137,7 +137,7 @@ button.hud-plate:focus-visible .hud-portrait {
 .hud-satiety {
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: var(--space-1);
   font-size: 0.8rem; /* the same as the HP and morale values */
   font-weight: bold;
   color: #fff;
@@ -169,7 +169,7 @@ button.hud-plate:focus-visible .hud-portrait {
 /* The value after the bar, like AP and MP; two digits wide so the bars don't shift as it changes. */
 .hud-bars .pip-bar .sub {
   min-width: 2ch;
-  margin-left: 0.25rem;
+  margin-left: var(--space-1);
   font-size: 0.8rem;
   font-weight: bold;
   color: #fff;
@@ -223,7 +223,7 @@ button.hud-plate:focus-visible .hud-portrait {
 }
 /* The resource stack loses its own card: it is at the bottom of the AP/MP one, under a rule. */
 .self-points > .resource-stack {
-  padding: 0.25rem 0 0;
+  padding: var(--space-1) 0 0;
   background: none;
   border: 0;
   border-top: 1px solid var(--panel-rim);
@@ -242,7 +242,7 @@ button.hud-plate:focus-visible .hud-portrait {
   z-index: 2; /* under the inventory popup (3), which may cover it */
   display: flex;
   align-items: flex-end;
-  gap: 0.5rem;
+  gap: var(--space-2);
   max-width: calc(100% - 1rem);
   pointer-events: none;
 }
@@ -254,7 +254,7 @@ button.hud-plate:focus-visible .hud-portrait {
   flex-direction: column;
   gap: 4px;
   position: relative;
-  padding: 0.4rem 0.3rem 0.25rem;
+  padding: var(--space-2) var(--space-1) var(--space-1);
   --cut-tl: 6px;
   --cut-tr: 6px;
 }
@@ -279,7 +279,7 @@ button.hud-plate:focus-visible .hud-portrait {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  gap: var(--space-3);
 }
 /* The fire notice follows the room's name down. */
 .room-view:has(> .self-hud-top) .room-fire {

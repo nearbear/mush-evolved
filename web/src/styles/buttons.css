@@ -9,7 +9,7 @@ button {
   --btn-left: url("../../../Mush/www/img/design/butleft.png");
   --btn-mid: url("../../../Mush/www/img/design/butbg.png");
   --btn-right: url("../../../Mush/www/img/design/butright.png");
-  margin: 0.25rem;
+  margin: var(--space-1);
   height: 21px;
   background:
     var(--btn-left) left / 5px 100% no-repeat,
@@ -17,7 +17,7 @@ button {
     var(--btn-mid) center / calc(100% - 10px) 100% no-repeat;
   color: #fff;
   border: 0;
-  padding: 0 0.75rem;
+  padding: 0 var(--space-3);
   font-size: 0.8rem;
   text-shadow: 0 1px 1px rgb(0 0 30 / 0.6);
   image-rendering: pixelated;
@@ -73,7 +73,7 @@ button.big:active:not(:disabled) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.3rem;
+  gap: var(--space-1);
   /* ActionLabel shrinks the font to fit; it must stay on one line to be measured. */
   white-space: nowrap;
 }

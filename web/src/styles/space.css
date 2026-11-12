@@ -65,7 +65,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.15rem;
+  gap: var(--space-1);
   font-size: 0.85rem;
   text-shadow: 0 1px 2px #000;
 }
@@ -74,7 +74,7 @@
   max-width: 12rem;
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: var(--space-2);
   white-space: nowrap;
 }
 /* One icon a point, each laid over most of the one before (IconStack), so a high count still fits on the line. */
@@ -143,7 +143,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.15rem;
+  gap: var(--space-1);
   font-size: 0.85rem;
   text-shadow: 0 1px 2px #000;
   pointer-events: none;
@@ -185,7 +185,7 @@
   left: 0.5rem;
   bottom: 0.5rem;
   display: flex;
-  gap: 0.5rem;
+  gap: var(--space-2);
 }
 .room-view:has(.self-points) .space-pack {
   left: 6rem;
@@ -218,12 +218,12 @@ button.space-hunter:focus-visible {
   align-self: center;
   box-sizing: border-box;
   width: min(26rem, 100% - 13rem);
-  margin-bottom: 0.5rem;
-  padding: 0.5rem;
+  margin-bottom: var(--space-2);
+  padding: var(--space-2);
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 0.4rem;
+  gap: var(--space-2);
   text-align: center;
   font-size: 0.85rem;
   background: rgb(9 9 45 / 0.85);
@@ -238,14 +238,14 @@ button.space-hunter:focus-visible {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 0.35rem;
+  gap: var(--space-2);
   font-weight: bold;
 }
 .space-fire {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--space-2);
 }
 .space-fire > button:not(.space-shoot) {
   flex: none;
@@ -256,16 +256,16 @@ button.space-hunter:focus-visible {
 .space-bar button.space-shoot {
   flex: 1;
   min-width: 0;
-  padding: 0 1rem;
+  padding: 0 var(--space-4);
 }
 .space-actions {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr));
-  gap: 0.4rem;
+  gap: var(--space-2);
 }
 .space-actions button {
   height: 2rem;
-  padding: 0 0.4rem;
+  padding: 0 var(--space-2);
 }
 
 /* Phones (useMobile.ts's MOBILE_QUERY): no AP bars in the corner, so the bar takes the width, less the corner column:
@@ -278,7 +278,7 @@ button.space-hunter:focus-visible {
   .space-bar {
     align-self: stretch;
     width: auto;
-    margin: 0 3.5rem 0.5rem 0.5rem;
+    margin: 0 3.5rem var(--space-2) var(--space-2);
   }
 }
 @media (prefers-reduced-motion: reduce) {

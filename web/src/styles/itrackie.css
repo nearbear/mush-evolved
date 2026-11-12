@@ -111,8 +111,8 @@
   flex: none;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.4rem 0.75rem 0;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3) 0;
 }
 .itrackie-title {
   flex: 1;
@@ -135,7 +135,7 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
-  padding: 0.5rem 0.75rem 0.75rem;
+  padding: var(--space-2) var(--space-3) var(--space-3);
 }
 .itrackie-panel[hidden] {
   display: none;
@@ -143,14 +143,14 @@
 
 /* Features tab: a drop-down, then the chosen feature's tracker over its thread. */
 .feature-select {
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--space-2);
   min-height: 32px;
   font: inherit;
 }
 .feature-select-trigger {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: var(--space-2);
   width: 100%;
   text-align: left;
 }
@@ -173,14 +173,14 @@
   border-radius: 4px;
   background: var(--surface-bottom, #0b1020);
   color: var(--text);
-  padding: 0.2rem;
+  padding: var(--space-1);
 }
 .feature-select-item {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--space-2);
   min-height: 40px;
-  padding: 0 0.6rem;
+  padding: 0 var(--space-2);
   border-radius: 3px;
   cursor: pointer;
   user-select: none;
@@ -205,8 +205,8 @@
 }
 .tracker {
   flex: none;
-  margin-bottom: 0.5rem;
-  padding-bottom: 0.5rem;
+  margin-bottom: var(--space-2);
+  padding-bottom: var(--space-2);
   border-bottom: 1px solid var(--edge);
 }
 .tracker-list {
@@ -220,8 +220,8 @@
 .tracker-list li {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.15rem 0;
+  gap: var(--space-2);
+  padding: var(--space-1) 0;
 }
 .tracker-list li > span {
   flex: 1;
@@ -232,12 +232,12 @@
   flex: none;
   margin: 0;
   min-width: 32px;
-  padding: 0 0.4rem;
+  padding: 0 var(--space-2);
 }
 /* Research feature: every research card in one row that scrolls sideways; the ones not yet complete are greyed. */
 .research-tracker {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--space-2);
   list-style: none;
   margin-top: 0;
   padding-left: 0;
@@ -250,7 +250,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.2rem;
+  gap: var(--space-1);
   width: 4.5rem;
   scroll-snap-align: start;
   font-size: 0.7rem;
@@ -280,15 +280,15 @@
   flex: none;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  margin: 0 0 0.5rem;
+  gap: var(--space-1);
+  margin: 0 0 var(--space-2);
   padding: 0;
   list-style: none;
 }
 .channel-slot {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--space-2);
 }
 .channel-slot button {
   margin: 0;
@@ -299,7 +299,7 @@
   min-width: 0;
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: var(--space-2);
   overflow: hidden;
   text-overflow: ellipsis;
   text-align: left;
@@ -320,7 +320,7 @@
 .channel-create-form {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: var(--space-3);
 }
 .channel-create-form > button {
   align-self: flex-end;
@@ -329,7 +329,7 @@
 .channel-create-name {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: var(--space-1);
 }
 .channel-create-name input {
   min-height: 32px;
@@ -339,7 +339,7 @@
   display: flex;
   flex-direction: column;
   margin: 0;
-  padding: 0.25rem 0.75rem 0.5rem;
+  padding: var(--space-1) var(--space-3) var(--space-2);
   border: 1px solid rgb(255 255 255 / 0.3);
   border-radius: 4px;
 }
@@ -347,7 +347,7 @@
 .icon-button {
   flex: none;
   min-width: 32px;
-  padding: 0 0.4rem;
+  padding: 0 var(--space-2);
   font-size: 0.95rem;
   line-height: 21px;
 }
@@ -359,7 +359,7 @@
 .tooltip {
   z-index: 50;
   max-width: 16rem;
-  padding: 0.25rem 0.5rem;
+  padding: var(--space-1) var(--space-2);
   border: 1px solid var(--edge);
   border-radius: 4px;
   background: var(--surface-bottom, #0b1020);
@@ -368,7 +368,7 @@
   pointer-events: none;
 }
 .channel-members {
-  margin: 0 0 0.5rem;
+  margin: 0 0 var(--space-2);
   overflow-wrap: anywhere;
 }
 .channel-empty {
@@ -378,25 +378,25 @@
 .channel-invite {
   flex: none;
   align-self: flex-start;
-  margin: 0.5rem 0 0;
+  margin: var(--space-2) 0 0;
 }
 /* Character picker: portraits in a wrapping row, name underneath; a picked one gets an outline. */
 .channel-picker {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: var(--space-2);
 }
 .channel-pick {
   /* Layout only: the global button sprite is replaced since these are portrait tiles, not text buttons. */
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.2rem;
+  gap: var(--space-1);
   width: 3.5rem;
   height: auto;
   min-height: 0;
   margin: 0;
-  padding: 0.25rem;
+  padding: var(--space-1);
   background: none;
   border: 2px solid transparent;
   border-radius: 4px;
@@ -452,16 +452,16 @@
 .thread-rows {
   list-style: none;
   margin: 0;
-  padding: 0 0.5rem 0 0;
+  padding: 0 var(--space-2) 0 0;
 }
 /* A thread as a row button: icon, name, message count. Also the link under a global message that has one. */
 .thread-link {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: var(--space-2);
   width: 100%;
   min-height: 32px;
-  margin: 0.25rem 0 0;
+  margin: var(--space-1) 0 0;
   text-align: left;
 }
 .thread-link .tab-icon {
@@ -480,10 +480,10 @@
 }
 .thread-starter {
   flex: none;
-  margin-top: 0.5rem;
+  margin-top: var(--space-2);
 }
 .thread-starter > p {
-  margin: 0 0 0.25rem;
+  margin: 0 0 var(--space-1);
 }
 .thread-create {
   flex: none;
@@ -499,8 +499,8 @@
 /* The starter message, set apart at the top of an open thread. */
 .feed > li.thread-head {
   border-bottom: 1px solid rgb(255 255 255 / 0.2);
-  padding-bottom: 0.5rem;
-  margin-bottom: 0.25rem;
+  padding-bottom: var(--space-2);
+  margin-bottom: var(--space-1);
 }
 
 /* Unread count on an iTrackie tab (the count is in the tab's accessible name too). */
@@ -538,12 +538,12 @@
 /* Astrophysics: the shared planets (SharedPlanets.tsx), a list like the private channels' that scrolls past a few rows. */
 .shared-planets {
   flex: none;
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--space-2);
 }
 .shared-planet-rows {
   max-height: 9.5rem;
   overflow-y: auto;
-  margin-bottom: 0.25rem;
+  margin-bottom: var(--space-1);
 }
 .shared-planet-name {
   flex: 1;
@@ -563,25 +563,25 @@
 .shared-planets-stale-toggle {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: var(--space-2);
   min-height: 32px;
   font-size: 0.85rem;
 }
 /* The shared text heads its thread, kept as written (line breaks included), never as markdown. */
 .shared-planet-text p {
-  margin: 0 0 0.25rem;
+  margin: 0 0 var(--space-1);
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
 .shared-planet-text .shared-planet-stale {
-  margin-left: 0.5rem;
+  margin-left: var(--space-2);
 }
 
 /* The Astro terminal's Share dialog (SharePlanetDialog.tsx). */
 .share-planet-form {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--space-2);
 }
 .share-planet-form > button {
   align-self: flex-end;
@@ -590,7 +590,7 @@
 .share-planet-text {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: var(--space-1);
 }
 .share-planet-text textarea {
   width: 100%;
@@ -607,5 +607,5 @@
 .mark-read {
   flex: none;
   margin: 0;
-  padding: 0 0.5rem;
+  padding: 0 var(--space-2);
 }
