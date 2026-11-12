@@ -356,16 +356,39 @@
 :has(> .tooltip) {
   z-index: 50;
 }
+/* Hover tooltips wear the original tooltip art (design/tiptop, tipbg, tipbottom, 247px wide), as .panel does off the
+   game screen (layout.css): tipbg is the body, three-sliced sideways with border-image; the two 16px glowing caps are
+   ::before and ::after behind the content. The vertical padding keeps a one-line tooltip at least as tall as both caps. */
 .tooltip {
+  position: relative;
+  isolation: isolate;
   z-index: 50;
   max-width: 16rem;
-  padding: var(--space-1) var(--space-2);
-  border: 1px solid var(--edge);
-  border-radius: 4px;
-  background: var(--surface-bottom, #0b1020);
+  padding: var(--space-2) var(--space-3);
+  border: 0 solid;
+  border-image: url("../../../Mush/www/img/design/tipbg.png") 0 10 fill / 0 10px stretch;
   color: #fff;
   font-size: 0.8rem;
   pointer-events: none;
+}
+.tooltip::before,
+.tooltip::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: 0;
+  right: 0;
+  height: 16px;
+  border: 0 solid;
+  pointer-events: none;
+}
+.tooltip::before {
+  top: 0;
+  border-image: url("../../../Mush/www/img/design/tiptop.png") 0 10 fill / 0 10px stretch;
+}
+.tooltip::after {
+  bottom: 0;
+  border-image: url("../../../Mush/www/img/design/tipbottom.png") 0 10 fill / 0 10px stretch;
 }
 .channel-members {
   margin: 0 0 var(--space-2);

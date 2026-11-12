@@ -3163,3 +3163,8 @@ Owner asked for an honest verdict on the scratchpad mental-health plan (stressor
 - Looking at the sprite (cropped with the repo's own PNG decoder, since PIL isn't installed) showed it carries its own shadow. A sine bob of the whole frame would have bobbed the shadow too, so `describeScene` splits the frame into two pictures: a still shadow and a floating body (`SceneSprite.bob`, which Pixi animates, 2px in whole pixels, off with reduced motion). The split broke the 1:1 placed-to-sprite indexing that fire slots relied on; caught while writing it and fixed with a `firstSprite` map plus a test.
 - `verify` couldn't go green: another session was editing Matchmaker/protocol in the same checkout at the same time. Checked my part per package instead (shared, web, tools tests; web typecheck; lint; build).
 
+
+## 2026-11-11: UI coherence step 3 (part): hover tooltips wear the original tooltip art
+
+- The owner chose to keep the `tipbg` art for hover tooltips (the plan's step 3 had asked whether to drop it) and to restyle panels in a later session. Every hover tooltip and hover card already shared one `.tooltip` rule (`web/src/styles/itrackie.css`), so the change is that one rule: the flat bordered box becomes `tipbg` as a three-sliced `border-image` body with `tiptop`/`tipbottom` as 16px caps in `::before`/`::after`, the same build `.panel` uses off the game screen. Vertical padding went up so a one-line tooltip is at least as tall as both caps.
+- Worked: grepping Popup class names first showed there was a single place to change, so no component was touched.
