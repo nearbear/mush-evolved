@@ -368,7 +368,7 @@
 }
 .visibility-badge img {
   display: block;
-  image-rendering: pixelated;
+  /* image-rendering: pixelated; */
 }
 .entry-marker {
   grid-area: marker;
@@ -378,7 +378,7 @@
 .entry-info {
   width: 16px;
   height: 16px;
-  image-rendering: pixelated;
+  /* image-rendering: pixelated; */
 }
 /* The info icon's native size. */
 .entry-info.info {
