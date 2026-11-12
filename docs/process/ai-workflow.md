@@ -2984,6 +2984,11 @@ The owner asked for a review of `docs/plans/bot-goals.md` against a new goal: a 
   - Added unit test in `shared/tests/skills.test.ts` verifying `oisif` is no longer a valid skill.
 - **Verified:** `npm run build` and `npm run verify` (typecheck, lint, and all 2,750 tests pass).
 
+## 2026-11-10: DRUG_DISPENSER research builds DRUG_DISP in the Medlab
+Owner stated the rule in one line; I copied the SUPER_CALC completion pattern (`completeResearch`, `DRUG_DISPENSER_EQUIPMENT` constant, room `SICK_BAY`), with a test. No questions needed; dispensing itself is not built.
+
+## 2026-11-11: remove drug 12
+"Remove drug 12" was ambiguous (starting stock vs the 12th type); I asked, the owner said the drug type. I removed `drug_12` (13 to 12 types; ids stay contiguous), its names, and added `upgradeTo115` (drops its drawn effects and items; STATE_VERSION 115, a deploy of its own). Fewer draws shifted the seeded RNG, so five seed-pinned tests (expeditions, mankind_only_hope, pilgred, anathema, goals) needed new seeds. `verify` still shows the slow replay-history tests and some server timeouts, which also fail without this change.
 ### 2026-11-10: Isometric room particle effect (CellFire) in PixiJS
 
 - Ported the Flash/Haxe isometric client's dynamic room fire particle system (`Mush/clients/iso/src/fx/CellFire.hx` and `Mush/clients/iso/src/Grid.hx:940-975`) to the PixiJS renderer (`web/src/iso/pixi/fire.ts`).
@@ -3089,3 +3094,6 @@ Owner decision after a player shared that eMush's developers are considering the
 At the owner's request, Claude edited `docs/plans/balance-review.md` for readability and concision, without changing its substance. Added a short "Terms" list for words the doc used undefined (the List, readings, forks and leaves, the sneaky Sol, passive Mush, "the original"); spelled out the reading-model figure (97 in 100 at 80% accuracy with full turnout); moved the fact-fix notes out of the status line into "Corrections and gaps"; replaced "upstream" with "the original" and settled on American spelling; split decision 5's long paragraph so the skill-slot argument and the Fertile decision stand apart. What worked: a glossary fixed most of the "what does this mean" questions players raised. Not added: the owner's agreement that a 4-cycle countdown is too long, which is content rather than editing.
 
 Correction (owner, 2026-11-11): "the original" means Motion Twin's Mush (the `Mush/` folder), not eMush, the remake whose source the project avoids copying and which eMushpedia documents. The editorial pass had defined "the original" as eMush; the review now says "eMush" everywhere it meant eMush and keeps "Mush" for Motion Twin's game.
+
+## 2026-11-11: Drug Dispenser terminal and `dispense_drug`
+Owner gave the rule in one line; I asked four questions (which drugs are offered, cost/limit, supply, structure) and the owner answered: one shared random list per reset (cycles 1 and 4), first N shown with N = 1 + Nurse + 2 x Biologist, one drug per reset from nothing, access plus a terminal action. The AP cost was left open, so it is a config placeholder of 0 AP. New state `drugDispenser` (added with a default, no version bump), `dispense_drug` action, a terminal panel in the client, en/fr/es text, tests in `shared/tests/drugDispenser.test.ts`.

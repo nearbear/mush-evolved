@@ -700,6 +700,7 @@ describe("actions from a client", () => {
     search: [{ type: "search" }],
     snoop: [{ type: "snoop" }],
     check_spores: [{ type: "check_spores", equipment: "LABORATORY:MYCOSCAN" }],
+    dispense_drug: [{ type: "dispense_drug", equipment: "SICK_BAY:DRUG_DISP", drug: "drug_0" }],
     cook: [{ type: "cook", item: "i1" }],
     express_cook: [{ type: "express_cook", item: "i1" }],
     water: [{ type: "water", item: "i1" }],

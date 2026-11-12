@@ -298,6 +298,7 @@
     "search": "Fouiller",
     "snoop": "Fouiner",
     "check_spores": "Vérifier (mycoscan)",
+    "dispense_drug": "Distribuer une drogue",
     "cook": "Cuisiner",
     "water": "Arroser",
     "treat": "Traiter",
@@ -1127,10 +1128,10 @@
       "gunman": "+2 Tirs gratuits PA par jour.\nVos tirs ratés provoquent 2 fois moins de maladresses.\nVos tirs réussis provoquent 2 fois plus de coups critiques.\nBonus pour développer certains Projets NERON.",
       "cook": "Peut lire les propriétés des aliments.\nPeut lire les propriétés des fruits.\n+4 PA par jour (points d'action Cuisiner).\nBonus pour développer certains Projets NERON.",
       "botanic": "Peut lire les propriétés des fruits.\nPeut lire les propriétés des plantes.\nPeut effectuer des greffes.\n+2 PA par jour (points d'action Jardinage).\nExpédition : L'évènement Récolte donne un fruit de plus.\nBonus pour développer certains Projets NERON.",
-      "biologist": "Peut lire les propriétés des médicaments.\n+4% de bonus sur chacune des Recherches du Laboratoire.\nBonus pour développer certains Projets NERON.",
+      "biologist": "Peut lire les propriétés des médicaments.\nVous avez 2 options supplémentaires lors de la distribution de drogues.\n+4% de bonus sur chacune des Recherches du Laboratoire.\nBonus pour développer certains Projets NERON.",
       "designer": "+2 PA par jour points d'action Projets NERON .\nBonus pour développer certains Projets NERON.",
       "medic": "Les actions Soins font gagner 2 PV supplémentaires.\nPeut effectuer des Opérations.\nPeut lire les propriétés des médicaments.\n+4% de bonus sur chacune des Recherches du Laboratoire.",
-      "first_aid": "+2 PA chaque jour (points d'action Soin gratuits).\nPeut lire les propriétés des médicaments.",
+      "first_aid": "+2 PA chaque jour (points d'action Soin gratuits).\nPeut lire les propriétés des médicaments.\nVous avez 1 option supplémentaire lors de la distribution de drogues.",
       "leadership": "Accorde l'action Discours enflammé qui permet d'augmenter le Moral (PMo) des équipiers.",
       "sturdy": "Vos attaques de corps-à-corps infligent un point de dégât supplémentaire.\nPas de pénalités pour les objets lourds.\nDispose de la possibilité de Mettre à la porte.",
       "sprint": "Vous gagnez 2 PM de plus à chaque conversion PA-PM ( non cumulatif avec la Trottinette).\n+1 étape en exploration.",
@@ -1216,6 +1217,7 @@
       "defacer": "Une fois par jour. Pour 2 PA, vous pouvez effacer tous les logs d'une salle. L'enregistrement des logs se fera à nouveau à partir du prochain cycle."
     }
   },
+  "drugDispenser": { "label": "Distributeur de drogues", "none": "Rien à prendre pour le moment : le distributeur a été utilisé et se réinitialise aux cycles 1 et 4.", "take": "Prendre : {{item}}" },
   "research": {
     "title": "Recherche",
     "tabs": {

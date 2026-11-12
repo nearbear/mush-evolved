@@ -232,6 +232,8 @@ export interface GameConfig {
   };
   hide: { cost: { ap: number } }; // Hiding an item (owner, 2026-10-25, from the wiki: 1 AP).
   search: { cost: { ap: number } }; // Searching the room for hidden items (owner, 2026-10-25, from the wiki: 1 AP).
+  /** The Drug Dispenser (owner, 2026-11-11): the cycles of the day it resets on (new list, unused), and what taking a drug costs. */
+  drugDispenser: { cost: { ap: number }; resetCycles: number[] };
   checkSpores: { cost: { ap: number } }; // The MycoScan's spore check (owner, 2026-11-01).
   snoop: { cost: { ap: number }; dirtyChance: number; injuryChance: number; rooms: string[]; items: Record<string, number> }; // The Scrapper's Snoop: cost, its dirt and injury odds, the storage rooms it works in, the items it makes by weight (owner, 2026-11-01).
   bandage: {

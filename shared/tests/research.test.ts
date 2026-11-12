@@ -287,6 +287,15 @@ describe("research", () => {
     expect(floorSteroids).toHaveLength(STEROIDS_YIELD);
   });
 
+  it("completing DRUG_DISPENSER adds the DRUG_DISP equipment to the medlab, once (owner, 2026-11-10)", () => {
+    const s = game();
+    expect((s.equipment.SICK_BAY ?? []).some((e) => e.type === "DRUG_DISP")).toBe(false);
+    setProgress(s, { research: "DRUG_DISPENSER" }, RESEARCH_COMPLETE - 1);
+    s.rng = CLEAN;
+    const done = mustApply(s, "p0", work("DRUG_DISPENSER"));
+    expect(done.equipment.SICK_BAY!.filter((e) => e.type === "DRUG_DISP")).toEqual([{ id: "SICK_BAY:DRUG_DISP", type: "DRUG_DISP" }]);
+  });
+
   it("consuming steroids gives humans 8 MP, 0 satiety, resets starvation timer, and does nothing for Mush", () => {
     const s = game();
     s.items.push({ id: "steroid-1", type: STEROIDS_ITEM, at: { kind: "player", id: "p0" } });

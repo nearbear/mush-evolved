@@ -32,6 +32,7 @@ export const GAME_STATE_FIELDS: Record<string, FieldRule> = {
   nextItemId: { reach: "never", test: "leaks.test.ts", note: "Not secret (item ids show it), just not sent." },
   equipment: { reach: "room", test: "build.test.ts", note: "Your room's, while alive (`roomEquipment`)." },
   dispensedOn: { reach: "never", test: "leaks.test.ts" },
+  drugDispenser: { reach: "never", test: "leaks.test.ts", note: "Its list is secret; `view.actions` offers each player only their own first N." },
   drugs: { reach: "filtered", test: "drugs.test.ts", note: "As `drugEffects`: only to living Biologists, Medics, Nurses and Mush." },
   log: { reach: "filtered", test: "leaks.test.ts", note: "Your room's public entries, ship-wide ones, and your private ones; room lines only within your window (#365, logWindow.test.ts)." },
   chat: { reach: "filtered", test: "leaks.test.ts", note: "Messages in your read channels." },
