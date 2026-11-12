@@ -22,7 +22,6 @@
   --gold-edge: #05063a;
   --gold-mid: #e8c20e;
   --badge: #24508a;
-  --room-bg: #0a0f1c;
   /* Dark text/strokes on light art (chat field, minimap dots). */
   --ink: #0d1424;
   /* Panel surface: the flat quote-box fill, plus glow colors for highlights. */
@@ -30,10 +29,18 @@
   --surface-bottom: var(--panel-fill);
   --glow: #3c6eff;
   --glow-rim: #78aaff;
-  /* Panel surface, sampled from the original quote box (design/quote.png):
-     flat fill, 1px rim, soft black shadow. */
-  --panel-fill: #1a1b4a;
-  --panel-rim: #26378c;
+  /* Chrome ramp ("Dusk", UI coherence step 2): the original's indigo, greyed, so the fills stay quiet and
+     Mush's saturated blue lives in the edges (--chrome-line, the tooltip art's line blue). The design kit's
+     #surfaces section compares it with the old colours. */
+  --chrome-0: #0b0b17; /* deepest: the scene backdrop */
+  --chrome-1: #17172c; /* panels: inspect, top bar */
+  --chrome-2: #21213d; /* raised: cards on the scene (nameplate, AP/MP, room plaque) */
+  --chrome-rim: #2f4fc0;
+  --chrome-line: #3965fb;
+  --room-bg: var(--chrome-0);
+  /* Panel surface: flat fill, 1px rim, soft black shadow (was sampled from the original quote box, design/quote.png). */
+  --panel-fill: var(--chrome-1);
+  --panel-rim: var(--chrome-rim);
   --panel-shadow: rgb(0 0 0 / 0.55);
   --panel-radius: 4px;
   color-scheme: dark;

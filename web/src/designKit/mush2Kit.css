@@ -162,6 +162,12 @@
   --chrome-rim: #2f4fc0; /* round 1's plain Dusk rim was #38385f */
   --chrome-line: #3965fb;
 }
+/* Today: the colours before the game took E (tokens.css now holds the Dusk ramp), kept as the reference. */
+.m2k-ramp[data-ramp="today"] {
+  --panel-fill: #1a1b4a;
+  --panel-rim: #26378c;
+  --room-bg: #0a0f1c;
+}
 .m2k-ramp:not([data-ramp="today"]) {
   --panel-fill: var(--chrome-1);
   --panel-rim: var(--chrome-rim);

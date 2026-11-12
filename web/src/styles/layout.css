@@ -61,6 +61,29 @@
   bottom: 0;
   border-image: url("../../../Mush/www/img/design/tipbottom.png") 0 10 fill / 0 10px stretch;
 }
+/*
+ * On the game screen the tooltip art gives way to the chrome ramp (tokens.css): its blue is baked into the
+ * images at ~90% opacity, so no token can quiet it. An opaque flat fill, with the art's bright line blue as
+ * the edge glowing inward. Off the game screen (lobby, dialogs, editor) the art stays for now.
+ */
+main.game :is(.panel, .top-bar) {
+  background: var(--chrome-1);
+  border: 1px solid var(--chrome-line);
+  border-image: none;
+  border-radius: var(--panel-radius);
+  box-shadow:
+    inset 0 0 0 1px rgb(57 101 251 / 0.6),
+    inset 0 0 16px 3px rgb(57 101 251 / 0.7),
+    0 0 6px var(--panel-shadow);
+}
+main.game :is(.panel, .top-bar)::before,
+main.game :is(.panel, .top-bar)::after {
+  display: none;
+}
+/* Cards on the scene (nameplate, AP/MP, room plaque) are one step up from the panels. */
+main.game .room-view {
+  --panel-fill: var(--chrome-2);
+}
 .panel-head {
   display: flex;
   justify-content: space-between;
