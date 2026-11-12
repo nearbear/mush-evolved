@@ -27,8 +27,8 @@ import { seats } from "../src/testing/fakes.ts";
 const config = { ...DEFAULT_CONFIG, manualCycles: true };
 
 /** A fresh game and a human seat in it (one seat is Mush). */
-function setup(seed = 1): { game: GameState; id: string } {
-  const game = startGame({ seats: seats(0), config, seed, rulesVersion: "test" });
+function setup(seed = 1, cfg: typeof config = config): { game: GameState; id: string } {
+  const game = startGame({ seats: seats(0), config: cfg, seed, rulesVersion: "test" });
   return { game, id: game.players.find((p) => p.role === "human")!.id };
 }
 
@@ -754,9 +754,12 @@ describe("shrinkDorm", () => {
 });
 
 describe("a Shrink holds its AP", () => {
-  /** A bot with `skills` and `ap`, standing in the lab, clean and with no free points. */
+  /**
+   * A bot with `skills` and `ap`, standing in the lab, clean and with no free points. Research never soils it: a dirty
+   * Shrink stops researching, which these tests don't measure.
+   */
   const inLab = (skills: string[], ap: number) => {
-    const { game: start, id } = setup(3);
+    const { game: start, id } = setup(1, { ...config, research: { ...config.research, dirtyChance: 0 } });
     const lab = roomsWith(viewFor(start, id), ["RESEARCH_LAB"])[0]!;
     const game = edit(start, id, (p) => {
       p.skills = skills as typeof p.skills;

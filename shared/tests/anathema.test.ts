@@ -4,7 +4,7 @@ import { killPlayer } from "../src/death.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameConfig, GameState } from "../src/types.ts";
-import { makeSeats, nextDay, offered, player, pickSkill } from "./support.ts";
+import { makeSeats, nextDay, noHunters, noIncidents, offered, player, pickSkill } from "./support.ts";
 
 // MP starts empty, so each move converts AP.
 const base: GameConfig = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [], startMp: 0 };
@@ -127,7 +127,8 @@ describe("Designer", () => {
   };
 
   it("grants 2 Designer points when picked and 2 each day, up to 4", () => {
-    let s = pick(createGame(makeSeats(2), base, 4), "p0", "designer");
+    // No incidents or hunters: over two days they can kill the only human and end the game.
+    let s = pick(createGame(makeSeats(2), noIncidents(noHunters(base)), 1), "p0", "designer");
     expect(player(s, "p0").resources.core).toBe(2);
     s = nextDay(s);
     expect(player(s, "p0").resources.core).toBe(4);
@@ -137,7 +138,7 @@ describe("Designer", () => {
   });
 
   it("makes a NERON project free and is spent before a Computer point", () => {
-    let s = nexus(pick(createGame(makeSeats(2), base, 4), "p0", "designer"), "p0");
+    let s = nexus(pick(createGame(makeSeats(2), base, 1), "p0", "designer"), "p0");
     player(s, "p0").resources.comp = 1;
     const ap = player(s, "p0").ap;
     const r = applyAction(s, "p0", work("PLASMA_SHIELD"));

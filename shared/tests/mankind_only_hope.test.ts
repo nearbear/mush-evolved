@@ -6,12 +6,13 @@ import { createGame, viewFor } from "../src/rules.ts";
 import { SKILLS } from "../src/skills.ts";
 import { overheadStatuses } from "../src/statuses.ts";
 import type { GameState } from "../src/types.ts";
-import { makeSeats, nextDay, player } from "./support.ts";
+import { makeSeats, nextDay, noHunters, noIncidents, player } from "./support.ts";
 
 // Seat p1 is Chun.
 const seats = makeSeats(3);
-const config = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [] };
-const ship = (): GameState => createGame(seats, config, 13);
+// No incidents: a panic attack would cost someone morale on top of the daily loss these tests measure.
+const config = noIncidents(noHunters({ ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [] }));
+const ship = (): GameState => createGame(seats, config, 1);
 const cut = config.mankindOnlyHope.moraleLossCut;
 
 describe("Mankind's Only Hope", () => {
@@ -48,7 +49,7 @@ describe("Mankind's Only Hope", () => {
   });
 
   it("is absent when Chun is not in the game", () => {
-    const s = createGame(seats.filter((x) => x.character !== "chun"), config, 13);
+    const s = createGame(seats.filter((x) => x.character !== "chun"), config, 1);
     expect(dailyMoraleLoss(s)).toBe(config.moralePerDay);
   });
 

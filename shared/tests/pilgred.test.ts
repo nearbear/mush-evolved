@@ -14,8 +14,10 @@ const repair: Action = { type: "repair_pilgred", equipment: TERMINAL };
 const cfg = DEFAULT_CONFIG.pilgred;
 const base = Math.floor((cfg.progress.rate * cfg.progress.mod) / 10);
 
-function game(room = "MOTOR_ROOM") {
-  const state = createGame(seats, noIncidents(noHunters(DEFAULT_CONFIG)), 11);
+/** Repairs never soil or injure (`odds` restores them), so no extra log line or status depends on the seed. */
+function game(room = "MOTOR_ROOM", odds = { dirtyChance: 0, injuryChance: 0 }) {
+  const config = noIncidents(noHunters(DEFAULT_CONFIG));
+  const state = createGame(seats, { ...config, pilgred: { ...config.pilgred, ...odds } }, 1);
   for (const p of state.players) p.room = room;
   return state;
 }
@@ -107,14 +109,17 @@ describe("PILGRED repair", () => {
     s = repairBy(s, "p1");
     expect(s.pilgred.progress).toBeGreaterThanOrEqual(before + base + penalty);
     expect(viewFor(s, "p0").relay.pilgred!.waiting).toBe(0);
-    // A third p0 repair would be more than everyone else's plus one: penalized again.
+    // A third p0 repair would be more than everyone else's plus one: penalized again. The pool hands its rolls to the
+    // highest values, so a new token can move an earlier roll onto another value; floor the earlier rolls to measure
+    // just the penalty.
+    for (const t of s.pilgred.pool.tokens) t.roll = 0;
     expect(gainOf(s, "p0").min).toBe(one - penalty);
   });
 
   it("is a 25% chance to get dirty", () => {
     let dirty = 0;
     for (let seed = 0; seed < 200; seed++) {
-      const s = game();
+      const s = game("MOTOR_ROOM", { dirtyChance: cfg.dirtyChance, injuryChance: 0 });
       s.rng = seed;
       if (must(applyAction(s, "p0", repair)).players[0]!.statuses.includes("dirty")) dirty++;
     }
