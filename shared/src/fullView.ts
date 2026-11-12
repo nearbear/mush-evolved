@@ -40,8 +40,9 @@ export function seatStarts(state: Readonly<GameState>): SeatStarts {
  * chosen (`seatStarts`); the state doesn't keep it.
  */
 export function fullViewFor(state: Readonly<GameState>, starts: Readonly<SeatStarts> | null): FullView {
-  // The outbox only carries copies of pages already in the history, on their way to storage.
-  const { rng: _rng, chatOutbox: _outbox, ...rest } = state;
+  // The outbox only carries copies of pages already in the history, on their way to storage. The NPCs' queue lists
+  // names not yet given (npcs.ts).
+  const { rng: _rng, npcs: _npcs, chatOutbox: _outbox, ...rest } = state;
   return clone({ ...rest, starts }) as FullView;
 }
 

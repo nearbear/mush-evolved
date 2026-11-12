@@ -59,8 +59,10 @@ describe("hunter waves", () => {
     expect(s.hunters.list).toHaveLength(count);
     expect(s.hunters.points).toBe(before % 10);
     expect(s.hunters.list[0]).toEqual({ id: "hunter-1", hp: 6, hitChance: 0.8, target: null });
-    expect(s.log.at(-2)).toMatchObject({ key: "hunterWave", params: { count }, visibleTo: "all", level: "warning" });
-    expect(s.log.at(-2)!.room).toBeUndefined();
+    // Found by key: other lines (a wandering drone's, #411) may come after it.
+    const wave = s.log.findLast((e) => e.key === "hunterWave");
+    expect(wave).toMatchObject({ params: { count }, visibleTo: "all", level: "warning" });
+    expect(wave!.room).toBeUndefined();
     for (const id of ["p0", "p1", "p2"]) expect(viewFor(s, id).hunters.count).toBe(count);
   });
 

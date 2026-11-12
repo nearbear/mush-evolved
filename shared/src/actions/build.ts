@@ -2,6 +2,7 @@ import { Action, isString } from "./action.ts";
 import { BLUEPRINTS, BLUEPRINT_ITEM } from "../blueprints.ts";
 import { canReachItem, itemsIn, produceItem, visibleItemsIn, isWorking } from "../items.ts";
 import { logPublic } from "../log.ts";
+import { initNpc } from "../npcs.ts";
 import { offShip } from "../patrol.ts";
 import type { GameState, ItemState, PlayerState } from "../types.ts";
 
@@ -70,7 +71,7 @@ export class BuildAction extends Action<BuildActionData> {
       (state.equipment[player.room] ??= []).push({ id: `${player.room}:${makes.equipment}:${state.nextItemId++}`, type: makes.equipment });
       logPublic(state, player.room, "built", { name: player.character, equipment: makes.equipment });
     } else {
-      produceItem(state, player, makes.item);
+      initNpc(state, produceItem(state, player, makes.item).item);
       logPublic(state, player.room, "builtItem", { name: player.character, item: makes.item });
     }
   }

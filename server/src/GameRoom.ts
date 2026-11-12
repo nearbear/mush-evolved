@@ -690,6 +690,8 @@ export class GameRoom extends Server<Env> {
       overrides: this.overrides,
       ...(forcedRoles && { forcedRoles }),
       seed: crypto.getRandomValues(new Uint32Array(1))[0]!,
+      // Its own draw, so what NPCs show from day 1 (a drone's name) says nothing of `seed` (npcs.ts).
+      npcSeed: crypto.getRandomValues(new Uint32Array(1))[0]!,
       rulesVersion: this.env.RULES_VERSION,
       startCycle: cycleOfDay(this.clockCycle, config.cyclesPerDay),
       launchedAt: now,

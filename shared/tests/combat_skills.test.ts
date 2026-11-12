@@ -117,7 +117,7 @@ describe("Space Tactics", () => {
     const s = waves(true, 1);
     expect(s.hunters.list).toHaveLength(full - Math.floor(full * 0.33));
     expect(s.hunters.points).toBe(plain.hunters.points);
-    expect(s.log.at(-2)).toMatchObject({ key: "hunterWave", params: { count: s.hunters.list.length } });
+    expect(s.log.findLast((e) => e.key === "hunterWave")).toMatchObject({ params: { count: s.hunters.list.length } });
     expect(full).toBeGreaterThanOrEqual(4);
   });
 

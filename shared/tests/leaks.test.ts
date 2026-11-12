@@ -110,6 +110,7 @@ function ship(): { state: GameState; sentinels: Sentinel[] } {
   s.contamination.p1 = num("contamination-p1", ["p0"]);
   s.contamination.p3 = num("contamination-p3", []);
   s.rng = num("rng", []);
+  s.npcs = { rng: num("npcRng", []), droneNames: [str("nextDroneName", [])] };
   s.sporesToday = num("sporesToday", []);
   s.spikedOn.p0 = num("spikedOn-p0", []);
   s.dispensedOn.anything = num("dispensedOn", []);
@@ -160,6 +161,13 @@ function ship(): { state: GameState; sentinels: Sentinel[] } {
   s.pilgred.pool.tokens.push({ by: "p3", base: 1, roll: roll("pilgredRoll") });
   s.items.push({ id: str("floor-here", ["p0", "p1", "p2"]), type: "wrench", at: { kind: "room", id: HERE } });
   s.items.push({ id: str("floor-elsewhere", ["p3"]), type: "wrench", at: { kind: "room", id: ELSEWHERE } });
+  // A drone's name and serial go with the item to whoever sees it; its failure counts to nobody (#411).
+  s.items.push({
+    id: "drone-here",
+    type: "support_drone",
+    at: { kind: "room", id: HERE },
+    drone: { name: str("droneName", ["p0", "p1", "p2"]), serial: num("droneSerial", ["p0", "p1", "p2"]), upgrades: [], failures: { repair: num("droneRepairFailures", []), extinguish: num("droneExtinguishFailures", []), shoot: num("droneShootFailures", []) } },
+  });
   s.log.push({ id: 10_000 + s.log.length, cycle: s.cycle, key: "test", params: { x: str("roomLog-elsewhere", ["p3"]) }, room: ELSEWHERE, visibleTo: "all" });
   // A message's game-wide id never goes out (a gap in it would show posts you can't read, #355); its `seq` does.
   s.chat.push({ id: num("chatId-mush", []), seq: 0, cycle: s.cycle, channel: MUSH_CHANNEL, from: "p0", isBot: false, text: str("mushChat", ["p0"]) });

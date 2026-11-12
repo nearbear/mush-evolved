@@ -18,6 +18,7 @@ import { jellyCycle, leakOxygen } from "./breakage.ts";
 import { projectDone } from "./projects.ts";
 import { fireCycle, ignitePending, isOnFire } from "./fire.ts";
 import { incidentsCycle } from "./incidents.ts";
+import { initNpc, newNpcState, npcCycle } from "./npcs.ts";
 import { hopelessCycle } from "./morale.ts";
 import { relayView } from "./relayView.ts";
 import { itemsIn, rechargeMicrowaves, startCharges, visibleItemsIn } from "./items.ts";
@@ -61,6 +62,7 @@ import type {
   DeepReadonly,
   GameConfig,
   GameState,
+  DroneState,
   ItemState,
   ItemView,
   ActionOption,
@@ -92,6 +94,7 @@ export function createGame(
   seed: number,
   forcedRoles: Readonly<Record<PlayerId, Role>> = {},
   startCycle = 1,
+  npcSeed?: number,
 ): GameState {
   const { preselection } = config;
   if (!preselection && config.mushCount >= seats.length) throw new Error("mushCount must be less than seat count");
@@ -115,6 +118,7 @@ export function createGame(
   const state: GameState = {
     config,
     rng,
+    npcs: newNpcState(seed, npcSeed),
     cycle: startCycle,
     phase: "playing",
     preselection: preselection !== null,
@@ -183,6 +187,7 @@ export function createGame(
   // Setup draws on streams of their own, so changing them doesn't move any roll on `state.rng`.
   state.drugs = drawDrugs({ rng: streamFor(seed, "drugs"), config });
   stockMedlab(state, { rng: streamFor(seed, "medlab-stock") });
+  for (const item of state.items) initNpc(state, item);
   grantCarePoints(state); // day 1 begins now
   for (const p of state.players) startLogSeen(state, p);
   return state;
@@ -442,6 +447,7 @@ function advanceCycle(state: GameState, at?: number): void {
   fireCycle(state);
   leakOxygen(state);
   jellyCycle(state);
+  npcCycle(state);
   preselectionCycle(state);
   strikeSlots(state);
 }
@@ -739,9 +745,12 @@ export const legalIn = (view: Pick<PlayerView, "actions">): Action[] => view.act
 const seesShield = (viewer: Readonly<PlayerState>): boolean => viewer.alive && (viewer.role === "mush" || hasSkill(viewer, "engineer"));
 
 /** An item as `viewer` sees it; a plant's sickness only for the Botanist role (`plantView`). */
-function itemView({ id, type, of, builds, charges, teaches, plant, spores, hiddenBy, broken, jelly, shield }: ItemState, viewer: Readonly<PlayerState>): ItemView {
-  return { id, type, ...(broken && { broken }), ...(jelly !== undefined && viewer.role === "mush" && viewer.alive && { jelly }), ...(shield !== undefined && seesShield(viewer) && { shield }), ...(hiddenBy === viewer.id && { hidden: true as const }), ...(spores && viewer.role === "mush" && viewer.alive && { spores }), ...(of !== undefined && { of }), ...(builds !== undefined && { builds }), ...(charges !== undefined && { charges }), ...(teaches !== undefined && { teaches }), ...(plant && { plant: plantView(plant, viewer) }) };
+function itemView({ id, type, of, builds, charges, teaches, plant, spores, hiddenBy, broken, jelly, shield, drone }: ItemState, viewer: Readonly<PlayerState>): ItemView {
+  return { id, type, ...(broken && { broken }), ...(jelly !== undefined && viewer.role === "mush" && viewer.alive && { jelly }), ...(shield !== undefined && seesShield(viewer) && { shield }), ...(hiddenBy === viewer.id && { hidden: true as const }), ...(spores && viewer.role === "mush" && viewer.alive && { spores }), ...(of !== undefined && { of }), ...(builds !== undefined && { builds }), ...(charges !== undefined && { charges }), ...(teaches !== undefined && { teaches }), ...(plant && { plant: plantView(plant, viewer) }), ...(drone && { drone: droneView(drone) }) };
 }
+
+/** A drone's public part (#411): name, serial and upgrades; its failure counts never leave the server. */
+const droneView = ({ name, serial, upgrades }: Readonly<DroneState>): NonNullable<ItemView["drone"]> => ({ name, serial, upgrades: [...upgrades] });
 
 function equipmentView(state: GameState, { id, type, broken, jelly, shield }: Equipment, viewer: Readonly<PlayerState>): EquipmentView {
   // Out and destroyed are known in the bay, where the ship is missing (owner, 2026-10-24); a docked ship's armor too,

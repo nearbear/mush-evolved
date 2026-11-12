@@ -23,6 +23,8 @@ export const BLUEPRINTS: Record<string, Blueprint> = {
   ECHO_SOUNDER: { needs: ["metal_scraps", "plastic_scraps"], makes: { item: "echo_sounder" } },
   HEAT_SEEKER: { needs: ["metal_scraps", "plastic_scraps"], makes: { item: "thermosensor" } },
   TRAD_MODULE: { needs: ["metal_scraps", "plastic_scraps"], makes: { item: "trad_module" } },
+  // #411 (owner, 2026-11-11; eMushpedia "Drone de soutien"): 4 metal scraps and 1 plastic scrap.
+  SUPPORT_DRONE: { needs: ["metal_scraps", "metal_scraps", "metal_scraps", "metal_scraps", "plastic_scraps"], makes: { item: "support_drone" } },
   WHITE_FLAG: { needs: ["old_shirt", "soap"], makes: { item: "white_flag" } },
 };
 

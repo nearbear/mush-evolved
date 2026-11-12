@@ -9,7 +9,7 @@ import { breakEquipment, breakItem, workingBreakable } from "./breakage.ts";
 import { damage } from "./death.ts";
 import { pushChat } from "./chat.ts";
 import { daedalusRooms, isOnFire, startFire } from "./fire.ts";
-import { ITEM_TYPES, isWorking } from "./items.ts";
+import { ITEM_TYPES, isWorking, itemsIn } from "./items.ts";
 import { logPrivate, logPublic } from "./log.ts";
 import { projectDone } from "./projects.ts";
 import { roll, rollFloat, rollInt, rollWeighted } from "./rng.ts";
@@ -116,6 +116,9 @@ const INCIDENTS: Record<IncidentId, Incident> = {
       const room = pick(state, daedalusRooms(state).filter((r) => workingBreakable(state, r).length > 0));
       logPublic(state, room, "electricalOverload");
       for (const equipment of workingBreakable(state, room)) breakEquipment(state, equipment);
+      // Owner, 2026-11-11 (#411): it also breaks the items of a type that says so (drones) lying on the floor, not carried
+      // ones. NERON announces each, as it does the equipment.
+      for (const item of itemsIn(state, { kind: "room", id: room }).filter((i) => isWorking(i) && ITEM_TYPES[i.type]?.breaksInOverload)) breakItem(state, item, true);
       for (const p of state.players.filter((o) => o.alive && o.room === room)) damage(state, p, state.config.incidents.electricalOverload.damage);
     },
   },

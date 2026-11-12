@@ -174,6 +174,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   paranoid: { cameras: 1 },
   // Owner, 2026-11-01: Green Thumb gives 2 empty hydropots when picked (the original's skills.json).
   greenThumb: { pots: 2 },
+  // #411, owner, 2026-11-11 (eMushpedia "Drone de soutien"): x1.25 a failure in a row, capped at 99%; reset by a success.
+  drones: { failureMultiplier: 1.25, maxChance: 0.99 },
   // Owner, 2026-10-27: Astrophysicist scans for 1 AP less and each remote analysis reveals 1 extra sector (the original skills.json).
   astrophysicist: { scanApDiscount: 1, extraSectors: 1 },
   gunner: { accuracyFactor: 2, damageFactor: 2 },
@@ -492,7 +494,7 @@ export const DEFAULT_CONFIG: GameConfig = {
      { type: "apron", room: "SICK_BAY" },
      { type: "protection_gloves", room: "SICK_BAY" },
     { type: "camera", room: "CORRIDOR_A" },
-    // #411: a support drone starts in the front corridor.
+    // #411: a support drone starts in the front corridor (drones.ts).
     { type: "support_drone", room: "CORRIDOR_A" },
     // Owner, 2026-10-25: an extinguisher in each of the front and rear corridors, for now (the original's are in storages).
     { type: "extinguisher", room: "CORRIDOR_A" },

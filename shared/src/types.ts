@@ -92,6 +92,20 @@ export interface ItemState {
   jelly?: number;
   /** Shielding from an Engineer's Reinforce (actions/reinforce.ts), up to `config.reinforce.max`. Engineers and Mush see it in views. No effect yet. */
   shield?: number;
+  /** For a support drone (drones.ts): its name, serial number, upgrades and failure counts. */
+  drone?: DroneState;
+}
+
+/** A support drone's own state (#411; drones.ts). Its name, serial and upgrades are public with the item; the failure counts never leave the server. */
+export interface DroneState {
+  /** One of `DRONE_NAMES` (drones.ts); a proper name, not translated. */
+  name: string;
+  /** 1 to 99, shown after the name so two drones rarely look alike. */
+  serial: number;
+  /** Upgrade ids (later phases of #410); none exist yet. */
+  upgrades: string[];
+  /** Failed tries in a row at each task; each multiplies that task's next chance by `config.drones.failureMultiplier`, and a success resets it (owner, 2026-11-11). */
+  failures: { repair: number; extinguish: number; shoot: number };
 }
 
 /** A plant in a hydropot (owner, 2026-10-22; docs/scratchpad/botany-plan.md, Pass 1). */

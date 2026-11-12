@@ -5,9 +5,9 @@ import type { GameState, PlayerState } from "../types.ts";
 
 export type HideActionData = { type: "hide"; item: string };
 
-/** The items this player carries that can be hidden: anything they could drop (not the camera). */
+/** The items this player carries that can be hidden: anything they could drop (not the camera) whose type allows it (not a drone). */
 function hideable(state: Readonly<GameState>, player: Readonly<PlayerState>) {
-  return state.items.filter((i) => i.at.kind === "player" && i.at.id === player.id && ITEM_TYPES[i.type]?.canDrop !== false);
+  return state.items.filter((i) => i.at.kind === "player" && i.at.id === player.id && ITEM_TYPES[i.type]?.canDrop !== false && ITEM_TYPES[i.type]?.canHide !== false);
 }
 
 /**

@@ -1,0 +1,101 @@
+// Support drones (#411, phase 1 of #410; owner, 2026-11-11, from eMushpedia "Drone de soutien"). A drone is an NPC
+// item (npcs.ts) with its own state in `ItemState.drone`. Each cycle change, a working drone aboard the Daedalus
+// repairs the first broken thing in its room it can repair, or else moves to a random neighbouring room. A carried
+// drone acts in its carrier's room, and with nothing to repair it leaves the inventory for a neighbouring room too
+// (owner, 2026-11-11, as eMush). It never repairs a hidden item (no new way to learn
+// of one) nor anything someone carries (inventories are private). A broken drone does nothing. Its lines are public
+// in the room; NERON says nothing.
+
+import { isBreakable } from "./breakage.ts";
+import { ITEM_TYPES, itemsIn } from "./items.ts";
+import { logPublic } from "./log.ts";
+import type { Npc } from "./npcs.ts";
+import { offShip } from "./patrol.ts";
+import { rollFloat, rollInt, rollShuffle } from "./rng.ts";
+import type { DroneState, Equipment, GameState, ItemState, LogParams, RoomId } from "./types.ts";
+
+/**
+ * The names a drone is given at random: eMush's nickname list, credited in NOTICE, without "Dalek" (a BBC trademark;
+ * owner, 2026-11-11). A drone keeps its name as a string, so changing the list only changes the names new drones roll.
+ */
+export const DRONE_NAMES: readonly string[] = [
+  "Betty", "Charlotte", "Dave", "Doc", "Doudou", "Douglams", "Einstein", "Fido", "Fito", "Groo", "Isaac", "Loulou",
+  "Médor", "Nabuk", "Papitou", "Poutou", "Rex", "Robbie", "Robert", "Selry", "Steve", "Terminus", "Troll", "Vortex", "Weathley",
+];
+
+/** The highest serial number; a drone's is 1 to this. */
+export const DRONE_MAX_SERIAL = 99;
+
+/**
+ * A new drone's state, from the NPCs' own stream (`state.npcs`, npcs.ts): the next name in the queue, which is the
+ * name list shuffled (so names don't repeat until all are used, then a fresh shuffle), a random serial, no upgrades,
+ * no failures.
+ */
+export function newDrone(state: GameState): DroneState {
+  const npcs = state.npcs;
+  if (npcs.droneNames.length === 0) npcs.droneNames = rollShuffle(npcs, DRONE_NAMES);
+  const name = npcs.droneNames.shift()!;
+  const serial = rollInt(npcs, DRONE_MAX_SERIAL) + 1;
+  return { name, serial, upgrades: [], failures: { repair: 0, extinguish: 0, shoot: 0 } };
+}
+
+/** A drone in a log line: `drone` (its name) and `serial`, which the client puts together. */
+export const droneParams = (drone: Readonly<DroneState>): LogParams => ({ drone: drone.name, serial: drone.serial });
+
+/** A drone task's chance: the base x `failureMultiplier` per failure in a row, capped at `maxChance`. */
+export function droneChance(state: Readonly<GameState>, base: number, failures: number): number {
+  const { failureMultiplier, maxChance } = state.config.drones;
+  return Math.min(maxChance, base * failureMultiplier ** failures);
+}
+
+type RepairTarget = { equipment: Equipment; chance: number } | { item: ItemState; chance: number };
+
+/**
+ * What a drone in `room` would repair: the room's first broken repairable equipment, in the room's order, else the
+ * first broken repairable item on its floor, in creation order, never one someone hid (owner, 2026-11-11).
+ */
+export function droneRepairTarget(state: Readonly<GameState>, room: RoomId): RepairTarget | undefined {
+  const equipment = (state.equipment[room] ?? []).find((e) => e.broken && isBreakable(state, e.type));
+  if (equipment) return { equipment, chance: state.config.repair.chance[equipment.type]! };
+  const item = itemsIn(state, { kind: "room", id: room }).find((i) => i.broken && i.hiddenBy === undefined && ITEM_TYPES[i.type]?.repairChance !== undefined);
+  return item && { item, chance: ITEM_TYPES[item.type]!.repairChance! };
+}
+
+/** One repair try, if there is something to repair: one seeded roll, Repair's effect on a success. Returns whether it tried. */
+function repair(state: GameState, drone: DroneState, room: RoomId): boolean {
+  const target = droneRepairTarget(state, room);
+  if (!target) return false;
+  const success = rollFloat(state) < droneChance(state, target.chance, drone.failures.repair);
+  // Owner, 2026-11-11: a success resets the count, as for the crew (eMush keeps it).
+  drone.failures.repair = success ? 0 : drone.failures.repair + 1;
+  const what: LogParams = "equipment" in target ? { equipment: target.equipment.type } : { item: target.item.type };
+  const key = "equipment" in target ? (success ? "droneRepaired" : "droneRepairFailed") : success ? "droneRepairedItem" : "droneRepairFailedItem";
+  // A repaired turret gets its charges back on its own (hunters.ts reads `broken`), as with Repair.
+  if (success) delete ("equipment" in target ? target.equipment : target.item).broken;
+  logPublic(state, room, key, { ...droneParams(drone), ...what });
+  return true;
+}
+
+/** Moves a drone in `room` (on its floor, or carried there) to a random neighbouring room's floor aboard the Daedalus, with public lines in both. */
+function wander(state: GameState, item: ItemState, drone: DroneState, room: RoomId): void {
+  const neighbours = (state.config.rooms[room] ?? []).filter((r) => !offShip(r));
+  if (neighbours.length === 0) return;
+  const to = neighbours[rollInt(state, neighbours.length)]!;
+  item.at = { kind: "room", id: to };
+  logPublic(state, room, "droneLeft", { ...droneParams(drone), room: to });
+  logPublic(state, to, "droneEntered", { ...droneParams(drone), room });
+}
+
+/** The support drone's behaviour (npcs.ts). */
+export const supportDrone: Npc = {
+  create: (state, item) => {
+    item.drone = newDrone(state);
+  },
+  act: (state, item, room) => {
+    if (item.broken || offShip(room)) return;
+    // A drone made before drones had state (a game started before #411 landed) gets it on its first turn.
+    const drone = (item.drone ??= newDrone(state));
+    if (repair(state, drone, room)) return;
+    wander(state, item, drone, room);
+  },
+};

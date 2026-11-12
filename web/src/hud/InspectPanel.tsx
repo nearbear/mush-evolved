@@ -150,6 +150,7 @@ function Details({ view, layout, resolved, onAction }: { view: PlayerView; layou
           </div>
           <div className="inspect-name inspect-item-name">
             <strong>{names.itemOf(resolved.item)}</strong>
+            {resolved.item.drone && <div className="sub inspect-drone">{names.drone(resolved.item.drone.name, resolved.item.drone.serial)}</div>}
           </div>
           <ItemAttrIcons heavy={ITEM_TYPES[resolved.item.type]?.heavy === true} mpPenalty={view.config.heavyMpPenalty} />
           {resolved.item.broken && (
@@ -159,10 +160,19 @@ function Details({ view, layout, resolved, onAction }: { view: PlayerView; layou
           )}
           {resolved.item.plant && <PlantStates plant={resolved.item.plant} />}
           <ThingMarks jelly={resolved.item.jelly} shield={resolved.item.shield} spores={resolved.item.spores} />
+          {resolved.item.drone && <DroneUpgrades upgrades={resolved.item.drone.upgrades} />}
           {resolved.item.charges !== undefined && <div className="sub inspect-charges">{t("itemAttr.charges", { count: resolved.item.charges })}</div>}
         </>
       );
   }
+}
+
+/** A drone's upgrades (#411); none exist until later phases of #410, so this reads "No upgrades" for now. */
+function DroneUpgrades({ upgrades }: { upgrades: readonly string[] }) {
+  const { t, i18n } = useTranslation();
+  if (upgrades.length === 0) return <div className="sub inspect-drone-upgrades">{t("itemAttr.droneNoUpgrades")}</div>;
+  const list = new Intl.ListFormat(i18n.language, { type: "conjunction" }).format(upgrades.map((id) => t(`drones.upgrades.${id}` as never, { defaultValue: id })));
+  return <div className="sub inspect-drone-upgrades">{t("itemAttr.droneUpgrades", { upgrades: list })}</div>;
 }
 
 /** The sprite the room draws for this equipment, scaled to the column width (like the item face, sized off `--tile`). */

@@ -144,6 +144,8 @@ export function useNames() {
   /** The short label along an item's face: a skill book's skill, a blueprint's product. */
   const itemLabel = (it: Pick<ItemView, "builds" | "teaches">) =>
     it.teaches !== undefined ? skill(it.teaches) : it.builds !== undefined ? built(it.builds) : undefined;
+  /** A support drone's name with its serial (#411): "Robbie #42". The name is a proper name and isn't translated. */
+  const drone = (name: string, serial: number) => t("itemAttr.droneName", { name, serial });
   const research = (id: string) => t(`research.names.${id}` as never, { defaultValue: id });
   const project = (id: string) => t(`projects.names.${id}` as never, { defaultValue: id });
   const title = (id: string) => t(`titles.names.${id}` as never, { defaultValue: id });
@@ -161,7 +163,7 @@ export function useNames() {
       }),
     );
 
-  /** The text of a log entry. `room`, `item`, `research`, `project`, `equipment`, `action`, `title`, `skill`, `base` (a rebel base), `direction` (a heading) and `entry` (a Xyloph entry) params are ids and get translated; `name`, `target` and `body` are character ids; `tested` and `spoiledBy` are an assay's counts by character. */
+  /** The text of a log entry. `room`, `item`, `research`, `project`, `equipment`, `action`, `title`, `skill`, `base` (a rebel base), `direction` (a heading) and `entry` (a Xyloph entry) params are ids and get translated; `drone` and `serial` make a drone's name; `name`, `target` and `body` are character ids; `tested` and `spoiledBy` are an assay's counts by character. */
   const logLine = ({ key, params = {} }: Pick<LogEntry, "key" | "params">): string => {
     const resolved: Record<string, string | number> = { ...params };
     if (typeof params.room === "string") resolved.room = room(params.room);
@@ -174,6 +176,8 @@ export function useNames() {
     if (typeof params.skill === "string") resolved.skill = skill(params.skill);
     if (typeof params.base === "string") resolved.base = rebelBase(params.base);
     if (typeof params.direction === "string") resolved.direction = t(`astro.directions.${params.direction}` as never, { defaultValue: params.direction });
+    // A drone's `drone` (its name) and `serial` (shared/src/drones.ts) come together as one name.
+    if (typeof params.drone === "string" && typeof params.serial === "number") resolved.drone = drone(params.drone, params.serial);
     if (typeof params.entry === "string") resolved.entry = t(`comms.xyloph.${params.entry}` as never, { defaultValue: params.entry });
     for (const who of ["name", "target", "body"] as const) if (typeof params[who] === "string") resolved[who] = characterGivenName(params[who]);
     // An assay's "chun:3,paola:1" lists (shared/src/actions/research.ts): "Chun ×3, Paola ×1".
@@ -181,5 +185,5 @@ export function useNames() {
     return t(`logEvent.${key}` as never, { ...resolved, defaultValue: key });
   };
 
-  return { room, equipment, item, itemOf, itemLabel, research, project, skill, title, rebelBase, action, character: characterName, characterGiven: characterGivenName, logLine };
+  return { room, equipment, item, itemOf, itemLabel, drone, research, project, skill, title, rebelBase, action, character: characterName, characterGiven: characterGivenName, logLine };
 }

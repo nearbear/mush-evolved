@@ -247,6 +247,8 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   paranoid: "full",
   // Two empty hydropots when picked (owner, 2026-11-01); the graft bonus waits for grafting.
   green_thumb: "partial",
+  // A support drone blueprint when picked (#411, modifiers/robotics.ts); drone upgrades wait for later phases of #410.
+  robotics: "partial",
   // Doubled turret odds and damage (owner, 2026-10-24).
   gunner: "full",
   // Saboteur: triples the odds of Sabotage (owner, 2026-11-07, modifiers/sapper.ts) and adds Contaminate to research (actions/contaminate.ts).

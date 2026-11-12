@@ -25,6 +25,7 @@
 
 import { resolveConfig } from "./config.ts";
 import { clone } from "./helpers.ts";
+import { newNpcState, type NpcState } from "./npcs.ts";
 import type { DrugDispenserState, DrugEffect } from "./drugs.ts";
 import type { FullView, SeatStart, SeatStarts } from "./fullView.ts";
 import type { RebelCall } from "./comms.ts";
@@ -47,6 +48,7 @@ import type {
   GameState,
   Hunter,
   HunterTarget,
+  DroneState,
   ItemState,
   LogEntry,
   Plan,
@@ -229,7 +231,19 @@ function itemFields(raw: Partial<SpaceDebris>, t: string): AllKeys<SpaceDebris> 
     broken: raw.broken,
     jelly: raw.jelly,
     shield: raw.shield,
+    drone: opt(raw.drone, normalizeDrone),
   };
+}
+
+export function normalizeDrone(raw: Partial<DroneState>): DroneState {
+  const t = "DroneState";
+  const failures = need(raw, "failures", t);
+  return { name: need(raw, "name", t), serial: need(raw, "serial", t), upgrades: [...need(raw, "upgrades", t)], failures: { repair: failures.repair, extinguish: failures.extinguish, shoot: failures.shoot } };
+}
+
+export function normalizeNpcs(raw: Partial<NpcState>): NpcState {
+  const t = "NpcState";
+  return { rng: need(raw, "rng", t), droneNames: [...need(raw, "droneNames", t)] };
 }
 
 export function normalizeItem(raw: Partial<ItemState>): ItemState {
@@ -850,6 +864,8 @@ export function normalizeGame(raw: Partial<Omit<GameState, "config">>, overrides
     ...normalizeCore(raw, { config }, { queue: "drop" }),
     config,
     rng: need(raw, "rng", t),
+    // A game saved before the NPCs had a stream of their own derives one from where its `rng` stands.
+    npcs: normalizeNpcs(added(raw, "npcs", newNpcState(need(raw, "rng", t)))),
     chatOutbox: normalizeOutbox(need(raw, "chatOutbox", t)),
   });
 }

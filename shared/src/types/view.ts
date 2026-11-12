@@ -59,6 +59,8 @@ export interface ItemView {
   spores?: number;
   /** For a planted hydropot. `sick` is there only for the Botanist role; everyone else never gets the field. */
   plant?: { species: string; age: number | null; thirst: 0 | 1 | 2; sick?: boolean };
+  /** For a support drone (#411): its name, serial and upgrades, public to whoever can see it. Never its failure counts. */
+  drone?: { name: string; serial: number; upgrades: string[] };
 }
 
 /** One seat as the end screen shows it, once the game has ended (#191). Everyone, you included, in seat order. */

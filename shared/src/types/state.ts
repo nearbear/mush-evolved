@@ -2,6 +2,7 @@ import type { BiosState } from "../bios.ts";
 import type { CharacterId } from "../characters.ts";
 import type { CommsState } from "../comms.ts";
 import type { DrugDispenserState, DrugEffect } from "../drugs.ts";
+import type { NpcState } from "../npcs.ts";
 import type { TurnSide } from "../navigation.ts";
 import type { PlanetDirection, PlanetTag } from "../planets.ts";
 import type { RelayPool, ResearchPool } from "../relay.ts";
@@ -210,6 +211,8 @@ export interface GameState extends GameCore {
   /** Read-only: the stored game keeps only its overrides and resolves this again on each load, so a write here is lost. */
   readonly config: DeepReadonly<GameConfig>;
   rng: RngState;
+  /** The NPCs' own stream and queues (npcs.ts), seeded apart from `rng`. Not in the full view. */
+  npcs: NpcState;
   /** Pages to store and delete, which the server takes after every input. Not in the full view. */
   chatOutbox: ChatOutbox;
 }

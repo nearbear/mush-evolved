@@ -9,6 +9,9 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License
 in LICENSE for more details.
 
+The support drones' nicknames (DRONE_NAMES in shared/src/drones.ts) come from
+eMush, licensed AGPL-3.0, less one name.
+
 Exception: everything under Mush/ is not covered by this license. It is Motion
 Twin's work, licensed CC BY-NC-SA 4.0 (see Mush/LICENSE.txt and
 Mush/ATTRIBUTION.md), and stays under those terms: non-commercial only.

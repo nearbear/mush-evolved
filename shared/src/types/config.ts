@@ -336,6 +336,10 @@ export interface GameConfig {
   paranoid: {
     cameras: number; // Camera items the `paranoid` skill gives when picked (owner, 2026-10-27; the original gives 2).
   };
+  drones: {
+    failureMultiplier: number; // Each failed try in a row at a drone task multiplies its next chance by this; a success resets it (#411, owner, 2026-11-11; eMushpedia's 1.25).
+    maxChance: number; // A drone's chance never goes above this (eMushpedia: 99%).
+  };
   greenThumb: {
     pots: number; // Empty hydropots the `green_thumb` skill gives when picked (owner, 2026-11-01; the original's 2).
   };

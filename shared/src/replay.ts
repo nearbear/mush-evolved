@@ -25,6 +25,8 @@ export interface GameSetup {
   /** What the launch asked for, which `config` was resolved from (provenance only). Missing on older games. */
   overrides?: ConfigOverrides;
   seed: number;
+  /** The NPCs' own seed (npcs.ts), drawn apart from `seed` so a drone's name says nothing of it. Missing on older games. */
+  npcSeed?: number;
   /**
    * Build of the rules that ran this game (a commit hash in production, "dev"
    * locally). Replaying under other rules can diverge; checking out this
@@ -78,7 +80,7 @@ export type Input =
   | { type: "dropQueues" };
 
 export function startGame(setup: GameSetup): GameState {
-  return createGame(setup.seats, setup.config, setup.seed, setup.forcedRoles, setup.startCycle);
+  return createGame(setup.seats, setup.config, setup.seed, setup.forcedRoles, setup.startCycle, setup.npcSeed);
 }
 
 /** The single entry point for changing a game. */

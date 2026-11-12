@@ -39,6 +39,10 @@ export interface ItemType {
   /** A Mush can sabotage it (actions/sabotage.ts), if it can also break (`canBreak`). */
   canBeSabotaged?: boolean;
   canBreakOnCycleChange?: boolean;
+  /** False: it can't be hidden (actions/hide.ts). Anything that can be dropped can be hidden otherwise. */
+  canHide?: boolean;
+  /** An electrical overload (incidents.ts) breaks it when it lies on the floor of the room hit (owner, 2026-11-11: drones). */
+  breaksInOverload?: boolean;
 }
 
 /**
@@ -48,10 +52,7 @@ export interface ItemType {
 /** A dead player's body (death.ts); `ItemState.of` says whose. */
 export const CORPSE_ITEM = "corpse";
 
-/**
- * A support drone (#411). Only its starting place and its look exist so far: the iso view draws one on the floor.
- * What it does (repairs, moving, breaking) is the rest of #411, so for now it is an inert item.
- */
+/** A support drone (#411): an NPC item that repairs and wanders the ship each cycle change (drones.ts). */
 export const SUPPORT_DRONE_ITEM = "support_drone";
 
 /** Express cooks rations (actions/express_cook.ts) while it has charges. */
@@ -151,8 +152,10 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   [MICROWAVE_ITEM]: { heavy: true, dismantle: { metal: 2, plastic: 0, chance: 0.25 }, canBreak: true, canBeSabotaged: true, repairChance: 0.25 },
   // Decided 2026-10-16: a dead player's body (death.ts). Takes one slot like any item; heavy.
   [CORPSE_ITEM]: { heavy: true },
-  // #411, iso view only for now: no rules yet (no repairs, moves or breaking). Icon help_drone (web/src/art/assets.ts).
-  [SUPPORT_DRONE_ITEM]: {},
+  // #411 (owner, 2026-11-11; eMushpedia "Drone de soutien"): 12% repair chance, can't be hidden or sabotaged, never
+  // breaks on its own at a cycle change; fire and electrical overload break it on the floor. What it does each cycle
+  // is drones.ts. Icon help_drone (web/src/art/assets.ts).
+  [SUPPORT_DRONE_ITEM]: { canBreak: true, repairChance: 0.12, canHide: false, breaksInOverload: true },
 
   // Owner, 2026-10-28: eMush's Wavoscope. Carried, it doubles the odds of hull repair and renovation (modifiers.ts, actionSuccessRate); heavy.
   // Icon wavoscope (web/src/art/assets.ts).
