@@ -1,5 +1,6 @@
 {
   "topBar": {
+    "dayCycle": "Jour {{day}} · Cycle {{cycle}}",
     "endCycle": "Terminer le cycle",
     "waiting": "En attente…",
     "waitingForOthers": "En attente des autres…",
@@ -215,7 +216,6 @@
   },
   "titles": {
     "label": "Titres",
-    "vacant": "Vacant",
     "holder": "{{title}} : {{name}}",
     "holderVacant": "{{title}} : vacant",
     "line": "Ordre de succession",

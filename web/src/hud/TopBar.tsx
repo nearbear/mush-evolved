@@ -61,69 +61,72 @@ export function TopBar({
   const ended = view.phase === "ended";
   return (
     <header className="top-bar">
-      {showSummary && <PlayerSummary view={view} countdown={nextCycleAt !== null && <CycleCountdown nextCycleAt={nextCycleAt} />} />}
-      <span className="cycle">
-        Day {view.day} · Cycle {view.cycleOfDay}
+      {showSummary && <PlayerSummary view={view} countdown={nextCycleAt !== null && <CycleCountdown nextCycleAt={nextCycleAt} dot />} />}
+      {/* Desktop zones (UI coherence step 5): time on the left, the ship in the middle, the actions on the right. Phones hide this one and show the cycle under the name. */}
+      <div className="cycle">
+        <span className="cycle-label hud-card amber">{t("topBar.dayCycle", { day: view.day, cycle: view.cycleOfDay })}</span>
         {nextCycleAt !== null && <CycleCountdown nextCycleAt={nextCycleAt} />}
         {view.preselection && <PreselectionTag />}
         {botsPaused && <BotsPausedTag pause={botsPaused} />}
-      </span>
-      <span className="spacer" />
+      </div>
       {!mobile && <ShipResources ship={view.ship} hunters={view.hunters.count} titles={view.titles} orbit={view.navigation.orbitName} expedition={view.expedition} lost={view.lost} />}
-      {mobile ? (
-        // Phones: the actions live in a hamburger menu to save top bar space.
-        <Menu.Root>
-          <Menu.Trigger className="menu-button" aria-label={t("menu.open")}>
-            <svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true">
-              <path d="M0 1h16M0 6h16M0 11h16" stroke="currentColor" strokeWidth="2" />
-            </svg>
-          </Menu.Trigger>
-          <Menu.Portal>
-            <Menu.Positioner sideOffset={6} align="end" className="menu-positioner">
-              <Menu.Popup className="menu-popup">
-                {ended && (
-                  <Menu.Item render={<button type="button" />} onClick={onResults}>
-                    {t("gameOver.results")}
+      {/* On phones a plain wrapper (display: contents), so the menu stays a top-bar flex item. */}
+      <div className="top-bar-actions">
+        {mobile ? (
+          // Phones: the actions live in a hamburger menu to save top bar space.
+          <Menu.Root>
+            <Menu.Trigger className="menu-button" aria-label={t("menu.open")}>
+              <svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true">
+                <path d="M0 1h16M0 6h16M0 11h16" stroke="currentColor" strokeWidth="2" />
+              </svg>
+            </Menu.Trigger>
+            <Menu.Portal>
+              <Menu.Positioner sideOffset={6} align="end" className="menu-positioner">
+                <Menu.Popup className="menu-popup">
+                  {ended && (
+                    <Menu.Item render={<button type="button" />} onClick={onResults}>
+                      {t("gameOver.results")}
+                    </Menu.Item>
+                  )}
+                  {showReady && (
+                    <Menu.Item render={<button type="button" />} disabled={!canReady} onClick={onReady}>
+                      {endCycleLabel}
+                    </Menu.Item>
+                  )}
+                  <Menu.Item render={<button type="button" />} onClick={() => setSettingsOpen(true)}>
+                    <img className="menu-item-icon" src={SETTINGS_ICON} alt="" />
+                    {t("settings.title")}
                   </Menu.Item>
-                )}
-                {showReady && (
-                  <Menu.Item render={<button type="button" />} disabled={!canReady} onClick={onReady}>
-                    {endCycleLabel}
-                  </Menu.Item>
-                )}
-                <Menu.Item render={<button type="button" />} onClick={() => setSettingsOpen(true)}>
-                  <img className="menu-item-icon" src={SETTINGS_ICON} alt="" />
-                  {t("settings.title")}
-                </Menu.Item>
-              </Menu.Popup>
-            </Menu.Positioner>
-          </Menu.Portal>
-        </Menu.Root>
-      ) : (
-        <>
-          {ended && (
-            <button type="button" onClick={onResults}>
-              {t("gameOver.results")}
-            </button>
-          )}
-          {showReady && (
-            <button type="button" disabled={!canReady} onClick={onReady}>
-              {endCycleLabel}
-            </button>
-          )}
-        </>
-      )}
-      <SettingsDialog
-        cheatsAllowed={cheatsAllowed}
-        activeCheats={you.cheats}
-        onCheat={onCheat}
-        onRoleCheat={onRoleCheat}
-        onSolCheat={onSolCheat}
-        onLeaveShip={onLeaveShip}
-        onLeave={onLeave}
-        hideTrigger={mobile}
-        {...(mobile ? { open: settingsOpen, onOpenChange: setSettingsOpen } : {})}
-      />
+                </Menu.Popup>
+              </Menu.Positioner>
+            </Menu.Portal>
+          </Menu.Root>
+        ) : (
+          <>
+            {ended && (
+              <button type="button" onClick={onResults}>
+                {t("gameOver.results")}
+              </button>
+            )}
+            {showReady && (
+              <button type="button" disabled={!canReady} onClick={onReady}>
+                {endCycleLabel}
+              </button>
+            )}
+          </>
+        )}
+        <SettingsDialog
+          cheatsAllowed={cheatsAllowed}
+          activeCheats={you.cheats}
+          onCheat={onCheat}
+          onRoleCheat={onRoleCheat}
+          onSolCheat={onSolCheat}
+          onLeaveShip={onLeaveShip}
+          onLeave={onLeave}
+          hideTrigger={mobile}
+          {...(mobile ? { open: settingsOpen, onOpenChange: setSettingsOpen } : {})}
+        />
+      </div>
     </header>
   );
 }

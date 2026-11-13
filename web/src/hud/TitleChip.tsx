@@ -4,7 +4,7 @@ import type { TitleView } from "@mush2/shared";
 import { TITLE_ICONS } from "../art/assets.ts";
 import { useNames } from "../i18n/names.ts";
 
-/** A title's card and who holds it; its line of succession (public) opens in a popover on hover, focus, or tap. */
+/** A title's icon and who holds it (the icon alone, muted, while vacant); its line of succession (public) opens in a popover on hover, focus, or tap. */
 export function TitleChip({ entry: title }: { entry: TitleView }) {
   const { t } = useTranslation();
   const names = useNames();
@@ -17,11 +17,12 @@ export function TitleChip({ entry: title }: { entry: TitleView }) {
         delay={200}
         nativeButton={false}
         render={<span role="button" tabIndex={0} />}
-        className="resource"
+        className={holder === null ? "resource vacant" : "resource"}
         aria-label={holder === null ? t("titles.holderVacant", { title: name }) : t("titles.holder", { title: name, name: holder })}
       >
         <img src={TITLE_ICONS[title.id]} alt="" />
-        {holder ?? t("titles.vacant")}
+        {/* Vacant: the icon alone, muted (the name is in the label and the popover). */}
+        {holder}
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Positioner sideOffset={6}>

@@ -8,9 +8,6 @@
   gap: var(--space-3);
   padding: var(--space-2) var(--space-3);
 }
-.top-bar .spacer {
-  flex: 1;
-}
 .stats {
   display: flex;
   gap: var(--space-3);
@@ -21,16 +18,62 @@
   display: none;
   margin-left: var(--space-2);
 }
-/* Shown until the Mush are chosen: a small Mush-style button that opens its explanation. */
+/*
+ * Desktop top bar, three zones (UI coherence step 5): time on the left (.cycle), the ship in the middle (.ship-resources,
+ * between thin dividers), the actions on the right (.top-bar-actions; End cycle is its only blue). Phones hide .cycle
+ * and show a different composition (responsive.css).
+ */
+.top-bar .cycle {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+/* The day and cycle: an amber-outlined label, the location plate's look (card.css), one step up from the bar. */
+.cycle-label {
+  position: relative;
+  --card-fill: var(--chrome-2);
+  padding: 2px var(--space-2) 2px var(--space-3);
+  font-size: 0.85rem;
+  font-weight: bold;
+  white-space: nowrap;
+}
+.cycle-countdown {
+  font-variant-numeric: tabular-nums;
+}
+.top-bar-actions {
+  flex: none;
+  display: flex;
+  align-items: center;
+}
+/*
+ * Status chips (pre-selection, AI paused): popover triggers that read as a status, not a button. A light outline in
+ * neutral text, no fill; the global button look is stripped as .recency does in chat.css.
+ */
 .preselection-tag {
-  margin-left: var(--space-2);
+  height: auto;
+  margin: 0;
+  padding: 1px var(--space-2);
+  background: none;
+  border: 1px solid color-mix(in srgb, var(--text) 45%, transparent);
+  border-radius: 2px;
+  color: var(--text);
+  font-size: 0.75rem;
+  line-height: 1.2;
+  text-shadow: none;
+  white-space: nowrap;
+  cursor: help;
+}
+.preselection-tag:hover,
+.preselection-tag[data-popup-open] {
+  border-color: var(--text);
 }
 .avatar {
   width: 40px;
   height: 40px;
   image-rendering: pixelated;
 }
-/* Outlined cards: the nameplate, both stat stacks, and the resource stack. The flat quote-box look (fill, 1px rim, soft shadow). */
+/* Outlined cards: the nameplate, both stat stacks, the resource stack, and the ship card (on phones; in the desktop top bar it is flat, below). The flat quote-box look (fill, 1px rim, soft shadow). */
 .nameplate,
 .stat-stack,
 .resource-stack,
@@ -189,7 +232,7 @@
   gap: var(--space-1);
   padding: 0 var(--space-2);
   border-radius: 999px;
-  background: #0d1424;
+  background: var(--chrome-0);
   border: 1px solid var(--panel-rim);
   font-size: 0.7rem;
   line-height: 1.2rem;
@@ -272,9 +315,9 @@
   flex-direction: column;
   gap: var(--space-1);
   padding: var(--space-2);
-  background: #1b2a4a;
-  border: 1px solid rgb(255 255 255 / 0.3);
-  border-radius: 6px;
+  background: var(--panel-fill);
+  border: 1px solid var(--panel-rim);
+  border-radius: var(--panel-radius);
 }
 .menu-popup button {
   margin: 0;
@@ -295,7 +338,7 @@
   image-rendering: pixelated;
 }
 
-/* Desktop ship resources card (oxygen, fuel, hull, plasma shield, alerts). Hidden on phones by TopBar. */
+/* Ship resources (oxygen, fuel, hull, plasma shield, hunters, alerts), the orbit, the expedition and the titles: the desktop top bar's middle zone, and the phones' ship card (ShipOverlay). */
 .ship-resources {
   display: flex;
   gap: var(--space-4);
@@ -303,13 +346,27 @@
   padding: var(--space-2) var(--space-3);
   list-style: none;
 }
-/* The titles follow the counters, set off by a divider. */
-.ship-title:first-of-type {
-  margin-left: var(--space-1);
+/* In the desktop top bar: no capsule of its own, just the zone between two thin dividers, its items centred. */
+.top-bar .ship-resources {
+  flex: 1;
+  align-self: stretch;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--space-4);
+  background: none;
+  border: 0;
+  border-inline: 1px solid var(--panel-rim);
+  border-radius: 0;
+  box-shadow: none;
 }
-.ship-title {
+/* The titles follow the counters as a group, set off by one divider. A vacant title is its icon alone, muted. */
+:where(li:not(.ship-title)) + .ship-title {
   padding-left: var(--space-4);
   border-left: 1px solid var(--panel-rim);
+}
+.ship-title .resource.vacant img {
+  opacity: 0.4;
+  filter: grayscale(1);
 }
 .ship-resource {
   display: inline-flex;
@@ -322,6 +379,20 @@
 .ship-resource img {
   display: block;
   image-rendering: pixelated;
+}
+/* Light current value, muted maximum; tabular figures in a fixed-width slot (its width is set inline). */
+.ship-resource-value {
+  font-variant-numeric: tabular-nums;
+}
+.ship-resource-max {
+  color: var(--muted);
+}
+/* Nothing to report (no hunters, no alert): muted. */
+.ship-resources li.empty .ship-resource {
+  color: var(--muted);
+}
+.ship-resources li.empty img {
+  opacity: 0.5;
 }
 /* The orbited planet's name (public in orbit), after the counters with the titles' divider. */
 .ship-orbit {

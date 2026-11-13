@@ -86,10 +86,12 @@ main.game .top-bar {
   --cut-bl: 10px;
 }
 /*
- * The amber-outline variant, for labels (the location plate: your room's name and the minimap, iso.css): the rim is the outline's gold line, and four 1px offset
+ * The amber-outline variant, for labels (the location plate: your room's name and the minimap, iso.css; and the top bar's
+ * day and cycle, .hud-card.amber in top-bar.css): the rim is the outline's gold line, and four 1px offset
  * shadows add its dark outer line along the bevel too. The dark inner line is the fill itself.
  */
-main.game .room-corner {
+main.game .room-corner,
+.hud-card.amber {
   --card-rim: var(--gold-mid);
   --cut-tl: 6px;
   --cut-bl: 6px;
