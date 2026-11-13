@@ -7,14 +7,12 @@ import type { GameState, PlayerState } from "../types.ts";
 export type CoupActionData = { type: "coup"; equipment: string };
 
 /**
- * The Politician's Coup (owner, 2026-11-12): at a NERON core, `coup.cost.ap` (3) AP and `coup.dirtyChance` (50%) to get
+ * The Politician's Coup (owner, 2026-11-12): in a room with a NERON core (not a terminal action: no need to open its window), `coup.cost.ap` (3) AP and `coup.dirtyChance` (50%) to get
  * dirty, any living player with the skill, Mush and the dirty included. It never fails and has no use limit, but is
  * refused for the current Commander and while your own coup is pending. It only sets `PlayerState.coupPending`;
  * `coupCycle` (coup.ts) grants the Commander title at the next cycle change. Secret, so roommates see it happen.
  */
 export class CoupAction extends Action<CoupActionData> {
-  override terminal = true;
-
   override visibility: ActionVisibility = "secret";
 
   constructor() {
