@@ -74,6 +74,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Confirmed 2026-10-15: spiking costs 1 AP and 1 spore, and raises a human's contamination by 1.
   spike: { cost: { ap: 1 }, cooldownCycles: 4 },
   bodyTransfer: { cost: { ap: 0 } },
+  resetSkills: { cost: { ap: 2 } },
   // Owner, 2026-11-05: the Apprentice skill's apprenticeship action costs 1 AP.
   apprenticeship: { cost: { ap: 1 } },
   // Owner, 2026-11-04: the pneumatic tube is free to use.

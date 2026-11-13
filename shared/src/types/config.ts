@@ -227,6 +227,9 @@ export interface GameConfig {
   bodyTransfer: {
     cost: { ap: number }; // The Mush skill Transfer: free (owner, 2026-10-24).
   };
+  resetSkills: {
+    cost: { ap: number }; // The Mush skill Epigenetics: 2 AP (owner, 2026-11-13).
+  };
   spores: {
     cost: { ap: number }; // AP spent to extract a spore (confirmed 2026-10-13).
     effect: { spores: number }; // Spores one extraction gives (confirmed 2026-10-13).

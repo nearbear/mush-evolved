@@ -77,6 +77,7 @@ const ACTION_NAME_KEYS = {
   extract_spore: "actions.extractSpore",
   spike: "actions.spike",
   body_transfer: "actions.bodyTransfer",
+  reset_skills: "actions.resetSkills",
   tube_transfer: "actions.tubeTransfer",
   consume_spore: "actions.consumeSpore",
   fungal_cuisine: "actions.fungalCuisine",

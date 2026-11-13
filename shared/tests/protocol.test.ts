@@ -729,6 +729,7 @@ describe("actions from a client", () => {
     consume_spore: [{ type: "consume_spore" }],
     fungal_cuisine: [{ type: "fungal_cuisine", item: "i1" }],
     body_transfer: [{ type: "body_transfer", target: "p1" }],
+    reset_skills: [{ type: "reset_skills" }],
     lie_down: [{ type: "lie_down", equipment: "e1" }],
     get_up: [{ type: "get_up" }],
     guard: [{ type: "guard" }],
