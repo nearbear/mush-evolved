@@ -1,5 +1,5 @@
 // The three skill slots, then the book slot, overlaid on the top-right of a character portrait. Skills are public
-// to everyone in the room; someone else's empty slots are left out. On your own portrait an empty slot is a gold plus that opens the picker; picks are
+// to everyone in the room; someone else's empty slots are left out. On your own portrait an empty slot is an amber socket with a gold plus that opens the picker; picks are
 // permanent. The book slot is filled only by reading a skill book (an item action), so it never has a plus.
 // Which skills can be picked comes from view.actions, never computed here.
 // A Mush looking at their own portrait gets a toggle at the top that swaps the stack for their four Mush skill slots.
@@ -70,7 +70,7 @@ export function SkillSlots({
                 <Hint label={t(mush ? "skills.pickMush" : "skills.pick")}>
                   <button
                     type="button"
-                    className="skill-slot"
+                    className="skill-slot skill-slot-open"
                     disabled={offered.length === 0}
                     aria-label={mush ? t("skills.mushSlot", { n: i + 1 }) : t("skills.slot", { n: i + 1 })}
                     onClick={() => setOpen(true)}
