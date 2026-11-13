@@ -1,5 +1,6 @@
 import { ITEM_TYPES, type ActionOption, type PlayerView, type RoomId } from "@mush2/shared";
 import { act, canAfford, failed, goTo, itemType, nearest, roomsWith, where } from "./blocks.ts";
+import { emptyGardenPots } from "./sow.ts";
 import type { BotMemory, Goal, GoalDef, GoalStep } from "./types.ts";
 
 /**
@@ -19,13 +20,20 @@ export function needsFood(view: PlayerView): boolean {
 const consumeOf = (view: PlayerView, o: ActionOption) => (o.action.type === "consume" ? ITEM_TYPES[itemType(view, o.action.item) ?? ""]?.consume : undefined);
 
 /**
+ * Whether a banana (any fruit) here is kept for sowing (owner, 2026-11-12): while an empty hydropot is on the garden
+ * floor, a bot that isn't Hungry leaves fruit uneaten so it can be sown (`sowHere`).
+ */
+const keepFruit = (view: PlayerView): boolean => !view.statuses.includes("hungry") && emptyGardenPots(view).length > 0;
+
+/**
  * The best food the bot can eat now (carried or in its room): the most satiety first, so a ration before a banana or a
- * coffee, and a cooked ration before an uncooked one.
+ * coffee, and a cooked ration before an uncooked one. Not fruit kept for sowing (`keepFruit`).
  */
 function bestFood(view: PlayerView): (ActionOption & { action: { type: "consume"; item: string } }) | undefined {
   const uncooked = (o: ActionOption) => (o.action.type === "consume" && ITEM_TYPES[itemType(view, o.action.item) ?? ""]?.cook ? 1 : 0);
   return view.actions
     .filter((o): o is ActionOption & { action: { type: "consume"; item: string } } => o.lacks.length === 0 && (consumeOf(view, o)?.satiety ?? 0) > 0)
+    .filter((o) => !(keepFruit(view) && ITEM_TYPES[itemType(view, o.action.item) ?? ""]?.fruit))
     .sort((a, b) => consumeOf(view, b)!.satiety - consumeOf(view, a)!.satiety || uncooked(a) - uncooked(b))[0];
 }
 

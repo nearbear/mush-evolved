@@ -11,11 +11,13 @@ import { project } from "./project.ts";
 import { repairHull } from "./repairHull.ts";
 import { research } from "./research.ts";
 import { rest } from "./rest.ts";
+import { setOutPots } from "./setOutPots.ts";
 import { returnToSol } from "./returnToSol.ts";
 import { shootHunters } from "./shootHunters.ts";
 import { shower } from "./shower.ts";
 import { shrinkDorm } from "./shrinkDorm.ts";
 import { snoop } from "./snoop.ts";
+import { sowHere } from "./sow.ts";
 import { tendPlants } from "./tendPlants.ts";
 import { travel } from "./travel.ts";
 import type { Goal, GoalDef } from "./types.ts";
@@ -35,11 +37,13 @@ export const SOLO_GOALS: readonly GoalDef[] = [
   pickSkill,
   snoop,
   eat,
+  sowHere,
   patrolShootHunters,
   shootHunters,
   shower,
   repairHull,
   contactSol,
+  setOutPots,
   tendPlants,
   travel,
   astro,
