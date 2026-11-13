@@ -292,7 +292,10 @@
       "name": "Mush beta"
     }
   },
+  "actionDescriptions": {},
   "actions": {
+    "dirtChance": "Sucio {{percent}} %",
+    "injuryChance": "Herida {{percent}} %",
     "claimSlot": "Apuntarse",
     "withdrawSlot": "Retirarse",
     "markDone": "Marcar como hecho",

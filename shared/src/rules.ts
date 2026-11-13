@@ -257,7 +257,7 @@ export function unaffordableActions(state: GameState, playerId: PlayerId): Actio
       if (refused !== "cant_afford" && refused !== NO_SPACE && refused !== COOLDOWN && refused !== AT_CAPACITY && refused !== DIRTY && refused !== NO_DEBRIS && refused !== PASIPHAE_INTACT) return [];
       const cost = def.cost(state, p, a);
       const lacks: ActionOption["lacks"] = [...(refused === NO_DEBRIS ? (["debris"] as const) : []), ...(refused === PASIPHAE_INTACT ? (["pasiphae"] as const) : []), ...(refused === DIRTY ? (["clean"] as const) : []), ...(refused === NO_SPACE ? (["space"] as const) : []), ...(refused === COOLDOWN ? (["cooldown"] as const) : []), ...(refused === AT_CAPACITY ? (["capacity"] as const) : []), ...(p.ap < cost.ap ? (["ap"] as const) : []), ...(p.mp < cost.mp ? (["mp"] as const) : [])];
-      const option: ActionOption = { action: a, cost, chance: def.chance(state, p, a), tags: [...def.tagsFor(state, a)], lacks };
+      const option: ActionOption = { action: a, cost, chance: def.chance(state, p, a), dirt: def.dirtChanceMods(state, p, a), injury: def.injuryChanceMods(state, p, a), tags: [...def.tagsFor(state, a)], lacks };
       if (refused === COOLDOWN) option.cooldown = def.cooldownLeft(state, p, a);
       return [option];
     }),
@@ -731,7 +731,7 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
 function legalOptions(state: GameState, p: PlayerState, legal: Action[]): ActionOption[] {
   return legal.map((a) => {
     const def = ACTIONS[a.type] as ActionDef<Action>;
-    return { action: a, cost: def.cost(state, p, a), chance: def.chance(state, p, a), tags: [...def.tagsFor(state, a)], lacks: [] };
+    return { action: a, cost: def.cost(state, p, a), chance: def.chance(state, p, a), dirt: def.dirtChanceMods(state, p, a), injury: def.injuryChanceMods(state, p, a), tags: [...def.tagsFor(state, a)], lacks: [] };
   });
 }
 

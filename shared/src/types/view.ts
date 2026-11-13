@@ -367,6 +367,10 @@ export interface ActionOption {
   cost: ActionCost;
   /** 0 to 1. */
   chance: number;
+  /** Your odds, 0 to 1, of getting dirty doing it (before an apron or Stickler stops it), after your modifiers. */
+  dirt: number;
+  /** Your odds, 0 to 1, of hurting yourself doing it (before gloves stop it), after your modifiers. */
+  injury: number;
   /** What kind of action it is (aggressive, spore), so the UI can mark it. Fixed per action type. */
   tags: ActionTag[];
   /**

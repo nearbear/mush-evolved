@@ -292,7 +292,10 @@
       "name": "Mush bêta"
     }
   },
+  "actionDescriptions": {},
   "actions": {
+    "dirtChance": "Sale {{percent}} %",
+    "injuryChance": "Blessure {{percent}} %",
     "claimSlot": "Prendre",
     "withdrawSlot": "Se retirer",
     "markDone": "Marquer comme fait",

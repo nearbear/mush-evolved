@@ -3240,3 +3240,11 @@ Owner asked that every action (Inspect panel, peek bar, room) take a double clic
 - Owner asked to move HP and morale into the desktop ID card at half size and satiety into the bottom-left resources "the way mobile does it", dropping the strip beside the card.
 - The card was one `<button>`; HP and morale open their own popovers (`StatInfo`), and a button can't contain other controls. So the card became a `div.id-card` whose top (band, portrait, fields) is the `button.id-open` that opens Inspect, with the bars on the card's foot at 1x sprite pixels (`--s: 1px`, 13px icons) in the card's dark ink.
 - Satiety is now always the first resource chip (`useChips` lost its `withSatiety` flag); the desktop-only `SatietyInfo` component, its CSS and the `stat.satietyValue` string went, leaving `useSatietyLines`. Desktop loses the red "hungry" colour on the number, as phones never had it; the hungry line is still in its card.
+
+## 2026-11-12: Dirt and injury odds on every action's card
+
+- `ActionOption` now carries `dirt` and `injury` (0 to 1), read from `dirtChanceMods`/`injuryChanceMods`, the same numbers `performAction` rolls, so the card and the roll can't disagree. Only the actor's own modifiers feed them, so nothing hidden leaks.
+- `ActionButton` now always has a hover/focus/tap card (`ActionDetails`): an optional description from `actionDescriptions.<type>` (empty for now, the groundwork for writing descriptions later), the caller's hint, the two odds, and food effects. Disabled buttons show the reason first, then the same details.
+- Worked: a single seam (ActionButton) covers nearly every action button, so no subagents were needed. Needed care: the replay test timed out at 5s under full-suite load; timing it alone with and without the change showed no slowdown.
+
+- Follow-up (same day): the odds show only when non-zero, as icon rows (the dirty status icon, the HP heart) labelled "Dirty N%" / "Injury N%", last in the card under a rule so they aren't mistaken for food effects. An enabled button with nothing to say gets no card again.

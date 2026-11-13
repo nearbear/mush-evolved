@@ -288,7 +288,10 @@
       "name": "Beta Mush"
     }
   },
+  "actionDescriptions": {},
   "actions": {
+    "dirtChance": "Dirty {{percent}}%",
+    "injuryChance": "Injury {{percent}}%",
     "claimSlot": "Claim",
     "withdrawSlot": "Withdraw",
     "markDone": "Mark done",

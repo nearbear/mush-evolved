@@ -393,3 +393,17 @@
 .inspect-broken img {
   image-rendering: pixelated;
 }
+
+/* An action card's dirt and injury odds sit last, under a rule, so they aren't read as what eating does. */
+.action-risks-rule {
+  border: none;
+  border-top: 1px solid currentColor;
+  opacity: 0.4;
+  margin: 6px 0 4px;
+}
+.consume-effects.action-risks {
+  margin-top: 0;
+}
+.consume-effects.action-risks span {
+  justify-self: start;
+}
