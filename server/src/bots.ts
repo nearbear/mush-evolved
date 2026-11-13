@@ -130,6 +130,7 @@ export class GoalBot implements Bot {
       visited: new Set(),
       shrinks: new Set(),
       lastExpedition: null,
+      asteroidsOnly: null,
       roll: (n) => {
         let i: number;
         [i, this.rng] = nextInt(this.rng, n);

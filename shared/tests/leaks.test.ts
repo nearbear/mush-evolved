@@ -136,8 +136,8 @@ function ship(): { state: GameState; sentinels: Sentinel[] } {
     planet: str("expeditionPlanet", ["p1"]),
     events: [{ sector: "OXYGEN", kind: "oxygen", amount: num("expeditionOxygen", ["p1"]) }],
   });
-  // Nobody is in a turret room, so no one sees a hunter's hp or id, or a turret's charges; only the count is public.
-  s.hunters = { points: num("hunterPoints", []), since: num("huntersSince", []), nextId: num("hunterNextId", []), list: [{ id: str("hunterId", []), hp: num("hunterHp", []), hitChance: num("hunterHitChance", []), target: { kind: "ship" } }] };
+  // Nobody is in a turret room, so no one sees a hunter's hp, id or countdown, or a turret's charges; only the count is public.
+  s.hunters = { points: num("hunterPoints", []), since: num("huntersSince", []), nextId: num("hunterNextId", []), list: [{ id: str("hunterId", []), hp: num("hunterHp", []), hitChance: num("hunterHitChance", []), target: { kind: "ship" }, type: "asteroid", countdown: num("hunterCountdown", []) }] };
   s.turrets["LASER_TURRET_A_0:TURRET_COMMAND"] = num("turretCharges", []);
   // Nobody is aboard a patrol ship, so no one sees its armor or charges, or a hunter's hp from there.
   s.patrolShips.PATROL_SHIP_A_0!.armor = num("patrolArmor", []);

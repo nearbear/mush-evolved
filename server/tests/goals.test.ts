@@ -12,6 +12,7 @@ import { rest } from "../src/bots/goals/rest.ts";
 import { research } from "../src/bots/goals/research.ts";
 import { project } from "../src/bots/goals/project.ts";
 import { SHRINK_DESK_WORK_WITHIN } from "../src/bots/goals/work.ts";
+import { onlyAsteroids, shotOrder } from "../src/bots/goals/hunterTargets.ts";
 import { patrolShootHunters } from "../src/bots/goals/patrolShootHunters.ts";
 import { shootHunters } from "../src/bots/goals/shootHunters.ts";
 import { shower } from "../src/bots/goals/shower.ts";
@@ -81,6 +82,7 @@ const memory = (scripted = true) => ({
   visited: new Set<string>(),
   shrinks: new Set<string>(),
   lastExpedition: null as "oxygen" | "fuel" | null,
+  asteroidsOnly: null as number | null,
   roll: roll0,
 });
 
@@ -385,8 +387,8 @@ describe("shootHunters", () => {
       p.resources.shoot = 0;
     });
     game.hunters.list = [
-      { id: "h1", hp: 6, hitChance: 0, target: null },
-      { id: "h2", hp: 2, hitChance: 0, target: null },
+      { id: "h1", hp: 6, hitChance: 0, target: null, type: "hunter", countdown: null },
+      { id: "h2", hp: 2, hitChance: 0, target: null, type: "hunter", countdown: null },
     ];
     return { game, id };
   }
@@ -407,7 +409,7 @@ describe("shootHunters", () => {
     for (const t of Object.values(start.equipment).flat().filter((e) => e.type === "TURRET_COMMAND")) start.turrets[t.id] = 20;
     start.hunters.list[0]!.hp = 99;
     start.hunters.list[1]!.hp = 99;
-    start.hunters.list.push({ id: "h3", hp: 1, hitChance: 0, target: null });
+    start.hunters.list.push({ id: "h3", hp: 1, hitChance: 0, target: null, type: "hunter", countdown: null });
     const { game: end, taken } = await untilReady(start, id, new GoalBot(1, 2, [shootHunters]));
     const shots = taken.filter((a) => a.type === "turret_attack");
     expect(shots[0]).toMatchObject({ hunter: "h3" });
@@ -442,7 +444,7 @@ describe("shootHunters", () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     game = r.state;
-    game.hunters.list = [{ id: "h1", hp: 6, hitChance: 0, target: null }];
+    game.hunters.list = [{ id: "h1", hp: 6, hitChance: 0, target: null, type: "hunter", countdown: null }];
     let cycles = 0;
     const nextCycle = (ap: number): PlayerView => {
       const view = viewFor(edit(game, id, (p) => (p.ap = ap)), id);
@@ -484,8 +486,8 @@ describe("patrolShootHunters", () => {
       p.resources.shoot = 0;
     });
     game.hunters.list = [
-      { id: "h1", hp: 99, hitChance: 0, target: null },
-      { id: "h2", hp: 99, hitChance: 0, target: null },
+      { id: "h1", hp: 99, hitChance: 0, target: null, type: "hunter", countdown: null },
+      { id: "h2", hp: 99, hitChance: 0, target: null, type: "hunter", countdown: null },
     ];
     return { game, id };
   }
@@ -524,6 +526,56 @@ describe("patrolShootHunters", () => {
     const bot = new GoalBot(1);
     expect(await bot.decideAction(viewFor(game, id))).toEqual({ type: "land", equipment: "PATROL_SHIP_A_0:PATROL_COMMAND" });
     expect(bot.current).toBe("patrolShootHunters:aboard");
+  });
+
+  it("shoots an Arack first, never an asteroid, and lands when only asteroids are left", async () => {
+    const { game, id } = pilot(9, "PATROL_SHIP_A_0");
+    game.patrolShips["PATROL_SHIP_A_0"]!.out = true;
+    game.hunters.list = [
+      { id: "h1", hp: 1, hitChance: 0, target: null, type: "asteroid", countdown: 3 },
+      { id: "h2", hp: 2, hitChance: 0, target: null, type: "hunter", countdown: null },
+      { id: "h3", hp: 6, hitChance: 0, target: null, type: "spider", countdown: null },
+    ];
+    expect(await new GoalBot(1).decideAction(viewFor(game, id))).toMatchObject({ type: "patrol_attack", hunter: "h3" });
+    game.hunters.list = [game.hunters.list[0]!];
+    expect(await new GoalBot(1).decideAction(viewFor(game, id))).toMatchObject({ type: "land" });
+  });
+});
+
+describe("hunter targets", () => {
+  const h = (id: string, type: "hunter" | "spider" | "asteroid", hp: number) => ({ id, type, hp, countdown: type === "asteroid" ? 3 : null });
+  const shot = (hunter: string) => ({ action: { hunter } });
+
+  it("orders Aracks first, then by hp, and drops asteroids and unseen hunters", () => {
+    const list = [h("a", "asteroid", 1), h("b", "hunter", 2), h("c", "spider", 6), h("d", "hunter", 1)];
+    expect(shotOrder([shot("a"), shot("b"), shot("c"), shot("d"), shot("x")], list).map((o) => o.action.hunter)).toEqual(["c", "d", "b"]);
+  });
+
+  it("remembers an asteroid-only sky while the public count stays the same", () => {
+    const { game, id } = setup();
+    const m = memory();
+    const view = viewFor(game, id);
+    const sky = (count: number, list: ReturnType<typeof h>[] | null) => ({ ...view, hunters: { ...view.hunters, count, list } });
+    expect(onlyAsteroids(sky(2, [h("a", "asteroid", 20), h("b", "asteroid", 20)]), m)).toBe(true);
+    expect(onlyAsteroids(sky(2, null), m)).toBe(true);
+    expect(onlyAsteroids(sky(3, null), m)).toBe(false);
+    expect(onlyAsteroids(sky(2, [h("a", "asteroid", 20), h("b", "hunter", 6)]), m)).toBe(false);
+    expect(onlyAsteroids(sky(2, null), m)).toBe(false);
+  });
+
+  it("keeps a Gunner away from the turrets once it has seen only asteroids there", () => {
+    const { game: start, id } = setup();
+    const turretRoom = roomsWith(viewFor(start, id), ["TURRET_COMMAND"])[0]!;
+    const game = edit(start, id, (p) => {
+      p.room = turretRoom;
+      p.ap = 10;
+      p.skills = ["gunner"];
+    });
+    game.hunters.list = [{ id: "h1", hp: 20, hitChance: 0, target: null, type: "asteroid", countdown: 3 }];
+    const m = memory();
+    expect(shootHunters.options(viewFor(game, id), m)).toEqual([]);
+    const away = edit(game, id, (p) => (p.room = start.players.find((q) => q.id === id)!.room));
+    expect(shootHunters.options(viewFor(away, id), m)).toEqual([]);
   });
 });
 

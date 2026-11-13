@@ -116,7 +116,7 @@ function handFilled() {
     lostAt: { [a.id]: 2 },
   });
   game.navigation = { heading: game.navigation.heading, orbit: "pl-1", arriving: { planet: "pl-1" }, lastTurn: { n: 3, side: "left" } };
-  game.hunters.list.push({ id: "h1", hp: 2, hitChance: 0.4, target: { kind: "ship" } });
+  game.hunters.list.push({ id: "h1", hp: 2, hitChance: 0.4, target: { kind: "ship" }, type: "dice", countdown: null });
   game.relay.projects.p = { tokens: [{ by: a.id, base: 3, roll: 0.5, unpenalized: true }] };
   game.relay.research.r = { tokens: [{ by: a.id, base: 3, roll: 0.5 }], pending: [{ by: b.id, base: 2, roll: 0.1, contaminatedBy: b.id }] };
   game.chatOutbox = { sealed: [{ channel: "global", page: 0, messages: [game.chat.at(-1)!] }], dropped: [{ channel: "pc-2", pages: 1 }] };
@@ -203,6 +203,8 @@ describe("normalizeGame", () => {
     expect([out.winner, out.ending, out.players[0]!.satietyZeroSince, out.navigation.orbit, out.navigation.lastTurn]).toEqual([null, null, null, null, null]);
     expect(out.navigation.arriving).toEqual({ planet: null });
     expect(out.hunters.since).toBeNull();
+    // Stored before #388: a plain hunter with no countdown.
+    expect(out.hunters.list[0]).toMatchObject({ type: "hunter", countdown: null });
     expect(out.hunters.list[0]!.target).toBeNull();
     expect(out.titles.commander).toBeNull();
   });

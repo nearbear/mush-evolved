@@ -1,24 +1,24 @@
 // What the room view shows while you fly a patrol ship (docs/plans/patrol.md; owner, 2026-11-10): a space scene. Your
 // ship, drawn with its docked sprite, sits in the upper right with its nose to the lower left; the star field streams
 // the other way to show the speed. The hunter you aim at is drawn large just ahead of the ship's nose, inside a reticle;
-// the rest wait in the lower left as one sprite per kind with a count (so 99 hunters take the room of one), and pressing
-// that sprite aims at the next. Both your ship and the targeted hunter show their name, a stack of shield icons and
+// the rest wait in the lower left as one small sprite per kind with a count (so 99 hunters take the room of one), and
+// pressing a kind's sprite aims at the next hunter of that kind. An asteroid's readout adds its impact countdown. Both your ship and the targeted hunter show their name, a stack of shield icons and
 // their hp underneath the sprite. The ship and the hunters each weave on their own beat, the ship a moment behind, so it
 // reads as a chase. The bar under the scene (a TechnoBox) has the ship's charges at the top (the number centred, the charges alternating left and right of it), Shoot flanked
 // by the two target-cycling arrow buttons (a patrol ship only; the Pasiphae can't shoot), and the ship's other actions
 // (Land, Collect scrap: whatever the view offers on its command, less Examine). Collect scrap's tooltip says how much
 // debris floats nearby (the view leaves the count out while a patrol ship can't collect); when the rules refuse it (no debris, or a patrol ship while the Pasiphae exists) it shows disabled with why.
 
-import { actionVisibility, patrolShip, type Action, type PlayerView, type ShipLayout } from "@mush2/shared";
+import { HUNTER_TYPES, actionVisibility, patrolShip, type Action, type HunterView, type PlayerView, type ShipLayout } from "@mush2/shared";
 import { useState, type CSSProperties, type KeyboardEvent } from "react";
 import { useTranslation } from "react-i18next";
-import { FX_CHARGE, FX_SHIELD, HUNTER_SPRITES } from "../art/assets.ts";
+import { FX_CHARGE, FX_SHIELD, HUNTER_SPRITES, HUNTER_SPRITES_SMALL } from "../art/assets.ts";
 import { useNames } from "../i18n/names.ts";
 import { atlasUrl } from "../iso/shipLayout.ts";
 import { ActionButton } from "./ActionButton.tsx";
 import { ActionLabel } from "./ActionLabel.tsx";
 import { FxSprite } from "./FxSprite.tsx";
-import { NO_FORMATION, aimedSlot, hunterIn, stepAim, track } from "./hunterSlots.ts";
+import { NO_FORMATION, aimedSlot, hunterIn, nextOfKind, stepAim, track } from "./hunterSlots.ts";
 import { spaceSky } from "./spaceSky.ts";
 import { optionsOn } from "./targets.ts";
 import { TechnoBox } from "./TechnoBox.tsx";
@@ -32,9 +32,13 @@ interface Props {
 }
 
 const NO_HUNTERS: NonNullable<PlayerView["hunters"]["list"]> = [];
-/** The aimed hunter is drawn at twice its size (whole pixels, so it stays crisp). */
-const AIM_SCALE = 2;
-const AIM_SIZE: CSSProperties = { width: HUNTER_SPRITES.hunter[2] * AIM_SCALE, height: HUNTER_SPRITES.hunter[3] * AIM_SCALE };
+/** The aimed plain hunter is drawn at twice its size (whole pixels, so it stays crisp); the other kinds' sprites are
+    already 66-84px, so they stay at 1x. */
+const aimScale = (type: HunterView["type"]): number => (type === "hunter" ? 2 : 1);
+const aimSize = (type: HunterView["type"]): CSSProperties => {
+  const [, , w, h] = HUNTER_SPRITES[type];
+  return { width: w * aimScale(type), height: h * aimScale(type) };
+};
 
 export function PatrolCockpit({ view, ship, layout, onAction }: Props) {
   const { t } = useTranslation();
@@ -71,8 +75,8 @@ export function PatrolCockpit({ view, ship, layout, onAction }: Props) {
   };
 
   const [sky] = useState(spaceSky);
-  // Only the plain hunter exists in the rules so far, so the pack is one sprite; each new kind gets its own.
-  const others = list.length - (target ? 1 : 0);
+  // The pack: how many of each kind are not the target, in `HUNTER_TYPES` order.
+  const pack = HUNTER_TYPES.map((type) => ({ type, count: list.filter((h) => h.type === type && h !== target).length })).filter((k) => k.count > 0);
 
   return (
     <section
@@ -93,20 +97,33 @@ export function PatrolCockpit({ view, ship, layout, onAction }: Props) {
           <div className="space-aim" aria-live="polite">
             <div className="space-sway" aria-hidden="true">
               <div className="space-reticle">
-                <div style={AIM_SIZE}>
-                  <FxSprite key={`${target.id}:${hits}`} slice={HUNTER_SPRITES.hunter} className={flash ? "hit" : undefined} />
+                <div style={aimSize(target.type)}>
+                  <FxSprite
+                    key={`${target.id}:${hits}`}
+                    slice={HUNTER_SPRITES[target.type]}
+                    className={[aimScale(target.type) === 2 && "x2", flash && "hit"].filter(Boolean).join(" ") || undefined}
+                  />
                 </div>
               </div>
             </div>
-            <CraftReadout name={t("turret.hunter", { index: slot + 1 })} hp={target.hp} />
+            <CraftReadout name={t("turret.hunter", { kind: t(`turret.kinds.${target.type}`), index: formation.numbers[target.id] ?? 1 })} hp={target.hp} />
+            {target.countdown !== null && <span>{t("turret.countdown", { count: target.countdown })}</span>}
           </div>
         )}
-        {others > 0 && (
+        {pack.length > 0 && (
           <div className="space-pack space-sway">
-            <button type="button" className="space-hunter" aria-label={t("patrol.others", { count: others })} onClick={() => step(1)}>
-              <FxSprite slice={HUNTER_SPRITES.hunter} />
-              <span aria-hidden="true">×{others}</span>
-            </button>
+            {pack.map(({ type, count }) => (
+              <button
+                key={type}
+                type="button"
+                className="space-hunter"
+                aria-label={t("patrol.others", { count, kind: t(`turret.kinds.${type}`) })}
+                onClick={() => setAim(nextOfKind(formation, aim, type))}
+              >
+                <FxSprite slice={HUNTER_SPRITES_SMALL[type]} />
+                <span aria-hidden="true">×{count}</span>
+              </button>
+            ))}
           </div>
         )}
       </div>

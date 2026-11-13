@@ -264,12 +264,9 @@ export const DEFAULT_CONFIG: GameConfig = {
   ship: { oxygen: { start: 30, max: 32, perCycle: 1 }, fuel: { start: 20, max: 100 }, combustion: { start: 0, max: 9 }, hull: { start: 100, max: 100 }, plasmaShield: { start: 50, max: 100, absorbPercent: 33, projectAbsorbPercent: 67, regen: 5 } },
   // Owner, 2026-10-24 (#208): eMush's hunter numbers, the wiki's turret and hull repair.
   hunters: {
-    points: { start: 40, perCycle: 6, hardFromDay: 5, hardBonus: 1, veryHardFromDay: 10, veryHardBonus: 2, perHunter: 10 },
+    points: { start: 40, perCycle: 6, hardFromDay: 5, hardBonus: 1, veryHardFromDay: 10, veryHardBonus: 2 },
     waveChance: 0.2,
     safeCycles: 2,
-    hp: 6,
-    damage: [2, 4],
-    hitChance: 0.8,
     missBonus: 0.1,
     // Owner, 2026-10-24 (#240): eMush's share of hunters that follow a jump.
     followShare: 0.5,
@@ -277,6 +274,17 @@ export const DEFAULT_CONFIG: GameConfig = {
     patrolTargetChance: 0.15,
     // Owner, 2026-10-28 (patrol plan, phase 5): eMush's 1 piece (2/3) or 2 (1/3), metal scraps 2 : space capsule 1 : plastic scraps 1.
     debris: { count: [0, 2, 1], types: { metal_scraps: 2, space_capsule: 1, plastic_scraps: 1 } },
+    // Owner, 2026-11-12 (#388): eMush's kinds (`HunterConfigData`). Draw weights 10/1/1/1/2, the Arack, asteroid and Trax
+    // from day 5 and the D1000 from day 10, at most 2 of each a wave (1 D1000). The Arack stops travel and leaving orbit
+    // (actions/travel.ts), the D1000 acts 3 times a cycle with armor 1, every Trax follows a jump, and the asteroid
+    // doesn't shoot: 6 cycle changes after it arrives it hits the Daedalus for its hp, through the shield.
+    types: {
+      hunter: { hp: 6, damage: [2, 4], hitChance: 0.8, actions: 1, armor: 0, cost: 10, weight: 10, fromDay: 1, maxPerWave: null, follows: "share", countdown: null },
+      spider: { hp: 6, damage: [1, 3], hitChance: 0.4, actions: 1, armor: 0, cost: 20, weight: 1, fromDay: 5, maxPerWave: 2, follows: "share", countdown: null },
+      asteroid: { hp: 20, damage: [0, 0], hitChance: 1, actions: 0, armor: 0, cost: 25, weight: 1, fromDay: 5, maxPerWave: 2, follows: "never", countdown: 6 },
+      dice: { hp: 30, damage: [3, 6], hitChance: 0.6, actions: 3, armor: 1, cost: 30, weight: 1, fromDay: 10, maxPerWave: 1, follows: "never", countdown: null },
+      trax: { hp: 10, damage: [2, 3], hitChance: 0.5, actions: 1, armor: 0, cost: 20, weight: 2, fromDay: 5, maxPerWave: 2, follows: "all", countdown: null },
+    },
   },
   turrets: { cost: { ap: 1 }, chance: 0.3, failureMultiplier: 1.25, damage: [2, 4], charges: 4, rechargePerCycle: 1 },
   patrol: {

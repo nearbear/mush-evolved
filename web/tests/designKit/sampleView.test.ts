@@ -45,8 +45,9 @@ describe("design kit sample view", () => {
     expect(S.itemsView.inventory.map((i) => i.type)).toContain("blaster");
     expect(S.brokenView.inventory.find((i) => i.type === "blaster")?.broken).toBe(true);
     expect(S.brokenView.roomEquipment.find((e) => e.type === "COFFEE_DISPENSER")?.broken).toBe(true);
-    expect(S.patrolHuntersView.hunters.list).toHaveLength(4);
-    expect(S.turretHuntersSample.view.hunters.list).toHaveLength(4);
+    expect(S.patrolHuntersView.hunters.list).toHaveLength(6);
+    expect(S.turretHuntersSample.view.hunters.list).toHaveLength(6);
+    expect(new Set(S.turretHuntersSample.view.hunters.list?.map((h) => h.type)).size).toBeGreaterThan(1);
     expect(S.turretHuntersSample.view.hunters.turrets).not.toBeNull();
     expect(S.mushChatView.chat.filter((m) => m.channel === "mush").length).toBe(3);
     expect(S.mushChatView.privateChannels).toHaveLength(1);

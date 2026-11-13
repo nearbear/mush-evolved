@@ -16,6 +16,7 @@ import {
   createGame,
   createThread,
   DEFAULT_CONFIG,
+  HUNTER_TYPES,
   ITEM_TYPES,
   endGame,
   killPlayer,
@@ -177,11 +178,17 @@ export function breakAll(state: GameState, types: readonly string[]): GameState 
   return next;
 }
 
-/** `n` hunters attack the ship with the config's aim, some a hit or two down so the hp differ (as the hunter tests add them; no wave roll). */
-export function addHunters(state: GameState, n: number): GameState {
+/**
+ * `n` hunters attack the ship with their kind's aim, some a hit or two down so the hp differ (as the hunter tests add
+ * them; no wave roll). Plain hunters, unless `mixed`, which takes the kinds in turn so every sprite shows.
+ */
+export function addHunters(state: GameState, n: number, mixed = false): GameState {
   const next = structuredClone(state);
-  const { hp, hitChance } = next.config.hunters;
-  for (let i = 0; i < n; i++) next.hunters.list.push({ id: `hunter-${next.hunters.nextId++}`, hp: Math.max(1, hp - (i % 3)), hitChance, target: null });
+  for (let i = 0; i < n; i++) {
+    const type = mixed ? HUNTER_TYPES[i % HUNTER_TYPES.length]! : "hunter";
+    const { hp, hitChance, countdown } = next.config.hunters.types[type];
+    next.hunters.list.push({ id: `hunter-${next.hunters.nextId++}`, type, hp: Math.max(1, hp - (i % 3)), hitChance, target: null, countdown });
+  }
   return next;
 }
 

@@ -10,7 +10,7 @@ import { expirePlans, plansView, strikeSlots } from "./plans.ts";
 import { bindPerformAction } from "./actions/summon.ts";
 import { applyCheats, makeHuman, shipInvincible, type Cheat, type RoleCheat } from "./cheats.ts";
 import { ACTIONS, type ActionDef } from "./actions.ts";
-import { AT_CAPACITY, COOLDOWN, DIRTY, NO_DEBRIS, NO_SPACE, PASIPHAE_INTACT, REACTOR_BROKEN } from "./actions/action.ts";
+import { ARACK_AROUND, AT_CAPACITY, COOLDOWN, DIRTY, NO_DEBRIS, NO_SPACE, PASIPHAE_INTACT, REACTOR_BROKEN } from "./actions/action.ts";
 import { getUp } from "./actions/lie_down.ts";
 import { researchNeedsView } from "./actions/research.ts";
 import { equipmentHere } from "./equipment.ts";
@@ -244,7 +244,7 @@ export function legalActions(state: GameState, playerId: PlayerId): Action[] {
 }
 
 /**
- * Actions that fail only on cost (`cant_afford`), on room in the inventory (`NO_SPACE`), on a cooldown (`COOLDOWN`), on a shared limit (`AT_CAPACITY`), on being dirty (`DIRTY`) or, for Collect scrap, on no debris (`NO_DEBRIS`) or the Pasiphae still existing (`PASIPHAE_INTACT`), or for Travel and turns on a broken reactor (`REACTOR_BROKEN`), with the cost and what falls
+ * Actions that fail only on cost (`cant_afford`), on room in the inventory (`NO_SPACE`), on a cooldown (`COOLDOWN`), on a shared limit (`AT_CAPACITY`), on being dirty (`DIRTY`) or, for Collect scrap, on no debris (`NO_DEBRIS`) or the Pasiphae still existing (`PASIPHAE_INTACT`), or for Travel and turns on a broken reactor (`REACTOR_BROKEN`), or for Travel and Leave orbit on an Arack around (`ARACK_AROUND`), with the cost and what falls
  * short. For showing them disabled.
  * Moves are left out: an unaffordable move has no cost to report, and doors aren't action buttons.
  */
@@ -255,9 +255,9 @@ export function unaffordableActions(state: GameState, playerId: PlayerId): Actio
     def.candidates(state, p).flatMap((a): ActionOption[] => {
       if (a.type === "move") return [];
       const refused = def.check(state, p, a);
-      if (refused !== "cant_afford" && refused !== NO_SPACE && refused !== COOLDOWN && refused !== AT_CAPACITY && refused !== DIRTY && refused !== NO_DEBRIS && refused !== PASIPHAE_INTACT && refused !== REACTOR_BROKEN) return [];
+      if (refused !== "cant_afford" && refused !== NO_SPACE && refused !== COOLDOWN && refused !== AT_CAPACITY && refused !== DIRTY && refused !== NO_DEBRIS && refused !== PASIPHAE_INTACT && refused !== REACTOR_BROKEN && refused !== ARACK_AROUND) return [];
       const cost = def.cost(state, p, a);
-      const lacks: ActionOption["lacks"] = [...(refused === NO_DEBRIS ? (["debris"] as const) : []), ...(refused === PASIPHAE_INTACT ? (["pasiphae"] as const) : []), ...(refused === REACTOR_BROKEN ? (["reactor"] as const) : []), ...(refused === DIRTY ? (["clean"] as const) : []), ...(refused === NO_SPACE ? (["space"] as const) : []), ...(refused === COOLDOWN ? (["cooldown"] as const) : []), ...(refused === AT_CAPACITY ? (["capacity"] as const) : []), ...(p.ap < cost.ap ? (["ap"] as const) : []), ...(p.mp < cost.mp ? (["mp"] as const) : [])];
+      const lacks: ActionOption["lacks"] = [...(refused === NO_DEBRIS ? (["debris"] as const) : []), ...(refused === PASIPHAE_INTACT ? (["pasiphae"] as const) : []), ...(refused === REACTOR_BROKEN ? (["reactor"] as const) : []), ...(refused === ARACK_AROUND ? (["arack"] as const) : []), ...(refused === DIRTY ? (["clean"] as const) : []), ...(refused === NO_SPACE ? (["space"] as const) : []), ...(refused === COOLDOWN ? (["cooldown"] as const) : []), ...(refused === AT_CAPACITY ? (["capacity"] as const) : []), ...(p.ap < cost.ap ? (["ap"] as const) : []), ...(p.mp < cost.mp ? (["mp"] as const) : [])];
       const option: ActionOption = { action: a, cost, chance: def.chance(state, p, a), dirt: def.dirtChanceMods(state, p, a), injury: def.injuryChanceMods(state, p, a), tags: [...def.tagsFor(state, a)], lacks };
       if (refused === COOLDOWN) option.cooldown = def.cooldownLeft(state, p, a);
       return [option];
@@ -672,7 +672,8 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     // the hunters' hp also to a living pilot in flight (owner, 2026-10-28).
     hunters: {
       count: state.hunters.list.length,
-      list: you.alive && (turretsHere(state, you).length > 0 || shipAboard(you)) ? state.hunters.list.map(({ id, hp }) => ({ id, hp })) : null,
+      // Each hunter's kind and an asteroid's countdown along with its hp (owner, 2026-11-12, #388).
+      list: you.alive && (turretsHere(state, you).length > 0 || shipAboard(you)) ? state.hunters.list.map(({ id, type, hp, countdown }) => ({ id, type, hp, countdown })) : null,
       turrets: you.alive && turretsHere(state, you).length > 0 ? Object.fromEntries(allTurrets(state).map((t) => [t.id, turretCharges(state, t.id)])) : null,
     },
     ...relayView(state, you),

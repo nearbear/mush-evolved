@@ -3333,3 +3333,31 @@ Chun's `premonition` skill now grants the Premonition action: 1 morale, no AP, a
 
 ### 2026-11-13: Epigenetics Mush skill
 Owner asked for a Mush skill granting `reset_skills`. Asked four questions up front (cost 2 AP, takes a slot with the others freed, Mush skills only, private and offered even when empty); implemented as `actions/reset_skills.ts` with a mind-bound `epigeneticsUsed` flag modelled on `transferUsed`. Worked: the Transfer action was a close template. Needed correction: fr/es locales have no skill-name entry in web locales (it lives in names.*.json), so my first scripted insert failed halfway.
+### 2026-11-12: Drone upgrades, phase 3: Sensor pathfinding (#413)
+
+- **Built:** extended `shortestPath` (`shared/src/paths.ts`) to accept a room predicate `(room: RoomId) => boolean` so BFS finds the nearest match and breaks ties by door order in `config.rooms`; added `"sensor"` to `DRONE_UPGRADES` and `sensorStep` in `shared/src/drones.ts` (fire if Firefighter, else broken repairable equipment or non-hidden floor item; hunters wait for Pilot in #415; fallback to random neighbouring room); added en/fr/es `"sensor"` strings (`Sensor` / `Capteur` / `Sensor`).
+- **Tests:** added predicate tests in `paths.test.ts` and Sensor tests (nearest target, Firefighter gate & priority, door-order tie-break, Pilot gate & random fallback, and `viewFor` leak check) in `droneUpgrades.test.ts`.
+
+## 2026-11-12: Mobile iTrackie bottom-nav unread badge
+
+- **Built:** added `totalUnread` in `web/src/hud/chatTabs.ts` summing `unreadCount` across `view.readChannels`, wired `useReadSnapshot()` into `web/src/hud/BottomNav.tsx` (`view` prop passed from `GameView.tsx`) so the `iTrackie` button renders `.tab-badge` (`99+` cap) and uses `itrackie.unreadTab` for its `aria-label` when unread > 0. Updated `tools/src/play/screenshot.ts`'s `nav` helper regex so tapping `"iTrackie"` works even when unread counts appear in its accessible name, and added unit/jsdom tests in `chatRead.test.ts` and `readMarking.test.tsx`.
+## 2026-11-12: Other hunter types (#388)
+
+- **Decision:** the owner chose all four of eMush's other kinds (Arack, asteroid, D1000, Trax) with eMush's numbers and behaviour: a weighted wave draw from day 5 (D1000 from day 10), the Arack blocking travel and leaving orbit, the D1000 acting 3 times with armor 1, every Trax following a jump, and asteroids hitting through the shield for their hp after 6 cycles.
+- **What worked:** the work was split across two sessions with a handoff file in the worktree's scratchpad. The second session picked it up cold and finished the client (sprites per kind, per-kind numbering in the cockpit's formation, one pack button per kind, the countdown), the en/fr/es strings, and the docs. A forked leak check confirmed the view only gains kind and countdown under the existing turret/pilot rule. It noted that the Arack refusal tells the Commander a kind exists, which the owner decided to allow.
+- **What needed correction:** the first session changed the design-kit samples to 6 mixed hunters but didn't update their test, and verify caught it. Worktree isolation refused inline Python heredocs with template literals, so the edits went through scripts in the scratchpad.
+- **Claude's unasked choices, flagged to the owner:**
+  - Collect scrap is safe with only asteroids around.
+  - An impact leaves no debris.
+  - Every kind uses the plain hunter's debris table.
+  - The fr/es strings are drafts.
+  - "{{kind}} ×{{count}}" replaced the plural "N more hunters" label.
+
+## 2026-11-12: Bots shoot Aracks first, never asteroids
+
+- **Decision (owner):** bots shoot Aracks first and leave asteroids alone, since the way to escape an asteroid is to travel. Claude read "not asteroids" as "never shoot them" rather than "don't prioritise them", and said so.
+- **What was built:**
+  - `server/src/bots/goals/hunterTargets.ts`: `shotOrder` puts Aracks first, then the weakest, and drops asteroids. Both the turret and patrol goals use it.
+  - `onlyAsteroids` keeps both goals off while the only hunters are asteroids. A bot sees the hunter list only at a turret or in flight, so `BotMemory.asteroidsOnly` remembers the public count from its last asteroid-only sighting and trusts it while the count is unchanged. Without that, a Gunner would walk to a turret every cycle, and a Pilot would take off and land again for nothing.
+- **Also:** filed [#422](https://github.com/nearbear/mush2/issues/422) (per-kind debris tables) under the Rules epic, at the owner's yes.
+- **What needed care:** `verify` failed twice in its test step and then passed unchanged, with nothing in the captured log naming a test. It looks flaky under load from parallel sessions, but that wasn't confirmed.

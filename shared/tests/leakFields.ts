@@ -73,7 +73,7 @@ export const GAME_STATE_FIELDS: Record<string, FieldRule> = {
   navigation: { reach: "room", test: "navigation.test.ts", note: "`heading` to the living at a Command terminal; `orbit` only as a public in-orbit flag, the planet id to its finder alone (as `orbited` on their planet); `lastTurn` public to everyone (owner, 2026-10-29)." },
   comms: { reach: "room", test: "comms.test.ts", note: "`linked` to everyone; the terminal screen to the living at a Com center terminal, with the Xyloph entries drawn so far (in database order)." },
   titles: { reach: "public", test: "titles.test.ts", note: "Holders and lines, by character (owner, 2026-10-20)." },
-  hunters: { reach: "room", test: "hunters.test.ts", note: "How many, to everyone; each hunter's hp and id to the living in a turret room; `points`, `since`, `nextId`, `hitChance` and `target` never (leaks.test.ts)." },
+  hunters: { reach: "room", test: "hunters.test.ts", note: "How many, to everyone; each hunter's id, kind, hp and countdown to the living in a turret room or flying a patrol ship (kind and countdown: hunterTypes.test.ts); `points`, `since`, `nextId`, `hitChance` and `target` never (leaks.test.ts)." },
   turrets: { reach: "room", test: "hunters.test.ts", note: "Every turret's charges, to the living in a turret room." },
   incidentPoints: { reach: "never", test: "leaks.test.ts", note: "The incident pool (#189): no one, no skill or role." },
   pendingFires: { reach: "never", test: "leaks.test.ts", note: "Rooms a Pyromaniac set to ignite at the next cycle change (2026-11-03)." },

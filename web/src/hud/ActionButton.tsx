@@ -103,6 +103,8 @@ export function DisabledActionButton({ view, blocked, children, className, hint 
       ? t("actions.lacksPasiphae")
       : lacks[0] === "reactor"
       ? t(blocked.action.type === "travel" ? "actions.lacksReactorTravel" : "actions.lacksReactorTurn")
+      : lacks[0] === "arack"
+      ? t("actions.lacksArack")
       : lacks[0] === "clean"
       ? t("actions.lacksClean")
       : lacks[0] === "capacity"

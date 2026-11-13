@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { NO_FORMATION, aimedSlot, hunterIn, stepAim, track } from "../../src/hud/hunterSlots.ts";
+import { NO_FORMATION, aimedSlot, hunterIn, nextOfKind, stepAim, track } from "../../src/hud/hunterSlots.ts";
 
-const h = (id: string, hp = 6) => ({ id, hp });
+const h = (id: string, hp = 6, type = "hunter") => ({ id, hp, type });
 
 describe("hunter slots", () => {
   it("gives new hunters the lowest free slots, in list order", () => {
@@ -42,5 +42,20 @@ describe("hunter slots", () => {
     expect(stepAim(f, 2, 1)).toBe(0);
     expect(stepAim(f, 0, -1)).toBe(2);
     expect(stepAim(NO_FORMATION, 5, 1)).toBe(5);
+  });
+
+  it("numbers hunters within their kind, keeping each number while the hunter lives", () => {
+    const first = track(NO_FORMATION, [h("a"), h("s", 6, "spider"), h("b"), h("t", 6, "spider")]);
+    expect(first.numbers).toEqual({ a: 1, s: 1, b: 2, t: 2 });
+    const second = track(first, [h("b"), h("t", 6, "spider"), h("c"), h("u", 6, "spider")]);
+    expect(second.numbers).toEqual({ b: 2, t: 2, c: 1, u: 1 });
+  });
+
+  it("steps the pack to the next hunter of a kind, wrapping", () => {
+    const f = track(NO_FORMATION, [h("a"), h("s", 6, "spider"), h("b"), h("t", 6, "spider")]);
+    expect(nextOfKind(f, 0, "spider")).toBe(1);
+    expect(nextOfKind(f, 1, "spider")).toBe(3);
+    expect(nextOfKind(f, 3, "spider")).toBe(1);
+    expect(nextOfKind(f, 1, "dice")).toBe(1);
   });
 });

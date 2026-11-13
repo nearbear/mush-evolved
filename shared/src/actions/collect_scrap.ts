@@ -1,6 +1,6 @@
 import { Action, NO_DEBRIS, PASIPHAE_INTACT, type ActionVisibility, isString } from "./action.ts";
 import { damage } from "../death.ts";
-import { destroyPatrolShip } from "../hunters.ts";
+import { destroyPatrolShip, shootingHunters } from "../hunters.ts";
 import { logPrivate } from "../log.ts";
 import { canScavenge, commandId, onPlanet, shipAboard } from "../patrol.ts";
 import { roll, rollFloat, rollShuffle, rollWeighted } from "../rng.ts";
@@ -49,7 +49,8 @@ export class CollectScrapAction extends Action<CollectScrapActionData> {
     state.space = state.space.filter((debris) => !picked.has(debris));
     if (count > 0) logPrivate(state, player.id, "scrapCollected", { count });
     else logPrivate(state, player.id, "scrapNotFound");
-    if (state.hunters.list.length === 0) return;
+    // Only hunters that shoot: asteroids don't (owner, 2026-11-12, #388; eMush's CollectScrap).
+    if (shootingHunters(state) === 0) return;
     const armorLoss = roll(state, armor);
     const hpLoss = rollFloat(state) < hp.noneChance ? 0 : roll(state, hp.range);
     const shipState = state.patrolShips[ship.id]!;

@@ -11,7 +11,7 @@ import type { ChannelId, ChatLine, ChatMessage, ChatThread, PrivateChannel, Shar
 import type { Plan } from "./plan.ts";
 import type { MovementRules } from "./config.ts";
 import type { ActionInProgress, PlayerState, Spot } from "./player.ts";
-import type { ExpeditionReport, GameState, ShipResources } from "./state.ts";
+import type { ExpeditionReport, GameState, HunterType, ShipResources } from "./state.ts";
 
 /** Room equipment as a client sees it. */
 export interface EquipmentView {
@@ -157,6 +157,14 @@ export interface PublicConfig {
  */
 export type YouView = Omit<PlayerState, "name" | "mind" | "transferUsed" | "epigeneticsUsed" | "history" | "current" | "queue" | "lastSeenAt" | "inactivity"> & { current: ActionInProgress | null; queue: Action[] };
 
+/** A hunter as a turret or a patrol ship's cockpit shows it: its kind, hp, and an asteroid's cycle changes to impact (null otherwise). */
+export interface HunterView {
+  id: string;
+  type: HunterType;
+  hp: number;
+  countdown: number | null;
+}
+
 export interface PlayerView {
   you: YouView;
   /** Every status you have, public and private, stored and derived (statuses.ts). */
@@ -295,10 +303,10 @@ export interface PlayerView {
   bios: BiosState | null;
   /**
    * Hunters attacking the ship (owner, 2026-10-24): how many, to everyone. `list` (each hunter's hp) only while you are
-   * alive in a turret room or flying a ship (owner, 2026-10-28); `turrets` (charges by turret equipment id) only while
+   * alive in a turret room or flying a ship (owner, 2026-10-28), with its kind and an asteroid's countdown (#388); `turrets` (charges by turret equipment id) only while
    * you are alive in a turret room. Otherwise null.
    */
-  hunters: { count: number; list: { id: string; hp: number }[] | null; turrets: Record<string, number> | null };
+  hunters: { count: number; list: HunterView[] | null; turrets: Record<string, number> | null };
   /**
    * Reports of the expeditions you went on, oldest first, while you are alive (owner, 2026-10-31): nobody else's, and
    * without the members' seat ids (the crew is by character).
@@ -375,9 +383,9 @@ export interface ActionOption {
   tags: ActionTag[];
   /**
    * Empty when you can do it now; otherwise the points, the inventory space, or the cleanliness ("clean": you are dirty)
-   * you lack, or for Collect scrap, "debris" (none out there) or "pasiphae" (a patrol ship can't while the Pasiphae exists), or for Travel and turns, "reactor" (the reactor it needs is broken). See `affordable`.
+   * you lack, or for Collect scrap, "debris" (none out there) or "pasiphae" (a patrol ship can't while the Pasiphae exists), or for Travel and turns, "reactor" (the reactor it needs is broken), or for Travel and Leave orbit, "arack" (an Arack is around). See `affordable`.
    */
-  lacks: ("ap" | "mp" | "space" | "cooldown" | "capacity" | "clean" | "debris" | "pasiphae" | "reactor")[];
+  lacks: ("ap" | "mp" | "space" | "cooldown" | "capacity" | "clean" | "debris" | "pasiphae" | "reactor" | "arack")[];
   /** Cycles until it is ready, when `lacks` has "cooldown". */
   cooldown?: number;
 }

@@ -613,7 +613,15 @@ export function normalizeHunterTarget(raw: Partial<HunterTarget>): HunterTarget 
 
 export function normalizeHunter(raw: Partial<Hunter>): Hunter {
   const t = "Hunter";
-  return stripUndefined<Hunter>({ id: need(raw, "id", t), hp: need(raw, "hp", t), hitChance: need(raw, "hitChance", t), target: orNull(need(raw, "target", t), normalizeHunterTarget) });
+  // `type` and `countdown` came with the other kinds (#388): a hunter stored before them is a plain hunter.
+  return stripUndefined<Hunter>({
+    id: need(raw, "id", t),
+    type: added(raw, "type", "hunter"),
+    hp: need(raw, "hp", t),
+    hitChance: need(raw, "hitChance", t),
+    target: orNull(need(raw, "target", t), normalizeHunterTarget),
+    countdown: added(raw, "countdown", null),
+  });
 }
 
 type Hunters = GameCore["hunters"];
