@@ -1,7 +1,7 @@
 // The Command terminal's steering (owner, 2026-10-22): the heading and whether the ship is in orbit, then, for the
 // Commander, turn left or right, and travel as far as the fuel loaded in the combustion chamber (or leave orbit). Every button comes from view.actions.
-// While an expedition is out (public, `view.expedition`), travel and leave orbit ask first, since the jump strands its
-// crew (owner, 2026-11-07, #356). Cosmetic only: confirming always goes through.
+// Travel and leave orbit always ask first, with one static warning about what a jump can cost (patrol ships in flight, an expedition out,
+// a rebel signal being decoded), whatever the ship's state (owner, 2026-11-12). Cosmetic only: confirming always goes through.
 
 import { PLANET_DIRECTIONS, type Action, type EquipmentView, type PlayerView } from "@mush2/shared";
 import { useState } from "react";
@@ -21,8 +21,8 @@ export function ShipNavigation({ terminal, view, onAction }: Props) {
   const { t } = useTranslation();
   const [confirming, setConfirming] = useState<Action | null>(null);
   const { heading, orbiting, traveling } = view.navigation;
-  /** A jump goes at once, or asks first while a crew is out. */
-  const jump = (action: Action) => (view.expedition ? setConfirming(action) : onAction(action));
+  /** A jump always asks first. */
+  const jump = (action: Action) => setConfirming(action);
   const here = view.actions.filter(({ action: a }) => "equipment" in a && a.equipment === terminal.id);
   const turns = here.filter(({ action: a }) => a.type === "turn_ship");
   const travel = here.find(({ action: a }) => a.type === "travel");
@@ -75,9 +75,9 @@ export function ShipNavigation({ terminal, view, onAction }: Props) {
       <ConfirmPanel
         open={confirming !== null}
         onOpenChange={(open) => !open && setConfirming(null)}
-        message={t("navigation.strandConfirm", { planet: view.expedition?.planet ?? "" })}
+        message={t("navigation.jumpConfirm")}
         yesLabel={confirming?.type === "leave_orbit" ? t("navigation.leaveOrbit") : t("navigation.travel")}
-        backLabel={t("navigation.strandBack")}
+        backLabel={t("navigation.jumpBack")}
         onYes={() => {
           if (confirming) onAction(confirming);
           setConfirming(null);

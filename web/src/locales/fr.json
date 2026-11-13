@@ -1628,8 +1628,8 @@
     "right": "Orienter à droite",
     "travel": "Voyager",
     "leaveOrbit": "Quitter l'orbite",
-    "strandConfirm": "Une expédition est encore sur {{planet}}. Sauter maintenant abandonne son équipage : sans rapatriement magnétique, il meurt et l'Icarus est perdu.",
-    "strandBack": "Retour",
+    "jumpConfirm": "Attention : déplacer le vaisseau peut avoir des conséquences majeures. Les patrouilleurs en vol sont perdus avec leurs pilotes, une expédition encore dehors est abandonnée, et un signal rebelle en cours de décodage est perdu. Consultez vos coéquipiers avant de continuer.",
+    "jumpBack": "Retour",
     "warning": "Voyager brûle tout le fuel de la chambre de combustion, et le vaisseau avance d'autant. Sans fuel chargé, les PA sont perdus. Toute planète qui ne se trouve pas droit devant à cette distance est perdue."
   },
   "turret": {
