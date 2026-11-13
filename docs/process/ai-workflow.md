@@ -3342,3 +3342,12 @@ Four questions went to the owner first, each one where the plan conflicted with 
   - Every kind uses the plain hunter's debris table.
   - The fr/es strings are drafts.
   - "{{kind}} ×{{count}}" replaced the plural "N more hunters" label.
+
+## 2026-11-12: Bots shoot Aracks first, never asteroids
+
+- **Decision (owner):** bots shoot Aracks first and leave asteroids alone, since the way to escape an asteroid is to travel. Claude read "not asteroids" as "never shoot them" rather than "don't prioritise them", and said so.
+- **What was built:**
+  - `server/src/bots/goals/hunterTargets.ts`: `shotOrder` puts Aracks first, then the weakest, and drops asteroids. Both the turret and patrol goals use it.
+  - `onlyAsteroids` keeps both goals off while the only hunters are asteroids. A bot sees the hunter list only at a turret or in flight, so `BotMemory.asteroidsOnly` remembers the public count from its last asteroid-only sighting and trusts it while the count is unchanged. Without that, a Gunner would walk to a turret every cycle, and a Pilot would take off and land again for nothing.
+- **Also:** filed [#422](https://github.com/nearbear/mush2/issues/422) (per-kind debris tables) under the Rules epic, at the owner's yes.
+- **What needed care:** `verify` failed twice in its test step and then passed unchanged, with nothing in the captured log naming a test. It looks flaky under load from parallel sessions, but that wasn't confirmed.

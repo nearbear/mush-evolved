@@ -52,6 +52,11 @@ export interface BotMemory {
    * alternates (owner, 2026-11-12, #417). Null until then.
    */
   lastExpedition: ExpeditionKind | null;
+  /**
+   * The public hunter count when this bot last saw a hunter list of nothing but asteroids (at a turret or in flight),
+   * else null: bots don't shoot asteroids, so the hunter goals stay off while the count is unchanged (`onlyAsteroids`).
+   */
+  asteroidsOnly: number | null;
   /** A seeded roll in [0, n), for choices with no better reason (the bot's own RNG, never `Math.random`). */
   roll(n: number): number;
 }
