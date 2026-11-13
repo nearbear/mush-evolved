@@ -22,7 +22,7 @@ function ship(config: Partial<GameConfig> = {}): GameState {
   const s = createGame(makeSeats(3), noHunters({ ...DEFAULT_CONFIG, mushCount: 1, startItems: [], ...config }), 3);
   player(s, "p0").room = player(s, "p1").room = TURRET_ROOM;
   player(s, "p2").room = "LABORATORY";
-  s.hunters.list.push({ id: "h1", hp: s.config.hunters.hp, hitChance: s.config.hunters.hitChance, target: null });
+  s.hunters.list.push({ id: "h1", hp: s.config.hunters.types.hunter.hp, hitChance: s.config.hunters.types.hunter.hitChance, target: null, type: "hunter", countdown: null });
   return s;
 }
 
@@ -58,7 +58,7 @@ describe("hunter waves", () => {
     const count = Math.floor(before / 10);
     expect(s.hunters.list).toHaveLength(count);
     expect(s.hunters.points).toBe(before % 10);
-    expect(s.hunters.list[0]).toEqual({ id: "hunter-1", hp: 6, hitChance: 0.8, target: null });
+    expect(s.hunters.list[0]).toEqual({ id: "hunter-1", hp: 6, hitChance: 0.8, target: null, type: "hunter", countdown: null });
     // Found by key: other lines (a wandering drone's, #411) may come after it.
     const wave = s.log.findLast((e) => e.key === "hunterWave");
     expect(wave).toMatchObject({ params: { count }, visibleTo: "all", level: "warning" });
@@ -130,7 +130,7 @@ describe("the cycle change", () => {
 describe("shooting from a turret", () => {
   it("is offered at a turret for each hunter, to anyone alive (Mush and dirty included), for 1 AP at 30%", () => {
     const s = ship();
-    s.hunters.list.push({ id: "h2", hp: 6, hitChance: 0.8, target: null });
+    s.hunters.list.push({ id: "h2", hp: 6, hitChance: 0.8, target: null, type: "hunter", countdown: null });
     player(s, "p1").statuses.push("dirty");
     for (const id of ["p0", "p1"]) expect(offered(s, id).filter((a) => a.type === "turret_attack")).toEqual([shoot("h1"), shoot("h2")]);
     expect(offered(s, "p2").filter((a) => a.type === "turret_attack")).toEqual([]);
@@ -189,7 +189,7 @@ describe("shooting from a turret", () => {
     s.turrets[TURRET] = 2;
     expect(viewFor(s, "p0").hunters).toEqual({
       count: 1,
-      list: [{ id: "h1", hp: 6 }],
+      list: [{ id: "h1", type: "hunter", hp: 6, countdown: null }],
       turrets: expect.objectContaining({ [TURRET]: 2, "LASER_TURRET_B_2:TURRET_COMMAND": 4 }),
     });
     expect(Object.keys(viewFor(s, "p0").hunters.turrets!)).toHaveLength(6);
@@ -264,7 +264,7 @@ describe("hunters following a jump", () => {
     player(s, "p0").room = "COMMAND_CENTER";
     s.titles.commander = "p0";
     s.ship.combustion = 2;
-    s.hunters.list = Array.from({ length: n }, (_, i) => ({ id: `h${i + 1}`, hp: i + 1, hitChance: 0.9, target: { kind: "ship" } }));
+    s.hunters.list = Array.from({ length: n }, (_, i) => ({ id: `h${i + 1}`, hp: i + 1, hitChance: 0.9, target: { kind: "ship" }, type: "hunter", countdown: null }));
     return s;
   }
 
@@ -274,7 +274,7 @@ describe("hunters following a jump", () => {
       const next = must(applyAction(s, "p0", travel));
       expect(next.hunters.list).toHaveLength(Math.ceil(n * DEFAULT_CONFIG.hunters.followShare));
       for (const h of next.hunters.list) {
-        expect(h).toEqual({ id: h.id, hp: s.hunters.list.find((o) => o.id === h.id)!.hp, hitChance: s.config.hunters.hitChance, target: null });
+        expect(h).toEqual({ id: h.id, hp: s.hunters.list.find((o) => o.id === h.id)!.hp, hitChance: s.config.hunters.types.hunter.hitChance, target: null, type: "hunter", countdown: null });
       }
       expect(next.hunters.points).toBe(s.hunters.points);
     }

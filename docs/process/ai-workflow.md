@@ -3331,3 +3331,14 @@ Four questions went to the owner first, each one where the plan conflicted with 
 ## 2026-11-12: Mobile iTrackie bottom-nav unread badge
 
 - **Built:** added `totalUnread` in `web/src/hud/chatTabs.ts` summing `unreadCount` across `view.readChannels`, wired `useReadSnapshot()` into `web/src/hud/BottomNav.tsx` (`view` prop passed from `GameView.tsx`) so the `iTrackie` button renders `.tab-badge` (`99+` cap) and uses `itrackie.unreadTab` for its `aria-label` when unread > 0. Updated `tools/src/play/screenshot.ts`'s `nav` helper regex so tapping `"iTrackie"` works even when unread counts appear in its accessible name, and added unit/jsdom tests in `chatRead.test.ts` and `readMarking.test.tsx`.
+## 2026-11-12: Other hunter types (#388)
+
+- **Decision:** the owner chose all four of eMush's other kinds (Arack, asteroid, D1000, Trax) with eMush's numbers and behaviour: a weighted wave draw from day 5 (D1000 from day 10), the Arack blocking travel and leaving orbit, the D1000 acting 3 times with armor 1, every Trax following a jump, and asteroids hitting through the shield for their hp after 6 cycles.
+- **What worked:** the work was split across two sessions with a handoff file in the worktree's scratchpad. The second session picked it up cold and finished the client (sprites per kind, per-kind numbering in the cockpit's formation, one pack button per kind, the countdown), the en/fr/es strings, and the docs. A forked leak check confirmed the view only gains kind and countdown under the existing turret/pilot rule. It noted that the Arack refusal tells the Commander a kind exists, which the owner decided to allow.
+- **What needed correction:** the first session changed the design-kit samples to 6 mixed hunters but didn't update their test, and verify caught it. Worktree isolation refused inline Python heredocs with template literals, so the edits went through scripts in the scratchpad.
+- **Claude's unasked choices, flagged to the owner:**
+  - Collect scrap is safe with only asteroids around.
+  - An impact leaves no debris.
+  - Every kind uses the plain hunter's debris table.
+  - The fr/es strings are drafts.
+  - "{{kind}} ×{{count}}" replaced the plural "N more hunters" label.

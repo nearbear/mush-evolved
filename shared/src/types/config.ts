@@ -2,6 +2,22 @@ import type { IncidentId } from "../incidents.ts";
 import type { PlanetDirection } from "../planets.ts";
 import type { PlantState, RoomId } from "../types.ts";
 import type { StatusId } from "../statuses.ts";
+import type { HunterType } from "./state.ts";
+
+/** One kind of hunter (owner, 2026-11-12, #388; eMush's `HunterConfigData`). */
+export interface HunterTypeConfig {
+  hp: number;
+  damage: [number, number]; // Damage per hit, uniform.
+  hitChance: number; // Its chance to hit, 0 to 1, back to this after a hit.
+  actions: number; // Actions each cycle change (pick a target, or shoot); 0 for the asteroid, which only counts down.
+  armor: number; // Taken off each hit it receives, down to 0.
+  cost: number; // Pool points a wave spends on it.
+  weight: number; // Its weight in a wave's draw.
+  fromDay: number; // The first day a wave can draw it.
+  maxPerWave: number | null; // At most this many in one wave; null: no cap.
+  follows: "share" | "all" | "never"; // On a jump: part of the `followShare` draw, always, or never.
+  countdown: number | null; // Cycle changes before it hits the Daedalus for its hp and is gone (the asteroid); null: never.
+}
 
 /** `T` with every field read-only, all the way down. */
 export type DeepReadonly<T> = T extends (...args: never[]) => unknown ? T : T extends object ? { readonly [K in keyof T]: DeepReadonly<T[K]> } : T;
@@ -518,19 +534,18 @@ export interface GameConfig {
   };
   // Hunters (owner, 2026-10-24, #208; eMush's numbers). A server-only pool starts at `points.start` when Mush are chosen and gains
   // day + `points.perCycle` each cycle change, + `hardBonus` from `hardFromDay`, + `veryHardBonus` instead from `veryHardFromDay`.
-  // Each cycle change after the first `safeCycles`, a `waveChance` roll spends it on one hunter per `points.perHunter`.
+  // Each cycle change after the first `safeCycles`, a `waveChance` roll spends it on a wave: hunters drawn one at a time by
+  // `types[*].weight` among the kinds it can still afford, the rest carried over (owner, 2026-11-12, #388).
   hunters: {
-    points: { start: number; perCycle: number; hardFromDay: number; hardBonus: number; veryHardFromDay: number; veryHardBonus: number; perHunter: number };
+    points: { start: number; perCycle: number; hardFromDay: number; hardBonus: number; veryHardFromDay: number; veryHardBonus: number };
     waveChance: number;
     safeCycles: number;
-    hp: number;
-    damage: [number, number]; // Damage to the ship per hit, uniform.
-    hitChance: number; // A hunter's chance to hit, 0 to 1, back to this after a hit.
     missBonus: number; // Added to the hunter's chance after each miss.
-    followShare: number; // Share of the hunters that follow a jump (travel or leaving orbit), rounded up.
+    followShare: number; // Share of the hunters whose kind `follows: "share"` that follow a jump (travel or leaving orbit), rounded up.
     patrolTargetChance: number; // Chance a hunter picking a target aims at a patrol ship in flight (one at random), when any is out.
     // What a destroyed hunter leaves in space: weights by piece count (index = count), and by item type for each piece.
     debris: { count: number[]; types: Record<string, number> };
+    types: Record<HunterType, HunterTypeConfig>;
   };
   // Turrets (owner, 2026-10-24, the wiki's Tourelle): 1 AP, a charge per shot, 30% to hit, x1.25 per miss in a row, reset by a hit.
   turrets: { cost: { ap: number }; chance: number; failureMultiplier: number; damage: [number, number]; charges: number; rechargePerCycle: number };

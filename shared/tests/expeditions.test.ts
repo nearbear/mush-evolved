@@ -1336,7 +1336,7 @@ describe("expeditions, phase 5: hold extension, patrol-ship landings, no droppin
 
   it("hunters aiming at the ship pick another target at once, and can't aim at it on the planet", () => {
     const s = flying({ events: only({ kind: "nothing", weight: 1 }) });
-    s.hunters.list.push({ id: "h1", hp: 6, hitChance: 0.8, target: { kind: "patrol", id: LONGANE.id } });
+    s.hunters.list.push({ id: "h1", hp: 6, hitChance: 0.8, target: { kind: "patrol", id: LONGANE.id }, type: "hunter", countdown: null });
     const next = must(applyAction(s, "p0", landOn));
     expect(next.hunters.list[0]!.target).toEqual({ kind: "ship" });
     expect(shipsInFlight(next)).toEqual([]);

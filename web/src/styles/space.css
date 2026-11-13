@@ -161,7 +161,8 @@
     var(--mark) 100% 100% / 12px 2px,
     var(--mark) 100% 100% / 2px 12px;
 }
-.space-reticle .fx-sprite {
+/* Only the plain hunter is doubled (PatrolCockpit's `aimScale`); the other kinds' sprites are big already. */
+.space-reticle .fx-sprite.x2 {
   transform: scale(2);
   transform-origin: 0 0;
 }

@@ -1,6 +1,6 @@
-import { Action, isString, REACTOR_BROKEN } from "./action.ts";
+import { Action, ARACK_AROUND, isString, REACTOR_BROKEN } from "./action.ts";
 import { endRebelCalls } from "../comms.ts";
-import { huntersFollow, loseShipsInFlight } from "../hunters.ts";
+import { arackAround, huntersFollow, loseShipsInFlight } from "../hunters.ts";
 import { pullShipsAboard } from "./land.ts";
 import { strandExpedition } from "../expeditions.ts";
 import { logPublic } from "../log.ts";
@@ -44,6 +44,8 @@ export class TravelAction extends Action<TravelActionData> {
     if (state.navigation.orbit !== null) return "in_orbit";
     if (isTraveling(state)) return "traveling";
     if (!canTravel(state)) return REACTOR_BROKEN;
+    // Owner, 2026-11-12 (#388; eMush): an Arack around stops the jump, no AP spent.
+    if (arackAround(state)) return ARACK_AROUND;
     return null;
   }
 

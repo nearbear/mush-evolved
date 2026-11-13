@@ -223,12 +223,25 @@ export interface GameState extends GameCore {
  */
 export type HunterTarget = { kind: "ship" } | { kind: "patrol"; id: RoomId };
 
-/** A hunter (hunters.ts). `hitChance` (0 to 1) and `target` (null until it picks one) are never sent. */
+/**
+ * The kinds of hunter (owner, 2026-11-12, #388; eMush's `HunterEnum`). Permanent ids: what players see is in the
+ * locales (`spider` is the Arack, `dice` the D1000).
+ */
+export const HUNTER_TYPES = ["hunter", "spider", "asteroid", "dice", "trax"] as const;
+export type HunterType = (typeof HUNTER_TYPES)[number];
+
+/**
+ * A hunter (hunters.ts). `hitChance` (0 to 1) and `target` (null until it picks one) are never sent. `countdown` is an
+ * asteroid's cycle changes left before it hits the Daedalus (null for every other kind). Its kind, hp and countdown go
+ * to the living in a turret room or flying a patrol ship.
+ */
 export interface Hunter {
   id: string;
+  type: HunterType;
   hp: number;
   hitChance: number;
   target: HunterTarget | null;
+  countdown: number | null;
 }
 
 /** A shared planet's entry, with the id of the finder's planet it came from (never sent: it ties entries to planets). */

@@ -14,7 +14,7 @@ const shoot: Action = { type: "turret_attack", equipment: TURRET, hunter: "h1" }
 function ship(config: Partial<GameConfig> = {}): GameState {
   const s = createGame(makeSeats(3), noHunters({ ...DEFAULT_CONFIG, mushCount: 1, startItems: [], ...config }), 3);
   player(s, "p0").room = TURRET_ROOM;
-  s.hunters.list.push({ id: "h1", hp: 100, hitChance: s.config.hunters.hitChance, target: null });
+  s.hunters.list.push({ id: "h1", hp: 100, hitChance: s.config.hunters.types.hunter.hitChance, target: null, type: "hunter", countdown: null });
   return s;
 }
 

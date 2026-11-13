@@ -385,8 +385,8 @@ describe("shootHunters", () => {
       p.resources.shoot = 0;
     });
     game.hunters.list = [
-      { id: "h1", hp: 6, hitChance: 0, target: null },
-      { id: "h2", hp: 2, hitChance: 0, target: null },
+      { id: "h1", hp: 6, hitChance: 0, target: null, type: "hunter", countdown: null },
+      { id: "h2", hp: 2, hitChance: 0, target: null, type: "hunter", countdown: null },
     ];
     return { game, id };
   }
@@ -407,7 +407,7 @@ describe("shootHunters", () => {
     for (const t of Object.values(start.equipment).flat().filter((e) => e.type === "TURRET_COMMAND")) start.turrets[t.id] = 20;
     start.hunters.list[0]!.hp = 99;
     start.hunters.list[1]!.hp = 99;
-    start.hunters.list.push({ id: "h3", hp: 1, hitChance: 0, target: null });
+    start.hunters.list.push({ id: "h3", hp: 1, hitChance: 0, target: null, type: "hunter", countdown: null });
     const { game: end, taken } = await untilReady(start, id, new GoalBot(1, 2, [shootHunters]));
     const shots = taken.filter((a) => a.type === "turret_attack");
     expect(shots[0]).toMatchObject({ hunter: "h3" });
@@ -442,7 +442,7 @@ describe("shootHunters", () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     game = r.state;
-    game.hunters.list = [{ id: "h1", hp: 6, hitChance: 0, target: null }];
+    game.hunters.list = [{ id: "h1", hp: 6, hitChance: 0, target: null, type: "hunter", countdown: null }];
     let cycles = 0;
     const nextCycle = (ap: number): PlayerView => {
       const view = viewFor(edit(game, id, (p) => (p.ap = ap)), id);
@@ -484,8 +484,8 @@ describe("patrolShootHunters", () => {
       p.resources.shoot = 0;
     });
     game.hunters.list = [
-      { id: "h1", hp: 99, hitChance: 0, target: null },
-      { id: "h2", hp: 99, hitChance: 0, target: null },
+      { id: "h1", hp: 99, hitChance: 0, target: null, type: "hunter", countdown: null },
+      { id: "h2", hp: 99, hitChance: 0, target: null, type: "hunter", countdown: null },
     ];
     return { game, id };
   }
