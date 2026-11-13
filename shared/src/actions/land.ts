@@ -3,7 +3,8 @@ import { board, manoeuvre } from "./takeoff.ts";
 import { retargetHunters } from "../hunters.ts";
 import { sameContainer } from "../items.ts";
 import { logSecret } from "../log.ts";
-import { commandId, onPlanet, type PatrolShip, shipAboard } from "../patrol.ts";
+import { commandId, onPlanet, type PatrolShip, shipAboard, shipsInFlight } from "../patrol.ts";
+import { projectDone } from "../projects.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
 export type LandActionData = { type: "land"; equipment: string };
@@ -51,17 +52,33 @@ export class LandAction extends Action<LandActionData> {
 
 /**
  * The ship back in its bay with its pilot, without the maneuver: a landing, or the end of a patrol ship's expedition
- * on a planet (expeditions.ts, owner, 2026-11-09, #359). Mutates a cloned state.
+ * on a planet (expeditions.ts, owner, 2026-11-09, #359). With no pilot (a Magnetic net recall of an empty ship) it docks
+ * silently. Mutates a cloned state.
  */
-export function dock(state: GameState, player: PlayerState, ship: PatrolShip): void {
-  board(player, ship.bay);
+export function dock(state: GameState, player: PlayerState | null, ship: PatrolShip): void {
+  if (player) board(player, ship.bay);
   const shipState = state.patrolShips[ship.id]!;
   shipState.out = false;
   shipState.onPlanet = null;
   retargetHunters(state, ship, { kind: "ship" });
-  logSecret(state, player.id, "patrolLanded", { name: player.character, room: ship.id });
+  if (player) logSecret(state, player.id, "patrolLanded", { name: player.character, room: ship.id });
   const cargo = state.items.filter((item) => sameContainer(item.at, { kind: "room", id: ship.id }));
   for (const item of cargo) item.at = { kind: "room", id: ship.bay };
   const count = cargo.filter((item) => item.hiddenBy === undefined).length;
-  if (count > 0) logSecret(state, player.id, "patrolUnloaded", { name: player.character, count });
+  if (player && count > 0) logSecret(state, player.id, "patrolUnloaded", { name: player.character, count });
+}
+
+/**
+ * The Daedalus jumps with Magnetic net done (owner, 2026-11-12): every patrol ship in flight docks in its bay at once
+ * instead of being lost, always cleanly (no manoeuvre roll), as in the original. No switch. Seen only as a landing: the
+ * usual secret line in the bay, nothing ship-wide. Ships on a planet are Magnetic return's (expeditions.ts). Mutates a
+ * cloned state.
+ */
+export function pullShipsAboard(state: GameState): void {
+  if (!projectDone(state, "MAGNETIC_NET")) return;
+  for (const ship of shipsInFlight(state)) {
+    const [pilot, ...others] = state.players.filter((p) => p.alive && p.room === ship.id);
+    dock(state, pilot ?? null, ship);
+    for (const p of others) board(p, ship.bay);
+  }
 }

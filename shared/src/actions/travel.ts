@@ -1,6 +1,7 @@
 import { Action, isString, REACTOR_BROKEN } from "./action.ts";
 import { endRebelCalls } from "../comms.ts";
 import { huntersFollow, loseShipsInFlight } from "../hunters.ts";
+import { pullShipsAboard } from "./land.ts";
 import { strandExpedition } from "../expeditions.ts";
 import { logPublic } from "../log.ts";
 import { canSteer, canTravel, isTraveling, planetAt } from "../navigation.ts";
@@ -72,6 +73,7 @@ export function jump(state: GameState, player: Readonly<PlayerState>, distance: 
   // The lost planets' entries no longer apply; the destination's stays, as the planet stays in play (owner, 2026-10-31).
   markSharedPlanetsStale(state, found ? found[1].id : null);
   logPublic(state, undefined, "shipTraveled", { name: player.character });
+  pullShipsAboard(state);
   loseShipsInFlight(state);
   strandExpedition(state);
   state.navigation.orbit = null;

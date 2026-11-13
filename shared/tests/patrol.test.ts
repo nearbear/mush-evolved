@@ -405,6 +405,63 @@ describe("hunters and ships in flight", () => {
       expect(lines(next, "p1", "patrolLost")).toMatchObject([{ params: { room: LONGANE.id }, level: "warning" }]);
     }
   });
+
+  describe("with Magnetic net (owner, 2026-11-12)", () => {
+    const terminal = "COMMAND_CENTER:PILOT_MODULE";
+    /** p0 flies Longane, p2 commands from the bridge, p1 waits in Bay Alpha; the net is done. */
+    function netted(config: Partial<GameConfig> = {}): GameState {
+      const s = flying(config);
+      s.projects.MAGNETIC_NET = 100;
+      player(s, "p2").room = "COMMAND_CENTER";
+      s.titles.commander = "p2";
+      s.ship.combustion = 2;
+      return s;
+    }
+
+    it("a jump (travel or leaving orbit) docks every ship in flight in its bay, its pilot with it", () => {
+      for (const jump of [{ type: "travel", equipment: terminal }, { type: "leave_orbit", equipment: terminal }] as Action[]) {
+        const s = netted();
+        if (jump.type === "leave_orbit") s.navigation.orbit = "planet-x";
+        const next = mustApply(s, "p2", jump);
+        expect(next.patrolShips[LONGANE.id]).toMatchObject({ out: false, destroyed: false });
+        expect(player(next, "p0")).toMatchObject({ alive: true, room: LONGANE.bay });
+        expect(lines(next, "p1", "patrolLost")).toEqual([]);
+      }
+    });
+
+    it("always lands cleanly, without the manoeuvre roll", () => {
+      const s = netted({ patrol: { ...DEFAULT_CONFIG.patrol, cleanChance: 0 } });
+      player(s, "p0").skills = []; // not a Pilot any more: a normal landing would be rough
+      const next = mustApply(s, "p2", { type: "travel", equipment: terminal });
+      expect([next.ship.hull, next.patrolShips[LONGANE.id]!.armor]).toEqual([s.ship.hull, s.patrolShips[LONGANE.id]!.armor]);
+      expect(lines(next, "p0", "patrolRough")).toEqual([]);
+    });
+
+    it("is seen only as a landing in the bay, not ship-wide", () => {
+      const next = mustApply(netted(), "p2", { type: "travel", equipment: terminal });
+      expect(lines(next, "p1", "patrolLanded")).toMatchObject([{ params: { name: player(next, "p0").character, room: LONGANE.id } }]);
+      expect(lines(next, "p2", "patrolLanded")).toEqual([]);
+    });
+
+    it("unloads the ship's cargo into the bay and turns its hunters to the Daedalus; the debris outside is still lost", () => {
+      const s = netted();
+      s.items.push({ id: "scrap", type: "METAL_SCRAPS", at: { kind: "room", id: LONGANE.id } } as GameState["items"][number]);
+      s.hunters.list[0]!.target = { kind: "patrol", id: LONGANE.id };
+      s.space.push({ id: "floating", type: "METAL_SCRAPS" } as GameState["space"][number]);
+      const next = mustApply(s, "p2", { type: "travel", equipment: terminal });
+      expect(next.items.find((i) => i.id === "scrap")!.at).toEqual({ kind: "room", id: LONGANE.bay });
+      expect(next.space).toEqual([]);
+      for (const h of next.hunters.list) expect(h.target).not.toEqual({ kind: "patrol", id: LONGANE.id });
+    });
+
+    it("docks a ship with nobody aboard too, silently", () => {
+      const s = netted();
+      player(s, "p0").room = BAY;
+      const next = mustApply(s, "p2", { type: "travel", equipment: terminal });
+      expect(next.patrolShips[LONGANE.id]).toMatchObject({ out: false, destroyed: false });
+      expect(lines(next, "p1", "patrolLanded")).toEqual([]);
+    });
+  });
 });
 
 describe("debris", () => {
