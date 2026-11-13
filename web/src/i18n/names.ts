@@ -95,6 +95,7 @@ const ACTION_NAME_KEYS = {
   chitchat: "actions.chitchat",
   comfort: "actions.comfort",
   anathema: "actions.anathema",
+  coup: "actions.coup",
   fiery_speech: "actions.fierySpeech",
   boring_speech: "actions.boringSpeech",
   attack: "actions.attack",

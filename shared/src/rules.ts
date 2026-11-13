@@ -25,6 +25,7 @@ import { itemsIn, rechargeMicrowaves, startCharges, visibleItemsIn } from "./ite
 import { actionFailed, apGain, mpGain, carePointsGain, channelLimit, computerPointsCap, computerPointsGain, shootPointsGain, cycleChanged, designerPointsGain, engineerPointsGain, gardenPointsGain, dailyMoraleLoss, inventorySlots, movementRules, pilgredPointsGain, satietyLoss } from "./modifiers.ts";
 import { contaminationSeenBy, convert } from "./infection.ts";
 import { isHungry, publicStatusesOf, statusesOf } from "./statuses.ts";
+import { coupCycle } from "./coup.ts";
 import { inactivityCycle } from "./inactivity.ts";
 import { emptyResources } from "./resources.ts";
 import { hasSkill } from "./skills.ts";
@@ -401,6 +402,7 @@ function advanceCycle(state: GameState, at?: number): void {
     p.ready = false;
   }
   if (at !== undefined) inactivityCycle(state, at);
+  coupCycle(state);
   diseaseTrackerCycleChange(state);
   cycleChanged(state);
   burnOxygen(state);

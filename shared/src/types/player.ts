@@ -77,6 +77,8 @@ export interface PlayerState extends Seat {
   pushedBy?: PlayerId;
   /** The Persecutor whose Anathema made this player an Outcast (anathema.ts). Never sent; the public `outcast` status is. */
   outcastBy?: PlayerId;
+  /** A Politician's coup is pending: they become Commander at the next cycle change if still eligible (coup.ts). Sent to its owner only. */
+  coupPending?: true;
   /**
    * When this player was last connected (server ms; inactivity.ts, reported by the server's `seen` input). Unset until
    * the rules first hear of them. Moves with the mind in a Transfer (`MIND_FIELDS`, mind.ts). Never sent.
