@@ -57,6 +57,14 @@ describe("Drug Dispenser", () => {
     expect(applyAction(s, "p3", take(s.drugDispenser.list[0]!))).toMatchObject({ ok: false });
   });
 
+  it("a Skilful counts as a Biologist: 3 options, and not 5 with both", () => {
+    const s = ship();
+    player(s, "p0").skills = ["skilful"];
+    player(s, "p3").skills = ["first_aid", "biologist", "skilful"];
+    expect(drugsOffered(s, "p0")).toEqual(s.drugDispenser.list.slice(0, 3));
+    expect(drugsOffered(s, "p3")).toEqual(s.drugDispenser.list.slice(0, 4));
+  });
+
   it("refuses a drug beyond your options, or from another room, and leaves the state alone", () => {
     const s = ship();
     expect(applyAction(s, "p0", take(s.drugDispenser.list[1]!))).toMatchObject({ ok: false });
