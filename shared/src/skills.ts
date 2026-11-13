@@ -206,6 +206,8 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   designer: "full",
   // +2 MP per AP-to-MP conversion (owner, 2026-10-24) and +1 expedition sector (owner, 2026-11-08, #358).
   sprint: "full",
+  // Coup (owner, 2026-11-12, coup.ts).
+  politician: "full",
   // Anathema and the Outcast status (owner, 2026-10-24, anathema.ts); it also ends when the Outcast goes inactive (#145).
   juge: "full",
   // Fiery speech (owner, 2026-10-24, speech.ts).

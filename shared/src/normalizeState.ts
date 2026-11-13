@@ -340,6 +340,7 @@ export function normalizePlayer(raw: Partial<PlayerState>, mode: QueueMode): Pla
     lyingSince: raw.lyingSince,
     pushedBy: raw.pushedBy,
     outcastBy: raw.outcastBy,
+    coupPending: raw.coupPending,
     lastSeenAt: raw.lastSeenAt,
     inactivity: raw.inactivity,
     boringToday: raw.boringToday,
