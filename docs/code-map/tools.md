@@ -10,7 +10,7 @@ All under `tools/src/`.
 - `pipBar/pipBar.ts`: `npm run pip-bar`, regenerates `Mush/derived/pip-bar/*.svg` from the original pip bar sprite (a test fails if they are stale).
 - `wiki/wiki.ts`: `npm run wiki`, reads eMushpedia (see the `wiki` skill).
 - `odsData/`: `npm run ods-data` (`odsData.ts`; `ods.ts` reads the spreadsheets).
-- `dev/`: `npm run dev` (`dev.ts`), `npm run preview` (`preview.ts`) per-worktree ports (`ports.ts`) and `npm run verify` (`verify.ts`: typecheck, lint and tests, quiet unless something fails).
+- `dev/`: `npm run dev` (`dev.ts`), `npm run preview` (`preview.ts`) per-worktree ports (`ports.ts`), `npm run verify` (`verify.ts`: typecheck, lint and tests, quiet unless something fails) and `npm run dev-state` (`devState.ts`: reads the local dev game state from wrangler's Durable Object storage, read-only).
 - `i18n/`: catalog checks (`catalog.ts`) and the hardcoded-text ratchet (`hardcoded.ts`, `baseline.json`).
 - `editor/vitePlugin.ts`: the ship map editor's save, a Vite dev-server plugin (`web/vite.config.ts`): `PUT /__editor/map` checks the map, writes `ship-map.json` and `ship-rooms.json`, and keeps its own writes from reloading pages (the editor would lose its undo history).
 
