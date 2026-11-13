@@ -126,6 +126,7 @@ export class GoalBot implements Bot {
       },
       ended: new Set(),
       today: new Set(),
+      once: new Set(),
       visited: new Set(),
       shrinks: new Set(),
       lastExpedition: null,

@@ -38,7 +38,9 @@ export function PeekBar({
       ? t("actions.attackWith", { weapon: names.itemOf(weapon) })
       : action.type === "apprenticeship"
         ? t("actions.apprenticeshipOf", { skill: names.skill(action.skill) })
-        : names.action(action.type);
+        : action.type === "upgrade_drone"
+          ? t("actions.upgradeDroneWith", { upgrade: names.droneUpgrade(action.upgrade) })
+          : names.action(action.type);
     return <ActionLabel text={text} cost={cost} chance={chance} visibility={actionVisibility(action.type)} />;
   };
   if (door) {

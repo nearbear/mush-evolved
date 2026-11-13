@@ -4,6 +4,7 @@
 // Putting one out is actions/extinguish.ts.
 
 import { breakEquipment, breakItem, workingBreakable } from "./breakage.ts";
+import { isFireproof } from "./drones.ts";
 import { ITEM_TYPES, isWorking, itemsIn } from "./items.ts";
 import { shipInvincible } from "./cheats.ts";
 import { pushChat } from "./chat.ts";
@@ -52,8 +53,9 @@ export function fireCycle(state: GameState): void {
     }
     for (const equipment of workingBreakable(state, room)) if (rollFloat(state) < config.breakChance) breakEquipment(state, equipment);
     // Owner, 2026-11-07: the same chance for each working item that can break and lies on the floor (not what people
-    // carry); public room line `fireBrokeItem`, or `fireDestroyedItem` for one that is destroyed when broken.
-    for (const item of itemsIn(state, { kind: "room", id: room }).filter((i) => isWorking(i) && ITEM_TYPES[i.type]?.canBreak)) {
+    // carry); public room line `fireBrokeItem`, or `fireDestroyedItem` for one that is destroyed when broken. A
+    // Firefighter drone is never broken by fire, so it doesn't roll (#412, owner, 2026-11-12).
+    for (const item of itemsIn(state, { kind: "room", id: room }).filter((i) => isWorking(i) && ITEM_TYPES[i.type]?.canBreak && !isFireproof(i))) {
       if (rollFloat(state) >= config.breakChance) continue;
       breakItem(state, item);
       logPublic(state, room, ITEM_TYPES[item.type]!.isDestroyedWhenBroken ? "fireDestroyedItem" : "fireBrokeItem", { item: item.type });

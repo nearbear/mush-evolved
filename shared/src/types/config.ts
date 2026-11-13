@@ -339,6 +339,9 @@ export interface GameConfig {
   drones: {
     failureMultiplier: number; // Each failed try in a row at a drone task multiplies its next chance by this; a success resets it (#411, owner, 2026-11-11; eMushpedia's 1.25).
     maxChance: number; // A drone's chance never goes above this (eMushpedia: 99%).
+    // Owner, 2026-11-12 (#412): a Robotics Expert's Upgrade costs `cost.ap` and `scraps` metal scraps, with the original's dirt and injury chances.
+    upgrade: { cost: { ap: number }; scraps: number; dirtyChance: number; injuryChance: number };
+    turboChance: number; // A Turbo drone's chance of a second action each cycle change, never a third (eMushpedia: 80%).
   };
   greenThumb: {
     pots: number; // Empty hydropots the `green_thumb` skill gives when picked (owner, 2026-11-01; the original's 2).

@@ -19,6 +19,9 @@ import { DORMS, shrinkDorm } from "../src/bots/goals/shrinkDorm.ts";
 import { snoop } from "../src/bots/goals/snoop.ts";
 import { BOT_EAT_AFTER_CYCLES, eat } from "../src/bots/goals/eat.ts";
 import { tendPlants } from "../src/bots/goals/tendPlants.ts";
+import { sowHere } from "../src/bots/goals/sow.ts";
+import { POT_STORAGE, STORAGE_CHECKED, setOutPots } from "../src/bots/goals/setOutPots.ts";
+import { sharedDestination, travel, turnsTo } from "../src/bots/goals/travel.ts";
 import { helpGoal, helpTasks } from "../src/bots/goals/help.ts";
 import type { GoalDef } from "../src/bots/goals/types.ts";
 import { chooseSkill } from "../src/bots/skillChoice.ts";
@@ -74,6 +77,7 @@ const memory = (scripted = true) => ({
   scripted,
   ended: new Set<string>(),
   today: new Set<string>(),
+  once: new Set<string>(),
   visited: new Set<string>(),
   shrinks: new Set<string>(),
   lastExpedition: null as "oxygen" | "fuel" | null,
@@ -569,8 +573,18 @@ describe("eat", () => {
   it("eats a banana it finds in the garden", async () => {
     const { game: start, id } = starving(BOT_EAT_AFTER_CYCLES);
     const game = edit(start, id, (p) => (p.room = start.config.botany.gardenRoom));
+    game.items = game.items.filter((i) => !(i.type === "tree_pot" && !i.plant));
     game.items.push({ id: "test-banana", type: "fruit_banana", at: { kind: "room", id: game.config.botany.gardenRoom } });
     expect(await new GoalBot(1, 2, [eat]).decideAction(viewFor(game, id))).toEqual({ type: "consume", item: "test-banana" });
+  });
+
+  it("leaves a banana for sowing while an empty pot is in the garden, unless Hungry", async () => {
+    const { game: start, id } = starving(BOT_EAT_AFTER_CYCLES);
+    const game = edit(start, id, (p) => (p.room = start.config.botany.gardenRoom));
+    game.items.push({ id: "test-banana", type: "fruit_banana", at: { kind: "room", id: game.config.botany.gardenRoom } });
+    expect(await new GoalBot(1, 2, [eat, sowHere]).decideAction(viewFor(game, id))).toMatchObject({ type: "take", item: "test-banana" });
+    const hungry = edit(game, id, (p) => p.statuses.push("hungry" as never));
+    expect(await new GoalBot(1, 2, [eat, sowHere]).decideAction(viewFor(hungry, id))).toEqual({ type: "consume", item: "test-banana" });
   });
 });
 
@@ -610,7 +624,7 @@ describe("tendPlants", () => {
     }
   });
 
-  it("walks to the garden, waters every thirsty plant, treats a sick one, and sows a banana from the floor", async () => {
+  it("walks to the garden, sows a banana from the floor, then waters every thirsty plant and treats a sick one", async () => {
     const { game, id } = gardener(["botanic"]);
     const garden = game.config.botany.gardenRoom;
     const sick = game.items.find((i) => i.plant && i.at.kind === "room" && i.at.id === garden)!;
@@ -621,7 +635,7 @@ describe("tendPlants", () => {
     const pots = after.items.filter((i) => i.type === "tree_pot" && i.at.kind === "room" && i.at.id === garden);
     expect(pots.every((p) => p.plant && p.plant.thirst === 0)).toBe(true);
     expect(pots.some((p) => p.plant?.sick)).toBe(false);
-    expect(taken.map((a) => a.type).filter((t) => t !== "move")).toEqual(["water", "water", "treat", "take", "sow"]);
+    expect(taken.map((a) => a.type).filter((t) => t !== "move")).toEqual(["take", "sow", "water", "water", "treat"]);
     expect(after.items.some((i) => i.id === "test-banana")).toBe(false);
   });
 
@@ -657,6 +671,69 @@ describe("tendPlants", () => {
     const [goal] = tendPlants.options(viewFor(inGarden, id), m);
     expect(goal!.step(viewFor(inGarden, id), m).kind).toBe("act");
     expect(m.today.has(`tendPlants:${garden}`)).toBe(false);
+  });
+});
+
+describe("sowHere and setOutPots", () => {
+  const garden = DEFAULT_CONFIG.botany.gardenRoom;
+  const onFloor = (g: GameState, room: string) => g.items.filter((i) => i.at.kind === "room" && i.at.id === room);
+
+  it("any bot in the garden sows a floor banana into the empty pot, not into a pot it carries", async () => {
+    const { game: start, id } = setup();
+    const game = edit(start, id, (p) => {
+      p.skills = ["pilot"] as typeof p.skills;
+      p.room = garden;
+      p.ap = 10;
+    });
+    game.items.push({ id: "test-banana", type: "fruit_banana", at: { kind: "room", id: garden } });
+    game.items.push({ id: "test-pot", type: "tree_pot", at: { kind: "player", id } });
+    const { game: after, taken } = await oneCycle(game, id, new GoalBot(1, 2, [sowHere]));
+    expect(taken.map((a) => a.type)).toEqual(["take", "sow"]);
+    expect(after.items.find((i) => i.id === "test-pot")!.plant).toBeUndefined();
+    expect(onFloor(after, garden).filter((i) => i.type === "tree_pot").every((p) => p.plant)).toBe(true);
+  });
+
+  it("isn't offered outside the garden, or without a banana", () => {
+    const { game: start, id } = setup();
+    const inGarden = edit(start, id, (p) => (p.room = garden));
+    expect(sowHere.options(viewFor(inGarden, id), memory())).toEqual([]);
+    const elsewhere = edit(start, id, (p) => (p.room = POT_STORAGE as typeof p.room));
+    elsewhere.items.push({ id: "test-banana", type: "fruit_banana", at: { kind: "player", id } });
+    expect(sowHere.options(viewFor(elsewhere, id), memory())).toEqual([]);
+  });
+
+  it("a Green Thumb Botanist with a full inventory sets out its pots, fetches the storage's, and sows the banana first", async () => {
+    const { game: start, id } = setup();
+    const game = edit(start, id, (p) => {
+      p.skills = ["botanic", "green_thumb"] as typeof p.skills;
+      p.room = garden;
+      p.ap = 12;
+      p.resources.garden = 0;
+    });
+    game.items = game.items.filter((i) => i.at.kind !== "player" || i.at.id !== id);
+    game.items.push({ id: "test-talky", type: "super_talky", at: { kind: "player", id } });
+    game.items.push({ id: "gt-1", type: "tree_pot", at: { kind: "player", id } }, { id: "gt-2", type: "tree_pot", at: { kind: "player", id } });
+    game.items.push({ id: "test-banana", type: "fruit_banana", at: { kind: "room", id: garden } });
+    for (const pot of game.items) if (pot.plant) pot.plant.thirst = 1;
+    const bot = new GoalBot(1, 2, [sowHere, setOutPots, tendPlants]);
+    const { game: after, taken } = await oneCycle(game, id, bot);
+    const kinds = taken.map((a) => a.type).filter((t) => t !== "move");
+    // The banana first (the Green Thumb pots are dropped to free a slot), then the pots, then watering.
+    expect(kinds).toEqual(["drop", "take", "sow", "drop", "take", "take", "drop", "drop", "water", "water"]);
+    expect(onFloor(after, POT_STORAGE).some((i) => i.type === "tree_pot")).toBe(false);
+    expect(onFloor(after, garden).filter((i) => i.type === "tree_pot")).toHaveLength(7);
+    expect(after.items.some((i) => i.id === "test-banana")).toBe(false);
+  });
+
+  it("checks the storage once a game", () => {
+    const { game: start, id } = setup();
+    const game = edit(start, id, (p) => (p.skills = ["botanic"] as typeof p.skills));
+    const m = memory();
+    expect(setOutPots.options(viewFor(game, id), m)).toHaveLength(1);
+    m.once.add(STORAGE_CHECKED);
+    expect(setOutPots.options(viewFor(game, id), m)).toEqual([]);
+    const other = edit(start, id, (p) => (p.skills = ["pilot"] as typeof p.skills));
+    expect(setOutPots.options(viewFor(other, id), memory())).toEqual([]);
   });
 });
 
@@ -972,6 +1049,107 @@ describe("astro (#222, #417)", () => {
     expect(chooseDestination(view, null)?.name).toBe("Near");
     expect(chooseDestination(view, "fuel")?.name).toBe("Near");
     expect(chooseDestination(view, "oxygen")?.name).toBe("Far");
+  });
+});
+
+describe("travel: the Commander (#417)", () => {
+  type Planet = GameState["planets"][string][number];
+  const planet = (id: string, name: string, direction: Planet["direction"], distance: number): Planet =>
+    ({ id, name, direction, distance, size: 2, sectors: [{ tag: "OXYGEN", known: true }, { tag: "FOREST", known: true }] }) as Planet;
+
+  /** A Commander with AP to spare, and `planets` found by someone else and shared in the bots' format (or `text`). */
+  function commander(planets: Planet[], text?: (p: Planet) => string) {
+    const { game: start, id } = setup();
+    const game = edit(start, id, (p) => {
+      p.ap = 8;
+      p.mp = 12;
+    });
+    const finder = game.players.find((p) => p.id !== id)!.id;
+    game.titles.commander = id;
+    game.planets[finder] = planets;
+    game.sharedPlanets = planets.map((p, i) => ({ id: `sp-${i}`, planet: p.id, text: text?.(p) ?? formatPlanetShare({ ...p, sectors: ["OXYGEN", "FOREST"] }), by: finder, day: 1, cycleOfDay: 1, stale: false }));
+    return { game, id };
+  }
+
+  it("turns the shorter way", () => {
+    expect(turnsTo("north", "east")).toEqual({ left: 3, right: 1 });
+    expect(turnsTo("north", "west")).toEqual({ left: 1, right: 3 });
+    expect(turnsTo("south", "south")).toEqual({ left: 0, right: 0 });
+  });
+
+  it("goes to the latest applicable share in the bots' format that the fuel reaches", () => {
+    const { game, id } = commander([planet("pl-1", "Old", "west", 3), planet("pl-2", "New", "east", 4)]);
+    expect(sharedDestination(viewFor(game, id))?.name).toBe("New");
+    game.sharedPlanets[1]!.stale = true;
+    expect(sharedDestination(viewFor(game, id))?.name).toBe("Old");
+    game.sharedPlanets[0]!.text = "Old is great, go west";
+    expect(sharedDestination(viewFor(game, id))).toBeNull();
+    const far = commander([planet("pl-1", "Far", "west", 5)]);
+    far.game.ship.fuel = 4;
+    expect(sharedDestination(viewFor(far.game, far.id))).toBeNull();
+  });
+
+  it("is only for the Commander, and not while traveling or in orbit", () => {
+    const { game, id } = commander([planet("pl-1", "Kaxor", "east", 3)]);
+    expect(travel.options(viewFor(game, id), memory())).toHaveLength(1);
+    expect(travel.options(viewFor({ ...game, titles: { ...game.titles, commander: null } }, id), memory())).toEqual([]);
+    expect(travel.options(viewFor({ ...game, navigation: { ...game.navigation, orbit: "pl-9" } }, id), memory())).toEqual([]);
+    expect(travel.options(viewFor({ ...game, navigation: { ...game.navigation, arriving: { planet: null } } }, id), memory())).toEqual([]);
+  });
+
+  it("checks the chamber, loads exactly the distance from the tanks, turns, travels, and arrives in orbit", async () => {
+    const { game, id } = commander([planet("pl-1", "Kaxor", "east", 3)]);
+    const fuel = game.ship.fuel;
+    const { game: after, taken } = await play(game, id, new GoalBot(1, 2, [travel]), 60);
+    const work = taken.map((a) => a.type).filter((t) => t !== "move");
+    expect(work[0]).toBe("check_combustion");
+    expect(work.filter((t) => t === "take_fuel")).toHaveLength(3);
+    expect(work.filter((t) => t === "load_fuel")).toHaveLength(3);
+    // North to east: one right turn.
+    expect(taken.filter((a) => a.type === "turn_ship")).toEqual([expect.objectContaining({ side: "right" })]);
+    expect(work.at(-1)).toBe("travel");
+    expect(after.ship.fuel).toBe(fuel - 3);
+    expect(after.ship.combustion).toBe(0);
+    expect(after.navigation.orbit ?? after.navigation.arriving?.planet).toBe("pl-1");
+  });
+
+  it("unloads what the chamber holds beyond the distance", async () => {
+    const { game, id } = commander([planet("pl-1", "Kaxor", "north", 2)]);
+    game.ship.combustion = 4;
+    const { game: after, taken } = await play(game, id, new GoalBot(1, 2, [travel]), 60);
+    const work = taken.map((a) => a.type).filter((t) => t !== "move");
+    expect(work).toEqual(["check_combustion", "unload_fuel", "unload_fuel", "travel"]);
+    expect(after.navigation.orbit ?? after.navigation.arriving?.planet).toBe("pl-1");
+  });
+
+  it("fetches fuel from the other tank when the nearest one is broken", async () => {
+    const { game, id } = commander([planet("pl-1", "Kaxor", "north", 2)]);
+    game.equipment.STORAGE_A_1 = game.equipment.STORAGE_A_1!.map((e) => (e.type === "FUEL_TANK" ? { ...e, broken: true } : e));
+    const { game: after, taken } = await play(game, id, new GoalBot(1, 2, [travel]), 80);
+    expect(taken.filter((a) => a.type === "take_fuel").map((a) => (a as { equipment: string }).equipment)).toEqual(["STORAGE_B_1:FUEL_TANK", "STORAGE_B_1:FUEL_TANK"]);
+    expect(after.navigation.orbit ?? after.navigation.arriving?.planet).toBe("pl-1");
+  });
+
+  it("turns the long way round when the short way's reactor is broken", async () => {
+    const { game, id } = commander([planet("pl-1", "Kaxor", "east", 2)]);
+    game.ship.combustion = 2;
+    game.equipment.MOTOR_ROOM = game.equipment.MOTOR_ROOM!.map((e) => (e.id === "MOTOR_ROOM:reac_b" ? { ...e, broken: true } : e));
+    const { taken } = await play(game, id, new GoalBot(1, 2, [travel]), 60);
+    expect(taken.filter((a) => a.type === "turn_ship").map((a) => (a as { side: string }).side)).toEqual(["left", "left", "left"]);
+    expect(taken.at(-1)?.type).toBe("travel");
+  });
+
+  it("may spend the AP reserve: at 2 AP on the bridge, fuel loaded, it still turns and travels", async () => {
+    const { game: start, id } = commander([planet("pl-1", "Kaxor", "east", 2)]);
+    const game = edit(start, id, (p) => {
+      p.ap = 2;
+      p.room = "COMMAND_CENTER";
+    });
+    game.ship.combustion = 2;
+    const { game: after, taken } = await play(game, id, new GoalBot(1, 2, [travel]), 40);
+    expect(taken.map((a) => a.type).filter((t) => t !== "move")).toEqual(["check_combustion", "turn_ship", "travel"]);
+    expect(after.log.find((l) => l.key === "shipTraveled")?.cycle).toBe(game.cycle);
+    expect(after.navigation.orbit ?? after.navigation.arriving?.planet).toBe("pl-1");
   });
 });
 

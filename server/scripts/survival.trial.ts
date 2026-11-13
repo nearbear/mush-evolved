@@ -130,6 +130,8 @@ test("survival", { timeout: 3_600_000 }, async () => {
   const social: Record<string, number> = {};
   for (const r of results) for (const [k, n] of Object.entries(r.social ?? {})) social[k] = (social[k] ?? 0) + n;
   if (Object.keys(social).length > 0) console.log(`messages sent: ${Object.entries(social).map(([k, n]) => `${k} ${n}`).join(", ")}`);
+  const jumped = results.filter((r) => (r.jumps ?? 0) > 0);
+  if (results.some((r) => r.jumps !== undefined)) console.log(`ship jumps: ${jumped.reduce((n, r) => n + r.jumps!, 0)}, in ${jumped.length} of ${results.length} runs`);
   const refused = results.reduce((a, r) => a + r.refused, 0);
   if (refused) console.log(`refused steps: ${refused} (should be 0)`);
 

@@ -44,6 +44,7 @@ const ACTION_NAME_KEYS = {
   sabotage: "actions.sabotage",
   green_jelly: "actions.greenJelly",
   reinforce: "actions.reinforce",
+  upgrade_drone: "actions.upgradeDrone",
   extinguish_manually: "actions.extinguishManually",
   takeoff: "actions.takeoff",
   icarus_takeoff: "actions.icarus_takeoff",
@@ -147,6 +148,8 @@ export function useNames() {
     it.teaches !== undefined ? skill(it.teaches) : it.builds !== undefined ? built(it.builds) : undefined;
   /** A support drone's name with its serial (#411): "Robbie #42". The name is a proper name and isn't translated. */
   const drone = (name: string, serial: number) => t("itemAttr.droneName", { name, serial });
+  /** A drone upgrade id (shared/src/drones.ts, #412): "Firefighter". */
+  const droneUpgrade = (id: string) => t(`drones.upgrades.${id}` as never, { defaultValue: id });
   const research = (id: string) => t(`research.names.${id}` as never, { defaultValue: id });
   const project = (id: string) => t(`projects.names.${id}` as never, { defaultValue: id });
   const title = (id: string) => t(`titles.names.${id}` as never, { defaultValue: id });
@@ -164,7 +167,7 @@ export function useNames() {
       }),
     );
 
-  /** The text of a log entry. `room`, `item`, `research`, `project`, `equipment`, `action`, `title`, `skill`, `base` (a rebel base), `direction` (a heading), `entry` (a Xyloph entry) and `cause` (a cause of death) params are ids and get translated; `drone` and `serial` make a drone's name; `name`, `target` and `body` are character ids; `tested` and `spoiledBy` are an assay's counts by character. */
+  /** The text of a log entry. `room`, `item`, `research`, `project`, `equipment`, `action`, `title`, `skill`, `base` (a rebel base), `direction` (a heading), `entry` (a Xyloph entry) and `cause` (a cause of death) params are ids and get translated; `drone` and `serial` make a drone's name, and `upgrade` is a drone upgrade; `name`, `target` and `body` are character ids; `tested` and `spoiledBy` are an assay's counts by character. */
   const logLine = ({ key, params = {} }: Pick<LogEntry, "key" | "params">): string => {
     const resolved: Record<string, string | number> = { ...params };
     if (typeof params.room === "string") resolved.room = room(params.room);
@@ -179,6 +182,7 @@ export function useNames() {
     if (typeof params.direction === "string") resolved.direction = t(`astro.directions.${params.direction}` as never, { defaultValue: params.direction });
     // A drone's `drone` (its name) and `serial` (shared/src/drones.ts) come together as one name.
     if (typeof params.drone === "string" && typeof params.serial === "number") resolved.drone = drone(params.drone, params.serial);
+    if (typeof params.upgrade === "string") resolved.upgrade = droneUpgrade(params.upgrade);
     if (typeof params.entry === "string") resolved.entry = t(`comms.xyloph.${params.entry}` as never, { defaultValue: params.entry });
     // A cause of death (shared/src/death.ts, #177).
     if (typeof params.cause === "string") resolved.cause = t(`deathCause.${params.cause}` as never, { defaultValue: params.cause });
@@ -188,5 +192,5 @@ export function useNames() {
     return t(`logEvent.${key}` as never, { ...resolved, defaultValue: key });
   };
 
-  return { room, equipment, item, itemOf, itemLabel, drone, research, project, skill, title, rebelBase, action, character: characterName, characterGiven: characterGivenName, logLine };
+  return { room, equipment, item, itemOf, itemLabel, drone, droneUpgrade, research, project, skill, title, rebelBase, action, character: characterName, characterGiven: characterGivenName, logLine };
 }

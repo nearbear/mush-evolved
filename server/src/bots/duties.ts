@@ -4,9 +4,10 @@
 //
 // How to edit:
 // - `priority`: where a scripted bot (no key) puts this among its goals. For reference, today's goals are
-//   returnToSol 100, pickSkill 90, snoop 85, eat 80, astro 76 (Astrophysicist), patrolShootHunters 75 (Pilot),
-//   shootHunters 74 (Shooter/Gunner), shower 70, repairHull 55, contactSol 54 (Radio Expert), tendPlants 53 (Botanist
-//   role), commsOfficer 52 (Comms Officer), research and project 50, shrinkDorm 45 (Shrink role), rest 40, explore 30.
+//   returnToSol 100, pickSkill 90, snoop 85, sowHere 81 (any bot, not Hungry), eat 80, travel 77 (Commander), astro 76 (Astrophysicist),
+//   patrolShootHunters 75 (Pilot), shootHunters 74 (Shooter/Gunner), shower 70, repairHull 55, contactSol 54 (Radio
+//   Expert), setOutPots 54 (Botanist role, Green Thumb), tendPlants 53 (Botanist role), commsOfficer 52 (Comms Officer), research and project 50, shrinkDorm 45
+//   (Shrink role), rest 40, explore 30.
 // - `when`: one of the triggers in `DutyTrigger`, each explained there. A new kind of trigger needs code first.
 // - `prompt`: one line a model bot is shown when it holds the skill or title. English for now (bot language: #95).
 // - Several rows may share a skill or title. Leave notes in comments freely.
@@ -26,10 +27,14 @@ export type DutyTrigger =
   | "daily"
   /** Each cycle while there is planet work: deleting, sharing the destination, analyzing, scanning (#417). */
   | "astro"
+  /** While a planet shared in the bots' format (planetShare.ts) is in reach and the ship neither travels nor orbits (#417). */
+  | "destination"
   /** While hunters attack the ship (`view.hunters.count`, public). */
   | "hunters"
   /** While a plant the bot can see is thirsty, dried, or (for the Botanist) sick. Seen only on arrival in the garden. */
   | "plants"
+  /** Once a game, early: carried empty hydropots, then Front Storage's, go to the garden floor (`setOutPots`). */
+  | "pots"
   /** While the link with Sol is down (`view.comms.linked`, public). */
   | "linkDown"
   /** While the link with Sol is up. */
@@ -57,8 +62,10 @@ export const BOT_DUTIES: readonly Duty[] = [
   // Outweighs piloting (owner, 2026-11-12): Frieda is both, and hunter sorties used to take the AP the search needs.
   { skill: "astrophysician", when: "astro", actions: ["scan_planet", "analyze_planet", "delete_planet"], priority: 76, prompt: "You're the Astrophysicist: scanning finds planets for 1 AP less, and your analyses reveal an extra sector." },
   { skill: "botanic", when: "plants", actions: ["water", "treat", "sow"], priority: 53, prompt: "You're the Botanist: you see sick plants, and garden points make garden work free." },
-  // Green Thumb isn't in SKILL_STATUS, so it does nothing yet.
-  { skill: "green_thumb", when: "waits", prompt: "" },
+  // Owner, 2026-11-12: sets out its pots (Green Thumb's two, then Front Storage's) in the garden, so bananas get sown.
+  { skill: "botanic", when: "pots", actions: ["take", "drop"], priority: 54, prompt: "" },
+  // Green Thumb gives 2 empty hydropots when picked; they go to the garden floor (owner, 2026-11-12).
+  { skill: "green_thumb", when: "pots", actions: ["take", "drop"], priority: 54, prompt: "You have a Green Thumb: set out your empty hydropots in the garden so bananas can be sown in them." },
   // Already counted: the research and project goals spend free points first.
   { skill: "designer", when: "passive", prompt: "You're a Designer: your points make work on NERON projects free." },
   { skill: "computer", when: "passive", prompt: "You're an IT Expert: your points make research and NERON project work free." },
@@ -84,8 +91,9 @@ export const BOT_DUTIES: readonly Duty[] = [
   { skill: "first_aid", when: "model", actions: ["heal"], prompt: "You know First Aid: you have free heal points. Offer when someone asks for healing." },
 
   // --- Titles ---
-  // Steering spends fuel and decides where the ship goes; no strategy decided, so model only for now.
-  { title: "commander", when: "model", actions: ["turn_ship", "travel", "leave_orbit"], prompt: "You're the Commander: only you can steer the ship and, once PILGRED is repaired, take it home." },
+  // Owner, 2026-11-12 (#417): travels to the destination the Astrophysicist shares, with exactly its distance in fuel.
+  // Above astro (owner, 2026-11-12): it costs a few AP and is what the search is for. Leaving orbit waits for slice 3.
+  { title: "commander", when: "destination", actions: ["check_combustion", "take_fuel", "load_fuel", "unload_fuel", "turn_ship", "travel"], priority: 77, prompt: "You're the Commander: only you can steer the ship and, once PILGRED is repaired, take it home." },
   // BIOS settings are free; no strategy decided.
   { title: "neron_admin", when: "model", actions: ["set_bios"], prompt: "You're NERON's Admin: only you can change NERON's BIOS settings." },
   { title: "comms_officer", when: "linkUp", actions: ["decode_rebel", "update_neron", "contact_xyloph"], priority: 52, prompt: "You're the Comms Officer: while the link with Sol is up, you decode rebel signals, update NERON and contact Xyloph." },

@@ -356,6 +356,44 @@
     bottom: 0;
     transform: translate(-50%, 50%);
   }
+  /* The portrait is too short here for the skill stack (105x150 at 360px), so the slots leave it for a row under the
+     name chip: the three picked slots, then the book slot, then a Mush's toggle, wrapping as the column allows (three
+     to a row at 360). The art is the grid's one cell, so the absolutely placed chip and status icons keep it, not
+     the whole figure, as their box. Slots shrink to 31px, which still holds the 25px skill icons at 1x. */
+  .inspect-figure-art {
+    display: grid;
+    /* Explicit, so the absolutely placed children's grid-area resolves (implicit lines don't count for them). */
+    grid-template: auto auto / auto;
+  }
+  .inspect-figure-art > .inspect-art,
+  .inspect-figure-art > .inspect-portrait,
+  .inspect-figure-name,
+  .inspect-figure-art .status-icons {
+    /* All four lines: for an absolutely placed item an auto end line is the container's edge, not the cell's. */
+    grid-area: 1 / 1 / 2 / 2;
+  }
+  .skill-slots {
+    position: static;
+    flex-flow: row wrap;
+    align-items: flex-start;
+    gap: 4px;
+    /* Clear the half of the name chip that hangs below the art. */
+    margin-top: calc(0.85rem + var(--space-2));
+  }
+  .skill-slots ul {
+    display: contents;
+  }
+  .skill-slots .skill-toggle {
+    order: 1;
+    margin-bottom: 0;
+  }
+  .skill-slot {
+    width: 31px;
+    height: 31px;
+  }
+  .skill-slot-book {
+    margin-top: 0;
+  }
   .inspect-target .inspect-sprite-box {
     --tile: 100cqw;
     margin: 0 auto;

@@ -136,8 +136,23 @@
   max-width: 28px;
   max-height: 28px;
 }
+/* Your own empty slot: an amber socket (the gold outline, inset) around the plus that opens the picker. On the Mush
+   stack the red edge stays outside it. Disabled (nothing to pick) it fades like any disabled button. */
+.skill-slot-open {
+  border-color: var(--gold-mid);
+  box-shadow:
+    inset 0 0 0 1px var(--gold-edge),
+    inset 0 0 0 2px var(--gold-mid),
+    inset 0 0 0 3px var(--gold-edge);
+  cursor: pointer;
+}
+.skill-slot-open:hover:not(:disabled),
+.skill-slot-open:focus-visible {
+  background: rgb(232 194 14 / 0.15);
+}
+/* The empty book slot: an outline only, quieter than a socket you can press. */
 .skill-slot-empty {
-  opacity: 0.35;
+  background: transparent;
 }
 /* The fourth slot, filled only by a skill book: set apart from the three picked ones. */
 .skill-slot-book {
