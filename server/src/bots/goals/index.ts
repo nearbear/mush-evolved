@@ -17,6 +17,7 @@ import { shower } from "./shower.ts";
 import { shrinkDorm } from "./shrinkDorm.ts";
 import { snoop } from "./snoop.ts";
 import { tendPlants } from "./tendPlants.ts";
+import { travel } from "./travel.ts";
 import type { Goal, GoalDef } from "./types.ts";
 
 /** The goals that fight hunters: a resting bot gets up for them (`GoalBot`). */
@@ -40,6 +41,7 @@ export const SOLO_GOALS: readonly GoalDef[] = [
   repairHull,
   contactSol,
   tendPlants,
+  travel,
   astro,
   commsOfficer,
   research,

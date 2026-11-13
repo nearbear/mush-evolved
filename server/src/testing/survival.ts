@@ -50,6 +50,8 @@ export interface SurvivalResult {
   decisions: number;
   /** Messages bots sent that aren't actions (sharing a planet, #417), by type, counting only the accepted ones. Absent in runs saved before. */
   social?: Record<string, number>;
+  /** Times the ship traveled to a new place (the Commander, #417), from the public log line. Absent in runs saved before. */
+  jumps?: number;
   /** Steps a bot returned that the rules refused (should be 0: goals step only from `legalIn`). */
   refused: number;
 }
@@ -95,7 +97,7 @@ export async function runSurvival(seed: number, opts: SurvivalOptions): Promise<
   let game = survivalGame(seed, opts);
   const trace = opts.trace ?? (() => {});
   const bots = new Map<PlayerId, GoalBot>(game.players.map((p, i) => [p.id, new GoalBot(seed * 1_000 + i)]));
-  const result: SurvivalResult = { seed, crew: game.players.map((p) => p.character), end: "survived", cyclesPerDay: game.config.cyclesPerDay, day: 1, cycle: 1, deaths: [], days: [], goals: {}, social: {}, decisions: 0, refused: 0 };
+  const result: SurvivalResult = { seed, crew: game.players.map((p) => p.character), end: "survived", cyclesPerDay: game.config.cyclesPerDay, day: 1, cycle: 1, deaths: [], days: [], goals: {}, social: {}, jumps: 0, decisions: 0, refused: 0 };
   const lastGoal = new Map<PlayerId, string | null>();
   let now = 0;
   let logSeen = game.nextLogId;
@@ -109,10 +111,15 @@ export async function runSurvival(seed: number, opts: SurvivalOptions): Promise<
     const p = game.players.find((q) => q.id === id)!;
     return p.alive && p.current === null && p.queue.length === 0 && legalActions(game, id).length > 0;
   };
-  /** Deaths since the last look, with the cause from the room's `died` line (#177). */
+  /** Deaths since the last look, with the cause from the room's `died` line (#177), and the ship's jumps. */
   const noteDeaths = (): void => {
     for (const e of game.log) {
-      if (e.id < logSeen || e.key !== "died") continue;
+      if (e.id < logSeen) continue;
+      if (e.key === "shipTraveled") {
+        result.jumps!++;
+        trace("  the ship traveled");
+      }
+      if (e.key !== "died") continue;
       const p = game.players.find((q) => q.character === e.params?.name);
       const cause = (e.params?.cause as DeathCause | undefined) ?? "unknown";
       result.deaths.push({ day: dayOf(game), cycle: game.cycle, character: String(e.params?.name), cause });

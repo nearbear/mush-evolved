@@ -19,6 +19,7 @@ import { DORMS, shrinkDorm } from "../src/bots/goals/shrinkDorm.ts";
 import { snoop } from "../src/bots/goals/snoop.ts";
 import { BOT_EAT_AFTER_CYCLES, eat } from "../src/bots/goals/eat.ts";
 import { tendPlants } from "../src/bots/goals/tendPlants.ts";
+import { sharedDestination, travel, turnsTo } from "../src/bots/goals/travel.ts";
 import { helpGoal, helpTasks } from "../src/bots/goals/help.ts";
 import type { GoalDef } from "../src/bots/goals/types.ts";
 import { chooseSkill } from "../src/bots/skillChoice.ts";
@@ -972,6 +973,107 @@ describe("astro (#222, #417)", () => {
     expect(chooseDestination(view, null)?.name).toBe("Near");
     expect(chooseDestination(view, "fuel")?.name).toBe("Near");
     expect(chooseDestination(view, "oxygen")?.name).toBe("Far");
+  });
+});
+
+describe("travel: the Commander (#417)", () => {
+  type Planet = GameState["planets"][string][number];
+  const planet = (id: string, name: string, direction: Planet["direction"], distance: number): Planet =>
+    ({ id, name, direction, distance, size: 2, sectors: [{ tag: "OXYGEN", known: true }, { tag: "FOREST", known: true }] }) as Planet;
+
+  /** A Commander with AP to spare, and `planets` found by someone else and shared in the bots' format (or `text`). */
+  function commander(planets: Planet[], text?: (p: Planet) => string) {
+    const { game: start, id } = setup();
+    const game = edit(start, id, (p) => {
+      p.ap = 8;
+      p.mp = 12;
+    });
+    const finder = game.players.find((p) => p.id !== id)!.id;
+    game.titles.commander = id;
+    game.planets[finder] = planets;
+    game.sharedPlanets = planets.map((p, i) => ({ id: `sp-${i}`, planet: p.id, text: text?.(p) ?? formatPlanetShare({ ...p, sectors: ["OXYGEN", "FOREST"] }), by: finder, day: 1, cycleOfDay: 1, stale: false }));
+    return { game, id };
+  }
+
+  it("turns the shorter way", () => {
+    expect(turnsTo("north", "east")).toEqual({ left: 3, right: 1 });
+    expect(turnsTo("north", "west")).toEqual({ left: 1, right: 3 });
+    expect(turnsTo("south", "south")).toEqual({ left: 0, right: 0 });
+  });
+
+  it("goes to the latest applicable share in the bots' format that the fuel reaches", () => {
+    const { game, id } = commander([planet("pl-1", "Old", "west", 3), planet("pl-2", "New", "east", 4)]);
+    expect(sharedDestination(viewFor(game, id))?.name).toBe("New");
+    game.sharedPlanets[1]!.stale = true;
+    expect(sharedDestination(viewFor(game, id))?.name).toBe("Old");
+    game.sharedPlanets[0]!.text = "Old is great, go west";
+    expect(sharedDestination(viewFor(game, id))).toBeNull();
+    const far = commander([planet("pl-1", "Far", "west", 5)]);
+    far.game.ship.fuel = 4;
+    expect(sharedDestination(viewFor(far.game, far.id))).toBeNull();
+  });
+
+  it("is only for the Commander, and not while traveling or in orbit", () => {
+    const { game, id } = commander([planet("pl-1", "Kaxor", "east", 3)]);
+    expect(travel.options(viewFor(game, id), memory())).toHaveLength(1);
+    expect(travel.options(viewFor({ ...game, titles: { ...game.titles, commander: null } }, id), memory())).toEqual([]);
+    expect(travel.options(viewFor({ ...game, navigation: { ...game.navigation, orbit: "pl-9" } }, id), memory())).toEqual([]);
+    expect(travel.options(viewFor({ ...game, navigation: { ...game.navigation, arriving: { planet: null } } }, id), memory())).toEqual([]);
+  });
+
+  it("checks the chamber, loads exactly the distance from the tanks, turns, travels, and arrives in orbit", async () => {
+    const { game, id } = commander([planet("pl-1", "Kaxor", "east", 3)]);
+    const fuel = game.ship.fuel;
+    const { game: after, taken } = await play(game, id, new GoalBot(1, 2, [travel]), 60);
+    const work = taken.map((a) => a.type).filter((t) => t !== "move");
+    expect(work[0]).toBe("check_combustion");
+    expect(work.filter((t) => t === "take_fuel")).toHaveLength(3);
+    expect(work.filter((t) => t === "load_fuel")).toHaveLength(3);
+    // North to east: one right turn.
+    expect(taken.filter((a) => a.type === "turn_ship")).toEqual([expect.objectContaining({ side: "right" })]);
+    expect(work.at(-1)).toBe("travel");
+    expect(after.ship.fuel).toBe(fuel - 3);
+    expect(after.ship.combustion).toBe(0);
+    expect(after.navigation.orbit ?? after.navigation.arriving?.planet).toBe("pl-1");
+  });
+
+  it("unloads what the chamber holds beyond the distance", async () => {
+    const { game, id } = commander([planet("pl-1", "Kaxor", "north", 2)]);
+    game.ship.combustion = 4;
+    const { game: after, taken } = await play(game, id, new GoalBot(1, 2, [travel]), 60);
+    const work = taken.map((a) => a.type).filter((t) => t !== "move");
+    expect(work).toEqual(["check_combustion", "unload_fuel", "unload_fuel", "travel"]);
+    expect(after.navigation.orbit ?? after.navigation.arriving?.planet).toBe("pl-1");
+  });
+
+  it("fetches fuel from the other tank when the nearest one is broken", async () => {
+    const { game, id } = commander([planet("pl-1", "Kaxor", "north", 2)]);
+    game.equipment.STORAGE_A_1 = game.equipment.STORAGE_A_1!.map((e) => (e.type === "FUEL_TANK" ? { ...e, broken: true } : e));
+    const { game: after, taken } = await play(game, id, new GoalBot(1, 2, [travel]), 80);
+    expect(taken.filter((a) => a.type === "take_fuel").map((a) => (a as { equipment: string }).equipment)).toEqual(["STORAGE_B_1:FUEL_TANK", "STORAGE_B_1:FUEL_TANK"]);
+    expect(after.navigation.orbit ?? after.navigation.arriving?.planet).toBe("pl-1");
+  });
+
+  it("turns the long way round when the short way's reactor is broken", async () => {
+    const { game, id } = commander([planet("pl-1", "Kaxor", "east", 2)]);
+    game.ship.combustion = 2;
+    game.equipment.MOTOR_ROOM = game.equipment.MOTOR_ROOM!.map((e) => (e.id === "MOTOR_ROOM:reac_b" ? { ...e, broken: true } : e));
+    const { taken } = await play(game, id, new GoalBot(1, 2, [travel]), 60);
+    expect(taken.filter((a) => a.type === "turn_ship").map((a) => (a as { side: string }).side)).toEqual(["left", "left", "left"]);
+    expect(taken.at(-1)?.type).toBe("travel");
+  });
+
+  it("may spend the AP reserve: at 2 AP on the bridge, fuel loaded, it still turns and travels", async () => {
+    const { game: start, id } = commander([planet("pl-1", "Kaxor", "east", 2)]);
+    const game = edit(start, id, (p) => {
+      p.ap = 2;
+      p.room = "COMMAND_CENTER";
+    });
+    game.ship.combustion = 2;
+    const { game: after, taken } = await play(game, id, new GoalBot(1, 2, [travel]), 40);
+    expect(taken.map((a) => a.type).filter((t) => t !== "move")).toEqual(["check_combustion", "turn_ship", "travel"]);
+    expect(after.log.find((l) => l.key === "shipTraveled")?.cycle).toBe(game.cycle);
+    expect(after.navigation.orbit ?? after.navigation.arriving?.planet).toBe("pl-1");
   });
 });
 
