@@ -3,7 +3,7 @@
 
 import { characterName, legalIn, nextInt, type Action, type LobbyLanguage, type PlayerView, type RngState } from "@mush2/shared";
 import { hasBotSkill } from "./bots/duties.ts";
-import { END_CYCLE, helpGoal, helpTasks, SOLO_GOALS, type BotMemory, type Goal, type GoalDef } from "./bots/goals/index.ts";
+import { END_CYCLE, helpGoal, helpTasks, SOLO_GOALS, type BotMemory, type BotSocial, type Goal, type GoalDef } from "./bots/goals/index.ts";
 import { buildPrompt, describeLogEntry, observeShrinks, parseReply, type BotMessage } from "./prompt.ts";
 import type { ModelGate } from "./model.ts";
 
@@ -16,8 +16,8 @@ export interface Bot {
   decideAction(view: PlayerView): Promise<Action | null>;
   /** Optional: global-chat lines to post now. The room posts them as this bot, and the rules still check it may. */
   chatLines?(view: PlayerView): string[];
-  /** Optional: the room refused the action this bot last returned (the rules said no). */
-  refused?(action: Action, error: string): void;
+  /** Optional: the room refused the action (or the `takeSocial` message) this bot last returned (the rules said no). */
+  refused?(action: Action | BotSocial, error: string): void;
   /**
    * Optional: a chat message someone else wrote reached a channel this bot reads (bot-goals.md, "Waking"). Returns
    * whether it listens (a model bot with a key); one that does gets a turn to reply, act, or do nothing, even mid-goal.
@@ -29,6 +29,11 @@ export interface Bot {
   readonly woken?: boolean;
   /** Optional: the message its last turn wants posted (at most one), taken once. The room posts it like a player's. */
   takeMessage?(): BotMessage | null;
+  /**
+   * Optional: a message that isn't an action or chat (sharing a planet, #417) its last turn wants sent, taken once. The
+   * room sends it like a player's (`GameRoom.social`); a refusal comes back through `refused`. The turn returns no action.
+   */
+  takeSocial?(): BotSocial | null;
 }
 
 /**
@@ -96,6 +101,7 @@ const sameAction = (a: Action, b: Action): boolean => JSON.stringify(a) === JSON
  */
 export class GoalBot implements Bot {
   private goal: Goal | null = null;
+  private social: BotSocial | null = null;
   private wokenByChat = false;
   private actions = 0;
   private cycle = -1;
@@ -122,6 +128,7 @@ export class GoalBot implements Bot {
       today: new Set(),
       visited: new Set(),
       shrinks: new Set(),
+      lastExpedition: null,
       roll: (n) => {
         let i: number;
         [i, this.rng] = nextInt(this.rng, n);
@@ -192,6 +199,15 @@ export class GoalBot implements Bot {
         this.goal = chosen;
       }
       const step = this.goal.step(view, this.memory);
+      if (step.kind === "social") {
+        // One thing a turn: the message instead of an action. The goal carries on next turn.
+        if (++this.actions <= GOAL_MAX_ACTIONS) {
+          this.social = step.message;
+          return null;
+        }
+        this.end(true);
+        continue;
+      }
       if (step.kind === "wait") {
         // Ending the cycle isn't a goal to keep: while it waits for the clock, something may open up (hunger, AP).
         if (this.goal === END_CYCLE) this.goal = null;
@@ -208,6 +224,12 @@ export class GoalBot implements Bot {
 
   refused(): void {
     this.end(true);
+  }
+
+  takeSocial(): BotSocial | null {
+    const social = this.social;
+    this.social = null;
+    return social;
   }
 
   /** Cycle bookkeeping and the interrupts. */

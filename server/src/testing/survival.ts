@@ -48,6 +48,8 @@ export interface SurvivalResult {
   goals: Record<string, number>;
   /** Times a bot was asked for its next step (the harness's cost, and a sign of goals churning). */
   decisions: number;
+  /** Messages bots sent that aren't actions (sharing a planet, #417), by type, counting only the accepted ones. Absent in runs saved before. */
+  social?: Record<string, number>;
   /** Steps a bot returned that the rules refused (should be 0: goals step only from `legalIn`). */
   refused: number;
 }
@@ -93,7 +95,7 @@ export async function runSurvival(seed: number, opts: SurvivalOptions): Promise<
   let game = survivalGame(seed, opts);
   const trace = opts.trace ?? (() => {});
   const bots = new Map<PlayerId, GoalBot>(game.players.map((p, i) => [p.id, new GoalBot(seed * 1_000 + i)]));
-  const result: SurvivalResult = { seed, crew: game.players.map((p) => p.character), end: "survived", cyclesPerDay: game.config.cyclesPerDay, day: 1, cycle: 1, deaths: [], days: [], goals: {}, decisions: 0, refused: 0 };
+  const result: SurvivalResult = { seed, crew: game.players.map((p) => p.character), end: "survived", cyclesPerDay: game.config.cyclesPerDay, day: 1, cycle: 1, deaths: [], days: [], goals: {}, social: {}, decisions: 0, refused: 0 };
   const lastGoal = new Map<PlayerId, string | null>();
   let now = 0;
   let logSeen = game.nextLogId;
@@ -141,6 +143,17 @@ export async function runSurvival(seed: number, opts: SurvivalOptions): Promise<
           result.goals[kind] = (result.goals[kind] ?? 0) + 1;
         }
         lastGoal.set(id, goal);
+        // A message that isn't an action (sharing a planet, #417), as the room sends it; that turn has no action.
+        const social = bot.takeSocial();
+        if (social) {
+          if (apply({ ...social, by: id })) {
+            acted = true;
+            result.social![social.type] = (result.social![social.type] ?? 0) + 1;
+          } else {
+            result.refused++;
+            bot.refused();
+          }
+        }
         if (!action) continue;
         if (game.players.find((p) => p.id === id)!.ready && action.type === "ready") continue;
         if (apply({ type: "action", action, by: id, at: now })) acted = true;

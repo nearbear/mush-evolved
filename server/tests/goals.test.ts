@@ -1,7 +1,8 @@
-import { DEFAULT_CONFIG, applyAction, legalIn, newCycle, startGame, viewFor, type Action, type CharacterId, type GameState, type PlayerView } from "@mush2/shared";
+import { DEFAULT_CONFIG, applyAction, applyInput, legalIn, newCycle, startGame, viewFor, type Action, type CharacterId, type GameState, type PlayerView } from "@mush2/shared";
 import { describe, expect, it } from "vitest";
 import { GOAL_MAX_ACTIONS, GoalBot } from "../src/bots.ts";
-import { astro } from "../src/bots/goals/astro.ts";
+import { astro, chooseDestination, judgePlanet } from "../src/bots/goals/astro.ts";
+import { formatPlanetShare, parsePlanetShare } from "../src/bots/planetShare.ts";
 import { canAfford, goTo, roomsWith, travelAp } from "../src/bots/goals/blocks.ts";
 import { commsOfficer } from "../src/bots/goals/commsOfficer.ts";
 import { contactSol } from "../src/bots/goals/contactSol.ts";
@@ -75,6 +76,7 @@ const memory = (scripted = true) => ({
   today: new Set<string>(),
   visited: new Set<string>(),
   shrinks: new Set<string>(),
+  lastExpedition: null as "oxygen" | "fuel" | null,
   roll: roll0,
 });
 
@@ -865,7 +867,7 @@ describe("help", () => {
   });
 });
 
-describe("astro (#222)", () => {
+describe("astro (#222, #417)", () => {
   const stargazer = (skills: string[], ap = 6) => {
     const { game: start, id } = setup();
     const game = edit(start, id, (p) => {
@@ -875,46 +877,101 @@ describe("astro (#222)", () => {
     });
     return { game, id };
   };
+  type Sector = { tag: string; known: boolean };
+  const known = (...tags: string[]): Sector[] => tags.map((tag) => ({ tag, known: true }));
+  const planet = (id: string, name: string, distance: number, sectors: Sector[]) =>
+    ({ id, name, direction: "north", distance, size: sectors.length, sectors }) as GameState["planets"][string][number];
 
-  it("is only for an Astrophysicist, and stops when all maxPlanets are fully analyzed", () => {
+  /** Like `oneCycle`, but also sends what the bot shares, as the room would. */
+  async function astroCycle(game: GameState, id: string, bot: GoalBot): Promise<{ game: GameState; taken: string[] }> {
+    const taken: string[] = [];
+    for (let t = 0; t < 40; t++) {
+      const action = await bot.decideAction(viewFor(game, id));
+      const social = bot.takeSocial();
+      if (social) {
+        const r = applyInput(game, { ...social, by: id });
+        expect(r.ok, JSON.stringify(social)).toBe(true);
+        if (r.ok) game = r.state;
+        taken.push(social.type);
+        continue;
+      }
+      if (!action || action.type === "ready") break;
+      const r = applyAction(game, id, action);
+      expect(r.ok, JSON.stringify(action)).toBe(true);
+      if (r.ok) game = r.state;
+      taken.push(action.type);
+    }
+    return { game, taken };
+  }
+
+  it("formats and parses the bots' share text, and rejects anything else", () => {
+    const text = formatPlanetShare({ name: "Kaxor", direction: "west", distance: 4, sectors: ["OXYGEN", null, "CAVE"] });
+    expect(text).toBe("Planet: Kaxor\nPosition: west, 4 fuel\nSectors: OXYGEN, ?, CAVE");
+    expect(parsePlanetShare(text)).toEqual({ name: "Kaxor", direction: "west", distance: 4, sectors: ["OXYGEN", null, "CAVE"] });
+    expect(parsePlanetShare("Kaxor is great, go north")).toBeNull();
+    expect(parsePlanetShare(text.replace("west", "up"))).toBeNull();
+    expect(parsePlanetShare(text.replace("CAVE", "CANDY"))).toBeNull();
+  });
+
+  it("judges planets: deadly, too far or useless ones go; ones with oxygen or fuel are kept once fully analyzed", () => {
+    const { game, id } = stargazer(["astrophysician"]);
+    const view = (sectors: Sector[], distance = 3) => {
+      game.planets[id] = [planet("pl-1", "Alpha", distance, sectors)];
+      const v = viewFor(game, id);
+      return [v, v.planets[0]!] as const;
+    };
+    expect(judgePlanet(...view(known("OXYGEN", "MANKAROG")))).toBe("delete");
+    expect(judgePlanet(...view([{ tag: "VOLCANIC_ACTIVITY", known: true }, { tag: "OXYGEN", known: false }]))).toBe("delete");
+    expect(judgePlanet(...view(known("OXYGEN"), game.ship.fuel + 1))).toBe("delete");
+    expect(judgePlanet(...view(known("FOREST", "DESERT")))).toBe("delete");
+    expect(judgePlanet(...view([{ tag: "OXYGEN", known: true }, { tag: "FOREST", known: false }]))).toBe("analyze");
+    expect(judgePlanet(...view(known("OXYGEN", "FOREST")))).toBe("ready");
+    expect(judgePlanet(...view(known("HYDROCARBON")))).toBe("ready");
+  });
+
+  it("is only for an Astrophysicist, and has nothing to do once its destination is shared and it holds maxPlanets", async () => {
     const other = stargazer(["pilot"]);
     expect(astro.options(viewFor(other.game, other.id), memory())).toEqual([]);
     const { game, id } = stargazer(["astrophysician"]);
     expect(astro.options(viewFor(game, id), memory())).toHaveLength(1);
-    game.planets[id] = [
-      { id: "pl-1", name: "Alpha", direction: "north", distance: 3, size: 2, sectors: [{ tag: "OXYGEN", known: true }] },
-      { id: "pl-2", name: "Beta", direction: "south", distance: 4, size: 2, sectors: [{ tag: "HYDROCARBON", known: true }] },
-    ];
-    expect(astro.options(viewFor(game, id), memory())).toEqual([]);
+    game.planets[id] = [planet("pl-1", "Alpha", 3, known("OXYGEN")), planet("pl-2", "Beta", 4, known("HYDROCARBON"))];
+    const { game: after, taken } = await astroCycle(game, id, new GoalBot(1, 2, [astro]));
+    expect(taken.filter((a) => a !== "move")).toEqual(["sharePlanet"]);
+    expect(after.sharedPlanets.map((e) => e.planet)).toEqual(["pl-1"]);
+    expect(astro.options(viewFor(after, id), memory())).toEqual([]);
   });
 
-  it("analyzes an unanalyzed planet before scanning, works down to the AP reserve, and goes once a day", async () => {
+  it("deletes useless planets, analyzes, then scans down to the AP reserve, every cycle", async () => {
     const { game, id } = stargazer(["astrophysician"], 6);
     game.planets[id] = [
-      {
-        id: "pl-1",
-        name: "Alpha",
-        direction: "north",
-        distance: 3,
-        size: 2,
-        sectors: [
-          { tag: "OXYGEN", known: false },
-          { tag: "HYDROCARBON", known: false },
-        ],
-      },
+      planet("pl-1", "Alpha", 3, [
+        { tag: "OXYGEN", known: false },
+        { tag: "HYDROCARBON", known: false },
+      ]),
+      planet("pl-2", "Beta", 3, known("FOREST", "DESERT")),
     ];
     const bot = new GoalBot(1, 2, [astro]);
-    const { game: after, taken } = await oneCycle(game, id, bot);
-    const work = taken.filter((a) => a.type !== "move");
-    // 6 AP -> 2 AP reserve = 4 AP spent: first analyze_planet (2 AP, reveals 2 sectors for Astrophysicist), then scan_planet (2 AP).
-    expect(work.map((a) => a.type)).toEqual(["analyze_planet", "scan_planet"]);
+    const { game: after, taken } = await astroCycle(game, id, bot);
+    const work = taken.filter((a) => a !== "move");
+    // Beta goes for free; 6 AP -> 2 AP reserve: analyze Alpha (2 sectors for the Astrophysicist), share it, scan (2 AP).
+    expect(work).toEqual(["delete_planet", "analyze_planet", "sharePlanet", "scan_planet"]);
     expect(after.players.find((p) => p.id === id)!.ap).toBe(2);
-    // Done for today, even with more AP later in the same day.
-    const refilled = edit(after, id, (p) => (p.ap = 8));
-    expect(await bot.decideAction(viewFor(refilled, id))).toEqual({ type: "ready" });
-    // Tomorrow it is offered again.
-    refilled.cycle += refilled.config.cyclesPerDay;
+    expect(parsePlanetShare(after.sharedPlanets[0]!.text)?.name).toBe("Alpha");
+    // Not once a day any more (#417): more AP in the next cycle is spent on the search too.
+    const next = newCycle(after);
+    expect(next.ok).toBe(true);
+    if (!next.ok) return;
+    const refilled = edit(next.state, id, (p) => (p.ap = 8));
     expect(await bot.decideAction(viewFor(refilled, id))).not.toEqual({ type: "ready" });
+  });
+
+  it("prefers a planet with something other than the last expedition's kind, then the nearest", () => {
+    const { game, id } = stargazer(["astrophysician"]);
+    game.planets[id] = [planet("pl-1", "Near", 2, known("OXYGEN")), planet("pl-2", "Far", 6, known("HYDROCARBON"))];
+    const view = viewFor(game, id);
+    expect(chooseDestination(view, null)?.name).toBe("Near");
+    expect(chooseDestination(view, "fuel")?.name).toBe("Near");
+    expect(chooseDestination(view, "oxygen")?.name).toBe("Far");
   });
 });
 
