@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { GameClientMessage } from "@mush2/shared";
 import { KEEP_MS, SEND_EVERY_MS, chatReadKey, createChatReadStore } from "../src/chatRead.ts";
-import { readAllOn, unreadByTab } from "../src/hud/chatTabs.ts";
+import { readAllOn, totalUnread, unreadByTab } from "../src/hud/chatTabs.ts";
 
 /** An in-memory localStorage. */
 function memoryStorage(entries: Record<string, string> = {}) {
@@ -195,6 +195,7 @@ describe("unreadByTab", () => {
       mush: 0,
       graveyard: 0,
     });
+    expect(totalUnread(view as never, { global: 7, "th-1": 3, "th-2": 1, mush: 9 })).toBe(9);
   });
 });
 

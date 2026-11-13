@@ -3327,3 +3327,7 @@ Four questions went to the owner first, each one where the plan conflicted with 
 
 - **Built:** extended `shortestPath` (`shared/src/paths.ts`) to accept a room predicate `(room: RoomId) => boolean` so BFS finds the nearest match and breaks ties by door order in `config.rooms`; added `"sensor"` to `DRONE_UPGRADES` and `sensorStep` in `shared/src/drones.ts` (fire if Firefighter, else broken repairable equipment or non-hidden floor item; hunters wait for Pilot in #415; fallback to random neighbouring room); added en/fr/es `"sensor"` strings (`Sensor` / `Capteur` / `Sensor`).
 - **Tests:** added predicate tests in `paths.test.ts` and Sensor tests (nearest target, Firefighter gate & priority, door-order tie-break, Pilot gate & random fallback, and `viewFor` leak check) in `droneUpgrades.test.ts`.
+
+## 2026-11-12: Mobile iTrackie bottom-nav unread badge
+
+- **Built:** added `totalUnread` in `web/src/hud/chatTabs.ts` summing `unreadCount` across `view.readChannels`, wired `useReadSnapshot()` into `web/src/hud/BottomNav.tsx` (`view` prop passed from `GameView.tsx`) so the `iTrackie` button renders `.tab-badge` (`99+` cap) and uses `itrackie.unreadTab` for its `aria-label` when unread > 0. Updated `tools/src/play/screenshot.ts`'s `nav` helper regex so tapping `"iTrackie"` works even when unread counts appear in its accessible name, and added unit/jsdom tests in `chatRead.test.ts` and `readMarking.test.tsx`.
