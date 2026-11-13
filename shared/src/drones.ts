@@ -2,11 +2,14 @@
 // item (npcs.ts) with its own state in `ItemState.drone`. Each cycle change, a working drone aboard the Daedalus
 // repairs the first broken thing in its room it can repair, or else moves to a random neighbouring room. A carried
 // drone acts in its carrier's room, and with nothing to repair it leaves the inventory for a neighbouring room too
-// (owner, 2026-11-11, as eMush). It never repairs a hidden item (no new way to learn
+// (owner, 2026-11-11, as eMush). Upgrades (#412, actions/upgrade_drone.ts): a Firefighter drone puts out its room's
+// fire before anything else and fire never breaks it; a Turbo drone has `config.drones.turboChance` of a second turn
+// (a full one, which may move it again), never a third (owner, 2026-11-12). It never repairs a hidden item (no new way to learn
 // of one) nor anything someone carries (inventories are private). A broken drone does nothing. Its lines are public
 // in the room; NERON says nothing.
 
 import { isBreakable } from "./breakage.ts";
+import { isOnFire } from "./fire.ts";
 import { ITEM_TYPES, itemsIn } from "./items.ts";
 import { logPublic } from "./log.ts";
 import type { Npc } from "./npcs.ts";
@@ -22,6 +25,20 @@ export const DRONE_NAMES: readonly string[] = [
   "Betty", "Charlotte", "Dave", "Doc", "Doudou", "Douglams", "Einstein", "Fido", "Fito", "Groo", "Isaac", "Loulou",
   "Médor", "Nabuk", "Papitou", "Poutou", "Rex", "Robbie", "Robert", "Selry", "Steve", "Terminus", "Troll", "Vortex", "Weathley",
 ];
+
+/**
+ * The upgrades a Robotics Expert can fit (#412): Firefighter and Turbo. Sensor (#413) and Pilot (#415) join the list
+ * when their effects are built, so nobody pays for one that does nothing (owner, 2026-11-12). Permanent ids.
+ */
+export const DRONE_UPGRADES = ["firefighter", "turbo"] as const;
+export type DroneUpgrade = (typeof DRONE_UPGRADES)[number];
+
+export const isDroneUpgrade = (x: unknown): x is DroneUpgrade => typeof x === "string" && (DRONE_UPGRADES as readonly string[]).includes(x);
+
+export const hasUpgrade = (item: Readonly<ItemState>, upgrade: DroneUpgrade): boolean => item.drone?.upgrades.includes(upgrade) ?? false;
+
+/** Fire never breaks a Firefighter drone (fire.ts). */
+export const isFireproof = (item: Readonly<ItemState>): boolean => hasUpgrade(item, "firefighter");
 
 /** The highest serial number; a drone's is 1 to this. */
 export const DRONE_MAX_SERIAL = 99;
@@ -76,14 +93,34 @@ function repair(state: GameState, drone: DroneState, room: RoomId): boolean {
   return true;
 }
 
-/** Moves a drone in `room` (on its floor, or carried there) to a random neighbouring room's floor aboard the Daedalus, with public lines in both. */
-function wander(state: GameState, item: ItemState, drone: DroneState, room: RoomId): void {
+/**
+ * A Firefighter drone's try at its room's fire, if there is one: one seeded roll at Extinguish's base chance raised by
+ * its own failure count, which a success resets (owner, 2026-11-12, as for repair). Returns whether it tried.
+ */
+function extinguish(state: GameState, item: ItemState, drone: DroneState, room: RoomId): boolean {
+  if (!hasUpgrade(item, "firefighter") || !isOnFire(state, room)) return false;
+  const success = rollFloat(state) < droneChance(state, state.config.extinguish.chance, drone.failures.extinguish);
+  drone.failures.extinguish = success ? 0 : drone.failures.extinguish + 1;
+  if (success) state.fires = state.fires.filter((r) => r !== room);
+  logPublic(state, room, success ? "droneExtinguished" : "droneExtinguishFailed", droneParams(drone));
+  return true;
+}
+
+/** Moves a drone in `room` (on its floor, or carried there) to a random neighbouring room's floor aboard the Daedalus, with public lines in both. Returns where it ends up. */
+function wander(state: GameState, item: ItemState, drone: DroneState, room: RoomId): RoomId {
   const neighbours = (state.config.rooms[room] ?? []).filter((r) => !offShip(r));
-  if (neighbours.length === 0) return;
+  if (neighbours.length === 0) return room;
   const to = neighbours[rollInt(state, neighbours.length)]!;
   item.at = { kind: "room", id: to };
   logPublic(state, room, "droneLeft", { ...droneParams(drone), room: to });
   logPublic(state, to, "droneEntered", { ...droneParams(drone), room });
+  return to;
+}
+
+/** One turn: put out a fire (Firefighter), else repair, else wander. Returns the room it ends the turn in. */
+function turn(state: GameState, item: ItemState, drone: DroneState, room: RoomId): RoomId {
+  if (extinguish(state, item, drone, room) || repair(state, drone, room)) return room;
+  return wander(state, item, drone, room);
 }
 
 /** The support drone's behaviour (npcs.ts). */
@@ -95,7 +132,8 @@ export const supportDrone: Npc = {
     if (item.broken || offShip(room)) return;
     // A drone made before drones had state (a game started before #411 landed) gets it on its first turn.
     const drone = (item.drone ??= newDrone(state));
-    if (repair(state, drone, room)) return;
-    wander(state, item, drone, room);
+    const now = turn(state, item, drone, room);
+    // Turbo (owner, 2026-11-12): one roll for a full second turn, in the room the first left it in; never a third.
+    if (hasUpgrade(item, "turbo") && state.phase === "playing" && rollFloat(state) < state.config.drones.turboChance) turn(state, item, drone, now);
   },
 };

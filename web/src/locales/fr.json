@@ -421,7 +421,9 @@
     "ignite": "Allumer un feu",
     "sabotage": "Saboter",
     "greenJelly": "Gelée verte",
-    "reinforce": "Renforcer"
+    "reinforce": "Renforcer",
+    "upgradeDrone": "Améliorer",
+    "upgradeDroneWith": "Améliorer ({{upgrade}})"
   },
   "queue": {
     "label": "Vos actions",
@@ -1040,6 +1042,9 @@
     "droneRepairFailedItem": "{{drone}} a tenté de réparer l'objet : {{item}}, sans succès.",
     "droneLeft": "{{drone}} est parti vers : {{room}}.",
     "droneEntered": "{{drone}} est arrivé de : {{room}}.",
+    "droneExtinguished": "{{drone}} a éteint l'incendie !",
+    "droneExtinguishFailed": "{{drone}} a tenté d'éteindre l'incendie, sans succès.",
+    "droneUpgraded": "{{name}} a installé l'amélioration {{upgrade}} sur {{drone}}.",
     "itemRepairFailed": "Vous n'avez pas réussi à réparer l'objet : {{item}}.",
     "fireExtinguished": "{{name}} a éteint l'incendie !",
     "extinguishFailed": "Vous n'avez pas réussi à éteindre l'incendie.",
@@ -1840,6 +1845,12 @@
       "title": "Bienvenue à bord",
       "bodyEndCycle": "Vous gagnez des PA à chaque cycle, et les PA non dépensés sont conservés. Dépensez-les en actions, puis appuyez sur Terminer le cycle quand vous avez fini.",
       "bodyClock": "Vous gagnez des PA à chaque cycle, et les PA non dépensés sont conservés. Un nouveau cycle commence à la fin du compte à rebours du prochain cycle."
+    }
+  },
+  "drones": {
+    "upgrades": {
+      "firefighter": "Pompier",
+      "turbo": "Turbo"
     }
   }
 }

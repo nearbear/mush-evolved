@@ -421,7 +421,9 @@
     "ignite": "Provocar un incendio",
     "sabotage": "Sabotear",
     "greenJelly": "Gelatina verde",
-    "reinforce": "Reforzar"
+    "reinforce": "Reforzar",
+    "upgradeDrone": "Mejorar",
+    "upgradeDroneWith": "Mejorar ({{upgrade}})"
   },
   "queue": {
     "label": "Tus acciones",
@@ -1040,6 +1042,9 @@
     "droneRepairFailedItem": "{{drone}} ha intentado reparar el objeto: {{item}}, sin éxito.",
     "droneLeft": "{{drone}} se ha ido a: {{room}}.",
     "droneEntered": "{{drone}} ha llegado desde: {{room}}.",
+    "droneExtinguished": "¡{{drone}} ha apagado el incendio!",
+    "droneExtinguishFailed": "{{drone}} ha intentado apagar el incendio, pero ha fallado.",
+    "droneUpgraded": "{{name}} ha instalado la mejora {{upgrade}} en {{drone}}.",
     "itemRepairFailed": "No has conseguido reparar el objeto: {{item}}.",
     "fireExtinguished": "¡{{name}} ha apagado el incendio!",
     "extinguishFailed": "No has conseguido apagar el incendio.",
@@ -1840,6 +1845,12 @@
       "title": "Bienvenido a bordo",
       "bodyEndCycle": "Ganas PA cada ciclo, y los PA no gastados se conservan. Gástalos en acciones y pulsa Terminar el ciclo cuando acabes.",
       "bodyClock": "Ganas PA cada ciclo, y los PA no gastados se conservan. Un nuevo ciclo empieza cuando termina la cuenta atrás del próximo ciclo."
+    }
+  },
+  "drones": {
+    "upgrades": {
+      "firefighter": "Bombero",
+      "turbo": "Turbo"
     }
   }
 }

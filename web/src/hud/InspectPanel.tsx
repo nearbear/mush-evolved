@@ -52,7 +52,9 @@ export function InspectPanel({
       ? t("actions.attackWith", { weapon: names.itemOf(weapon) })
       : action.type === "apprenticeship"
         ? t("actions.apprenticeshipOf", { skill: names.skill(action.skill) })
-        : names.action(action.type);
+        : action.type === "upgrade_drone"
+          ? t("actions.upgradeDroneWith", { upgrade: names.droneUpgrade(action.upgrade) })
+          : names.action(action.type);
     return <ActionLabel text={text} cost={cost} chance={chance} visibility={actionVisibility(action.type)} />;
   };
   const resolved = resolveTarget(view, target);
@@ -167,11 +169,12 @@ function Details({ view, layout, resolved, onAction }: { view: PlayerView; layou
   }
 }
 
-/** A drone's upgrades (#411); none exist until later phases of #410, so this reads "No upgrades" for now. */
+/** A drone's upgrades (#412), public to anyone who examines it, or "No upgrades". */
 function DroneUpgrades({ upgrades }: { upgrades: readonly string[] }) {
   const { t, i18n } = useTranslation();
+  const names = useNames();
   if (upgrades.length === 0) return <div className="sub inspect-drone-upgrades">{t("itemAttr.droneNoUpgrades")}</div>;
-  const list = new Intl.ListFormat(i18n.language, { type: "conjunction" }).format(upgrades.map((id) => t(`drones.upgrades.${id}` as never, { defaultValue: id })));
+  const list = new Intl.ListFormat(i18n.language, { type: "conjunction" }).format(upgrades.map((id) => names.droneUpgrade(id)));
   return <div className="sub inspect-drone-upgrades">{t("itemAttr.droneUpgrades", { upgrades: list })}</div>;
 }
 

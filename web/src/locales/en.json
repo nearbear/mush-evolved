@@ -416,7 +416,9 @@
     "ignite": "Start a fire",
     "sabotage": "Sabotage",
     "greenJelly": "Green Jelly",
-    "reinforce": "Reinforce"
+    "reinforce": "Reinforce",
+    "upgradeDrone": "Upgrade",
+    "upgradeDroneWith": "Upgrade ({{upgrade}})"
   },
   "queue": {
     "label": "Your actions",
@@ -1021,6 +1023,9 @@
     "droneRepairFailedItem": "{{drone}} tried to repair the {{item}}, but failed.",
     "droneLeft": "{{drone}} left for: {{room}}.",
     "droneEntered": "{{drone}} arrived from: {{room}}.",
+    "droneExtinguished": "{{drone}} put out the fire!",
+    "droneExtinguishFailed": "{{drone}} tried to put out the fire, but failed.",
+    "droneUpgraded": "{{name}} fitted {{drone}} with the {{upgrade}} upgrade.",
     "itemRepairFailed": "You failed to repair the {{item}}.",
     "fireExtinguished": "{{name}} put out the fire!",
     "extinguishFailed": "You failed to put out the fire.",
@@ -1902,6 +1907,12 @@
       "title": "Welcome aboard",
       "bodyEndCycle": "You gain AP every cycle, and unspent AP is kept. Spend it on actions, then press End cycle when you're done.",
       "bodyClock": "You gain AP every cycle, and unspent AP is kept. A new cycle starts when the countdown to the next cycle runs out."
+    }
+  },
+  "drones": {
+    "upgrades": {
+      "firefighter": "Firefighter",
+      "turbo": "Turbo"
     }
   }
 }

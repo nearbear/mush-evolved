@@ -660,6 +660,7 @@ describe("actions from a client", () => {
     take: [{ type: "take", item: "i1" }],
     drop: [{ type: "drop", item: "i1" }],
     reinforce: [{ type: "reinforce", item: "i1" }, { type: "reinforce", equipment: "e1" }],
+    upgrade_drone: [{ type: "upgrade_drone", item: "i1", upgrade: "turbo" }],
     dismantle: [{ type: "dismantle", item: "i1" }, { type: "dismantle", equipment: "e1" }],
     access: [{ type: "access", equipment: "e1" }],
     research: [{ type: "research", equipment: "e1", research: "r1" }],
