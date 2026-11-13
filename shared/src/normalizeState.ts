@@ -326,6 +326,7 @@ export function normalizePlayer(raw: Partial<PlayerState>, mode: QueueMode): Pla
     character: need(raw, "character", t),
     mind: need(raw, "mind", t),
     transferUsed: raw.transferUsed,
+    epigeneticsUsed: raw.epigeneticsUsed,
     apprenticeUsed: raw.apprenticeUsed,
     geniusUsed: raw.geniusUsed,
     bodyTakenBy: raw.bodyTakenBy,

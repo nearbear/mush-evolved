@@ -50,6 +50,8 @@ export interface PlayerState extends Seat {
   mind: PlayerId;
   /** The Mush in this mind has used Transfer (one use per game); moves with the mind. Never sent. */
   transferUsed?: true;
+  /** The Mush in this mind has used Epigenetics (one use per game); moves with the mind. Never sent. */
+  epigeneticsUsed?: true;
   /** This body used Apprenticeship (the copy replaced Apprentice), so Apprentice can't be picked again. Your own view only; stays with the body. */
   apprenticeUsed?: true;
   /** This body used Eureka moment (become_genius), once per game. Your own view only; stays with the body. */

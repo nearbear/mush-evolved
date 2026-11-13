@@ -93,6 +93,7 @@ export const PLAYER_STATE_FIELDS: Record<string, FieldRule> = {
   // PlayerState
   mind: { reach: "never", test: "leaks.test.ts", note: "Which seat plays the body; would reveal a Transfer." },
   transferUsed: { reach: "never", test: "leaks.test.ts" },
+  epigeneticsUsed: { reach: "never", test: "leaks.test.ts" },
   bodyTakenBy: { reach: "own", test: "body_transfer.test.ts", note: "The victim's pop-up; never to anyone else." },
   role: { reach: "own", test: "leaks.test.ts", note: "Death announces it crew-wide (death.test.ts); everyone's once the game has ended (victory.test.ts)." },
   alpha: { reach: "own", test: "leaks.test.ts" },

@@ -558,6 +558,7 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     outcastBy: _outcastBy,
     mind: _mind,
     transferUsed: _transferUsed,
+    epigeneticsUsed: _epigeneticsUsed,
     history: _history,
     lastSeenAt: _lastSeenAt,
     inactivity: _inactivity,

@@ -143,6 +143,7 @@ export const MUSH_SKILLS = [
   "slimetrap",
   "electro_slime",
   "defacer",
+  "epigenetics",
 ] as const;
 
 export type MushSkillId = (typeof MUSH_SKILLS)[number];
@@ -230,6 +231,8 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   botanic: "partial",
   // Sees plant sickness as the Botanist does (botany.ts); none of its other skills' knowledge.
   skilful: "partial",
+  // Mush skill: the one-use reset of the Mush skills (owner, 2026-11-13, actions/reset_skills.ts).
+  epigenetics: "full",
   // Mush skill: the one-use body swap (owner, 2026-10-24, body_transfer.ts).
   transfert: "full",
   // Mush skill: spores into food (owner, 2026-10-24, fungal_cuisine.ts); no Hygienist or Cook-point interaction.
