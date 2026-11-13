@@ -372,6 +372,8 @@
     "lacksSpace": "Your inventory is full.",
     "lacksClean": "You have to be clean to do this. Take a shower first.",
     "lacksPasiphae": "A patrol ship can only collect scrap once the Pasiphae has been destroyed.",
+    "lacksReactorTravel": "The Emergency reactor is broken: the ship can't travel until it is repaired.",
+    "lacksReactorTurn": "The lateral reactor on this side is broken: the ship can't turn this way until it is repaired.",
     "lacksMp": "Not enough MP: it costs {{need}}, you have {{have}}.",
     "lacksBoth": "Not enough AP or MP: it costs {{needAp}} AP and {{needMp}} MP, you have {{haveAp}} AP and {{haveMp}} MP.",
     "returnToSol": "Return to Sol",

@@ -30,6 +30,9 @@ export const NO_DEBRIS = "no_debris";
 /** The `validate` code for Collect scrap from a patrol ship while the Pasiphae still exists: shown disabled (`unaffordableActions`). */
 export const PASIPHAE_INTACT = "pasiphae_intact";
 
+/** The `validate` code for Travel or a turn whose reactor is broken (navigation.ts): shown disabled with the reason, not hidden (`unaffordableActions`). */
+export const REACTOR_BROKEN = "reactor_broken";
+
 /**
  * Who learns of an action, for the label on its button (the log entries themselves come from `log.ts`).
  * Declared per action and kept in step with the log call in its `apply`.

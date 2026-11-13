@@ -41,6 +41,7 @@ describe("ship navigation", () => {
     s.equipment.MOTOR_ROOM!.find((e) => e.id === "MOTOR_ROOM:EMERGENCY_REACTOR")!.broken = true;
     expect(applyAction(s, "p0", travel).ok).toBe(false);
     expect(offered(s, "p0").some((a) => a.type === "travel")).toBe(false);
+    expect(option(s, "p0", { type: "travel" })?.lacks).toEqual(["reactor"]);
     expect(must(applyAction(s, "p0", turn("left"))).navigation.heading).toBe("west");
   });
 
@@ -56,6 +57,8 @@ describe("ship navigation", () => {
     expect(applyAction(s, "p0", turn("right")).ok).toBe(false);
     reactor("MOTOR_ROOM:reac_a").broken = true;
     expect(offered(s, "p0").filter((a) => a.type === "turn_ship")).toEqual([]);
+    expect(option(s, "p0", { type: "turn_ship", side: "left" })?.lacks).toEqual(["reactor"]);
+    expect(option(s, "p0", { type: "turn_ship", side: "right" })?.lacks).toEqual(["reactor"]);
   });
 
   it("starts facing north, not in orbit", () => {
