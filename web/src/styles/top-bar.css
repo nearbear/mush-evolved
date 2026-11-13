@@ -1,4 +1,4 @@
-/* Top bar: nameplate, faction icon, pip bars, and stat stacks. */
+/* Top bar: nameplate, faction icon, and pip bars. */
 
 /* Top bar */
 
@@ -7,12 +7,6 @@
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-2) var(--space-3);
-}
-.stats {
-  display: flex;
-  gap: var(--space-3);
-  /* Match the nameplate's height; the stacks inside stretch to fill it. */
-  align-self: stretch;
 }
 .cycle-under-name {
   display: none;
@@ -73,9 +67,8 @@
   height: 40px;
   image-rendering: pixelated;
 }
-/* Outlined cards: the nameplate, both stat stacks, the resource stack, and the ship card (on phones; in the desktop top bar it is flat, below). The flat quote-box look (fill, 1px rim, soft shadow). */
+/* Outlined cards: the nameplate, the resource stack, and the ship card (on phones; in the desktop top bar it is flat, below). The flat quote-box look (fill, 1px rim, soft shadow). */
 .nameplate,
-.stat-stack,
 .resource-stack,
 .ship-resources {
   background: var(--panel-fill);
@@ -187,23 +180,6 @@
 .pip-bar.vertical .pip-label,
 .pip-bar.vertical .sub {
   margin: 0;
-}
-/* Two pip bars on top of each other, labels in one column so the pips line up. */
-.stat-stack {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 3px;
-  padding: var(--space-1) var(--space-2);
-}
-/* Labels and values: white with a dark shadow, since the muted gray is too faint on the slot blue. */
-.stat-stack .pip-label,
-.stat-stack .pip-bar .sub {
-  color: #fff;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
-}
-.stat-stack .pip-label {
-  min-width: 1.4rem;
 }
 
 /*
