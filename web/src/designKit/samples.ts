@@ -67,12 +67,12 @@ export const terminalSamples: { view: PlayerView; terminal: EquipmentView }[] = 
   return { view, terminal };
 });
 
-/** Hunters attacking: four, at full hp and a little less. */
-const HUNTERS = 4;
+/** Hunters attacking: six, every kind once and a second plain hunter, at full hp and a little less. */
+const HUNTERS = 6;
 
 /** The turret terminal while hunters attack (each hunter's hp and every turret's charges are in the view there). */
 export const turretHuntersSample = (() => {
-  const view = sampleView(addHunters(moveToEquipment(atTerminals, "TURRET_COMMAND"), HUNTERS));
+  const view = sampleView(addHunters(moveToEquipment(atTerminals, "TURRET_COMMAND"), HUNTERS, true));
   const terminal = view.roomEquipment.find((e) => e.type === "TURRET_COMMAND");
   if (!terminal) throw new Error("No TURRET_COMMAND in the sample room");
   return { view, terminal };
@@ -84,7 +84,7 @@ const inFlight = (() => {
   return act(s, { type: "takeoff", equipment: "SPACESHIP_BAY_A:PATROL_SHIP_A_0" });
 })();
 export const patrolView = sampleView(inFlight);
-export const patrolHuntersView = sampleView(addHunters(inFlight, HUNTERS));
+export const patrolHuntersView = sampleView(addHunters(inFlight, HUNTERS, true));
 
 /**
  * The iTrackie's sample: Hua, a Pilot, shares a planet from the Astro terminal, then flies the Icarus to it (so the

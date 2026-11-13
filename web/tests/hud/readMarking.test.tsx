@@ -35,6 +35,7 @@ vi.hoisted(() => {
 
 import "../../src/i18n/index.ts";
 import { ChatReadProvider, createChatReadStore, type ChatReadStore } from "../../src/chatRead.ts";
+import { BottomNav } from "../../src/hud/BottomNav.tsx";
 import { MessageEntry, Thread } from "../../src/hud/Thread.tsx";
 import { ITrackie } from "../../src/hud/ITrackie.tsx";
 import { ended, sampleState, sampleView, say } from "../../src/designKit/sampleView.ts";
@@ -318,5 +319,40 @@ describe("no unread badges in a replay or an ended game (#400)", () => {
     renderITrackie(sampleView(ended(unreadView(), "humans", "eden")), true);
     expect(badges()).toHaveLength(0);
     expect(document.querySelector("button.mark-read")).toBeNull();
+  });
+});
+
+describe("BottomNav unread badge", () => {
+  const unreadView = () => {
+    let state = sampleState();
+    state = say(say(state, "global", "hello", "p1"), "botany", "seeds", "p1");
+    return state;
+  };
+  const renderNav = (view: PlayerView, provider = true) =>
+    render(withStore(<BottomNav panel="room" onChange={() => {}} view={view} />, provider));
+
+  it("shows the total unread badge and accessible name, and clears when marked read", () => {
+    renderNav(sampleView(unreadView()));
+    expect(document.querySelector(".bottom-nav-button .tab-badge")?.textContent).toBe("2");
+    expect(screen.getByRole("button", { name: "iTrackie, 2 unread" })).not.toBeNull();
+    act(() => store.markAll({ global: 1, botany: 1 }));
+    expect(document.querySelector(".bottom-nav-button .tab-badge")).toBeNull();
+    expect(screen.getByRole("button", { name: "iTrackie" })).not.toBeNull();
+  });
+
+  it("caps the displayed badge at 99+ while keeping the exact count in the accessible name", () => {
+    const view = { readChannels: ["global"], chatCounts: { global: 105 } } as unknown as PlayerView;
+    renderNav(view);
+    expect(document.querySelector(".bottom-nav-button .tab-badge")?.textContent).toBe("99+");
+    expect(screen.getByRole("button", { name: "iTrackie, 105 unread" })).not.toBeNull();
+  });
+
+  it("shows none in a replay (no read store) or an ended game", () => {
+    const live = sampleView(unreadView());
+    renderNav(live, false);
+    expect(document.querySelector(".bottom-nav-button .tab-badge")).toBeNull();
+    cleanup();
+    renderNav(sampleView(ended(unreadView(), "humans", "eden")), true);
+    expect(document.querySelector(".bottom-nav-button .tab-badge")).toBeNull();
   });
 });

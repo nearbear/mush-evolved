@@ -351,7 +351,7 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
         />
       )}
       {mobile && transport && <div className="game-transport">{transport}</div>}
-      {mobile && <BottomNav panel={panel} onChange={setPanel} />}
+      {mobile && <BottomNav panel={panel} onChange={setPanel} view={view} />}
     </main>
     </ServerClockContext.Provider>
   );

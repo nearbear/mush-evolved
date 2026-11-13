@@ -232,7 +232,7 @@ async function joinMobile(page: Page, name: string): Promise<void> {
 
 /** The phone pass: taps, the peek bar, panel switching, a wide room, and landscape. */
 async function mobileSteps(page: Page, step: Step): Promise<void> {
-  const nav = (name: string) => page.locator(".bottom-nav").getByRole("button", { name, exact: true }).tap();
+  const nav = (name: string) => page.locator(".bottom-nav").getByRole("button", { name: new RegExp(`^${name}(,|$)`) }).tap();
   const peek = page.locator(".peek-bar");
 
   await step("m02-peek-person", async () => {

@@ -444,14 +444,22 @@ export const TAB_ICONS = {
 export const FX_SHEET = urls(
   import.meta.glob<string>("../../../Mush/clients/iso/gfx/fx.png", { eager: true, query: "?url", import: "default" }),
 )["fx"]!;
-/** Each hunter kind's battle-view slice in `FX_SHEET` (x, y, w, h), from the `FX_SPC_*` slices in tiles.xml. Only the
-    plain hunter exists in the rules so far; the others are here for when their kinds do. */
+/** Each hunter kind's battle-view slice in `FX_SHEET` (x, y, w, h), from the `FX_SPC_*` slices in tiles.xml. Keyed by
+    `HunterType` (spider is the Arack, dice the D1000). They range from 48x26 (hunter) to 84x92 (D1000). */
 export const HUNTER_SPRITES = {
   hunter: [378, 80, 48, 26],
   trax: [480, 49, 66, 46],
   spider: [547, 34, 76, 70],
   asteroid: [373, 330, 81, 72],
   dice: [492, 309, 84, 92],
+} as const satisfies Record<string, readonly [number, number, number, number]>;
+/** The same kinds' small slices (`FX_SPC_SMALL_*`, all 36x26), for lists where rows should stay even. */
+export const HUNTER_SPRITES_SMALL = {
+  hunter: [383, 83, 36, 26],
+  trax: [487, 62, 36, 26],
+  spider: [562, 57, 36, 26],
+  asteroid: [396, 345, 36, 26],
+  dice: [489, 321, 36, 26],
 } as const satisfies Record<string, readonly [number, number, number, number]>;
 /** The battle view's hp and charge icons in `FX_SHEET` (`FX_SPC_SHIELD`, `FX_SPC_CHARGE`). */
 export const FX_SHIELD = [432, 80, 13, 13] as const;

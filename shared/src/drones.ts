@@ -1,18 +1,21 @@
 // Support drones (#411, phase 1 of #410; owner, 2026-11-11, from eMushpedia "Drone de soutien"). A drone is an NPC
 // item (npcs.ts) with its own state in `ItemState.drone`. Each cycle change, a working drone aboard the Daedalus
-// repairs the first broken thing in its room it can repair, or else moves to a random neighbouring room. A carried
-// drone acts in its carrier's room, and with nothing to repair it leaves the inventory for a neighbouring room too
-// (owner, 2026-11-11, as eMush). Upgrades (#412, actions/upgrade_drone.ts): a Firefighter drone puts out its room's
-// fire before anything else and fire never breaks it; a Turbo drone has `config.drones.turboChance` of a second turn
-// (a full one, which may move it again), never a third (owner, 2026-11-12). It never repairs a hidden item (no new way to learn
-// of one) nor anything someone carries (inventories are private). A broken drone does nothing. Its lines are public
-// in the room; NERON says nothing.
+// repairs the first broken thing in its room it can repair, or else moves to a neighbouring room. A carried drone
+// acts in its carrier's room, and with nothing to repair it leaves the inventory for a neighbouring room too (owner,
+// 2026-11-11, as eMush). Upgrades (#412, actions/upgrade_drone.ts): a Firefighter drone puts out its room's fire before
+// anything else and fire never breaks it; a Turbo drone has `config.drones.turboChance` of a second turn (a full one,
+// which may move it again), never a third (owner, 2026-11-12); a Sensor drone (#413) steps along `shortestPath` toward
+// the nearest trouble (fire if Firefighter, else broken repairable equipment or floor item; hunters if Pilot in #415)
+// with ties broken by door order, falling back to a random move. It never repairs a hidden item (no new way to learn
+// of one) nor anything someone carries (inventories are private). A broken drone does nothing. Its lines are public in
+// the room; NERON says nothing.
 
 import { isBreakable } from "./breakage.ts";
 import { isOnFire } from "./fire.ts";
 import { ITEM_TYPES, itemsIn } from "./items.ts";
 import { logPublic } from "./log.ts";
 import type { Npc } from "./npcs.ts";
+import { shortestPath } from "./paths.ts";
 import { offShip } from "./patrol.ts";
 import { rollFloat, rollInt, rollShuffle } from "./rng.ts";
 import type { DroneState, Equipment, GameState, ItemState, LogParams, RoomId } from "./types.ts";
@@ -27,10 +30,10 @@ export const DRONE_NAMES: readonly string[] = [
 ];
 
 /**
- * The upgrades a Robotics Expert can fit (#412): Firefighter and Turbo. Sensor (#413) and Pilot (#415) join the list
- * when their effects are built, so nobody pays for one that does nothing (owner, 2026-11-12). Permanent ids.
+ * The upgrades a Robotics Expert can fit (#412, #413): Firefighter, Turbo, and Sensor. Pilot (#415) joins the list
+ * when its effects are built, so nobody pays for one that does nothing (owner, 2026-11-12). Permanent ids.
  */
-export const DRONE_UPGRADES = ["firefighter", "turbo"] as const;
+export const DRONE_UPGRADES = ["firefighter", "turbo", "sensor"] as const;
 export type DroneUpgrade = (typeof DRONE_UPGRADES)[number];
 
 export const isDroneUpgrade = (x: unknown): x is DroneUpgrade => typeof x === "string" && (DRONE_UPGRADES as readonly string[]).includes(x);
@@ -106,11 +109,27 @@ function extinguish(state: GameState, item: ItemState, drone: DroneState, room: 
   return true;
 }
 
-/** Moves a drone in `room` (on its floor, or carried there) to a random neighbouring room's floor aboard the Daedalus, with public lines in both. Returns where it ends up. */
+/**
+ * The next room along `shortestPath` toward the highest-priority trouble a Sensor drone (#413) can handle:
+ * a burning room (only with Firefighter), then a room with broken repairable equipment or floor item (hunters attacking
+ * is gated on Pilot, #415). Ties go by door order in `config.rooms`; undefined if no target is reachable.
+ */
+function sensorStep(state: Readonly<GameState>, item: Readonly<ItemState>, room: RoomId): RoomId | undefined {
+  const targets: ((r: RoomId) => boolean)[] = [];
+  if (hasUpgrade(item, "firefighter")) targets.push((r) => isOnFire(state, r));
+  targets.push((r) => droneRepairTarget(state, r) !== undefined);
+  for (const match of targets) {
+    const step = shortestPath(state.config.rooms, room, (r) => r !== room && !offShip(r) && match(r))?.[0];
+    if (step) return step;
+  }
+  return undefined;
+}
+
+/** Moves a drone in `room` (on its floor, or carried there) to a neighbouring room's floor aboard the Daedalus (Sensor pathfinding first if upgraded, else random), with public lines in both. Returns where it ends up. */
 function wander(state: GameState, item: ItemState, drone: DroneState, room: RoomId): RoomId {
   const neighbours = (state.config.rooms[room] ?? []).filter((r) => !offShip(r));
   if (neighbours.length === 0) return room;
-  const to = neighbours[rollInt(state, neighbours.length)]!;
+  const to = (hasUpgrade(item, "sensor") && sensorStep(state, item, room)) || neighbours[rollInt(state, neighbours.length)]!;
   item.at = { kind: "room", id: to };
   logPublic(state, room, "droneLeft", { ...droneParams(drone), room: to });
   logPublic(state, to, "droneEntered", { ...droneParams(drone), room });

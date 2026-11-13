@@ -165,7 +165,7 @@ describe("shooting from a patrol ship", () => {
   /** p0 flying Longane, with two hunters out there. */
   function flying(config: Partial<GameConfig> = {}): GameState {
     const s = mustApply(ship(config), "p0", takeoff());
-    s.hunters.list.push({ id: "h1", hp: 6, hitChance: 0.8, target: null }, { id: "h2", hp: 6, hitChance: 0.8, target: null });
+    s.hunters.list.push({ id: "h1", hp: 6, hitChance: 0.8, target: null, type: "hunter", countdown: null }, { id: "h2", hp: 6, hitChance: 0.8, target: null, type: "hunter", countdown: null });
     return s;
   }
 
@@ -264,7 +264,7 @@ describe("shooting from a patrol ship", () => {
     const pas = ship();
     player(pas, "p0").room = PASIPHAE.bay;
     const out = mustApply(pas, "p0", takeoff(PASIPHAE));
-    out.hunters.list.push({ id: "h1", hp: 6, hitChance: 0.8, target: null });
+    out.hunters.list.push({ id: "h1", hp: 6, hitChance: 0.8, target: null, type: "hunter", countdown: null });
     expect(offered(out, "p0").some((a) => a.type === "patrol_attack")).toBe(false);
     expect(refusal(out, "p0", shoot("h1", PASIPHAE))).toBe("cant_shoot");
     expect(viewFor(out, "p0").patrolShip).toMatchObject({ id: PASIPHAE.id, charges: null });
@@ -284,7 +284,7 @@ describe("shooting from a patrol ship", () => {
 
   it("the pilot sees each hunter's hp but no turret's charges; nobody on the ground does", () => {
     const s = flying();
-    expect(viewFor(s, "p0").hunters).toEqual({ count: 2, list: [{ id: "h1", hp: 6 }, { id: "h2", hp: 6 }], turrets: null });
+    expect(viewFor(s, "p0").hunters).toEqual({ count: 2, list: [{ id: "h1", type: "hunter", hp: 6, countdown: null }, { id: "h2", type: "hunter", hp: 6, countdown: null }], turrets: null });
     expect(viewFor(s, "p1").hunters).toEqual({ count: 2, list: null, turrets: null });
   });
 
@@ -336,7 +336,7 @@ describe("hunters and ships in flight", () => {
   /** p0 flying Longane, with one hunter out there. */
   function flying(config: Partial<GameConfig> = {}): GameState {
     const s = mustApply(ship(config), "p0", takeoff());
-    s.hunters.list.push({ id: "h1", hp: 6, hitChance: 1, target: null });
+    s.hunters.list.push({ id: "h1", hp: 6, hitChance: 1, target: null, type: "hunter", countdown: null });
     return s;
   }
 
@@ -345,7 +345,7 @@ describe("hunters and ships in flight", () => {
     expect(nextCycle(flying(hunters({ patrolTargetChance: 0 }))).hunters.list[0]!.target).toEqual({ kind: "ship" });
     // With nothing in flight, the Daedalus.
     const docked = ship(hunters({ patrolTargetChance: 1 }));
-    docked.hunters.list.push({ id: "h1", hp: 6, hitChance: 1, target: null });
+    docked.hunters.list.push({ id: "h1", hp: 6, hitChance: 1, target: null, type: "hunter", countdown: null });
     expect(nextCycle(docked).hunters.list[0]!.target).toEqual({ kind: "ship" });
   });
 
@@ -358,7 +358,7 @@ describe("hunters and ships in flight", () => {
     expect(lost).toBeLessThanOrEqual(4);
     expect(next.ship.hull).toBe(s.ship.hull);
     expect(next.ship.plasmaShield).toBeGreaterThanOrEqual(s.ship.plasmaShield);
-    expect(next.hunters.list[0]).toMatchObject({ target: { kind: "patrol", id: LONGANE.id }, hitChance: s.config.hunters.hitChance });
+    expect(next.hunters.list[0]).toMatchObject({ target: { kind: "patrol", id: LONGANE.id }, hitChance: s.config.hunters.types.hunter.hitChance });
     expect(lines(next, "p0", "hunterHitPatrol")).toMatchObject([{ room: LONGANE.id, params: { room: LONGANE.id, armor: lost } }]);
     for (const id of ["p1", "p2"]) expect(lines(next, id, "hunterHitPatrol")).toEqual([]);
   });
@@ -377,7 +377,7 @@ describe("hunters and ships in flight", () => {
     player(next, "p1").skills = ["pilot"];
     expect(refusal(next, "p1", takeoff())).toBe("no_ship");
     // A destroyed ship is never aimed at, and doesn't recharge.
-    next.hunters.list.push({ id: "h9", hp: 6, hitChance: 1, target: null });
+    next.hunters.list.push({ id: "h9", hp: 6, hitChance: 1, target: null, type: "hunter", countdown: null });
     next.patrolShips[LONGANE.id]!.charges = 0;
     const later = nextCycle(next);
     expect(later.hunters.list.find((h) => h.id === "h9")!.target).toEqual({ kind: "ship" });
@@ -482,7 +482,7 @@ describe("debris", () => {
   it("a destroyed hunter drops 1 or 2 pieces, by the weights in config", () => {
     for (const [count, type] of [[1, "metal_scraps"], [2, "space_capsule"]] as const) {
       const s = ship({ hunters: { ...DEFAULT_CONFIG.hunters, waveChance: 0, debris: { count: count === 1 ? [0, 1] : [0, 0, 1], types: { [type]: 1 } } } });
-      s.hunters.list.push({ id: "h1", hp: 1, hitChance: 0.8, target: null });
+      s.hunters.list.push({ id: "h1", hp: 1, hitChance: 0.8, target: null, type: "hunter", countdown: null });
       player(s, "p1").room = "LASER_TURRET_A_0";
       const next = mustApply({ ...s, config: { ...s.config, turrets: { ...s.config.turrets, chance: 1 } } }, "p1", { type: "turret_attack", equipment: "LASER_TURRET_A_0:TURRET_COMMAND", hunter: "h1" });
       expect(next.hunters.list).toEqual([]);
@@ -569,10 +569,15 @@ describe("debris", () => {
     const after = mustApply(safe, "p0", collect());
     expect(after.patrolShips[LONGANE.id]!.armor).toBe(10);
     expect(player(after, "p0").hp).toBe(player(safe, "p0").hp);
+    // Asteroids don't shoot (owner, 2026-11-12, #388): with only asteroids around it's safe too.
+    const rocks = flying();
+    debris(rocks, "metal_scraps");
+    rocks.hunters.list.push({ id: "a1", hp: 20, hitChance: 1, target: null, type: "asteroid", countdown: 6 });
+    expect(mustApply(rocks, "p0", collect()).patrolShips[LONGANE.id]!.armor).toBe(10);
 
     const s = flying(collecting({ hp: { noneChance: 0, range: [2, 4] } }));
     debris(s, "metal_scraps");
-    s.hunters.list.push({ id: "h1", hp: 6, hitChance: 0.8, target: null });
+    s.hunters.list.push({ id: "h1", hp: 6, hitChance: 0.8, target: null, type: "hunter", countdown: null });
     const next = mustApply(s, "p0", collect());
     const armor = 10 - next.patrolShips[LONGANE.id]!.armor;
     const hp = player(s, "p0").hp - player(next, "p0").hp;
@@ -584,7 +589,7 @@ describe("debris", () => {
   it("at 0 armor the ship is destroyed and everything aboard, the pilot's body too, floats off as debris", () => {
     const s = flying();
     debris(s, "metal_scraps");
-    s.hunters.list.push({ id: "h1", hp: 6, hitChance: 0.8, target: null });
+    s.hunters.list.push({ id: "h1", hp: 6, hitChance: 0.8, target: null, type: "hunter", countdown: null });
     s.patrolShips[LONGANE.id]!.armor = 1;
     s.items.push({ id: "carried", type: "wrench", at: { kind: "player", id: "p0" } });
     const next = mustApply(s, "p0", collect());

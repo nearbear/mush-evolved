@@ -1,10 +1,10 @@
-// Drone upgrades (#412): a Robotics Expert's Upgrade action, Firefighter and Turbo.
+// Drone upgrades (#412, #413): a Robotics Expert's Upgrade action, Firefighter, Turbo and Sensor.
 import { describe, expect, it } from "vitest";
 import { ACTIONS } from "../src/actions.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { DRONE_UPGRADES, droneChance } from "../src/drones.ts";
 import { startFire } from "../src/fire.ts";
-import { SUPPORT_DRONE_ITEM } from "../src/items.ts";
+import { MICROWAVE_ITEM, SUPPORT_DRONE_ITEM } from "../src/items.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { GameConfig, GameState, ItemState } from "../src/types.ts";
 import { clone, costOf, makeSeats, mustApply, nextCycle, noHunters, noIncidents, offered, pickSkill, player } from "./support.ts";
@@ -66,7 +66,7 @@ describe("drone upgrades: the action", () => {
   it("costs 2 AP and 2 metal scraps, with 25% dirt and 5% injury; Turbo's second turn is 80%", () => {
     const { cost, scraps, dirtyChance, injuryChance } = DEFAULT_CONFIG.drones.upgrade;
     expect([cost.ap, scraps, dirtyChance, injuryChance, DEFAULT_CONFIG.drones.turboChance]).toEqual([2, 2, 0.25, 0.05, 0.8]);
-    expect([...DRONE_UPGRADES]).toEqual(["firefighter", "turbo"]);
+    expect([...DRONE_UPGRADES]).toEqual(["firefighter", "turbo", "sensor"]);
   });
 
   it("only a Robotics Expert is offered it, one option per upgrade the drone lacks, at the config's AP", () => {
@@ -112,13 +112,13 @@ describe("drone upgrades: the action", () => {
     expect(refusal(s, "p0", drone.id, "turbo")).toBe("no_scrap");
   });
 
-  it("never fits an upgrade twice, nor one that isn't offered (Sensor, Pilot); the state is unchanged", () => {
+  it("never fits an upgrade twice, nor one that isn't offered (Pilot); the state is unchanged", () => {
     const { s, drone } = workshop();
-    drone.drone!.upgrades = ["firefighter"];
+    drone.drone!.upgrades = ["firefighter", "sensor"];
     expect(offered(s, "p0").filter((a) => a.type === "upgrade_drone")).toEqual([{ type: "upgrade_drone", item: drone.id, upgrade: "turbo" }]);
     const before = clone(s);
     expect(refusal(s, "p0", drone.id, "firefighter")).toBe("already_upgraded");
-    expect(refusal(s, "p0", drone.id, "sensor")).toBe("cant_upgrade");
+    expect(refusal(s, "p0", drone.id, "pilot")).toBe("cant_upgrade");
     expect(s).toEqual(before);
     drone.drone!.upgrades = [...DRONE_UPGRADES];
     expect(offered(s, "p0").some((a) => a.type === "upgrade_drone")).toBe(false);
@@ -246,5 +246,95 @@ describe("drone upgrades: Turbo", () => {
     expect(after.fires).not.toContain(HERE);
     expect(after.equipment[HERE]!.find((e) => e.id === equipment.id)!.broken).toBeUndefined();
     expect(lines(after, "droneLeft")).toEqual([]);
+  });
+});
+
+describe("drone upgrades: Sensor", () => {
+  const stepOf = (s: GameState, id: string) => (find(nextCycle(s), id)!.at as { kind: "room"; id: string }).id;
+
+  it("steps along shortestPath toward the nearest broken repairable equipment or floor item, ignoring hidden and carried items", () => {
+    // From CORRIDOR_A: CORRIDOR_B -> REFECTORY (2 steps) vs CORRIDOR_B -> SPACESHIP_BAY_A -> STORAGE_A_0 (3 steps).
+    const s = ship();
+    const drone = addDrone(s, "CORRIDOR_A", { upgrades: ["sensor"] });
+    s.equipment.STORAGE_A_0![0]!.broken = true;
+    s.items.push({ id: "mw-hidden", type: MICROWAVE_ITEM, at: { kind: "room", id: "COMMAND_CENTER" }, broken: true, hiddenBy: "p0" });
+    s.items.push({ id: "mw-carried", type: MICROWAVE_ITEM, at: { kind: "player", id: "p0" }, broken: true });
+    expect(stepOf(s, drone.id)).toBe("CORRIDOR_B");
+
+    // A closer broken floor item in SICK_BAY (1 step from CORRIDOR_A) wins over STORAGE_A_0 (3 steps).
+    s.items.push({ id: "mw-floor", type: MICROWAVE_ITEM, at: { kind: "room", id: "SICK_BAY" }, broken: true });
+    expect(stepOf(s, drone.id)).toBe("SICK_BAY");
+  });
+
+  it("prefers a burning room over broken equipment only when it also has Firefighter", () => {
+    const base = ship();
+    // From CORRIDOR_A: LABORATORY is 1 step away; NEXUS_ROOM is 3 steps away via CORRIDOR_B -> SPACESHIP_BAY_B -> CORRIDOR_C.
+    base.equipment.LABORATORY![0]!.broken = true;
+    startFire(base, "NEXUS_ROOM");
+
+    const withFirefighter = clone(base);
+    const ffDrone = addDrone(withFirefighter, "CORRIDOR_A", { upgrades: ["sensor", "firefighter"] });
+    expect(stepOf(withFirefighter, ffDrone.id)).toBe("CORRIDOR_B");
+
+    const sensorOnly = clone(base);
+    const plainDrone = addDrone(sensorOnly, "CORRIDOR_A", { upgrades: ["sensor"] });
+    expect(stepOf(sensorOnly, plainDrone.id)).toBe("LABORATORY");
+  });
+
+  it("without Firefighter, ignores a burning room and falls back to random moves when nothing is broken", () => {
+    const rooms = new Set<string>();
+    for (let seed = 1; seed <= 20; seed++) {
+      const s = ship(quiet(), seed);
+      const drone = addDrone(s, "CORRIDOR_A", { upgrades: ["sensor"] });
+      startFire(s, "COMMAND_CENTER");
+      rooms.add(stepOf(s, drone.id));
+    }
+    expect(rooms.size).toBeGreaterThan(1);
+  });
+
+  it("breaks distance ties by door order in config.rooms", () => {
+    const s = ship();
+    // From CORRIDOR_A: COMMAND_CENTER (ASTRO_MODULE) and LABORATORY (RESEARCH_LAB) are both 1 door away.
+    s.equipment.COMMAND_CENTER![0]!.broken = true;
+    s.equipment.LABORATORY![0]!.broken = true;
+    const drone = addDrone(s, "CORRIDOR_A", { upgrades: ["sensor"] });
+    expect(stepOf(s, drone.id)).toBe("COMMAND_CENTER");
+
+    const reversed = clone(s);
+    reversed.config = {
+      ...reversed.config,
+      rooms: { ...reversed.config.rooms, CORRIDOR_A: [...reversed.config.rooms.CORRIDOR_A!].reverse() },
+    };
+    expect(stepOf(reversed, drone.id)).toBe("LABORATORY");
+  });
+
+  it("falls back to a random move with no target, even when hunters are attacking (Pilot is phase 5)", () => {
+    const rooms = new Set<string>();
+    for (let seed = 1; seed <= 20; seed++) {
+      const s = ship(quiet(), seed);
+      s.hunters.list.push({ id: "h1", hp: 5, target: null, misses: 0 });
+      const drone = addDrone(s, "CORRIDOR_A", { upgrades: ["sensor"] });
+      rooms.add(stepOf(s, drone.id));
+    }
+    expect(rooms.size).toBeGreaterThan(1);
+  });
+
+  it("adds nothing to other rooms' player views when heading toward a distant fire or broken item", () => {
+    const s = ship();
+    const drone = addDrone(s, "CORRIDOR_A", { upgrades: ["sensor", "firefighter"] });
+    s.equipment.NEXUS_ROOM![0]!.broken = true;
+    startFire(s, "MOTOR_ROOM");
+    const after = nextCycle(s);
+    // p0 in REFECTORY and p2 in LABORATORY see neither the fire in MOTOR_ROOM, the broken equipment in NEXUS_ROOM, nor the drone's move in CORRIDOR_A -> CORRIDOR_B.
+    for (const id of ["p0", "p2"]) {
+      const view = viewFor(after, id);
+      expect(view.roomOnFire).toBe(false);
+      expect(view.burningRooms).toEqual([]);
+      expect(view.log.some((e) => e.key.startsWith("drone"))).toBe(false);
+      const visible = JSON.stringify({ log: view.log, chat: view.chat, roomItems: view.roomItems, roomEquipment: view.roomEquipment });
+      expect(visible).not.toContain("MOTOR_ROOM");
+      expect(visible).not.toContain("NEXUS_ROOM");
+    }
+    expect((find(after, drone.id)!.at as { id: string }).id).toBe("CORRIDOR_B");
   });
 });

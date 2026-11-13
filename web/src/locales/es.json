@@ -380,6 +380,7 @@
     "lacksClean": "No puedes hacer esto con la suciedad encima. Dúchate primero.",
     "lacksPasiphae": "Una nave patrulla solo puede recoger restos cuando el Pasiphae ha sido destruido.",
     "lacksReactorTravel": "El reactor de emergencia está averiado: el Daedalus no puede viajar hasta que lo reparen.",
+    "lacksArack": "Un Arack se ha aferrado al Daedalus: la nave no puede moverse hasta que lo derriben.",
     "lacksReactorTurn": "El reactor lateral de este lado está averiado: el Daedalus no puede girar hacia este lado hasta que lo reparen.",
     "lacksMp": "No tienes suficientes PM: cuesta {{need}} y tienes {{have}}.",
     "lacksBoth": "No tienes suficientes PA ni PM: cuesta {{needAp}} PA y {{needMp}} PM, y tienes {{haveAp}} PA y {{haveMp}} PM.",
@@ -977,6 +978,7 @@
     "hunterWave_one": "NERON: ¡{{count}} hunter ataca el Daedalus!",
     "hunterWave_many": "NERON: ¡{{count}} hunters atacan el Daedalus!",
     "hunterWave_other": "NERON: ¡{{count}} hunters atacan el Daedalus!",
+    "asteroidImpact": "NERON: ¡un asteroide ha impactado contra el Daedalus!",
     "shipDestroyed": "El casco del Daedalus cede. La nave explota, y toda la tripulación con ella.",
     "turretHit": "Alcanzas al hunter: {{damage}} de daño.",
     "turretMiss": "Fallas el disparo al hunter.",
@@ -1267,7 +1269,11 @@
       "defacer": "Una vez al día. Por 2 PA puedes borrar todos los registros de una sala. Se volverán a registrar a partir del próximo ciclo."
     }
   },
-  "drugDispenser": { "label": "Dispensador de drogas", "none": "Nada que tomar ahora: el dispensador ya se usó y se reinicia en los ciclos 1 y 4.", "take": "Tomar {{item}}" },
+  "drugDispenser": {
+    "label": "Dispensador de drogas",
+    "none": "Nada que tomar ahora: el dispensador ya se usó y se reinicia en los ciclos 1 y 4.",
+    "take": "Tomar {{item}}"
+  },
   "research": {
     "title": "Investigación",
     "tabs": {
@@ -1643,8 +1649,18 @@
   "turret": {
     "label": "Hunters a tiro",
     "none": "Ningún hunter a la vista.",
-    "hunter": "Hunter {{index}}",
+    "hunter": "{{kind}} {{index}}",
+    "kinds": {
+      "hunter": "Hunter",
+      "spider": "Arack",
+      "asteroid": "Asteroide",
+      "dice": "D1000",
+      "trax": "Trax"
+    },
     "hp": "{{hp}} PV",
+    "countdown_one": "Impacto en {{count}} ciclo",
+    "countdown_many": "Impacto en {{count}} ciclos",
+    "countdown_other": "Impacto en {{count}} ciclos",
     "charges": "Cargas restantes: {{charges}}"
   },
   "bodyTaken": {
@@ -1757,9 +1773,7 @@
   "patrol": {
     "prevTarget": "Objetivo anterior",
     "nextTarget": "Objetivo siguiente",
-    "others_one": "{{count}} Hunter más: apuntar al siguiente",
-    "others_many": "{{count}} Hunters más: apuntar al siguiente",
-    "others_other": "{{count}} Hunters más: apuntar al siguiente",
+    "others": "{{kind}} ×{{count}}: apuntar al siguiente",
     "flying": "En vuelo a bordo de {{ship}}",
     "armor": "Blindaje: {{armor}}/{{max}}",
     "out": "La nave ha salido de patrulla.",
@@ -1853,7 +1867,8 @@
   "drones": {
     "upgrades": {
       "firefighter": "Bombero",
-      "turbo": "Turbo"
+      "turbo": "Turbo",
+      "sensor": "Sensor"
     }
   }
 }

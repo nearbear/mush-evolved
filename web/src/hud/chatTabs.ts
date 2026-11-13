@@ -21,6 +21,13 @@ export function unreadByTab(view: Pick<PlayerView, "readChannels" | "chatCounts"
   return counts;
 }
 
+/** Total unread across all readable channels (#400). */
+export function totalUnread(view: Pick<PlayerView, "readChannels" | "chatCounts">, read: Readonly<ChatRead>): number {
+  let total = 0;
+  for (const channel of view.readChannels) total += unreadCount(view.chatCounts, read, channel);
+  return total;
+}
+
 /** What Mark all read raises on `tab`: each channel read there, at its message count (#400). */
 export function readAllOn(view: Pick<PlayerView, "readChannels" | "chatCounts">, tab: TabId): ChatRead {
   return Object.fromEntries(view.readChannels.filter((c) => tabOf(c) === tab).map((c) => [c, view.chatCounts[c] ?? 0]));

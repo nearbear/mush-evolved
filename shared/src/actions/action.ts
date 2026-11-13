@@ -33,6 +33,9 @@ export const PASIPHAE_INTACT = "pasiphae_intact";
 /** The `validate` code for Travel or a turn whose reactor is broken (navigation.ts): shown disabled with the reason, not hidden (`unaffordableActions`). */
 export const REACTOR_BROKEN = "reactor_broken";
 
+/** The `validate` code for Travel or Leave orbit while an Arack is around (hunters.ts): shown disabled with the reason (`unaffordableActions`). */
+export const ARACK_AROUND = "arack_around";
+
 /**
  * Who learns of an action, for the label on its button (the log entries themselves come from `log.ts`).
  * Declared per action and kept in step with the log call in its `apply`.

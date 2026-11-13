@@ -380,6 +380,7 @@
     "lacksClean": "Vous devez être propre pour faire ceci. Prenez d'abord une douche.",
     "lacksPasiphae": "Un patrouilleur ne peut rapatrier des débris qu'une fois le Pasiphae détruit.",
     "lacksReactorTravel": "Le réacteur d'urgence est en panne : le Daedalus ne peut pas voyager tant qu'il n'est pas réparé.",
+    "lacksArack": "Un Arack s'est accroché au Daedalus : le vaisseau ne peut pas se déplacer tant qu'il n'est pas abattu.",
     "lacksReactorTurn": "Le réacteur latéral de ce côté est en panne : le Daedalus ne peut pas tourner de ce côté tant qu'il n'est pas réparé.",
     "lacksMp": "Pas assez de PM : cela coûte {{need}}, vous en avez {{have}}.",
     "lacksBoth": "Pas assez de PA ni de PM : cela coûte {{needAp}} PA et {{needMp}} PM, vous avez {{haveAp}} PA et {{haveMp}} PM.",
@@ -977,6 +978,7 @@
     "hunterWave_one": "NERON : {{count}} hunter attaque le Daedalus !",
     "hunterWave_many": "NERON : {{count}} hunters attaquent le Daedalus !",
     "hunterWave_other": "NERON : {{count}} hunters attaquent le Daedalus !",
+    "asteroidImpact": "NERON : un astéroïde a percuté le Daedalus !",
     "shipDestroyed": "La coque du Daedalus cède. Le vaisseau explose, et tout l'équipage avec lui.",
     "turretHit": "Vous touchez le hunter : {{damage}} dégâts.",
     "turretMiss": "Vous ratez le hunter.",
@@ -1267,7 +1269,11 @@
       "defacer": "Une fois par jour. Pour 2 PA, vous pouvez effacer tous les logs d'une salle. L'enregistrement des logs se fera à nouveau à partir du prochain cycle."
     }
   },
-  "drugDispenser": { "label": "Distributeur de drogues", "none": "Rien à prendre pour le moment : le distributeur a été utilisé et se réinitialise aux cycles 1 et 4.", "take": "Prendre : {{item}}" },
+  "drugDispenser": {
+    "label": "Distributeur de drogues",
+    "none": "Rien à prendre pour le moment : le distributeur a été utilisé et se réinitialise aux cycles 1 et 4.",
+    "take": "Prendre : {{item}}"
+  },
   "research": {
     "title": "Recherche",
     "tabs": {
@@ -1643,8 +1649,18 @@
   "turret": {
     "label": "Hunters à portée",
     "none": "Aucun hunter en vue.",
-    "hunter": "Hunter {{index}}",
+    "hunter": "{{kind}} {{index}}",
+    "kinds": {
+      "hunter": "Hunter",
+      "spider": "Arack",
+      "asteroid": "Astéroïde",
+      "dice": "D1000",
+      "trax": "Trax"
+    },
     "hp": "{{hp}} PV",
+    "countdown_one": "Impact dans {{count}} cycle",
+    "countdown_many": "Impact dans {{count}} cycles",
+    "countdown_other": "Impact dans {{count}} cycles",
     "charges": "Charges restantes : {{charges}}"
   },
   "bodyTaken": {
@@ -1757,9 +1773,7 @@
   "patrol": {
     "prevTarget": "Cible précédente",
     "nextTarget": "Cible suivante",
-    "others_one": "{{count}} autre Hunter : viser le suivant",
-    "others_many": "{{count}} autres Hunters : viser le suivant",
-    "others_other": "{{count}} autres Hunters : viser le suivant",
+    "others": "{{kind}} ×{{count}} : viser le suivant",
     "flying": "En vol à bord du {{ship}}",
     "armor": "Armure : {{armor}}/{{max}}",
     "out": "Le vaisseau est sorti en patrouille.",
@@ -1853,7 +1867,8 @@
   "drones": {
     "upgrades": {
       "firefighter": "Pompier",
-      "turbo": "Turbo"
+      "turbo": "Turbo",
+      "sensor": "Capteur"
     }
   }
 }

@@ -16,6 +16,14 @@ describe("shortestPath", () => {
     expect(shortestPath({ ...graph, A: ["C", "B"] }, "A", "D")).toEqual(["C", "D"]);
   });
 
+  it("with a predicate, stops at the nearest match and breaks distance ties by door order", () => {
+    expect(shortestPath(graph, "A", (r) => r === "A" || r === "D")).toEqual([]);
+    expect(shortestPath(graph, "A", (r) => r === "C" || r === "D")).toEqual(["C"]);
+    expect(shortestPath(graph, "A", (r) => r === "B" || r === "C")).toEqual(["B"]);
+    expect(shortestPath({ ...graph, A: ["C", "B"] }, "A", (r) => r === "B" || r === "C")).toEqual(["C"]);
+    expect(shortestPath(graph, "A", (r) => r === "E")).toBeNull();
+  });
+
   it("is null when there is no way", () => {
     expect(shortestPath(graph, "A", "E")).toBeNull();
     expect(shortestPath(graph, "A", "NOWHERE")).toBeNull();

@@ -118,34 +118,6 @@
     align-self: stretch;
     height: auto;
   }
-  /*
-   * Stats get their own row. Spacing is trimmed so both stacks fit side by side
-   * at 360px, the narrowest phone we support (the bars drop to 1x sprite pixels).
-   */
-  .top-bar .stats {
-    order: 1;
-    flex-basis: 100%;
-    gap: var(--space-2);
-  }
-  /* Side by side, one row, equal widths. */
-  .top-bar .stat-stack {
-    flex: 1 1 0;
-    min-width: 0;
-    padding: var(--space-1);
-  }
-  .pip-bar {
-    --s: 1px; /* 12 slots at 2x would not fit half the phone width */
-    gap: 1px;
-  }
-  .pip-bar .sub {
-    margin-left: var(--space-1);
-  }
-  .stat-stack .pip-label {
-    min-width: 1.25rem;
-  }
-  .pip-label img.big {
-    height: 20px;
-  }
   /* The action queue keeps clear of the ship button and the sack in the lower-right corner (40px each). */
   .room-bottom-left {
     max-width: calc(100% - 1rem - 2 * (40px + 0.5rem));
@@ -293,15 +265,6 @@
   .top-bar .avatar {
     width: 24px;
     height: 24px;
-  }
-  .top-bar .stats {
-    order: 0;
-    flex-basis: auto;
-    flex-wrap: nowrap;
-  }
-  /* The stats share the row with the name, so the stacks size to their content. */
-  .top-bar .stat-stack {
-    flex: none;
   }
   .bottom-nav-button {
     height: 32px;

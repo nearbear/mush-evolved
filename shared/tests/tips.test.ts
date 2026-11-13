@@ -76,7 +76,7 @@ describe("tips", () => {
 
   it("points at the nearest turret while hunters attack, before every other tip", () => {
     const attacked = ship((s) => {
-      s.hunters.list.push({ id: "h1", hp: 6, hitChance: 0.5, target: null });
+      s.hunters.list.push({ id: "h1", hp: 6, hitChance: 0.5, target: null, type: "hunter", countdown: null });
       player(s, "p0").hp = 1;
     });
     expect(ids(attacked).slice(0, 2)).toEqual(["hunters", "hurt"]);
