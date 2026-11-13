@@ -37,7 +37,7 @@ Eight, each with its own interior room in eMush (`PATROL_SHIP_*`, no doors) and 
 - **Targeting**: a hunter picking a target tries, in order, a patrol ship in flight (15%), then a player in flight (5%), else the Daedalus. Hitting a patrol ship takes 2–4 armor; a player, 2–4 hp. Hitting a ship it doesn't destroy keeps it as the target (unlike the Daedalus, where a hit drops the aim).
 - **Destroyed** (armor 0): permanent. Everyone aboard is ejected into space and dies without an operational spacesuit (we have none, so they die). The room's contents float off as debris.
 - **Debris**: a destroyed hunter drops 1 (⅔) or 2 (⅓) pieces into space, drawn from metal scraps 2 : space capsule 1 : plastic scraps 1. The space capsule is an item that, opened for 1 AP, becomes a random item (metal scraps, plastic scraps, oxygen capsule or fuel capsule).
-- **Travel** (and leaving orbit): every ship in flight is destroyed and its pilot dies (unless the Magnetic net project, not built), and all debris is lost. This is a real Mush lever: a Mush Commander can jump while a human is out.
+- **Travel** (and leaving orbit): every ship in flight is destroyed and its pilot dies (unless the Magnetic net project is done: built 2026-11-12, the ships dock cleanly in their bays), and all debris is lost. This is a real Mush lever: a Mush Commander can jump while a human is out.
 - **Hull 0**: everyone dies wherever they are (already true).
 
 ## Proposed design

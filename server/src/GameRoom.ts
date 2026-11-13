@@ -1286,9 +1286,18 @@ export class GameRoom extends Server<Env> {
           // The game may have moved on during a slow decision; the rules reject a choice that is no longer legal. A
           // choice made for a body the bot no longer plays (a Transfer) is dropped, and so is what it wanted to say.
           const message = bot.takeMessage?.() ?? null;
+          const social = bot.takeSocial?.() ?? null;
           if (this.body(playerId) !== by) return;
           // Said before it acts: "I'll heal you", then the walk.
           if (message) await this.botSay(playerId, by, message, wake ? wake.depth + 1 : 0);
+          // A goal's message that isn't an action (sharing a planet, #417), sent like a player's; its turn has no action.
+          if (social) {
+            const error = await this.social(playerId, by, social);
+            if (error) {
+              console.warn(`Bot ${playerId} sent a refused ${social.type}: ${error}`);
+              bot.refused?.(social, error);
+            }
+          }
           if (!action || this.body(playerId) !== by) return;
           this.pruneWakes();
           // Waits for pending wakes, and for the router to say whether there are any.

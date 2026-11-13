@@ -22,7 +22,7 @@ import type { Goal, GoalDef } from "./types.ts";
 /** The goals that fight hunters: a resting bot gets up for them (`GoalBot`). */
 export const HUNTER_GOALS: ReadonlySet<string> = new Set([shootHunters.id, patrolShootHunters.id]);
 
-export type { BotMemory, Goal, GoalDef, GoalStep } from "./types.ts";
+export type { BotMemory, BotSocial, ExpeditionKind, Goal, GoalDef, GoalStep } from "./types.ts";
 
 /**
  * The solo goals, which a bot without a key plays by priority. Not `repairPilgred` (owner, 2026-11-01): returning to Sol

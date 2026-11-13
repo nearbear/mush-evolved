@@ -2,10 +2,21 @@
 // to a bed and rest, walk to the lab and research) instead of choosing one action at a time. Goals are pure: the bot's
 // own view and memory in, one step out, so they are tested without a server or a model.
 
-import type { Action, LobbyLanguage, PlayerView, RoomId } from "@mush2/shared";
+import type { Action, GameClientMessage, LobbyLanguage, PlayerView, RoomId } from "@mush2/shared";
+
+/**
+ * A message a goal sends that isn't an action (#417): sharing a planet. It goes through the same path as a person's
+ * (`GameRoom.social`: rate limit, moderation, the rules), and is recorded like one.
+ */
+export type BotSocial = Extract<GameClientMessage, { type: "sharePlanet" }>;
+
+/** What an expedition goes for: an Oxygen sector or a Hydrocarbon sector (owner, 2026-11-12, #417). */
+export type ExpeditionKind = "oxygen" | "fuel";
 
 export type GoalStep =
   | { kind: "act"; action: Action }
+  /** Send a message that isn't an action; the goal carries on next turn. */
+  | { kind: "social"; message: BotSocial }
   /** Nothing to do until the next change: the bot ends its cycle when End cycle is on, otherwise waits. */
   | { kind: "wait" }
   /** Finished. `again`: it may be chosen again this cycle (a work goal stopped only because the bot got dirty). */
@@ -34,6 +45,11 @@ export interface BotMemory {
   readonly visited: Set<RoomId>;
   /** Players known to be a Shrink (seen in a room or announced in chat); `you.id` means this Shrink has spoken in global chat. */
   readonly shrinks: Set<string>;
+  /**
+   * What the ship last went to one of this Astrophysicist's planets for (seen when it orbits one), so the next choice
+   * alternates (owner, 2026-11-12, #417). Null until then.
+   */
+  lastExpedition: ExpeditionKind | null;
   /** A seeded roll in [0, n), for choices with no better reason (the bot's own RNG, never `Math.random`). */
   roll(n: number): number;
 }

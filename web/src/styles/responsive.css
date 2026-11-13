@@ -99,7 +99,6 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  .top-bar .spacer,
   .top-bar .cycle,
   .wide-only {
     display: none;
@@ -109,6 +108,10 @@
   }
   .top-bar button {
     margin: 0;
+  }
+  /* The actions are top-bar flex items themselves (the hamburger stretches to the nameplate's height). */
+  .top-bar-actions {
+    display: contents;
   }
   /* The hamburger matches the nameplate's height (the 3-slice art stretches to fit). */
   .top-bar .menu-button {

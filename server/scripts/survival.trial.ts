@@ -127,6 +127,9 @@ test("survival", { timeout: 3_600_000 }, async () => {
   const goals: Record<string, number> = {};
   for (const r of results) for (const [k, n] of Object.entries(r.goals)) goals[k] = (goals[k] ?? 0) + n;
   console.log(`goals started: ${Object.entries(goals).sort((a, b) => b[1] - a[1]).map(([k, n]) => `${k} ${n}`).join(", ")}`);
+  const social: Record<string, number> = {};
+  for (const r of results) for (const [k, n] of Object.entries(r.social ?? {})) social[k] = (social[k] ?? 0) + n;
+  if (Object.keys(social).length > 0) console.log(`messages sent: ${Object.entries(social).map(([k, n]) => `${k} ${n}`).join(", ")}`);
   const refused = results.reduce((a, r) => a + r.refused, 0);
   if (refused) console.log(`refused steps: ${refused} (should be 0)`);
 

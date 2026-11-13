@@ -165,7 +165,8 @@ export function destroyPatrolShip(state: GameState, ship: PatrolShip, key: "patr
 
 /**
  * The Daedalus jumps (travel or leaving orbit): each ship out is lost with its pilot (owner, 2026-10-24, answer 5), and
- * the debris around the ship, the wrecks' included, is left behind.
+ * the debris around the ship, the wrecks' included, is left behind. With Magnetic net the ships were already pulled
+ * aboard (`pullShipsAboard`, actions/land.ts), so only the debris goes.
  */
 export function loseShipsInFlight(state: GameState): void {
   for (const ship of shipsInFlight(state)) destroyPatrolShip(state, ship, "patrolLost");

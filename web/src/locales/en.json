@@ -1,5 +1,6 @@
 {
   "topBar": {
+    "dayCycle": "Day {{day}} · Cycle {{cycle}}",
     "endCycle": "End cycle",
     "waiting": "Waiting…",
     "waitingForOthers": "Waiting for others…",
@@ -211,7 +212,6 @@
   },
   "titles": {
     "label": "Titles",
-    "vacant": "Vacant",
     "holder": "{{title}}: {{name}}",
     "holderVacant": "{{title}}: vacant",
     "line": "Line of succession",
@@ -373,6 +373,8 @@
     "lacksSpace": "Your inventory is full.",
     "lacksClean": "You have to be clean to do this. Take a shower first.",
     "lacksPasiphae": "A patrol ship can only collect scrap once the Pasiphae has been destroyed.",
+    "lacksReactorTravel": "The Emergency reactor is broken: the ship can't travel until it is repaired.",
+    "lacksReactorTurn": "The lateral reactor on this side is broken: the ship can't turn this way until it is repaired.",
     "lacksMp": "Not enough MP: it costs {{need}}, you have {{have}}.",
     "lacksBoth": "Not enough AP or MP: it costs {{needAp}} AP and {{needMp}} MP, you have {{haveAp}} AP and {{haveMp}} MP.",
     "returnToSol": "Return to Sol",
@@ -1701,8 +1703,8 @@
     "right": "Turn right",
     "travel": "Travel",
     "leaveOrbit": "Leave orbit",
-    "strandConfirm": "An expedition is still out on {{planet}}. Jumping now strands its crew: without Magnetic return, they die and the Icarus is lost.",
-    "strandBack": "Back",
+    "jumpConfirm": "Warning: moving the ship can have major consequences. Patrol ships in flight are lost with their pilots, an expedition still out is stranded, and a rebel signal being decoded is lost. Consult your crewmates before going ahead.",
+    "jumpBack": "Back",
     "warning": "Travel burns all the fuel in the combustion chamber, and the ship goes that far. With none loaded the AP is wasted. Every planet not lying exactly ahead at that distance is lost."
   },
   "turret": {

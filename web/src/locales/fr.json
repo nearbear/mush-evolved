@@ -1,5 +1,6 @@
 {
   "topBar": {
+    "dayCycle": "Jour {{day}} · Cycle {{cycle}}",
     "endCycle": "Terminer le cycle",
     "waiting": "En attente…",
     "waitingForOthers": "En attente des autres…",
@@ -215,7 +216,6 @@
   },
   "titles": {
     "label": "Titres",
-    "vacant": "Vacant",
     "holder": "{{title}} : {{name}}",
     "holderVacant": "{{title}} : vacant",
     "line": "Ordre de succession",
@@ -378,6 +378,8 @@
     "lacksSpace": "Votre inventaire est plein.",
     "lacksClean": "Vous devez être propre pour faire ceci. Prenez d'abord une douche.",
     "lacksPasiphae": "Un patrouilleur ne peut rapatrier des débris qu'une fois le Pasiphae détruit.",
+    "lacksReactorTravel": "Le réacteur d'urgence est en panne : le Daedalus ne peut pas voyager tant qu'il n'est pas réparé.",
+    "lacksReactorTurn": "Le réacteur latéral de ce côté est en panne : le Daedalus ne peut pas tourner de ce côté tant qu'il n'est pas réparé.",
     "lacksMp": "Pas assez de PM : cela coûte {{need}}, vous en avez {{have}}.",
     "lacksBoth": "Pas assez de PA ni de PM : cela coûte {{needAp}} PA et {{needMp}} PM, vous avez {{haveAp}} PA et {{haveMp}} PM.",
     "returnToSol": "Rentrer sur Sol",
@@ -1628,8 +1630,8 @@
     "right": "Orienter à droite",
     "travel": "Voyager",
     "leaveOrbit": "Quitter l'orbite",
-    "strandConfirm": "Une expédition est encore sur {{planet}}. Sauter maintenant abandonne son équipage : sans rapatriement magnétique, il meurt et l'Icarus est perdu.",
-    "strandBack": "Retour",
+    "jumpConfirm": "Attention : déplacer le vaisseau peut avoir des conséquences majeures. Les patrouilleurs en vol sont perdus avec leurs pilotes, une expédition encore dehors est abandonnée, et un signal rebelle en cours de décodage est perdu. Consultez vos coéquipiers avant de continuer.",
+    "jumpBack": "Retour",
     "warning": "Voyager brûle tout le fuel de la chambre de combustion, et le vaisseau avance d'autant. Sans fuel chargé, les PA sont perdus. Toute planète qui ne se trouve pas droit devant à cette distance est perdue."
   },
   "turret": {

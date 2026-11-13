@@ -20,8 +20,12 @@ export function ShipResources({ ship, hunters, titles, orbit, expedition, lost }
       {RESOURCES.map((id) => {
         const name = t(`shipResources.${id}`);
         const value = id === "alerts" ? null : id === "hunters" ? String(hunters) : `${ship[id]}/${ship.max[id]}`;
+        // A fixed-width slot (the widest reading, in tabular figures), so a changing value never shifts its neighbours.
+        const width = id === "alerts" || id === "hunters" ? 2 : 2 * String(ship.max[id]).length + 1;
+        // Nothing to report (no hunters, no alert) is muted. Values get no warning colour: no thresholds are decided (owner, 2026-11-12).
+        const empty = value === null || (id === "hunters" && hunters === 0);
         return (
-          <li key={id}>
+          <li key={id} className={empty ? "empty" : undefined}>
             {/* A popover, not a tooltip, so a tap opens it on phones (touch has no hover). */}
             <Popover.Root>
               <Popover.Trigger
@@ -33,7 +37,16 @@ export function ShipResources({ ship, hunters, titles, orbit, expedition, lost }
                 aria-label={value === null ? name : `${name}: ${value}`}
               >
                 <img src={SHIP_RESOURCE_ICONS[id]} alt="" />
-                <span className="ship-resource-value">{value ?? "–"}</span>
+                <span className="ship-resource-value" style={{ minWidth: `${width}ch` }}>
+                  {id === "alerts" || id === "hunters" ? (
+                    (value ?? "–")
+                  ) : (
+                    <>
+                      {ship[id]}
+                      <span className="ship-resource-max">/{ship.max[id]}</span>
+                    </>
+                  )}
+                </span>
               </Popover.Trigger>
               <Popover.Portal>
                 <Popover.Positioner sideOffset={6}>

@@ -18,6 +18,7 @@
     "typecheck": "tsc --noEmit",
     "dev": "node src/dev/dev.ts",
     "preview": "node src/dev/preview.ts",
+    "dev-state": "node src/dev/devState.ts",
     "screenshot": "node src/play/screenshot.ts",
     "a11y": "node src/a11y/a11y.ts",
     "ship-view": "node src/play/shipView.ts",

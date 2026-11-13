@@ -1,5 +1,6 @@
 {
   "topBar": {
+    "dayCycle": "Día {{day}} · Ciclo {{cycle}}",
     "endCycle": "Terminar el ciclo",
     "waiting": "Esperando…",
     "waitingForOthers": "Esperando a los demás…",
@@ -215,7 +216,6 @@
   },
   "titles": {
     "label": "Títulos",
-    "vacant": "Vacante",
     "holder": "{{title}}: {{name}}",
     "holderVacant": "{{title}}: vacante",
     "line": "Línea de sucesión",
@@ -378,6 +378,8 @@
     "lacksSpace": "Tu inventario está lleno.",
     "lacksClean": "No puedes hacer esto con la suciedad encima. Dúchate primero.",
     "lacksPasiphae": "Una nave patrulla solo puede recoger restos cuando el Pasiphae ha sido destruido.",
+    "lacksReactorTravel": "El reactor de emergencia está averiado: el Daedalus no puede viajar hasta que lo reparen.",
+    "lacksReactorTurn": "El reactor lateral de este lado está averiado: el Daedalus no puede girar hacia este lado hasta que lo reparen.",
     "lacksMp": "No tienes suficientes PM: cuesta {{need}} y tienes {{have}}.",
     "lacksBoth": "No tienes suficientes PA ni PM: cuesta {{needAp}} PA y {{needMp}} PM, y tienes {{haveAp}} PA y {{haveMp}} PM.",
     "returnToSol": "Volver a Sol",
@@ -1628,8 +1630,8 @@
     "right": "Girar a la derecha",
     "travel": "Viajar",
     "leaveOrbit": "Salir de la órbita",
-    "strandConfirm": "Una expedición sigue en {{planet}}. Saltar ahora abandona a su tripulación: sin repatriación magnética, muere y el Icarus se pierde.",
-    "strandBack": "Volver",
+    "jumpConfirm": "Atención: mover la nave puede tener consecuencias graves. Las naves patrulla en vuelo se pierden con sus pilotos, una expedición que siga fuera queda abandonada, y una señal rebelde en decodificación se pierde. Consulta a tus compañeros antes de continuar.",
+    "jumpBack": "Volver",
     "warning": "Viajar quema todo el combustible de la cámara de combustión, y la nave avanza esa distancia. Sin combustible cargado se pierden los PA. Todo planeta que no esté justo delante a esa distancia se pierde."
   },
   "turret": {

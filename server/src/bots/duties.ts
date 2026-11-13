@@ -4,9 +4,9 @@
 //
 // How to edit:
 // - `priority`: where a scripted bot (no key) puts this among its goals. For reference, today's goals are
-//   returnToSol 100, pickSkill 90, snoop 85, eat 80, patrolShootHunters 75 (Pilot), shootHunters 74 (Shooter/Gunner),
-//   shower 70, repairHull 55, contactSol 54 (Radio Expert), tendPlants 53 (Botanist role), astro 52 (Astrophysicist),
-//   commsOfficer 52 (Comms Officer), research and project 50, shrinkDorm 45 (Shrink role), rest 40, explore 30.
+//   returnToSol 100, pickSkill 90, snoop 85, eat 80, astro 76 (Astrophysicist), patrolShootHunters 75 (Pilot),
+//   shootHunters 74 (Shooter/Gunner), shower 70, repairHull 55, contactSol 54 (Radio Expert), tendPlants 53 (Botanist
+//   role), commsOfficer 52 (Comms Officer), research and project 50, shrinkDorm 45 (Shrink role), rest 40, explore 30.
 // - `when`: one of the triggers in `DutyTrigger`, each explained there. A new kind of trigger needs code first.
 // - `prompt`: one line a model bot is shown when it holds the skill or title. English for now (bot language: #95).
 // - Several rows may share a skill or title. Leave notes in comments freely.
@@ -24,6 +24,8 @@ export type DutyTrigger =
   | "dorm"
   /** Once a day, when affordable within the AP reserve. */
   | "daily"
+  /** Each cycle while there is planet work: deleting, sharing the destination, analyzing, scanning (#417). */
+  | "astro"
   /** While hunters attack the ship (`view.hunters.count`, public). */
   | "hunters"
   /** While a plant the bot can see is thirsty, dried, or (for the Botanist) sick. Seen only on arrival in the garden. */
@@ -51,7 +53,9 @@ export const BOT_DUTIES: readonly Duty[] = [
   { skill: "logistics", when: "passive", prompt: "You're a Logistics Expert: each cycle you give 1 AP to someone in your room, so ending cycles near others helps them." },
   { skill: "pilot", when: "hunters", actions: ["takeoff", "patrol_attack", "land"], priority: 75, prompt: "You're a Pilot: when hunters attack, a patrol ship can shoot them down." },
   { skill: "gunman", when: "hunters", actions: ["turret_attack", "patrol_attack"], priority: 74, prompt: "You're a Shooter: your Shoot points make turret and patrol ship shots free while hunters attack." },
-  { skill: "astrophysician", when: "daily", actions: ["scan_planet", "analyze_planet"], priority: 52, prompt: "You're the Astrophysicist: scanning finds planets for 1 AP less, and your analyses reveal an extra sector." },
+    // Owner, 2026-11-12 (#417): looks for an oxygen planet and a fuel planet, deletes the rest, shares the destination.
+  // Outweighs piloting (owner, 2026-11-12): Frieda is both, and hunter sorties used to take the AP the search needs.
+  { skill: "astrophysician", when: "astro", actions: ["scan_planet", "analyze_planet", "delete_planet"], priority: 76, prompt: "You're the Astrophysicist: scanning finds planets for 1 AP less, and your analyses reveal an extra sector." },
   { skill: "botanic", when: "plants", actions: ["water", "treat", "sow"], priority: 53, prompt: "You're the Botanist: you see sick plants, and garden points make garden work free." },
   // Green Thumb isn't in SKILL_STATUS, so it does nothing yet.
   { skill: "green_thumb", when: "waits", prompt: "" },
