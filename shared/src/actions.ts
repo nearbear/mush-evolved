@@ -82,6 +82,7 @@ import { BoringSpeechAction, FierySpeechAction } from "./actions/speech.ts";
 import { PunchAction } from "./actions/punch.ts";
 import { InterrogateAction } from "./actions/interrogate.ts";
 import { ChitchatAction } from "./actions/chitchat.ts";
+import { PremonitionAction } from "./actions/premonition.ts";
 import { ComfortAction } from "./actions/comfort.ts";
 import { AttackAction } from "./actions/attack.ts";
 import { ShareAction } from "./actions/share.ts";
@@ -228,6 +229,7 @@ const REGISTRY = {
   punch: new PunchAction(),
   interrogate: new InterrogateAction(),
   chitchat: new ChitchatAction(),
+  premonition: new PremonitionAction(),
   comfort: new ComfortAction(),
   anathema: new AnathemaAction(),
   coup: new CoupAction(),

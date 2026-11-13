@@ -743,6 +743,7 @@ describe("actions from a client", () => {
     punch: [{ type: "punch", target: "p1" }],
     interrogate: [{ type: "interrogate", target: "p1" }],
     chitchat: [{ type: "chitchat", target: "p1" }],
+    premonition: [{ type: "premonition", target: "p1" }],
     comfort: [{ type: "comfort", target: "p1" }],
     anathema: [{ type: "anathema", target: "p1" }],
     coup: [{ type: "coup", equipment: "NEXUS_ROOM:NERON_CORE" }],

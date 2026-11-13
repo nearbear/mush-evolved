@@ -67,8 +67,8 @@ export function stockMedlab(state: GameState, rng: HasRng): void {
   }
 }
 
-/** The skills that reveal the drugs' effects: Biologist, Medic and Nurse (`first_aid`). Mush see them too. */
-export const DRUG_LORE_SKILLS: readonly string[] = ["biologist", "medic", "first_aid"];
+/** The skills that reveal the drugs' effects: Biologist, Skilful (counts as Biologist), Medic and Nurse (`first_aid`). Mush see them too. */
+export const DRUG_LORE_SKILLS: readonly string[] = ["biologist", "skilful", "medic", "first_aid"];
 
 /** The drugs' effects, for a living Biologist, Medic, Nurse or Mush; null for everyone else (they learn by trying). */
 export function drugEffectsSeenBy(state: Readonly<GameState>, player: Readonly<PlayerState>): Record<string, DrugEffect> | null {
@@ -93,10 +93,10 @@ export interface DrugDispenserState {
   used: boolean;
 }
 
-/** Drug options an alive player is shown: 1, +1 with Nurse (`first_aid`), +2 with Biologist, stacking (owner, 2026-11-11). */
+/** Drug options an alive player is shown: 1, +1 with Nurse (`first_aid`), +2 with Biologist or Skilful (who counts as one; they don't stack), stacking (owner, 2026-11-11). */
 export function drugOptionCount(player: Readonly<PlayerState>): number {
   const skills = skillsOf(player);
-  return 1 + (skills.includes("first_aid") ? 1 : 0) + (skills.includes("biologist") ? 2 : 0);
+  return 1 + (skills.includes("first_aid") ? 1 : 0) + (skills.includes("biologist") || skills.includes("skilful") ? 2 : 0);
 }
 
 /** The first `drugOptionCount` drugs of the dispenser's list: what this player may choose from. */

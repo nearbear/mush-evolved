@@ -94,6 +94,7 @@ const ACTION_NAME_KEYS = {
   punch: "actions.punch",
   interrogate: "actions.interrogate",
   chitchat: "actions.chitchat",
+  premonition: "actions.premonition",
   comfort: "actions.comfort",
   anathema: "actions.anathema",
   coup: "actions.coup",

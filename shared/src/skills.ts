@@ -176,7 +176,7 @@ export type SkillStatus = "full" | "partial" | "none";
  * NERON projects are left out of this count (owner, 2026-10-16).
  */
 export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillStatus>>> = {
-  // Heal bonus only; no operations, medicine properties, or research bonus.
+  // Heal bonus and reads drug properties; no operations or research bonus.
   medic: "partial",
   // 16 cycles of room log (owner, 2026-11-05, #365, log.ts) and cancels Found dead on expeditions (owner, 2026-11-08, #357); no movement sources, ship logs or List.
   hunt: "partial",
@@ -186,8 +186,10 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   pilot: "partial",
   // Heavy-item penalty and punch damage only; no Throw Out.
   sturdy: "partial",
-  // Free heal points only; no medicine properties.
-  first_aid: "partial",
+  // Free heal points (2/day) and reads drug properties and gets +1 Drug Dispenser option (owner, 2026-11-13).
+  first_aid: "full",
+  // Premonition: reveals a crewmate's last action for 1 morale (owner, 2026-11-13, actions/premonition.ts).
+  premonition: "full",
   // Computer points and their use on research and NERON projects only; no hacking.
   computer: "partial",
   // PILGRED points and the PILGRED repair bonus (owner, 2026-10-21).

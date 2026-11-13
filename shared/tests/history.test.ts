@@ -46,10 +46,10 @@ describe("action history", () => {
     expect(player(s, "p0").history).toEqual(["fiery_speech", "punch", "punch"]);
   });
 
-  it("leaves out moving, taking and dropping, Examine, BIOS changes, accessing a terminal, ending the cycle, picking a skill, plan actions and the Traitor's expedition Sabotage", () => {
+  it("leaves out moving, taking and dropping, Examine, BIOS changes, accessing a terminal, ending the cycle, picking a skill, Premonition, plan actions and the Traitor's expedition Sabotage", () => {
     const unrecorded = Object.entries(ACTIONS).filter(([, def]) => !def.recorded).map(([type]) => type).sort();
     // Plan actions (claim, withdraw, Done, cancel, summon) are channel business, not something your character does.
-    expect(unrecorded).toEqual(["access", "cancel_plan", "claim_slot", "drop", "examine", "mark_done", "move", "pick_skill", "ready", "sabotage_expedition", "self_disease", "self_injury", "set_bios", "summon", "take", "warp_to_planet", "withdraw_slot"]);
+    expect(unrecorded).toEqual(["access", "cancel_plan", "claim_slot", "drop", "examine", "mark_done", "move", "pick_skill", "premonition", "ready", "sabotage_expedition", "self_disease", "self_injury", "set_bios", "summon", "take", "warp_to_planet", "withdraw_slot"]);
     const s = ship("leadership");
     const move = offered(s, "p0").find((a) => a.type === "move")!;
     expect(player(mustApply(s, "p0", move), "p0").history).toEqual([]);
@@ -232,5 +232,44 @@ describe("Chitchat with a Confident", () => {
     const s = mustApply(ship("confident"), "p1", chitchat("p0"));
     expect(JSON.stringify(viewFor(s, "p1"))).toContain("chitchatToday");
     expect(JSON.stringify(viewFor(s, "p0"))).not.toContain("chitchatToday");
+  });
+});
+
+describe("Premonition", () => {
+  const premonition = (target: PlayerId): Action => ({ type: "premonition", target });
+
+  it("costs 1 morale and no AP, and shows a crewmate's last action in another room", () => {
+    let s = ship("premonition");
+    player(s, "p2").history = ["punch", "fiery_speech"];
+    const ap = player(s, "p0").ap;
+    s = mustApply(s, "p0", premonition("p2"));
+    expect(revealedActions(s, "p0")).toEqual(["fiery_speech"]);
+    expect([player(s, "p0").ap, player(s, "p0").morale]).toEqual([ap, 4]);
+    expect([DEFAULT_CONFIG.premonition.moraleCost]).toEqual([1]);
+  });
+
+  it("says so when they have done nothing, with no daily limit, and leaves no trace for anyone else", () => {
+    let s = ship("premonition");
+    s = mustApply(s, "p0", premonition("p1"), premonition("p1"));
+    expect(revealedTo(s, "p0").map((l) => l.key)).toEqual(["historyNothing", "historyNothing"]);
+    expect(player(s, "p0").morale).toBe(3);
+    expect(player(s, "p0").history).toEqual([]);
+    for (const id of ["p1", "p2", "p3"]) expect(revealedTo(s, id)).toEqual([]);
+    expect(s.log.filter((l) => l.key === "premonition")).toEqual([]);
+  });
+
+  it("is offered only to someone with the skill and the morale, for living others, and refused otherwise", () => {
+    let s = ship("premonition");
+    killPlayer(s, player(s, "p3"), "assassinated");
+    expect(offered(s, "p0").filter((a) => a.type === "premonition").map((a) => (a as { target: string }).target).sort()).toEqual(["p1", "p2"]);
+    expect(offered(s, "p1").some((a) => a.type === "premonition")).toBe(false);
+    expect(applyAction(s, "p1", premonition("p2"))).toMatchObject({ ok: false });
+    expect(applyAction(s, "p0", premonition("p0"))).toMatchObject({ ok: false });
+    expect(applyAction(s, "p0", premonition("p3"))).toMatchObject({ ok: false });
+    player(s, "p0").morale = 0;
+    const before = JSON.stringify(s);
+    expect(offered(s, "p0").some((a) => a.type === "premonition")).toBe(false);
+    expect(applyAction(s, "p0", premonition("p2"))).toMatchObject({ ok: false });
+    expect(JSON.stringify(s)).toBe(before);
   });
 });
