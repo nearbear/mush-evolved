@@ -13,7 +13,7 @@ export class ResetSkillsAction extends Action<ResetSkillsActionData> {
   override visibility: ActionVisibility = "private";
 
   constructor() {
-    super("reset_skills", {});
+    super("reset_skills");
   }
 
   override getCost(state: Readonly<GameState>): { ap: number; mp: number } {
