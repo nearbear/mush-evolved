@@ -3248,3 +3248,11 @@ Owner asked that every action (Inspect panel, peek bar, room) take a double clic
 - Worked: a single seam (ActionButton) covers nearly every action button, so no subagents were needed. Needed care: the replay test timed out at 5s under full-suite load; timing it alone with and without the change showed no slowdown.
 
 - Follow-up (same day): the odds show only when non-zero, as icon rows (the dirty status icon, the HP heart) labelled "Dirty N%" / "Injury N%", last in the card under a rule so they aren't mistaken for food effects. An enabled button with nothing to say gets no card again.
+
+### 2026-11-12: iTrackie cycle dividers as a header-blue band
+
+- Asked for the iTrackie's cycle dividers to use the light blue of the terminal title bar and to divide cycles cleanly. A 1px line in `--terminal-header-bg` (#a6eefb) would barely show on the card (#c2f3fc), so the divider became a full-width band in that blue with the "Cycle N" label centred in dark navy, and the side lines were removed (`web/src/styles/itrackie.css`, scoped to `.itrackie-card`, so it covers both the log and the chat threads).
+- `npm run verify` failed twice in the server tests and then passed with no code change; `npm test` alone passed too. It looks like a timing flake in the server tests under load, not this CSS change.
+- Follow-up: the last row of each cycle dropped its bottom border (`li:has(+ li.cycle-divider)`), since the band already divides. The owner asked about a MUI-style Stack `divider` prop; Base UI has no Stack or layout components (only an unstyled `Separator`), and the feed is a plain `<ul>` styled in CSS, so a sibling selector was simpler than adopting a component.
+- Correction to the flake note above: the intermittent failure is not in the server tests (their stderr is just noise). It is `replayView.test.ts` > `stepMarks` over a recorded 16-seat game, which takes about 6.6s under full-suite load and hits Vitest's 5s default timeout. Unrelated to the CSS; left for the owner to decide.
+- Owner chose a longer timeout for the flaky `stepMarks` test: 15s on that one test, committed on its own. Note for later: the test rebuilds `loaded.flatMap((l) => l.frames)` inside its per-step loop, which is quadratic over ~1500 steps; hoisting it would likely make the test fast without a timeout.
