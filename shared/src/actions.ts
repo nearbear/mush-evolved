@@ -77,6 +77,7 @@ import { ApprenticeshipAction } from "./actions/apprenticeship.ts";
 import { BecomeGeniusAction } from "./actions/become_genius.ts";
 import { ReadBookAction } from "./actions/read_book.ts";
 import { AnathemaAction } from "./actions/anathema.ts";
+import { CoupAction } from "./actions/coup.ts";
 import { BoringSpeechAction, FierySpeechAction } from "./actions/speech.ts";
 import { PunchAction } from "./actions/punch.ts";
 import { InterrogateAction } from "./actions/interrogate.ts";
@@ -229,6 +230,7 @@ const REGISTRY = {
   chitchat: new ChitchatAction(),
   comfort: new ComfortAction(),
   anathema: new AnathemaAction(),
+  coup: new CoupAction(),
   fiery_speech: new FierySpeechAction(),
   boring_speech: new BoringSpeechAction(),
   attack: new AttackAction(),

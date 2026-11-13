@@ -3257,6 +3257,10 @@ Owner asked that every action (Inspect panel, peek bar, room) take a double clic
 - Correction to the flake note above: the intermittent failure is not in the server tests (their stderr is just noise). It is `replayView.test.ts` > `stepMarks` over a recorded 16-seat game, which takes about 6.6s under full-suite load and hits Vitest's 5s default timeout. Unrelated to the CSS; left for the owner to decide.
 - Owner chose a longer timeout for the flaky `stepMarks` test: 15s on that one test, committed on its own. Note for later: the test rebuilds `loaded.flatMap((l) => l.frames)` inside its per-step loop, which is quadratic over ~1500 steps; hoisting it would likely make the test fast without a timeout.
 
+## 2026-11-12: Politician skill and Coup action
+- Asked the owner four rule questions in one call (limits, cycle-change effect, visibility, who/dirt). Owner chose unlimited uses (overriding the original skill text's "once per game"), secret visibility, and added mid-turn that Coup has a 50% dirty chance.
+- Built `actions/coup.ts` (sets `coupPending`) and `coup.ts` (`coupCycle` resolves it after the inactivity check, first plotter in the Commander line wins). Copied Anathema/Ignite as templates; flag modelled on `outcastBy`. Updated the skill description in en/fr/es to match unlimited use.
+- Needed no `STATE_VERSION` bump (new optional field, normalizer passes it through). Not built: undoing the coup on later inactivity.
 ## 2026-11-12: Disabled navigation buttons with a reason when a reactor is broken
 
 - Debugging "why can't I travel in my dev game" went quickest by decoding the newest GameRoom's Durable Object storage (`server/.wrangler/state/v3/do/mush2-server-GameRoom/*.sqlite`, the `game` key is v8-serialized; `node:sqlite` + `v8.deserialize`). It showed all three Motor Room reactors broken, so Travel and both turns were silently missing from `view.actions`.
