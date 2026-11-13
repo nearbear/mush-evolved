@@ -3279,3 +3279,7 @@ Follow-up, same day: the owner confirmed both calls and ranked astro above pilot
 ## 2026-11-12: `npm run dev-state` and the `dev-state` skill
 
 A debugging session spent about a dozen tool calls finding the dev game's state (which Durable Object SQLite file, v8-serialized values, the rules state at `.game`, `accounts` for the human seat). That is now a read-only script, `tools/src/dev/devState.ts`. It prints a summary of the newest game, and `--path`, `--list`, `--room` and `--key` cover the rest. A short skill says when to use it and that its output carries hidden info. What needed correction: the first run opened every room's database, and opening one read-only still leaves an empty `-wal` file, so every room looked freshly written. The script now opens databases only when needed and ignores empty WAL files when picking the newest room.
+
+## 2026-11-12: Shared-checkout rule for verify failures
+
+Added a working agreement to `CLAUDE.md`: other sessions may be editing the same checkout, so when `npm run verify` fails in a file the current task didn't touch, the session names the failing test in one line, says it looks like someone else's work, and stops instead of investigating. The point is for the session to report such a failure rather than dig into another session's in-progress work.

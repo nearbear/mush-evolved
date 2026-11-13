@@ -69,6 +69,7 @@ These are non-negotiable unless I say otherwise.
 - The databases are currently empty, so it's OK if something bumps the game version for now.
 - Keep a short log in `docs/process/ai-workflow.md` of significant decisions made with AI assistance, including what worked and what needed correction. I plan to write this up. Only ever append to it with `cat >>`; never read or rewrite the whole file (it is large).
 - **Checks and the log happen once, at the very end of a task.** While iterating, run only the tests you need (`npm test -w shared -- rules.test.ts -t "name"`), not the full suite, typecheck or lint after each step. When the whole task is done, run `npm run verify` once (plus `npm run build` if `web` changed), and append one `docs/process/ai-workflow.md` entry for the whole task, not one per sub-step. Rerun `verify` only if you edit code after it passed.
+- **Other sessions may be editing this checkout.** If `verify` fails in a file this task didn't touch, don't investigate. Name the failing test in one line, say it looks like someone else's work, and stop.
 - Explain tradeoffs when there is a real choice; I want to understand the code, not just receive it.
 - When you mention a GitHub issue to me, always make it a clickable link to the issue, e.g. [#216](https://github.com/nearbear/mush2/issues/216). The `#216` shorthand is fine as link text, but it must point at the full URL so I can Ctrl+click it.
 - Ignore the files in the `docs/scratchpad` folder unless otherwise directed; they are for notes and planning, not part of the main codebase.
