@@ -1852,7 +1852,8 @@
   "drones": {
     "upgrades": {
       "firefighter": "Pompier",
-      "turbo": "Turbo"
+      "turbo": "Turbo",
+      "sensor": "Capteur"
     }
   }
 }

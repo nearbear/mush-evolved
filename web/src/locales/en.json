@@ -1914,7 +1914,8 @@
   "drones": {
     "upgrades": {
       "firefighter": "Firefighter",
-      "turbo": "Turbo"
+      "turbo": "Turbo",
+      "sensor": "Sensor"
     }
   }
 }
