@@ -34,6 +34,17 @@ Bots are players. Every rule that keeps hidden information off clients applies t
 
 `npm run model-trial -w server` (see CLAUDE.md, Commands) measures a prompt or gate change against a real model before and after. Findings so far are on #224: the answer-only prompt line matters (asking a model to "think, then answer" without hidden reasoning gets cut off), turning reasoning off is refused (400) by Gemini 3.x models, and new OpenRouter accounts are rate-limited per model.
 
+## Measuring a scripted-bot change: the survival harness
+
+A change to what scripted bots do (goals, duties, triggers, social lines) is judged by whether ships last longer on the same seeds, not by unit tests alone (`docs/plans/bot-goals.md`, "Direction", point 1). The harness runs scripted bots on every seat, no Mush and no model calls, so it is free; 50 seeds take about 6 minutes. Flags are in `docs/process/commands.md`.
+
+1. **Baseline first, before editing.** Run committed `main` (stash or use a worktree if the checkout already has the change) and save it: `npm run survival -w server -- --seeds 1-50 --out docs/scratchpad/survival-pre<issue>-<date>.json`. Don't trust an older saved run as the baseline: a rules change since can move it, so the two runs go back to back.
+2. **After the change**, the same seeds and flags: `npm run survival -w server -- --seeds 1-50 --out docs/scratchpad/survival-<issue>-<variant>-<date>.json --compare <baseline>`. Run it in the background (`run_in_background`); it takes minutes.
+3. **Read it honestly.** A difference of a few hundredths of a day in the mean, or a few seeds either way, is noise; say "within noise" rather than "better." Check the measure the issue named (e.g. hull destruction), not only median days, and look at the endings and death causes for something the change made worse. `--verbose <seed>` traces one seed cycle by cycle when a number needs explaining.
+4. **Record the result** as a bullet under "Reaching Eden" in `docs/plans/bot-goals.md`, in the existing style: issue and date, seeds/crew/day cap, the before → after numbers that matter (median and mean days, longer/shorter seed counts, endings, top death causes, the counts the change targets), your reading of why, and the saved file names. Report the same numbers to the user; they decide whether the change met the bar.
+
+These saved runs are the one exception to ignoring `docs/scratchpad/`: write and compare them there.
+
 ## Steps
 
 1. Ask the user anything open: provider, spend cap, rate limits, what the bot should try to do (that's game strategy, and it may touch rules; use the `rule` skill if so).
