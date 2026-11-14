@@ -2,6 +2,7 @@
 // to a bed and rest, walk to the lab and research) instead of choosing one action at a time. Goals are pure: the bot's
 // own view and memory in, one step out, so they are tested without a server or a model.
 
+import type { ItemMemory } from "../itemShare.ts";
 import type { Action, GameClientMessage, LobbyLanguage, PlanetDirection, PlayerView, RoomId } from "@mush2/shared";
 
 /**
@@ -57,6 +58,8 @@ export interface BotMemory {
    * else null: bots don't shoot asteroids, so the hunter goals stay off while the count is unchanged (`onlyAsteroids`).
    */
   asteroidsOnly: number | null;
+  /** Where shared item types lie, from what the bot saw and what bots said in global chat (`itemShare.ts`). */
+  readonly items: ItemMemory;
   /** Last fuel reading the Commander saw in the combustion chamber (`null` if unknown or cleared by traveling, #421). */
   combustion: number | null;
   /** Cycle when the Commander started holding the jump (`null` when not holding, #421). */

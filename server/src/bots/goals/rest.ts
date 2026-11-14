@@ -2,7 +2,7 @@ import { act, canAfford, failed, find, goTo, roomsWith, where } from "./blocks.t
 import type { Goal, GoalDef } from "./types.ts";
 
 /** Goals that interrupt a rest at the start of a cycle when hunters are outside (owner, 2026-11-01). */
-const HUNTER_GOALS = new Set(["shootHunters", "patrolShootHunters"]);
+const HUNTER_GOALS = new Set(["shootHunters", "crewShootHunters", "patrolShootHunters"]);
 
 /**
  * Rest in the nearest bed (a bed gives AP each cycle): lie down, then wait cycle after cycle until AP is full. A new

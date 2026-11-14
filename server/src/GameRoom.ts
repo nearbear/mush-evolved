@@ -69,6 +69,7 @@ import {
 import { accountStoreFor } from "./accountStore.ts";
 import { buildRouterPrompt, parseRouterReply, routerInput } from "./router.ts";
 import { BOT_CHAT_CHAIN_DEPTH, LogParrotBot, ModelBot, WanderBot, type Bot } from "./bots.ts";
+import { parseItemLine } from "./bots/itemShare.ts";
 import type { BotMessage } from "./prompt.ts";
 import { finishedEntry, gameStoreFor } from "./gameStore.ts";
 import { clockCycle, clockCycleStart, cycleMs, cycleOfDay } from "./cycleClock.ts";
@@ -878,7 +879,8 @@ export class GameRoom extends Server<Env> {
       msg.type === "chat" || msg.type === "sharePlanet" || msg.type === "shareReport" ? { ...msg, by, text: moderated.text } : { ...msg, by, name: moderated.text };
     const error = await this.act(input, moderated.text === raw ? undefined : raw);
     if (!error && msg.type === "chat") {
-      this.wakeBots(playerId, msg.channel, depth);
+      // A bots' item line (itemShare.ts) is for code to parse, not a message to answer: no router call, nobody woken.
+      if (parseItemLine(moderated.text) === null) this.wakeBots(playerId, msg.channel, depth);
       // Posting reads the channel (#400): your own message is never unread, nor anything before it.
       if (!this.isBotSeat(playerId)) await this.raiseChatRead(playerId, { [msg.channel]: this.game.chatSeq[msg.channel] ?? 0 });
     }

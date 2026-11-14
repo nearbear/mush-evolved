@@ -13,7 +13,7 @@ import { research } from "./research.ts";
 import { rest } from "./rest.ts";
 import { setOutPots } from "./setOutPots.ts";
 import { returnToSol } from "./returnToSol.ts";
-import { shootHunters } from "./shootHunters.ts";
+import { crewShootHunters, shootHunters } from "./shootHunters.ts";
 import { shower } from "./shower.ts";
 import { shrinkDorm } from "./shrinkDorm.ts";
 import { snoop } from "./snoop.ts";
@@ -23,7 +23,7 @@ import { travel } from "./travel.ts";
 import type { Goal, GoalDef } from "./types.ts";
 
 /** The goals that fight hunters: a resting bot gets up for them (`GoalBot`). */
-export const HUNTER_GOALS: ReadonlySet<string> = new Set([shootHunters.id, patrolShootHunters.id]);
+export const HUNTER_GOALS: ReadonlySet<string> = new Set([shootHunters.id, crewShootHunters.id, patrolShootHunters.id]);
 
 export type { BotMemory, BotSocial, ExpeditionKind, Goal, GoalDef, GoalStep } from "./types.ts";
 
@@ -48,6 +48,7 @@ export const SOLO_GOALS: readonly GoalDef[] = [
   travel,
   astro,
   commsOfficer,
+  crewShootHunters,
   research,
   project,
   shrinkDorm,

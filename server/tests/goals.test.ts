@@ -1,4 +1,4 @@
-import { DEFAULT_CONFIG, applyAction, applyInput, legalIn, newCycle, startGame, viewFor, type Action, type CharacterId, type GameState, type PlayerView } from "@mush2/shared";
+import { DEFAULT_CONFIG, SHIP_ROOMS, applyAction, applyInput, legalIn, newCycle, shortestPath, startGame, viewFor, type Action, type CharacterId, type GameState, type PlayerView } from "@mush2/shared";
 import { describe, expect, it } from "vitest";
 import { GOAL_MAX_ACTIONS, GoalBot } from "../src/bots.ts";
 import { astro, chooseDestination, judgePlanet } from "../src/bots/goals/astro.ts";
@@ -14,7 +14,7 @@ import { project } from "../src/bots/goals/project.ts";
 import { SHRINK_DESK_WORK_WITHIN } from "../src/bots/goals/work.ts";
 import { onlyAsteroids, shotOrder } from "../src/bots/goals/hunterTargets.ts";
 import { patrolShootHunters } from "../src/bots/goals/patrolShootHunters.ts";
-import { shootHunters } from "../src/bots/goals/shootHunters.ts";
+import { crewShootHunters, shootHunters } from "../src/bots/goals/shootHunters.ts";
 import { shower } from "../src/bots/goals/shower.ts";
 import { DORMS, shrinkDorm } from "../src/bots/goals/shrinkDorm.ts";
 import { snoop } from "../src/bots/goals/snoop.ts";
@@ -25,6 +25,7 @@ import { POT_STORAGE, STORAGE_CHECKED, setOutPots } from "../src/bots/goals/setO
 import { HOLD_HUNTER_TRIGGER, HOLD_MAX_DAYS, HOLD_MIN_OXYGEN, JUMP_WAIT_CYCLES, sharedDestination, targetJump, travel, turnsTo } from "../src/bots/goals/travel.ts";
 import { helpGoal, helpTasks } from "../src/bots/goals/help.ts";
 import type { GoalDef } from "../src/bots/goals/types.ts";
+import { formatItemLine, newItemMemory, observeItems, parseItemLine, roomsHolding } from "../src/bots/itemShare.ts";
 import { chooseSkill } from "../src/bots/skillChoice.ts";
 import { seats } from "../src/testing/fakes.ts";
 
@@ -91,6 +92,7 @@ const memory = (scripted = true) => ({
   shrinks: new Set<string>(),
   lastExpedition: null as "oxygen" | "fuel" | null,
   asteroidsOnly: null as number | null,
+  items: newItemMemory(),
   combustion: null as number | null,
   holdSince: null as number | null,
   heading: null as GameState["navigation"]["heading"] | null,
@@ -425,6 +427,27 @@ describe("shootHunters", () => {
     expect(shootHunters.options(viewFor(gunner.game, gunner.id), memory())).toHaveLength(1);
   });
 
+  it("has a bot with no shooting skill shoot too, after its own jobs and before research and projects", async () => {
+    const noSkill = attacked(null);
+    const view = viewFor(noSkill.game, noSkill.id);
+    expect(crewShootHunters.options(view, memory()).map((g) => g.id)).toEqual(["crewShootHunters"]);
+    // Not at 4 AP, not with no hunters, and never for a bot the skilled goal already covers.
+    expect(crewShootHunters.options(viewFor(edit(noSkill.game, noSkill.id, (p) => (p.ap = 4)), noSkill.id), memory())).toEqual([]);
+    const gunner = attacked("gunner");
+    expect(crewShootHunters.options(viewFor(gunner.game, gunner.id), memory())).toEqual([]);
+    // Nor for a Pilot, who saves its AP for a sortie.
+    expect(crewShootHunters.options(viewFor(edit(noSkill.game, noSkill.id, (p) => (p.skills = ["pilot"])), noSkill.id), memory())).toEqual([]);
+    const { game: quiet, id } = setup();
+    expect(crewShootHunters.options(viewFor(edit(quiet, id, (p) => (p.ap = 10)), id), memory())).toEqual([]);
+    const rank = (id: string): number => SOLO_GOALS.find((g) => g.id === id)!.priority;
+    for (const job of ["commsOfficer", "tendPlants", "setOutPots", "contactSol", "astro", "travel"]) expect(rank(job)).toBeGreaterThan(rank("crewShootHunters"));
+    for (const desk of ["research", "project"]) expect(rank("crewShootHunters")).toBeGreaterThan(rank(desk));
+    for (const t of Object.values(noSkill.game.equipment).flat().filter((e) => e.type === "TURRET_COMMAND")) noSkill.game.turrets[t.id] = 20;
+    const { taken } = await untilReady(noSkill.game, noSkill.id, new GoalBot(1, 2, [crewShootHunters, research, project]));
+    expect(taken.some((a) => a.type === "turret_attack")).toBe(true);
+    expect(taken.some((a) => a.type === "research" || a.type === "project")).toBe(false);
+  });
+
   it("walks to the nearest turret and shoots the weakest hunter, spending all its AP, the reserve too", async () => {
     const { game: start, id } = attacked();
     for (const t of Object.values(start.equipment).flat().filter((e) => e.type === "TURRET_COMMAND")) start.turrets[t.id] = 20;
@@ -666,6 +689,14 @@ async function oneCycle(game: GameState, id: string, bot: GoalBot): Promise<{ ga
   const taken: Action[] = [];
   for (let t = 0; t < 40; t++) {
     const action = await bot.decideAction(viewFor(game, id));
+    // A message that isn't an action (an item line, itemShare.ts) is sent as the room sends it; that turn has no action.
+    const social = bot.takeSocial();
+    if (social) {
+      const said = applyInput(game, { ...social, by: id });
+      expect(said.ok, JSON.stringify(social)).toBe(true);
+      if (said.ok) game = said.state;
+      continue;
+    }
     if (!action || action.type === "ready") break;
     const r = applyAction(game, id, action);
     expect(r.ok, JSON.stringify(action)).toBe(true);
@@ -1086,7 +1117,7 @@ describe("astro (#222, #417)", () => {
     expect(astro.options(viewFor(game, id), memory())).toHaveLength(1);
     game.planets[id] = [planet("pl-1", "Alpha", 3, known("OXYGEN")), planet("pl-2", "Beta", 4, known("HYDROCARBON"))];
     const { game: after, taken } = await astroCycle(game, id, new GoalBot(1, 2, [astro]));
-    expect(taken.filter((a) => a !== "move")).toEqual(["sharePlanet"]);
+    expect(taken.filter((a) => a !== "move" && a !== "chat")).toEqual(["sharePlanet"]);
     expect(after.sharedPlanets.map((e) => e.planet)).toEqual(["pl-1"]);
     expect(astro.options(viewFor(after, id), memory())).toEqual([]);
   });
@@ -1102,7 +1133,7 @@ describe("astro (#222, #417)", () => {
     ];
     const bot = new GoalBot(1, 2, [astro]);
     const { game: after, taken } = await astroCycle(game, id, bot);
-    const work = taken.filter((a) => a !== "move");
+    const work = taken.filter((a) => a !== "move" && a !== "chat");
     // Beta goes for free; 6 AP -> 2 AP reserve: analyze Alpha (2 sectors for the Astrophysicist), share it, scan (2 AP).
     expect(work).toEqual(["delete_planet", "analyze_planet", "sharePlanet", "scan_planet"]);
     expect(after.players.find((p) => p.id === id)!.ap).toBe(2);
@@ -1641,5 +1672,73 @@ describe("contactSol and commsOfficer (#222)", () => {
     ];
     const step3 = goal!.step(viewFor(game, id), m);
     expect(step3).toMatchObject({ kind: "act", action: { type: "update_neron" } });
+  });
+});
+
+describe("item sharing (itemShare.ts) and walking to scrap", () => {
+  /** A game with every metal scrap in one room, and a bot placed in `room` (default: with the scrap). */
+  function scrapGame(at: "with" | "away" = "with"): { game: GameState; id: string; scrapRoom: string; other: string } {
+    const { game: start, id } = setup();
+    const scrapRoom = start.items.find((i) => i.type === "metal_scraps" && i.at.kind === "room")!.at.id;
+    for (const i of start.items) if (i.type === "metal_scraps") i.at = { kind: "room", id: scrapRoom };
+    const other = start.players.find((p) => p.id !== id && p.role === "human")!.id;
+    const far = SHIP_ROOMS.map((r) => r.id).find((r) => r !== scrapRoom && (shortestPath(start.config.rooms, r, scrapRoom)?.length ?? 0) === 2)!;
+    const game = edit(start, id, (p) => {
+      p.room = at === "with" ? scrapRoom : far;
+      p.ap = 10;
+      p.mp = 12;
+    });
+    return { game, id, scrapRoom, other };
+  }
+
+  it("reads only its own format, a shared type and a real room", () => {
+    const line = { type: "metal_scraps" as const, room: "CORRIDOR_A", present: true };
+    expect(parseItemLine(formatItemLine(line))).toEqual(line);
+    expect(parseItemLine(formatItemLine({ ...line, present: false }))).toEqual({ ...line, present: false });
+    for (const text of ["Item: gold in CORRIDOR_A", "Item: metal_scraps in NOWHERE", "item: metal_scraps in CORRIDOR_A", "Item: metal_scraps in CORRIDOR_A please"]) expect(parseItemLine(text)).toBeNull();
+  });
+
+  it("says once where it sees scrap, and another bot learns the room from the line", () => {
+    const { game, id, scrapRoom, other } = scrapGame();
+    const m = memory();
+    const post = observeItems(viewFor(game, id), m);
+    expect(post).toEqual({ type: "chat", channel: "global", text: `Item: metal_scraps in ${scrapRoom}` });
+    expect(roomsHolding(m, "metal_scraps")).toEqual([scrapRoom]);
+    const said = applyInput(game, { ...post!, by: id });
+    expect(said.ok).toBe(true);
+    if (!said.ok) return;
+    // Nobody repeats it: not the bot that said it, not another bot standing there.
+    expect(observeItems(viewFor(said.state, id), m)).toBeNull();
+    const elsewhere = edit(said.state, other, (p) => (p.room = SHIP_ROOMS.map((r) => r.id).find((r) => r !== scrapRoom)!));
+    const theirs = memory();
+    expect(observeItems(viewFor(elsewhere, other), theirs)).toBeNull();
+    expect(roomsHolding(theirs, "metal_scraps")).toEqual([scrapRoom]);
+    // The scrap is gone: the first bot to stand there says so, and the room is forgotten.
+    const gone = structuredClone(said.state);
+    gone.items = gone.items.filter((i) => i.type !== "metal_scraps");
+    expect(observeItems(viewFor(gone, id), m)?.text).toBe(`Item: no metal_scraps in ${scrapRoom}`);
+    expect(roomsHolding(m, "metal_scraps")).toEqual([]);
+  });
+
+  it("walks to a room it knows holds scrap and patches the hull there, only below 50", async () => {
+    const { game: start, id, scrapRoom } = scrapGame("away");
+    start.ship.hull = 40;
+    const m = memory();
+    expect(repairHull.options(viewFor(start, id), m)).toEqual([]);
+    m.items.rooms.set("metal_scraps", new Set([scrapRoom]));
+    expect(repairHull.options(viewFor(start, id), m).map((g) => g.key)).toEqual([`repairHull:${scrapRoom}`]);
+    start.ship.hull = 50;
+    expect(repairHull.options(viewFor(start, id), m)).toEqual([]);
+    // End to end: told by a line in chat, the bot walks there and tries until the AP reserve.
+    start.ship.hull = 40;
+    const told = applyInput(start, { type: "chat", channel: "global", text: formatItemLine({ type: "metal_scraps", room: scrapRoom, present: true }), by: id });
+    expect(told.ok).toBe(true);
+    if (!told.ok) return;
+    const { game: end, taken } = await untilReady(told.state, id, new GoalBot(1, 2, [repairHull]));
+    expect(taken.filter((a) => a.type === "move")).toHaveLength(2);
+    expect(taken.filter((a) => a.type === "repair_hull").length).toBeGreaterThan(0);
+    const me = end.players.find((p) => p.id === id)!;
+    expect(me.room).toBe(scrapRoom);
+    expect(me.ap).toBe(2);
   });
 });

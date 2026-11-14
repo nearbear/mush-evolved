@@ -5,6 +5,7 @@ import { characterName, legalIn, nextInt, type Action, type LobbyLanguage, type 
 import { hasBotSkill, holdsTrigger } from "./bots/duties.ts";
 import { canReachBridgeWithTravelAp } from "./bots/goals/blocks.ts";
 import { END_CYCLE, helpGoal, helpTasks, SOLO_GOALS, type BotMemory, type BotSocial, type Goal, type GoalDef } from "./bots/goals/index.ts";
+import { newItemMemory, observeItems } from "./bots/itemShare.ts";
 import { holdStartCycle, isHoldingJump } from "./bots/planetShare.ts";
 import { buildPrompt, describeLogEntry, observeShrinks, parseReply, type BotMessage } from "./prompt.ts";
 import type { ModelGate } from "./model.ts";
@@ -133,6 +134,7 @@ export class GoalBot implements Bot {
       shrinks: new Set(),
       lastExpedition: null,
       asteroidsOnly: null,
+      items: newItemMemory(),
       combustion: null,
       holdSince: null,
       heading: null,
@@ -181,6 +183,12 @@ export class GoalBot implements Bot {
     this.observe(view);
     const legal = legalIn(view);
     if (legal.length === 0) return null;
+    // Where shared items lie (itemShare.ts): what it sees here that chat doesn't say yet is this turn's one message.
+    const report = observeItems(view, this.memory);
+    if (report) {
+      this.social = report;
+      return null;
+    }
     if (!this.listens) this.wokenByChat = false;
     // Woken by chat: the model is asked even mid-goal or with one option, since it may want to talk; it may carry on.
     if (this.wokenByChat) {

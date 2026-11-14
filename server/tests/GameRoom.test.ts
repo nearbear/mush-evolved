@@ -1,3 +1,4 @@
+import { parseItemLine } from "../src/bots/itemShare.ts";
 import {
   characterName,
   CHARACTERS,
@@ -856,7 +857,8 @@ describe("GameRoom bots", () => {
           if (storage.alarm !== null && storage.alarm <= Date.now()) await room.onAlarm();
         }
       };
-      const botMessages = (room: Room) => gameOf(room).chat.filter((m) => m.from !== null && ["p1", "p2", "p3"].includes(m.from));
+      // What the bots said, leaving out their item lines (itemShare.ts), which code posts whatever the model says.
+      const botMessages = (room: Room) => gameOf(room).chat.filter((m) => m.from !== null && ["p1", "p2", "p3"].includes(m.from) && parseItemLine(m.text) === null);
 
       it("wake every model bot but the author; replies are posted as AI, and a chain stops at the depth limit", async () => {
         const fetch = chatty("heard you");
