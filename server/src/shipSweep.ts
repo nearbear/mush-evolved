@@ -4,6 +4,7 @@
 // the rest. It can't find a seat that has no row (a restore that lost rows).
 
 import type { AccountStore } from "./accountStore.ts";
+import { failure, logWarn } from "./log.ts";
 
 /** Rows younger than this are left alone: their join may still be under way. */
 export const SWEEP_GRACE_MS = 10 * 60 * 1000;
@@ -24,7 +25,7 @@ export async function sweepShips(
     try {
       aboard = new Set(await seatAccounts(roomId));
     } catch (e) {
-      console.warn(`Sweep couldn't ask a ship: ${e instanceof Error ? e.message : typeof e}`);
+      logWarn("sweep_ask_failed", { roomId, ...failure(e) });
       continue;
     }
     for (const accountId of accounts) {

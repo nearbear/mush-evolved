@@ -77,6 +77,7 @@ import { clockCycle, clockCycleStart, cycleMs, cycleOfDay } from "./cycleClock.t
 import { devModelCredentials, ModelGate, playerModelCredentials } from "./model.ts";
 import { RateLimiter } from "./rateLimit.ts";
 import { copyReplay, verifyReplay } from "./replayStore.ts";
+import { failure, failureName, logError, logWarn, snapshotFailure } from "./log.ts";
 
 declare global {
   interface Env {
@@ -136,7 +137,7 @@ const RECLAIMED_KEY = "reclaimed";
 export function shipOverrides(setup: unknown): ConfigOverrides {
   const valid = validateSetup(setup);
   // The matchmaker learns the setup the ship really has from `status().setupId` (#236).
-  if (!valid) console.warn("A ship's setup didn't validate; it launches with the standard setup.");
+  if (!valid) logWarn("setup_invalid");
   const used = valid ?? STANDARD_SETUP;
   return { ...setupOverrides(used.knobs), setupId: used.id };
 }
@@ -342,10 +343,8 @@ export class GameRoom extends Server<Env> {
       };
     } catch (e) {
       this.unavailable = true;
-      console.error(
-        `UNAVAILABLE: ship ${this.name}'s snapshot (state version ${version}) can't be read by this build (state version ${STATE_VERSION}). ` +
-          `Kept; connections refused until a build that reads it is deployed. ${e instanceof Error ? `${e.name}: ${e.message}` : String(e)}`,
-      );
+      // Kept; connections refused until a build that reads it is deployed (docs/ops/deploy.md).
+      logError("UNAVAILABLE", { roomId: this.name, storedVersion: version, stateVersion: STATE_VERSION, ...snapshotFailure(e) });
       return;
     }
     const { dropped } = loaded;
@@ -501,7 +500,7 @@ export class GameRoom extends Server<Env> {
       try {
         await accountStoreFor(this.env).leaveShip(accountId, this.name, Date.now());
       } catch (e) {
-        console.warn(`Leaving the ship failed: ${e instanceof Error ? e.message : typeof e}`);
+        logWarn("leave_ship_failed", { roomId: this.name, ...failure(e) });
         return;
       }
       delete this.aboard[seat];
@@ -578,7 +577,7 @@ export class GameRoom extends Server<Env> {
         delete this.aboard[seat];
       }
     } catch (e) {
-      console.warn(`Freeing accounts failed: ${e instanceof Error ? e.message : typeof e}`);
+      logWarn("free_accounts_failed", { roomId: this.name, ...failure(e) });
     }
   }
 
@@ -619,7 +618,7 @@ export class GameRoom extends Server<Env> {
       if (this.replayReady) this.reclaimAt ??= Date.now() + RECLAIM_DELAY_MS;
       await this.persist();
     } catch (e) {
-      console.warn(`Listing the finished game failed: ${e instanceof Error ? e.message : typeof e}`);
+      logWarn("list_finished_failed", { roomId: this.name, ...failure(e) });
       this.listRetryAt = Date.now() + this.listRetryMs;
       this.listRetryMs = Math.min(this.listRetryMs * 2, LIST_RETRY_MAX_MS);
     }
@@ -662,7 +661,7 @@ export class GameRoom extends Server<Env> {
       if (this.listed) this.reclaimAt ??= Date.now() + RECLAIM_DELAY_MS;
       await this.persist();
     } catch (e) {
-      console.warn(`Copying the replay failed: ${e instanceof Error ? e.message : typeof e}`);
+      logWarn("replay_copy_failed", { roomId: this.name, ...failure(e) });
       this.replayRetryAt = Date.now() + this.replayRetryMs;
       this.replayRetryMs = Math.min(this.replayRetryMs * 2, REPLAY_RETRY_MAX_MS);
     }
@@ -707,7 +706,7 @@ export class GameRoom extends Server<Env> {
       this.chatRead.clear();
       for (const conn of this.getConnections<SeatState>()) conn.close(4001, "Invalid seat token");
     } catch (e) {
-      console.warn(`Reclaiming room storage failed: ${e instanceof Error ? e.message : typeof e}`);
+      logWarn("reclaim_failed", { roomId: this.name, ...failure(e) });
       this.reclaimAt = Date.now() + this.reclaimRetryMs;
       this.reclaimRetryMs = Math.min(this.reclaimRetryMs * 2, RECLAIM_RETRY_MAX_MS);
     }
@@ -878,7 +877,7 @@ export class GameRoom extends Server<Env> {
         // Never stamp the tick before the bar's end.
         const error = await this.act({ type: "tick", at: Math.max(now, due) });
         if (error) {
-          console.warn(`Tick failed: ${error}`);
+          logWarn("tick_failed", { roomId: this.name, code: error });
           break;
         }
       } else {
@@ -887,7 +886,7 @@ export class GameRoom extends Server<Env> {
         await this.markSeen([...this.getConnections<SeatState>()].flatMap((c) => (c.state ? [c.state.playerId] : [])));
         const error = await this.act({ type: "cycle", at: boundary });
         if (error) {
-          console.warn(`Cycle failed: ${error}`);
+          logWarn("cycle_failed", { roomId: this.name, code: error });
           await this.persist();
         }
       }
@@ -1003,7 +1002,7 @@ export class GameRoom extends Server<Env> {
       // A named bot that can't read the channel isn't woken: it would only see the message it was woken for missing.
       if (reply !== null) seats = parseRouterReply(reply, input).flatMap((body) => candidates.get(body) ?? []).filter((seat) => readers.has(seat));
     } catch (e) {
-      console.warn(`Chat router failed: ${e instanceof Error ? e.message : typeof e}`);
+      logWarn("chat_router_failed", { roomId: this.name, ...failureName(e) });
     } finally {
       this.routing--;
       // Also when it wakes nobody: bots held their ready back while it ran.
@@ -1024,19 +1023,19 @@ export class GameRoom extends Server<Env> {
       channel = this.game.channels.find(pair)?.id;
       if (channel === undefined) {
         const error = await this.social(seat, by, { type: "createChannel", members: [message.to] });
-        if (error) return console.warn(`Bot ${seat} couldn't open a channel: ${error}`);
+        if (error) return logWarn("bot_channel_failed", { roomId: this.name, seat, code: error });
         const opened = this.game.channels.filter((c) => c.createdBy === by).at(-1);
         if (!opened) return;
         // The invite was refused (they are in too many channels): leave the empty channel rather than talk to no one.
         if (!pair(opened)) {
           await this.social(seat, by, { type: "leaveChannel", channel: opened.id });
-          return console.warn(`Bot ${seat} couldn't reach ${message.to} privately`);
+          return logWarn("bot_private_unreachable", { roomId: this.name, seat });
         }
         channel = opened.id;
       }
     }
     const error = await this.social(seat, by, { type: "chat", channel, text: message.text }, depth);
-    if (error) console.warn(`Bot ${seat} couldn't chat: ${error}`);
+    if (error) logWarn("bot_chat_refused", { roomId: this.name, seat, code: error });
   }
 
   /** Rejections are counted in memory and saved with the next change, so spam doesn't cost a write each. */
@@ -1185,7 +1184,8 @@ export class GameRoom extends Server<Env> {
     }
     const source = this.game ? chatPageSource(this.game, by, channel, page) : null;
     const stored = source === "stored" ? await this.ctx.storage.get<ChatMessage[]>(chatPageKey(channel, page)) : undefined;
-    if (source === "stored" && !stored) console.warn(`Chat page ${chatPageKey(channel, page)} is missing from storage`);
+    // Not the channel: a private channel's existence is hidden.
+    if (source === "stored" && !stored) logWarn("chat_page_missing", { roomId: this.name, page });
     // The body again: a Transfer may have moved the seat while storage was read.
     const body = this.body(seat);
     const messages = this.game && body ? chatPageView(this.game, body, channel, page, stored) : null;
@@ -1305,7 +1305,7 @@ export class GameRoom extends Server<Env> {
     if (!this.game || !bot.chatLines || !by) return;
     for (const text of bot.chatLines(viewFor(this.game, by))) {
       const error = await this.act({ type: "chat", channel: "global", text, by });
-      if (error) console.warn(`Bot ${playerId} couldn't chat: ${error}`);
+      if (error) logWarn("bot_chat_refused", { roomId: this.name, seat: playerId, code: error });
     }
   }
 
@@ -1357,7 +1357,7 @@ export class GameRoom extends Server<Env> {
           if (social) {
             const error = await this.social(playerId, by, social);
             if (error) {
-              console.warn(`Bot ${playerId} sent a refused ${social.type}: ${error}`);
+              logWarn("bot_social_refused", { roomId: this.name, seat: playerId, kind: social.type, code: error });
               bot.refused?.(social, error);
             }
           }
@@ -1367,12 +1367,13 @@ export class GameRoom extends Server<Env> {
           if (action.type === "ready" && (this.wakes.size > 0 || this.routing > 0)) return;
           const error = await this.act({ type: "action", action, by, at: Date.now() });
           if (error) {
-            console.warn(`Bot ${playerId} chose an illegal action: ${error}`);
+            // The code only: the action could describe what the bot knows.
+            logWarn("bot_action_illegal", { roomId: this.name, seat: playerId, code: error });
             bot.refused?.(action, error);
           }
         } catch (e) {
           // A throwing bot must not take the room down (#114); it is asked again after the next change.
-          console.warn(`Bot ${playerId} failed: ${e instanceof Error ? e.message : typeof e}`);
+          logWarn("bot_failed", { roomId: this.name, seat: playerId, ...failureName(e) });
         } finally {
           this.pendingBots.delete(playerId);
           this.pruneWakes();

@@ -34,6 +34,7 @@ import { sessionCookie } from "./auth.ts";
 import { DEV_FILL_DELAY_MS, DEV_RATE_SCALE, type JoinResult, type SeatAccount } from "./GameRoom.ts";
 import { RateLimiter } from "./rateLimit.ts";
 import { setupStoreFor } from "./setupStore.ts";
+import { failure, logWarn } from "./log.ts";
 
 /** Storage keys: each account's vote is `vote:<accountId>` (one key each, so a round has no size cap). */
 const VOTE_PREFIX = "vote:";
@@ -144,7 +145,7 @@ export class Matchmaker extends Server<Env> {
       this.connAccounts.set(connection.id, voter.accountId);
       this.send(connection, { type: "myVote", setupId: this.votes.get(voter.accountId) ?? null });
     } catch (e) {
-      console.warn(`Reading the account's vote failed: ${e instanceof Error ? e.message : typeof e}`);
+      logWarn("vote_read_failed", { language: this.name, ...failure(e) });
     }
   }
 
@@ -183,7 +184,7 @@ export class Matchmaker extends Server<Env> {
     try {
       await this.board(connection, msg);
     } catch (e) {
-      console.warn(`Boarding failed: ${e instanceof Error ? e.message : typeof e}`);
+      logWarn("boarding_failed", { language: this.name, ...failure(e) });
       connection.setState({ joined: false });
       this.send(connection, { type: "error", message: "join_failed" });
     }
@@ -209,7 +210,7 @@ export class Matchmaker extends Server<Env> {
       connection.setState({ joined: false });
       this.send(connection, { type: "error", message: resumed === "unavailable" ? "ship_unavailable" : "not_aboard" });
     } catch (e) {
-      console.warn(`Resuming failed: ${e instanceof Error ? e.message : typeof e}`);
+      logWarn("resume_failed", { language: this.name, ...failure(e) });
       connection.setState({ joined: false });
       this.send(connection, { type: "error", message: "join_failed" });
     }
@@ -328,7 +329,7 @@ export class Matchmaker extends Server<Env> {
       const token = await room.setupSinglePlayer(msg.name, msg.character, this.name as LobbyLanguage, boarder?.accountId);
       this.send(connection, { type: "matched", roomId, token });
     } catch (e) {
-      console.warn(`Single-player launch failed: ${e instanceof Error ? e.message : typeof e}`);
+      logWarn("single_player_launch_failed", { language: this.name, ...failure(e) });
       connection.setState({ joined: false });
       this.send(connection, { type: "error", message: "join_failed" });
     }
@@ -357,7 +358,7 @@ export class Matchmaker extends Server<Env> {
       voter = await this.boarder(connection);
       onBallot = !voter || setupId === STANDARD_SETUP_ID || (await setupStoreFor(this.env).ballot([setupId])).length > 0;
     } catch (e) {
-      console.warn(`Voting failed: ${e instanceof Error ? e.message : typeof e}`);
+      logWarn("voting_failed", { language: this.name, ...failure(e) });
       this.refuseVote(connection, "vote_failed");
       return;
     }
@@ -395,7 +396,7 @@ export class Matchmaker extends Server<Env> {
     this.votes = new Map();
     this.closing = this.closing
       .then(() => this.closeRound(counted))
-      .catch((e: unknown) => console.warn(`Closing the vote round failed: ${e instanceof Error ? e.message : typeof e}`));
+      .catch((e: unknown) => logWarn("vote_close_failed", { language: this.name, ...failure(e) }));
     return this.closing;
   }
 
@@ -411,7 +412,8 @@ export class Matchmaker extends Server<Env> {
       const ids = [...new Set(counted.values())].filter((id) => id !== STANDARD_SETUP_ID);
       ballot = await setupStoreFor(this.env).ballot(ids);
     } catch (e) {
-      console.warn(`Counting the vote failed; the next ship gets the standard setup: ${e instanceof Error ? e.message : typeof e}`);
+      // The next ship gets the standard setup.
+      logWarn("vote_count_failed", { language: this.name, ...failure(e) });
       for (const [accountId, setupId] of counted) if (!this.votes.has(accountId)) this.votes.set(accountId, setupId);
       this.nextSetup = STANDARD_SETUP;
       await Promise.all([this.ctx.storage.put(NEXT_SETUP_KEY, STANDARD_SETUP), this.forgetOpen()]);

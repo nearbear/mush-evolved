@@ -51,6 +51,7 @@ Feature designs in `plans/`, one per file. Each plan's own header is the authori
 - `ops/deploy.md`: the three deployments and deploying test from CI.
 - `ops/sign-in.md`: OAuth apps, secrets and sessions.
 - `ops/r2.md`: the replay buckets, what a finished game's copy holds, and inspecting one.
+- `ops/observability.md`: Workers Logs, the log events and what must never be logged.
 - `ops/config.md`: every environment variable and secret, and where each is set.
 
 ## Process

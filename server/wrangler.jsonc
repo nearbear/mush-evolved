@@ -33,12 +33,16 @@
   "vars": { "RULES_VERSION": "dev" },
   // Daily: deletes expired sessions and sign-ups (the scheduled handler in src/index.ts).
   "triggers": { "crons": ["17 4 * * *"] },
+  // Workers Logs (#430, docs/ops/observability.md). The redaction is required: the game socket's URL carries the
+  // seat token (?token=), which would otherwise be stored with every connection. Issues groups uncaught exceptions,
+  // a backstop for crashes log.ts never sees.
+  "observability": { "enabled": true, "redact_query_string": true, "issues": { "enabled": true } },
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["GameRoom", "Matchmaker"] }],
   // The top level above is production. Wrangler does not inherit bindings, vars,
   // or migrations into an environment, so staging and test repeat them. Their
   // different Worker names give them their own Durable Object storage and secrets.
-  // Test is staging with cheats and End cycle on (ALLOW_CHEATS), behind Cloudflare
-  // Access. Never DEV_SERVER or MODEL_API_KEY on any deployment: no bot fill,
+  // Test is staging with cheats and End cycle on (ALLOW_CHEATS), public since
+  // 2026-11-08 (docs/ops/deploy.md). Never DEV_SERVER or MODEL_API_KEY on any deployment: no bot fill,
   // normal rate limits, no dev model key.
   "env": {
     "staging": {
@@ -67,6 +71,7 @@
       "r2_buckets": [{ "binding": "REPLAYS", "bucket_name": "mush2-replays-staging" }],
       "vars": { "RULES_VERSION": "dev" },
       "triggers": { "crons": ["17 4 * * *"] },
+      "observability": { "enabled": true, "redact_query_string": true, "issues": { "enabled": true } },
       "migrations": [{ "tag": "v1", "new_sqlite_classes": ["GameRoom", "Matchmaker"] }]
     },
     "test": {
@@ -95,6 +100,7 @@
       "r2_buckets": [{ "binding": "REPLAYS", "bucket_name": "mush2-replays-test" }],
       "vars": { "RULES_VERSION": "dev", "ALLOW_CHEATS": "true" },
       "triggers": { "crons": ["17 4 * * *"] },
+      "observability": { "enabled": true, "redact_query_string": true, "issues": { "enabled": true } },
       "migrations": [{ "tag": "v1", "new_sqlite_classes": ["GameRoom", "Matchmaker"] }]
     }
   }
