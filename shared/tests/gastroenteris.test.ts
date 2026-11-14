@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
-import { addDisease, spreadByTouch } from "../src/diseases.ts";
+import { canLaunchExpedition } from "../src/expeditions.ts";
+import { canFly } from "../src/patrol.ts";
+import { addDisease, removeDisease, spreadByTouch } from "../src/diseases.ts";
 import { cycleChanged, enteredRoom } from "../src/modifiers.ts";
 import { createGame } from "../src/rules.ts";
 import type { GameConfig } from "../src/types.ts";
@@ -34,5 +36,17 @@ describe("Gastroenteris on a Mush", () => {
     spreadByTouch(state, a, b);
     expect(b.modifiers).toContain("fungal_infection_disease");
     expect(b.modifiers).not.toContain("gastroenteris_disease");
+  });
+
+  it("grounds a Pilot: no takeoff and no Icarus takeoff, until it is cured", () => {
+    const state = createGame(makeSeats(4), noHunters(config), 3);
+    const pilot = state.players.find((p) => p.role === "human")!;
+    pilot.skills.push("pilot");
+    expect(canFly(pilot) && canLaunchExpedition(state, pilot)).toBe(true);
+    addDisease(state, pilot, "gastroenteris_disease");
+    expect(canFly(pilot)).toBe(false); // takeoff (actions/takeoff.ts)
+    expect(canLaunchExpedition(state, pilot)).toBe(false); // icarus_takeoff (actions/icarus_takeoff.ts)
+    removeDisease(state, pilot, "gastroenteris_disease");
+    expect(canFly(pilot)).toBe(true);
   });
 });
