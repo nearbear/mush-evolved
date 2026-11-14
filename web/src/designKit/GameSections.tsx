@@ -40,8 +40,8 @@ export function TerminalBodiesSection() {
         <>
           <code>hud/TerminalDialog.tsx</code>&apos;s <code>TerminalBody</code> in each terminal&apos;s{" "}
           <code>TerminalFrame</code>, seen by a Pilot commander at a fresh ship&apos;s terminals (with one planet found). Inside:
-          the research and project lists, PILGRED, <code>PlanetList</code> (its Share button opens{" "}
-          <code>SharePlanetDialog</code>), <code>CommandTerminal</code> (<code>ShipNavigation</code>,{" "}
+          the research and project lists, PILGRED, <code>PlanetList</code> (its Share button swaps the planet for{" "}
+          <code>SharePlanetForm</code>), <code>CommandTerminal</code> (<code>ShipNavigation</code>,{" "}
           <code>UnavailableButton</code>), <code>CommsCenter</code>, <code>BiosTerminal</code> and <code>TurretPanel</code>{" "}
           (<code>HunterList</code>), the turret once more with hunters in sight.
         </>

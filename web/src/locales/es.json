@@ -1417,7 +1417,6 @@
     "shareHint": "La tripulación leerá este texto en la función Astrofísica. Cambia lo que quieras antes de publicarlo.",
     "shareLabel": "Texto que compartir",
     "sharePost": "Publicar",
-    "shareClose": "Cerrar",
     "shareName": "Planeta: {{name}}",
     "sharePosition": "Posición: {{direction}}, {{distance}} de combustible",
     "shareSectors": "Sectores: {{sectors}}",

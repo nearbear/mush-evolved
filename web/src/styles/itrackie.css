@@ -628,14 +628,22 @@
   margin-left: var(--space-2);
 }
 
-/* The Astro terminal's Share dialog (SharePlanetDialog.tsx). */
+/* The Astro terminal's Share form (SharePlanetForm.tsx), in place of the planet's card. */
 .share-planet-form {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
 }
-.share-planet-form > button {
-  align-self: flex-end;
+.share-planet-form h3,
+.share-planet-form p {
+  margin: 0;
+}
+.share-planet-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+.share-planet-buttons button {
   margin: 0;
 }
 .share-planet-text {

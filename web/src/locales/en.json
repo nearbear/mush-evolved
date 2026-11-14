@@ -1494,7 +1494,6 @@
     "shareHint": "The crew will read this text in the Astrophysics feature. Change anything you like before you post it.",
     "shareLabel": "Text to share",
     "sharePost": "Post",
-    "shareClose": "Close",
     "shareName": "Planet: {{name}}",
     "sharePosition": "Position: {{direction}}, {{distance}} fuel",
     "shareSectors": "Sectors: {{sectors}}",

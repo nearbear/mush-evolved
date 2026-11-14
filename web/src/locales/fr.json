@@ -1417,7 +1417,6 @@
     "shareHint": "L'équipage lira ce texte dans la fonction Astrophysique. Modifiez ce que vous voulez avant de le publier.",
     "shareLabel": "Texte à partager",
     "sharePost": "Publier",
-    "shareClose": "Fermer",
     "shareName": "Planète : {{name}}",
     "sharePosition": "Position : {{direction}}, {{distance}} de carburant",
     "shareSectors": "Secteurs : {{sectors}}",
