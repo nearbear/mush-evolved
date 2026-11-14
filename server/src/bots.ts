@@ -5,6 +5,8 @@ import { characterName, legalIn, nextInt, type Action, type LobbyLanguage, type 
 import { hasBotSkill, holdsTrigger } from "./bots/duties.ts";
 import { canReachBridgeWithTravelAp } from "./bots/goals/blocks.ts";
 import { END_CYCLE, helpGoal, helpTasks, SOLO_GOALS, type BotMemory, type BotSocial, type Goal, type GoalDef } from "./bots/goals/index.ts";
+import { extinguish } from "./bots/goals/extinguish.ts";
+import { newFireMemory, observeFires } from "./bots/fireShare.ts";
 import { newItemMemory, observeItems } from "./bots/itemShare.ts";
 import { holdStartCycle, isHoldingJump } from "./bots/planetShare.ts";
 import { buildPrompt, describeLogEntry, observeShrinks, parseReply, type BotMessage } from "./prompt.ts";
@@ -135,6 +137,7 @@ export class GoalBot implements Bot {
       lastExpedition: null,
       asteroidsOnly: null,
       items: newItemMemory(),
+      fires: newFireMemory(),
       combustion: null,
       holdSince: null,
       heading: null,
@@ -183,8 +186,15 @@ export class GoalBot implements Bot {
     this.observe(view);
     const legal = legalIn(view);
     if (legal.length === 0) return null;
-    // Where shared items lie (itemShare.ts): what it sees here that chat doesn't say yet is this turn's one message.
-    const report = observeItems(view, this.memory);
+    // Fires (fireShare.ts, #429): news of one drops a goal ranked under fighting it, if the bot can do something about
+    // it; what it sees here that chat doesn't say yet is this turn's one message.
+    const fires = observeFires(view, this.memory);
+    if (fires.news && this.goal !== null && this.goal.id !== extinguish.id && this.goals.includes(extinguish) && extinguish.options(view, this.memory).length > 0) {
+      this.goal.onInterrupt?.(this.memory);
+      this.end(false);
+    }
+    // Where shared items lie (itemShare.ts): likewise, one line a turn.
+    const report = fires.post ?? observeItems(view, this.memory);
     if (report) {
       this.social = report;
       return null;

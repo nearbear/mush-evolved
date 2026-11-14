@@ -37,6 +37,8 @@ export function lossReport(results: readonly SurvivalResult[], repairBelow: numb
     // The budget: the crew holds the hull only if it removes hunters as fast as they come.
     `budget per cycle: ${per(arrived, rows.length)} hunters arrive, ${per(killed + shed, rows.length)} removed (${per(killed, rows.length)} killed, ${per(shed, rows.length)} shed)`,
     `hull lost per run: ${per(hullLost, n, 1)}, of it about ${per(byFire, n, 1)} to fires (${per(fireCycles, rows.length, 1)} rooms burning per cycle) and ${per(hullLost - byFire, n, 1)} to hunters (${per(hullLost - byFire, hunterCycles)} per hunter per cycle); the split is an estimate`,
+    // The same budget for fires (#429): rooms lit against fires put out.
+    `fires per cycle: ${per(total((r) => r.firesStarted ?? 0), rows.length)} rooms catch fire, ${per(total((r) => r.firesOut ?? 0), rows.length)} put out, from ${per(total((r) => r.extinguishTries ?? 0), rows.length)} tries`,
     `hull patched per run: ${per(total((r) => r.repairs), n, 1)} patches from ${per(total((r) => r.repairTries), n, 1)} tries; ${low.length} cycles under ${repairBelow} hull`,
     `shooting: ${per(shots, attacked.length)} shots per cycle under attack, ${per(shots, killed, 1)} shots per kill, no shot in ${quiet} of ${attacked.length} cycles under attack`,
     `AP at cycle end: ${per(total((r) => r.apLeft), total((r) => r.alive))} per living bot, ${per(total((r) => r.atCap), rows.length)} bots at their cap`,
