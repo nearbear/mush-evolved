@@ -103,10 +103,24 @@ main.game .room-corner.alert {
   --card-rim: var(--danger);
   filter: drop-shadow(0 0 1px var(--danger)) drop-shadow(0 0 4px var(--danger)) drop-shadow(0 1px 3px var(--panel-shadow));
 }
-/* Phones: the top bar runs edge to edge under the screen's top, so only its bottom corners are cut. */
+/* Phones: no cut corners at all (the owner's call: bevels don't read well that small). The cards keep their rim and
+   fill, square. The iTrackie's own --cut goes too, so the pale card inside it and its tab outline are square as well. */
 @media (max-width: 1023px) {
-  main.game .top-bar {
+  main.game :is(.hud-card, .panel, .top-bar, .room-corner, .itrackie) {
     --cut-tl: 0px;
     --cut-tr: 0px;
+    --cut-br: 0px;
+    --cut-bl: 0px;
+  }
+  main.game .itrackie {
+    --cut: 0px;
+  }
+  /* The top bar is no panel on phones: the ID card (the nameplate) sits straight on the scene. */
+  main.game .top-bar {
+    filter: none;
+  }
+  main.game .top-bar::before,
+  main.game .top-bar::after {
+    display: none;
   }
 }

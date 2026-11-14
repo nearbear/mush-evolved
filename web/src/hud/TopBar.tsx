@@ -59,49 +59,69 @@ export function TopBar({
   // Ready can't be offered while you already are, so the button stays (disabled, "Waiting…") until the cycle ends.
   const showReady = canReady || you.ready;
   const ended = view.phase === "ended";
-  return (
-    <header className="top-bar">
-      {showSummary && <PlayerSummary view={view} countdown={nextCycleAt !== null && <CycleCountdown nextCycleAt={nextCycleAt} dot />} />}
-      {/* Desktop zones (UI coherence step 5): time on the left, the ship in the middle, the actions on the right. Phones hide this one and show the cycle under the name. */}
-      <div className="cycle">
-        <span className="cycle-label hud-card amber">{t("topBar.dayCycle", { day: view.day, cycle: view.cycleOfDay })}</span>
-        {nextCycleAt !== null && <CycleCountdown nextCycleAt={nextCycleAt} />}
+  // The day and cycle with the time left, in one amber plate, the two split by an amber divider.
+  const clock = (
+    <span className="cycle-label hud-card amber">
+      {t("topBar.dayCycle", { day: view.day, cycle: view.cycleOfDay })}
+      {nextCycleAt !== null && (
+        <>
+          <span className="clock-divider" aria-hidden="true" />
+          <CycleCountdown nextCycleAt={nextCycleAt} />
+        </>
+      )}
+    </span>
+  );
+  const tags =
+    view.preselection || botsPaused ? (
+      <>
         {view.preselection && <PreselectionTag />}
         {botsPaused && <BotsPausedTag pause={botsPaused} />}
-      </div>
+      </>
+    ) : null;
+  // Phones: the actions live in a hamburger menu, on the right of the nameplate, to save top bar space.
+  const menu = mobile && (
+    <Menu.Root>
+      <Menu.Trigger className="menu-button" aria-label={t("menu.open")}>
+        <svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true">
+          <path d="M0 1h16M0 6h16M0 11h16" stroke="currentColor" strokeWidth="2" />
+        </svg>
+      </Menu.Trigger>
+      <Menu.Portal>
+        <Menu.Positioner sideOffset={6} align="end" className="menu-positioner">
+          <Menu.Popup className="menu-popup">
+            {ended && (
+              <Menu.Item render={<button type="button" />} onClick={onResults}>
+                {t("gameOver.results")}
+              </Menu.Item>
+            )}
+            {showReady && (
+              <Menu.Item render={<button type="button" />} disabled={!canReady} onClick={onReady}>
+                {endCycleLabel}
+              </Menu.Item>
+            )}
+            <Menu.Item render={<button type="button" />} onClick={() => setSettingsOpen(true)}>
+              <img className="menu-item-icon" src={SETTINGS_ICON} alt="" />
+              {t("settings.title")}
+            </Menu.Item>
+          </Menu.Popup>
+        </Menu.Positioner>
+      </Menu.Portal>
+    </Menu.Root>
+  );
+  return (
+    <header className="top-bar">
+      {/* Desktop zones (UI coherence step 5): time on the left, the ship in the middle, the actions on the right. Phones put the clock, the tags and the menu on the nameplate. */}
+      {showSummary ? (
+        <PlayerSummary view={view} clock={clock} tags={tags} menu={menu} />
+      ) : (
+        <div className="cycle">
+          {clock}
+          {tags}
+        </div>
+      )}
       {!mobile && <ShipResources ship={view.ship} hunters={view.hunters.count} titles={view.titles} orbit={view.navigation.orbitName} expedition={view.expedition} lost={view.lost} />}
-      {/* On phones a plain wrapper (display: contents), so the menu stays a top-bar flex item. */}
       <div className="top-bar-actions">
-        {mobile ? (
-          // Phones: the actions live in a hamburger menu to save top bar space.
-          <Menu.Root>
-            <Menu.Trigger className="menu-button" aria-label={t("menu.open")}>
-              <svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true">
-                <path d="M0 1h16M0 6h16M0 11h16" stroke="currentColor" strokeWidth="2" />
-              </svg>
-            </Menu.Trigger>
-            <Menu.Portal>
-              <Menu.Positioner sideOffset={6} align="end" className="menu-positioner">
-                <Menu.Popup className="menu-popup">
-                  {ended && (
-                    <Menu.Item render={<button type="button" />} onClick={onResults}>
-                      {t("gameOver.results")}
-                    </Menu.Item>
-                  )}
-                  {showReady && (
-                    <Menu.Item render={<button type="button" />} disabled={!canReady} onClick={onReady}>
-                      {endCycleLabel}
-                    </Menu.Item>
-                  )}
-                  <Menu.Item render={<button type="button" />} onClick={() => setSettingsOpen(true)}>
-                    <img className="menu-item-icon" src={SETTINGS_ICON} alt="" />
-                    {t("settings.title")}
-                  </Menu.Item>
-                </Menu.Popup>
-              </Menu.Positioner>
-            </Menu.Portal>
-          </Menu.Root>
-        ) : (
+        {!mobile && (
           <>
             {ended && (
               <button type="button" onClick={onResults}>

@@ -28,8 +28,8 @@
 .itrackie-tabs {
   display: flex;
   gap: 2px;
-  /* Clear of the panel's cut corners (--cut) on both sides. */
-  padding-inline: var(--cut);
+  /* Clear of the panel's cut corners (--cut) on both sides; phones have none, so the padding's width there. */
+  padding-inline: max(var(--cut), var(--pad));
   /* The selected tab is 3px taller and overlaps the card's rim, so it opens into the card. */
   margin-bottom: -3px;
 }

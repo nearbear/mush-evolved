@@ -105,8 +105,8 @@ export function TabOutline({ shape = "round", line }: Props) {
         box.top = list ? rel(list).bottom - 3 : rel(top).top;
       }
       const panel = getComputedStyle(root.closest(".kit-panel") ?? root);
-      // cut-card.css's --c: the panel's cut less the padding's share of it, to a whole pixel.
-      const cut = Math.round(parseFloat(panel.getPropertyValue("--cut")) - parseFloat(panel.getPropertyValue("--pad")) * 0.5858);
+      // cut-card.css's --c: the panel's cut less the padding's share of it, to a whole pixel; none when the panel is square (phones).
+      const cut = Math.max(0, Math.round(parseFloat(panel.getPropertyValue("--cut")) - parseFloat(panel.getPropertyValue("--pad")) * 0.5858));
       const radius = parseFloat(getComputedStyle(card).borderTopRightRadius) || 0;
       setD(outlinePath(box, tab, cut, radius, shape));
     };
