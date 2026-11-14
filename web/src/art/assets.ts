@@ -134,6 +134,12 @@ const itemIcons = urls(
   import.meta.glob<string>("../../../Mush/www/img/icons/items/*.jpg", { eager: true, query: "?url", import: "default" }),
 );
 
+// Hand-made icons (Mush/derived/items/, adaptations of the originals). A name shared with an original replaces it.
+Object.assign(
+  itemIcons,
+  urls(import.meta.glob<string>("../../../Mush/derived/items/*.{jpg,png}", { eager: true, query: "?url", import: "default" })),
+);
+
 /** Every item icon, keyed by file name without extension (e.g. "wrench", "fruit_banana"). */
 export const ITEM_ICONS: Readonly<Record<string, string>> = itemIcons;
 
