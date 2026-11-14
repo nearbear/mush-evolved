@@ -9,8 +9,11 @@ import type { PlayerView } from "@mush2/shared";
 
 export type Stat = "ap" | "mp" | "hp" | "morale";
 
-/** `children` is the stat's own display (a pip bar or a chip); the whole of it opens the card. */
-export function StatInfo({ stat, view, value, max, children }: { stat: Stat; view: PlayerView; value: number; max: number; children: ReactNode }) {
+/**
+ * `children` is the stat's own display (a pip bar or a chip); the whole of it opens the card. `bar` (phones, whose chips
+ * show only the value) stands up beside the text, with the capacity after the name.
+ */
+export function StatInfo({ stat, view, value, max, bar, children }: { stat: Stat; view: PlayerView; value: number; max: number; bar?: ReactNode; children: ReactNode }) {
   const { t } = useTranslation();
   const { mpPerMove, apPerConversion, mpPerConversion } = view.movement;
   const lines = t(`stat.info.${stat}`, { maxAp: view.maxAp, mpCap: view.maxMp, mpPerMove, apPerConversion, mpPerConversion }).split("\n").filter(Boolean);
@@ -28,13 +31,23 @@ export function StatInfo({ stat, view, value, max, children }: { stat: Stat; vie
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Positioner sideOffset={6}>
-          <Popover.Popup className="tooltip resource-card skill-card">
-            <strong>{t(`stat.name.${stat}`)}</strong>
-            <ul>
-              {lines.map((line) => (
-                <li key={line}>{line}</li>
-              ))}
-            </ul>
+          <Popover.Popup className={`tooltip resource-card skill-card${bar ? " stat-info-card" : ""}`}>
+            {bar}
+            <div>
+              <strong>
+                {t(`stat.name.${stat}`)}
+                {bar && (
+                  <span className="stat-info-amount">
+                    {value}/{max}
+                  </span>
+                )}
+              </strong>
+              <ul>
+                {lines.map((line) => (
+                  <li key={line}>{line}</li>
+                ))}
+              </ul>
+            </div>
           </Popover.Popup>
         </Popover.Positioner>
       </Popover.Portal>
