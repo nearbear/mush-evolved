@@ -14,6 +14,7 @@ import { killPlayer } from "./death.ts";
 import { clone, fail, type ActionResult } from "./helpers.ts";
 import { logPrivate, startLogSeen } from "./log.ts";
 import { callNextRebel } from "./comms.ts";
+import { rollAtSelection } from "./lostAnalysis.ts";
 import { startHunters } from "./hunters.ts";
 import { rollShuffle } from "./rng.ts";
 import { newPlayer, startInventory } from "./rules.ts";
@@ -82,6 +83,7 @@ export function selectMush(state: GameState): void {
   pushChat(state, "global", { from: null, isBot: false, text: "", system: { key: "mushChosen" } });
   state.titles = assignTitles(state.players);
   callNextRebel(state);
+  rollAtSelection(state);
   startHunters(state);
 
   if (aboard.length < rules.minPlayers) {

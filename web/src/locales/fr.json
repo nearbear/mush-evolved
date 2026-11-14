@@ -316,6 +316,7 @@
     "sow": "Semer",
     "expressCook": "Cuisine Express",
     "readBook": "Apprentissage",
+    "tear": "Déchirer",
     "build": "Assembler",
     "jettison": "Larguer",
     "install": "Installer",
@@ -878,6 +879,7 @@
     "plantMatured": "Un plant a atteint la maturité : {{item}}.",
     "plantProduced": "Un plant a produit de l'oxygène et un fruit : {{item}}.",
     "bookRead": "{{name}} a lu un Apprentron et appris la compétence {{skill}}.",
+    "documentTorn": "{{name}} a déchiré un document.",
     "expressCooked": "{{name}} a fait une cuisine express : {{item}}.",
     "jettisoned": "{{name}} a largué le corps de {{body}}.",
     "healed": "{{name}} a soigné {{target}}.",
@@ -1665,6 +1667,13 @@
     "countdown_many": "Impact dans {{count}} cycles",
     "countdown_other": "Impact dans {{count}} cycles",
     "charges": "Charges restantes : {{charges}}"
+  },
+  "document": {
+    "read": "Lire",
+    "close": "Fermer",
+    "lostAnalysisTitle": "L'analyse perdue de Finola",
+    "lostAnalysisHeadline": "Dépistage de l'infection de l'équipage au départ. Les personnes notées négatives n'étaient pas Mush.",
+    "negative": "Négatif"
   },
   "bodyTaken": {
     "title": "On vous a volé votre corps !",

@@ -473,6 +473,7 @@ export interface GameConfig {
       cost: { ap: number }; // AP spent to contact Xyloph (owner, 2026-10-21).
       qualityLoss: number; // Wireless infidelity takes this off the Sol chance (the original, 20).
       neronBoostPercent: number; // NERON's lost database moves the NERON update forward this much (the original, 25).
+      lostAnalysisPerMush: number; // Finola's lost analysis marks floor(starting Mush × this) non-Mush characters negative (owner, 2026-11-13: 2.5; #394).
       schoolBooks: number; // Skill books printed by the school manuals, each for a random skill (the original, 2).
       workshopBlueprints: number; // Random blueprints printed by the workshop manuals (the original, 3).
     };

@@ -2,6 +2,7 @@ import type { BiosState } from "../bios.ts";
 import type { CharacterId } from "../characters.ts";
 import type { CommsState } from "../comms.ts";
 import type { DrugDispenserState, DrugEffect } from "../drugs.ts";
+import type { LostAnalysisState } from "../lostAnalysis.ts";
 import type { NpcState } from "../npcs.ts";
 import type { TurnSide } from "../navigation.ts";
 import type { PlanetDirection, PlanetTag } from "../planets.ts";
@@ -213,6 +214,8 @@ export interface GameState extends GameCore {
   rng: RngState;
   /** The NPCs' own stream and queues (npcs.ts), seeded apart from `rng`. Not in the full view. */
   npcs: NpcState;
+  /** Finola's lost analysis (#394): its own stream, then the rows rolled at Mush selection. Server-only until printed; not in the full view. */
+  lostAnalysis: LostAnalysisState;
   /** Pages to store and delete, which the server takes after every input. Not in the full view. */
   chatOutbox: ChatOutbox;
 }

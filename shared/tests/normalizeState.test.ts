@@ -8,6 +8,7 @@ import {
   added,
   NormalizeError,
   normalizeContainer,
+  normalizeDocument,
   normalizeFullView,
   normalizeGame,
   normalizeHunterTarget,
@@ -325,6 +326,7 @@ describe("union normalizers", () => {
     ["HunterTarget", normalizeHunterTarget, { kind: "patrol", id: "PATROL_SHIP_ALPHA_TAMARIN" }, "kind"],
     ["PlanSlot", normalizePlanSlot, { kind: "task", task: { type: "heal", target: "p1" }, holder: null, done: false }, "kind"],
     ["PlanTask", normalizePlanTask, { type: "bring", itemType: "medikit" }, "type"],
+    ["DocumentState", normalizeDocument, { kind: "lost_analysis", rows: [] }, "kind"],
   ];
 
   for (const [type, normalize, valid, key] of cases) {
@@ -369,6 +371,7 @@ describe("union normalizers", () => {
     ["HunterTarget", normalizeHunterTarget, Object.values(targets)],
     ["PlanTask", normalizePlanTask, Object.values(tasks)],
     ["PlanSlot", normalizePlanSlot, Object.values(slots).flat()],
+    ["DocumentState", normalizeDocument, [{ kind: "lost_analysis", rows: [{ character: "chun", negative: true }, { character: "chao", negative: false }] }]],
   ];
 
   for (const [type, normalize, samples] of variants) {

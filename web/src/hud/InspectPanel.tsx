@@ -15,6 +15,7 @@ import { ItemFace } from "./ItemFace.tsx";
 import { ItemAttrIcons } from "./ItemAttrIcons.tsx";
 import { PlantStates } from "./PlantStates.tsx";
 import { ItemIcon } from "./ItemIcon.tsx";
+import { DocumentReader } from "./DocumentDialog.tsx";
 import { ActionLabel } from "./ActionLabel.tsx";
 import { SkillSlots } from "./SkillSlots.tsx";
 import { StatusIcon, StatusIcons } from "./StatusIcons.tsx";
@@ -164,6 +165,7 @@ function Details({ view, layout, resolved, onAction }: { view: PlayerView; layou
           <ThingMarks jelly={resolved.item.jelly} shield={resolved.item.shield} spores={resolved.item.spores} />
           {resolved.item.drone && <DroneUpgrades upgrades={resolved.item.drone.upgrades} />}
           {resolved.item.charges !== undefined && <div className="sub inspect-charges">{t("itemAttr.charges", { count: resolved.item.charges })}</div>}
+          {resolved.item.document && <DocumentReader document={resolved.item.document} />}
         </>
       );
   }

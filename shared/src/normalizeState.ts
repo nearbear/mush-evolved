@@ -26,6 +26,8 @@
 import { resolveConfig } from "./config.ts";
 import { clone } from "./helpers.ts";
 import { newNpcState, type NpcState } from "./npcs.ts";
+import { type LostAnalysisState, rollLostAnalysis } from "./lostAnalysis.ts";
+import { streamFor } from "./rng.ts";
 import type { DrugDispenserState, DrugEffect } from "./drugs.ts";
 import type { FullView, SeatStart, SeatStarts } from "./fullView.ts";
 import type { RebelCall } from "./comms.ts";
@@ -48,6 +50,8 @@ import type {
   GameState,
   Hunter,
   HunterTarget,
+  DocumentRow,
+  DocumentState,
   DroneState,
   ItemState,
   LogEntry,
@@ -232,7 +236,41 @@ function itemFields(raw: Partial<SpaceDebris>, t: string): AllKeys<SpaceDebris> 
     jelly: raw.jelly,
     shield: raw.shield,
     drone: opt(raw.drone, normalizeDrone),
+    document: opt(raw.document, normalizeDocument),
   };
+}
+
+export function normalizeDocumentRow(raw: Partial<DocumentRow>): DocumentRow {
+  const t = "DocumentRow";
+  return { character: need(raw, "character", t), negative: need(raw, "negative", t) };
+}
+
+export function normalizeDocument(raw: Partial<DocumentState>): DocumentState {
+  const t = "DocumentState";
+  switch (raw.kind) {
+    case "lost_analysis":
+      return { kind: "lost_analysis", rows: need(raw, "rows", t).map(normalizeDocumentRow) };
+    default:
+      throw unknownVariant(t, "kind", raw.kind satisfies undefined);
+  }
+}
+
+export function normalizeLostAnalysis(raw: Partial<LostAnalysisState>): LostAnalysisState {
+  const t = "LostAnalysisState";
+  return { rng: need(raw, "rng", t), rows: orNull(need(raw, "rows", t), (rows) => rows.map(normalizeDocumentRow)) };
+}
+
+/**
+ * A game saved before the lost analysis (#394): a stream derived from where its `rng` stands and, once the Mush are
+ * chosen, rows rolled now with the alpha Mush as the starting Mush bodies (right unless a Transfer or cure happened).
+ */
+function lostAnalysisFor(raw: Partial<Omit<GameState, "config">>, config: DeepReadonly<GameConfig>): LostAnalysisState {
+  const t = "GameState";
+  const state: LostAnalysisState = { rng: streamFor(need(raw, "rng", t), "lost-analysis"), rows: null };
+  if (need(raw, "preselection", t)) return state;
+  const aboard = need(raw, "players", t).map((p) => ({ character: need(p, "character", "PlayerState"), mush: need(p, "alpha", "PlayerState") }));
+  state.rows = rollLostAnalysis(state, aboard, config.comms.xyloph.lostAnalysisPerMush);
+  return state;
 }
 
 export function normalizeDrone(raw: Partial<DroneState>): DroneState {
@@ -876,6 +914,7 @@ export function normalizeGame(raw: Partial<Omit<GameState, "config">>, overrides
     rng: need(raw, "rng", t),
     // A game saved before the NPCs had a stream of their own derives one from where its `rng` stands.
     npcs: normalizeNpcs(added(raw, "npcs", newNpcState(need(raw, "rng", t)))),
+    lostAnalysis: normalizeLostAnalysis(added(raw, "lostAnalysis", lostAnalysisFor(raw, config))),
     chatOutbox: normalizeOutbox(need(raw, "chatOutbox", t)),
   });
 }

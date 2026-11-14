@@ -5,6 +5,7 @@
 
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
+import type { CharacterId } from "../src/characters.ts";
 import { createGame, viewFor } from "../src/rules.ts";
 import { type GameState, MUSH_CHANNEL, type PlayerId } from "../src/types.ts";
 import { GAME_STATE_FIELDS, ITEM_STATE_FIELDS, PLAYER_STATE_FIELDS } from "./leakFields.ts";
@@ -112,6 +113,8 @@ function ship(): { state: GameState; sentinels: Sentinel[] } {
   s.contamination.p3 = num("contamination-p3", []);
   s.rng = num("rng", []);
   s.npcs = { rng: num("npcRng", []), droneNames: [str("nextDroneName", [])] };
+  // The unprinted lost analysis (#394) reaches nobody.
+  s.lostAnalysis = { rng: num("lostAnalysisRng", []), rows: [{ character: str("lostAnalysisRow", []) as CharacterId, negative: true }] };
   s.sporesToday = num("sporesToday", []);
   s.spikedOn.p0 = num("spikedOn-p0", []);
   s.dispensedOn.anything = num("dispensedOn", []);

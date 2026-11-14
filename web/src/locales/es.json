@@ -316,6 +316,7 @@
     "sow": "Sembrar",
     "expressCook": "Cocina exprés",
     "readBook": "Leer",
+    "tear": "Romper",
     "build": "Montar",
     "jettison": "Expulsar",
     "install": "Instalar",
@@ -878,6 +879,7 @@
     "plantMatured": "Una planta ha madurado: {{item}}.",
     "plantProduced": "Una planta produjo oxígeno y un fruto: {{item}}.",
     "bookRead": "{{name}} leyó un libro de habilidad y aprendió {{skill}}.",
+    "documentTorn": "{{name}} rompió un documento.",
     "expressCooked": "{{name}} hizo una cocina exprés: {{item}}.",
     "jettisoned": "{{name}} expulsó el cuerpo de {{body}}.",
     "healed": "{{name}} curó a {{target}}.",
@@ -1665,6 +1667,13 @@
     "countdown_many": "Impacto en {{count}} ciclos",
     "countdown_other": "Impacto en {{count}} ciclos",
     "charges": "Cargas restantes: {{charges}}"
+  },
+  "document": {
+    "read": "Leer",
+    "close": "Cerrar",
+    "lostAnalysisTitle": "El análisis perdido de Finola",
+    "lostAnalysisHeadline": "Detección de la infección de la tripulación al partir. Quienes figuran como negativos no eran Mush.",
+    "negative": "Negativo"
   },
   "bodyTaken": {
     "title": "¡Te han robado el cuerpo!",

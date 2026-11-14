@@ -23,6 +23,7 @@ export const GAME_STATE_FIELDS: Record<string, FieldRule> = {
   config: { reach: "public", test: "rules.test.ts", note: "Only `rooms` and `PublicConfig` go out." },
   rng: { reach: "never", test: "leaks.test.ts" },
   npcs: { reach: "never", test: "leaks.test.ts", note: "The NPCs' own stream and the names the next drones get (#411)." },
+  lostAnalysis: { reach: "never", test: "leaks.test.ts", note: "Finola's lost analysis (#394): its stream and the rows rolled at selection. Only a printed copy (`ItemState.document`) is ever seen." },
   cycle: { reach: "public", test: "rules.test.ts" },
   phase: { reach: "public", test: "rules.test.ts" },
   preselection: { reach: "public", test: "preselection.test.ts" },
@@ -158,5 +159,6 @@ export const ITEM_STATE_FIELDS: Record<string, FieldRule> = {
   jelly: { reach: "filtered", test: "green_jelly.test.ts", note: "Mush only (living): cycles left before the jelly breaks the item." },
   shield: { reach: "filtered", test: "reinforce.test.ts", note: "Living Engineers and Mush only: the shielding on the item." },
   broken: { reach: "filtered", test: "broken_items.test.ts", note: "Goes with the item to whoever can see it, like its type." },
+  document: { reach: "filtered", test: "lostAnalysis.test.ts", note: "A printed document's rows (characters and marks), to whoever can see the item (#394)." },
   drone: { reach: "filtered", test: "drones.test.ts", note: "Name, serial and upgrades go with the item to whoever can see it; the failure counts never leave the server (#411)." },
 };

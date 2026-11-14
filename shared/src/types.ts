@@ -94,7 +94,18 @@ export interface ItemState {
   shield?: number;
   /** For a support drone (drones.ts): its name, serial number, upgrades and failure counts. */
   drone?: DroneState;
+  /** For a document (`DOCUMENT_ITEM`, lostAnalysis.ts): what is printed on it. Public to whoever can see the item. */
+  document?: DocumentState;
 }
+
+/** One line of a printed document: a character (a body) and whether it is marked "negative" (not Mush). */
+export interface DocumentRow {
+  character: CharacterId;
+  negative: boolean;
+}
+
+/** What a document says, by kind. Finola's lost analysis (#394); THE List (#266) will add its own kind. */
+export type DocumentState = { kind: "lost_analysis"; rows: DocumentRow[] };
 
 /** A support drone's own state (#411; drones.ts). Its name, serial and upgrades are public with the item; the failure counts never leave the server. */
 export interface DroneState {

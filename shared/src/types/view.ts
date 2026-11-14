@@ -6,7 +6,7 @@ import type { RebelBaseId, XylophEntryId } from "../comms.ts";
 import type { TurnSide } from "../navigation.ts";
 import type { PlanetDirection } from "../planets.ts";
 import type { TitleId } from "../titles.ts";
-import type { Action, BotKind, ItemId, LogEntry, LogLine, PlayerId, Role, RoomId } from "../types.ts";
+import type { Action, BotKind, DocumentState, ItemId, LogEntry, LogLine, PlayerId, Role, RoomId } from "../types.ts";
 import type { ChannelId, ChatLine, ChatMessage, ChatThread, PrivateChannel, SharedPlanet, SharedReport, SharedReportId } from "./chat.ts";
 import type { Plan } from "./plan.ts";
 import type { MovementRules } from "./config.ts";
@@ -61,6 +61,8 @@ export interface ItemView {
   plant?: { species: string; age: number | null; thirst: 0 | 1 | 2; sick?: boolean };
   /** For a support drone (#411): its name, serial and upgrades, public to whoever can see it. Never its failure counts. */
   drone?: { name: string; serial: number; upgrades: string[] };
+  /** For a document (#394): its kind and rows (characters and marks), public to whoever can see it. */
+  document?: DocumentState;
 }
 
 /** One seat as the end screen shows it, once the game has ended (#191). Everyone, you included, in seat order. */

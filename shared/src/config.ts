@@ -243,7 +243,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   comms: {
     sol: { cost: { ap: 2 }, startChance: 4, chancePerFail: 4, radioExpertFactor: 2, radioExpertRoomFactor: 1.5 },
     rebel: { cost: { ap: 2 }, gainMax: 40, windowMin: 8, windowMax: 16, rebelBonus: 1, kivancBonus: 1, kaladaanMorale: 6, cygniMorale: 3, cygniPatrolDamage: 1, siriusRationAp: 1 },
-    xyloph: { cost: { ap: 2 }, qualityLoss: 20, neronBoostPercent: 25, schoolBooks: 2, workshopBlueprints: 3 },
+    xyloph: { cost: { ap: 2 }, qualityLoss: 20, neronBoostPercent: 25, lostAnalysisPerMush: 2.5, schoolBooks: 2, workshopBlueprints: 3 },
     neron: { cost: { ap: 2 }, progressPercent: 25 },
   },
   // Confirmed 2026-10-17: lying down in a bed is free (the +1 AP per cycle is the lying_down modifier).

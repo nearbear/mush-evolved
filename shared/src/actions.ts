@@ -76,6 +76,7 @@ import { PickSkillAction } from "./actions/pick_skill.ts";
 import { ApprenticeshipAction } from "./actions/apprenticeship.ts";
 import { BecomeGeniusAction } from "./actions/become_genius.ts";
 import { ReadBookAction } from "./actions/read_book.ts";
+import { TearAction } from "./actions/tear.ts";
 import { AnathemaAction } from "./actions/anathema.ts";
 import { CoupAction } from "./actions/coup.ts";
 import { BoringSpeechAction, FierySpeechAction } from "./actions/speech.ts";
@@ -242,6 +243,7 @@ const REGISTRY = {
   apprenticeship: new ApprenticeshipAction(),
   become_genius: new BecomeGeniusAction(),
   read_book: new ReadBookAction(),
+  tear: new TearAction(),
   self_disease: new SelfDiseaseAction(),
   self_injury: new SelfInjuryAction(),
   warp_to_planet: new WarpToPlanetAction(),
