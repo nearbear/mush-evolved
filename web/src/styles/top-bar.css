@@ -34,15 +34,18 @@
 .cycle-countdown {
   font-variant-numeric: tabular-nums;
 }
-/* The plate's own rim, crossing it top to bottom (through its 2px vertical padding): gold between two dark lines. */
+/*
+ * The plate's own rim, crossing it top to bottom (through its 2px vertical padding): gold between two dark lines. The
+ * gold runs the full height and joins the rim's gold flush, as an iTrackie tab meets its card; the dark lines stop at the
+ * rim's inside edge (1px short at each end), so they never cut through it.
+ */
 .clock-divider {
   align-self: stretch;
-  width: 1px;
-  margin: -2px var(--space-2);
-  background: var(--gold-mid);
-  box-shadow:
-    1px 0 0 var(--gold-edge),
-    -1px 0 0 var(--gold-edge);
+  width: 3px;
+  margin: -2px calc(var(--space-2) - 1px);
+  background:
+    linear-gradient(var(--gold-mid), var(--gold-mid)) center / 1px 100% no-repeat,
+    linear-gradient(var(--gold-edge), var(--gold-edge)) center / 3px calc(100% - 2px) no-repeat;
 }
 .top-bar-actions {
   flex: none;
@@ -87,7 +90,10 @@
 /*
  * Phones: who you are, as the desktop ID card (self-hud.css, whose .id-band, .id-portrait, .id-faction and .id-name it
  * reuses) on the same pale stock with the same dark outline, but square: a band in your faction's colour across the top,
- * then your portrait (tap for your goal) beside your name and the clock. The stat chips hang off its foot (below).
+ * then your portrait (tap for your goal), your name and the clock, your stats (below), your other resources in a dark
+ * column the card's full height (the band stops at it), and the menu. The name gets its full width first (grid tracks
+ * grow to their max-content before a 1fr track gets anything) and is cut off with a "…" only once the stats' first three
+ * columns can't fit; the resources' 1fr track takes what is left.
  */
 .nameplate {
   --band: 15px;
@@ -95,13 +101,16 @@
   --text: #171b5c;
   --muted: #4a5a8f;
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, max-content) minmax(3.25rem, 1fr) auto;
   grid-template-rows: calc(var(--band) + 1px) auto;
-  column-gap: var(--space-3); /* the faction icon overhangs the portrait */
+  grid-template-areas:
+    "band band band band"
+    "pic who stats menu";
+  column-gap: var(--space-2);
   row-gap: var(--space-1);
   align-items: center;
   padding: 0 var(--space-2) var(--space-1);
-  background: linear-gradient(var(--id-faction) 0 var(--band), var(--terminal-bg) 0);
+  background: var(--terminal-bg);
   border: 1px solid var(--gold-edge);
   box-shadow: 0 0 6px var(--panel-shadow);
   color: var(--text);
@@ -110,8 +119,10 @@
   --id-faction: var(--mush);
 }
 .nameplate .id-portrait {
+  grid-area: pic;
   width: 40px;
   height: 40px;
+  margin-right: var(--space-1); /* the faction icon overhangs it */
   cursor: help;
 }
 .nameplate .faction-card:focus-visible {
@@ -119,8 +130,10 @@
   outline-offset: 2px;
 }
 .nameplate .who {
+  grid-area: who;
   display: flex;
   flex-direction: column;
+  align-self: stretch;
   align-items: start;
   gap: var(--space-1);
   min-width: 0;
@@ -133,20 +146,27 @@
   text-overflow: ellipsis;
 }
 /*
- * The clock sits on the band's right end, centred on it and standing a little proud of the card's top. Its light text
- * is tokens.css's --text: the card's dark ink is wrong on the plate's dark fill.
+ * The clock sits on the band's right end, against the resources, centred on the band and standing a little proud of the
+ * card's top (the negative margins let it overflow its short row evenly). Its light text is tokens.css's --text: the
+ * card's dark ink is wrong on the plate's dark fill.
  */
 .nameplate .cycle-label {
-  position: absolute;
+  grid-area: band;
   z-index: 1;
-  top: calc((var(--band) + 1px) / 2);
-  right: var(--space-2);
-  transform: translateY(-50%);
+  justify-self: end;
+  margin-block: -1rem;
   font-size: 0.8rem;
   color: #dfe6f5;
 }
+/* The faction band, from the card's left edge to the resources' column. */
 .nameplate .id-band {
-  padding-right: 12rem; /* clear of the clock */
+  grid-area: band;
+  align-self: start;
+  height: var(--band);
+  margin: 0 calc(-1 * var(--space-2));
+  padding: 0 12rem 0 var(--space-2); /* clear of the clock */
+  background: var(--id-faction);
+  line-height: var(--band);
 }
 .nameplate-tags {
   display: flex;
@@ -155,6 +175,7 @@
 }
 /* The hamburger, on the card's right: the Mush button look, sized to sit beside the name. */
 .nameplate .menu-button {
+  grid-area: menu;
   height: 32px;
   margin: 0;
   padding: 0 var(--space-2);
@@ -231,36 +252,36 @@
 }
 
 /*
- * Phone top bar: AP / MP / HP / morale as icon + count chips under the portrait, overhanging the
- * nameplate's bottom edge (half in, half out) so they take almost no extra height.
+ * Phones: your stats in the ID card, two rows deep and filled a column at a time: AP over MP, HP over morale, then your
+ * other resources (ResourceGrid), as icon + count chips. The resources get what the row leaves (at least one column) and
+ * cut off whole columns past it (ResourceGrid measures which).
  */
-.nameplate:has(.stat-chips) {
-  position: relative;
-  overflow: visible; /* the chips hang out of the card */
-  padding-bottom: calc(var(--space-3) + var(--space-1)); /* room for the half of the chips that sits inside the card */
-  margin-bottom: var(--space-2); /* and for the half that hangs out */
+.stat-chips {
+  grid-area: stats;
 }
 .stat-chips {
-  align-items: center;
-  position: absolute;
-  left: 0.3rem;
-  right: 0.3rem; /* the bound the resource chip truncates against */
-  bottom: 0;
-  transform: translateY(50%);
-  display: flex;
-  gap: var(--space-1);
+  display: grid;
+  grid-template-rows: repeat(2, auto);
+  grid-auto-flow: column;
+  grid-auto-columns: max-content;
+  gap: 2px var(--space-1);
+}
+/* Each chip fills its cell, so the two in a column are one width. */
+.stat-chips .stat-chip {
+  flex: 1;
 }
 .stat-chip {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
-  padding: 0 var(--space-2);
+  padding: 0 6px;
   border-radius: 999px;
   background: var(--chrome-0);
   border: 1px solid var(--panel-rim);
   font-size: 0.7rem;
-  line-height: 1.2rem;
+  line-height: 1.05rem;
   color: #fff;
+  font-variant-numeric: tabular-nums;
 }
 .stat-chip img {
   height: 10px; /* 2x the 5px sprites, whole pixels */
@@ -271,31 +292,74 @@
 .stat-chip img.big {
   height: 13px;
 }
-
-/* Your other resources in one chip: as many as fit and "…", which opens them all. The 16x16 icons stay at 1x. */
-.stat-chip.resource-chip {
-  /* A block of inline parts, so it takes the width left in the row and cuts the parts that don't fit with a "…". */
-  display: block;
+/* A dark column the card's full height, top edge to bottom edge, ruled off from the stock by the card's outline. */
+.resource-grid {
+  grid-area: res;
+  align-self: stretch;
   min-width: 0;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  display: flex;
+  margin-bottom: calc(-1 * var(--space-1)); /* through the card's bottom padding */
   cursor: pointer;
 }
-.stat-chip.resource-chip .resource-chip-part {
-  margin-right: var(--space-2);
-  vertical-align: middle;
+.resource-grid-cells {
+  position: relative; /* the cells' offsets are measured from here */
+  flex: 1;
+  min-width: 0;
+  align-content: center;
+  column-gap: var(--space-1);
+  overflow: hidden;
 }
-.stat-chip.resource-chip .resource-chip-part:last-child {
-  margin-right: 0;
+.resource-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: 0.75rem;
+  font-weight: bold;
+  line-height: 16px;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+.resource-cell img {
+  image-rendering: pixelated; /* 16x16, at 1x */
+}
+/* Past the card's edge: still laid out, so measuring never moves anything, but not drawn. */
+.resource-cell[data-cut] {
+  visibility: hidden;
+}
+/* The last cell that fits, when some don't: a "…" in place of its resource. */
+.resource-cell.more {
+  position: relative;
+  color: transparent;
+}
+.resource-cell.more > * {
+  visibility: hidden;
+}
+.resource-cell.more::after {
+  content: "…";
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #fff;
+}
+/* Phones: a stat's card has its pip bar standing beside the text, and its capacity after the name. */
+.stat-info-card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  max-width: min(20rem, calc(100vw - 2rem));
+}
+.stat-info-card .pip-bar {
+  flex: none;
+}
+.stat-info-amount {
+  margin-left: var(--space-2);
+  font-variant-numeric: tabular-nums;
 }
 .resource-chip-part {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
-}
-.stat-chip .resource-chip-part img {
-  height: 16px;
 }
 /* Desktop: your other resources one above the other in a card in the HUD; it opens them all. */
 .resource-stack {

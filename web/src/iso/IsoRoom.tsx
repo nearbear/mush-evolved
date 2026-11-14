@@ -21,7 +21,7 @@
 import { Suspense, lazy, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ComponentType, type MouseEvent, type PointerEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { createPortal } from "react-dom";
-import { CAMERA_EQUIPMENT, CORPSE_ITEM, EQUIPMENT_TYPES, SUPPORT_DRONE_ITEM, SUPER_CALC_EQUIPMENT, type EquipmentView, type RoomId, type RoomLayout, type ShipLayout, type Spot, type Target } from "@mush2/shared";
+import { CAMERA_EQUIPMENT, CORPSE_ITEM, EQUIPMENT_TYPES, PROJECT_COMPLETE, SUPPORT_DRONE_ITEM, SUPER_CALC_EQUIPMENT, type EquipmentView, type RoomId, type RoomLayout, type ShipLayout, type Spot, type Target } from "@mush2/shared";
 import type { Bubble } from "../scene/useSpeechBubbles.ts";
 import { useNames } from "../i18n/names.ts";
 import { CAMERA_SLICES, equipmentByTileKey, roomAsBuilt } from "./equipmentTiles.ts";
@@ -121,12 +121,23 @@ function chairAt(layout: ShipLayout, room: RoomLayout | undefined, cell: { x: nu
   return t ? layout.slices[t.slice]?.dir ?? "" : undefined;
 }
 
-function roomLooks(pilgredRepaired: boolean, humanTankFull?: boolean, superCalcBuilt?: boolean): ReadonlyMap<string, string> | undefined {
-  if (!pilgredRepaired && !humanTankFull && !superCalcBuilt) return undefined;
-  const looks = new Map<string, string>();
+/** Scenery swaps (`looks`) from completed ship projects and stateful equipment. */
+export function roomLooks(
+  pilgredRepaired: boolean,
+  humanTankFull?: boolean,
+  superCalcBuilt?: boolean,
+  neronThread?: boolean,
+  bayDoorXxl?: boolean,
+  plasmaShield?: boolean,
+): ReadonlyMap<string, string> {
+  const looks = new Map<string, string>([
+    ["auxiliary_terminal_neron", neronThread ? "auxiliary_terminal_neron_upgrade_b" : "auxiliary_terminal_neron_upgrade_a"],
+  ]);
   if (pilgredRepaired) looks.set("core_pilgred", "core_pilgred_upgrade");
   if (humanTankFull) looks.set("human_tank", "human_tank_full");
   if (superCalcBuilt) looks.set("server", "server_active");
+  if (bayDoorXxl) looks.set("bay_window", "bay_window_upgrade");
+  if (plasmaShield) looks.set("plasma_shield", "plasma_shield_upgrade");
   return looks;
 }
 
@@ -164,6 +175,7 @@ export function IsoRoom({
   onZoomStep,
   pilgredRepaired,
   humanTankFull,
+  projects,
   pace,
   planet,
   turn,
@@ -227,6 +239,8 @@ export function IsoRoom({
   pilgredRepaired: boolean;
   /** A Mush has died on the ship (public): the sick bay's human_tank shows a person in it. */
   humanTankFull?: boolean;
+  /** Visible NERON projects (percent done); completed ones swap bay doors, plasma shield coils and auxiliary terminals. */
+  projects?: Readonly<Record<string, number>>;
   /** How fast the ship is going: the stars behind it stream at that rate. */
   pace: ShipPace;
   /** The planet the ship orbits, as an image URL (public), or null. */
@@ -572,7 +586,13 @@ export function IsoRoom({
   const ringOf = new Map(neighbors.map((n) => [n.id as string, n.ring]));
   const byId = new Map([...drawnPeople, ...neighbors.flatMap((n) => n.people)].map((o) => [o.id, o]));
   const superCalcBuilt = equipment.some((e) => e.type === SUPER_CALC_EQUIPMENT);
-  const looks = useMemo(() => roomLooks(pilgredRepaired, humanTankFull, superCalcBuilt), [pilgredRepaired, humanTankFull, superCalcBuilt]);
+  const neronThread = (projects?.NERON_PROJECT_THREAD ?? 0) >= PROJECT_COMPLETE;
+  const bayDoorXxl = (projects?.BAY_DOOR_XXL ?? 0) >= PROJECT_COMPLETE;
+  const plasmaShield = (projects?.PLASMA_SHIELD ?? 0) >= PROJECT_COMPLETE;
+  const looks = useMemo(
+    () => roomLooks(pilgredRepaired, humanTankFull, superCalcBuilt, neronThread, bayDoorXxl, plasmaShield),
+    [pilgredRepaired, humanTankFull, superCalcBuilt, neronThread, bayDoorXxl, plasmaShield],
+  );
   const imageInput = { layout, room, people: byId, walkers, seats, corpses, drones, looks };
 
   // Load every image this room hit-tests against, so masks are ready by the first click.

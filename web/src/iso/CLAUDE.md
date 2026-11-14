@@ -104,14 +104,19 @@ Loaded when working on the isometric view. The UI rules in `web/CLAUDE.md` still
   (`useAnimFrame`): a timer in `IsoRoom` re-renders every sprite in the scene. A renderer restarts
   an animation when its `animId` changes; one with `loops: "hold"` rests on its last frame.
 - Scenery that loops on its own all the time is listed in `AMBIENT_SLICES` (`scene.ts`): the engine
-  room's three reactors, PILGRED's core once repaired, and the placed MidFill/MidFill2 equipment with an
-  `auto` anim (gravity simulator, surgery pod, NERON, BIOS, tanks, bridge LEDs and astro console, antenna, human tank). Like ones are kept out of step
+  room's three reactors, PILGRED's core once repaired, the placed MidFill/MidFill2 equipment with an
+  `auto` anim (gravity simulator, surgery pod, NERON, BIOS, tanks, bridge LEDs and astro console, antenna,
+  human tank), the NERON core auxiliary terminals, the bridge's `planets` hologram, the bay lights, the
+  bay doors (normal and Bay Door XXL), and the Plasma Shield coils once complete. Tuned speed multipliers
+  live in `AMBIENT_SPEED`. Like ones are kept out of step
   (`spreadAmbient`: each starts at a different frame, spread evenly around the loop). Only the slices listed there move; most
   `auto` anims in tiles.xml are not played yet. Frames step along a row and wrap every `perRow`
-  (the slice's `framesX`; the reactors' frames run down a column), through `frameAt`. `looks`
-  draws a tile as another slice of the same size: `core_pilgred` becomes the animated
-  `core_pilgred_upgrade` once the view's public `pilgredRepaired` is true, and `human_tank`
-  becomes `human_tank_full` once `humanTankFull` is true (a Mush has died on the ship).
+  (the slice's `framesX`; the reactors' frames run down a column), through `frameAt`. `looks` (`IsoRoom.tsx`)
+  draws a tile as another slice of the same size: `core_pilgred` becomes `core_pilgred_upgrade` once
+  `pilgredRepaired` is true, `human_tank` becomes `human_tank_full` once `humanTankFull` is true (a Mush
+  has died on the ship), `auxiliary_terminal_neron` uses `auxiliary_terminal_neron_upgrade_a` or `_b`
+  (`NERON_PROJECT_THREAD`), `bay_window` becomes `bay_window_upgrade` (`BAY_DOOR_XXL`), and
+  `plasma_shield` becomes `plasma_shield_upgrade` (`PLASMA_SHIELD`).
 - Room fire (`pixi/fire.ts`, after the original's `CellFire`): when the room is on fire (`PlayerView.roomOnFire`),
   every floor cell gets a slot in the paint order (`placeWithSlots`: sorted after the sprites, as a one-cell
   thing would be against what overlaps it, so it moves nothing else; someone standing on the cell is drawn

@@ -71,7 +71,7 @@ export function SelfPoints({ view }: { view: PlayerView }) {
         </StatInfo>
       </div>
       {/* Home for resources that belong nowhere else (satiety, spores, free IT points, ...): two show, the card opens them all. */}
-      <CompactResourceChips view={view} stacked />
+      <CompactResourceChips view={view} />
     </div>
   );
 }

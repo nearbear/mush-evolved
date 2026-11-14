@@ -35,7 +35,7 @@ TextureStyle.defaultOptions.scaleMode = "nearest";
 
 /** A floating sprite (`SceneSprite.bob`, a drone) rises and falls this many pixels either way, once every `BOB_MS`. */
 const BOB_PX = 2;
-const BOB_MS = 2400;
+const BOB_MS = 1600;
 
 /** Where in its bob a floating sprite is at `now`: whole pixels, so it stays crisp, and out of step with others by key. */
 function bobAt(key: string, now: number): number {
