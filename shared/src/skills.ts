@@ -283,6 +283,8 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   neron_access: "full",
   //Insantly complete a research, project, or repair (owner, 2026-10-25, actions/instant_research.ts).
   genius: "full",
+  // Expedition: -1 damage per hit, +1 Alien Steak on Provision events, and chosen last on Kill events (expeditions.ts).
+  survival: "full",
 };
 
 export function skillStatus(skill: string): SkillStatus {
