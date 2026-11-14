@@ -7,10 +7,10 @@ import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { ConsumeEffects } from "./ConsumeEffects.tsx";
 import { HP_ICON, STATUS_ICONS } from "../art/assets.ts";
-import { useDoublePress } from "./DoublePress.tsx";
+import { SINGLE_PRESS_ACTIONS, useDoublePress } from "./DoublePress.tsx";
 import { affordable, type Action, type ActionOption, type PlayerView } from "@mush2/shared";
 
-/** A button that does the action on a double press (useDoublePress), or the disabled one with the reason when you lack the points. */
+/** A button that does the action on a double press (useDoublePress; one press for SINGLE_PRESS_ACTIONS), or the disabled one with the reason when you lack the points. */
 export function ActionButton(props: { view: PlayerView; option: ActionOption; onAction: (action: Action) => void; children: ReactNode; className?: string; hint?: string }) {
   const { view, option, children, className, hint } = props;
   if (!affordable(option)) return <DisabledActionButton view={view} blocked={option} className={className} hint={hint}>{children}</DisabledActionButton>;
@@ -18,7 +18,7 @@ export function ActionButton(props: { view: PlayerView; option: ActionOption; on
 }
 
 function EnabledActionButton({ view, option, onAction, children, className, hint }: { view: PlayerView; option: ActionOption; onAction: (action: Action) => void; children: ReactNode; className?: string | undefined; hint?: string | undefined }) {
-  const { onClick, armed } = useDoublePress(() => onAction(option.action));
+  const { onClick, armed } = useDoublePress(() => onAction(option.action), SINGLE_PRESS_ACTIONS.has(option.action.type));
   const button = (
     <button type="button" className={className} data-armed={armed ? "" : undefined} onClick={onClick}>
       {children}

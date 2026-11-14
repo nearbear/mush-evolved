@@ -1,4 +1,4 @@
-import { DEFAULT_CONFIG, SHIP_ROOMS, applyAction, applyInput, legalIn, newCycle, shortestPath, startGame, viewFor, type Action, type CharacterId, type GameState, type PlayerView } from "@mush2/shared";
+import { DEFAULT_CONFIG, SHIP_ROOMS, applyAction, applyInput, legalIn, pushChat, newCycle, shortestPath, startGame, viewFor, type Action, type CharacterId, type GameState, type PlayerView } from "@mush2/shared";
 import { describe, expect, it } from "vitest";
 import { GOAL_MAX_ACTIONS, GoalBot } from "../src/bots.ts";
 import { astro, chooseDestination, judgePlanet } from "../src/bots/goals/astro.ts";
@@ -25,6 +25,8 @@ import { POT_STORAGE, STORAGE_CHECKED, setOutPots } from "../src/bots/goals/setO
 import { HOLD_HUNTER_TRIGGER, HOLD_MAX_DAYS, HOLD_MIN_OXYGEN, JUMP_WAIT_CYCLES, sharedDestination, targetJump, travel, turnsTo } from "../src/bots/goals/travel.ts";
 import { helpGoal, helpTasks } from "../src/bots/goals/help.ts";
 import type { GoalDef } from "../src/bots/goals/types.ts";
+import { formatFireLine, newFireMemory, observeFires, parseFireLine } from "../src/bots/fireShare.ts";
+import { extinguish } from "../src/bots/goals/extinguish.ts";
 import { formatItemLine, newItemMemory, observeItems, parseItemLine, roomsHolding } from "../src/bots/itemShare.ts";
 import { chooseSkill } from "../src/bots/skillChoice.ts";
 import { seats } from "../src/testing/fakes.ts";
@@ -93,6 +95,7 @@ const memory = (scripted = true) => ({
   lastExpedition: null as "oxygen" | "fuel" | null,
   asteroidsOnly: null as number | null,
   items: newItemMemory(),
+  fires: newFireMemory(),
   combustion: null as number | null,
   holdSince: null as number | null,
   heading: null as GameState["navigation"]["heading"] | null,
@@ -1681,6 +1684,8 @@ describe("item sharing (itemShare.ts) and walking to scrap", () => {
     const { game: start, id } = setup();
     const scrapRoom = start.items.find((i) => i.type === "metal_scraps" && i.at.kind === "room")!.at.id;
     for (const i of start.items) if (i.type === "metal_scraps") i.at = { kind: "room", id: scrapRoom };
+    // Only scrap is reported here (extinguishers are too, #429).
+    start.items = start.items.filter((i) => i.type !== "extinguisher");
     const other = start.players.find((p) => p.id !== id && p.role === "human")!.id;
     const far = SHIP_ROOMS.map((r) => r.id).find((r) => r !== scrapRoom && (shortestPath(start.config.rooms, r, scrapRoom)?.length ?? 0) === 2)!;
     const game = edit(start, id, (p) => {
@@ -1740,5 +1745,117 @@ describe("item sharing (itemShare.ts) and walking to scrap", () => {
     const me = end.players.find((p) => p.id === id)!;
     expect(me.room).toBe(scrapRoom);
     expect(me.ap).toBe(2);
+  });
+});
+
+describe("fires (fireShare.ts, extinguish goal, #429)", () => {
+  /** A game where `room` has just caught fire, announced by NERON as the rules do (fire.ts `startFire`). */
+  function ignite(game: GameState, room: string): GameState {
+    const next = structuredClone(game);
+    next.fires.push(room);
+    pushChat(next, "global", { from: null, isBot: false, text: "", system: { key: "fireStarted" } });
+    return next;
+  }
+  /** A bot with 10 AP and 0 MP standing in `room`. */
+  function at(room: string, ap = 10): { game: GameState; id: string } {
+    const { game, id } = setup();
+    return {
+      game: edit(game, id, (p) => {
+        p.room = room;
+        p.ap = ap;
+        p.mp = 0;
+      }),
+      id,
+    };
+  }
+  const fire = "LABORATORY";
+
+  it("reads only its own format and a real room", () => {
+    for (const news of ["in", "out", "clear"] as const) expect(parseFireLine(formatFireLine({ news, room: "CORRIDOR_A" }))).toEqual({ news, room: "CORRIDOR_A" });
+    for (const text of ["Fire: in NOWHERE", "fire: in CORRIDOR_A", "Fire: hot in CORRIDOR_A", "Fire: in CORRIDOR_A now"]) expect(parseFireLine(text)).toBeNull();
+  });
+
+  it("counts NERON's notice, says a searched room is clear and a burning one burns, and others learn from the lines", () => {
+    const { game: start, id } = at("CORRIDOR_A");
+    const game = ignite(start, fire);
+    const m = memory();
+    const seen = observeFires(viewFor(game, id), m);
+    expect(seen.news).toBe(true);
+    expect(seen.post?.text).toBe("Fire: clear in CORRIDOR_A");
+    expect(m.fires.active).toBe(1);
+    // In the burning room: it says so.
+    const there = edit(game, id, (p) => (p.room = fire));
+    const found = observeFires(viewFor(there, id), m);
+    expect(found.post?.text).toBe(`Fire: in ${fire}`);
+    expect([...m.fires.burning]).toEqual([fire]);
+    // Another bot learns it from chat and says nothing.
+    const said = applyInput(there, { ...found.post!, by: id });
+    expect(said.ok).toBe(true);
+    if (!said.ok) return;
+    const other = said.state.players.find((p) => p.id !== id && p.alive)!.id;
+    const theirs = memory();
+    const heard = observeFires(viewFor(edit(said.state, other, (p) => (p.room = "CORRIDOR_C")), other), theirs);
+    expect([...theirs.fires.burning]).toEqual([fire]);
+    expect(heard.post).toBeNull(); // nothing unlocated, so no clear line for CORRIDOR_C
+    // Put out: the bot standing there says so, and every count drops.
+    const out = structuredClone(said.state);
+    out.fires = [];
+    expect(observeFires(viewFor(out, id), m).post?.text).toBe(`Fire: out in ${fire}`);
+    expect(m.fires.active).toBe(0);
+    expect(m.fires.burning.size).toBe(0);
+  });
+
+  it("with the Fire sensor, trusts it and posts nothing", () => {
+    const { game: start, id } = at("CORRIDOR_A");
+    const game = ignite(start, fire);
+    game.projects.FIRE_SENSOR = 100;
+    const m = memory();
+    expect(observeFires(viewFor(game, id), m).post).toBeNull();
+    expect([...m.fires.burning]).toEqual([fire]);
+    expect(m.fires.active).toBe(1);
+  });
+
+  it("fetches an extinguisher it heard about, puts out a known fire (reserve included), and leaves it in a corridor", async () => {
+    const { game: start, id } = at("CORRIDOR_A", 6);
+    let game = ignite(start, fire);
+    // Told where the fire is; the extinguisher in CORRIDOR_A it sees itself.
+    const told = applyInput(game, { type: "chat", channel: "global", text: `Fire: in ${fire}`, by: id });
+    expect(told.ok).toBe(true);
+    if (!told.ok) return;
+    game = told.state;
+    const bot = new GoalBot(3, 2, [extinguish]);
+    const { game: end, taken } = await play(game, id, bot, 40);
+    expect(taken.some((a) => a.type === "take")).toBe(true);
+    expect(taken.some((a) => a.type === "extinguish")).toBe(true);
+    // Back in a corridor and dropped once the fire is out.
+    expect(taken.slice(0, 6).map((a) => a.type)).toEqual(["take", "move", "extinguish", "extinguish", "move", "drop"]);
+    expect(taken[4]).toEqual({ type: "move", to: "CORRIDOR_A" });
+    // Later cycles bring new random fires, so only the first round is pinned down.
+    expect(end.players.find((p) => p.id === id)!.alive).toBe(true);
+  });
+
+  it("searches only above the AP reserve", () => {
+    const { game: start, id } = at("CORRIDOR_A", 2);
+    const game = ignite(start, fire);
+    const m = memory();
+    observeFires(viewFor(game, id), m);
+    expect(extinguish.options(viewFor(game, id), m)).toEqual([]);
+    const rich = edit(game, id, (p) => (p.ap = 6));
+    expect(extinguish.options(viewFor(rich, id), m).map((g) => g.key)).toEqual(["extinguish:search"]);
+  });
+
+  it("a fire heard about drops a lower goal", async () => {
+    const { game: placed, id } = at("CORRIDOR_A");
+    const start = edit(placed, id, (p) => (p.mp = 6)); // exploring walks on MP alone
+    const bot = new GoalBot(1, 2, [extinguish, ...SOLO_GOALS.filter((g) => g.id === "explore")]);
+    // The first turns post what it sees on the floor (itemShare.ts); then it explores.
+    for (let i = 0; i < 4 && bot.current === null; i++) await bot.decideAction(viewFor(start, id));
+    expect(bot.current).toMatch(/^explore:/);
+    const burning = ignite(start, fire);
+    // That turn it says CORRIDOR_A is clear; the next it searches.
+    await bot.decideAction(viewFor(burning, id));
+    expect(bot.current).toBeNull();
+    await bot.decideAction(viewFor(burning, id));
+    expect(bot.current).toBe("extinguish:search");
   });
 });

@@ -1,12 +1,12 @@
-// Who you are and your stats on phones, in the top bar: portrait, name, role, AP/MP/HP/morale as chips, other
-// resources. The desktop equivalent is SelfHud, over the room view.
+// Who you are and your stats on phones, in the top bar, styled after the desktop ID card (SelfHud): a band in your faction's
+// colour across the top, then your portrait (its faction icon pinned on; tap for your goal), your name and the clock, with
+// AP/MP/HP/morale and your other resources as chips along the foot. The desktop equivalent is SelfHud, over the room view.
 
 import { characterGivenName, type PlayerView } from "@mush2/shared";
 import type { ReactNode } from "react";
 import { Popover } from "@base-ui/react/popover";
 import { useTranslation } from "react-i18next";
 import { AP_PIP, FACTION_ICONS, HP_ICON, MORALE_ICON, MP_PIP, bustIcon } from "../art/assets.ts";
-import { PreselectionTag } from "./PreselectionTag.tsx";
 import { CompactResourceChips } from "./ResourceChips.tsx";
 import { StatInfo, type Stat } from "./StatInfo.tsx";
 
@@ -16,7 +16,7 @@ export function factionOf(view: PlayerView) {
   return role === "human" ? "human" : alpha ? "alphaMush" : "betaMush";
 }
 
-/** Which faction you belong to, with its goal in a popover (hover, focus, or tap: touch has no hover). */
+/** Your portrait with your faction's icon pinned to it, as on the desktop ID card; its goal is in a popover (hover, focus, or tap: touch has no hover). */
 function FactionCard({ view }: { view: PlayerView }) {
   const { t } = useTranslation();
   const { role } = view.you;
@@ -29,10 +29,11 @@ function FactionCard({ view }: { view: PlayerView }) {
         delay={200}
         nativeButton={false}
         render={<span role="button" tabIndex={0} />}
-        className={`faction-card ${role}`}
+        className="faction-card id-portrait"
         aria-label={t("faction.about", { name })}
       >
-        <img className="faction-icon" src={FACTION_ICONS[faction]} alt="" />
+        <img className="avatar" src={bustIcon(view.you.character)} alt="" />
+        <img className="id-faction" src={FACTION_ICONS[faction]} alt="" />
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Positioner sideOffset={6}>
@@ -60,28 +61,25 @@ function StatChip({ stat, view, value, max, icon, big = false }: { stat: Stat; v
   );
 }
 
-/** `countdown` goes after the phone's abbreviated cycle (the top bar's own cycle is hidden there). */
-export function PlayerSummary({ view, countdown }: { view: PlayerView; countdown?: ReactNode }) {
+/**
+ * `clock` is the top bar's amber day/cycle/countdown plate, set over the faction band's right end; `tags` (pre-selection,
+ * AI paused) go under your name; `menu` is the hamburger, on the card's right.
+ */
+export function PlayerSummary({ view, clock, tags, menu }: { view: PlayerView; clock: ReactNode; tags: ReactNode; menu: ReactNode }) {
   const { t } = useTranslation();
   const { you } = view;
   return (
     <div className="player-summary">
       <div className={`nameplate ${you.role}`}>
-        <img className="avatar" src={bustIcon(you.character)} alt="" />
-        <div className="who">
-          <strong>{characterGivenName(you.character)}</strong>
-          {/* The phone layout shows the cycle here instead of on its own, abbreviated. */}
-          <span className="sub cycle-under-name" role="img" aria-label={t("stat.dayCycle", { day: view.day, cycle: view.cycleOfDay })}>
-            D{view.day}C{view.cycleOfDay}
-          </span>
-          {countdown && <span className="sub cycle-under-name">{countdown}</span>}
-          {view.preselection && (
-            <span className="cycle-under-name">
-              <PreselectionTag />
-            </span>
-          )}
-        </div>
+        <span className="id-band">{t(`idCard.band.${you.role}`)}</span>
         <FactionCard view={view} />
+        <div className="who">
+          <strong className="id-value id-name">{characterGivenName(you.character)}</strong>
+          {/* Positioned over the band (top-bar.css); in landscape it follows the name instead. */}
+          {clock}
+          {tags && <span className="nameplate-tags">{tags}</span>}
+        </div>
+        {menu}
         <div className="stat-chips">
           <StatChip stat="ap" view={view} value={you.ap} max={view.maxAp} icon={AP_PIP} />
           <StatChip stat="mp" view={view} value={you.mp} max={view.maxMp} icon={MP_PIP} />

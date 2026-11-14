@@ -1,0 +1,65 @@
+/*
+ * Small shared UI patterns (#435). Each reads surface tokens, so it is right on the dark panels and on the light card
+ * (cut-card.css redefines the tokens) without a per-dialog override. The design kit's #primitives section shows each
+ * on both surfaces. Add a primitive here only when a second user needs it.
+ */
+
+/* Field label: a bold label above its control. The wrapper is a <label> (label text in a span, then the control) or a
+   <fieldset> (a <legend>, then the controls). */
+.field {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.field-label {
+  margin-bottom: var(--space-1);
+  padding: 0;
+  font-weight: bold;
+  color: var(--text);
+}
+
+/* Pickable tile: a portrait over a name, toggled with aria-pressed. The global button sprite is replaced, since these
+   are tiles, not text buttons; the user sets the width. Colours come from the --pick-* tokens. */
+.pick-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  height: auto;
+  min-height: 0;
+  margin: 0;
+  padding: var(--space-1);
+  background: none;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  color: inherit;
+  text-shadow: none;
+  font-size: 0.75rem;
+  text-align: center;
+  overflow-wrap: break-word;
+}
+.pick-tile > [aria-hidden="true"] {
+  flex: none;
+}
+@media (hover: hover) {
+  .pick-tile:hover:not(:disabled, [aria-pressed="true"]) {
+    background: var(--pick-hover-bg);
+  }
+}
+.pick-tile:focus-visible {
+  outline: 2px solid var(--pick-on-edge);
+  outline-offset: 1px;
+}
+.pick-tile[aria-pressed="true"] {
+  background: var(--pick-on-bg);
+  border-color: var(--pick-on-edge);
+}
+
+/* Muted note: secondary text (a hint, an empty state, a caption). --muted keeps AA contrast on both surfaces. */
+.sub {
+  color: var(--muted);
+  font-size: 0.8rem;
+}

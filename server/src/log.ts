@@ -19,6 +19,7 @@ export type LogEvent =
   | "leave_ship_failed"
   | "free_accounts_failed"
   | "list_finished_failed"
+  | "record_ship_failed"
   | "replay_copy_failed"
   | "reclaim_failed"
   | "tick_failed"

@@ -8,10 +8,6 @@
   gap: var(--space-3);
   padding: var(--space-2) var(--space-3);
 }
-.cycle-under-name {
-  display: none;
-  margin-left: var(--space-2);
-}
 /*
  * Desktop top bar, three zones (UI coherence step 5): time on the left (.cycle), the ship in the middle (.ship-resources,
  * between thin dividers), the actions on the right (.top-bar-actions; End cycle is its only blue). Phones hide .cycle
@@ -23,9 +19,12 @@
   align-items: center;
   gap: var(--space-2);
 }
-/* The day and cycle: an amber-outlined label, the location plate's look (card.css), one step up from the bar. */
+/* The clock: the day and cycle, then the time left past an amber divider, in one amber-outlined plate (the location
+   plate's look, card.css), one step up from the bar. */
 .cycle-label {
   position: relative;
+  display: inline-flex;
+  align-items: center;
   --card-fill: var(--chrome-2);
   padding: 2px var(--space-2) 2px var(--space-3);
   font-size: 0.85rem;
@@ -34,6 +33,16 @@
 }
 .cycle-countdown {
   font-variant-numeric: tabular-nums;
+}
+/* The plate's own rim, crossing it top to bottom (through its 2px vertical padding): gold between two dark lines. */
+.clock-divider {
+  align-self: stretch;
+  width: 1px;
+  margin: -2px var(--space-2);
+  background: var(--gold-mid);
+  box-shadow:
+    1px 0 0 var(--gold-edge),
+    -1px 0 0 var(--gold-edge);
 }
 .top-bar-actions {
   flex: none;
@@ -67,8 +76,7 @@
   height: 40px;
   image-rendering: pixelated;
 }
-/* Outlined cards: the nameplate, the resource stack, and the ship card (on phones; in the desktop top bar it is flat, below). The flat quote-box look (fill, 1px rim, soft shadow). */
-.nameplate,
+/* Outlined cards: the resource stack, and the ship card (on phones; in the desktop top bar it is flat, below). The flat quote-box look (fill, 1px rim, soft shadow). */
 .resource-stack,
 .ship-resources {
   background: var(--panel-fill);
@@ -76,40 +84,80 @@
   border-radius: var(--panel-radius);
   box-shadow: 0 0 6px var(--panel-shadow);
 }
-/* Avatar, name, and faction icon (hover, focus, or tap for its goal). */
-.nameplate {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-1) var(--space-2) var(--space-1) var(--space-1);
-}
 /*
- * Outlined card, like MUI's: a 1px outline in the faction color, filled with the same
- * color at low opacity laid over the card fill (a one-color gradient is the overlay).
+ * Phones: who you are, as the desktop ID card (self-hud.css, whose .id-band, .id-portrait, .id-faction and .id-name it
+ * reuses) on the same pale stock with the same dark outline, but square: a band in your faction's colour across the top,
+ * then your portrait (tap for your goal) beside your name and the clock. The stat chips hang off its foot (below).
  */
 .nameplate {
-  --faction: var(--human);
-  --overlay: color-mix(in srgb, var(--faction) 25%, transparent);
-  border: 1px solid var(--faction);
-  background: linear-gradient(var(--overlay), var(--overlay)), var(--panel-fill);
-}
-.nameplate.mush {
-  --faction: var(--mush);
-}
-/* The usual muted gray-blue is too faint on the tinted fill. */
-.nameplate .sub {
+  --band: 15px;
+  --id-faction: var(--human);
+  --text: #171b5c;
+  --muted: #4a5a8f;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-rows: calc(var(--band) + 1px) auto;
+  column-gap: var(--space-3); /* the faction icon overhangs the portrait */
+  row-gap: var(--space-1);
+  align-items: center;
+  padding: 0 var(--space-2) var(--space-1);
+  background: linear-gradient(var(--id-faction) 0 var(--band), var(--terminal-bg) 0);
+  border: 1px solid var(--gold-edge);
+  box-shadow: 0 0 6px var(--panel-shadow);
   color: var(--text);
 }
-.faction-card {
-  display: inline-flex;
-  flex: none;
+.nameplate.mush {
+  --id-faction: var(--mush);
+}
+.nameplate .id-portrait {
+  width: 40px;
+  height: 40px;
   cursor: help;
 }
-.faction-icon {
-  width: 32px;
+.nameplate .faction-card:focus-visible {
+  outline: 2px solid var(--id-faction);
+  outline-offset: 2px;
+}
+.nameplate .who {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  gap: var(--space-1);
+  min-width: 0;
+}
+.nameplate .id-name {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 0.95rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+/*
+ * The clock sits on the band's right end, centred on it and standing a little proud of the card's top. Its light text
+ * is tokens.css's --text: the card's dark ink is wrong on the plate's dark fill.
+ */
+.nameplate .cycle-label {
+  position: absolute;
+  z-index: 1;
+  top: calc((var(--band) + 1px) / 2);
+  right: var(--space-2);
+  transform: translateY(-50%);
+  font-size: 0.8rem;
+  color: #dfe6f5;
+}
+.nameplate .id-band {
+  padding-right: 12rem; /* clear of the clock */
+}
+.nameplate-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+/* The hamburger, on the card's right: the Mush button look, sized to sit beside the name. */
+.nameplate .menu-button {
   height: 32px;
-  object-fit: contain;
-  image-rendering: pixelated;
+  margin: 0;
+  padding: 0 var(--space-2);
 }
 .faction-goals {
   max-width: 16rem;
@@ -189,7 +237,7 @@
 .nameplate:has(.stat-chips) {
   position: relative;
   overflow: visible; /* the chips hang out of the card */
-  padding-bottom: var(--space-3); /* room for the half of the chips that sits inside the card */
+  padding-bottom: calc(var(--space-3) + var(--space-1)); /* room for the half of the chips that sits inside the card */
   margin-bottom: var(--space-2); /* and for the half that hangs out */
 }
 .stat-chips {

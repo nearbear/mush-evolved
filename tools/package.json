@@ -26,7 +26,8 @@
     "art-align": "node src/play/artAlign.ts",
     "ship-top": "node src/play/shipTop.ts",
     "contact-sheet": "node src/contactSheet/contactSheet.ts",
-    "sim-readings": "node src/sims/readings.ts"
+    "sim-readings": "node src/sims/readings.ts",
+    "ships": "node src/ops/ships.ts"
   },
   "dependencies": {
     "@mush2/shared": "*"

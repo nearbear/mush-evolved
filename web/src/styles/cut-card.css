@@ -8,7 +8,7 @@
  * each line is 0.7071px across (one pixel per row on a 45° step), so the lines land on pixel steps instead of blurring.
  */
 .cut-card {
-  --c: round(calc(var(--cut) - var(--pad) * 0.5858), 1px);
+  --c: round(max(0px, var(--cut) - var(--pad) * 0.5858), 1px); /* 0 when the frame is square (the iTrackie on phones) */
   --d: calc((var(--c) - 0.5px) * 0.7071);
   --corner: transparent var(--d), var(--gold-edge) 0 calc(var(--d) + 0.7071px), var(--gold-mid) 0 calc(var(--d) + 1.4142px),
     var(--gold-edge) 0 calc(var(--d) + 2.1213px), transparent 0;
@@ -32,6 +32,10 @@
   --field-edge: #171b5c;
   --field-radius: 1px;
   --field-shadow: inset 0 1px 2px rgb(23 27 92 / 0.4);
+  /* Pickable tiles: the title bar's deeper cyan with the accent edge. */
+  --pick-hover-bg: rgb(23 27 92 / 0.08);
+  --pick-on-bg: var(--terminal-header-bg);
+  --pick-on-edge: var(--accent);
   background:
     linear-gradient(45deg, var(--corner)) left bottom / calc(var(--c) + 4px) calc(var(--c) + 4px) no-repeat border-box,
     linear-gradient(315deg, var(--corner)) right bottom / calc(var(--c) + 4px) calc(var(--c) + 4px) no-repeat border-box,

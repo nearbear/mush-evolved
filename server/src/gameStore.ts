@@ -24,6 +24,7 @@ import {
   type Winner,
 } from "@mush2/shared";
 import type { SqlDatabase } from "./accountStore.ts";
+import { endShipStatement } from "./shipStore.ts";
 
 /** A seat as it is written: the name as it was, moderated only when read (`listFinished`). */
 export interface FinishedPlayerRow extends Omit<FinishedCrewMember, "name"> {
@@ -154,7 +155,10 @@ const seatNumber = (seat: string) => Number(seat.slice(1));
 export class GameStore {
   constructor(private db: SqlDatabase) {}
 
-  /** Writes a finished game and its seats in one batch. Writing the same game again changes nothing. */
+  /**
+   * Writes a finished game and its seats, and deletes its running-ships row (#431), in one batch. Writing the same
+   * game again changes nothing.
+   */
   async recordFinished(record: FinishedRecord): Promise<void> {
     await this.db.batch([
       this.db
@@ -182,6 +186,7 @@ export class GameStore {
           )
           .bind(record.id, p.seat, p.accountId, p.name, p.isBot ? 1 : 0, p.startCharacter, p.endCharacter, p.startRole, p.endRole, p.alive ? 1 : 0),
       ),
+      endShipStatement(this.db, record.id),
     ]);
   }
 

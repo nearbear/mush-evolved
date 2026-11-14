@@ -28,8 +28,8 @@
 .itrackie-tabs {
   display: flex;
   gap: 2px;
-  /* Clear of the panel's cut corners (--cut) on both sides. */
-  padding-inline: var(--cut);
+  /* Clear of the panel's cut corners (--cut) on both sides; phones have none, so the padding's width there. */
+  padding-inline: max(var(--cut), var(--pad));
   /* The selected tab is 3px taller and overlaps the card's rim, so it opens into the card. */
   margin-bottom: -3px;
 }
@@ -356,30 +356,9 @@
   align-self: flex-end;
   margin: 0;
 }
-.channel-create-name {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-}
-/* The field headings: bold, a step up from the body text. */
-.channel-create-name > span,
-.channel-create-members > legend {
-  font-weight: bold;
-}
 .channel-create-name input {
   min-height: 32px;
   font: inherit;
-}
-.channel-create-members {
-  display: flex;
-  flex-direction: column;
-  margin: 0;
-  padding: 0;
-  border: 0;
-}
-.channel-create-members > legend {
-  margin-bottom: var(--space-1);
-  padding: 0;
 }
 /* Square-ish emoji button; the label lives in the tooltip. */
 .icon-button {
@@ -441,39 +420,15 @@
   align-self: flex-start;
   margin: var(--space-2) 0 0;
 }
-/* Character picker: portraits in a wrapping row, name underneath; a picked one gets an outline. */
+/* Character picker: pick-tiles (primitives.css) in a wrapping row. */
 .channel-picker {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
 }
+/* Wide enough for the longest given name (Terrence) on one line. */
 .channel-pick {
-  /* Layout only: the global button sprite is replaced since these are portrait tiles, not text buttons. */
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-1);
-  /* Wide enough for the longest given name (Terrence) on one line. */
   width: 4.5rem;
-  height: auto;
-  min-height: 0;
-  margin: 0;
-  padding: var(--space-1);
-  background: none;
-  border: 2px solid transparent;
-  border-radius: 4px;
-  color: inherit;
-  text-shadow: none;
-  font-size: 0.75rem;
-  text-align: center;
-  overflow-wrap: break-word;
-}
-.channel-pick-sprite {
-  flex: none;
-}
-.channel-pick[aria-pressed="true"] {
-  border-color: var(--accent);
-  background: var(--terminal-header-bg);
 }
 
 /* The Mush tab appears only for Mush, in the faction pink, pushed to the far right. */

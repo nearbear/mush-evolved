@@ -4,7 +4,8 @@ import { handleAuth } from "./auth.ts";
 import { gameStoreFor } from "./gameStore.ts";
 import { crossOriginUpgrade } from "./origin.ts";
 import { setupStoreFor } from "./setupStore.ts";
-import { sweepShips } from "./shipSweep.ts";
+import { shipStoreFor } from "./shipStore.ts";
+import { sweepRunning, sweepShips } from "./shipSweep.ts";
 
 export { GameRoom } from "./GameRoom.ts";
 export { Matchmaker } from "./Matchmaker.ts";
@@ -26,11 +27,13 @@ export default {
   },
 
   // The daily cron (triggers.crons in wrangler.jsonc): expired sessions and sign-ups are deleted, and open
-  // account_ships rows whose ship doesn't have the account aboard are closed.
+  // account_ships rows whose ship doesn't have the account aboard are closed, and the rows of ships that aren't
+  // running are removed (#431).
   async scheduled(_controller, env): Promise<void> {
     const store = accountStoreFor(env);
     const now = Date.now();
     await store.deleteExpired(now);
     await sweepShips(store, async (roomId) => (await getServerByName(env.GameRoom, roomId)).seatAccounts(), now);
+    await sweepRunning(shipStoreFor(env), async (roomId) => (await getServerByName(env.GameRoom, roomId)).running());
   },
 } satisfies ExportedHandler<Env>;

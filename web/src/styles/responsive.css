@@ -93,30 +93,15 @@
     flex: 1 1 0;
     min-width: 0;
   }
-  .top-bar .who {
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .top-bar .cycle,
   .wide-only {
     display: none;
-  }
-  .cycle-under-name {
-    display: inline;
   }
   .top-bar button {
     margin: 0;
   }
-  /* The actions are top-bar flex items themselves (the hamburger stretches to the nameplate's height). */
+  /* Only the settings dialog is left in it (its trigger is the nameplate's menu). */
   .top-bar-actions {
     display: contents;
-  }
-  /* The hamburger matches the nameplate's height (the 3-slice art stretches to fit). */
-  .top-bar .menu-button {
-    align-self: stretch;
-    height: auto;
   }
   /* The action queue keeps clear of the ship button and the sack in the lower-right corner (40px each). */
   .room-bottom-left {
@@ -265,6 +250,33 @@
   .top-bar .avatar {
     width: 24px;
     height: 24px;
+  }
+  /* The nameplate fits one row too: the band becomes a bare stripe of the faction's colour, and the clock follows the name. */
+  .nameplate {
+    --band: 4px;
+    row-gap: 0;
+  }
+  .nameplate .id-band {
+    visibility: hidden;
+  }
+  .nameplate .id-portrait {
+    width: 26px;
+    height: 26px;
+  }
+  .nameplate .who {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-3);
+  }
+  /* No band to sit on: the clock follows the name. */
+  .nameplate .cycle-label {
+    position: relative;
+    top: auto;
+    right: auto;
+    transform: none;
+  }
+  .nameplate .menu-button {
+    height: 26px;
   }
   .bottom-nav-button {
     height: 32px;

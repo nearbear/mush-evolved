@@ -28,7 +28,7 @@ Feature designs in `plans/`, one per file. Each plan's own header is the authori
 | `plans/design-kit.md` | Components for the dev design kit and their `PlayerView` fixture | Done | 2026-11-07: every listed component is in the kit, alone or inside a composite. Not a rules plan. |
 | `plans/replay-viewer.md` | Replay viewer page, split into stories | Not built | Reviewed with the owner 2026-11-05 ([#156](https://github.com/nearbear/mush2/issues/156)). |
 | `plans/normalize-state.md` | Normalizing stored state on load ([#384](https://github.com/nearbear/mush2/issues/384)), as built | Done | Built 2026-11-07. The replay viewer's use of `readFrame` is [#369](https://github.com/nearbear/mush2/issues/369). Not a rules plan. |
-| `plans/observability.md` | Server logs, running-ships list, alerts ([#127](https://github.com/nearbear/mush2/issues/127)) | Not built | Decided 2026-11-14; stories [#430](https://github.com/nearbear/mush2/issues/430)–[#434](https://github.com/nearbear/mush2/issues/434). Not a rules plan. |
+| `plans/observability.md` | Server logs, running-ships list, alerts ([#127](https://github.com/nearbear/mush2/issues/127)) | Partly built: logs (#430) and running ships (#431) | Decided 2026-11-14; stories [#430](https://github.com/nearbear/mush2/issues/430)–[#434](https://github.com/nearbear/mush2/issues/434). Not a rules plan. |
 | `plans/inventory-notes.md` | Shared manual item notes for the crew | Draft | 2026-11-01; not decided. |
 | `plans/balance.md` | Balance goals, targets, AP economy and tuning | Draft | 2026-11-04; not decided. |
 | `plans/balance-review.md` | Claude's review of the balance plan: diagnosis, design tests, the order to decide things in | Review | 2026-11-10; recommendations only. |
@@ -51,7 +51,7 @@ Feature designs in `plans/`, one per file. Each plan's own header is the authori
 - `ops/deploy.md`: the three deployments and deploying test from CI.
 - `ops/sign-in.md`: OAuth apps, secrets and sessions.
 - `ops/r2.md`: the replay buckets, what a finished game's copy holds, and inspecting one.
-- `ops/observability.md`: Workers Logs, the log events and what must never be logged.
+- `ops/observability.md`: Workers Logs, the log events and what must never be logged; the running-ships table and `npm run ships`.
 - `ops/config.md`: every environment variable and secret, and where each is set.
 
 ## Process

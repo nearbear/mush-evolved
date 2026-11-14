@@ -1,6 +1,7 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AccountStore } from "../src/accountStore.ts";
-import { SWEEP_GRACE_MS, sweepShips } from "../src/shipSweep.ts";
+import { ShipStore } from "../src/shipStore.ts";
+import { SWEEP_GRACE_MS, sweepRunning, sweepShips } from "../src/shipSweep.ts";
 import { migratedDatabase } from "./sqliteD1.ts";
 
 const T0 = 1_000_000_000_000;
@@ -52,5 +53,23 @@ describe("sweepShips (#285)", () => {
     const closed = await sweepShips(store, async () => { throw new Error("down"); }, T0 + SWEEP_GRACE_MS + 1);
     expect(closed).toBe(0);
     expect(await store.currentShip(ann)).toBe("r1");
+  });
+});
+
+describe("sweepRunning (#431)", () => {
+  it("removes the rows of ships that say they aren't running, and keeps the rest and those it can't ask", async () => {
+    const ships = new ShipStore(migratedDatabase());
+    for (const roomId of ["running", "retired", "down"]) await ships.launched({ roomId, language: "en", singlePlayer: false, seats: 16, launchedAt: T0 });
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    try {
+      const removed = await sweepRunning(ships, async (roomId) => {
+        if (roomId === "down") throw new Error("down");
+        return roomId === "running";
+      });
+      expect(removed).toBe(1);
+      expect((await ships.roomIds()).sort()).toEqual(["down", "running"]);
+    } finally {
+      vi.restoreAllMocks();
+    }
   });
 });

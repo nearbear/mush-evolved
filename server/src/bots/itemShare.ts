@@ -8,8 +8,8 @@
 import { SHIP_ROOMS, type PlayerView, type RoomId } from "@mush2/shared";
 import type { BotMemory, BotSocial } from "./goals/types.ts";
 
-/** The item types bots report. A goal that needs another type shared adds it here. */
-export const SHARED_ITEMS = ["metal_scraps"] as const;
+/** The item types bots report. A goal that needs another type shared adds it here. Extinguishers: #429. */
+export const SHARED_ITEMS = ["metal_scraps", "extinguisher"] as const;
 export type SharedItem = (typeof SHARED_ITEMS)[number];
 
 const ROOM_IDS: ReadonlySet<string> = new Set(SHIP_ROOMS.map((r) => r.id));
@@ -70,7 +70,8 @@ export function observeItems(view: PlayerView, memory: BotMemory): BotSocial | n
   if (!ROOM_IDS.has(room)) return null;
   let post: BotSocial | null = null;
   for (const type of SHARED_ITEMS) {
-    const present = view.roomItems.some((i) => i.type === type);
+    // A broken one isn't worth crossing the ship for (it can't be used until repaired).
+    const present = view.roomItems.some((i) => i.type === type && !i.broken);
     setIn(items.rooms, type, room, present);
     if (post === null && view.chatChannels.includes("global") && present !== (items.said.get(type)?.has(room) ?? false)) {
       setIn(items.said, type, room, present);

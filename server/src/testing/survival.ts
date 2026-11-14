@@ -69,6 +69,10 @@ export interface CycleReport {
   /** Hull lost at the cycle change that ended this cycle, and hunters that arrived in it. */
   hullLost: number;
   arrived: number;
+  /** Rooms that caught fire (in the cycle and at the change that ended it), and fires put out in it (#429). Missing in older runs. */
+  firesStarted?: number;
+  firesOut?: number;
+  extinguishTries?: number;
 }
 
 export interface SurvivalResult {
@@ -151,7 +155,7 @@ export async function runSurvival(seed: number, opts: SurvivalOptions): Promise<
   let now = 0;
   let logSeen = game.nextLogId;
 
-  const newRow = (cycle: number): CycleReport => ({ cycle, hull: 0, oxygen: 0, alive: 0, hunters: 0, fires: 0, killed: 0, shed: 0, shots: 0, repairTries: 0, repairs: 0, apLeft: 0, atCap: 0, scraps: 0, scrapsCarried: 0, apShooters: {}, apOthers: {}, hullLost: 0, arrived: 0 });
+  const newRow = (cycle: number): CycleReport => ({ cycle, hull: 0, oxygen: 0, alive: 0, hunters: 0, fires: 0, killed: 0, shed: 0, shots: 0, repairTries: 0, repairs: 0, apLeft: 0, atCap: 0, scraps: 0, scrapsCarried: 0, apShooters: {}, apOthers: {}, hullLost: 0, arrived: 0, firesStarted: 0, firesOut: 0, extinguishTries: 0 });
   let row = newRow(game.cycle);
   /** Fills the row's end-of-cycle fields from `g`, the state just before the change (or where the game ended). */
   const closeRow = (g: GameState): void => {
@@ -167,11 +171,15 @@ export async function runSurvival(seed: number, opts: SurvivalOptions): Promise<
     if (!r.ok) return false;
     game = r.state;
     const fresh = game.log.filter((e) => e.id >= before.nextLogId);
+    const lit = game.fires.filter((r) => !before.fires.includes(r)).length;
+    const out = before.fires.filter((r) => !game.fires.includes(r)).length;
     // A change that ends the game (hull 0, the last death) ends it before the cycle counter moves.
     const ended = before.phase === "playing" && game.phase !== "playing";
     if (game.cycle !== before.cycle || ended) {
       closeRow(before);
       row.hullLost = Math.max(0, before.ship.hull - game.ship.hull);
+      row.firesStarted! += lit;
+      row.firesOut! += out;
       row.arrived = fresh.reduce((a, e) => a + (e.key === "hunterWave" ? Number(e.params?.count ?? 0) : 0), 0);
       if (!ended) row = newRow(game.cycle);
       return true;
@@ -179,10 +187,13 @@ export async function runSurvival(seed: number, opts: SurvivalOptions): Promise<
     const gone = before.hunters.list.length - game.hunters.list.length;
     if (gone > 0) row[fresh.some((e) => e.key === "shipTraveled") ? "shed" : "killed"] += gone;
     row.repairs += fresh.filter((e) => e.key === "hullRepaired").length;
+    row.firesStarted! += lit;
+    row.firesOut! += out;
     if (input.type === "action") {
       const type = input.action.type;
       if (type === "turret_attack" || type === "patrol_attack") row.shots++;
       if (type === "repair_hull") row.repairTries++;
+      if (type === "extinguish" || type === "extinguish_manually") row.extinguishTries!++;
       if (before.hunters.list.length > 0 && apCost > 0) {
         const by = before.players.find((p) => p.id === input.by)!;
         const ap = by.skills.some((s) => HUNTER_SKILLS.has(s)) ? row.apShooters : row.apOthers;

@@ -20,7 +20,7 @@ import type { GoalStep } from "./types.ts";
 export { canAfford as rawCanAfford, nearest, roomsWith, travelAp } from "@mush2/shared";
 
 /** Simulates walking `fromRoom -> toRoom` starting with `(ap, mp)` and returns remaining points, or null if unreachable. */
-function walkBudget(view: PlayerView, fromRoom: RoomId, toRoom: RoomId, ap: number, mp: number): { ap: number; mp: number } | null {
+export function walkBudget(view: PlayerView, fromRoom: RoomId, toRoom: RoomId, ap: number, mp: number): { ap: number; mp: number } | null {
   const path = shortestPath(view.rooms, fromRoom, toRoom);
   if (path === null) return null;
   let points = { ap, mp };

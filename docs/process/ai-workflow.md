@@ -3503,3 +3503,56 @@ The owner disliked the Astro terminal's Share button opening a navy `.settings-p
 - **What worked:** numbers before pictures; per-site before/after crops plus a pixel diff, with a visual-check subagent reading them, which caught the two bad sites (the sign cycle, the deck wall).
 - **What needed correction:** my first reading of the floor-shift idea was too optimistic. Terminology now in `web/src/iso/CLAUDE.md`: main axis (+x, front corridor to engine room) and cross axis (y, Alpha to Beta).
 - Also fixed: `npm run ship-render` crashed because `placement.ts` imported from the `@mush2/shared` index.
+
+## 2026-11-14: infiniteSpores cheat also skips the spike cooldown
+
+The owner asked for the infinite-spores dev cheat to remove the 4-cycle spike cooldown too. One line in `SpikeAction.cooldownLeft` (returns 0 when the actor has the cheat) plus a test in `spike.test.ts`. Kept it inside the existing cheat rather than a new toggle, as asked; the cheat's label still reads "Infinite spores".
+
+## 2026-11-14: UI primitives on both surfaces (#435)
+
+- Added `web/src/styles/primitives.css` with `.field`/`.field-label`, `.pick-tile` and the muted note `.sub` (moved from `base.css`; kept the name rather than renaming ~40 uses). The tile reads new `--pick-*` tokens, set in `tokens.css` (dark: chrome-2 fill, gold edge) and redefined in `cut-card.css` (light: title-bar cyan, accent edge), the same pattern as `--field-*`.
+- The private channel dialog now uses the primitives; its one-off heading and tile rules in `itrackie.css` are gone (only the tile width stays).
+- Design kit: a "Primitives on both surfaces" section renders the same markup on a dark panel and inside a `TerminalFrame` light card; checked with a Playwright screenshot at 1280px and 360px (no horizontal scroll).
+- Left alone on purpose: the lobby's `.pod-character` and the skill cards have their own looks; converting them would be scope creep until the owner wants one look.
+
+## 2026-11-14: running-ships table and `npm run ships` (#431)
+
+- Built steps 4–6 of `docs/plans/observability.md`: `0005_ships.sql`, `shipStore.ts`, the room's launch write (not awaited, retried from the alarm with backoff, and again on start until `shipRecorded` is saved), the row deleted in `GameStore.recordFinished`'s batch (alone for a game with no `games` row), a `running` RPC and `sweepRunning` in the daily cron, and `tools/src/ops/ships.ts`. No version bump, no dependency.
+- Choices made along the way: the "written" flag is saved with the next input rather than with a write of its own, since rewriting the row is harmless; `recordFinished` waits for a launch write under way so it can't land after the delete; a ship this build can't read counts as running, so the sweep keeps it; the sweep has no grace period, because a row exists only after its launch is saved.
+- Needed correction: the plan said single player would show 1 or 0 aboard, but single player never opens an `account_ships` row, so it shows `-`; the plan was updated. The first test run failed in 9 room tests because their rooms had no D1 binding, so the new write failed and its retry moved the alarm. The fix was a D1 on every test room, not a room that tolerates a missing binding.
+- Not done here: running `npm run ships` against staging needs a deploy that applies `0005_ships.sql`. The query and wrangler's JSON were checked against the local D1.
+
+## 2026-11-14: Single-press actions (terminal access)
+
+- Owner asked for inconsequential actions to take one click, starting with accessing a terminal. Added `SINGLE_PRESS_ACTIONS` in `web/src/hud/DoublePress.tsx` (just `access` for now) and a `single` flag on `useDoublePress`, which `ActionButton` sets from the action type, so every access button (peek bar, Inspect) fires on the first press.
+- Tradeoff: kept the list client-side rather than as a property on the shared `Action` class, since it's a UI-confirmation choice, not a rule, and `ActionOption` would otherwise need a new field in every view. A flag on the hook (not a second hook) lets one button switch without breaking the rules of hooks.
+- Added a jsdom test for the hook (`web/tests/hud/doublePress.test.tsx`) and a line in `web/CLAUDE.md`. Verify's server bot tests timed out (unrelated to this change).
+
+## 2026-11-14: Phone nameplate as an ID card, desktop clock on phones, no chamfers on phones
+
+- The phone nameplate (`PlayerSummary`) now borrows the desktop ID card's look by reusing its classes (`.id-band`, `.id-portrait`, `.id-faction`, `.id-name`): pale stock with a dark outline, a faction-coloured band with "Daedalus · Crew/Mush", the portrait with the faction icon pinned on (still the popover trigger for the goal), the name in tracked caps. The stat chips still hang off its foot.
+- The clock is now one element that `TopBar` builds and places: in the desktop top bar, or under the name on phones (the amber "Day N · Cycle N" plate, countdown, pre-selection and AI-paused tags). This replaced the phone-only "D1C7 · h:mm:ss" text, and phones now get the AI-paused tag too, which they had been missing. The unused `stat.dayCycle` key and `CycleCountdown`'s `dot` option were removed.
+- The owner asked for no chamfered corners on phones. One phone rule in `card.css` zeroes every `--cut-*` on the game screen's cards, plus the iTrackie's `--cut`. `cut-card.css`'s `--c` and `TabOutline`'s cut were clamped at 0 so the inner card and tab outline go square with it. Modal frames (terminals, `FramedDialog`) and the tab shapes keep their cuts.
+- Needed correction: the dark ink set on the nameplate also reached the amber clock plate, whose fill is dark, so the plate needed its own light text. The screenshot's landscape check (top bar ≤ 70px) caught the taller card. In landscape the band shrinks to a 4px stripe with no text, and the clock moves up beside the name.
+
+## 2026-11-14: Alien fruit rework, design review and decisions
+
+The owner proposed a value-budget rework of alien fruits (each species worth 3-6, effects priced in value points) to fix eMush's problem that alien plants are rarely worth planting over bananas. Claude reviewed it against the code and eMushpedia: the banana scores 2 on the scale, so the floor fixes the core problem, but disease cost ignored its odds, the budget was per fruit while planting is per pot per day (grow time), visibility decides whether risk is knowable, Energize was overpriced given MP carry-over, and generation and grafting needed algorithms. The owner settled 14 questions in two rounds; recorded under "Alien fruits" in `docs/rules/rules-design.md`. Worked: giving a default for every question so the owner could answer in one pass; a quick simulation answered "will re-rolling be slow?" with a number (about 35-38% of random fruits fit, under 3 tries on average) instead of a guess. Needed correction: nothing yet; grafting deferred to a later pass.
+
+## 2026-11-14: Bots fight fires (#429)
+
+- **Decided by the owner:** every bot answers a fire, above astrophysics; bots don't take the Firefighter skill; searching for an unlocated fire keeps the AP reserve (a bot that found it with nothing left couldn't put it out); extinguishers go back to the front and rear corridors once no fire is known.
+- **Built with AI:** `fireShare.ts` (fixed global-chat fire lines, NERON's notice counted, Fire sensor trusted), the `extinguish` goal at 78, extinguishers in `SHARED_ITEMS`, a fire interrupt in `GoalBot`, and a fire budget line in the survival report. Choices not asked: a known fire may spend the reserve; returning an extinguisher keeps it; a fire heard about drops any goal but `extinguish` when there is something to do.
+- **What worked:** the issue's design (written by an earlier session) was close to buildable; the survival harness measured it in one run: ship destroyed 25 → 1, burnt deaths 201 → 0, mean days 3.75 → 4.57.
+- **What needed correction:** the first baseline ran in the same worktree while code was being edited, so it was rerun from a clean detached worktree of `main`; goal labels needed the `i18n-ignore` marker; a full verify while two 50-seed runs saturated the CPU gave timeouts that weren't real failures.
+
+## 2026-11-14: Clock as one amber plate; phone ID card carries the clock and menu
+
+- Owner's follow-up to the ID-card nameplate. The clock is now one amber plate on both layouts: "Day N · Cycle N", an amber divider (gold between two dark lines, crossing the plate top to bottom), then the countdown. Before, the countdown sat outside the plate as plain text. The pre-selection and AI-paused tags are now separate from the clock: beside it on desktop, under the name on phones.
+- Phones: the top bar has no panel any more, so the ID card sits straight on the scene. The plate sits over the right end of the faction band, standing a little above the card. The hamburger menu moved into the card, on its right. In landscape the band is only a stripe, so the plate follows the name instead.
+- `TopBar` builds the clock, tags and menu once and either places them itself (desktop) or hands them to `PlayerSummary` (phones).
+
+### 2026-11-14: Alien fruits, second round of decisions
+
+The owner settled the remaining readings (Skilful/Polyvalent counts as Botanist, Chef is `cook`, Mush get fruit morale, a separate disease-pool config without cold, the random-roll shape); all recorded in the "Alien fruits" entry of `docs/rules/rules-design.md`. Needed correction: Claude had counted 14 alien species from the 14 `fruit<NN>` icons without checking them, and asked the owner about a "14th species" that didn't exist. Reading the original's `Data.ods` Skins sheet showed `fruit00` is the banana and `fruit13` the Halloween fruit, so there are 12; the fact is now in `docs/assets/mush-assets.md`. Lesson: check the source data before asking the owner about it.
+- Needed correction: the clock's divider was first named `.cycle-divider`, a class the chat's "CYCLE N" rows already used (`CycleDivider.tsx`), so its `width: 1px` squeezed those rows to one character wide. Renamed to `.clock-divider`. Lesson: grep a new class name across `web/src` before using it, since the stylesheets are global.

@@ -50,7 +50,9 @@ Goal priorities and triggers were mostly set by the owner. A number in the table
 | `SCRIPTED_SHOOT_AP` | 5 | `goals/shootHunters.ts` | Owner, 2026-11-01, confirmed 2026-11-13: walking to a turret and back is overhead, so not lower |
 | `SCRIPTED_PATROL_AP` | 9 | `goals/patrolShootHunters.ts` | Owner, 2026-11-01, confirmed 2026-11-13: takeoff and landing cost 4 |
 | `CREW_SHOOT_PRIORITY` | 51 | `goals/shootHunters.ts` | Owner, 2026-11-13: bots with no hunter skill shoot after their own jobs, before research and projects |
-| `SHARED_ITEMS` | metal scrap | `itemShare.ts` | Owner, 2026-11-13: bots share item locations in a fixed global-chat line |
+| `SHARED_ITEMS` | metal scrap, extinguisher | `itemShare.ts` | Owner, 2026-11-13: bots share item locations in a fixed global-chat line; extinguishers #429 |
+| `EXTINGUISH_PRIORITY` | 78 | `goals/extinguish.ts` | Owner, 2026-11-14 (#429): above astrophysics; every bot; searching keeps the AP reserve, a known fire may spend it |
+| `EXTINGUISHER_HOMES` | front and rear corridors | `goals/extinguish.ts` | Owner, 2026-11-14 (#429): central, so anyone can reach one |
 | `HULL_REPAIR_BELOW` | 50 | `goals/repairHull.ts` | Owner, 2026-11-01, kept 2026-11-13: above it scrap is worth more elsewhere |
 | `HOLD_HUNTER_TRIGGER` | 5 | `goals/travel.ts` | Owner, 2026-11-13 (#421); left open as a tuning knob |
 | `HOLD_MAX_DAYS`, `HOLD_MIN_OXYGEN`, `JUMP_WAIT_CYCLES` | 4, 8, 2 | `goals/travel.ts` | #421 |
@@ -58,6 +60,8 @@ Goal priorities and triggers were mostly set by the owner. A number in the table
 | `SHRINK_DESK_WORK_WITHIN` | 4 | `goals/work.ts` | Owner, 2026-11-01 |
 
 Keep this table current: when a constant is added or the owner changes one, update its row with the date.
+
+Bots don't pick the Firefighter skill (owner, 2026-11-14, #429; it isn't in `BOT_SKILL_RULES`).
 
 Standing direction (owner, 2026-11-13): bots with a job of their own (Botanist, Astrophysicist, Comms Officer, Commander) do it first; fix who does what by reordering priorities before adding special cases; a bot finds things through what it saw itself or what another bot said in a fixed chat line, never through a hard-coded location.
 

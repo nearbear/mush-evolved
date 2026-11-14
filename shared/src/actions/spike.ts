@@ -41,7 +41,7 @@ export class SpikeAction extends Action<SpikeActionData> {
 
   override cooldownLeft(state: Readonly<GameState>, player: Readonly<PlayerState>, _target: SpikeActionData): number {
     const last = state.spikedOn[player.id];
-    if (last === undefined) return 0;
+    if (last === undefined || player.cheats.includes("infiniteSpores")) return 0; // the cheat also skips the cooldown
     return Math.max(0, state.config.spike.cooldownCycles - (state.cycle - last));
   }
 
