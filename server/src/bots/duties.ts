@@ -27,7 +27,10 @@ export type DutyTrigger =
   | "daily"
   /** Each cycle while there is planet work: deleting, sharing the destination, analyzing, scanning (#417). */
   | "astro"
-  /** While a planet shared in the bots' format (planetShare.ts) is in reach and the ship neither travels nor orbits (#417). */
+  /**
+   * Preparing and holding jumps for the ship when not traveling or in orbit: to a shared destination (planetShare.ts,
+   * #417) or an escape jump into empty space (#421).
+   */
   | "destination"
   /** While hunters attack the ship (`view.hunters.count`, public). */
   | "hunters"
@@ -91,7 +94,8 @@ export const BOT_DUTIES: readonly Duty[] = [
   { skill: "first_aid", when: "model", actions: ["heal"], prompt: "You know First Aid: you have free heal points. Offer when someone asks for healing." },
 
   // --- Titles ---
-  // Owner, 2026-11-12 (#417): travels to the destination the Astrophysicist shares, with exactly its distance in fuel.
+  // Owner, 2026-11-12 (#417, #421): prepares jumps in advance and holds `travel` until hunters >= 8, 4 days of holding,
+  // or oxygen <= 8 (jumping to the shared planet when one is in reach, else 1-fuel escape jump on the current heading).
   // Above astro (owner, 2026-11-12): it costs a few AP and is what the search is for. Leaving orbit waits for slice 3.
   { title: "commander", when: "destination", actions: ["check_combustion", "take_fuel", "load_fuel", "unload_fuel", "turn_ship", "travel"], priority: 77, prompt: "You're the Commander: only you can steer the ship and, once PILGRED is repaired, take it home." },
   // BIOS settings are free; no strategy decided.

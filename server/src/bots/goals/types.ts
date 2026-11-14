@@ -2,13 +2,13 @@
 // to a bed and rest, walk to the lab and research) instead of choosing one action at a time. Goals are pure: the bot's
 // own view and memory in, one step out, so they are tested without a server or a model.
 
-import type { Action, GameClientMessage, LobbyLanguage, PlayerView, RoomId } from "@mush2/shared";
+import type { Action, GameClientMessage, LobbyLanguage, PlanetDirection, PlayerView, RoomId } from "@mush2/shared";
 
 /**
- * A message a goal sends that isn't an action (#417): sharing a planet. It goes through the same path as a person's
- * (`GameRoom.social`: rate limit, moderation, the rules), and is recorded like one.
+ * A message a goal sends that isn't an action (#417, #421): sharing a planet or a global-chat signal. It goes through
+ * the same path as a person's (`GameRoom.social`: rate limit, moderation, the rules), and is recorded like one.
  */
-export type BotSocial = Extract<GameClientMessage, { type: "sharePlanet" }>;
+export type BotSocial = Extract<GameClientMessage, { type: "sharePlanet" | "chat" }>;
 
 /** What an expedition goes for: an Oxygen sector or a Hydrocarbon sector (owner, 2026-11-12, #417). */
 export type ExpeditionKind = "oxygen" | "fuel";
@@ -57,6 +57,18 @@ export interface BotMemory {
    * else null: bots don't shoot asteroids, so the hunter goals stay off while the count is unchanged (`onlyAsteroids`).
    */
   asteroidsOnly: number | null;
+  /** Last fuel reading the Commander saw in the combustion chamber (`null` if unknown or cleared by traveling, #421). */
+  combustion: number | null;
+  /** Cycle when the Commander started holding the jump (`null` when not holding, #421). */
+  holdSince: number | null;
+  /** Last heading seen on a Command terminal (`null` until visited, #421). */
+  heading: PlanetDirection | null;
+  /** True when the Commander jumped or gave up while holding and still needs to post `"Jump: off"` (#421). */
+  cancelHold: boolean;
+  /** True right after a jump so `travel` finishes once `"Jump: off"` is posted (#421). */
+  justJumped: boolean;
+  /** Failure reason saved while `"Jump: off"` is posted before failing `travel` (#421). */
+  failedReason: string | null;
   /** A seeded roll in [0, n), for choices with no better reason (the bot's own RNG, never `Math.random`). */
   roll(n: number): number;
 }

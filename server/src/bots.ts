@@ -2,8 +2,10 @@
 // spend cap, none of which belong in the pure rules package.
 
 import { characterName, legalIn, nextInt, type Action, type LobbyLanguage, type PlayerView, type RngState } from "@mush2/shared";
-import { hasBotSkill } from "./bots/duties.ts";
+import { hasBotSkill, holdsTrigger } from "./bots/duties.ts";
+import { canReachBridgeWithTravelAp } from "./bots/goals/blocks.ts";
 import { END_CYCLE, helpGoal, helpTasks, SOLO_GOALS, type BotMemory, type BotSocial, type Goal, type GoalDef } from "./bots/goals/index.ts";
+import { holdStartCycle, isHoldingJump } from "./bots/planetShare.ts";
 import { buildPrompt, describeLogEntry, observeShrinks, parseReply, type BotMessage } from "./prompt.ts";
 import type { ModelGate } from "./model.ts";
 
@@ -131,6 +133,12 @@ export class GoalBot implements Bot {
       shrinks: new Set(),
       lastExpedition: null,
       asteroidsOnly: null,
+      combustion: null,
+      holdSince: null,
+      heading: null,
+      cancelHold: false,
+      justJumped: false,
+      failedReason: null,
       roll: (n) => {
         let i: number;
         [i, this.rng] = nextInt(this.rng, n);
@@ -217,7 +225,13 @@ export class GoalBot implements Bot {
       }
       if (step.kind === "act") {
         // A stale or wrong step is the goal's failure, never an illegal input.
-        if (++this.actions <= GOAL_MAX_ACTIONS && legal.some((a) => sameAction(a, step.action))) return step.action;
+        if (++this.actions <= GOAL_MAX_ACTIONS && legal.some((a) => sameAction(a, step.action))) {
+          if (!this.keepsHeldJump(view, step.action)) {
+            this.end(true);
+            continue;
+          }
+          return step.action;
+        }
         this.end(true);
       } else this.end(!(step.kind === "done" && step.again));
     }
@@ -256,6 +270,32 @@ export class GoalBot implements Bot {
     this.hp = view.you.hp;
     this.memory.visited.add(view.you.room);
     observeShrinks(view, this.memory.shrinks);
+    if (view.navigation.traveling || view.navigation.orbiting) this.memory.combustion = null;
+    if (view.navigation.heading !== null) this.memory.heading = view.navigation.heading;
+    const chatHold = holdStartCycle(view);
+    if (chatHold !== null && this.memory.holdSince === null) this.memory.holdSince = chatHold;
+  }
+
+  /**
+   * When the Commander is holding a jump (#421), any non-travel goal must still leave enough AP/MP to walk back to the
+   * bridge and pay 1 AP to `travel`.
+   */
+  private keepsHeldJump(view: PlayerView, action: Action): boolean {
+    if (
+      this.goal?.id === "travel" ||
+      this.goal?.id === "returnToSol" ||
+      !holdsTrigger(view, "destination") ||
+      view.navigation.traveling ||
+      view.navigation.orbiting ||
+      (this.memory.holdSince === null && !isHoldingJump(view))
+    ) {
+      return true;
+    }
+    const opt = view.actions.find((a) => sameAction(a.action, action));
+    const nextRoom = action.type === "move" ? action.to : view.you.room;
+    const nextAp = view.you.ap - (opt?.cost.ap ?? 0);
+    const nextMp = view.you.mp - (opt?.cost.mp ?? 0);
+    return canReachBridgeWithTravelAp(view, nextRoom, nextAp, nextMp);
   }
 
   /**

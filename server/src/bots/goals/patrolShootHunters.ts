@@ -2,6 +2,7 @@ import type { PlayerView, RoomId } from "@mush2/shared";
 import { dutyPriority, holdsTrigger } from "../duties.ts";
 import { act, canAfford, failed, find, goTo, offered, roomsWith, where } from "./blocks.ts";
 import { onlyAsteroids, shotOrder } from "./hunterTargets.ts";
+import { jumpDueByChat } from "./travel.ts";
 import type { BotMemory, Goal, GoalDef, GoalStep } from "./types.ts";
 
 /** A ship's interface in its bay (`PATROL_INTERFACE` in shared/src/patrol.ts). */
@@ -21,7 +22,9 @@ const isPatrolDuty = (d: { actions?: readonly string[] }): boolean => Boolean(d.
  * destroyed ship kills its pilot (hunters.ts), so it always keeps `landAp`; one goal is one flight. Which ships are
  * docked is seen only in the bay, so a bay with none fails the goal there and the next nearest is offered. A bot that
  * finds itself aboard (a flight carried over a cycle, or it was hurt) is offered only this goal, to finish the flight:
- * ships have no doors, so nothing else could work.
+ * ships have no doors, so nothing else could work. Once the Commander's jump is due (`jumpDueByChat`: `"Jump: now"`, or a
+ * hold whose public trigger is met, #421) it doesn't take off, and one already out lands without shooting: the jump would take the ship and its pilot. Before
+ * that, a held jump changes nothing: pilots fly and gunners shoot (owner, 2026-11-13).
  */
 export const patrolShootHunters: GoalDef = {
   id: "patrolShootHunters",
@@ -30,7 +33,7 @@ export const patrolShootHunters: GoalDef = {
   },
   options(view, memory) {
     if (view.patrolShip !== null) return [sortie(view, null)];
-    if (view.hunters.count === 0 || onlyAsteroids(view, memory) || !holdsTrigger(view, "hunters", isPatrolDuty)) return [];
+    if (view.hunters.count === 0 || jumpDueByChat(view) || onlyAsteroids(view, memory) || !holdsTrigger(view, "hunters", isPatrolDuty)) return [];
     if (memory.scripted && view.you.ap < SCRIPTED_PATROL_AP) return [];
     const { takeoffAp, landAp } = view.config;
     const shot = view.you.resources.shoot > 0 ? 0 : view.config.patrolShotAp;
@@ -56,7 +59,7 @@ function sortie(view: PlayerView, bay: RoomId | null): Goal {
         flown = true;
         return fly(v, memory);
       }
-      if (flown || bay === null || v.hunters.count === 0 || onlyAsteroids(v, memory)) return { kind: "done" };
+      if (flown || bay === null || v.hunters.count === 0 || jumpDueByChat(v) || onlyAsteroids(v, memory)) return { kind: "done" };
       const walk = goTo(v, bay);
       if (walk) return walk;
       const takeoff = offered(v, "takeoff").find((o) => !o.action.equipment.endsWith(`:${PASIPHAE}`));
@@ -80,7 +83,7 @@ function fly(v: PlayerView, memory: BotMemory): GoalStep {
     v.hunters.list,
   )[0];
   const charges = v.patrolShip?.charges ?? 0;
-  if (shot && charges > 0 && v.hunters.count > 0 && v.you.ap - shot.cost.ap >= v.config.landAp) return act(shot.action);
+  if (!jumpDueByChat(v) && shot && charges > 0 && v.hunters.count > 0 && v.you.ap - shot.cost.ap >= v.config.landAp) return act(shot.action);
   const land = find(v, "land");
   return land ? act(land) : { kind: "wait" };
 }

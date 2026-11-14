@@ -1,4 +1,4 @@
-import { act, canAfford, failed, find, goTo, roomsWith, where } from "./blocks.ts";
+import { act, failed, find, goTo, rawCanAfford, roomsWith, where } from "./blocks.ts";
 import type { GoalDef } from "./types.ts";
 
 /**
@@ -11,7 +11,7 @@ export const returnToSol: GoalDef = {
   options(view, memory) {
     if (!view.pilgredRepaired) return [];
     if (view.titles.find((t) => t.id === "commander")?.holder !== view.you.character) return [];
-    const room = roomsWith(view, ["PILOT_MODULE"]).find((r) => !memory.ended.has(`returnToSol:${r}`) && canAfford(view, r, view.config.returnToSolAp, 0));
+    const room = roomsWith(view, ["PILOT_MODULE"]).find((r) => !memory.ended.has(`returnToSol:${r}`) && rawCanAfford(view, r, view.config.returnToSolAp, 0));
     if (!room) return [];
     return [
       {
