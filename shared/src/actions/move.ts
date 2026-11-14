@@ -4,7 +4,7 @@ import { wheelAlong } from "./accommodate.ts";
 import { logPublic } from "../log.ts";
 import { isBlocked } from "./guard.ts";
 import { arrive } from "../spot.ts";
-import { moveCost, movementRules } from "../modifiers.ts";
+import { enterRoom, enteredRoom, moveCost, movementRules } from "../modifiers.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
 export type MoveActionData = { type: "move"; to: string };
@@ -49,6 +49,8 @@ export class MoveAction extends Action<MoveActionData> {
     logPublic(state, target.to, "entered", { name: player.character, room: from });
     leaveAccommodation(state, player);
     wheelAlong(state, player, from);
+    enteredRoom(state, player);
+    enterRoom(state, player);
   }
 }
 

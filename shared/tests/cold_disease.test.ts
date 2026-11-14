@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { addDisease } from "../src/diseases.ts";
-import { cycleChanged } from "../src/modifiers.ts";
+import { cycleChanged, enterRoom } from "../src/modifiers.ts";
 import { createGame, newCycle } from "../src/rules.ts";
 import { nextInt } from "../src/rng.ts";
 import type { GameConfig } from "../src/types.ts";
@@ -14,6 +14,8 @@ const config: GameConfig = {
   startSkills: [],
   startInventory: [],
   startItems: [],
+  // No cycle spread here: its rolls would move the RNG the seeded tests below follow.
+  diseases: { ...DEFAULT_CONFIG.diseases, allDiseaseStats: DEFAULT_CONFIG.diseases.allDiseaseStats.map(({ cycleSpread: _c, ...rest }) => rest) },
 };
 
 describe("Cold disease", () => {
@@ -78,5 +80,46 @@ describe("Cold disease", () => {
 
     expect(healthy.mp).toBe(5);
     expect(state.log.some((entry) => entry.key === "coldDiseaseMpLost")).toBe(false);
+  });
+
+  it("spreads from a sick player to the other, whoever walks in", () => {
+    for (const mover of ["sick", "healthy"] as const) {
+      const state = createGame(makeSeats(4), config, 1);
+      const stats = state.config.diseases.allDiseaseStats[state.config.diseases.allDiseases.indexOf("cold_disease")];
+      if (stats) state.config.diseases.allDiseaseStats[0] = { ...stats, roomSpread: 1 }; // replaced, not edited: the stats object may be shared
+      const sick = player(state, "p0");
+      const healthy = player(state, "p1");
+      addDisease(state, sick, "cold_disease");
+      sick.room = healthy.room = "FRONT_CORRIDOR";
+      enterRoom(state, mover === "sick" ? sick : healthy);
+      expect(healthy.modifiers).toContain("cold_disease");
+    }
+  });
+
+  it("spreads to the others in the room at a cycle change", () => {
+    const state = createGame(makeSeats(4), config, 1);
+    const stats = state.config.diseases.allDiseaseStats[0];
+    if (stats) state.config.diseases.allDiseaseStats[0] = { ...stats, cycleSpread: 1 };
+    const [sick, near, far] = [player(state, "p0"), player(state, "p1"), player(state, "p2")];
+    addDisease(state, sick, "cold_disease");
+    sick.room = near.room = "FRONT_CORRIDOR";
+    far.room = "BRIDGE";
+    cycleChanged(state);
+    expect(near.modifiers).toContain("cold_disease");
+    expect(far.modifiers).not.toContain("cold_disease");
+  });
+
+  it("lets a Mush spread it at a cycle change without losing anything", () => {
+    const state = createGame(makeSeats(4), config, 1);
+    const stats = state.config.diseases.allDiseaseStats[0];
+    if (stats) state.config.diseases.allDiseaseStats[0] = { ...stats, cycleSpread: 1 };
+    const mush = state.players.find((p) => p.role === "mush")!;
+    const other = state.players.find((p) => p.role === "human")!;
+    addDisease(state, mush, "cold_disease");
+    mush.room = other.room = "FRONT_CORRIDOR";
+    mush.mp = 5;
+    for (let i = 0; i < 20; i++) cycleChanged(state);
+    expect(other.modifiers).toContain("cold_disease");
+    expect(mush.mp).toBe(5);
   });
 });

@@ -16,6 +16,7 @@ import { antic_perfume } from "./modifiers/antic_perfume.ts";
 import { caffeinomaniac } from "./modifiers/caffeinomaniac.ts";
 import { cold_disease } from "./modifiers/cold_disease.ts";
 import { extreme_tinnitus_disease } from "./modifiers/extreme_tinnitus_disease.ts";
+import { gastroenteris_disease } from "./modifiers/gastroenteris_disease.ts";
 import { fungal_infection_disease } from "./modifiers/fungal_infection_disease.ts";
 import { broken_nose_injury } from "./modifiers/broken_nose_injury.ts";
 import { sapper } from "./modifiers/sapper.ts";
@@ -139,6 +140,7 @@ export interface Modifier extends Partial<FoldHooks> {
    */
   onActionFailed?: (next: GameState, player: PlayerState, apSpent: number) => void;
   /** Runs for each living player at a cycle change, after the AP refill. Mutates a state the caller already cloned. */
+  /** (A disease hook also reaches a Mush: it guards its own stat effects with `diseaseAffects`, diseases.ts.) */
   onCycle?: (next: GameState, player: PlayerState) => void;
   /** Runs after the player showers. Mutates a state the caller already cloned. */
   onShower?: (next: GameState, player: PlayerState) => void;
@@ -148,6 +150,8 @@ export interface Modifier extends Partial<FoldHooks> {
   onPick?: (next: GameState, player: PlayerState) => void;
   /** Runs whenever the ship moves */
   onShipMovement?: (next: GameState, player: PlayerState) => void;
+  /** Runs after the holder moves into a room, whoever is there (a move action). Mutates a state the caller already cloned. */
+  onEnterRoom?: (next: GameState, player: PlayerState) => void;
   /** Runs when a player enters a room with another player */
   onEncounter?: (next: GameState, player: PlayerState, other: PlayerState) => void;
 }
@@ -155,11 +159,32 @@ export interface Modifier extends Partial<FoldHooks> {
 export type ModifierRegistry = Readonly<Record<string, Modifier>>;
 
 /** Items and skills will register here too. When a skill gains rules, update its entry in SKILL_STATUS (skills.ts). */
-export const MODIFIERS: Record<string, Modifier> = { lying_down, medic, first_aid, sturdy, creative, expert, antic_perfume, logistics, caffeinomaniac, cold_disease, extreme_tinnitus_disease, fungal_infection_disease, broken_nose_injury, computer, designer, sprint, physicist, botanic, pacifist, immunity, mankind_only_hope, wheelchair, hyperactive, pilot, engineer, gunman, gunner, persistent, polymath, space_tactics, paranoid, green_thumb, robotics, astrophysician, lethargy, escape, sapper };
+export const MODIFIERS: Record<string, Modifier> = { lying_down, medic, first_aid, sturdy, creative, expert, antic_perfume, logistics, caffeinomaniac, cold_disease, extreme_tinnitus_disease, fungal_infection_disease, gastroenteris_disease, broken_nose_injury, computer, designer, sprint, physicist, botanic, pacifist, immunity, mankind_only_hope, wheelchair, hyperactive, pilot, engineer, gunman, gunner, persistent, polymath, space_tactics, paranoid, green_thumb, robotics, astrophysician, lethargy, escape, sapper };
 
-/** The ids every hook folds over: the player's skills (book slot last), then their other modifiers. */
+/**
+ * The ids every numeric (fold) and cost hook runs over: the player's skills (book slot last), then their other
+ * modifiers. A Mush's diseases are left out, so they never change a Mush's numbers (diseases.ts).
+ */
 export function modifierIds(player: Readonly<PlayerState>): string[] {
-  return [...skillsOf(player), ...player.modifiers];
+  const ids = [...skillsOf(player), ...player.modifiers];
+  return player.role === "mush" ? ids.filter((id) => !isDiseaseId(id)) : ids;
+}
+
+const isDiseaseId = (id: string): boolean => id.endsWith("_disease");
+
+/** The diseases a Mush has, which `modifierIds` leaves out. Empty for anyone else. */
+function mushDiseaseIds(player: Readonly<PlayerState>): string[] {
+  return player.role === "mush" ? player.modifiers.filter(isDiseaseId) : [];
+}
+
+/**
+ * The ids the event hooks (onCycle, onShipMovement, onEnterRoom, onEncounter) run over: `modifierIds` plus a Mush's
+ * diseases. A disease's event hook can do three things at once, so it decides for itself: stat effects only when
+ * `diseaseAffects(player)` (diseases.ts), special logs only when `canHaveSpecialLogs(player)`, spreading always.
+ * Fold and cost hooks never reach a Mush's diseases.
+ */
+function eventIds(player: Readonly<PlayerState>): string[] {
+  return [...modifierIds(player), ...mushDiseaseIds(player)];
 }
 
 /** Folds `base` through the named hook of each of the player's modifiers, in list order. */
@@ -483,6 +508,14 @@ export function showered(next: GameState, player: PlayerState, registry: Modifie
   for (const id of modifierIds(player)) registry[id]?.onShower?.(next, player);
 }
 
+/**
+ * A Mush's meal has no effects (consume.ts), so only their diseases' onConsume hooks run, and each of those must keep
+ * to special logs (`canHaveSpecialLogs`), never stats. The Mush's skills' onConsume hooks do not run.
+ */
+export function consumedByMush(next: GameState, player: PlayerState, item: ItemState, registry: ModifierRegistry = MODIFIERS): void {
+  for (const id of mushDiseaseIds(player)) registry[id]?.onConsume?.(next, player, item);
+}
+
 /** Runs every onConsume hook of the player's modifiers. Mutates a state the caller already cloned. */
 export function consumed(next: GameState, player: PlayerState, item: ItemState, registry: ModifierRegistry = MODIFIERS): void {
   for (const id of modifierIds(player)) registry[id]?.onConsume?.(next, player, item);
@@ -497,23 +530,30 @@ export function skillPicked(next: GameState, player: PlayerState, skill: string,
 export function cycleChanged(next: GameState, registry: ModifierRegistry = MODIFIERS): void {
   for (const player of next.players) {
     if (!player.alive) continue;
-    for (const id of modifierIds(player)) registry[id]?.onCycle?.(next, player);
+    for (const id of eventIds(player)) registry[id]?.onCycle?.(next, player);
   }
 }
 
 export function shipMoved(next: GameState, registry: ModifierRegistry = MODIFIERS): void {
   for (const player of next.players) {
     if (!player.alive) continue;
-    for (const id of modifierIds(player)) registry[id]?.onShipMovement?.(next, player);
+    for (const id of eventIds(player)) registry[id]?.onShipMovement?.(next, player);
   }
 }
-/*  */
-export function enterRoom(state: GameState, player: PlayerState, ctx: CostContext, registry: ModifierRegistry = MODIFIERS): void {
-  for (const holder of roomHolders(ctx.state, ctx.actor.room)) {
-    for (const id of modifierIds(holder)) {
-      registry[id]?.onEncounter?.(state, player, holder);
-      registry[id]?.onEncounter?.(state, holder, player);
-    }
+/** Runs every onEnterRoom hook of the player's modifiers, once they are in the new room. Mutates a state the caller already cloned. */
+export function enteredRoom(next: GameState, player: PlayerState, registry: ModifierRegistry = MODIFIERS): void {
+  for (const id of eventIds(player)) registry[id]?.onEnterRoom?.(next, player);
+}
+
+/**
+ * A player has just moved into a room: each modifier of theirs and of everyone already there gets its onEncounter
+ * hook, carrier first, with the other as the one it may reach (a cold spreads both ways). A Mush's diseases still spread.
+ */
+export function enterRoom(state: GameState, player: PlayerState, registry: ModifierRegistry = MODIFIERS): void {
+  for (const other of roomHolders(state, player.room)) {
+    if (other.id === player.id) continue;
+    for (const id of eventIds(other)) registry[id]?.onEncounter?.(state, other, player);
+    for (const id of eventIds(player)) registry[id]?.onEncounter?.(state, player, other);
   }
 }
 

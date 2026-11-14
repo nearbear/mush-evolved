@@ -567,12 +567,14 @@ export const DEFAULT_CONFIG: GameConfig = {
     allDiseases: [
       "cold_disease",
       "extreme_tinnitus_disease",
-      "fungal_infection_disease"],
+      "fungal_infection_disease",
+      "gastroenteris_disease"],
     allDisorders: ["depression_disorder"],
     allInjuries: ["broken_nose_injury"],
     allDiseaseStats: [
-      {type: "disease", durationMin: 8, durationMax: 12, roomSpread: 0.02}, 
+      {type: "disease", durationMin: 8, durationMax: 12, roomSpread: 0.02, cycleSpread: 0.02}, 
       {type: "disease", durationMin: 12, durationMax: 20}, 
+      {type: "disease", durationMin: 8, durationMax: 12, spreadByDTT: true},
       {type: "disease", durationMin: 8, durationMax: 12}],
     allDisorderStats: [{type: "disorder", resistance: 8}],
     allInjuryStats: [{type: "injury"}],
