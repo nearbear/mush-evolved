@@ -3628,3 +3628,8 @@ The owner asked for somewhere to put their own art (first: a new item icon). Ask
 ## 2026-11-14: Bot memory in room storage (#440)
 
 Implemented the issue's proposal as written: `GoalBot.snapshot()`/`restore()` (optional on `Bot`) produce a plain-data `BotMemorySnapshot` (`server/src/bots/memoryStore.ts`), saved as `bot:<seat>` in the same `persist` put as `"game"` and read back in `onStart`; `BOT_MEMORY_VERSION` drops other versions, and `restore` merges the stored snapshot over the fresh bot's own, so added fields default. The goal itself isn't stored (closures). What worked: using the fresh bot's own snapshot as the defaults kept the "new field" rule to one line. The hold test includes a control (a bot without the restore does post `Jump: hold` again), so it proves the restore matters rather than passing by accident. Needed correction: an existing storage-size test counted keys exactly and broke when the first save after launch also wrote eight bot keys; it now counts non-bot keys. Leak-check found no leaks.
+
+## 2026-11-14: Bots work on Fire Detector first (#428)
+
+- Added `BOT_PROJECT_ORDER` and `pickProject` in `server/src/bots/goals/project.ts`: the project goal takes the first offered project in that list, otherwise the most advanced as before. Owner chose `["FIRE_SENSOR"]` alone, so the survival harness can measure Fire Detector by itself.
+- Correction to the issue's premise: projects aren't all offered at once. Only `config.project.offerCount` (3) from the shuffled `projectDeck` are, so 0% ties went by deck order, not `PROJECTS` order, and the bot can only prefer Fire Detector when it's in the offered batch. Tests pin the deck to cover offered, started-by-someone-else, completed and not-offered cases.

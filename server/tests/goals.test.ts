@@ -1,4 +1,4 @@
-import { CHAT_PAGE, DEFAULT_CONFIG, SHIP_ROOMS, applyAction, applyInput, legalIn, pushChat, newCycle, shortestPath, startGame, viewFor, type Action, type CharacterId, type GameState, type PlayerView } from "@mush2/shared";
+import { CHAT_PAGE, DEFAULT_CONFIG, SHIP_ROOMS, applyAction, applyInput, legalIn, pushChat, newCycle, shortestPath, startGame, viewFor, type Action, type CharacterId, type GameState, type PlayerView, type ProjectId } from "@mush2/shared";
 import { describe, expect, it } from "vitest";
 import { GOAL_MAX_ACTIONS, GoalBot } from "../src/bots.ts";
 import { astro, chooseDestination, judgePlanet } from "../src/bots/goals/astro.ts";
@@ -10,7 +10,7 @@ import { SOLO_GOALS } from "../src/bots/goals/index.ts";
 import { repairHull } from "../src/bots/goals/repairHull.ts";
 import { rest } from "../src/bots/goals/rest.ts";
 import { research } from "../src/bots/goals/research.ts";
-import { project } from "../src/bots/goals/project.ts";
+import { BOT_PROJECT_ORDER, pickProject, project } from "../src/bots/goals/project.ts";
 import { SHRINK_DESK_WORK_WITHIN } from "../src/bots/goals/work.ts";
 import { onlyAsteroids, shotOrder } from "../src/bots/goals/hunterTargets.ts";
 import { patrolShootHunters } from "../src/bots/goals/patrolShootHunters.ts";
@@ -985,6 +985,47 @@ describe("a Shrink holds its AP", () => {
     expect(taken.some((a) => a.type === "research")).toBe(true);
     expect(ap(after, id)).toBeGreaterThanOrEqual(max - SHRINK_DESK_WORK_WITHIN);
     expect(ap(after, id)).toBeLessThan(max - SHRINK_DESK_WORK_WITHIN + DEFAULT_CONFIG.research.cost.ap);
+  });
+});
+
+describe("project order (#428)", () => {
+  /** A human at the NERON core with AP, offered `deck` (dealt first), with `progress` already on the ship's projects. */
+  function atCore(progress: Record<string, number> = {}, deck: ProjectId[] = ["PATROL_SHIP_LAUNCHER", "FIRE_SENSOR", "PLASMA_SHIELD"]) {
+    const { game: start, id } = setup();
+    const core = roomsWith(viewFor(start, id), ["NERON_CORE"])[0]!;
+    const game = edit(start, id, (p) => {
+      p.room = core;
+      p.ap = 10;
+    });
+    Object.assign(game.projects, progress);
+    game.projectDeck = [...deck, ...game.projectDeck.filter((p) => !deck.includes(p))];
+    return { game, id };
+  }
+  const chosen = (game: GameState, id: string) => {
+    const option = pickProject(viewFor(game, id));
+    return option?.action.type === "project" ? option.action.project : undefined;
+  };
+
+  it("works on Fire Detector ahead of unimplemented projects at 0%", () => {
+    expect(BOT_PROJECT_ORDER[0]).toBe("FIRE_SENSOR");
+    const { game, id } = atCore();
+    expect(chosen(game, id)).toBe("FIRE_SENSOR");
+  });
+
+  it("works on Fire Detector ahead of a project someone (a Mush) already started", () => {
+    const { game, id } = atCore({ PATROL_SHIP_LAUNCHER: 40 });
+    expect(chosen(game, id)).toBe("FIRE_SENSOR");
+  });
+
+  it("falls back to the most advanced once Fire Detector is done", () => {
+    const { game, id } = atCore({ FIRE_SENSOR: 100, PLASMA_SHIELD: 20 });
+    expect(chosen(game, id)).toBe("PLASMA_SHIELD");
+  });
+
+  it("falls back to the most advanced when Fire Detector isn't offered", () => {
+    const { game, id } = atCore({ PLASMA_SHIELD: 20 }, ["PATROL_SHIP_LAUNCHER", "PLASMA_SHIELD", "BRIC_BROC"]);
+    expect(viewFor(game, id).actions.some((o) => o.action.type === "project" && o.action.project === "FIRE_SENSOR")).toBe(false);
+    expect(chosen(game, id)).toBe("PLASMA_SHIELD");
   });
 });
 
