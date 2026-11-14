@@ -20,11 +20,14 @@ import { fireCycle, ignitePending, isOnFire } from "./fire.ts";
 import { incidentsCycle } from "./incidents.ts";
 import { initNpc, newNpcState, npcCycle } from "./npcs.ts";
 import { cheatRoomStock } from "./cheatStock.ts";
+import { CHEAT_ROOM } from "./cheatRoom.ts";
+import { leaveAccommodation, pushing } from "./accommodation.ts";
+import { board } from "./actions/takeoff.ts";
 import { newLostAnalysis, rollAtSelection } from "./lostAnalysis.ts";
 import { hopelessCycle } from "./morale.ts";
 import { relayView } from "./relayView.ts";
 import { itemsIn, rechargeMicrowaves, startCharges, visibleItemsIn } from "./items.ts";
-import { actionFailed, apGain, mpGain, carePointsGain, channelLimit, computerPointsCap, computerPointsGain, shootPointsGain, cycleChanged, designerPointsGain, engineerPointsGain, gardenPointsGain, dailyMoraleLoss, inventorySlots, movementRules, pilgredPointsGain, satietyLoss } from "./modifiers.ts";
+import { actionFailed, apGain, enterRoom, enteredRoom, mpGain, carePointsGain, channelLimit, computerPointsCap, computerPointsGain, shootPointsGain, cycleChanged, designerPointsGain, engineerPointsGain, gardenPointsGain, dailyMoraleLoss, inventorySlots, movementRules, pilgredPointsGain, satietyLoss } from "./modifiers.ts";
 import { contaminationSeenBy, convert } from "./infection.ts";
 import { isHungry, publicStatusesOf, statusesOf } from "./statuses.ts";
 import { coupCycle } from "./coup.ts";
@@ -53,9 +56,9 @@ import { callNextRebel, commsCycle, commsTerminalView, comTerminalsHere, newComm
 import { botanyCycle, botanyDay, plantView } from "./botany.ts";
 import { burnOxygen, shipView, startShip } from "./ship.ts";
 import { allTurrets, huntersCycle, newHunters, startHunters, turretCharges, turretsHere } from "./hunters.ts";
-import { expeditionReturnAt, lostPlayers, withCrew } from "./expeditions.ts";
+import { expeditionReturnAt, lostPlayers, onExpedition, withCrew } from "./expeditions.ts";
 import { ICARUS_EQUIPMENT } from "./actions/icarus_takeoff.ts";
-import { canScavenge, interfaceId, isLostPlace, newPatrolShips, PATROL_INTERFACE, PATROL_SHIPS, shipAboard } from "./patrol.ts";
+import { canScavenge, interfaceId, isLostPlace, newPatrolShips, offShip, PATROL_INTERFACE, PATROL_SHIPS, shipAboard } from "./patrol.ts";
 import { preselectionCycle } from "./preselection.ts";
 import { SUCCESSION, TITLE_IDS, assignTitles, noTitles } from "./titles.ts";
 import type {
@@ -378,6 +381,30 @@ export function solCheat(state: GameState, playerId: PlayerId): ActionResult {
   const next = clone(state);
   logPublic(next, undefined, "returnedToSol", { name: p.character });
   endGame(next, winnerOnArrival(next), "sol");
+  return { ok: true, state: next };
+}
+
+/**
+ * Takes the player to the cheat room (#170, development cheat, gated by the server like setCheat). Not a move: no door,
+ * no cost, no log line, so the room they leave sees them vanish in place. Out of bed first; refused while pushing or
+ * being pushed (that would need a push to end, which logs), and from off the ship. Mutates nothing it was given.
+ */
+export function cheatRoomCheat(state: GameState, playerId: PlayerId): ActionResult {
+  const p = findPlayer(state, playerId);
+  if (!p) return fail("unknown_player");
+  if (state.phase !== "playing") return fail("game_over");
+  if (!state.config.cheatRoom) return fail("no_cheat_room");
+  if (!p.alive) return fail("dead");
+  if (p.room === CHEAT_ROOM) return fail("already_there");
+  if (offShip(p.room) || onExpedition(state, p)) return fail("off_ship");
+  if (p.pushedBy !== undefined || pushing(state, p)) return fail("being_pushed");
+  const next = clone(state);
+  const me = findPlayer(next, playerId)!;
+  getUp(me);
+  leaveAccommodation(next, me);
+  board(me, CHEAT_ROOM);
+  enteredRoom(next, me);
+  enterRoom(next, me);
   return { ok: true, state: next };
 }
 

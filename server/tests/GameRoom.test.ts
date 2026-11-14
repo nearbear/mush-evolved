@@ -280,6 +280,23 @@ describe("GameRoom cheats", () => {
     expect([...storage.data.keys()].some((k) => k.startsWith("input:"))).toBe(false);
   });
 
+  it("takes the sender to the cheat room only where cheats are allowed (#170)", async () => {
+    const { room: closed, storage } = await newRoom(3);
+    const closedConn = connect(closed, "tok0");
+    await send(closed, closedConn, { type: "cheatRoom" });
+    expect(lastMsg(closedConn)).toEqual({ type: "error", message: "cheats_disabled" });
+    expect([...storage.data.keys()].some((k) => k.startsWith("input:"))).toBe(false);
+
+    const { room } = await newRoom(3, new FakeStorage(), CHEATS);
+    const [a, b] = [connect(room, "tok0"), connect(room, "tok1")];
+    const logBefore = lastView(b).log.length;
+    await send(room, a, { type: "cheatRoom" });
+    expect(lastView(a).you.room).toBe(CHEAT_ROOM);
+    expect(lastView(a).roomEquipment.some((e) => e.type === "SUPERKUBE")).toBe(true);
+    // The others get a fresh view too, with no log line about it.
+    expect(lastView(b).log).toHaveLength(logBefore);
+  });
+
   it("tells the client whether cheats are allowed", async () => {
     const off = connect((await newRoom(3)).room, "tok0");
     const on = connect((await newRoom(3, new FakeStorage(), { ALLOW_CHEATS: "true" })).room, "tok0");
