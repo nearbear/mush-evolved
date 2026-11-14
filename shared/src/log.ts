@@ -15,6 +15,7 @@
 
 import type { ActionVisibility } from "./actions/action.ts";
 import { CAMERA_EQUIPMENT } from "./equipment.ts";
+import { rollFloat } from "./rng.ts";
 import { hasSkill } from "./skills.ts";
 import type { GameState, LogEntry, LogParams, PlayerId, PlayerState, RoomId } from "./types.ts";
 
@@ -98,7 +99,12 @@ export function logSecret(state: GameState, actor: PlayerId, key: string, params
   pushLog(state, { key, ...(params && { params }), room: p.room, visibleTo, kind: "secret", ...spilled(visibleTo) });
 }
 
-/** Mutates a state that the caller already cloned. Room history only if a camera saw it. */
+/**
+ * Mutates a state that the caller already cloned. Room history only if a camera saw it, or an Observant noticed it:
+ * each living Observant in the room other than the actor rolls `observant.revealChance` in turn (owner, 2026-11-14,
+ * eMushpedia Observateur), and the first who succeeds makes it room history, like a camera, and adds a public line
+ * naming them. No roll when a camera already shows it. A Mush Observant never reveals their own covert actions.
+ */
 export function logCovert(state: GameState, actor: PlayerId, key: string, params?: LogParams): void {
   const p = state.players.find((pl) => pl.id === actor);
   if (!p) return;
@@ -106,8 +112,16 @@ export function logCovert(state: GameState, actor: PlayerId, key: string, params
     outcastLine(state, p.room, "covert", key, params);
     return;
   }
-  const visibleTo = cameraSees(state, p.room, params) ? "all" : [actor];
+  const noticer = cameraSees(state, p.room, params) ? undefined : observantNotices(state, p);
+  const visibleTo = cameraSees(state, p.room, params) || noticer ? "all" : [actor];
   pushLog(state, { key, ...(params && { params }), room: p.room, visibleTo, kind: "covert", ...spilled(visibleTo) });
+  if (noticer) logPublic(state, p.room, "observantNoticed", { name: noticer.character });
+}
+
+/** The first living Observant in the actor's room, other than the actor, whose reveal roll succeeds. Rolls the seeded RNG once per Observant tried. */
+function observantNotices(state: GameState, actor: Readonly<PlayerState>): PlayerState | undefined {
+  const observants = state.players.filter((o) => o.id !== actor.id && o.alive && o.room === actor.room && hasSkill(o, "observant"));
+  return observants.find(() => rollFloat(state) < state.config.observant.revealChance);
 }
 
 /**

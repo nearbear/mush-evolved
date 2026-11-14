@@ -173,6 +173,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   gunman: { capPoints: 4, pointsPerDay: 2 },
   // Owner, 2026-10-27: Paranoid gives 1 extra Camera item when picked (the original gives 2).
   paranoid: { cameras: 1 },
+  // Owner, 2026-11-14 (eMushpedia Observateur, upstream eMush): Search costs Observant 1 AP less; each Observant present has a 25% chance to reveal a covert action.
+  observant: { searchApDiscount: 1, revealChance: 0.25 },
   // Owner, 2026-11-01: Green Thumb gives 2 empty hydropots when picked (the original's skills.json).
   greenThumb: { pots: 2 },
   // #411, owner, 2026-11-11 (eMushpedia "Drone de soutien"): x1.25 a failure in a row, capped at 99%; reset by a success.
