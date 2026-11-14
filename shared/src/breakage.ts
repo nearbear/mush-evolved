@@ -4,6 +4,7 @@
 // tank leaks oxygen each cycle, a broken Com center cuts the link to Sol, and a broken turret shows 0 charges and
 // gets its own back when repaired. Repairing is actions/repair.ts.
 
+import { forgetReports } from "./reports.ts";
 import { getUp } from "./actions/lie_down.ts";
 import { pushChat } from "./chat.ts";
 import { loseLink } from "./comms.ts";
@@ -24,6 +25,7 @@ export const workingBreakable = (state: Readonly<GameState>, room: RoomId): Equi
 export function breakEquipment(state: GameState, equipment: Equipment, announce = true): void {
   if (equipment.broken || !isBreakable(state, equipment.type)) return;
   equipment.broken = true;
+  forgetReports(state, { equipment: equipment.id }); // Broken again, it starts unreported (#444).
   for (const p of state.players) if (p.lyingIn === equipment.id) getUp(p);
   if (equipment.type === "COM_CENTER") loseLink(state);
   if (announce) pushChat(state, "global", { from: null, isBot: false, text: "", system: { key: "equipmentBroken", params: { equipment: equipment.type } } });

@@ -492,3 +492,14 @@
   font-size: 0.8rem;
   color: #fff;
 }
+
+/* The alerts popover's located problems (ShipResources `AlertList`, #444). */
+.alert-list {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+  max-width: min(320px, calc(100vw - 32px));
+}
+.alert-list li + li {
+  margin-top: 2px;
+}

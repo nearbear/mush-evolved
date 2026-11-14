@@ -741,6 +741,8 @@ describe("actions from a client", () => {
     body_transfer: [{ type: "body_transfer", target: "p1" }],
     reset_skills: [{ type: "reset_skills" }],
     lie_down: [{ type: "lie_down", equipment: "e1" }],
+    report_fire: [{ type: "report_fire" }],
+    report_equipment: [{ type: "report_equipment", equipment: "e1" }],
     get_up: [{ type: "get_up" }],
     guard: [{ type: "guard" }],
     stop_guarding: [{ type: "stop_guarding" }],

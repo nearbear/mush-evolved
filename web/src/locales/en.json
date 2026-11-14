@@ -34,7 +34,14 @@
     "orbit": "Orbiting {{name}}",
     "expedition": "Expedition to {{planet}}: {{names}}, back in {{time}}",
     "expeditionShip": "Expedition to {{planet}} in {{ship}}: {{names}}, back in {{time}}",
-    "lost": "{{name}} is lost on {{planet}}"
+    "lost": "{{name}} is lost on {{planet}}",
+    "alertFire": "Fire in {{room}} (reported by {{name}})",
+    "alertFireDetector": "Fire in {{room}} ({{detector}})",
+    "alertBroken": "Broken {{equipment}} in {{room}} (reported by {{name}})",
+    "alertBrokenDetector": "Broken {{equipment}} in {{room}} ({{detector}})",
+    "alertsUnreported_one": "1 more unreported",
+    "alertsUnreported_other": "{{count}} more unreported",
+    "alertsNone": "No fires or breakdowns reported"
   },
   "peek": {
     "doorTo": "Door to {{room}}",
@@ -333,6 +340,8 @@
     "stt": "STT",
     "extractSpore": "Extract spore",
     "lieDown": "Lie down",
+    "reportFire": "Report fire",
+    "reportEquipment": "Report breakdown",
     "getUp": "Get up",
     "guard": "Guard",
     "stopGuarding": "Stop guarding",
@@ -1041,6 +1050,8 @@
     "equipmentBroken": "NERON: the {{equipment}} has broken down.",
     "itemBroken": "NERON: the {{item}} has broken down.",
     "fireStarted": "NERON: a fire has broken out aboard!",
+    "fireReported": "NERON: {{name}} reports a fire in {{room}}.",
+    "equipmentReported": "NERON: {{name}} reports that the {{equipment}} in {{room}} is broken.",
     "tremor": "The room shakes violently!",
     "panicAttack": "You have a panic attack.",
     "metalPlate": "A metal plate falls on {{name}}!",
@@ -1793,7 +1804,6 @@
       "dirty": "Make yourself dirty",
       "contaminate": "Add contamination",
       "spawn": "Spawn an item",
-      "restock": "Restock the room",
       "teleport": "Teleport to a room"
     }
   },

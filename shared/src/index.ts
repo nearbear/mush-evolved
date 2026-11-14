@@ -28,6 +28,7 @@ export * from "./resources.ts";
 export * from "./skills.ts";
 export * from "./research.ts";
 export * from "./projects.ts";
+export * from "./reports.ts";
 export * from "./pilgred.ts";
 export * from "./dispense.ts";
 export * from "./planets.ts";

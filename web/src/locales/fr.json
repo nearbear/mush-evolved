@@ -34,7 +34,15 @@
     "orbit": "En orbite autour de {{name}}",
     "expedition": "Expédition sur {{planet}} : {{names}}, retour dans {{time}}",
     "expeditionShip": "Expédition sur {{planet}} à bord du {{ship}} : {{names}}, retour dans {{time}}",
-    "lost": "{{name}} a disparu sur {{planet}}"
+    "lost": "{{name}} a disparu sur {{planet}}",
+    "alertFire": "Incendie : {{room}} (signalé par {{name}})",
+    "alertFireDetector": "Incendie : {{room}} ({{detector}})",
+    "alertBroken": "En panne : {{equipment}}, {{room}} (signalé par {{name}})",
+    "alertBrokenDetector": "En panne : {{equipment}}, {{room}} ({{detector}})",
+    "alertsUnreported_one": "1 autre non signalé",
+    "alertsUnreported_other": "{{count}} autres non signalés",
+    "alertsUnreported_many": "{{count}} autres non signalés",
+    "alertsNone": "Aucun incendie ni panne signalé"
   },
   "peek": {
     "doorTo": "Porte vers {{room}}",
@@ -338,6 +346,8 @@
     "stt": "STT",
     "extractSpore": "Extraire une spore",
     "lieDown": "S'allonger",
+    "reportFire": "Signaler l'incendie",
+    "reportEquipment": "Signaler la panne",
     "getUp": "Se lever",
     "guard": "Garder",
     "stopGuarding": "Cesser de garder",
@@ -1061,6 +1071,8 @@
     "equipmentBroken": "NERON : panne de l'équipement « {{equipment}} ».",
     "itemBroken": "NERON : panne de l'objet « {{item}} ».",
     "fireStarted": "NERON : un incendie s'est déclaré à bord !",
+    "fireReported": "NERON : {{name}} signale un incendie ({{room}}).",
+    "equipmentReported": "NERON : {{name}} signale une panne de l'équipement « {{equipment}} » ({{room}}).",
     "tremor": "La pièce est violemment secouée !",
     "panicAttack": "Vous faites une crise de panique.",
     "metalPlate": "Une plaque de métal tombe sur {{name}} !",
@@ -1721,7 +1733,6 @@
       "dirty": "Se salir",
       "contaminate": "Ajouter une contamination",
       "spawn": "Faire apparaître un objet",
-      "restock": "Réapprovisionner la pièce",
       "teleport": "Se téléporter dans une pièce"
     }
   },

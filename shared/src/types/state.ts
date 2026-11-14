@@ -202,6 +202,12 @@ export interface GameCore {
   incidentPoints: number;
   /** Burning rooms (fire.ts), in the order they caught fire. Only the living in a burning room see it (`PlayerView.roomOnFire`). */
   fires: RoomId[];
+  /**
+   * Problems players reported (reports.ts, #444): a fire by its room, a breakdown by its equipment id, and who
+   * reported it. Each lasts until the problem is fixed (`pruneReports`). Detector coverage is never stored. Sent only
+   * as `PlayerView.alerts` and `burningRooms`, to the living.
+   */
+  reports: Report[];
   /** Rooms a Pyromaniac set to catch fire at the next cycle change (actions/ignite.ts). Never sent. */
   pendingFires: RoomId[];
   /** Who holds each title (titles.ts); null while vacant. Public: every view has the holders and the lines. */
@@ -230,6 +236,9 @@ export interface GameState extends GameCore {
  * What a hunter is aiming at (hunters.ts): the Daedalus or a patrol ship in flight, by its room id. Players out in space
  * come with Mush auto-ejection (docs/plans/patrol.md, "Later"; owner, 2026-10-28).
  */
+/** A problem a player reported (reports.ts, #444): a fire by its room, a breakdown by its equipment's id. `by` is the reporter. */
+export type Report = { kind: "fire"; room: RoomId; by: PlayerId } | { kind: "equipment"; equipment: string; by: PlayerId };
+
 export type HunterTarget = { kind: "ship" } | { kind: "patrol"; id: RoomId };
 
 /**

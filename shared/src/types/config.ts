@@ -547,6 +547,7 @@ export interface GameConfig {
   plans: { expiryDays: number; slotsPerPlan: number; finishedKept: number };
   guard: { cost: { ap: number } }; // AP spent to guard (owner, 2026-11-06).
   lieDown: { cost: { ap: number } }; // AP spent to lie down in a bed (confirmed 2026-10-17).
+  report: { cost: { ap: number } }; // AP spent to report a fire or a breakdown (owner, 2026-11-14, #444: free).
   // Skill Lethargy (owner, 2026-11-01): from the `cyclesLying`th cycle change spent lying down on, each one gives
   // `bonusAp` more AP; the AP cap is multiplied by `maxApMultiplier`.
   lethargy: { cyclesLying: number; bonusAp: number; maxApMultiplier: number };

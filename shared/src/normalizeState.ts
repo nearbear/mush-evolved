@@ -52,6 +52,7 @@ import type {
   GameState,
   Hunter,
   HunterTarget,
+  Report,
   DocumentRow,
   DocumentState,
   DroneState,
@@ -706,6 +707,18 @@ export function normalizeNavigation(raw: Partial<Navigation>): Navigation {
   });
 }
 
+export function normalizeReport(raw: Partial<Report>): Report {
+  const t = "Report";
+  switch (raw.kind) {
+    case "fire":
+      return stripUndefined<Report>({ kind: "fire", room: need(raw, "room", t), by: need(raw, "by", t) });
+    case "equipment":
+      return stripUndefined<Report>({ kind: "equipment", equipment: need(raw, "equipment", t), by: need(raw, "by", t) });
+    default:
+      throw unknownVariant(t, "kind", raw.kind satisfies undefined);
+  }
+}
+
 export function normalizeHunterTarget(raw: Partial<HunterTarget>): HunterTarget {
   const t = "HunterTarget";
   switch (raw.kind) {
@@ -969,6 +982,8 @@ export function normalizeCore(raw: Partial<GameCore>, _ctx: NormalizeContext, mo
     failureStreaks: dict(need(raw, "failureStreaks", t)),
     incidentPoints: need(raw, "incidentPoints", t),
     fires: copy(need(raw, "fires", t)),
+    // Reports (#444): none in a game stored before them.
+    reports: added(raw, "reports", []).map(normalizeReport),
     pendingFires: copy(need(raw, "pendingFires", t)),
     titles: {
       commander: need(titles, "commander", `${t}.titles`),

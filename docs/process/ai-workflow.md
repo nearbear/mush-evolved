@@ -3658,3 +3658,10 @@ Added `shared/src/kube.ts`: the `KUBE_OPS` table and a pure `applyKube`, reached
 - Removed the `selfDisease` cheat and the Self Disease and Self Injury actions, their server gate, tests, UI and translations. `STATE_VERSION` 117 with `upgradeTo117` drops the flag from stored games. The deleted tests' check that a disease takes the ship's own configured duration was ported to `cheatRoom.test.ts`.
 - Needed correction: the upgrade step first used `??`, which `normalizeState.ts` bans (a test enforces it). One `npm run verify` run failed in the test step with the cause cut off by the truncated output; every workspace passed on its own, and the rerun passed.
 - Still open: the cheat room's layout file, waiting on the Superkube sprite.
+
+## 2026-11-14: Reports and the alert bar (#444)
+
+- **Decision (owner, 2026-11-14, in the issue):** free, instant, always-successful `report_fire` / `report_equipment` for real, unreported problems in your room; Fire detectors and the Anomaly detector report their kind automatically; the alert bar counts everything but locates only reported problems; a report lasts until the problem is fixed.
+- **Built:** `shared/src/reports.ts` (detector coverage derived, never stored; `alertsFor`; `pruneReports`), `actions/report.ts`, `GameState.reports` (added field, no version bump), `PlayerView.alerts`, `burningRooms` now the reported fires, `EQUIPMENT_SENSOR` "full", the alerts slot and popover in `ShipResources.tsx`, en/fr/es strings.
+- **What worked:** pruning once after every input in `applyInput`, as the issue proposed, instead of hooking each fix path. Claude added a second, cheap guard in `startFire` / `breakEquipment` (drop any old report) so a fire put out and relit within one input (a drone, then a spread) still starts unreported.
+- **Needed correction:** the fr/es plural keys needed a `_many` form (caught by the i18n catalog test), and the old `projectDone` import in `rules.ts` went unused (lint). The NERON and popover wording is Claude's, not eMush's; the clean-room tool couldn't be queried for upstream strings in this session.

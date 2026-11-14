@@ -89,6 +89,7 @@ import { AttackAction } from "./actions/attack.ts";
 import { ShareAction } from "./actions/share.ts";
 import { GuardAction, StopGuardingAction } from "./actions/guard.ts";
 import { GetUpAction, LieDownAction } from "./actions/lie_down.ts";
+import { ReportEquipmentAction, ReportFireAction } from "./actions/report.ts";
 import { ShowerAction } from "./actions/shower.ts";
 import { SpikeAction } from "./actions/spike.ts";
 import { FungalCuisineAction } from "./actions/fungal_cuisine.ts";
@@ -218,6 +219,8 @@ const REGISTRY = {
   reset_skills: new ResetSkillsAction(),
   lie_down: new LieDownAction(),
   get_up: new GetUpAction(),
+  report_fire: new ReportFireAction(),
+  report_equipment: new ReportEquipmentAction(),
   guard: new GuardAction(),
   stop_guarding: new StopGuardingAction(),
   accommodate: new AccommodateAction(),

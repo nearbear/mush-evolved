@@ -34,7 +34,15 @@
     "orbit": "En órbita alrededor de {{name}}",
     "expedition": "Expedición a {{planet}}: {{names}}, de vuelta en {{time}}",
     "expeditionShip": "Expedición a {{planet}} en {{ship}}: {{names}}, de vuelta en {{time}}",
-    "lost": "{{name}} se ha perdido en {{planet}}"
+    "lost": "{{name}} se ha perdido en {{planet}}",
+    "alertFire": "Incendio en {{room}} (informado por {{name}})",
+    "alertFireDetector": "Incendio en {{room}} ({{detector}})",
+    "alertBroken": "Averiado: {{equipment}} en {{room}} (informado por {{name}})",
+    "alertBrokenDetector": "Averiado: {{equipment}} en {{room}} ({{detector}})",
+    "alertsUnreported_one": "1 más sin informar",
+    "alertsUnreported_other": "{{count}} más sin informar",
+    "alertsUnreported_many": "{{count}} más sin informar",
+    "alertsNone": "No se ha informado de incendios ni averías"
   },
   "peek": {
     "doorTo": "Puerta a {{room}}",
@@ -338,6 +346,8 @@
     "stt": "STT",
     "extractSpore": "Extraer una espora",
     "lieDown": "Acostarse",
+    "reportFire": "Informar del incendio",
+    "reportEquipment": "Informar de la avería",
     "getUp": "Levantarse",
     "guard": "Vigilar",
     "stopGuarding": "Dejar de vigilar",
@@ -1061,6 +1071,8 @@
     "equipmentBroken": "NERON: el equipo «{{equipment}}» se ha averiado.",
     "itemBroken": "NERON: el objeto «{{item}}» se ha averiado.",
     "fireStarted": "NERON: ¡se ha declarado un incendio a bordo!",
+    "fireReported": "NERON: {{name}} informa de un incendio en {{room}}.",
+    "equipmentReported": "NERON: {{name}} informa de que el equipo «{{equipment}}» de {{room}} está averiado.",
     "tremor": "¡La sala tiembla violentamente!",
     "panicAttack": "Sufres un ataque de pánico.",
     "metalPlate": "¡Una placa de metal cae sobre {{name}}!",
@@ -1721,7 +1733,6 @@
       "dirty": "Ensuciarse",
       "contaminate": "Añadir contaminación",
       "spawn": "Hacer aparecer un objeto",
-      "restock": "Reabastecer la sala",
       "teleport": "Teletransportarse a una sala"
     }
   },

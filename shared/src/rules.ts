@@ -15,11 +15,11 @@ import { getUp } from "./actions/lie_down.ts";
 import { researchNeedsView } from "./actions/research.ts";
 import { equipmentHere } from "./equipment.ts";
 import { jellyCycle, leakOxygen } from "./breakage.ts";
-import { newProjectDeck, projectDone } from "./projects.ts";
+import { newProjectDeck } from "./projects.ts";
 import { fireCycle, ignitePending, isOnFire } from "./fire.ts";
+import { alertsFor, fireReported } from "./reports.ts";
 import { incidentsCycle } from "./incidents.ts";
 import { initNpc, newNpcState, npcCycle } from "./npcs.ts";
-import { cheatRoomStock } from "./cheatStock.ts";
 import { CHEAT_ROOM } from "./cheatRoom.ts";
 import { teleport, teleportBlocked } from "./kube.ts";
 import { newLostAnalysis, rollAtSelection } from "./lostAnalysis.ts";
@@ -118,7 +118,6 @@ export function createGame(
 
   const starts: Omit<ItemState, "id">[] = [
     ...config.startItems.map((it): Omit<ItemState, "id"> => ({ type: it.type, at: { kind: "room", id: it.room }, ...(it.builds !== undefined && { builds: it.builds }), ...(it.teaches !== undefined && { teaches: it.teaches }), ...(it.plant && { plant: { ...it.plant } }), ...chargesFor(config, it.type) })),
-    ...(config.cheatRoom ? cheatRoomStock().map((it) => ({ ...it, ...chargesFor(config, it.type) })) : []),
     ...players.flatMap((p) => startInventory(config, p.id)),
   ];
   const items: ItemState[] = starts.map((it, i) => ({ id: `item-${i + 1}`, ...it }));
@@ -180,6 +179,7 @@ export function createGame(
     turrets: {},
     incidentPoints: 0,
     fires: [],
+    reports: [],
     pendingFires: [],
     failureStreaks: {},
     patrolShips: newPatrolShips(config),
@@ -667,7 +667,9 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     roomItems: you.alive ? visibleItemsIn(state, { kind: "room", id: you.room }, you).map((item) => itemView(item, you)) : [],
     roomEquipment: you.alive ? (state.equipment[you.room] ?? []).map((e) => equipmentView(state, e, you)) : [],
     roomOnFire: you.alive && isOnFire(state, you.room),
-    burningRooms: you.alive && projectDone(state, "FIRE_SENSOR") ? [...state.fires] : [],
+    // Reported fires, by players or Fire detectors (#444); an unreported fire's room reaches nobody.
+    burningRooms: you.alive ? state.fires.filter((room) => fireReported(state, room)) : [],
+    alerts: you.alive ? alertsFor(state) : { fires: 0, broken: 0, reports: [] },
     // `seesLine` (log.ts) says which lines are yours; room lines, private ones included, only within your window (#365).
     // A private line names only you in the view: no one learns who else saw it (`leaked` marks a secret line others saw).
     // `kind` and `leaked` go with every line you see (#366).

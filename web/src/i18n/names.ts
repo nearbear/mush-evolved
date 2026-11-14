@@ -82,6 +82,8 @@ const ACTION_NAME_KEYS = {
   consume_spore: "actions.consumeSpore",
   fungal_cuisine: "actions.fungalCuisine",
   lie_down: "actions.lieDown",
+  report_fire: "actions.reportFire",
+  report_equipment: "actions.reportEquipment",
   get_up: "actions.getUp",
   guard: "actions.guard",
   stop_guarding: "actions.stopGuarding",
