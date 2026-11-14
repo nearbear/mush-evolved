@@ -152,6 +152,27 @@ export interface ConfigOverrides {
   preselection?: PreselectionRules;
 }
 
+export interface FruitsConfig {
+  valueRange: [number, number]; // Inclusive target budget [min, max] when rolling each species at launch.
+  maxAttempts: number; // Cap on full-fruit re-rolls before failing loudly.
+  growCyclesPerPoint: number; // Grow time per point of value (value 3..6 -> 12..24 cycles).
+  ap: { ap: number; value: number }[]; // Single-slot AP options (plus "none" at equal odds).
+  morale: { morale: number; value: number }[]; // Single-slot morale options (plus "none" at equal odds).
+  hp: { hp: number; value: number }[]; // Single-slot HP options (plus "none" at equal odds).
+  maxSpecials: number; // Max distinct special buffs rolled (0..maxSpecials).
+  buffs: {
+    treat_disease: { value: number; cycles: number }; // Extra -1 duration per cycle on every disease.
+    energize: { value: number; cycles: number; extraMpPerConversion: number }; // Extra MP per AP-to-MP conversion.
+    resistance: { value: number; cycles: number }; // Immune to spores.
+    perception: { value: number; cycles: number; factor: number }; // Relative success chance factor on actions.
+  };
+  maxDiseases: number; // Max distinct diseases rolled (0..min(maxDiseases, eligible.length)).
+  diseaseOdds: [number, number]; // Inclusive integer percent [min, max] divided by 100 -> 0.30..0.80.
+  diseaseValueDivisor: number; // Disease value divisor: -Math.max(1, Math.round(cost * odds / divisor)).
+  diseaseDelay: [number, number]; // Delay in cycles rolled per meal [min, max].
+  diseases: Record<string, number>; // Pool of alien fruit disease ids -> cost; cold is never included.
+}
+
 export interface GameConfig {
   mushCount: number; // Mush picked at launch. Unused with `preselection`, where the player count decides.
   // Null: everyone is seated at launch and Mush are picked then (tests, single player later).
@@ -292,6 +313,7 @@ export interface GameConfig {
     sow: { cost: { ap: number } }; // Plant a carried fruit in an empty hydropot.
     dirtyChance: number; // Chance of getting dirty after watering, treating or sowing (the original's 15%).
     growCycles: Record<string, number>; // Cycles a young plant of each species needs before it becomes adult.
+    fruits: FruitsConfig; // Seeded alien fruit rules (fruits.ts, #437).
     sickChancePerCycle: number; // PLACEHOLDER: each healthy plant's chance of falling sick at each cycle change.
     oxygenPerPlant: number; // Oxygen each producing plant gives at day start.
     gardenRoom: RoomId; // Garden points pay for an action only on a plant here.
@@ -646,9 +668,9 @@ export interface GameConfig {
     catastrophe: [min: number, max: number]; // HP every living member loses, rolled for each.
     survivalReduction: number; // Taken off each damage a member with the Survival skill takes.
     botanistBonus: number; // Extra fruit per harvest with a living Botanist in the crew.
-    // Item types found: fruits and steaks (placeholders: bananas, uncooked rations), a starmap fragment, and the
+    // Item types found: alien fruits (picked uniformly by Harvest) and steaks (placeholders: uncooked rations), a starmap fragment, and the
     // artifacts an Artifact event or a fight's loot picks among, uniformly.
-    loot: { harvest: string; provision: string; starmap: string; artifacts: string[] };
+    loot: { harvest: string[]; provision: string; starmap: string; artifacts: string[] };
     survivalProvision: number; // Extra steaks per Provision for each living Survival holder in the crew.
     mushTrapChance: number; // Chance each human member gains a spore in a Mush trap.
     creatures: Record<string, { strength: number[]; loot: CreatureLoot }>; // Fight opponents: a strength drawn uniformly from the list.

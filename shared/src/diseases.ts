@@ -68,16 +68,33 @@ export function treatDisease(state: GameState, player: PlayerState, name: Status
 export function diseaseTrackerCycleChange(next: GameState): void {
   for (const player of next.players) {
     if (!player.alive) continue;
-    for (const tracker of player.diseaseTrackers) {
+    if (player.role !== "human") delete player.pendingDiseases;
+    for (const tracker of [...player.diseaseTrackers]) {
       if (player.role == "mush" && !next.config.diseases.allInjuries.includes(tracker.name)){
       removeDisease(next, player, tracker.name);
       }
       tracker.duration -= 1;
       if (player.statuses.includes(treatedStatus(tracker.name))) tracker.duration -= 1;
+      if (
+        player.treatDiseaseUntil !== undefined &&
+        next.cycle <= player.treatDiseaseUntil &&
+        next.config.diseases.allDiseases.includes(tracker.name)
+      ) {
+        tracker.duration -= 1;
+      }
       if (tracker.duration <= 0 && !tracker.forever){
         tracker.complete = true;
         removeDisease(next, player, tracker.name);
       } 
+    }
+    if (player.role === "human" && player.pendingDiseases?.length) {
+      const remaining = [];
+      for (const pending of player.pendingDiseases) {
+        if (pending.atCycle <= next.cycle) addDisease(next, player, pending.id);
+        else remaining.push(pending);
+      }
+      if (remaining.length > 0) player.pendingDiseases = remaining;
+      else delete player.pendingDiseases;
     }
   }
 }

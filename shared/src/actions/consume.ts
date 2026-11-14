@@ -5,6 +5,7 @@ import { logSecret } from "../log.ts";
 import { consumed } from "../modifiers.ts";
 import { rationApBonus } from "../comms.ts";
 import { applyDrug } from "../drugs.ts";
+import { applyFruit } from "../fruits.ts";
 import { contaminate } from "../infection.ts";
 import { isFullBelly } from "../statuses.ts";
 import type { GameState, PlayerState } from "../types.ts";
@@ -40,6 +41,7 @@ export class ConsumeAction extends Action<ConsumeActionData> {
       player.satiety += ITEM_TYPES[item.type]!.consume!.satiety;
       gainMorale(state, player, ITEM_TYPES[item.type]!.consume!.morale ?? 0);
       gainMorale(state, player, state.drugs[item.type]?.morale ?? 0);
+      gainMorale(state, player, state.fruits[item.type]?.morale ?? 0);
       logSecret(state, player.id, "consumed", { name: player.character, item: item.type });
       return;
     }
@@ -53,6 +55,7 @@ export class ConsumeAction extends Action<ConsumeActionData> {
       player.satietyZeroSince = player.satiety === 0 ? state.cycle : null;
     }
     applyDrug(state, player, item.type);
+    applyFruit(state, player, item.type);
     consumed(state, player, item);
     logSecret(state, player.id, "consumed", { name: player.character, item: item.type });
     // Fungal cuisine: a human is contaminated first, one level per spore; a conversion ends the meal with no food effects.

@@ -145,8 +145,22 @@ export function itemIcon(type: string): string | undefined {
   return itemIcons[ICON_FILE[type] ?? type];
 }
 
-/** A planted hydropot's icon, by species (its fruit's item type): the original's tree_* icons. */
-const PLANT_ICON_FILE: Readonly<Record<string, string>> = { fruit_banana: "tree_banana" };
+/** A planted hydropot's icon, by species (its fruit's item type): the original's tree_* / fruit_tree* icons. */
+const PLANT_ICON_FILE: Readonly<Record<string, string>> = {
+  fruit_banana: "tree_banana",
+  fruit01: "fruit_tree01",
+  fruit02: "fruit_tree02",
+  fruit03: "fruit_tree03",
+  fruit04: "fruit_tree04",
+  fruit05: "fruit_tree05",
+  fruit06: "fruit_tree06",
+  fruit07: "fruit_tree07",
+  fruit08: "fruit_tree08",
+  fruit09: "fruit_tree09",
+  fruit10: "fruit_tree10",
+  fruit11: "fruit_tree11",
+  fruit12: "fruit_tree12",
+};
 
 /** Icon for an item as the view has it: a planted hydropot shows its plant. */
 export function itemViewIcon(item: Pick<ItemView, "type" | "plant">): string | undefined {

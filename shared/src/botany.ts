@@ -58,6 +58,10 @@ export function botanyCycle(state: GameState): void {
   }
 }
 
+export function growCyclesFor(state: Readonly<GameState>, species: string): number {
+  return state.fruits[species]?.growCycles ?? state.config.botany.growCycles[species] ?? 0;
+}
+
 /**
  * At day start, after `botanyCycle`: young plants that have had their cycles become adult; each adult plant that
  * is not thirsty, dried or sick gives oxygen (up to the ship's max) and one fruit of its species; then every plant
@@ -68,7 +72,7 @@ export function botanyDay(state: GameState): void {
   for (const pot of state.items.filter(isPlanted)) {
     const { plant } = pot;
     const room = potRoom(state, pot);
-    if (plant.age !== null && plant.age >= (botany.growCycles[plant.species] ?? 0)) {
+    if (plant.age !== null && plant.age >= growCyclesFor(state, plant.species)) {
       plant.age = null;
       logPublic(state, room, "plantMatured", { item: plant.species });
     }

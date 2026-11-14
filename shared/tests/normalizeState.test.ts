@@ -77,6 +77,10 @@ function handFilled() {
     accommodationOffers: [{ by: b.id, until: 500 }],
     diseaseTrackers: [{ name: "cold", duration: 3, resistance: 1, complete: false, forever: true }],
     immuneUntil: 9,
+    treatDiseaseUntil: 12,
+    energizeUntil: 10,
+    perceptionUntil: 11,
+    pendingDiseases: [{ id: "cold_disease", atCycle: 14 }],
     bookSkill: "cook",
   } satisfies Partial<PlayerState>);
   game.items[0]!.hiddenBy = a.id;

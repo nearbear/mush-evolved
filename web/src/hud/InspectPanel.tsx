@@ -164,7 +164,7 @@ function Details({ view, layout, resolved, onAction }: { view: PlayerView; layou
               <img src={BROKEN_ICON} alt="" /> {t("roomList.broken")}
             </div>
           )}
-          {resolved.item.plant && <PlantStates plant={resolved.item.plant} />}
+          {resolved.item.plant && <PlantStates plant={resolved.item.plant} view={view} />}
           <ThingMarks jelly={resolved.item.jelly} shield={resolved.item.shield} spores={resolved.item.spores} />
           {resolved.item.drone && <DroneUpgrades upgrades={resolved.item.drone.upgrades} />}
           {resolved.item.charges !== undefined && <div className="sub inspect-charges">{t("itemAttr.charges", { count: resolved.item.charges })}</div>}

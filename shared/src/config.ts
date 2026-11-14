@@ -1,5 +1,5 @@
 import shipRooms from "@mush2/assets/derived/ship-rooms.json";
-import { BOOK_ITEM, ITRACKIE_ITEM } from "./itemIds.ts";
+import { ALIEN_FRUIT_ITEMS, BOOK_ITEM, ITRACKIE_ITEM } from "./itemIds.ts";
 import { ICARUS_CRAFT, patrolEquipment, patrolRooms } from "./patrol.ts";
 import { SKILLS } from "./skills.ts";
 import type { ShipRoom } from "./shipLayout.ts";
@@ -135,6 +135,51 @@ export const DEFAULT_CONFIG: GameConfig = {
     sow: { cost: { ap: 2 } },
     dirtyChance: 0.15,
     growCycles: { fruit_banana: 36 },
+    // Owner, 2026-11-14 (#437, docs/rules/rules-design.md): alien fruit traits rolled per ship in [3, 6] budget.
+    fruits: {
+      valueRange: [3, 6],
+      maxAttempts: 1000,
+      growCyclesPerPoint: 4,
+      ap: [
+        { ap: 1, value: 2 },
+        { ap: 2, value: 5 },
+      ],
+      morale: [
+        { morale: 1, value: 1 },
+        { morale: 2, value: 2 },
+        { morale: 3, value: 3 },
+        { morale: -2, value: -2 },
+      ],
+      hp: [
+        { hp: 1, value: 1 },
+        { hp: 2, value: 2 },
+      ],
+      maxSpecials: 3,
+      buffs: {
+        treat_disease: { value: 2, cycles: 4 },
+        energize: { value: 1, cycles: 2, extraMpPerConversion: 2 },
+        resistance: { value: 2, cycles: 2 },
+        perception: { value: 2, cycles: 2, factor: 1.1 },
+      },
+      maxDiseases: 3,
+      diseaseOdds: [30, 80],
+      diseaseValueDivisor: 0.55,
+      diseaseDelay: [2, 16],
+      // Cold is never in the pool; rollFruits filters to diseases present in `config.diseases.allDiseases`.
+      diseases: {
+        extreme_tinnitus_disease: 2,
+        fungal_infection_disease: 2,
+        skin_inflammation_disease: 2,
+        space_rabies_disease: 3,
+        gastroenteritis_disease: 3,
+        smallpox_disease: 1,
+        black_bite_disease: 2,
+        rejuvenation_disease: 1,
+        acid_reflux_disease: 1,
+        mush_allergy_disease: 3,
+        tapeworm_disease: 2,
+      },
+    },
     sickChancePerCycle: 0.05,
     oxygenPerPlant: 1,
     gardenRoom: "HYDROPONIC_CENTER",
@@ -381,7 +426,7 @@ export const DEFAULT_CONFIG: GameConfig = {
     survivalReduction: 1,
     botanistBonus: 1,
     loot: {
-      harvest: "fruit_banana",
+      harvest: [...ALIEN_FRUIT_ITEMS],
       provision: "uncooked_ration",
       starmap: "super_map",
       // Phases 3 and 4 (owner, 2026-11-08, #357): one picked uniformly, the original's 9. Only their names and icons so far.

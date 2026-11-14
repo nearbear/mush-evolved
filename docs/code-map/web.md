@@ -57,7 +57,7 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 - `InventoryPanel.tsx`: item zones; drag to take/drop, tap fallback.
 - `InspectPanel.tsx`: the selected person, equipment, or item, with its legal actions.
 - `SkillSlots.tsx`: skill slots and the picker dialog; a Mush's own portrait toggles between human and Mush slots. Exports `SkillPopover` (a skill's name, description and effects on hover, focus or tap), also used by the lobby's character pane.
-- `StatusIcons.tsx`, `ItemAttrIcons.tsx`: status and item attribute icons. `PlantStates.tsx`: a planted hydropot's young, thirsty, dried and (Botanist role only) sick icons.
+- `StatusIcons.tsx`, `ItemAttrIcons.tsx`: status and item attribute icons. `PlantStates.tsx`: a planted hydropot's young, thirsty, dried and (Botanist role only) sick icons, plus alien fruit maturation cycles (and Mush danger warning) when `view.fruitEffects` exposes them (#437).
 - `ITrackie.tsx`: the right panel: room log, global chat, Features, Private tabs. Messages come from `readChannels`, the message box from `chatChannels`; the dead lose the Room and Private tabs, get a read-only note instead of the box in the other channels, and gain a skull Graveyard tab.
 - `DeathNotice.tsx`: what a dead player sees where the room was.
 - `ItemIcon.tsx`: an item's icon (`itemViewIcon`: a planted hydropot shows its tree); a corpse shows its owner lying down.
@@ -88,7 +88,7 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 - `RelayDetails.tsx`: relay tokens in the research, project and PILGRED terminals: `RelayHelp` (the rule sentence), `RelayDetails` (waiting line and token faces; research samples, pending ones underlined), `withGain` (a work button's text with the gain).
 - `TerminalDialog.tsx`: the window opened by accessing a terminal; holds the research lab, NERON projects and the panels above (`CommsCenter`, `BiosTerminal`, `TurretPanel`, `ShipNavigation`, `PlanetList`). Its frame is `TerminalFrame.tsx` (title bar, cosmetic login, close, icon, gold `TabOutline`), pure props with no dialog context so the design kit shows it; the login comes from `terminalLogin` in `terminalUsername.ts`. `TerminalBody` picks the body by terminal type (exported for the design kit). `TerminalBody` picks the body by terminal type (exported for the design kit).
 - `FramedDialog.tsx`: the terminal frame as a modal (backdrop, kit-panel, cut card, `DialogHeader` title bar, scrolling body, gold `TabOutline`); the caller keeps `Dialog.Root` and supplies the body. Used by the settings window, the skill picker, the document reader and the private channel create/invite dialog.
-- `DialogHeader.tsx`: sticky title bar with a close button for scrolling dialogs. `ItemFace.tsx`: an item's square face with an optional label. `ConsumeEffects.tsx`: what eating or drinking an item does.
+- `DialogHeader.tsx`: sticky title bar with a close button for scrolling dialogs. `ItemFace.tsx`: an item's square face with an optional label. `ConsumeEffects.tsx`: what eating or drinking an item does, including alien fruit lore (stats, buffs, disease odds, maturation cycles, unknown-effects state for non-lore humans, and Mush danger warning when lacking human lore skills, #437).
 - `useOverlayDismiss.ts`: closes a room-view overlay on Escape or a press elsewhere in the room view (`InventoryOverlay`, `ShipOverlay`).
 
 **editor/** (dev builds only, at `/editor`; `main.tsx` loads it lazily behind `import.meta.env.DEV`, so it is never in a production bundle; #209)

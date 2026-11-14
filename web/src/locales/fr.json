@@ -192,7 +192,19 @@
   },
   "inspect": {
     "self": "{{character}} (vous) : inspecter",
-    "deselect": "Désélectionner"
+    "deselect": "Désélectionner",
+    "fruitUnknown": "Les effets sont inconnus : seul un Botaniste, Cuistot ou Polyvalent connaît cette espèce.",
+    "fruitBuffs": {
+      "treat_disease": "Soin des maladies (les maladies guérissent d'un cycle de plus par cycle pendant 4 cycles)",
+      "energize": "Énergisant (+2 PM par conversion de PA pendant 2 cycles)",
+      "resistance": "Résistance (immunisé contre les spores pendant 2 cycles)",
+      "perception": "Perception (+10 % de chances de réussite aux actions pendant 2 cycles)"
+    },
+    "fruitDiseaseOdds": "{{disease}} ({{percent}} %)",
+    "fruitGrowCycles_one": "Maturation : {{count}} cycle",
+    "fruitGrowCycles_many": "Maturation : {{count}} cycles",
+    "fruitGrowCycles_other": "Maturation : {{count}} cycles",
+    "fruitMushWarning": "Savoir Mush : sans Botaniste, Cuistot ou Polyvalent, un humain ne connaîtrait pas ces effets."
   },
   "nav": {
     "panels": "Panneaux",
@@ -636,7 +648,7 @@
     "warning": "Avertissement",
     "shipMessage": "Message du vaisseau",
     "checkbox": "Case à cocher",
-    "cycleDivider": "Cycle {{cycle}}",
+    "cycleDivider": "Jour {{day}} · Cycle {{cycle}}",
     "composer": {
       "preview": "Aperçu du markdown",
       "edit": "Masquer l'aperçu",
@@ -753,6 +765,15 @@
     "cold_disease": "Rhume",
     "extreme_tinnitus_disease": "Acouphènes extrêmes",
     "fungal_infection_disease": "Infection fongique",
+    "skin_inflammation_disease": "Éruption cutanée",
+    "space_rabies_disease": "Rage spatiale",
+    "gastroenteritis_disease": "Gastro-entérite",
+    "smallpox_disease": "Variole",
+    "black_bite_disease": "Morsure noire",
+    "rejuvenation_disease": "Rajeunissement",
+    "acid_reflux_disease": "Reflux gastriques",
+    "mush_allergy_disease": "Allergie au Mush",
+    "tapeworm_disease": "Ver solitaire",
     "broken_nose_injury": "Nez explosé",
     "inactive": "Inactif",
     "super_inactive": "Grand inactif",

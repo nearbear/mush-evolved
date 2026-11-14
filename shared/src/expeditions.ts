@@ -427,7 +427,7 @@ function resolve(ctx: Ctx, sector: PlanetTag | typeof LANDING, table: readonly E
     case "harvest": {
       // Polymath counts as a Botanist here (owner, 2026-11-08, #358).
       const bonus = living().some((p) => hasSkill(p, "botanic") || hasSkill(p, "polymath")) ? rules.botanistBonus : 0;
-      event.item = rules.loot.harvest;
+      event.item = harvestFruit(state);
       event.amount = drop(state, event.item, amount + bonus);
       break;
     }
@@ -585,6 +585,12 @@ function recoverShip(state: GameState, pilot: Readonly<PlayerState>): void {
     logPublic(state, ship.bay, "patrolRecovered", { room: ship.id });
   }
 }
+
+/** An alien fruit species picked uniformly for a Harvest event (#437). */
+const harvestFruit = (state: GameState): string => {
+  const list = state.config.expedition.loot.harvest;
+  return list[rollInt(state, list.length)]!;
+};
 
 /** An artifact picked uniformly among the original's 9. */
 const artifact = (state: GameState): string => {

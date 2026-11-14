@@ -1,6 +1,12 @@
 // What eating or drinking an item does, one effect per line with its icon, read from the shared item table (static data, not game state).
 
-import { ITEM_TYPES, type PlayerView } from "@mush2/shared";
+import {
+  ALIEN_FRUIT_ITEMS,
+  FRUIT_LORE_SKILLS,
+  ITEM_TYPES,
+  type FruitBuffId,
+  type PlayerView,
+} from "@mush2/shared";
 import { useTranslation } from "react-i18next";
 import {
   AP_PIP,
@@ -9,6 +15,23 @@ import {
   MP_PIP,
   SATIETY_ICON,
 } from "../art/assets.ts";
+
+const FRUIT_BUFF_KEYS = {
+  treat_disease: "inspect.fruitBuffs.treat_disease",
+  energize: "inspect.fruitBuffs.energize",
+  resistance: "inspect.fruitBuffs.resistance",
+  perception: "inspect.fruitBuffs.perception",
+} as const satisfies Record<FruitBuffId, string>;
+
+export function hasHumanFruitLore(view: PlayerView): boolean {
+  return FRUIT_LORE_SKILLS.some(
+    (s) => view.you.skills.includes(s) || view.you.bookSkill === s,
+  );
+}
+
+export function isMushOnlyFruitLore(view: PlayerView): boolean {
+  return view.you.role === "mush" && !hasHumanFruitLore(view);
+}
 
 export function ConsumeEffects({
   type,
@@ -25,30 +48,38 @@ export function ConsumeEffects({
   const drug = isDrug ? view.drugEffects?.[type] : undefined;
   if (isDrug && !drug)
     return <p className="consume-unknown">{t("itemAttr.drugUnknown")}</p>;
+  // Alien fruit species (`fruit01`–`fruit12`) are likewise drawn per ship and revealed only via `view.fruitEffects`.
+  const isAlienFruit = (ALIEN_FRUIT_ITEMS as readonly string[]).includes(type);
+  const fruit = isAlienFruit ? view.fruitEffects?.[type] : undefined;
+  if (isAlienFruit && !fruit)
+    return <p className="consume-unknown">{t("inspect.fruitUnknown")}</p>;
   const effects: [number | undefined, string, string][] = [
-    [consume.ap + (drug?.ap ?? 0), AP_PIP, t("stat.ap")],
+    [consume.ap + (drug?.ap ?? 0) + (fruit?.ap ?? 0), AP_PIP, t("stat.ap")],
     [(consume.mp ?? 0) + (drug?.mp ?? 0), MP_PIP, t("stat.mp")],
     [consume.satiety, SATIETY_ICON, t("itemAttr.satiety")],
     [
-      (consume.morale ?? 0) + (drug?.morale ?? 0),
+      (consume.morale ?? 0) + (drug?.morale ?? 0) + (fruit?.morale ?? 0),
       MORALE_ICON,
       t("stat.morale"),
     ],
-    [consume.hp, HP_ICON, t("stat.hp")],
+    [(consume.hp ?? 0) + (fruit?.hp ?? 0), HP_ICON, t("stat.hp")],
   ];
   const shown = effects.filter(([n]) => n);
   const treats = drug?.treats ?? [];
-  if (shown.length === 0 && treats.length === 0) return null;
+  if (shown.length === 0 && treats.length === 0 && !fruit) return null;
+  const mushWarning = fruit ? isMushOnlyFruitLore(view) : false;
   return (
     <>
-      <ul className="consume-effects">
-        {shown.map(([n, icon, label]) => (
-          <li key={label}>
-            <img src={icon} alt={label} />
-            <span>{`${n! > 0 ? "+" : "−"}${Math.abs(n!)}`}</span>
-          </li>
-        ))}
-      </ul>
+      {shown.length > 0 && (
+        <ul className="consume-effects">
+          {shown.map(([n, icon, label]) => (
+            <li key={label}>
+              <img src={icon} alt={label} />
+              <span>{`${n! > 0 ? "+" : "−"}${Math.abs(n!)}`}</span>
+            </li>
+          ))}
+        </ul>
+      )}
       {treats.length > 0 && (
         <p className="consume-treats">
           {t("itemAttr.drugTreats", {
@@ -57,6 +88,35 @@ export function ConsumeEffects({
               .join(", "),
           })}
         </p>
+      )}
+      {fruit && fruit.buffs.length > 0 && (
+        <ul className="consume-buffs">
+          {fruit.buffs.map((buff) => (
+            <li key={buff}>{t(FRUIT_BUFF_KEYS[buff])}</li>
+          ))}
+        </ul>
+      )}
+      {fruit && fruit.diseases.length > 0 && (
+        <p className="consume-diseases">
+          {fruit.diseases
+            .map((d) =>
+              t("inspect.fruitDiseaseOdds", {
+                disease: t(`status.${d.id}`, {
+                  defaultValue: t(d.id as never, { defaultValue: d.id }),
+                }),
+                percent: Math.round(d.odds * 100),
+              }),
+            )
+            .join(", ")}
+        </p>
+      )}
+      {fruit && (
+        <p className="consume-grow">
+          {t("inspect.fruitGrowCycles", { count: fruit.growCycles })}
+        </p>
+      )}
+      {mushWarning && (
+        <p className="consume-mush-warning">{t("inspect.fruitMushWarning")}</p>
       )}
     </>
   );

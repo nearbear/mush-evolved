@@ -67,6 +67,10 @@ function ship(): { state: GameState; sentinels: Sentinel[] } {
       forever: false,
     });
     p.immuneUntil = num(`immuneUntil-${p.id}`, own);
+    p.treatDiseaseUntil = num(`treatDiseaseUntil-${p.id}`, []);
+    p.energizeUntil = num(`energizeUntil-${p.id}`, []);
+    p.perceptionUntil = num(`perceptionUntil-${p.id}`, []);
+    p.pendingDiseases = [{ id: str(`pendingDisease-${p.id}`, []), atCycle: num(`pendingDiseaseAt-${p.id}`, []) }];
     p.spores = num(`spores-${p.id}`, own);
     for (const r of Object.keys(p.resources) as (keyof typeof p.resources)[]) p.resources[r] = num(`resources.${r}-${p.id}`, own);
     p.modifiers.push(str(`modifier-${p.id}`, own));

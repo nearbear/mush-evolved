@@ -73,7 +73,7 @@ export function isHungry(state: Readonly<Pick<GameState, "config" | "cycle">>, p
   );
 }
 
-/** Immune to infection until the cycle in `immuneUntil` (granted by the antic_perfume skill). */
+/** Immune to infection until the cycle in `immuneUntil` (granted by `antic_perfume` or fruit `resistance`). */
 export function isImmune(state: Readonly<Pick<GameState, "cycle">>, p: Readonly<PlayerState>): boolean {
   return hasImmunityTrait(p) || (p.immuneUntil !== undefined && state.cycle < p.immuneUntil);
 }

@@ -6,9 +6,10 @@
 
 import { inventorySlots } from "./modifiers.ts";
 import type { Container, DeepReadonly, GameConfig, GameState, ItemState, PlayerState } from "./types.ts";
-import { BOOK_ITEM, ITRACKIE_ITEM } from "./itemIds.ts";
+import { ALIEN_FRUIT_ITEMS, BOOK_ITEM, ITRACKIE_ITEM } from "./itemIds.ts";
 
-export { BOOK_ITEM, ITRACKIE_ITEM } from "./itemIds.ts";
+export { ALIEN_FRUIT_ITEMS, BOOK_ITEM, ITRACKIE_ITEM } from "./itemIds.ts";
+export type { AlienFruitItem } from "./itemIds.ts";
 
 export interface ItemType {
   /** Drinking or eating it removes it and does this. */
@@ -132,6 +133,8 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   [TREE_POT_ITEM]: {},
   // Owner, 2026-10-22: the original's banana (genFruitList): +1 AP, +1 satiety, +1 morale, +1 HP. Named after its icon.
   fruit_banana: { fruit: true, consume: { ap: 1, satiety: 1, morale: 1, hp: 1 } },
+  // #437 (owner, 2026-11-14): 12 alien species whose rolled stats live on `state.fruits`.
+  ...Object.fromEntries(ALIEN_FRUIT_ITEMS.map((id) => [id, { fruit: true, consume: { ap: 1, satiety: 1 } }])),
   // Owner, 2026-10-23, the wiki: one unit of fuel, taken from a tank and loaded into the combustion chamber. One slot
   // each, never dropped (actions/take_fuel.ts). Named after its icon.
   [FUEL_CAPSULE_ITEM]: { canDrop: false },

@@ -81,6 +81,7 @@ import type {
   Seat,
 } from "./types.ts";
 import { drawDrugs, drugEffectsSeenBy, hasDrugDispenser, resetDrugDispenser, stockMedlab } from "./drugs.ts";
+import { drawFruits, fruitEffectsSeenBy } from "./fruits.ts";
 import { changeAP, changeMP } from "./adjustStats.ts";
 import { diseaseTrackerCycleChange } from "./diseases.ts";
 
@@ -134,6 +135,7 @@ export function createGame(
     equipment: clone(config.equipment),
     dispensedOn: {},
     drugs: {},
+    fruits: {},
     drugDispenser: { list: [], used: false },
     log: [{ id: 1, cycle: startCycle, key: "crewWakes", visibleTo: "all" }],
     nextLogId: 2,
@@ -192,6 +194,7 @@ export function createGame(
   }
   // Setup draws on streams of their own, so changing them doesn't move any roll on `state.rng`.
   state.drugs = drawDrugs({ rng: streamFor(seed, "drugs"), config });
+  state.fruits = drawFruits({ rng: streamFor(seed, "fruits"), config });
   stockMedlab(state, { rng: streamFor(seed, "medlab-stock") });
   for (const item of state.items) initNpc(state, item);
   grantCarePoints(state); // day 1 begins now
@@ -569,6 +572,10 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     inactivity: _inactivity,
     lyingSince: _lyingSince,
     enteredFrom: _enteredFrom,
+    treatDiseaseUntil: _treatDiseaseUntil,
+    energizeUntil: _energizeUntil,
+    perceptionUntil: _perceptionUntil,
+    pendingDiseases: _pendingDiseases,
     ...yours
   } = you;
   return {
@@ -581,6 +588,7 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     },
     statuses: statusesOf(state, you),
     drugEffects: drugEffectsSeenBy(state, you),
+    fruitEffects: fruitEffectsSeenBy(state, you),
     // TODO(rules): should Mush see each other's roles? Hidden for now.
     players: others.map((o) => {
       const { id, isBot, botKind, character, room, alive, ready } = o;
@@ -666,7 +674,7 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
       scanAp: state.config.astro.scan.cost.ap, astrophysicistScanDiscount: state.config.astrophysicist.scanApDiscount,
       analyzeAp: state.config.astro.analyze.cost.ap, orbitAnalyzeAp: state.config.astro.analyze.orbitCost.ap,
       contactSolAp: state.config.comms.sol.cost.ap, rebelAp: state.config.comms.rebel.cost.ap, neronAp: state.config.comms.neron.cost.ap,
-      gardenRoom: state.config.botany.gardenRoom },
+      gardenRoom: state.config.botany.gardenRoom, cyclesPerDay: state.config.cyclesPerDay },
     maxAp: you.maxAp,
     maxMp: you.maxMp,
     maxHp: you.maxHp,

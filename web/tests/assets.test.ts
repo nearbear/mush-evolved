@@ -1,5 +1,6 @@
+import { ALIEN_FRUIT_ITEMS } from "@mush2/shared";
 import { describe, expect, it } from "vitest";
-import { EMPTY_SLOT_ICON, skillIcon } from "../src/art/assets.ts";
+import { EMPTY_SLOT_ICON, itemViewIcon, skillIcon } from "../src/art/assets.ts";
 
 describe("skillIcon", () => {
   it("maps maintenance_agent to the former dreamer (oisif) icon", () => {
@@ -20,5 +21,23 @@ describe("skillIcon", () => {
 
   it("returns EMPTY_SLOT_ICON for an unknown skill", () => {
     expect(skillIcon("unknown_skill_id")).toBe(EMPTY_SLOT_ICON);
+  });
+});
+
+describe("itemViewIcon", () => {
+  it("renders fruit_tree01..fruit_tree12 for planted alien fruit hydropots", () => {
+    for (const species of ALIEN_FRUIT_ITEMS) {
+      const icon = itemViewIcon({
+        type: "tree_pot",
+        plant: { species, age: 0, thirst: 0 },
+      });
+      expect(icon).toBeDefined();
+      expect(icon).toContain(`fruit_tree${species.slice("fruit".length)}`);
+    }
+  });
+
+  it("renders tree_banana for planted banana pots and tree_pot when empty", () => {
+    expect(itemViewIcon({ type: "tree_pot", plant: { species: "fruit_banana", age: null, thirst: 0 } })).toContain("tree_banana");
+    expect(itemViewIcon({ type: "tree_pot" })).toContain("tree_pot");
   });
 });

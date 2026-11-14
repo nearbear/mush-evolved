@@ -244,6 +244,9 @@ export function actionSuccessRate(base: number, ctx: CostContext, registry: Modi
   // gives more than the move spends), so the floor is 0 or the base, whichever is lower.
   // An Outcast (anathema.ts) loses a fifth of their chance on every action that rolls one (owner, 2026-10-24).
   if (ctx.actor.outcastBy !== undefined) chance *= ctx.state.config.anathema.successFactor;
+  if (ctx.actor.perceptionUntil !== undefined && ctx.state.cycle < ctx.actor.perceptionUntil) {
+    chance *= ctx.state.config.botany.fruits.buffs.perception.factor;
+  }
   if(chance > 0.99){
     chance = 0.99;
   }
@@ -326,6 +329,9 @@ export function movementRules(
   for (const id of modifierIds(player)) {
     const hook = registry[id]?.movement;
     if (hook) rules = hook(rules, player, state);
+  }
+  if (player.energizeUntil !== undefined && state.cycle < player.energizeUntil) {
+    rules.mpPerConversion += state.config.botany.fruits.buffs.energize.extraMpPerConversion;
   }
   if (gravityBroken(state)) rules.mpPerConversion = Math.max(0, rules.mpPerConversion - state.config.gravitySimulator.brokenMpPenalty);
   if (carriesHeavy(state, player)) rules.mpPerMove += fold("heavyMpPenalty", state.config.heavy.mpPenalty, state, player, registry);

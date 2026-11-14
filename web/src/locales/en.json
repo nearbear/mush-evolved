@@ -189,7 +189,18 @@
   },
   "inspect": {
     "self": "{{character}} (you): inspect",
-    "deselect": "Deselect"
+    "deselect": "Deselect",
+    "fruitUnknown": "Effects are unknown: only a Botanist, Chef or Polyvant knows this species.",
+    "fruitBuffs": {
+      "treat_disease": "Treat Disease (diseases heal 1 cycle faster per cycle for 4 cycles)",
+      "energize": "Energize (+2 MP per AP conversion for 2 cycles)",
+      "resistance": "Resistance (immune to spores for 2 cycles)",
+      "perception": "Perception (+10% action success chance for 2 cycles)"
+    },
+    "fruitDiseaseOdds": "{{disease}} ({{percent}}%)",
+    "fruitGrowCycles_one": "Maturation: {{count}} cycle",
+    "fruitGrowCycles_other": "Maturation: {{count}} cycles",
+    "fruitMushWarning": "Mush knowledge: without Botanist, Chef or Polyvant, a human wouldn't know these effects."
   },
   "nav": {
     "panels": "Panels",
@@ -629,7 +640,7 @@
     "warning": "Warning",
     "shipMessage": "Ship message",
     "checkbox": "Checkbox",
-    "cycleDivider": "Cycle {{cycle}}",
+    "cycleDivider": "Day {{day}} · Cycle {{cycle}}",
     "composer": {
       "preview": "Preview markdown",
       "edit": "Hide preview",
@@ -741,6 +752,15 @@
     "cold_disease": "Cold",
     "extreme_tinnitus_disease": "Extreme Tinnitus",
     "fungal_infection_disease": "Fungal Infection",
+    "skin_inflammation_disease": "Skin Inflammation",
+    "space_rabies_disease": "Space Rabies",
+    "gastroenteritis_disease": "Gastroenteritis",
+    "smallpox_disease": "Smallpox",
+    "black_bite_disease": "Black Bite",
+    "rejuvenation_disease": "Rejuvenation",
+    "acid_reflux_disease": "Acid Reflux",
+    "mush_allergy_disease": "Mush Allergy",
+    "tapeworm_disease": "Tapeworm",
     "broken_nose_injury": "Broken Nose",
     "inactive": "Inactive",
     "super_inactive": "Super Inactive",

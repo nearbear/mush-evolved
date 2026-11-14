@@ -2,6 +2,7 @@ import type { ActionCost, ActionTag } from "../actions.ts";
 import type { CharacterId } from "../characters.ts";
 import type { BiosState } from "../bios.ts";
 import type { DrugEffect } from "../drugs.ts";
+import type { FruitEffect } from "../fruits.ts";
 import type { RebelBaseId, XylophEntryId } from "../comms.ts";
 import type { TurnSide } from "../navigation.ts";
 import type { PlanetDirection } from "../planets.ts";
@@ -150,6 +151,8 @@ export interface PublicConfig {
   neronAp: number;
   /** The garden (`botany.gardenRoom`): where garden points pay, and where bots look for plants and bananas. */
   gardenRoom: RoomId;
+  /** Cycles in one day (24 / `cycleHours`), so the client can turn a log or chat entry's global `cycle` into day and cycle-of-day. */
+  cyclesPerDay: number;
 }
 
 /**
@@ -157,7 +160,22 @@ export interface PublicConfig {
  * you (your mind, Transfer use, action history, when you were last seen, the raw inactivity field); the queue is plain
  * actions (the recorded adjustments stay on the server).
  */
-export type YouView = Omit<PlayerState, "name" | "mind" | "transferUsed" | "epigeneticsUsed" | "history" | "current" | "queue" | "lastSeenAt" | "inactivity"> & { current: ActionInProgress | null; queue: Action[] };
+export type YouView = Omit<
+  PlayerState,
+  | "name"
+  | "mind"
+  | "transferUsed"
+  | "epigeneticsUsed"
+  | "history"
+  | "current"
+  | "queue"
+  | "lastSeenAt"
+  | "inactivity"
+  | "treatDiseaseUntil"
+  | "energizeUntil"
+  | "perceptionUntil"
+  | "pendingDiseases"
+> & { current: ActionInProgress | null; queue: Action[] };
 
 /** A hunter as a turret or a patrol ship's cockpit shows it: its kind, hp, and an asteroid's cycle changes to impact (null otherwise). */
 export interface HunterView {
@@ -198,6 +216,8 @@ export interface PlayerView {
   inventory: ItemView[];
   /** What each drug does in this ship (drugs.ts); null unless you are a living Biologist, Medic, Nurse or Mush. */
   drugEffects: Record<string, DrugEffect> | null;
+  /** What each alien fruit species does in this ship (fruits.ts); null unless you are a living Botanist, Skilful, Chef or Mush. */
+  fruitEffects: Record<string, FruitEffect> | null;
   /** Your inventory size, after modifiers. */
   inventorySlots: number;
   /** Items stored in the room you are in. Other rooms' items are never sent. */

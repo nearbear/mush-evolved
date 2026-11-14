@@ -358,9 +358,20 @@
   gap: 2px 6px;
 }
 .consume-unknown,
-.consume-treats {
+.consume-treats,
+.consume-buffs,
+.consume-diseases,
+.consume-grow,
+.consume-mush-warning {
   margin: 4px 0 0;
   max-width: 28ch;
+  font-size: 0.75rem;
+}
+.consume-buffs {
+  padding-left: var(--space-3);
+}
+.consume-mush-warning {
+  color: var(--danger);
 }
 .consume-effects li {
   display: contents;

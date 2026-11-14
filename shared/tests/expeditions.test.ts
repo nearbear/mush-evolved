@@ -65,6 +65,7 @@ const go = (s: GameState, by: PlayerId = "p0") => must(applyAction(s, by, takeof
 const give = (s: GameState, id: PlayerId, type: string, charges?: number) =>
   s.items.push({ id: `item-test-${s.items.length}`, type, at: { kind: "player", id }, ...(charges !== undefined && { charges }) });
 const floor = (s: GameState, type: string) => s.items.filter((i) => i.type === type && i.at.kind === "room" && i.at.id === ICARUS).length;
+const harvested = (s: GameState, room = ICARUS) => s.items.filter((i) => expedition.loot.harvest.includes(i.type) && i.at.kind === "room" && i.at.id === room).length;
 
 describe("expeditions, phase 1 (instant, as in single player)", () => {
   it("is offered to a Pilot at the Icarus in orbit of a planet with an unexplored sector, and to no one else", () => {
@@ -172,10 +173,11 @@ describe("expeditions, phase 1 (instant, as in single player)", () => {
 
   it("leaves the loot on the bay's floor: fruit (one more with a Botanist), rations, a starmap", () => {
     const harvest = go(game({ tags: ["FRUIT_TREES"], events: only({ kind: "harvest", weight: 1, amount: 3 }) }));
-    expect(floor(harvest, expedition.loot.harvest)).toBe(3);
+    expect(harvested(harvest)).toBe(3);
+    expect(expedition.loot.harvest).toContain(harvest.expeditions[0]!.events[1]!.item);
     const withBotanist = game({ tags: ["FRUIT_TREES"], events: only({ kind: "harvest", weight: 1, amount: 3 }) });
     player(withBotanist, "p2").skills.push("botanic");
-    expect(floor(go(withBotanist), expedition.loot.harvest)).toBe(3 + expedition.botanistBonus);
+    expect(harvested(go(withBotanist))).toBe(3 + expedition.botanistBonus);
     expect(floor(go(game({ tags: ["PREDATOR"], events: only({ kind: "provision", weight: 1, amount: 3 }) })), expedition.loot.provision)).toBe(3);
     const artifact = go(game({ tags: ["RUINS"], events: only({ kind: "artifact", weight: 1 }) }));
     expect(expedition.loot.artifacts).toContain(artifact.expeditions[0]!.events[1]!.item);
@@ -543,7 +545,7 @@ describe("expeditions, phase 2: time away", () => {
     expect(t.expeditions[0]!.events).toHaveLength(2);
     expect(t.planets.p5![0]!.sectors.filter((x) => x.explored)).toHaveLength(1);
     // The loot is in the Icarus while away; members can take it.
-    expect(t.items.filter((i) => i.type === expedition.loot.harvest && i.at.kind === "room" && i.at.id === CRAFT).length).toBeGreaterThan(0);
+    expect(harvested(t, CRAFT)).toBeGreaterThan(0);
     expect(viewFor(t, "p4").expedition!.returnAt).toBe(returnAt);
     t = tickAt(t, T0 + 3 * step);
     expect(t.expedition).not.toBeNull();
@@ -551,7 +553,7 @@ describe("expeditions, phase 2: time away", () => {
     expect(t.expedition).toBeNull();
     for (const id of crewIds) expect(player(t, id).room).toBe(ICARUS);
     expect(t.items.some((i) => i.at.kind === "room" && i.at.id === CRAFT)).toBe(false);
-    expect(floor(t, expedition.loot.harvest)).toBe(t.expeditions[0]!.events.reduce((n, e) => n + (e.kind === "harvest" ? e.amount! : 0), 0));
+    expect(harvested(t)).toBe(t.expeditions[0]!.events.reduce((n, e) => n + (e.kind === "harvest" ? e.amount! : 0), 0));
     expect(t.log.filter((e) => e.key === "expeditionReturned").map((e) => e.visibleTo)).toEqual(t.expeditions[0]!.members.map((id) => [id]));
   });
 
@@ -665,7 +667,7 @@ describe("expeditions, phase 2: time away", () => {
         expect(t.icarusLost).toBe(true);
         expect(inCraft(t)).toEqual([]);
         // Nothing came back: no bodies, loot or the members' items anywhere.
-        expect(t.items.some((i) => i.type === "corpse" || i.type === "starmap" || i.type === expedition.loot.harvest)).toBe(false);
+        expect(t.items.some((i) => i.type === "corpse" || i.type === "starmap" || expedition.loot.harvest.includes(i.type))).toBe(false);
         const line = t.log.find((e) => e.key === "icarusLost")!;
         expect(line).toMatchObject({ visibleTo: "all", params: { planet: "Fugunys" }, level: "warning" });
         expect(t.log.some((e) => e.key === "expeditionReturned")).toBe(false);
@@ -700,7 +702,7 @@ describe("expeditions, phase 2: time away", () => {
         expect(player(t, id).room).toBe(ICARUS);
       }
       expect(t.expeditions[0]!.events).toHaveLength(2);
-      expect(floor(t, expedition.loot.harvest)).toBe(loot);
+      expect(harvested(t)).toBe(loot);
       expect(t.items.find((i) => i.type === "starmap")!.at).toEqual({ kind: "player", id: "p1" });
       expect(t.log.find((e) => e.key === "icarusRecalled")).toMatchObject({ visibleTo: "all", params: { planet: "Fugunys" } });
       expect(t.log.filter((e) => e.key === "expeditionReturned")).toHaveLength(crewIds.length);
@@ -1193,7 +1195,7 @@ describe("expeditions, phase 4, slice D: skills", () => {
     expect(back.expedition).toBeNull();
     expect(player(back, "p1").ap).toBe(player(landed, "p1").ap - expedition.uTurn.cost.ap);
     for (const id of crewIds) expect(player(back, id).room).toBe(ICARUS);
-    expect(floor(back, expedition.loot.harvest)).toBe(1);
+    expect(harvested(back)).toBe(1);
     expect(back.planets.p5![0]!.sectors.filter((x) => x.explored)).toHaveLength(1);
     expect(back.expeditions[0]!.events.at(-1)).toEqual({ sector: "U_TURN", kind: "uTurn", who: player(s, "p1").character });
     expect(back.log.slice(landed.log.length).filter((e) => e.visibleTo === "all")).toEqual([]);
@@ -1348,7 +1350,7 @@ describe("expeditions, phase 5: hold extension, patrol-ship landings, no droppin
     expect(t.expedition).toBeNull();
     expect(player(t, "p0").room).toBe(LONGANE.bay);
     expect(t.patrolShips[LONGANE.id]).toMatchObject({ out: false, onPlanet: null, destroyed: false });
-    expect(t.items.filter((i) => i.type === expedition.loot.harvest && i.at.kind === "room" && i.at.id === LONGANE.bay).length).toBeGreaterThan(0);
+    expect(harvested(t, LONGANE.bay)).toBeGreaterThan(0);
     expect(inShip(t)).toEqual([]);
     expect(viewFor(t, "p0").log.some((e) => e.key === "expeditionReturned")).toBe(true);
   });

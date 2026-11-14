@@ -192,7 +192,19 @@
   },
   "inspect": {
     "self": "{{character}} (tú): inspeccionar",
-    "deselect": "Deseleccionar"
+    "deselect": "Deseleccionar",
+    "fruitUnknown": "Los efectos son desconocidos: solo un Botánico, Cocinero o Polivalente conoce esta especie.",
+    "fruitBuffs": {
+      "treat_disease": "Tratar enfermedad (las enfermedades curan 1 ciclo más rápido por ciclo durante 4 ciclos)",
+      "energize": "Energizante (+2 PM por conversión de PA durante 2 ciclos)",
+      "resistance": "Resistencia (inmune a las esporas durante 2 ciclos)",
+      "perception": "Percepción (+10 % de probabilidad de éxito en acciones durante 2 ciclos)"
+    },
+    "fruitDiseaseOdds": "{{disease}} ({{percent}} %)",
+    "fruitGrowCycles_one": "Maduración: {{count}} ciclo",
+    "fruitGrowCycles_many": "Maduración: {{count}} ciclos",
+    "fruitGrowCycles_other": "Maduración: {{count}} ciclos",
+    "fruitMushWarning": "Conocimiento Mush: sin Botánico, Cocinero o Polivalente, un humano no conocería estos efectos."
   },
   "nav": {
     "panels": "Paneles",
@@ -636,7 +648,7 @@
     "warning": "Advertencia",
     "shipMessage": "Mensaje de la nave",
     "checkbox": "Casilla de verificación",
-    "cycleDivider": "Ciclo {{cycle}}",
+    "cycleDivider": "Día {{day}} · Ciclo {{cycle}}",
     "composer": {
       "preview": "Vista previa del markdown",
       "edit": "Ocultar vista previa",
@@ -753,6 +765,15 @@
     "cold_disease": "Resfriado",
     "extreme_tinnitus_disease": "Tinnitus extremo",
     "fungal_infection_disease": "Micosis",
+    "skin_inflammation_disease": "Inflamación cutánea",
+    "space_rabies_disease": "Rabia espacial",
+    "gastroenteritis_disease": "Gastroenteritis",
+    "smallpox_disease": "Viruela",
+    "black_bite_disease": "Mordedura negra",
+    "rejuvenation_disease": "Rejuvenecimiento",
+    "acid_reflux_disease": "Reflujo ácido",
+    "mush_allergy_disease": "Alergia al Mush",
+    "tapeworm_disease": "Solitaria",
     "broken_nose_injury": "Nariz rota",
     "inactive": "Inactivo",
     "super_inactive": "Gran inactivo",

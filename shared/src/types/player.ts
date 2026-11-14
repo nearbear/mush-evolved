@@ -2,6 +2,7 @@ import type { Cheat } from "../cheats.ts";
 import type { CharacterId } from "../characters.ts";
 import type { Action, PlayerId, Role, RoomId, Seat } from "../types.ts";
 import type { DiseaseTracker } from "../diseases.ts";
+import type { PendingDisease } from "../fruits.ts";
 
 export type ResourceId = "eng" | "exp" | "comp" | "garden" | "core" | "shoot" | "cook" | "heal" | "pilgred";
 
@@ -137,8 +138,16 @@ export interface PlayerState extends Seat {
   statuses: string[];
   /** Disease Trackers, these store the progress of a disease healing */
   diseaseTrackers: DiseaseTracker[];
-  /** First cycle the player is no longer immune to infection (antic_perfume); unset or past means not immune. Private: your own view only, as the `immune` status. */
+  /** First cycle the player is no longer immune to infection (`antic_perfume` or fruit `resistance`); unset or past means not immune. Private: your own view only, as the `immune` status. */
   immuneUntil?: number;
+  /** Last cycle (`next.cycle <= treatDiseaseUntil`) a fruit's Treat Disease buff still accelerates disease recovery. Never sent. */
+  treatDiseaseUntil?: number;
+  /** First cycle a fruit's Energize buff is over (`state.cycle < energizeUntil`). Never sent; reflected in `view.movement.mpPerConversion`. */
+  energizeUntil?: number;
+  /** First cycle a fruit's Perception buff is over (`state.cycle < perceptionUntil`). Never sent. */
+  perceptionUntil?: number;
+  /** Delayed diseases rolled on eating an alien fruit, triggering at `atCycle` (`diseaseTrackerCycleChange`). Never sent to anyone. */
+  pendingDiseases?: PendingDisease[];
   /** Spores this player carries. Only Mush ever gain any; visible in your own view only (teammates' counts will be shown to Mush later). */
   spores: number;
   /** Extra point counters (resources.ts). Private: only in your own view. Nothing earns or spends them yet. */

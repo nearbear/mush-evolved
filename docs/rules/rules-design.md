@@ -8,7 +8,7 @@ The record of answered rule decisions and the design for the rules that are not 
 
 ## Decisions received
 
-- **Alien fruits** (2026-11-14, owner; not built; replaces eMush's per-trait rolls, which leave most alien fruits worse than a banana). Goal: every alien plant is worth planting over a banana.
+- **Alien fruits** (2026-11-14, owner; backend built in [#437](https://github.com/nearbear/mush2/issues/437), client tooltips/art in [#438](https://github.com/nearbear/mush2/issues/438); replaces eMush's per-trait rolls, which leave most alien fruits worse than a banana). Goal: every alien plant is worth planting over a banana.
   - **Species and source**: the original's 12 alien species (its `Data.ods` Skins rows 1–12, icons `fruit01`–`fruit12`, Lianube to Filandru; `fruit00` is the banana and `fruit13`, Citrouïd, is the Halloween event fruit, left out), each species' traits fixed for the whole ship (seeded at creation). Expedition Harvest events drop a random alien fruit instead of bananas; the ship starts with none. Bananas are unchanged (+1 AP, +1 satiety, +1 morale, +1 HP, 36 cycles).
   - **Base**: every fruit gives 1 satiety and 1 AP, outside the budget.
   - **Value budget**: an alien species is worth 3–6 (grafts 4–9, later pass). A purely random fruit is generated, then the whole fruit is re-rolled until its value fits. Purely random: each single-slot category (AP, morale, health) picks one of its options or none with equal odds; diseases and specials each roll 0–3 distinct effects. A simulation fits about 35–38% of fruits, under 3 tries per species; generation should still cap its tries and fail loudly, with a test over many seeds.

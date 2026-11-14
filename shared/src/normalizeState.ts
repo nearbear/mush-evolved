@@ -29,6 +29,7 @@ import { newNpcState, type NpcState } from "./npcs.ts";
 import { type LostAnalysisState, rollLostAnalysis } from "./lostAnalysis.ts";
 import { streamFor } from "./rng.ts";
 import type { DrugDispenserState, DrugEffect } from "./drugs.ts";
+import type { FruitDisease, FruitEffect, PendingDisease } from "./fruits.ts";
 import type { FullView, SeatStart, SeatStarts } from "./fullView.ts";
 import { PROJECT_IDS } from "./projects.ts";
 import type { RebelCall } from "./comms.ts";
@@ -323,6 +324,28 @@ export function normalizeDrug(raw: Partial<DrugEffect>): DrugEffect {
   return stripUndefined<DrugEffect>({ morale: need(raw, "morale", t), ap: need(raw, "ap", t), mp: need(raw, "mp", t), treats: [...need(raw, "treats", t)] });
 }
 
+export function normalizeFruitDisease(raw: Partial<FruitDisease>): FruitDisease {
+  const t = "FruitDisease";
+  return stripUndefined<FruitDisease>({ id: need(raw, "id", t), odds: need(raw, "odds", t) });
+}
+
+export function normalizeFruit(raw: Partial<FruitEffect>): FruitEffect {
+  const t = "FruitEffect";
+  return stripUndefined<FruitEffect>({
+    ap: need(raw, "ap", t),
+    morale: need(raw, "morale", t),
+    hp: need(raw, "hp", t),
+    buffs: [...need(raw, "buffs", t)],
+    diseases: need(raw, "diseases", t).map(normalizeFruitDisease),
+    growCycles: need(raw, "growCycles", t),
+  });
+}
+
+export function normalizePendingDisease(raw: Partial<PendingDisease>): PendingDisease {
+  const t = "PendingDisease";
+  return stripUndefined<PendingDisease>({ id: need(raw, "id", t), atCycle: need(raw, "atCycle", t) });
+}
+
 export function normalizeDrugDispenser(raw: Partial<DrugDispenserState>): DrugDispenserState {
   const t = "DrugDispenserState";
   return { list: [...need(raw, "list", t)], used: need(raw, "used", t) };
@@ -431,6 +454,10 @@ export function normalizePlayer(raw: Partial<PlayerState>, mode: QueueMode): Pla
     statuses: copy(need(raw, "statuses", t)),
     diseaseTrackers: need(raw, "diseaseTrackers", t).map(normalizeDiseaseTracker),
     immuneUntil: raw.immuneUntil,
+    treatDiseaseUntil: raw.treatDiseaseUntil,
+    energizeUntil: raw.energizeUntil,
+    perceptionUntil: raw.perceptionUntil,
+    pendingDiseases: opt(raw.pendingDiseases, (list) => list.map(normalizePendingDisease)),
     spores: need(raw, "spores", t),
     // Fixed keys: a new resource doesn't compile until it has a default here.
     resources: {
@@ -875,6 +902,7 @@ export function normalizeCore(raw: Partial<GameCore>, _ctx: NormalizeContext, mo
     equipment: mapValues(need(raw, "equipment", t), (list) => list.map(normalizeEquipment)),
     dispensedOn: dict(need(raw, "dispensedOn", t)),
     drugs: mapValues(added(raw, "drugs", {}), normalizeDrug),
+    fruits: mapValues(added(raw, "fruits", {}), normalizeFruit),
     drugDispenser: normalizeDrugDispenser(added(raw, "drugDispenser", { list: [], used: false })),
     log: need(raw, "log", t).map(normalizeLogEntry),
     nextLogId: need(raw, "nextLogId", t),

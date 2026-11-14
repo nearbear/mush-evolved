@@ -2,6 +2,7 @@ import type { BiosState } from "../bios.ts";
 import type { CharacterId } from "../characters.ts";
 import type { CommsState } from "../comms.ts";
 import type { DrugDispenserState, DrugEffect } from "../drugs.ts";
+import type { FruitEffect } from "../fruits.ts";
 import type { LostAnalysisState } from "../lostAnalysis.ts";
 import type { NpcState } from "../npcs.ts";
 import type { TurnSide } from "../navigation.ts";
@@ -62,6 +63,8 @@ export interface GameCore {
   dispensedOn: Record<string, number>;
   /** What each drug item type does in this ship, drawn at launch (drugs.ts). Never sent to players. */
   drugs: Record<string, DrugEffect>;
+  /** What each alien fruit species does in this ship, drawn at launch (fruits.ts). Never sent to players except via `view.fruitEffects`. */
+  fruits: Record<string, FruitEffect>;
   /** The Drug Dispenser's current list and whether it has been used (drugs.ts). Never sent; `view.actions` offers the viewer's own options. */
   drugDispenser: DrugDispenserState;
   log: LogEntry[];
