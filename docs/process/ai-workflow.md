@@ -3503,3 +3503,7 @@ The owner disliked the Astro terminal's Share button opening a navy `.settings-p
 - **What worked:** numbers before pictures; per-site before/after crops plus a pixel diff, with a visual-check subagent reading them, which caught the two bad sites (the sign cycle, the deck wall).
 - **What needed correction:** my first reading of the floor-shift idea was too optimistic. Terminology now in `web/src/iso/CLAUDE.md`: main axis (+x, front corridor to engine room) and cross axis (y, Alpha to Beta).
 - Also fixed: `npm run ship-render` crashed because `placement.ts` imported from the `@mush2/shared` index.
+
+## 2026-11-14: infiniteSpores cheat also skips the spike cooldown
+
+The owner asked for the infinite-spores dev cheat to remove the 4-cycle spike cooldown too. One line in `SpikeAction.cooldownLeft` (returns 0 when the actor has the cheat) plus a test in `spike.test.ts`. Kept it inside the existing cheat rather than a new toggle, as asked; the cheat's label still reads "Infinite spores".

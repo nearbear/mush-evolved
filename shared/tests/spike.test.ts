@@ -63,6 +63,14 @@ describe("spiking", () => {
     expect(applyAction(s, "p0", spike("p1")).ok).toBe(true);
   });
 
+  it("has no cooldown with the infiniteSpores cheat", () => {
+    let s = ship();
+    player(s, "p0").spores = 5;
+    player(s, "p0").cheats = ["infiniteSpores"];
+    s = must(applyAction(s, "p0", spike("p1")));
+    expect(applyAction(s, "p0", spike("p1")).ok).toBe(true);
+  });
+
   it("keeps the cooldown separate per Mush", () => {
     const s = ship();
     player(s, "p2").spores = 1;
