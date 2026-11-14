@@ -1,0 +1,44 @@
+// @vitest-environment jsdom
+//
+// `useDoublePress` (hud/DoublePress.tsx): actions take two presses, except the `SINGLE_PRESS_ACTIONS`, which take one.
+
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { SINGLE_PRESS_ACTIONS, useDoublePress } from "../../src/hud/DoublePress.tsx";
+
+function Probe({ fire, single }: { fire: () => void; single?: boolean }) {
+  const { onClick, armed } = useDoublePress(fire, single);
+  return (
+    <button type="button" data-armed={armed ? "" : undefined} onClick={onClick}>
+      go
+    </button>
+  );
+}
+
+afterEach(cleanup);
+
+describe("useDoublePress", () => {
+  it("arms on the first press and fires on the second", () => {
+    const fire = vi.fn();
+    render(<Probe fire={fire} />);
+    const button = screen.getByRole("button");
+    fireEvent.click(button, { detail: 1 });
+    expect(fire).not.toHaveBeenCalled();
+    expect(button.hasAttribute("data-armed")).toBe(true);
+    fireEvent.click(button, { detail: 2 });
+    expect(fire).toHaveBeenCalledTimes(1);
+  });
+
+  it("fires on the first press when single, without arming", () => {
+    const fire = vi.fn();
+    render(<Probe fire={fire} single />);
+    const button = screen.getByRole("button");
+    fireEvent.click(button, { detail: 1 });
+    expect(fire).toHaveBeenCalledTimes(1);
+    expect(button.hasAttribute("data-armed")).toBe(false);
+  });
+
+  it("lists accessing a terminal as a single-press action", () => {
+    expect(SINGLE_PRESS_ACTIONS.has("access")).toBe(true);
+  });
+});

@@ -3521,3 +3521,9 @@ The owner asked for the infinite-spores dev cheat to remove the 4-cycle spike co
 - Choices made along the way: the "written" flag is saved with the next input rather than with a write of its own, since rewriting the row is harmless; `recordFinished` waits for a launch write under way so it can't land after the delete; a ship this build can't read counts as running, so the sweep keeps it; the sweep has no grace period, because a row exists only after its launch is saved.
 - Needed correction: the plan said single player would show 1 or 0 aboard, but single player never opens an `account_ships` row, so it shows `-`; the plan was updated. The first test run failed in 9 room tests because their rooms had no D1 binding, so the new write failed and its retry moved the alarm. The fix was a D1 on every test room, not a room that tolerates a missing binding.
 - Not done here: running `npm run ships` against staging needs a deploy that applies `0005_ships.sql`. The query and wrangler's JSON were checked against the local D1.
+
+## 2026-11-14: Single-press actions (terminal access)
+
+- Owner asked for inconsequential actions to take one click, starting with accessing a terminal. Added `SINGLE_PRESS_ACTIONS` in `web/src/hud/DoublePress.tsx` (just `access` for now) and a `single` flag on `useDoublePress`, which `ActionButton` sets from the action type, so every access button (peek bar, Inspect) fires on the first press.
+- Tradeoff: kept the list client-side rather than as a property on the shared `Action` class, since it's a UI-confirmation choice, not a rule, and `ActionOption` would otherwise need a new field in every view. A flag on the hook (not a second hook) lets one button switch without breaking the rules of hooks.
+- Added a jsdom test for the hook (`web/tests/hud/doublePress.test.tsx`) and a line in `web/CLAUDE.md`. Verify's server bot tests timed out (unrelated to this change).
