@@ -28,12 +28,18 @@ main {
   padding: 0 var(--space-4);
 }
 
-input {
-  background: var(--panel);
-  color: var(--text);
-  border: 1px solid var(--edge);
-  border-radius: 4px;
+/* Text fields take their surface's --field-* tokens (tokens.css; cut-card.css on the light card). :where keeps this at
+   zero specificity, so a component's own field rule (the chatbox art) always wins. */
+:where(input:not([type="checkbox"], [type="radio"]), textarea) {
+  background: var(--field-bg);
+  color: var(--field-text);
+  border: 1px solid var(--field-edge);
+  border-radius: var(--field-radius);
+  box-shadow: var(--field-shadow);
   padding: var(--space-2) var(--space-2);
+}
+:where(input, textarea)::placeholder {
+  color: var(--field-placeholder);
 }
 
 a {

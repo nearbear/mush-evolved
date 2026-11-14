@@ -204,6 +204,11 @@
 /* A terminal's: the name over the login on the left; on the right close, then the icon in the bottom-right corner,
    hanging down to the tab line (the tabs may run over it, close may not). Its column is as wide as the icon, so the
    text never runs under it. */
+/* A plain title takes the room left beside close and wraps its own text, so close never drops to a second line. */
+.terminal-header > .settings-title {
+  flex: 1 1 0;
+  min-width: 0;
+}
 .terminal-header:has(> .terminal-heading) {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;

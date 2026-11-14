@@ -3,12 +3,11 @@ import { useTranslation } from "react-i18next";
 import { Dialog } from "@base-ui/react/dialog";
 import { useNames } from "../i18n/names.ts";
 import type { ChannelId, PlayerId, PlayerView, PrivateChannelId } from "@mush2/shared";
-import { DialogHeader } from "./DialogHeader.tsx";
+import { FramedDialog } from "./FramedDialog.tsx";
 import { IconButton } from "./IconButton.tsx";
 import { Thread } from "./Thread.tsx";
 import { UnreadChip } from "./UnreadChip.tsx";
 import { TAB_ICONS, standingSprite } from "../art/assets.ts";
-import "./settings.css";
 
 export interface ChannelHandlers {
   onCreate: (name: string, members: PlayerId[]) => void;
@@ -175,53 +174,49 @@ function ChannelDialog({
         if (!next) reset();
       }}
     >
-      <Dialog.Portal>
-        <Dialog.Backdrop className="settings-backdrop" />
-        <Dialog.Popup className="settings-popup">
-          <DialogHeader heading={t(creating ? "channels.createTitle" : "channels.inviteTitle")} closeLabel={t("channels.close")} />
-          <form
-            className="channel-create-form"
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (!creating && members.length === 0) return;
-              // Drop anyone who died (or joined) while the dialog was open.
-              onSubmit(name, members.filter((m) => choices.some((p) => p.id === m)));
-              reset();
-            }}
-          >
-            {creating && (
-              <label className="channel-create-name">
-                <span>{t("channels.nameLabel")}</span>
-                <input value={name} onChange={(e) => setName(e.target.value)} maxLength={24} placeholder={t("channels.namePlaceholder")} />
-              </label>
-            )}
-            <fieldset className="channel-create-members">
-              <legend>{t(creating ? "channels.membersLabel" : "channels.inviteLabel")}</legend>
-              {choices.length === 0 && <p className="sub">{t("channels.noOne")}</p>}
-              <div className="channel-picker">
-                {choices.map((p) => {
-                  const on = members.includes(p.id);
-                  return (
-                    <button
-                      key={p.id}
-                      type="button"
-                      className="channel-pick"
-                      aria-pressed={on}
-                      onClick={() => setMembers((ms) => (on ? ms.filter((m) => m !== p.id) : [...ms, p.id]))}
-                    >
-                      <span className="channel-pick-sprite" style={standingSprite(p.character, 1)} aria-hidden="true" />
-                      <span>{names.characterGiven(p.character)}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </fieldset>
-            <button type="submit" disabled={!creating && members.length === 0}>
-              {t(creating ? "channels.create" : "channels.invite")}
-            </button>
-          </form>
-        </Dialog.Popup>
-      </Dialog.Portal>
+      <FramedDialog heading={t(creating ? "channels.createTitle" : "channels.inviteTitle")} closeLabel={t("channels.close")}>
+        <form
+          className="channel-create-form"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!creating && members.length === 0) return;
+            // Drop anyone who died (or joined) while the dialog was open.
+            onSubmit(name, members.filter((m) => choices.some((p) => p.id === m)));
+            reset();
+          }}
+        >
+          {creating && (
+            <label className="channel-create-name">
+              <span>{t("channels.nameLabel")}</span>
+              <input value={name} onChange={(e) => setName(e.target.value)} maxLength={24} placeholder={t("channels.namePlaceholder")} />
+            </label>
+          )}
+          <fieldset className="channel-create-members">
+            <legend>{t(creating ? "channels.membersLabel" : "channels.inviteLabel")}</legend>
+            {choices.length === 0 && <p className="sub">{t("channels.noOne")}</p>}
+            <div className="channel-picker">
+              {choices.map((p) => {
+                const on = members.includes(p.id);
+                return (
+                  <button
+                    key={p.id}
+                    type="button"
+                    className="channel-pick"
+                    aria-pressed={on}
+                    onClick={() => setMembers((ms) => (on ? ms.filter((m) => m !== p.id) : [...ms, p.id]))}
+                  >
+                    <span className="channel-pick-sprite" style={standingSprite(p.character, 1)} aria-hidden="true" />
+                    <span>{names.characterGiven(p.character)}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </fieldset>
+          <button type="submit" disabled={!creating && members.length === 0}>
+            {t(creating ? "channels.create" : "channels.invite")}
+          </button>
+        </form>
+      </FramedDialog>
     </Dialog.Root>
   );
 }

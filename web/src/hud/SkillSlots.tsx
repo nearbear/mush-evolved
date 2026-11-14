@@ -4,13 +4,12 @@
 // Which skills can be picked comes from view.actions, never computed here.
 // A Mush looking at their own portrait gets a toggle at the top that swaps the stack for their four Mush skill slots.
 // It only changes what is drawn (to save space); both sets stay picked. Mush skills are only ever in your own view.
-// The picker is framed like the settings window (terminal.css: the kit-panel around the light cut card).
+// The picker is a FramedDialog, like the settings window.
 
 import { Dialog } from "@base-ui/react/dialog";
 import { ConfirmPanel } from "./ConfirmPanel.tsx";
-import { DialogHeader } from "./DialogHeader.tsx";
+import { FramedDialog } from "./FramedDialog.tsx";
 import { Hint } from "./IconButton.tsx";
-import { TabOutline } from "./TabOutline.tsx";
 import { Popover } from "@base-ui/react/popover";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -104,46 +103,31 @@ export function SkillSlots({
           if (!o) setPending(null);
         }}
       >
-        <Dialog.Portal>
-          <Dialog.Backdrop className="settings-backdrop" />
-          <Dialog.Popup className="settings-popup terminal-popup kit-panel skill-picker">
-            <div className="cut-card cut-top terminal-card terminal-outlined">
-              <div className="terminal-top">
-                <DialogHeader
-                  className="terminal-header"
-                  heading={t(mush ? "skills.mushTitle" : "skills.title")}
-                  closeLabel={t("skills.close")}
-                />
-              </div>
-              <div className="terminal-body">
-                <p className="skill-warning">{t("skills.warning")}</p>
-                <ul className="skill-list">
-                  {offered.map((skill) => (
-                    <li key={skill}>
-                      <SkillCard skill={skill} onSelect={() => setPending(skill)} />
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-            <TabOutline shape="cut" line=".terminal-body" />
-            <ConfirmPanel
-              open={pending !== null}
-              onOpenChange={(o) => !o && setPending(null)}
-              message={t("skills.confirm", { skill: pending ? names.skill(pending) : "" })}
-              yesLabel={t("skills.confirmYes")}
-              backLabel={t("skills.back")}
-              onYes={() => {
-                if (!pending) return;
-                onAction({ type: "pick_skill", skill: pending });
-                setOpen(false);
-                setPending(null);
-              }}
-            >
-              {pending && <SkillCard skill={pending} />}
-            </ConfirmPanel>
-          </Dialog.Popup>
-        </Dialog.Portal>
+        <FramedDialog className="skill-picker" heading={t(mush ? "skills.mushTitle" : "skills.title")} closeLabel={t("skills.close")}>
+          <p className="skill-warning">{t("skills.warning")}</p>
+          <ul className="skill-list">
+            {offered.map((skill) => (
+              <li key={skill}>
+                <SkillCard skill={skill} onSelect={() => setPending(skill)} />
+              </li>
+            ))}
+          </ul>
+          <ConfirmPanel
+            open={pending !== null}
+            onOpenChange={(o) => !o && setPending(null)}
+            message={t("skills.confirm", { skill: pending ? names.skill(pending) : "" })}
+            yesLabel={t("skills.confirmYes")}
+            backLabel={t("skills.back")}
+            onYes={() => {
+              if (!pending) return;
+              onAction({ type: "pick_skill", skill: pending });
+              setOpen(false);
+              setPending(null);
+            }}
+          >
+            {pending && <SkillCard skill={pending} />}
+          </ConfirmPanel>
+        </FramedDialog>
       </Dialog.Root>
     </div>
   );

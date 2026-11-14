@@ -24,6 +24,14 @@
   --badge: #24508a;
   /* Dark text/strokes on light art (chat field, minimap dots). */
   --ink: #0d1424;
+  /* Text fields (base.css's input and textarea): the dark-surface look. cut-card.css redefines them for its light card,
+     so a field is right on either surface without a per-dialog override. */
+  --field-bg: var(--panel);
+  --field-text: var(--text);
+  --field-placeholder: var(--muted);
+  --field-edge: var(--edge);
+  --field-radius: 4px;
+  --field-shadow: none;
   /* Panel surface: the flat quote-box fill, plus glow colors for highlights. */
   --surface-top: var(--panel-fill);
   --surface-bottom: var(--panel-fill);
