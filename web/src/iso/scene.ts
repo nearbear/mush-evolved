@@ -110,9 +110,12 @@ const AMBIENT_SLICES: ReadonlySet<string> = new Set([
 
 /** Speed multiplier for ambient animations tuned faster (> 1) or slower (< 1) than their tiles.xml rhythm. */
 const AMBIENT_SPEED: Readonly<Record<string, number>> = {
+  bay_light: 0.7,
+  bay_window: 0.7,
+  bay_window_upgrade: 0.7,
   radar_trans_void: 0.5,
-  rotational_reactor: 2,
-  emergency_reactor: 2,
+  rotational_reactor: 1.4,
+  emergency_reactor: 1.4,
   tank_fuel_right_front: 0.5,
   tank_fuel_left_back: 0.5,
   surgery_console: 0.5,
