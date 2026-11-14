@@ -3462,3 +3462,9 @@ A review in Claude Code (Opus 5.5) of the uncommitted #339 work found five issue
 ## 2026-11-14: Astro Share form inline instead of a second modal
 
 The owner disliked the Astro terminal's Share button opening a navy `.settings-popup` over the terminal window (a double modal in a different style). `SharePlanetDialog` became `SharePlanetForm`, which replaces the planet's card inside its tab, with Back and Post; switching tabs drops it, focus moves to the text on open and back to Share on Back. `astro.shareClose` removed (Back reuses `astro.back`). The delete confirmation still uses `ConfirmPanel` over the window, which web/CLAUDE.md keeps as the original pop-up style.
+
+## 2026-11-14: Skill implementation status housecleaning
+
+- Audited `SKILLS` (66 human) and `MUSH_SKILLS` (27 Mush) in `shared/src/skills.ts` against the implementations in `shared/src/` and listed effects in `web/src/locales/en.json`.
+- Updated `SKILL_STATUS` in `shared/src/skills.ts`: added `biologist: "full"` (drug properties, +2 Drug Dispenser options, +4 research bonus), promoted `pilot` from `"partial"` to `"full"` (patrol shooting accuracy and expedition piloting were already built), and promoted `robotics` from `"partial"` to `"full"` (`upgrade_drone` landed in phase 2, #412). Updated stale comments on `medic`, `computer`, `engineer`, `escape`, `botanic`, `skilful`, `paranoid`, and `genius`.
+- Synced stale skill notes in `docs/rules/implemented-rules.md` (`Healing`, `Mush skills`, `Titles`, `Paranoid`, `Combat skills` for `polymath`, and `Support drones, phase 1` for `robotics`) and added assertions for `biologist`, `pilot`, and `robotics` in `shared/tests/skills.test.ts`.

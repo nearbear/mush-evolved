@@ -177,29 +177,31 @@ export type SkillStatus = "full" | "partial" | "none";
  * NERON projects are left out of this count (owner, 2026-10-16).
  */
 export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillStatus>>> = {
-  // Heal bonus and reads drug properties; no operations or research bonus.
+  // Heal bonus, research bonus, and reads drug properties; no operations.
   medic: "partial",
   // 16 cycles of room log (owner, 2026-11-05, #365, log.ts) and cancels Found dead on expeditions (owner, 2026-11-08, #357); no movement sources, ship logs or List.
   hunt: "partial",
   // Apprenticeship (owner, 2026-11-05, actions/apprenticeship.ts).
   apprentice: "full",
-  // Flying patrol ships, with clean takeoffs and landings (owner, 2026-10-24, patrol.ts); no shooting bonus yet.
-  pilot: "partial",
+  // Flying patrol ships and the Pasiphae, clean takeoffs and landings, doubled patrol-ship shot odds, and expedition piloting (patrol.ts, modifiers/pilot.ts, expeditions.ts).
+  pilot: "full",
   // Heavy-item penalty and punch damage only; no Throw Out.
   sturdy: "partial",
   // Free heal points (2/day) and reads drug properties and gets +1 Drug Dispenser option (owner, 2026-11-13).
   first_aid: "full",
   // Premonition: reveals a crewmate's last action for 1 morale (owner, 2026-11-13, actions/premonition.ts).
   premonition: "full",
-  // Computer points and their use on research and NERON projects only; no hacking.
+  // Computer points and their use on research, NERON projects, comms, and planet analysis only; no hacking.
   computer: "partial",
+  // Reads drug properties, +2 Drug Dispenser options, and +4 research bonus (drugs.ts, research.ts).
+  biologist: "full",
   // PILGRED points and the PILGRED repair bonus (owner, 2026-10-21).
   physicist: "full",
-  // PILGRED repair bonus and doubled renovation odds (owner, 2026-10-28); no repair points or equipment repairs.
+  // Engineer points, PILGRED repair bonus, doubled repair and renovation odds, Dismantle, and Reinforce (modifiers/engineer.ts, actions/dismantle.ts, actions/reinforce.ts, pilgred.ts).
   engineer: "full",
   creative: "full",
   lethargy: "full",
-  // Only the lower melee odds against its holder; its other listed effects are not built.
+  // Lower melee odds against its holder and moving past Guardians (modifiers/escape.ts, actions/guard.ts).
   escape: "full",
   antic_perfume: "full",
   logistics: "full",
@@ -227,9 +229,9 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   radio_expert: "full",
   // +100% rebel decoding (owner, 2026-10-21, comms.ts).
   rebel: "full",
-  // Garden points and seeing plant sickness (owner, 2026-10-22, botany.ts); no grafting or fruit properties.
+  // Garden points, seeing plant sickness, and +1 fruit on expedition Harvest events (botany.ts, expeditions.ts); no grafting or fruit properties.
   botanic: "partial",
-  // Sees plant sickness as the Botanist does (botany.ts); none of its other skills' knowledge.
+  // Sees plant sickness as the Botanist does (botany.ts) and reads drug properties / +2 Drug Dispenser options as Biologist (drugs.ts); no research bonus or expedition effects.
   skilful: "partial",
   // Mush skill: the one-use reset of the Mush skills (owner, 2026-11-13, actions/reset_skills.ts).
   epigenetics: "full",
@@ -250,12 +252,12 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   gunman: "partial",
   // Scan for planets costs 1 AP less; remote analyses reveal 1 extra sector; +4 on its two NERON projects (owner, 2026-10-27).
   astrophysician: "full",
-  // One extra camera item when picked (owner, 2026-10-27).
+  // One extra camera item when picked and free install/uninstall of cameras (owner, 2026-10-27, modifiers/paranoid.ts).
   paranoid: "full",
   // Two empty hydropots when picked (owner, 2026-11-01); the graft bonus waits for grafting.
   green_thumb: "partial",
-  // A support drone blueprint when picked (#411, modifiers/robotics.ts); drone upgrades wait for later phases of #410.
-  robotics: "partial",
+  // A support drone blueprint when picked and upgrading drones with metal scraps (#411, #412, modifiers/robotics.ts, actions/upgrade_drone.ts).
+  robotics: "full",
   // Doubled turret odds and damage (owner, 2026-10-24).
   gunner: "full",
   // Saboteur: triples the odds of Sabotage (owner, 2026-11-07, modifiers/sapper.ts) and adds Contaminate to research (actions/contaminate.ts).
@@ -281,7 +283,7 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   traitor: "partial",
   //Mush skill: Allows for accessing Bios.
   neron_access: "full",
-  //Insantly complete a research, project, or repair (owner, 2026-10-25, actions/instant_research.ts).
+  // Instantly complete a research, project, or repair (owner, 2026-10-25, actions/become_genius.ts).
   genius: "full",
   // Expedition: -1 damage per hit, +1 Alien Steak on Provision events, and chosen last on Kill events (expeditions.ts).
   survival: "full",
