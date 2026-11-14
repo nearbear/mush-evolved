@@ -1,7 +1,9 @@
-// Your other resources (satiety first, then spores, free IT points, ...) as icon and count chips, showing the first two (desktop) or as many as fit (phone) and "…", which opens
-// them all: one chip in the phone nameplate's chip row (beside AP/MP/HP/morale), or a card stacking them on desktop.
+// Your other resources (satiety first, then spores, free IT points, ...) as icons and counts, and a popover with them all:
+// on desktop a card stacking the first two and "…" (SelfHud); on phones a dark column the ID card's full height, two rows
+// deep, with as many columns as fit beside AP/MP and HP/morale, the last cell a "…" when some don't (PlayerSummary).
 
 import { Popover } from "@base-ui/react/popover";
+import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { RESOURCE_IDS, resourceAvailable, type PlayerView } from "@mush2/shared";
 import { RESOURCE_ICONS, SATIETY_ICON, SPORE_ICON } from "../art/assets.ts";
@@ -31,36 +33,23 @@ function useChips(view: PlayerView): Chip[] {
   ];
 }
 
-/**
- * The first two resources and "…"; it opens a popover with all of them, each with its own card. `stacked` is the
- * desktop card: the resources one above the other, and the popover also opens on hover (it still opens on tap).
- */
-export function CompactResourceChips({ view, stacked = false }: { view: PlayerView; stacked?: boolean }) {
+/** The trigger (`className`, holding `children`) opens a popover with every resource, each with its own card. */
+function AllResources({ chips, shown, hover, align, children }: { chips: Chip[]; shown: Chip[]; hover: boolean; align: "center" | "end"; children: ReactNode }) {
   const { t, i18n } = useTranslation();
-  const chips = useChips(view);
-  // The phone chip lists every resource and lets CSS cut it off with a "…" where the nameplate's width runs out.
-  const shown = stacked ? chips.slice(0, COMPACT_COUNT) : chips;
   const list = new Intl.ListFormat(i18n.language, { type: "unit" }).format(shown.map((c) => t("resources.amount", { name: c.name, count: c.count })));
   return (
     <Popover.Root>
       <Popover.Trigger
-        openOnHover={stacked}
+        openOnHover={hover}
         delay={200}
         nativeButton={false}
         render={<span role="button" tabIndex={0} />}
-        className={stacked ? "resource-stack" : "stat-chip resource-chip"}
         aria-label={t("resources.otherSummary", { list })}
       >
-        {shown.map((chip) => (
-          <span key={chip.key} className="resource-chip-part">
-            <img src={chip.icon} alt="" />
-            {chip.count}
-          </span>
-        ))}
-        {stacked && chips.length > COMPACT_COUNT && <span aria-hidden="true">…</span>}
+        {children}
       </Popover.Trigger>
       <Popover.Portal>
-        <Popover.Positioner sideOffset={6} align={stacked ? "center" : "end"}>
+        <Popover.Positioner sideOffset={6} align={align}>
           <Popover.Popup className="tooltip resource-rest" aria-label={t("resources.other")}>
             {chips.map(({ key, ...chip }) => (
               <ResourceChip key={key} {...chip} />
@@ -69,6 +58,69 @@ export function CompactResourceChips({ view, stacked = false }: { view: PlayerVi
         </Popover.Positioner>
       </Popover.Portal>
     </Popover.Root>
+  );
+}
+
+/** Desktop: the first two resources one above the other and "…"; the popover also opens on hover (it still opens on tap). */
+export function CompactResourceChips({ view }: { view: PlayerView }) {
+  const chips = useChips(view);
+  const shown = chips.slice(0, COMPACT_COUNT);
+  return (
+    <AllResources chips={chips} shown={shown} hover align="center">
+      {shown.map((chip) => (
+        <span key={chip.key} className="resource-chip-part">
+          <img src={chip.icon} alt="" />
+          {chip.count}
+        </span>
+      ))}
+      {chips.length > COMPACT_COUNT && <span aria-hidden="true">…</span>}
+    </AllResources>
+  );
+}
+
+/**
+ * Phones: every resource as a chip in a grid two rows deep that fills its columns top to bottom and is cut off where the
+ * ID card's width runs out. Every chip stays laid out (the ones past the edge invisible), so measuring never moves
+ * anything; when some don't fit, the last one that does shows "…" in its place. Tapping anywhere opens them all.
+ */
+export function ResourceGrid({ view }: { view: PlayerView }) {
+  const chips = useChips(view);
+  const ref = useRef<HTMLSpanElement>(null);
+  // How many chips fit whole; all of them until measured.
+  const [fit, setFit] = useState(chips.length);
+  const signature = chips.map((c) => `${c.key}:${c.count}`).join();
+  // biome-ignore lint/correctness/useExhaustiveDependencies: signature stands in for the chips: a chip coming or going, or a count changing width, moves the cells without resizing the grid.
+  useLayoutEffect(() => {
+    const grid = ref.current;
+    if (!grid) return;
+    const measure = () => {
+      const width = grid.clientWidth;
+      if (width === 0) return; // hidden
+      const cells = [...grid.children] as HTMLElement[];
+      const whole = cells.filter((c) => c.offsetLeft + c.offsetWidth <= width + 0.5).length;
+      setFit(Math.max(1, whole));
+    };
+    const resized = new ResizeObserver(measure);
+    resized.observe(grid);
+    measure();
+    return () => resized.disconnect();
+  }, [signature]);
+  const cut = fit < chips.length;
+  // The "…" takes the last whole cell, so one fewer resource shows.
+  const visible = cut ? fit - 1 : chips.length;
+  return (
+    <>
+      {chips.map((chip, i) => (
+        <span key={chip.key} className={`stat-chip resource-cell${i === visible && cut ? " more" : ""}`} data-cut={i > visible || undefined}>
+          <img src={chip.icon} alt="" />
+          {chip.count}
+        </span>
+      ))}
+      <AllResources chips={chips} shown={chips} hover={false} align="end">
+        <span key={"more"} className={`stat-chip resource-cell more`}>
+        </span>
+      </AllResources>
+    </>
   );
 }
 

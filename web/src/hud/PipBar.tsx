@@ -71,7 +71,7 @@ export function PipBar({
   bigIcon?: boolean;
   /** For the 3px-wide life/morale pips, which use a narrower slot. */
   thin?: boolean;
-  /** Standing up, with the label above and the value below. For the 5x5 AP/MP pips only (the thin pips aren't square). */
+  /** Standing up, with the label above and the value below. The thin pips are turned to lie across their slots. */
   vertical?: boolean;
   /** The icon as a plain image, without its own tooltip: for a bar whose wrapper already explains the stat (StatInfo, in the HUD's plate). */
   plainIcon?: boolean;
@@ -133,15 +133,24 @@ export function PipBar({
                 <g transform={`translate(0 ${yOff}) matrix(0 1 1 0 0 0)`}>
                   <g dangerouslySetInnerHTML={{ __html: capStart }} />
                   {Array.from({ length: n }, (_, i) => (
-                    <g key={i} transform={`translate(${CAP_START + i * pitch} 0)`} dangerouslySetInnerHTML={{ __html: slotPiece(shadeFor(i, n), thin) }} />
+                    <g key={i} transform={`translate(${CAP_START + i * pitch} 0)`}>
+                      <g dangerouslySetInnerHTML={{ __html: slotPiece(shadeFor(i, n), thin) }} />
+                      {thin && <svg x={4} width={1} height={FRAME_H} viewBox={`3 0 1 ${FRAME_H}`} dangerouslySetInnerHTML={{ __html: slotPiece(shadeFor(i, n), thin) }} />}
+                    </g>
                   ))}
                   <g transform={`translate(${CAP_START + n * pitch} 0)`} dangerouslySetInnerHTML={{ __html: capEnd }} />
                 </g>
                 {/* Filled from the bottom slot up; the clip's top edge wipes up or down. Pips stay upright. */}
                 <svg x={0} y={bottom - h} width={FRAME_H} height={h} viewBox={`0 ${bottom - h} ${FRAME_H} ${h}`} overflow="hidden" aria-hidden="true">
-                  {Array.from({ length: Math.min(n, Math.max(0, drawn - c * perCol)) }, (_, i) => (
-                    <image key={i} href={pip} x={3} y={yOff + CAP_START + (n - 1 - i) * pitch + 1} width={5} height={pipW} />
-                  ))}
+                  {Array.from({ length: Math.min(n, Math.max(0, drawn - c * perCol)) }, (_, i) => {
+                    const y = yOff + CAP_START + (n - 1 - i) * pitch + 1;
+                    // The square pips stay upright; the thin ones (3x5) are swapped onto their side, as the frame is.
+                    return thin ? (
+                      <image key={i} href={pip} x={y} y={3} width={pipW} height={5} transform="matrix(0 1 1 0 0 0)" />
+                    ) : (
+                      <image key={i} href={pip} x={3} y={y} width={5} height={pipW} />
+                    );
+                  })}
                 </svg>
               </g>
             );

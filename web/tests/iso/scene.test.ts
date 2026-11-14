@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
-import type { RoomId, ShipLayout, SliceInfo } from "@mush2/shared";
+import type { RoomId, ShipArt, ShipLayout, SliceInfo } from "@mush2/shared";
+import shipArtJson from "../../../Mush/derived/ship-art.json?raw";
+import { roomLooks } from "../../src/iso/IsoRoom.tsx";
 import type { PlacedSprite } from "../../src/iso/placement.ts";
 import { animFrame, animStep, describeScene, doorAnim, doorOpenMs, frameAt, imageOf, type Occupant, type SceneInput } from "../../src/iso/scene.ts";
+import { HUMAN_TANK_FULL_SLICE } from "../../src/iso/shipLayout.ts";
 import type { Walker } from "../../src/iso/useWalkers.ts";
 
 const HERE = "bridge" as RoomId;
@@ -150,7 +153,7 @@ describe("describeScene", () => {
 
   it("loops the reactors on their own, at their rhythm, stepping down their column", () => {
     const s = only(scene([placed({ slice: "rotational_reactor", width: 228, height: 182, sx: 350, sy: 0 })]));
-    expect(s.anim).toMatchObject({ frames: [0, 1, 2], frameMs: [200 / 3, 200 / 3, 200 / 3], loops: "forever" });
+    expect(s.anim).toMatchObject({ frames: [0, 1, 2], frameMs: [100 / 3, 100 / 3, 100 / 3], loops: "forever" });
     expect(frameAt(s.image, 2)).toEqual({ sx: 350, sy: 364 });
   });
 
@@ -258,6 +261,85 @@ describe("describeScene", () => {
     });
     expect(s.sprites.map((p) => p.key)).toEqual(["t0", "a:drone:d1|shadow", "a:drone:d1", "t2"]);
     expect(s.fire[0]!.at).toBe(3);
+  });
+});
+
+describe("roomLooks and ambient animations", () => {
+  const realArt = JSON.parse(shipArtJson) as ShipArt;
+  const realLayout = {
+    ...realArt,
+    slices: { ...realArt.slices, human_tank_full: HUMAN_TANK_FULL_SLICE },
+    rooms: [],
+    autoBind: {},
+  } as unknown as ShipLayout;
+
+  const tick = 1000 / 30;
+  const realScene = (slice: string, looks?: ReadonlyMap<string, string>) =>
+    only(
+      scene([placed({ slice, width: realLayout.slices[slice]!.width, height: realLayout.slices[slice]!.height })], {
+        layout: realLayout,
+        looks,
+      }),
+    );
+
+  it("maps project-driven scenery looks with auxiliary terminals always active", () => {
+    const base = roomLooks(false);
+    expect(base.get("auxiliary_terminal_neron")).toBe("auxiliary_terminal_neron_upgrade_a");
+    expect(base.has("bay_window")).toBe(false);
+    expect(base.has("plasma_shield")).toBe(false);
+
+    const upgraded = roomLooks(true, true, true, true, true, true);
+    expect(upgraded.get("auxiliary_terminal_neron")).toBe("auxiliary_terminal_neron_upgrade_b");
+    expect(upgraded.get("bay_window")).toBe("bay_window_upgrade");
+    expect(upgraded.get("plasma_shield")).toBe("plasma_shield_upgrade");
+    expect(upgraded.get("core_pilgred")).toBe("core_pilgred_upgrade");
+    expect(upgraded.get("human_tank")).toBe("human_tank_full");
+    expect(upgraded.get("server")).toBe("server_active");
+  });
+
+  it("animates the planets hologram, bay lights, bay doors, plasma shield coils, and NERON auxiliary terminals", () => {
+    expect(realScene("planets").anim).toMatchObject({ frames: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], frameMs: Array(10).fill(3 * tick), loops: "forever" });
+    expect(realScene("bay_light").anim).toMatchObject({ frames: [0, 1, 2, 3, 4, 5], frameMs: Array(6).fill(2 * tick), loops: "forever" });
+
+    const baseBayDoor = realScene("bay_window", roomLooks(false));
+    expect(baseBayDoor.image.frame.sy).toBe(realLayout.slices.bay_window!.y);
+    expect(baseBayDoor.anim).toMatchObject({ frames: Array.from({ length: 16 }, (_, i) => i), frameMs: Array(16).fill(2 * tick), loops: "forever" });
+
+    const xxlBayDoor = realScene("bay_window", roomLooks(false, false, false, false, true, false));
+    expect(xxlBayDoor.image.frame.sy).toBe(realLayout.slices.bay_window_upgrade!.y);
+    expect(xxlBayDoor.anim).toMatchObject({ frames: Array.from({ length: 16 }, (_, i) => i), frameMs: Array(16).fill(2 * tick), loops: "forever" });
+
+    expect(realScene("plasma_shield", roomLooks(false)).anim).toBeUndefined();
+    const shieldUp = realScene("plasma_shield", roomLooks(false, false, false, false, false, true));
+    expect(shieldUp.anim).toMatchObject({
+      frames: [0, 1, 2, 3, 4, 5, 6],
+      frameMs: [33, 3, 2, 1, 1, 1, 2].map((t) => t * tick),
+      loops: "forever",
+    });
+
+    const neronA = realScene("auxiliary_terminal_neron", roomLooks(false));
+    expect(neronA.image.frame.sy).toBe(realLayout.slices.auxiliary_terminal_neron_upgrade_a!.y);
+    expect(neronA.anim).toMatchObject({ frames: [0, 1, 2, 3, 4, 5, 6, 7], frameMs: Array(8).fill(4 * tick), loops: "forever" });
+
+    const neronB = realScene("auxiliary_terminal_neron", roomLooks(false, false, false, true, false, false));
+    expect(neronB.image.frame.sy).toBe(realLayout.slices.auxiliary_terminal_neron_upgrade_b!.y);
+    expect(neronB.anim).toMatchObject({ frames: [0, 1, 2, 3, 4, 5, 6, 7], frameMs: Array(8).fill(4 * tick), loops: "forever" });
+  });
+
+  it("applies AMBIENT_SPEED multipliers to tuned ambient animations", () => {
+    const ms = (slice: string, looks?: ReadonlyMap<string, string>) => realScene(slice, looks).anim!.frameMs as number[];
+    expect(ms("radar_trans_void")).toEqual(Array(4).fill(2 * tick));
+    expect(ms("rotational_reactor")).toEqual(Array(8).fill(1 * tick));
+    expect(ms("emergency_reactor")).toEqual(Array(8).fill(1 * tick));
+    expect(ms("tank_fuel_right_front")).toEqual(Array(6).fill(8 * tick));
+    expect(ms("tank_fuel_left_back")).toEqual(Array(6).fill(8 * tick));
+    expect(ms("surgery_console")).toEqual(Array(8).fill(6 * tick));
+    expect(ms("human_tank")).toEqual(Array(9).fill(6 * tick));
+    expect(ms("human_tank", roomLooks(false, true))).toEqual(Array(9).fill(6 * tick));
+    expect(ms("pilot_astro_left")).toEqual(Array(8).fill(8.5 * tick));
+    expect(ms("tank_o2_left_front")).toEqual(Array(6).fill(8 * tick));
+    expect(ms("tank_o2_right_front")).toEqual(Array(6).fill(8 * tick));
+    expect(ms("tank_o2_right_back")).toEqual(Array(6).fill(8 * tick));
   });
 });
 
