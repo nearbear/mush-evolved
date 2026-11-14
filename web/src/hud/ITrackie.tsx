@@ -242,7 +242,7 @@ export function ITrackie({
               <ol className="feed">
                 {roomLog.map((e, i) => (
                   <Fragment key={i}>
-                    {roomLog[i - 1]?.cycle !== e.cycle && <CycleDivider cycle={e.cycle} />}
+                    {roomLog[i - 1]?.cycle !== e.cycle && <CycleDivider cycle={e.cycle} cyclesPerDay={view.config.cyclesPerDay} />}
                     <LogRow entry={e} canRead={e.key === "expeditionReturned" && view.expeditions.some((r) => r.id === e.params?.report)} onRead={setReport} />
                   </Fragment>
                 ))}

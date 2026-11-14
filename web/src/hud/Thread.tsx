@@ -109,7 +109,7 @@ export const Thread = memo(function Thread({ view, channel, placeholder, onSend,
             const mine = m.from === view.you.id;
             return (
               <Fragment key={messageKey(m)}>
-                {messages[i - 1]?.cycle !== m.cycle && <CycleDivider cycle={m.cycle} />}
+                {messages[i - 1]?.cycle !== m.cycle && <CycleDivider cycle={m.cycle} cyclesPerDay={view.config.cyclesPerDay} />}
                 {m.seq === divider.beforeSeq && (
                   <li ref={divider.ref} className="unread-divider">
                     {t("itrackie.unread.divider")}

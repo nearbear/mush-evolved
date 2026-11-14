@@ -1,6 +1,6 @@
 // Small helpers shared by rules.ts, chat.ts and the actions.
 
-import type { GameState, PlayerId, PlayerState } from "./types.ts";
+import type { GameConfig, GameState, PlayerId, PlayerState } from "./types.ts";
 
 export type ActionResult = { ok: true; state: GameState } | { ok: false; error: string };
 
@@ -21,8 +21,8 @@ export function findPlayer(state: GameState, id: PlayerId): PlayerState | undefi
   return state.players.find((p) => p.id === id);
 }
 
-/** Day and cycle-within-day (both 1-based) for the state's global cycle counter. */
-export function dayOf(state: Pick<GameState, "cycle" | "config">): { day: number; cycleOfDay: number } {
+/** Day and cycle-within-day (both 1-based) for a global cycle counter. */
+export function dayOf(state: { cycle: number; config: Pick<GameConfig, "cyclesPerDay"> }): { day: number; cycleOfDay: number } {
   const n = state.config.cyclesPerDay;
   return { day: Math.floor((state.cycle - 1) / n) + 1, cycleOfDay: ((state.cycle - 1) % n) + 1 };
 }
