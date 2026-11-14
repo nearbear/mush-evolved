@@ -9,6 +9,7 @@ import { extinguish } from "./bots/goals/extinguish.ts";
 import { newFireMemory, observeFires } from "./bots/fireShare.ts";
 import { newItemMemory, observeItems } from "./bots/itemShare.ts";
 import { holdStartCycle, isHoldingJump, newJumpMemory } from "./bots/planetShare.ts";
+import { readSnapshot, BOT_MEMORY_VERSION, type BotMemorySnapshot } from "./bots/memoryStore.ts";
 import { buildPrompt, describeLogEntry, observeShrinks, parseReply, type BotMessage } from "./prompt.ts";
 import type { ModelGate } from "./model.ts";
 
@@ -39,6 +40,13 @@ export interface Bot {
    * room sends it like a player's (`GameRoom.social`); a refusal comes back through `refused`. The turn returns no action.
    */
   takeSocial?(): BotSocial | null;
+  /**
+   * Optional: what the bot remembers, as plain data for room storage (#440). The room saves it with the game and never
+   * looks inside; it is never in game state, the record or a view.
+   */
+  snapshot?(): unknown;
+  /** Optional: takes back a `snapshot` after a restart, before the first turn. False (and fresh memory) if it was dropped. */
+  restore?(stored: unknown): boolean;
 }
 
 /**
@@ -102,7 +110,8 @@ const sameAction = (a: Action, b: Action): boolean => JSON.stringify(a) === JSON
  * Plays the solo goals (docs/plans/bot-goals.md) by their priority: picks a goal, follows it turn after turn, and
  * chooses again only when it finishes, fails, or an interrupt fires (a new cycle, unless resting and no hunter needs
  * shooting; losing HP). What it
- * remembers is in this object only, and lost on a restart. A bot without a model key plays this.
+ * remembers is saved in room storage by `snapshot` and read back by `restore` (#440); the goal it was following is not,
+ * so after a restart it chooses again. A bot without a model key plays this.
  */
 export class GoalBot implements Bot {
   private goal: Goal | null = null;
@@ -151,6 +160,67 @@ export class GoalBot implements Bot {
         return i;
       },
     };
+  }
+
+  snapshot(): BotMemorySnapshot {
+    const m = this.memory;
+    const map = <K, V>(x: Map<K, Set<V>>): [K, V[]][] => [...x].map(([k, v]) => [k, [...v]]);
+    return {
+      version: BOT_MEMORY_VERSION,
+      rng: this.rng,
+      day: this.day,
+      cycle: this.cycle,
+      hp: this.hp,
+      ended: [...m.ended],
+      today: [...m.today],
+      once: [...m.once],
+      visited: [...m.visited],
+      shrinks: [...m.shrinks],
+      lastExpedition: m.lastExpedition,
+      asteroidsOnly: m.asteroidsOnly,
+      items: { rooms: map(m.items.rooms), said: map(m.items.said), seq: m.items.seq },
+      fires: { active: m.fires.active, burning: [...m.fires.burning], checked: [...m.fires.checked], seq: m.fires.seq },
+      combustion: m.combustion,
+      holdSince: m.holdSince,
+      jump: { ...m.jump },
+      heading: m.heading,
+      cancelHold: m.cancelHold,
+      justJumped: m.justJumped,
+      failedReason: m.failedReason,
+    };
+  }
+
+  /** Call on a fresh bot only: its own snapshot is the default for any field the stored one lacks. */
+  restore(stored: unknown): boolean {
+    const s = readSnapshot(stored, this.snapshot());
+    if (!s) return false;
+    const m = this.memory;
+    const refill = <T>(set: Set<T>, from: readonly T[]): void => {
+      set.clear();
+      for (const x of from) set.add(x);
+    };
+    const map = <K, V>(from: readonly [K, V[]][]): Map<K, Set<V>> => new Map(from.map(([k, v]) => [k, new Set(v)]));
+    this.rng = s.rng;
+    this.day = s.day;
+    this.cycle = s.cycle;
+    this.hp = s.hp;
+    refill(m.ended, s.ended);
+    refill(m.today, s.today);
+    refill(m.once, s.once);
+    refill(m.visited, s.visited);
+    refill(m.shrinks, s.shrinks);
+    m.lastExpedition = s.lastExpedition;
+    m.asteroidsOnly = s.asteroidsOnly;
+    Object.assign(m.items, { rooms: map(s.items.rooms), said: map(s.items.said), seq: s.items.seq });
+    Object.assign(m.fires, { active: s.fires.active, burning: new Set(s.fires.burning), checked: new Set(s.fires.checked), seq: s.fires.seq });
+    m.combustion = s.combustion;
+    m.holdSince = s.holdSince;
+    Object.assign(m.jump, s.jump);
+    m.heading = s.heading;
+    m.cancelHold = s.cancelHold;
+    m.justJumped = s.justJumped;
+    m.failedReason = s.failedReason;
+    return true;
   }
 
   /** The ship's language (`BotMemory.language`). A scripted bot writes nothing, so English. */

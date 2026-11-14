@@ -24,7 +24,8 @@ import { sowHere } from "../src/bots/goals/sow.ts";
 import { POT_STORAGE, STORAGE_CHECKED, setOutPots } from "../src/bots/goals/setOutPots.ts";
 import { HOLD_HUNTER_TRIGGER, HOLD_MAX_DAYS, HOLD_MIN_OXYGEN, JUMP_WAIT_CYCLES, sharedDestination, targetJump, travel, turnsTo } from "../src/bots/goals/travel.ts";
 import { helpGoal, helpTasks } from "../src/bots/goals/help.ts";
-import type { GoalDef } from "../src/bots/goals/types.ts";
+import type { BotMemory, GoalDef } from "../src/bots/goals/types.ts";
+import { BOT_MEMORY_VERSION } from "../src/bots/memoryStore.ts";
 import { formatFireLine, newFireMemory, observeFires, parseFireLine } from "../src/bots/fireShare.ts";
 import { extinguish } from "../src/bots/goals/extinguish.ts";
 import { formatItemLine, newItemMemory, observeItems, parseItemLine, roomsHolding } from "../src/bots/itemShare.ts";
@@ -1567,6 +1568,69 @@ describe("travel holds & escape jumps (#421)", () => {
     await bot.decideAction(viewFor(jumped, id));
     expect(memoryOf(bot).holdSince).toBeNull();
     expect(memoryOf(bot).jump.since).toBeNull();
+  });
+
+  it("keeps a hold across a room restart: no second 'Jump: hold', and the same holdSince (#440)", async () => {
+    const { game: start, id } = commander([planet("pl-1", "Kaxor", "north", 1)]);
+    start.ship.combustion = 1;
+    const before = new GoalBot(1, 2, [travel]);
+    const { game: held } = await untilReady(start, id, before);
+    const since = holdStartCycle(viewFor(held, id), memory())!;
+    scrollGlobal(held, held.players.find((p) => p.id !== id)!.id);
+    held.hunters.points = 0;
+    const next = newCycle(held);
+    expect(next.ok).toBe(true);
+    if (!next.ok) return;
+    next.state.hunters.list = [];
+    // Stored as Durable Object storage does (structured clone), then read back by the bot the restarted room makes.
+    const stored = structuredClone(before.snapshot());
+    const fresh = new GoalBot(2, 2, [travel]);
+    const { game: unrestored } = await untilReady(structuredClone(next.state), id, fresh);
+    expect(unrestored.chat.some((m) => m.text === HOLD_JUMP_LINE)).toBe(true); // what a restart did before
+    const bot = new GoalBot(2, 2, [travel]);
+    expect(bot.restore(stored)).toBe(true);
+    const { game: again, taken } = await untilReady(next.state, id, bot);
+    expect(taken.map((a) => a.type)).not.toContain("travel");
+    expect(again.chat.some((m) => m.text === HOLD_JUMP_LINE)).toBe(false);
+    expect(memoryOf(bot).holdSince).toBe(since);
+    expect(memoryOf(bot).jump.since).toBe(since);
+  });
+
+  it("restores every remembered fact, drops another version's snapshot, and fills fields added since (#440)", async () => {
+    const { game, id } = commander([]);
+    const bot = new GoalBot(1, 2, []);
+    await bot.decideAction(viewFor(game, id));
+    const full = (b: GoalBot) => (b as unknown as { memory: BotMemory }).memory;
+    const m = full(bot);
+    m.shrinks.add(id); // a Shrink that has announced itself
+    m.once.add("setOutPots");
+    m.today.add("tendPlants");
+    m.items.rooms.set("extinguisher", new Set(["LABORATORY"]));
+    m.fires.burning.add("FRONT_CORRIDOR");
+    m.cancelHold = true;
+    m.heading = "east";
+    const stored = structuredClone(bot.snapshot());
+
+    const restored = new GoalBot(7, 2, []);
+    expect(restored.restore(stored)).toBe(true);
+    expect(restored.snapshot()).toEqual(bot.snapshot());
+    const r = full(restored);
+    expect(r.shrinks.has(id)).toBe(true);
+    expect(r.items.rooms.get("extinguisher")?.has("LABORATORY")).toBe(true);
+    expect(r.fires.burning.has("FRONT_CORRIDOR")).toBe(true);
+
+    const other = new GoalBot(7, 2, []);
+    expect(other.restore({ ...stored, version: BOT_MEMORY_VERSION + 1 })).toBe(false);
+    expect(other.restore(undefined)).toBe(false);
+    expect(memoryOf(other).shrinks.size).toBe(0);
+    expect(other.snapshot()).toEqual(new GoalBot(7, 2, []).snapshot());
+
+    // A field this build has and the stored snapshot lacks comes out at a fresh bot's value.
+    const { heading: _, ...older } = stored;
+    const filled = new GoalBot(7, 2, []);
+    expect(filled.restore(older)).toBe(true);
+    expect(full(filled).heading).toBeNull();
+    expect(memoryOf(filled).shrinks.has(id)).toBe(true);
   });
 
   it("lets a pilot remember a due jump after its line scrolls out of chat (#427)", () => {

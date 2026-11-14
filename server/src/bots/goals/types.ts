@@ -27,8 +27,8 @@ export type GoalStep =
   | { kind: "failed"; reason: string };
 
 /**
- * What a bot remembers, all of it in the bot object's memory: never in game state, the record, storage or a view, and
- * lost on a restart (the bot just chooses again). Only what the bot saw itself.
+ * What a bot remembers: only what the bot saw itself, never in game state, the record or a view. Saved in room storage
+ * per seat (`memoryStore.ts`, #440), so a restart keeps it; a field added here needs a place in `BotMemorySnapshot`.
  */
 export interface BotMemory {
   /** AP kept for emergencies: work goals stop rather than spend it (`BOT_AP_RESERVE`). */

@@ -73,6 +73,7 @@ import { BOT_CHAT_CHAIN_DEPTH, LogParrotBot, ModelBot, WanderBot, type Bot } fro
 import { parseFireLine } from "./bots/fireShare.ts";
 import { parseItemLine } from "./bots/itemShare.ts";
 import { parseJumpHold } from "./bots/planetShare.ts";
+import { BOT_MEMORY_PREFIX, botMemoryKey } from "./bots/memoryStore.ts";
 import type { BotMessage } from "./prompt.ts";
 import { finishedEntry, gameStoreFor } from "./gameStore.ts";
 import { shipRow, shipStoreFor } from "./shipStore.ts";
@@ -389,7 +390,7 @@ export class GameRoom extends Server<Env> {
     this.blocked = (await this.ctx.storage.list({ prefix: "blocked:" })).size;
     if (dropped) await this.recordDropped();
     else if (this.reclaimAt !== null && stored.reclaimAt === undefined) await this.persist();
-    this.initBots();
+    this.initBots(await this.ctx.storage.list({ prefix: BOT_MEMORY_PREFIX }));
     this.scheduleBots();
     await this.scheduleTick();
   }
@@ -1317,14 +1318,17 @@ export class GameRoom extends Server<Env> {
     return !!p && p.current === null && p.queue.length === 0 && legalActions(this.game!, p.id).length > 0;
   }
 
-  private initBots(): void {
+  /** Makes a bot for every bot seat without one; `memories` (keys `bot:<seat>`, after a restart) are given back to them (#440). */
+  private initBots(memories: ReadonlyMap<string, unknown> = new Map()): void {
     for (const p of this.game?.players ?? []) {
       if (!p.isBot || this.bots.has(p.mind)) continue;
       const seed = (): number => crypto.getRandomValues(new Uint32Array(1))[0]!;
-      this.bots.set(
-        p.mind,
-        p.botKind === "wander" ? new WanderBot(seed()) : p.botKind === "model" ? new ModelBot(this.gate(), seed(), undefined, undefined, this.language ?? undefined) : new LogParrotBot(),
-      );
+      const bot: Bot =
+        p.botKind === "wander" ? new WanderBot(seed()) : p.botKind === "model" ? new ModelBot(this.gate(), seed(), undefined, undefined, this.language ?? undefined) : new LogParrotBot();
+      const stored = memories.get(botMemoryKey(p.mind));
+      // Another version's snapshot is dropped (fresh memory); the next save overwrites it.
+      if (stored !== undefined && bot.restore && !bot.restore(stored)) logWarn("bot_memory_dropped", { roomId: this.name, seat: p.mind });
+      this.bots.set(p.mind, bot);
     }
   }
 
@@ -1486,7 +1490,10 @@ export class GameRoom extends Server<Env> {
     const writes: Promise<unknown>[] = [];
     // Storage deletes at most 128 keys a call.
     for (let i = 0; i < deletes.length; i += 128) writes.push(this.ctx.storage.delete(deletes.slice(i, i + 128)));
-    writes.push(this.ctx.storage.put({ ...entries, game: stored }));
+    // Each bot's memory goes in the same put as the game (#440), so the two can't disagree after a crash.
+    const memories: Record<string, unknown> = {};
+    for (const [seat, bot] of this.bots) if (bot.snapshot) memories[botMemoryKey(seat)] = bot.snapshot();
+    writes.push(this.ctx.storage.put({ ...entries, ...memories, game: stored }));
     await Promise.all(writes);
   }
 

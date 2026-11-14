@@ -1,5 +1,6 @@
 import { parseItemLine } from "../src/bots/itemShare.ts";
 import { HOLD_JUMP_LINE } from "../src/bots/planetShare.ts";
+import { BOT_MEMORY_VERSION } from "../src/bots/memoryStore.ts";
 import {
   characterName,
   CHARACTERS,
@@ -432,10 +433,12 @@ describe("GameRoom persistence", () => {
       await revived.onStart();
       expect(gameOf(revived).config).toEqual(resolveConfig(overrides));
       // Saved again after the reload, still with the same overrides.
-      const inputs = storage.data.size;
+      // Bot memory (#440) isn't counted: a single-player ship's first save after launch also writes a key per bot.
+      const keys = () => [...storage.data.keys()].filter((k) => !k.startsWith("bot:")).length;
+      const inputs = keys();
       await send(revived, connect(revived, token), { type: "chat", channel: CHAT_CHANNELS[0], text: "hello" });
       // The input, and the poster's read count (#400).
-      expect(storage.data.size).toBe(inputs + 2);
+      expect(keys()).toBe(inputs + 2);
       expect(stored().overrides).toEqual(overrides);
     } finally {
       vi.useRealTimers();
@@ -1178,6 +1181,32 @@ describe("GameRoom single player", () => {
       vi.unstubAllGlobals();
     });
   });
+
+  it("keeps each bot's memory in room storage across a restart, and never in a view or the record (#440)", async () => {
+    vi.stubGlobal("fetch", vi.fn());
+    const { room, storage, token } = await soloRoom();
+    connect(room, token);
+    await playOut(room, storage);
+    const botKeys = [...storage.data.keys()].filter((k) => k.startsWith("bot:")).sort();
+    expect(botKeys).toEqual(["p1", "p2", "p3", "p4", "p5", "p6", "p7", "p8"].map((s) => `bot:${s}`));
+    // A fact only the stored memory holds: a marker no game input could put anywhere else.
+    const marker = "remembered-440";
+    const p1 = storage.data.get("bot:p1") as { shrinks: string[]; version: number };
+    p1.shrinks.push(marker);
+    (storage.data.get("bot:p2") as { version: number }).version = -1; // another version's snapshot
+    const revived = asRoom(storage);
+    await revived.onStart();
+    const bots = (revived as unknown as { bots: Map<string, { snapshot(): { shrinks: string[]; version: number } }> }).bots;
+    expect(bots.get("p1")!.snapshot().shrinks).toContain(marker);
+    expect(bots.get("p2")!.snapshot().shrinks).not.toContain(marker);
+    const c = connect(revived, token);
+    await playOut(revived, storage);
+    expect((storage.data.get("bot:p2") as { version: number }).version).toBe(BOT_MEMORY_VERSION);
+    expect((storage.data.get("bot:p1") as { shrinks: string[] }).shrinks).toContain(marker);
+    expect(JSON.stringify(c.messages())).not.toContain(marker);
+    for (const [key, value] of storage.data) if (!key.startsWith("bot:")) expect(JSON.stringify(value), key).not.toContain(marker);
+    vi.unstubAllGlobals();
+  }, 20_000);
 
   it("stays single player after a restart", async () => {
     const { storage, token } = await soloRoom();
