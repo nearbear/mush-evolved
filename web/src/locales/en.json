@@ -94,7 +94,6 @@
       "instantActions": "Instant actions",
       "noRelayPenalty": "No relay penalty",
       "freeHacking": "Unrestricted terminals",
-      "selfDisease": "Self Disease",
       "anySkill": "Pick any skill",
       "alwaysClean": "Always clean",
       "easyTravel": "Easy travel",
@@ -369,8 +368,6 @@
     "becomeGenius": "Eureka moment",
     "apprenticeship": "Apprenticeship",
     "pickSkill": "Pick a skill",
-    "selfDisease": "Self Disease",
-    "selfInjury": "Self Injury",
     "easyTravel": "Warp to a planet",
     "visibility": {
       "private": "Private",
@@ -470,7 +467,11 @@
     "planet_not_found": "That planet isn't one of yours.",
     "share_text_invalid": "Shared text needs to be up to 500 characters and 20 lines, and not empty.",
     "report_share_forbidden": "You need your iTrackie to share a report.",
-    "report_not_found": "You weren't on that expedition."
+    "report_not_found": "You weren't on that expedition.",
+    "not_in_cheat_room": "You need to be in the cheat room.",
+    "already_has": "You already have that.",
+    "mush_immune": "A Mush can't catch a disease.",
+    "cannot_contaminate": "You can't be contaminated."
   },
   "terminal": {
     "close": "Close",
@@ -1771,6 +1772,30 @@
     "lostAnalysisTitle": "Finola's lost analysis",
     "lostAnalysisHeadline": "Crew infection screening at departure. Those listed as negative were not Mush.",
     "negative": "Negative"
+  },
+  "kube": {
+    "open": "Open",
+    "title": "Superkube",
+    "close": "Close",
+    "apply": "Apply",
+    "tabs": {
+      "health": "Health",
+      "items": "Items",
+      "travel": "Travel"
+    },
+    "ops": {
+      "ailment": "Give yourself an ailment",
+      "cure": "Cure everything",
+      "hp": "Set HP",
+      "morale": "Set morale",
+      "ap": "Set AP",
+      "mp": "Set MP",
+      "dirty": "Make yourself dirty",
+      "contaminate": "Add contamination",
+      "spawn": "Spawn an item",
+      "restock": "Restock the room",
+      "teleport": "Teleport to a room"
+    }
   },
   "bodyTaken": {
     "title": "Your body has been taken!",

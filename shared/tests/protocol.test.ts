@@ -766,8 +766,6 @@ describe("actions from a client", () => {
     apprenticeship: [{ type: "apprenticeship", target: "p1", skill: SKILLS[0] }],
     read_book: [{ type: "read_book", item: "i1" }],
     tear: [{ type: "tear", item: "i1" }],
-    self_disease: [{ type: "self_disease" }],
-    self_injury: [{ type: "self_injury" }],
   };
   const all = Object.values(SAMPLES).flat();
   const asAction = (action: unknown) => parse({ type: "action", action });

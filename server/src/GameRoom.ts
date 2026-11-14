@@ -890,7 +890,7 @@ export class GameRoom extends Server<Env> {
     }
     if (
       ((msg.type === "cheat" || msg.type === "roleCheat" || msg.type === "solCheat" || msg.type === "cheatRoom" || msg.type === "kube" || msg.type === "leaveShip") ||
-        (msg.type === "action" && (msg.action.type === "self_disease" || msg.action.type === "self_injury" || msg.action.type === "warp_to_planet"))) &&
+        (msg.type === "action" && msg.action.type === "warp_to_planet")) &&
       !this.cheatsAllowed
     ) {
       this.send(connection, { type: "error", message: CHEATS_DISABLED });

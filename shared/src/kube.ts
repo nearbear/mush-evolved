@@ -137,14 +137,23 @@ export type KubeOpId = keyof typeof KUBE_OPS;
 
 export const isKubeOp = (value: unknown): value is KubeOpId => typeof value === "string" && Object.hasOwn(KUBE_OPS, value);
 
+/**
+ * What `kubeChoices` reads: the ship's rooms and its disease lists. A `GameConfig` fits; so does the client's
+ * `{ rooms: view.rooms, diseases: DEFAULT_CONFIG.diseases }` (the view carries no disease lists).
+ */
+export interface KubeChoiceSource {
+  readonly rooms: Readonly<Record<RoomId, unknown>>;
+  readonly diseases: { readonly allDiseases: readonly StatusId[]; readonly allDisorders: readonly StatusId[]; readonly allInjuries: readonly StatusId[] };
+}
+
 /** The ship's diseases, disorders and injuries, in that order. */
-const ailments = (config: DeepReadonly<GameConfig>): StatusId[] => [...config.diseases.allDiseases, ...config.diseases.allDisorders, ...config.diseases.allInjuries];
+const ailments = (config: KubeChoiceSource): StatusId[] => [...config.diseases.allDiseases, ...config.diseases.allDisorders, ...config.diseases.allInjuries];
 
 /**
  * What an argument of `kind` may be on a ship with this config, in the order the window lists them: the ship's
  * ailments, every item type, or the Daedalus's rooms with the Laboratory first (the cheat room and the crafts left out).
  */
-export function kubeChoices(config: DeepReadonly<GameConfig>, kind: Exclude<KubeArgKind, "none" | "number">): string[] {
+export function kubeChoices(config: KubeChoiceSource, kind: Exclude<KubeArgKind, "none" | "number">): string[] {
   if (kind === "ailment") return ailments(config);
   if (kind === "item") return Object.keys(ITEM_TYPES);
   const rooms = Object.keys(config.rooms).filter((room) => room !== CHEAT_ROOM && !inCraft(room));

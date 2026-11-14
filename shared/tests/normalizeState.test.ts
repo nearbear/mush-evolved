@@ -464,6 +464,14 @@ describe("upgrade", () => {
     expect(raw.relay.projects).toEqual({ PLASMA_SHIELD: { lastBy: "p1", streak: 2 } });
     expect(normalizeGame(raw, overrides).relay.projects).toEqual({ PLASMA_SHIELD: { lastBy: "p1", streak: 2 } });
   });
+
+  it("upgradeTo117 drops the removed selfDisease cheat (#170) and keeps the others", () => {
+    const { game, overrides } = fresh();
+    const raw = stored(game);
+    raw.players[0].cheats = ["infiniteAp", "selfDisease"];
+    upgrade({ game: raw, overrides }, 116);
+    expect(normalizeGame(raw, overrides).players[0]!.cheats).toEqual(["infiniteAp"]);
+  });
 });
 
 describe("normalizeFrame (#384)", () => {

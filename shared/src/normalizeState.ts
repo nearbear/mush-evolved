@@ -83,7 +83,7 @@ import type {
  * override key. A step lands in a deploy of its own (docs/ops/deploy.md: roll back only to the same version). Something
  * that never reached a deploy (test or production) is in no stored snapshot, so changing or removing it needs no step.
  */
-export const STATE_VERSION = 116;
+export const STATE_VERSION = 117;
 
 /**
  * The oldest stored version this build reads: 114, the shape the normalizers were written against. A snapshot below it
@@ -159,8 +159,21 @@ const upgradeTo116: UpgradeStep = {
   },
 };
 
+/** Before 117, a player could hold the `selfDisease` cheat; the Superkube (#170) replaced it. */
+const upgradeTo117: UpgradeStep = {
+  to: 117,
+  paths: ["game.players[].cheats"],
+  run: (game) => {
+    const players = game.players as Array<Record<string, unknown>> | undefined;
+    if (!players) return;
+    for (const p of players) {
+      if (Array.isArray(p.cheats)) p.cheats = p.cheats.filter((c) => c !== "selfDisease");
+    }
+  },
+};
+
 /** Every step, in order of `to`: `upgradeTo115`, `upgradeTo116`, ... */
-export const UPGRADE_STEPS: readonly UpgradeStep[] = [upgradeTo115, upgradeTo116];
+export const UPGRADE_STEPS: readonly UpgradeStep[] = [upgradeTo115, upgradeTo116, upgradeTo117];
 
 /**
  * Brings a stored snapshot from version `from` to `STATE_VERSION`, before it is normalized: runs every step with

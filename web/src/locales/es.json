@@ -95,7 +95,6 @@
       "instantActions": "Acciones instantáneas",
       "noRelayPenalty": "Sin penalización por relevo",
       "freeHacking": "Terminales sin restricciones",
-      "selfDisease": "Self Disease",
       "anySkill": "Elegir cualquier habilidad",
       "alwaysClean": "Siempre limpio",
       "easyTravel": "Viaje fácil",
@@ -374,8 +373,6 @@
     "becomeGenius": "Momento eureka",
     "apprenticeship": "Aprendizaje",
     "pickSkill": "Elegir una habilidad",
-    "selfDisease": "Provocarse la enfermedad",
-    "selfInjury": "Provocarse una lesión",
     "easyTravel": "Saltar a un planeta",
     "visibility": {
       "private": "Privada",
@@ -476,7 +473,11 @@
     "planet_not_found": "Ese planeta no es uno de los tuyos.",
     "share_text_invalid": "Un texto compartido debe tener como máximo 500 caracteres y 20 líneas, y no estar vacío.",
     "report_share_forbidden": "Necesitas tu iTrackie para compartir un informe.",
-    "report_not_found": "No estabas en esa expedición."
+    "report_not_found": "No estabas en esa expedición.",
+    "not_in_cheat_room": "Tienes que estar en la sala de trucos.",
+    "already_has": "Ya lo tienes.",
+    "mush_immune": "Un Mush no puede contraer enfermedades.",
+    "cannot_contaminate": "No puedes ser contaminado."
   },
   "terminal": {
     "close": "Cerrar",
@@ -1699,6 +1700,30 @@
     "lostAnalysisTitle": "El análisis perdido de Finola",
     "lostAnalysisHeadline": "Detección de la infección de la tripulación al partir. Quienes figuran como negativos no eran Mush.",
     "negative": "Negativo"
+  },
+  "kube": {
+    "open": "Abrir",
+    "title": "Superkube",
+    "close": "Cerrar",
+    "apply": "Aplicar",
+    "tabs": {
+      "health": "Salud",
+      "items": "Objetos",
+      "travel": "Viaje"
+    },
+    "ops": {
+      "ailment": "Provocarse una dolencia",
+      "cure": "Curarlo todo",
+      "hp": "Fijar los PV",
+      "morale": "Fijar la moral",
+      "ap": "Fijar los PA",
+      "mp": "Fijar los PM",
+      "dirty": "Ensuciarse",
+      "contaminate": "Añadir contaminación",
+      "spawn": "Hacer aparecer un objeto",
+      "restock": "Reabastecer la sala",
+      "teleport": "Teletransportarse a una sala"
+    }
   },
   "bodyTaken": {
     "title": "¡Te han robado el cuerpo!",

@@ -170,6 +170,20 @@ describe("cheat room", () => {
       expect(me(ok(kube(mush, m.id, "ailment", allInjuries[0]!)), m.id).modifiers).toContain(allInjuries[0]);
     });
 
+    it("gives a disease the ship's own duration for it, seen only by you", () => {
+      const base = resolveConfig({ cheatRoom: true });
+      const allDiseaseStats = base.diseases.allDiseases.map((_, i) => ({ type: "disease", durationMin: 30 + i, durationMax: 30 + i }));
+      const s = createGame(makeSeats(3), { ...base, mushCount: 1, diseases: { ...base.diseases, allDiseaseStats } }, 7);
+      const human = s.players.find((pl) => pl.role === "human")!;
+      human.room = CHEAT_ROOM;
+      const other = s.players.find((pl) => pl.id !== human.id)!.id;
+      const name = s.config.diseases.allDiseases[2]!;
+      const next = ok(kube(s, human.id, "ailment", name));
+      expect(me(next, human.id).diseaseTrackers).toMatchObject([{ name, duration: 32 }]);
+      expect(viewFor(next, human.id).statuses).toContain(name);
+      expect(viewFor(next, other).players.find((pl) => pl.id === human.id)?.statuses).not.toContain(name);
+    });
+
     it("cures every ailment and contamination", () => {
       const { s, p } = inRoom();
       const { allDiseases, allInjuries } = s.config.diseases;

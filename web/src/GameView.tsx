@@ -2,7 +2,7 @@
 // the server decides what is legal and sends it in view.actions. No socket either: see GameScreen.
 
 import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
-import { CHEAT_ROOM, CORPSE_ITEM, SUPPORT_DRONE_ITEM, isLostPlace, legalIn, type Action, type BotPause, type CharacterId, type Cheat, type GameClientMessage, type PlayerView, type RoleCheat, type RoomId, type Spot, type Target } from "@mush2/shared";
+import { CHEAT_ROOM, CORPSE_ITEM, SUPPORT_DRONE_ITEM, isLostPlace, legalIn, type Action, type BotPause, type CharacterId, type Cheat, type GameClientMessage, type KubeOpId, type PlayerView, type RoleCheat, type RoomId, type Spot, type Target } from "@mush2/shared";
 import { useTranslation } from "react-i18next";
 import { ActionQueue } from "./hud/ActionQueue.tsx";
 import { BottomNav, type MobilePanel } from "./hud/BottomNav.tsx";
@@ -194,6 +194,9 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
   // Fall back to yourself when nothing is selected or the selection is gone (left the room, item moved away).
   const target: Target = selected && resolveTarget(view, selected) ? selected : { kind: "player", id: you.id };
 
+  // The Superkube's options (#170): a cheat input, so only while cheats are allowed, and never in a replay.
+  const kube = cheatsAllowed && !readOnly ? (op: KubeOpId, arg?: string | number) => post(arg === undefined ? { type: "kube", op } : { type: "kube", op, arg }) : undefined;
+
   const terminal = terminalId ? view.roomEquipment.find((e) => e.id === terminalId) ?? null : null;
 
   return (
@@ -224,7 +227,7 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
 
       <div className="three-panel" data-panel={panel}>
         <div className="left-column">
-          <InspectPanel view={view} layout={layout} target={target} onAction={act} onDeselect={selected && target === selected ? () => select(null) : undefined} />
+          <InspectPanel view={view} layout={layout} target={target} onAction={act} onDeselect={selected && target === selected ? () => select(null) : undefined} onKube={kube} />
         </div>
 
         <div className="world">
@@ -350,6 +353,7 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
           onAction={act}
           onMove={move}
           onMore={() => setPanel("inspect")}
+          onKube={kube}
         />
       )}
       {mobile && transport && <div className="game-transport">{transport}</div>}

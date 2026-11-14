@@ -95,7 +95,6 @@
       "instantActions": "Actions instantanées",
       "noRelayPenalty": "Pas de pénalité de relais",
       "freeHacking": "Terminaux sans restriction",
-      "selfDisease": "Self Disease",
       "anySkill": "Choisir n'importe quelle compétence",
       "alwaysClean": "Toujours propre",
       "easyTravel": "Voyage facile",
@@ -374,8 +373,6 @@
     "becomeGenius": "Coup de génie",
     "apprenticeship": "Apprentissage",
     "pickSkill": "Choisir une compétence",
-    "selfDisease": "S'infliger la maladie",
-    "selfInjury": "S'infliger une blessure",
     "easyTravel": "Sauter vers une planète",
     "visibility": {
       "private": "Privée",
@@ -476,7 +473,11 @@
     "planet_not_found": "Cette planète n'est pas l'une des vôtres.",
     "share_text_invalid": "Un texte partagé doit faire au plus 500 caractères et 20 lignes, et ne pas être vide.",
     "report_share_forbidden": "Il vous faut votre iTrackie pour partager un rapport.",
-    "report_not_found": "Vous n'étiez pas de cette expédition."
+    "report_not_found": "Vous n'étiez pas de cette expédition.",
+    "not_in_cheat_room": "Vous devez être dans la salle de triche.",
+    "already_has": "Vous l'avez déjà.",
+    "mush_immune": "Un Mush ne peut pas attraper de maladie.",
+    "cannot_contaminate": "Vous ne pouvez pas être contaminé."
   },
   "terminal": {
     "close": "Fermer",
@@ -1699,6 +1700,30 @@
     "lostAnalysisTitle": "L'analyse perdue de Finola",
     "lostAnalysisHeadline": "Dépistage de l'infection de l'équipage au départ. Les personnes notées négatives n'étaient pas Mush.",
     "negative": "Négatif"
+  },
+  "kube": {
+    "open": "Ouvrir",
+    "title": "Superkube",
+    "close": "Fermer",
+    "apply": "Appliquer",
+    "tabs": {
+      "health": "Santé",
+      "items": "Objets",
+      "travel": "Voyage"
+    },
+    "ops": {
+      "ailment": "S'infliger une affection",
+      "cure": "Tout soigner",
+      "hp": "Fixer les PV",
+      "morale": "Fixer le moral",
+      "ap": "Fixer les PA",
+      "mp": "Fixer les PM",
+      "dirty": "Se salir",
+      "contaminate": "Ajouter une contamination",
+      "spawn": "Faire apparaître un objet",
+      "restock": "Réapprovisionner la pièce",
+      "teleport": "Se téléporter dans une pièce"
+    }
   },
   "bodyTaken": {
     "title": "On vous a volé votre corps !",

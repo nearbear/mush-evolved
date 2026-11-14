@@ -5,7 +5,7 @@ import { useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
 import type { CSSProperties, ReactNode } from "react";
-import { actionVisibility, CHARACTERS, ITEM_TYPES, PROJECT_COMPLETE, characterGivenName, characterName, SUPER_CALC_EQUIPMENT, type Action, type ActionOption, type EquipmentView, type PlayerView, type ShipLayout, type Target } from "@mush2/shared";
+import { actionVisibility, CHARACTERS, ITEM_TYPES, PROJECT_COMPLETE, characterGivenName, characterName, SUPER_CALC_EQUIPMENT, SUPERKUBE, type Action, type ActionOption, type EquipmentView, type PlayerView, type ShipLayout, type Target } from "@mush2/shared";
 import { BROKEN_ICON, characterImage, CONTAMINATED_ICON, JELLY_ICON, portrait, SHIELD_ICON } from "../art/assets.ts";
 import { useMobile } from "../useMobile.ts";
 import { atlasUrl } from "../iso/shipLayout.ts";
@@ -16,6 +16,7 @@ import { ItemAttrIcons } from "./ItemAttrIcons.tsx";
 import { PlantStates } from "./PlantStates.tsx";
 import { ItemIcon } from "./ItemIcon.tsx";
 import { DocumentReader } from "./DocumentDialog.tsx";
+import { SuperkubeOpener, type SendKube } from "./Superkube.tsx";
 import { ActionLabel } from "./ActionLabel.tsx";
 import { SkillSlots } from "./SkillSlots.tsx";
 import { StatusIcon, StatusIcons } from "./StatusIcons.tsx";
@@ -29,6 +30,7 @@ export function InspectPanel({
   target,
   onAction,
   onDeselect,
+  onKube,
 }: {
   view: PlayerView;
   /** For equipment sprites; without it equipment shows as text only. */
@@ -38,6 +40,8 @@ export function InspectPanel({
   onAction: (action: Action) => void;
   /** Clears the selection; given only while something other than yourself is selected. */
   onDeselect?: () => void;
+  /** Sends a Superkube option (#170); given only while cheats are allowed, so only then does the Superkube open. */
+  onKube?: SendKube | undefined;
 }) {
   const { t } = useTranslation();
   const names = useNames();
@@ -62,6 +66,8 @@ export function InspectPanel({
   const options = optionsOn(view, target);
   // A printed document's Read (#394) is client-only, so it is not one of the options, but it sits with them.
   const doc = resolved?.kind === "item" ? resolved.item.document : undefined;
+  // The Superkube's Open (#170) is a cheat, not an action, so it isn't one of the options either.
+  const kube = onKube && resolved?.kind === "equipment" && resolved.equipment.type === SUPERKUBE ? onKube : undefined;
   const root = useRef<HTMLElement>(null);
   useKeepFocus(root);
   const targetName =
@@ -86,9 +92,10 @@ export function InspectPanel({
           {mobile && deselect}
         </div>
       )}
-      {(options.length > 0 || doc) && (
+      {(options.length > 0 || doc || kube) && (
         <div className="inspect-actions" role="group" aria-label={targetName}>
           {doc && <DocumentReader document={doc} />}
+          {kube && <SuperkubeOpener view={view} onKube={kube} />}
           {options.map((o) => (
             <ActionButton key={JSON.stringify(o.action)} view={view} option={o} onAction={onAction}>
               {labelFor(o)}

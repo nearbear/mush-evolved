@@ -681,3 +681,14 @@ li.research-item-blocked .research-progress {
   height: 32px;
   image-rendering: pixelated;
 }
+
+/* The Superkube's window (Superkube.tsx, #170): one row per option, its label, its control taking what room is left, and Apply. */
+.kube-row > label {
+  flex: 1 1 8rem;
+}
+
+.kube-row > select,
+.kube-row > input {
+  flex: 1 1 8rem;
+  min-width: 0;
+}
