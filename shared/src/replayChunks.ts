@@ -6,8 +6,10 @@
 // input's `base`. So every chunk rebuilds by itself (`rebuildHistory`). A room restart mid-cycle adds a `base` step
 // inside a chunk, which `rebuildHistory` already reads.
 //
-// Only the history leaves the room: never the input itself, the text before moderation (`raw`), message ids, accounts
-// or blocked text. The replay is made from the full view alone, so nothing beyond what that view shows is copied.
+// Only the history leaves the room: never the input itself, the text before moderation (`raw`), the record's link from
+// an input to its message (`chatId`), accounts or blocked text. The replay is made from the full view alone, so nothing
+// beyond what that view shows is copied. That view does keep each chat message's own `id`, so a report can cite one
+// from the replay; ids stay out of live views only (`ChatMessage.id`).
 
 import type { PlayerId } from "./types.ts";
 import type { RecordedInput } from "./replay.ts";
