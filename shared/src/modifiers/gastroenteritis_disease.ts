@@ -1,4 +1,4 @@
-import { changeMP, updateMaxValues } from "../adjustStats.ts";
+import { changeAP, changeMP, updateMaxValues } from "../adjustStats.ts";
 import { damage } from "../death.ts";
 import { soil } from "../dirt.ts";
 import { diseaseAffects, vomit } from "../diseases.ts";
@@ -26,6 +26,8 @@ export const gastroenteritis_disease: Modifier = {
     updateMaxValues(next, player);
   },
   onConsume(next, player, item) {
+    // -1 AP on anything consumed, after the item's own AP; a Mush's meal has none (consume.ts) and suffers no stats.
+    if (diseaseAffects(player)) changeAP(next, player, -1);
     const consume = ITEM_TYPES[item.type]?.consume;
     // Food only: a drug (satiety 0) is no meal.
     if (consume && consume.satiety > 0) vomit(next, player);

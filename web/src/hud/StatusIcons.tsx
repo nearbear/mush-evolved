@@ -58,6 +58,8 @@ export function StatusIcon({
   children?: React.ReactNode;
 }) {
   const { t } = useTranslation();
+  // A description with several lines is a list, as a skill's effects are (SkillSlots.tsx); one line stays a paragraph.
+  const lines = description?.split("\n").filter(Boolean) ?? [];
   return (
     <Popover.Root>
       <Popover.Trigger openOnHover delay={200} className="status-icon" aria-label={name}>
@@ -69,7 +71,14 @@ export function StatusIcon({
           <Popover.Popup className="tooltip resource-card status-card">
             <strong>{name}</strong>
             {visibility && <p className="status-visibility">{t(`status.${visibility}`)}</p>}
-            {description && <p>{description}</p>}
+            {lines.length === 1 && <p>{lines[0]}</p>}
+            {lines.length > 1 && (
+              <ul>
+                {lines.map((line, i) => (
+                  <li key={i}>{line}</li>
+                ))}
+              </ul>
+            )}
           </Popover.Popup>
         </Popover.Positioner>
       </Popover.Portal>

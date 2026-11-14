@@ -40,7 +40,8 @@ describe("Self Disease", () => {
   });
 
   it("uses the selected disease's configured duration and advances the RNG", () => {
-    const allDiseaseStats = DEFAULT_CONFIG.diseases.allDiseases.map((_, index) => ({
+    const allDiseaseStats = DEFAULT_CONFIG.diseases.allDiseases.map((label, index) => ({
+      label,
       type: "disease",
       durationMin: 30 + index,
       durationMax: 30 + index,

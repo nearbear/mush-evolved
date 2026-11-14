@@ -1,9 +1,10 @@
 import { roll, rollInt } from "./rng.ts";
 import { skillPicked } from "./modifiers.ts";
 import { addStatus, removeStatus, type StatusId } from "./statuses.ts";
-import type { GameState, PlayerState } from "./types.ts";
+import type { DiseaseStats, GameState, PlayerState } from "./types.ts";
 import { updateMaxValues } from "./adjustStats.ts";
 import { hasSkill } from "./skills.ts";
+import { damage } from "./death.ts";
 import { soil } from "./dirt.ts";
 import { logPublic } from "./log.ts";
 
@@ -13,6 +14,11 @@ export interface DiseaseTracker {
   resistance: number;
   complete: boolean;
   forever: boolean;
+}
+
+/** A disease's numbers, found by its `label` (config.ts), not by its place in the list. */
+export function diseaseStats(state: Readonly<GameState>, name: string): DiseaseStats | undefined {
+  return state.config.diseases.allDiseaseStats.find((stats) => stats.label === name);
 }
 
 export function addDisease(state: GameState, player: PlayerState, name: StatusId){
@@ -33,8 +39,7 @@ export function addDisease(state: GameState, player: PlayerState, name: StatusId
     player.modifiers.push(name);
     skillPicked(state, player, name);
     addStatus(player, name);
-    const index = state.config.diseases.allDiseases.indexOf(name);
-    const stats = state.config.diseases.allDiseaseStats.at(index);
+    const stats = diseaseStats(state, name);
     const duration = roll(state, [stats?.durationMin || 1, stats?.durationMax || 2]);
 
     player.diseaseTrackers.push({ name, duration: duration, resistance: 8, complete: false, forever: false });
@@ -115,6 +120,34 @@ export function sneeze(state: GameState, player: PlayerState): void {
   logPublic(state, player.room, "sneezes", { name: player.character });
 }
 
+/** Logs "(Player) scratches themselves repeatedly" in the player's room, when the player can have special logs. */
+export function itchy(state: GameState, player: PlayerState): void {
+  if (!canHaveSpecialLogs(player)) return;
+  logPublic(state, player.room, "scratches", { name: player.character });
+}
+
+/** Health a bite takes from its victim. */
+const BITE_DAMAGE = 2;
+
+/** Logs "(Player) foams from the mouth" in the player's room, when the player can have special logs. */
+export function foaming(state: GameState, player: PlayerState): void {
+  if (!canHaveSpecialLogs(player)) return;
+  logPublic(state, player.room, "foams", { name: player.character });
+}
+
+/**
+ * Logs that the player starts chewing on a random other living player's arm, who loses 2 health, when the player can
+ * have special logs. Does nothing when they are alone.
+ */
+export function bite(state: GameState, player: PlayerState): void {
+  if (!canHaveSpecialLogs(player)) return;
+  const others = state.players.filter((p) => p.alive && p.id !== player.id && p.room === player.room);
+  if (others.length === 0) return;
+  const other = others[rollInt(state, others.length)]!;
+  logPublic(state, player.room, "bites", { name: player.character, target: other.character });
+  damage(state, other, BITE_DAMAGE, "injury");
+}
+
 /**
  * Logs that the player vomits, when they can have special logs. Alone, they throw up on themselves; otherwise a random
  * other living player in the room is the target. Whoever is hit gets dirty (soil: an apron or Stickler can block it).
@@ -138,7 +171,7 @@ export function vomit(state: GameState, player: PlayerState): void {
  */
 export function spreadByTouch(state: GameState, a: PlayerState, b: PlayerState): void {
   const spreading = (p: PlayerState) =>
-    p.modifiers.filter((id) => state.config.diseases.allDiseaseStats[state.config.diseases.allDiseases.indexOf(id)]?.spreadByDTT);
+    p.modifiers.filter((id) => diseaseStats(state, id)?.spreadByDTT);
   const fromA = spreading(a);
   const fromB = spreading(b);
   for (const id of fromA) addDisease(state, b, id as StatusId);
