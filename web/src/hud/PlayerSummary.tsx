@@ -4,7 +4,7 @@
 // then your other resources, in a column the card's full height, in as many columns as fit. The desktop equivalent is SelfHud, over the room view.
 
 import { characterGivenName, type PlayerView } from "@mush2/shared";
-import type { ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
 import { Popover } from "@base-ui/react/popover";
 import { useTranslation } from "react-i18next";
 import { AP_PIP, FACTION_ICONS, HP_ICON, HP_PIP, MORALE_ICON, MORALE_PIP, MP_PIP, bustIcon } from "../art/assets.ts";
@@ -94,6 +94,7 @@ function StatChip({ stat, view, value, max, icon, big = false }: { stat: Stat; v
 export function PlayerSummary({ view, clock, tags, menu }: { view: PlayerView; clock: ReactNode; tags: ReactNode; menu: ReactNode }) {
   const { t } = useTranslation();
   const { you } = view;
+  const statsRef = useRef<HTMLDivElement>(null);
   return (
     <div className="player-summary">
       <div className={`nameplate ${you.role}`}>
@@ -106,12 +107,12 @@ export function PlayerSummary({ view, clock, tags, menu }: { view: PlayerView; c
           {tags && <span className="nameplate-tags">{tags}</span>}
         </div>
         {/* Two rows, filled a column at a time: AP over MP, HP over morale, then the resources. */}
-        <div className="stat-chips">
+        <div className="stat-chips" ref={statsRef}>
           <StatChip stat="ap" view={view} value={you.ap} max={view.maxAp} icon={AP_PIP} />
           <StatChip stat="mp" view={view} value={you.mp} max={view.maxMp} icon={MP_PIP} />
           <StatChip stat="hp" view={view} value={you.hp} max={view.maxHp} icon={HP_ICON} big />
           <StatChip stat="morale" view={view} value={you.morale} max={view.maxMorale} icon={MORALE_ICON} big />
-          <ResourceGrid view={view} />
+          <ResourceGrid view={view} gridRef={statsRef} />
         </div>
         {menu}
       </div>

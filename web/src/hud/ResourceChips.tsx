@@ -3,7 +3,7 @@
 // deep, with as many columns as fit beside AP/MP and HP/morale, the last cell a "…" when some don't (PlayerSummary).
 
 import { Popover } from "@base-ui/react/popover";
-import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { useLayoutEffect, useState, type ReactNode, type RefObject } from "react";
 import { useTranslation } from "react-i18next";
 import { RESOURCE_IDS, resourceAvailable, type PlayerView } from "@mush2/shared";
 import { RESOURCE_ICONS, SATIETY_ICON, SPORE_ICON } from "../art/assets.ts";
@@ -34,7 +34,7 @@ function useChips(view: PlayerView): Chip[] {
 }
 
 /** The trigger (`className`, holding `children`) opens a popover with every resource, each with its own card. */
-function AllResources({ chips, shown, hover, align, children }: { chips: Chip[]; shown: Chip[]; hover: boolean; align: "center" | "end"; children: ReactNode }) {
+function AllResources({ chips, shown, hover, align, className, children }: { chips: Chip[]; shown: Chip[]; hover: boolean; align: "center" | "end"; className?: string; children: ReactNode }) {
   const { t, i18n } = useTranslation();
   const list = new Intl.ListFormat(i18n.language, { type: "unit" }).format(shown.map((c) => t("resources.amount", { name: c.name, count: c.count })));
   return (
@@ -44,6 +44,7 @@ function AllResources({ chips, shown, hover, align, children }: { chips: Chip[];
         delay={200}
         nativeButton={false}
         render={<span role="button" tabIndex={0} />}
+        className={className}
         aria-label={t("resources.otherSummary", { list })}
       >
         {children}
@@ -66,7 +67,7 @@ export function CompactResourceChips({ view }: { view: PlayerView }) {
   const chips = useChips(view);
   const shown = chips.slice(0, COMPACT_COUNT);
   return (
-    <AllResources chips={chips} shown={shown} hover align="center">
+    <AllResources chips={chips} shown={shown} hover align="center" className="resource-stack">
       {shown.map((chip) => (
         <span key={chip.key} className="resource-chip-part">
           <img src={chip.icon} alt="" />
@@ -83,20 +84,19 @@ export function CompactResourceChips({ view }: { view: PlayerView }) {
  * ID card's width runs out. Every chip stays laid out (the ones past the edge invisible), so measuring never moves
  * anything; when some don't fit, the last one that does shows "…" in its place. Tapping anywhere opens them all.
  */
-export function ResourceGrid({ view }: { view: PlayerView }) {
+export function ResourceGrid({ view, gridRef }: { view: PlayerView; gridRef: RefObject<HTMLDivElement | null> }) {
   const chips = useChips(view);
-  const ref = useRef<HTMLSpanElement>(null);
   // How many chips fit whole; all of them until measured.
   const [fit, setFit] = useState(chips.length);
   const signature = chips.map((c) => `${c.key}:${c.count}`).join();
   // biome-ignore lint/correctness/useExhaustiveDependencies: signature stands in for the chips: a chip coming or going, or a count changing width, moves the cells without resizing the grid.
   useLayoutEffect(() => {
-    const grid = ref.current;
+    const grid = gridRef.current;
     if (!grid) return;
     const measure = () => {
       const width = grid.clientWidth;
       if (width === 0) return; // hidden
-      const cells = [...grid.children] as HTMLElement[];
+      const cells = [...grid.querySelectorAll<HTMLElement>(".resource-cell")];
       const whole = cells.filter((c) => c.offsetLeft + c.offsetWidth <= width + 0.5).length;
       setFit(Math.max(1, whole));
     };
@@ -104,22 +104,30 @@ export function ResourceGrid({ view }: { view: PlayerView }) {
     resized.observe(grid);
     measure();
     return () => resized.disconnect();
-  }, [signature]);
+  }, [signature, gridRef]);
   const cut = fit < chips.length;
   // The "…" takes the last whole cell, so one fewer resource shows.
   const visible = cut ? fit - 1 : chips.length;
   return (
     <>
-      {chips.map((chip, i) => (
-        <span key={chip.key} className={`stat-chip resource-cell${i === visible && cut ? " more" : ""}`} data-cut={i > visible || undefined}>
-          <img src={chip.icon} alt="" />
-          {chip.count}
-        </span>
-      ))}
-      <AllResources chips={chips} shown={chips} hover={false} align="end">
-        <span key={"more"} className={`stat-chip resource-cell more`}>
-        </span>
-      </AllResources>
+      {chips.map((chip, i) => {
+        const isMore = cut && i === visible;
+        const content = (
+          <>
+            <img src={chip.icon} alt="" />
+            {chip.count}
+          </>
+        );
+        return isMore ? (
+          <AllResources key={chip.key} chips={chips} shown={chips.slice(0, visible)} hover={false} align="end" className="stat-chip resource-cell more">
+            {content}
+          </AllResources>
+        ) : (
+          <span key={chip.key} className="stat-chip resource-cell" data-cut={i > visible || undefined}>
+            {content}
+          </span>
+        );
+      })}
     </>
   );
 }

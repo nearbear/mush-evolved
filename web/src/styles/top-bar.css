@@ -258,12 +258,13 @@
  */
 .stat-chips {
   grid-area: stats;
-}
-.stat-chips {
+  position: relative; /* resource-cell offsets are measured from here */
+  overflow: hidden;
   display: grid;
   grid-template-rows: repeat(2, auto);
   grid-auto-flow: column;
   grid-auto-columns: max-content;
+  justify-content: safe center;
   gap: 2px var(--space-1);
 }
 /* Each chip fills its cell, so the two in a column are one width. */
@@ -330,6 +331,7 @@
 .resource-cell.more {
   position: relative;
   color: transparent;
+  cursor: pointer;
 }
 .resource-cell.more > * {
   visibility: hidden;

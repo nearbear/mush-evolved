@@ -253,10 +253,10 @@
   /* The nameplate fits one row too: the band becomes a bare stripe of the faction's colour, and the clock follows the name. */
   .nameplate {
     --band: 4px;
-    grid-template-columns: auto minmax(0, max-content) auto auto minmax(3.25rem, 1fr) auto;
+    grid-template-columns: auto minmax(0, max-content) auto minmax(3.25rem, 1fr) auto;
     grid-template-areas:
-      "band band band band res menu"
-      "pic who clock stats res menu";
+      "band band band band band"
+      "pic who clock stats menu";
     row-gap: 0;
   }
   /* Its colour stays as the stripe; only the words go. */
