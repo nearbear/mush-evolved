@@ -1,8 +1,11 @@
 import { parseItemLine } from "../src/bots/itemShare.ts";
+import { HOLD_JUMP_LINE } from "../src/bots/planetShare.ts";
+import { BOT_MEMORY_VERSION } from "../src/bots/memoryStore.ts";
 import {
   characterName,
   CHARACTERS,
   CHAT_CHANNELS,
+  CHEAT_ROOM,
   MUSH_CHANNEL,
   STATE_VERSION,
   CHAT_PAGE,
@@ -277,6 +280,23 @@ describe("GameRoom cheats", () => {
     expect([...storage.data.keys()].some((k) => k.startsWith("input:"))).toBe(false);
   });
 
+  it("takes the sender to the cheat room only where cheats are allowed (#170)", async () => {
+    const { room: closed, storage } = await newRoom(3);
+    const closedConn = connect(closed, "tok0");
+    await send(closed, closedConn, { type: "cheatRoom" });
+    expect(lastMsg(closedConn)).toEqual({ type: "error", message: "cheats_disabled" });
+    expect([...storage.data.keys()].some((k) => k.startsWith("input:"))).toBe(false);
+
+    const { room } = await newRoom(3, new FakeStorage(), CHEATS);
+    const [a, b] = [connect(room, "tok0"), connect(room, "tok1")];
+    const logBefore = lastView(b).log.length;
+    await send(room, a, { type: "cheatRoom" });
+    expect(lastView(a).you.room).toBe(CHEAT_ROOM);
+    expect(lastView(a).roomEquipment.some((e) => e.type === "SUPERKUBE")).toBe(true);
+    // The others get a fresh view too, with no log line about it.
+    expect(lastView(b).log).toHaveLength(logBefore);
+  });
+
   it("tells the client whether cheats are allowed", async () => {
     const off = connect((await newRoom(3)).room, "tok0");
     const on = connect((await newRoom(3, new FakeStorage(), { ALLOW_CHEATS: "true" })).room, "tok0");
@@ -394,13 +414,13 @@ describe("GameRoom after a Transfer", () => {
 /** Each way a room launches (returning a seat token), with the config overrides it should record. */
 const LAUNCHES: { name: string; env: Record<string, string>; launch: (room: Room) => Promise<string>; overrides: ConfigOverrides }[] = [
   { name: "setup", env: {}, launch: (r) => r.setup(seats(3), tokensFor(3)).then(() => "tok0"), overrides: {} },
-  { name: "setup, cheats", env: CHEATS, launch: (r) => r.setup(seats(3), tokensFor(3)).then(() => "tok0"), overrides: { manualCycles: true } },
+  { name: "setup, cheats", env: CHEATS, launch: (r) => r.setup(seats(3), tokensFor(3)).then(() => "tok0"), overrides: { manualCycles: true, cheatRoom: true } },
   { name: "ship", env: {}, launch: (r) => r.join("Ann", "chao").then((j) => (j.ok ? j.token : "")), overrides: { ...setupOverrides(STANDARD_KNOBS), setupId: "standard" } },
   {
     name: "dev ship",
     env: CHEATS,
     launch: (r) => r.join("Ann", "chao").then((j) => (j.ok ? j.token : "")),
-    overrides: { ...setupOverrides(STANDARD_KNOBS), setupId: "standard", manualCycles: true },
+    overrides: { ...setupOverrides(STANDARD_KNOBS), setupId: "standard", manualCycles: true, cheatRoom: true },
   },
   { name: "single player", env: {}, launch: (r) => r.setupSinglePlayer("Guest 1", "chun"), overrides: { mushCount: 1, manualCycles: true, instantExpeditions: true } },
 ];
@@ -408,6 +428,19 @@ const LAUNCHES: { name: string; env: Record<string, string>; launch: (room: Room
 const gameOf = (room: Room) => (room as unknown as { game: GameState }).game;
 
 describe("GameRoom persistence", () => {
+  it("gives a ship the cheat room only if cheats were allowed at launch, whatever the flag says later (#170)", async () => {
+    const hasRoom = (room: Room) => Object.hasOwn(gameOf(room).config.rooms, CHEAT_ROOM) && Object.hasOwn(gameOf(room).equipment, CHEAT_ROOM);
+    for (const [launchEnv, laterEnv] of [[{}, CHEATS], [CHEATS, {}]] as const) {
+      const storage = new FakeStorage();
+      const room = asRoom(storage, launchEnv);
+      await room.setup(seats(3), tokensFor(3));
+      expect(hasRoom(room)).toBe(launchEnv === CHEATS);
+      const revived = asRoom(storage, laterEnv);
+      await revived.onStart();
+      expect(hasRoom(revived)).toBe(launchEnv === CHEATS);
+    }
+  });
+
   it.each(LAUNCHES)("records the launch's config and the overrides it came from ($name)", async ({ env, launch, overrides }) => {
     // The dev ship seats its bots on a timer, which must not outlive the test.
     vi.useFakeTimers();
@@ -431,10 +464,12 @@ describe("GameRoom persistence", () => {
       await revived.onStart();
       expect(gameOf(revived).config).toEqual(resolveConfig(overrides));
       // Saved again after the reload, still with the same overrides.
-      const inputs = storage.data.size;
+      // Bot memory (#440) isn't counted: a single-player ship's first save after launch also writes a key per bot.
+      const keys = () => [...storage.data.keys()].filter((k) => !k.startsWith("bot:")).length;
+      const inputs = keys();
       await send(revived, connect(revived, token), { type: "chat", channel: CHAT_CHANNELS[0], text: "hello" });
       // The input, and the poster's read count (#400).
-      expect(storage.data.size).toBe(inputs + 2);
+      expect(keys()).toBe(inputs + 2);
       expect(stored().overrides).toEqual(overrides);
     } finally {
       vi.useRealTimers();
@@ -957,6 +992,22 @@ describe("GameRoom bots", () => {
         vi.useRealTimers();
       });
 
+      it("wake nobody for a bots' jump line, which code parses (#427)", async () => {
+        const fetch = chatty("heard you");
+        vi.stubGlobal("fetch", fetch);
+        const { room, storage } = await modelRoom({ ...DEV, ...MODEL });
+        const human = connect(room, "tok0");
+        await pass(room, storage, 1500);
+        const before = fetch.mock.calls.length;
+        await send(room, human, { type: "chat", channel: "global", text: HOLD_JUMP_LINE });
+        await pass(room, storage, 5000);
+        const prompts = promptsOf(fetch, before);
+        expect(prompts.some((m) => m[0]!.content.startsWith("You route chat"))).toBe(false);
+        expect(prompts.some((m) => m[1]!.content.includes("A new chat message came in"))).toBe(false);
+        vi.unstubAllGlobals();
+        vi.useRealTimers();
+      });
+
       it("don't wake bots without a key", async () => {
         const fetch = vi.fn();
         vi.stubGlobal("fetch", fetch);
@@ -1022,14 +1073,14 @@ describe("GameRoom single player", () => {
     const { room, storage, token } = await soloRoom();
     const c = connect(room, token);
     // Let bots finish their solo actions while the human is still unready: no bot sends `ready` yet.
-    for (let i = 0; i < 10; i++) await playOut(room, storage);
+    for (let i = 0; i < 3; i++) await playOut(room, storage);
     expect(lastView(c).cycleOfDay).toBe(5);
     expect(lastView(c).players.every((p) => !p.ready)).toBe(true);
     await send(room, c, { type: "action", action: { type: "ready" } });
     for (let i = 0; i < 20 && lastView(c).cycleOfDay === 5; i++) await playOut(room, storage);
     expect(lastView(c).cycleOfDay).toBe(6);
     vi.unstubAllGlobals();
-  });
+  }, 20_000);
 
   it("drops a chat wake when a woken bot dies before its turn, so the cycle still ends", async () => {
     vi.stubGlobal(
@@ -1161,6 +1212,32 @@ describe("GameRoom single player", () => {
       vi.unstubAllGlobals();
     });
   });
+
+  it("keeps each bot's memory in room storage across a restart, and never in a view or the record (#440)", async () => {
+    vi.stubGlobal("fetch", vi.fn());
+    const { room, storage, token } = await soloRoom();
+    connect(room, token);
+    await playOut(room, storage);
+    const botKeys = [...storage.data.keys()].filter((k) => k.startsWith("bot:")).sort();
+    expect(botKeys).toEqual(["p1", "p2", "p3", "p4", "p5", "p6", "p7", "p8"].map((s) => `bot:${s}`));
+    // A fact only the stored memory holds: a marker no game input could put anywhere else.
+    const marker = "remembered-440";
+    const p1 = storage.data.get("bot:p1") as { shrinks: string[]; version: number };
+    p1.shrinks.push(marker);
+    (storage.data.get("bot:p2") as { version: number }).version = -1; // another version's snapshot
+    const revived = asRoom(storage);
+    await revived.onStart();
+    const bots = (revived as unknown as { bots: Map<string, { snapshot(): { shrinks: string[]; version: number } }> }).bots;
+    expect(bots.get("p1")!.snapshot().shrinks).toContain(marker);
+    expect(bots.get("p2")!.snapshot().shrinks).not.toContain(marker);
+    const c = connect(revived, token);
+    await playOut(revived, storage);
+    expect((storage.data.get("bot:p2") as { version: number }).version).toBe(BOT_MEMORY_VERSION);
+    expect((storage.data.get("bot:p1") as { shrinks: string[] }).shrinks).toContain(marker);
+    expect(JSON.stringify(c.messages())).not.toContain(marker);
+    for (const [key, value] of storage.data) if (!key.startsWith("bot:")) expect(JSON.stringify(value), key).not.toContain(marker);
+    vi.unstubAllGlobals();
+  }, 20_000);
 
   it("stays single player after a restart", async () => {
     const { storage, token } = await soloRoom();

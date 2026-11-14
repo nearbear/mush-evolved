@@ -37,8 +37,8 @@ export const shower: GoalDef = {
     const room = roomsWith(view, ["SHOWER"]).find(
       (r) =>
         !memory.ended.has(`shower:${r}`) &&
-        (canAfford(view, r, view.config.showerAp + dutyAp, memory.reserve) ||
-          canAfford(view, r, view.config.showerAp + deskAp, deskReserve)),
+        (canAfford(view, r, view.config.showerAp + dutyAp, memory.reserve, memory) ||
+          canAfford(view, r, view.config.showerAp + deskAp, deskReserve, memory)),
     );
     if (!room) return [];
     return [

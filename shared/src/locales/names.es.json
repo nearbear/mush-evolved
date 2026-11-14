@@ -1,5 +1,6 @@
 {
   "rooms": {
+    "CHEAT_ROOM": "Sala de trucos",
     "COMMAND_CENTER": "Puente",
     "SPACESHIP_BAY_A": "Hangar Alfa",
     "SPACESHIP_BAY_B": "Hangar Beta",
@@ -39,6 +40,7 @@
     "LOST": "Planeta"
   },
   "equipment": {
+    "SUPERKUBE": "Superkube",
     "ASTRO_MODULE": "Terminal astro",
     "BEAT_BOX": "Gramola",
     "BED": "Cama",

@@ -24,6 +24,7 @@ export function TopBar({
   onCheat,
   onRoleCheat,
   onSolCheat,
+  onCheatRoom,
   onLeaveShip,
 }: {
   view: PlayerView;
@@ -43,6 +44,8 @@ export function TopBar({
   onCheat: (cheat: Cheat, on: boolean) => void;
   onRoleCheat: (role: RoleCheat) => void;
   onSolCheat: () => void;
+  /** Absent on a ship without the cheat room, and while you're in it (#170). */
+  onCheatRoom?: (() => void) | undefined;
   onLeaveShip: () => void;
 }) {
   const { you } = view;
@@ -141,6 +144,7 @@ export function TopBar({
           onCheat={onCheat}
           onRoleCheat={onRoleCheat}
           onSolCheat={onSolCheat}
+          onCheatRoom={onCheatRoom}
           onLeaveShip={onLeaveShip}
           onLeave={onLeave}
           hideTrigger={mobile}

@@ -66,6 +66,8 @@ export const EQUIPMENT_TYPES: Record<string, EquipmentType> = {
   SOFA: { bed: true, builtOnly: true, dismantle: { metal: 0, plastic: 1, chance: 0.25 }, canBeSabotaged: true },
   STELLAR_ANTENNA: {canBeSabotaged: true},
   SUPER_CALC: { terminal: true, builtOnly: true, canBeSabotaged: true },
+  // The cheat room's testing machine (#170, cheatRoom.ts): only ever in that room, on dev ships.
+  SUPERKUBE: {},
   SURGERY_POD: {canBeSabotaged: true},
   TURRET_COMMAND: { terminal: true, canBeSabotaged: true },
 };

@@ -870,6 +870,7 @@ export function normalizeOverrides(raw: Partial<ConfigOverrides>): ConfigOverrid
     cycleHours: raw.cycleHours,
     sharedSpots: raw.sharedSpots,
     setupId: raw.setupId,
+    cheatRoom: raw.cheatRoom,
     preselection: opt(raw.preselection, normalizePreselection),
   });
 }
@@ -1005,6 +1006,8 @@ export function overridesOf(config: Partial<DeepReadonly<GameConfig>>): ConfigOv
     instantExpeditions: config.instantExpeditions,
     cycleHours: config.cycleHours,
     sharedSpots: config.sharedSpots,
+    // False in the config means no cheat room, which the overrides say by leaving the key out.
+    cheatRoom: config.cheatRoom || undefined,
     // Null in the config means no setup or no pre-selection, which the overrides say by leaving the key out.
     setupId: setupId === null ? undefined : setupId,
     preselection: preselection === null || preselection === undefined ? undefined : normalizePreselection(preselection),

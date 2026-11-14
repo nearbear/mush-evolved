@@ -13,7 +13,7 @@ export const explore: GoalDef = {
   options(view, memory) {
     const unseen = SHIP_ROOMS.map((r) => r.id).filter((id) => !memory.visited.has(id));
     return nearest(view, unseen)
-      .filter((room) => travelAp(view, room) === 0 && canAfford(view, room, 0, 0))
+      .filter((room) => travelAp(view, room) === 0 && canAfford(view, room, 0, 0, memory))
       .slice(0, 2)
       .map(
         (room): Goal => ({

@@ -41,3 +41,9 @@ not copied art, but takes its colors and style from `clients/iso/gfx/bg.png`.
 `derived/techno-box.png` is `www/img/design/xp_counter.png` edited by hand into a
 closed box (the left end cap mirrored onto the right, the fade removed). It is
 an adaptation and is also licensed CC BY-NC-SA 4.0.
+
+`derived/items/` holds item icons made by hand for this project from the
+original item icons (the blue slot tile and, where noted, parts of other
+icons). They are adaptations and are also licensed CC BY-NC-SA 4.0. Each file:
+
+- `super_kube.jpg`: drawn on the blue slot tile (`www/img/icons/items/empty.jpg`).

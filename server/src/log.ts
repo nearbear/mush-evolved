@@ -32,6 +32,7 @@ export type LogEvent =
   | "bot_social_refused"
   | "bot_action_illegal"
   | "bot_failed"
+  | "bot_memory_dropped"
   // Other modules
   | "model_call_failed"
   | "seat_revoke_failed"

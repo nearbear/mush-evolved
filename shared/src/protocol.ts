@@ -122,6 +122,8 @@ export type GameClientMessage =
   | { type: "roleCheat"; role: RoleCheat }
   // Development only: the ship returns to Sol now, ending the game (a dev route to a finished game and its replay).
   | { type: "solCheat" }
+  // Development only: takes the sender to the cheat room (#170), on a ship that has one. Not an action.
+  | { type: "cheatRoom" }
   // Development only, like the cheats: frees the sender's account from this ship at once, so the lobby offers other
   // ships. Not an input: the rules never see it, and the character stays aboard unplayed.
   | { type: "leaveShip" };
@@ -244,6 +246,7 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
   }
   if (msg?.type === "roleCheat") return isRoleCheat(msg.role) ? { type: "roleCheat", role: msg.role } : null;
   if (msg?.type === "solCheat") return { type: "solCheat" };
+  if (msg?.type === "cheatRoom") return { type: "cheatRoom" };
   if (msg?.type !== "action" || !isRecord(msg.action)) return null;
   const a = msg.action;
   // `hasOwn`, not `in` or a lookup: those would find "constructor" and the like on the prototype.
