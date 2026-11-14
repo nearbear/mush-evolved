@@ -297,6 +297,24 @@ describe("GameRoom cheats", () => {
     expect(lastView(b).log).toHaveLength(logBefore);
   });
 
+  it("takes Superkube options only where cheats are allowed and from inside the cheat room (#170)", async () => {
+    const { room: closed, storage } = await newRoom(3);
+    const closedConn = connect(closed, "tok0");
+    await send(closed, closedConn, { type: "kube", op: "dirty" });
+    expect(lastMsg(closedConn)).toEqual({ type: "error", message: "cheats_disabled" });
+    expect([...storage.data.keys()].some((k) => k.startsWith("input:"))).toBe(false);
+
+    const { room } = await newRoom(3, new FakeStorage(), CHEATS);
+    const a = connect(room, "tok0");
+    await send(room, a, { type: "kube", op: "dirty" });
+    expect(lastMsg(a)).toEqual({ type: "error", message: "not_in_cheat_room" });
+    await send(room, a, { type: "cheatRoom" });
+    await send(room, a, { type: "kube", op: "dirty" });
+    expect(lastView(a).statuses).toContain("dirty");
+    await send(room, a, { type: "kube", op: "teleport", arg: "LABORATORY" });
+    expect(lastView(a).you.room).toBe("LABORATORY");
+  });
+
   it("tells the client whether cheats are allowed", async () => {
     const off = connect((await newRoom(3)).room, "tok0");
     const on = connect((await newRoom(3, new FakeStorage(), { ALLOW_CHEATS: "true" })).room, "tok0");

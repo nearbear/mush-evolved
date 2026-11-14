@@ -3,6 +3,7 @@
 
 import { ACTIONS, type ActionType } from "./actions.ts";
 import { isCheat, isRoleCheat, type Cheat, type RoleCheat } from "./cheats.ts";
+import { isKubeOp, type KubeOpId } from "./kube.ts";
 import { isCharacterId, type CharacterId } from "./characters.ts";
 import { MAX_CHAT_LENGTH, privateChannelId } from "./chat.ts";
 import { MAX_CHAT_READ_ENTRIES, type ChatRead } from "./chatRead.ts";
@@ -124,6 +125,8 @@ export type GameClientMessage =
   | { type: "solCheat" }
   // Development only: takes the sender to the cheat room (#170), on a ship that has one. Not an action.
   | { type: "cheatRoom" }
+  // Development only: one Superkube option (kube.ts, #170), from a human in the cheat room. Not an action.
+  | { type: "kube"; op: KubeOpId; arg?: string | number }
   // Development only, like the cheats: frees the sender's account from this ship at once, so the lobby offers other
   // ships. Not an input: the rules never see it, and the character stays aboard unplayed.
   | { type: "leaveShip" };
@@ -247,6 +250,13 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
   if (msg?.type === "roleCheat") return isRoleCheat(msg.role) ? { type: "roleCheat", role: msg.role } : null;
   if (msg?.type === "solCheat") return { type: "solCheat" };
   if (msg?.type === "cheatRoom") return { type: "cheatRoom" };
+  if (msg?.type === "kube") {
+    const { op, arg } = msg;
+    if (!isKubeOp(op)) return null;
+    if (arg === undefined) return { type: "kube", op };
+    // The option checks the argument's kind (applyKube); here only its shape and size.
+    return (typeof arg === "string" && arg.length <= 64) || Number.isSafeInteger(arg) ? { type: "kube", op, arg: arg as string | number } : null;
+  }
   if (msg?.type !== "action" || !isRecord(msg.action)) return null;
   const a = msg.action;
   // `hasOwn`, not `in` or a lookup: those would find "constructor" and the like on the prototype.

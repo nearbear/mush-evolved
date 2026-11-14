@@ -517,6 +517,15 @@ describe("cheats and lifecycle wire parser (#107)", () => {
     expect(parse({ type: "acknowledgeTransfer", extra: 1 })).toEqual({ type: "acknowledgeTransfer" });
   });
 
+  it("parses a Superkube option, leaving its argument's kind to applyKube (#170)", () => {
+    expect(parse({ type: "kube", op: "cure", extra: 1 })).toEqual({ type: "kube", op: "cure" });
+    expect(parse({ type: "kube", op: "hp", arg: 5 })).toEqual({ type: "kube", op: "hp", arg: 5 });
+    expect(parse({ type: "kube", op: "teleport", arg: "LABORATORY" })).toEqual({ type: "kube", op: "teleport", arg: "LABORATORY" });
+    for (const bad of [{ op: "constructor" }, { op: "nope" }, { op: "hp", arg: 1.5 }, { op: "hp", arg: null }, { op: "spawn", arg: "x".repeat(65) }, { op: "spawn", arg: ["a"] }]) {
+      expect(parse({ type: "kube", ...bad })).toBeNull();
+    }
+  });
+
   const BAD_CHEAT_INPUTS: Array<[label: string, msg: unknown]> = [
     ["cheat unknown cheat name", { type: "cheat", cheat: "godMode", on: true }],
     ["cheat prototype constructor", { type: "cheat", cheat: "constructor", on: true }],

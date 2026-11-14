@@ -21,13 +21,12 @@ import { incidentsCycle } from "./incidents.ts";
 import { initNpc, newNpcState, npcCycle } from "./npcs.ts";
 import { cheatRoomStock } from "./cheatStock.ts";
 import { CHEAT_ROOM } from "./cheatRoom.ts";
-import { leaveAccommodation, pushing } from "./accommodation.ts";
-import { board } from "./actions/takeoff.ts";
+import { teleport, teleportBlocked } from "./kube.ts";
 import { newLostAnalysis, rollAtSelection } from "./lostAnalysis.ts";
 import { hopelessCycle } from "./morale.ts";
 import { relayView } from "./relayView.ts";
 import { itemsIn, rechargeMicrowaves, startCharges, visibleItemsIn } from "./items.ts";
-import { actionFailed, apGain, enterRoom, enteredRoom, mpGain, carePointsGain, channelLimit, computerPointsCap, computerPointsGain, shootPointsGain, cycleChanged, designerPointsGain, engineerPointsGain, gardenPointsGain, dailyMoraleLoss, inventorySlots, movementRules, pilgredPointsGain, satietyLoss } from "./modifiers.ts";
+import { actionFailed, apGain, mpGain, carePointsGain, channelLimit, computerPointsCap, computerPointsGain, shootPointsGain, cycleChanged, designerPointsGain, engineerPointsGain, gardenPointsGain, dailyMoraleLoss, inventorySlots, movementRules, pilgredPointsGain, satietyLoss } from "./modifiers.ts";
 import { contaminationSeenBy, convert } from "./infection.ts";
 import { isHungry, publicStatusesOf, statusesOf } from "./statuses.ts";
 import { coupCycle } from "./coup.ts";
@@ -397,14 +396,10 @@ export function cheatRoomCheat(state: GameState, playerId: PlayerId): ActionResu
   if (!p.alive) return fail("dead");
   if (p.room === CHEAT_ROOM) return fail("already_there");
   if (offShip(p.room) || onExpedition(state, p)) return fail("off_ship");
-  if (p.pushedBy !== undefined || pushing(state, p)) return fail("being_pushed");
+  const blocked = teleportBlocked(state, p);
+  if (blocked) return fail(blocked);
   const next = clone(state);
-  const me = findPlayer(next, playerId)!;
-  getUp(me);
-  leaveAccommodation(next, me);
-  board(me, CHEAT_ROOM);
-  enteredRoom(next, me);
-  enterRoom(next, me);
+  teleport(next, findPlayer(next, playerId)!, CHEAT_ROOM);
   return { ok: true, state: next };
 }
 
