@@ -54,11 +54,6 @@ h2 {
   margin: 0 0 var(--space-2);
 }
 
-.sub {
-  color: var(--muted);
-  font-size: 0.8rem;
-}
-
 /* The original loading spinner, above any "Connecting…"-style message. */
 .loading::before {
   content: "";

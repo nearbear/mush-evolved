@@ -32,6 +32,10 @@
   --field-edge: var(--edge);
   --field-radius: 4px;
   --field-shadow: none;
+  /* Pickable tiles (primitives.css's .pick-tile): hover fill, and the pressed fill and edge. Redefined in cut-card.css. */
+  --pick-hover-bg: rgb(255 255 255 / 0.08);
+  --pick-on-bg: var(--chrome-2);
+  --pick-on-edge: var(--highlight);
   /* Panel surface: the flat quote-box fill, plus glow colors for highlights. */
   --surface-top: var(--panel-fill);
   --surface-bottom: var(--panel-fill);

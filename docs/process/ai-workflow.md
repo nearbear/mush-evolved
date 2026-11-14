@@ -3507,3 +3507,10 @@ The owner disliked the Astro terminal's Share button opening a navy `.settings-p
 ## 2026-11-14: infiniteSpores cheat also skips the spike cooldown
 
 The owner asked for the infinite-spores dev cheat to remove the 4-cycle spike cooldown too. One line in `SpikeAction.cooldownLeft` (returns 0 when the actor has the cheat) plus a test in `spike.test.ts`. Kept it inside the existing cheat rather than a new toggle, as asked; the cheat's label still reads "Infinite spores".
+
+## 2026-11-14: UI primitives on both surfaces (#435)
+
+- Added `web/src/styles/primitives.css` with `.field`/`.field-label`, `.pick-tile` and the muted note `.sub` (moved from `base.css`; kept the name rather than renaming ~40 uses). The tile reads new `--pick-*` tokens, set in `tokens.css` (dark: chrome-2 fill, gold edge) and redefined in `cut-card.css` (light: title-bar cyan, accent edge), the same pattern as `--field-*`.
+- The private channel dialog now uses the primitives; its one-off heading and tile rules in `itrackie.css` are gone (only the tile width stays).
+- Design kit: a "Primitives on both surfaces" section renders the same markup on a dark panel and inside a `TerminalFrame` light card; checked with a Playwright screenshot at 1280px and 360px (no horizontal scroll).
+- Left alone on purpose: the lobby's `.pod-character` and the skill cards have their own looks; converting them would be scope creep until the owner wants one look.

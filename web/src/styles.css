@@ -4,6 +4,7 @@
 @import "./styles/base.css";
 @import "./styles/buttons.css";
 @import "./styles/card.css";
+@import "./styles/primitives.css";
 @import "./styles/top-bar.css";
 @import "./styles/layout.css";
 @import "./styles/inspect.css";

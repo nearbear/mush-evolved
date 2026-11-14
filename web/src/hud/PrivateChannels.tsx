@@ -186,13 +186,13 @@ function ChannelDialog({
           }}
         >
           {creating && (
-            <label className="channel-create-name">
-              <span>{t("channels.nameLabel")}</span>
+            <label className="field channel-create-name">
+              <span className="field-label">{t("channels.nameLabel")}</span>
               <input value={name} onChange={(e) => setName(e.target.value)} maxLength={24} placeholder={t("channels.namePlaceholder")} />
             </label>
           )}
-          <fieldset className="channel-create-members">
-            <legend>{t(creating ? "channels.membersLabel" : "channels.inviteLabel")}</legend>
+          <fieldset className="field">
+            <legend className="field-label">{t(creating ? "channels.membersLabel" : "channels.inviteLabel")}</legend>
             {choices.length === 0 && <p className="sub">{t("channels.noOne")}</p>}
             <div className="channel-picker">
               {choices.map((p) => {
@@ -201,11 +201,11 @@ function ChannelDialog({
                   <button
                     key={p.id}
                     type="button"
-                    className="channel-pick"
+                    className="pick-tile channel-pick"
                     aria-pressed={on}
                     onClick={() => setMembers((ms) => (on ? ms.filter((m) => m !== p.id) : [...ms, p.id]))}
                   >
-                    <span className="channel-pick-sprite" style={standingSprite(p.character, 1)} aria-hidden="true" />
+                    <span style={standingSprite(p.character, 1)} aria-hidden="true" />
                     <span>{names.characterGiven(p.character)}</span>
                   </button>
                 );

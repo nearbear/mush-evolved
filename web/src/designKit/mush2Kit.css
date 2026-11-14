@@ -255,3 +255,30 @@
     height: 560px;
   }
 }
+
+/* The primitives section: a stand-in dark panel (the inspect column's fill and rim), and the sample content's spacing. */
+.m2k-dark-surface {
+  box-sizing: border-box;
+  width: min(28rem, calc(100vw - 32px));
+  padding: var(--space-3);
+  background: var(--panel-fill);
+  border: 1px solid var(--panel-rim);
+  border-radius: var(--panel-radius);
+  color: var(--text);
+}
+.m2k-primitives {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.m2k-primitives .sub {
+  margin: 0;
+}
+.m2k-picks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.m2k-pick {
+  width: 4.5rem;
+}
