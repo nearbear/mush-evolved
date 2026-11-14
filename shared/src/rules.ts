@@ -80,7 +80,8 @@ import type {
   Seat,
 } from "./types.ts";
 import { drawDrugs, drugEffectsSeenBy, hasDrugDispenser, resetDrugDispenser, stockMedlab } from "./drugs.ts";
-import { changeAP, changeMP, diseaseTrackerCycleChange } from "./adjustStats.ts";
+import { changeAP, changeMP } from "./adjustStats.ts";
+import { diseaseTrackerCycleChange } from "./diseases.ts";
 
 export type { ActionResult };
 
@@ -558,6 +559,7 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     outcastBy: _outcastBy,
     mind: _mind,
     transferUsed: _transferUsed,
+    epigeneticsUsed: _epigeneticsUsed,
     history: _history,
     lastSeenAt: _lastSeenAt,
     inactivity: _inactivity,

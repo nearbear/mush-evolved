@@ -30,7 +30,7 @@ import type { DrugDispenserState, DrugEffect } from "./drugs.ts";
 import type { FullView, SeatStart, SeatStarts } from "./fullView.ts";
 import type { RebelCall } from "./comms.ts";
 import type { RelayPool, RelayToken, ResearchPool, Sample } from "./relay.ts";
-import type { DiseaseTracker } from "./adjustStats.ts";
+import type { DiseaseTracker } from "./diseases.ts";
 import type {
   ChatMark,
   ChatMessage,
@@ -326,6 +326,7 @@ export function normalizePlayer(raw: Partial<PlayerState>, mode: QueueMode): Pla
     character: need(raw, "character", t),
     mind: need(raw, "mind", t),
     transferUsed: raw.transferUsed,
+    epigeneticsUsed: raw.epigeneticsUsed,
     apprenticeUsed: raw.apprenticeUsed,
     geniusUsed: raw.geniusUsed,
     bodyTakenBy: raw.bodyTakenBy,

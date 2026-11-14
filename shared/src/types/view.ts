@@ -155,7 +155,7 @@ export interface PublicConfig {
  * you (your mind, Transfer use, action history, when you were last seen, the raw inactivity field); the queue is plain
  * actions (the recorded adjustments stay on the server).
  */
-export type YouView = Omit<PlayerState, "name" | "mind" | "transferUsed" | "history" | "current" | "queue" | "lastSeenAt" | "inactivity"> & { current: ActionInProgress | null; queue: Action[] };
+export type YouView = Omit<PlayerState, "name" | "mind" | "transferUsed" | "epigeneticsUsed" | "history" | "current" | "queue" | "lastSeenAt" | "inactivity"> & { current: ActionInProgress | null; queue: Action[] };
 
 /** A hunter as a turret or a patrol ship's cockpit shows it: its kind, hp, and an asteroid's cycle changes to impact (null otherwise). */
 export interface HunterView {

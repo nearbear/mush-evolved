@@ -46,6 +46,11 @@ describe("who sees the drugs' effects", () => {
     d!.role = "mush";
     for (const p of state.players) expect(viewFor(state, p.id).drugEffects).toEqual(state.drugs);
     d!.role = "human";
+    d!.skills.push("skilful");
+    expect(viewFor(state, d!.id).drugEffects).toEqual(state.drugs);
+    d!.skills.pop();
+    d!.role = "mush";
+    d!.role = "human";
     expect(viewFor(state, d!.id).drugEffects).toBeNull();
     a!.alive = false;
     expect(viewFor(state, a!.id).drugEffects).toBeNull();

@@ -74,6 +74,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Confirmed 2026-10-15: spiking costs 1 AP and 1 spore, and raises a human's contamination by 1.
   spike: { cost: { ap: 1 }, cooldownCycles: 4 },
   bodyTransfer: { cost: { ap: 0 } },
+  resetSkills: { cost: { ap: 2 } },
   // Owner, 2026-11-05: the Apprentice skill's apprenticeship action costs 1 AP.
   apprenticeship: { cost: { ap: 1 } },
   // Owner, 2026-11-04: the pneumatic tube is free to use.
@@ -194,6 +195,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Owner, 2026-10-24 (eMushpedia Confident, Bourreau; actions.json TORTURE): Chitchat costs 1 AP once a day and gives
   // +2 morale; the Torturer's Interrogate costs 1 AP once a day, deals 1 damage, 15% dirt, 10% injury.
   chitchat: { cost: { ap: 1 }, morale: 2 },
+  // Owner, 2026-11-13 (eMushpedia Pressentiment): Premonition costs 1 morale and no AP, and shows a crewmate's last action.
+  premonition: { moraleCost: 1 },
   // Shrink (owner, 2026-10-26, eMushpedia Psy): Comfort costs 1 AP and gives a roommate 2 morale; lying in a bed with a Shrink in the room gives 1 morale a cycle.
   comfort: { cost: { ap: 1 }, morale: 2 },
   shrink: { lyingMorale: 1 },

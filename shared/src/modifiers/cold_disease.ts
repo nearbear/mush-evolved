@@ -2,7 +2,8 @@ import { updateMaxValues } from "../adjustStats.ts";
 import { logPrivate } from "../log.ts";
 import type { Modifier } from "../modifiers.ts";
 import { rollInt, rollFloat } from "../rng.ts";
-import { addDisease, changeMP } from "../adjustStats.ts";
+import { changeMP } from "../adjustStats.ts";
+import { addDisease } from "../diseases.ts";
 
 export const cold_disease: Modifier = {
   onCycle(next, player) {

@@ -55,6 +55,7 @@ function handFilled() {
   // Every optional field set, so a field copied from the wrong key shows.
   Object.assign(a, {
     transferUsed: true,
+    epigeneticsUsed: true,
     apprenticeUsed: true,
     geniusUsed: true,
     bodyTakenBy: b.character,

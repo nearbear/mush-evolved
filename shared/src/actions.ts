@@ -82,6 +82,7 @@ import { BoringSpeechAction, FierySpeechAction } from "./actions/speech.ts";
 import { PunchAction } from "./actions/punch.ts";
 import { InterrogateAction } from "./actions/interrogate.ts";
 import { ChitchatAction } from "./actions/chitchat.ts";
+import { PremonitionAction } from "./actions/premonition.ts";
 import { ComfortAction } from "./actions/comfort.ts";
 import { AttackAction } from "./actions/attack.ts";
 import { ShareAction } from "./actions/share.ts";
@@ -91,6 +92,7 @@ import { ShowerAction } from "./actions/shower.ts";
 import { SpikeAction } from "./actions/spike.ts";
 import { FungalCuisineAction } from "./actions/fungal_cuisine.ts";
 import { BodyTransferAction } from "./actions/body_transfer.ts";
+import { ResetSkillsAction } from "./actions/reset_skills.ts";
 import { TransferAction } from "./actions/transfer.ts";
 import { WaterAction } from "./actions/water.ts";
 import { TreatAction } from "./actions/treat.ts";
@@ -214,6 +216,7 @@ const REGISTRY = {
   spike: new SpikeAction(),
   fungal_cuisine: new FungalCuisineAction(),
   body_transfer: new BodyTransferAction(),
+  reset_skills: new ResetSkillsAction(),
   lie_down: new LieDownAction(),
   get_up: new GetUpAction(),
   guard: new GuardAction(),
@@ -228,6 +231,7 @@ const REGISTRY = {
   punch: new PunchAction(),
   interrogate: new InterrogateAction(),
   chitchat: new ChitchatAction(),
+  premonition: new PremonitionAction(),
   comfort: new ComfortAction(),
   anathema: new AnathemaAction(),
   coup: new CoupAction(),
