@@ -1,3 +1,4 @@
+import { parseItemLine } from "../src/bots/itemShare.ts";
 import {
   characterName,
   CHARACTERS,
@@ -29,6 +30,7 @@ import {
   type ChunkEntry,
   type FullView,
   type ReplayIndex,
+  type ReplayModeration,
   type PlayerView,
   type RecordedInput,
   type Role,
@@ -43,7 +45,7 @@ import { FakeConnection, FakeR2Bucket, FakeServer, FakeStorage, seats, tokensFor
 import { migratedDatabase } from "./sqliteD1.ts";
 
 vi.mock("partyserver", () => ({ Server: FakeServer }));
-const { GameRoom } = await import("../src/GameRoom.ts");
+const { GameRoom, RECLAIM_DELAY_MS } = await import("../src/GameRoom.ts");
 
 type Conn = FakeConnection<{ playerId: string }>;
 type Room = InstanceType<typeof GameRoom>;
@@ -856,7 +858,8 @@ describe("GameRoom bots", () => {
           if (storage.alarm !== null && storage.alarm <= Date.now()) await room.onAlarm();
         }
       };
-      const botMessages = (room: Room) => gameOf(room).chat.filter((m) => m.from !== null && ["p1", "p2", "p3"].includes(m.from));
+      // What the bots said, leaving out their item lines (itemShare.ts), which code posts whatever the model says.
+      const botMessages = (room: Room) => gameOf(room).chat.filter((m) => m.from !== null && ["p1", "p2", "p3"].includes(m.from) && parseItemLine(m.text) === null);
 
       it("wake every model bot but the author; replies are posted as AI, and a chain stops at the depth limit", async () => {
         const fetch = chatty("heard you");
@@ -1927,7 +1930,7 @@ describe("GameRoom replay copy to R2 (#336)", () => {
     expect(JSON.stringify(index)).not.toContain("Human 0");
     // Launch to the first cycle, then the cycle onward.
     expect(index.chunks).toHaveLength(2);
-    expect(bucket.puts, "written once").toBe(index.chunks.length + 1);
+    expect(bucket.puts, "written once").toBe(index.chunks.length + 2);
     const inputs = (await storage.list({ prefix: "input:" })).size;
     expect(index.chunks.reduce((n, c) => n + c.inputs, 0)).toBe(inputs);
     const chunk = bucket.objects.get(replayKeys.chunk("test-room", 1))!;
@@ -1936,9 +1939,17 @@ describe("GameRoom replay copy to R2 (#336)", () => {
     expect(rebuildHistory(entries.map((e) => e.history)).at(-1)!.view).toEqual(last);
     // Each entry is only its time and history: no input, raw text or chat id.
     for (const e of entries) expect(Object.keys(e).sort()).toEqual(["at", "history"]);
+    expect(await bucket.json<ReplayModeration>(replayKeys.moderation("test-room"))).toEqual({
+      v: HISTORY_VERSION,
+      roomId: "test-room",
+      raw: {},
+      rawByInput: {},
+      blocked: [],
+      rateLimited: {},
+    });
   });
 
-  it("retries a failed copy from the alarm, and isn't ready until every chunk and the index are written", async () => {
+  it("retries a failed copy from the alarm, and isn't ready until every chunk, moderation.json, and the index are written", async () => {
     vi.spyOn(console, "warn").mockImplementation(() => {});
     const bucket = new FakeR2Bucket();
     const { room, inner, storage } = await endedRoom(bucket);
@@ -1948,11 +1959,19 @@ describe("GameRoom replay copy to R2 (#336)", () => {
     expect(ready(storage)).toBe(false);
     expect(bucket.objects.has(replayKeys.index("test-room"))).toBe(false);
     expect(storage.alarm).not.toBeNull();
-    // Then only the index fails.
+    // Then only moderation.json fails: still no index, not ready.
     bucket.failAfter = bucket.puts + 2;
     vi.setSystemTime(storage.alarm!);
     await room.onAlarm();
     expect(ready(storage)).toBe(false);
+    expect(bucket.objects.has(replayKeys.moderation("test-room"))).toBe(false);
+    expect(bucket.objects.has(replayKeys.index("test-room"))).toBe(false);
+    // Then only the index fails.
+    bucket.failAfter = bucket.puts + 3;
+    vi.setSystemTime(storage.alarm!);
+    await room.onAlarm();
+    expect(ready(storage)).toBe(false);
+    expect(bucket.objects.has(replayKeys.moderation("test-room"))).toBe(true);
     expect(bucket.objects.has(replayKeys.index("test-room"))).toBe(false);
     bucket.failAfter = null;
     vi.setSystemTime(storage.alarm!);
@@ -1960,6 +1979,54 @@ describe("GameRoom replay copy to R2 (#336)", () => {
     expect(ready(storage)).toBe(true);
     expect(bucket.objects.has(replayKeys.index("test-room"))).toBe(true);
     expect((storage.data.get("game") as { replayReady: boolean }).replayReady).toBe(true);
+  });
+
+  it("copies moderator data (raw, rawByInput, blocked, rateLimited) to moderation.json without leaking it to chunks", async () => {
+    vi.setSystemTime(Date.UTC(2026, 9, 19, 14));
+    const storage = new FakeStorage();
+    const bucket = new FakeR2Bucket();
+    const room = asRoom(storage, CHEATS);
+    (room as unknown as Copying).env.REPLAYS = bucket;
+    await room.setup(seats(3), tokensFor(3), { p0: "mush" });
+    const [c0, c1] = [connect(room, "tok0"), connect(room, "tok1")];
+    // Filtered chat message (`raw` keyed by ChatMessage.id).
+    await send(room, c0, { type: "chat", channel: CHAT_CHANNELS[0], text: "what the fuck" });
+    const filteredMsg = lastView(c0).chat.at(-1)!;
+    expect(filteredMsg.text).toBe("what the ****");
+    // Filtered non-message input (`rawByInput` keyed by input seq).
+    const threadSeq = (storage.data.get("game") as { inputs: number }).inputs;
+    await send(room, c0, { type: "createThread", name: "see http://example.com" });
+    // Blocked messages in order (also consumes 1 chat rate-limit token on p1).
+    await send(room, c0, { type: "chat", channel: CHAT_CHANNELS[0], text: "   " });
+    await send(room, c1, { type: "chat", channel: CHAT_CHANNELS[0], text: "x".repeat(301) });
+    // 6 more messages on p1 (7 total within 10s against the 5-message limit -> 2 rejected).
+    for (let i = 0; i < 6; i++) await send(room, c1, { type: "chat", channel: CHAT_CHANNELS[0], text: `msg ${i}` });
+
+    const inner = room as unknown as Copying;
+    inner.game.phase = "ended";
+    inner.game.winner = "humans";
+    inner.game.ending = "sol";
+    await inner.persist();
+    await inner.copyReplay();
+
+    const chunkEntries = await bucket.json<ChunkEntry[]>(replayKeys.chunk("test-room", 0));
+    const fullAfter = rebuildHistory(chunkEntries.map((e) => e.history)).at(-1)!.view;
+    const replayChatId = fullAfter.chat.find((m) => m.text === "what the ****")!.id;
+    expect(JSON.stringify(chunkEntries)).not.toContain("what the fuck");
+    expect(JSON.stringify(chunkEntries)).not.toContain("http://example.com");
+
+    const mod = await bucket.json<ReplayModeration>(replayKeys.moderation("test-room"));
+    expect(mod).toMatchObject({
+      v: HISTORY_VERSION,
+      roomId: "test-room",
+      raw: { [replayChatId]: "what the fuck" },
+      rawByInput: { [threadSeq]: "see http://example.com" },
+      rateLimited: { p1: 2 },
+    });
+    expect(mod.blocked).toEqual([
+      expect.objectContaining({ by: "p0", type: "chat", raw: "   ", reason: "empty_message" }),
+      expect.objectContaining({ by: "p1", type: "chat", raw: "x".repeat(301), reason: "message_too_long" }),
+    ]);
   });
 
   it("finishes the copy in a room revived after one failed partway, and keeps the room's record", async () => {
@@ -2112,5 +2179,201 @@ describe("GameRoom chat read state (#400)", () => {
     expect(storage.data.get("chatRead:p0")).toEqual({ [crew]: 1 });
     await say(room, a, global);
     expect(storage.data.get("chatRead:p0")).toEqual({ [global]: 1 });
+  });
+});
+
+describe("GameRoom storage reclamation (#339)", () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ now: Date.UTC(2026, 9, 19, 14) });
+    return () => {
+      vi.restoreAllMocks();
+      vi.useRealTimers();
+    };
+  });
+
+  async function launchedShip(opts: { db?: ReturnType<typeof migratedDatabase> | null; bucket?: FakeR2Bucket | null } = {}) {
+    const db = opts.db === undefined ? migratedDatabase() : opts.db;
+    const bucket = opts.bucket === undefined ? new FakeR2Bucket() : opts.bucket;
+    const storage = new FakeStorage();
+    const room = new GameRoom(
+      { storage } as never,
+      { RULES_VERSION: "test", ALLOW_CHEATS: "true", ...(db && { DB: db }), ...(bucket && { REPLAYS: bucket }) } as never,
+    );
+    const store = db ? new AccountStore(db) : null;
+    const tokens: string[] = [];
+    for (const [name, character] of [["Ann", "chao"], ["Bob", "chun"], ["Cy", "frieda"]] as const) {
+      let account: { accountId: string; sessionKey: string } | undefined;
+      if (store) {
+        const created = await store.createAccount(name, "dev", name, Date.now());
+        if (!created.ok) throw new Error(created.reason);
+        await store.boardShip(created.account.id, "test-room", Date.now());
+        account = { accountId: created.account.id, sessionKey: `session-${name}` };
+      }
+      const joined = await room.join(name, character, STANDARD_SETUP, account, "en");
+      if (!joined.ok) throw new Error(joined.error);
+      tokens.push(joined.token);
+    }
+    return { room, storage, db, bucket, tokens };
+  }
+
+  it("waits until both listed and replayReady are true, then waits 48 hours before deleting", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    // Case 1: listed is false (no D1), replayReady is true -> no reclaimAt scheduled, nothing deleted even after 48h.
+    const noDb = await launchedShip({ db: null });
+    const c1 = connect(noDb.room, noDb.tokens[0]!);
+    await send(noDb.room, c1, { type: "solCheat" });
+    expect((noDb.storage.data.get("game") as { listed: boolean; replayReady: boolean; reclaimAt?: number })).toMatchObject({
+      listed: false,
+      replayReady: true,
+    });
+    expect((noDb.storage.data.get("game") as { reclaimAt?: number }).reclaimAt).toBeUndefined();
+    vi.advanceTimersByTime(RECLAIM_DELAY_MS + 1000);
+    const innerNoDb = noDb.room as unknown as { reclaimAt: number | null; reclaimStorage(): Promise<void> };
+    innerNoDb.reclaimAt = Date.now() - 1;
+    await innerNoDb.reclaimStorage();
+    expect(innerNoDb.reclaimAt).toBeNull();
+    expect(noDb.storage.data.size).toBeGreaterThan(0);
+
+    // Case 2: listed is true, replayReady is false (no R2) -> no reclaimAt scheduled, nothing deleted even after 48h.
+    const noBucket = await launchedShip({ bucket: null });
+    const c2 = connect(noBucket.room, noBucket.tokens[0]!);
+    await send(noBucket.room, c2, { type: "solCheat" });
+    expect((noBucket.storage.data.get("game") as { listed: boolean; replayReady: boolean; reclaimAt?: number })).toMatchObject({
+      listed: true,
+      replayReady: false,
+    });
+    expect((noBucket.storage.data.get("game") as { reclaimAt?: number }).reclaimAt).toBeUndefined();
+    vi.advanceTimersByTime(RECLAIM_DELAY_MS + 1000);
+    await (noBucket.room as unknown as { reclaimStorage(): Promise<void> }).reclaimStorage();
+    expect(noBucket.storage.data.size).toBeGreaterThan(0);
+
+    // Once the missing replay copy succeeds on retry, reclaimAt is set 48 hours out from then.
+    const bucket = new FakeR2Bucket();
+    (noBucket.room as unknown as { env: Record<string, unknown> }).env.REPLAYS = bucket;
+    vi.setSystemTime(noBucket.storage.alarm!);
+    await noBucket.room.onAlarm();
+    const expectedReclaim = Date.now() + RECLAIM_DELAY_MS;
+    expect((noBucket.storage.data.get("game") as { listed: boolean; replayReady: boolean; reclaimAt?: number })).toMatchObject({
+      listed: true,
+      replayReady: true,
+      reclaimAt: expectedReclaim,
+    });
+    expect(noBucket.storage.alarm).toBe(expectedReclaim);
+
+    // Not deleted one ms before the 48-hour mark.
+    vi.setSystemTime(expectedReclaim - 1);
+    await noBucket.room.onAlarm();
+    expect(noBucket.storage.data.size).toBeGreaterThan(0);
+  });
+
+  it("reclaims all room storage after 48 hours across restart, keeping D1 summary and R2 replay working", async () => {
+    const { room, storage, db, bucket, tokens } = await launchedShip();
+    const c0 = connect(room, tokens[0]!);
+    await send(room, c0, { type: "chat", channel: CHAT_CHANNELS[0], text: "what the fuck" });
+    await send(room, c0, { type: "chat", channel: CHAT_CHANNELS[0], text: "   " });
+    await send(room, c0, { type: "solCheat" });
+
+    const expectedReclaim = Date.now() + RECLAIM_DELAY_MS;
+    expect(storage.alarm).toBe(expectedReclaim);
+    expect(storage.data.size).toBeGreaterThan(2);
+
+    // Evicted and revived before the 48-hour alarm fires.
+    const revived = asRoom(storage, { RULES_VERSION: "test", ALLOW_CHEATS: "true" });
+    (revived as unknown as { env: Record<string, unknown> }).env = { RULES_VERSION: "test", ALLOW_CHEATS: "true", DB: db!, REPLAYS: bucket! };
+    await revived.onStart();
+    expect(storage.alarm).toBe(expectedReclaim);
+    const liveConn = connect(revived, tokens[1]!);
+    expect(liveConn.closed).toBeNull();
+
+    // At 48 hours, everything in room storage is deleted and open sockets are closed.
+    vi.setSystemTime(expectedReclaim);
+    await revived.onAlarm();
+    expect([...storage.data.keys()]).toEqual(["reclaimed"]);
+    expect(storage.alarm).toBeNull();
+    expect(liveConn.closed?.code).toBe(4001);
+
+    // New connections, joins, and resume see a retired/empty room; D1 and R2 still hold the game and replay.
+    expect(connect(revived, tokens[0]!).closed?.code).toBe(4001);
+    expect(await revived.join("Late", "janice")).toEqual({ ok: false, error: "ship_closed" });
+    expect(await revived.resume("any", "s")).toEqual({ ok: false });
+    expect(revived.seatAccounts()).toEqual([]);
+    // Evicted again: the tombstone keeps it retired.
+    const reloaded = asRoom(storage, { RULES_VERSION: "test", ALLOW_CHEATS: "true" });
+    await reloaded.onStart();
+    expect(await reloaded.join("Later", "janice")).toEqual({ ok: false, error: "ship_closed" });
+    expect(storage.alarm).toBeNull();
+    expect((await new GameStore(db!).listFinished()).games).toHaveLength(1);
+    expect(bucket!.objects.has(replayKeys.index("test-room"))).toBe(true);
+    expect(bucket!.objects.has(replayKeys.chunk("test-room", 0))).toBe(true);
+    const mod = await bucket!.json<ReplayModeration>(replayKeys.moderation("test-room"));
+    expect(Object.values(mod.raw)).toEqual(["what the fuck"]);
+    expect(mod.blocked).toHaveLength(1);
+  });
+
+  it("refuses to delete and retries with backoff if R2 verification or deleteAll fails", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const { room, storage, bucket, tokens } = await launchedShip();
+    const c0 = connect(room, tokens[0]!);
+    await send(room, c0, { type: "solCheat" });
+    const reclaimAt = storage.alarm!;
+
+    // Missing moderation.json (or chunk / index): keeps storage and reschedules with backoff.
+    const savedMod = bucket!.objects.get(replayKeys.moderation("test-room"))!;
+    bucket!.objects.delete(replayKeys.moderation("test-room"));
+    vi.setSystemTime(reclaimAt);
+    await room.onAlarm();
+    expect(storage.data.size).toBeGreaterThan(0);
+    expect(warn).toHaveBeenCalled();
+    expect(storage.alarm).toBe(reclaimAt + 60_000);
+
+    // Missing chunk: still refuses and doubles backoff.
+    bucket!.objects.set(replayKeys.moderation("test-room"), savedMod);
+    const savedChunk = bucket!.objects.get(replayKeys.chunk("test-room", 0))!;
+    bucket!.objects.delete(replayKeys.chunk("test-room", 0));
+    vi.setSystemTime(storage.alarm!);
+    await room.onAlarm();
+    expect(storage.data.size).toBeGreaterThan(0);
+    expect(storage.alarm).toBe(reclaimAt + 60_000 + 120_000);
+
+    // Restored in R2, but endShip fails once while aboard still has a seat: keeps storage and retries.
+    bucket!.objects.set(replayKeys.chunk("test-room", 0), savedChunk);
+    const endShipSpy = vi.spyOn(AccountStore.prototype, "endShip").mockRejectedValueOnce(new Error("D1 is down"));
+    (room as unknown as { aboard: Record<string, string> }).aboard = { p0: "acc-1" };
+    vi.setSystemTime(storage.alarm!);
+    await room.onAlarm();
+    expect(storage.data.size).toBeGreaterThan(0);
+    expect(storage.alarm).toBe(reclaimAt + 60_000 + 120_000 + 240_000);
+    endShipSpy.mockRestore();
+
+    // Restored D1 + R2, but deleteAll fails once: keeps storage and retries.
+    const deleteAllSpy = vi.spyOn(storage, "deleteAll").mockRejectedValueOnce(new Error("storage hiccup"));
+    vi.setSystemTime(storage.alarm!);
+    await room.onAlarm();
+    expect(storage.data.size).toBeGreaterThan(0);
+    expect(storage.alarm).not.toBeNull();
+    deleteAllSpy.mockRestore();
+
+    // Next retry succeeds.
+    vi.setSystemTime(storage.alarm!);
+    await room.onAlarm();
+    expect([...storage.data.keys()]).toEqual(["reclaimed"]);
+    expect(storage.alarm).toBeNull();
+  });
+
+  it("reclaims an unrecorded single-player game (no account) after 48 hours without R2 objects", async () => {
+    const storage = new FakeStorage();
+    const room = asRoom(storage, CHEATS);
+    const token = await room.setupSinglePlayer("Solo", "chun", "en");
+    const c = connect(room, token);
+    await send(room, c, { type: "solCheat" });
+    expect((storage.data.get("game") as { listed: boolean; replayReady: boolean; reclaimAt?: number })).toMatchObject({
+      listed: true,
+      replayReady: true,
+      reclaimAt: Date.now() + RECLAIM_DELAY_MS,
+    });
+    vi.setSystemTime(storage.alarm!);
+    await room.onAlarm();
+    expect([...storage.data.keys()]).toEqual(["reclaimed"]);
+    expect(storage.alarm).toBeNull();
   });
 });

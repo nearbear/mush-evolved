@@ -8,6 +8,7 @@ import {
   added,
   NormalizeError,
   normalizeContainer,
+  normalizeDocument,
   normalizeFullView,
   normalizeGame,
   normalizeHunterTarget,
@@ -117,7 +118,7 @@ function handFilled() {
   });
   game.navigation = { heading: game.navigation.heading, orbit: "pl-1", arriving: { planet: "pl-1" }, lastTurn: { n: 3, side: "left" } };
   game.hunters.list.push({ id: "h1", hp: 2, hitChance: 0.4, target: { kind: "ship" }, type: "dice", countdown: null });
-  game.relay.projects.p = { tokens: [{ by: a.id, base: 3, roll: 0.5, unpenalized: true }] };
+  game.relay.projects.p = { lastBy: a.id, streak: 2 };
   game.relay.research.r = { tokens: [{ by: a.id, base: 3, roll: 0.5 }], pending: [{ by: b.id, base: 2, roll: 0.1, contaminatedBy: b.id }] };
   game.chatOutbox = { sealed: [{ channel: "global", page: 0, messages: [game.chat.at(-1)!] }], dropped: [{ channel: "pc-2", pages: 1 }] };
   return { game, overrides };
@@ -325,6 +326,7 @@ describe("union normalizers", () => {
     ["HunterTarget", normalizeHunterTarget, { kind: "patrol", id: "PATROL_SHIP_ALPHA_TAMARIN" }, "kind"],
     ["PlanSlot", normalizePlanSlot, { kind: "task", task: { type: "heal", target: "p1" }, holder: null, done: false }, "kind"],
     ["PlanTask", normalizePlanTask, { type: "bring", itemType: "medikit" }, "type"],
+    ["DocumentState", normalizeDocument, { kind: "lost_analysis", rows: [] }, "kind"],
   ];
 
   for (const [type, normalize, valid, key] of cases) {
@@ -369,6 +371,7 @@ describe("union normalizers", () => {
     ["HunterTarget", normalizeHunterTarget, Object.values(targets)],
     ["PlanTask", normalizePlanTask, Object.values(tasks)],
     ["PlanSlot", normalizePlanSlot, Object.values(slots).flat()],
+    ["DocumentState", normalizeDocument, [{ kind: "lost_analysis", rows: [{ character: "chun", negative: true }, { character: "chao", negative: false }] }]],
   ];
 
   for (const [type, normalize, samples] of variants) {
@@ -444,6 +447,18 @@ describe("upgrade", () => {
     expect(tos.every((to) => to <= STATE_VERSION)).toBe(true);
     expect(tos.every((to) => to > MIN_STATE_VERSION)).toBe(true);
     expect(MIN_STATE_VERSION).toBeLessThanOrEqual(STATE_VERSION);
+  });
+
+  it("upgradeTo116 converts stored project token pools to trailing contributor streaks and drops empty pools", () => {
+    const { game, overrides } = fresh();
+    const raw = stored(game);
+    raw.relay.projects = {
+      PLASMA_SHIELD: { tokens: [{ by: "p0", base: 6, roll: 0.1 }, { by: "p1", base: 6, roll: 0.2 }, { by: "p1", base: 6, roll: 0.3 }] },
+      EMPTY: { tokens: [] },
+    };
+    upgrade({ game: raw, overrides }, 115);
+    expect(raw.relay.projects).toEqual({ PLASMA_SHIELD: { lastBy: "p1", streak: 2 } });
+    expect(normalizeGame(raw, overrides).relay.projects).toEqual({ PLASMA_SHIELD: { lastBy: "p1", streak: 2 } });
   });
 });
 

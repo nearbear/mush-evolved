@@ -2,7 +2,10 @@
 // can be unit tested and run headless. Reproduces the original Flash client
 // (clients/iso/src: V2DIso.grid2px, Data.setup, Grid.sort/sortFunc).
 
-import { placedEquipment, type RoomLayout, type ShipLayout, type SliceInfo, type TileKind, type TilePlacement } from "@mush2/shared";
+import type { RoomLayout, ShipLayout, SliceInfo, TileKind, TilePlacement } from "@mush2/shared";
+// By module, not the package's index: the index imports ship-rooms.json, which plain Node (`npm run
+// ship-render`) can't load without an import attribute.
+import { placedEquipment } from "@mush2/shared/src/shipLayout.ts";
 
 /** Half the width of one cell's diamond, in pixels (V2DIso.R). */
 const R = 16;
@@ -84,6 +87,62 @@ interface Sortable {
   shape: "flat" | "wall" | "solid";
   /** An actor lying on whatever overlaps it (see `Actor.onTop`). */
   onTop?: boolean;
+  /**
+   * A wall that stops at a T: the room whose other-axis wall on its cell carries on. It draws under
+   * everything of that room but its floor: the wall, its doors and what is mounted on them (`markTees`).
+   */
+  under?: string;
+}
+
+/**
+ * Which way each wall slice runs: along x (the main axis, on its cell's +y edge), along y (the cross
+ * axis, on its +x edge), or both (`corner_02`, the original's front corner). Posts and front-edge doors
+ * stand on no edge; doors run by their footprint (see `wallRuns`).
+ */
+export const WALL_RUNS: Readonly<Record<string, "x" | "y" | "xy">> = {
+  BIG_WALL_L: "y",
+  WALL_L_DECK: "y",
+  BIG_WALL_R: "x",
+  WALL_R_DECK: "x",
+  corner_02: "xy",
+};
+
+/** The edges a wall or door tile stands on, as the cells whose +y edge (x) or +x edge (y) it is. */
+export function wallRuns(layout: ShipLayout, t: { kind: TileKind | "actor"; slice: string; x: number; y: number }): { axis: "x" | "y"; x: number; y: number }[] {
+  if (t.kind === "wall") {
+    const run = WALL_RUNS[t.slice] ?? "";
+    return [...(run.includes("x") ? [{ axis: "x" as const, x: t.x, y: t.y }] : []), ...(run.includes("y") ? [{ axis: "y" as const, x: t.x, y: t.y }] : [])];
+  }
+  if (t.kind !== "door" || FRONT_DOORS.has(t.slice)) return [];
+  const [w] = layout.slices[t.slice]?.footprint ?? [1, 1];
+  return w > 1
+    ? [{ axis: "x", x: t.x, y: t.y }, { axis: "x", x: t.x - 1, y: t.y }]
+    : [{ axis: "y", x: t.x, y: t.y }, { axis: "y", x: t.x, y: t.y - 1 }];
+}
+
+/**
+ * T junctions (owner, 2026-11-14): where a main-axis wall and a cross-axis wall share a cell, they meet
+ * at its +x+y corner. If one of them carries on past that corner and the other stops there, the one
+ * that stops draws under the other, so its end cap hides behind the wall it runs into and the two top
+ * ridges join. It goes under whatever is mounted on that wall too (a sign reaching across), or the
+ * order would loop. (An L, where both stop, is `corner_02`; where both carry on, neither is marked.)
+ */
+function markTees(layout: ShipLayout, statics: readonly (PlacedSprite & Sortable)[]) {
+  const runs = new Map<string, string>();
+  const walls = statics.filter((s) => s.kind === "wall" || s.kind === "door");
+  for (const s of walls) for (const r of wallRuns(layout, { ...s, ...s.cell })) runs.set(`${r.axis}${r.x},${r.y}`, s.room);
+  for (const s of statics) {
+    if (s.kind !== "wall") continue;
+    const run = WALL_RUNS[s.slice];
+    if (run !== "x" && run !== "y") continue;
+    const { x, y } = s.cell;
+    const other = run === "x" ? "y" : "x";
+    const over = runs.get(`${other}${x},${y}`);
+    if (!over) continue;
+    // Past the +x+y corner: the next x edge is on cell (x + 1, y), the next y edge on (x, y + 1).
+    const carriesOn = (axis: "x" | "y") => runs.has(axis === "x" ? `x${x + 1},${y}` : `y${x},${y + 1}`);
+    if (!carriesOn(run) && carriesOn(other)) s.under = over;
+  }
 }
 
 /**
@@ -159,6 +218,7 @@ export interface PreparedScene {
 export function prepareScene(layout: ShipLayout, rooms: SceneRooms): PreparedScene {
   const drawn = new Set(rooms.map((r) => r.room.id));
   const statics = rooms.flatMap((r, scene) => tileSortables(layout, r, scene, drawn)).sort(baseOrder);
+  markTees(layout, statics);
   const byLeft = leftOrder(statics);
   const edges: number[] = [];
   for (let p = 0; p < byLeft.length; p++) {
@@ -289,7 +349,7 @@ function cellSlots(
 }
 
 /** A sprite without the fields only sorting uses. */
-const unsorted = ({ pass, depth, prio, stage, screenX, scene, box, shape, ...s }: PlacedSprite & Sortable): PlacedSprite => s;
+const unsorted = ({ pass, depth, prio, stage, screenX, scene, box, shape, under, ...s }: PlacedSprite & Sortable): PlacedSprite => s;
 
 /** Indices of `sprites` by `left`, a tie going to the earlier one. */
 const leftOrder = (sprites: readonly PlacedSprite[]) => sprites.map((_, i) => i).sort((i, j) => sprites[i]!.left - sprites[j]!.left || i - j);
@@ -483,6 +543,9 @@ const boxesOverlap = (a: Sortable, b: Sortable) =>
 function compare(a: PlacedSprite & Sortable, b: PlacedSprite & Sortable): number {
   if (a.pass !== PASS.tile && a.pass !== PASS.entity) return baseOrder(a, b);
   if (b.pass !== PASS.tile && b.pass !== PASS.entity) return baseOrder(a, b);
+  // A wall stopping at a T goes under the room whose wall it runs into, but over its floor (`markTees`).
+  if (a.under && a.under === b.room && b.kind !== "ground" && !b.under) return -1;
+  if (b.under && b.under === a.room && a.kind !== "ground" && !a.under) return 1;
   const standing = (a.shape === "wall" && b.shape === "solid") || (b.shape === "wall" && a.shape === "solid");
   if (a.scene === b.scene && !standing) {
     if (a.pass !== PASS.entity || b.pass !== PASS.entity) return baseOrder(a, b);

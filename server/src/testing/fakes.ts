@@ -71,6 +71,11 @@ export class FakeR2Bucket {
     };
   }
 
+  /** Whether an object exists (`R2Bucket.head`): metadata object, or null. */
+  async head(key: string): Promise<object | null> {
+    return this.objects.has(key) ? {} : null;
+  }
+
   /** An object's JSON, gunzipped when it was stored gzipped. */
   async json<T>(key: string): Promise<T> {
     const object = this.objects.get(key);

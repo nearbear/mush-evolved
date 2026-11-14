@@ -1,10 +1,62 @@
 // Building blocks most goals are made of: finding an offered action and walking somewhere. Pricing a walk is in shared.
 
-import { doorCount, shortestPath, type Action, type ActionOption, type PlayerView, type RoomId } from "@mush2/shared";
+import {
+  DEFAULT_CONFIG,
+  canAfford as rawCanAfford,
+  doorCount,
+  moveCost,
+  roomsWith,
+  shortestPath,
+  type Action,
+  type ActionOption,
+  type PlayerView,
+  type RoomId,
+} from "@mush2/shared";
+import { holdsTrigger } from "../duties.ts";
+import { isHoldingJump } from "../planetShare.ts";
 import type { GoalStep } from "./types.ts";
 
 // The situation helpers live in shared (situation.ts), where the client's tips use them too.
-export { canAfford, nearest, roomsWith, travelAp } from "@mush2/shared";
+export { canAfford as rawCanAfford, nearest, roomsWith, travelAp } from "@mush2/shared";
+
+/** Simulates walking `fromRoom -> toRoom` starting with `(ap, mp)` and returns remaining points, or null if unreachable. */
+function walkBudget(view: PlayerView, fromRoom: RoomId, toRoom: RoomId, ap: number, mp: number): { ap: number; mp: number } | null {
+  const path = shortestPath(view.rooms, fromRoom, toRoom);
+  if (path === null) return null;
+  let points = { ap, mp };
+  for (let i = 0; i < path.length; i++) {
+    const cost = moveCost(view.movement, points);
+    if (!cost) return null;
+    points = { ap: points.ap - cost.ap, mp: cost.mpAfter };
+  }
+  return points;
+}
+
+/** Whether from `(fromRoom, ap, mp)` the viewer can reach a Command terminal and still pay 1 AP to `travel` (#421). */
+export function canReachBridgeWithTravelAp(view: PlayerView, fromRoom: RoomId, ap: number, mp: number): boolean {
+  const bridges = roomsWith(view, ["PILOT_MODULE"]);
+  const travelCost = DEFAULT_CONFIG.navigation.travel.cost.ap;
+  return bridges.some((bridge) => {
+    const back = walkBudget(view, fromRoom, bridge, ap, mp);
+    return back !== null && back.ap >= travelCost;
+  });
+}
+
+/** Whether the viewer is the Commander currently holding a jump in global chat (#421). */
+export function isCommanderHolding(view: PlayerView): boolean {
+  return holdsTrigger(view, "destination") && !view.navigation.traveling && !view.navigation.orbiting && isHoldingJump(view);
+}
+
+/**
+ * Whether the viewer can walk to `room` and spend `ap` there, keeping `reserve` AP — and when the viewer is the
+ * Commander holding a jump (#421), still keeping enough AP/MP to walk back to the bridge and `travel`.
+ */
+export function canAfford(view: PlayerView, room: RoomId, ap: number, reserve: number): boolean {
+  if (!rawCanAfford(view, room, ap, reserve)) return false;
+  if (!isCommanderHolding(view)) return true;
+  const afterWalk = walkBudget(view, view.you.room, room, view.you.ap, view.you.mp);
+  return afterWalk !== null && canReachBridgeWithTravelAp(view, room, afterWalk.ap - ap, afterWalk.mp);
+}
 
 type ActionOf<T extends Action["type"]> = Extract<Action, { type: T }>;
 

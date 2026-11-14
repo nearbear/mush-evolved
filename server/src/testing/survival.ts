@@ -6,6 +6,7 @@
 
 import { applyInput, CHARACTERS, createGame, legalActions, nextDue, resolveConfig, shuffle, viewFor, type DeathCause, type Ending, type GameState, type Input, type PlayerId, type Seat } from "@mush2/shared";
 import { GoalBot } from "../bots.ts";
+import { BOT_DUTIES } from "../bots/duties.ts";
 
 export interface SurvivalOptions {
   /** Stop counting after this many days (owner, 2026-11-11: 30 by default). */
@@ -14,6 +15,10 @@ export interface SurvivalOptions {
   crew: number;
   /** No incidents (breakage, fires, tremors): the incident budget is zero. */
   noIncidents?: boolean;
+  /** Oxygen never burns: takes asphyxia out of a run, to study another killer alone. */
+  noOxygen?: boolean;
+  /** No hunter waves: the pool never grows. */
+  noHunters?: boolean;
   /** Called with each line of a cycle-by-cycle trace (one seed, `--verbose`). */
   trace?: (line: string) => void;
 }
@@ -30,6 +35,40 @@ export interface DaySnapshot {
   broken: number;
   fires: number;
   hunters: number;
+}
+
+/**
+ * One cycle of a run, for the loss report (`--report`): what threatened the ship and what the crew did about it. The
+ * state fields are as the cycle ended, before the change; `hullLost` and `arrived` are what that change then did.
+ */
+export interface CycleReport {
+  cycle: number;
+  hull: number;
+  oxygen: number;
+  alive: number;
+  /** Hunters outside as the cycle ended. */
+  hunters: number;
+  /** Rooms on fire as the cycle ended: each may cost the hull at the change (`config.fire`), like a hunter. */
+  fires: number;
+  /** Hunters destroyed during the cycle, and hunters left behind by a jump. */
+  killed: number;
+  shed: number;
+  /** Turret and patrol ship shots fired. */
+  shots: number;
+  repairTries: number;
+  repairs: number;
+  /** AP left over the living crew as the cycle ended, and how many of them stood at their AP cap (AP wasted). */
+  apLeft: number;
+  atCap: number;
+  /** Metal scraps aboard (in rooms or carried), and how many of them are carried. */
+  scraps: number;
+  scrapsCarried: number;
+  /** AP spent by action type while hunters were outside: by bots holding a hunter-fighting skill, and by the rest. */
+  apShooters: Record<string, number>;
+  apOthers: Record<string, number>;
+  /** Hull lost at the cycle change that ended this cycle, and hunters that arrived in it. */
+  hullLost: number;
+  arrived: number;
 }
 
 export interface SurvivalResult {
@@ -54,12 +93,17 @@ export interface SurvivalResult {
   jumps?: number;
   /** Steps a bot returned that the rules refused (should be 0: goals step only from `legalIn`). */
   refused: number;
+  /** Cycle by cycle, for the loss report. Absent in runs saved before. */
+  cycles?: CycleReport[];
 }
 
 /** Rounds in one cycle before the run counts as stalled: far above what 16 bots spending their AP need. */
 const ROUNDS_PER_CYCLE = 2_000;
 
-export function survivalGame(seed: number, opts: Pick<SurvivalOptions, "crew" | "noIncidents">): GameState {
+/** The skills whose duty is fighting hunters (`BOT_DUTIES`): the report splits AP between their holders and the rest. */
+const HUNTER_SKILLS: ReadonlySet<string> = new Set(BOT_DUTIES.flatMap((d) => (d.when === "hunters" && d.skill ? [d.skill] : [])));
+
+export function survivalGame(seed: number, opts: Pick<SurvivalOptions, "crew" | "noIncidents" | "noOxygen" | "noHunters">): GameState {
   if (!(opts.crew >= 2 && opts.crew <= CHARACTERS.length)) throw new Error(`crew must be 2 to ${CHARACTERS.length}`);
   // Every character may be a bot here (trial only, as in model.trial.ts); the crew is drawn with the seed.
   const [drawn] = shuffle(CHARACTERS.map((c) => c.id), seed);
@@ -71,10 +115,15 @@ export function survivalGame(seed: number, opts: Pick<SurvivalOptions, "crew" | 
     character,
   }));
   const game = createGame(seats, resolveConfig({ mushCount: 0, manualCycles: true, instantExpeditions: true }), seed);
-  if (!opts.noIncidents) return game;
+  // Each switch takes one killer out of the run, so another can be studied alone (the game is created first: the
+  // crew and the seed's draws stay the same).
+  let config = game.config;
   // A zero budget: the pool gets nothing at cycle changes, so the chance of an incident stays 0 (incidents.ts).
   const never = 1_000_000;
-  return { ...game, config: { ...game.config, incidents: { ...game.config.incidents, budget: { base: [0], tier1: { fromDay: never, bonus: 0 }, tier2: { fromDay: never, bonus: 0 } } } } };
+  if (opts.noIncidents) config = { ...config, incidents: { ...config.incidents, budget: { base: [0], tier1: { fromDay: never, bonus: 0 }, tier2: { fromDay: never, bonus: 0 } } } };
+  if (opts.noOxygen) config = { ...config, ship: { ...config.ship, oxygen: { ...config.ship.oxygen, perCycle: 0 } } };
+  if (opts.noHunters) config = { ...config, hunters: { ...config.hunters, waveChance: 0 } };
+  return config === game.config ? game : { ...game, config };
 }
 
 const dayOfCycle = (game: GameState, cycle: number): number => Math.floor((cycle - 1) / game.config.cyclesPerDay) + 1;
@@ -97,15 +146,50 @@ export async function runSurvival(seed: number, opts: SurvivalOptions): Promise<
   let game = survivalGame(seed, opts);
   const trace = opts.trace ?? (() => {});
   const bots = new Map<PlayerId, GoalBot>(game.players.map((p, i) => [p.id, new GoalBot(seed * 1_000 + i)]));
-  const result: SurvivalResult = { seed, crew: game.players.map((p) => p.character), end: "survived", cyclesPerDay: game.config.cyclesPerDay, day: 1, cycle: 1, deaths: [], days: [], goals: {}, social: {}, jumps: 0, decisions: 0, refused: 0 };
+  const result: SurvivalResult = { seed, crew: game.players.map((p) => p.character), end: "survived", cyclesPerDay: game.config.cyclesPerDay, day: 1, cycle: 1, deaths: [], days: [], goals: {}, social: {}, jumps: 0, decisions: 0, refused: 0, cycles: [] };
   const lastGoal = new Map<PlayerId, string | null>();
   let now = 0;
   let logSeen = game.nextLogId;
 
-  const apply = (input: Input): boolean => {
+  const newRow = (cycle: number): CycleReport => ({ cycle, hull: 0, oxygen: 0, alive: 0, hunters: 0, fires: 0, killed: 0, shed: 0, shots: 0, repairTries: 0, repairs: 0, apLeft: 0, atCap: 0, scraps: 0, scrapsCarried: 0, apShooters: {}, apOthers: {}, hullLost: 0, arrived: 0 });
+  let row = newRow(game.cycle);
+  /** Fills the row's end-of-cycle fields from `g`, the state just before the change (or where the game ended). */
+  const closeRow = (g: GameState): void => {
+    const living = g.players.filter((p) => p.alive);
+    const scraps = g.items.filter((i) => i.type === "metal_scraps");
+    Object.assign(row, { hull: g.ship.hull, oxygen: g.ship.oxygen, alive: living.length, hunters: g.hunters.list.length, fires: g.fires.length, apLeft: living.reduce((a, p) => a + p.ap, 0), atCap: living.filter((p) => p.ap >= p.maxAp).length, scraps: scraps.length, scrapsCarried: scraps.filter((i) => i.at.kind === "player").length });
+    result.cycles!.push(row);
+  };
+  /** `apCost`: what the action's option said it costs, for the report (timed actions are paid for when they finish). */
+  const apply = (input: Input, apCost = 0): boolean => {
+    const before = game;
     const r = applyInput(game, input);
-    if (r.ok) game = r.state;
-    return r.ok;
+    if (!r.ok) return false;
+    game = r.state;
+    const fresh = game.log.filter((e) => e.id >= before.nextLogId);
+    // A change that ends the game (hull 0, the last death) ends it before the cycle counter moves.
+    const ended = before.phase === "playing" && game.phase !== "playing";
+    if (game.cycle !== before.cycle || ended) {
+      closeRow(before);
+      row.hullLost = Math.max(0, before.ship.hull - game.ship.hull);
+      row.arrived = fresh.reduce((a, e) => a + (e.key === "hunterWave" ? Number(e.params?.count ?? 0) : 0), 0);
+      if (!ended) row = newRow(game.cycle);
+      return true;
+    }
+    const gone = before.hunters.list.length - game.hunters.list.length;
+    if (gone > 0) row[fresh.some((e) => e.key === "shipTraveled") ? "shed" : "killed"] += gone;
+    row.repairs += fresh.filter((e) => e.key === "hullRepaired").length;
+    if (input.type === "action") {
+      const type = input.action.type;
+      if (type === "turret_attack" || type === "patrol_attack") row.shots++;
+      if (type === "repair_hull") row.repairTries++;
+      if (before.hunters.list.length > 0 && apCost > 0) {
+        const by = before.players.find((p) => p.id === input.by)!;
+        const ap = by.skills.some((s) => HUNTER_SKILLS.has(s)) ? row.apShooters : row.apOthers;
+        ap[type] = (ap[type] ?? 0) + apCost;
+      }
+    }
+    return true;
   };
   const idle = (id: PlayerId): boolean => {
     const p = game.players.find((q) => q.id === id)!;
@@ -143,7 +227,8 @@ export async function runSurvival(seed: number, opts: SurvivalOptions): Promise<
         if (game.cycle !== cycle || game.phase !== "playing") break;
         if (!idle(id)) continue;
         result.decisions++;
-        const action = await bot.decideAction(viewFor(game, id));
+        const view = viewFor(game, id);
+        const action = await bot.decideAction(view);
         const goal = bot.current;
         if (goal !== null && goal !== lastGoal.get(id)) {
           const kind = goal.split(":")[0]!;
@@ -163,7 +248,8 @@ export async function runSurvival(seed: number, opts: SurvivalOptions): Promise<
         }
         if (!action) continue;
         if (game.players.find((p) => p.id === id)!.ready && action.type === "ready") continue;
-        if (apply({ type: "action", action, by: id, at: now })) acted = true;
+        const cost = view.actions.find((o) => JSON.stringify(o.action) === JSON.stringify(action))?.cost.ap ?? 0;
+        if (apply({ type: "action", action, by: id, at: now }, cost)) acted = true;
         else {
           result.refused++;
           bot.refused();
@@ -190,6 +276,8 @@ export async function runSurvival(seed: number, opts: SurvivalOptions): Promise<
     trace(`cycle ${cycle}: hull ${s.hull}, oxygen ${s.oxygen}, fuel ${s.fuel}, alive ${s.alive}, broken ${s.broken}, fires ${s.fires}, hunters ${s.hunters}`);
   }
   if (game.phase === "ended") result.end = game.ending ?? "stalled";
+  // The cycle the run stopped in (a game that ends at a cycle change ends inside `applyInput`, before the row closes).
+  if (result.cycles!.at(-1)?.cycle !== row.cycle) closeRow(game);
   const last = Math.min(game.cycle, lastCycle);
   result.cycle = last;
   result.day = dayOfCycle(game, last);

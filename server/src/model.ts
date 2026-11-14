@@ -4,6 +4,7 @@
 // and the player's own key in single player (bring your own key, #216).
 
 import type { BotPause, ModelProvider } from "@mush2/shared";
+import { failureName, logWarn } from "./log.ts";
 
 declare global {
   interface Env {
@@ -182,7 +183,7 @@ export class ModelGate {
         else this.failing = true;
       }
       // Only our own messages, or the error's name: anything else could carry the request.
-      console.warn(`Model call failed: ${e instanceof ModelError ? e.message : e instanceof Error ? e.name : typeof e}`);
+      logWarn("model_call_failed", e instanceof ModelError ? { ...(e.status !== null && { status: e.status }), errorName: "ModelError", message: e.message } : failureName(e));
       return null;
     } finally {
       this.release();

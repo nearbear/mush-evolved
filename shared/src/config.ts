@@ -173,6 +173,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   gunman: { capPoints: 4, pointsPerDay: 2 },
   // Owner, 2026-10-27: Paranoid gives 1 extra Camera item when picked (the original gives 2).
   paranoid: { cameras: 1 },
+  // Owner, 2026-11-14 (eMushpedia Observateur, upstream eMush): Search costs Observant 1 AP less; each Observant present has a 25% chance to reveal a covert action.
+  observant: { searchApDiscount: 1, revealChance: 0.25 },
   // Owner, 2026-11-01: Green Thumb gives 2 empty hydropots when picked (the original's skills.json).
   greenThumb: { pots: 2 },
   // #411, owner, 2026-11-11 (eMushpedia "Drone de soutien"): x1.25 a failure in a row, capped at 99%; reset by a success.
@@ -222,8 +224,10 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Owner, 2026-10-22: the Commander steers at the Command terminal. Turn, travel and leave orbit cost 1 AP each (the wiki);
   // leaving orbit burns 1 fuel and the ship starts facing north (Claude's defaults).
   navigation: { turn: { cost: { ap: 1 } }, travel: { cost: { ap: 1 } }, leaveOrbit: { cost: { ap: 1 }, fuel: 1 }, startHeading: "north" },
-  // Decided 2026-10-18: NERON projects work exactly like research (2 AP; owner, 2026-10-26: the same relay formula).
+  // Decided 2026-10-18: NERON projects work like research (2 AP; owner, 2026-10-26: the same relay formula).
+  // Owner, 2026-11-14: 3 randomly drawn projects offered at a time, rolling progress directly with a relay streak (no tokens).
   project: {
+    offerCount: 3,
     cost: { ap: 2 },
     progress: { rate: 6, mod: 10, skillBoost: 4, relayPenalty: 2 },
     noiseReducer: { maxAp: 2 },
@@ -243,7 +247,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   comms: {
     sol: { cost: { ap: 2 }, startChance: 4, chancePerFail: 4, radioExpertFactor: 2, radioExpertRoomFactor: 1.5 },
     rebel: { cost: { ap: 2 }, gainMax: 40, windowMin: 8, windowMax: 16, rebelBonus: 1, kivancBonus: 1, kaladaanMorale: 6, cygniMorale: 3, cygniPatrolDamage: 1, siriusRationAp: 1 },
-    xyloph: { cost: { ap: 2 }, qualityLoss: 20, neronBoostPercent: 25, schoolBooks: 2, workshopBlueprints: 3 },
+    xyloph: { cost: { ap: 2 }, qualityLoss: 20, neronBoostPercent: 25, lostAnalysisPerMush: 2.5, schoolBooks: 2, workshopBlueprints: 3 },
     neron: { cost: { ap: 2 }, progressPercent: 25 },
   },
   // Confirmed 2026-10-17: lying down in a bed is free (the +1 AP per cycle is the lying_down modifier).

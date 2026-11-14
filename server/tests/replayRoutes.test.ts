@@ -55,7 +55,13 @@ async function copy(roomId: string, confirmed = true): Promise<ReplayIndex> {
     seats: [{ seat: "p0", role: "mush", character: CHARACTERS[0]!.id }],
     chunks: CHUNKS.map((entries, n) => ({ cycle: n, firstInput: n * 2, inputs: entries.length, from: entries[0]!.at, to: entries.at(-1)!.at })),
   };
-  if (confirmed) await bucket.put(replayKeys.index(roomId), JSON.stringify(index));
+  if (confirmed) {
+    await bucket.put(
+      replayKeys.moderation(roomId),
+      JSON.stringify({ v: HISTORY_VERSION, roomId, raw: { 1: "secret raw" }, rawByInput: {}, blocked: [], rateLimited: {} }),
+    );
+    await bucket.put(replayKeys.index(roomId), JSON.stringify(index));
+  }
   return index;
 }
 
@@ -107,10 +113,12 @@ describe("GET /api/games/<id>/replay (#337)", () => {
     expect(await chunk.json()).toEqual(CHUNKS[0]);
   });
 
-  it("answers 404 for a chunk the index doesn't list, or a malformed one", async () => {
+  it("answers 404 for a chunk the index doesn't list, or a malformed one, and never serves moderation.json", async () => {
     await copy("room-1");
     await list("room-1");
-    for (const n of ["2", "-1", "1.0", "x", "0000001"]) expect([n, (await get(`/api/games/room-1/replay/${n}`)).status]).toEqual([n, 404]);
+    for (const n of ["2", "-1", "1.0", "x", "0000001", "moderation", "moderation.json"]) {
+      expect([n, (await get(`/api/games/room-1/replay/${n}`)).status]).toEqual([n, 404]);
+    }
   });
 
   it("serves nothing of a running game, even one with objects in the bucket", async () => {

@@ -2,20 +2,31 @@
 // every seat and no Mush (runSurvival, src/testing/survival.ts) and reports how long each ship lasted and what killed it.
 // Free: no model, no network.
 //
-//   npm run survival -w server -- [--seeds 1-50] [--days 30] [--crew 16] [--no-incidents] [--out run.json] [--compare base.json] [--verbose <seed>]
+//   npm run survival -w server -- [--seeds 1-50] [--days 30] [--crew 16] [--no-incidents] [--no-oxygen] [--no-hunters] [--report] [--out run.json] [--compare base.json] [--verbose <seed>]
 //
 // Runs under Vitest like model.trial.ts (the rules import JSON the bundler way), never in `npm test`. Arguments come
 // through TRIAL_ARGS, which run-trial.mjs sets. `--out` saves the results; `--compare` prints each seed's change against
 // a saved run, so "ships last longer on the same seeds" is one command. `--jobs N` splits the seeds across N processes
-// (half the cores by default); `--verbose <seed>` traces one seed cycle by cycle.
+// (half the cores by default); `--verbose <seed>` traces one seed cycle by cycle. `--report` adds the loss report
+// (survivalReport.ts): hunters arriving against hunters removed, what each cost the hull, and where the AP went.
+// `--no-oxygen`, `--no-hunters` and `--no-incidents` each take one killer out, to study another alone.
 
 import { spawn } from "node:child_process";
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { availableParallelism, tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { parseArgs } from "node:util";
+import { DEFAULT_CONFIG } from "@mush2/shared";
 import { test } from "vitest";
+import { HULL_REPAIR_BELOW } from "../src/bots/goals/repairHull.ts";
 import { runSurvival, type SurvivalResult } from "../src/testing/survival.ts";
+import { lossReport } from "../src/testing/survivalReport.ts";
+
+/**
+ * What a burning room costs the hull per cycle on average (fire.ts: a fire that doesn't spread rolls for hull damage),
+ * for the report's estimate of the fires' share.
+ */
+const FIRE_HULL_PER_CYCLE = (1 - DEFAULT_CONFIG.fire.spreadChance) * DEFAULT_CONFIG.fire.hullChance * ((DEFAULT_CONFIG.fire.hullDamage[0] + DEFAULT_CONFIG.fire.hullDamage[1]) / 2);
 
 const { values: args } = parseArgs({
   args: JSON.parse(process.env.TRIAL_ARGS ?? "[]") as string[],
@@ -24,6 +35,9 @@ const { values: args } = parseArgs({
     days: { type: "string", default: "30" },
     crew: { type: "string", default: "16" },
     "no-incidents": { type: "boolean", default: false },
+    "no-oxygen": { type: "boolean", default: false },
+    "no-hunters": { type: "boolean", default: false },
+    report: { type: "boolean", default: false },
     out: { type: "string" },
     compare: { type: "string" },
     verbose: { type: "string" },
@@ -62,7 +76,7 @@ async function play(seeds: number[], days: number, crew: number, verbose: boolea
   const results: SurvivalResult[] = [];
   for (const seed of seeds) {
     const t0 = performance.now();
-    const r = await runSurvival(seed, { days, crew, noIncidents: args["no-incidents"], ...(verbose && { trace: (l: string) => console.log(l) }) });
+    const r = await runSurvival(seed, { days, crew, noIncidents: args["no-incidents"], noOxygen: args["no-oxygen"], noHunters: args["no-hunters"], ...(verbose && { trace: (l: string) => console.log(l) }) });
     results.push(r);
     const first = r.deaths[0];
     console.log(
@@ -77,7 +91,7 @@ async function inParallel(seeds: number[], jobs: number): Promise<SurvivalResult
   const dir = mkdtempSync(join(tmpdir(), "survival-"));
   try {
     const parts = Array.from({ length: jobs }, (_, j) => seeds.filter((_, i) => i % jobs === j));
-    const shared = ["--days", args.days, "--crew", args.crew, ...(args["no-incidents"] ? ["--no-incidents"] : [])];
+    const shared = ["--days", args.days, "--crew", args.crew, ...(["no-incidents", "no-oxygen", "no-hunters"] as const).flatMap((flag) => (args[flag] ? [`--${flag}`] : []))];
     await Promise.all(
       parts.map(
         (part, j) =>
@@ -113,7 +127,7 @@ test("survival", { timeout: 3_600_000 }, async () => {
   results.sort((a, b) => a.seed - b.seed);
 
   const kept = results.map(lasted);
-  console.log(`\n${seeds.length} seeds, crew ${crew}, cap ${days} days${args["no-incidents"] ? ", no incidents" : ""}, ${((performance.now() - started) / 1000).toFixed(0)}s`);
+  console.log(`\n${seeds.length} seeds, crew ${crew}, cap ${days} days${args["no-incidents"] ? ", no incidents" : ""}${args["no-oxygen"] ? ", no oxygen burn" : ""}${args["no-hunters"] ? ", no hunters" : ""}, ${((performance.now() - started) / 1000).toFixed(0)}s`);
   console.log(`days lasted: median ${median(kept).toFixed(2)}, mean ${(kept.reduce((a, b) => a + b, 0) / Math.max(1, kept.length)).toFixed(2)}, min ${Math.min(...kept).toFixed(2)}, max ${Math.max(...kept).toFixed(2)}`);
   console.log(`endings: ${tally(results.map((r) => r.end))}`);
   console.log(`deaths: ${tally(results.flatMap((r) => r.deaths.map((d) => d.cause)))}`);
@@ -134,6 +148,8 @@ test("survival", { timeout: 3_600_000 }, async () => {
   if (results.some((r) => r.jumps !== undefined)) console.log(`ship jumps: ${jumped.reduce((n, r) => n + r.jumps!, 0)}, in ${jumped.length} of ${results.length} runs`);
   const refused = results.reduce((a, r) => a + r.refused, 0);
   if (refused) console.log(`refused steps: ${refused} (should be 0)`);
+
+  if (args.report) console.log(`\n${lossReport(results, HULL_REPAIR_BELOW, FIRE_HULL_PER_CYCLE).join("\n")}\n`);
 
   if (args.compare) {
     const compare = fromCaller(args.compare);

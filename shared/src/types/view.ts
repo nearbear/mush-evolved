@@ -6,7 +6,7 @@ import type { RebelBaseId, XylophEntryId } from "../comms.ts";
 import type { TurnSide } from "../navigation.ts";
 import type { PlanetDirection } from "../planets.ts";
 import type { TitleId } from "../titles.ts";
-import type { Action, BotKind, ItemId, LogEntry, LogLine, PlayerId, Role, RoomId } from "../types.ts";
+import type { Action, BotKind, DocumentState, ItemId, LogEntry, LogLine, PlayerId, Role, RoomId } from "../types.ts";
 import type { ChannelId, ChatLine, ChatMessage, ChatThread, PrivateChannel, SharedPlanet, SharedReport, SharedReportId } from "./chat.ts";
 import type { Plan } from "./plan.ts";
 import type { MovementRules } from "./config.ts";
@@ -61,6 +61,8 @@ export interface ItemView {
   plant?: { species: string; age: number | null; thirst: 0 | 1 | 2; sick?: boolean };
   /** For a support drone (#411): its name, serial and upgrades, public to whoever can see it. Never its failure counts. */
   drone?: { name: string; serial: number; upgrades: string[] };
+  /** For a document (#394): its kind and rows (characters and marks), public to whoever can see it. */
+  document?: DocumentState;
 }
 
 /** One seat as the end screen shows it, once the game has ended (#191). Everyone, you included, in seat order. */
@@ -279,17 +281,17 @@ export interface PlayerView {
    * with a research terminal; otherwise null. Researches with no requirements are left out.
    */
   researchNeeds: Record<string, boolean[]> | null;
-  /** Percent done of each NERON project that has been started: all of them while you are alive at NERON's core, otherwise only the completed ones (owner, 2026-10-31). */
+  /** Percent done of each NERON project: currently offered ones while you are alive at NERON's core (all unfinished with unrestricted terminals), plus completed ones everywhere. */
   projects: Record<string, number>;
   /** PILGRED's repair, percent done, only while you are alive in a room with its terminal (owner, 2026-10-21); otherwise null. */
   pilgred: number | null;
   /**
-   * The relay token pools (relay.ts) of the targets whose room you are alive in: every research in the lab, every project
-   * at NERON's core, PILGRED at its terminal. Empty (or null) elsewhere.
+   * Relay status of the targets whose room you are alive in: every research in the lab (with samples), each offered
+   * project at NERON's core (gain range only, no tokens), and PILGRED at its terminal (with tokens). Empty (or null) elsewhere.
    */
   relay: { research: Record<string, RelayTargetView>; projects: Record<string, RelayTargetView>; pilgred: RelayTargetView | null };
-  /** How many relay tokens you have made on each target, wherever you are (your own information). Targets you never worked on are left out. */
-  yourTokens: { research: Record<string, number>; projects: Record<string, number>; pilgred: number };
+  /** How many relay tokens you have made on each pooled target, wherever you are (your own information). Targets you never worked on are left out. */
+  yourTokens: { research: Record<string, number>; pilgred: number };
   /** Whether PILGRED is repaired, public to everyone: its completion is announced to the whole crew (repair_pilgred.ts). */
   pilgredRepaired: boolean;
   /** Whether a Mush has died on the ship (public): the human_tank in Sick Bay shows a person in it. */

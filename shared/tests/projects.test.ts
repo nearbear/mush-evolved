@@ -1,19 +1,21 @@
 import { describe, expect, it } from "vitest";
+import { advanceNeron } from "../src/comms.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import projets from "@mush2/assets/derived/data/Data/projets.json";
+import { offeredProjects } from "../src/projectEffects.ts";
 import { PROJECT_COMPLETE, PROJECT_IDS, PROJECTS, projectSkills } from "../src/projects.ts";
 import { parseGameMessage } from "../src/protocol.ts";
-import { applyAction, createGame, viewFor } from "../src/rules.ts";
+import { applyAction, createGame, setCheat, viewFor } from "../src/rules.ts";
 import { addStatus } from "../src/statuses.ts";
 import type { Action } from "../src/types.ts";
-import { makeSeats, mustApply, offered, pickSkill, setProgress } from "./support.ts";
+import { makeSeats, must, mustApply, offered, pickSkill, setProgress } from "./support.ts";
 
 const seats = makeSeats(3, "others");
 const work = (project: string): Action => ({ type: "project", equipment: "NEXUS_ROOM:NERON_CORE", project });
 const AP = DEFAULT_CONFIG.project.cost.ap;
 
-function game(room = "NEXUS_ROOM") {
-  const state = createGame(seats, DEFAULT_CONFIG, 7);
+function game(room = "NEXUS_ROOM", seed = 7) {
+  const state = createGame(seats, DEFAULT_CONFIG, seed);
   for (const p of state.players) p.room = room;
   return state;
 }
@@ -23,18 +25,25 @@ describe("NERON projects", () => {
     expect(DEFAULT_CONFIG.research.progress).toEqual(DEFAULT_CONFIG.project.progress);
   });
 
-  it("starts with nothing done and every project offered at NERON's core, and not at the BIOS terminal", () => {
+  it("starts with nothing done and 3 randomly drawn projects offered at NERON's core, and not at the BIOS terminal", () => {
     const s = game();
     expect(s.projects).toEqual({});
     const actions = offered(s, "p0").filter((a) => a.type === "project");
-    expect(actions.map((a) => a.project).sort()).toEqual([...PROJECT_IDS].sort());
+    expect(actions).toHaveLength(DEFAULT_CONFIG.project.offerCount);
+    expect(actions.map((a) => a.project)).toEqual(s.projectDeck.slice(0, 3));
     expect(actions.every((a) => a.equipment === "NEXUS_ROOM:NERON_CORE")).toBe(true);
     expect(PROJECT_IDS).toHaveLength(41);
-    expect(applyAction(s, "p0", { type: "project", equipment: "NEXUS_ROOM:NERON_BIOS_TERM", project: "PLASMA_SHIELD" }).ok).toBe(false);
+    expect([...s.projectDeck].sort()).toEqual([...PROJECT_IDS].sort());
+    expect(game("NEXUS_ROOM", 99).projectDeck).not.toEqual(s.projectDeck);
+    const drawn = actions.map((a) => a.project);
+    const unoffered = PROJECT_IDS.find((id) => !drawn.includes(id))!;
+    expect(applyAction(s, "p0", work(unoffered)).ok).toBe(false);
+    expect(applyAction(s, "p0", { type: "project", equipment: "NEXUS_ROOM:NERON_BIOS_TERM", project: drawn[0]! }).ok).toBe(false);
   });
 
-  it("costs AP and advances the chosen project, for anyone, with the relay penalty for repeats", () => {
+  it("costs AP and advances the chosen project, for anyone, with the relay penalty for repeats and no tokens", () => {
     const s = game();
+    setProgress(s, { project: "PLASMA_SHIELD" }, 0);
     const ap = s.players[1]!.ap;
     const r = applyAction(s, "p1", work("PLASMA_SHIELD"));
     if (!r.ok) throw new Error(r.error);
@@ -43,11 +52,16 @@ describe("NERON projects", () => {
     expect(first).toBeLessThanOrEqual(9);
     expect(r.state.players[1]!.ap).toBe(ap - AP);
     expect(r.state.research).toEqual({});
+    expect(r.state.relay.projects.PLASMA_SHIELD).toEqual({ lastBy: "p1", streak: 1 });
+    expect("projects" in viewFor(r.state, "p1").yourTokens).toBe(false);
     const again = applyAction(r.state, "p1", work("PLASMA_SHIELD"));
     // The repeat is penalised by 2: 4-6.
     const second = again.ok ? again.state.projects.PLASMA_SHIELD! - first : -1;
     expect(second).toBeGreaterThanOrEqual(4);
     expect(second).toBeLessThanOrEqual(6);
+    // noRelayPenalty cheat waives the repeat penalty on projects too.
+    const noPenalty = must(setCheat(r.state, "p1", "noRelayPenalty", true));
+    expect(viewFor(noPenalty, "p1").relay.projects.PLASMA_SHIELD!.gain).toEqual({ min: 6, max: 9 });
     // Someone else in between resets the streak.
     const other = applyAction(r.state, "p0", work("PLASMA_SHIELD"));
     if (!other.ok) throw new Error(other.error);
@@ -67,6 +81,8 @@ describe("NERON projects", () => {
     const cfg = DEFAULT_CONFIG.project.progress;
     const s = game();
     s.rng = 7;
+    setProgress(s, { project: "PLASMA_SHIELD" }, 0);
+    setProgress(s, { project: "BRIC_BROC" }, 0);
     const you = s.players[0]!;
     you.skills = ["engineer", "physicist"];
     expect(viewFor(s, "p0").relay.projects.PLASMA_SHIELD!.gain.min).toBe(6 + 2 * cfg.skillBoost);
@@ -82,47 +98,102 @@ describe("NERON projects", () => {
   it("does not make project work dirty", () => {
     const s = game();
     s.rng = 7;
-    const r = applyAction(s, "p0", work("PLASMA_SHIELD"));
+    const [first] = offeredProjects(s);
+    const r = applyAction(s, "p0", work(first!));
     if (!r.ok) throw new Error(r.error);
     expect(r.state.players[0]!.statuses).not.toContain("dirty");
   });
 
-  it("completes at 100% and then is no longer offered or accepted", () => {
+  it("completing 1 of the 3 offered projects rotates to 3 new ones and permanently retires the other 2", () => {
     let s = game();
-    setProgress(s, { project: "BEAT_BOX" }, PROJECT_COMPLETE - 1);
+    const firstBatch = offeredProjects(s);
+    expect(firstBatch).toHaveLength(3);
+    const [chosen, retiredA, retiredB] = firstBatch as [string, string, string];
+    // Partial progress on a retired sibling is hidden once retired.
+    s.projects[retiredA] = 15;
+    s.projects[chosen] = PROJECT_COMPLETE - 1;
     s.players[0]!.ap = 12;
-    const r = applyAction(s, "p0", work("BEAT_BOX"));
-    if (!r.ok) throw new Error(r.error);
-    s = r.state;
-    expect(s.projects.BEAT_BOX).toBe(100);
+    s = mustApply(s, "p0", work(chosen));
+    expect(s.projects[chosen]).toBe(PROJECT_COMPLETE);
     expect(s.log.at(-1)?.key).toBe("projectCompleted");
-    s.players[0]!.ap = 12;
-    expect(offered(s, "p0")).not.toContainEqual(work("BEAT_BOX"));
-    expect(applyAction(s, "p0", work("BEAT_BOX")).ok).toBe(false);
+    const secondBatch = offeredProjects(s);
+    expect(secondBatch).toHaveLength(3);
+    for (const id of firstBatch) {
+      expect(secondBatch).not.toContain(id);
+      expect(s.projectDeck).not.toContain(id);
+      expect(offered(s, "p0")).not.toContainEqual(work(id));
+      expect(applyAction(s, "p0", work(id)).ok).toBe(false);
+    }
+    const coreView = viewFor(s, "p0");
+    expect(coreView.projects).toEqual({ [chosen]: PROJECT_COMPLETE });
+    expect(coreView.projects[retiredA]).toBeUndefined();
+    expect(Object.keys(coreView.relay.projects)).toEqual(secondBatch);
+    // Exhausting all remaining batches never draws retiredA or retiredB again.
+    const seen = new Set<string>(firstBatch);
+    while (offeredProjects(s).length > 0) {
+      const next = offeredProjects(s)[0]!;
+      expect(seen.has(next)).toBe(false);
+      for (const id of offeredProjects(s)) seen.add(id);
+      s.projects[next] = PROJECT_COMPLETE - 1;
+      s.players[0]!.ap = 12;
+      s = mustApply(s, "p0", work(next));
+    }
+    expect(s.projectDeck).toEqual([]);
+    expect(s.projects[retiredA]).toBe(15);
+    expect(s.projects[retiredB]).toBeUndefined();
+  });
+
+  it("NERON update picks any unfinished project and only replaces an offered slot if one of the 3 was picked", () => {
+    const s = game();
+    const initialOffer = offeredProjects(s);
+    const unoffered = PROJECT_IDS.find((id) => !initialOffer.includes(id))!;
+    // Unoffered project completed by NERON update: leaves the 3 offered slots unchanged and removes it from the deck.
+    const forUnoffered = game();
+    for (const id of PROJECT_IDS) if (id !== unoffered) forUnoffered.projects[id] = PROJECT_COMPLETE;
+    // Restore incomplete markers on initialOffer without putting them above unoffered.
+    for (const id of initialOffer) delete forUnoffered.projects[id];
+    expect(offeredProjects(forUnoffered)).toEqual(initialOffer);
+    for (const id of PROJECT_IDS) if (id !== unoffered) forUnoffered.projects[id] = PROJECT_COMPLETE;
+    forUnoffered.comms.neron.progress = 0;
+    expect(advanceNeron(forUnoffered, 100)).toBe(unoffered);
+    expect(forUnoffered.projects[unoffered]).toBe(PROJECT_COMPLETE);
+    expect(forUnoffered.projectDeck).not.toContain(unoffered);
+
+    // Offered project completed by NERON update removes only that project from projectDeck.
+    const single = game();
+    const batch = offeredProjects(single);
+    for (const id of PROJECT_IDS) if (id !== batch[1]!) single.projects[id] = PROJECT_COMPLETE;
+    single.comms.neron.progress = 0;
+    expect(advanceNeron(single, 100)).toBe(batch[1]!);
+    expect(single.projectDeck).not.toContain(batch[1]!);
+    // Re-open batch[0], batch[2], and the next card in deck to confirm only batch[1] was removed (not batch[0] or batch[2]).
+    const remaining = [batch[0]!, batch[2]!, single.projectDeck.find((id) => id !== batch[0]! && id !== batch[2]!)!];
+    for (const id of remaining) delete single.projects[id];
+    expect(offeredProjects(single)).toEqual(remaining);
   });
 
   it("can complete every project", () => {
     let s = game();
-    for (const id of PROJECT_IDS)
-      {
-        setProgress(s, { project: id }, PROJECT_COMPLETE - 1);
-        s.players[0]!.ap = 12;
-        const r = applyAction(s, "p0", work(id));
-        if (!r.ok) throw new Error(`${id}: ${r.error}`);
-        s = r.state;
-      }
+    for (const id of PROJECT_IDS) {
+      setProgress(s, { project: id }, PROJECT_COMPLETE - 1);
+      s.players[0]!.ap = 12;
+      const r = applyAction(s, "p0", work(id));
+      if (!r.ok) throw new Error(`${id}: ${r.error}`);
+      s = r.state;
+    }
     expect(PROJECT_IDS.every((id) => s.projects[id] === 100)).toBe(true);
     expect(offered(s, "p0").some((a) => a.type === "project")).toBe(false);
   });
 
   it("is refused when dirty, too poor, in another room, or for an unknown project, leaving state unchanged", () => {
     const s = game();
+    const first = offeredProjects(s)[0]!;
     addStatus(s.players[0]!, "dirty");
-    expect(applyAction(s, "p0", work("PLASMA_SHIELD")).ok).toBe(false);
+    expect(applyAction(s, "p0", work(first)).ok).toBe(false);
     expect(offered(s, "p0").some((a) => a.type === "project")).toBe(false);
     s.players[1]!.ap = AP - 1;
-    expect(applyAction(s, "p1", work("PLASMA_SHIELD")).ok).toBe(false);
-    expect(applyAction(game("LABORATORY"), "p0", work("PLASMA_SHIELD")).ok).toBe(false);
+    expect(applyAction(s, "p1", work(first)).ok).toBe(false);
+    expect(applyAction(game("LABORATORY"), "p0", work(first)).ok).toBe(false);
     expect(offered(game("LABORATORY"), "p0").some((a) => a.type === "project")).toBe(false);
     expect(applyAction(s, "p2", work("MYCOSCAN")).ok).toBe(false);
     expect(s.projects).toEqual({});
@@ -130,38 +201,45 @@ describe("NERON projects", () => {
 
   it("is free with a Computer point, which is spent", () => {
     let s = game();
+    const first = offeredProjects(s)[0]!;
     s = pickSkill(s, "p0", "computer");
     const ap = s.players[0]!.ap;
     const comp = s.players[0]!.resources.comp;
-    const r = applyAction(s, "p0", work("PLASMA_SHIELD"));
+    const r = applyAction(s, "p0", work(first));
     if (!r.ok) throw new Error(r.error);
     expect(r.state.players[0]!.ap).toBe(ap);
     expect(r.state.players[0]!.resources.comp).toBe(comp - 1);
     r.state.players[0]!.ap = 0;
-    expect(applyAction(r.state, "p0", work("PLASMA_SHIELD")).ok).toBe(true);
+    expect(applyAction(r.state, "p0", work(first)).ok).toBe(true);
   });
 
   it("tells the view which point pays: a Designer point before a Computer point, none once both are spent", () => {
     const s = game();
+    const first = offeredProjects(s)[0]!;
     const paidBy = (state: typeof s) => viewFor(state, "p0").actions.find((o) => o.action.type === "project")!.cost.paidBy;
     s.players[0]!.resources.comp = 1;
     s.players[0]!.resources.core = 1;
     expect(paidBy(s)).toBe("core");
-    const first = mustApply(s, "p0", work("PLASMA_SHIELD"));
-    expect(first.players[0]!.resources).toMatchObject({ core: 0, comp: 1 });
-    expect(paidBy(first)).toBe("comp");
-    const second = mustApply(first, "p0", work("PLASMA_SHIELD"));
-    expect(second.players[0]!.resources.comp).toBe(0);
-    expect(paidBy(second)).toBeUndefined();
+    const firstStep = mustApply(s, "p0", work(first));
+    expect(firstStep.players[0]!.resources).toMatchObject({ core: 0, comp: 1 });
+    expect(paidBy(firstStep)).toBe("comp");
+    const secondStep = mustApply(firstStep, "p0", work(first));
+    expect(secondStep.players[0]!.resources.comp).toBe(0);
+    expect(paidBy(secondStep)).toBeUndefined();
   });
 
   it("is seen only at NERON's core until complete, and only the room sees the log line (owner, 2026-10-31)", () => {
     let s = game();
+    setProgress(s, { project: "WHOS_WHO" }, 0);
     s.players[2]!.room = "REFECTORY";
     s = mustApply(s, "p0", work("WHOS_WHO"));
     for (const id of ["p0", "p1"]) {
       expect(viewFor(s, id).projects).toEqual(s.projects);
-      expect(viewFor(s, id).relay.projects.WHOS_WHO!.tokens).toEqual([{ by: "p0", value: s.projects.WHOS_WHO }]);
+      expect(viewFor(s, id).relay.projects.WHOS_WHO).toEqual({
+        waiting: 0,
+        gain: id === "p0" ? { min: 4, max: 6 } : { min: 6, max: 9 },
+        tokens: [],
+      });
     }
     expect(viewFor(s, "p2").projects).toEqual({});
     expect(viewFor(s, "p2").relay.projects).toEqual({});

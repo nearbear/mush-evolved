@@ -345,10 +345,12 @@
   --btn-right: url("../../../Mush/www/img/design/butrightover.png");
   font-weight: bold;
 }
+/* The create/invite dialog (ChannelDialog), a FramedDialog: its contents sit on the light card, so they take cut-card's
+   dark tokens. */
 .channel-create-form {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: 1rem;
 }
 .channel-create-form > button {
   align-self: flex-end;
@@ -359,6 +361,11 @@
   flex-direction: column;
   gap: var(--space-1);
 }
+/* The field headings: bold, a step up from the body text. */
+.channel-create-name > span,
+.channel-create-members > legend {
+  font-weight: bold;
+}
 .channel-create-name input {
   min-height: 32px;
   font: inherit;
@@ -367,9 +374,12 @@
   display: flex;
   flex-direction: column;
   margin: 0;
-  padding: var(--space-1) var(--space-3) var(--space-2);
-  border: 1px solid rgb(255 255 255 / 0.3);
-  border-radius: 4px;
+  padding: 0;
+  border: 0;
+}
+.channel-create-members > legend {
+  margin-bottom: var(--space-1);
+  padding: 0;
 }
 /* Square-ish emoji button; the label lives in the tooltip. */
 .icon-button {
@@ -443,7 +453,8 @@
   flex-direction: column;
   align-items: center;
   gap: var(--space-1);
-  width: 3.5rem;
+  /* Wide enough for the longest given name (Terrence) on one line. */
+  width: 4.5rem;
   height: auto;
   min-height: 0;
   margin: 0;
@@ -451,16 +462,18 @@
   background: none;
   border: 2px solid transparent;
   border-radius: 4px;
+  color: inherit;
+  text-shadow: none;
   font-size: 0.75rem;
   text-align: center;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 .channel-pick-sprite {
   flex: none;
 }
 .channel-pick[aria-pressed="true"] {
-  border-color: #fff;
-  background: rgb(255 255 255 / 0.2);
+  border-color: var(--accent);
+  background: var(--terminal-header-bg);
 }
 
 /* The Mush tab appears only for Mush, in the faction pink, pushed to the far right. */
@@ -628,14 +641,22 @@
   margin-left: var(--space-2);
 }
 
-/* The Astro terminal's Share dialog (SharePlanetDialog.tsx). */
+/* The Astro terminal's Share form (SharePlanetForm.tsx), in place of the planet's card. */
 .share-planet-form {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
 }
-.share-planet-form > button {
-  align-self: flex-end;
+.share-planet-form h3,
+.share-planet-form p {
+  margin: 0;
+}
+.share-planet-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+.share-planet-buttons button {
   margin: 0;
 }
 .share-planet-text {

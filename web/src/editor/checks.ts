@@ -41,20 +41,8 @@ export const KNOWN_MISALIGNED: readonly string[] = [
  * room changes them), with why. web/tests/iso/placement.test.ts fails on any other.
  */
 export const KNOWN_WALL_ENDS: Readonly<Record<string, string>> = {
-  "LASER_TURRET_A_0 -34,18": "under the bridge's consoles",
-  "LASER_TURRET_A_1 -1,6": "behind Bay Alpha's deck wall, which carries on past it",
-  "CORRIDOR_A -2,23": "a sprinkler is mounted on the centre corridor's wall where it would go",
-  "LASER_TURRET_A_2 42,12": "behind the motor room's door",
   "CORRIDOR_B -1,37": "behind Bay Beta's deck wall, and a camera is where it would go",
-  "LASER_TURRET_B_1 -1,39": "behind Bay Beta's deck wall, which carries on past it",
-  "STORAGE_B_0 4,37": "behind Bay Beta's deck wall, which carries on past it",
-  "BEDROOM_B 12,37": "behind Bay Beta's deck wall, which carries on past it",
-  "MOTOR_ROOM 39,37": "behind the Icarus bay's deck wall, which carries on past it",
   "STORAGE_B_1 27,37": "the Icarus bay's deck corner post stands where it would go, and covers it",
-  // Since the map was frozen (2026-10-21): the sick bay's back wall closes this from the whole ship, but the
-  // sick bay isn't drawn from the centre corridor at fog depth 1. To fix by hand in the map.
-  "CORRIDOR_A -4,28": "the sick bay's wall closes it; a gap from the centre corridor at fog depth 1 (to fix)",
-  "CORRIDOR_B -2,28": "the sick bay's wall closes it; a gap from the centre corridor at fog depth 1 (to fix)",
 };
 
 /** Whether the editor lists loose wall ends. Off since 2026-10-24: the list was noisy. wallEnds and its test still run. */

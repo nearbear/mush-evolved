@@ -4,7 +4,7 @@ import { ITEM_TYPES } from "../src/items.ts";
 import { actionFailed } from "../src/modifiers.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, legalActions, viewFor } from "../src/rules.ts";
-import { CHARACTER_SKILLS, isSkill, SKILLS, SKILL_SLOTS } from "../src/skills.ts";
+import { CHARACTER_SKILLS, isSkill, SKILLS, SKILL_SLOTS, skillStatus } from "../src/skills.ts";
 import { CHARACTERS } from "../src/characters.ts";
 import type { GameConfig, GameState } from "../src/types.ts";
 import { forceDismantleOdds, makeSeats, nextCycle } from "./support.ts";
@@ -252,5 +252,11 @@ describe("character skill lists", () => {
     expect(SKILLS as readonly string[]).toContain("maintenance_agent");
     expect(isSkill("maintenance_agent")).toBe(true);
     expect(SKILLS.length).toBe(66);
+  });
+
+  it("marks fully implemented skills in SKILL_STATUS", () => {
+    expect(skillStatus("biologist")).toBe("full");
+    expect(skillStatus("pilot")).toBe("full");
+    expect(skillStatus("robotics")).toBe("full");
   });
 });

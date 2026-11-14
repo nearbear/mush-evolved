@@ -1,12 +1,11 @@
 // The settings button and its dialog. Options apply immediately; there is no Save button.
-// Uses the global Mush `button` style and the terminal frame (terminal.css): a kit-panel around a light cut card.
+// Uses the global Mush `button` style and the terminal frame (FramedDialog).
 
 import { CHEATS, type Cheat, type RoleCheat } from "@mush2/shared";
 import { AccountSettings } from "../account/AccountSettings.tsx";
 import { Credits } from "./Credits.tsx";
-import { DialogHeader } from "./DialogHeader.tsx";
+import { FramedDialog } from "./FramedDialog.tsx";
 import { Hint } from "./IconButton.tsx";
-import { TabOutline } from "./TabOutline.tsx";
 import { Dialog } from "@base-ui/react/dialog";
 import { Tabs } from "@base-ui/react/tabs";
 import { useTranslation } from "react-i18next";
@@ -68,93 +67,82 @@ export function SettingsDialog({
           </Dialog.Trigger>
         </Hint>
       )}
-      <Dialog.Portal>
-        <Dialog.Backdrop className="settings-backdrop" />
-        <Dialog.Popup className="settings-popup terminal-popup kit-panel">
-          <div className="cut-card cut-top terminal-card terminal-outlined">
-          <div className="terminal-top">
-            <DialogHeader className="terminal-header" heading={t("settings.title")} closeLabel={t("settings.close")} />
-          </div>
-          <div className="terminal-body">
-          <Tabs.Root className="settings-tabs" defaultValue={cheatsAllowed ? "cheats" : "general"}>
-            <Tabs.List className="settings-tab-list">
-              <Tabs.Tab className="settings-tab" value="general">{t("settings.tabs.general")}</Tabs.Tab>
-              <Tabs.Tab className="settings-tab" value="account">{t("settings.tabs.account")}</Tabs.Tab>
-              {cheatsAllowed && <Tabs.Tab className="settings-tab" value="cheats">{t("settings.tabs.cheats")}</Tabs.Tab>}
-            </Tabs.List>
-            <Tabs.Panel className="settings-panel" value="general">
-          <div className="settings-row">
-            <span>{t("language.label")}</span>
-            <LanguageSwitcher inline />
-          </div>
-          <label className="settings-row">
-            <span>{t("settings.fogDepth.label")}</span>
-            <select value={fogDepth} onChange={(e) => setFogDepth(parseFogDepth(e.target.value))}>
-              <option value="1">{t("settings.fogDepth.one")}</option>
-              <option value="2">{t("settings.fogDepth.two")}</option>
-              <option value="all">{t("settings.fogDepth.all")}</option>
-            </select>
+      <FramedDialog heading={t("settings.title")} closeLabel={t("settings.close")}>
+        <Tabs.Root className="settings-tabs" defaultValue={cheatsAllowed ? "cheats" : "general"}>
+          <Tabs.List className="settings-tab-list">
+            <Tabs.Tab className="settings-tab" value="general">{t("settings.tabs.general")}</Tabs.Tab>
+            <Tabs.Tab className="settings-tab" value="account">{t("settings.tabs.account")}</Tabs.Tab>
+            {cheatsAllowed && <Tabs.Tab className="settings-tab" value="cheats">{t("settings.tabs.cheats")}</Tabs.Tab>}
+          </Tabs.List>
+          <Tabs.Panel className="settings-panel" value="general">
+        <div className="settings-row">
+          <span>{t("language.label")}</span>
+          <LanguageSwitcher inline />
+        </div>
+        <label className="settings-row">
+          <span>{t("settings.fogDepth.label")}</span>
+          <select value={fogDepth} onChange={(e) => setFogDepth(parseFogDepth(e.target.value))}>
+            <option value="1">{t("settings.fogDepth.one")}</option>
+            <option value="2">{t("settings.fogDepth.two")}</option>
+            <option value="all">{t("settings.fogDepth.all")}</option>
+          </select>
+        </label>
+        <label className="settings-row">
+          <span>{t("settings.announce.label")}</span>
+          <select value={verbosity} onChange={(e) => setVerbosity(parseVerbosity(e.target.value))}>
+            <option value="all">{t("settings.announce.all")}</option>
+            <option value="mentions">{t("settings.announce.mentions")}</option>
+            <option value="off">{t("settings.announce.off")}</option>
+          </select>
+        </label>
+        <div className="settings-row">
+          <label>
+            <input type="checkbox" checked={tips.on} onChange={(e) => setTipsOn(e.target.checked)} /> {t("settings.tips.show")}
           </label>
-          <label className="settings-row">
-            <span>{t("settings.announce.label")}</span>
-            <select value={verbosity} onChange={(e) => setVerbosity(parseVerbosity(e.target.value))}>
-              <option value="all">{t("settings.announce.all")}</option>
-              <option value="mentions">{t("settings.announce.mentions")}</option>
-              <option value="off">{t("settings.announce.off")}</option>
-            </select>
-          </label>
-          <div className="settings-row">
-            <label>
-              <input type="checkbox" checked={tips.on} onChange={(e) => setTipsOn(e.target.checked)} /> {t("settings.tips.show")}
-            </label>
-            <button type="button" onClick={resetTips} disabled={tips.muted.length === 0 && tips.snoozed.length === 0}>
-              {t("settings.tips.reset")}
+          <button type="button" onClick={resetTips} disabled={tips.muted.length === 0 && tips.snoozed.length === 0}>
+            {t("settings.tips.reset")}
+          </button>
+        </div>
+            <button type="button" onClick={onLeave}>{t("topBar.mainMenu")}</button>
+            <Credits as="p" className="settings-credits" />
+          </Tabs.Panel>
+          <Tabs.Panel className="settings-panel" value="account">
+            <AccountSettings onLeave={onLeave} />
+          </Tabs.Panel>
+          {cheatsAllowed && (
+            <Tabs.Panel className="settings-panel" value="cheats">
+          <fieldset className="settings-cheats">
+            <div className="settings-cheat-grid">
+            {CHEATS.map((cheat) => {
+              const box = (
+                <label key={cheat} className="settings-cheat">
+                  <input type="checkbox" checked={activeCheats.includes(cheat)} onChange={(e) => onCheat(cheat, e.target.checked)} />
+                  {t(`settings.cheats.${cheat}`)}
+                </label>
+              );
+              const hint = CHEAT_HINTS[cheat];
+              return hint ? <Hint key={cheat} label={t(hint)}>{box}</Hint> : box;
+            })}
+            </div>
+            <button type="button" onClick={() => {
+                for (const c of CHEATS) if (activeCheats.includes(c) === allOn) onCheat(c, !allOn);
+              }}>
+              {t(allOn ? "settings.cheats.disableAll" : "settings.cheats.enableAll")}
             </button>
-          </div>
-              <button type="button" onClick={onLeave}>{t("topBar.mainMenu")}</button>
-              <Credits as="p" className="settings-credits" />
+            <div className="settings-cheat-row">
+              {ROLE_BUTTON_ORDER.map((role) => (
+                <button key={role} type="button" onClick={() => onRoleCheat(role)}>
+                  {t(`settings.cheats.role.${role}`)}
+                </button>
+              ))}
+            </div>
+            <button type="button" onClick={onSolCheat}>{t("settings.cheats.returnToSol")}</button>
+            <button type="button" onClick={onLeaveShip}>{t("settings.cheats.leaveShip")}</button>
+          </fieldset>
             </Tabs.Panel>
-            <Tabs.Panel className="settings-panel" value="account">
-              <AccountSettings onLeave={onLeave} />
-            </Tabs.Panel>
-            {cheatsAllowed && (
-              <Tabs.Panel className="settings-panel" value="cheats">
-            <fieldset className="settings-cheats">
-              <div className="settings-cheat-grid">
-              {CHEATS.map((cheat) => {
-                const box = (
-                  <label key={cheat} className="settings-cheat">
-                    <input type="checkbox" checked={activeCheats.includes(cheat)} onChange={(e) => onCheat(cheat, e.target.checked)} />
-                    {t(`settings.cheats.${cheat}`)}
-                  </label>
-                );
-                const hint = CHEAT_HINTS[cheat];
-                return hint ? <Hint key={cheat} label={t(hint)}>{box}</Hint> : box;
-              })}
-              </div>
-              <button type="button" onClick={() => {
-                  for (const c of CHEATS) if (activeCheats.includes(c) === allOn) onCheat(c, !allOn);
-                }}>
-                {t(allOn ? "settings.cheats.disableAll" : "settings.cheats.enableAll")}
-              </button>
-              <div className="settings-cheat-row">
-                {ROLE_BUTTON_ORDER.map((role) => (
-                  <button key={role} type="button" onClick={() => onRoleCheat(role)}>
-                    {t(`settings.cheats.role.${role}`)}
-                  </button>
-                ))}
-              </div>
-              <button type="button" onClick={onSolCheat}>{t("settings.cheats.returnToSol")}</button>
-              <button type="button" onClick={onLeaveShip}>{t("settings.cheats.leaveShip")}</button>
-            </fieldset>
-              </Tabs.Panel>
-            )}
-          </Tabs.Root>
-          </div>
-          </div>
-          <TabOutline shape="cut" line=".terminal-body" />
-        </Dialog.Popup>
-      </Dialog.Portal>
+          )}
+        </Tabs.Root>
+      </FramedDialog>
     </Dialog.Root>
   );
 }

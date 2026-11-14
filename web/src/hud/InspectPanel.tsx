@@ -15,6 +15,7 @@ import { ItemFace } from "./ItemFace.tsx";
 import { ItemAttrIcons } from "./ItemAttrIcons.tsx";
 import { PlantStates } from "./PlantStates.tsx";
 import { ItemIcon } from "./ItemIcon.tsx";
+import { DocumentReader } from "./DocumentDialog.tsx";
 import { ActionLabel } from "./ActionLabel.tsx";
 import { SkillSlots } from "./SkillSlots.tsx";
 import { StatusIcon, StatusIcons } from "./StatusIcons.tsx";
@@ -59,6 +60,8 @@ export function InspectPanel({
   };
   const resolved = resolveTarget(view, target);
   const options = optionsOn(view, target);
+  // A printed document's Read (#394) is client-only, so it is not one of the options, but it sits with them.
+  const doc = resolved?.kind === "item" ? resolved.item.document : undefined;
   const root = useRef<HTMLElement>(null);
   useKeepFocus(root);
   const targetName =
@@ -83,8 +86,9 @@ export function InspectPanel({
           {mobile && deselect}
         </div>
       )}
-      {options.length > 0 && (
+      {(options.length > 0 || doc) && (
         <div className="inspect-actions" role="group" aria-label={targetName}>
+          {doc && <DocumentReader document={doc} />}
           {options.map((o) => (
             <ActionButton key={JSON.stringify(o.action)} view={view} option={o} onAction={onAction}>
               {labelFor(o)}

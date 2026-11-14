@@ -5,6 +5,7 @@ import { CHARACTERS } from "../src/characters.ts";
 import { EQUIPMENT_TYPES } from "../src/equipment.ts";
 import { DRUG_ITEMS, ITEM_TYPES } from "../src/items.ts";
 import { ANY_CONSUMABLE, RESEARCH_REQUIRES, type ResearchId } from "../src/research.ts";
+import { PROJECT_COMPLETE, type ProjectId } from "../src/projects.ts";
 import { type ActionResult, applyAction, legalIn, newCycle, viewFor } from "../src/rules.ts";
 import type { RelayPool } from "../src/relay.ts";
 import type { Action, ActionOption, GameConfig, GameState, PlayerId, PlayerState, Seat } from "../src/types.ts";
@@ -127,7 +128,7 @@ function seedPool(pool: RelayPool, percent: number): void {
   pool.tokens.push({ by: "seed", base: percent, roll: 0 });
 }
 
-/** Sets a research, project or PILGRED to `percent` through its relay pool, as contributions would have. */
+/** Sets a research, project or PILGRED to `percent` (and ensures an unfinished project is in the offered draw). */
 export function setProgress(s: GameState, target: { research: string } | { project: string } | "pilgred", percent: number): void {
   if (target === "pilgred") {
     seedPool(s.pilgred.pool, percent);
@@ -136,7 +137,9 @@ export function setProgress(s: GameState, target: { research: string } | { proje
     seedPool((s.relay.research[target.research] ??= { tokens: [], pending: [] }), percent);
     s.research[target.research] = percent;
   } else {
-    seedPool((s.relay.projects[target.project] ??= { tokens: [] }), percent);
     s.projects[target.project] = percent;
+    delete s.relay.projects[target.project];
+    const project = target.project as ProjectId;
+    if (percent < PROJECT_COMPLETE) s.projectDeck = [project, ...s.projectDeck.filter((id) => id !== project)];
   }
 }

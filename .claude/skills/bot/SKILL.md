@@ -34,6 +34,10 @@ Bots are players. Every rule that keeps hidden information off clients applies t
 
 `npm run model-trial -w server` (see CLAUDE.md, Commands) measures a prompt or gate change against a real model before and after. Findings so far are on #224: the answer-only prompt line matters (asking a model to "think, then answer" without hidden reasoning gets cut off), turning reasoning off is refused (400) by Gemini 3.x models, and new OpenRouter accounts are rate-limited per model.
 
+## Changing what scripted bots do
+
+Why bots lose, which goal or threshold to change, and whether a change helped is the `bot-strategy` skill: diagnose with the survival harness's loss report, one change per run, measured on the same seeds. Use it for any change to goals, duties, triggers or social lines; this skill covers the architecture rules such a change must still follow.
+
 ## Steps
 
 1. Ask the user anything open: provider, spend cap, rate limits, what the bot should try to do (that's game strategy, and it may touch rules; use the `rule` skill if so).

@@ -163,15 +163,7 @@
 			"linter": {
 				"rules": {
 					"suspicious": {
-						"noConsole": {
-							"level": "error",
-							"options": {
-								"allow": [
-									"warn",
-									"error"
-								]
-							}
-						}
+						"noConsole": "error"
 					},
 					"style": {
 						"noRestrictedImports": {
@@ -207,6 +199,18 @@
 								]
 							}
 						}
+					}
+				}
+			}
+		},
+		{
+			"includes": [
+				"server/src/log.ts"
+			],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noConsole": "off"
 					}
 				}
 			}

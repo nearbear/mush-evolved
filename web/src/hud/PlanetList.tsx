@@ -11,7 +11,7 @@ import { ActionButton } from "./ActionButton.tsx";
 import { ConfirmPanel } from "./ConfirmPanel.tsx";
 import { ActionLabel } from "./ActionLabel.tsx";
 import { StatusIcon } from "./StatusIcons.tsx";
-import { SharePlanetDialog } from "./SharePlanetDialog.tsx";
+import { SharePlanetForm } from "./SharePlanetForm.tsx";
 import "./settings.css";
 
 interface Props {
@@ -30,7 +30,10 @@ export function PlanetList({ view, onAction, terminal, onShare }: Props) {
   // null until the player picks a tab: the leftmost one shows first.
   const [tab, setTab] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  // The planet whose Share form replaces its card, if any; leaving its tab drops the form.
   const [sharing, setSharing] = useState<string | null>(null);
+  // After Back, focus returns to the Share button that opened the form.
+  const refocusShare = useRef(false);
   const knownPlanets = useRef(new Set(view.planets.map((p) => p.id)));
 
   // A newly discovered planet opens on its own tab, never on the "New planet" tab it was scanned from.
@@ -88,12 +91,18 @@ export function PlanetList({ view, onAction, terminal, onShare }: Props) {
             </ActionButton>
           )}
           {terminal && onShare && view.canSharePlanets && (
-            <>
-              <button type="button" onClick={() => setSharing(planet.id)}>
-                {t("astro.share")}
-              </button>
-              <SharePlanetDialog planet={planet} open={sharing === planet.id} onOpenChange={(o) => setSharing(o ? planet.id : null)} onShare={onShare} />
-            </>
+            <button
+              type="button"
+              ref={(el) => {
+                if (el && refocusShare.current) {
+                  refocusShare.current = false;
+                  el.focus();
+                }
+              }}
+              onClick={() => setSharing(planet.id)}
+            >
+              {t("astro.share")}
+            </button>
           )}
           {remove && (
             <>
@@ -138,7 +147,11 @@ export function PlanetList({ view, onAction, terminal, onShare }: Props) {
   // A deleted planet's tab is gone: fall back to the first tab that exists.
   const current = tab !== null && (view.planets.some((p) => p.id === tab) || (tab === NEW_TAB && hasNewTab)) ? tab : (view.planets[0]?.id ?? NEW_TAB);
   return (
-    <Tabs.Root className="settings-tabs planet-list" value={current} onValueChange={(value) => setTab(value as string)}>
+    <Tabs.Root className="settings-tabs planet-list" value={current} onValueChange={(value) => {
+        setTab(value as string);
+        setSharing(null);
+      }}
+    >
       <Tabs.List className="settings-tab-list progress-tab-list" aria-label={t("astro.title")}>
         {view.planets.map((planet) => (
           <Tabs.Tab key={planet.id} className="settings-tab" value={planet.id}>
@@ -153,7 +166,21 @@ export function PlanetList({ view, onAction, terminal, onShare }: Props) {
       </Tabs.List>
       {view.planets.map((planet) => (
         <Tabs.Panel key={planet.id} value={planet.id}>
-          {planetCard(planet)}
+          {sharing === planet.id && onShare ? (
+            <SharePlanetForm
+              planet={planet}
+              onPost={(text) => {
+                onShare(planet.id, text);
+                setSharing(null);
+              }}
+              onBack={() => {
+                refocusShare.current = true;
+                setSharing(null);
+              }}
+            />
+          ) : (
+            planetCard(planet)
+          )}
         </Tabs.Panel>
       ))}
       {hasNewTab && (

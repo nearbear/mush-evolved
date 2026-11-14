@@ -755,6 +755,7 @@ describe("actions from a client", () => {
     become_genius: [{ type: "become_genius" }],
     apprenticeship: [{ type: "apprenticeship", target: "p1", skill: SKILLS[0] }],
     read_book: [{ type: "read_book", item: "i1" }],
+    tear: [{ type: "tear", item: "i1" }],
     self_disease: [{ type: "self_disease" }],
     self_injury: [{ type: "self_injury" }],
   };

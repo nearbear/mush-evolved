@@ -64,6 +64,7 @@
   box-sizing: border-box;
   border: 0;
   border-radius: 0;
+  box-shadow: none;
   background: url("../../../Mush/www/img/design/chatbox.png") 0 0 / 100% 100% no-repeat;
   color: var(--ink);
 }
@@ -95,19 +96,15 @@
 .chat-compose .chat-preview {
   grid-column: 1 / -1;
 }
-/* A sharp, bevelled edge like chatbox.png's, in the iTrackie's ink. */
+/* The light card's field look (cut-card.css's --field-* tokens, via base.css): a sharp, bevelled edge like chatbox.png's. */
 .chat-compose textarea {
   min-width: 0;
   box-sizing: border-box;
   resize: none;
   padding: 3px 6px;
-  border: 1px solid #171b5c;
-  border-radius: 1px;
-  box-shadow: inset 0 1px 2px rgb(23 27 92 / 0.4);
   font: inherit;
   font-size: 0.85rem;
   line-height: 18px;
-  background: #fff;
   color: var(--ink);
 }
 .chat-tools {

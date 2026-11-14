@@ -7,6 +7,7 @@ import { gainMorale } from "./adjustStats.ts";
 import { BLUEPRINT_ITEM, BLUEPRINTS } from "./blueprints.ts";
 import { pushChat } from "./chat.ts";
 import { BOOK_ITEM, newItemId } from "./items.ts";
+import { DOCUMENT_ITEM } from "./lostAnalysis.ts";
 import { PROJECT_COMPLETE, PROJECT_IDS } from "./projects.ts";
 import { onProjectCompleted } from "./projectEffects.ts";
 import { roll, rollInt } from "./rng.ts";
@@ -203,7 +204,8 @@ function randomOf<T>(state: GameState, list: readonly T[]): T {
 }
 
 /**
- * An entry's effect (owner, 2026-10-21). Items appear on the bridge floor. Lost analysis (#394), Zong Chun's ghost
+ * An entry's effect (owner, 2026-10-21). Items appear on the bridge floor; Finola's lost analysis prints as a document
+ * (#394, lostAnalysis.ts). Zong Chun's ghost
  * (read through `xylophFound` by the researches) and Kivanç (besides the decoding bonus) are only recorded here.
  * Mutates a state the caller already cloned.
  */
@@ -219,6 +221,12 @@ export function applyXyloph(state: GameState, entry: XylophEntryId): void {
     case "MUSH_GENOME_DATA":
       dropItem(state, { type: GENOME_DISK_ITEM });
       return;
+    case "LOST_ANALYSIS": {
+      // Rolled at Mush selection; null only if no selection happened yet.
+      const rows = state.lostAnalysis.rows;
+      if (rows) dropItem(state, { type: DOCUMENT_ITEM, document: { kind: "lost_analysis", rows: rows.map((r) => ({ ...r })) } });
+      return;
+    }
     case "NILS_CARLSSON_CONTACT":
       dropItem(state, { type: MUSH_SAMPLE_ITEM });
       return;
@@ -253,6 +261,7 @@ export function advanceNeron(state: GameState, percent: number): string | undefi
   if (unfinished.length === 0) return undefined;
   const project = randomOf(state, unfinished);
   state.projects[project] = PROJECT_COMPLETE;
+  state.projectDeck = state.projectDeck.filter((id) => id !== project);
   onProjectCompleted(state, project);
   return project;
 }

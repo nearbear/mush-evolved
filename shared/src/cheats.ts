@@ -39,7 +39,7 @@ const REFILL: Record<Cheat, (p: PlayerState, state: GameState) => void> = {
   },
   instantActions: () => {}, // no stat to refill; queue.ts reads the flag
   noRelayPenalty: () => {}, // relay.ts reads the flag
-  freeHacking: () => {}, // bypassesTitles in titles.ts reads the flag
+  freeHacking: () => {}, // titles.ts, actions/research.ts and projectEffects.ts read the flag
   selfDisease: () => {},
   anySkill: () => {}, // actions/pick_skill.ts reads the flag
   alwaysClean: (p) => removeStatus(p, "dirty"), // dirt is added mid-action; this runs after it

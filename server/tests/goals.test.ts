@@ -1,8 +1,8 @@
-import { DEFAULT_CONFIG, applyAction, applyInput, legalIn, newCycle, startGame, viewFor, type Action, type CharacterId, type GameState, type PlayerView } from "@mush2/shared";
+import { DEFAULT_CONFIG, SHIP_ROOMS, applyAction, applyInput, legalIn, newCycle, shortestPath, startGame, viewFor, type Action, type CharacterId, type GameState, type PlayerView } from "@mush2/shared";
 import { describe, expect, it } from "vitest";
 import { GOAL_MAX_ACTIONS, GoalBot } from "../src/bots.ts";
 import { astro, chooseDestination, judgePlanet } from "../src/bots/goals/astro.ts";
-import { formatPlanetShare, parsePlanetShare } from "../src/bots/planetShare.ts";
+import { CANCEL_HOLD_LINE, HOLD_JUMP_LINE, JUMP_NOW_LINE, crewAboard, formatPlanetShare, holdStartCycle, isHoldingJump, isJumpDue, parseJumpHold, parsePlanetShare } from "../src/bots/planetShare.ts";
 import { canAfford, goTo, roomsWith, travelAp } from "../src/bots/goals/blocks.ts";
 import { commsOfficer } from "../src/bots/goals/commsOfficer.ts";
 import { contactSol } from "../src/bots/goals/contactSol.ts";
@@ -14,7 +14,7 @@ import { project } from "../src/bots/goals/project.ts";
 import { SHRINK_DESK_WORK_WITHIN } from "../src/bots/goals/work.ts";
 import { onlyAsteroids, shotOrder } from "../src/bots/goals/hunterTargets.ts";
 import { patrolShootHunters } from "../src/bots/goals/patrolShootHunters.ts";
-import { shootHunters } from "../src/bots/goals/shootHunters.ts";
+import { crewShootHunters, shootHunters } from "../src/bots/goals/shootHunters.ts";
 import { shower } from "../src/bots/goals/shower.ts";
 import { DORMS, shrinkDorm } from "../src/bots/goals/shrinkDorm.ts";
 import { snoop } from "../src/bots/goals/snoop.ts";
@@ -22,9 +22,10 @@ import { BOT_EAT_AFTER_CYCLES, eat } from "../src/bots/goals/eat.ts";
 import { tendPlants } from "../src/bots/goals/tendPlants.ts";
 import { sowHere } from "../src/bots/goals/sow.ts";
 import { POT_STORAGE, STORAGE_CHECKED, setOutPots } from "../src/bots/goals/setOutPots.ts";
-import { sharedDestination, travel, turnsTo } from "../src/bots/goals/travel.ts";
+import { HOLD_HUNTER_TRIGGER, HOLD_MAX_DAYS, HOLD_MIN_OXYGEN, JUMP_WAIT_CYCLES, sharedDestination, targetJump, travel, turnsTo } from "../src/bots/goals/travel.ts";
 import { helpGoal, helpTasks } from "../src/bots/goals/help.ts";
 import type { GoalDef } from "../src/bots/goals/types.ts";
+import { formatItemLine, newItemMemory, observeItems, parseItemLine, roomsHolding } from "../src/bots/itemShare.ts";
 import { chooseSkill } from "../src/bots/skillChoice.ts";
 import { seats } from "../src/testing/fakes.ts";
 
@@ -57,6 +58,13 @@ async function play(game: GameState, id: string, bot: GoalBot, turns: number): P
     if (game.phase !== "playing" || !me.alive) break;
     const view = viewFor(game, id);
     const action = await bot.decideAction(view);
+    const social = bot.takeSocial();
+    if (social) {
+      const r = applyInput(game, { ...social, by: id });
+      expect(r.ok, JSON.stringify(social)).toBe(true);
+      if (r.ok) game = r.state;
+      continue;
+    }
     if (action === null || action.type === "ready") {
       const next = newCycle(game);
       if (!next.ok) break;
@@ -76,6 +84,7 @@ const roll0 = () => 0;
 const memory = (scripted = true) => ({
   reserve: 2,
   scripted,
+  language: "en" as const,
   ended: new Set<string>(),
   today: new Set<string>(),
   once: new Set<string>(),
@@ -83,6 +92,13 @@ const memory = (scripted = true) => ({
   shrinks: new Set<string>(),
   lastExpedition: null as "oxygen" | "fuel" | null,
   asteroidsOnly: null as number | null,
+  items: newItemMemory(),
+  combustion: null as number | null,
+  holdSince: null as number | null,
+  heading: null as GameState["navigation"]["heading"] | null,
+  cancelHold: false,
+  justJumped: false,
+  failedReason: null as string | null,
   roll: roll0,
 });
 
@@ -92,6 +108,13 @@ async function untilReady(game: GameState, id: string, bot: GoalBot): Promise<{ 
   for (let t = 0; t < 60; t++) {
     const view = viewFor(game, id);
     const action = await bot.decideAction(view);
+    const social = bot.takeSocial();
+    if (social) {
+      const r = applyInput(game, { ...social, by: id });
+      expect(r.ok, JSON.stringify(social)).toBe(true);
+      if (r.ok) game = r.state;
+      continue;
+    }
     if (action === null || action.type === "ready") break;
     expect(isLegal(view, action), JSON.stringify(action)).toBe(true);
     const result = applyAction(game, id, action);
@@ -404,6 +427,27 @@ describe("shootHunters", () => {
     expect(shootHunters.options(viewFor(gunner.game, gunner.id), memory())).toHaveLength(1);
   });
 
+  it("has a bot with no shooting skill shoot too, after its own jobs and before research and projects", async () => {
+    const noSkill = attacked(null);
+    const view = viewFor(noSkill.game, noSkill.id);
+    expect(crewShootHunters.options(view, memory()).map((g) => g.id)).toEqual(["crewShootHunters"]);
+    // Not at 4 AP, not with no hunters, and never for a bot the skilled goal already covers.
+    expect(crewShootHunters.options(viewFor(edit(noSkill.game, noSkill.id, (p) => (p.ap = 4)), noSkill.id), memory())).toEqual([]);
+    const gunner = attacked("gunner");
+    expect(crewShootHunters.options(viewFor(gunner.game, gunner.id), memory())).toEqual([]);
+    // Nor for a Pilot, who saves its AP for a sortie.
+    expect(crewShootHunters.options(viewFor(edit(noSkill.game, noSkill.id, (p) => (p.skills = ["pilot"])), noSkill.id), memory())).toEqual([]);
+    const { game: quiet, id } = setup();
+    expect(crewShootHunters.options(viewFor(edit(quiet, id, (p) => (p.ap = 10)), id), memory())).toEqual([]);
+    const rank = (id: string): number => SOLO_GOALS.find((g) => g.id === id)!.priority;
+    for (const job of ["commsOfficer", "tendPlants", "setOutPots", "contactSol", "astro", "travel"]) expect(rank(job)).toBeGreaterThan(rank("crewShootHunters"));
+    for (const desk of ["research", "project"]) expect(rank("crewShootHunters")).toBeGreaterThan(rank(desk));
+    for (const t of Object.values(noSkill.game.equipment).flat().filter((e) => e.type === "TURRET_COMMAND")) noSkill.game.turrets[t.id] = 20;
+    const { taken } = await untilReady(noSkill.game, noSkill.id, new GoalBot(1, 2, [crewShootHunters, research, project]));
+    expect(taken.some((a) => a.type === "turret_attack")).toBe(true);
+    expect(taken.some((a) => a.type === "research" || a.type === "project")).toBe(false);
+  });
+
   it("walks to the nearest turret and shoots the weakest hunter, spending all its AP, the reserve too", async () => {
     const { game: start, id } = attacked();
     for (const t of Object.values(start.equipment).flat().filter((e) => e.type === "TURRET_COMMAND")) start.turrets[t.id] = 20;
@@ -645,6 +689,14 @@ async function oneCycle(game: GameState, id: string, bot: GoalBot): Promise<{ ga
   const taken: Action[] = [];
   for (let t = 0; t < 40; t++) {
     const action = await bot.decideAction(viewFor(game, id));
+    // A message that isn't an action (an item line, itemShare.ts) is sent as the room sends it; that turn has no action.
+    const social = bot.takeSocial();
+    if (social) {
+      const said = applyInput(game, { ...social, by: id });
+      expect(said.ok, JSON.stringify(social)).toBe(true);
+      if (said.ok) game = said.state;
+      continue;
+    }
     if (!action || action.type === "ready") break;
     const r = applyAction(game, id, action);
     expect(r.ok, JSON.stringify(action)).toBe(true);
@@ -1065,7 +1117,7 @@ describe("astro (#222, #417)", () => {
     expect(astro.options(viewFor(game, id), memory())).toHaveLength(1);
     game.planets[id] = [planet("pl-1", "Alpha", 3, known("OXYGEN")), planet("pl-2", "Beta", 4, known("HYDROCARBON"))];
     const { game: after, taken } = await astroCycle(game, id, new GoalBot(1, 2, [astro]));
-    expect(taken.filter((a) => a !== "move")).toEqual(["sharePlanet"]);
+    expect(taken.filter((a) => a !== "move" && a !== "chat")).toEqual(["sharePlanet"]);
     expect(after.sharedPlanets.map((e) => e.planet)).toEqual(["pl-1"]);
     expect(astro.options(viewFor(after, id), memory())).toEqual([]);
   });
@@ -1081,7 +1133,7 @@ describe("astro (#222, #417)", () => {
     ];
     const bot = new GoalBot(1, 2, [astro]);
     const { game: after, taken } = await astroCycle(game, id, bot);
-    const work = taken.filter((a) => a !== "move");
+    const work = taken.filter((a) => a !== "move" && a !== "chat");
     // Beta goes for free; 6 AP -> 2 AP reserve: analyze Alpha (2 sectors for the Astrophysicist), share it, scan (2 AP).
     expect(work).toEqual(["delete_planet", "analyze_planet", "sharePlanet", "scan_planet"]);
     expect(after.players.find((p) => p.id === id)!.ap).toBe(2);
@@ -1191,17 +1243,373 @@ describe("travel: the Commander (#417)", () => {
     expect(taken.at(-1)?.type).toBe("travel");
   });
 
-  it("may spend the AP reserve: at 2 AP on the bridge, fuel loaded, it still turns and travels", async () => {
+  it("may spend the AP reserve: at 2 AP on the bridge, fuel loaded, it still turns and travels when a jump triggers", async () => {
     const { game: start, id } = commander([planet("pl-1", "Kaxor", "east", 2)]);
     const game = edit(start, id, (p) => {
       p.ap = 2;
       p.room = "COMMAND_CENTER";
     });
     game.ship.combustion = 2;
+    game.hunters.list = Array.from({ length: HOLD_HUNTER_TRIGGER }, (_, i) => ({
+      id: `h-${i}`,
+      hp: 4,
+      hitChance: 0,
+      target: null,
+      type: "hunter" as const,
+      countdown: null,
+    }));
     const { game: after, taken } = await play(game, id, new GoalBot(1, 2, [travel]), 40);
     expect(taken.map((a) => a.type).filter((t) => t !== "move")).toEqual(["check_combustion", "turn_ship", "travel"]);
     expect(after.log.find((l) => l.key === "shipTraveled")?.cycle).toBe(game.cycle);
     expect(after.navigation.orbit ?? after.navigation.arriving?.planet).toBe("pl-1");
+  });
+});
+
+describe("travel holds & escape jumps (#421)", () => {
+  type Planet = GameState["planets"][string][number];
+  const makeHunters = (n: number): GameState["hunters"]["list"] =>
+    Array.from({ length: n }, (_, i) => ({ id: `h-${i}`, hp: 4, hitChance: 0, target: null, type: "hunter", countdown: null }));
+  const planet = (id: string, name: string, direction: Planet["direction"], distance: number): Planet =>
+    ({ id, name, direction, distance, size: 2, sectors: [{ tag: "OXYGEN", known: true }] }) as Planet;
+
+  function commander(planets: Planet[] = []) {
+    const { game: start, id } = setup();
+    const game = edit(start, id, (p) => {
+      p.ap = 8;
+      p.mp = 12;
+    });
+    const finder = game.players.find((p) => p.id !== id)!.id;
+    game.titles.commander = id;
+    game.planets[finder] = planets;
+    game.sharedPlanets = planets.map((p, i) => ({
+      id: `sp-${i}`,
+      planet: p.id,
+      text: formatPlanetShare({ ...p, sectors: ["OXYGEN"] }),
+      by: finder,
+      day: 1,
+      cycleOfDay: 1,
+      stale: false,
+    }));
+    return { game, id };
+  }
+
+  it("parses and tracks the jump-hold chat lines cleanly", () => {
+    expect(parseJumpHold(HOLD_JUMP_LINE)).toBe("hold");
+    expect(parseJumpHold(JUMP_NOW_LINE)).toBe("now");
+    expect(parseJumpHold(CANCEL_HOLD_LINE)).toBe("off");
+    expect(parseJumpHold("Jump now!")).toBeNull();
+    const { game, id } = commander();
+    expect(isHoldingJump(viewFor(game, id))).toBe(false);
+    const held = applyInput(game, { type: "chat", channel: "global", text: HOLD_JUMP_LINE, by: id });
+    expect(held.ok).toBe(true);
+    if (!held.ok) return;
+    expect(isHoldingJump(viewFor(held.state, id))).toBe(true);
+    expect(holdStartCycle(viewFor(held.state, id))).toBe(held.state.cycle);
+    const off = applyInput(held.state, { type: "chat", channel: "global", text: CANCEL_HOLD_LINE, by: id });
+    expect(off.ok).toBe(true);
+    if (!off.ok) return;
+    expect(isHoldingJump(viewFor(off.state, id))).toBe(false);
+  });
+
+  it("prepares and holds a jump with 'Jump: hold' until 8 hunters attack, then jumps and posts 'Jump: off'", async () => {
+    const { game, id } = commander([planet("pl-1", "Kaxor", "east", 2)]);
+    const bot = new GoalBot(1, 2, [travel]);
+    const { game: prepared, taken } = await untilReady(game, id, bot);
+    expect(taken.filter((a) => a.type === "travel")).toEqual([]);
+    expect(prepared.ship.combustion).toBe(2);
+    expect(prepared.navigation.heading).toBe("east");
+    expect(prepared.players.find((p) => p.id === id)!.room).toBe("COMMAND_CENTER");
+    expect(isHoldingJump(viewFor(prepared, id))).toBe(true);
+
+    // 7 hunters: still holds.
+    prepared.hunters.list = makeHunters(HOLD_HUNTER_TRIGGER - 1);
+    const next = newCycle(edit(prepared, id, (p) => (p.ap = 6)));
+    expect(next.ok).toBe(true);
+    if (!next.ok) return;
+    const { game: stillHeld } = await untilReady(next.state, id, bot);
+    expect(stillHeld.navigation.arriving).toBeNull();
+    expect(isHoldingJump(viewFor(stillHeld, id))).toBe(true);
+
+    // 8 hunters: jumps and posts 'Jump: off'.
+    stillHeld.hunters.list = makeHunters(HOLD_HUNTER_TRIGGER);
+    const next2 = newCycle(stillHeld);
+    expect(next2.ok).toBe(true);
+    if (!next2.ok) return;
+    const { game: jumped, taken: taken2 } = await untilReady(next2.state, id, bot);
+    expect(taken2.map((a) => a.type)).toContain("travel");
+    expect(jumped.navigation.arriving?.planet).toBe("pl-1");
+    expect(isHoldingJump(viewFor(jumped, id))).toBe(false);
+  });
+
+  it("with someone out in a patrol ship at the trigger, posts 'Jump: now' and jumps only once the minimap shows them aboard", async () => {
+    const { game, id } = commander([]);
+    const bot = new GoalBot(1, 2, [travel]);
+    const { game: held } = await untilReady(game, id, bot);
+    expect(held.ship.combustion).toBe(1);
+
+    const pilotId = held.players.find((p) => p.id !== id && p.alive)!.id;
+    let out = edit(held, pilotId, (p) => (p.room = "PATROL_SHIP_A_0"));
+    out.patrolShips["PATROL_SHIP_A_0"]!.out = true;
+    out.hunters.list = makeHunters(HOLD_HUNTER_TRIGGER);
+    expect(crewAboard(viewFor(out, id))).toBe(false);
+    const next = newCycle(out);
+    expect(next.ok).toBe(true);
+    if (!next.ok) return;
+    out = next.state;
+    const { game: waiting, taken } = await untilReady(out, id, bot);
+    expect(taken.map((a) => a.type)).not.toContain("travel");
+    expect(isJumpDue(viewFor(waiting, id))).toBe(true);
+    expect(waiting.navigation.arriving).toBeNull();
+
+    // Back aboard: the decision stands even if the count fell below the trigger, and the ship jumps.
+    let landed = edit(waiting, pilotId, (p) => (p.room = "SPACESHIP_BAY_A"));
+    landed.patrolShips["PATROL_SHIP_A_0"]!.out = false;
+    landed.hunters.list = makeHunters(HOLD_HUNTER_TRIGGER - 2);
+    expect(crewAboard(viewFor(landed, id))).toBe(true);
+    const { game: jumped, taken: taken2 } = await untilReady(landed, id, bot);
+    expect(taken2.map((a) => a.type)).toContain("travel");
+    expect(jumped.navigation.arriving).toEqual({ planet: null });
+    expect(isHoldingJump(viewFor(jumped, id))).toBe(false);
+  });
+
+  it("jumps anyway 2 cycles after 'Jump: now' if someone is still out", async () => {
+    const { game, id } = commander([]);
+    const bot = new GoalBot(1, 2, [travel]);
+    const { game: held } = await untilReady(game, id, bot);
+    const pilotId = held.players.find((p) => p.id !== id && p.alive)!.id;
+    let state = edit(held, pilotId, (p) => (p.room = "PATROL_SHIP_A_0"));
+    state.patrolShips["PATROL_SHIP_A_0"]!.out = true;
+    state.hunters.list = makeHunters(HOLD_HUNTER_TRIGGER);
+    for (let i = 0; i <= JUMP_WAIT_CYCLES; i++) {
+      const next = newCycle(state);
+      expect(next.ok).toBe(true);
+      if (!next.ok) return;
+      const { game: after, taken } = await untilReady(next.state, id, bot);
+      state = after;
+      if (i < JUMP_WAIT_CYCLES) {
+        expect(taken.map((a) => a.type)).not.toContain("travel");
+        state.players.find((p) => p.id === pilotId)!.room = "PATROL_SHIP_A_0"; // still out
+      } else expect(taken.map((a) => a.type)).toContain("travel");
+    }
+    expect(state.navigation.arriving).toEqual({ planet: null });
+  });
+
+  it("prepares a 1-fuel escape jump when no destination is shared (and never runs for a human Commander)", async () => {
+    const { game, id } = commander([]);
+    expect(targetJump(viewFor({ ...game, titles: { ...game.titles, commander: null } }, id), 0)).not.toBeNull();
+    expect(travel.options(viewFor({ ...game, titles: { ...game.titles, commander: null } }, id), memory())).toEqual([]);
+
+    const bot = new GoalBot(1, 2, [travel]);
+    const { game: held } = await untilReady(game, id, bot);
+    expect(held.ship.combustion).toBe(1);
+    expect(isHoldingJump(viewFor(held, id))).toBe(true);
+
+    held.hunters.list = makeHunters(HOLD_HUNTER_TRIGGER);
+    const next = newCycle(held);
+    expect(next.ok).toBe(true);
+    if (!next.ok) return;
+    const { game: jumped, taken } = await untilReady(next.state, id, bot);
+    expect(taken.map((a) => a.type)).toContain("travel");
+    expect(jumped.navigation.arriving).toEqual({ planet: null });
+    expect(isHoldingJump(viewFor(jumped, id))).toBe(false);
+  });
+
+  it("upgrades a held 1-fuel escape jump when an Astrophysicist shares a planet mid-hold", async () => {
+    const { game, id } = commander([]);
+    const bot = new GoalBot(1, 2, [travel]);
+    const { game: held } = await untilReady(game, id, bot);
+    expect(held.ship.combustion).toBe(1);
+    expect(isHoldingJump(viewFor(held, id))).toBe(true);
+
+    const finder = held.players.find((p) => p.id !== id)!.id;
+    const pl = planet("pl-2", "Boreas", "west", 3);
+    held.planets[finder] = [pl];
+    held.sharedPlanets.push({
+      id: "sp-late",
+      planet: pl.id,
+      text: formatPlanetShare({ ...pl, sectors: ["OXYGEN"] }),
+      by: finder,
+      day: held.day,
+      cycleOfDay: ((held.cycle - 1) % DEFAULT_CONFIG.cyclesPerDay) + 1,
+      stale: false,
+    });
+    const next = newCycle(edit(held, id, (p) => (p.ap = 8)));
+    expect(next.ok).toBe(true);
+    if (!next.ok) return;
+    const { game: upgraded } = await untilReady(next.state, id, bot);
+    expect(upgraded.ship.combustion).toBe(3);
+    expect(upgraded.navigation.heading).toBe("west");
+    expect(upgraded.navigation.arriving).toBeNull();
+  });
+
+  it("stops waiting after 4 days of holding, or when oxygen drops to 8 or below", async () => {
+    const { game: o2Start, id: o2Id } = commander([planet("pl-1", "Kaxor", "north", 1)]);
+    o2Start.ship.combustion = 1;
+    const o2Bot = new GoalBot(1, 2, [travel]);
+    const { game: o2Held } = await untilReady(o2Start, o2Id, o2Bot);
+    expect(isHoldingJump(viewFor(o2Held, o2Id))).toBe(true);
+    o2Held.ship.oxygen = HOLD_MIN_OXYGEN;
+    const o2Next = newCycle(o2Held);
+    expect(o2Next.ok).toBe(true);
+    if (!o2Next.ok) return;
+    const { game: o2Jumped } = await untilReady(o2Next.state, o2Id, o2Bot);
+    expect(o2Jumped.navigation.arriving?.planet).toBe("pl-1");
+    expect(isHoldingJump(viewFor(o2Jumped, o2Id))).toBe(false);
+
+    // 4 days: backdate the hold line rather than play 32 cycles (starvation and hull damage would end the game first).
+    const { game: timeStart, id: timeId } = commander([planet("pl-1", "Kaxor", "north", 1)]);
+    timeStart.ship.combustion = 1;
+    const timeBot = new GoalBot(1, 2, [travel]);
+    const { game: timeHeld } = await untilReady(timeStart, timeId, timeBot);
+    const holdLine = timeHeld.chat.find((m) => m.channel === "global" && m.text === HOLD_JUMP_LINE)!;
+    const waitCycles = HOLD_MAX_DAYS * DEFAULT_CONFIG.cyclesPerDay;
+    holdLine.cycle = timeHeld.cycle + 1 - (waitCycles - 1);
+    timeHeld.hunters.points = 0;
+    const almost = newCycle(timeHeld);
+    expect(almost.ok).toBe(true);
+    if (!almost.ok) return;
+    almost.state.hunters.list = [];
+    almost.state.hunters.points = 0;
+    const { game: stillHolding } = await untilReady(almost.state, timeId, timeBot);
+    expect(stillHolding.navigation.arriving).toBeNull();
+    expect(isHoldingJump(viewFor(stillHolding, timeId))).toBe(true);
+    const last = newCycle(stillHolding);
+    expect(last.ok).toBe(true);
+    if (!last.ok) return;
+    last.state.hunters.list = [];
+    const { game: timedOut } = await untilReady(last.state, timeId, timeBot);
+    expect(timedOut.navigation.arriving?.planet).toBe("pl-1");
+    expect(isHoldingJump(viewFor(timedOut, timeId))).toBe(false);
+  });
+
+  it("keeps 1 AP and bridge reach while running other goals during a hold, and wakes from rest on jump trigger", async () => {
+    const { game: start, id } = commander([planet("pl-1", "Kaxor", "north", 1)]);
+    start.ship.combustion = 1;
+    const bot = new GoalBot(1, 2, SOLO_GOALS);
+    const { game: initialHold } = await untilReady(start, id, bot);
+    expect(isHoldingJump(viewFor(initialHold, id))).toBe(true);
+
+    // At 1 AP, 0 MP on the bridge with other goals available, the Commander keeps that 1 AP and bridge reach.
+    const atBridge = edit(initialHold, id, (p) => {
+      p.room = "COMMAND_CENTER";
+      p.ap = 1;
+      p.mp = 0;
+    });
+    const { game: held } = await untilReady(atBridge, id, bot);
+    expect(held.players.find((p) => p.id === id)!.ap).toBeGreaterThanOrEqual(1);
+    expect(canAfford(viewFor(held, id), "MEDBAY", 0, 0)).toBe(false);
+    // With 1 AP and enough MP for the round trip to BEDROOM_A, can afford a 0-AP goal there, but not a 1-AP goal.
+    const roundTripMp = 8;
+    const spareMp = edit(held, id, (p) => {
+      p.room = "COMMAND_CENTER";
+      p.ap = 1;
+      p.mp = roundTripMp;
+    });
+    expect(canAfford(viewFor(spareMp, id), "BEDROOM_A", 0, 0)).toBe(true);
+    expect(canAfford(viewFor(spareMp, id), "BEDROOM_A", 1, 0)).toBe(false);
+
+    // Put Commander to rest on the ship while holding, then wake at 8 hunters to jump.
+    const resting = edit(held, id, (p) => {
+      p.room = "BEDROOM_A";
+      p.ap = 2;
+      p.mp = 12;
+      p.lyingIn = held.equipment.BEDROOM_A!.find((e) => e.type === "BED")!.id;
+      p.modifiers.push("lying_down");
+    });
+    const sleepBot = bot; // keeps its chamber reading in memory (the log line stays in the chamber room)
+    const s1 = await sleepBot.decideAction(viewFor(resting, id));
+    expect(s1).toEqual({ type: "ready" });
+    expect(sleepBot.current).toMatch(/^rest:/);
+    resting.hunters.list = makeHunters(HOLD_HUNTER_TRIGGER);
+    const woken = newCycle(resting);
+    expect(woken.ok).toBe(true);
+    if (!woken.ok) return;
+    const { game: jumped, taken } = await untilReady(woken.state, id, sleepBot);
+    expect(taken.map((a) => a.type)).toContain("travel");
+    expect(jumped.navigation.arriving?.planet).toBe("pl-1");
+  });
+
+  it("re-announces the hold without restarting its clock when the line scrolls out of chat", async () => {
+    const { game: start, id } = commander([planet("pl-1", "Kaxor", "north", 1)]);
+    start.ship.combustion = 1;
+    const bot = new GoalBot(1, 2, [travel]);
+    const { game: held } = await untilReady(start, id, bot);
+    const since = holdStartCycle(viewFor(held, id))!;
+    held.chat = held.chat.filter((m) => m.text !== HOLD_JUMP_LINE); // as if its page were archived
+    expect(isHoldingJump(viewFor(held, id))).toBe(false);
+    held.hunters.points = 0;
+    const next = newCycle(held);
+    expect(next.ok).toBe(true);
+    if (!next.ok) return;
+    next.state.hunters.list = [];
+    const { game: again, taken } = await untilReady(next.state, id, bot);
+    expect(taken.map((a) => a.type)).not.toContain("travel");
+    expect(isHoldingJump(viewFor(again, id))).toBe(true);
+    expect(holdStartCycle(viewFor(again, id))).toBeGreaterThan(since);
+    expect((bot as unknown as { memory: { holdSince: number | null } }).memory.holdSince).toBe(since); // the clock runs from the first line
+  });
+
+  it("keeps turret gunners shooting but patrol pilots docked (landing if airborne) while a jump hold is active in chat", async () => {
+    const { game: start, id: commanderId } = commander([]);
+    const turret = start.players.find((p) => p.id !== commanderId)!;
+    const pilot = start.players.find((p) => p.id !== commanderId && p.id !== turret.id)!;
+    const turretRoom = roomsWith(viewFor(start, turret.id), ["TURRET_COMMAND"])[0]!;
+    const bayRoom = roomsWith(viewFor(start, pilot.id), ["PATROL_INTERFACE"])[0]!;
+    let game = edit(start, turret.id, (p) => {
+      p.room = turretRoom;
+      p.ap = 8;
+      p.skills = ["gunman"];
+      p.resources.shoot = 0;
+    });
+    game = edit(game, pilot.id, (p) => {
+      p.room = bayRoom;
+      p.ap = 10;
+      p.skills = ["pilot"];
+      p.resources.shoot = 0;
+    });
+    game.hunters.list = makeHunters(3);
+    for (const t of Object.values(game.equipment).flat().filter((e) => e.type === "TURRET_COMMAND")) game.turrets[t.id] = 10;
+
+    // Without hold, gunner and pilot want to shoot.
+    expect(shootHunters.options(viewFor(game, turret.id), memory())).toHaveLength(1);
+    expect(patrolShootHunters.options(viewFor(game, pilot.id), memory())).toHaveLength(1);
+
+    // A held jump changes nothing: both still fight.
+    const heldRes = applyInput(game, { type: "chat", channel: "global", text: HOLD_JUMP_LINE, by: commanderId });
+    expect(heldRes.ok).toBe(true);
+    if (!heldRes.ok) return;
+    expect(shootHunters.options(viewFor(heldRes.state, turret.id), memory())).toHaveLength(1);
+    expect(patrolShootHunters.options(viewFor(heldRes.state, pilot.id), memory())).toHaveLength(1);
+    // ...until its public trigger is met: the jump is due, so the pilot stays docked before any "Jump: now".
+    const triggered = structuredClone(heldRes.state);
+    triggered.hunters.list = makeHunters(HOLD_HUNTER_TRIGGER);
+    expect(patrolShootHunters.options(viewFor(triggered, pilot.id), memory())).toEqual([]);
+
+    // 'Jump: now': the gunner still shoots; the pilot stays docked, and lands without shooting if airborne.
+    const nowRes = applyInput(heldRes.state, { type: "chat", channel: "global", text: JUMP_NOW_LINE, by: commanderId });
+    expect(nowRes.ok).toBe(true);
+    if (!nowRes.ok) return;
+    game = nowRes.state;
+    expect(isJumpDue(viewFor(game, pilot.id))).toBe(true);
+    expect(holdStartCycle(viewFor(game, pilot.id))).toBe(heldRes.state.cycle);
+    expect(shootHunters.options(viewFor(game, turret.id), memory())).toHaveLength(1);
+    expect(patrolShootHunters.options(viewFor(game, pilot.id), memory())).toEqual([]);
+
+    const airborne = edit(game, pilot.id, (p) => {
+      p.room = "PATROL_SHIP_A_0";
+    });
+    airborne.patrolShips["PATROL_SHIP_A_0"]!.out = true;
+    expect(await new GoalBot(1, 2, [patrolShootHunters]).decideAction(viewFor(airborne, pilot.id))).toEqual({
+      type: "land",
+      equipment: "PATROL_SHIP_A_0:PATROL_COMMAND",
+    });
+
+    // After 'Jump: off', both resume fighting.
+    const offRes = applyInput(game, { type: "chat", channel: "global", text: CANCEL_HOLD_LINE, by: commanderId });
+    expect(offRes.ok).toBe(true);
+    if (!offRes.ok) return;
+    expect(shootHunters.options(viewFor(offRes.state, turret.id), memory())).toHaveLength(1);
+    expect(patrolShootHunters.options(viewFor(offRes.state, pilot.id), memory())).toHaveLength(1);
   });
 });
 
@@ -1264,5 +1672,73 @@ describe("contactSol and commsOfficer (#222)", () => {
     ];
     const step3 = goal!.step(viewFor(game, id), m);
     expect(step3).toMatchObject({ kind: "act", action: { type: "update_neron" } });
+  });
+});
+
+describe("item sharing (itemShare.ts) and walking to scrap", () => {
+  /** A game with every metal scrap in one room, and a bot placed in `room` (default: with the scrap). */
+  function scrapGame(at: "with" | "away" = "with"): { game: GameState; id: string; scrapRoom: string; other: string } {
+    const { game: start, id } = setup();
+    const scrapRoom = start.items.find((i) => i.type === "metal_scraps" && i.at.kind === "room")!.at.id;
+    for (const i of start.items) if (i.type === "metal_scraps") i.at = { kind: "room", id: scrapRoom };
+    const other = start.players.find((p) => p.id !== id && p.role === "human")!.id;
+    const far = SHIP_ROOMS.map((r) => r.id).find((r) => r !== scrapRoom && (shortestPath(start.config.rooms, r, scrapRoom)?.length ?? 0) === 2)!;
+    const game = edit(start, id, (p) => {
+      p.room = at === "with" ? scrapRoom : far;
+      p.ap = 10;
+      p.mp = 12;
+    });
+    return { game, id, scrapRoom, other };
+  }
+
+  it("reads only its own format, a shared type and a real room", () => {
+    const line = { type: "metal_scraps" as const, room: "CORRIDOR_A", present: true };
+    expect(parseItemLine(formatItemLine(line))).toEqual(line);
+    expect(parseItemLine(formatItemLine({ ...line, present: false }))).toEqual({ ...line, present: false });
+    for (const text of ["Item: gold in CORRIDOR_A", "Item: metal_scraps in NOWHERE", "item: metal_scraps in CORRIDOR_A", "Item: metal_scraps in CORRIDOR_A please"]) expect(parseItemLine(text)).toBeNull();
+  });
+
+  it("says once where it sees scrap, and another bot learns the room from the line", () => {
+    const { game, id, scrapRoom, other } = scrapGame();
+    const m = memory();
+    const post = observeItems(viewFor(game, id), m);
+    expect(post).toEqual({ type: "chat", channel: "global", text: `Item: metal_scraps in ${scrapRoom}` });
+    expect(roomsHolding(m, "metal_scraps")).toEqual([scrapRoom]);
+    const said = applyInput(game, { ...post!, by: id });
+    expect(said.ok).toBe(true);
+    if (!said.ok) return;
+    // Nobody repeats it: not the bot that said it, not another bot standing there.
+    expect(observeItems(viewFor(said.state, id), m)).toBeNull();
+    const elsewhere = edit(said.state, other, (p) => (p.room = SHIP_ROOMS.map((r) => r.id).find((r) => r !== scrapRoom)!));
+    const theirs = memory();
+    expect(observeItems(viewFor(elsewhere, other), theirs)).toBeNull();
+    expect(roomsHolding(theirs, "metal_scraps")).toEqual([scrapRoom]);
+    // The scrap is gone: the first bot to stand there says so, and the room is forgotten.
+    const gone = structuredClone(said.state);
+    gone.items = gone.items.filter((i) => i.type !== "metal_scraps");
+    expect(observeItems(viewFor(gone, id), m)?.text).toBe(`Item: no metal_scraps in ${scrapRoom}`);
+    expect(roomsHolding(m, "metal_scraps")).toEqual([]);
+  });
+
+  it("walks to a room it knows holds scrap and patches the hull there, only below 50", async () => {
+    const { game: start, id, scrapRoom } = scrapGame("away");
+    start.ship.hull = 40;
+    const m = memory();
+    expect(repairHull.options(viewFor(start, id), m)).toEqual([]);
+    m.items.rooms.set("metal_scraps", new Set([scrapRoom]));
+    expect(repairHull.options(viewFor(start, id), m).map((g) => g.key)).toEqual([`repairHull:${scrapRoom}`]);
+    start.ship.hull = 50;
+    expect(repairHull.options(viewFor(start, id), m)).toEqual([]);
+    // End to end: told by a line in chat, the bot walks there and tries until the AP reserve.
+    start.ship.hull = 40;
+    const told = applyInput(start, { type: "chat", channel: "global", text: formatItemLine({ type: "metal_scraps", room: scrapRoom, present: true }), by: id });
+    expect(told.ok).toBe(true);
+    if (!told.ok) return;
+    const { game: end, taken } = await untilReady(told.state, id, new GoalBot(1, 2, [repairHull]));
+    expect(taken.filter((a) => a.type === "move")).toHaveLength(2);
+    expect(taken.filter((a) => a.type === "repair_hull").length).toBeGreaterThan(0);
+    const me = end.players.find((p) => p.id === id)!;
+    expect(me.room).toBe(scrapRoom);
+    expect(me.ap).toBe(2);
   });
 });

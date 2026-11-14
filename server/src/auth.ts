@@ -41,6 +41,7 @@ import { allowAuthRequest } from "./rateLimit.ts";
 import { gameSummaryRoute, replayChunkRoute, replayIndexRoute, type ReplayReader, type ReplayRouteDeps } from "./replayRoutes.ts";
 import type { SetupStore } from "./setupStore.ts";
 import { listSetups, lookupSetup, MAX_SETUP_BODY, postSetup, type SetupRouteDeps } from "./setupRoutes.ts";
+import { failure, logWarn } from "./log.ts";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 /** Sessions last 30 days, renewed while in use. */
@@ -199,7 +200,7 @@ async function endSession(sessionId: string, deps: AuthDeps): Promise<void> {
     try {
       await deps.revokeSeats(session.accountId, await sha256Hex(sessionId));
     } catch (e) {
-      console.warn(`Revoking seats failed: ${e instanceof Error ? e.message : typeof e}`);
+      logWarn("seat_revoke_failed", failure(e));
     }
   }
   await deps.store.deleteSession(sessionId);

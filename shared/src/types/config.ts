@@ -359,6 +359,10 @@ export interface GameConfig {
   paranoid: {
     cameras: number; // Camera items the `paranoid` skill gives when picked (owner, 2026-10-27; the original gives 2).
   };
+  observant: {
+    searchApDiscount: number; // AP the `observant` skill takes off Search, never below 0 (owner, 2026-11-14; the original 1).
+    revealChance: number; // Each living Observant in the room (not the actor) rolls this to reveal a covert action (owner, 2026-11-14; the original 25%).
+  };
   drones: {
     failureMultiplier: number; // Each failed try in a row at a drone task multiplies its next chance by this; a success resets it (#411, owner, 2026-11-11; eMushpedia's 1.25).
     maxChance: number; // A drone's chance never goes above this (eMushpedia: 99%).
@@ -425,8 +429,9 @@ export interface GameConfig {
     contaminate: { cost: { ap: number } }; // Saboteur's Contaminate (owner, 2026-10-31: Sabotage's 1 AP).
   };
   project: {
+    offerCount: number; // Projects offered at NERON's core at a time (owner, 2026-11-14: 3).
     cost: { ap: number }; // AP spent to work on a NERON project (decided 2026-10-18).
-    progress: { rate: number; mod: number; skillBoost: number; relayPenalty: number }; // As research's (owner, 2026-10-26); no skill bonus for now.
+    progress: { rate: number; mod: number; skillBoost: number; relayPenalty: number }; // As research's (owner, 2026-10-26); skill tags boost gain.
     // Noise Reducer (owner, 2026-11-01; eMushpedia *Isolateur phonique*): every player's AP cap +maxAp, added after Lethargy doubles it.
     noiseReducer: { maxAp: number };
     bricBroc: { preventChance: number };
@@ -477,6 +482,7 @@ export interface GameConfig {
       cost: { ap: number }; // AP spent to contact Xyloph (owner, 2026-10-21).
       qualityLoss: number; // Wireless infidelity takes this off the Sol chance (the original, 20).
       neronBoostPercent: number; // NERON's lost database moves the NERON update forward this much (the original, 25).
+      lostAnalysisPerMush: number; // Finola's lost analysis marks floor(starting Mush × this) non-Mush characters negative (owner, 2026-11-13: 2.5; #394).
       schoolBooks: number; // Skill books printed by the school manuals, each for a random skill (the original, 2).
       workshopBlueprints: number; // Random blueprints printed by the workshop manuals (the original, 3).
     };

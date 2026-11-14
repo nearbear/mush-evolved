@@ -192,6 +192,22 @@ bottom-right; one along y runs top-right to bottom-left. A room's back edges (wh
 are its top-left and top-right sides; its front edges, bottom-left and bottom-right. When the user
 describes a spot in screen terms, translate it to cells and confirm on the data before changing code.
 
+The owner's names for the two directions (2026-11-14), to use when talking about ship design:
+
+- **Main axis**: +x, down-right on screen. The ship's length, along the chain of rooms from the
+  front corridor back to the engine room. Walls along it: `BIG_WALL_R`, `WALL_R_DECK`, `DOOR_R*`
+  (standing on a cell's +y edge).
+- **Cross axis**: y, top-right to bottom-left on screen. The ship's width, from Alpha Bay to Bay
+  Beta. Walls along it: `BIG_WALL_L`, `WALL_L_DECK`, `DOOR_L*` (standing on a cell's +x edge).
+- "Parallel to the cross axis" means running along y; "toward the bottom right" means along +x.
+
+`npm run art-align` measures how the art sits on the grid, in pixels, instead of judging screenshots:
+for every wall and door, its base against the edge it stands on and how far it reaches past each end;
+for floors, their diamond against the cell's (`-- --slice NAME --each` lists every placement). As of
+2026-11-14 both axes measure the same: wall bases 2.5 px below their edge, wall art 6 px past the
++x/+y end and flush at the other, doors' lowest pixels 8.75 px above the edge, floors exactly on their
+cells. The map puts floor in front of walls, not behind them, on both axes alike.
+
 ## The ship map
 
 - **`Mush/derived/ship-map.json` is the ship.** Every room (`RoomLayout`: id, label, `at`, equipment
@@ -241,6 +257,15 @@ describes a spot in screen terms, translate it to cells and confirm on the data 
   short of another shows a gap. Judge joins by the top ridges: they should run on into each other.
   "Leaves no wall stopping just short of another room's" in `placement.test.ts` checks the map from
   every room at fog depths 1 and all, with the ends left on purpose pinned with their reasons.
+- **T junctions** (2026-11-14): where a main-axis wall runs into a cross-axis wall that carries on
+  past the meeting point (or the other way round), the stopping wall's last piece goes on the same
+  cell as the other wall's piece, both on the cell's two edges, and `markTees` (`placement.ts`) draws
+  it under everything of the other wall's room but its floor: that wall, its doors and what is mounted
+  on them. Its end cap hides and the two top ridges join. Two walls on one cell is fine, even from two
+  rooms. Don't stop a wall a cell short, and don't bend it into a `corner_02` at a T (both were used
+  before and leave a notch or an L); `corner_02` is for a true L, where both walls end. The exception is
+  a deck wall (`WALL_*_DECK`, taller) running into a regular one: its end can't hide, so Bay Beta's
+  corner at plan cell (21, 37) keeps its `corner_02`.
 - Rooms have walls only on their back edges (low x and low y), as in the original, which drew one
   room at a time; their front edges are open, and a neighbour's back wall closes them. Don't close
   open front edges in general: a wall there covers the room behind it.
@@ -269,3 +294,36 @@ describes a spot in screen terms, translate it to cells and confirm on the data 
 - Dead ends: walls on every open front edge (they cover whole rooms); a wall drawn behind doors (the
   ridge doubles); odd corridor widths (a two-cell door can't be centred); widening the centre
   corridor (Bay Alpha's and Bay Beta's doors are four cells apart, so it hits the storage rooms).
+- More dead ends (2026-11-14): shifting all floors, or all walls of one axis, by half a cell to make
+  walls line up. The art is consistent (`npm run art-align`), so a global shift only moves the problem:
+  floors shifted along +x left 1-2 px slivers at wall bases, and walls drag every mounted thing with
+  them. Misaligned walls are a map problem at a particular junction; find the cells first.
+
+### Scripts and tools that save time (learned the hard way)
+
+- **Throwaway scripts in plain Node work.** Write a `.ts` file in the scratchpad that imports by
+  absolute path from `tools/src/play/shipScene.ts` (`loadScene({ depth: "all" })`: every sprite on
+  the ship plan, `edgesOf`), `tools/src/shipLayout/shipMap.ts` (`readShip`, `readMap`/`writeMap`) and
+  `web/src/iso/placement.ts` (`prepareScene` gives `statics` and the "draws before" `edges`), and run
+  it with `node` from `tools/`. That is how to read `ship-art.json`'s numbers (reading the file, or
+  `node -e` on it, is denied). Plain Node can't load the `@mush2/shared` index (it imports a JSON
+  file without an attribute), so code that tools run must import shared modules by path
+  (`@mush2/shared/src/shipLayout.ts`), as `placement.ts` and `checks.ts` do.
+- **A tile's frame number from a placed sprite:** `((sy - slice.y) / slice.height) * slice.framesX +
+  (sx - slice.x) / slice.width`. `--add` wants the frame number, not the sheet position.
+- **Before/after without editing the map:** `ship-render --cells=... --scale 3` with `--add
+  "ROOM:slice:frame:x:y;..."` and `--drop "slice:x:y;..."` (plan cells, `--add` always makes a
+  layer-0 wall). Render the same `--cells` box twice, diff the two PNGs pixel by pixel (`decodePng`)
+  to find what changed and where, then give the `visual-check` agent the pairs with the diff boxes.
+  Unchanged crops mean the new piece is fully hidden. Crops of about 6x6 cells at 3x (720x576) read well.
+- **Paint order isn't insertion order.** Appending a tile, or passing rooms in another order, doesn't
+  decide who draws on top; `compare` does. When a new rule seems ignored, look for a cycle: a pair it
+  orders can be overridden when the topological sort breaks a cycle at its earliest sprite. Search
+  `prepareScene(...).edges` for a path from one sprite back to the other; the thing in the middle is
+  usually something mounted on a wall (the ICARUS letters).
+- **Deck walls (`WALL_*_DECK`) are taller than regular walls** (81 px against 66), so a deck wall's
+  end can't hide behind a regular one; such corners keep `corner_02`.
+- **`KNOWN_WALL_ENDS` going stale doesn't fail anything.** After a map change, compare it with
+  `wallEnds(readShip())` and drop the entries that no longer show.
+- **In a worktree,** Bash refuses compound commands that `cd` and then run git, and heredocs into
+  files outside the worktree; keep each call to one plain command and write scripts with the Write tool.

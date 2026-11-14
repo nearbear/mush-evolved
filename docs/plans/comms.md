@@ -47,7 +47,7 @@ Where the build differs from the first draft of this plan (which is no longer ke
 ## Left, in issues
 
 - General announcement, the Comms Officer's broadcast: [#393](https://github.com/nearbear/mush2/issues/393).
-- Finola's lost analysis printout: [#394](https://github.com/nearbear/mush2/issues/394).
+- Finola's lost analysis printout: built (#394, 2026-11-13; `lostAnalysis.ts`).
 - Merchant trades: [#143](https://github.com/nearbear/mush2/issues/143).
 - Comms triumphs (Kivanç for Paola, Wolf, Eleesha's rebel bases): [#354](https://github.com/nearbear/mush2/issues/354).
 - Cygni's patrol ship damage +1 is built (owner, 2026-11-07). [#173](https://github.com/nearbear/mush2/issues/173) (a blaster blueprint for Cygni) stays open.

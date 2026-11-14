@@ -6,8 +6,14 @@
 // input's `base`. So every chunk rebuilds by itself (`rebuildHistory`). A room restart mid-cycle adds a `base` step
 // inside a chunk, which `rebuildHistory` already reads.
 //
-// Only the history leaves the room: never the input itself, the text before moderation (`raw`), message ids, accounts
-// or blocked text. The replay is made from the full view alone, so nothing beyond what that view shows is copied.
+// Only the history leaves the room for the public replay: never the input itself, the text before moderation (`raw`),
+// the record's link from an input to its message (`chatId`), accounts or blocked text. The replay is made from the full
+// view alone, so nothing beyond what that view shows is copied. That view does keep each chat message's own `id`, so a
+// report can cite one from the replay; ids stay out of live views only (`ChatMessage.id`).
+//
+// `copyReplay` also writes `moderation.json` (moderator-only `raw`, `rawByInput`, `blocked`, and `rateLimited`, #339,
+// #157) before the index, under a key the public replay routes never serve, so room storage can be reclaimed 48 hours
+// after archiving.
 
 import type { PlayerId } from "./types.ts";
 import type { RecordedInput } from "./replay.ts";
@@ -123,6 +129,32 @@ export interface ReplayMeta {
   /** `ReplayIndex.realTime`. */
   realTime?: boolean;
   starts: Record<PlayerId, SeatStart>;
+  /** Per seat, messages rejected by the rate limiters (#339, #157). */
+  rateLimited?: Record<PlayerId, number>;
+}
+
+/** Text moderation refused (`blocked:<seq>` in room storage, copied to `moderation.json` for #157). Moderators only. */
+export interface BlockedText {
+  at: number;
+  by: PlayerId;
+  type: "chat" | "createChannel" | "createThread" | "sharePlanet" | "shareReport";
+  raw: string;
+  reason: string;
+}
+
+/**
+ * Moderator-only data for a finished game (`replays/<roomId>/moderation.json`, #339, #157), written before the index
+ * and never served by the public replay routes. `raw` maps each filtered chat message's `ChatMessage.id` (`chatId`)
+ * to the text before moderation changed it; `rawByInput` maps the record position (`input:<seq>`) to `raw` for
+ * filtered inputs without a `chatId` (channel/thread names, planet/report shares).
+ */
+export interface ReplayModeration {
+  v: number;
+  roomId: string;
+  raw: Record<number, string>;
+  rawByInput: Record<number, string>;
+  blocked: BlockedText[];
+  rateLimited: Record<PlayerId, number>;
 }
 
 /** The index for a game's chunks. Seats are listed in seat order. */
@@ -149,5 +181,6 @@ export function replayIndex(
 export const replayKeys = {
   prefix: (roomId: string) => `replays/${roomId}/`,
   chunk: (roomId: string, n: number) => `${replayKeys.prefix(roomId)}chunk-${String(n).padStart(6, "0")}.json.gz`,
+  moderation: (roomId: string) => `${replayKeys.prefix(roomId)}moderation.json`,
   index: (roomId: string) => `${replayKeys.prefix(roomId)}index.json`,
 };
