@@ -3446,3 +3446,9 @@ A review in Claude Code (Opus 5.5) of the uncommitted #339 work found five issue
 - **Fixed:** `reclaimStorage` now throws `accounts still aboard` if `releaseAccounts` (which swallows its errors) left seats aboard, so the backoff retries instead of wiping `aboard`; it marks the room `retired` so a `join` can't crash on a null game; its guard clears `reclaimAt` so a stale alarm can't loop; `verifyReplay` checks chunks with R2 `head` rather than `get` plus cancel.
 - **Tombstone (owner approved):** the second review found `retired` didn't survive eviction (`onStart` derives it from the deleted `setup` key), so a stale join could launch a game over the room id and overwrite its R2 replay. After `deleteAll()` the room now writes one `reclaimed` key, which `onStart` reads as retired. Cost: one tiny key per ended game. The test that reclaims across a restart now also revives the room a second time and checks `join` answers `ship_closed`.
 - **What worked:** reviewing inline rather than through the review skill, and reading call sites (`stillAboard`, `join`, `onStart`) to check each finding before reporting it.
+
+## 2026-11-14: Skill picker in the settings window's frame
+
+- Asked to style the "Choose a skill" modal like the settings screen. The picker already used `.settings-popup`, but the settings window had since moved into the terminal frame (kit-panel, light cut card, cyan title bar, `TabOutline`). Reused that markup as `DocumentDialog` does; no new component.
+- The skill cards were dark panels made for the old navy popup, so they're recoloured only inside `.skill-picker` (terminal tokens, gold border on hover); the confirm panel's copy portals out and keeps the dark look.
+- Checked with a one-off Playwright script (no `npm run screenshot` step opens the picker) and the visual-check agent at desktop and 360px.

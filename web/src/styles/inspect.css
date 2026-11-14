@@ -254,7 +254,22 @@
 }
 .settings-popup.skill-picker {
   width: min(56rem, calc(100vw - 2rem));
-  overflow-y: auto;
+}
+/* In the picker the cards sit on the terminal's light card (terminal.css), so they take its colours: the title bar's
+   deeper cyan for the header, the card's edge for the rim. The confirm panel's copy stays on the dark pop-up box. */
+.skill-picker .skill-pick-card {
+  background: var(--terminal-bg);
+  border-color: var(--edge);
+  box-shadow: none;
+}
+.skill-picker .skill-pick-card header {
+  background: var(--terminal-header-bg);
+  border-bottom-color: var(--edge);
+}
+.skill-picker .skill-pick-card[role="button"]:hover,
+.skill-picker .skill-pick-card[role="button"]:focus-visible {
+  border-color: var(--gold-mid);
+  box-shadow: 0 0 0 1px var(--gold-mid);
 }
 .skill-card {
   max-width: min(18rem, calc(100vw - 2rem));

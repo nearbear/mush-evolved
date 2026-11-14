@@ -4,11 +4,13 @@
 // Which skills can be picked comes from view.actions, never computed here.
 // A Mush looking at their own portrait gets a toggle at the top that swaps the stack for their four Mush skill slots.
 // It only changes what is drawn (to save space); both sets stay picked. Mush skills are only ever in your own view.
+// The picker is framed like the settings window (terminal.css: the kit-panel around the light cut card).
 
 import { Dialog } from "@base-ui/react/dialog";
 import { ConfirmPanel } from "./ConfirmPanel.tsx";
 import { DialogHeader } from "./DialogHeader.tsx";
 import { Hint } from "./IconButton.tsx";
+import { TabOutline } from "./TabOutline.tsx";
 import { Popover } from "@base-ui/react/popover";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -16,6 +18,7 @@ import { isMushSkill, legalIn, MUSH_SKILL_SLOTS, SKILL_SLOTS, skillStatus, type 
 import { GOLD_PLUS_ICON, MUSH_ICON, skillIcon } from "../art/assets.ts";
 import { useNames } from "../i18n/names.ts";
 import "./settings.css";
+import "./terminal.css";
 
 export function SkillSlots({
   view,
@@ -103,16 +106,27 @@ export function SkillSlots({
       >
         <Dialog.Portal>
           <Dialog.Backdrop className="settings-backdrop" />
-          <Dialog.Popup className="settings-popup skill-picker">
-            <DialogHeader heading={t(mush ? "skills.mushTitle" : "skills.title")} closeLabel={t("skills.close")} />
-            <p className="skill-warning">{t("skills.warning")}</p>
-            <ul className="skill-list">
-              {offered.map((skill) => (
-                <li key={skill}>
-                  <SkillCard skill={skill} onSelect={() => setPending(skill)} />
-                </li>
-              ))}
-            </ul>
+          <Dialog.Popup className="settings-popup terminal-popup kit-panel skill-picker">
+            <div className="cut-card cut-top terminal-card terminal-outlined">
+              <div className="terminal-top">
+                <DialogHeader
+                  className="terminal-header"
+                  heading={t(mush ? "skills.mushTitle" : "skills.title")}
+                  closeLabel={t("skills.close")}
+                />
+              </div>
+              <div className="terminal-body">
+                <p className="skill-warning">{t("skills.warning")}</p>
+                <ul className="skill-list">
+                  {offered.map((skill) => (
+                    <li key={skill}>
+                      <SkillCard skill={skill} onSelect={() => setPending(skill)} />
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+            <TabOutline shape="cut" line=".terminal-body" />
             <ConfirmPanel
               open={pending !== null}
               onOpenChange={(o) => !o && setPending(null)}
