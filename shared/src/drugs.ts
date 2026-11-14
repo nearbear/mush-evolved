@@ -2,7 +2,8 @@
 // Every disease in `config.diseases.allDiseases` is treated by at least one drug.
 
 import { DRUG_ITEMS, newItemId } from "./items.ts";
-import { changeAP, changeMP, gainMorale, treatDisease } from "./adjustStats.ts";
+import { changeAP, changeMP, gainMorale } from "./adjustStats.ts";
+import { treatDisease } from "./diseases.ts";
 import { skillsOf } from "./skills.ts";
 import { type HasRng, rollInt, rollShuffle } from "./rng.ts";
 import type { GameState, PlayerState } from "./types.ts";

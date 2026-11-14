@@ -80,7 +80,8 @@ import type {
   Seat,
 } from "./types.ts";
 import { drawDrugs, drugEffectsSeenBy, hasDrugDispenser, resetDrugDispenser, stockMedlab } from "./drugs.ts";
-import { changeAP, changeMP, diseaseTrackerCycleChange } from "./adjustStats.ts";
+import { changeAP, changeMP } from "./adjustStats.ts";
+import { diseaseTrackerCycleChange } from "./diseases.ts";
 
 export type { ActionResult };
 

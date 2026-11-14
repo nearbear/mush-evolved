@@ -79,7 +79,8 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 - `statuses.ts`: stored and derived statuses.
 - `inactivity.ts`: inactive and super inactive (#145): `isInactive`, `isSuperInactive`, `inactivityOf`, `inactivityCycle` (from `advanceCycle`, given the clock cycle's server time), `markSeen`, and the server's `seen` and `inactivate` inputs.
 - `morale.ts`: `hopelessCycle`, death at 0 morale (Hopeless humans die when a cycle ends; each death costs every living player morale). `isHopeless` is in `statuses.ts`.
-- `adjustStats.ts`: capped morale changes and disease application; `addDisease` updates both the modifier and private status.
+- `adjustStats.ts`: capped morale, AP and MP changes and max-value updates.
+- `diseases.ts`: `DiseaseTracker`, `addDisease` (updates both the modifier and private status), `removeDisease`, `treatDisease` and the per-cycle tracker countdown.
 - `cheats.ts`: development cheats (issue #148), gated by `ALLOW_CHEATS`. Flag-only cheats are read where they apply: `instantActions` in `queue.ts`, `noRelayPenalty` in `relay.ts` (`makeToken`, fixed on the token), `freeHacking` in `titles.ts` (`bypassesTitles`), `anySkill` in `actions/pick_skill.ts`, `easyTravel` in `actions/warp_to_planet.ts` and `actions/leave_orbit.ts`. `alwaysClean` strips `dirty` in `applyCheats`. `fastExpeditions` is ship-wide (anyone with it on): `expeditions.ts` steps every 2 s (`FAST_EXPEDITION_STEP_MS`), and switching it on mid-expedition pulls the next step in. Two cheats are calls rather than flags: `setRoleCheat` and `solCheat` (in `rules.ts`; the ship returns to Sol now, a dev route to a finished game).
 
 ## Types, config, and data

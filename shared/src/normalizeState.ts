@@ -30,7 +30,7 @@ import type { DrugDispenserState, DrugEffect } from "./drugs.ts";
 import type { FullView, SeatStart, SeatStarts } from "./fullView.ts";
 import type { RebelCall } from "./comms.ts";
 import type { RelayPool, RelayToken, ResearchPool, Sample } from "./relay.ts";
-import type { DiseaseTracker } from "./adjustStats.ts";
+import type { DiseaseTracker } from "./diseases.ts";
 import type {
   ChatMark,
   ChatMessage,

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
-import { addDisease } from "../src/adjustStats.ts";
+import { addDisease } from "../src/diseases.ts";
 import { cycleChanged } from "../src/modifiers.ts";
 import { createGame, newCycle } from "../src/rules.ts";
 import { nextInt } from "../src/rng.ts";

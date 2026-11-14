@@ -1,7 +1,7 @@
 import type { Cheat } from "../cheats.ts";
 import type { CharacterId } from "../characters.ts";
 import type { Action, PlayerId, Role, RoomId, Seat } from "../types.ts";
-import type { DiseaseTracker } from "../adjustStats.ts";
+import type { DiseaseTracker } from "../diseases.ts";
 
 export type ResourceId = "eng" | "exp" | "comp" | "garden" | "core" | "shoot" | "cook" | "heal" | "pilgred";
 
