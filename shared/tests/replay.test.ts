@@ -340,6 +340,7 @@ describe("replay chunks (#336)", () => {
     expect(replayIndex({ roomId: "r1", rulesVersion: "abc", endedAt: 9, realTime: false, starts: {} }, []).realTime).toBe(false);
     expect(replayIndex({ roomId: "r1", rulesVersion: "abc", endedAt: 9, realTime: true, starts: {} }, []).realTime).toBe(true);
     expect(replayKeys.chunk("r1", 3)).toBe("replays/r1/chunk-000003.json.gz");
+    expect(replayKeys.moderation("r1")).toBe("replays/r1/moderation.json");
     expect(replayKeys.index("r1")).toBe("replays/r1/index.json");
   });
 });

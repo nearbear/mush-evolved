@@ -52,6 +52,7 @@ import {
   type Input,
   type LobbyLanguage,
   type RecordedInput,
+  type BlockedText,
   type PlayerId,
   type PlayerState,
   type Role,
@@ -75,7 +76,7 @@ import { finishedEntry, gameStoreFor } from "./gameStore.ts";
 import { clockCycle, clockCycleStart, cycleMs, cycleOfDay } from "./cycleClock.ts";
 import { devModelCredentials, ModelGate, playerModelCredentials } from "./model.ts";
 import { RateLimiter } from "./rateLimit.ts";
-import { copyReplay } from "./replayStore.ts";
+import { copyReplay, verifyReplay } from "./replayStore.ts";
 
 declare global {
   interface Env {
@@ -120,6 +121,13 @@ const LIST_RETRY_MAX_MS = 60 * 60_000;
 /** The same for its history's copy to R2 (#336). */
 const REPLAY_RETRY_MS = 60_000;
 const REPLAY_RETRY_MAX_MS = 60 * 60_000;
+/** How long after a finished game is both listed (#155) and in R2 (#336) before its room storage is deleted (#339). */
+export const RECLAIM_DELAY_MS = 48 * 60 * 60_000;
+/** A finished game whose room storage couldn't be deleted is tried again after this, doubling up to the max. */
+const RECLAIM_RETRY_MS = 60_000;
+const RECLAIM_RETRY_MAX_MS = 60 * 60_000;
+/** The tombstone a reclaimed room keeps (#339): marks it retired, so a stale join can't overwrite its R2 replay. */
+const RECLAIMED_KEY = "reclaimed";
 
 /**
  * A ship's overrides from its setup (#232): the knobs, plus the setup's id for the record and the view. The setup is
@@ -167,6 +175,8 @@ interface StoredRoom {
   endedAt?: number;
   /** The finished game's history is in R2, every chunk and the index confirmed (#336). */
   replayReady: boolean;
+  /** When the ended game's room storage may be deleted (48 hours after both `listed` and `replayReady` are set, #339). */
+  reclaimAt?: number;
 }
 
 // The game's record, beside the snapshot in this room's storage:
@@ -176,14 +186,6 @@ interface StoredRoom {
 //   "blocked:<seq>" BlockedText, text moderation refused (moderators only)
 //   "account:<seat>" the account that took the seat (#292), written with its join and never rewritten, so moderators
 //                    can tell who played a seat after a rename or once the snapshot is gone. Moderators only.
-
-interface BlockedText {
-  at: number;
-  by: PlayerId;
-  type: "chat" | "createChannel" | "createThread" | "sharePlanet" | "shareReport";
-  raw: string;
-  reason: string;
-}
 
 /** Close code for a ship whose snapshot this build can't read (#384): kept for a later build, distinct from 4001. */
 const UNAVAILABLE_CLOSE = 4002;
@@ -224,7 +226,7 @@ interface SeatState {
 
 export class GameRoom extends Server<Env> {
   private game: GameState | null = null;
-  /** A record with no live game (its snapshot was dropped as older than `MIN_STATE_VERSION`): never launch over it. */
+  /** A record with no live game (its snapshot was dropped as older than `MIN_STATE_VERSION`, or its storage was reclaimed): never launch over it. */
   private retired = false;
   /**
    * The snapshot is kept but this build can't read it (#384): stored by a newer build (a rollback across an upgrade
@@ -253,6 +255,9 @@ export class GameRoom extends Server<Env> {
   private replayRetryAt: number | null = null;
   private replayRetryMs = REPLAY_RETRY_MS;
   private copying: Promise<void> | null = null;
+  /** When to delete room storage after archiving (#339), and the wait after the next failure. */
+  private reclaimAt: number | null = null;
+  private reclaimRetryMs = RECLAIM_RETRY_MS;
   private inputs = 0;
   private rateLimited: Record<PlayerId, number> = {};
   private clockCycle = 0;
@@ -320,7 +325,7 @@ export class GameRoom extends Server<Env> {
     if (!stored || version < MIN_STATE_VERSION) {
       // Only the snapshot goes; the record ("setup", "input:*", "blocked:*", "account:*") is kept for the replay (#167).
       if (stored) await this.ctx.storage.delete("game");
-      this.retired = (await this.ctx.storage.get("setup")) !== undefined;
+      this.retired = (await this.ctx.storage.get("setup")) !== undefined || (await this.ctx.storage.get(RECLAIMED_KEY)) !== undefined;
       return;
     }
     // Upgraded and normalized on load (#384): only known fields survive, and every action under way or queued is
@@ -364,8 +369,11 @@ export class GameRoom extends Server<Env> {
     this.replayReady = stored.replayReady;
     // The same for its history's copy, which may have failed partway.
     if (this.game.phase === "ended" && !this.replayReady) this.replayRetryAt = Date.now();
+    this.reclaimAt =
+      stored.reclaimAt ?? (this.game.phase === "ended" && this.listed && this.replayReady ? Date.now() + RECLAIM_DELAY_MS : null);
     this.blocked = (await this.ctx.storage.list({ prefix: "blocked:" })).size;
     if (dropped) await this.recordDropped();
+    else if (this.reclaimAt !== null && stored.reclaimAt === undefined) await this.persist();
     this.initBots();
     this.scheduleBots();
     await this.scheduleTick();
@@ -608,6 +616,7 @@ export class GameRoom extends Server<Env> {
       if (entry) await gameStoreFor(this.env).recordFinished(entry);
       this.listed = true;
       this.listRetryAt = null;
+      if (this.replayReady) this.reclaimAt ??= Date.now() + RECLAIM_DELAY_MS;
       await this.persist();
     } catch (e) {
       console.warn(`Listing the finished game failed: ${e instanceof Error ? e.message : typeof e}`);
@@ -617,9 +626,9 @@ export class GameRoom extends Server<Env> {
   }
 
   /**
-   * Once the game has ended, copies its history to R2 (#336, replayStore.ts). `replayReady` is set only after every
-   * chunk and the index are written; a failure is tried again from the alarm with backoff (`replayRetryAt`), apart
-   * from the listing so neither outage holds up the other. Room storage is kept (retention is #132).
+   * Once the game has ended, copies its history and moderator data to R2 (#336, #339, replayStore.ts). `replayReady`
+   * is set only after every chunk, `moderation.json`, and the index are written; a failure is tried again from the
+   * alarm with backoff (`replayRetryAt`), apart from the listing so neither outage holds up the other.
    */
   private copyReplay(): Promise<void> {
     this.copying ??= this.tryCopyReplay().finally(() => (this.copying = null));
@@ -632,6 +641,7 @@ export class GameRoom extends Server<Env> {
     if (this.singlePlayer && this.accounts[SINGLE_PLAYER_HUMAN] === undefined) {
       this.replayReady = true;
       this.replayRetryAt = null;
+      if (this.listed) this.reclaimAt ??= Date.now() + RECLAIM_DELAY_MS;
       await this.persist();
       return;
     }
@@ -645,14 +655,61 @@ export class GameRoom extends Server<Env> {
         // Multiplayer cycles run on a clock (`nextCycleAt`); single player's end by End cycle. Not hidden information.
         realTime: !this.singlePlayer,
         starts: this.starts ?? {},
+        rateLimited: this.rateLimited,
       });
       this.replayReady = true;
       this.replayRetryAt = null;
+      if (this.listed) this.reclaimAt ??= Date.now() + RECLAIM_DELAY_MS;
       await this.persist();
     } catch (e) {
       console.warn(`Copying the replay failed: ${e instanceof Error ? e.message : typeof e}`);
       this.replayRetryAt = Date.now() + this.replayRetryMs;
       this.replayRetryMs = Math.min(this.replayRetryMs * 2, REPLAY_RETRY_MAX_MS);
+    }
+  }
+
+  /**
+   * Reclaims all Durable Object storage 48 hours after a finished game is both listed and copied to R2 (#339).
+   * Verifies every R2 object (`index.json`, chunks, `moderation.json`) before deleting; on failure, keeps storage and
+   * retries with backoff from the alarm.
+   */
+  private async reclaimStorage(): Promise<void> {
+    if (this.game?.phase !== "ended" || !this.listed || !this.replayReady) {
+      this.reclaimAt = null;
+      return;
+    }
+    await this.releaseAccounts();
+    try {
+      if (Object.keys(this.aboard).length > 0) throw new Error("accounts still aboard");
+      if (!this.singlePlayer || this.accounts[SINGLE_PLAYER_HUMAN] !== undefined) {
+        if (!this.env.REPLAYS) throw new Error("no REPLAYS bucket bound");
+        await verifyReplay(this.env.REPLAYS, this.name, this.inputs);
+      }
+      await this.ctx.storage.deleteAll();
+      // The one key left: keeps the room retired after eviction, so nothing launches over the archived replay.
+      await this.ctx.storage.put(RECLAIMED_KEY, true);
+      if (this.retryTimer !== null) {
+        clearTimeout(this.retryTimer);
+        this.retryTimer = null;
+      }
+      this.retired = true;
+      this.game = null;
+      this.tokens = {};
+      this.accounts = {};
+      this.aboard = {};
+      this.tokenSessions = {};
+      this.listRetryAt = null;
+      this.replayRetryAt = null;
+      this.reclaimAt = null;
+      this.bots.clear();
+      this.wakes.clear();
+      this.modelGate = null;
+      this.chatRead.clear();
+      for (const conn of this.getConnections<SeatState>()) conn.close(4001, "Invalid seat token");
+    } catch (e) {
+      console.warn(`Reclaiming room storage failed: ${e instanceof Error ? e.message : typeof e}`);
+      this.reclaimAt = Date.now() + this.reclaimRetryMs;
+      this.reclaimRetryMs = Math.min(this.reclaimRetryMs * 2, RECLAIM_RETRY_MAX_MS);
     }
   }
 
@@ -837,6 +894,7 @@ export class GameRoom extends Server<Env> {
     }
     if (this.listRetryAt !== null && this.listRetryAt <= Date.now()) await this.recordFinished();
     if (this.replayRetryAt !== null && this.replayRetryAt <= Date.now()) await this.copyReplay();
+    if (this.reclaimAt !== null && this.reclaimAt <= Date.now()) await this.reclaimStorage();
     await this.scheduleTick();
   }
 
@@ -1033,8 +1091,8 @@ export class GameRoom extends Server<Env> {
     const outbox = takeChatOutbox(this.game);
     this.noteStarts();
     if (this.game.phase === "ended") this.endedAt ??= now;
-    // The message the chat input posted: the only player message an input makes.
-    const chatId = input.type === "chat" ? this.game.chat.find((m) => m.id >= firstChatId && m.from !== null)?.id : undefined;
+    // The player message the input posted (`chat`, or a reply appended by `shareReport`).
+    const chatId = this.game.chat.find((m) => m.id >= firstChatId && m.from !== null)?.id;
     const full = fullViewFor(this.game, this.starts);
     const history = historyStep(this.lastFull, () => fullViewFor(before, starts), full, input.type === "cycle", this.build);
     this.lastFull = full;
@@ -1070,11 +1128,14 @@ export class GameRoom extends Server<Env> {
   }
 
 
-  /** One alarm, for the earliest action bar to run out or the next cycle. An alarm survives the room being evicted from memory. */
+  /** One alarm, for the earliest action bar to run out, the next cycle, or post-game retries/cleanup. An alarm survives the room being evicted from memory. */
   private async scheduleTick(): Promise<void> {
     const bar = this.game ? nextDue(this.game) : null;
     const cycle = this.game?.phase === "playing" ? this.nextCycleAt() : null;
-    const due = [bar, cycle, this.listRetryAt, this.replayRetryAt].reduce<number | null>((a, b) => (a === null ? b : b === null ? a : Math.min(a, b)), null);
+    const due = [bar, cycle, this.listRetryAt, this.replayRetryAt, this.reclaimAt].reduce<number | null>(
+      (a, b) => (a === null ? b : b === null ? a : Math.min(a, b)),
+      null,
+    );
     if (due === null) await this.ctx.storage.deleteAlarm();
     else if ((await this.ctx.storage.getAlarm()) !== due) await this.ctx.storage.setAlarm(due);
   }
@@ -1350,6 +1411,7 @@ export class GameRoom extends Server<Env> {
       listed: this.listed,
       ...(this.endedAt !== null && { endedAt: this.endedAt }),
       replayReady: this.replayReady,
+      ...(this.reclaimAt !== null && { reclaimAt: this.reclaimAt }),
     };
     const writes: Promise<unknown>[] = [];
     // Storage deletes at most 128 keys a call.

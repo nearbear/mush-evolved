@@ -3409,6 +3409,20 @@ Owner asked for four changes to the document Read window: busts instead of the c
 - **Owner decisions:** unskilled bots shoot at priority 51 (after their own jobs, before research); 5 and 9 AP gates stay; item locations are shared by a fixed global-chat line, not a hard-coded room; hull repair threshold stays 50.
 - **Result (50 seeds):** ship destroyed 34 → 27 (shooting) → 20 (scrap); days lasted barely move because oxygen and fires end ships at the same time. Runs done in a detached snapshot worktree so development could continue while they ran, and because another session was editing `shared/` in the main checkout.
 
+## 2026-11-14 — Ended room storage reclamation and private moderation backup (#339)
+
+Implemented Durable Object storage reclamation 48 hours after an ended game is both listed in D1 and backed up to R2:
+
+- **Approach & decisions resolved with the user:**
+  - Copy moderator-only data (`raw`, `rawByInput`, `blocked`, `rateLimited`) to a private R2 object (`replays/<roomId>/moderation.json`) during `copyReplay` before writing `index.json`, rather than waiting until reclamation time, so R2 becomes the complete archive as soon as a game ends while `server/src/replayRoutes.ts` continues serving only `index.json` and chunk files (returning 404 for `moderation.json`).
+  - Key unmoderated player chat messages in `raw` by `ChatMessage.id` (`RecordedInput.chatId`) and key non-message filtered inputs (channel/thread names, shared planet/report titles) in `rawByInput` by input sequence number (`input:<seq>`), preserving context without changing replay chunk visibility.
+- **Implementation:**
+  - Extended `shared/src/replayChunks.ts` (`BlockedText`, `ReplayModeration`, `ReplayMeta.rateLimited`, `replayKeys.moderation`) and `server/src/replayStore.ts` (`copyReplay` + `verifyReplay`).
+  - Updated `server/src/GameRoom.ts` with `RECLAIM_DELAY_MS` (48h), `reclaimAt` persistence/backfill for pre-#339 ended rooms, `reclaimStorage()` (runs `releaseAccounts()`, verifies R2 chunks and `moderation.json` unless unrecorded solo, closes sockets with `4001`, calls `ctx.storage.deleteAll()`), and exponential alarm backoff (`RECLAIM_RETRY_MS`..`RECLAIM_RETRY_MAX_MS`).
+  - Updated `docs/ops/r2.md`, `docs/rules/rules-design.md`, `docs/code-map/shared.md`, and `docs/code-map/server.md`.
+- **Corrections & checks:**
+  - Test run caught that a blocked over-length chat message still consumes a `chatLimiter` token before rate-limiting kicks in, making `rateLimited.p1` equal `2` rather than `1` in the `moderation.json` test scenario; updated the assertion after verifying `GameRoom.social()` order of checks.
+
 ## 2026-11-14: Three-project proposals, streak relay on projects, and Unrestricted terminals
 
 Implemented three NERON project, research, and cheat updates requested together:
@@ -3423,3 +3437,12 @@ Implemented three NERON project, research, and cheat updates requested together:
   - Bumped `STATE_VERSION` from `115` to `116` with `upgradeTo116` in `shared/src/normalizeState.ts`, updated unit, leak, and stored-room tests, and updated `docs/rules/implemented-rules.md`, `docs/rules/rules-design.md`, and `docs/code-map/shared.md`.
 - **What needed correction:**
   - Re-reading the initial wording revealed "relay mechanic" meant the relay token pool specifically, not the repeat relay penalty — confirming that upfront kept NERON projects aligned with the intended design.
+
+## 2026-11-14: Review fixes for ended-room reclamation (#339)
+
+A review in Claude Code (Opus 5.5) of the uncommitted #339 work found five issues; the owner fixed four and set one aside:
+
+- **Set aside by the owner:** reclaiming pre-#339 ended rooms would never verify (their R2 copy has no `moderation.json`). Not applicable, since the databases hold no games yet.
+- **Fixed:** `reclaimStorage` now throws `accounts still aboard` if `releaseAccounts` (which swallows its errors) left seats aboard, so the backoff retries instead of wiping `aboard`; it marks the room `retired` so a `join` can't crash on a null game; its guard clears `reclaimAt` so a stale alarm can't loop; `verifyReplay` checks chunks with R2 `head` rather than `get` plus cancel.
+- **Tombstone (owner approved):** the second review found `retired` didn't survive eviction (`onStart` derives it from the deleted `setup` key), so a stale join could launch a game over the room id and overwrite its R2 replay. After `deleteAll()` the room now writes one `reclaimed` key, which `onStart` reads as retired. Cost: one tiny key per ended game. The test that reclaims across a restart now also revives the room a second time and checks `join` answers `ship_closed`.
+- **What worked:** reviewing inline rather than through the review skill, and reading call sites (`stillAboard`, `join`, `onStart`) to check each finding before reporting it.
