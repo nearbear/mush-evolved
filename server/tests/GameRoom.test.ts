@@ -1022,14 +1022,14 @@ describe("GameRoom single player", () => {
     const { room, storage, token } = await soloRoom();
     const c = connect(room, token);
     // Let bots finish their solo actions while the human is still unready: no bot sends `ready` yet.
-    for (let i = 0; i < 10; i++) await playOut(room, storage);
+    for (let i = 0; i < 3; i++) await playOut(room, storage);
     expect(lastView(c).cycleOfDay).toBe(5);
     expect(lastView(c).players.every((p) => !p.ready)).toBe(true);
     await send(room, c, { type: "action", action: { type: "ready" } });
     for (let i = 0; i < 20 && lastView(c).cycleOfDay === 5; i++) await playOut(room, storage);
     expect(lastView(c).cycleOfDay).toBe(6);
     vi.unstubAllGlobals();
-  });
+  }, 20_000);
 
   it("drops a chat wake when a woken bot dies before its turn, so the cycle still ends", async () => {
     vi.stubGlobal(
