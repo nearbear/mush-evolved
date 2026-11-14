@@ -37,6 +37,7 @@
     "a11y": "npm run a11y -w tools --",
     "ship-view": "npm run ship-view -w tools --",
     "ship-render": "npm run ship-render -w tools --",
+    "art-align": "npm run art-align -w tools --",
     "ship-top": "npm run ship-top -w tools --",
     "contact-sheet": "npm run contact-sheet -w tools --",
     "wiki": "npm run wiki -w tools --",

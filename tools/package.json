@@ -23,6 +23,7 @@
     "a11y": "node src/a11y/a11y.ts",
     "ship-view": "node src/play/shipView.ts",
     "ship-render": "node src/play/shipRender.ts",
+    "art-align": "node src/play/artAlign.ts",
     "ship-top": "node src/play/shipTop.ts",
     "contact-sheet": "node src/contactSheet/contactSheet.ts",
     "sim-readings": "node src/sims/readings.ts"
