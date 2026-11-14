@@ -132,7 +132,7 @@ export function fruitEffectsSeenBy(
 
 /**
  * A human eats an alien fruit: extra AP, morale, HP, non-stacking buff timers (re-eating resets them), and any
- * delayed diseases rolled for this meal. Mutates a state the caller already cloned.
+ * delayed diseases rolled for this meal (`rollFruitDiseases`). Mutates a state the caller already cloned.
  */
 export function applyFruit(state: GameState, player: PlayerState, type: string): void {
   const fruit = state.fruits[type];
@@ -141,7 +141,7 @@ export function applyFruit(state: GameState, player: PlayerState, type: string):
   if (fruit.ap !== 0) changeAP(state, player, fruit.ap);
   if (fruit.morale !== 0) gainMorale(state, player, fruit.morale);
 
-  const { buffs, diseaseDelay } = state.config.botany.fruits;
+  const { buffs } = state.config.botany.fruits;
   for (const buff of fruit.buffs) {
     switch (buff) {
       case "treat_disease":
@@ -159,6 +159,18 @@ export function applyFruit(state: GameState, player: PlayerState, type: string):
     }
   }
 
+  rollFruitDiseases(state, player, type);
+}
+
+/**
+ * Rolls a meal's diseases: each of the species' diseases at its odds, arriving after a delay rolled per meal
+ * (`pendingDiseases`, handed out by `diseaseTrackerCycleChange`). A Mush rolls them too, the same way, and carries what
+ * arrives without suffering from it (owner, 2026-11-14; `diseaseAffects` in diseases.ts).
+ */
+export function rollFruitDiseases(state: GameState, player: PlayerState, type: string): void {
+  const fruit = state.fruits[type];
+  if (!fruit) return;
+  const { diseaseDelay } = state.config.botany.fruits;
   for (const disease of fruit.diseases) {
     if (rollFloat(state) >= disease.odds) continue;
     const delay = roll(state, diseaseDelay);

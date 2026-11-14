@@ -2,10 +2,10 @@ import { Action, isString } from "./action.ts";
 import { heal as healHp } from "../death.ts";
 import { ITEM_TYPES, canReachItem, removeItem } from "../items.ts";
 import { logSecret } from "../log.ts";
-import { consumed } from "../modifiers.ts";
+import { consumed, consumedByMush } from "../modifiers.ts";
 import { rationApBonus } from "../comms.ts";
 import { applyDrug } from "../drugs.ts";
-import { applyFruit } from "../fruits.ts";
+import { applyFruit, rollFruitDiseases } from "../fruits.ts";
 import { contaminate } from "../infection.ts";
 import { isFullBelly } from "../statuses.ts";
 import type { GameState, PlayerState } from "../types.ts";
@@ -42,7 +42,10 @@ export class ConsumeAction extends Action<ConsumeActionData> {
       gainMorale(state, player, ITEM_TYPES[item.type]!.consume!.morale ?? 0);
       gainMorale(state, player, state.drugs[item.type]?.morale ?? 0);
       gainMorale(state, player, state.fruits[item.type]?.morale ?? 0);
+      // A Mush still catches a fruit's diseases, as a carrier (owner, 2026-11-14).
+      rollFruitDiseases(state, player, item.type);
       logSecret(state, player.id, "consumed", { name: player.character, item: item.type });
+      consumedByMush(state, player, item);
       return;
     }
     const { ap, mp = 0, satiety, morale = 0, hp = 0 } = ITEM_TYPES[item.type]!.consume!;

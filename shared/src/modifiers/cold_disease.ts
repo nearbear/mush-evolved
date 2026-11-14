@@ -3,10 +3,18 @@ import { logPrivate } from "../log.ts";
 import type { Modifier } from "../modifiers.ts";
 import { rollInt, rollFloat } from "../rng.ts";
 import { changeMP } from "../adjustStats.ts";
-import { addDisease } from "../diseases.ts";
+import { addDisease, diseaseAffects } from "../diseases.ts";
 
 export const cold_disease: Modifier = {
   onCycle(next, player) {
+    // Spread first: the MP roll below returns early. Each other living player in the room is a separate roll.
+    const spread = next.config.diseases.allDiseaseStats[next.config.diseases.allDiseases.indexOf("cold_disease")]?.cycleSpread;
+    if (spread != null) {
+      for (const other of next.players) {
+        if (other.alive && other.id !== player.id && other.room === player.room && rollFloat(next) < spread) addDisease(next, other, "cold_disease");
+      }
+    }
+    if (!diseaseAffects(player)) return; // a Mush spreads it but loses nothing
     if (rollInt(next, 3) !== 0 || player.mp <= 0) return;
 
   

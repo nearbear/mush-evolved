@@ -1,10 +1,12 @@
 import { gainMorale, updateMaxValues } from "../adjustStats.ts";
 import { damage } from "../death.ts";
 //import { logPrivate } from "../log.ts";
+import { diseaseAffects } from "../diseases.ts";
 import type { Modifier } from "../modifiers.ts";
 
 export const extreme_tinnitus_disease: Modifier = {
   onShipMovement(next, player) {
+    if (!diseaseAffects(player)) return;
     damage(next, player, 2, "injury");
     gainMorale(next, player, -2);
   },

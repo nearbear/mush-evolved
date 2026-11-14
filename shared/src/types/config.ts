@@ -48,6 +48,10 @@ export interface DiseaseStats {
   durationMax?: number,
   resistance?: number,
   roomSpread?: number,
+  /** Chance to spread to each other living player in the room at a cycle change. */
+  cycleSpread?: number,
+  /** Spreads to the other player whenever two players STT or DTT (share.ts). */
+  spreadByDTT?: boolean,
   dttSpread?: number,
 }
 

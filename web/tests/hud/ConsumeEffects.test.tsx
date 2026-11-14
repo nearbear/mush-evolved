@@ -26,16 +26,16 @@ const SAMPLE_EFFECT: FruitEffect = {
 function makeView({
   role = "human",
   skills = [],
-  bookSkill = null,
+  bookSkill,
 }: {
   role?: "human" | "mush";
   skills?: string[];
-  bookSkill?: string | null;
+  bookSkill?: string;
 } = {}): PlayerView {
   const state = sampleState({ role });
   const player = state.players.find((p) => p.id === SAMPLE_SEAT)!;
   player.skills = skills;
-  player.bookSkill = bookSkill;
+  if (bookSkill !== undefined) player.bookSkill = bookSkill;
   state.fruits.fruit01 = SAMPLE_EFFECT;
   return viewFor(state, SAMPLE_SEAT);
 }

@@ -10,47 +10,48 @@
 
 import { isBrokenIn } from "./equipment.ts";
 import { carriesHeavy, isWorking } from "./items.ts";
+import { projectDone } from "./projects.ts";
 import { RESEARCH_COMPLETE } from "./research.ts";
 import { skillsOf } from "./skills.ts";
 import { antic_perfume } from "./modifiers/antic_perfume.ts";
+import { astrophysician } from "./modifiers/astrophysician.ts";
+import { botanic } from "./modifiers/botanic.ts";
 import { caffeinomaniac } from "./modifiers/caffeinomaniac.ts";
+import { computer } from "./modifiers/computer.ts";
+import { creative } from "./modifiers/creative.ts";
+import { designer } from "./modifiers/designer.ts";
+import { engineer } from "./modifiers/engineer.ts";
+import { escape } from "./modifiers/escape.ts";
+import { expert } from "./modifiers/expert.ts";
+import { first_aid } from "./modifiers/first_aid.ts";
+import { green_thumb } from "./modifiers/green_thumb.ts";
+import { gunman } from "./modifiers/gunman.ts";
+import { gunner } from "./modifiers/gunner.ts";
+import { lethargy } from "./modifiers/lethargy.ts";
+import { logistics } from "./modifiers/logistics.ts";
+import { medic } from "./modifiers/medic.ts";
+import { observant } from "./modifiers/observant.ts";
+import { paranoid } from "./modifiers/paranoid.ts";
+import { persistent } from "./modifiers/persistent.ts";
+import { physicist } from "./modifiers/physicist.ts";
+import { pilot } from "./modifiers/pilot.ts";
+import { polymath } from "./modifiers/polymath.ts";
+import { robotics } from "./modifiers/robotics.ts";
+import { sapper } from "./modifiers/sapper.ts";
+import { space_tactics } from "./modifiers/space_tactics.ts";
+import { sprint } from "./modifiers/sprint.ts";
+import { sturdy } from "./modifiers/sturdy.ts";
+import { hyperactive } from "./modifiers/hyperactive.ts";
+import { immunity } from "./modifiers/immunity.ts";
+import { mankind_only_hope } from "./modifiers/mankind_only_hope.ts";
+import { pacifist } from "./modifiers/pacifist.ts";
+import { wheelchair } from "./modifiers/wheelchair.ts";
+import { lying_down } from "./modifiers/lying_down.ts";
 import { cold_disease } from "./modifiers/cold_disease.ts";
 import { extreme_tinnitus_disease } from "./modifiers/extreme_tinnitus_disease.ts";
 import { fungal_infection_disease } from "./modifiers/fungal_infection_disease.ts";
+import { gastroenteritis_disease } from "./modifiers/gastroenteritis_disease.ts";
 import { broken_nose_injury } from "./modifiers/broken_nose_injury.ts";
-import { sapper } from "./modifiers/sapper.ts";
-import { creative } from "./modifiers/creative.ts";
-import { expert } from "./modifiers/expert.ts";
-import { computer } from "./modifiers/computer.ts";
-import { designer } from "./modifiers/designer.ts";
-import { sprint } from "./modifiers/sprint.ts";
-import { gunman } from "./modifiers/gunman.ts";
-import { astrophysician } from "./modifiers/astrophysician.ts";
-import { paranoid } from "./modifiers/paranoid.ts";
-import { observant } from "./modifiers/observant.ts";
-import { green_thumb } from "./modifiers/green_thumb.ts";
-import { robotics } from "./modifiers/robotics.ts";
-import { gunner } from "./modifiers/gunner.ts";
-import { persistent } from "./modifiers/persistent.ts";
-import { polymath } from "./modifiers/polymath.ts";
-import { space_tactics } from "./modifiers/space_tactics.ts";
-import { physicist } from "./modifiers/physicist.ts";
-import { botanic } from "./modifiers/botanic.ts";
-import { first_aid } from "./modifiers/first_aid.ts";
-import { logistics } from "./modifiers/logistics.ts";
-import { immunity } from "./modifiers/immunity.ts";
-import { lethargy } from "./modifiers/lethargy.ts";
-import { projectDone } from "./projects.ts";
-import { lying_down } from "./modifiers/lying_down.ts";
-import { mankind_only_hope } from "./modifiers/mankind_only_hope.ts";
-import { medic } from "./modifiers/medic.ts";
-import { escape } from "./modifiers/escape.ts";
-import { pacifist } from "./modifiers/pacifist.ts";
-import { hyperactive } from "./modifiers/hyperactive.ts";
-import { wheelchair } from "./modifiers/wheelchair.ts";
-import { sturdy } from "./modifiers/sturdy.ts";
-import { pilot } from "./modifiers/pilot.ts";
-import { engineer } from "./modifiers/engineer.ts";
 import type { ActionCost } from "./actions.ts";
 import type { ActionTag } from "./actions/action.ts";
 import type { Action, GameState, ItemState, MovementRules, PlayerState } from "./types.ts";
@@ -140,6 +141,7 @@ export interface Modifier extends Partial<FoldHooks> {
    */
   onActionFailed?: (next: GameState, player: PlayerState, apSpent: number) => void;
   /** Runs for each living player at a cycle change, after the AP refill. Mutates a state the caller already cloned. */
+  /** (A disease hook also reaches a Mush: it guards its own stat effects with `diseaseAffects`, diseases.ts.) */
   onCycle?: (next: GameState, player: PlayerState) => void;
   /** Runs after the player showers. Mutates a state the caller already cloned. */
   onShower?: (next: GameState, player: PlayerState) => void;
@@ -149,6 +151,8 @@ export interface Modifier extends Partial<FoldHooks> {
   onPick?: (next: GameState, player: PlayerState) => void;
   /** Runs whenever the ship moves */
   onShipMovement?: (next: GameState, player: PlayerState) => void;
+  /** Runs after the holder moves into a room, whoever is there (a move action). Mutates a state the caller already cloned. */
+  onEnterRoom?: (next: GameState, player: PlayerState) => void;
   /** Runs when a player enters a room with another player */
   onEncounter?: (next: GameState, player: PlayerState, other: PlayerState) => void;
 }
@@ -156,11 +160,77 @@ export interface Modifier extends Partial<FoldHooks> {
 export type ModifierRegistry = Readonly<Record<string, Modifier>>;
 
 /** Items and skills will register here too. When a skill gains rules, update its entry in SKILL_STATUS (skills.ts). */
-export const MODIFIERS: Record<string, Modifier> = { lying_down, medic, first_aid, sturdy, creative, expert, antic_perfume, logistics, caffeinomaniac, cold_disease, extreme_tinnitus_disease, fungal_infection_disease, broken_nose_injury, computer, designer, sprint, physicist, botanic, pacifist, immunity, mankind_only_hope, wheelchair, hyperactive, pilot, engineer, gunman, gunner, persistent, polymath, space_tactics, paranoid, observant, green_thumb, robotics, astrophysician, lethargy, escape, sapper };
+export const MODIFIERS: Record<string, Modifier> = {
+  // Skills
+  antic_perfume,
+  astrophysician,
+  botanic,
+  caffeinomaniac,
+  computer,
+  creative,
+  designer,
+  engineer,
+  escape,
+  expert,
+  first_aid,
+  green_thumb,
+  gunman,
+  gunner,
+  lethargy,
+  logistics,
+  medic,
+  observant,
+  paranoid,
+  persistent,
+  physicist,
+  pilot,
+  polymath,
+  robotics,
+  sapper,
+  space_tactics,
+  sprint,
+  sturdy,
+  // Character traits
+  hyperactive,
+  immunity,
+  mankind_only_hope,
+  pacifist,
+  wheelchair,
+  // Statuses
+  lying_down,
+  // Diseases
+  cold_disease,
+  extreme_tinnitus_disease,
+  fungal_infection_disease,
+  gastroenteritis_disease,
+  // Injuries
+  broken_nose_injury,
+};
 
-/** The ids every hook folds over: the player's skills (book slot last), then their other modifiers. */
+/**
+ * The ids every numeric (fold) and cost hook runs over: the player's skills (book slot last), then their other
+ * modifiers. A Mush's diseases are left out, so they never change a Mush's numbers (diseases.ts).
+ */
 export function modifierIds(player: Readonly<PlayerState>): string[] {
-  return [...skillsOf(player), ...player.modifiers];
+  const ids = [...skillsOf(player), ...player.modifiers];
+  return player.role === "mush" ? ids.filter((id) => !isDiseaseId(id)) : ids;
+}
+
+const isDiseaseId = (id: string): boolean => id.endsWith("_disease");
+
+/** The diseases a Mush has, which `modifierIds` leaves out. Empty for anyone else. */
+function mushDiseaseIds(player: Readonly<PlayerState>): string[] {
+  return player.role === "mush" ? player.modifiers.filter(isDiseaseId) : [];
+}
+
+/**
+ * The ids the event hooks (onCycle, onShipMovement, onEnterRoom, onEncounter) run over: `modifierIds` plus a Mush's
+ * diseases. A disease's event hook can do three things at once, so it decides for itself: stat effects only when
+ * `diseaseAffects(player)` (diseases.ts), special logs only when `canHaveSpecialLogs(player)`, spreading always.
+ * Fold and cost hooks never reach a Mush's diseases.
+ */
+function eventIds(player: Readonly<PlayerState>): string[] {
+  return [...modifierIds(player), ...mushDiseaseIds(player)];
 }
 
 /** Folds `base` through the named hook of each of the player's modifiers, in list order. */
@@ -490,6 +560,14 @@ export function showered(next: GameState, player: PlayerState, registry: Modifie
   for (const id of modifierIds(player)) registry[id]?.onShower?.(next, player);
 }
 
+/**
+ * A Mush's meal has no effects (consume.ts), so only their diseases' onConsume hooks run, and each of those must keep
+ * to special logs (`canHaveSpecialLogs`), never stats. The Mush's skills' onConsume hooks do not run.
+ */
+export function consumedByMush(next: GameState, player: PlayerState, item: ItemState, registry: ModifierRegistry = MODIFIERS): void {
+  for (const id of mushDiseaseIds(player)) registry[id]?.onConsume?.(next, player, item);
+}
+
 /** Runs every onConsume hook of the player's modifiers. Mutates a state the caller already cloned. */
 export function consumed(next: GameState, player: PlayerState, item: ItemState, registry: ModifierRegistry = MODIFIERS): void {
   for (const id of modifierIds(player)) registry[id]?.onConsume?.(next, player, item);
@@ -504,23 +582,30 @@ export function skillPicked(next: GameState, player: PlayerState, skill: string,
 export function cycleChanged(next: GameState, registry: ModifierRegistry = MODIFIERS): void {
   for (const player of next.players) {
     if (!player.alive) continue;
-    for (const id of modifierIds(player)) registry[id]?.onCycle?.(next, player);
+    for (const id of eventIds(player)) registry[id]?.onCycle?.(next, player);
   }
 }
 
 export function shipMoved(next: GameState, registry: ModifierRegistry = MODIFIERS): void {
   for (const player of next.players) {
     if (!player.alive) continue;
-    for (const id of modifierIds(player)) registry[id]?.onShipMovement?.(next, player);
+    for (const id of eventIds(player)) registry[id]?.onShipMovement?.(next, player);
   }
 }
-/*  */
-export function enterRoom(state: GameState, player: PlayerState, ctx: CostContext, registry: ModifierRegistry = MODIFIERS): void {
-  for (const holder of roomHolders(ctx.state, ctx.actor.room)) {
-    for (const id of modifierIds(holder)) {
-      registry[id]?.onEncounter?.(state, player, holder);
-      registry[id]?.onEncounter?.(state, holder, player);
-    }
+/** Runs every onEnterRoom hook of the player's modifiers, once they are in the new room. Mutates a state the caller already cloned. */
+export function enteredRoom(next: GameState, player: PlayerState, registry: ModifierRegistry = MODIFIERS): void {
+  for (const id of eventIds(player)) registry[id]?.onEnterRoom?.(next, player);
+}
+
+/**
+ * A player has just moved into a room: each modifier of theirs and of everyone already there gets its onEncounter
+ * hook, carrier first, with the other as the one it may reach (a cold spreads both ways). A Mush's diseases still spread.
+ */
+export function enterRoom(state: GameState, player: PlayerState, registry: ModifierRegistry = MODIFIERS): void {
+  for (const other of roomHolders(state, player.room)) {
+    if (other.id === player.id) continue;
+    for (const id of eventIds(other)) registry[id]?.onEncounter?.(state, other, player);
+    for (const id of eventIds(player)) registry[id]?.onEncounter?.(state, player, other);
   }
 }
 

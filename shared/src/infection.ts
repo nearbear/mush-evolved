@@ -52,7 +52,6 @@ export function convert(state: GameState, player: PlayerState): void {
   player.satiety = 0;
   player.satietyZeroSince = null;
   delete state.contamination[player.id];
-  delete player.pendingDiseases;
   logPrivate(state, player.id, "converted");
 }
 

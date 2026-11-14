@@ -168,7 +168,7 @@ describe("consuming alien fruits", () => {
     expect(applyAction(after, "p0", { type: "consume", item: giveFruit(after, "p0") }).ok).toBe(false);
   });
 
-  it("gives Mush only base satiety and morale (including -2), with no AP, HP, buffs or diseases", () => {
+  it("gives Mush base satiety and morale (including -2) and the fruit's diseases, but no AP, HP or buffs", () => {
     const s = ship();
     setFruit(s, {
       ap: 2,
@@ -181,13 +181,14 @@ describe("consuming alien fruits", () => {
     Object.assign(m, { ap: 3, satiety: 0, morale: 6, hp: 8 });
     const after = player(mustApply(s, "p3", { type: "consume", item: giveFruit(s, "p3") }), "p3");
     expect([after.ap, after.satiety, after.morale, after.hp]).toEqual([3, 1, 4, 8]);
-    expect([after.immuneUntil, after.treatDiseaseUntil, after.energizeUntil, after.perceptionUntil, after.pendingDiseases]).toEqual([
-      undefined,
+    expect([after.immuneUntil, after.treatDiseaseUntil, after.energizeUntil, after.perceptionUntil]).toEqual([
       undefined,
       undefined,
       undefined,
       undefined,
     ]);
+    // A Mush catches a fruit's diseases as a carrier (owner, 2026-11-14), on the same delayed schedule as a human.
+    expect(after.pendingDiseases?.map((d) => d.id)).toEqual(["fungal_infection_disease"]);
     // Positive morale works for Mush too.
     const s2 = ship();
     setFruit(s2, { morale: 3 });
@@ -223,15 +224,42 @@ describe("delayed diseases", () => {
     expect(arrivalCycles.size).toBeGreaterThan(3);
   });
 
-  it("clears pending diseases if the human converts to Mush before the disease arrives", () => {
+  it("keeps pending diseases if the human converts to Mush before the disease arrives (owner, 2026-11-14)", () => {
     let s = ship();
     setFruit(s, { diseases: [{ id: "extreme_tinnitus_disease", odds: 1 }] });
     s = mustApply(s, "p0", { type: "consume", item: giveFruit(s, "p0") });
     expect(player(s, "p0").pendingDiseases).toHaveLength(1);
+    const arrives = player(s, "p0").pendingDiseases![0]!.atCycle;
     convert(s, player(s, "p0"));
+    expect(player(s, "p0").pendingDiseases).toHaveLength(1);
+    while (s.cycle < arrives) s = nextCycle(s);
+    expect(player(s, "p0").modifiers).toContain("extreme_tinnitus_disease");
     expect(player(s, "p0").pendingDiseases).toBeUndefined();
-    for (let i = 0; i < 16; i++) s = nextCycle(s);
-    expect(player(s, "p0").modifiers).not.toContain("extreme_tinnitus_disease");
+  });
+
+  it("gives a Mush a fruit's disease after the same 2..16 cycle delay, to carry without suffering it", () => {
+    let s = ship();
+    setFruit(s, { diseases: [{ id: "fungal_infection_disease", odds: 1 }] });
+    // A twin ship where the same fruit carries nothing: the Mush's numbers must match it cycle for cycle.
+    let healthy = clone(s);
+    setFruit(healthy, { diseases: [] });
+    const eatCycle = s.cycle;
+    s = mustApply(s, "p3", { type: "consume", item: giveFruit(s, "p3") });
+    healthy = mustApply(healthy, "p3", { type: "consume", item: giveFruit(healthy, "p3") });
+    const delay = player(s, "p3").pendingDiseases![0]!.atCycle - eatCycle;
+    expect(delay).toBeGreaterThanOrEqual(FRUIT_CFG.diseaseDelay[0]);
+    expect(delay).toBeLessThanOrEqual(FRUIT_CFG.diseaseDelay[1]);
+    for (let step = 1; step < delay; step++) s = nextCycle(s);
+    expect(player(s, "p3").modifiers).not.toContain("fungal_infection_disease");
+    s = nextCycle(s);
+    const m = player(s, "p3");
+    expect(m.role).toBe("mush");
+    expect(m.modifiers).toContain("fungal_infection_disease");
+    expect(m.pendingDiseases).toBeUndefined();
+    for (let i = 0; i < 4; i++) s = nextCycle(s);
+    for (let i = 0; i < delay + 4; i++) healthy = nextCycle(healthy);
+    const stats = (p: ReturnType<typeof player>) => [p.hp, p.morale, p.statuses.includes("Dirty")];
+    expect(stats(player(s, "p3"))).toEqual(stats(player(healthy, "p3")));
   });
 });
 

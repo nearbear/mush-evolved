@@ -3594,3 +3594,15 @@ The owner settled the remaining readings (Skilful/Polyvalent counts as Botanist,
 
 - Exposed `cyclesPerDay` on `PublicConfig` (`shared/src/types/view.ts`, `shared/src/rules.ts`) and widened `dayOf` (`shared/src/helpers.ts`) to accept `{ cycle, config: { cyclesPerDay } }` so the client can convert any log or chat entry's global `cycle` into 1-based `day` and `cycleOfDay`.
 - Updated `CycleDivider` (`web/src/hud/CycleDivider.tsx`), its callers in `ITrackie.tsx` and `Thread.tsx`, and the `itrackie.cycleDivider` locale string (`en`, `fr`, `es`) to display `"Day {{day}} · Cycle {{cycle}}"`.
+
+## 2026-11-14: MODIFIERS registry one entry per line
+
+- The registry in `shared/src/modifiers.ts` was a single 530-character line. Split it to one entry per line, grouped under comments (skills, character traits, statuses, diseases, injuries) and alphabetical within each group; the modifier imports follow the same order. No behavior change (the registry is looked up by id, so order does not matter).
+- Considered and not done: a `modifiers/index.ts` barrel spread into the registry. It would save the second listing but add an indirection, and tests mutate `MODIFIERS`, so it would still need a mutable copy.
+
+## 2026-11-14: Merging PR #439 (Mush carry diseases) into the alien-fruits work
+
+- Conflict in `diseaseTrackerCycleChange`: main kept the old "Mush lose non-injury diseases each cycle" block, and #439 deleted it. Did a 3-way diff against the merge base: main never touched that block, so #439's deletion wins. The owner confirmed the rule: Mush carry and spread diseases but don't suffer from them. Kept main's additions (pending fruit diseases, Treat Disease buff).
+- The merge exposed a fixture bug: `ConsumeEffects.test.tsx` set `bookSkill = null` on a `string | undefined` field. #439's new `modifierIds` filter calls `.endsWith` on a Mush's ids and crashed on it. Fixed the fixture, not the rule code.
+- Open question for the owner: fruit diseases are still human-only (`fruits.ts`, `convert()` drops pending ones), even though Mush can now carry diseases.
+- Follow-up, same day: the owner decided Mush catch alien fruit diseases as carriers. They get the same odds and delay as humans, and a pending disease survives conversion. `rollFruitDiseases` was split out of `applyFruit` so the Mush branch of `consume` calls it, and the human-only gates on `pendingDiseases` were removed (`diseases.ts`, `convert()`). Correction: my first "a Mush isn't hurt" test compared morale before and after, and failed on the ordinary daily −2 morale. It now compares against a twin ship whose fruit carries nothing.
