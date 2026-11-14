@@ -3,6 +3,7 @@ import { logPrivate } from "../log.ts";
 import { contaminate } from "../infection.ts";
 import type { GameState, PlayerState } from "../types.ts";
 import { gainMorale } from "../adjustStats.ts";
+import { spreadByTouch } from "../diseases.ts";
 import { dayOf } from "../helpers.ts";
 
 export type ShareActionData = { type: "dtt" | "stt"; target: string };
@@ -43,5 +44,6 @@ export class ShareAction<T extends "dtt" | "stt" = "dtt" | "stt"> extends Action
     logPrivate(state, player.id, "shareDid", { label, name: other.character });
     logPrivate(state, other.id, "shareDidToYou", { label, name: player.character });
     if (contaminating) contaminate(state, human);
+    spreadByTouch(state, player, other);
   }
 }
