@@ -75,9 +75,9 @@ const TICK_MS = 1000 / 30;
 /**
  * Scenery that plays its own animation (its first tiles.xml anim, at its rhythm) all the time: the
  * engine room's three reactors, PILGRED's core once it is repaired (its `_upgrade` look, `looks`),
- * and the equipment on MidFill/MidFill2 whose tiles.xml anim is `auto` (gravity simulator, surgery
- * pod, NERON's core and BIOS terminal, the tanks, the bridge's LEDs and astro console, the antenna,
- * the sick bay's human tank), and the lab's MycoScan once built (BigFill's third row, also `auto`).
+ * the MidFill/MidFill2 equipment whose tiles.xml anim is `auto`, the NERON core auxiliary terminals,
+ * the bridge's `planets` hologram, the bay lights, the bay doors (normal and Bay Door XXL), the
+ * Plasma Shield coils once complete, and the lab's MycoScan once built.
  */
 const AMBIENT_SLICES: ReadonlySet<string> = new Set([
   "rotational_reactor",
@@ -99,7 +99,30 @@ const AMBIENT_SLICES: ReadonlySet<string> = new Set([
   "human_tank_full",
   "mycoscan",
   "server_active",
+  "auxiliary_terminal_neron_upgrade_a",
+  "auxiliary_terminal_neron_upgrade_b",
+  "planets",
+  "bay_light",
+  "bay_window",
+  "bay_window_upgrade",
+  "plasma_shield_upgrade",
 ]);
+
+/** Speed multiplier for ambient animations tuned faster (> 1) or slower (< 1) than their tiles.xml rhythm. */
+const AMBIENT_SPEED: Readonly<Record<string, number>> = {
+  radar_trans_void: 0.5,
+  rotational_reactor: 2,
+  emergency_reactor: 2,
+  tank_fuel_right_front: 0.5,
+  tank_fuel_left_back: 0.5,
+  surgery_console: 0.5,
+  human_tank: 2,
+  human_tank_full: 2,
+  pilot_astro_left: 2,
+  tank_o2_left_front: 0.5,
+  tank_o2_right_front: 0.5,
+  tank_o2_right_back: 0.5,
+};
 
 /** One walk cycle: the six 32x48 frames of a crew strip, half a second in all. */
 const WALK_CYCLE = { frames: [0, 1, 2, 3, 4, 5], frameMs: 500 / 6 } as const;
@@ -169,7 +192,8 @@ export type DoorState = "opening" | "open" | "closing";
 /** The doors that open: two animations, opening then closing (`DOOR_L`, `DOOR_R` and their deck versions). */
 export const opensAsDoor = (slice: SliceInfo | undefined) => !!slice?.flags.includes("door") && slice.anims.length >= 2;
 
-const ticksToMs = (rhythm: readonly number[], n: number) => Array.from({ length: n }, (_, i) => (rhythm[i] ?? rhythm.at(-1) ?? 1) * TICK_MS);
+const ticksToMs = (rhythm: readonly number[], n: number, speed = 1) =>
+  Array.from({ length: n }, (_, i) => ((rhythm[i] ?? rhythm.at(-1) ?? 1) * TICK_MS) / speed);
 
 /** How long a door takes to open, in ms (the opening animation's rhythm). */
 export function doorOpenMs(slice: SliceInfo | undefined): number {
@@ -488,7 +512,7 @@ export function describeScene(input: SceneInput): Scene {
     const anim = swivel?.length
       ? { frames: swivel, frameMs: 6 * TICK_MS, loops: "forever" as const }
       : ambient?.frames.length
-        ? ambientAnim(ambient.frames, ticksToMs(ambient.rhythm, ambient.frames.length), ambientStarts.get(s.key) ?? 0)
+        ? ambientAnim(ambient.frames, ticksToMs(ambient.rhythm, ambient.frames.length, AMBIENT_SPEED[drawnSlice] ?? 1), ambientStarts.get(s.key) ?? 0)
         : undefined;
     if (s.door) {
       const canGo = reachable.has(s.door.target as RoomId);

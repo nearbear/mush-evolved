@@ -497,10 +497,17 @@ function clip(x0: number, x1: number, y0: number, y1: number, floor: Box): Box {
 
 /**
  * The original's order (Grid.sortFunc): by pass, then anchor depth (x + y).
- * At a tie, the room you're in draws over the others.
+ * At a tie, the room you're in draws over the others, and entities whose footprint reaches
+ * further back draw before smaller ones on the same front corner (SweepRenderer.sortFunc).
  */
 const baseOrder = (a: Sortable, b: Sortable) =>
-  a.pass - b.pass || a.depth - b.depth || b.prio - a.prio || a.screenX - b.screenX || a.stage - b.stage || b.scene - a.scene;
+  a.pass - b.pass ||
+  a.depth - b.depth ||
+  b.prio - a.prio ||
+  a.screenX - b.screenX ||
+  a.stage - b.stage ||
+  b.scene - a.scene ||
+  (a.pass === PASS.entity ? a.box.y0 - b.box.y0 || a.box.x0 - b.box.x0 : 0);
 
 /**
  * Which footprint is further from the camera: the one wholly at lower x, or

@@ -5,7 +5,7 @@ import { useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
 import type { CSSProperties, ReactNode } from "react";
-import { actionVisibility, CHARACTERS, ITEM_TYPES, characterGivenName, characterName, SUPER_CALC_EQUIPMENT, type Action, type ActionOption, type EquipmentView, type PlayerView, type ShipLayout, type Target } from "@mush2/shared";
+import { actionVisibility, CHARACTERS, ITEM_TYPES, PROJECT_COMPLETE, characterGivenName, characterName, SUPER_CALC_EQUIPMENT, type Action, type ActionOption, type EquipmentView, type PlayerView, type ShipLayout, type Target } from "@mush2/shared";
 import { BROKEN_ICON, characterImage, CONTAMINATED_ICON, JELLY_ICON, portrait, SHIELD_ICON } from "../art/assets.ts";
 import { useMobile } from "../useMobile.ts";
 import { atlasUrl } from "../iso/shipLayout.ts";
@@ -223,7 +223,13 @@ function EquipmentSprite({ view, layout, equipment }: { view: PlayerView; layout
   const room = mapRoom && roomAsBuilt(mapRoom, view.roomEquipment);
   const entry = [...equipmentByTileKey(room, view.roomEquipment)].find(([, e]) => e.id === equipment.id);
   const tile = room?.tiles[Number(entry?.[0].slice(1))];
-  const sliceName = equipment.type === SUPER_CALC_EQUIPMENT ? "server_active" : tile?.slice;
+  const rawSlice = equipment.type === SUPER_CALC_EQUIPMENT ? "server_active" : tile?.slice;
+  const sliceName =
+    rawSlice === "auxiliary_terminal_neron"
+      ? (view.projects.NERON_PROJECT_THREAD ?? 0) >= PROJECT_COMPLETE
+        ? "auxiliary_terminal_neron_upgrade_b"
+        : "auxiliary_terminal_neron_upgrade_a"
+      : rawSlice;
   const slice = sliceName ? layout?.slices[sliceName] : undefined;
   const sheet = slice && layout?.sheets[slice.sheet];
   const url = layout && slice && atlasUrl(layout, slice.sheet);

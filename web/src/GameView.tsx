@@ -276,6 +276,7 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
                 bubbles={bubbles}
                 pilgredRepaired={view.pilgredRepaired}
                 humanTankFull={view.humanTankFull}
+                projects={view.projects}
                 pace={shipPace(view.navigation)}
                 planet={orbitImage(view.navigation.orbitPicture)}
                 turn={view.navigation.lastTurn}

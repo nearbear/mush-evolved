@@ -232,6 +232,8 @@ describe("the real ship", () => {
     const order = (slice: string) => placed.find((s) => s.slice === slice)!.order;
     expect(order("chair_2")).toBeGreaterThan(order("pilot_astro_right"));
     expect(placed.find((s) => s.kind === "actor")!.order).toBeGreaterThan(order("pilot_astro_right"));
+    // The 1x1 `planets` hologram on (9,21) draws on top of the 2x1 `pilot_astro_center` table on the same front corner.
+    expect(order("planets")).toBeGreaterThan(order("pilot_astro_center"));
   });
 
   it("draws a neighbour's wall over the part of this room behind it, and this room's wall over the part of the neighbour behind it", () => {
