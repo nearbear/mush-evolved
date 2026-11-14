@@ -3633,3 +3633,7 @@ Implemented the issue's proposal as written: `GoalBot.snapshot()`/`restore()` (o
 
 - Added `BOT_PROJECT_ORDER` and `pickProject` in `server/src/bots/goals/project.ts`: the project goal takes the first offered project in that list, otherwise the most advanced as before. Owner chose `["FIRE_SENSOR"]` alone, so the survival harness can measure Fire Detector by itself.
 - Correction to the issue's premise: projects aren't all offered at once. Only `config.project.offerCount` (3) from the shuffled `projectDeck` are, so 0% ties went by deck order, not `PROJECTS` order, and the bot can only prefer Fire Detector when it's in the offered batch. Tests pin the deck to cover offered, started-by-someone-else, completed and not-offered cases.
+
+## 2026-11-14: Cheat room, first slice (#170)
+
+Owner asked for #170, then cut it to "one initial slice". Claude took the rules side of the room only: a `cheatRoom` override set by `GameRoom.launch` when cheats are allowed, `resolveConfig` adding a door-less `CHEAT_ROOM` with a coffee machine and a new `SUPERKUBE` equipment type, `createGame` stocking one of every item type, and `daedalusRooms` leaving it out. Items are stocked in `createGame` (new `cheatStock.ts`), not in `config.startItems`, because `config.ts` importing `items.ts` risked an import cycle; `GameConfig.cheatRoom` carries the flag. Patrol ships' door-less rooms were the pattern to copy. Not yet built: the `cheatRoom` teleport input, the `kube` ops, the client layout file, the Superkube window, removing `selfDisease`.

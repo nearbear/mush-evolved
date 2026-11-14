@@ -1,5 +1,6 @@
 {
   "rooms": {
+    "CHEAT_ROOM": "Salle de triche",
     "COMMAND_CENTER": "Pont",
     "SPACESHIP_BAY_A": "Baie Alpha",
     "SPACESHIP_BAY_B": "Baie Beta",
@@ -39,6 +40,7 @@
     "LOST": "Planète"
   },
   "equipment": {
+    "SUPERKUBE": "Superkube",
     "ASTRO_MODULE": "Terminal Astro",
     "BEAT_BOX": "Jukebox",
     "BED": "Lit",

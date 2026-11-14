@@ -19,6 +19,7 @@ import { newProjectDeck, projectDone } from "./projects.ts";
 import { fireCycle, ignitePending, isOnFire } from "./fire.ts";
 import { incidentsCycle } from "./incidents.ts";
 import { initNpc, newNpcState, npcCycle } from "./npcs.ts";
+import { cheatRoomStock } from "./cheatStock.ts";
 import { newLostAnalysis, rollAtSelection } from "./lostAnalysis.ts";
 import { hopelessCycle } from "./morale.ts";
 import { relayView } from "./relayView.ts";
@@ -115,6 +116,7 @@ export function createGame(
 
   const starts: Omit<ItemState, "id">[] = [
     ...config.startItems.map((it): Omit<ItemState, "id"> => ({ type: it.type, at: { kind: "room", id: it.room }, ...(it.builds !== undefined && { builds: it.builds }), ...(it.teaches !== undefined && { teaches: it.teaches }), ...(it.plant && { plant: { ...it.plant } }), ...chargesFor(config, it.type) })),
+    ...(config.cheatRoom ? cheatRoomStock().map((it) => ({ ...it, ...chargesFor(config, it.type) })) : []),
     ...players.flatMap((p) => startInventory(config, p.id)),
   ];
   const items: ItemState[] = starts.map((it, i) => ({ id: `item-${i + 1}`, ...it }));

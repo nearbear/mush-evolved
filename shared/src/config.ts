@@ -1,5 +1,6 @@
 import shipRooms from "@mush2/assets/derived/ship-rooms.json";
 import { ALIEN_FRUIT_ITEMS, BOOK_ITEM, ITRACKIE_ITEM } from "./itemIds.ts";
+import { CHEAT_ROOM, cheatRoomEquipment } from "./cheatRoom.ts";
 import { ICARUS_CRAFT, patrolEquipment, patrolRooms } from "./patrol.ts";
 import { SKILLS } from "./skills.ts";
 import type { ShipRoom } from "./shipLayout.ts";
@@ -36,6 +37,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   cycleHours: 3,
   // Owner, 2026-10-19 (#24): cycles follow the UTC clock; End cycle stays for testing, on only where the server allows cheats.
   manualCycles: false,
+  cheatRoom: false,
   instantExpeditions: false,
   // Owner, 2026-10-20 (#17, #21): on by default; a setup can turn it off (#231).
   sharedSpots: true,
@@ -655,6 +657,8 @@ export function resolveConfig(o: ConfigOverrides = {}): GameConfig {
     ...(o.cycleHours !== undefined && { cycleHours: o.cycleHours, cyclesPerDay: 24 / o.cycleHours }),
     ...(o.sharedSpots !== undefined && { sharedSpots: o.sharedSpots }),
     ...(o.setupId !== undefined && { setupId: o.setupId }),
+    // The cheat room has no doors, so no route reaches it (#170).
+    ...(o.cheatRoom && { cheatRoom: true, rooms: { ...DEFAULT_CONFIG.rooms, [CHEAT_ROOM]: [] }, equipment: { ...DEFAULT_CONFIG.equipment, [CHEAT_ROOM]: cheatRoomEquipment() } }),
     ...(p && { preselection: { seats: p.seats, endsOn: { day: p.endsOn.day, cycle: p.endsOn.cycle }, mushCount: p.mushCount ?? "auto", twoMushAbove: p.twoMushAbove, minPlayers: p.minPlayers } }),
   };
 }

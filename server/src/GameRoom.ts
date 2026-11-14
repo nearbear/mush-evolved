@@ -801,8 +801,9 @@ export class GameRoom extends Server<Env> {
 
   private async launch(seats: Seat[], tokens: Record<string, PlayerId>, overrides: ConfigOverrides, forcedRoles?: Record<PlayerId, Role>): Promise<void> {
     const now = Date.now();
-    // End cycle is for testing (only where cheats are allowed, owner, 2026-10-19) and single player.
-    this.overrides = this.cheatsAllowed ? { ...overrides, manualCycles: true } : overrides;
+    // End cycle is for testing (only where cheats are allowed, owner, 2026-10-19) and single player. So is the cheat
+    // room (#170): recorded in the overrides now, so turning the flag on or off later never adds or removes it.
+    this.overrides = this.cheatsAllowed ? { ...overrides, manualCycles: true, cheatRoom: true } : overrides;
     const config = resolveConfig(this.overrides);
     this.clockCycle = clockCycle(now, cycleMs(this.env, config.cycleHours));
     const setup: GameSetup = {

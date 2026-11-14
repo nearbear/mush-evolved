@@ -5,6 +5,7 @@ import {
   characterName,
   CHARACTERS,
   CHAT_CHANNELS,
+  CHEAT_ROOM,
   MUSH_CHANNEL,
   STATE_VERSION,
   CHAT_PAGE,
@@ -396,13 +397,13 @@ describe("GameRoom after a Transfer", () => {
 /** Each way a room launches (returning a seat token), with the config overrides it should record. */
 const LAUNCHES: { name: string; env: Record<string, string>; launch: (room: Room) => Promise<string>; overrides: ConfigOverrides }[] = [
   { name: "setup", env: {}, launch: (r) => r.setup(seats(3), tokensFor(3)).then(() => "tok0"), overrides: {} },
-  { name: "setup, cheats", env: CHEATS, launch: (r) => r.setup(seats(3), tokensFor(3)).then(() => "tok0"), overrides: { manualCycles: true } },
+  { name: "setup, cheats", env: CHEATS, launch: (r) => r.setup(seats(3), tokensFor(3)).then(() => "tok0"), overrides: { manualCycles: true, cheatRoom: true } },
   { name: "ship", env: {}, launch: (r) => r.join("Ann", "chao").then((j) => (j.ok ? j.token : "")), overrides: { ...setupOverrides(STANDARD_KNOBS), setupId: "standard" } },
   {
     name: "dev ship",
     env: CHEATS,
     launch: (r) => r.join("Ann", "chao").then((j) => (j.ok ? j.token : "")),
-    overrides: { ...setupOverrides(STANDARD_KNOBS), setupId: "standard", manualCycles: true },
+    overrides: { ...setupOverrides(STANDARD_KNOBS), setupId: "standard", manualCycles: true, cheatRoom: true },
   },
   { name: "single player", env: {}, launch: (r) => r.setupSinglePlayer("Guest 1", "chun"), overrides: { mushCount: 1, manualCycles: true, instantExpeditions: true } },
 ];
@@ -410,6 +411,19 @@ const LAUNCHES: { name: string; env: Record<string, string>; launch: (room: Room
 const gameOf = (room: Room) => (room as unknown as { game: GameState }).game;
 
 describe("GameRoom persistence", () => {
+  it("gives a ship the cheat room only if cheats were allowed at launch, whatever the flag says later (#170)", async () => {
+    const hasRoom = (room: Room) => Object.hasOwn(gameOf(room).config.rooms, CHEAT_ROOM) && Object.hasOwn(gameOf(room).equipment, CHEAT_ROOM);
+    for (const [launchEnv, laterEnv] of [[{}, CHEATS], [CHEATS, {}]] as const) {
+      const storage = new FakeStorage();
+      const room = asRoom(storage, launchEnv);
+      await room.setup(seats(3), tokensFor(3));
+      expect(hasRoom(room)).toBe(launchEnv === CHEATS);
+      const revived = asRoom(storage, laterEnv);
+      await revived.onStart();
+      expect(hasRoom(revived)).toBe(launchEnv === CHEATS);
+    }
+  });
+
   it.each(LAUNCHES)("records the launch's config and the overrides it came from ($name)", async ({ env, launch, overrides }) => {
     // The dev ship seats its bots on a timer, which must not outlive the test.
     vi.useFakeTimers();

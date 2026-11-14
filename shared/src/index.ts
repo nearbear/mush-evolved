@@ -21,6 +21,7 @@ export * from "./accounts.ts";
 export * from "./replay.ts";
 export * from "./queue.ts";
 export * from "./cheats.ts";
+export { CHEAT_ROOM, SUPERKUBE } from "./cheatRoom.ts";
 export * from "./statuses.ts";
 export * from "./resources.ts";
 export * from "./skills.ts";

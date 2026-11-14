@@ -151,6 +151,7 @@ export interface ConfigOverrides {
   cycleHours?: number; // A setup's cycle length (#230): one of `CYCLE_HOURS` (setups.ts). Also sets `cyclesPerDay`.
   sharedSpots?: boolean; // A setup's shared positions (#231).
   setupId?: string; // The setup the ship launched with (#232). Its knobs are already in the keys above.
+  cheatRoom?: boolean; // The cheat room (#170, cheatRoom.ts): set at launch wherever the server allows cheats.
   // A ship's rules, whole, frozen at launch: an edit to `PRESELECTION` would otherwise move a live ship's deadline or
   // seat count away from the matchmaker's. Absent: `DEFAULT_CONFIG`'s (`null`).
   preselection?: PreselectionRules;
@@ -192,6 +193,8 @@ export interface GameConfig {
   // Cycles change on the server's UTC clock (#24). With this on, `ready` is offered too and the cycle also ends once
   // every living player is ready: the dev server's manual End cycle, and later single player.
   manualCycles: boolean;
+  // The ship has the cheat room (#170, cheatRoom.ts): in `rooms` and `equipment`, and stocked at launch. Dev ships only.
+  cheatRoom: boolean;
   // An expedition resolves at takeoff instead of one step every `expedition.stepMs` (single player; owner, 2026-11-07, #356).
   instantExpeditions: boolean;
 
