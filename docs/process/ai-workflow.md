@@ -3535,6 +3535,17 @@ The owner asked for the infinite-spores dev cheat to remove the 4-cycle spike co
 - The owner asked for no chamfered corners on phones. One phone rule in `card.css` zeroes every `--cut-*` on the game screen's cards, plus the iTrackie's `--cut`. `cut-card.css`'s `--c` and `TabOutline`'s cut were clamped at 0 so the inner card and tab outline go square with it. Modal frames (terminals, `FramedDialog`) and the tab shapes keep their cuts.
 - Needed correction: the dark ink set on the nameplate also reached the amber clock plate, whose fill is dark, so the plate needed its own light text. The screenshot's landscape check (top bar ≤ 70px) caught the taller card. In landscape the band shrinks to a 4px stripe with no text, and the clock moves up beside the name.
 
+## 2026-11-14: Alien fruit rework, design review and decisions
+
+The owner proposed a value-budget rework of alien fruits (each species worth 3-6, effects priced in value points) to fix eMush's problem that alien plants are rarely worth planting over bananas. Claude reviewed it against the code and eMushpedia: the banana scores 2 on the scale, so the floor fixes the core problem, but disease cost ignored its odds, the budget was per fruit while planting is per pot per day (grow time), visibility decides whether risk is knowable, Energize was overpriced given MP carry-over, and generation and grafting needed algorithms. The owner settled 14 questions in two rounds; recorded under "Alien fruits" in `docs/rules/rules-design.md`. Worked: giving a default for every question so the owner could answer in one pass; a quick simulation answered "will re-rolling be slow?" with a number (about 35-38% of random fruits fit, under 3 tries on average) instead of a guess. Needed correction: nothing yet; grafting deferred to a later pass.
+
+## 2026-11-14: Bots fight fires (#429)
+
+- **Decided by the owner:** every bot answers a fire, above astrophysics; bots don't take the Firefighter skill; searching for an unlocated fire keeps the AP reserve (a bot that found it with nothing left couldn't put it out); extinguishers go back to the front and rear corridors once no fire is known.
+- **Built with AI:** `fireShare.ts` (fixed global-chat fire lines, NERON's notice counted, Fire sensor trusted), the `extinguish` goal at 78, extinguishers in `SHARED_ITEMS`, a fire interrupt in `GoalBot`, and a fire budget line in the survival report. Choices not asked: a known fire may spend the reserve; returning an extinguisher keeps it; a fire heard about drops any goal but `extinguish` when there is something to do.
+- **What worked:** the issue's design (written by an earlier session) was close to buildable; the survival harness measured it in one run: ship destroyed 25 → 1, burnt deaths 201 → 0, mean days 3.75 → 4.57.
+- **What needed correction:** the first baseline ran in the same worktree while code was being edited, so it was rerun from a clean detached worktree of `main`; goal labels needed the `i18n-ignore` marker; a full verify while two 50-seed runs saturated the CPU gave timeouts that weren't real failures.
+
 ## 2026-11-14: Clock as one amber plate; phone ID card carries the clock and menu
 
 - Owner's follow-up to the ID-card nameplate. The clock is now one amber plate on both layouts: "Day N · Cycle N", an amber divider (gold between two dark lines, crossing the plate top to bottom), then the countdown. Before, the countdown sat outside the plate as plain text. The pre-selection and AI-paused tags are now separate from the clock: beside it on desktop, under the name on phones.
