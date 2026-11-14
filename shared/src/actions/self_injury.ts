@@ -1,4 +1,4 @@
-import { addDisease } from "../adjustStats.ts";
+import { addDisease } from "../diseases.ts";
 import { rollInt } from "../rng.ts";
 import type { StatusId } from "../statuses.ts";
 import { Action, type ActionVisibility } from "./action.ts";
