@@ -30,8 +30,9 @@ import { type LostAnalysisState, rollLostAnalysis } from "./lostAnalysis.ts";
 import { streamFor } from "./rng.ts";
 import type { DrugDispenserState, DrugEffect } from "./drugs.ts";
 import type { FullView, SeatStart, SeatStarts } from "./fullView.ts";
+import { PROJECT_IDS } from "./projects.ts";
 import type { RebelCall } from "./comms.ts";
-import type { RelayPool, RelayToken, ResearchPool, Sample } from "./relay.ts";
+import type { RelayPool, RelayStreak, RelayToken, ResearchPool, Sample } from "./relay.ts";
 import type { DiseaseTracker } from "./diseases.ts";
 import type {
   ChatMark,
@@ -60,6 +61,7 @@ import type {
   PlanTask,
   Planet,
   PlantState,
+  PlayerId,
   PlayerState,
   PreselectionRules,
   PrivateChannel,
@@ -80,7 +82,7 @@ import type {
  * override key. A step lands in a deploy of its own (docs/ops/deploy.md: roll back only to the same version). Something
  * that never reached a deploy (test or production) is in no stored snapshot, so changing or removing it needs no step.
  */
-export const STATE_VERSION = 115;
+export const STATE_VERSION = 116;
 
 /**
  * The oldest stored version this build reads: 114, the shape the normalizers were written against. A snapshot below it
@@ -129,8 +131,35 @@ const upgradeTo115: UpgradeStep = {
   },
 };
 
-/** Every step, in order of `to`: `upgradeTo115`, ... */
-export const UPGRADE_STEPS: readonly UpgradeStep[] = [upgradeTo115];
+/**
+ * Before 116, `game.relay.projects` stored token pools (`{ tokens }`); projects now store only a `RelayStreak`
+ * (`{ lastBy, streak }`). Convert any non-empty token list into the trailing contributor's streak and drop empty pools.
+ */
+const upgradeTo116: UpgradeStep = {
+  to: 116,
+  paths: ["game.relay.projects"],
+  run: (game) => {
+    const relay = game.relay as { projects?: Record<string, { tokens?: { by: PlayerId }[]; lastBy?: PlayerId | null; streak?: number }> } | undefined;
+    if (!relay || !relay.projects) return;
+    const next: Record<string, RelayStreak> = {};
+    for (const [id, entry] of Object.entries(relay.projects)) {
+      if (!entry) continue;
+      if (Array.isArray(entry.tokens)) {
+        const last = entry.tokens.at(-1);
+        if (!last) continue;
+        let streak = 0;
+        for (let i = entry.tokens.length - 1; i >= 0 && entry.tokens[i]!.by === last.by; i--) streak++;
+        next[id] = { lastBy: last.by, streak };
+      } else if (entry.lastBy !== undefined && typeof entry.streak === "number") {
+        next[id] = { lastBy: entry.lastBy, streak: entry.streak };
+      }
+    }
+    relay.projects = next;
+  },
+};
+
+/** Every step, in order of `to`: `upgradeTo115`, `upgradeTo116`, ... */
+export const UPGRADE_STEPS: readonly UpgradeStep[] = [upgradeTo115, upgradeTo116];
 
 /**
  * Brings a stored snapshot from version `from` to `STATE_VERSION`, before it is normalized: runs every step with
@@ -697,11 +726,16 @@ export function normalizeResearchPool(raw: Partial<ResearchPool>): ResearchPool 
   return stripUndefined<ResearchPool>({ tokens: need(raw, "tokens", t).map(normalizeSample), pending: need(raw, "pending", t).map(normalizeSample) });
 }
 
+export function normalizeRelayStreak(raw: Partial<RelayStreak>): RelayStreak {
+  const t = "RelayStreak";
+  return stripUndefined<RelayStreak>({ lastBy: need(raw, "lastBy", t), streak: need(raw, "streak", t) });
+}
+
 type Relay = GameCore["relay"];
 
 export function normalizeRelay(raw: Partial<Relay>): Relay {
   const t = "Relay";
-  return stripUndefined<Relay>({ research: mapValues(need(raw, "research", t), normalizeResearchPool), projects: mapValues(need(raw, "projects", t), normalizeRelayPool) });
+  return stripUndefined<Relay>({ research: mapValues(need(raw, "research", t), normalizeResearchPool), projects: mapValues(need(raw, "projects", t), normalizeRelayStreak) });
 }
 
 type Pilgred = GameCore["pilgred"];
@@ -828,6 +862,7 @@ export function normalizeCore(raw: Partial<GameCore>, _ctx: NormalizeContext, mo
   const t = "GameCore";
   const bios = need(raw, "bios", t);
   const titles = need(raw, "titles", t);
+  const projects = dict(need(raw, "projects", t));
   return stripUndefined<GameCore>({
     cycle: need(raw, "cycle", t),
     phase: need(raw, "phase", t),
@@ -866,7 +901,8 @@ export function normalizeCore(raw: Partial<GameCore>, _ctx: NormalizeContext, mo
     sporesToday: need(raw, "sporesToday", t),
     spikedOn: dict(need(raw, "spikedOn", t)),
     research: dict(need(raw, "research", t)),
-    projects: dict(need(raw, "projects", t)),
+    projects,
+    projectDeck: copy(added(raw, "projectDeck", PROJECT_IDS.filter((id) => !(projects[id] !== undefined && projects[id] >= 100)))),
     relay: normalizeRelay(need(raw, "relay", t)),
     pilgred: normalizePilgred(need(raw, "pilgred", t)),
     comms: normalizeComms(need(raw, "comms", t)),

@@ -15,7 +15,7 @@ import { getUp } from "./actions/lie_down.ts";
 import { researchNeedsView } from "./actions/research.ts";
 import { equipmentHere } from "./equipment.ts";
 import { jellyCycle, leakOxygen } from "./breakage.ts";
-import { projectDone } from "./projects.ts";
+import { newProjectDeck, projectDone } from "./projects.ts";
 import { fireCycle, ignitePending, isOnFire } from "./fire.ts";
 import { incidentsCycle } from "./incidents.ts";
 import { initNpc, newNpcState, npcCycle } from "./npcs.ts";
@@ -157,6 +157,7 @@ export function createGame(
     spikedOn: {},
     research: {},
     projects: {},
+    projectDeck: newProjectDeck(seed),
     relay: { research: {}, projects: {} },
     pilgred: { progress: 0, pool: { tokens: [] } },
     planets: {},

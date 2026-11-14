@@ -1,18 +1,20 @@
 import { Action, type ActionCost, isString } from "./action.ts";
 import { equipmentHere } from "../equipment.ts";
 import { PROJECT_COMPLETE, PROJECT_IDS, projectSkills, type ProjectId } from "../projects.ts";
-import { contribute } from "../relay.ts";
+import { relayGainRange, rollRelayGain, touchRelay } from "../relay.ts";
 import { logPublic } from "../log.ts";
 import { removeStatus } from "../statuses.ts";
-import { onProjectCompleted } from "../projectEffects.ts";
+import { offeredProjects, onProjectCompleted } from "../projectEffects.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
 export type ProjectActionData = { type: "project"; equipment: string; project: string };
 
 /**
- * Work on a NERON project at NERON's core, exactly like research (decided 2026-10-18): 2 AP (free with a Designer or Computer point,
- * which is spent; the Designer point goes first, since it works nowhere else, owner 2026-10-24) adds a relay token to the project's pool (relay.ts; owner, 2026-10-30), +4 for each of the project's two skills (PROJECTS; owner, 2026-10-27). Anyone alive who is not dirty can help. On completion the
- * project's effects start (projectEffects.ts). Public room log.
+ * Work on a NERON project at NERON's core (2 AP; free with a Designer or Computer point, which is spent; the Designer
+ * point goes first since it works nowhere else, owner 2026-10-24). Only 3 randomly drawn projects are offered at a time
+ * (or all unfinished ones with unrestricted terminals). Rolls progress directly with a per-project relay streak penalty
+ * for consecutive contributions by the same player (no tokens; owner, 2026-11-14). Completing one offered project retires
+ * the other two offered alongside it. On completion the project's effects start (projectEffects.ts). Public room log.
  */
 export class ProjectAction extends Action<ProjectActionData> {
   override terminal = true;
@@ -30,8 +32,9 @@ export class ProjectAction extends Action<ProjectActionData> {
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): ProjectActionData[] {
+    const offered = offeredProjects(state, player);
     return equipmentHere(state, player, "NERON_CORE").flatMap((core) =>
-      PROJECT_IDS.filter((id) => (state.projects[id] ?? 0) < PROJECT_COMPLETE).map((project): ProjectActionData => ({ type: "project", equipment: core.id, project })),
+      offered.map((project): ProjectActionData => ({ type: "project", equipment: core.id, project })),
     );
   }
 
@@ -39,18 +42,27 @@ export class ProjectAction extends Action<ProjectActionData> {
     if (!equipmentHere(state, player, "NERON_CORE").some((core) => core.id === target.equipment)) return "cant_project";
     if (!(PROJECT_IDS as readonly string[]).includes(target.project)) return "no_such_project";
     if ((state.projects[target.project] ?? 0) >= PROJECT_COMPLETE) return "project_done";
+    if (!offeredProjects(state, player).includes(target.project as ProjectId)) return "invalid_project";
     if (player.statuses.includes("dirty")) return "dirty";
     return null;
   }
 
   override apply(state: GameState, player: PlayerState, target: ProjectActionData): void {
-    const pool = (state.relay.projects[target.project] ??= { tokens: [] });
+    const project = target.project as ProjectId;
+    const batch = offeredProjects(state);
     // Genius (owner, 2026-11-05): the next project finishes at once, and the status is used up.
     const genius = player.statuses.includes("genius");
     if (genius) removeStatus(player, "genius");
-    const progress = genius ? PROJECT_COMPLETE : contribute(state, pool, state.config.project.progress, player, projectSkills(target.project), PROJECT_COMPLETE);
-    state.projects[target.project] = progress;
-    logPublic(state, player.room, progress >= PROJECT_COMPLETE ? "projectCompleted" : "projectWorked", { name: player.character, project: target.project, percent: progress });
-    if (progress >= PROJECT_COMPLETE) onProjectCompleted(state, target.project as ProjectId);
+    const gain = genius ? PROJECT_COMPLETE : rollRelayGain(state, relayGainRange(state.config.project.progress, player, projectSkills(project), state.relay.projects[project]));
+    if (!genius) touchRelay(state.relay.projects, project, player.id);
+    const progress = Math.min(PROJECT_COMPLETE, (state.projects[project] ?? 0) + gain);
+    state.projects[project] = progress;
+    logPublic(state, player.room, progress >= PROJECT_COMPLETE ? "projectCompleted" : "projectWorked", { name: player.character, project, percent: progress });
+    if (progress >= PROJECT_COMPLETE) {
+      // Retire the 3 offered projects when one of them finishes; completing an unoffered project via cheat retires only itself.
+      const retired = batch.includes(project) ? new Set(batch) : new Set([project]);
+      state.projectDeck = state.projectDeck.filter((id) => !retired.has(id));
+      onProjectCompleted(state, project);
+    }
   }
 }

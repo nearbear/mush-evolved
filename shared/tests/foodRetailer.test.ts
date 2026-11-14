@@ -11,7 +11,7 @@ const work = { type: "project", equipment: "NEXUS_ROOM:NERON_CORE", project: "FO
 function ship(progress = PROJECT_COMPLETE - 1): GameState {
   const s = createGame(makeSeats(3, "others"), DEFAULT_CONFIG, 7);
   for (const p of s.players) p.room = "NEXUS_ROOM";
-  if (progress > 0) setProgress(s, { project: "FOOD_RETAILER" }, progress);
+  setProgress(s, { project: "FOOD_RETAILER" }, progress);
   return s;
 }
 

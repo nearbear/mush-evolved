@@ -222,8 +222,10 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Owner, 2026-10-22: the Commander steers at the Command terminal. Turn, travel and leave orbit cost 1 AP each (the wiki);
   // leaving orbit burns 1 fuel and the ship starts facing north (Claude's defaults).
   navigation: { turn: { cost: { ap: 1 } }, travel: { cost: { ap: 1 } }, leaveOrbit: { cost: { ap: 1 }, fuel: 1 }, startHeading: "north" },
-  // Decided 2026-10-18: NERON projects work exactly like research (2 AP; owner, 2026-10-26: the same relay formula).
+  // Decided 2026-10-18: NERON projects work like research (2 AP; owner, 2026-10-26: the same relay formula).
+  // Owner, 2026-11-14: 3 randomly drawn projects offered at a time, rolling progress directly with a relay streak (no tokens).
   project: {
+    offerCount: 3,
     cost: { ap: 2 },
     progress: { rate: 6, mod: 10, skillBoost: 4, relayPenalty: 2 },
     noiseReducer: { maxAp: 2 },

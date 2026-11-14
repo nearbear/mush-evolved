@@ -4,7 +4,7 @@
 // Mush/src/common/Solver.hx): each token in a row by the same player loses `relayPenalty` more. Players never arrange
 // anything; the game finds the best ordering, so the crew no longer has to take turns live.
 
-import { rollFloat } from "./rng.ts";
+import { roll, rollFloat, type HasRng } from "./rng.ts";
 import { hasSkill, type SkillId } from "./skills.ts";
 import type { GameState, PlayerId, PlayerState } from "./types.ts";
 
@@ -146,4 +146,40 @@ export function contribute(state: GameState, pool: RelayPool, config: Readonly<R
 
 function sum(values: readonly number[]): number {
   return values.reduce((a, b) => a + b, 0);
+}
+
+/** Who contributed last to a non-pooled target (NERON projects) and how many times in a row. Never sent. */
+export interface RelayStreak {
+  lastBy: PlayerId | null;
+  streak: number;
+}
+
+/**
+ * The gain range of one contribution: `rate * mod / 10` (rounded down), plus `skillBoost` for each matching skill, minus
+ * `relayPenalty` for each contribution in a row this player has just made (it resets once someone else contributes; the
+ * noRelayPenalty cheat waives it), never below 0. The gain is rolled in [min, min + min / 2].
+ */
+export function relayGainRange(
+  config: Readonly<RelayProgressConfig>,
+  player: Readonly<PlayerState>,
+  skills: readonly SkillId[],
+  last: Readonly<RelayStreak> | null | undefined,
+): { min: number; max: number } {
+  const relaying = last?.lastBy === player.id && !player.cheats.includes("noRelayPenalty");
+  const streak = relaying ? last.streak : 0;
+  let base = Math.floor((config.rate * config.mod) / 10);
+  for (const skill of skills) if (hasSkill(player, skill)) base += config.skillBoost;
+  const min = Math.max(0, Math.min(100, base - streak * config.relayPenalty));
+  return { min, max: Math.min(100, min + (min >> 1)) };
+}
+
+/** Rolls one contribution's gain with the seeded RNG (no draw when the range is a single value). */
+export function rollRelayGain(state: HasRng, range: { min: number; max: number }): number {
+  return range.max === range.min ? range.min : roll(state, [range.min, range.max]);
+}
+
+/** Records this player's contribution to `id`: their streak grows if they were last, else it restarts at 1. */
+export function touchRelay(streaks: Record<string, RelayStreak>, id: string, player: PlayerId): void {
+  const prev = streaks[id];
+  streaks[id] = prev?.lastBy === player ? { lastBy: player, streak: prev.streak + 1 } : { lastBy: player, streak: 1 };
 }

@@ -1,8 +1,9 @@
 // NERON projects, worked on at NERON's core in the Nexus. Built the same way as research (research.ts): only the ids live
-// here (the names are translated in the client), progress is state (`GameState.projects`, percent), and the whole list
-// is public (decided 2026-10-18). Each project's skill tags speed up work on it (owner, 2026-10-27); the original's other
-// fields (difficulty `mod`, the 3-at-a-time offer, effects) are not used yet.
+// here (the names are translated in the client), and progress is state (`GameState.projects`, percent). Only 3 randomly
+// drawn projects are offered at a time (`newProjectDeck`, `offeredProjects`; owner, 2026-11-14). Each project's skill
+// tags speed up work on it (owner, 2026-10-27).
 
+import { rollShuffle, streamFor } from "./rng.ts";
 import type { SkillId } from "./skills.ts";
 import type { GameState } from "./types.ts";
 
@@ -70,6 +71,12 @@ export const PROJECT_COMPLETE = 100;
 /** Whether a NERON project is complete. */
 export function projectDone(state: Readonly<Pick<GameState, "projects">>, project: ProjectId): boolean {
   return (state.projects[project] ?? 0) >= PROJECT_COMPLETE;
+}
+
+/** The game's shuffled project draw order, from its own stream so other rolls never shift it. */
+export function newProjectDeck(seed: number): ProjectId[] {
+  const stream = { rng: streamFor(seed, "projects") };
+  return rollShuffle(stream, PROJECT_IDS);
 }
 
 /** How much of a project's effects the rules implement, like `ResearchStatus`. */

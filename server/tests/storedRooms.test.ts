@@ -93,6 +93,7 @@ const VALUE_IDS: Record<string, readonly string[]> = {
   "game.log[].room": ["ROOMS"],
   "game.fires[]": ["ROOMS"],
   "game.pendingFires[]": ["ROOMS"],
+  "game.projectDeck[]": ["PROJECTS"],
   "starts.*.character": ["CHARACTERS"],
 };
 const KEY_IDS: Record<string, readonly string[]> = {

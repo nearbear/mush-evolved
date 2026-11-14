@@ -261,6 +261,7 @@ export function advanceNeron(state: GameState, percent: number): string | undefi
   if (unfinished.length === 0) return undefined;
   const project = randomOf(state, unfinished);
   state.projects[project] = PROJECT_COMPLETE;
+  state.projectDeck = state.projectDeck.filter((id) => id !== project);
   onProjectCompleted(state, project);
   return project;
 }

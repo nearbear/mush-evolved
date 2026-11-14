@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
+import { offeredProjects } from "../src/projectEffects.ts";
 import { PROJECT_COMPLETE } from "../src/projects.ts";
 import { RESEARCH_COMPLETE, RESEARCH_IDS, RESEARCH_REQUIRES } from "../src/research.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
@@ -43,11 +44,13 @@ describe("Genius skill", () => {
 
   it("completes the next project at once", () => {
     const s = must(applyAction(ship("NEXUS_ROOM"), "p0", eureka));
-    const done = must(applyAction(s, "p0", core("PLASMA_SHIELD")));
-    expect(done.projects.PLASMA_SHIELD).toBe(PROJECT_COMPLETE);
+    const first = offeredProjects(s)[0]!;
+    const done = must(applyAction(s, "p0", core(first)));
+    expect(done.projects[first]).toBe(PROJECT_COMPLETE);
     expect(player(done, "p0").statuses).not.toContain("genius");
-    const next = must(applyAction(done, "p0", core("MAGNETIC_NET")));
-    expect(next.projects.MAGNETIC_NET).toBeLessThan(PROJECT_COMPLETE);
+    const nextId = offeredProjects(done)[0]!;
+    const next = must(applyAction(done, "p0", core(nextId)));
+    expect(next.projects[nextId]).toBeLessThan(PROJECT_COMPLETE);
   });
 
   it("makes the next repair certain, and is used up by it", () => {

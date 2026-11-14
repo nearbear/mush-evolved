@@ -157,11 +157,12 @@ function ship(): { state: GameState; sentinels: Sentinel[] } {
   };
   s.research.STEROIDS = scaled("researchProgress", 1e4, ["p0", "p1", "p2"]);
   s.projects.PLASMA_SHIELD = scaled("projectProgress", 1e4, []);
+  s.projectDeck = ["PLASMA_SHIELD", ...s.projectDeck.filter((id) => id !== "PLASMA_SHIELD"), str("projectDeck", []) as never];
   s.pilgred.progress = scaled("pilgredProgress", 1e4, []);
   const roll = (what: string) => scaled(what, 1e7, []);
-  // Pending samples' rolls and who contaminated one go to nobody (assay.ts).
+  // Pending samples' rolls and who contaminated one go to nobody (assay.ts); project streaks go to nobody.
   s.relay.research.STEROIDS = { tokens: [{ by: "p3", base: 6, roll: roll("researchRoll") }], pending: [{ by: "p3", base: 6, roll: roll("pendingRoll"), contaminatedBy: str("contaminatedBy", []) }] };
-  s.relay.projects.PLASMA_SHIELD = { tokens: [{ by: "p3", base: 6, roll: roll("projectRoll") }] };
+  s.relay.projects.PLASMA_SHIELD = { lastBy: "p3", streak: num("projectStreak", []) };
   s.pilgred.pool.tokens.push({ by: "p3", base: 1, roll: roll("pilgredRoll") });
   s.items.push({ id: str("floor-here", ["p0", "p1", "p2"]), type: "wrench", at: { kind: "room", id: HERE } });
   s.items.push({ id: str("floor-elsewhere", ["p3"]), type: "wrench", at: { kind: "room", id: ELSEWHERE } });

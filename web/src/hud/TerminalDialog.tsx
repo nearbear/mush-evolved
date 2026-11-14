@@ -131,6 +131,7 @@ function ResearchList({ terminal, view, onAction }: ListProps) {
         })
       }
       view={view}
+      showRelayHelp
       onAction={onAction}
     />
   );
@@ -139,10 +140,11 @@ function ResearchList({ terminal, view, onAction }: ListProps) {
 function ProjectList({ terminal, view, onAction }: ListProps) {
   const { t } = useTranslation();
   const names = useNames();
+  const ids = PROJECT_IDS.filter((id) => (view.projects[id] ?? 0) >= PROJECT_COMPLETE || id in view.relay.projects);
   return (
     <ProgressList
       label={t("projects.title")}
-      ids={PROJECT_IDS}
+      ids={ids}
       progress={view.projects}
       relay={view.relay.projects}
       complete={PROJECT_COMPLETE}
@@ -255,6 +257,7 @@ interface ProgressListProps {
   /** Other buttons beside the work button, from the view's offers (research: own spoil, Contaminate). */
   more?: (id: string) => { option: ActionOption; label: string }[];
   view: PlayerView;
+  showRelayHelp?: boolean;
   onAction: (action: Action) => void;
 }
 
@@ -318,7 +321,7 @@ const PROGRESS_TABS: readonly ProgressTab[] = ["active", "blocked", "done"];
  * tabs: Active (in progress, then available), Blocked (not offered by the view, so for research the lab misses a need)
  * and Done. Within a tab the order is the list's own. Empty Blocked or Done tabs are left out.
  */
-function ProgressList({ label, ids, progress, relay, complete, cards, name, desc, status, needs, option: optionFor, more, view, onAction }: ProgressListProps) {
+function ProgressList({ label, ids, progress, relay, complete, cards, name, desc, status, needs, option: optionFor, more, view, showRelayHelp = false, onAction }: ProgressListProps) {
   const { t } = useTranslation();
   const [tab, setTab] = useState<ProgressTab>("active");
   const rows = ids.map((id) => ({ id, percent: progress[id] ?? 0, option: optionFor(id) }));
@@ -371,7 +374,7 @@ function ProgressList({ label, ids, progress, relay, complete, cards, name, desc
                           />
                           <span>{t("research.percent", { percent })}</span>
                           {option && (
-                            <ActionButton view={view} option={option} onAction={onAction} hint={t("relay.help")}>
+                            <ActionButton view={view} option={option} onAction={onAction} hint={showRelayHelp ? t("relay.help") : undefined}>
                               <ActionLabel text={withGain(t, t("research.work"), relay[id]?.gain)} cost={option.cost} chance={option.chance} />
                             </ActionButton>
                           )}

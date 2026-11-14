@@ -3,9 +3,23 @@
 // modifiers.ts for the Noise Reducer); this only refreshes what is stored.
 
 import { updateMaxValues } from "./adjustStats.ts";
-import type { ProjectId } from "./projects.ts";
+import { PROJECT_IDS, projectDone, type ProjectId } from "./projects.ts";
 import { newItemId } from "./items.ts";
-import type { GameState } from "./types.ts";
+import type { DeepReadonly, GameConfig, GameCore, GameState, PlayerState } from "./types.ts";
+
+/**
+ * The unfinished projects currently offered at NERON's core: the first `config.project.offerCount` unfinished entries
+ * of `state.projectDeck`, or every unfinished project for a player with the `freeHacking` ("Unrestricted terminals") cheat.
+ */
+export function offeredProjects(
+  state: Readonly<Pick<GameCore, "projects" | "projectDeck"> & { config: DeepReadonly<Pick<GameConfig, "project">> }>,
+  player?: Readonly<Pick<PlayerState, "cheats">>,
+): ProjectId[] {
+  if (player?.cheats.includes("freeHacking")) {
+    return PROJECT_IDS.filter((id) => !projectDone(state, id));
+  }
+  return state.projectDeck.filter((id) => !projectDone(state, id)).slice(0, state.config.project.offerCount);
+}
 
 /** Runs once when `project` reaches 100%. Mutates a state the caller already cloned. */
 export function onProjectCompleted(state: GameState, project: ProjectId): void {

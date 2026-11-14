@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { CHEATS, type Cheat } from "../src/cheats.ts";
 import { CHARACTER_SKILLS, isSkill, SKILLS, SKILL_SLOTS } from "../src/skills.ts";
+import { PROJECT_COMPLETE, PROJECT_IDS } from "../src/projects.ts";
+import { offeredProjects } from "../src/projectEffects.ts";
+import { RESEARCH_IDS } from "../src/research.ts";
+import { PRESELECTION } from "../src/preselection.ts";
 import { TITLE_IDS, bypassesTitles, hasTitleAccess } from "../src/titles.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { parseGameMessage } from "../src/protocol.ts";
@@ -161,6 +165,48 @@ describe("relay and title cheats", () => {
     for (const title of TITLE_IDS) expect(hasTitleAccess(s, player(s, other), title)).toBe(true);
     s.titles.commander = null;
     expect(hasTitleAccess(s, player(s, other), "commander")).toBe(true);
+  });
+
+  it("unrestricted terminals (freeHacking) offers all unfinished researches ignoring item, Chun and post-selection requirements", () => {
+    let s = createGame(seats, { ...cfg, preselection: PRESELECTION }, 7);
+    for (const p of s.players) p.room = "LABORATORY";
+    s.players[0]!.role = "mush";
+    // ANTI_MUSH_SERUM requires mush_sample, mush_floppy_disk, Chun, and post-selection.
+    expect(applyAction(s, "p0", { type: "research", equipment: "LABORATORY:RESEARCH_LAB", research: "ANTI_MUSH_SERUM" }).ok).toBe(false);
+    expect(offered(s, "p0").some((a) => a.type === "research" && a.research === "ANTI_MUSH_SERUM")).toBe(false);
+    s = cheat(s, "p0", "freeHacking");
+    expect(offered(s, "p0").filter((a) => a.type === "research").map((a) => a.research).sort()).toEqual([...RESEARCH_IDS].sort());
+    expect(offered(s, "p0").filter((a) => a.type === "spoil_research").map((a) => a.research).sort()).toEqual([...RESEARCH_IDS].sort());
+    const afterWork = applyAction(s, "p0", { type: "research", equipment: "LABORATORY:RESEARCH_LAB", research: "ANTI_MUSH_SERUM" });
+    expect(afterWork.ok).toBe(true);
+    const afterSpoil = applyAction(s, "p0", { type: "spoil_research", equipment: "LABORATORY:RESEARCH_LAB", research: "ANTI_MUSH_SERUM" });
+    expect(afterSpoil.ok).toBe(true);
+    // Others without the cheat still cannot access restricted researches.
+    expect(applyAction(s, "p1", { type: "research", equipment: "LABORATORY:RESEARCH_LAB", research: "ANTI_MUSH_SERUM" }).ok).toBe(false);
+  });
+
+  it("unrestricted terminals (freeHacking) shows and offers all unfinished projects at NERON's core without disturbing the 3-project batch", () => {
+    let s = fresh();
+    for (const p of s.players) p.room = "NEXUS_ROOM";
+    const batch = offeredProjects(s);
+    const unoffered = PROJECT_IDS.find((id) => !batch.includes(id))!;
+    s.projects[unoffered] = 10;
+    expect(viewFor(s, "p1").projects[unoffered]).toBeUndefined();
+    expect(applyAction(s, "p0", { type: "project", equipment: "NEXUS_ROOM:NERON_CORE", project: unoffered }).ok).toBe(false);
+
+    s = cheat(s, "p0", "freeHacking");
+    const coreView = viewFor(s, "p0");
+    expect(coreView.projects[unoffered]).toBe(10);
+    expect(Object.keys(coreView.relay.projects).sort()).toEqual([...PROJECT_IDS].sort());
+    expect(offered(s, "p0").filter((a) => a.type === "project").map((a) => a.project).sort()).toEqual([...PROJECT_IDS].sort());
+
+    // Completing an unoffered project with the cheat removes only that project from the deck.
+    s.projects[unoffered] = PROJECT_COMPLETE - 1;
+    const afterUnoffered = applyAction(s, "p0", { type: "project", equipment: "NEXUS_ROOM:NERON_CORE", project: unoffered });
+    if (!afterUnoffered.ok) throw new Error(afterUnoffered.error);
+    expect(afterUnoffered.state.projects[unoffered]).toBe(PROJECT_COMPLETE);
+    expect(afterUnoffered.state.projectDeck).not.toContain(unoffered);
+    expect(offeredProjects(afterUnoffered.state)).toEqual(batch);
   });
 });
 

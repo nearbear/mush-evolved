@@ -6,7 +6,8 @@ import type { LostAnalysisState } from "../lostAnalysis.ts";
 import type { NpcState } from "../npcs.ts";
 import type { TurnSide } from "../navigation.ts";
 import type { PlanetDirection, PlanetTag } from "../planets.ts";
-import type { RelayPool, ResearchPool } from "../relay.ts";
+import type { ProjectId } from "../projects.ts";
+import type { RelayPool, RelayStreak, ResearchPool } from "../relay.ts";
 import type { RngState } from "../rng.ts";
 import type { TitleId } from "../titles.ts";
 import type { ItemState, LogEntry, PlayerId, RoomId } from "../types.ts";
@@ -116,13 +117,15 @@ export interface GameCore {
   spikedOn: Record<PlayerId, number>;
   /** Percent done of each research that has been started (absent = 0), by research id (research.ts): the best arrangement of its verified samples (assay.ts). Only the living in the lab see it until it is complete. */
   research: Record<string, number>;
-  /** Percent done of each NERON project that has been started (absent = 0), by project id (projects.ts). Only the living at NERON's core see it until it is complete. */
+  /** Percent done of each NERON project that has been started (absent = 0), by project id (projects.ts). Offered ones and completed ones reach NERON's core; elsewhere only completed ones. */
   projects: Record<string, number>;
+  /** Remaining NERON projects in draw order; the first `config.project.offerCount` unfinished ones are offered at NERON's core. Never sent. */
+  projectDeck: ProjectId[];
   /**
-   * Each research's and project's relay tokens (relay.ts; research's are samples, verified and pending, assay.ts). Only
-   * the living in the target's room see them, as contributor and value; rolls and contamination are never sent.
+   * Research sample pools (`research`, assay.ts) and per-project contributor streaks (`projects`, relay.ts).
+   * Research contributor and value go only to the living in the lab (rolls and contamination never); project streaks never leave the server (only the computed gain range does).
    */
-  relay: { research: Record<string, ResearchPool>; projects: Record<string, RelayPool> };
+  relay: { research: Record<string, ResearchPool>; projects: Record<string, RelayStreak> };
   /**
    * PILGRED's repair (pilgred.ts): percent done and its relay tokens (relay.ts). Both go only to the living in a room
    * with the PILGRED terminal, the tokens as contributor and value; rolls are never sent.

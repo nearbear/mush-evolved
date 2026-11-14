@@ -421,8 +421,9 @@ export interface GameConfig {
     contaminate: { cost: { ap: number } }; // Saboteur's Contaminate (owner, 2026-10-31: Sabotage's 1 AP).
   };
   project: {
+    offerCount: number; // Projects offered at NERON's core at a time (owner, 2026-11-14: 3).
     cost: { ap: number }; // AP spent to work on a NERON project (decided 2026-10-18).
-    progress: { rate: number; mod: number; skillBoost: number; relayPenalty: number }; // As research's (owner, 2026-10-26); no skill bonus for now.
+    progress: { rate: number; mod: number; skillBoost: number; relayPenalty: number }; // As research's (owner, 2026-10-26); skill tags boost gain.
     // Noise Reducer (owner, 2026-11-01; eMushpedia *Isolateur phonique*): every player's AP cap +maxAp, added after Lethargy doubles it.
     noiseReducer: { maxAp: number };
     bricBroc: { preventChance: number };

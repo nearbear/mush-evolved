@@ -4,7 +4,7 @@ import { killPlayer } from "../src/death.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameConfig, GameState } from "../src/types.ts";
-import { makeSeats, nextDay, noHunters, noIncidents, offered, player, pickSkill } from "./support.ts";
+import { makeSeats, nextDay, noHunters, noIncidents, offered, player, pickSkill, setProgress } from "./support.ts";
 
 // MP starts empty, so each move converts AP.
 const base: GameConfig = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [], startMp: 0 };
@@ -139,6 +139,7 @@ describe("Designer", () => {
 
   it("makes a NERON project free and is spent before a Computer point", () => {
     let s = nexus(pick(createGame(makeSeats(2), base, 1), "p0", "designer"), "p0");
+    setProgress(s, { project: "PLASMA_SHIELD" }, 0);
     player(s, "p0").resources.comp = 1;
     const ap = player(s, "p0").ap;
     const r = applyAction(s, "p0", work("PLASMA_SHIELD"));

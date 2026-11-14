@@ -41,8 +41,9 @@ export function researchNeedsView(state: Readonly<GameState>, room: RoomId): Rec
   return Object.fromEntries(RESEARCH_IDS.filter((id) => RESEARCH_REQUIRES[id]).map((id) => [id, researchNeedsMet(state, room, id)]));
 }
 
-/** Whether the lab meets a research's requirements (RESEARCH_REQUIRES; owner, 2026-10-25). */
-export function researchAllowed(state: Readonly<GameState>, room: RoomId, research: ResearchId): boolean {
+/** Whether the lab meets a research's requirements (RESEARCH_REQUIRES; owner, 2026-10-25), or unrestricted terminals bypasses them. */
+export function researchAllowed(state: Readonly<GameState>, room: RoomId, research: ResearchId, player?: Readonly<Pick<PlayerState, "cheats">>): boolean {
+  if (player?.cheats.includes("freeHacking")) return true;
   return researchNeedsMet(state, room, research).every(Boolean);
 }
 
@@ -161,7 +162,7 @@ export class ResearchAction extends Action<ResearchActionData> {
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): ResearchActionData[] {
     return equipmentHere(state, player, "RESEARCH_LAB").flatMap((lab) =>
-      RESEARCH_IDS.filter((id) => (state.research[id] ?? 0) < RESEARCH_COMPLETE && researchAllowed(state, player.room, id)).map((research): ResearchActionData => ({ type: "research", equipment: lab.id, research })),
+      RESEARCH_IDS.filter((id) => (state.research[id] ?? 0) < RESEARCH_COMPLETE && researchAllowed(state, player.room, id, player)).map((research): ResearchActionData => ({ type: "research", equipment: lab.id, research })),
     );
   }
 
@@ -169,7 +170,7 @@ export class ResearchAction extends Action<ResearchActionData> {
     if (!equipmentHere(state, player, "RESEARCH_LAB").some((lab) => lab.id === target.equipment)) return "cant_research";
     if (!(RESEARCH_IDS as readonly string[]).includes(target.research)) return "no_such_research";
     if ((state.research[target.research] ?? 0) >= RESEARCH_COMPLETE) return "research_done";
-    if (!researchAllowed(state, player.room, target.research as ResearchId)) return "research_needs";
+    if (!researchAllowed(state, player.room, target.research as ResearchId, player)) return "research_needs";
     if (player.statuses.includes("dirty")) return DIRTY;
     return null;
   }
