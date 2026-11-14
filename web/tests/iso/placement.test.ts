@@ -114,6 +114,46 @@ describe("placeRoom", () => {
   });
 });
 
+describe("T junctions", () => {
+  // Room A's main-axis wall (along x, on the y = 1 line) runs into room B's cross-axis wall (along y, on
+  // the x = 2 line). Cell (1, 0) holds both; B's carries on past their corner (2, 1), A's stops there.
+  const tees: ShipLayout = {
+    ...layout,
+    slices: { ...layout.slices, BIG_WALL_R: slice({ width: 48, height: 66 }), BIG_WALL_L: slice({ width: 48, height: 66 }), sign: slice({ width: 40 }) },
+  };
+  const wall = (slice: string, x: number, y: number) => ({ x, y, kind: "wall" as const, layer: 0, slice, frame: 0 });
+  const a: RoomLayout = { id: "A", label: "A", tiles: [wall("BIG_WALL_R", 0, 0), wall("BIG_WALL_R", 1, 0)] };
+  const b = (tiles: RoomLayout["tiles"]): RoomLayout => ({ id: "B", label: "B", tiles });
+  const orderOf = (placed: ReturnType<typeof placeScene>, room: string, slice: string, x: number, y: number) =>
+    placed.find((s) => s.room === room && s.slice === slice && s.cell.x === x && s.cell.y === y)!.order;
+
+  it("draws the wall that stops under the wall it runs into, and what is mounted on that", () => {
+    const sign = { x: 1, y: 1, kind: "prop" as const, layer: 0, slice: "sign", frame: 0 };
+    for (const first of ["A", "B"]) {
+      const rooms = [
+        { room: a, dx: 0, dy: 0, actors: [] },
+        { room: b([wall("BIG_WALL_L", 1, 0), wall("BIG_WALL_L", 1, 1), sign]), dx: 0, dy: 0, actors: [] },
+      ];
+      const placed = placeScene(tees, first === "A" ? rooms : rooms.reverse());
+      const under = orderOf(placed, "A", "BIG_WALL_R", 1, 0);
+      expect(under, `${first} first`).toBeLessThan(orderOf(placed, "B", "BIG_WALL_L", 1, 0));
+      expect(under, `${first} first`).toBeLessThan(orderOf(placed, "B", "sign", 1, 1));
+    }
+  });
+
+  it("works the other way round: a cross-axis wall stopping at a main-axis one goes under it", () => {
+    const main: RoomLayout = { id: "A", label: "A", tiles: [wall("BIG_WALL_R", 0, 0), wall("BIG_WALL_R", 1, 0), wall("BIG_WALL_R", 2, 0)] };
+    for (const first of ["A", "B"]) {
+      const rooms = [
+        { room: main, dx: 0, dy: 0, actors: [] },
+        { room: b([wall("BIG_WALL_L", 1, -1), wall("BIG_WALL_L", 1, 0)]), dx: 0, dy: 0, actors: [] },
+      ];
+      const placed = placeScene(tees, first === "A" ? rooms : rooms.reverse());
+      expect(orderOf(placed, "B", "BIG_WALL_L", 1, 0), `${first} first`).toBeLessThan(orderOf(placed, "A", "BIG_WALL_R", 1, 0));
+    }
+  });
+});
+
 describe("placeWithSlots", () => {
   // A 4x4 floor with a two-cell table across (1,1)-(2,1).
   const floor: RoomLayout = {
