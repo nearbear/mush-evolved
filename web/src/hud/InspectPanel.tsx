@@ -60,6 +60,8 @@ export function InspectPanel({
   };
   const resolved = resolveTarget(view, target);
   const options = optionsOn(view, target);
+  // A printed document's Read (#394) is client-only, so it is not one of the options, but it sits with them.
+  const doc = resolved?.kind === "item" ? resolved.item.document : undefined;
   const root = useRef<HTMLElement>(null);
   useKeepFocus(root);
   const targetName =
@@ -84,8 +86,9 @@ export function InspectPanel({
           {mobile && deselect}
         </div>
       )}
-      {options.length > 0 && (
+      {(options.length > 0 || doc) && (
         <div className="inspect-actions" role="group" aria-label={targetName}>
+          {doc && <DocumentReader document={doc} />}
           {options.map((o) => (
             <ActionButton key={JSON.stringify(o.action)} view={view} option={o} onAction={onAction}>
               {labelFor(o)}
@@ -165,7 +168,6 @@ function Details({ view, layout, resolved, onAction }: { view: PlayerView; layou
           <ThingMarks jelly={resolved.item.jelly} shield={resolved.item.shield} spores={resolved.item.spores} />
           {resolved.item.drone && <DroneUpgrades upgrades={resolved.item.drone.upgrades} />}
           {resolved.item.charges !== undefined && <div className="sub inspect-charges">{t("itemAttr.charges", { count: resolved.item.charges })}</div>}
-          {resolved.item.document && <DocumentReader document={resolved.item.document} />}
         </>
       );
   }
