@@ -1,10 +1,13 @@
-// The daily repair of `account_ships` (#285). A row is written before its seat (Matchmaker.board), so a crash between
+// The daily repairs of D1: open `account_ships` rows (#285, `sweepShips`) and running-ships rows (#431, `sweepRunning`).
+//
+// `account_ships` (#285). A row is written before its seat (Matchmaker.board), so a crash between
 // the two, a failed undo, a lost "you died" write or a D1 restore can leave an open row for a ship the account isn't
 // aboard, and the account couldn't board anywhere. Joining already repairs its own row (GameRoom.resume); this catches
 // the rest. It can't find a seat that has no row (a restore that lost rows).
 
 import type { AccountStore } from "./accountStore.ts";
 import { failure, logWarn } from "./log.ts";
+import type { ShipStore } from "./shipStore.ts";
 
 /** Rows younger than this are left alone: their join may still be under way. */
 export const SWEEP_GRACE_MS = 10 * 60 * 1000;
@@ -35,4 +38,25 @@ export async function sweepShips(
     }
   }
   return closed;
+}
+
+/**
+ * Removes the rows of ships that aren't running (#431): a ship retired by a STATE_VERSION bump or one that crashed
+ * mid-launch never ends, so it never deletes its own row. Each room is asked first (`GameRoom.running`); one that
+ * can't be asked keeps its row. A row is written only after its launch is saved, so there is no grace period: a
+ * room that says it isn't running never will be. Returns how many rows went.
+ */
+export async function sweepRunning(ships: ShipStore, running: (roomId: string) => Promise<boolean>): Promise<number> {
+  let removed = 0;
+  for (const roomId of await ships.roomIds()) {
+    try {
+      if (await running(roomId)) continue;
+    } catch (e) {
+      logWarn("sweep_ask_failed", { roomId, ...failure(e) });
+      continue;
+    }
+    await ships.ended(roomId);
+    removed++;
+  }
+  return removed;
 }

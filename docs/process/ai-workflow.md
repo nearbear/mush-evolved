@@ -3514,3 +3514,10 @@ The owner asked for the infinite-spores dev cheat to remove the 4-cycle spike co
 - The private channel dialog now uses the primitives; its one-off heading and tile rules in `itrackie.css` are gone (only the tile width stays).
 - Design kit: a "Primitives on both surfaces" section renders the same markup on a dark panel and inside a `TerminalFrame` light card; checked with a Playwright screenshot at 1280px and 360px (no horizontal scroll).
 - Left alone on purpose: the lobby's `.pod-character` and the skill cards have their own looks; converting them would be scope creep until the owner wants one look.
+
+## 2026-11-14: running-ships table and `npm run ships` (#431)
+
+- Built steps 4–6 of `docs/plans/observability.md`: `0005_ships.sql`, `shipStore.ts`, the room's launch write (not awaited, retried from the alarm with backoff, and again on start until `shipRecorded` is saved), the row deleted in `GameStore.recordFinished`'s batch (alone for a game with no `games` row), a `running` RPC and `sweepRunning` in the daily cron, and `tools/src/ops/ships.ts`. No version bump, no dependency.
+- Choices made along the way: the "written" flag is saved with the next input rather than with a write of its own, since rewriting the row is harmless; `recordFinished` waits for a launch write under way so it can't land after the delete; a ship this build can't read counts as running, so the sweep keeps it; the sweep has no grace period, because a row exists only after its launch is saved.
+- Needed correction: the plan said single player would show 1 or 0 aboard, but single player never opens an `account_ships` row, so it shows `-`; the plan was updated. The first test run failed in 9 room tests because their rooms had no D1 binding, so the new write failed and its retry moved the alarm. The fix was a D1 on every test room, not a room that tolerates a missing binding.
+- Not done here: running `npm run ships` against staging needs a deploy that applies `0005_ships.sql`. The query and wrangler's JSON were checked against the local D1.

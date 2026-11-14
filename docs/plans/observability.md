@@ -1,6 +1,6 @@
 # Plan: observability (written 2026-11-14)
 
-What the server is doing right now and what went wrong, for the **operator** (the owner). Moderators get none of this directly; their list of running ships is a separate story that reads the same table. Issue [#127](https://github.com/nearbear/mush2/issues/127), under the DevOps epic ([#51](https://github.com/nearbear/mush2/issues/51)). Nothing here is built yet.
+What the server is doing right now and what went wrong, for the **operator** (the owner). Moderators get none of this directly; their list of running ships is a separate story that reads the same table. Issue [#127](https://github.com/nearbear/mush2/issues/127), under the DevOps epic ([#51](https://github.com/nearbear/mush2/issues/51)). Steps 1–3 (#430) and 4–6 (#431) are built; how they work is in `docs/ops/observability.md`.
 
 ## Decisions (owner, 2026-11-14)
 
@@ -40,7 +40,7 @@ What the server is doing right now and what went wrong, for the **operator** (th
 ## Tradeoffs
 
 - **A failed launch write** leaves the ship off the list until the alarm retry succeeds.
-- **Players aboard counts signed-in players.** Exact for multiplayer, which needs an account; single player shows 1 or 0.
+- **Players aboard counts signed-in players.** Exact for multiplayer, which needs an account. Single player shows `-`: it never opens an `account_ships` row (as built, #431), and the table holds no player information.
 - **No cycle or phase** in the first table: that is a D1 write per ship per cycle. Launch time is enough for "right now"; [#434](https://github.com/nearbear/mush2/issues/434) adds them.
 - **No version bumps.** The room snapshot and the rules don't change, so neither `STATE_VERSION` nor `RULES_VERSION` moves. No new npm dependency.
 - Steps 1–3 and 4–6 are separate commits and can land in either order.

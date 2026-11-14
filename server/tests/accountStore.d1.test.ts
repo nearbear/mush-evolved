@@ -16,6 +16,7 @@ import { STANDARD_KNOBS } from "@mush2/shared";
 import { AccountStore } from "../src/accountStore.ts";
 import { GameStore } from "../src/gameStore.ts";
 import { SetupStore } from "../src/setupStore.ts";
+import { ShipStore } from "../src/shipStore.ts";
 
 const SERVER = resolve(import.meta.dirname, "..");
 
@@ -112,7 +113,7 @@ it("runs every setup store statement on D1", async () => {
   expect((await setups.ballot([v1.setup.id, v2.ok ? v2.setup.id : "", "standard"])).map((s) => s.version)).toEqual([2]);
 }, 30_000);
 
-it("runs every game store statement on D1", async () => {
+it("runs every game and ship store statement on D1", async () => {
   const accounts = new AccountStore(proxy.env.DB);
   const games = new GameStore(proxy.env.DB);
   const created = await accounts.createAccount("Finisher", "google", "g-games", 1000);
@@ -134,8 +135,16 @@ it("runs every game store statement on D1", async () => {
     rulesVersion: "dev",
     crew: crew.map((c) => ({ ...c })),
   });
+  // The running-ships row (#431) goes in the same batch as the games row.
+  const ships = new ShipStore(proxy.env.DB);
+  await ships.launched({ roomId: "g1", language: "en", singlePlayer: false, seats: 16, launchedAt: 1 });
+  await ships.launched({ roomId: "g1", language: "en", singlePlayer: false, seats: 16, launchedAt: 1 });
+  await ships.launched({ roomId: "solo", language: null, singlePlayer: true, seats: 9, launchedAt: 1 });
   await games.recordFinished(record("g1", 10));
   await games.recordFinished(record("g1", 10));
+  expect(await ships.roomIds()).toEqual(["solo"]);
+  await ships.ended("solo");
+  expect(await ships.roomIds()).toEqual([]);
   await games.recordFinished(record("g2", 20));
   const first = await games.listFinished({ limit: 1 });
   expect(first.games.map((g) => g.id)).toEqual(["g2"]);

@@ -41,6 +41,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AccountStore } from "../src/accountStore.ts";
 import { BOT_CHAT_CHAIN_DEPTH } from "../src/bots.ts";
 import { GameStore } from "../src/gameStore.ts";
+import { ShipStore } from "../src/shipStore.ts";
+import { sweepRunning } from "../src/shipSweep.ts";
 import { FakeConnection, FakeR2Bucket, FakeServer, FakeStorage, seats, tokensFor } from "../src/testing/fakes.ts";
 import { migratedDatabase } from "./sqliteD1.ts";
 
@@ -52,8 +54,9 @@ type Room = InstanceType<typeof GameRoom>;
 
 // The room is a Durable Object; these tests drive it through the same
 // methods the runtime calls (setup, onConnect, onMessage) with fake sockets.
+// Every room has a D1, as every deployment does: the running-ships row (#431) is written at launch.
 const asRoom = (storage: FakeStorage, env: Record<string, string> = {}): Room =>
-  new GameRoom({ storage } as never, { RULES_VERSION: "test", ...env } as never);
+  new GameRoom({ storage } as never, { RULES_VERSION: "test", DB: migratedDatabase(), ...env } as never);
 
 async function newRoom(humans = 3, storage = new FakeStorage(), env: Record<string, string> = {}, roles?: Record<string, Role>) {
   const room = asRoom(storage, env);
@@ -1820,6 +1823,133 @@ describe("GameRoom finished games list (#155)", () => {
       expect(rows.results).toEqual(accountId ? [{ sp: 1, language: "fr" }] : []);
       expect((await new GameStore(db).listFinished()).games).toEqual([]);
     }
+  });
+});
+
+describe("GameRoom running ships (#431)", () => {
+  type Shipping = { recordingShip: Promise<void> | null; recordFinished(): Promise<void>; game: GameState; env: Record<string, unknown> };
+  type ShipDbRow = { room_id: string; language: string | null; single_player: number; seats: number; launched_at: number };
+  const shipRows = async (db: ReturnType<typeof migratedDatabase>) => (await db.prepare("SELECT * FROM ships").all<ShipDbRow>()).results;
+  const gameRows = async (db: ReturnType<typeof migratedDatabase>) => (await db.prepare("SELECT room_id FROM games").all()).results;
+  const endGame = (inner: Shipping) => {
+    inner.game.phase = "ended";
+    inner.game.winner = "humans";
+    inner.game.ending = "sol";
+  };
+
+  /** A room on this D1, or none (`null`), so the launch write fails. */
+  const shipRoom = (db: ReturnType<typeof migratedDatabase> | null, storage = new FakeStorage()) => {
+    const room = new GameRoom({ storage } as never, { RULES_VERSION: "test", REPLAYS: new FakeR2Bucket(), ...(db && { DB: db }) } as never);
+    return { room, storage, inner: room as unknown as Shipping };
+  };
+
+  it("writes a row when a multiplayer ship launches, with no player information", async () => {
+    vi.useFakeTimers({ now: Date.UTC(2026, 10, 14, 10) });
+    try {
+      const db = migratedDatabase();
+      const { room, inner } = shipRoom(db);
+      expect(room.running()).toBe(false);
+      await room.join("Ann", "chun", STANDARD_SETUP, undefined, "fr");
+      await inner.recordingShip;
+      expect(await shipRows(db)).toEqual([
+        { room_id: (room as unknown as { name: string }).name, language: "fr", single_player: 0, seats: inner.game.config.preselection!.seats, launched_at: Date.now() },
+      ]);
+      expect(room.running()).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("retries a failed write from the alarm, and the end of the game removes the row with the games row", async () => {
+    vi.useFakeTimers({ now: 1_000_000 });
+    try {
+      vi.spyOn(console, "warn").mockImplementation(() => {});
+      const { room, inner, storage } = shipRoom(null);
+      await room.setup(seats(3), tokensFor(3));
+      await inner.recordingShip;
+      // No D1: the write failed and the alarm is set to try again, before the next cycle.
+      const retryAt = storage.alarm!;
+      expect(retryAt).toBe(1_000_000 + 60_000);
+      const db = migratedDatabase();
+      inner.env.DB = db;
+      vi.setSystemTime(retryAt);
+      await room.onAlarm();
+      expect((await shipRows(db)).map((r) => r.seats)).toEqual([inner.game.players.length]);
+      expect(storage.alarm).not.toBe(retryAt);
+      endGame(inner);
+      await inner.recordFinished();
+      expect(await shipRows(db)).toEqual([]);
+      expect(await gameRows(db)).toHaveLength(1);
+    } finally {
+      vi.restoreAllMocks();
+      vi.useRealTimers();
+    }
+  });
+
+  it("writes nothing on a retry once the game has ended", async () => {
+    vi.useFakeTimers({ now: 1_000_000 });
+    try {
+      vi.spyOn(console, "warn").mockImplementation(() => {});
+      const { room, inner, storage } = shipRoom(null);
+      await room.setup(seats(3), tokensFor(3));
+      await inner.recordingShip;
+      const db = migratedDatabase();
+      inner.env.DB = db;
+      endGame(inner);
+      await inner.recordFinished();
+      vi.setSystemTime(1_000_000 + 60_000);
+      await room.onAlarm();
+      expect(await shipRows(db)).toEqual([]);
+      expect(await gameRows(db)).toHaveLength(1);
+      expect(storage.alarm).toBeNull();
+    } finally {
+      vi.restoreAllMocks();
+      vi.useRealTimers();
+    }
+  });
+
+  it("writes a row for a single-player game without an account, and removes it at the end with no games row", async () => {
+    const db = migratedDatabase();
+    const { room, inner } = shipRoom(db);
+    await room.setupSinglePlayer("Solo", "chun", "es");
+    await inner.recordingShip;
+    expect(await shipRows(db)).toMatchObject([{ language: "es", single_player: 1, seats: inner.game.players.length }]);
+    endGame(inner);
+    await inner.recordFinished();
+    expect(await shipRows(db)).toEqual([]);
+    expect(await gameRows(db)).toEqual([]);
+  });
+
+  it("writes the row again on restart if it wasn't saved as written, which changes nothing", async () => {
+    vi.useFakeTimers({ now: 1_000_000 });
+    try {
+      const db = migratedDatabase();
+      const { room, inner, storage } = shipRoom(db);
+      await room.setup(seats(3), tokensFor(3));
+      await inner.recordingShip;
+      // Saved with the next input only, so a restart before one writes it again.
+      expect((storage.data.get("game") as { shipRecorded: boolean }).shipRecorded).toBe(false);
+      const revived = shipRoom(db, storage);
+      await revived.room.onStart();
+      expect(storage.alarm).toBe(1_000_000);
+      await revived.room.onAlarm();
+      expect(await shipRows(db)).toHaveLength(1);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("says a retired ship isn't running, so the sweep removes its row", async () => {
+    const db = migratedDatabase();
+    const { room, storage, inner } = shipRoom(db);
+    await room.setup(seats(3), tokensFor(3));
+    await inner.recordingShip;
+    (storage.data.get("game") as { version: number }).version = -1;
+    const retired = shipRoom(db, storage).room;
+    await retired.onStart();
+    expect(retired.running()).toBe(false);
+    expect(await sweepRunning(new ShipStore(db), async () => retired.running())).toBe(1);
+    expect(await shipRows(db)).toEqual([]);
   });
 });
 

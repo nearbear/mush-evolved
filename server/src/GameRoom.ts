@@ -73,6 +73,7 @@ import { BOT_CHAT_CHAIN_DEPTH, LogParrotBot, ModelBot, WanderBot, type Bot } fro
 import { parseItemLine } from "./bots/itemShare.ts";
 import type { BotMessage } from "./prompt.ts";
 import { finishedEntry, gameStoreFor } from "./gameStore.ts";
+import { shipRow, shipStoreFor } from "./shipStore.ts";
 import { clockCycle, clockCycleStart, cycleMs, cycleOfDay } from "./cycleClock.ts";
 import { devModelCredentials, ModelGate, playerModelCredentials } from "./model.ts";
 import { RateLimiter } from "./rateLimit.ts";
@@ -172,6 +173,11 @@ interface StoredRoom {
   starts?: Record<PlayerId, SeatStart>;
   /** The finished game is in the list (#155), or needs no entry. */
   listed: boolean;
+  /**
+   * The running-ships row is written (#431). Saved with the next input, not on its own: a room that restarts without
+   * it writes the row again, which changes nothing. Missing on older games, which write theirs on their next start.
+   */
+  shipRecorded?: boolean;
   /** When the game ended (the time of the input that ended it); missing while it runs. */
   endedAt?: number;
   /** The finished game's history is in R2, every chunk and the index confirmed (#336). */
@@ -251,6 +257,11 @@ export class GameRoom extends Server<Env> {
   /** When to try writing the finished game's entry again (`recordFinished`), and the wait after the next failure. */
   private listRetryAt: number | null = null;
   private listRetryMs = LIST_RETRY_MS;
+  /** The running-ships row (#431, `recordShip`): written, when to try again, the wait after the next failure, and one at a time. */
+  private shipRecorded = false;
+  private shipRetryAt: number | null = null;
+  private shipRetryMs = LIST_RETRY_MS;
+  private recordingShip: Promise<void> | null = null;
   /** The history's copy to R2 (#336): done, when to try it again, the wait after the next failure, and one at a time. */
   private replayReady = false;
   private replayRetryAt: number | null = null;
@@ -363,6 +374,9 @@ export class GameRoom extends Server<Env> {
     this.starts = loaded.starts;
     this.listed = stored.listed;
     this.endedAt = stored.endedAt ?? null;
+    this.shipRecorded = stored.shipRecorded ?? false;
+    // A running ship whose row wasn't written (or saved as written): try at once. Idempotent.
+    if (this.game.phase === "playing" && !this.shipRecorded) this.shipRetryAt = Date.now();
     // A finished game whose entry wasn't written yet: try at once.
     if (this.game.phase === "ended" && !this.listed) this.listRetryAt = Date.now();
     this.replayReady = stored.replayReady;
@@ -490,6 +504,15 @@ export class GameRoom extends Server<Env> {
   }
 
   /**
+   * Whether this ship is running, for the sweep of running-ships rows (#431, shipSweep.ts): a ship retired by a
+   * STATE_VERSION bump, reclaimed, ended or never launched isn't. One this build can't read (#384) counts as running:
+   * a later build that reads it carries on, so its row stays until its game ends.
+   */
+  running(): boolean {
+    return this.unavailable || this.game?.phase === "playing";
+  }
+
+  /**
    * Leave ship, a developer cheat (`ALLOW_CHEATS` only): frees the seat's account in D1 so the lobby offers other
    * ships, and drops every token for the seat, closing its sockets (4001 sends the client to the lobby). The character
    * stays aboard, unplayed; nothing goes through the rules. Not a player rule: a living player can't leave a ship.
@@ -600,6 +623,9 @@ export class GameRoom extends Server<Env> {
     const game = this.game;
     if (this.listed || game?.phase !== "ended") return;
     const endedAt = this.endedAt ?? Date.now();
+    // A launch write still under way finishes first, so it can't land after the row is deleted.
+    await this.recordingShip;
+    this.shipRetryAt = null;
     try {
       const setup = await this.ctx.storage.get<GameSetup>("setup");
       const entry = finishedEntry(game, {
@@ -612,7 +638,9 @@ export class GameRoom extends Server<Env> {
         starts: this.starts ?? {},
         accounts: this.accounts,
       });
+      // The running-ships row goes with the entry, in one batch (#431); a game with no entry deletes it alone.
       if (entry) await gameStoreFor(this.env).recordFinished(entry);
+      else await shipStoreFor(this.env).ended(this.name);
       this.listed = true;
       this.listRetryAt = null;
       if (this.replayReady) this.reclaimAt ??= Date.now() + RECLAIM_DELAY_MS;
@@ -621,6 +649,38 @@ export class GameRoom extends Server<Env> {
       logWarn("list_finished_failed", { roomId: this.name, ...failure(e) });
       this.listRetryAt = Date.now() + this.listRetryMs;
       this.listRetryMs = Math.min(this.listRetryMs * 2, LIST_RETRY_MAX_MS);
+    }
+  }
+
+  /**
+   * Writes the running-ships row (#431) after launch, without the game waiting on it: a failure is tried again from
+   * the alarm with backoff (`shipRetryAt`). Idempotent. A game that has ended by then writes nothing: its row would
+   * never be deleted.
+   */
+  private recordShip(): Promise<void> {
+    this.recordingShip ??= this.tryRecordShip().finally(() => (this.recordingShip = null));
+    return this.recordingShip;
+  }
+
+  private async tryRecordShip(): Promise<void> {
+    const game = this.game;
+    if (this.shipRecorded || !game) return;
+    if (game.phase !== "playing") {
+      this.shipRetryAt = null;
+      return;
+    }
+    try {
+      const setup = await this.ctx.storage.get<GameSetup>("setup");
+      await shipStoreFor(this.env).launched(
+        shipRow(game, { roomId: this.name, language: this.language, singlePlayer: this.singlePlayer, launchedAt: setup?.launchedAt ?? Date.now() }),
+      );
+      this.shipRecorded = true;
+      this.shipRetryAt = null;
+    } catch (e) {
+      logWarn("record_ship_failed", { roomId: this.name, ...failure(e) });
+      this.shipRetryAt = Date.now() + this.shipRetryMs;
+      this.shipRetryMs = Math.min(this.shipRetryMs * 2, LIST_RETRY_MAX_MS);
+      await this.scheduleTick();
     }
   }
 
@@ -697,6 +757,7 @@ export class GameRoom extends Server<Env> {
       this.accounts = {};
       this.aboard = {};
       this.tokenSessions = {};
+      this.shipRetryAt = null;
       this.listRetryAt = null;
       this.replayRetryAt = null;
       this.reclaimAt = null;
@@ -762,6 +823,8 @@ export class GameRoom extends Server<Env> {
     this.initBots();
     this.scheduleBots();
     await this.scheduleTick();
+    // Not awaited: the game never waits on D1.
+    void this.recordShip();
   }
 
   override async onConnect(connection: Connection<SeatState>, ctx: ConnectionContext): Promise<void> {
@@ -891,6 +954,7 @@ export class GameRoom extends Server<Env> {
         }
       }
     }
+    if (this.shipRetryAt !== null && this.shipRetryAt <= Date.now()) await this.recordShip();
     if (this.listRetryAt !== null && this.listRetryAt <= Date.now()) await this.recordFinished();
     if (this.replayRetryAt !== null && this.replayRetryAt <= Date.now()) await this.copyReplay();
     if (this.reclaimAt !== null && this.reclaimAt <= Date.now()) await this.reclaimStorage();
@@ -1131,7 +1195,7 @@ export class GameRoom extends Server<Env> {
   private async scheduleTick(): Promise<void> {
     const bar = this.game ? nextDue(this.game) : null;
     const cycle = this.game?.phase === "playing" ? this.nextCycleAt() : null;
-    const due = [bar, cycle, this.listRetryAt, this.replayRetryAt, this.reclaimAt].reduce<number | null>(
+    const due = [bar, cycle, this.shipRetryAt, this.listRetryAt, this.replayRetryAt, this.reclaimAt].reduce<number | null>(
       (a, b) => (a === null ? b : b === null ? a : Math.min(a, b)),
       null,
     );
@@ -1410,6 +1474,7 @@ export class GameRoom extends Server<Env> {
       ...(this.language !== null && { language: this.language }),
       ...(this.starts !== null && { starts: this.starts }),
       listed: this.listed,
+      shipRecorded: this.shipRecorded,
       ...(this.endedAt !== null && { endedAt: this.endedAt }),
       replayReady: this.replayReady,
       ...(this.reclaimAt !== null && { reclaimAt: this.reclaimAt }),

@@ -15,6 +15,7 @@
     "preview": "npm run preview -w tools",
     "ports": "node tools/src/dev/ports.ts",
     "dev-state": "npm run dev-state -s -w tools --",
+    "ships": "npm run ships -s -w tools --",
     "test": "npm run test -w shared -w tools -w web -w server",
     "test:browser": "npm run test:browser -w tools",
     "test:slow": "npm run test:slow -w shared",

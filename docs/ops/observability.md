@@ -32,3 +32,19 @@ Each request the Worker runs gets an automatic entry. Checked on staging: Cloudf
 
 - An uncaught error's message and stack are stored unfiltered. Workers Logs stores the same text anyway, so Issues adds no new exposure, but no thrown message should quote game state.
 - Not tried: whether a throw inside a Durable Object, or one PartyServer catches, appears there.
+
+## Running ships (#431)
+
+The `ships` table in D1 (`server/migrations/0005_ships.sql`, `server/src/shipStore.ts`) holds one row per ship running now: `room_id`, `language`, `single_player`, `seats`, `launched_at`. No player information.
+
+- **Written at launch** by the room, without the game waiting on D1. A failed write logs `record_ship_failed` and is retried from the room's alarm with backoff; a room that restarts before the write was saved writes it again (idempotent). A ship that is already over by then writes nothing. Ships launched before this table existed write theirs on their next start.
+- **Deleted when the game ends**, in the same D1 batch as its `games` row, so the table never holds a finished ship and needs no retention rule. A single-player game without an account has no `games` row; its ship row is deleted alone.
+- **The daily cron** (`sweepRunning` in `shipSweep.ts`) asks each listed room whether it is still `running` and deletes the rows of those that aren't: retired by a `STATE_VERSION` bump, reclaimed, or crashed mid-launch. A room it can't ask keeps its row (`sweep_ask_failed`). A ship this build can't read (`UNAVAILABLE`) counts as running: a later build carries it on.
+
+### `npm run ships -- --env <production|staging|test>`
+
+Prints the running ships per language and mode, each with its room ID, signed-in players aboard (open `account_ships` rows) against seats, and launch time. It runs one fixed, read-only query through `wrangler d1 execute --remote` with your own wrangler login (`npx wrangler login`), so there is no web route to secure. It never prints account IDs or names.
+
+- **Aboard counts signed-in players**: exact for multiplayer, which needs an account. Single player never boards, so it shows `-`.
+- **A ship can be missing for a while** if its launch write failed: it appears once the room's retry succeeds.
+- No cycle or phase yet (#434); a room ID is what to search for in the logs (`roomId`).
