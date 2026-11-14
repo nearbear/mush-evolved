@@ -22,7 +22,7 @@ export function contactSolOptions(view: PlayerView, memory: BotMemory, ignoreDir
   if (view.comms.linked || !holdsTrigger(view, "linkDown", isSolDuty)) return [];
   if (!ignoreDirty && view.statuses.includes("dirty")) return [];
   const room = roomsWith(view, [COM_CENTER]).find(
-    (r) => !memory.ended.has(`contactSol:${r}`) && canAfford(view, r, view.config.contactSolAp, memory.reserve),
+    (r) => !memory.ended.has(`contactSol:${r}`) && canAfford(view, r, view.config.contactSolAp, memory.reserve, memory),
   );
   if (!room) return [];
   return [

@@ -8,7 +8,7 @@ import { END_CYCLE, helpGoal, helpTasks, SOLO_GOALS, type BotMemory, type BotSoc
 import { extinguish } from "./bots/goals/extinguish.ts";
 import { newFireMemory, observeFires } from "./bots/fireShare.ts";
 import { newItemMemory, observeItems } from "./bots/itemShare.ts";
-import { holdStartCycle, isHoldingJump } from "./bots/planetShare.ts";
+import { holdStartCycle, isHoldingJump, newJumpMemory } from "./bots/planetShare.ts";
 import { buildPrompt, describeLogEntry, observeShrinks, parseReply, type BotMessage } from "./prompt.ts";
 import type { ModelGate } from "./model.ts";
 
@@ -140,6 +140,7 @@ export class GoalBot implements Bot {
       fires: newFireMemory(),
       combustion: null,
       holdSince: null,
+      jump: newJumpMemory(),
       heading: null,
       cancelHold: false,
       justJumped: false,
@@ -290,7 +291,7 @@ export class GoalBot implements Bot {
     observeShrinks(view, this.memory.shrinks);
     if (view.navigation.traveling || view.navigation.orbiting) this.memory.combustion = null;
     if (view.navigation.heading !== null) this.memory.heading = view.navigation.heading;
-    const chatHold = holdStartCycle(view);
+    const chatHold = holdStartCycle(view, this.memory);
     if (chatHold !== null && this.memory.holdSince === null) this.memory.holdSince = chatHold;
   }
 
@@ -305,7 +306,7 @@ export class GoalBot implements Bot {
       !holdsTrigger(view, "destination") ||
       view.navigation.traveling ||
       view.navigation.orbiting ||
-      (this.memory.holdSince === null && !isHoldingJump(view))
+      (this.memory.holdSince === null && !isHoldingJump(view, this.memory))
     ) {
       return true;
     }

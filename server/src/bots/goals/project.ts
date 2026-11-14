@@ -12,7 +12,7 @@ export function projectOptions(view: PlayerView, memory: BotMemory, assumeClean 
   if (PROJECT_IDS.every((id) => (view.projects[id] ?? 0) >= PROJECT_COMPLETE)) return [];
   const free = view.you.resources.core > 0 || view.you.resources.comp > 0;
   const cost = free ? 0 : view.config.projectAp;
-  const core = roomsWith(view, ["NERON_CORE"]).find((room) => !memory.ended.has(`project:${room}`) && canAfford(view, room, cost, deskWorkReserve(view, memory)));
+  const core = roomsWith(view, ["NERON_CORE"]).find((room) => !memory.ended.has(`project:${room}`) && canAfford(view, room, cost, deskWorkReserve(view, memory), memory));
   return core ? [workAt("project", core, `Work on NERON projects at a terminal ${where(view, core)}, the most advanced first`, (v) => mostAdvanced(v, "project", (a) => v.projects[a.project] ?? 0), deskWorkReserve)] : [];
 }
 

@@ -58,7 +58,7 @@ function plan(view: PlayerView, memory: BotMemory): Plan | null {
   const burning = nearest(view, [...fires.burning]);
   if (burning.length > 0) {
     if (carried(view)) {
-      const room = burning.find((r) => canAfford(view, r, extinguishAp, 0));
+      const room = burning.find((r) => canAfford(view, r, extinguishAp, 0, memory));
       if (room && open(`extinguish:fire:${room}`)) return { key: `extinguish:fire:${room}`, label: `Carry your extinguisher to the fire ${where(view, room)} and put it out` }; // i18n-ignore: model prompt text, not player-visible
     } else {
       for (const from of nearest(view, roomsHolding(memory, EXTINGUISHER))) {
@@ -68,12 +68,12 @@ function plan(view: PlayerView, memory: BotMemory): Plan | null {
     }
   }
   if (unlocatedFires(fires) > 0 && !fireSensor(view) && open("extinguish:search")) {
-    if (nearest(view, unsearchedRooms(fires)).some((r) => canAfford(view, r, 0, memory.reserve))) {
+    if (nearest(view, unsearchedRooms(fires)).some((r) => canAfford(view, r, 0, memory.reserve, memory))) {
       return { key: "extinguish:search", label: "A fire broke out somewhere: look for it in the rooms nobody has checked" }; // i18n-ignore: model prompt text, not player-visible
     }
   }
   if (fires.active === 0 && fires.burning.size === 0 && carried(view) && open("extinguish:return")) {
-    const home = nearest(view, EXTINGUISHER_HOMES).find((r) => canAfford(view, r, 0, memory.reserve));
+    const home = nearest(view, EXTINGUISHER_HOMES).find((r) => canAfford(view, r, 0, memory.reserve, memory));
     if (home) return { key: "extinguish:return", label: `Leave your extinguisher ${where(view, home)}, where anyone can reach it` }; // i18n-ignore: model prompt text, not player-visible
   }
   return null;
@@ -97,11 +97,11 @@ function step(view: PlayerView, memory: BotMemory, key: string): GoalStep {
     return take ? act(take) : failed("no_extinguisher");
   }
   if (kind === "search") {
-    const target = nearest(view, unsearchedRooms(fires)).find((r) => canAfford(view, r, 0, memory.reserve));
+    const target = nearest(view, unsearchedRooms(fires)).find((r) => canAfford(view, r, 0, memory.reserve, memory));
     return target ? (goTo(view, target) ?? { kind: "done", again: true }) : { kind: "done" };
   }
   // return
-  const home = nearest(view, EXTINGUISHER_HOMES).find((r) => canAfford(view, r, 0, memory.reserve));
+  const home = nearest(view, EXTINGUISHER_HOMES).find((r) => canAfford(view, r, 0, memory.reserve, memory));
   const walk = home === undefined ? failed("no_home") : goTo(view, home);
   if (walk) return walk;
   const drop = find(view, "drop", (a) => a.item === carried(view));

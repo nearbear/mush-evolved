@@ -16,7 +16,7 @@ export const rest: GoalDef = {
   options(view, memory) {
     if (view.you.ap >= view.maxAp) return [];
     if (view.you.lyingIn !== undefined) return [restIn(view.you.room, "Stay in bed until your AP is full")];
-    const room = roomsWith(view, ["BED"]).find((r) => !memory.ended.has(`rest:${r}`) && canAfford(view, r, view.config.lieDownAp, 0));
+    const room = roomsWith(view, ["BED"]).find((r) => !memory.ended.has(`rest:${r}`) && canAfford(view, r, view.config.lieDownAp, 0, memory));
     return room ? [restIn(room, `Rest: lie down in a bed ${where(view, room)} until your AP is full`)] : [];
   },
 };

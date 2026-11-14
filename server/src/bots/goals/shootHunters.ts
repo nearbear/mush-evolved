@@ -52,7 +52,7 @@ export const crewShootHunters: GoalDef = {
 function shootOptions(id: string, view: PlayerView, memory: BotMemory): Goal[] {
   if (view.hunters.count === 0 || onlyAsteroids(view, memory) || (memory.scripted && view.you.ap < SCRIPTED_SHOOT_AP)) return [];
   const cost = view.you.resources.shoot > 0 ? 0 : view.config.turretAp;
-  const room = roomsWith(view, [TURRET]).find((r) => !memory.ended.has(`${id}:${r}`) && canAfford(view, r, cost, 0));
+  const room = roomsWith(view, [TURRET]).find((r) => !memory.ended.has(`${id}:${r}`) && canAfford(view, r, cost, 0, memory));
   return room ? [shootFrom(id, view, room)] : [];
 }
 

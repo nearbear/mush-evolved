@@ -42,7 +42,7 @@ export const tendPlants: GoalDef = {
     const here = view.you.room === garden;
     if (here ? !gardenJob(view, memory.reserve) : memory.today.has(`tendPlants:${garden}`)) return [];
     const apNeeded = view.you.resources.garden > 0 ? 0 : view.config.waterAp;
-    if (!here && !canAfford(view, garden, apNeeded, memory.reserve)) return [];
+    if (!here && !canAfford(view, garden, apNeeded, memory.reserve, memory)) return [];
     return [
       {
         id: "tendPlants",

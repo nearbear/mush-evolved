@@ -33,11 +33,11 @@ export const patrolShootHunters: GoalDef = {
   },
   options(view, memory) {
     if (view.patrolShip !== null) return [sortie(view, null)];
-    if (view.hunters.count === 0 || jumpDueByChat(view) || onlyAsteroids(view, memory) || !holdsTrigger(view, "hunters", isPatrolDuty)) return [];
+    if (view.hunters.count === 0 || jumpDueByChat(view, memory) || onlyAsteroids(view, memory) || !holdsTrigger(view, "hunters", isPatrolDuty)) return [];
     if (memory.scripted && view.you.ap < SCRIPTED_PATROL_AP) return [];
     const { takeoffAp, landAp } = view.config;
     const shot = view.you.resources.shoot > 0 ? 0 : view.config.patrolShotAp;
-    const bay = roomsWith(view, [INTERFACE]).find((r) => !memory.ended.has(keyFor(r)) && canAfford(view, r, takeoffAp + shot + landAp, 0));
+    const bay = roomsWith(view, [INTERFACE]).find((r) => !memory.ended.has(keyFor(r)) && canAfford(view, r, takeoffAp + shot + landAp, 0, memory));
     return bay ? [sortie(view, bay)] : [];
   },
 };
@@ -59,7 +59,7 @@ function sortie(view: PlayerView, bay: RoomId | null): Goal {
         flown = true;
         return fly(v, memory);
       }
-      if (flown || bay === null || v.hunters.count === 0 || jumpDueByChat(v) || onlyAsteroids(v, memory)) return { kind: "done" };
+      if (flown || bay === null || v.hunters.count === 0 || jumpDueByChat(v, memory) || onlyAsteroids(v, memory)) return { kind: "done" };
       const walk = goTo(v, bay);
       if (walk) return walk;
       const takeoff = offered(v, "takeoff").find((o) => !o.action.equipment.endsWith(`:${PASIPHAE}`));
@@ -83,7 +83,7 @@ function fly(v: PlayerView, memory: BotMemory): GoalStep {
     v.hunters.list,
   )[0];
   const charges = v.patrolShip?.charges ?? 0;
-  if (!jumpDueByChat(v) && shot && charges > 0 && v.hunters.count > 0 && v.you.ap - shot.cost.ap >= v.config.landAp) return act(shot.action);
+  if (!jumpDueByChat(v, memory) && shot && charges > 0 && v.hunters.count > 0 && v.you.ap - shot.cost.ap >= v.config.landAp) return act(shot.action);
   const land = find(v, "land");
   return land ? act(land) : { kind: "wait" };
 }

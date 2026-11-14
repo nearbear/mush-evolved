@@ -24,7 +24,7 @@ export const shrinkDorm: GoalDef = {
   options(view, memory) {
     if (!holdsTrigger(view, "dorm") || memory.today.has("shrinkDorm")) return [];
     const dorm = dormFor(view);
-    if (!canAfford(view, dorm, 0, 0)) return [];
+    if (!canAfford(view, dorm, 0, 0, memory)) return [];
     return [
       {
         id: "shrinkDorm",

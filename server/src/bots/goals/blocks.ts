@@ -14,7 +14,7 @@ import {
 } from "@mush2/shared";
 import { holdsTrigger } from "../duties.ts";
 import { isHoldingJump } from "../planetShare.ts";
-import type { GoalStep } from "./types.ts";
+import type { BotMemory, GoalStep } from "./types.ts";
 
 // The situation helpers live in shared (situation.ts), where the client's tips use them too.
 export { canAfford as rawCanAfford, nearest, roomsWith, travelAp } from "@mush2/shared";
@@ -43,17 +43,17 @@ export function canReachBridgeWithTravelAp(view: PlayerView, fromRoom: RoomId, a
 }
 
 /** Whether the viewer is the Commander currently holding a jump in global chat (#421). */
-export function isCommanderHolding(view: PlayerView): boolean {
-  return holdsTrigger(view, "destination") && !view.navigation.traveling && !view.navigation.orbiting && isHoldingJump(view);
+export function isCommanderHolding(view: PlayerView, memory: BotMemory): boolean {
+  return holdsTrigger(view, "destination") && !view.navigation.traveling && !view.navigation.orbiting && isHoldingJump(view, memory);
 }
 
 /**
  * Whether the viewer can walk to `room` and spend `ap` there, keeping `reserve` AP — and when the viewer is the
  * Commander holding a jump (#421), still keeping enough AP/MP to walk back to the bridge and `travel`.
  */
-export function canAfford(view: PlayerView, room: RoomId, ap: number, reserve: number): boolean {
+export function canAfford(view: PlayerView, room: RoomId, ap: number, reserve: number, memory: BotMemory): boolean {
   if (!rawCanAfford(view, room, ap, reserve)) return false;
-  if (!isCommanderHolding(view)) return true;
+  if (!isCommanderHolding(view, memory)) return true;
   const afterWalk = walkBudget(view, view.you.room, room, view.you.ap, view.you.mp);
   return afterWalk !== null && canReachBridgeWithTravelAp(view, room, afterWalk.ap - ap, afterWalk.mp);
 }

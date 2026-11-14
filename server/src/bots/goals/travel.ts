@@ -22,9 +22,9 @@ export const HOLD_MIN_OXYGEN = 8;
 export const JUMP_WAIT_CYCLES = 2;
 
 /** Whether the jump can go: the minimap shows the whole living crew aboard, or the wait after `"Jump: now"` is over. */
-function clearToJump(view: PlayerView): boolean {
+function clearToJump(view: PlayerView, memory: BotMemory): boolean {
   if (crewAboard(view)) return true;
-  const since = jumpNowCycle(view);
+  const since = jumpNowCycle(view, memory);
   return since !== null && view.cycle - since >= JUMP_WAIT_CYCLES;
 }
 
@@ -86,9 +86,9 @@ export function shouldJumpNow(view: PlayerView, holdStart: number | null): boole
  * hold is up and its trigger is met (hunter count, oxygen, the hold line's cycle). Pilots check this before taking
  * off: a takeoff is a timed action nobody in another room sees, so waiting for `"Jump: now"` would race the jump.
  */
-export function jumpDueByChat(view: PlayerView): boolean {
-  if (isJumpDue(view)) return true;
-  const since = holdStartCycle(view);
+export function jumpDueByChat(view: PlayerView, memory: BotMemory): boolean {
+  if (isJumpDue(view, memory)) return true;
+  const since = holdStartCycle(view, memory);
   return since !== null && shouldJumpNow(view, since);
 }
 
@@ -120,11 +120,11 @@ export function turnsTo(from: PlanetDirection, to: PlanetDirection): { left: num
 }
 
 /**
- * When the current hold started: the earlier of the hold line in chat and the bot's own memory. Global chat keeps only
- * its latest pages, so the line can scroll out mid-hold; the Commander then re-announces it without restarting the clock.
+ * When the current hold started: the earlier of the hold line read in chat (`BotMemory.jump`, kept after the line
+ * scrolls out, #427) and the bot's own memory of starting it.
  */
 function effectiveHoldStart(view: PlayerView, memory: BotMemory): number | null {
-  const chat = holdStartCycle(view);
+  const chat = holdStartCycle(view, memory);
   if (chat === null) return memory.holdSince;
   return memory.holdSince === null ? chat : Math.min(chat, memory.holdSince);
 }
@@ -157,7 +157,7 @@ export const travel: GoalDef = {
       return [travelGoal(view, memory, firstBridge, { direction: null, distance: 1 })];
     }
     if (view.navigation.traveling || view.navigation.orbiting) {
-      if (isHoldingJump(view) && view.chatChannels.includes("global")) {
+      if (isHoldingJump(view, memory) && view.chatChannels.includes("global")) {
         return [travelGoal(view, memory, firstBridge, { direction: null, distance: 1 })];
       }
       memory.holdSince = null;
@@ -167,7 +167,7 @@ export const travel: GoalDef = {
     const chamber = combustionReading(view, memory);
     const target = targetJump(view, chamber);
     if (!target) {
-      if (isHoldingJump(view) && view.chatChannels.includes("global")) {
+      if (isHoldingJump(view, memory) && view.chatChannels.includes("global")) {
         return [travelGoal(view, memory, firstBridge, { direction: null, distance: 1 })];
       }
       memory.holdSince = null;
@@ -176,14 +176,13 @@ export const travel: GoalDef = {
 
     const prepared = isPrepared(view, memory, chamber, target);
     const holdStart = effectiveHoldStart(view, memory);
-    // Holding: nothing to do until the trigger, unless the hold line has scrolled out of chat and must be posted again.
-    const lineLost = !isHoldingJump(view) && memory.holdSince !== null && view.chatChannels.includes("global");
-    const due = isJumpDue(view) || shouldJumpNow(view, holdStart);
-    if (prepared && holdStart !== null && !due && !lineLost) {
+    // Holding: nothing to do until the trigger.
+    const due = isJumpDue(view, memory) || shouldJumpNow(view, holdStart);
+    if (prepared && holdStart !== null && !due) {
       return [];
     }
     // Due, announced, and someone is still out on the minimap: nothing to do until they are back aboard.
-    if (prepared && isJumpDue(view) && !clearToJump(view)) return [];
+    if (prepared && isJumpDue(view, memory) && !clearToJump(view, memory)) return [];
 
     const apNeeded = prepared ? DEFAULT_CONFIG.navigation.travel.cost.ap : steerAp(view, target.direction, memory);
     const bridge = roomsWith(view, [COMMAND]).find((r) => !memory.ended.has(`travel:${r}`) && rawCanAfford(view, r, apNeeded, 0));
@@ -209,7 +208,7 @@ function travelGoal(view: PlayerView, _memory: BotMemory, bridge: RoomId, initia
 
       if (memory.cancelHold) {
         memory.cancelHold = false;
-        if (isHoldingJump(v) && v.chatChannels.includes("global")) {
+        if (isHoldingJump(v, memory) && v.chatChannels.includes("global")) {
           return { kind: "social", message: { type: "chat", channel: "global", text: CANCEL_HOLD_LINE } };
         }
       }
@@ -225,7 +224,7 @@ function travelGoal(view: PlayerView, _memory: BotMemory, bridge: RoomId, initia
 
       const failWithCancel = (reason: string): GoalStep => {
         memory.holdSince = null;
-        if (isHoldingJump(v) && v.chatChannels.includes("global")) {
+        if (isHoldingJump(v, memory) && v.chatChannels.includes("global")) {
           memory.failedReason = reason;
           return { kind: "social", message: { type: "chat", channel: "global", text: CANCEL_HOLD_LINE } };
         }
@@ -234,7 +233,7 @@ function travelGoal(view: PlayerView, _memory: BotMemory, bridge: RoomId, initia
 
       const finishWithCancel = (): GoalStep => {
         memory.holdSince = null;
-        if (isHoldingJump(v) && v.chatChannels.includes("global")) {
+        if (isHoldingJump(v, memory) && v.chatChannels.includes("global")) {
           memory.justJumped = true;
           return { kind: "social", message: { type: "chat", channel: "global", text: CANCEL_HOLD_LINE } };
         }
@@ -252,7 +251,7 @@ function travelGoal(view: PlayerView, _memory: BotMemory, bridge: RoomId, initia
 
       // The hold goes up as preparing starts, so a line is always up before a jump and pilots can tell from it when
       // the jump is due (`jumpDueByChat`): a takeoff already under way when `"Jump: now"` is posted can't be seen.
-      if (!isHoldingJump(v) && v.chatChannels.includes("global")) {
+      if (!isHoldingJump(v, memory) && v.chatChannels.includes("global")) {
         memory.holdSince ??= v.cycle;
         return { kind: "social", message: { type: "chat", channel: "global", text: HOLD_JUMP_LINE } };
       }
@@ -291,9 +290,9 @@ function travelGoal(view: PlayerView, _memory: BotMemory, bridge: RoomId, initia
       }
 
       const holdStart = effectiveHoldStart(v, memory);
-      if (!isJumpDue(v) && !shouldJumpNow(v, holdStart)) {
+      if (!isJumpDue(v, memory) && !shouldJumpNow(v, holdStart)) {
         memory.holdSince ??= v.cycle;
-        if (!isHoldingJump(v) && v.chatChannels.includes("global")) {
+        if (!isHoldingJump(v, memory) && v.chatChannels.includes("global")) {
           return { kind: "social", message: { type: "chat", channel: "global", text: HOLD_JUMP_LINE } };
         }
         return { kind: "done", again: true };
@@ -303,10 +302,10 @@ function travelGoal(view: PlayerView, _memory: BotMemory, bridge: RoomId, initia
       // every living crewmate aboard, so nobody out in a patrol ship is left behind, or `JUMP_WAIT_CYCLES` have passed.
       // `"Jump: now"` always goes up first, so pilots hear of the jump before it (even with everyone aboard).
       memory.holdSince ??= v.cycle;
-      if (!isJumpDue(v) && v.chatChannels.includes("global")) {
+      if (!isJumpDue(v, memory) && v.chatChannels.includes("global")) {
         return { kind: "social", message: { type: "chat", channel: "global", text: JUMP_NOW_LINE } };
       }
-      if (!clearToJump(v)) return { kind: "done", again: true };
+      if (!clearToJump(v, memory)) return { kind: "done", again: true };
 
       const go = find(v, "travel");
       if (!go) {
@@ -316,7 +315,7 @@ function travelGoal(view: PlayerView, _memory: BotMemory, bridge: RoomId, initia
       }
       memory.combustion = null;
       memory.holdSince = null;
-      memory.cancelHold = isHoldingJump(v) && v.chatChannels.includes("global");
+      memory.cancelHold = isHoldingJump(v, memory) && v.chatChannels.includes("global");
       memory.justJumped = true;
       return act(go);
     },

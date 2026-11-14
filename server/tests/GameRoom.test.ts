@@ -1,4 +1,5 @@
 import { parseItemLine } from "../src/bots/itemShare.ts";
+import { HOLD_JUMP_LINE } from "../src/bots/planetShare.ts";
 import {
   characterName,
   CHARACTERS,
@@ -953,6 +954,22 @@ describe("GameRoom bots", () => {
         await send(room, human, { type: "chat", channel: "global", text: "everyone answer" });
         await pass(room, storage, 5000);
         expect(botMessages(room)).toHaveLength(1);
+        vi.unstubAllGlobals();
+        vi.useRealTimers();
+      });
+
+      it("wake nobody for a bots' jump line, which code parses (#427)", async () => {
+        const fetch = chatty("heard you");
+        vi.stubGlobal("fetch", fetch);
+        const { room, storage } = await modelRoom({ ...DEV, ...MODEL });
+        const human = connect(room, "tok0");
+        await pass(room, storage, 1500);
+        const before = fetch.mock.calls.length;
+        await send(room, human, { type: "chat", channel: "global", text: HOLD_JUMP_LINE });
+        await pass(room, storage, 5000);
+        const prompts = promptsOf(fetch, before);
+        expect(prompts.some((m) => m[0]!.content.startsWith("You route chat"))).toBe(false);
+        expect(prompts.some((m) => m[1]!.content.includes("A new chat message came in"))).toBe(false);
         vi.unstubAllGlobals();
         vi.useRealTimers();
       });
