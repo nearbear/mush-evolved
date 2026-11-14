@@ -2,7 +2,10 @@
 // can be unit tested and run headless. Reproduces the original Flash client
 // (clients/iso/src: V2DIso.grid2px, Data.setup, Grid.sort/sortFunc).
 
-import { placedEquipment, type RoomLayout, type ShipLayout, type SliceInfo, type TileKind, type TilePlacement } from "@mush2/shared";
+import type { RoomLayout, ShipLayout, SliceInfo, TileKind, TilePlacement } from "@mush2/shared";
+// By module, not the package's index: the index imports ship-rooms.json, which plain Node (`npm run
+// ship-render`) can't load without an import attribute.
+import { placedEquipment } from "@mush2/shared/src/shipLayout.ts";
 
 /** Half the width of one cell's diamond, in pixels (V2DIso.R). */
 const R = 16;
