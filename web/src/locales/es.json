@@ -1390,7 +1390,7 @@
       "STEROIDS": "Genera 4 anabolizantes.",
       "MYCOSCAN": "Permite detectar esporas en un tripulante sano.",
       "PATULINE_SCRAMBLER": "Los infectados ya no pueden comunicarse por el canal Mush.",
-      "FUNGUS_SCRAMBLER": "Los cazas tienen un 20 % de probabilidad en cada disparo de apuntar a uno de los suyos.",
+      "FUNGUS_SCRAMBLER": "Los cazas tienen un 20 % de probabilidad al elegir un nuevo objetivo de apuntar a uno de los suyos.",
       "PHEROMODEM": "El rastreador permite ahora comunicarse por el canal Mush.",
       "CONSTIPASPORE_SERUM": "Aumenta en 2 el coste de crear esporas.",
       "MYCO_ALARM": "Genera 5 MicoAlarmas.",

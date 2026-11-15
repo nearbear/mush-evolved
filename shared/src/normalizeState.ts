@@ -746,6 +746,8 @@ export function normalizeHunterTarget(raw: Partial<HunterTarget>): HunterTarget 
       return stripUndefined<HunterTarget>({ kind: "ship" });
     case "patrol":
       return stripUndefined<HunterTarget>({ kind: "patrol", id: need(raw, "id", t) });
+    case "hunter":
+      return stripUndefined<HunterTarget>({ kind: "hunter", id: need(raw, "id", t) });
     default:
       throw unknownVariant(t, "kind", raw.kind satisfies undefined);
   }

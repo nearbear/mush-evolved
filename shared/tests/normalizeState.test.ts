@@ -355,6 +355,7 @@ describe("union normalizers", () => {
   const targets: { [K in HunterTarget["kind"]]: Extract<HunterTarget, { kind: K }> } = {
     ship: { kind: "ship" },
     patrol: { kind: "patrol", id: "PATROL_SHIP_ALPHA_TAMARIN" },
+    hunter: { kind: "hunter", id: "hunter-1" },
   };
   const reports: { [K in Report["kind"]]: Extract<Report, { kind: K }> } = {
     fire: { kind: "fire", room: "BRIDGE", by: "p1" },

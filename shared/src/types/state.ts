@@ -239,7 +239,7 @@ export interface GameState extends GameCore {
 /** A problem a player reported (reports.ts, #444): a fire by its room, a breakdown by its equipment's id. `by` is the reporter. */
 export type Report = { kind: "fire"; room: RoomId; by: PlayerId } | { kind: "equipment"; equipment: string; by: PlayerId };
 
-export type HunterTarget = { kind: "ship" } | { kind: "patrol"; id: RoomId };
+export type HunterTarget = { kind: "ship" } | { kind: "patrol"; id: RoomId } | { kind: "hunter"; id: string };
 
 /**
  * The kinds of hunter (owner, 2026-11-12, #388; eMush's `HunterEnum`). Permanent ids: what players see is in the

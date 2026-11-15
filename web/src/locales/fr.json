@@ -1390,7 +1390,7 @@
       "STEROIDS": "Génère 4 anabolisants.",
       "MYCOSCAN": "Permet de détecter la présence de spores sur un membre d'équipage sain.",
       "PATULINE_SCRAMBLER": "Les infectés ne peuvent plus communiquer sur le canal Mush.",
-      "FUNGUS_SCRAMBLER": "Les chasseurs ont 20 % de chance à chaque tir de cibler l'un des leurs.",
+      "FUNGUS_SCRAMBLER": "Les chasseurs ont 20 % de chance lors du choix d'une nouvelle cible de cibler l'un des leurs.",
       "PHEROMODEM": "Le traqueur permet désormais de communiquer sur le canal Mush.",
       "CONSTIPASPORE_SERUM": "Augmente de 2 le coût de création des spores.",
       "MYCO_ALARM": "Génère 5 MycoAlarmes.",
