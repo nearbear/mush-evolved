@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { actionVisibility, ACTIONS } from "../src/actions.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { killPlayer } from "../src/death.ts";
+import { cure } from "../src/infection.ts";
 import { CAMERA_EQUIPMENT } from "../src/equipment.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { queueAction } from "../src/queue.ts";
@@ -153,5 +154,19 @@ describe("nimble fingers", () => {
     if (!queued.ok) return;
     expect(player(queued.state, "p0").spot).toEqual({ kind: "cell", x: 100, y: 100, sitting: true });
     expect(player(queued.state, "p1").pushedBy).toBe("p0");
+  });
+
+  it("clears nimble mode when cured by anti-Mush serum", () => {
+    const s = mustApply(ship(), "p0", { type: "enter_nimble" });
+    expect(cure(s, player(s, "p0"))).toBe(true);
+
+    const p0View = viewFor(s, "p0");
+    expect(p0View.statuses).not.toContain("nimble");
+    expect(option(s, "p0", { type: "exit_nimble" })).toBeUndefined();
+    expect(applyAction(s, "p0", { type: "exit_nimble" }).ok).toBe(false);
+    expect(actionVisibility("drop", p0View)).toBe("public");
+
+    const dropped = mustApply(s, "p0", { type: "drop", item: "test-item-1" });
+    expect(viewFor(dropped, "p0").log.at(-1)?.kind).toBeUndefined();
   });
 });

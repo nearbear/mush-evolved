@@ -7,7 +7,7 @@ import { logPrivate } from "./log.ts";
 import { contaminated, contaminationCapacity } from "./modifiers.ts";
 import { rollFloat } from "./rng.ts";
 import { hasSkill } from "./skills.ts";
-import { isImmune } from "./statuses.ts";
+import { isImmune, removeStatus } from "./statuses.ts";
 import { MUSH_CHANNEL, type GameState, type PlayerState } from "./types.ts";
 
 /**
@@ -86,6 +86,7 @@ export function cure(state: GameState, player: PlayerState): boolean {
     player.satiety = 0;
     player.satietyZeroSince = state.cycle;
     delete state.spikedOn[player.id];
+    removeStatus(player, "nimble");
     logPrivate(state, player.id, "cured");
     return true;
   }
