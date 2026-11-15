@@ -4,7 +4,7 @@
 import { useMemo, type PointerEvent } from "react";
 import { useTranslation } from "react-i18next";
 import planJson from "@mush2/assets/derived/ship-plan.json";
-import type { OtherPlayerView, RoomId, ShipPlan } from "@mush2/shared";
+import { doorId, type DoorId, type OtherPlayerView, type RoomId, type ShipPlan } from "@mush2/shared";
 import { FIRE_ICON, MUSH_ICON, bustIcon } from "../art/assets.ts";
 import { useNames } from "../i18n/names.ts";
 import { cellsPath, iconSpots, runsPath } from "./plan.ts";
@@ -42,6 +42,7 @@ export function ShipPlanSvg({
   unidentified,
   reachable,
   burningRooms = [],
+  brokenDoors = [],
   pointed,
   interactive,
   onPoint,
@@ -55,6 +56,7 @@ export function ShipPlanSvg({
   unidentified: RoomId[];
   reachable?: Set<RoomId>;
   burningRooms?: readonly RoomId[];
+  brokenDoors?: readonly DoorId[];
   pointed: RoomId | null;
   interactive: boolean;
   onPoint: (room: RoomId | null) => void;
@@ -125,13 +127,16 @@ export function ShipPlanSvg({
           </path>
         );
       })}
-      {SHIP_PLAN.doors.map((d) => (
-        <path
-          key={`${d.rooms.join()}:${d.cells[0]!.join()}`}
-          className={`minimap-door${here && d.rooms.includes(here) ? " here" : ""}`}
-          d={cellsPath(d.cells)}
-        />
-      ))}
+      {SHIP_PLAN.doors.map((d) => {
+        const broken = brokenDoors.includes(doorId(d.rooms[0], d.rooms[1]));
+        return (
+          <path
+            key={`${d.rooms.join()}:${d.cells[0]!.join()}`}
+            className={`minimap-door${here && d.rooms.includes(here) ? " here" : ""}${broken ? " broken" : ""}`}
+            d={cellsPath(d.cells)}
+          />
+        );
+      })}
       {dots.map(({ x, y, size, key, person }) => (
         <image
           key={key}

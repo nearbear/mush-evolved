@@ -362,6 +362,7 @@ describe("union normalizers", () => {
   const reports: { [K in Report["kind"]]: Extract<Report, { kind: K }> } = {
     fire: { kind: "fire", room: "BRIDGE", by: "p1" },
     equipment: { kind: "equipment", equipment: "BRIDGE:COMMUNICATION_CENTER", by: "p2" },
+    door: { kind: "door", door: "BRIDGE|FRONT_CORRIDOR", by: "p1" },
   };
   const tasks: { [K in PlanTask["type"]]: Extract<PlanTask, { type: K }> } = {
     research: { type: "research", research: "r" },

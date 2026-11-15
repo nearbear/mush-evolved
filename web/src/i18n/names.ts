@@ -87,6 +87,7 @@ const ACTION_NAME_KEYS = {
   lie_down: "actions.lieDown",
   report_fire: "actions.reportFire",
   report_equipment: "actions.reportEquipment",
+  report_door: "actions.reportDoor",
   get_up: "actions.getUp",
   guard: "actions.guard",
   stop_guarding: "actions.stopGuarding",

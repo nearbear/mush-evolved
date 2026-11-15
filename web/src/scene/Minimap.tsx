@@ -11,7 +11,7 @@
 
 import { useEffect, useState, type CSSProperties, type PointerEvent } from "react";
 import { useTranslation } from "react-i18next";
-import type { RoomId } from "@mush2/shared";
+import type { DoorId, RoomId } from "@mush2/shared";
 import { RoomCaption, SHIP_PLAN, ShipPlanSvg, type MinimapPerson } from "./ShipPlanMap.tsx";
 
 export function Minimap({
@@ -21,6 +21,7 @@ export function Minimap({
   unidentified,
   reachable,
   burningRooms = [],
+  brokenDoors = [],
 }: {
   /** The room you are in. */
   here: RoomId;
@@ -32,6 +33,8 @@ export function Minimap({
   reachable: Set<RoomId>;
   /** Rooms on fire revealed ship-wide by Fire Detectors. */
   burningRooms?: readonly RoomId[];
+  /** Broken doors revealed ship-wide by Defective piston sensors. */
+  brokenDoors?: readonly DoorId[];
 }) {
   const { t } = useTranslation();
   const [hovering, setHovering] = useState(false);
@@ -74,6 +77,7 @@ export function Minimap({
         unidentified={unidentified}
         reachable={reachable}
         burningRooms={burningRooms}
+        brokenDoors={brokenDoors}
         pointed={pointed}
         interactive={expanded}
         onPoint={setPointed}

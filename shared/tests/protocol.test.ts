@@ -745,6 +745,7 @@ describe("actions from a client", () => {
     lie_down: [{ type: "lie_down", equipment: "e1" }],
     report_fire: [{ type: "report_fire" }],
     report_equipment: [{ type: "report_equipment", equipment: "e1" }],
+    report_door: [{ type: "report_door", door: "BRIDGE|FRONT_CORRIDOR" }],
     get_up: [{ type: "get_up" }],
     guard: [{ type: "guard" }],
     stop_guarding: [{ type: "stop_guarding" }],

@@ -19,7 +19,7 @@ import { jellyCycle, leakOxygen } from "./breakage.ts";
 import { newProjectDeck } from "./projects.ts";
 import { doorsOf } from "./doors.ts";
 import { fireCycle, ignitePending, isGardenProtected, isOnFire } from "./fire.ts";
-import { alertsFor, fireReported } from "./reports.ts";
+import { alertsFor, brokenDoors, doorsDetected, fireReported } from "./reports.ts";
 import { incidentsCycle } from "./incidents.ts";
 import { initNpc, newNpcState, npcCycle } from "./npcs.ts";
 import { CHEAT_ROOM } from "./cheatRoom.ts";
@@ -674,6 +674,8 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     roomOnFire: you.alive && isOnFire(state, you.room),
     // Reported fires, by players or Fire detectors (#444); an unreported fire's room reaches nobody.
     burningRooms: you.alive ? state.fires.filter((room) => fireReported(state, room)) : [],
+    // Broken doors aboard, only once Defective piston sensors is complete (#330).
+    brokenDoors: you.alive && doorsDetected(state) ? brokenDoors(state) : [],
     alerts: you.alive ? alertsFor(state) : { fires: 0, broken: 0, reports: [] },
     // `seesLine` (log.ts) says which lines are yours; room lines, private ones included, only within your window (#365).
     // A private line names only you in the view: no one learns who else saw it (`leaked` marks a secret line others saw).
