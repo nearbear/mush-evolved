@@ -13,12 +13,13 @@ export function emptyResources(): Record<ResourceId, number> {
 /** The skill whose daily grant is the only way to gain each resource (the other resources have no source yet). */
 const RESOURCE_SKILLS: Partial<Record<ResourceId, readonly string[]>> = {
   heal: ["first_aid"],
-  eng: ["engineer"],
+  eng: ["engineer", "maintenance_agent"],
   comp: ["computer", "polymath"],
   shoot: ["gunman"],
   core: ["designer"],
   pilgred: ["physicist"],
-  garden: ["botanic"],
+  garden: ["botanic", "maintenance_agent"],
+  cook: ["maintenance_agent"],
 };
 
 /** Whether a player could gain this resource: they hold some, or one of their skills grants it. Lets the UI hide counters they can never use. */

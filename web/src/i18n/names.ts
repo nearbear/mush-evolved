@@ -58,6 +58,7 @@ const ACTION_NAME_KEYS = {
   analyze_planet: "actions.analyzePlanet",
   delete_planet: "actions.deletePlanet",
   dispense: "actions.dispense",
+  play_arcade: "actions.playArcade",
   consume: "actions.consume",
   hide: "actions.hide",
   search: "actions.search",

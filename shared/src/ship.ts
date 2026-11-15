@@ -7,7 +7,7 @@
 import { shipInvincible } from "./cheats.ts";
 import { damage } from "./death.ts";
 import { logPublic } from "./log.ts";
-import { PROJECT_COMPLETE } from "./projects.ts";
+import { projectDone } from "./projects.ts";
 import { rollInt } from "./rng.ts";
 import type { DeepReadonly, GameConfig, GameState, PlayerView, ShipResources } from "./types.ts";
 
@@ -50,17 +50,20 @@ export function burnOxygen(state: GameState): void {
 export function shieldAbsorbPercent(state: Readonly<GameState>): number {
   const shield = state.config.ship.plasmaShield;
   if (!state.bios.plasma_shield) return 0;
-  return (state.projects.PLASMA_SHIELD ?? 0) >= PROJECT_COMPLETE ? shield.projectAbsorbPercent : shield.absorbPercent;
+  return projectDone(state, "PLASMA_SHIELD") ? shield.projectAbsorbPercent : shield.absorbPercent;
 }
 
 /**
- * Damage to the ship (hunters.ts): the shield takes its percentage (rounded to the nearest point) while it has points, the hull the
- * rest. Mutates a state the caller already cloned.
+ * Damage to the ship (hunters.ts): Armoured corridors reduces the incoming hit (floor 0), then the shield takes its
+ * percentage (rounded to the nearest point) while it has points, the hull the rest. Mutates a state the caller already cloned.
  */
 export function damageShip(state: GameState, amount: number): void {
   if (shipInvincible(state)) return;
   const { ship } = state;
-  const toShield = Math.min(ship.plasmaShield, Math.round((amount * shieldAbsorbPercent(state)) / 100));
+  const effective = projectDone(state, "ARMOUR_CORRIDOR")
+    ? Math.max(0, amount - state.config.project.armourCorridor.damageReduction)
+    : amount;
+  const toShield = Math.min(ship.plasmaShield, Math.round((effective * shieldAbsorbPercent(state)) / 100));
   ship.plasmaShield -= toShield;
-  ship.hull = Math.max(0, ship.hull - (amount - toShield));
+  ship.hull = Math.max(0, ship.hull - (effective - toShield));
 }

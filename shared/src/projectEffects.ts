@@ -3,8 +3,9 @@
 // modifiers.ts for the Noise Reducer); this only refreshes what is stored.
 
 import { updateMaxValues } from "./adjustStats.ts";
+import { DYNARCADE_EQUIPMENT } from "./equipment.ts";
 import { PROJECT_IDS, projectDone, type ProjectId } from "./projects.ts";
-import { newItemId } from "./items.ts";
+import { newItemId, TREE_POT_ITEM } from "./items.ts";
 import type { DeepReadonly, GameConfig, GameCore, GameState, PlayerState } from "./types.ts";
 
 /**
@@ -29,5 +30,17 @@ export function onProjectCompleted(state: GameState, project: ProjectId): void {
   if (project === "FOOD_RETAILER") {
     const { room, items } = state.config.project.foodRetailer;
     for (const type of items) state.items.push({ id: newItemId(state), type, at: { kind: "room", id: room } });
+  }
+  // Dynarcade (CALL_OF_DIRTY; owner, 2026-11-14): spawns the Dynarcade in Alpha Bay 2 once complete.
+  if (project === "CALL_OF_DIRTY") {
+    const { room } = state.config.project.dynarcade;
+    const id = `${room}:${DYNARCADE_EQUIPMENT}`;
+    const list = (state.equipment[room] ??= []);
+    if (!list.some((e) => e.id === id)) list.push({ id, type: DYNARCADE_EQUIPMENT });
+  }
+  // Extra hydropots (EXTRA_HYDROPONPOTS; owner, 2026-11-14): spawns `count` empty hydropots on the floor of `room`.
+  if (project === "EXTRA_HYDROPONPOTS") {
+    const { room, count } = state.config.project.extraHydropots;
+    for (let i = 0; i < count; i++) state.items.push({ id: newItemId(state), type: TREE_POT_ITEM, at: { kind: "room", id: room } });
   }
 }

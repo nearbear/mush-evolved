@@ -1,4 +1,4 @@
-import { Action, isString } from "./action.ts";
+import { Action, type ActionCost, isString } from "./action.ts";
 import { ITEM_TYPES, canReachItem } from "../items.ts";
 import { logPublic } from "../log.ts";
 import type { GameState, ItemState, PlayerState } from "../types.ts";
@@ -28,8 +28,9 @@ export class CookAction extends Action<CookActionData> {
     super("cook", { item: isString });
   }
 
-  override getCost(state: Readonly<GameState>): { ap: number; mp: number } {
-    return { ap: state.config.cook.cost.ap, mp: 0 };
+  /** A Cook point (`resources.cook`) makes one use free (owner, 2026-11-14). */
+  override getCost(state: Readonly<GameState>, player: Readonly<PlayerState>): ActionCost {
+    return player.resources.cook > 0 ? { ap: 0, mp: 0, paidBy: "cook" } : { ap: state.config.cook.cost.ap, mp: 0 };
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): CookActionData[] {

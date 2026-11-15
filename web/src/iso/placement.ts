@@ -419,7 +419,10 @@ function tileSortables(
       stage: t.kind === "ground" ? 0 : t.kind === "prop" ? 2 : 1,
       screenX: anchor.x,
       scene,
-      box: t.kind === "ground" || t.kind === "wall" || t.kind === "door" ? { x0: x - w + 1, x1: x, y0: y - h + 1, y1: y } : clip(x - w + 1, x, y - h + 1 + (inFront ? 1 : 0), y + (inFront ? 1 : 0), floor),
+      // Bay doors sit in the back wall row off the floor; clipping them onto floor.y0 makes them overlap and cover furniture on that row.
+      box: t.kind === "ground" || t.kind === "wall" || t.kind === "door" || t.slice === "bay_window" || t.slice === "bay_window_upgrade"
+        ? { x0: x - w + 1, x1: x, y0: y - h + 1, y1: y }
+        : clip(x - w + 1, x, y - h + 1 + (inFront ? 1 : 0), y + (inFront ? 1 : 0), floor),
       shape: flat ? "flat" : t.kind === "wall" || t.kind === "door" ? "wall" : "solid",
     });
   };

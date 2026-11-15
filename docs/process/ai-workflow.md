@@ -3688,3 +3688,69 @@ Owner gave the full rule: 12–20 cycles; each cycle change a 40% chance of -1 M
 
 Built the disease incident (cost 3, weight 3, already in rules-design) in `incidents.ts`, drawing from a new `config.diseases.incidentDiseases` (cold, skin inflammation; owner). The doc said "a human falls ill"; Claude asked who, what log and how often, and the owner chose anyone living aboard (Mush as carriers), a private line, and once per person per cycle change. Only diseases the victim doesn't have are picked, so someone with all of them isn't a target. Worked first time; the existing `only(id)` test helper made the incident easy to isolate.
 Adding an incident to the menu changes the seeded random draws of every cycle change, which broke two seed-dependent tests that weren't about incidents: the coffee roaster schedule (now runs with `noIncidents`) and a 40-turn GoalBot fire test whose "still alive" check failed because hunters destroyed the ship (now skipped when the ship is lost). The full verify also showed many timeouts on a loaded machine; the GameRoom and survival ones fail on clean HEAD too.
+### 2026-11-14: Superkube window closed on tab change (#170)
+
+Bug: switching the Superkube window to Items or Travel closed it. Cause: GameView's desktop "click outside the Inspect panel resets the selection" listener treated clicks in the portaled dialog as outside `.inspect`, so the selection fell back to yourself and the opener (and its dialog) unmounted. Fix: clicks inside any `[role='dialog']` count as inside. The isolated Superkube DOM test couldn't catch it, since the reset lives in GameView; worth remembering for any window opened from the Inspect panel.
+
+### 2026-11-14: Superkube item picker (#170)
+
+The Items tab's Spawn row became a picker: a search field (accent- and case-insensitive, over the translated name and the id, every word must match), a grid of `.pick-tile` buttons with each item's 50x50 icon at 1x over its name, sorted by name in the current language, and one Spawn button naming the picked item. Picking is single-click; only the button sends. No memo: the panel mounts only while its tab is open. New en/fr/es strings `kube.search`, `kube.spawnItem`, `kube.noMatch`; two DOM tests.
+
+### 2026-11-14 — Superkube Travel minimap
+
+- **What was built:** Extracted the shared SVG deck plan and room caption from `Minimap.tsx` into `web/src/scene/ShipPlanMap.tsx` and used it in `Superkube.tsx` (`KubeTravelMap`) for the Travel tab, so clicking (or pressing Enter/Space on) any room teleports there immediately (`teleport` kube op).
+- **What worked:** Reusing `ShipPlanSvg` and `RoomCaption` kept crew busts, fire highlights, and room labels consistent between the corner minimap and the Superkube without duplicating layout logic.
+
+## 2026-11-14: Bots repair broken oxygen tanks (#443)
+
+- Owner asked for oxygen tank repair right behind fires, hunting a NERON-announced tank like fires. Claude asked two questions first: how a bot knows where tanks are (owner chose the public ship map, an exception to "never a hard-coded location", already the precedent in `roomsWith`) and who goes (owner: every bot, and suggested claiming a tank in chat first to avoid duplication, which Claude built as `Tank: going to <ROOM>`).
+- What needed correction: the first harness counter for tank repairs read 0 because every action is timed in the harness and its result lands on a later input; counting the `repaired` log entries on any input fixed it. Also added the new tank line to GameRoom's machine-line filter so it doesn't wake model bots.
+- Result (50 seeds): leaked tank-cycles 21.7 → 0.2 a run, mean days 4.68 → 5.29, asphyxia deaths 572 → 422.
+
+### 2026-11-14: Bots hunt and repair broken oxygen tanks (#443, first slice)
+
+- Owner asked for oxygen-tank repair right behind fires, with bots hunting an announced tank the way they hunt fires. Claude asked two questions: how bots know where tanks are (owner: the public ship map, an exception to "no hard-coded location"), and who goes (owner: every bot, and suggested they claim a tank before going to avoid duplicates, which became a `Tank: going to <ROOM>` chat line valid for the cycle).
+- Built `tankShare.ts` (suspects from NERON's notice, locations from alert-bar reports, claim and "fine" lines) and the `repairOxygen` goal at 77.5; GameRoom treats tank lines as machine lines (no bot woken).
+- What needed correction: the first harness counter showed tank repair tries with zero successes. In the harness every action is timed and resolves on a later input, so the result log isn't in the same step as the action; counting repairs from the log on any input fixed it.
+- Survival, 50 seeds against a fresh `main` baseline: broken tank-cycles 21.7 → 0.2 a run, mean days 4.68 → 5.29 (35 longer, 6 shorter), asphyxia deaths 572 → 422. The scripted report to the crew (#443's open questions about plans and channels) is not built.
+
+### 2026-11-14: Superkube Destinations tab (#414)
+
+- Moved the `solCheat` ("Return to Sol now") cheat out of `SettingsDialog` (`protocol.ts`, `rules.ts`, `replay.ts`, `GameRoom.ts`, `TopBar.tsx`, `GameView.tsx`, `HudSections.tsx`) and into the Superkube (`shared/src/kube.ts`, `web/src/hud/Superkube.tsx`) under a new `destinations` tab alongside a new `returnToEden` option, with `returnedToEden` log lines and `en`/`fr`/`es` translations.
+
+## 2026-11-14 — Move current-room fire indicator into minimap header
+
+- Removed the standalone `.room-fire` banner from [GameView.tsx](web/src/GameView.tsx), [iso.css](web/src/styles/iso.css), and [self-hud.css](web/src/styles/self-hud.css).
+- Placed `FIRE_ICON` inside `.room-title`'s `.room-icons` slot (with `role="status"` and `Hint` tooltip `t("roomList.onFire")`) in the `.room-corner` card.
+- Enabled `pointer-events: auto` on `.room-icons` (since `.room-title` has `pointer-events: none`) and `.room-icons:empty { display: none }`.
+
+- **Dynarcade project (`CALL_OF_DIRTY`, 2026-11-14):** Owner confirmed 1 AP, 33% base chance (×1.5 per consecutive miss) for +2 morale, 33% chance of standard 2 HP injury on play (no guaranteed HP loss), private win/loss log, any living player (Mush included) when working, and no video game addiction disorder yet. Marked `DYNARCADE` `builtOnly` so it is omitted from `SPACESHIP_BAY_AA` until `CALL_OF_DIRTY` completes (`projectEffects.ts`, `equipmentTiles.ts`), and hid `spaceship_broken` in `IsoRoom.tsx` once complete.
+
+## 2026-11-14: machine-line check moved out of GameRoom
+
+Small refactor on request: `GameRoom.social` called four bot-line parsers (item, fire, tank, jump-hold) inline to decide whether a chat line wakes bots. That check is now `isMachineLine` in `server/src/bots/machineLines.ts`, so a new bots' line format is added next to the others instead of in `GameRoom`. Behavior unchanged; a small test covers every format. What needed correction: the first test used made-up item and room ids, which the parsers rightly reject (tank lines must name a tank room).
+
+- **Takeoff thruster (`PATROL_SHIP_LAUNCHER`)** (2026-11-14, owner): Asked three open questions before coding (scope of discount, discount amount, iso bay platform art swap). Owner chose: discount applies to patrol ships, Pasiphae (`takeoff`), and Icarus expeditions (`icarus_takeoff`); 1 AP less (floor 0 AP); and swap bay platforms to `bay_alpha_platform_upgrade` / `bay_beta_platform_upgrade` in `IsoRoom.tsx`. Implemented via `config.project.patrolShipLauncher.takeoffApDiscount`, `actionCost` in `shared/src/modifiers.ts`, `PROJECT_STATUS.PATROL_SHIP_LAUNCHER = "full"`, and `roomLooks` in `web/src/iso/IsoRoom.tsx`. What worked: `actionCost` and `roomLooks` already held the exact patterns for `CHIPSET_ACCELERATION`, `BAY_DOOR_XXL`, and `PLASMA_SHIELD`, and the upgraded platform slices were already in `ship-art.json`.
+
+### 2026-11-14 — Alpha Bay 2 bay door paint order
+
+- **Cause:** `bay_window` (20×1 entity in the back wall row off the floor) was clipped onto `floor.y0` by `clip()` in `web/src/iso/placement.ts`, making its box overlap `cupboard3` and `dynarcade` in Alpha Bay 2 (`SPACESHIP_BAY_AA`) and fall back to anchor `depth` (35 > 17 and 24).
+- **Fix:** Exempt `bay_window` and `bay_window_upgrade` from `clip()` in `tileSortables` so their footprint stays on the back wall row behind floor furniture, and added a regression test in `web/tests/iso/placement.test.ts`.
+
+- **Armoured corridors (`ARMOUR_CORRIDOR`)** (2026-11-14, owner): Asked three open questions before coding (before vs after plasma shield, hunter shots only vs all `damageShip` including asteroid impacts, minimum damage 0 vs 1). Owner chose: reduce incoming attack by 1 before the plasma shield splits it, apply to all `damageShip` calls (hunter shots and asteroid impacts), and floor at 0. Implemented via `config.project.armourCorridor.damageReduction` (`1`), `damageShip` in `shared/src/ship.ts`, and `PROJECT_STATUS.ARMOUR_CORRIDOR = "full"`. What worked: `damageShip` was already the single choke point for hunter and asteroid damage to the Daedalus.
+
+### 2026-11-14: Maintenance Agent skill (`maintenance_agent`)
+
+- **Decision (owner):** Maintenance Agent grants +1 Engineer (`eng`), +1 Garden (`garden`), and +1 Cook (`cook`) point on pick and each day, sharing `config.engineer.capPoints` (2) and `config.botany.capPoints` (4), with `config.cook.capPoints` = 8. Cook points pay for `cook` only (0 AP, `paidBy: "cook"`), not `fungal_cuisine`.
+- **What worked:** `RESOURCE_IDS`, `paidBy`, `ActionLabel`, and `ResourceChips` already supported `"cook"`, so adding `cookPointsPerDay`, `cookPointsGain`, `modifiers/maintenance_agent.ts`, `CookAction.getCost`, and `RESOURCE_SKILLS` entries slotted cleanly into the existing modifier and resource architecture.
+
+### 2026-11-14 — Mycologist skill
+
+- **Decision (owner):** A human Mycologist's `heal` (Sick Bay or Medikit) and `use_bandage` actions remove 1 contamination (`heal.effect.mycologistSpores`) from a human patient (self included, even at full HP), without curing `fungal_infection_disease`. Does nothing if the healer is Mush, and removes contamination silently (no extra log or Mush-channel notice, so healing doesn't act as a spore detector).
+- **Implementation:** Added `onHeal` to `Modifier` and `healed()` in `shared/src/modifiers.ts`, `removeContamination()` in `shared/src/infection.ts`, and `shared/src/modifiers/mycologist.ts`; wired `healed()` into `HealAction` and `UseBandageAction`, and marked `mycologist: "full"` in `shared/src/skills.ts`.
+- **What worked:** Asking the 4 open rule questions up front (target effect, bandage inclusion, Mush Mycologist behavior, and visibility/silence) resolved the tension between the flavor text (`fungal_infection_disease`) and the effect text / upstream eMush (`1 spore` on heal).
+
+## 2026-11-14: Extra hydropots project (`EXTRA_HYDROPONPOTS`)
+
+- **Decision (owner):** Completing `EXTRA_HYDROPONPOTS` spawns 3 empty hydropots (`tree_pot`) on the floor of the Hydroponic Garden (`HYDROPONIC_CENTER`), with no extra room log line beyond the standard project completion log at NERON's Core. Tunable in `config.project.extraHydropots`.
+- **Implementation:** Added `config.project.extraHydropots` (`shared/src/types/config.ts`, `shared/src/config.ts`), spawned the pots in `onProjectCompleted` (`shared/src/projectEffects.ts`), marked `EXTRA_HYDROPONPOTS: "full"` in `PROJECT_STATUS` (`shared/src/projects.ts`), and added unit tests in `shared/tests/extraHydropots.test.ts`.

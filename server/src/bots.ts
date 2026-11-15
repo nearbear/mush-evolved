@@ -6,7 +6,9 @@ import { hasBotSkill, holdsTrigger } from "./bots/duties.ts";
 import { canReachBridgeWithTravelAp } from "./bots/goals/blocks.ts";
 import { END_CYCLE, helpGoal, helpTasks, SOLO_GOALS, type BotMemory, type BotSocial, type Goal, type GoalDef } from "./bots/goals/index.ts";
 import { extinguish } from "./bots/goals/extinguish.ts";
+import { repairOxygen } from "./bots/goals/repairOxygen.ts";
 import { newFireMemory, observeFires } from "./bots/fireShare.ts";
+import { newTankMemory, observeTanks } from "./bots/tankShare.ts";
 import { newItemMemory, observeItems } from "./bots/itemShare.ts";
 import { holdStartCycle, isHoldingJump, newJumpMemory } from "./bots/planetShare.ts";
 import { readSnapshot, BOT_MEMORY_VERSION, type BotMemorySnapshot } from "./bots/memoryStore.ts";
@@ -147,6 +149,7 @@ export class GoalBot implements Bot {
       asteroidsOnly: null,
       items: newItemMemory(),
       fires: newFireMemory(),
+      tanks: newTankMemory(),
       combustion: null,
       holdSince: null,
       jump: newJumpMemory(),
@@ -180,6 +183,7 @@ export class GoalBot implements Bot {
       asteroidsOnly: m.asteroidsOnly,
       items: { rooms: map(m.items.rooms), said: map(m.items.said), seq: m.items.seq },
       fires: { active: m.fires.active, burning: [...m.fires.burning], checked: [...m.fires.checked], seq: m.fires.seq },
+      tanks: { broken: [...m.tanks.broken], suspect: [...m.tanks.suspect], claims: [...m.tanks.claims], seq: m.tanks.seq },
       combustion: m.combustion,
       holdSince: m.holdSince,
       jump: { ...m.jump },
@@ -213,6 +217,7 @@ export class GoalBot implements Bot {
     m.asteroidsOnly = s.asteroidsOnly;
     Object.assign(m.items, { rooms: map(s.items.rooms), said: map(s.items.said), seq: s.items.seq });
     Object.assign(m.fires, { active: s.fires.active, burning: new Set(s.fires.burning), checked: new Set(s.fires.checked), seq: s.fires.seq });
+    Object.assign(m.tanks, { broken: new Set(s.tanks.broken), suspect: new Set(s.tanks.suspect), claims: new Map(s.tanks.claims), seq: s.tanks.seq });
     m.combustion = s.combustion;
     m.holdSince = s.holdSince;
     Object.assign(m.jump, s.jump);
@@ -264,8 +269,14 @@ export class GoalBot implements Bot {
       this.goal.onInterrupt?.(this.memory);
       this.end(false);
     }
+    // Oxygen tanks (tankShare.ts, #443): the same, for a newly broken or suspected tank.
+    const tanks = observeTanks(view, this.memory);
+    if (tanks.news && this.goal !== null && this.goal.id !== extinguish.id && this.goal.id !== repairOxygen.id && this.goals.includes(repairOxygen) && repairOxygen.options(view, this.memory).length > 0) {
+      this.goal.onInterrupt?.(this.memory);
+      this.end(false);
+    }
     // Where shared items lie (itemShare.ts): likewise, one line a turn.
-    const report = fires.post ?? observeItems(view, this.memory);
+    const report = fires.post ?? tanks.post ?? observeItems(view, this.memory);
     if (report) {
       this.social = report;
       return null;

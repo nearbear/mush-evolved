@@ -29,7 +29,9 @@ import { gunman } from "./modifiers/gunman.ts";
 import { gunner } from "./modifiers/gunner.ts";
 import { lethargy } from "./modifiers/lethargy.ts";
 import { logistics } from "./modifiers/logistics.ts";
+import { maintenance_agent } from "./modifiers/maintenance_agent.ts";
 import { medic } from "./modifiers/medic.ts";
+import { mycologist } from "./modifiers/mycologist.ts";
 import { observant } from "./modifiers/observant.ts";
 import { paranoid } from "./modifiers/paranoid.ts";
 import { persistent } from "./modifiers/persistent.ts";
@@ -85,6 +87,7 @@ type FoldHooks = Record<
   | "analysisSectors"
   | "pilgredPointsPerDay"
   | "gardenPointsPerDay"
+  | "cookPointsPerDay"
   | "heavyMpPenalty"
   | "cleanManoeuvreChance"
   | "maxAp"
@@ -162,6 +165,8 @@ export interface Modifier extends Partial<FoldHooks> {
   onShower?: (next: GameState, player: PlayerState) => void;
   /** Runs after the player consumes an item, once its own AP and satiety are applied. Mutates a state the caller already cloned. */
   onConsume?: (next: GameState, player: PlayerState, item: ItemState) => void;
+  /** Runs after the player heals someone (heal or use_bandage), once HP is restored. Mutates a state the caller already cloned. */
+  onHeal?: (next: GameState, player: PlayerState, patient: PlayerState) => void;
   /** Runs once when the player picks this skill (not for other modifiers). Mutates a state the caller already cloned. */
   onPick?: (next: GameState, player: PlayerState) => void;
   /** Runs whenever the ship moves */
@@ -193,7 +198,9 @@ export const MODIFIERS: Record<string, Modifier> = {
   gunner,
   lethargy,
   logistics,
+  maintenance_agent,
   medic,
+  mycologist,
   observant,
   paranoid,
   persistent,
@@ -291,6 +298,10 @@ export function actionCost(base: ActionCost, ctx: CostContext, registry: Modifie
   }
   if (ctx.action.type === "scan_planet" && projectDone(ctx.state, "CHIPSET_ACCELERATION")) {
     cost.ap -= ctx.state.config.project.chipsetAcceleration.scanApDiscount;
+  }
+  // Takeoff thruster (owner, 2026-11-14): patrol ship, Pasiphae, and Icarus takeoff cost 1 AP less.
+  if ((ctx.action.type === "takeoff" || ctx.action.type === "icarus_takeoff") && projectDone(ctx.state, "PATROL_SHIP_LAUNCHER")) {
+    cost.ap -= ctx.state.config.project.patrolShipLauncher.takeoffApDiscount;
   }
   // A broken Stellar antenna makes the four Comms terminal actions cost more (owner, 2026-11-08); other actions at the terminal don't.
   if (COMMS_ACTIONS.includes(ctx.action.type) && isBrokenIn(ctx.state, "MOTOR_ROOM", "MOTOR_ROOM:STELLAR_ANTENNA")) {
@@ -542,6 +553,10 @@ export function waveShrinkChance(state: Readonly<GameState>, registry: ModifierR
 export const gardenPointsGain = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
   fold("gardenPointsPerDay", 0, state, player, registry);
 
+/** Cook points a player gains at the start of a day: nothing by default, plus what skills grant. */
+export const cookPointsGain = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
+  fold("cookPointsPerDay", 0, state, player, registry);
+
 /** HP a punch removes: the rolled base damage folded through the puncher's modifiers. */
 export const punchDamage = (state: Readonly<GameState>, player: Readonly<PlayerState>, base: number, registry: ModifierRegistry = MODIFIERS) =>
   fold("punchDamage", base, state, player, registry);
@@ -593,6 +608,11 @@ export function consumedByMush(next: GameState, player: PlayerState, item: ItemS
 /** Runs every onConsume hook of the player's modifiers. Mutates a state the caller already cloned. */
 export function consumed(next: GameState, player: PlayerState, item: ItemState, registry: ModifierRegistry = MODIFIERS): void {
   for (const id of modifierIds(player)) registry[id]?.onConsume?.(next, player, item);
+}
+
+/** Runs every onHeal hook of the healer's modifiers. Mutates a state the caller already cloned. */
+export function healed(next: GameState, healer: PlayerState, patient: PlayerState, registry: ModifierRegistry = MODIFIERS): void {
+  for (const id of modifierIds(healer)) registry[id]?.onHeal?.(next, healer, patient);
 }
 
 /** Runs the picked skill's onPick hook. Mutates a state the caller already cloned. */

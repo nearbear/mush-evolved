@@ -40,7 +40,7 @@ export const EQUIPMENT_TYPES: Record<string, EquipmentType> = {
   COM_CENTER: { terminal: true, title: "comms_officer", canBeSabotaged: true },
   CRYO_MODULE: {},
   DRUG_DISP: { terminal: true, builtOnly: true, dismantle: { metal: 2, plastic: 1, chance: 0.25 }, },
-  DYNARCADE: { canBeSabotaged: true },
+  DYNARCADE: { builtOnly: true, canBeSabotaged: true },
   EMERGENCY_REACTOR: {canBeSabotaged: true },
   FUEL_TANK: {canBeSabotaged: true},
   GRAVITY_SIMULATOR: {canBeSabotaged: true },
@@ -80,6 +80,8 @@ export const CAMERA_EQUIPMENT = "CAMERA";
 export const DRUG_DISPENSER_EQUIPMENT = "DRUG_DISP";
 /** Equipment type the SUPER_CALC research adds to the Nexus. */
 export const SUPER_CALC_EQUIPMENT = "SUPER_CALC";
+/** Equipment type the CALL_OF_DIRTY project adds to Alpha Bay 2. */
+export const DYNARCADE_EQUIPMENT = "DYNARCADE";
 
 /** Id of the camera installed in a room (at most one per room). */
 export const cameraEquipmentId = (room: string): string => `${room}:${CAMERA_EQUIPMENT}`;

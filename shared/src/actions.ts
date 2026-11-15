@@ -13,6 +13,7 @@ import { DismantleAction } from "./actions/dismantle.ts";
 import { AccessAction } from "./actions/access.ts";
 import type { ActionCost, ActionTag, ActionVisibility } from "./actions/action.ts";
 import { DispenseAction } from "./actions/dispense.ts";
+import { PlayArcadeAction } from "./actions/play_arcade.ts";
 import { ExamineAction } from "./actions/examine.ts";
 import { ConsumeSporeAction } from "./actions/consume_spore.ts";
 import { TubeTransferAction } from "./actions/tube_transfer.ts";
@@ -191,6 +192,7 @@ const REGISTRY = {
   renovate: new RenovateAction(),
   open_capsule: new OpenCapsuleAction(),
   dispense: new DispenseAction(),
+  play_arcade: new PlayArcadeAction(),
   consume: new ConsumeAction(),
   hide: new HideAction(),
   search: new SearchAction(),

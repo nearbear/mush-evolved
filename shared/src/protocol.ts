@@ -121,8 +121,6 @@ export type GameClientMessage =
   // Development only: the server refuses it unless cheats are enabled (cheats.ts).
   | { type: "cheat"; cheat: Cheat; on: boolean }
   | { type: "roleCheat"; role: RoleCheat }
-  // Development only: the ship returns to Sol now, ending the game (a dev route to a finished game and its replay).
-  | { type: "solCheat" }
   // Development only: takes the sender to the cheat room (#170), on a ship that has one. Not an action.
   | { type: "cheatRoom" }
   // Development only: one Superkube option (kube.ts, #170), from a human in the cheat room. Not an action.
@@ -248,7 +246,6 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
       : null;
   }
   if (msg?.type === "roleCheat") return isRoleCheat(msg.role) ? { type: "roleCheat", role: msg.role } : null;
-  if (msg?.type === "solCheat") return { type: "solCheat" };
   if (msg?.type === "cheatRoom") return { type: "cheatRoom" };
   if (msg?.type === "kube") {
     const { op, arg } = msg;

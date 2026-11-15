@@ -503,7 +503,7 @@ describe("invite and leaveChannel wire parser (#107)", () => {
 });
 
 describe("cheats and lifecycle wire parser (#107)", () => {
-  it("parses cheats, roleCheat, solCheat, clearQueue, and acknowledgeTransfer, dropping extra fields", () => {
+  it("parses cheats, roleCheat, cheatRoom, clearQueue, and acknowledgeTransfer, dropping extra fields", () => {
     for (const cheat of CHEATS) {
       expect(parse({ type: "cheat", cheat, on: true, extra: 1 })).toEqual({ type: "cheat", cheat, on: true });
       expect(parse({ type: "cheat", cheat, on: false, extra: 1 })).toEqual({ type: "cheat", cheat, on: false });
@@ -511,7 +511,6 @@ describe("cheats and lifecycle wire parser (#107)", () => {
     for (const role of ROLE_CHEATS) {
       expect(parse({ type: "roleCheat", role, extra: 1 })).toEqual({ type: "roleCheat", role });
     }
-    expect(parse({ type: "solCheat", extra: 1 })).toEqual({ type: "solCheat" });
     expect(parse({ type: "cheatRoom", extra: 1 })).toEqual({ type: "cheatRoom" });
     expect(parse({ type: "clearQueue", extra: 1 })).toEqual({ type: "clearQueue" });
     expect(parse({ type: "acknowledgeTransfer", extra: 1 })).toEqual({ type: "acknowledgeTransfer" });
@@ -714,6 +713,7 @@ describe("actions from a client", () => {
     renovate: [{ type: "renovate", equipment: "e1" }],
     open_capsule: [{ type: "open_capsule", item: "i1" }],
     dispense: [{ type: "dispense", equipment: "e1" }],
+    play_arcade: [{ type: "play_arcade", equipment: "SPACESHIP_BAY_AA:DYNARCADE" }],
     consume: [{ type: "consume", item: "i1" }],
     hide: [{ type: "hide", item: "i1" }],
     search: [{ type: "search" }],

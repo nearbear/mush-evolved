@@ -63,3 +63,20 @@ describe("Super Calculator in the Nexus", () => {
     expect(entry![0]).toBe(`t${serverIndex}`);
   });
 });
+
+describe("Dynarcade in Alpha Bay 2", () => {
+  const bay = roomOf(layout, "SPACESHIP_BAY_AA");
+  const dynarcade: EquipmentView = { id: "SPACESHIP_BAY_AA:DYNARCADE", type: "DYNARCADE" };
+
+  it("is stripped before CALL_OF_DIRTY completes and drawn once built", () => {
+    expect(bay.tiles.some((t) => t.slice === "dynarcade")).toBe(false);
+    expect([...equipmentByTileKey(bay, []).values()].some((e) => e.type === "DYNARCADE")).toBe(false);
+
+    const built = roomAsBuilt(bay, [dynarcade]);
+    expect(built.tiles.some((t) => t.slice === "dynarcade")).toBe(true);
+    const keys = equipmentByTileKey(built, [dynarcade]);
+    const entry = [...keys.entries()].find(([, e]) => e.type === "DYNARCADE");
+    expect(entry).toBeDefined();
+    expect(built.tiles[Number(entry![0].slice(1))]?.slice).toBe("dynarcade");
+  });
+});

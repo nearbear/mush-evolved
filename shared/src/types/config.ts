@@ -277,6 +277,7 @@ export interface GameConfig {
       hp: number; // HP a heal restores before modifiers (confirmed 2026-10-15).
       medicBonusHp: number; // Extra HP a heal restores for a player with the medic skill (owner, 2026-10-15).
       nursePointsPerDay: number; // Care points the nurse skill (`first_aid`) grants at the start of each day and when picked (owner, 2026-10-15).
+      mycologistSpores: number; // Contamination removed per heal/bandage by a human Mycologist (owner, 2026-11-14).
     };
     rooms: string[]; // Rooms where anyone can heal without a medikit (confirmed 2026-10-15: the sick bay).
     dirtyChance: number; // Chance of getting the dirty status after healing.
@@ -336,6 +337,7 @@ export interface GameConfig {
     rooms: RoomId[]; // Rooms where food can be cooked (confirmed 2026-10-16).
     dirtyChance: number; // Chance of getting the dirty status after cooking.
     injuryChance: number; // Chance of getting the injured status after cooking (owner, 2026-10-16: 25%).
+    capPoints: number; // Most Cook points (`resources.cook`) a player can hold (owner, 2026-11-14: 8).
   };
   expressCook: {
     cost: { ap: number }; // AP spent to express cook a ration with a reachable microwave (owner, 2026-10-19: 0).
@@ -427,6 +429,10 @@ export interface GameConfig {
     pointsPerDay: number; // Engineer points the `engineer` skill grants at the start of each day.
     pointsOnPick: number; // Engineer points it grants when picked.
   };
+  maintenanceAgent: {
+    pointsPerDay: { eng: number; garden: number; cook: number }; // Points the `maintenance_agent` skill grants at the start of each day (owner, 2026-11-14).
+    pointsOnPick: { eng: number; garden: number; cook: number }; // Points it grants when picked (owner, 2026-11-14).
+  };
   sprinter: {
     extraMpPerConversion: number; // Extra MP the `sprint` skill gets from each AP-to-MP conversion (owner, 2026-10-24; eMushpedia).
   };
@@ -470,8 +476,16 @@ export interface GameConfig {
     quantumSensors: { extraSectors: number };
     // CPU Overclocking (owner, 2026-11-01; eMushpedia *Accélération du processeur*): Scan for planets costs -scanApDiscount AP.
     chipsetAcceleration: { scanApDiscount: number };
+    // Takeoff thruster (owner, 2026-11-14): patrol ship, Pasiphae, and Icarus takeoff cost -takeoffApDiscount AP.
+    patrolShipLauncher: { takeoffApDiscount: number };
+    // Armoured corridors (owner, 2026-11-14): every attack on the Daedalus (damageShip) is reduced by damageReduction before the shield, floor 0.
+    armourCorridor: { damageReduction: number };
     // Fission Coffee Roaster (owner, 2026-11-02; eMushpedia *Torréfacteur à fission*): coffee machine regenerates at these cycles of each day (C1, C5; every cycle with PILGRED).
     fissionCoffeeRoaster: { cycles: number[] };
+    // Dynarcade (CALL_OF_DIRTY; owner, 2026-11-14): spawns the Dynarcade in `room`, where anyone can play for `cost.ap` AP (`successChance` x`failureMultiplier` per miss for +`morale`, `injuryChance` of 2 HP injury).
+    dynarcade: { room: RoomId; cost: { ap: number }; successChance: number; failureMultiplier: number; morale: number; injuryChance: number };
+    // Extra hydropots (EXTRA_HYDROPONPOTS; owner, 2026-11-14): completing it puts `count` empty hydropots on the floor of `room`.
+    extraHydropots: { room: RoomId; count: number };
   };
   pilgred: {
     cost: { ap: number }; // AP spent to take part in repairing PILGRED (owner, 2026-10-21; the original's REPAIR_PILGRED, 2).

@@ -2,7 +2,7 @@ import { Action, type ActionCost, peopleHere, isString } from "./action.ts";
 import { heal as healHp } from "../death.ts";
 import { itemsIn, isWorking } from "../items.ts";
 import { logPublic } from "../log.ts";
-import { healAmount } from "../modifiers.ts";
+import { healAmount, healed } from "../modifiers.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
 export type HealActionData = { type: "heal"; target: string };
@@ -42,6 +42,7 @@ export class HealAction extends Action<HealActionData> {
   override apply(state: GameState, player: PlayerState, target: HealActionData): void {
     const patient = state.players.find((o) => o.id === target.target)!; // checked, so it exists
     healHp(state, patient, healAmount(state, player));
+    healed(state, player, patient);
     logPublic(state, player.room, patient.id === player.id ? "healedSelf" : "healed", { name: player.character, target: patient.character });
   }
 }

@@ -71,6 +71,10 @@
   display: flex;
   gap: 2px;
   margin-left: auto;
+  pointer-events: auto;
+}
+.room-icons:empty {
+  display: none;
 }
 .room-icons > * {
   width: 16px;
@@ -379,27 +383,4 @@
 .iso-pixi canvas {
   display: block;
   pointer-events: none;
-}
-
-/* "This room is on fire!" in the top-left corner (fire.ts; under the nameplate on desktop): only the living in a burning
-   room get it. */
-.room-fire {
-  position: absolute;
-  top: 0.5rem;
-  left: 0.5rem;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  max-width: calc(100% - 1rem);
-  padding: var(--space-1) var(--space-2);
-  background: rgb(120 20 10 / 0.9);
-  border: 1px solid #f07a3a;
-  border-radius: 2px;
-  color: #fff;
-  font-size: 0.85rem;
-  pointer-events: none;
-}
-.room-fire img {
-  image-rendering: pixelated;
 }

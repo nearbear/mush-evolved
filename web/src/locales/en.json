@@ -29,6 +29,7 @@
     "fuel": "Fuel",
     "hull": "Hull",
     "plasmaShield": "Plasma shield",
+    "fires": "Fires",
     "alerts": "Alerts",
     "hunters": "Hunters",
     "orbit": "Orbiting {{name}}",
@@ -107,7 +108,6 @@
       "invincible": "Invincible ship",
       "fastExpeditions": "Fast expeditions",
       "goToCheatRoom": "Go to cheat room",
-      "returnToSol": "Return to Sol now",
       "leaveShip": "Leave ship",
       "role": {
         "mush": "Become Mush",
@@ -317,6 +317,7 @@
     "access": "Access",
     "examine": "Examine",
     "dispense": "Pull coffee",
+    "playArcade": "Play arcade",
     "consume": "Consume",
     "hide": "Hide",
     "search": "Search",
@@ -919,6 +920,8 @@
     "interrogated": "{{name}} interrogated {{target}}.",
     "chitchatted": "{{name}} chitchatted with {{target}}.",
     "comforted": "{{name}} comforted {{target}}.",
+    "playArcadeWin": "You beat Xatator, the level 10 boss on the Dynarcade!",
+    "playArcadeLose": "You lost on the Dynarcade.",
     "historyRevealed": "{{name}} recently did: {{action}}.",
     "historyNothing": "You learned nothing about what {{name}} did recently.",
     "punchCrit": "{{name}} landed a magnificent punch on {{target}}.",
@@ -985,6 +988,7 @@
     "titlePassed": "{{name}} is now {{title}}.",
     "titleVacant": "Nobody aboard can take the title {{title}}: it is vacant.",
     "returnedToSol": "{{name}} took the Daedalus to Sol.",
+    "returnedToEden": "{{name}} took the Daedalus to Eden.",
     "solLinked": "You established the link with Sol.",
     "solFailed": "You failed to establish the link with Sol.",
     "rebelDecoded": "You decoded part of the signal from {{base}}: {{percent}}% decoded.",
@@ -1796,10 +1800,15 @@
     "title": "Superkube",
     "close": "Close",
     "apply": "Apply",
+    "search": "Search items",
+    "spawnItem": "Spawn {{item}}",
+    "noMatch": "No item matches.",
+    "clickToTeleport": "Click a room to teleport there",
     "tabs": {
       "health": "Health",
       "items": "Items",
-      "travel": "Travel"
+      "travel": "Travel",
+      "destinations": "Destinations"
     },
     "ops": {
       "ailment": "Give yourself an ailment",
@@ -1811,7 +1820,9 @@
       "dirty": "Make yourself dirty",
       "contaminate": "Add contamination",
       "spawn": "Spawn an item",
-      "teleport": "Teleport to a room"
+      "teleport": "Teleport to a room",
+      "returnToSol": "Return to Sol",
+      "returnToEden": "Return to Eden"
     }
   },
   "bodyTaken": {

@@ -71,9 +71,7 @@ import {
 import { accountStoreFor } from "./accountStore.ts";
 import { buildRouterPrompt, parseRouterReply, routerInput } from "./router.ts";
 import { BOT_CHAT_CHAIN_DEPTH, LogParrotBot, ModelBot, WanderBot, type Bot } from "./bots.ts";
-import { parseFireLine } from "./bots/fireShare.ts";
-import { parseItemLine } from "./bots/itemShare.ts";
-import { parseJumpHold } from "./bots/planetShare.ts";
+import { isMachineLine } from "./bots/machineLines.ts";
 import { BOT_MEMORY_PREFIX, botMemoryKey } from "./bots/memoryStore.ts";
 import type { BotMessage } from "./prompt.ts";
 import { finishedEntry, gameStoreFor } from "./gameStore.ts";
@@ -889,7 +887,7 @@ export class GameRoom extends Server<Env> {
       return;
     }
     if (
-      ((msg.type === "cheat" || msg.type === "roleCheat" || msg.type === "solCheat" || msg.type === "cheatRoom" || msg.type === "kube" || msg.type === "leaveShip") ||
+      ((msg.type === "cheat" || msg.type === "roleCheat" || msg.type === "cheatRoom" || msg.type === "kube" || msg.type === "leaveShip") ||
         (msg.type === "action" && msg.action.type === "warp_to_planet")) &&
       !this.cheatsAllowed
     ) {
@@ -926,7 +924,7 @@ export class GameRoom extends Server<Env> {
         ? await this.act({ ...msg, by, at: Date.now() })
         : msg.type === "walk"
           ? await this.act({ ...msg, by }, undefined, this.game.players.find((p) => p.id === by)?.room)
-          : msg.type === "clearQueue" || msg.type === "acknowledgeTransfer" || msg.type === "cheat" || msg.type === "roleCheat" || msg.type === "solCheat" || msg.type === "cheatRoom" || msg.type === "kube"
+          : msg.type === "clearQueue" || msg.type === "acknowledgeTransfer" || msg.type === "cheat" || msg.type === "roleCheat" || msg.type === "cheatRoom" || msg.type === "kube"
             ? await this.act({ ...msg, by })
             : await this.social(playerId, by, msg);
     if (error) this.send(connection, { type: "error", message: error });
@@ -984,7 +982,7 @@ export class GameRoom extends Server<Env> {
   private async social(
     playerId: PlayerId,
     by: PlayerId,
-    msg: Exclude<GameClientMessage, { type: "action" | "clearQueue" | "acknowledgeTransfer" | "walk" | "cheat" | "roleCheat" | "solCheat" | "cheatRoom" | "kube" | "setModel" | "clearModel" | "leaveShip" | "chatPage" | "chatRead" }>,
+    msg: Exclude<GameClientMessage, { type: "action" | "clearQueue" | "acknowledgeTransfer" | "walk" | "cheat" | "roleCheat" | "cheatRoom" | "kube" | "setModel" | "clearModel" | "leaveShip" | "chatPage" | "chatRead" }>,
     /** A chat message's reply depth (`BOT_CHAT_CHAIN_DEPTH`): 0 unless a bot is replying to chat. */
     depth = 0,
   ): Promise<string | null> {
@@ -1010,10 +1008,8 @@ export class GameRoom extends Server<Env> {
       msg.type === "chat" || msg.type === "sharePlanet" || msg.type === "shareReport" ? { ...msg, by, text: moderated.text } : { ...msg, by, name: moderated.text };
     const error = await this.act(input, moderated.text === raw ? undefined : raw);
     if (!error && msg.type === "chat") {
-      // A bots' item, fire or jump line (itemShare.ts, fireShare.ts, planetShare.ts) is for code to parse, not a
-      // message to answer: no router call, nobody woken.
-      const machineLine = parseItemLine(moderated.text) !== null || parseFireLine(moderated.text) !== null || parseJumpHold(moderated.text) !== null;
-      if (!machineLine) this.wakeBots(playerId, msg.channel, depth);
+      // A bots' machine line (machineLines.ts) is for code to parse, not a message to answer: no router call, nobody woken.
+      if (!isMachineLine(moderated.text)) this.wakeBots(playerId, msg.channel, depth);
       // Posting reads the channel (#400): your own message is never unread, nor anything before it.
       if (!this.isBotSeat(playerId)) await this.raiseChatRead(playerId, { [msg.channel]: this.game.chatSeq[msg.channel] ?? 0 });
     }

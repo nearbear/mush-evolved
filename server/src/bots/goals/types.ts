@@ -3,6 +3,7 @@
 // own view and memory in, one step out, so they are tested without a server or a model.
 
 import type { FireMemory } from "../fireShare.ts";
+import type { TankMemory } from "../tankShare.ts";
 import type { ItemMemory } from "../itemShare.ts";
 import type { JumpMemory } from "../planetShare.ts";
 import type { Action, GameClientMessage, LobbyLanguage, PlanetDirection, PlayerView, RoomId } from "@mush2/shared";
@@ -64,6 +65,8 @@ export interface BotMemory {
   readonly items: ItemMemory;
   /** Which rooms burn and which a search has cleared, from what the bot saw and what bots said (`fireShare.ts`, #429). */
   readonly fires: FireMemory;
+  /** Which oxygen tanks are broken, suspected or claimed, from the alert bar, NERON and bots' lines (`tankShare.ts`, #443). */
+  readonly tanks: TankMemory;
   /** Last fuel reading the Commander saw in the combustion chamber (`null` if unknown or cleared by traveling, #421). */
   combustion: number | null;
   /** Cycle when the Commander started holding the jump (`null` when not holding, #421); `"Jump: off"` clears it. */

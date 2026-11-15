@@ -231,6 +231,18 @@ describe("cheat room", () => {
       expect(next.log).toEqual(s.log);
     });
 
+    it.each([
+      ["returnToSol", "sol", "returnedToSol"],
+      ["returnToEden", "eden", "returnedToEden"],
+    ] as const)("%s ends the game at %s once, with the decided winner", (op, ending, logKey) => {
+      const { s, p } = inRoom();
+      const next = ok(kube(s, p, op));
+      // A Mush is aboard and alive at the start, so the Mush win.
+      expect(next).toMatchObject({ phase: "ended", winner: "mush", ending });
+      expect(next.log.at(-1)).toMatchObject({ key: logKey, params: { name: me(s, p).character }, visibleTo: "all" });
+      expect(kube(next, p, op)).toMatchObject({ ok: false, error: "game_over" });
+    });
+
     it("replays", () => {
       const setup = { seats: makeSeats(3), config: { ...resolveConfig({ cheatRoom: true }), mushCount: 1 }, seed: 7 };
       const human = createGame(setup.seats, setup.config, setup.seed).players.find((pl) => pl.role === "human")!.id;

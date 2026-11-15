@@ -56,10 +56,52 @@ describe("SuperkubeOpener", () => {
     expect(onKube).not.toHaveBeenCalled();
   });
 
-  it("teleports to the Laboratory by default, the first room listed", () => {
+  it("teleports to a room immediately when clicked on the minimap", () => {
     const onKube = open();
     fireEvent.click(screen.getByRole("tab", { name: "Travel" }));
-    fireEvent.click(applyFor("Teleport to a room"));
+    expect(screen.getByText("Click a room to teleport there")).toBeTruthy();
+    const lab = screen.getByRole("button", { name: "Laboratory" });
+    fireEvent.focus(lab);
+    expect(screen.getByText("Laboratory", { selector: "strong" })).toBeTruthy();
+    fireEvent.click(lab);
     expect(onKube).toHaveBeenCalledWith("teleport", "LABORATORY");
+  });
+
+  it("teleports on Enter when a room on the minimap is focused", () => {
+    const onKube = open();
+    fireEvent.click(screen.getByRole("tab", { name: "Travel" }));
+    const refectory = screen.getByRole("button", { name: "Refectory" });
+    fireEvent.keyDown(refectory, { key: "Enter" });
+    expect(onKube).toHaveBeenCalledWith("teleport", "REFECTORY");
+  });
+
+  it("spawns the item picked from the searched grid", () => {
+    const onKube = open();
+    fireEvent.click(screen.getByRole("tab", { name: "Items" }));
+    const spawn = screen.getByRole("button", { name: "Spawn an item" }) as HTMLButtonElement;
+    expect(spawn.disabled).toBe(true);
+    const tiles = () => screen.getAllByRole("button", { pressed: false });
+    const all = tiles().length;
+    fireEvent.change(screen.getByLabelText("Search items"), { target: { value: "blaster" } });
+    expect(tiles().length).toBeLessThan(all);
+    fireEvent.click(screen.getByRole("button", { name: "Blaster" }));
+    fireEvent.click(screen.getByRole("button", { name: "Spawn Blaster" }));
+    expect(onKube).toHaveBeenCalledWith("spawn", "blaster");
+  });
+
+  it("says so when no item matches", () => {
+    open();
+    fireEvent.click(screen.getByRole("tab", { name: "Items" }));
+    fireEvent.change(screen.getByLabelText("Search items"), { target: { value: "zzzz" } });
+    expect(screen.getByText("No item matches.")).toBeTruthy();
+  });
+
+  it("sends returnToSol and returnToEden from the Destinations tab", () => {
+    const onKube = open();
+    fireEvent.click(screen.getByRole("tab", { name: "Destinations" }));
+    fireEvent.click(screen.getByRole("button", { name: "Return to Sol" }));
+    expect(onKube).toHaveBeenCalledWith("returnToSol");
+    fireEvent.click(screen.getByRole("button", { name: "Return to Eden" }));
+    expect(onKube).toHaveBeenCalledWith("returnToEden");
   });
 });

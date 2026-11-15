@@ -1,6 +1,7 @@
 import shipRooms from "@mush2/assets/derived/ship-rooms.json";
 import { ALIEN_FRUIT_ITEMS, BOOK_ITEM, ITRACKIE_ITEM } from "./itemIds.ts";
 import { CHEAT_ROOM, cheatRoomEquipment } from "./cheatRoom.ts";
+import { EQUIPMENT_TYPES } from "./equipment.ts";
 import { ICARUS_CRAFT, patrolEquipment, patrolRooms } from "./patrol.ts";
 import { SKILLS } from "./skills.ts";
 import type { ShipRoom } from "./shipLayout.ts";
@@ -92,7 +93,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Anyone can heal in the sick bay without a medikit; the medic skill adds 2 HP, the nurse 2 care points a day.
   heal: {
     cost: { apOther: 2, apSelf: 3 },
-    effect: { hp: 3, medicBonusHp: 2, nursePointsPerDay: 2 },
+    effect: { hp: 3, medicBonusHp: 2, nursePointsPerDay: 2, mycologistSpores: 1 },
     rooms: ["SICK_BAY"],
     dirtyChance: 0.05,
   },
@@ -189,7 +190,8 @@ export const DEFAULT_CONFIG: GameConfig = {
     capPoints: 4,
   },
   // Confirmed 2026-10-16: cooking an uncooked ration costs 1 AP, only in the refectory.
-  cook: { cost: { ap: 1 }, rooms: ["REFECTORY"], dirtyChance: 0.25, injuryChance: 0.01 },
+  // Owner, 2026-11-14: Cook points cap at 8.
+  cook: { cost: { ap: 1 }, rooms: ["REFECTORY"], dirtyChance: 0.25, injuryChance: 0.01, capPoints: 8 },
   // Owner, 2026-10-19: express cook is free, anywhere you can reach a microwave, and spends one of its 4 charges;
   // it regains one each day. Consequences for using it come later.
   expressCook: { cost: { ap: 0 }, charges: { start: 4, max: 4, perDay: 1 }, dirtyChance: 0.05 },
@@ -215,6 +217,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   designer: { capPoints: 4, pointsPerDay: 2 },
   // Owner, 2026-11-09: the engineer skill holds up to 2 Engineer points, gains 1 a day and 2 when picked; they pay for repair, dismantle, reinforce, hull repair, install, uninstall and renovate.
   engineer: { capPoints: 2, pointsPerDay: 1, pointsOnPick: 2 },
+  // Owner, 2026-11-14: Maintenance Agent grants +1 Engineer, +1 Garden, and +1 Cook point a day and 1 of each when picked, sharing the existing caps.
+  maintenanceAgent: { pointsPerDay: { eng: 1, garden: 1, cook: 1 }, pointsOnPick: { eng: 1, garden: 1, cook: 1 } },
   // Owner, 2026-10-25 (the original skills.json): Gunman +2 Shoot points a day (max 4); Gunner doubles turret odds and damage;
   // Persistent's streak grows by x1.5 a miss instead of x1.25; Space Tactics shrinks 50% of waves by 33%; Polymath +2 channels, +1 Computer point a day, +2 cap.
   gunman: { capPoints: 4, pointsPerDay: 2 },
@@ -283,7 +287,11 @@ export const DEFAULT_CONFIG: GameConfig = {
     foodRetailer: { room: "NEXUS_ROOM", items: ["output_tube", "input_tube", "input_tube"] },
     quantumSensors: { extraSectors: 1 },
     chipsetAcceleration: { scanApDiscount: 1 },
+    patrolShipLauncher: { takeoffApDiscount: 1 },
+    armourCorridor: { damageReduction: 1 },
     fissionCoffeeRoaster: { cycles: [1, 5] },
+    dynarcade: { room: "SPACESHIP_BAY_AA", cost: { ap: 1 }, successChance: 0.33, failureMultiplier: 1.5, morale: 2, injuryChance: 0.33 },
+    extraHydropots: { room: "HYDROPONIC_CENTER", count: 3 },
   },
   // Owner, 2026-10-21: repairing PILGRED uses the original's numbers (DIG_RATE 6, PILGRED_MOD 2, DIG_BOOST 4, -2 per repeat),
   // 2 AP, 25% dirty; the Physicist gains 1 PILGRED point a day and holds 2.
@@ -615,7 +623,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   rooms: { ...(Object.fromEntries(SHIP_ROOMS.map((r) => [r.id, r.doors])) as Record<RoomId, RoomId[]>), ...patrolRooms(), [ICARUS_CRAFT]: [] },
   // Confirmed 2026-10-11: the equipment drawn in each room of the original map; each patrol ship holds its command.
   // Terminals' chairs stay out: they are map data the rules read from the map (`terminalChairs`, spot.ts), not game state.
-  equipment: { ...Object.fromEntries(SHIP_ROOMS.map((r) => [r.id, r.equipment.map(({ id, type }) => ({ id, type }))])), ...patrolEquipment() },
+  equipment: { ...Object.fromEntries(SHIP_ROOMS.map((r) => [r.id, r.equipment.filter(({ type }) => !EQUIPMENT_TYPES[type]?.builtOnly).map(({ id, type }) => ({ id, type }))])), ...patrolEquipment() },
   diseases:  {
     allDiseases: [
       "cold_disease",

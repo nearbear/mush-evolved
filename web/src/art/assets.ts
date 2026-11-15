@@ -294,12 +294,13 @@ const uiIcons = urls(
 export const SATIETY_ICON = uiIcons["sat"]!;
 
 /** Ship resource icons (14-16px pixel art) for the top bar's resources card; the hull reuses the gold `shield` icon. */
-export const SHIP_RESOURCE_ICONS: Readonly<Record<"oxygen" | "fuel" | "hull" | "plasmaShield" | "hunters" | "alerts", string>> = {
+export const SHIP_RESOURCE_ICONS: Readonly<Record<"oxygen" | "fuel" | "hull" | "plasmaShield" | "hunters" | "fires" | "alerts", string>> = {
   oxygen: uiIcons["o2"]!,
   fuel: uiIcons["fuel"]!,
   hull: uiIcons["shield"]!,
   plasmaShield: uiIcons["plasma"]!,
   hunters: uiIcons["hunter"]!,
+  fires: FIRE_ICON,
   alerts: uiIcons["alert"]!,
 };
 

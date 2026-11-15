@@ -25,6 +25,19 @@ export function contaminate(state: GameState, human: PlayerState, amount = 1): v
   }
 }
 
+/**
+ * Lowers a living human's contamination by `amount` (floor 0), deleting the entry when it reaches 0.
+ * Silent: neither the human nor the Mush channel is told (Mycologist, confirmed 2026-11-14).
+ */
+export function removeContamination(state: GameState, player: PlayerState, amount = 1): void {
+  if (player.role !== "human" || !player.alive) return;
+  const level = state.contamination[player.id] ?? 0;
+  if (level <= 0) return;
+  const next = level - amount;
+  if (next <= 0) delete state.contamination[player.id];
+  else state.contamination[player.id] = next;
+}
+
 /** A system message in the Mush channel (decided 2026-10-16). Names the human and the level, never the Mush responsible. */
 function tellMush(state: GameState, key: string, params: Record<string, string | number>): void {
   pushChat(state, MUSH_CHANNEL, { from: null, isBot: false, text: "", system: { key, params } });

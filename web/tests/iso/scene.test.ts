@@ -287,11 +287,15 @@ describe("roomLooks and ambient animations", () => {
     expect(base.get("auxiliary_terminal_neron")).toBe("auxiliary_terminal_neron_upgrade_a");
     expect(base.has("bay_window")).toBe(false);
     expect(base.has("plasma_shield")).toBe(false);
+    expect(base.has("bay_alpha_platform")).toBe(false);
+    expect(base.has("bay_beta_platform")).toBe(false);
 
-    const upgraded = roomLooks(true, true, true, true, true, true);
+    const upgraded = roomLooks(true, true, true, true, true, true, true);
     expect(upgraded.get("auxiliary_terminal_neron")).toBe("auxiliary_terminal_neron_upgrade_b");
     expect(upgraded.get("bay_window")).toBe("bay_window_upgrade");
     expect(upgraded.get("plasma_shield")).toBe("plasma_shield_upgrade");
+    expect(upgraded.get("bay_alpha_platform")).toBe("bay_alpha_platform_upgrade");
+    expect(upgraded.get("bay_beta_platform")).toBe("bay_beta_platform_upgrade");
     expect(upgraded.get("core_pilgred")).toBe("core_pilgred_upgrade");
     expect(upgraded.get("human_tank")).toBe("human_tank_full");
     expect(upgraded.get("server")).toBe("server_active");
