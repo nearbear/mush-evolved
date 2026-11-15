@@ -826,6 +826,8 @@
       "skin_inflammation_disease": "Al cambiar de ciclo, tienes un 10 % de probabilidad de ensuciarte.\nEntrar en una sala tiene un 16 % de probabilidad de hacerte rascar.\nDucharte te cuesta 6 PS.",
       "space_rabies_disease": "Al cambiar de ciclo, pierdes 2 PS y muerdes a alguien de la sala, que pierde 2 PS.\nEntrar en una sala tiene un 16 % de probabilidad de hacerte echar espuma por la boca y un 16 % de hacerte atacar a alguien con un arma que lleves.\nTodo el daño que recibes aumenta en 1.",
       "smallpox_disease": "-2 PV máximos.\n-2 de moral máxima.\nAl cambiar de ciclo, tienes un 40 % de probabilidad de perder 1 PM y un 50 % de perder 2 PS.",
+      "rejuvenation_disease": "Al cambiar de ciclo, tienes un 50 % de probabilidad de perder 1 PM, un 10 % de ensuciarte y un 3 % de contraer otra enfermedad.\nAl estar acostado, tienes un 30 % de probabilidad de no recuperar PA adicionales.",
+      "mush_allergy_disease": "Si recibes una espora, mueres.\nSi te convierte en Mush, sobrevives.",
       "broken_nose_injury": "-2 PV máximos.\n-2 de moral máxima.",
       "inactive": "No se ha conectado en 24 horas. No puede tener ningún título, no puede sufrir una Transferencia, y un puñetazo le acierta el 90 % de las veces. Termina en cuanto se conecta.",
       "super_inactive": "No se ha conectado en 48 horas. Logística también lo ignora. Termina en cuanto se conecta.",

@@ -650,7 +650,9 @@ export const DEFAULT_CONFIG: GameConfig = {
       "gastroenteritis_disease",
       "skin_inflammation_disease",
       "space_rabies_disease",
-      "smallpox_disease"],
+      "smallpox_disease",
+      "rejuvenation_disease",
+      "mush_allergy_disease"],
     // Owner, 2026-11-14: what the disease incident can give.
     incidentDiseases: ["cold_disease", "skin_inflammation_disease"],
     allDisorders: ["depression_disorder"],
@@ -662,7 +664,11 @@ export const DEFAULT_CONFIG: GameConfig = {
       {label: "gastroenteritis_disease", type: "disease", durationMin: 8, durationMax: 12 ,spreadByDTT: true, roomSpread: 0.02, cycleSpread: 0.04},
       {label: "skin_inflammation_disease",type: "disease", durationMin: 12, durationMax: 20, roomSpread: 0.02, cycleSpread: 0.02, spreadByDTT: true},
       {label: "space_rabies_disease", type: "disease", durationMin: 8, durationMax: 12},
-      {label: "smallpox_disease", type: "disease", durationMin: 12, durationMax: 20}],
+      {label: "smallpox_disease", type: "disease", durationMin: 12, durationMax: 20},
+      // Owner, 2026-11-14.
+      {label: "rejuvenation_disease", type: "disease", durationMin: 8, durationMax: 12},
+      // Owner, 2026-11-14.
+      {label: "mush_allergy_disease", type: "disease", durationMin: 20, durationMax: 32}],
     allDisorderStats: [{type: "disorder", resistance: 8}],
     allInjuryStats: [{type: "injury"}],
     },

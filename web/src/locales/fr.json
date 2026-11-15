@@ -826,6 +826,8 @@
       "skin_inflammation_disease": "À chaque changement de cycle, vous avez 10 % de chances de devenir sale.\nEntrer dans une pièce a 16 % de chances de vous faire vous gratter.\nPrendre une douche vous coûte 6 PV.",
       "space_rabies_disease": "À chaque changement de cycle, vous perdez 2 PV et mâchouillez quelqu'un dans la pièce, qui perd 2 PV.\nEntrer dans une pièce a 16 % de chances de vous faire baver d'écume et 16 % de chances de vous faire attaquer quelqu'un avec une arme que vous portez.\nTous les dégâts que vous subissez sont augmentés de 1.",
       "smallpox_disease": "-2 PV maximum.\n-2 au moral maximum.\nÀ chaque changement de cycle, vous avez 40 % de chances de perdre 1 PM et 50 % de chances de perdre 2 PV.",
+      "rejuvenation_disease": "À chaque changement de cycle, vous avez 50 % de chances de perdre 1 PM, 10 % de chances de devenir sale et 3 % de chances d'attraper une autre maladie.\nAllongé, vous avez 30 % de chances de ne récupérer aucun PA supplémentaire.",
+      "mush_allergy_disease": "Si vous recevez une spore, vous mourez.\nSi elle vous transforme en Mush, vous survivez.",
       "broken_nose_injury": "-2 PV maximum.\n-2 au moral maximum.",
       "inactive": "Ne s'est pas connecté depuis 24 heures. Ne peut détenir aucun titre, ne peut pas subir de Transfert, et un coup de poing l'atteint 90 % du temps. Prend fin dès sa connexion.",
       "super_inactive": "Ne s'est pas connecté depuis 48 heures. Logistique l'ignore aussi. Prend fin dès sa connexion.",
