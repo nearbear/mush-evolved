@@ -29,6 +29,7 @@
     "fuel": "Combustible",
     "hull": "Casco",
     "plasmaShield": "Escudo de plasma",
+    "fires": "Incendios",
     "alerts": "Alertas",
     "hunters": "Hunters",
     "orbit": "En órbita alrededor de {{name}}",

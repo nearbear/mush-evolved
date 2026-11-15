@@ -6,13 +6,14 @@ import { useNames } from "../i18n/names.ts";
 import { TitleChip } from "./TitleChip.tsx";
 import { useCountdown } from "./useCountdown.ts";
 
-const RESOURCES = ["oxygen", "fuel", "hull", "plasmaShield", "hunters", "alerts"] as const;
+const RESOURCES = ["oxygen", "fuel", "hull", "plasmaShield", "hunters", "fires", "alerts"] as const;
 
 /**
  * The ship card (in the desktop top bar, and ShipOverlay on phones) with the ship's resource counters, how many hunters
- * are attacking, the ship titles, the orbited planet's name while in orbit (owner, 2026-10-31), and the expedition
- * away: who, where and when they are back (owner, 2026-11-07), all public. Alerts count every fire and broken piece of
- * equipment aboard; the popover locates only the reported ones (owner, 2026-11-14, #444).
+ * are attacking, active fires, broken equipment alerts, the ship titles, the orbited planet's name while in orbit
+ * (owner, 2026-10-31), and the expedition away: who, where and when they are back (owner, 2026-11-07), all public.
+ * Fires count every fire aboard and alerts count every broken piece of equipment; each popover locates only the
+ * reported ones (owner, 2026-11-14, #444).
  */
 export function ShipResources({
   ship,
@@ -32,16 +33,22 @@ export function ShipResources({
   alerts: PlayerView["alerts"];
 }) {
   const { t } = useTranslation();
-  const alertCount = alerts.fires + alerts.broken;
   return (
     <ul className="ship-resources" aria-label={t("shipResources.title")}>
       {RESOURCES.map((id) => {
         const name = t(`shipResources.${id}`);
-        const value = id === "alerts" ? String(alertCount) : id === "hunters" ? String(hunters) : `${ship[id]}/${ship.max[id]}`;
+        const value =
+          id === "fires"
+            ? String(alerts.fires)
+            : id === "alerts"
+              ? String(alerts.broken)
+              : id === "hunters"
+                ? String(hunters)
+                : `${ship[id]}/${ship.max[id]}`;
         // A fixed-width slot (the widest reading, in tabular figures), so a changing value never shifts its neighbours.
-        const width = id === "alerts" || id === "hunters" ? 2 : 2 * String(ship.max[id]).length + 1;
-        // Nothing to report (no hunters, no alert) is muted. Values get no warning colour: no thresholds are decided (owner, 2026-11-12).
-        const empty = (id === "hunters" && hunters === 0) || (id === "alerts" && alertCount === 0);
+        const width = id === "fires" || id === "alerts" || id === "hunters" ? 2 : 2 * String(ship.max[id]).length + 1;
+        // Nothing to report (no hunters, no fires, no alerts) is muted. Values get no warning colour: no thresholds are decided (owner, 2026-11-12).
+        const empty = (id === "hunters" && hunters === 0) || (id === "fires" && alerts.fires === 0) || (id === "alerts" && alerts.broken === 0);
         return (
           <li key={id} className={empty ? "empty" : undefined}>
             {/* A popover, not a tooltip, so a tap opens it on phones (touch has no hover). */}
@@ -56,7 +63,7 @@ export function ShipResources({
               >
                 <img src={SHIP_RESOURCE_ICONS[id]} alt="" />
                 <span className="ship-resource-value" style={{ minWidth: `${width}ch` }}>
-                  {id === "alerts" || id === "hunters" ? (
+                  {id === "fires" || id === "alerts" || id === "hunters" ? (
                     value
                   ) : (
                     <>
@@ -70,7 +77,8 @@ export function ShipResources({
                 <Popover.Positioner sideOffset={6}>
                   <Popover.Popup className="tooltip">
                     {`${name}: ${value}`}
-                    {id === "alerts" && <AlertList alerts={alerts} />}
+                    {id === "fires" && <AlertList kind="fire" total={alerts.fires} reports={alerts.reports} />}
+                    {id === "alerts" && <AlertList kind="equipment" total={alerts.broken} reports={alerts.reports} />}
                   </Popover.Popup>
                 </Popover.Positioner>
               </Popover.Portal>
@@ -92,15 +100,24 @@ export function ShipResources({
   );
 }
 
-/** The reported fires and breakdowns, then how many more there are that nobody reported. */
-function AlertList({ alerts }: { alerts: PlayerView["alerts"] }) {
+/** The reported fires or breakdowns, then how many more there are that nobody reported. */
+function AlertList({
+  kind,
+  total,
+  reports,
+}: {
+  kind: PlayerView["alerts"]["reports"][number]["kind"];
+  total: number;
+  reports: PlayerView["alerts"]["reports"];
+}) {
   const { t } = useTranslation();
   const names = useNames();
-  const unreported = alerts.fires + alerts.broken - alerts.reports.length;
-  if (alerts.fires + alerts.broken === 0) return null;
+  const matching = reports.filter((r) => r.kind === kind);
+  const unreported = total - matching.length;
+  if (total === 0) return null;
   return (
     <ul className="alert-list">
-      {alerts.reports.map((r, i) => {
+      {matching.map((r, i) => {
         const detector = r.by === "FIRE_SENSOR" || r.by === "EQUIPMENT_SENSOR" ? names.project(r.by) : null;
         const room = names.room(r.room);
         const text =

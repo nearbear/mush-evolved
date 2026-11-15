@@ -29,6 +29,7 @@
     "fuel": "Fuel",
     "hull": "Hull",
     "plasmaShield": "Plasma shield",
+    "fires": "Fires",
     "alerts": "Alerts",
     "hunters": "Hunters",
     "orbit": "Orbiting {{name}}",
