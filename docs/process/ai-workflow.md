@@ -3901,3 +3901,8 @@ Two hidden-information choices made by Claude, not the owner, worth a look: (1) 
 
 - **Decision (owner):** `sow` targets a reachable fruit (`canReachItem`, carried or on the room floor) instead of targeting a pot with a carried fruit, and plants into a reachable empty hydropot (preferring a floor pot over a carried pot).
 - **What worked:** Moving the action target to the fruit (`SowActionData = { type: "sow"; item: string }`) eliminated the need for a `Sow (Fruit)` disambiguation label on pots and simplified the bot `sowJob` goal so bots can sow straight from the garden floor.
+
+### 2026-11-14 — Bot expedition gear & report sharing
+
+- Extended `SHARED_ITEMS` in `server/src/bots/itemShare.ts` with expedition gear (`space_suit`, `rope`, `quad_compass`, `white_flag`, `drill`) so bots share and look up their rooms via `Item:` lines.
+- Added `server/src/bots/reportShare.ts` (`formatReportShare`, `parseReportShare`, `exploredSectors`, `observeReports`, `exploredOn`, `ReportMemory`) and wired it into `BotSocial`, `BotMemory`, `BotMemorySnapshot`, and `GoalBot` (`decideAction`, `snapshot`, `restore`) so returning crew bots post `shareReport` once per finished expedition and the Commander folds `view.sharedReports` into `BotMemory.reports` for `leave_orbit`.

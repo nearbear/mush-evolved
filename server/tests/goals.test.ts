@@ -31,6 +31,7 @@ import { formatTankLine, newTankMemory, observeTanks, parseTankLine } from "../s
 import { extinguish } from "../src/bots/goals/extinguish.ts";
 import { repairOxygen } from "../src/bots/goals/repairOxygen.ts";
 import { formatItemLine, newItemMemory, observeItems, parseItemLine, roomsHolding } from "../src/bots/itemShare.ts";
+import { newReportMemory } from "../src/bots/reportShare.ts";
 import { chooseSkill } from "../src/bots/skillChoice.ts";
 import { seats } from "../src/testing/fakes.ts";
 
@@ -103,6 +104,7 @@ const memory = (scripted = true) => ({
   combustion: null as number | null,
   holdSince: null as number | null,
   jump: newJumpMemory(),
+  reports: newReportMemory(),
   heading: null as GameState["navigation"]["heading"] | null,
   cancelHold: false,
   justJumped: false,
@@ -686,7 +688,7 @@ describe("eat", () => {
     const { game: start, id } = starving(BOT_EAT_AFTER_CYCLES);
     const game = edit(start, id, (p) => (p.room = start.config.botany.gardenRoom));
     game.items.push({ id: "test-banana", type: "fruit_banana", at: { kind: "room", id: game.config.botany.gardenRoom } });
-    expect(await new GoalBot(1, 2, [eat, sowHere]).decideAction(viewFor(game, id))).toMatchObject({ type: "take", item: "test-banana" });
+    expect(await new GoalBot(1, 2, [eat, sowHere]).decideAction(viewFor(game, id))).toMatchObject({ type: "sow", item: "test-banana" });
     const hungry = edit(game, id, (p) => p.statuses.push("hungry" as never));
     expect(await new GoalBot(1, 2, [eat, sowHere]).decideAction(viewFor(hungry, id))).toEqual({ type: "consume", item: "test-banana" });
   });
@@ -1254,7 +1256,7 @@ describe("travel: the Commander (#417)", () => {
     const { game, id } = commander([planet("pl-1", "Kaxor", "east", 3)]);
     const fuel = game.ship.fuel;
     const { game: after, taken } = await play(game, id, new GoalBot(1, 2, [travel]), 60);
-    const work = taken.map((a) => a.type).filter((t) => t !== "move");
+    const work = taken.map((a) => a.type).filter((t) => t !== "move" && !t.startsWith("report_"));
     expect(work[0]).toBe("check_combustion");
     expect(work.filter((t) => t === "take_fuel")).toHaveLength(3);
     expect(work.filter((t) => t === "load_fuel")).toHaveLength(3);
@@ -1270,7 +1272,7 @@ describe("travel: the Commander (#417)", () => {
     const { game, id } = commander([planet("pl-1", "Kaxor", "north", 2)]);
     game.ship.combustion = 4;
     const { game: after, taken } = await play(game, id, new GoalBot(1, 2, [travel]), 60);
-    const work = taken.map((a) => a.type).filter((t) => t !== "move");
+    const work = taken.map((a) => a.type).filter((t) => t !== "move" && !t.startsWith("report_"));
     expect(work).toEqual(["check_combustion", "unload_fuel", "unload_fuel", "travel"]);
     expect(after.navigation.orbit ?? after.navigation.arriving?.planet).toBe("pl-1");
   });
