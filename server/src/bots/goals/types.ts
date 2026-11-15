@@ -6,13 +6,24 @@ import type { FireMemory } from "../fireShare.ts";
 import type { TankMemory } from "../tankShare.ts";
 import type { ItemMemory } from "../itemShare.ts";
 import type { JumpMemory } from "../planetShare.ts";
+import type { ReportMemory } from "../reportShare.ts";
 import type { Action, GameClientMessage, LobbyLanguage, PlanetDirection, PlayerView, RoomId } from "@mush2/shared";
 
 /**
- * A message a goal sends that isn't an action (#417, #421): sharing a planet or a global-chat signal. It goes through
- * the same path as a person's (`GameRoom.social`: rate limit, moderation, the rules), and is recorded like one.
+ * A message a goal sends that isn't an action (#417, #421): sharing a planet, sharing an expedition report, a
+ * global-chat signal, creating a private channel, or posting a plan. It goes through the same path as a person's
+ * (`GameRoom.social`: rate limit, moderation, the rules), and is recorded like one.
  */
-export type BotSocial = Extract<GameClientMessage, { type: "sharePlanet" | "chat" }>;
+export type BotSocial = Extract<GameClientMessage, { type: "sharePlanet" | "shareReport" | "chat" | "createChannel" | "postPlan" }>;
+
+/** Expedition prep state remembered across turns (including after dropping iTrackie before takeoff). */
+export interface ExpeditionPrepMemory {
+  planId: string;
+  seenCycle: number;
+  ready: boolean;
+  expeditions: number;
+  done?: boolean;
+}
 
 /** What an expedition goes for: an Oxygen sector or a Hydrocarbon sector (owner, 2026-11-12, #417). */
 export type ExpeditionKind = "oxygen" | "fuel";
@@ -73,6 +84,8 @@ export interface BotMemory {
   holdSince: number | null;
   /** The Commander's jump lines in global chat, folded in as read (`planetShare.ts`, #427). */
   readonly jump: JumpMemory;
+  /** Explored sectors from shared expedition reports, and which reports were seen or shared (`reportShare.ts`). */
+  readonly reports: ReportMemory;
   /** Last heading seen on a Command terminal (`null` until visited, #421). */
   heading: PlanetDirection | null;
   /** True when the Commander jumped or gave up while holding and still needs to post `"Jump: off"` (#421). */
@@ -81,6 +94,8 @@ export interface BotMemory {
   justJumped: boolean;
   /** Failure reason saved while `"Jump: off"` is posted before failing `travel` (#421). */
   failedReason: string | null;
+  /** Active expedition plan prep state (first-seen cycle for wait timing, and ready-in-ICARUS state after dropping iTrackie). */
+  expeditionPrep: ExpeditionPrepMemory | null;
   /** A seeded roll in [0, n), for choices with no better reason (the bot's own RNG, never `Math.random`). */
   roll(n: number): number;
 }

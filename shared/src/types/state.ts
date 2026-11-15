@@ -241,8 +241,11 @@ export interface GameState extends GameCore {
  * What a hunter is aiming at (hunters.ts): the Daedalus or a patrol ship in flight, by its room id. Players out in space
  * come with Mush auto-ejection (docs/plans/patrol.md, "Later"; owner, 2026-10-28).
  */
-/** A problem a player reported (reports.ts, #444): a fire by its room, a breakdown by its equipment's id. `by` is the reporter. */
-export type Report = { kind: "fire"; room: RoomId; by: PlayerId } | { kind: "equipment"; equipment: string; by: PlayerId };
+/** A problem a player reported (reports.ts, #444, #330): a fire by its room, a breakdown by its equipment's id, or a broken door by its id. `by` is the reporter. */
+export type Report =
+  | { kind: "fire"; room: RoomId; by: PlayerId }
+  | { kind: "equipment"; equipment: string; by: PlayerId }
+  | { kind: "door"; door: DoorId; by: PlayerId };
 
 export type HunterTarget = { kind: "ship" } | { kind: "patrol"; id: RoomId } | { kind: "hunter"; id: string };
 

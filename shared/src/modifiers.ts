@@ -435,7 +435,7 @@ export function hunterPointsPerCycle(base: number, state: Readonly<GameState>, r
   return Math.max(0, points);
 }
 
-/** The share of hunters that follow a jump: `base` through every living player's `crewFollowingHunters` hooks, in seat order; between 0 and 1. */
+/** The share of hunters that follow a jump: `base` through every living player's `crewFollowingHunters` hooks, in seat order, then halved by Trail Reducer (`TRAIL_REDUCER`); between 0 and 1. */
 export function followingHuntersShare(base: number, state: Readonly<GameState>, registry: ModifierRegistry = MODIFIERS): number {
   let share = base;
   for (const holder of state.players) {
@@ -445,6 +445,7 @@ export function followingHuntersShare(base: number, state: Readonly<GameState>, 
       if (hook) share = hook(share, holder, state);
     }
   }
+  if (projectDone(state, "TRAIL_REDUCER")) share *= state.config.project.trailReducer.followMultiplier;
   return Math.min(1, Math.max(0, share));
 }
 

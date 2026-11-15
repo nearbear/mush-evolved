@@ -1,6 +1,7 @@
-import { DEFAULT_CONFIG, legalIn, startGame, viewFor, type LogLine } from "@mush2/shared";
+import { applyInput, DEFAULT_CONFIG, legalIn, startGame, viewFor, type LogLine } from "@mush2/shared";
 import { describe, expect, it } from "vitest";
-import { LogParrotBot, WanderBot } from "../src/bots.ts";
+import { GoalBot, LogParrotBot, WanderBot } from "../src/bots.ts";
+import type { BotSocial, GoalDef } from "../src/bots/goals/index.ts";
 import { seats } from "../src/testing/fakes.ts";
 
 // End cycle on, as on the dev server; without it a bot waits for the clock instead.
@@ -70,5 +71,61 @@ describe("LogParrotBot", () => {
     const view = { ...base, chatChannels: [], log: [priv] };
     expect(bot.chatLines(view)).toEqual([]);
     expect(bot.chatLines({ ...view, chatChannels: ["global"] })).toHaveLength(1);
+  });
+});
+
+describe("GoalBot social messages", () => {
+  it("emits createChannel, postPlan, and shareReport through takeSocial", async () => {
+    const config = { ...DEFAULT_CONFIG, manualCycles: true };
+    let game = startGame({ seats: seats(0), config, seed: 1, rulesVersion: "test" });
+    const messages: BotSocial[] = [
+      { type: "createChannel", name: "crew", members: ["p1"] },
+      {
+        type: "postPlan",
+        plan: {
+          channel: "pc-1",
+          room: "REFECTORY",
+          purpose: "meal",
+          slots: [{ kind: "onCall" }],
+        },
+      },
+      { type: "shareReport", report: "exp-1", text: "safe" },
+    ];
+    let stepIndex = 0;
+    const goalDef: GoalDef = {
+      id: "testSocial",
+      options: () => [
+        {
+          key: "testSocial",
+          label: "testSocial",
+          priority: 100,
+          step: () => {
+            const message = messages[stepIndex++];
+            return message ? { kind: "social", message } : { kind: "done" };
+          },
+        },
+      ],
+    };
+    const bot = new GoalBot({ state: 1 }, 2, [goalDef]);
+
+    expect(await bot.decideAction(viewFor(game, "p0"))).toBeNull();
+    const create = bot.takeSocial();
+    expect(create).toEqual(messages[0]);
+    expect(bot.takeSocial()).toBeNull();
+    const created = applyInput(game, { ...create!, by: "p0" });
+    expect(created.ok).toBe(true);
+    if (!created.ok) return;
+    game = created.state;
+
+    expect(await bot.decideAction(viewFor(game, "p0"))).toBeNull();
+    const post = bot.takeSocial();
+    expect(post).toEqual(messages[1]);
+    const posted = applyInput(game, { ...post!, by: "p0" });
+    expect(posted.ok).toBe(true);
+    if (!posted.ok) return;
+    game = posted.state;
+
+    expect(await bot.decideAction(viewFor(game, "p0"))).toBeNull();
+    expect(bot.takeSocial()).toEqual(messages[2]);
   });
 });

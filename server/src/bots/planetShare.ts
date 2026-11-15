@@ -40,6 +40,15 @@ export function parsePlanetShare(text: string): SharedPlanetInfo | null {
   return { name, direction, distance, sectors: sectors.map((s) => (s === UNKNOWN ? null : s)) };
 }
 
+/** The latest non-stale shared planet in the bots' format, if any (used while traveling or orbiting). */
+export function activeSharedPlanet(view: PlayerView): SharedPlanetInfo | null {
+  const shares = view.sharedPlanets
+    .map((entry, i) => ({ entry, i, info: entry.stale ? null : parsePlanetShare(entry.text) }))
+    .filter((s): s is typeof s & { info: SharedPlanetInfo } => s.info !== null);
+  shares.sort((a, b) => b.entry.day - a.entry.day || b.entry.cycleOfDay - a.entry.cycleOfDay || b.i - a.i);
+  return shares[0]?.info ?? null;
+}
+
 /**
  * Public chat lines the Commander posts in global chat about a prepared jump (#421). `"Jump: hold"`: a jump is
  * ready and held; nobody changes what they do. `"Jump: now"`: the trigger is met and the ship flees as soon as the

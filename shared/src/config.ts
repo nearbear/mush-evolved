@@ -302,8 +302,11 @@ export const DEFAULT_CONFIG: GameConfig = {
     fissionCoffeeRoaster: { cycles: [1, 5] },
     dynarcade: { room: "SPACESHIP_BAY_AA", cost: { ap: 1 }, successChance: 0.33, failureMultiplier: 1.5, morale: 2, injuryChance: 0.33 },
     extraHydropots: { room: "HYDROPONIC_CENTER", count: 3 },
+    heatLamp: { extraFruitChance: 0.5 },
+    hydroponicIncubator: { growthMultiplier: 2 },
     neronParticipation: { percent: 5 },
     autoWatering: { extinguishChance: 0.25 },
+    trailReducer: { followMultiplier: 0.5 },
   },
   // Owner, 2026-10-21: repairing PILGRED uses the original's numbers (DIG_RATE 6, PILGRED_MOD 2, DIG_BOOST 4, -2 per repeat),
   // 2 AP, 25% dirty; the Physicist gains 1 PILGRED point a day and holds 2.
@@ -383,13 +386,13 @@ export const DEFAULT_CONFIG: GameConfig = {
   spaceCapsule: { cost: { ap: 1 }, dirtyChance: 0.25, injuryChance: 0.01, contents: ["metal_scraps", "plastic_scraps", "oxy_capsule", "fuel_capsule"] },
   hullRepair: { cost: { ap: 1 }, chance: 0.25, injuryChance: 0.05, amount: 5 },
   oscilloscope: { repairFactor: 2 },
-  // Owner, 2026-10-25 (#184), eMushpedia "Embûches": budget, roll and catalog (cost, weight). Stuck door is not
-  // built, so it is not on the menu.
+  // Owner, 2026-10-25 (#184), eMushpedia "Embûches": budget, roll and catalog (cost, weight).
   incidents: {
     budget: { base: [1, 2, 1], tier1: { fromDay: 5, bonus: 1 }, tier2: { fromDay: 10, bonus: 2 } },
     rollPoints: 18,
     catalog: {
       tremor: { cost: 2, weight: 10 },
+      stuck_door: { cost: 3, weight: 10 },
       fire: { cost: 4, weight: 6 },
       panic_attack: { cost: 2, weight: 5 },
       oxygen_leak: { cost: 3, weight: 3 },

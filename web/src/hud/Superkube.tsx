@@ -174,6 +174,7 @@ function KubeTravelMap({ op, view, onKube }: { op: KubeOpId; view: PlayerView; o
         unidentified={view.unidentified}
         reachable={reachable}
         burningRooms={view.burningRooms}
+        brokenDoors={view.brokenDoors}
         pointed={pointed}
         interactive
         onPoint={setPointed}

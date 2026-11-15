@@ -253,7 +253,7 @@ export async function runSurvival(seed: number, opts: SurvivalOptions): Promise<
           result.goals[kind] = (result.goals[kind] ?? 0) + 1;
         }
         lastGoal.set(id, goal);
-        // A message that isn't an action (sharing a planet, #417), as the room sends it; that turn has no action.
+        // A message that isn't an action (sharing a planet or report, chat signal, channel, plan), as the room sends it; that turn has no action.
         const social = bot.takeSocial();
         if (social) {
           if (apply({ ...social, by: id })) {

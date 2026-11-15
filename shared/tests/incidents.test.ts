@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { isBreakable } from "../src/breakage.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
+import { allDoors, doorRooms } from "../src/doors.ts";
 import { EQUIPMENT_TYPES } from "../src/equipment.ts";
 import { INCIDENT_IDS, incidentPointsForDay, type IncidentId } from "../src/incidents.ts";
 import { hasCamera } from "../src/log.ts";
@@ -280,6 +281,31 @@ describe("incidents", () => {
     const after = nextCycle(s);
     expect(after.fires).toHaveLength(1);
     expect(globalSystem(after)).toContainEqual({ key: "fireStarted" });
+  });
+
+  it("stuck door: costs 3 with weight 10, breaks one working door silently, and skips when none is left", () => {
+    expect(DEFAULT_CONFIG.incidents.catalog.stuck_door).toEqual({ cost: 3, weight: 10 });
+    const config = only("stuck_door");
+    const s = ship(config);
+    s.incidentPoints = config.incidents.catalog.stuck_door.cost - 1;
+    const after = nextCycle(s);
+    const broken = Object.keys(after.doors);
+    expect(broken).toHaveLength(1);
+    expect(after.incidentPoints).toBe(0);
+    expect(after.log.slice(s.log.length).map((e) => e.key)).toEqual(["cycleBegins"]);
+    expect(globalSystem(after)).toEqual([]);
+
+    const [a, b] = doorRooms(broken[0]!);
+    const outsider = after.players.find((p) => p.room !== a && p.room !== b)!;
+    expect(viewFor(after, outsider.id).doors.some((d) => d.broken)).toBe(false);
+    expect(viewFor(after, outsider.id).brokenDoors).toEqual([]);
+    expect(viewFor(after, outsider.id).alerts).toEqual({ fires: 0, broken: 1, reports: [] });
+
+    const allBroken = ship(config);
+    for (const id of allDoors(allBroken.config.rooms)) allBroken.doors[id] = { broken: true };
+    allBroken.incidentPoints = config.incidents.catalog.stuck_door.cost;
+    const unchanged = nextCycle(allBroken);
+    expect(unchanged.incidentPoints).toBe(config.incidents.catalog.stuck_door.cost + incidentPointsForDay(config, 1));
   });
 });
 

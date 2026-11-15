@@ -92,7 +92,7 @@ import { GuardAction, StopGuardingAction } from "./actions/guard.ts";
 import { EnterNimbleAction, ExitNimbleAction, NIMBLE } from "./actions/nimble.ts";
 import { ProtectAction } from "./actions/protect.ts";
 import { GetUpAction, LieDownAction } from "./actions/lie_down.ts";
-import { ReportEquipmentAction, ReportFireAction } from "./actions/report.ts";
+import { ReportDoorAction, ReportEquipmentAction, ReportFireAction } from "./actions/report.ts";
 import { ShowerAction } from "./actions/shower.ts";
 import { SpikeAction } from "./actions/spike.ts";
 import { FungalCuisineAction } from "./actions/fungal_cuisine.ts";
@@ -229,6 +229,7 @@ const REGISTRY = {
   get_up: new GetUpAction(),
   report_fire: new ReportFireAction(),
   report_equipment: new ReportEquipmentAction(),
+  report_door: new ReportDoorAction(),
   guard: new GuardAction(),
   stop_guarding: new StopGuardingAction(),
   enter_nimble: new EnterNimbleAction(),

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
+import { PROJECT_COMPLETE, projectStatus } from "../src/projects.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { GameConfig, GameState, ItemState, PlantState } from "../src/types.ts";
@@ -100,7 +101,7 @@ describe("botany: the day change", () => {
   it("a plant sown at cycle 1 that needs 8 cycles is adult and produces from cycle 1 of the next day", () => {
     let s = ship({ growCycles: { [BANANA]: 8 } });
     s.items = s.items.filter((i) => !i.plant);
-    s = mustApply(s, "p0", { type: "sow", item: emptyPot(s).id, fruit: giveBanana(s) });
+    s = mustApply(s, "p0", { type: "sow", item: giveBanana(s) });
     const pot = planted(s)[0]!.id;
     expect(item(s, pot).plant).toEqual({ species: BANANA, age: 0, thirst: 0, sick: false });
     for (let c = 0; c < s.config.cyclesPerDay - 1; c++) s = nextCycle(s);
@@ -246,27 +247,40 @@ describe("botany: treat and hidden sickness", () => {
 });
 
 describe("botany: sow", () => {
-  it("needs a carried fruit and an empty pot in reach, uses the fruit up, and is public", () => {
+  it("needs a reachable fruit and an empty pot in reach, uses the fruit up, and is public", () => {
     const s = ship();
     expect(offered(s, "p0").some((x) => x.type === "sow")).toBe(false);
     const fruit = giveBanana(s);
     const pot = emptyPot(s).id;
-    expect(offered(s, "p0")).toContainEqual({ type: "sow", item: pot, fruit });
+    expect(offered(s, "p0")).toContainEqual({ type: "sow", item: fruit });
     const ap = player(s, "p0").ap;
-    const next = mustApply(s, "p0", { type: "sow", item: pot, fruit });
+    const next = mustApply(s, "p0", { type: "sow", item: fruit });
     expect(item(next, pot).plant).toEqual({ species: BANANA, age: 0, thirst: 0, sick: false });
     expect(next.items.some((i) => i.id === fruit)).toBe(false);
     expect(player(next, "p0").ap).toBe(ap - cfg.sow.cost.ap);
     expect(next.log.find((e) => e.key === "sowedPlant")).toMatchObject({ room: GARDEN, visibleTo: "all" });
   });
 
-  it("refuses a planted pot, a fruit on the floor, and someone else's fruit", () => {
+  it("can sow a fruit on the floor, preferring a floor pot over a carried pot", () => {
     const s = ship();
     const fruit = giveBanana(s);
-    expect(applyAction(s, "p0", { type: "sow", item: planted(s)[0]!.id, fruit }).ok).toBe(false);
-    expect(applyAction(s, "p1", { type: "sow", item: emptyPot(s).id, fruit }).ok).toBe(false);
     item(s, fruit).at = { kind: "room", id: GARDEN };
-    expect(applyAction(s, "p0", { type: "sow", item: emptyPot(s).id, fruit }).ok).toBe(false);
+    s.items.push({ id: "carried-pot", type: "tree_pot", at: { kind: "player", id: "p0" } });
+    const pot = emptyPot(s).id;
+    expect(offered(s, "p0")).toContainEqual({ type: "sow", item: fruit });
+    const next = mustApply(s, "p0", { type: "sow", item: fruit });
+    expect(item(next, pot).plant).toEqual({ species: BANANA, age: 0, thirst: 0, sick: false });
+    expect(item(next, "carried-pot").plant).toBeUndefined();
+    expect(next.items.some((i) => i.id === fruit)).toBe(false);
+  });
+
+  it("refuses when no empty pot is in reach, someone else's fruit, or a non-fruit", () => {
+    const s = ship();
+    const fruit = giveBanana(s);
+    expect(applyAction(s, "p1", { type: "sow", item: fruit }).ok).toBe(false);
+    item(s, emptyPot(s).id).at = { kind: "room", id: "LABORATORY" };
+    expect(applyAction(s, "p0", { type: "sow", item: fruit }).ok).toBe(false);
+    expect(applyAction(s, "p0", { type: "sow", item: planted(s)[0]!.id }).ok).toBe(false);
   });
 });
 
@@ -301,11 +315,11 @@ describe("botany: garden points", () => {
 });
 
 describe("botany: protocol", () => {
-  it("parses water, treat and sow, and rejects a sow without a fruit", () => {
-    for (const action of [{ type: "water", item: "i" }, { type: "treat", item: "i" }, { type: "sow", item: "i", fruit: "f" }]) {
+  it("parses water, treat and sow, and rejects a sow without an item", () => {
+    for (const action of [{ type: "water", item: "i" }, { type: "treat", item: "i" }, { type: "sow", item: "i" }]) {
       expect(parseGameMessage(JSON.stringify({ type: "action", action }))).toEqual({ type: "action", action });
     }
-    expect(parseGameMessage(JSON.stringify({ type: "action", action: { type: "sow", item: "i" } }))).toBeNull();
+    expect(parseGameMessage(JSON.stringify({ type: "action", action: { type: "sow" } }))).toBeNull();
   });
 
   it("an illegal action leaves the state unchanged", () => {
@@ -314,5 +328,219 @@ describe("botany: protocol", () => {
     applyAction(s, "p0", { type: "treat", item: "nope" });
     expect(JSON.stringify(s)).toBe(before);
     expect(must(applyAction(s, "p0", { type: "treat", item: planted(s)[0]!.id }))).not.toBe(s);
+  });
+});
+
+describe("botany: heat lamps", () => {
+  function heatShip(extraFruitChance = DEFAULT_CONFIG.project.heatLamp.extraFruitChance, progress = PROJECT_COMPLETE): GameState {
+    const s = createGame(
+      makeSeats(3),
+      noIncidents(noHunters({
+        ...DEFAULT_CONFIG,
+        mushCount: 0,
+        botany: { ...cfg, sickChancePerCycle: 0 },
+        project: { ...DEFAULT_CONFIG.project, heatLamp: { extraFruitChance } },
+      })),
+      3,
+    );
+    s.projects.HEAT_LAMP = progress;
+    return lastCycleOfDay(s);
+  }
+
+  it("uses the confirmed config values and project status", () => {
+    expect(DEFAULT_CONFIG.project.heatLamp).toEqual({ extraFruitChance: 0.5 });
+    expect(projectStatus("HEAT_LAMP")).toBe("full");
+  });
+
+  it("produces an extra fruit and logs plantExtraFruit for floor and carried plants in the garden", () => {
+    const s = heatShip(1);
+    const [floorPot, carriedPot] = planted(s);
+    // Free p0's inventory so both produced fruits fit instead of overflowing onto the garden floor.
+    s.items = s.items.filter((i) => !(i.at.kind === "player" && i.at.id === "p0"));
+    carriedPot!.at = { kind: "player", id: "p0" };
+    player(s, "p0").room = GARDEN;
+
+    const next = nextCycle(s);
+    expect(bananas(next).filter((b) => b.at.kind === "room" && b.at.id === GARDEN)).toHaveLength(2);
+    expect(bananas(next).filter((b) => b.at.kind === "player" && b.at.id === "p0")).toHaveLength(2);
+    expect(next.log.filter((e) => e.key === "plantProduced")).toHaveLength(2);
+    expect(next.log.filter((e) => e.key === "plantExtraFruit")).toHaveLength(2);
+    expect(next.log.find((e) => e.key === "plantExtraFruit")).toMatchObject({
+      room: GARDEN,
+      visibleTo: "all",
+      params: { item: BANANA },
+    });
+  });
+
+  it("does not apply outside the garden or to non-producing plants", () => {
+    const s = heatShip(1);
+    const [labPot, sickPot] = planted(s);
+    labPot!.at = { kind: "room", id: "LABORATORY" };
+    sickPot!.plant!.sick = true;
+
+    const next = nextCycle(s);
+    expect(bananas(next)).toHaveLength(1);
+    expect(bananas(next)[0]!.at).toEqual({ kind: "room", id: "LABORATORY" });
+    expect(next.log.filter((e) => e.key === "plantExtraFruit")).toHaveLength(0);
+  });
+
+  it("does nothing before Heat lamps is complete, when extraFruitChance is 0, or when the Hydroponics center is broken", () => {
+    const incomplete = nextCycle(heatShip(1, PROJECT_COMPLETE - 1));
+    expect(bananas(incomplete)).toHaveLength(2);
+    expect(incomplete.log.filter((e) => e.key === "plantExtraFruit")).toHaveLength(0);
+
+    const zeroChance = nextCycle(heatShip(0, PROJECT_COMPLETE));
+    expect(bananas(zeroChance)).toHaveLength(2);
+    expect(zeroChance.log.filter((e) => e.key === "plantExtraFruit")).toHaveLength(0);
+
+    const brokenShip = heatShip(1, PROJECT_COMPLETE);
+    (brokenShip.equipment[GARDEN] ?? []).find((e) => e.type === "PLANT_CONTROLLER")!.broken = true;
+    const broken = nextCycle(brokenShip);
+    expect(bananas(broken)).toHaveLength(2);
+    expect(broken.log.filter((e) => e.key === "plantExtraFruit")).toHaveLength(0);
+  });
+
+  it("rolls the 50% chance deterministically per plant", () => {
+    let minCount = Infinity;
+    let maxCount = -Infinity;
+    for (let seed = 1; seed <= 12; seed++) {
+      const s = createGame(
+        makeSeats(3),
+        noIncidents(noHunters({ ...DEFAULT_CONFIG, mushCount: 0, botany: { ...cfg, sickChancePerCycle: 0 } })),
+        seed,
+      );
+      s.projects.HEAT_LAMP = PROJECT_COMPLETE;
+      const next = nextCycle(lastCycleOfDay(s));
+      const count = bananas(next).length;
+      minCount = Math.min(minCount, count);
+      maxCount = Math.max(maxCount, count);
+    }
+    expect(minCount).toBe(2);
+    expect(maxCount).toBeGreaterThan(2);
+  });
+});
+
+describe("Hydroponic incubator", () => {
+  function incubatorShip(progress = PROJECT_COMPLETE, broken = false): GameState {
+    const s = ship();
+    s.projects.HYDROPONIC_INCUBATOR = progress;
+    const [floorPot, carriedPot] = planted(s);
+    floorPot!.plant = { species: BANANA, age: 0, thirst: 0, sick: false };
+    carriedPot!.plant = { species: BANANA, age: 0, thirst: 0, sick: false };
+    carriedPot!.at = { kind: "player", id: "p0" };
+    if (broken) {
+      const controller = (s.equipment[GARDEN] ?? []).find((e) => e.type === "PLANT_CONTROLLER")!;
+      controller.broken = true;
+    }
+    return s;
+  }
+
+  it("uses the confirmed config values and project status", () => {
+    expect(DEFAULT_CONFIG.project.hydroponicIncubator).toEqual({ growthMultiplier: 2 });
+    expect(projectStatus("HYDROPONIC_INCUBATOR")).toBe("full");
+  });
+
+  it("doubles young plant aging for floor and carried pots in the garden and matures at day start", () => {
+    const s = incubatorShip();
+    const growCycles = s.config.botany.growCycles[BANANA]!;
+    const [floorPot, carriedPot] = pots(s).filter((p) => p.plant);
+    floorPot!.plant!.age = growCycles - 2;
+
+    // Mid-day cycle: +2 reaches growCycles, but maturation waits for day start.
+    const midDay = nextCycle(s);
+    expect(item(midDay, floorPot!.id).plant!.age).toBe(growCycles);
+    expect(item(midDay, carriedPot!.id).plant!.age).toBe(s.config.project.hydroponicIncubator.growthMultiplier);
+
+    // Day start: floor pot ages again (+2) and matures; carried pot ages +2 more.
+    const dayStart = nextCycle(lastCycleOfDay(midDay));
+    expect(item(dayStart, floorPot!.id).plant!.age).toBeNull();
+    expect(dayStart.log.filter((e) => e.key === "plantMatured")).toHaveLength(1);
+    expect(item(dayStart, carriedPot!.id).plant!.age).toBe(s.config.project.hydroponicIncubator.growthMultiplier * 2);
+  });
+
+  it("does not speed up young plants outside the garden or adult plants", () => {
+    const s = incubatorShip();
+    const [floorPot, carriedPot] = pots(s).filter((p) => p.plant);
+    floorPot!.at = { kind: "room", id: "LABORATORY" };
+    player(s, "p0").room = "LABORATORY";
+    const adultPot = emptyPot(s);
+    adultPot.plant = adult();
+
+    const next = nextCycle(s);
+    expect(item(next, floorPot!.id).plant!.age).toBe(1);
+    expect(item(next, carriedPot!.id).plant!.age).toBe(1);
+    expect(item(next, adultPot.id).plant!.age).toBeNull();
+  });
+
+  it("does nothing while the project is incomplete or the Hydroponics center is broken", () => {
+    const incomplete = nextCycle(incubatorShip(PROJECT_COMPLETE - 1));
+    for (const pot of pots(incomplete).filter((p) => p.plant)) {
+      expect(pot.plant!.age).toBe(1);
+    }
+
+    const broken = nextCycle(incubatorShip(PROJECT_COMPLETE, true));
+    for (const pot of pots(broken).filter((p) => p.plant)) {
+      expect(pot.plant!.age).toBe(1);
+    }
+  });
+});
+
+describe("Nano ladybugs", () => {
+  function ladybugsShip(progress = PROJECT_COMPLETE, broken = false): GameState {
+    const s = createGame(
+      makeSeats(3),
+      noIncidents(noHunters({ ...DEFAULT_CONFIG, mushCount: 0, botany: { ...cfg, sickChancePerCycle: 1 } })),
+      3,
+    );
+    s.projects.PARASITE_ELIM = progress;
+    if (broken) {
+      (s.equipment[GARDEN] ?? []).find((e) => e.type === "PLANT_CONTROLLER")!.broken = true;
+    }
+    return s;
+  }
+
+  it("marks PARASITE_ELIM as full", () => {
+    expect(projectStatus("PARASITE_ELIM")).toBe("full");
+  });
+
+  it("prevents healthy floor and carried plants in the garden from falling sick, without curing sick ones", () => {
+    const s = ladybugsShip();
+    const [floorPot, carriedPot] = planted(s);
+    floorPot!.plant = { species: BANANA, age: 0, thirst: 0, sick: false };
+    carriedPot!.plant = { species: BANANA, age: null, thirst: 0, sick: false };
+    carriedPot!.at = { kind: "player", id: "p0" };
+    player(s, "p0").room = GARDEN;
+
+    const alreadySick = emptyPot(s);
+    alreadySick.plant = { species: BANANA, age: null, thirst: 0, sick: true };
+
+    const next = nextCycle(s);
+    expect(item(next, floorPot!.id).plant!.sick).toBe(false);
+    expect(item(next, carriedPot!.id).plant!.sick).toBe(false);
+    expect(item(next, alreadySick.id).plant!.sick).toBe(true);
+  });
+
+  it("still lets plants outside the garden fall sick", () => {
+    const s = ladybugsShip();
+    const [labFloorPot, labCarriedPot] = planted(s);
+    labFloorPot!.at = { kind: "room", id: "LABORATORY" };
+    labCarriedPot!.at = { kind: "player", id: "p0" };
+    player(s, "p0").room = "LABORATORY";
+
+    const next = nextCycle(s);
+    expect(item(next, labFloorPot!.id).plant!.sick).toBe(true);
+    expect(item(next, labCarriedPot!.id).plant!.sick).toBe(true);
+  });
+
+  it("does nothing while the project is incomplete or the Hydroponics center is broken", () => {
+    const incomplete = nextCycle(ladybugsShip(PROJECT_COMPLETE - 1));
+    for (const pot of planted(incomplete)) {
+      expect(pot.plant!.sick).toBe(true);
+    }
+
+    const broken = nextCycle(ladybugsShip(PROJECT_COMPLETE, true));
+    for (const pot of planted(broken)) {
+      expect(pot.plant!.sick).toBe(true);
+    }
   });
 });

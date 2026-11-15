@@ -7,7 +7,7 @@
 // converters. Memory is a cache of what the bot saw: dropping it does no more harm than a restart did before.
 
 import type { PlanetDirection, PlayerId, RngState, RoomId } from "@mush2/shared";
-import type { ExpeditionKind } from "./goals/types.ts";
+import type { ExpeditionKind, ExpeditionPrepMemory } from "./goals/types.ts";
 import type { SharedItem } from "./itemShare.ts";
 import type { JumpMemory } from "./planetShare.ts";
 
@@ -42,10 +42,12 @@ export interface BotMemorySnapshot {
   combustion: number | null;
   holdSince: number | null;
   jump: JumpMemory;
+  reports: { explored: [string, string[]][]; seen: string[]; shared: string[] };
   heading: PlanetDirection | null;
   cancelHold: boolean;
   justJumped: boolean;
   failedReason: string | null;
+  expeditionPrep: ExpeditionPrepMemory | null;
 }
 
 /** The stored snapshot if it is of this version, merged over `fresh` so fields added since come out at their defaults. */

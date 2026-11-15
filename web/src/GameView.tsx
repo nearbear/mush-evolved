@@ -316,6 +316,7 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
                 unidentified={view.unidentified}
                 reachable={reachable}
                 burningRooms={view.burningRooms}
+                brokenDoors={view.brokenDoors}
               />
             </div>
           </div>

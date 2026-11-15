@@ -22,19 +22,13 @@ export const emptyGardenPots = (view: PlayerView): ItemView[] =>
 export const payable = (view: PlayerView, o: ActionOption, reserve: number): boolean => o.lacks.length === 0 && view.you.ap - o.cost.ap >= reserve;
 
 /**
- * The next sowing step here (owner, 2026-11-12): sow a carried fruit into an empty garden pot, or pick one up off the
- * floor first when it carries none and the sowing can still be paid for afterwards. Garden points pay in the garden.
+ * The next sowing step here (owner, 2026-11-12; updated 2026-11-14): sow any reachable fruit (carried or on the floor)
+ * into an empty garden floor pot. Garden points pay in the garden.
  */
 export function sowJob(view: PlayerView, reserve: number): GoalStep | null {
-  const pots = new Set(emptyGardenPots(view).map((p) => p.id));
-  if (pots.size === 0) return null;
-  const sow = view.actions.find((o) => o.action.type === "sow" && pots.has(o.action.item) && payable(view, o, reserve));
-  if (sow) return act(sow.action);
-  if (view.inventory.some(isFruitItem)) return null;
-  const fruit = view.roomItems.find(isFruitItem);
-  const take = fruit && view.actions.find((o) => o.action.type === "take" && o.action.item === fruit.id && o.lacks.length === 0);
-  const sowAp = view.you.resources.garden > 0 ? 0 : view.config.sowAp;
-  return take && view.you.ap - take.cost.ap - sowAp >= reserve ? act(take.action) : null;
+  if (emptyGardenPots(view).length === 0) return null;
+  const sow = view.actions.find((o) => o.action.type === "sow" && payable(view, o, reserve));
+  return sow ? act(sow.action) : null;
 }
 
 /**

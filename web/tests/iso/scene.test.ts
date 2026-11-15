@@ -293,12 +293,13 @@ describe("roomLooks and ambient animations", () => {
     expect(base.has("bay_beta_platform")).toBe(false);
     expect(base.has("spaceship")).toBe(false);
     expect(base.has("coffee")).toBe(false);
+    expect(base.has("garden")).toBe(false);
 
     const auxOnly = roomLooks(false, false, false, true, false, false, false, false, false, false, false, true);
     expect(auxOnly.get("auxiliary_terminal_neron")).toBe("auxiliary_terminal_neron_upgrade_b");
     expect(roomLooks(false, false, false, false, false, false, false, false, false, false, false, true).get("auxiliary_terminal_neron")).toBe("auxiliary_terminal_neron_upgrade_a");
 
-    const upgraded = roomLooks(true, true, true, true, true, true, true, true, true, true, true, true);
+    const upgraded = roomLooks(true, true, true, true, true, true, true, true, true, true, true, true, true, true);
     expect(upgraded.get("auxiliary_terminal_neron")).toBe("auxiliary_terminal_neron_upgrade_b");
     expect(upgraded.get("bay_window")).toBe("bay_window_upgrade");
     expect(upgraded.get("plasma_shield")).toBe("plasma_shield_upgrade");
@@ -310,6 +311,9 @@ describe("roomLooks and ambient animations", () => {
     expect(upgraded.get("coffee")).toBe("coffee_upgrade_ab");
     expect(roomLooks(false, false, false, false, false, false, false, false, false, true, false).get("coffee")).toBe("coffee_upgrade_a");
     expect(roomLooks(false, false, false, false, false, false, false, false, false, false, true).get("coffee")).toBe("coffee_upgrade_b");
+    expect(upgraded.get("garden")).toBe("garden_upgrade_ab");
+    expect(roomLooks(false, false, false, false, false, false, false, false, false, false, false, false, true, false).get("garden")).toBe("garden_upgrade_b");
+    expect(roomLooks(false, false, false, false, false, false, false, false, false, false, false, false, false, true).get("garden")).toBe("garden_upgrade_a");
     expect(upgraded.get("core_pilgred")).toBe("core_pilgred_upgrade");
     expect(upgraded.get("human_tank")).toBe("human_tank_full");
     expect(upgraded.get("server")).toBe("server_active");
@@ -411,5 +415,25 @@ describe("doors", () => {
     expect(scene([own, theirs]).sprites.map((s) => s.anim)).toEqual([undefined, undefined]);
     const s = scene([own, theirs], { doors: new Map([["t5", "opening"], [`${NEXT}/t2`, "closing"]]) });
     expect(s.sprites.map((p) => p.anim?.frames[0])).toEqual([0, 12]);
+  });
+});
+
+describe("smoke", () => {
+  it("emits smoke sources for broken doors and broken equipment right after their sprite", () => {
+    const floor = placed({ key: "f0", kind: "ground" });
+    const door = placed({ key: "d1", kind: "door", slice: "door", cell: { x: 2, y: 1 }, door: { target: NEXT } });
+    const workingEq = placed({ key: "e1", kind: "entity", slice: "server", cell: { x: 3, y: 2 } });
+    const brokenEq = placed({ key: "e2", kind: "entity", slice: "rotational_reactor", cell: { x: 4, y: 2 } });
+    const s = scene([floor, door, workingEq, brokenEq], {
+      brokenDoors: new Set([NEXT]),
+      equipment: new Map([
+        ["e1", { id: "eq1", type: "NERON", broken: false }],
+        ["e2", { id: "eq2", type: "REACTOR", broken: true }],
+      ]),
+    });
+    expect(s.smoke).toEqual([
+      { key: "d1", x: 16 - -100, y: 24 - -50, footprint: [1, 1], at: 2 },
+      { key: "e2", x: 32 - -100, y: 48 - -50, footprint: [1, 1], at: 4 },
+    ]);
   });
 });

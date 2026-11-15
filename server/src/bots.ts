@@ -11,6 +11,7 @@ import { newFireMemory, observeFires } from "./bots/fireShare.ts";
 import { newTankMemory, observeTanks } from "./bots/tankShare.ts";
 import { newItemMemory, observeItems } from "./bots/itemShare.ts";
 import { holdStartCycle, isHoldingJump, newJumpMemory } from "./bots/planetShare.ts";
+import { newReportMemory, observeReports } from "./bots/reportShare.ts";
 import { readSnapshot, BOT_MEMORY_VERSION, type BotMemorySnapshot } from "./bots/memoryStore.ts";
 import { buildPrompt, describeLogEntry, observeShrinks, parseReply, type BotMessage } from "./prompt.ts";
 import type { ModelGate } from "./model.ts";
@@ -38,8 +39,9 @@ export interface Bot {
   /** Optional: the message its last turn wants posted (at most one), taken once. The room posts it like a player's. */
   takeMessage?(): BotMessage | null;
   /**
-   * Optional: a message that isn't an action or chat (sharing a planet, #417) its last turn wants sent, taken once. The
-   * room sends it like a player's (`GameRoom.social`); a refusal comes back through `refused`. The turn returns no action.
+   * Optional: a message that isn't an action or chat (sharing a planet or report, creating a channel, posting a plan)
+   * its last turn wants sent, taken once. The room sends it like a player's (`GameRoom.social`); a refusal comes back
+   * through `refused`. The turn returns no action.
    */
   takeSocial?(): BotSocial | null;
   /**
@@ -153,10 +155,12 @@ export class GoalBot implements Bot {
       combustion: null,
       holdSince: null,
       jump: newJumpMemory(),
+      reports: newReportMemory(),
       heading: null,
       cancelHold: false,
       justJumped: false,
       failedReason: null,
+      expeditionPrep: null,
       roll: (n) => {
         let i: number;
         [i, this.rng] = nextInt(this.rng, n);
@@ -187,10 +191,12 @@ export class GoalBot implements Bot {
       combustion: m.combustion,
       holdSince: m.holdSince,
       jump: { ...m.jump },
+      reports: { explored: [...m.reports.explored].map(([k, v]) => [k, [...v]]), seen: [...m.reports.seen], shared: [...m.reports.shared] },
       heading: m.heading,
       cancelHold: m.cancelHold,
       justJumped: m.justJumped,
       failedReason: m.failedReason,
+      expeditionPrep: m.expeditionPrep ? { ...m.expeditionPrep } : null,
     };
   }
 
@@ -221,10 +227,16 @@ export class GoalBot implements Bot {
     m.combustion = s.combustion;
     m.holdSince = s.holdSince;
     Object.assign(m.jump, s.jump);
+    Object.assign(m.reports, {
+      explored: new Map(s.reports.explored.map(([k, v]) => [k, [...v]])),
+      seen: new Set(s.reports.seen),
+      shared: new Set(s.reports.shared),
+    });
     m.heading = s.heading;
     m.cancelHold = s.cancelHold;
     m.justJumped = s.justJumped;
     m.failedReason = s.failedReason;
+    m.expeditionPrep = s.expeditionPrep ? { ...s.expeditionPrep } : null;
     return true;
   }
 
@@ -275,15 +287,16 @@ export class GoalBot implements Bot {
       this.goal.onInterrupt?.(this.memory);
       this.end(false);
     }
-    // Where shared items lie (itemShare.ts): likewise, one line a turn.
-    const report = fires.post ?? tanks.post ?? observeItems(view, this.memory);
+    // Expedition reports (reportShare.ts) and shared items (itemShare.ts): likewise, one message a turn.
+    const sharedReport = observeReports(view, this.memory, !fires.post && !tanks.post);
+    const report = fires.post ?? tanks.post ?? sharedReport ?? observeItems(view, this.memory);
     if (report) {
       this.social = report;
       return null;
     }
     // Reports (#444): a fire or broken equipment the bot sees and nobody reported, it reports at once. It is free and
     // instant, so it's a reflex rather than a goal, and it doesn't drop the goal being followed.
-    const reportNow = legal.find((a) => a.type === "report_fire" || a.type === "report_equipment");
+    const reportNow = legal.find((a) => a.type === "report_fire" || a.type === "report_equipment" || a.type === "report_door");
     if (reportNow) return reportNow;
     if (!this.listens) this.wokenByChat = false;
     // Woken by chat: the model is asked even mid-goal or with one option, since it may want to talk; it may carry on.
