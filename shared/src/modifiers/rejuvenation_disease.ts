@@ -1,8 +1,8 @@
 import { changeMP } from "../adjustStats.ts";
 import { soil } from "../dirt.ts";
-import { addDisease, diseaseAffects } from "../diseases.ts";
+import { addDisease, diseaseAffects, withoutBedBonus } from "../diseases.ts";
 import { logPrivate } from "../log.ts";
-import { apGain, type Modifier } from "../modifiers.ts";
+import type { Modifier } from "../modifiers.ts";
 import { rollFloat, rollInt } from "../rng.ts";
 
 /** Chance to lose 1 MP at each cycle change. */
@@ -21,10 +21,7 @@ const CYCLE_DISEASE_CHANCE = 0.03;
 export const rejuvenation_disease: Modifier = {
   onApRefill(gain, next, player) {
     if (!player.alive || !diseaseAffects(player) || !player.modifiers.includes("lying_down")) return gain;
-    if (rollFloat(next) >= NO_REST_CHANCE) return gain;
-    const awake = { ...player, modifiers: player.modifiers.filter((m) => m !== "lying_down"), lyingSince: undefined };
-    const bedBonus = apGain(next, player) - apGain(next, awake);
-    return gain - Math.max(0, bedBonus);
+    return rollFloat(next) < NO_REST_CHANCE ? withoutBedBonus(gain, next, player) : gain;
   },
   onCycle(next, player) {
     if (!diseaseAffects(player)) return;

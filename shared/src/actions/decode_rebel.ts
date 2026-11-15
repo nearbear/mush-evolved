@@ -1,6 +1,7 @@
 import { Action, type ActionCost, type ActionVisibility, isString } from "./action.ts";
 import { canUseComms, comTerminalsHere, isOpen, REBEL_COMPLETE, rebelReached, rollRebelGain } from "../comms.ts";
 import { logPrivate } from "../log.ts";
+import { rebelGain } from "../modifiers.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
 export type DecodeRebelActionData = { type: "decode_rebel"; equipment: string; base: string };
@@ -44,7 +45,7 @@ export class DecodeRebelAction extends Action<DecodeRebelActionData> {
 
   override apply(state: GameState, player: PlayerState, target: DecodeRebelActionData): void {
     const call = state.comms.rebels.find((c) => c.base === target.base)!;
-    call.progress = Math.min(REBEL_COMPLETE, call.progress + rollRebelGain(state, player));
+    call.progress = Math.min(REBEL_COMPLETE, call.progress + rebelGain(state, player, rollRebelGain(state, player)));
     if (call.progress < REBEL_COMPLETE) {
       logPrivate(state, player.id, "rebelDecoded", { base: call.base, percent: call.progress });
       return;

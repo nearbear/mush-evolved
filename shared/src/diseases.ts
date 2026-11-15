@@ -1,5 +1,5 @@
 import { roll, rollFloat, rollInt } from "./rng.ts";
-import { skillPicked } from "./modifiers.ts";
+import { apGain, skillPicked } from "./modifiers.ts";
 import { addStatus, removeStatus, type StatusId } from "./statuses.ts";
 import type { DiseaseStats, GameState, PlayerState } from "./types.ts";
 import { updateMaxValues } from "./adjustStats.ts";
@@ -115,6 +115,15 @@ export function diseaseTrackerCycleChange(next: GameState): void {
  */
 export function diseaseAffects(player: PlayerState): boolean {
   return player.role !== "mush";
+}
+
+/**
+ * `gain` without what the bed adds to a lying player's AP refill (the bed's +1 and Lethargy's bonus): for diseases that
+ * sometimes spoil the rest (Rejuvenation, Migraine).
+ */
+export function withoutBedBonus(gain: number, state: Readonly<GameState>, player: Readonly<PlayerState>): number {
+  const awake = { ...player, modifiers: player.modifiers.filter((m) => m !== "lying_down"), lyingSince: undefined };
+  return gain - Math.max(0, apGain(state, player) - apGain(state, awake));
 }
 
 /** Special disease logs are for humans, and for anyone with the bacterial_contact skill. */

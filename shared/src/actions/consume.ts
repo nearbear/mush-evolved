@@ -27,6 +27,8 @@ export class ConsumeAction extends Action<ConsumeActionData> {
     const item = state.items.find((i) => i.id === target.item);
     if (!item) return "no_such_item";
     if (!ITEM_TYPES[item.type]?.consume || !canReachItem(state, player, item)) return "cant_consume";
+    // Food Poisoning (owner, 2026-11-15): a human with it can consume nothing, food or drug.
+    if (player.role === "human" && player.modifiers.includes("food_poisoning_disease")) return "cant_eat";
     return isFullBelly(state, player) && !ITEM_TYPES[item.type]!.drug ? "full_belly" : null;
   }
 

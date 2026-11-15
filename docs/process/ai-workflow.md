@@ -3888,6 +3888,11 @@ Two hidden-information choices made by Claude, not the owner, worth a look: (1) 
 - Follow-up (2026-11-15): owner asked for the `shoot` tag on `patrol_attack`, reversing the 2026-10-28 "no Gunner effect" note: Gunner's x2 accuracy now applies to patrol shots (its damage stays turret-only), and Pink Eye's patrol special case became redundant and was removed.
 - Follow-up (2026-11-15): the owner reverted the patrol `shoot` tag right after it was added; the entry above no longer applies. Patrol shots stay untagged (no Gunner), and Pink Eye matches them by action type again.
 
+## 2026-11-15: Sinus Storm, Migraine, Slight Nausea, Food Poisoning
+
+- Owner gave the four diseases' effects and durations; Claude asked four questions first and the owner answered: Sinus Storm's piloting penalty is a patrol shot ×0.7; Migraine's "-2% when relaying" is −2 on each relay token's base (research, NERON projects, PILGRED); Food Poisoning blocks food and drugs; none joins the fruit pool.
+- Worked: nearly every effect reused an existing hook (onCycle, onEnterRoom with `sneeze`/`vomit`, `satietyPerCycle`, `damageTaken`, `contaminationCapacity`, `analysisSectors`, `canFly`). New: `neronProgress`/`rebelGain` folds, a Migraine malus in `relay.ts`, a `cant_eat` refusal in consume, and `withoutBedBonus` pulled out of Rejuvenation so Migraine shares it.
+- Per the owner, tests cover only what no other disease already tested (Migraine's four penalties, Food Poisoning's eating ban, the durations).
 ### 2026-11-14: Heat lamps project (`HEAT_LAMP`)
 - **Decision (owner):** Once `HEAT_LAMP` is complete, each producing plant in `botany.gardenRoom` (floor or carried, via `potRoom`) has a 50% (`config.project.heatLamp.extraFruitChance`) seeded chance at day start of producing +1 extra fruit (2 total), logging `plantProduced` plus a separate public `plantExtraFruit` room line. In the iso view, `roomLooks` swaps `garden` to `garden_upgrade_b` (or `garden_upgrade_ab` when `HYDROPONIC_INCUBATOR` is also complete).
 - **What worked:** Clarifying the 4 open details (floor vs carried scope, 50% +1 fruit, separate log line, iso tile swap) upfront with `ask_question` before editing kept the implementation and tests focused.
