@@ -5,6 +5,7 @@ import { allDoors, doorRooms } from "../src/doors.ts";
 import { EQUIPMENT_TYPES } from "../src/equipment.ts";
 import { INCIDENT_IDS, incidentPointsForDay, type IncidentId } from "../src/incidents.ts";
 import { hasCamera } from "../src/log.ts";
+import { MODIFIERS } from "../src/modifiers.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { turretCharges } from "../src/hunters.ts";
 import type { GameConfig, GameState } from "../src/types.ts";
@@ -146,9 +147,20 @@ describe("incidents", () => {
     expect(after.log.find((e) => e.key === "metalPlate")).toMatchObject({ params: { name: hit[0]!.character }, room: hit[0]!.room, visibleTo: "all" });
   });
 
-  it("disease: the config's incident list is cold and skin inflammation, and it costs 3 with weight 3", () => {
-    expect(DEFAULT_CONFIG.diseases.incidentDiseases).toEqual(["cold_disease", "skin_inflammation_disease"]);
+  it("disease: costs 3 with weight 3", () => {
     expect(DEFAULT_CONFIG.incidents.catalog.disease).toEqual({ cost: 3, weight: 3 });
+  });
+
+  // The list itself is the owner's to edit in config.ts; this only checks that whatever it holds can be caught.
+  it("disease: the config's incident list is a non-empty set of known diseases, each with its rules", () => {
+    const list = DEFAULT_CONFIG.diseases.incidentDiseases;
+    expect(list.length).toBeGreaterThan(0);
+    expect(new Set(list).size).toBe(list.length);
+    for (const id of list) {
+      expect(DEFAULT_CONFIG.diseases.allDiseases).toContain(id);
+      expect(MODIFIERS[id], id).toBeDefined();
+      expect(DEFAULT_CONFIG.diseases.allDiseaseStats.some((stats) => stats.label === id), id).toBe(true);
+    }
   });
 
   it("disease: one incident disease to each person aboard at most once a cycle, Mush included, told privately", () => {

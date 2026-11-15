@@ -664,7 +664,7 @@ export const DEFAULT_CONFIG: GameConfig = {
       "slight_nausea_disease",
       "food_poisoning_disease"],
     // Owner, 2026-11-14: what the disease incident can give.
-    incidentDiseases: ["cold_disease", "skin_inflammation_disease"],
+    incidentDiseases: ["cold_disease", "skin_inflammation_disease", "migraine_disease", "sinus_storm_disease"],
     allDisorders: ["depression_disorder"],
     allInjuries: ["broken_nose_injury"],
     allDiseaseStats: [
