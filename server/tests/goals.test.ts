@@ -27,7 +27,9 @@ import { helpGoal, helpTasks } from "../src/bots/goals/help.ts";
 import type { BotMemory, GoalDef } from "../src/bots/goals/types.ts";
 import { BOT_MEMORY_VERSION } from "../src/bots/memoryStore.ts";
 import { formatFireLine, newFireMemory, observeFires, parseFireLine } from "../src/bots/fireShare.ts";
+import { formatTankLine, newTankMemory, observeTanks, parseTankLine } from "../src/bots/tankShare.ts";
 import { extinguish } from "../src/bots/goals/extinguish.ts";
+import { repairOxygen } from "../src/bots/goals/repairOxygen.ts";
 import { formatItemLine, newItemMemory, observeItems, parseItemLine, roomsHolding } from "../src/bots/itemShare.ts";
 import { chooseSkill } from "../src/bots/skillChoice.ts";
 import { seats } from "../src/testing/fakes.ts";
@@ -97,6 +99,7 @@ const memory = (scripted = true) => ({
   asteroidsOnly: null as number | null,
   items: newItemMemory(),
   fires: newFireMemory(),
+  tanks: newTankMemory(),
   combustion: null as number | null,
   holdSince: null as number | null,
   jump: newJumpMemory(),
@@ -2046,5 +2049,101 @@ describe("fires (fireShare.ts, extinguish goal, #429)", () => {
     expect(bot.current).toBeNull();
     await bot.decideAction(viewFor(burning, id));
     expect(bot.current).toBe("extinguish:search");
+  });
+});
+
+describe("oxygen tanks (tankShare.ts, repairOxygen goal, #443)", () => {
+  const FRONT = "STORAGE_A_0";
+  const REAR = "STORAGE_B_0";
+  /** A game where the tank in `room` has just broken, announced by NERON as the rules do (breakage.ts). */
+  function breakTank(game: GameState, room: string): GameState {
+    const next = structuredClone(game);
+    next.equipment[room]!.find((e) => e.type === "OXYGEN_TANK")!.broken = true;
+    pushChat(next, "global", { from: null, isBot: false, text: "", system: { key: "equipmentBroken", params: { equipment: "OXYGEN_TANK" } } });
+    return next;
+  }
+  /** A bot with `ap` AP and 0 MP standing in `room`. */
+  function at(room: string, ap = 10): { game: GameState; id: string } {
+    const { game, id } = setup();
+    return {
+      game: edit(game, id, (p) => {
+        p.room = room;
+        p.ap = ap;
+        p.mp = 0;
+      }),
+      id,
+    };
+  }
+
+  it("reads only its own format and a tank room", () => {
+    expect(parseTankLine(formatTankLine({ kind: "claim", room: FRONT }))).toEqual({ kind: "claim", room: FRONT });
+    expect(parseTankLine(formatTankLine({ kind: "fine", room: REAR }))).toEqual({ kind: "fine", room: REAR });
+    for (const text of ["Tank: going to CORRIDOR_A", "tank: going to STORAGE_A_0", "Tank: fine in NOWHERE", "Tank: going to STORAGE_A_0 now"]) expect(parseTankLine(text)).toBeNull();
+  });
+
+  it("suspects every tank room on NERON's notice, says a working one is fine, and learns the broken one from reports", () => {
+    const { game: start, id } = at(FRONT);
+    const game = breakTank(start, REAR);
+    const m = memory();
+    const seen = observeTanks(viewFor(game, id), m);
+    expect(seen.news).toBe(true);
+    expect(seen.post?.text).toBe(`Tank: fine in ${FRONT}`);
+    expect([...m.tanks.suspect]).toEqual([REAR]);
+    const said = applyInput(game, { ...seen.post!, by: id });
+    expect(said.ok).toBe(true);
+    if (!said.ok) return;
+    // Another bot reads the line and suspects only the rear tank.
+    const other = said.state.players.find((p) => p.id !== id && p.alive)!.id;
+    const theirs = memory();
+    observeTanks(viewFor(edit(said.state, other, (p) => (p.room = "CORRIDOR_A")), other), theirs);
+    expect([...theirs.tanks.suspect]).toEqual([REAR]);
+    // Reported: known broken, no longer a suspect.
+    const reported = structuredClone(said.state);
+    reported.reports.push({ kind: "equipment", equipment: reported.equipment[REAR]!.find((e) => e.type === "OXYGEN_TANK")!.id, by: id });
+    observeTanks(viewFor(edit(reported, other, (p) => (p.room = "CORRIDOR_A")), other), theirs);
+    expect([...theirs.tanks.broken]).toEqual([REAR]);
+    expect(theirs.tanks.suspect.size).toBe(0);
+  });
+
+  it("with the Anomaly detector, searches nothing", () => {
+    const { game: start, id } = at("CORRIDOR_A");
+    const game = breakTank(start, REAR);
+    game.projects.EQUIPMENT_SENSOR = 100;
+    const m = memory();
+    observeTanks(viewFor(game, id), m);
+    expect([...m.tanks.broken]).toEqual([REAR]);
+    expect(m.tanks.suspect.size).toBe(0);
+  });
+
+  it("claims a tank, walks there, reports it and repairs it", async () => {
+    const { game: start, id } = at("CORRIDOR_A", 12);
+    const game = breakTank(start, FRONT);
+    game.config = { ...game.config, repair: { ...game.config.repair, chance: { ...game.config.repair.chance, OXYGEN_TANK: 1 } } };
+    const bot = new GoalBot(1, 2, [repairOxygen]);
+    const { game: end, taken } = await play(game, id, bot, 20);
+    expect(end.equipment[FRONT]!.find((e) => e.type === "OXYGEN_TANK")!.broken).toBeUndefined();
+    expect(taken.map((a) => a.type)).toContain("report_equipment");
+    expect(taken.some((a) => a.type === "repair")).toBe(true);
+    expect(end.chat.some((c) => c.text === `Tank: going to ${FRONT}`)).toBe(true);
+  });
+
+  it("leaves a tank room another bot claimed this cycle", () => {
+    const { game: start, id } = at("CORRIDOR_A");
+    const broken = breakTank(start, FRONT);
+    const other = broken.players.find((p) => p.id !== id && p.alive)!.id;
+    const claimed = applyInput(broken, { type: "chat", channel: "global", text: formatTankLine({ kind: "claim", room: FRONT }), by: other });
+    expect(claimed.ok).toBe(true);
+    if (!claimed.ok) return;
+    const m = memory();
+    observeTanks(viewFor(claimed.state, id), m);
+    // The rear tank is still a suspect nobody claimed; the front one is someone else's.
+    expect(repairOxygen.options(viewFor(claimed.state, id), m).map((g) => g.key)).toEqual([`repairOxygen:go:${REAR}`]);
+    const next = newCycle(claimed.state);
+    expect(next.ok).toBe(true);
+    if (!next.ok) return;
+    const view = viewFor(edit(next.state, id, (p) => (p.ap = 10)), id);
+    observeTanks(view, m);
+    expect(repairOxygen.options(view, m).map((g) => g.key)[0]).toMatch(/^repairOxygen:go:/);
+    expect(m.tanks.claims.size).toBe(0);
   });
 });

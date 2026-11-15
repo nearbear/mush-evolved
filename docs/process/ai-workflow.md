@@ -3692,3 +3692,10 @@ The Items tab's Spawn row became a picker: a search field (accent- and case-inse
 
 - **What was built:** Extracted the shared SVG deck plan and room caption from `Minimap.tsx` into `web/src/scene/ShipPlanMap.tsx` and used it in `Superkube.tsx` (`KubeTravelMap`) for the Travel tab, so clicking (or pressing Enter/Space on) any room teleports there immediately (`teleport` kube op).
 - **What worked:** Reusing `ShipPlanSvg` and `RoomCaption` kept crew busts, fire highlights, and room labels consistent between the corner minimap and the Superkube without duplicating layout logic.
+
+### 2026-11-14: Bots hunt and repair broken oxygen tanks (#443, first slice)
+
+- Owner asked for oxygen-tank repair right behind fires, with bots hunting an announced tank the way they hunt fires. Claude asked two questions: how bots know where tanks are (owner: the public ship map, an exception to "no hard-coded location"), and who goes (owner: every bot, and suggested they claim a tank before going to avoid duplicates, which became a `Tank: going to <ROOM>` chat line valid for the cycle).
+- Built `tankShare.ts` (suspects from NERON's notice, locations from alert-bar reports, claim and "fine" lines) and the `repairOxygen` goal at 77.5; GameRoom treats tank lines as machine lines (no bot woken).
+- What needed correction: the first harness counter showed tank repair tries with zero successes. In the harness every action is timed and resolves on a later input, so the result log isn't in the same step as the action; counting repairs from the log on any input fixed it.
+- Survival, 50 seeds against a fresh `main` baseline: broken tank-cycles 21.7 → 0.2 a run, mean days 4.68 → 5.29 (35 longer, 6 shorter), asphyxia deaths 572 → 422. The scripted report to the crew (#443's open questions about plans and channels) is not built.

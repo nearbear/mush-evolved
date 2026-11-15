@@ -6,7 +6,7 @@
 // a renamed or reshaped field bumps `BOT_MEMORY_VERSION`, and a snapshot of another version is dropped, with no
 // converters. Memory is a cache of what the bot saw: dropping it does no more harm than a restart did before.
 
-import type { PlanetDirection, RngState, RoomId } from "@mush2/shared";
+import type { PlanetDirection, PlayerId, RngState, RoomId } from "@mush2/shared";
 import type { ExpeditionKind } from "./goals/types.ts";
 import type { SharedItem } from "./itemShare.ts";
 import type { JumpMemory } from "./planetShare.ts";
@@ -38,6 +38,7 @@ export interface BotMemorySnapshot {
   asteroidsOnly: number | null;
   items: { rooms: [SharedItem, RoomId[]][]; said: [SharedItem, RoomId[]][]; seq: number };
   fires: { active: number; burning: RoomId[]; checked: RoomId[]; seq: number };
+  tanks: { broken: RoomId[]; suspect: RoomId[]; claims: [RoomId, { by: PlayerId; cycle: number }][]; seq: number };
   combustion: number | null;
   holdSince: number | null;
   jump: JumpMemory;

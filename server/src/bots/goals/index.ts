@@ -10,6 +10,7 @@ import { patrolShootHunters } from "./patrolShootHunters.ts";
 import { pickSkill } from "./pickSkill.ts";
 import { project } from "./project.ts";
 import { repairHull } from "./repairHull.ts";
+import { repairOxygen } from "./repairOxygen.ts";
 import { research } from "./research.ts";
 import { rest } from "./rest.ts";
 import { setOutPots } from "./setOutPots.ts";
@@ -40,6 +41,7 @@ export const SOLO_GOALS: readonly GoalDef[] = [
   eat,
   sowHere,
   extinguish,
+  repairOxygen,
   patrolShootHunters,
   shootHunters,
   shower,

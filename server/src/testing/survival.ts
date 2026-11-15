@@ -73,6 +73,10 @@ export interface CycleReport {
   firesStarted?: number;
   firesOut?: number;
   extinguishTries?: number;
+  /** Broken oxygen tanks as the cycle ended (each leaks `config.repair.oxygenLeak` at the change), and tank repairs tried and done in it (#443). Missing in older runs. */
+  brokenTanks?: number;
+  tankRepairTries?: number;
+  tankRepairs?: number;
 }
 
 export interface SurvivalResult {
@@ -155,13 +159,13 @@ export async function runSurvival(seed: number, opts: SurvivalOptions): Promise<
   let now = 0;
   let logSeen = game.nextLogId;
 
-  const newRow = (cycle: number): CycleReport => ({ cycle, hull: 0, oxygen: 0, alive: 0, hunters: 0, fires: 0, killed: 0, shed: 0, shots: 0, repairTries: 0, repairs: 0, apLeft: 0, atCap: 0, scraps: 0, scrapsCarried: 0, apShooters: {}, apOthers: {}, hullLost: 0, arrived: 0, firesStarted: 0, firesOut: 0, extinguishTries: 0 });
+  const newRow = (cycle: number): CycleReport => ({ cycle, hull: 0, oxygen: 0, alive: 0, hunters: 0, fires: 0, killed: 0, shed: 0, shots: 0, repairTries: 0, repairs: 0, apLeft: 0, atCap: 0, scraps: 0, scrapsCarried: 0, apShooters: {}, apOthers: {}, hullLost: 0, arrived: 0, firesStarted: 0, firesOut: 0, extinguishTries: 0, brokenTanks: 0, tankRepairTries: 0, tankRepairs: 0 });
   let row = newRow(game.cycle);
   /** Fills the row's end-of-cycle fields from `g`, the state just before the change (or where the game ended). */
   const closeRow = (g: GameState): void => {
     const living = g.players.filter((p) => p.alive);
     const scraps = g.items.filter((i) => i.type === "metal_scraps");
-    Object.assign(row, { hull: g.ship.hull, oxygen: g.ship.oxygen, alive: living.length, hunters: g.hunters.list.length, fires: g.fires.length, apLeft: living.reduce((a, p) => a + p.ap, 0), atCap: living.filter((p) => p.ap >= p.maxAp).length, scraps: scraps.length, scrapsCarried: scraps.filter((i) => i.at.kind === "player").length });
+    Object.assign(row, { hull: g.ship.hull, oxygen: g.ship.oxygen, alive: living.length, hunters: g.hunters.list.length, fires: g.fires.length, apLeft: living.reduce((a, p) => a + p.ap, 0), atCap: living.filter((p) => p.ap >= p.maxAp).length, scraps: scraps.length, scrapsCarried: scraps.filter((i) => i.at.kind === "player").length, brokenTanks: Object.values(g.equipment).flat().filter((e) => e.type === "OXYGEN_TANK" && e.broken).length });
     result.cycles!.push(row);
   };
   /** `apCost`: what the action's option said it costs, for the report (timed actions are paid for when they finish). */
@@ -187,6 +191,7 @@ export async function runSurvival(seed: number, opts: SurvivalOptions): Promise<
     const gone = before.hunters.list.length - game.hunters.list.length;
     if (gone > 0) row[fresh.some((e) => e.key === "shipTraveled") ? "shed" : "killed"] += gone;
     row.repairs += fresh.filter((e) => e.key === "hullRepaired").length;
+    row.tankRepairs! += fresh.filter((e) => e.key === "repaired" && e.params?.equipment === "OXYGEN_TANK").length;
     row.firesStarted! += lit;
     row.firesOut! += out;
     if (input.type === "action") {
@@ -194,6 +199,8 @@ export async function runSurvival(seed: number, opts: SurvivalOptions): Promise<
       if (type === "turret_attack" || type === "patrol_attack") row.shots++;
       if (type === "repair_hull") row.repairTries++;
       if (type === "extinguish" || type === "extinguish_manually") row.extinguishTries!++;
+      const action = input.action;
+      if (action.type === "repair" && "equipment" in action && Object.values(before.equipment).flat().some((e) => e.id === action.equipment && e.type === "OXYGEN_TANK")) row.tankRepairTries!++;
       if (before.hunters.list.length > 0 && apCost > 0) {
         const by = before.players.find((p) => p.id === input.by)!;
         const ap = by.skills.some((s) => HUNTER_SKILLS.has(s)) ? row.apShooters : row.apOthers;

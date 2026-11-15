@@ -52,6 +52,7 @@ Goal priorities and triggers were mostly set by the owner. A number in the table
 | `CREW_SHOOT_PRIORITY` | 51 | `goals/shootHunters.ts` | Owner, 2026-11-13: bots with no hunter skill shoot after their own jobs, before research and projects |
 | `SHARED_ITEMS` | metal scrap, extinguisher | `itemShare.ts` | Owner, 2026-11-13: bots share item locations in a fixed global-chat line; extinguishers #429 |
 | `EXTINGUISH_PRIORITY` | 78 | `goals/extinguish.ts` | Owner, 2026-11-14 (#429): above astrophysics; every bot; searching keeps the AP reserve, a known fire may spend it |
+| `REPAIR_OXYGEN_PRIORITY` | 77.5 | `goals/repairOxygen.ts` | Owner, 2026-11-14 (#443): right behind fires; every bot; a bot claims a tank room in chat (`Tank: going to`) before going; tank rooms come from the public ship map |
 | `EXTINGUISHER_HOMES` | front and rear corridors | `goals/extinguish.ts` | Owner, 2026-11-14 (#429): central, so anyone can reach one |
 | `HULL_REPAIR_BELOW` | 50 | `goals/repairHull.ts` | Owner, 2026-11-01, kept 2026-11-13: above it scrap is worth more elsewhere |
 | `HOLD_HUNTER_TRIGGER` | 5 | `goals/travel.ts` | Owner, 2026-11-13 (#421); left open as a tuning knob |
