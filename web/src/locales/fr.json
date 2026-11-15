@@ -109,7 +109,6 @@
       "invincible": "Vaisseau invincible",
       "fastExpeditions": "Expéditions rapides",
       "goToCheatRoom": "Aller dans la salle de triche",
-      "returnToSol": "Retour sur Sol immédiat",
       "leaveShip": "Quitter le vaisseau",
       "role": {
         "mush": "Devenir Mush",
@@ -323,6 +322,7 @@
     "access": "Accéder",
     "examine": "Examiner",
     "dispense": "Tirer un café",
+    "playArcade": "Jouer sur la borne",
     "consume": "Consommer",
     "hide": "Cacher",
     "search": "Fouiller",
@@ -929,6 +929,8 @@
     "interrogated": "{{name}} a interrogé {{target}}.",
     "chitchatted": "{{name}} a papoté avec {{target}}.",
     "comforted": "{{name}} a réconforté {{target}}.",
+    "playArcadeWin": "Vous avez vaincu Xatator, le boss du niveau 10 sur la Dynarcade !",
+    "playArcadeLose": "Vous avez perdu sur la Dynarcade.",
     "historyRevealed": "{{name}} a récemment fait : {{action}}.",
     "historyNothing": "Vous n'avez rien appris sur ce que {{name}} a fait récemment.",
     "punchCrit": "{{name}} a placé un magistral uppercut à {{target}}.",
@@ -995,6 +997,7 @@
     "titlePassed": "{{name}} est maintenant {{title}}.",
     "titleVacant": "Personne à bord ne peut prendre le titre {{title}} : il est vacant.",
     "returnedToSol": "{{name}} a fait voyager le Daedalus sur Sol.",
+    "returnedToEden": "{{name}} a fait voyager le Daedalus sur Éden.",
     "solLinked": "Vous avez établi le contact avec Sol.",
     "solFailed": "Vous n'avez pas réussi à établir le contact avec Sol.",
     "rebelDecoded": "Vous avez décodé une partie du signal de {{base}} : {{percent}} % décodé.",
@@ -1725,7 +1728,8 @@
     "tabs": {
       "health": "Santé",
       "items": "Objets",
-      "travel": "Voyage"
+      "travel": "Voyage",
+      "destinations": "Destinations"
     },
     "ops": {
       "ailment": "S'infliger une affection",
@@ -1737,7 +1741,9 @@
       "dirty": "Se salir",
       "contaminate": "Ajouter une contamination",
       "spawn": "Faire apparaître un objet",
-      "teleport": "Se téléporter dans une pièce"
+      "teleport": "Se téléporter dans une pièce",
+      "returnToSol": "Rentrer sur Sol",
+      "returnToEden": "Aller sur Éden"
     }
   },
   "bodyTaken": {

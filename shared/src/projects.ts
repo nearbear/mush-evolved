@@ -102,6 +102,8 @@ export const PROJECT_STATUS: Readonly<Partial<Record<ProjectId, ProjectStatus>>>
   FISSION_COFFEE_ROASTER: "full",
   // Each cycle change, 15% that all its incidents are prevented; the points are still spent (owner, 2026-11-08; incidents.ts).
   BRIC_BROC: "full",
+  // Completing it adds the Dynarcade in Alpha Bay 2 (hiding the broken patrol ship); anyone can play for 1 AP (owner, 2026-11-14).
+  CALL_OF_DIRTY: "full",
 };
 
 export function projectStatus(project: string): ProjectStatus {

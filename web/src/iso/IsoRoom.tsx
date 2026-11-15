@@ -21,7 +21,7 @@
 import { Suspense, lazy, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ComponentType, type MouseEvent, type PointerEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { createPortal } from "react-dom";
-import { CAMERA_EQUIPMENT, CORPSE_ITEM, EQUIPMENT_TYPES, PROJECT_COMPLETE, SUPPORT_DRONE_ITEM, SUPER_CALC_EQUIPMENT, type EquipmentView, type RoomId, type RoomLayout, type ShipLayout, type Spot, type Target } from "@mush2/shared";
+import { CAMERA_EQUIPMENT, CORPSE_ITEM, DYNARCADE_EQUIPMENT, EQUIPMENT_TYPES, PROJECT_COMPLETE, SUPPORT_DRONE_ITEM, SUPER_CALC_EQUIPMENT, type EquipmentView, type RoomId, type RoomLayout, type ShipLayout, type Spot, type Target } from "@mush2/shared";
 import type { Bubble } from "../scene/useSpeechBubbles.ts";
 import { useNames } from "../i18n/names.ts";
 import { CAMERA_SLICES, equipmentByTileKey, roomAsBuilt } from "./equipmentTiles.ts";
@@ -352,6 +352,8 @@ export function IsoRoom({
   const equipmentByKey = useMemo(() => equipmentByTileKey(roomLayout, equipment), [roomLayout, equipment]);
   // A patrol ship in flight isn't drawn in its bay (owner, 2026-10-24); the view marks its interface out.
   const flownKey = [...equipmentByKey].filter(([, e]) => e.out).map(([key]) => key).join(",");
+  // Once CALL_OF_DIRTY completes, the Dynarcade replaces the broken patrol ship in Alpha Bay 2.
+  const dynarcadeDone = (projects?.CALL_OF_DIRTY ?? 0) >= PROJECT_COMPLETE || equipment.some((e) => e.type === DYNARCADE_EQUIPMENT);
   const tileOf = new Map([...equipmentByKey].map(([key, e]) => [e.id, Number(key.slice(1))]));
   for (const o of occupants) {
     const tile = o.lying ? tileOf.get(o.lying) : undefined;
@@ -476,6 +478,7 @@ export function IsoRoom({
     const placed = placeWithSlots(prepared.scene, [actors, ...neighbors.map((n) => n.actors)], burning);
     const scene = placed.sprites
       .filter((s) => !CAMERA_SLICES.has(s.slice) || (hasCamera && s.room === room))
+      .filter((s) => !(dynarcadeDone && s.slice === "spaceship_broken"))
       .filter((s) => s.room !== room || !flown.has(s.key))
       // A walker facing right is drawn mirrored; hit-testing mirrors with it.
       .map((s) => {
@@ -493,7 +496,7 @@ export function IsoRoom({
       for (const [ax, ay] of [[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]] as const) ownCells.add(`${ax},${ay}`);
     }
     return { scene, sprites, neighborSprites, neighbors, box: bounds(sprites), ownCells, fireSlots: onFire ? placed.slots : undefined };
-  }, [prepared, spots, walkersKey, occupantKey, corpseKey, droneKey, nearbyKey, hasCamera, flownKey, leavers, onFire]);
+  }, [prepared, spots, walkersKey, occupantKey, corpseKey, droneKey, nearbyKey, hasCamera, dynarcadeDone, flownKey, leavers, onFire]);
 
   // Sprites draw at exactly one screen pixel per source pixel, so art stays crisp.
   // The camera always keeps you centred, even near a room's edges (the neighbours fill the space

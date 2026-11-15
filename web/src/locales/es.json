@@ -109,7 +109,6 @@
       "invincible": "Nave invencible",
       "fastExpeditions": "Expediciones rápidas",
       "goToCheatRoom": "Ir a la sala de trucos",
-      "returnToSol": "Volver a Sol ahora",
       "leaveShip": "Abandonar la nave",
       "role": {
         "mush": "Convertirse en Mush",
@@ -323,6 +322,7 @@
     "access": "Acceder",
     "examine": "Examinar",
     "dispense": "Sacar un café",
+    "playArcade": "Jugar en la recreativa",
     "consume": "Consumir",
     "hide": "Esconder",
     "search": "Registrar",
@@ -929,6 +929,8 @@
     "interrogated": "{{name}} interrogó a {{target}}.",
     "chitchatted": "{{name}} charló con {{target}}.",
     "comforted": "{{name}} consoló a {{target}}.",
+    "playArcadeWin": "¡Venciste a Xatator, el jefe del nivel 10 en la Dynarcade!",
+    "playArcadeLose": "Has perdido en la Dynarcade.",
     "historyRevealed": "{{name}} hizo hace poco: {{action}}.",
     "historyNothing": "No averiguaste nada sobre lo que {{name}} hizo hace poco.",
     "punchCrit": "{{name}} le asestó un magnífico puñetazo a {{target}}.",
@@ -995,6 +997,7 @@
     "titlePassed": "{{name}} es ahora {{title}}.",
     "titleVacant": "Nadie a bordo puede tomar el título {{title}}: está vacante.",
     "returnedToSol": "{{name}} llevó el Daedalus a Sol.",
+    "returnedToEden": "{{name}} llevó el Daedalus a Edén.",
     "solLinked": "Has establecido contacto con Sol.",
     "solFailed": "No has logrado establecer contacto con Sol.",
     "rebelDecoded": "Has decodificado parte de la señal de {{base}}: {{percent}} % decodificado.",
@@ -1725,7 +1728,8 @@
     "tabs": {
       "health": "Salud",
       "items": "Objetos",
-      "travel": "Viaje"
+      "travel": "Viaje",
+      "destinations": "Destinos"
     },
     "ops": {
       "ailment": "Provocarse una dolencia",
@@ -1737,7 +1741,9 @@
       "dirty": "Ensuciarse",
       "contaminate": "Añadir contaminación",
       "spawn": "Hacer aparecer un objeto",
-      "teleport": "Teletransportarse a una sala"
+      "teleport": "Teletransportarse a una sala",
+      "returnToSol": "Volver a Sol",
+      "returnToEden": "Viajar a Edén"
     }
   },
   "bodyTaken": {

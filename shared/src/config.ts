@@ -1,6 +1,7 @@
 import shipRooms from "@mush2/assets/derived/ship-rooms.json";
 import { ALIEN_FRUIT_ITEMS, BOOK_ITEM, ITRACKIE_ITEM } from "./itemIds.ts";
 import { CHEAT_ROOM, cheatRoomEquipment } from "./cheatRoom.ts";
+import { EQUIPMENT_TYPES } from "./equipment.ts";
 import { ICARUS_CRAFT, patrolEquipment, patrolRooms } from "./patrol.ts";
 import { SKILLS } from "./skills.ts";
 import type { ShipRoom } from "./shipLayout.ts";
@@ -284,6 +285,7 @@ export const DEFAULT_CONFIG: GameConfig = {
     quantumSensors: { extraSectors: 1 },
     chipsetAcceleration: { scanApDiscount: 1 },
     fissionCoffeeRoaster: { cycles: [1, 5] },
+    dynarcade: { room: "SPACESHIP_BAY_AA", cost: { ap: 1 }, successChance: 0.33, failureMultiplier: 1.5, morale: 2, injuryChance: 0.33 },
   },
   // Owner, 2026-10-21: repairing PILGRED uses the original's numbers (DIG_RATE 6, PILGRED_MOD 2, DIG_BOOST 4, -2 per repeat),
   // 2 AP, 25% dirty; the Physicist gains 1 PILGRED point a day and holds 2.
@@ -614,7 +616,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   rooms: { ...(Object.fromEntries(SHIP_ROOMS.map((r) => [r.id, r.doors])) as Record<RoomId, RoomId[]>), ...patrolRooms(), [ICARUS_CRAFT]: [] },
   // Confirmed 2026-10-11: the equipment drawn in each room of the original map; each patrol ship holds its command.
   // Terminals' chairs stay out: they are map data the rules read from the map (`terminalChairs`, spot.ts), not game state.
-  equipment: { ...Object.fromEntries(SHIP_ROOMS.map((r) => [r.id, r.equipment.map(({ id, type }) => ({ id, type }))])), ...patrolEquipment() },
+  equipment: { ...Object.fromEntries(SHIP_ROOMS.map((r) => [r.id, r.equipment.filter(({ type }) => !EQUIPMENT_TYPES[type]?.builtOnly).map(({ id, type }) => ({ id, type }))])), ...patrolEquipment() },
   diseases:  {
     allDiseases: [
       "cold_disease",
