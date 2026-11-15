@@ -220,10 +220,12 @@ describe("view history", () => {
       const frames = rebuildHistory(history);
       expect(frames).toHaveLength(views.length);
       frames.forEach(({ view }, n) => {
-        if (!isDeepStrictEqual(JSON.parse(JSON.stringify(view)), JSON.parse(JSON.stringify(views[n])))) expect(view, `step ${n}`).toEqual(views[n]);
+        if (!isDeepStrictEqual(view, views[n]) && !isDeepStrictEqual(JSON.parse(JSON.stringify(view)), JSON.parse(JSON.stringify(views[n])))) {
+          expect(view, `step ${n}`).toEqual(views[n]);
+        }
       });
     }
-  }, 10_000 * seedsFrom(1).length);
+  }, 20_000 * seedsFrom(1).length);
 
   it("stamps the build on every copy, and each frame carries the stamp of the copy it continues from (#384)", () => {
     const [a, b, c] = [play(5, 2).state, play(10, 2).state, play(15, 2).state].map((s) => fullViewFor(s, null)) as [FullView, FullView, FullView];

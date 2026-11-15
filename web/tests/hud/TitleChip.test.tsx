@@ -21,7 +21,7 @@ vi.mock("../../src/i18n/names.ts", () => ({
 describe("TitleSuccession", () => {
   it("marks players before the holder as lost, the holder as holder, and later players as plain", () => {
     const out = renderToStaticMarkup(
-      <TitleSuccession title={{ id: "commander", holder: "gioele", line: ["jinsu", "chao", "gioele", "stephen"] }} />,
+      <TitleSuccession entry={{ id: "commander", holder: "gioele", line: ["jinsu", "chao", "gioele", "stephen"] }} />,
     );
     expect(out).toBe(
       '<ol><li class="lost">jinsu</li><li class="lost">chao</li><li class="holder">gioele</li><li>stephen</li></ol>',
@@ -30,14 +30,14 @@ describe("TitleSuccession", () => {
 
   it("does not mark anyone as lost while vacant during preselection", () => {
     const out = renderToStaticMarkup(
-      <TitleSuccession title={{ id: "commander", holder: null, line: ["jinsu", "chao"] }} preselection />,
+      <TitleSuccession entry={{ id: "commander", holder: null, line: ["jinsu", "chao"] }} preselection />,
     );
     expect(out).toBe("<ol><li>jinsu</li><li>chao</li></ol>");
   });
 
   it("marks everyone as lost when vacant after preselection", () => {
     const out = renderToStaticMarkup(
-      <TitleSuccession title={{ id: "commander", holder: null, line: ["jinsu", "chao"] }} preselection={false} />,
+      <TitleSuccession entry={{ id: "commander", holder: null, line: ["jinsu", "chao"] }} preselection={false} />,
     );
     expect(out).toBe('<ol><li class="lost">jinsu</li><li class="lost">chao</li></ol>');
   });
