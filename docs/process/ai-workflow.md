@@ -3906,3 +3906,15 @@ Two hidden-information choices made by Claude, not the owner, worth a look: (1) 
 
 - Extended `SHARED_ITEMS` in `server/src/bots/itemShare.ts` with expedition gear (`space_suit`, `rope`, `quad_compass`, `white_flag`, `drill`) so bots share and look up their rooms via `Item:` lines.
 - Added `server/src/bots/reportShare.ts` (`formatReportShare`, `parseReportShare`, `exploredSectors`, `observeReports`, `exploredOn`, `ReportMemory`) and wired it into `BotSocial`, `BotMemory`, `BotMemorySnapshot`, and `GoalBot` (`decideAction`, `snapshot`, `restore`) so returning crew bots post `shareReport` once per finished expedition and the Commander folds `view.sharedReports` into `BotMemory.reports` for `leave_orbit`.
+
+### 2026-11-14: Broken equipment and door smoke (`FX_SMOKE` / `SmokeEmitter`)
+- Located the original `FX_SMOKE` slice (`240,48,16,16` in `Mush/clients/iso/gfx/fx.png`, `Mush/clients/iso/xml/tiles.xml`) and `Mush/clients/iso/src/fx/SmokeEmitter.hx` (used in `Grid.hx` for `BROKEN` entities).
+- Added `SceneSmokeSource` and `Scene.smoke` in `web/src/iso/scene.ts` for broken doors and broken equipment, placed immediately after the emitting sprite in paint order.
+- Added `RoomSmoke` (`web/src/iso/pixi/smoke.ts`) porting `SmokeEmitter`/`SmokPart` to PixiJS v8 and wired it into `PixiRenderer.ts` alongside `RoomFire`.
+
+### 2026-11-14 — Hydroponic incubator project (`HYDROPONIC_INCUBATOR`)
+- **Decision (owner):** Once `HYDROPONIC_INCUBATOR` is complete, young plants in `botany.gardenRoom` (floor or carried, via `potRoom`) age by `config.project.hydroponicIncubator.growthMultiplier` (2) per cycle in `botanyCycle` while `PLANT_CONTROLLER` (Hydroponics center) is working, with maturation remaining at day start (`botanyDay`).
+- **Implementation:** Extracted `plantControllerWorking` in `shared/src/botany.ts` (reused by `isGardenProtected` in `shared/src/fire.ts` to avoid circular imports or duplicated checks), marked `HYDROPONIC_INCUBATOR` as `"full"` in `PROJECT_STATUS`, and added unit tests in `shared/tests/botany.test.ts`.
+
+### 2026-11-14 — Heat lamps paused when Hydroponics center is broken
+- **Decision (owner):** `HEAT_LAMP` is also paused while `PLANT_CONTROLLER` (Hydroponics center) is broken (`botanyDay` in `shared/src/botany.ts` checks `plantControllerWorking(state)`), matching `HYDROPONIC_INCUBATOR`.

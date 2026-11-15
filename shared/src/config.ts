@@ -303,6 +303,7 @@ export const DEFAULT_CONFIG: GameConfig = {
     dynarcade: { room: "SPACESHIP_BAY_AA", cost: { ap: 1 }, successChance: 0.33, failureMultiplier: 1.5, morale: 2, injuryChance: 0.33 },
     extraHydropots: { room: "HYDROPONIC_CENTER", count: 3 },
     heatLamp: { extraFruitChance: 0.5 },
+    hydroponicIncubator: { growthMultiplier: 2 },
     neronParticipation: { percent: 5 },
     autoWatering: { extinguishChance: 0.25 },
     trailReducer: { followMultiplier: 0.5 },

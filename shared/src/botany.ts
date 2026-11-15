@@ -45,17 +45,27 @@ export function plantView(plant: Readonly<PlantState>, viewer: Readonly<PlayerSt
   return { species, age, thirst, ...(isBotanistRole(viewer) && { sick }) };
 }
 
+/** Whether the Hydroponics center (`PLANT_CONTROLLER`) in the garden room is working. */
+export const plantControllerWorking = (state: Readonly<GameState>): boolean =>
+  (state.equipment[state.config.botany.gardenRoom] ?? []).some((e) => e.type === "PLANT_CONTROLLER" && !e.broken);
+
 /**
- * At every cycle change: young plants age by one, and each healthy plant, young or adult, may fall sick
- * (`sickChancePerCycle`, seeded). Mutates a state the caller already cloned.
+ * At every cycle change: young plants age by one (2× in the garden while `HYDROPONIC_INCUBATOR` is complete and
+ * `PLANT_CONTROLLER` is working), and each healthy plant, young or adult, may fall sick (`sickChancePerCycle`, seeded).
+ * Mutates a state the caller already cloned.
  */
 export function botanyCycle(state: GameState): void {
+  const { botany, project } = state.config;
+  const incubatorActive = projectDone(state, "HYDROPONIC_INCUBATOR") && plantControllerWorking(state);
   for (const pot of state.items) {
     if (!isPlanted(pot)) continue;
     const { plant } = pot;
-    if (plant.age !== null) plant.age += 1;
+    if (plant.age !== null) {
+      const rate = incubatorActive && potRoom(state, pot) === botany.gardenRoom ? project.hydroponicIncubator.growthMultiplier : 1;
+      plant.age += rate;
+    }
     if (plant.sick) continue;
-    if (rollFloat(state) < state.config.botany.sickChancePerCycle) plant.sick = true;
+    if (rollFloat(state) < botany.sickChancePerCycle) plant.sick = true;
   }
 }
 
@@ -70,7 +80,7 @@ export function growCyclesFor(state: Readonly<GameState>, species: string): numb
  */
 export function botanyDay(state: GameState): void {
   const { botany, ship, project } = state.config;
-  const heatLamp = projectDone(state, "HEAT_LAMP");
+  const heatLamp = projectDone(state, "HEAT_LAMP") && plantControllerWorking(state);
   for (const pot of state.items.filter(isPlanted)) {
     const { plant } = pot;
     const room = potRoom(state, pot);

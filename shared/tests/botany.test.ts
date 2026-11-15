@@ -384,7 +384,7 @@ describe("botany: heat lamps", () => {
     expect(next.log.filter((e) => e.key === "plantExtraFruit")).toHaveLength(0);
   });
 
-  it("does nothing before Heat lamps is complete or when extraFruitChance is 0", () => {
+  it("does nothing before Heat lamps is complete, when extraFruitChance is 0, or when the Hydroponics center is broken", () => {
     const incomplete = nextCycle(heatShip(1, PROJECT_COMPLETE - 1));
     expect(bananas(incomplete)).toHaveLength(2);
     expect(incomplete.log.filter((e) => e.key === "plantExtraFruit")).toHaveLength(0);
@@ -392,6 +392,12 @@ describe("botany: heat lamps", () => {
     const zeroChance = nextCycle(heatShip(0, PROJECT_COMPLETE));
     expect(bananas(zeroChance)).toHaveLength(2);
     expect(zeroChance.log.filter((e) => e.key === "plantExtraFruit")).toHaveLength(0);
+
+    const brokenShip = heatShip(1, PROJECT_COMPLETE);
+    (brokenShip.equipment[GARDEN] ?? []).find((e) => e.type === "PLANT_CONTROLLER")!.broken = true;
+    const broken = nextCycle(brokenShip);
+    expect(bananas(broken)).toHaveLength(2);
+    expect(broken.log.filter((e) => e.key === "plantExtraFruit")).toHaveLength(0);
   });
 
   it("rolls the 50% chance deterministically per plant", () => {
@@ -411,5 +417,70 @@ describe("botany: heat lamps", () => {
     }
     expect(minCount).toBe(2);
     expect(maxCount).toBeGreaterThan(2);
+  });
+});
+
+describe("Hydroponic incubator", () => {
+  function incubatorShip(progress = PROJECT_COMPLETE, broken = false): GameState {
+    const s = ship();
+    s.projects.HYDROPONIC_INCUBATOR = progress;
+    const [floorPot, carriedPot] = planted(s);
+    floorPot!.plant = { species: BANANA, age: 0, thirst: 0, sick: false };
+    carriedPot!.plant = { species: BANANA, age: 0, thirst: 0, sick: false };
+    carriedPot!.at = { kind: "player", id: "p0" };
+    if (broken) {
+      const controller = (s.equipment[GARDEN] ?? []).find((e) => e.type === "PLANT_CONTROLLER")!;
+      controller.broken = true;
+    }
+    return s;
+  }
+
+  it("uses the confirmed config values and project status", () => {
+    expect(DEFAULT_CONFIG.project.hydroponicIncubator).toEqual({ growthMultiplier: 2 });
+    expect(projectStatus("HYDROPONIC_INCUBATOR")).toBe("full");
+  });
+
+  it("doubles young plant aging for floor and carried pots in the garden and matures at day start", () => {
+    const s = incubatorShip();
+    const growCycles = s.config.botany.growCycles[BANANA]!;
+    const [floorPot, carriedPot] = pots(s).filter((p) => p.plant);
+    floorPot!.plant!.age = growCycles - 2;
+
+    // Mid-day cycle: +2 reaches growCycles, but maturation waits for day start.
+    const midDay = nextCycle(s);
+    expect(item(midDay, floorPot!.id).plant!.age).toBe(growCycles);
+    expect(item(midDay, carriedPot!.id).plant!.age).toBe(s.config.project.hydroponicIncubator.growthMultiplier);
+
+    // Day start: floor pot ages again (+2) and matures; carried pot ages +2 more.
+    const dayStart = nextCycle(lastCycleOfDay(midDay));
+    expect(item(dayStart, floorPot!.id).plant!.age).toBeNull();
+    expect(dayStart.log.filter((e) => e.key === "plantMatured")).toHaveLength(1);
+    expect(item(dayStart, carriedPot!.id).plant!.age).toBe(s.config.project.hydroponicIncubator.growthMultiplier * 2);
+  });
+
+  it("does not speed up young plants outside the garden or adult plants", () => {
+    const s = incubatorShip();
+    const [floorPot, carriedPot] = pots(s).filter((p) => p.plant);
+    floorPot!.at = { kind: "room", id: "LABORATORY" };
+    player(s, "p0").room = "LABORATORY";
+    const adultPot = emptyPot(s);
+    adultPot.plant = adult();
+
+    const next = nextCycle(s);
+    expect(item(next, floorPot!.id).plant!.age).toBe(1);
+    expect(item(next, carriedPot!.id).plant!.age).toBe(1);
+    expect(item(next, adultPot.id).plant!.age).toBeNull();
+  });
+
+  it("does nothing while the project is incomplete or the Hydroponics center is broken", () => {
+    const incomplete = nextCycle(incubatorShip(PROJECT_COMPLETE - 1));
+    for (const pot of pots(incomplete).filter((p) => p.plant)) {
+      expect(pot.plant!.age).toBe(1);
+    }
+
+    const broken = nextCycle(incubatorShip(PROJECT_COMPLETE, true));
+    for (const pot of pots(broken).filter((p) => p.plant)) {
+      expect(pot.plant!.age).toBe(1);
+    }
   });
 });

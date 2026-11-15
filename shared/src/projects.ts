@@ -120,8 +120,10 @@ export const PROJECT_STATUS: Readonly<Partial<Record<ProjectId, ProjectStatus>>>
   CALL_OF_DIRTY: "full",
   // Completing it spawns 3 empty hydropots on the Hydroponic Garden floor (owner, 2026-11-14; projectEffects.ts).
   EXTRA_HYDROPONPOTS: "full",
-  // Each producing plant in the garden (floor or carried) has a 50% chance at day start of producing an extra fruit (owner, 2026-11-14; botany.ts).
+  // Each producing plant in the garden (floor or carried) has a 50% chance at day start of producing an extra fruit while PLANT_CONTROLLER is working (owner, 2026-11-14; botany.ts).
   HEAT_LAMP: "full",
+  // Young plants in the garden (floor or carried) age 2x per cycle while the Hydroponics center (PLANT_CONTROLLER) is working; maturation stays at day start (owner, 2026-11-14; botany.ts).
+  HYDROPONIC_INCUBATOR: "full",
   // Any offered project above 0% gains +5% per cycle; at most one can complete per cycle (owner, 2026-11-14; projectEffects.ts).
   NERON_PROJECT_THREAD: "full",
   // Sick bay and engine room auxiliary NERON terminals stay offline (no access/project/coup/breakage, black screen) until complete (owner, 2026-11-14; equipment.ts).
