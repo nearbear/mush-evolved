@@ -1604,7 +1604,7 @@
   "comms": {
     "linked": "Contacto con Sol establecido.",
     "unlinked": "Sin contacto con Sol.",
-    "solSignal": "Señal: {{db}} dB ({{strength}})",
+    "solSignal": "({{db}} dB, {{strength}})",
     "strength": {
       "faint": "apenas perceptible",
       "weak": "débil",

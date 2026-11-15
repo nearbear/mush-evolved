@@ -88,7 +88,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   fungalCuisine: { cost: { ap: 1 } },
   // Confirmed 2026-10-13/14: extracting costs 1 AP and gives 1 spore; each Mush waits 4 cycles between extractions
   // and the faction shares 4 per day (skills and research will raise it).
-  spores: { cost: { ap: 1 }, effect: { spores: 1 }, perDay: 4, max: 2 },
+  spores: { cost: { ap: 1 }, effect: { spores: 1 }, perDay: 4, max: 2, constipasporeExtraAp: 2, antisporeReduction: 2 },
   // Confirmed 2026-10-15: healing needs a medikit in your inventory; 2 AP on someone else, 3 on yourself, restores 3 HP.
   // Anyone can heal in the sick bay without a medikit; the medic skill adds 2 HP, the nurse 2 care points a day.
   heal: {
@@ -191,7 +191,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   },
   // Confirmed 2026-10-16: cooking an uncooked ration costs 1 AP, only in the refectory.
   // Owner, 2026-11-14: Cook points cap at 8.
-  cook: { cost: { ap: 1 }, rooms: ["REFECTORY"], dirtyChance: 0.25, injuryChance: 0.01, capPoints: 8 },
+  cook: { cost: { ap: 1 }, rooms: ["REFECTORY"], dirtyChance: 0.25, injuryChance: 0.01, capPoints: 8, pointsPerDay: 4, pointsOnPick: 4 },
   // Owner, 2026-10-19: express cook is free, anywhere you can reach a microwave, and spends one of its 4 charges;
   // it regains one each day. Consequences for using it come later.
   expressCook: { cost: { ap: 0 }, charges: { start: 4, max: 4, perDay: 1 }, dirtyChance: 0.05 },
@@ -256,7 +256,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   interrogate: { cost: { ap: 1 }, damage: 1, dirtyChance: 0.15, injuryChance: 0.1 },
   // Decided 2026-10-16: working on a research costs 2 AP. Owner, 2026-10-26: its progress follows the original's relay formula, 6-9% at difficulty 10.
   // Owner, 2026-10-31 (docs/plans/research-sabotage.md): assays at the quarter marks, 5% noise, Contaminate costs 1 AP.
-  research: { cost: { ap: 2 }, progress: { rate: 6, mod: 10, skillBoost: 4, relayPenalty: 2 }, dirtyChance: 0.15, assayMarks: [25, 50, 75, 100], spoilChance: 0.05, contaminate: { cost: { ap: 1 } } },
+  research: { cost: { ap: 2 }, progress: { rate: 6, mod: 10, skillBoost: 4, relayPenalty: 2 }, dirtyChance: 0.15, assayMarks: [25, 50, 75, 100], spoilChance: 0.05, contaminate: { cost: { ap: 1 } }, guaranaExtraAp: 1 },
   // Owner, 2026-11-08: a scan succeeds 80% of the time, 50% while the Planet scanner (Motor Room) is broken.
   // Decided 2026-10-19 (docs/plans/astro.md): scan 3 AP, x1.25 per failure in a row (the 50% was the original's); x1.25 per failure in a row; analysis 2 AP; 2 planets per player.
   // Owner, 2026-10-22: planets get a direction and a distance (2 to 9 fuel, unique on the ship), and grow with the day.
@@ -288,6 +288,8 @@ export const DEFAULT_CONFIG: GameConfig = {
     quantumSensors: { extraSectors: 1 },
     chipsetAcceleration: { scanApDiscount: 1 },
     patrolShipLauncher: { takeoffApDiscount: 1 },
+    patrolShipExtraAmmo: { extraCharges: 6 },
+    patrolShipBlasterGun: { extraDamage: 1 },
     armourCorridor: { damageReduction: 1 },
     fissionCoffeeRoaster: { cycles: [1, 5] },
     dynarcade: { room: "SPACESHIP_BAY_AA", cost: { ap: 1 }, successChance: 0.33, failureMultiplier: 1.5, morale: 2, injuryChance: 0.33 },
@@ -536,6 +538,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   hopeless: { deathMorale: 1 },
   creative: { refundOdds: 0.5 },
   anticPerfume: { immuneCycles: 2 },
+  strongSkin: { resistOdds: 0.5 },
   // Owner, 2026-10-31 (#145): real time, not cycles.
   inactivity: { inactiveAfterHours: 24, superAfterHours: 48 },
   logistics: { ap: 1 },

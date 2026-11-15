@@ -1,5 +1,5 @@
 /* The Com center's spectrum plot (Spectrogram.tsx): a sigplot-like trace on black, with the dB scale in a narrow
-   column on the left (the unit is in the text line below it). The canvas is drawn at its real size in device pixels, so it is never scaled. */
+   column on the left (the unit is in the status text at the top). The canvas is drawn at its real size in device pixels, so it is never scaled. */
 .spectrogram {
   display: grid;
   grid-template-columns: 2.25rem minmax(0, 1fr);
@@ -31,6 +31,7 @@
   top: 0.25rem;
   left: 50%;
   transform: translateX(-50%);
+  width: max-content;
   max-width: calc(100% - 0.5rem);
   padding: 0.125rem 0.375rem;
   background: rgba(0, 0, 0, 0.75);

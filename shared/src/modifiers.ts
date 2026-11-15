@@ -18,6 +18,7 @@ import { astrophysician } from "./modifiers/astrophysician.ts";
 import { botanic } from "./modifiers/botanic.ts";
 import { caffeinomaniac } from "./modifiers/caffeinomaniac.ts";
 import { computer } from "./modifiers/computer.ts";
+import { cook } from "./modifiers/cook.ts";
 import { creative } from "./modifiers/creative.ts";
 import { designer } from "./modifiers/designer.ts";
 import { engineer } from "./modifiers/engineer.ts";
@@ -187,6 +188,7 @@ export const MODIFIERS: Record<string, Modifier> = {
   botanic,
   caffeinomaniac,
   computer,
+  cook,
   creative,
   designer,
   engineer,
@@ -483,9 +485,11 @@ export function moveCost(
   return { ap: rules.apPerConversion, mpAfter: converted - rules.mpPerMove };
 }
 
-/** Spores the Mush faction may extract per day: the configured count folded through the extracting player's modifiers. */
-export const sporesPerDay = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
-  fold("sporesPerDay", state.config.spores.perDay, state, player, registry);
+/** Spores the Mush faction may extract per day: the configured count (less ANTISPORE_GAZ) folded through the extracting player's modifiers. */
+export const sporesPerDay = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) => {
+  const reduction = (state.research.ANTISPORE_GAZ ?? 0) >= RESEARCH_COMPLETE ? state.config.spores.antisporeReduction : 0;
+  return Math.max(0, fold("sporesPerDay", state.config.spores.perDay - reduction, state, player, registry));
+};
 
 /** HP a heal restores: the configured amount folded through the healer's modifiers. */
 export const healAmount = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>

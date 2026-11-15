@@ -4,6 +4,7 @@
 
 import { updateMaxValues } from "./adjustStats.ts";
 import { DYNARCADE_EQUIPMENT } from "./equipment.ts";
+import { PATROL_SHIPS, patrolMaxCharges } from "./patrol.ts";
 import { PROJECT_IDS, projectDone, type ProjectId } from "./projects.ts";
 import { newItemId, TREE_POT_ITEM } from "./items.ts";
 import type { DeepReadonly, GameConfig, GameCore, GameState, PlayerState } from "./types.ts";
@@ -37,6 +38,16 @@ export function onProjectCompleted(state: GameState, project: ProjectId): void {
     const id = `${room}:${DYNARCADE_EQUIPMENT}`;
     const list = (state.equipment[room] ??= []);
     if (!list.some((e) => e.id === id)) list.push({ id, type: DYNARCADE_EQUIPMENT });
+  }
+  // Teslatron reservoir (PATROLSHIP_EXTRA_AMMO; owner, 2026-11-14): non-destroyed patrol ships gain +6 charges (capped at new max; Pasiphae unaffected).
+  if (project === "PATROLSHIP_EXTRA_AMMO") {
+    const extra = state.config.project.patrolShipExtraAmmo.extraCharges;
+    for (const ship of PATROL_SHIPS) {
+      if (ship.kind !== "patrol") continue;
+      const shipState = state.patrolShips[ship.id]!;
+      if (shipState.destroyed) continue;
+      shipState.charges = Math.min(patrolMaxCharges(state, ship), shipState.charges + extra);
+    }
   }
   // Extra hydropots (EXTRA_HYDROPONPOTS; owner, 2026-11-14): spawns `count` empty hydropots on the floor of `room`.
   if (project === "EXTRA_HYDROPONPOTS") {

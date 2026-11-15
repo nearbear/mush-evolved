@@ -267,6 +267,8 @@ export interface GameConfig {
     effect: { spores: number }; // Spores one extraction gives (confirmed 2026-10-13).
     perDay: number; // Spores the whole Mush faction may extract per day, before modifiers (confirmed 2026-10-14).
     max: number; // Spores one Mush may hold; extraction is refused at it (owner, 2026-11-10, balance review decision 8).
+    constipasporeExtraAp: number; // Extra AP added to extract_spore once CONSTIPASPORE_SERUM completes (owner, 2026-11-14).
+    antisporeReduction: number; // Daily spore extraction cap reduction once ANTISPORE_GAZ completes (2026-11-14).
   };
   heal: {
     cost: {
@@ -338,6 +340,8 @@ export interface GameConfig {
     dirtyChance: number; // Chance of getting the dirty status after cooking.
     injuryChance: number; // Chance of getting the injured status after cooking (owner, 2026-10-16: 25%).
     capPoints: number; // Most Cook points (`resources.cook`) a player can hold (owner, 2026-11-14: 8).
+    pointsPerDay: number; // Cook points the `cook` (Chef) skill grants at the start of each day (owner, 2026-11-14: 4).
+    pointsOnPick: number; // Cook points it grants when picked (owner, 2026-11-14: 4).
   };
   expressCook: {
     cost: { ap: number }; // AP spent to express cook a ration with a reachable microwave (owner, 2026-10-19: 0).
@@ -462,6 +466,7 @@ export interface GameConfig {
     assayMarks: number[];
     spoilChance: number;
     contaminate: { cost: { ap: number } }; // Saboteur's Contaminate (owner, 2026-10-31: Sabotage's 1 AP).
+    guaranaExtraAp: number; // Extra AP coffee gives humans once GUARANA_CAPUCCINO completes (1).
   };
   project: {
     offerCount: number; // Projects offered at NERON's core at a time (owner, 2026-11-14: 3).
@@ -478,6 +483,10 @@ export interface GameConfig {
     chipsetAcceleration: { scanApDiscount: number };
     // Takeoff thruster (owner, 2026-11-14): patrol ship, Pasiphae, and Icarus takeoff cost -takeoffApDiscount AP.
     patrolShipLauncher: { takeoffApDiscount: number };
+    // Teslatron reservoir (PATROLSHIP_EXTRA_AMMO; owner, 2026-11-14): patrol ships hold +extraCharges max charges and gain +extraCharges on completion (capped at new max; Pasiphae unaffected).
+    patrolShipExtraAmmo: { extraCharges: number };
+    // Blaster gun (PATROLSHIP_BLASTER_GUN; owner, 2026-11-14): patrol ship hits deal +extraDamage (stacks with Cygni).
+    patrolShipBlasterGun: { extraDamage: number };
     // Armoured corridors (owner, 2026-11-14): every attack on the Daedalus (damageShip) is reduced by damageReduction before the shield, floor 0.
     armourCorridor: { damageReduction: number };
     // Fission Coffee Roaster (owner, 2026-11-02; eMushpedia *Torréfacteur à fission*): coffee machine regenerates at these cycles of each day (C1, C5; every cycle with PILGRED).
@@ -730,6 +739,9 @@ export interface GameConfig {
   };
   anticPerfume: {
     immuneCycles: number; // Cycles of infection immunity the antic_perfume skill grants after each shower (confirmed 2026-10-16); a new shower resets it, no stacking.
+  };
+  strongSkin: {
+    resistOdds: number; // Chance a human Hygienist resists a Mush contamination or physical disease (owner, 2026-11-14).
   };
   inactivity: {
     inactiveAfterHours: number; // Real hours without connecting (and a full AP gauge) before a player goes inactive at a cycle change (owner, 2026-10-31).

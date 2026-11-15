@@ -3754,3 +3754,34 @@ Small refactor on request: `GameRoom.social` called four bot-line parsers (item,
 
 - **Decision (owner):** Completing `EXTRA_HYDROPONPOTS` spawns 3 empty hydropots (`tree_pot`) on the floor of the Hydroponic Garden (`HYDROPONIC_CENTER`), with no extra room log line beyond the standard project completion log at NERON's Core. Tunable in `config.project.extraHydropots`.
 - **Implementation:** Added `config.project.extraHydropots` (`shared/src/types/config.ts`, `shared/src/config.ts`), spawned the pots in `onProjectCompleted` (`shared/src/projectEffects.ts`), marked `EXTRA_HYDROPONPOTS: "full"` in `PROJECT_STATUS` (`shared/src/projects.ts`), and added unit tests in `shared/tests/extraHydropots.test.ts`.
+
+### 2026-11-14 — Chef (`cook`) skill
+
+- **Decided by the owner:** Chef (`cook`) grants +4 Cook points on pick (`config.cook.pointsOnPick`) and +4 at each day start (`config.cook.pointsPerDay`), held up to `config.cook.capPoints` (8). Alien fruit lore (`FRUIT_LORE_SKILLS`), `FOOD_RETAILER` NERON project bonus, and Cook-point spending on `cook` (0 AP, `paidBy: "cook"`, not `fungal_cuisine`) were already in place.
+- **What worked:** `cookPointsPerDay`, `config.cook.capPoints`, `FRUIT_LORE_SKILLS`, `FOOD_RETAILER`, and `CookAction` Cook-point spending were already built for `maintenance_agent` and `fruits`, so implementing Chef required only `modifiers/cook.ts`, `config.cook.pointsPerDay`/`pointsOnPick`, `RESOURCE_SKILLS.cook`, `SKILL_STATUS.cook = "full"`, and `shared/tests/cook.test.ts`.
+
+### 2026-11-14 — Teslatron reservoir project (`PATROLSHIP_EXTRA_AMMO`)
+- **Decision (owner):** Completing `PATROLSHIP_EXTRA_AMMO` raises patrol ships' max charges by 6 (`10 -> 16`, Pasiphae unaffected; `config.project.patrolShipExtraAmmo.extraCharges = 6`), adds +6 current charges to all non-destroyed patrol ships on completion (capped at the new max), and swaps `spaceship` to `spaceship_upgrade_a` in both the bays (`IsoRoom`) and flight cockpit (`PatrolCockpit`). Marked `"full"` in `PROJECT_STATUS`.
+- **What worked:** `patrolMaxCharges` in `shared/src/patrol.ts`, `onProjectCompleted` in `shared/src/projectEffects.ts`, `roomLooks` in `web/src/iso/IsoRoom.tsx`, and `ShipSprite` in `web/src/hud/PatrolCockpit.tsx` all fit existing project and scenery-swap patterns cleanly.
+
+### 2026-11-14: Constipaspore serum research (`CONSTIPASPORE_SERUM`)
+
+- **Decision (owner):** Completing `CONSTIPASPORE_SERUM` adds `config.spores.constipasporeExtraAp` (2 AP) to `extract_spore` (from 1 to 3 AP). Fertile's first daily extraction stays 0 AP (overrides the serum), and completion emits only the standard `researchCompleted` public log line.
+- **Implementation:** Added `spores.constipasporeExtraAp: 2` in `shared/src/types/config.ts` and `shared/src/config.ts`, checked `state.research.CONSTIPASPORE_SERUM >= RESEARCH_COMPLETE` in `ExtractSporeAction.getCost` (`shared/src/actions/extract_spore.ts`, after `freeExtraction`), and marked `CONSTIPASPORE_SERUM: "full"` in `RESEARCH_STATUS` (`shared/src/research.ts`). Added unit tests in `shared/tests/spores.test.ts`, `shared/tests/fertile.test.ts`, and `shared/tests/research.test.ts`.
+
+### 2026-11-14 — Guarana cappuccino research (GUARANA_CAPUCCINO)
+- **What:** Implemented `GUARANA_CAPUCCINO` (`RESEARCH_STATUS`: `"full"`): humans consuming `coffee` gain `config.research.guaranaExtraAp` (1) extra AP in `shared/src/actions/consume.ts` (capped at `maxAp`, stacking with `caffeinomaniac`; Mush still gain 0 AP). Wired `view.research` into `IsoRoom.tsx` via `GameView.tsx` so `roomLooks` swaps `coffee` to `coffee_upgrade_b` (or `coffee_upgrade_ab` when combined with `FISSION_COFFEE_ROASTER`, and `coffee_upgrade_a` for `FISSION_COFFEE_ROASTER` alone), matching `upgrades.xml` and `ship-art.json`.
+- **Verification:** Added `shared/tests/guaranaCapuccino.test.ts` and updated `web/tests/iso/scene.test.ts`; ran `npm run verify` and `npm run build`.
+
+### 2026-11-14 — Hygienist skill (`strong_skin`)
+- **Decision (owner):** Human Hygienists have a 50% (`config.strongSkin.resistOdds`) chance to silently resist Mush contamination (`contaminate`, rolling once for all spores on a fungal-cuisine meal) and a 50% chance to silently resist physical diseases (`config.diseases.allDiseases` in `addDisease`, excluding disorders, injuries, and Mush holders).
+- **What worked:** Checking `reference/emush` via `npm run emush` and `Mush/derived/data/Data/skills.json` surfaced the exact mechanics and edge cases (all-or-nothing on fungal cuisine, physical-disease-only, humans-only) to confirm with the owner before editing. Changing `consume.ts` from a per-spore loop to `contaminate(state, player, item.spores)` kept all-or-nothing fungal cuisine simple.
+- **What needed correction:** Initial test used seat `p1` (Chun, who has `immunity`), so `contaminate` was always blocked; switching the test seat to `p2` verified the 50% roll.
+
+### 2026-11-14 — Blaster gun project (`PATROLSHIP_BLASTER_GUN`)
+- **Decision (owner):** Completing `PATROLSHIP_BLASTER_GUN` adds +1 damage on every patrol ship hit (`config.project.patrolShipBlasterGun.extraDamage = 1`), stacking with Cygni's +1, and swaps `spaceship` to `spaceship_upgrade_b` (or `spaceship_upgrade_ab` when combined with `PATROLSHIP_EXTRA_AMMO`) in both the bays (`IsoRoom`) and flight cockpit (`PatrolCockpit`). Marked `"full"` in `PROJECT_STATUS`.
+- **What worked:** `patrolBlasterBonus` in `shared/src/patrol.ts` mirrors `patrolDamageBonus` in `comms.ts`, `PatrolAttackAction` adds both, and `Mush/clients/iso/xml/upgrades.xml` already had the `spaceship_upgrade_b` / `spaceship_upgrade_ab` slices wired into `ship-art.json`. Config only, so no `STATE_VERSION` bump.
+
+### 2026-11-14: Antispore gas research (`ANTISPORE_GAZ`)
+- **Decision (owner / original `research.json`):** Completing `ANTISPORE_GAZ` reduces the Mush daily spore extraction cap (`sporesPerDay`) by `config.spores.antisporeReduction` (2, from 4 to 2, clamped at 0), with the standard `researchCompleted` public log line only.
+- **What worked:** `sporesPerDay` already folded `config.spores.perDay` in `shared/src/modifiers.ts`, and `RESEARCH_REQUIRES.ANTISPORE_GAZ` + en/fr/es locale strings were already in place, so wiring `antisporeReduction` into `sporesPerDay` and marking `RESEARCH_STATUS.ANTISPORE_GAZ = "full"` took minimal, clean changes.
