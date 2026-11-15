@@ -63,7 +63,7 @@ export class ConsumeAction extends Action<ConsumeActionData> {
     applyFruit(state, player, item.type);
     consumed(state, player, item);
     logSecret(state, player.id, "consumed", { name: player.character, item: item.type });
-    // Fungal cuisine: a human is contaminated first, one level per spore; a conversion ends the meal with no food effects.
+    // Fungal cuisine: food effects apply first, then the human is contaminated by the item's spore level (even if it converts them).
     if (player.role === "human" && item.spores) {
       contaminate(state, player, item.spores);
     }
