@@ -348,6 +348,10 @@ export function actionSuccessRate(base: number, ctx: CostContext, registry: Modi
   if ((ctx.action.type === "repair_hull" || ctx.action.type === "renovate") && ctx.state.items.some((i) => i.type === "oscilloscope" && isWorking(i) && i.at.kind === "player" && i.at.id === ctx.actor.id)) {
     chance *= ctx.state.config.oscilloscope.repairFactor;
   }
+  // Heuristic targeting (owner, 2026-11-14): x1.25 aim on turret and patrol ship shots for everyone on the crew.
+  if ((ctx.action.type === "turret_attack" || ctx.action.type === "patrol_attack") && projectDone(ctx.state, "NERON_TARGETING_ASSIST")) {
+    chance *= ctx.state.config.project.neronTargetingAssist.accuracyFactor;
+  }
   // Hooks can't make a price negative. A move's MP is a net change and can already be negative (a conversion
   // gives more than the move spends), so the floor is 0 or the base, whichever is lower.
   // An Outcast (anathema.ts) loses a fifth of their chance on every action that rolls one (owner, 2026-10-24).

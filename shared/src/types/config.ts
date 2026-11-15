@@ -497,6 +497,8 @@ export interface GameConfig {
     patrolShipBlasterGun: { extraDamage: number };
     // Inverted pulsator (TURRET_EXTRA_FIRERATE; owner, 2026-11-14): turrets recharge rechargeMultiplier times as fast each cycle.
     turretExtraFirerate: { rechargeMultiplier: number };
+    // Heuristic targeting (NERON_TARGETING_ASSIST; owner, 2026-11-14): turret and patrol ship shots gain accuracyFactor (x1.25) hit chance for everyone.
+    neronTargetingAssist: { accuracyFactor: number };
     // Armoured corridors (owner, 2026-11-14): every attack on the Daedalus (damageShip) is reduced by damageReduction before the shield, floor 0.
     armourCorridor: { damageReduction: number };
     // Fission Coffee Roaster (owner, 2026-11-02; eMushpedia *Torréfacteur à fission*): coffee machine regenerates at these cycles of each day (C1, C5; every cycle with PILGRED).

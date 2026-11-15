@@ -94,6 +94,8 @@ export const PROJECT_STATUS: Readonly<Partial<Record<ProjectId, ProjectStatus>>>
   PATROLSHIP_BLASTER_GUN: "full",
   // Turrets recharge twice as fast each cycle (owner, 2026-11-14; hunters.ts).
   TURRET_EXTRA_FIRERATE: "full",
+  // Turret and patrol ship shots gain x1.25 hit chance for everyone (owner, 2026-11-14; modifiers.ts `actionSuccessRate`).
+  NERON_TARGETING_ASSIST: "full",
   // The shield absorbs 67% of a hit instead of 33% (owner, 2026-10-24; ship.ts).
   PLASMA_SHIELD: "full",
   // Reports every fire: burning rooms turn red on the minimap and show on the alert bar (owner, 2026-11-02; #444).
