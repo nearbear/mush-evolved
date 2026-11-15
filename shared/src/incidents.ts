@@ -8,6 +8,7 @@ import { gainMorale } from "./adjustStats.ts";
 import { breakEquipment, breakItem, workingBreakable } from "./breakage.ts";
 import { damage } from "./death.ts";
 import { addDisease } from "./diseases.ts";
+import { allDoors, breakDoor } from "./doors.ts";
 import { pushChat } from "./chat.ts";
 import { daedalusRooms, isOnFire, startFire } from "./fire.ts";
 import { ITEM_TYPES, isWorking, itemsIn } from "./items.ts";
@@ -16,9 +17,10 @@ import { projectDone } from "./projects.ts";
 import { roll, rollFloat, rollInt, rollWeighted } from "./rng.ts";
 import type { DeepReadonly, Equipment, GameConfig, GameState, ItemState, PlayerId, PlayerState, RoomId } from "./types.ts";
 
-/** The built incidents. Not built: stuck door (doors aren't objects yet). */
+/** The built incidents. */
 export const INCIDENT_IDS = [
   "tremor",
+  "stuck_door",
   "fire",
   "panic_attack",
   "oxygen_leak",
@@ -93,6 +95,8 @@ const catchable = (state: Readonly<GameState>, p: Readonly<PlayerState>): string
 const sickenable = (state: Readonly<GameState>, sickened: ReadonlySet<PlayerId>): PlayerState[] =>
   aboard(state).filter((p) => !sickened.has(p.id) && catchable(state, p).length > 0);
 
+const workingDoors = (state: Readonly<GameState>) => allDoors(state.config.rooms).filter((id) => !state.doors[id]?.broken);
+
 const INCIDENTS: Record<IncidentId, Incident> = {
   // One room with crew; everyone there loses their own 1-3 HP roll (owner, 2026-11-01).
   tremor: {
@@ -101,6 +105,13 @@ const INCIDENTS: Record<IncidentId, Incident> = {
       const room = pick(state, occupiedRooms(state));
       logPublic(state, room, "tremor");
       for (const p of state.players.filter((o) => o.alive && o.room === room)) damage(state, p, roll(state, state.config.incidents.tremor.damage), "injury");
+    },
+  },
+  // One working door aboard breaks silently (owner, 2026-11-14, #330).
+  stuck_door: {
+    possible: (state) => workingDoors(state).length > 0,
+    apply: (state) => {
+      breakDoor(state, pick(state, workingDoors(state)));
     },
   },
   fire: {

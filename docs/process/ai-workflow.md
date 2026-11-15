@@ -3893,3 +3893,43 @@ Two hidden-information choices made by Claude, not the owner, worth a look: (1) 
 - Owner gave the four diseases' effects and durations; Claude asked four questions first and the owner answered: Sinus Storm's piloting penalty is a patrol shot ×0.7; Migraine's "-2% when relaying" is −2 on each relay token's base (research, NERON projects, PILGRED); Food Poisoning blocks food and drugs; none joins the fruit pool.
 - Worked: nearly every effect reused an existing hook (onCycle, onEnterRoom with `sneeze`/`vomit`, `satietyPerCycle`, `damageTaken`, `contaminationCapacity`, `analysisSectors`, `canFly`). New: `neronProgress`/`rebelGain` folds, a Migraine malus in `relay.ts`, a `cant_eat` refusal in consume, and `withoutBedBonus` pulled out of Rejuvenation so Migraine shares it.
 - Per the owner, tests cover only what no other disease already tested (Migraine's four penalties, Food Poisoning's eating ban, the durations).
+### 2026-11-14: Heat lamps project (`HEAT_LAMP`)
+- **Decision (owner):** Once `HEAT_LAMP` is complete, each producing plant in `botany.gardenRoom` (floor or carried, via `potRoom`) has a 50% (`config.project.heatLamp.extraFruitChance`) seeded chance at day start of producing +1 extra fruit (2 total), logging `plantProduced` plus a separate public `plantExtraFruit` room line. In the iso view, `roomLooks` swaps `garden` to `garden_upgrade_b` (or `garden_upgrade_ab` when `HYDROPONIC_INCUBATOR` is also complete).
+- **What worked:** Clarifying the 4 open details (floor vs carried scope, 50% +1 fruit, separate log line, iso tile swap) upfront with `ask_question` before editing kept the implementation and tests focused.
+
+### 2026-11-14 — Door reports and Defective piston sensors (#330, slice 3)
+- Implemented `report_door` (`ReportDoorAction`), the `door` variant on `Report` / `AlertReport`, `forgetReports` on `breakDoor`, and `DOOR_SENSOR` (`doorsDetected`, `PROJECT_STATUS.DOOR_SENSOR = "full"`, `PlayerView.brokenDoors`).
+- Client updates: `ShipResources` alert list now includes broken doors in the `alerts` breakdown count and formats both rooms (`alertDoor` / `alertDoorDetector`), `ShipPlanSvg` highlights `brokenDoors` in danger yellow once `DOOR_SENSOR` is complete, and en/fr/es locales gained `reportDoor`, `doorReported`, `alertDoor`, and `alertDoorDetector`.
+
+### 2026-11-14 — Trail reducer NERON project (`TRAIL_REDUCER`)
+- **Decision (owner):** Once `TRAIL_REDUCER` is complete, `followingHuntersShare` multiplies the following share by `config.project.trailReducer.followMultiplier` (`0.5`, turning `0.5` into `0.25`) on every jump (`travel`, `leave_orbit`, `warp_to_planet`), keeping `Math.ceil` and affecting only `follows: "share"` hunters (plain hunters and Aracks; Trax still all follow).
+- **What worked:** `followingHuntersShare` and `huntersFollow` were already factored cleanly, so the project only needed a config knob, one multiplier check in `followingHuntersShare`, `PROJECT_STATUS.TRAIL_REDUCER = "full"`, and tests.
+
+- **2026-11-14 — Stuck door incident (#330 slice 5).** Added `stuck_door` to `INCIDENT_IDS` and `DEFAULT_CONFIG.incidents.catalog` (`cost: 3`, `weight: 10`), picking a random working Daedalus door via `allDoors` + `breakDoor` (silent, clears any prior report). Added tests in `shared/tests/incidents.test.ts` covering cost/weight, silent breakage, hidden-information isolation, and skipping when all doors are broken.
+
+### 2026-11-14: Sow from floor on the fruit itself
+
+- **Decision (owner):** `sow` targets a reachable fruit (`canReachItem`, carried or on the room floor) instead of targeting a pot with a carried fruit, and plants into a reachable empty hydropot (preferring a floor pot over a carried pot).
+- **What worked:** Moving the action target to the fruit (`SowActionData = { type: "sow"; item: string }`) eliminated the need for a `Sow (Fruit)` disambiguation label on pots and simplified the bot `sowJob` goal so bots can sow straight from the garden floor.
+
+### 2026-11-14 — Bot expedition gear & report sharing
+
+- Extended `SHARED_ITEMS` in `server/src/bots/itemShare.ts` with expedition gear (`space_suit`, `rope`, `quad_compass`, `white_flag`, `drill`) so bots share and look up their rooms via `Item:` lines.
+- Added `server/src/bots/reportShare.ts` (`formatReportShare`, `parseReportShare`, `exploredSectors`, `observeReports`, `exploredOn`, `ReportMemory`) and wired it into `BotSocial`, `BotMemory`, `BotMemorySnapshot`, and `GoalBot` (`decideAction`, `snapshot`, `restore`) so returning crew bots post `shareReport` once per finished expedition and the Commander folds `view.sharedReports` into `BotMemory.reports` for `leave_orbit`.
+
+### 2026-11-14: Broken equipment and door smoke (`FX_SMOKE` / `SmokeEmitter`)
+- Located the original `FX_SMOKE` slice (`240,48,16,16` in `Mush/clients/iso/gfx/fx.png`, `Mush/clients/iso/xml/tiles.xml`) and `Mush/clients/iso/src/fx/SmokeEmitter.hx` (used in `Grid.hx` for `BROKEN` entities).
+- Added `SceneSmokeSource` and `Scene.smoke` in `web/src/iso/scene.ts` for broken doors and broken equipment, placed immediately after the emitting sprite in paint order.
+- Added `RoomSmoke` (`web/src/iso/pixi/smoke.ts`) porting `SmokeEmitter`/`SmokPart` to PixiJS v8 and wired it into `PixiRenderer.ts` alongside `RoomFire`.
+
+### 2026-11-14 — Hydroponic incubator project (`HYDROPONIC_INCUBATOR`)
+- **Decision (owner):** Once `HYDROPONIC_INCUBATOR` is complete, young plants in `botany.gardenRoom` (floor or carried, via `potRoom`) age by `config.project.hydroponicIncubator.growthMultiplier` (2) per cycle in `botanyCycle` while `PLANT_CONTROLLER` (Hydroponics center) is working, with maturation remaining at day start (`botanyDay`).
+- **Implementation:** Extracted `plantControllerWorking` in `shared/src/botany.ts` (reused by `isGardenProtected` in `shared/src/fire.ts` to avoid circular imports or duplicated checks), marked `HYDROPONIC_INCUBATOR` as `"full"` in `PROJECT_STATUS`, and added unit tests in `shared/tests/botany.test.ts`.
+
+### 2026-11-14 — Heat lamps paused when Hydroponics center is broken
+- **Decision (owner):** `HEAT_LAMP` is also paused while `PLANT_CONTROLLER` (Hydroponics center) is broken (`botanyDay` in `shared/src/botany.ts` checks `plantControllerWorking(state)`), matching `HYDROPONIC_INCUBATOR`.
+- **2026-11-14 — Bot expedition prep (`expeditionPrep`):** Added scripted claiming and expedition prep goal (`server/src/bots/goals/expeditionPrep.ts`) plus `activeSharedPlanet` (`server/src/bots/planetShare.ts`). Priority claimants (helpful skills for the shared planet's sectors, including `gunman` with a working gun and `diplomacy`/`polymath` on `INTELLIGENT`) claim `onCall` slots immediately; fit non-priority bots claim after a 1-cycle wait; ties break by turn order. Bots fetch needed gear from `itemShare`, walk to `ICARUS`, drop `itrackie` before takeoff while `orbiting` (remembering `expeditionPrep` in `BotMemory` so they stay waiting in `ICARUS` without `view.plans` and don't re-prep an already-completed plan), and recover `itrackie` after returning.
+
+### 2026-11-14 — Nano ladybugs project (`PARASITE_ELIM`)
+- **Decision (owner):** Once `PARASITE_ELIM` is complete, healthy plants in `botany.gardenRoom` (floor or carried, via `potRoom`) never fall sick on cycle change (`botanyCycle`) while `PLANT_CONTROLLER` (Hydroponics center) is working; already-sick plants stay sick until treated.
+- **Implementation:** Updated `botanyCycle` in `shared/src/botany.ts` to skip the `sickChancePerCycle` roll for garden plants when `PARASITE_ELIM` is complete and `plantControllerWorking(state)` is true, marked `PARASITE_ELIM` as `"full"` in `PROJECT_STATUS`, updated `projects.descriptions.PARASITE_ELIM` in `web/src/locales/{en,fr,es}.json`, and added unit tests in `shared/tests/botany.test.ts`.

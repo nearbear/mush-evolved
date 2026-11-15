@@ -4,6 +4,7 @@
 
 import { ITEM_TYPES, TREE_POT_ITEM, produceItem, newItemId } from "./items.ts";
 import { logPublic } from "./log.ts";
+import { projectDone } from "./projects.ts";
 import { rollFloat } from "./rng.ts";
 import { hasSkill } from "./skills.ts";
 import type { GameState, ItemState, ItemView, PlantState, PlayerState, RoomId } from "./types.ts";
@@ -44,17 +45,32 @@ export function plantView(plant: Readonly<PlantState>, viewer: Readonly<PlayerSt
   return { species, age, thirst, ...(isBotanistRole(viewer) && { sick }) };
 }
 
+/** Whether the Hydroponics center (`PLANT_CONTROLLER`) in the garden room is working. */
+export const plantControllerWorking = (state: Readonly<GameState>): boolean =>
+  (state.equipment[state.config.botany.gardenRoom] ?? []).some((e) => e.type === "PLANT_CONTROLLER" && !e.broken);
+
 /**
- * At every cycle change: young plants age by one, and each healthy plant, young or adult, may fall sick
- * (`sickChancePerCycle`, seeded). Mutates a state the caller already cloned.
+ * At every cycle change: young plants age by one (2× in the garden while `HYDROPONIC_INCUBATOR` is complete and
+ * `PLANT_CONTROLLER` is working), and each healthy plant, young or adult, may fall sick (`sickChancePerCycle`, seeded)
+ * unless `PARASITE_ELIM` is complete, `PLANT_CONTROLLER` is working, and the pot is in the garden. Mutates a state
+ * the caller already cloned.
  */
 export function botanyCycle(state: GameState): void {
+  const { botany, project } = state.config;
+  const controllerWorking = plantControllerWorking(state);
+  const incubatorActive = projectDone(state, "HYDROPONIC_INCUBATOR") && controllerWorking;
+  const parasiteElimActive = projectDone(state, "PARASITE_ELIM") && controllerWorking;
   for (const pot of state.items) {
     if (!isPlanted(pot)) continue;
     const { plant } = pot;
-    if (plant.age !== null) plant.age += 1;
+    const inGarden = potRoom(state, pot) === botany.gardenRoom;
+    if (plant.age !== null) {
+      const rate = incubatorActive && inGarden ? project.hydroponicIncubator.growthMultiplier : 1;
+      plant.age += rate;
+    }
     if (plant.sick) continue;
-    if (rollFloat(state) < state.config.botany.sickChancePerCycle) plant.sick = true;
+    if (parasiteElimActive && inGarden) continue;
+    if (rollFloat(state) < botany.sickChancePerCycle) plant.sick = true;
   }
 }
 
@@ -68,7 +84,8 @@ export function growCyclesFor(state: Readonly<GameState>, species: string): numb
  * gets thirstier, stopping at dried. Mutates a state the caller already cloned.
  */
 export function botanyDay(state: GameState): void {
-  const { botany, ship } = state.config;
+  const { botany, ship, project } = state.config;
+  const heatLamp = projectDone(state, "HEAT_LAMP") && plantControllerWorking(state);
   for (const pot of state.items.filter(isPlanted)) {
     const { plant } = pot;
     const room = potRoom(state, pot);
@@ -80,6 +97,10 @@ export function botanyDay(state: GameState): void {
       state.ship.oxygen = Math.min(ship.oxygen.max, state.ship.oxygen + botany.oxygenPerPlant);
       produceFruit(state, pot);
       logPublic(state, room, "plantProduced", { item: plant.species });
+      if (heatLamp && room === botany.gardenRoom && rollFloat(state) < project.heatLamp.extraFruitChance) {
+        produceFruit(state, pot);
+        logPublic(state, room, "plantExtraFruit", { item: plant.species });
+      }
     }
     plant.thirst = Math.min(2, plant.thirst + 1) as PlantState["thirst"];
   }

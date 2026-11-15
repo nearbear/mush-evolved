@@ -3,7 +3,7 @@
 // 2026-11-01); only the living in a burning room see that it burns (`PlayerView.roomOnFire`). Fire burns no oxygen.
 // Putting one out is actions/extinguish.ts.
 
-import { isPlanted } from "./botany.ts";
+import { isPlanted, plantControllerWorking } from "./botany.ts";
 import { breakEquipment, breakItem, workingBreakable } from "./breakage.ts";
 import { isFireproof } from "./drones.ts";
 import { ITEM_TYPES, isWorking, itemsIn } from "./items.ts";
@@ -25,8 +25,7 @@ export const daedalusRooms = (state: Readonly<GameState>): RoomId[] => Object.ke
 export const isOnFire = (state: Readonly<GameState>, room: RoomId): boolean => state.fires.includes(room);
 
 /** Whether the Hydroponics center (`PLANT_CONTROLLER`) in the garden room is working, protecting plants there from fire. */
-export const isGardenProtected = (state: Readonly<GameState>): boolean =>
-  (state.equipment[state.config.botany.gardenRoom] ?? []).some((e) => e.type === "PLANT_CONTROLLER" && !e.broken);
+export const isGardenProtected = plantControllerWorking;
 
 /** At a cycle change, before incidents and fires act: lights each room a Pyromaniac set (actions/ignite.ts). */
 export function ignitePending(state: GameState): void {

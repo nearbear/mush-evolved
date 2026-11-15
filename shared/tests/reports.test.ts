@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { breakEquipment } from "../src/breakage.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
+import { breakDoor, doorId, repairDoor } from "../src/doors.ts";
 import { startFire } from "../src/fire.ts";
 import { PROJECT_COMPLETE, projectStatus } from "../src/projects.ts";
 import { applyInput } from "../src/replay.ts";
@@ -12,7 +13,11 @@ import { clone, makeSeats, must, mustApply, noHunters, noIncidents, offered, opt
 // Reports and the alert bar (owner, 2026-11-14, #444).
 
 const HERE = "REFECTORY";
+const HERE_TO = DEFAULT_CONFIG.rooms[HERE]![0]!;
+const HERE_DOOR = doorId(HERE, HERE_TO);
 const ELSEWHERE = "LABORATORY";
+const ELSEWHERE_TO = DEFAULT_CONFIG.rooms[ELSEWHERE]!.find((r) => r !== HERE)!;
+const ELSEWHERE_DOOR = doorId(ELSEWHERE, ELSEWHERE_TO);
 const COFFEE = "REFECTORY:COFFEE_DISPENSER";
 
 /** A quiet ship of 3: p0 and p1 in the refectory, p2 in the laboratory. */
@@ -103,10 +108,47 @@ describe("reporting a breakdown", () => {
   });
 });
 
+describe("reporting a broken door", () => {
+  it("is offered on a broken door of your room only, names both rooms, and updates alerts without lighting the minimap", () => {
+    const s = ship();
+    expect(offered(s, "p0").some((a) => a.type === "report_door")).toBe(false);
+    breakDoor(s, HERE_DOOR);
+    breakDoor(s, ELSEWHERE_DOOR);
+    expect(offered(s, "p0").filter((a) => a.type === "report_door")).toEqual([{ type: "report_door", door: HERE_DOOR }]);
+    const after = mustApply(s, "p0", { type: "report_door", door: HERE_DOOR });
+    expect(globalSystem(after).at(-1)).toEqual({
+      key: "doorReported",
+      params: { name: player(s, "p0").character, room: HERE, other: HERE_TO },
+    });
+    expect(viewFor(after, "p2").alerts).toEqual({
+      fires: 0,
+      broken: 2,
+      reports: [{ kind: "door", door: HERE_DOOR, by: player(s, "p0").character }],
+    });
+    // Without DOOR_SENSOR, reporting a door never lights it on the minimap.
+    expect(viewFor(after, "p2").brokenDoors).toEqual([]);
+    // Reported once: nobody on either side can report it again.
+    expect(offered(after, "p1").some((a) => a.type === "report_door")).toBe(false);
+    player(after, "p1").room = HERE_TO;
+    expect(offered(after, "p1").some((a) => a.type === "report_door")).toBe(false);
+  });
+
+  it("refuses working doors, doors elsewhere, and a repeat", () => {
+    const s = ship();
+    expect(applyAction(s, "p0", { type: "report_door", door: HERE_DOOR }).ok).toBe(false);
+    breakDoor(s, ELSEWHERE_DOOR);
+    expect(applyAction(s, "p0", { type: "report_door", door: ELSEWHERE_DOOR }).ok).toBe(false);
+    breakDoor(s, HERE_DOOR);
+    const after = mustApply(s, "p0", { type: "report_door", door: HERE_DOOR });
+    expect(applyAction(after, "p1", { type: "report_door", door: HERE_DOOR }).ok).toBe(false);
+  });
+});
+
 describe("detectors", () => {
-  it("both are marked fully implemented", () => {
+  it("all three detectors are marked fully implemented", () => {
     expect(projectStatus("FIRE_SENSOR")).toBe("full");
     expect(projectStatus("EQUIPMENT_SENSOR")).toBe("full");
+    expect(projectStatus("DOOR_SENSOR")).toBe("full");
   });
 
   it("Fire detectors report every fire, existing and future, and the action stops being offered", () => {
@@ -139,6 +181,28 @@ describe("detectors", () => {
     );
     // Breakdowns never light the minimap.
     expect(viewFor(s, "p2").burningRooms).toEqual([]);
+    expect(viewFor(s, "p2").brokenDoors).toEqual([]);
+  });
+
+  it("EQUIPMENT_SENSOR does not report broken doors; DOOR_SENSOR reports every broken door and lights the minimap", () => {
+    const s = ship();
+    breakDoor(s, HERE_DOOR);
+    s.projects.EQUIPMENT_SENSOR = PROJECT_COMPLETE;
+    expect(viewFor(s, "p2").alerts).toEqual({ fires: 0, broken: 1, reports: [] });
+    expect(viewFor(s, "p2").brokenDoors).toEqual([]);
+    expect(offered(s, "p0")).toContainEqual({ type: "report_door", door: HERE_DOOR });
+
+    s.projects.DOOR_SENSOR = PROJECT_COMPLETE;
+    breakDoor(s, ELSEWHERE_DOOR);
+    expect(offered(s, "p0").some((a) => a.type === "report_door")).toBe(false);
+    const view = viewFor(s, "p2");
+    expect(view.brokenDoors).toEqual(expect.arrayContaining([HERE_DOOR, ELSEWHERE_DOOR]));
+    expect(view.alerts.reports).toEqual(
+      expect.arrayContaining([
+        { kind: "door", door: HERE_DOOR, by: "DOOR_SENSOR" },
+        { kind: "door", door: ELSEWHERE_DOOR, by: "DOOR_SENSOR" },
+      ]),
+    );
   });
 });
 
@@ -176,6 +240,17 @@ describe("a report lasts until the problem is fixed", () => {
     expect(viewFor(s, "p2").alerts).toEqual({ fires: 0, broken: 1, reports: [] });
   });
 
+  it("repairing a door drops the report, and breaking it again starts unreported", () => {
+    let s = ship();
+    breakDoor(s, HERE_DOOR);
+    s = mustApply(s, "p0", { type: "report_door", door: HERE_DOOR });
+    repairDoor(s, HERE_DOOR);
+    expect(pruneReports(s).reports).toEqual([]);
+    breakDoor(s, HERE_DOOR);
+    expect(s.reports).toEqual([]);
+    expect(viewFor(s, "p2").alerts).toEqual({ fires: 0, broken: 1, reports: [] });
+  });
+
   it("pruning never mutates its input and keeps open reports", () => {
     let s = ship();
     startFire(s, HERE);
@@ -188,25 +263,31 @@ describe("a report lasts until the problem is fixed", () => {
 });
 
 describe("hidden information", () => {
-  it("an unreported fire's room and an unreported breakdown's identity reach nobody", () => {
+  it("an unreported fire's room and an unreported breakdown's or broken door's identity reach nobody", () => {
     const s = ship();
     startFire(s, ELSEWHERE);
     breakIt(s, labEquipment(s).id);
+    breakDoor(s, ELSEWHERE_DOOR);
     for (const id of ["p0", "p1"]) {
       const v = viewFor(s, id);
-      expect(v.alerts).toEqual({ fires: 1, broken: 1, reports: [] });
+      expect(v.alerts).toEqual({ fires: 1, broken: 2, reports: [] });
       expect(v.burningRooms).toEqual([]);
+      expect(v.brokenDoors).toEqual([]);
       expect(JSON.stringify(v.alerts)).not.toContain(ELSEWHERE);
+      expect(JSON.stringify(v.alerts)).not.toContain(ELSEWHERE_DOOR);
     }
   });
 
-  it("the dead get no alerts and no burning rooms", () => {
+  it("the dead get no alerts, no burning rooms, and no broken doors", () => {
     let s = ship();
     startFire(s, HERE);
     breakIt(s, COFFEE);
+    breakDoor(s, HERE_DOOR);
+    s.projects.DOOR_SENSOR = PROJECT_COMPLETE;
     s = mustApply(s, "p0", { type: "report_fire" }, { type: "report_equipment", equipment: COFFEE });
     player(s, "p2").alive = false;
     expect(viewFor(s, "p2").alerts).toEqual({ fires: 0, broken: 0, reports: [] });
     expect(viewFor(s, "p2").burningRooms).toEqual([]);
+    expect(viewFor(s, "p2").brokenDoors).toEqual([]);
   });
 });

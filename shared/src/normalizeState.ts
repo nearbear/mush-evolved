@@ -741,6 +741,8 @@ export function normalizeReport(raw: Partial<Report>): Report {
       return stripUndefined<Report>({ kind: "fire", room: need(raw, "room", t), by: need(raw, "by", t) });
     case "equipment":
       return stripUndefined<Report>({ kind: "equipment", equipment: need(raw, "equipment", t), by: need(raw, "by", t) });
+    case "door":
+      return stripUndefined<Report>({ kind: "door", door: need(raw, "door", t), by: need(raw, "by", t) });
     default:
       throw unknownVariant(t, "kind", raw.kind satisfies undefined);
   }

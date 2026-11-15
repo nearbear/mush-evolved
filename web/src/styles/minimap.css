@@ -63,6 +63,11 @@
 .minimap-door.here {
   opacity: 1;
 }
+.minimap-door.broken {
+  fill: #ffe600;
+  opacity: 1;
+  filter: drop-shadow(0 0 0.35px #ffe600);
+}
 .minimap-person {
   opacity: 0.55;
   image-rendering: pixelated;

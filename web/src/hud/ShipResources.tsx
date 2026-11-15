@@ -1,6 +1,6 @@
 import { Popover } from "@base-ui/react/popover";
 import { useTranslation } from "react-i18next";
-import type { PlayerView } from "@mush2/shared";
+import { doorRooms, type PlayerView } from "@mush2/shared";
 import { SHIP_RESOURCE_ICONS } from "../art/assets.ts";
 import { useNames } from "../i18n/names.ts";
 import { TitleChip, TitlesChip } from "./TitleChip.tsx";
@@ -110,34 +110,47 @@ export function ShipResources({
   );
 }
 
-/** The reported fires or breakdowns, then how many more there are that nobody reported. */
+/** The reported fires or breakdowns (equipment and doors), then how many more there are that nobody reported. */
 function AlertList({
   kind,
   total,
   reports,
 }: {
-  kind: PlayerView["alerts"]["reports"][number]["kind"];
+  kind: "fire" | "equipment";
   total: number;
   reports: PlayerView["alerts"]["reports"];
 }) {
   const { t } = useTranslation();
   const names = useNames();
-  const matching = reports.filter((r) => r.kind === kind);
+  const matching = reports.filter((r) => (kind === "fire" ? r.kind === "fire" : r.kind === "equipment" || r.kind === "door"));
   const unreported = total - matching.length;
   if (total === 0) return null;
   return (
     <ul className="alert-list">
       {matching.map((r, i) => {
-        const detector = r.by === "FIRE_SENSOR" || r.by === "EQUIPMENT_SENSOR" ? names.project(r.by) : null;
-        const room = names.room(r.room);
-        const text =
-          r.kind === "fire"
-            ? detector !== null
+        const detector = r.by === "FIRE_SENSOR" || r.by === "EQUIPMENT_SENSOR" || r.by === "DOOR_SENSOR" ? names.project(r.by) : null;
+        let text: string;
+        if (r.kind === "fire") {
+          const room = names.room(r.room);
+          text =
+            detector !== null
               ? t("shipResources.alertFireDetector", { room, detector })
-              : t("shipResources.alertFire", { room, name: names.characterGiven(r.by) })
-            : detector !== null
+              : t("shipResources.alertFire", { room, name: names.characterGiven(r.by) });
+        } else if (r.kind === "equipment") {
+          const room = names.room(r.room);
+          text =
+            detector !== null
               ? t("shipResources.alertBrokenDetector", { room, equipment: names.equipment(r.equipment), detector })
               : t("shipResources.alertBroken", { room, equipment: names.equipment(r.equipment), name: names.characterGiven(r.by) });
+        } else {
+          const [a, b] = doorRooms(r.door);
+          const roomA = names.room(a);
+          const roomB = names.room(b);
+          text =
+            detector !== null
+              ? t("shipResources.alertDoorDetector", { roomA, roomB, detector })
+              : t("shipResources.alertDoor", { roomA, roomB, name: names.characterGiven(r.by) });
+        }
         // By position: two broken pieces of one type in one room share a room and a type. The list is short and rebuilt whole.
         return <li key={i}>{text}</li>;
       })}

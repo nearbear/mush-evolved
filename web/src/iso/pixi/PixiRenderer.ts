@@ -30,6 +30,7 @@ import { starfield, starLayer } from "../starfield.ts";
 import { ESP, espPulse, filterKey, lookOf } from "./effects.ts";
 import { EspFilters, lookFilter } from "./filters.ts";
 import { RoomFire } from "./fire.ts";
+import { RoomSmoke } from "./smoke.ts";
 
 TextureStyle.defaultOptions.scaleMode = "nearest";
 
@@ -173,6 +174,7 @@ export class PixiRenderer {
   private readonly sprites = new Container();
   private readonly outlines = new Container();
   private readonly fire = new RoomFire();
+  private readonly smoke = new RoomSmoke();
   private readonly drawn = new Map<string, Drawn>();
   private groundOrder: Drawn[] = [];
   private order: Drawn[] = [];
@@ -224,7 +226,8 @@ export class PixiRenderer {
       if (this.destroyed) return;
       const fireTextures = Array.from({ length: 6 }, (_, i) => frameTexture(base, `fx_fire_${i}`, 5 + i * 3, 0, 3, 3));
       this.fire.setTextures(fireTextures);
-      if (this.fire.active) this.requestRender();
+      this.smoke.setTexture(frameTexture(base, "fx_smoke", 240, 48, 16, 16));
+      if (this.fire.active || this.smoke.active) this.requestRender();
     });
     const layer = (texture: Texture, size: number, parallax: number, rate: number): SkyLayer => ({
       sprite: new TilingSprite({ texture, width: this.app.screen.width, height: this.app.screen.height }),
@@ -287,7 +290,9 @@ export class PixiRenderer {
     const outlines = this.sync(scene.outlines, OUTLINE, this.outlines, this.outlineOrder, seen, (d, o) => this.paintOutline(d, o));
     if (scene.fire.length) this.fire.setFire(scene.room, scene.fire);
     else this.fire.unsetFire();
-    this.arrange(this.sprites, this.withFire(scene, sprites));
+    if (scene.smoke.length) this.smoke.setSmoke(scene.room, scene.smoke);
+    else this.smoke.unsetSmoke();
+    this.arrange(this.sprites, this.withParticles(scene, sprites));
     for (const [key, d] of this.drawn) {
       if (seen.has(key)) continue;
       d.sprite.destroy();
@@ -331,23 +336,26 @@ export class PixiRenderer {
   }
 
   /**
-   * The sprites layer's children: its sprites, with each burning cell's fire layer before the sprite it
-   * goes under. A fire cell's place counts every scene sprite, floors included, which draw in their own layer.
+   * The sprites layer's children: its sprites, with each fire or smoke layer placed at its spot in the
+   * paint order. Indices in `scene.fire` and `scene.smoke` count every scene sprite, floors included.
    */
-  private withFire(scene: Scene, sprites: readonly Drawn[]): Container[] {
-    if (!scene.fire.length) return sprites.map((d) => d.sprite);
+  private withParticles(scene: Scene, sprites: readonly Drawn[]): Container[] {
+    if (!scene.fire.length && !scene.smoke.length) return sprites.map((d) => d.sprite);
     // The index among the non-floor sprites of each scene sprite position.
     const upTo = new Int32Array(scene.sprites.length + 1);
     scene.sprites.forEach((s, i) => {
       upTo[i + 1] = upTo[i]! + (s.kind === "ground" ? 0 : 1);
     });
     const before = new Map<number, Container[]>();
-    for (const c of scene.fire) {
-      const layer = this.fire.layerFor(c.cell);
-      if (!layer) continue;
-      const i = upTo[c.at]!;
-      before.set(i, [...(before.get(i) ?? []), layer]);
-    }
+    const addLayer = (at: number, layer: Container | undefined) => {
+      if (!layer) return;
+      const i = upTo[at]!;
+      const list = before.get(i);
+      if (list) list.push(layer);
+      else before.set(i, [layer]);
+    };
+    for (const c of scene.fire) addLayer(c.at, this.fire.layerFor(c.cell));
+    for (const s of scene.smoke) addLayer(s.at, this.smoke.layerFor(s.key));
     const out: Container[] = [];
     sprites.forEach((d, i) => {
       out.push(...(before.get(i) ?? []), d.sprite);
@@ -474,6 +482,7 @@ export class PixiRenderer {
     this.esp?.pulsing.destroy();
     this.esp?.faint.destroy();
     this.fire.destroy();
+    this.smoke.destroy();
   }
 
   /** A color token from styles/tokens.css, as the page has it. */
@@ -607,17 +616,22 @@ export class PixiRenderer {
       this.dirty = true;
     }
     const streams = this.speed !== 0 || this.speed !== this.cruise || this.turning();
+    const particles = this.fire.active || this.smoke.active;
     if (dt > 0 && this.fire.active) {
       this.fire.update(dt, this.reducedMotion.matches);
       this.dirty = true;
     }
-    if (!streams && !this.fire.active) this.lastTick = 0;
+    if (dt > 0 && this.smoke.active) {
+      this.smoke.update(dt, this.reducedMotion.matches);
+      this.dirty = true;
+    }
+    if (!streams && !particles) this.lastTick = 0;
     const pulse = this.pulsing && !this.reducedMotion.matches;
     if (this.esp) {
       this.esp.pulsing.alpha = espPulse(now, this.reducedMotion.matches);
       if (pulse) this.dirty = true;
     }
     if (this.dirty) this.renderNow();
-    if (playing || pulse || streams || bobs || this.fire.active) this.raf = requestAnimationFrame(this.tick);
+    if (playing || pulse || streams || bobs || particles) this.raf = requestAnimationFrame(this.tick);
   };
 }

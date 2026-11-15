@@ -5,6 +5,7 @@
 
 import { CHEAT_ROOM } from "./cheatRoom.ts";
 import { inCraft } from "./patrol.ts";
+import { forgetReports } from "./reports.ts";
 import type { DeepReadonly, DoorId, DoorView, GameState, RoomId } from "./types.ts";
 
 /** The door between `a` and `b`: their ids sorted and joined, so both sides name it alike. */
@@ -60,6 +61,7 @@ export function doorsOf(state: DeepReadonly<Pick<GameState, "config" | "doors">>
 export function breakDoor(state: GameState, id: DoorId): boolean {
   if (state.doors[id]?.broken) return false;
   state.doors[id] = { broken: true };
+  forgetReports(state, { door: id }); // Broken again, it starts unreported (#330).
   return true;
 }
 

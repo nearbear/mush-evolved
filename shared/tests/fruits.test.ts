@@ -130,7 +130,7 @@ describe("botany: sowing and growing alien fruits", () => {
     setFruit(s, { growCycles: 12 }, TEST_FRUIT);
     const pot = s.items.find((i) => i.type === "tree_pot" && !i.plant && i.at.kind === "room" && i.at.id === "HYDROPONIC_CENTER")!;
     const fruitId = giveFruit(s, "p0", TEST_FRUIT);
-    s = mustApply(s, "p0", { type: "sow", item: pot.id, fruit: fruitId });
+    s = mustApply(s, "p0", { type: "sow", item: fruitId });
     expect(s.items.find((i) => i.id === pot.id)!.plant).toEqual({ species: TEST_FRUIT, age: 0, thirst: 0, sick: false });
     expect(growCyclesFor(s, TEST_FRUIT)).toBe(12);
 
