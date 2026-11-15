@@ -7,7 +7,8 @@ import { DYNARCADE_EQUIPMENT } from "./equipment.ts";
 import { logPublic } from "./log.ts";
 import { PATROL_SHIPS, patrolMaxCharges } from "./patrol.ts";
 import { PROJECT_COMPLETE, PROJECT_IDS, projectDone, type ProjectId } from "./projects.ts";
-import { newItemId, TREE_POT_ITEM } from "./items.ts";
+import { newItemId, SUPPORT_DRONE_ITEM, TREE_POT_ITEM } from "./items.ts";
+import { newDrone } from "./droneIdentity.ts";
 import type { DeepReadonly, GameConfig, GameCore, GameState, PlayerState } from "./types.ts";
 
 /**
@@ -25,7 +26,7 @@ export function offeredProjects(
 }
 
 /** Runs once when `project` reaches 100%. Mutates a state the caller already cloned. */
-export function onProjectCompleted(state: GameState, project: ProjectId): void {
+function onProjectCompleted(state: GameState, project: ProjectId): void {
   // The AP cap goes up by 2; current AP doesn't (eMushpedia: only the maximum).
   if (project === "NOISE_REDUCER") for (const p of state.players) if (p.alive) updateMaxValues(state, p);
   // The pneumatic tubes (owner, 2026-11-04): an output and two inputs appear on the floor of the configured room (the Nexus).
@@ -55,6 +56,22 @@ export function onProjectCompleted(state: GameState, project: ProjectId): void {
     const { room, count } = state.config.project.extraHydropots;
     for (let i = 0; i < count; i++) state.items.push({ id: newItemId(state), type: TREE_POT_ITEM, at: { kind: "room", id: room } });
   }
+  // Extra drone (EXTRA_DRONE; 2026-11-14): spawns `count` support drone(s) on the floor of `room` (the Nexus).
+  if (project === "EXTRA_DRONE") {
+    const { room, count } = state.config.project.extraDrone;
+    for (let i = 0; i < count; i++) {
+      // What initNpc does for a support drone, without importing npcs.ts -> drones.ts (an import cycle; droneIdentity.ts).
+      state.items.push({ id: newItemId(state), type: SUPPORT_DRONE_ITEM, at: { kind: "room", id: room }, drone: newDrone(state) });
+    }
+  }
+}
+
+/** Marks `project` complete, retires `retire` from the proposal deck, and runs its one-time completion effects. */
+export function completeProject(state: GameState, project: ProjectId, retire: readonly ProjectId[] = [project]): void {
+  state.projects[project] = PROJECT_COMPLETE;
+  const retired = new Set(retire);
+  state.projectDeck = state.projectDeck.filter((id) => !retired.has(id));
+  onProjectCompleted(state, project);
 }
 
 /**
@@ -73,7 +90,6 @@ export function neronParticipationCycle(state: GameState): void {
     const next = Math.min(PROJECT_COMPLETE, current + step);
     if (next >= PROJECT_COMPLETE) {
       if (completed === undefined) {
-        state.projects[id] = PROJECT_COMPLETE;
         completed = id;
       } else {
         state.projects[id] = PROJECT_COMPLETE - 1;
@@ -83,9 +99,7 @@ export function neronParticipationCycle(state: GameState): void {
     }
   }
   if (completed !== undefined) {
-    const retired = new Set(offered);
-    state.projectDeck = state.projectDeck.filter((id) => !retired.has(id));
+    completeProject(state, completed, offered);
     logPublic(state, undefined, "neronProjectCompleted", { project: completed });
-    onProjectCompleted(state, completed);
   }
 }

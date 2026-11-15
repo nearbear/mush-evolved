@@ -307,6 +307,7 @@ export const DEFAULT_CONFIG: GameConfig = {
     neronParticipation: { percent: 5 },
     autoWatering: { extinguishChance: 0.25 },
     trailReducer: { followMultiplier: 0.5 },
+    extraDrone: { room: "NEXUS_ROOM", count: 1 },
   },
   // Owner, 2026-10-21: repairing PILGRED uses the original's numbers (DIG_RATE 6, PILGRED_MOD 2, DIG_BOOST 4, -2 per repeat),
   // 2 AP, 25% dirty; the Physicist gains 1 PILGRED point a day and holds 2.

@@ -520,6 +520,8 @@ export interface GameConfig {
     autoWatering: { extinguishChance: number };
     // Trail reducer (TRAIL_REDUCER; owner, 2026-11-14): halves the share of "share" hunters following a jump (50% -> 25%).
     trailReducer: { followMultiplier: number };
+    // Extra drone (EXTRA_DRONE; 2026-11-14): completing it puts `count` support drone(s) on the floor of `room` (the Nexus).
+    extraDrone: { room: RoomId; count: number };
   };
   pilgred: {
     cost: { ap: number }; // AP spent to take part in repairing PILGRED (owner, 2026-10-21; the original's REPAIR_PILGRED, 2).
