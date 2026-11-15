@@ -117,7 +117,7 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 - `LeavingRoom.tsx`: `LeavingIsoRoom`, what `GameView` renders: `IsoRoom`, but on a room change it keeps the room you left on screen until you have walked into its doorway.
 - `useActingOn.ts`: what your latest action is on (or the door, for a move), read from the view's queue (`begun`), so you walk up to it when it starts; `IsoRoom` turns it into a cell.
 - `hitMask.ts`: per-frame alpha masks for hit-testing.
-- `shipLayout.ts`: fetches the layout JSON and maps atlas sheets to image URLs.
+- `shipLayout.ts`: fetches the layout JSON and maps atlas sheets to image URLs. `useCheatRoom` adds the cheat room (#170, `Mush/derived/cheat-room.json`, a dynamic `import()` fetched only once you are in it) and the Superkube's sprite (`addCheatRoom`; the owner's `Mush/derived/items/super_kube.jpg`).
 
 ## scene/
 

@@ -3666,6 +3666,13 @@ Added `shared/src/kube.ts`: the `KUBE_OPS` table and a pure `applyKube`, reached
 - **What worked:** pruning once after every input in `applyInput`, as the issue proposed, instead of hooking each fix path. Claude added a second, cheap guard in `startFire` / `breakEquipment` (drop any old report) so a fire put out and relit within one input (a drone, then a spread) still starts unreported.
 - **Needed correction:** the fr/es plural keys needed a `_many` form (caught by the i18n catalog test), and the old `projectDone` import in `rules.ts` went unused (lint). The NERON and popover wording is Claude's, not eMush's; the clean-room tool couldn't be queried for upstream strings in this session.
 
+### 2026-11-14: The cheat room's layout and the Superkube's sprite; the room holds only the Superkube (#170)
+
+- The owner changed the room's contents: the Superkube is the only thing in it. No coffee machine and no items at start. The Superkube's Restock option went too, since there is nothing to restock. Spawn still works, through `cheatItem` in `cheatStock.ts`.
+- The room's layout is `Mush/derived/cheat-room.json`, written by a short script: a 6x6 square of the corridors' `GROUND_DECK` plates (their 2x2 frame pattern), a `COLUMN` post with `BIG_WALL_R`/`BIG_WALL_L` back walls, and the Superkube bound at (15, 13). It sits at plan x = 500 and has no doors, so `neighborRooms` never draws it from another room or anything beside it. `useCheatRoom` (`web/src/iso/shipLayout.ts`) brings it in with a dynamic `import()`, only once you are in the room. The build makes it its own 3 kB chunk. The editor, `ship-check` and `ship-rooms.json` never see it.
+- The Superkube is drawn from the owner's 50x50 icon (`Mush/derived/items/super_kube.jpg`) as a one-cell blocker, with its sheet and slice added in code like `human_tank_full`. The offset puts its bottom edge on the cell's front corner. That was worked out from the floor tile's numbers, not seen in a screenshot. The JPEG keeps its blue tile background.
+- Worked: the corridor's floor pattern came from dumping the room as an ASCII grid of frames with a throwaway `readShip` script (the iso CLAUDE.md's advice).
+
 ## 2026-11-14: bots use reports for fires and breakdowns (#444, #429)
 
 - **Asked:** make bots use the new reports for fires and equipment breakages; is an explore plan bots could claim worth it?

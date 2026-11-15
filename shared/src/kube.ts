@@ -7,12 +7,12 @@ import { leaveAccommodation, pushing } from "./accommodation.ts";
 import { getUp } from "./actions/lie_down.ts";
 import { board } from "./actions/takeoff.ts";
 import { updateMaxValues } from "./adjustStats.ts";
-import { cheatRoomStock } from "./cheatStock.ts";
+import { cheatItem } from "./cheatStock.ts";
 import { CHEAT_ROOM } from "./cheatRoom.ts";
 import { addDisease, removeDisease } from "./diseases.ts";
 import { clone, fail, findPlayer, type ActionResult } from "./helpers.ts";
 import { contaminate } from "./infection.ts";
-import { ITEM_TYPES, itemsIn, newItemId, startCharges } from "./items.ts";
+import { ITEM_TYPES, newItemId, startCharges } from "./items.ts";
 import { enterRoom, enteredRoom } from "./modifiers.ts";
 import { inCraft } from "./patrol.ts";
 import { addStatus, isImmune, type StatusId } from "./statuses.ts";
@@ -100,23 +100,8 @@ export const KUBE_OPS = {
     arg: "item",
     apply: (state, me, arg) => {
       const type = arg as string;
-      const [stock] = cheatRoomStock().filter((it) => it.type === type);
       const charges = startCharges(state.config, type);
-      state.items.push({ ...stock!, id: newItemId(state), at: { kind: "room", id: me.room }, ...(charges !== undefined && { charges }) });
-      return null;
-    },
-  },
-  // Back to one of each: every item type missing from the room's floor comes back. Extras stay.
-  restock: {
-    group: "items",
-    arg: "none",
-    apply: (state, me) => {
-      const here = new Set(itemsIn(state, { kind: "room", id: me.room }).map((i) => i.type));
-      for (const it of cheatRoomStock()) {
-        if (here.has(it.type)) continue;
-        const charges = startCharges(state.config, it.type);
-        state.items.push({ ...it, id: newItemId(state), ...(charges !== undefined && { charges }) });
-      }
+      state.items.push({ ...cheatItem(type, me.room), id: newItemId(state), ...(charges !== undefined && { charges }) });
       return null;
     },
   },

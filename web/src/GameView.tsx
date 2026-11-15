@@ -29,7 +29,7 @@ import { shipPace, type Corpse, type Drone, type Occupant } from "./iso/scene.ts
 import { FIRE_ICON, orbitImage } from "./art/assets.ts";
 import { LeavingIsoRoom } from "./iso/LeavingRoom.tsx";
 import { recentDoorMoves } from "./iso/doorMoves.ts";
-import { useShipLayout } from "./iso/shipLayout.ts";
+import { useCheatRoom, useShipLayout } from "./iso/shipLayout.ts";
 import { useActingOn } from "./iso/useActingOn.ts";
 import { useFogDepth } from "./fogDepth.ts";
 import { ROOM_RENDERER } from "./rendererChoice.ts";
@@ -80,7 +80,7 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
   const post = (msg: GameClientMessage) => send?.(msg);
   const [zoom, setZoom] = useState(1);
   const names = useNames();
-  const layout = useShipLayout();
+  const layout = useCheatRoom(useShipLayout(), view.you.room === CHEAT_ROOM);
   const roomTitleId = useId();
   /** UI-only state: what the inspect panel shows. Null means yourself. */
   const [selected, setSelected] = useState<Target | null>(null);

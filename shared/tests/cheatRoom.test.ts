@@ -1,4 +1,4 @@
-// The cheat room (#170): dev ships only, door-less, one of every item, a coffee machine and the Superkube.
+// The cheat room (#170): dev ships only, door-less, holding only the Superkube.
 import { describe, expect, it } from "vitest";
 import { CHEAT_ROOM, SUPERKUBE } from "../src/cheatRoom.ts";
 import { resolveConfig } from "../src/config.ts";
@@ -10,7 +10,6 @@ import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { applyInput, replayGame } from "../src/replay.ts";
 import { ICARUS_CRAFT } from "../src/patrol.ts";
 import { KUBE_OPS, kubeChoices, type KubeOpId } from "../src/kube.ts";
-import { clone } from "../src/helpers.ts";
 import { makeSeats } from "./support.ts";
 
 const devShip = () => createGame(makeSeats(3), { ...resolveConfig({ cheatRoom: true }), mushCount: 1 }, 7);
@@ -24,7 +23,7 @@ describe("cheat room", () => {
 
     const dev = devShip();
     expect(dev.config.rooms[CHEAT_ROOM]).toEqual([]);
-    expect(dev.equipment[CHEAT_ROOM]!.map((e) => e.type)).toEqual(["COFFEE_DISPENSER", SUPERKUBE]);
+    expect(dev.equipment[CHEAT_ROOM]!.map((e) => e.type)).toEqual([SUPERKUBE]);
   });
 
   it("reads the override back out of a resolved config", () => {
@@ -32,16 +31,8 @@ describe("cheat room", () => {
     expect(overridesOf(resolveConfig()).cheatRoom).toBeUndefined();
   });
 
-  it("holds exactly one of each item type", () => {
-    const types = itemsIn(devShip(), { kind: "room", id: CHEAT_ROOM }).map((i) => i.type);
-    expect([...types].sort()).toEqual(Object.keys(ITEM_TYPES).sort());
-  });
-
-  it("has a working coffee machine", () => {
-    const s = devShip();
-    s.players[0]!.room = CHEAT_ROOM;
-    const r = applyAction(s, "p0", { type: "dispense", equipment: `${CHEAT_ROOM}:COFFEE_DISPENSER` });
-    expect(r.ok).toBe(true);
+  it("holds nothing but the Superkube: no items on its floor", () => {
+    expect(itemsIn(devShip(), { kind: "room", id: CHEAT_ROOM })).toEqual([]);
   });
 
   it("is reached by no route and left out of random events", () => {
@@ -56,7 +47,7 @@ describe("cheat room", () => {
   describe("going in (the cheatRoom input)", () => {
     const go = (s: ReturnType<typeof devShip>, by = "p0") => applyInput(s, { type: "cheatRoom", by });
 
-    it("takes you there for free, with no log line, and shows you its contents", () => {
+    it("takes you there for free, with no log line, and shows you the Superkube", () => {
       const s = devShip();
       const before = s.players[0]!;
       const r = go(s);
@@ -68,11 +59,9 @@ describe("cheat room", () => {
       expect(r.state.log).toEqual(s.log);
       const view = viewFor(r.state, "p0");
       expect(view.roomEquipment.map((e) => e.type)).toContain(SUPERKUBE);
-      expect(view.roomItems).toHaveLength(Object.keys(ITEM_TYPES).length);
-      // Someone outside sees neither its items nor its equipment (the room they leave sees you vanish).
+      // Someone outside doesn't see its equipment (the room they leave sees you vanish).
       const other = viewFor(r.state, "p1");
       expect(other.roomEquipment.some((e) => e.type === SUPERKUBE)).toBe(false);
-      expect(other.roomItems.length).toBeLessThan(view.roomItems.length);
     });
 
     it("gets you out of bed first", () => {
@@ -223,18 +212,15 @@ describe("cheat room", () => {
       expect(kube(mush, m.id, "contaminate")).toMatchObject({ ok: false, error: "cannot_contaminate" });
     });
 
-    it("spawns an item on the floor and restocks the room back to one of each", () => {
+    it("spawns an item on the floor, with a recipe or a skill where it needs one", () => {
       const { s, p } = inRoom();
       const floor = (st: S) => itemsIn(st, { kind: "room", id: CHEAT_ROOM });
       const type = Object.keys(ITEM_TYPES)[0]!;
-      const spawned = ok(kube(s, p, "spawn", type));
-      expect(floor(spawned).filter((i) => i.type === type)).toHaveLength(2);
-
-      const emptied = clone(s);
-      emptied.items = emptied.items.filter((i) => !(i.at.kind === "room" && i.at.id === CHEAT_ROOM && i.type !== type));
-      const restocked = ok(kube(emptied, p, "restock"));
-      expect(floor(restocked).map((i) => i.type).sort()).toEqual(Object.keys(ITEM_TYPES).sort());
-      expect(new Set(restocked.items.map((i) => i.id)).size).toBe(restocked.items.length);
+      const once = ok(kube(s, p, "spawn", type));
+      const twice = ok(kube(once, p, "spawn", type));
+      expect(floor(twice).filter((i) => i.type === type)).toHaveLength(2);
+      expect(new Set(twice.items.map((i) => i.id)).size).toBe(twice.items.length);
+      expect(floor(ok(kube(s, p, "spawn", "blueprint")))[0]?.builds).toBeDefined();
     });
 
     it("teleports you out to any Daedalus room, Laboratory first, with no log line", () => {
