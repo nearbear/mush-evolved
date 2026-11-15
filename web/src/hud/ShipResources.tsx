@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import type { PlayerView } from "@mush2/shared";
 import { SHIP_RESOURCE_ICONS } from "../art/assets.ts";
 import { useNames } from "../i18n/names.ts";
-import { TitleChip } from "./TitleChip.tsx";
+import { TitleChip, TitlesChip } from "./TitleChip.tsx";
 import { useCountdown } from "./useCountdown.ts";
 
 const RESOURCES = ["oxygen", "fuel", "hull", "plasmaShield", "hunters", "fires", "alerts"] as const;
@@ -19,6 +19,8 @@ export function ShipResources({
   ship,
   hunters,
   titles,
+  preselection = false,
+  compactTitles = false,
   orbit,
   expedition,
   lost,
@@ -27,6 +29,8 @@ export function ShipResources({
   ship: PlayerView["ship"];
   hunters: number;
   titles: PlayerView["titles"];
+  preselection?: boolean;
+  compactTitles?: boolean;
   orbit: string | null;
   expedition: PlayerView["expedition"];
   lost: PlayerView["lost"];
@@ -91,11 +95,17 @@ export function ShipResources({
       {lost.map((l) => (
         <LostAlert key={l.name} entry={l} />
       ))}
-      {titles.map((title) => (
-        <li key={title.id} className="ship-title">
-          <TitleChip entry={title} />
-        </li>
-      ))}
+      {compactTitles
+        ? titles.length > 0 && (
+            <li className="ship-title">
+              <TitlesChip titles={titles} preselection={preselection} />
+            </li>
+          )
+        : titles.map((title) => (
+            <li key={title.id} className="ship-title">
+              <TitleChip entry={title} preselection={preselection} />
+            </li>
+          ))}
     </ul>
   );
 }

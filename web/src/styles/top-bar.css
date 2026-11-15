@@ -454,9 +454,31 @@
   padding-left: var(--space-4);
   border-left: 1px solid var(--panel-rim);
 }
-.ship-title .resource.vacant img {
+.ship-title .resource.vacant img,
+.ship-titles-button.vacant img {
   opacity: 0.4;
   filter: grayscale(1);
+}
+/* Desktop top bar's single titles button: strips the global button look so only the commander icon sits after the divider. */
+.ship-titles-button {
+  display: inline-flex;
+  align-items: center;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: 0;
+  box-shadow: none;
+  cursor: help;
+}
+.ship-titles-button img {
+  display: block;
+  image-rendering: pixelated;
+}
+.ship-titles-button:hover img,
+.ship-titles-button[data-popup-open] img {
+  opacity: 1;
+  filter: none;
 }
 .ship-resource {
   display: inline-flex;

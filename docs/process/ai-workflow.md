@@ -3827,3 +3827,8 @@ Small refactor on request: `GameRoom.social` called four bot-line parsers (item,
 - **Decision (owner):** Renamed English display name from `Fruitarian` to `Frugivore` (`names.en.json`, `web/src/locales/en.json`). Implemented `frugivore` (`modifiers/frugivore.ts`): humans gain `+1` AP on eating a banana (`config.frugivore.bananaAp`) and `+2` AP on eating an alien fruit (`config.frugivore.alienFruitAp`), capped at `maxAp`, with no other effect (no fruit lore, does not apply to Mush).
 - **What worked:** Using `onConsume` in `modifiers/frugivore.ts` automatically restricts the bonus to humans because `consumedByMush` skips skill `onConsume` hooks.
 - **Verification note:** `shared` (`skills.test.ts` including the 5 new `frugivore` tests) and `web` tests passed; `npm run verify` hit two unrelated failures from other work in the checkout (`shared/tests/autoWatering.test.ts` and `tools/tests/leaks/fields.test.ts` for `opportunistTitles: opportunist.test.ts`).
+
+### 2026-11-14 — Desktop topbar titles popover
+
+- **Decision:** Replaced the three individual `TitleChip` items in the desktop `TopBar` (`ShipResources` with `compactTitles`) with a single commander-icon `TitlesChip` button (`TITLE_ICONS.commander`) that opens one popover showing all three titles and their lines of succession side by side. Kept the per-title `TitleChip` layout in mobile `ShipOverlay`.
+- **Succession styling:** Extracted `TitleSuccession` (`TitleChip.tsx`) for both views: the current holder is bold at full opacity, anyone without the title has reduced opacity (`.title-card li:not(.holder)`), and players ahead of the current holder (or everyone when vacant after pre-selection) are struck through (`.title-card li.lost`).

@@ -18,13 +18,43 @@
 .resource img {
   image-rendering: pixelated;
 }
-/* A title's line of succession; the holder in bold. */
+/* A title's line of succession: holder in bold, anyone who lost it struck through, anyone without it muted. */
 .title-card ol {
   margin: var(--space-1) 0 0;
   padding-left: 1.5rem;
 }
+.title-card li:not(.holder) {
+  opacity: 0.55;
+}
+.title-card li.lost {
+  text-decoration: line-through;
+}
 .title-card li.holder {
   font-weight: bold;
+}
+.tooltip.titles-card {
+  max-width: min(42rem, calc(100vw - 2rem));
+}
+.titles-line-heading {
+  margin: 0;
+}
+.titles-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(8.5rem, 1fr));
+  gap: var(--space-4);
+  margin-top: var(--space-2);
+}
+.title-section-heading {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+.title-section-heading img {
+  flex: none;
+  image-rendering: pixelated;
 }
 /*
  * Over the room view. Top-left: your ID card (UI coherence step 7), with HP and morale at half size along its foot. The card is light card stock, like the iTrackie: light surfaces are your own things, dark ones the ship.
