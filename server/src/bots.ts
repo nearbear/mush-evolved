@@ -270,6 +270,10 @@ export class GoalBot implements Bot {
       this.social = report;
       return null;
     }
+    // Reports (#444): a fire or broken equipment the bot sees and nobody reported, it reports at once. It is free and
+    // instant, so it's a reflex rather than a goal, and it doesn't drop the goal being followed.
+    const reportNow = legal.find((a) => a.type === "report_fire" || a.type === "report_equipment");
+    if (reportNow) return reportNow;
     if (!this.listens) this.wokenByChat = false;
     // Woken by chat: the model is asked even mid-goal or with one option, since it may want to talk; it may carry on.
     if (this.wokenByChat) {

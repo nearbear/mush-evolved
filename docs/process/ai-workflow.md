@@ -3665,3 +3665,10 @@ Added `shared/src/kube.ts`: the `KUBE_OPS` table and a pure `applyKube`, reached
 - **Built:** `shared/src/reports.ts` (detector coverage derived, never stored; `alertsFor`; `pruneReports`), `actions/report.ts`, `GameState.reports` (added field, no version bump), `PlayerView.alerts`, `burningRooms` now the reported fires, `EQUIPMENT_SENSOR` "full", the alerts slot and popover in `ShipResources.tsx`, en/fr/es strings.
 - **What worked:** pruning once after every input in `applyInput`, as the issue proposed, instead of hooking each fix path. Claude added a second, cheap guard in `startFire` / `breakEquipment` (drop any old report) so a fire put out and relit within one input (a drone, then a spread) still starts unreported.
 - **Needed correction:** the fr/es plural keys needed a `_many` form (caught by the i18n catalog test), and the old `projectDone` import in `rules.ts` went unused (lint). The NERON and popover wording is Claude's, not eMush's; the clean-room tool couldn't be queried for upstream strings in this session.
+
+## 2026-11-14: bots use reports for fires and breakdowns (#444, #429)
+
+- **Asked:** make bots use the new reports for fires and equipment breakages; is an explore plan bots could claim worth it?
+- **Built:** `GoalBot` reports any fire or broken equipment in its room as a free reflex before its goal. `fireShare.ts` now takes the fire count from the alert bar (`view.alerts.fires`) and burning rooms from reports (`view.burningRooms`), so the `Fire: in` and `Fire: out` chat lines went away; only `Fire: clear in <ROOM>` stays, because a report can't say where a fire isn't. Exact counts also replaced the "searched everywhere, give up" guess.
+- **Found:** bots have no goal that repairs equipment, so a breakdown report helps humans and #443's oxygen tank, but no bot acts on it yet. Left for the owner to decide, along with the explore plan (advised against: exploring costs MP only, and plans are for rosters).
+- **Measured:** 10 seeds against a fresh main baseline: fire numbers unchanged (0.09 rooms lit and put out a cycle), chat 386 → 356, days within noise (−0.11).
