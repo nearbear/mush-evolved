@@ -57,7 +57,7 @@ export const EQUIPMENT_TYPES: Record<string, EquipmentType> = {
   PILGRED: { terminal: true },
   PILOT_MODULE: { terminal: true, title: "commander", canBeSabotaged: true },
   PLANET_SCANNER: {canBeSabotaged: true},
-  PLANT_CONTROLLER: {},
+  PLANT_CONTROLLER: { canBeSabotaged: true },
   RESEARCH_LAB: { terminal: true, canBeSabotaged: true },
   ROTATIONAL_REACTOR: {canBeSabotaged: true},
   SHOWER: { shower: true, canBeSabotaged: true },

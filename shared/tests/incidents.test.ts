@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { isBreakable } from "../src/breakage.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
+import { EQUIPMENT_TYPES } from "../src/equipment.ts";
 import { INCIDENT_IDS, incidentPointsForDay, type IncidentId } from "../src/incidents.ts";
 import { hasCamera } from "../src/log.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
@@ -372,6 +374,14 @@ describe("broken equipment", () => {
     const after = nextCycle(s);
     expect(equipment(after, "COMMAND_CENTER:COM_CENTER").broken).toBe(true);
     expect(after.comms.linked).toBe(false);
+  });
+
+  it("Hydroponics center (PLANT_CONTROLLER) can break and be sabotaged, with the Command terminal's base repair chance", () => {
+    const s = ship();
+    expect(isBreakable(s, "PLANT_CONTROLLER")).toBe(true);
+    expect(s.config.repair.chance.PLANT_CONTROLLER).toBe(s.config.repair.chance.PILOT_MODULE);
+    expect(s.config.repair.chance.PLANT_CONTROLLER).toBe(0.12);
+    expect(EQUIPMENT_TYPES.PLANT_CONTROLLER?.canBeSabotaged).toBe(true);
   });
 });
 
