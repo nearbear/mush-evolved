@@ -35,7 +35,10 @@ describe("Self Disease", () => {
     expect(player(result.state, "p0").statuses).toContain(selectedDisease);
     expect(viewFor(result.state, "p0").statuses).toContain(selectedDisease);
     expect(viewFor(result.state, "p1").players.find((p) => p.id === "p0")?.statuses).not.toContain(selectedDisease);
-    expect(JSON.stringify({ ...viewFor(result.state, "p1"), drugEffects: null })).not.toContain(selectedDisease);
+    // The name can appear in a view anyway (game data, like which diseases a fruit can carry), so what must not change
+    // is how many times p1's view mentions it, not whether it does.
+    const mentions = (s: typeof state) => JSON.stringify({ ...viewFor(s, "p1"), drugEffects: null }).split(selectedDisease).length - 1;
+    expect(mentions(result.state)).toBe(mentions(state));
     expect(player(result.state, "p0").current).toBeNull();
   });
 
