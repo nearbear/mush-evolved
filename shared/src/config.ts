@@ -359,8 +359,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   spaceCapsule: { cost: { ap: 1 }, dirtyChance: 0.25, injuryChance: 0.01, contents: ["metal_scraps", "plastic_scraps", "oxy_capsule", "fuel_capsule"] },
   hullRepair: { cost: { ap: 1 }, chance: 0.25, injuryChance: 0.05, amount: 5 },
   oscilloscope: { repairFactor: 2 },
-  // Owner, 2026-10-25 (#184), eMushpedia "Embûches": budget, roll and catalog (cost, weight). Stuck door and disease
-  // are not built, so they are not on the menu.
+  // Owner, 2026-10-25 (#184), eMushpedia "Embûches": budget, roll and catalog (cost, weight). Stuck door is not
+  // built, so it is not on the menu.
   incidents: {
     budget: { base: [1, 2, 1], tier1: { fromDay: 5, bonus: 1 }, tier2: { fromDay: 10, bonus: 2 } },
     rollPoints: 18,
@@ -373,6 +373,7 @@ export const DEFAULT_CONFIG: GameConfig = {
       metal_plate: { cost: 2, weight: 3 },
       fuel_leak: { cost: 3, weight: 3 },
       equipment_breakdown: { cost: 3, weight: 3 },
+      disease: { cost: 3, weight: 3 },
     },
     tremor: { damage: [1, 3] },
     panicAttack: { morale: 3 },
@@ -622,7 +623,10 @@ export const DEFAULT_CONFIG: GameConfig = {
       "fungal_infection_disease",
       "gastroenteritis_disease",
       "skin_inflammation_disease",
-      "space_rabies_disease"],
+      "space_rabies_disease",
+      "smallpox_disease"],
+    // Owner, 2026-11-14: what the disease incident can give.
+    incidentDiseases: ["cold_disease", "skin_inflammation_disease"],
     allDisorders: ["depression_disorder"],
     allInjuries: ["broken_nose_injury"],
     allDiseaseStats: [
@@ -631,7 +635,8 @@ export const DEFAULT_CONFIG: GameConfig = {
       {label: "fungal_infection_disease", type: "disease", durationMin: 8, durationMax: 12, spreadByDTT: true, },
       {label: "gastroenteritis_disease", type: "disease", durationMin: 8, durationMax: 12 ,spreadByDTT: true, roomSpread: 0.02, cycleSpread: 0.04},
       {label: "skin_inflammation_disease",type: "disease", durationMin: 12, durationMax: 20, roomSpread: 0.02, cycleSpread: 0.02, spreadByDTT: true},
-      {label: "space_rabies_disease", type: "disease", durationMin: 8, durationMax: 12}],
+      {label: "space_rabies_disease", type: "disease", durationMin: 8, durationMax: 12},
+      {label: "smallpox_disease", type: "disease", durationMin: 12, durationMax: 20}],
     allDisorderStats: [{type: "disorder", resistance: 8}],
     allInjuryStats: [{type: "injury"}],
     },

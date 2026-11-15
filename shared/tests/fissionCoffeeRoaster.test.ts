@@ -6,9 +6,10 @@ import { PILGRED_COMPLETE } from "../src/pilgred.ts";
 import { PROJECT_COMPLETE, projectStatus } from "../src/projects.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameState } from "../src/types.ts";
-import { makeSeats, mustApply, nextCycle, offered, setProgress } from "./support.ts";
+import { makeSeats, mustApply, nextCycle, noIncidents, offered, setProgress } from "./support.ts";
 
-const config = DEFAULT_CONFIG;
+// No incidents: a random breakdown of the machine would make the schedule depend on the seed.
+const config = noIncidents(DEFAULT_CONFIG);
 const MACHINE = "REFECTORY:COFFEE_DISPENSER";
 const pull: Action = { type: "dispense", equipment: MACHINE };
 const workRoaster: Action = { type: "project", equipment: "NEXUS_ROOM:NERON_CORE", project: "FISSION_COFFEE_ROASTER" };

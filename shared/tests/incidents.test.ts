@@ -143,6 +143,37 @@ describe("incidents", () => {
     expect(after.log.find((e) => e.key === "metalPlate")).toMatchObject({ params: { name: hit[0]!.character }, room: hit[0]!.room, visibleTo: "all" });
   });
 
+  it("disease: the config's incident list is cold and skin inflammation, and it costs 3 with weight 3", () => {
+    expect(DEFAULT_CONFIG.diseases.incidentDiseases).toEqual(["cold_disease", "skin_inflammation_disease"]);
+    expect(DEFAULT_CONFIG.incidents.catalog.disease).toEqual({ cost: 3, weight: 3 });
+  });
+
+  it("disease: one incident disease to each person aboard at most once a cycle, Mush included, told privately", () => {
+    const s = ship(only("disease"));
+    s.incidentPoints = 20; // enough for more than 3
+    const after = nextCycle(s);
+    const cost = after.config.incidents.catalog.disease.cost;
+    expect(after.incidentPoints).toBe(21 - 3 * cost);
+    for (const p of after.players) {
+      const caught = p.modifiers.filter((m) => !player(s, p.id).modifiers.includes(m));
+      expect(caught).toHaveLength(1);
+      expect(after.config.diseases.incidentDiseases).toContain(caught[0]);
+      expect(p.statuses).toContain(caught[0]);
+    }
+    const lines = after.log.filter((e) => e.key === "incidentDisease");
+    expect(lines).toHaveLength(3);
+    for (const line of lines) expect(line.visibleTo).toHaveLength(1);
+  });
+
+  it("disease: never someone who already has every incident disease, and nothing when nobody can catch one", () => {
+    const s = ship(only("disease"));
+    for (const p of s.players) for (const d of s.config.diseases.incidentDiseases) p.modifiers.push(d);
+    s.incidentPoints = 20;
+    const after = nextCycle(s);
+    expect(after.incidentPoints).toBe(21);
+    expect(after.log.some((e) => e.key === "incidentDisease")).toBe(false);
+  });
+
   it("oxygen leak and fuel leak break a tank, announced in global chat by equipment, never by room", () => {
     for (const [id, type] of [["oxygen_leak", "OXYGEN_TANK"], ["fuel_leak", "FUEL_TANK"]] as const) {
       const s = ship(only(id));
