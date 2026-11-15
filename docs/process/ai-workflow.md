@@ -3754,3 +3754,11 @@ Small refactor on request: `GameRoom.social` called four bot-line parsers (item,
 
 - **Decision (owner):** Completing `EXTRA_HYDROPONPOTS` spawns 3 empty hydropots (`tree_pot`) on the floor of the Hydroponic Garden (`HYDROPONIC_CENTER`), with no extra room log line beyond the standard project completion log at NERON's Core. Tunable in `config.project.extraHydropots`.
 - **Implementation:** Added `config.project.extraHydropots` (`shared/src/types/config.ts`, `shared/src/config.ts`), spawned the pots in `onProjectCompleted` (`shared/src/projectEffects.ts`), marked `EXTRA_HYDROPONPOTS: "full"` in `PROJECT_STATUS` (`shared/src/projects.ts`), and added unit tests in `shared/tests/extraHydropots.test.ts`.
+
+## 2026-11-14: Rejuvenation disease
+
+- Added `rejuvenation_disease` (8–12 cycles): per cycle 50% -1 MP, 10% dirty (via `soil`), 3% an incident disease; 30% no bed AP while lying down.
+- The sleep effect needed a roll at the AP refill, but `apPerCycle` is a pure fold (also read for display), so a new `onApRefill` hook (`apRefill` in modifiers.ts) runs once at the refill in `advanceCycle`. The bed bonus is measured as the gain with and without `lying_down`/`lyingSince`, so Lethargy's bonus is also lost on a failed roll.
+- Correction: the first test run failed because the first human in small seeded games is usually Chao (hyperactive, no bed AP); the test strips that trait.
+- Follow-up: added an `onContaminate(next, player, amount)` modifier hook, run by `contaminated` (modifiers.ts) at the end of `contaminate` (infection.ts) after the rise or conversion, through `eventIds` so a Mush's diseases are reached too; it does not run when contamination is refused.
+- Follow-up: Mush Allergy (20–32 cycles) built on the new `onContaminate` hook: a spore that leaves its holder human kills them; one that converts them doesn't. Asked the owner for the death cause, since causes are public and a new "allergy" cause would reveal the spike; the owner chose `injury`.

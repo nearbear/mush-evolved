@@ -4,7 +4,7 @@
 
 import { pushChat } from "./chat.ts";
 import { logPrivate } from "./log.ts";
-import { contaminationCapacity } from "./modifiers.ts";
+import { contaminated, contaminationCapacity } from "./modifiers.ts";
 import { isImmune } from "./statuses.ts";
 import { MUSH_CHANNEL, type GameState, type PlayerState } from "./types.ts";
 
@@ -23,6 +23,7 @@ export function contaminate(state: GameState, human: PlayerState, amount = 1): v
     state.contamination[human.id] = level;
     tellMush(state, "mushContaminated", { name: human.character, level, capacity });
   }
+  contaminated(state, human, amount);
 }
 
 /**

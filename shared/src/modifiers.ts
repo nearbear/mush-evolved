@@ -55,6 +55,8 @@ import { fungal_infection_disease } from "./modifiers/fungal_infection_disease.t
 import { space_rabies_disease } from "./modifiers/space_rabies_disease.ts";
 import { skin_inflammation_disease } from "./modifiers/skin_inflammation_disease.ts";
 import { smallpox_disease } from "./modifiers/smallpox_disease.ts";
+import { rejuvenation_disease } from "./modifiers/rejuvenation_disease.ts";
+import { mush_allergy_disease } from "./modifiers/mush_allergy_disease.ts";
 import { gastroenteritis_disease } from "./modifiers/gastroenteritis_disease.ts";
 import { broken_nose_injury } from "./modifiers/broken_nose_injury.ts";
 import type { ActionCost } from "./actions.ts";
@@ -158,6 +160,11 @@ export interface Modifier extends Partial<FoldHooks> {
    * it mutates a state the caller already cloned; randomness goes through `next.rng`.
    */
   onActionFailed?: (next: GameState, player: PlayerState, apSpent: number) => void;
+  /**
+   * Adjusts the AP a player is about to gain at a cycle change's refill (`gain`, already folded through apPerCycle).
+   * Unlike the folds it runs once, at the refill, so it may roll (`next.rng`). Never reaches a Mush's diseases.
+   */
+  onApRefill?: (gain: number, next: GameState, player: PlayerState) => number;
   /** Runs for each living player at a cycle change, after the AP refill. Mutates a state the caller already cloned. */
   /** (A disease hook also reaches a Mush: it guards its own stat effects with `diseaseAffects`, diseases.ts.) */
   onCycle?: (next: GameState, player: PlayerState) => void;
@@ -167,6 +174,12 @@ export interface Modifier extends Partial<FoldHooks> {
   onConsume?: (next: GameState, player: PlayerState, item: ItemState) => void;
   /** Runs after the player heals someone (heal or use_bandage), once HP is restored. Mutates a state the caller already cloned. */
   onHeal?: (next: GameState, player: PlayerState, patient: PlayerState) => void;
+  /**
+   * Runs at the end of `contaminate` (infection.ts), once the player's contamination rose by `amount` or converted them
+   * (then they are already Mush). Not when the contamination was refused (immune, not a living human). Mutates a state
+   * the caller already cloned.
+   */
+  onContaminate?: (next: GameState, player: PlayerState, amount: number) => void;
   /** Runs once when the player picks this skill (not for other modifiers). Mutates a state the caller already cloned. */
   onPick?: (next: GameState, player: PlayerState) => void;
   /** Runs whenever the ship moves */
@@ -228,6 +241,8 @@ export const MODIFIERS: Record<string, Modifier> = {
   skin_inflammation_disease,
   space_rabies_disease,
   smallpox_disease,
+  rejuvenation_disease,
+  mush_allergy_disease,
   // Injuries
   broken_nose_injury,
 };
@@ -416,6 +431,16 @@ export function followingHuntersShare(base: number, state: Readonly<GameState>, 
 /** Runs every onActionFailed hook the player has. Mutates a state the caller already cloned. */
 export function actionFailed(next: GameState, player: PlayerState, apSpent: number, registry: ModifierRegistry = MODIFIERS): void {
   for (const id of modifierIds(player)) registry[id]?.onActionFailed?.(next, player, apSpent);
+}
+
+/** The AP a player gains at this cycle change's refill: `apGain`, then each modifier's onApRefill. Mutates `next.rng`. */
+export function apRefill(next: GameState, player: PlayerState, registry: ModifierRegistry = MODIFIERS): number {
+  let gain = apGain(next, player, registry);
+  for (const id of modifierIds(player)) {
+    const hook = registry[id]?.onApRefill;
+    if (hook) gain = hook(gain, next, player);
+  }
+  return gain;
 }
 
 /** Base movement rules folded through the player's modifiers, in list order, plus the heavy-item penalty. */
@@ -626,6 +651,11 @@ export function cycleChanged(next: GameState, registry: ModifierRegistry = MODIF
     if (!player.alive) continue;
     for (const id of eventIds(player)) registry[id]?.onCycle?.(next, player);
   }
+}
+
+/** Runs every onContaminate hook of the player's modifiers. Mutates a state the caller already cloned. */
+export function contaminated(next: GameState, player: PlayerState, amount: number, registry: ModifierRegistry = MODIFIERS): void {
+  for (const id of eventIds(player)) registry[id]?.onContaminate?.(next, player, amount);
 }
 
 export function shipMoved(next: GameState, registry: ModifierRegistry = MODIFIERS): void {
