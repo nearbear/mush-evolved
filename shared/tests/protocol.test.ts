@@ -759,6 +759,7 @@ describe("actions from a client", () => {
     premonition: [{ type: "premonition", target: "p1" }],
     comfort: [{ type: "comfort", target: "p1" }],
     anathema: [{ type: "anathema", target: "p1" }],
+    protect: [{ type: "protect", target: "p1" }],
     coup: [{ type: "coup", equipment: "NEXUS_ROOM:NERON_CORE" }],
     fiery_speech: [{ type: "fiery_speech" }],
     boring_speech: [{ type: "boring_speech" }],

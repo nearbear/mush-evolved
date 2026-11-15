@@ -3795,3 +3795,12 @@ Small refactor on request: `GameRoom.social` called four bot-line parsers (item,
 
 - **Decision (owner):** Completing `HEALING_OINTMANT` (requires `medikit` in the lab, not consumed) adds `heal.effect.ointmentBonusHp` (1) extra HP to both `heal` (Medikit / Sick Bay) and `use_bandage`, for everyone (humans and Mush, stacking with `medic`), with the standard `researchCompleted` log line only.
 - **Implementation:** Added `heal.effect.ointmentBonusHp: 1` in `shared/src/types/config.ts` and `shared/src/config.ts`, added `ointmentHealBonus` to `healAmount` and `bandageHealAmount` in `shared/src/modifiers.ts`, and marked `HEALING_OINTMANT: "full"` in `RESEARCH_STATUS` (`shared/src/research.ts`). Added unit tests in `shared/tests/heal.test.ts` and `shared/tests/bandage.test.ts`.
+
+### 2026-11-14 — Bodyguard skill (`bodyguard`) and `protect` action
+
+- **Decision (owner):** Implemented the Bodyguard skill (`actions/protect.ts`, `modifiers/bodyguard.ts`). `protect` costs 1 AP, is timed, logs publicly (`protected`), and targets any living roommate not already protected (Mush included). Switching targets replaces the old VIP; no separate stop action. While both are alive and in the same room, every `aggressive`-tagged action targeting the VIP (`target === vip.id`) costs +2 AP, including by the Bodyguard themselves, stacking with Pacifist and repricing queued actions; room-wide `guard` and area-weapon attacks without a `target` are not taxed. Both get public statuses (`protecting` and `protected`) in the room showing who protects whom (`OtherPlayerView.protectedBy` / `protecting`, `OwnPlayerView.protecting`). Persists across movement and ends when either dies.
+- **What worked:** Reusing `roomActionCost` (checking `tags.includes("aggressive")` and `action.target === vip.id`) gave queued-action repricing and Pacifist stacking for free.
+
+## 2026-11-14: Fungal cuisine food effects on conversion
+- **Decision (owner):** Reverted the 2026-10-24 decision that conversion from Fungal cuisine skips food effects; food gains (AP, HP, morale, etc.) now apply before contamination/conversion to prevent surprise AP loss.
+- **Changes:** `shared/src/actions/consume.ts` already ran `contaminate` after food effects, so updated its stale comment, updated `docs/rules/rules-design.md` and `docs/rules/implemented-rules.md`, and added a conversion-with-effects regression test in `shared/tests/fungal_cuisine.test.ts`.

@@ -123,6 +123,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   punch: { cost: { ap: 1 }, effect: { damage: [1, 2], sturdyBonusDamage: 1 }, crit: { chance: 0.2, damage: [2, 3] }, successChance: 0.6, inactiveTargetSuccessChance: 0.9, dirtyChance: 0.25 },
   // Owner, 2026-10-18: Ian's Pacifist makes aggressive actions in his room cost 2 more AP, his own included.
   pacifist: { aggressiveApSurcharge: 2 },
+  // Owner, 2026-11-14: Bodyguard's Protect costs 1 AP and adds 2 AP to aggressive actions targeting the VIP while both are together.
+  bodyguard: { cost: { ap: 1 }, aggressiveApSurcharge: 2 },
   // Owner, 2026-11-08: while the Stellar antenna is broken, contacting Sol, decoding a rebel base, contacting Xyloph and updating NERON cost this much more AP.
   antenna: { brokenApSurcharge: 1 },
   // Owner, 2026-11-08: while any Gravity Simulator is broken, every crew member gains this much less MP at each cycle change and from each AP-to-MP conversion.
@@ -318,6 +320,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   guard: { cost: { ap: 1 } },
   // Lethargy (owner, 2026-11-01): +1 AP a cycle from the 4th cycle change spent lying down, AP cap doubled.
   lethargy: { cyclesLying: 4, bonusAp: 1, maxApMultiplier: 2 },
+  // Opportunist (owner, 2026-11-14): +5 AP the first time you gain each title, capped at maxAp.
+  opportunist: { ap: 5 },
   // Confirmed 2026-10-14: showering costs 2 AP, 1 less with soap in your inventory; a Mush takes 4 damage.
   shower: { cost: { ap: 2, soapDiscountAp: 1, waterResistantAp: 1 }, effect: { mushDamage: 4 }, injuryChance: 0.02 },
   transfer: { injuryChance: 0.01 },

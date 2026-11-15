@@ -1,4 +1,5 @@
 import type { Cheat } from "../cheats.ts";
+import type { TitleId } from "../titles.ts";
 import type { CharacterId } from "../characters.ts";
 import type { Action, PlayerId, Role, RoomId, Seat } from "../types.ts";
 import type { DiseaseTracker } from "../diseases.ts";
@@ -57,6 +58,8 @@ export interface PlayerState extends Seat {
   apprenticeUsed?: true;
   /** This body used Eureka moment (become_genius), once per game. Your own view only; stays with the body. */
   geniusUsed?: true;
+  /** Titles that have already triggered Opportunist on this body (opportunist.ts). Stays with the body. Never sent. */
+  opportunistTitles?: TitleId[];
   /**
    * Set on a Transfer's victim, in their new body: the character who took their old body, for the pop-up they must
    * acknowledge (`acknowledgeTransfer`). Your own view only.
@@ -80,6 +83,8 @@ export interface PlayerState extends Seat {
   pushedBy?: PlayerId;
   /** The Persecutor whose Anathema made this player an Outcast (anathema.ts). Never sent; the public `outcast` status is. */
   outcastBy?: PlayerId;
+  /** The Bodyguard protecting this player (actions/protect.ts). Public to the room (`OtherPlayerView.protectedBy`, the `protected` status). */
+  protectedBy?: PlayerId;
   /** A Politician's coup is pending: they become Commander at the next cycle change if still eligible (coup.ts). Sent to its owner only. */
   coupPending?: true;
   /**

@@ -7,10 +7,25 @@ import { DEFAULT_CONFIG, STATUS_PUBLIC, statusIdsFor } from "@mush2/shared";
 import { CONTAMINATED_ICON, statusIcon, statusIconClass } from "../art/assets.ts";
 
 /** `contamination` is set only when the server sent one (a Mush looking at a contaminated human). */
-export function StatusIcons({ statuses, contamination }: { statuses: readonly string[]; contamination?: number | undefined }) {
+export function StatusIcons({
+  statuses,
+  contamination,
+  protecting,
+  protectedBy,
+}: {
+  statuses: readonly string[];
+  contamination?: number | undefined;
+  protecting?: string | undefined;
+  protectedBy?: string | undefined;
+}) {
   const { t } = useTranslation();
   const known = statusIdsFor(DEFAULT_CONFIG.diseases.allDiseases).filter((id) => statuses.includes(id));
   if (known.length === 0 && contamination === undefined) return null;
+  const descriptionFor = (id: string): string | undefined => {
+    if (id === "protecting" && protecting) return t("status.desc.protectingTarget", { name: protecting });
+    if (id === "protected" && protectedBy) return t("status.desc.protectedBy", { name: protectedBy });
+    return t(`status.desc.${id}`, { defaultValue: "" }) || undefined;
+  };
   return (
     <ul className="status-icons" aria-label={t("status.label")}>
       {known.map((id) => (
@@ -19,7 +34,7 @@ export function StatusIcons({ statuses, contamination }: { statuses: readonly st
             icon={statusIcon(id)}
             iconClass={statusIconClass(id)}
             name={t(`status.${id}`, { defaultValue: id })}
-            description={t(`status.desc.${id}`, { defaultValue: "" }) || undefined}
+            description={descriptionFor(id)}
             visibility={STATUS_PUBLIC[id] ? "public" : "private"}
           />
         </li>

@@ -120,6 +120,13 @@ function Details({ view, layout, resolved, onAction }: { view: PlayerView; layou
       const isYou = person.id === view.you.id;
       // The phone layout shows only the given name, to keep the figure label short.
       const displayName = mobile ? characterGivenName(person.character) : characterName(person.character);
+      const whoName = (id: string | undefined): string | undefined => {
+        if (!id) return undefined;
+        const match = id === view.you.id ? view.you : view.players.find((o) => o.id === id);
+        return match ? characterName(match.character) : undefined;
+      };
+      const protectingName = whoName(isYou ? view.you.protecting : person.protecting);
+      const protectedByName = whoName(isYou ? view.you.protectedBy : person.protectedBy);
       return (
         <div className="inspect-figure">
           <div className="inspect-figure-art">
@@ -130,7 +137,12 @@ function Details({ view, layout, resolved, onAction }: { view: PlayerView; layou
             )}
             {character && <span className="inspect-figure-name">{displayName}</span>}
             <SkillSlots view={view} skills={person.skills} bookSkill={person.bookSkill} isYou={isYou} onAction={onAction} />
-            <StatusIcons statuses={isYou ? view.statuses : person.statuses} contamination={"contamination" in person ? person.contamination : undefined} />
+            <StatusIcons
+              statuses={isYou ? view.statuses : person.statuses}
+              contamination={"contamination" in person ? person.contamination : undefined}
+              protecting={protectingName}
+              protectedBy={protectedByName}
+            />
           </div>
         </div>
       );

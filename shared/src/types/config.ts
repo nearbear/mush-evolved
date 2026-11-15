@@ -310,6 +310,10 @@ export interface GameConfig {
   pacifist: {
     aggressiveApSurcharge: number; // Extra AP for each aggressive action in a Pacifist's room, theirs too (owner, 2026-10-18).
   };
+  bodyguard: {
+    cost: { ap: number }; // AP to Protect a crewmate (owner, 2026-11-14).
+    aggressiveApSurcharge: number; // Extra AP for each aggressive action targeting the VIP while both are alive in the same room, theirs too (owner, 2026-11-14).
+  };
   antenna: {
     brokenApSurcharge: number; // Extra AP for contacting Sol, decoding a rebel base, contacting Xyloph and updating NERON while the Stellar antenna (Motor Room) is broken (owner, 2026-11-08).
   };
@@ -580,6 +584,8 @@ export interface GameConfig {
   // Skill Lethargy (owner, 2026-11-01): from the `cyclesLying`th cycle change spent lying down on, each one gives
   // `bonusAp` more AP; the AP cap is multiplied by `maxApMultiplier`.
   lethargy: { cyclesLying: number; bonusAp: number; maxApMultiplier: number };
+  // Skill Opportunist (owner, 2026-11-14): +ap the first time you gain each title, capped at maxAp.
+  opportunist: { ap: number };
   shower: {
     cost: {
       ap: number; // AP spent to shower, before the soap discount (confirmed 2026-10-14).

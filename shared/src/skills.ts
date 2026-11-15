@@ -300,6 +300,8 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   survival: "full",
   // +5 AP (capped at maxAp) the first time you gain each title while having the skill (owner, 2026-11-14, modifiers/opportunist.ts).
   opportunist: "full",
+  // Protect a crewmate for 1 AP; aggressive actions targeting them in the same room cost +2 AP (owner, 2026-11-14, actions/protect.ts, modifiers/bodyguard.ts).
+  bodyguard: "full",
 };
 
 export function skillStatus(skill: string): SkillStatus {

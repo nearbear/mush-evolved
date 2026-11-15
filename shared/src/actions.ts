@@ -89,6 +89,7 @@ import { ComfortAction } from "./actions/comfort.ts";
 import { AttackAction } from "./actions/attack.ts";
 import { ShareAction } from "./actions/share.ts";
 import { GuardAction, StopGuardingAction } from "./actions/guard.ts";
+import { ProtectAction } from "./actions/protect.ts";
 import { GetUpAction, LieDownAction } from "./actions/lie_down.ts";
 import { ReportEquipmentAction, ReportFireAction } from "./actions/report.ts";
 import { ShowerAction } from "./actions/shower.ts";
@@ -225,6 +226,7 @@ const REGISTRY = {
   report_equipment: new ReportEquipmentAction(),
   guard: new GuardAction(),
   stop_guarding: new StopGuardingAction(),
+  protect: new ProtectAction(),
   accommodate: new AccommodateAction(),
   accept_accommodation: new AcceptAccommodationAction(),
   stop_accommodation: new StopAccommodationAction(),
