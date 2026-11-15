@@ -58,6 +58,7 @@ function handFilled() {
   Object.assign(a, {
     transferUsed: true,
     epigeneticsUsed: true,
+    massMoulderingUsed: true,
     apprenticeUsed: true,
     geniusUsed: true,
     bodyTakenBy: b.character,

@@ -97,6 +97,7 @@ import { SpikeAction } from "./actions/spike.ts";
 import { FungalCuisineAction } from "./actions/fungal_cuisine.ts";
 import { BodyTransferAction } from "./actions/body_transfer.ts";
 import { ResetSkillsAction } from "./actions/reset_skills.ts";
+import { MassMoulderingAction } from "./actions/mass_mouldering.ts";
 import { TransferAction } from "./actions/transfer.ts";
 import { WaterAction } from "./actions/water.ts";
 import { TreatAction } from "./actions/treat.ts";
@@ -220,6 +221,7 @@ const REGISTRY = {
   fungal_cuisine: new FungalCuisineAction(),
   body_transfer: new BodyTransferAction(),
   reset_skills: new ResetSkillsAction(),
+  mass_mouldering: new MassMoulderingAction(),
   lie_down: new LieDownAction(),
   get_up: new GetUpAction(),
   report_fire: new ReportFireAction(),

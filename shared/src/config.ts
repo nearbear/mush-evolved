@@ -78,6 +78,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   spike: { cost: { ap: 1 }, cooldownCycles: 4 },
   bodyTransfer: { cost: { ap: 0 } },
   resetSkills: { cost: { ap: 2 } },
+  // Owner, 2026-11-14: Mass Mouldering costs 2 AP and 0 spores, once per game (2 AP drain omitted).
+  massMouldering: { cost: { ap: 2 } },
   // Owner, 2026-11-05: the Apprentice skill's apprenticeship action costs 1 AP.
   apprenticeship: { cost: { ap: 1 } },
   // Owner, 2026-11-04: the pneumatic tube is free to use.
@@ -418,7 +420,7 @@ export const DEFAULT_CONFIG: GameConfig = {
     chance: {
       CAMERA: 0.25, OXYGEN_TANK: 0.25, FUEL_TANK: 0.25, SHOWER: 0.25,
       ASTRO_MODULE: 0.12, PILOT_MODULE: 0.12, BEAT_BOX: 0.12, SOFA: 0.12, MYCOSCAN: 0.12, COMBUSTION_CHAMBER_ACCESS: 0.12,
-      PLANET_SCANNER: 0.12, STELLAR_ANTENNA: 0.12, SUPER_CALC: 0.12, KITCHEN: 0.12, COFFEE_DISPENSER: 0.12, TURRET_COMMAND: 0.12,
+      PLANET_SCANNER: 0.12, PLANT_CONTROLLER: 0.12, STELLAR_ANTENNA: 0.12, SUPER_CALC: 0.12, KITCHEN: 0.12, COFFEE_DISPENSER: 0.12, TURRET_COMMAND: 0.12,
       COM_CENTER: 0.06, RESEARCH_LAB: 0.06, GRAVITY_SIMULATOR: 0.06, EMERGENCY_REACTOR: 0.06, ROTATIONAL_REACTOR: 0.06, NERON_CORE: 0.06,
       NERON_BIOS_TERM: 0.03,
     },

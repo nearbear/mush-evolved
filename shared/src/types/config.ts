@@ -262,6 +262,9 @@ export interface GameConfig {
   resetSkills: {
     cost: { ap: number }; // The Mush skill Epigenetics: 2 AP (owner, 2026-11-13).
   };
+  massMouldering: {
+    cost: { ap: number }; // The Mush skill Mass Mouldering: 2 AP, 0 spores (owner, 2026-11-14).
+  };
   spores: {
     cost: { ap: number }; // AP spent to extract a spore (confirmed 2026-10-13).
     effect: { spores: number }; // Spores one extraction gives (confirmed 2026-10-13).

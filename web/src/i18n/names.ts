@@ -79,6 +79,7 @@ const ACTION_NAME_KEYS = {
   spike: "actions.spike",
   body_transfer: "actions.bodyTransfer",
   reset_skills: "actions.resetSkills",
+  mass_mouldering: "actions.massMouldering",
   tube_transfer: "actions.tubeTransfer",
   consume_spore: "actions.consumeSpore",
   fungal_cuisine: "actions.fungalCuisine",
