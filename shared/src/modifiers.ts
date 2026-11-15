@@ -55,6 +55,7 @@ import { extreme_tinnitus_disease } from "./modifiers/extreme_tinnitus_disease.t
 import { fungal_infection_disease } from "./modifiers/fungal_infection_disease.ts";
 import { space_rabies_disease } from "./modifiers/space_rabies_disease.ts";
 import { skin_inflammation_disease } from "./modifiers/skin_inflammation_disease.ts";
+import { smallpox_disease } from "./modifiers/smallpox_disease.ts";
 import { gastroenteritis_disease } from "./modifiers/gastroenteritis_disease.ts";
 import { broken_nose_injury } from "./modifiers/broken_nose_injury.ts";
 import type { ActionCost } from "./actions.ts";
@@ -228,6 +229,7 @@ export const MODIFIERS: Record<string, Modifier> = {
   gastroenteritis_disease,
   skin_inflammation_disease,
   space_rabies_disease,
+  smallpox_disease,
   // Injuries
   broken_nose_injury,
 };

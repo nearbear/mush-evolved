@@ -3680,6 +3680,14 @@ Added `shared/src/kube.ts`: the `KUBE_OPS` table and a pure `applyKube`, reached
 - **Found:** bots have no goal that repairs equipment, so a breakdown report helps humans and #443's oxygen tank, but no bot acts on it yet. Left for the owner to decide, along with the explore plan (advised against: exploring costs MP only, and plans are for rosters).
 - **Measured:** 10 seeds against a fresh main baseline: fire numbers unchanged (0.09 rooms lit and put out a cycle), chat 386 → 356, days within noise (−0.11).
 
+## 2026-11-14: Smallpox disease
+
+Owner gave the full rule: 12–20 cycles; each cycle change a 40% chance of -1 MP and a 50% chance of -2 HP; -2 max morale and -2 max HP. Built as `modifiers/smallpox_disease.ts`, following the Gastroenteritis/Space Rabies pattern (`diseaseAffects` so a Mush carries it unharmed, `diseaseStats` by label for the duration). Claude's readings: the two rolls are independent, and there is no spread since none was given. What needed correction: the locale names already existed (from the fruit disease pool), so a scripted insert duplicated them and had to be removed. The full `verify` timed out in server tests under load; they passed alone.
+
+## 2026-11-14: Disease incident
+
+Built the disease incident (cost 3, weight 3, already in rules-design) in `incidents.ts`, drawing from a new `config.diseases.incidentDiseases` (cold, skin inflammation; owner). The doc said "a human falls ill"; Claude asked who, what log and how often, and the owner chose anyone living aboard (Mush as carriers), a private line, and once per person per cycle change. Only diseases the victim doesn't have are picked, so someone with all of them isn't a target. Worked first time; the existing `only(id)` test helper made the incident easy to isolate.
+Adding an incident to the menu changes the seeded random draws of every cycle change, which broke two seed-dependent tests that weren't about incidents: the coffee roaster schedule (now runs with `noIncidents`) and a 40-turn GoalBot fire test whose "still alive" check failed because hunters destroyed the ship (now skipped when the ship is lost). The full verify also showed many timeouts on a loaded machine; the GameRoom and survival ones fail on clean HEAD too.
 ### 2026-11-14: Superkube window closed on tab change (#170)
 
 Bug: switching the Superkube window to Items or Travel closed it. Cause: GameView's desktop "click outside the Inspect panel resets the selection" listener treated clicks in the portaled dialog as outside `.inspect`, so the selection fell back to yourself and the opener (and its dialog) unmounted. Fix: clicks inside any `[role='dialog']` count as inside. The isolated Superkube DOM test couldn't catch it, since the reset lives in GameView; worth remembering for any window opened from the Inspect panel.

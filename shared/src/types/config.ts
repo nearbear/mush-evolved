@@ -35,6 +35,8 @@ export interface MovementRules {
 
 export interface DiseaseCatagories {
   allDiseases: string [],
+  /** The diseases the disease incident (incidents.ts) picks from. */
+  incidentDiseases: string[],
   allDisorders: string [],
   allInjuries: StatusId[],
   allDiseaseStats: DiseaseStats[],
