@@ -320,8 +320,7 @@ export function performAction(next: GameState, actor: PlayerState, action: Actio
       def.apply(next, actor, action);
     }
   };
-  if (isNimble(actor)) withNimbleActor(actor.id, run);
-  else run();
+  withNimbleActor(isNimble(actor) ? actor.id : null, run);
   // After apply, so an action that reveals your own history (Chitchat) doesn't show itself.
   if (def.recorded) recordAction(next, actor, action.type);
   if (dirtyChance > 0) {
@@ -589,7 +588,6 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     transferUsed: _transferUsed,
     epigeneticsUsed: _epigeneticsUsed,
     massMoulderingUsed: _massMoulderingUsed,
-    opportunistTitles: _opportunistTitles,
     history: _history,
     lastSeenAt: _lastSeenAt,
     inactivity: _inactivity,

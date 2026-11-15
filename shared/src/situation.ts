@@ -2,18 +2,23 @@
 // the bot goals (server/src/bots/goals) and the client's tips (tips.ts), so both read a situation the same way.
 
 import { SHIP_ROOMS } from "./config.ts";
+import { doorId } from "./doors.ts";
 import { moveCost } from "./modifiers.ts";
 import { shortestPath } from "./paths.ts";
-import type { PlayerView, RoomId } from "./types.ts";
+import type { DoorId, PlayerView, RoomId } from "./types.ts";
 
 /**
- * The door test a walk planned from one player's view uses (#330): the broken doors of the viewer's own room are shut;
- * every other door, whose state the view doesn't carry, is taken as working.
+ * The door test a walk planned from one player's view uses (#330): every broken door the viewer knows of — in their
+ * own room (`doors`), reported on the alert bar (`alerts.reports`), or from Defective piston sensors (`brokenDoors`) —
+ * is shut; every other door is taken as working.
  */
-export function viewDoorsOpen(view: Pick<PlayerView, "you" | "doors">): (from: RoomId, to: RoomId) => boolean {
-  const here = view.you.room;
-  const shut = new Set(view.doors.filter((d) => d.broken).map((d) => d.to));
-  return (from, to) => !((from === here && shut.has(to)) || (to === here && shut.has(from)));
+export function viewDoorsOpen(
+  view: Pick<PlayerView, "doors" | "brokenDoors" | "alerts">,
+): (from: RoomId, to: RoomId) => boolean {
+  const shut = new Set<DoorId>(view.brokenDoors);
+  for (const d of view.doors) if (d.broken) shut.add(d.id);
+  for (const r of view.alerts.reports) if (r.kind === "door") shut.add(r.door);
+  return (from, to) => !shut.has(doorId(from, to));
 }
 
 /** The shortest walk from `from` to `room` the viewer knows of (`viewDoorsOpen`), or null. */

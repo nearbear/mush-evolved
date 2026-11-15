@@ -876,7 +876,6 @@
     "summonStoppedNoPath": "You were summoned to: {{room}}, but there is no way there from where you are.",
     "loseMorale": "You have lost {{amount}} morale.",
     "gainMorale": "You gain {{amount}} morale.",
-    "opportunistTitle": "You gained {{ap}} AP for becoming {{title}} for the first time.",
     "actionCostChanged": "Your queued action ({{action}}) was cancelled because its cost changed: it now costs {{ap}} AP and {{mp}} MP.",
     "actionDropped": "Your queued action ({{action}}) was no longer possible and was dropped.",
     "becomeDirty": "You're filthy! You have become dirty.",

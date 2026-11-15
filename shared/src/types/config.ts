@@ -520,6 +520,8 @@ export interface GameConfig {
     autoWatering: { extinguishChance: number };
     // Trail reducer (TRAIL_REDUCER; owner, 2026-11-14): halves the share of "share" hunters following a jump (50% -> 25%).
     trailReducer: { followMultiplier: number };
+    // Extra drone (EXTRA_DRONE; 2026-11-14): completing it puts `count` support drone(s) on the floor of `room` (the Nexus).
+    extraDrone: { room: RoomId; count: number };
   };
   pilgred: {
     cost: { ap: number }; // AP spent to take part in repairing PILGRED (owner, 2026-10-21; the original's REPAIR_PILGRED, 2).
@@ -603,8 +605,6 @@ export interface GameConfig {
   // Skill Lethargy (owner, 2026-11-01): from the `cyclesLying`th cycle change spent lying down on, each one gives
   // `bonusAp` more AP; the AP cap is multiplied by `maxApMultiplier`.
   lethargy: { cyclesLying: number; bonusAp: number; maxApMultiplier: number };
-  // Skill Opportunist (owner, 2026-11-14): +ap the first time you gain each title, capped at maxAp.
-  opportunist: { ap: number };
   shower: {
     cost: {
       ap: number; // AP spent to shower, before the soap discount (confirmed 2026-10-14).

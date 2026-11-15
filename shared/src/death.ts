@@ -9,7 +9,7 @@ import { shipInvincible } from "./cheats.ts";
 import type { CharacterId } from "./characters.ts";
 import { removeFromChannel, pushChat } from "./chat.ts";
 import { CORPSE_ITEM, ITRACKIE_ITEM, sameContainer, newItemId } from "./items.ts";
-import { logPublic } from "./log.ts";
+import { logPublic, withNimbleActor } from "./log.ts";
 import { damageTaken } from "./modifiers.ts";
 import { PATROL_SHIPS } from "./patrol.ts";
 import { removeStatus } from "./statuses.ts";
@@ -108,7 +108,7 @@ export function killPlayer(state: GameState, player: PlayerState, cause: DeathCa
   // The room always gets a line, without the role; NERON's crew-wide announcement reveals it, unless the BIOS has
   // death announcements off (bios.ts). Both give the cause, never the killer (#177).
   loseShipOnPlanet(state, player);
-  logPublic(state, player.room, "died", { name: player.character, cause });
+  withNimbleActor(null, () => logPublic(state, player.room, "died", { name: player.character, cause }));
   if (state.bios.death_announcements) {
     systemMessage(state, "global", player.role === "mush" ? "diedMush" : "diedHuman", { name: player.character, cause });
   }

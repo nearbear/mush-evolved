@@ -453,7 +453,6 @@ export function normalizePlayer(raw: Partial<PlayerState>, mode: QueueMode): Pla
     massMoulderingUsed: raw.massMoulderingUsed,
     apprenticeUsed: raw.apprenticeUsed,
     geniusUsed: raw.geniusUsed,
-    opportunistTitles: opt(raw.opportunistTitles, copy),
     bodyTakenBy: raw.bodyTakenBy,
     role: need(raw, "role", t),
     alpha: need(raw, "alpha", t),

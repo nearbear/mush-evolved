@@ -3933,3 +3933,28 @@ Two hidden-information choices made by Claude, not the owner, worth a look: (1) 
 ### 2026-11-14 — Nano ladybugs project (`PARASITE_ELIM`)
 - **Decision (owner):** Once `PARASITE_ELIM` is complete, healthy plants in `botany.gardenRoom` (floor or carried, via `potRoom`) never fall sick on cycle change (`botanyCycle`) while `PLANT_CONTROLLER` (Hydroponics center) is working; already-sick plants stay sick until treated.
 - **Implementation:** Updated `botanyCycle` in `shared/src/botany.ts` to skip the `sickChancePerCycle` roll for garden plants when `PARASITE_ELIM` is complete and `plantControllerWorking(state)` is true, marked `PARASITE_ELIM` as `"full"` in `PROJECT_STATUS`, updated `projects.descriptions.PARASITE_ELIM` in `web/src/locales/{en,fr,es}.json`, and added unit tests in `shared/tests/botany.test.ts`.
+
+### 2026-11-14 — Remove leftover partial Opportunist implementation
+- **Change:** Removed the unimplemented `opportunist` rule scaffolding left behind without `modifiers/opportunist.ts` (`SKILL_STATUS.opportunist`, `config.opportunist`, `PlayerState.opportunistTitles` and its `normalizeState`/`rules`/`leakFields`/`leaks.test.ts` plumbing, `Modifier.onTitleGained` / `titleGained`, `opportunistTitle` locale strings in `en`/`es`/`fr`, and the `implemented-rules.md` / `code-map/shared.md` entries), keeping `opportunist` as an unimplemented pickable skill.
+- **Verification:** `npm run build` passed; `npm test` passed all suites.
+
+### 2026-11-14 — Nimble mode witnessed logs stay plain public
+
+- **Decision (owner):** Witnessed or camera-seen room-level `logPublic` calls while in Nimble mode must stay plain public (`kind: undefined`, `leaked: undefined`) rather than `kind: "secret", leaked: true`, so Nimble mode never leaks a Mush via the secret badge. Also scoped `withNimbleActor` so non-actor events (`killPlayer`, `wheelAlong`) and nested `performAction` calls (e.g. `summon` walks) are not rewritten under the Nimble actor.
+- **Files:** `shared/src/log.ts`, `shared/src/rules.ts`, `shared/src/death.ts`, `shared/src/actions/accommodate.ts`, `shared/tests/nimble.test.ts`, `docs/rules/rules-design.md`, `docs/rules/implemented-rules.md`.
+
+### 2026-11-14 — Route around all known broken doors in `viewDoorsOpen`
+
+- **Change:** Updated `viewDoorsOpen` in `shared/src/situation.ts` to treat broken doors from `view.brokenDoors` (`DOOR_SENSOR`) and `view.alerts.reports` (`kind: "door"`) as shut in addition to `view.doors` in the viewer's own room, preventing bots from forgetting a broken door they just reported and bouncing `A -> C -> A -> C`.
+- **Files:** `shared/src/situation.ts`, `shared/tests/doors.test.ts`, `server/tests/goals.test.ts`.
+
+### 2026-11-14: Bot expedition launch (`expeditionLaunch`) and full-inventory iTrackie recovery
+
+- **What was done:** Added [`expeditionLaunch`](server/src/bots/goals/expeditionLaunch.ts) (priority 73.5, registered in `SOLO_GOALS` and `rest.ts`'s wakeup list) so a Pilot in orbit with unexplored sectors walks to `ICARUS`, runs `summon` on their open `"expedition"` plan, and launches with `icarus_takeoff` (waiting in `ICARUS` if short on AP). Updated `recoverITrackieGoal` in [`expeditionPrep`](server/src/bots/goals/expeditionPrep.ts) so returning crew bots with a full inventory drop expedition gear first to pick their `itrackie` back up before `observeReports` emits `shareReport`.
+- **What needed correction:** Initial unit test assumed `PlanetView.sectors` carries `explored` booleans, whereas `PlanetView.sectors` is `(string | null)[]` (revealed tags only). Fixed `hasKnownUnexplored` to compare `exploredOn(memory, orbitName)` against known sector count and fall back to `offered(view, "icarus_takeoff")` once in `ICARUS` (recording `noTakeoff:<orbitName>` in `memory.once` if unavailable).
+
+### 2026-11-14 — Extra drone project (`EXTRA_DRONE`)
+
+- **Decision:** Completing `EXTRA_DRONE` spawns 1 `support_drone` on the floor of `NEXUS_ROOM` (`config.project.extraDrone`), initialized via `initNpc`, with no extra log line beyond standard project completion; marked `PROJECT_STATUS.EXTRA_DRONE = "full"`.
+- **What needed correction:** Importing `initNpc` from `npcs.ts` inside `projectEffects.ts` exposed a circular module-init order where `drones.ts` had not finished defining `supportDrone` when `npcs.ts` built its top-level `NPCS` map. Making the NPC registry lookup lazy (`npcs()`) in `npcs.ts` resolved the cycle cleanly.
+- **Correction (same task, later):** the lazy `npcs()` registry hid the symptom in `npcs.ts` but not the cycle: the full suite then failed 113 tests elsewhere (`Class extends value undefined` in `lie_down.ts`, `isGardenProtected is not a function` in `fire.ts`), because `projectEffects.ts -> npcs.ts -> drones.ts -> fire.ts/doors.ts/...` loaded modules half-initialized. Reverted `npcs.ts` and moved `newDrone`, `DRONE_NAMES` and `DRONE_MAX_SERIAL` into a leaf module, `droneIdentity.ts` (re-exported by `drones.ts`); `projectEffects.ts` sets `drone: newDrone(state)` directly. Lesson: running only the new test file missed a cross-module import-order break; run the whole shared suite after adding an import edge between rules modules. Also added a test for completion by a NERON update (#414's acceptance list).

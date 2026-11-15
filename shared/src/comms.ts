@@ -8,8 +8,8 @@ import { BLUEPRINT_ITEM, BLUEPRINTS } from "./blueprints.ts";
 import { pushChat } from "./chat.ts";
 import { BOOK_ITEM, newItemId } from "./items.ts";
 import { DOCUMENT_ITEM } from "./lostAnalysis.ts";
-import { PROJECT_COMPLETE, PROJECT_IDS } from "./projects.ts";
-import { onProjectCompleted } from "./projectEffects.ts";
+import { PROJECT_IDS, projectDone } from "./projects.ts";
+import { completeProject } from "./projectEffects.ts";
 import { roll, rollInt } from "./rng.ts";
 import { hasSkill, SKILLS } from "./skills.ts";
 import { hasTitleAccess } from "./titles.ts";
@@ -257,12 +257,10 @@ export function advanceNeron(state: GameState, percent: number): string | undefi
   if (neron.progress < NERON_UPDATE_COMPLETE) return undefined;
   neron.version += 1;
   neron.progress = 0;
-  const unfinished = PROJECT_IDS.filter((id) => (state.projects[id] ?? 0) < PROJECT_COMPLETE);
+  const unfinished = PROJECT_IDS.filter((id) => !projectDone(state, id));
   if (unfinished.length === 0) return undefined;
   const project = randomOf(state, unfinished);
-  state.projects[project] = PROJECT_COMPLETE;
-  state.projectDeck = state.projectDeck.filter((id) => id !== project);
-  onProjectCompleted(state, project);
+  completeProject(state, project);
   return project;
 }
 

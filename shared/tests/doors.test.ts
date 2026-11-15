@@ -10,6 +10,7 @@ import { allDoors, breakDoor, doorId, doorRooms, doorsOf, isDoor, isDoorBroken, 
 import { SUPPORT_DRONE_ITEM } from "../src/items.ts";
 import { normalizeGame, overridesOf } from "../src/normalizeState.ts";
 import { shortestPath } from "../src/paths.ts";
+import { PROJECT_COMPLETE } from "../src/projects.ts";
 import { applyInput } from "../src/replay.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { doorCount, viewPath } from "../src/situation.ts";
@@ -116,6 +117,13 @@ describe("a broken door blocks movement", () => {
     expect(doorCount(viewFor(s, "p0"), "CORRIDOR_A")).toBe(2);
     // In the refectory, p3 knows nothing of it: the walk still takes it.
     expect(viewPath(viewFor(s, "p3"), "REFECTORY", "LABORATORY")).toEqual(["CORRIDOR_B", "CORRIDOR_A", "LABORATORY"]);
+    // Once reported, p3 routes around it too.
+    const reported = mustApply(s, "p0", { type: "report_door", door: LAB_DOOR });
+    expect(viewPath(viewFor(reported, "p3"), "REFECTORY", "LABORATORY")).toEqual(["CORRIDOR_B", "CORRIDOR_A", "SICK_BAY", "LABORATORY"]);
+    // And with Defective piston sensors complete, view.brokenDoors informs everyone even without a report.
+    const detected = clone(s);
+    detected.projects.DOOR_SENSOR = PROJECT_COMPLETE;
+    expect(viewPath(viewFor(detected, "p3"), "REFECTORY", "LABORATORY")).toEqual(["CORRIDOR_B", "CORRIDOR_A", "SICK_BAY", "LABORATORY"]);
   });
 });
 
