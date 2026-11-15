@@ -29,7 +29,7 @@ export type DutyTrigger =
   | "astro"
   /**
    * Preparing and holding jumps for the ship when not traveling or in orbit: to a shared destination (planetShare.ts,
-   * #417) or an escape jump into empty space (#421).
+   * #417) or an escape jump into empty space (#421). In orbit, leaving it once every sector is explored (#417).
    */
   | "destination"
   /** While hunters attack the ship (`view.hunters.count`, public). */
@@ -96,8 +96,9 @@ export const BOT_DUTIES: readonly Duty[] = [
   // --- Titles ---
   // Owner, 2026-11-12 (#417, #421): prepares jumps in advance and holds `travel` until hunters >= 8, 4 days of holding,
   // or oxygen <= 8 (jumping to the shared planet when one is in reach, else 1-fuel escape jump on the current heading).
-  // Above astro (owner, 2026-11-12): it costs a few AP and is what the search is for. Leaving orbit waits for slice 3.
-  { title: "commander", when: "destination", actions: ["check_combustion", "take_fuel", "load_fuel", "unload_fuel", "turn_ship", "travel"], priority: 77, prompt: "You're the Commander: only you can steer the ship and, once PILGRED is repaired, take it home." },
+  // Above astro (owner, 2026-11-12): it costs a few AP and is what the search is for. Leaves orbit once every sector
+  // is explored, by the shared expedition reports (#417).
+  { title: "commander", when: "destination", actions: ["check_combustion", "take_fuel", "load_fuel", "unload_fuel", "turn_ship", "travel", "leave_orbit"], priority: 77, prompt: "You're the Commander: only you can steer the ship and, once PILGRED is repaired, take it home." },
   // BIOS settings are free; no strategy decided.
   { title: "neron_admin", when: "model", actions: ["set_bios"], prompt: "You're NERON's Admin: only you can change NERON's BIOS settings." },
   { title: "comms_officer", when: "linkUp", actions: ["decode_rebel", "update_neron", "contact_xyloph"], priority: 52, prompt: "You're the Comms Officer: while the link with Sol is up, you decode rebel signals, update NERON and contact Xyloph." },

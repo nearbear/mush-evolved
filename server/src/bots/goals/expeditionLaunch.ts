@@ -1,7 +1,6 @@
 import { DEFAULT_CONFIG, viewPath, type PlayerView } from "@mush2/shared";
 import { hasBotSkill } from "../duties.ts";
-import { activeSharedPlanet } from "../planetShare.ts";
-import { exploredOn } from "../reportShare.ts";
+import { orbitExplored } from "../reportShare.ts";
 import { act, canAfford, find, goTo, offered } from "./blocks.ts";
 import type { BotMemory, Goal, GoalDef } from "./types.ts";
 
@@ -12,16 +11,8 @@ const ICARUS = DEFAULT_CONFIG.expedition.room;
 const openExpeditionPlan = (view: PlayerView) =>
   view.plans.find((p) => p.purpose === "expedition" && p.status === "open");
 
-function hasKnownUnexplored(view: PlayerView, memory: BotMemory): boolean {
-  const orbitName = view.navigation.orbitName;
-  if (!orbitName) return true;
-  const explored = exploredOn(memory, orbitName).length;
-  const own = view.planets.find((p) => p.orbited || p.name === orbitName);
-  if (own && explored >= own.sectors.length) return false;
-  const shared = activeSharedPlanet(view);
-  if (shared && shared.name === orbitName && explored >= shared.sectors.length) return false;
-  return true;
-}
+/** Whether sectors may be left to explore: not known to be all explored (`orbitExplored`). */
+const hasKnownUnexplored = (view: PlayerView, memory: BotMemory): boolean => orbitExplored(view, memory) !== true;
 
 const noTakeoffKey = (view: PlayerView): string => `noTakeoff:${view.navigation.orbitName ?? "orbit"}`;
 

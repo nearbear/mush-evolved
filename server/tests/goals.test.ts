@@ -1321,6 +1321,62 @@ describe("travel: the Commander (#417)", () => {
   });
 });
 
+describe("travel: the Commander leaves orbit (#417)", () => {
+  /** A Commander in orbit around Orbis (2 sectors, shared in the bots' format) with AP to spare, the chamber empty. */
+  function inOrbit() {
+    const { game: start, id } = setup();
+    const game = edit(start, id, (p) => {
+      p.ap = 8;
+      p.mp = 12;
+    });
+    const finder = game.players.find((p) => p.id !== id)!.id;
+    game.titles.commander = id;
+    game.ship.combustion = 0;
+    game.planets[finder] = [
+      { id: "pl-1", name: "Orbis", direction: "north", distance: 2, size: 2, picture: 1, revealed: 2, sectors: [{ tag: "OXYGEN", known: true, explored: true }, { tag: "FOREST", known: true, explored: true }] },
+    ] as GameState["planets"][string];
+    game.navigation = { ...game.navigation, arriving: null, orbit: "pl-1" };
+    game.sharedPlanets = [{ id: "sp-1", planet: "pl-1", text: formatPlanetShare({ name: "Orbis", direction: "north", distance: 2, sectors: ["OXYGEN", "FOREST"] }), by: finder, day: 1, cycleOfDay: 1, stale: false }];
+    game.sharedReports = [{ id: "sr-1", report: "ex-1", text: "Planet: Orbis\nExplored: OXYGEN, FOREST", by: finder, day: 1, cycleOfDay: 1 }] as GameState["sharedReports"];
+    return { game, id };
+  }
+  const explored = () => {
+    const m = memory();
+    m.reports.explored.set("Orbis", ["OXYGEN", "FOREST"]);
+    return m;
+  };
+
+  it("waits while a sector is unexplored by the shared reports, an expedition is out, or a ship is in flight", () => {
+    const { game, id } = inOrbit();
+    expect(travel.options(viewFor(game, id), explored())).toHaveLength(1);
+    const half = memory();
+    half.reports.explored.set("Orbis", ["OXYGEN"]);
+    expect(travel.options(viewFor(game, id), half)).toEqual([]);
+    expect(travel.options(viewFor(game, id), memory())).toEqual([]);
+    const flying = edit(game, game.players.find((p) => p.id !== id && p.alive)!.id, (p) => (p.room = "ICARUS_CRAFT"));
+    expect(travel.options(viewFor(flying, id), explored())).toEqual([]);
+    expect(travel.options(viewFor({ ...game, titles: { ...game.titles, commander: null } }, id), explored())).toEqual([]);
+  });
+
+  it("checks the chamber, loads 1 fuel, and leaves orbit from the bridge", async () => {
+    const { game, id } = inOrbit();
+    const fuel = game.ship.fuel;
+    const bot = new GoalBot(1, 2, [travel]);
+    let state = game;
+    const work: string[] = [];
+    for (let t = 0; t < 60 && !work.includes("leave_orbit"); t++) {
+      const r = await play(state, id, bot, 1);
+      state = r.game;
+      work.push(...r.taken.map((a) => a.type).filter((type) => type !== "move" && !type.startsWith("report_")));
+    }
+    expect(work).toEqual(["check_combustion", "take_fuel", "load_fuel", "leave_orbit"]);
+    expect(state.navigation.orbit).toBeNull();
+    expect(state.log.some((l) => l.key === "leftOrbit")).toBe(true);
+    expect(state.ship.fuel).toBe(fuel - 1);
+    expect(state.ship.combustion).toBe(0);
+  });
+});
+
 describe("travel holds & escape jumps (#421)", () => {
   type Planet = GameState["planets"][string][number];
   const makeHunters = (n: number): GameState["hunters"]["list"] =>

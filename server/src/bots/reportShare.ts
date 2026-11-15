@@ -6,6 +6,7 @@
 
 import { PLANET_TAGS, type ExpeditionEvent, type PlayerView } from "@mush2/shared";
 import type { BotMemory, BotSocial } from "./goals/types.ts";
+import { activeSharedPlanet } from "./planetShare.ts";
 
 /** An expedition report as a share in the bots' format describes it. */
 export interface SharedReportInfo {
@@ -86,3 +87,18 @@ export function observeReports(view: PlayerView, memory: BotMemory, canPost = tr
 
 /** The sector tags reported as explored on `planet`. */
 export const exploredOn = (memory: BotMemory, planet: string): string[] => [...(memory.reports.explored.get(planet) ?? [])];
+
+/**
+ * Whether every sector of the orbited planet is explored, as far as this bot knows (#417): the explored sectors in
+ * shared reports (`BotMemory.reports`) against the planet's sector count, from the bot's own copy of the planet or the
+ * active share in the bots' format. `null` when not in orbit or the planet's sectors aren't known to the bot.
+ */
+export function orbitExplored(view: PlayerView, memory: BotMemory): boolean | null {
+  const name = view.navigation.orbitName;
+  if (!view.navigation.orbiting || !name) return null;
+  const own = view.planets.find((p) => p.orbited || p.name === name);
+  const shared = activeSharedPlanet(view);
+  const count = own?.sectors.length ?? (shared?.name === name ? shared.sectors.length : null);
+  if (count === null) return null;
+  return exploredOn(memory, name).length >= count;
+}
