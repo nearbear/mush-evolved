@@ -13,7 +13,7 @@ import { lyingFrame, sittingFrame, spriteStrip } from "../art/assets.ts";
 import type { Bar } from "../scene/ActionBar.tsx";
 import { atlasUrl } from "./shipLayout.ts";
 import { CAMERA_SLICES } from "./equipmentTiles.ts";
-import { type CellSlot, frameRect, gridToPx, type PlacedSprite } from "./placement.ts";
+import { type CellSlot, frameRect, gridToPx, type PlacedSprite, WALL_RUNS, wallRuns } from "./placement.ts";
 import type { Walker } from "./useWalkers.ts";
 
 export interface Occupant {
@@ -240,11 +240,25 @@ export interface ScenePicture {
   walker?: string;
 }
 
+/** Which isometric axis a cutaway wall/door runs along. */
+export type CutawayAxis = "x" | "y" | "xy";
+
+/** World-space box and axis of the foreground wall/door whose floor line drives a sprite's cutaway. */
+export interface Cutaway {
+  axis: CutawayAxis;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 export interface SceneSprite extends ScenePicture {
   role: SceneRole;
   kind?: TileKind | "actor";
   slice?: string;
   effect?: SceneEffect;
+  /** Foreground neighbour wall/door (or prop mounted to one) that is dithered above the wall's base. */
+  cutaway?: Cutaway;
   /** People and bodies cast a soft shadow below them: standing (or seated), or lying. */
   shadow?: "standing" | "lying";
   /** Floats: bobs gently up and down on its own clock (a drone, not its shadow). A renderer may draw it still. */
@@ -470,9 +484,63 @@ function ambientAnim(frames: readonly number[], frameMs: readonly number[], star
   return { frames: turn(frames), frameMs: turn(frameMs), loops: "forever" };
 }
 
+function cutawayAxis(layout: ShipLayout, s: PlacedSprite): CutawayAxis | undefined {
+  if (s.kind === "wall") {
+    const axis: CutawayAxis = WALL_RUNS[s.slice] ?? "xy";
+    return s.flipX && axis !== "xy" ? (axis === "x" ? "y" : "x") : axis;
+  }
+  if (s.kind !== "door") return undefined;
+  const runs = wallRuns(layout, { kind: s.kind, slice: s.slice, x: s.cell.x, y: s.cell.y });
+  if (runs.length === 0) return undefined;
+  const hasX = runs.some((r) => r.axis === "x");
+  const hasY = runs.some((r) => r.axis === "y");
+  const axis: CutawayAxis = hasX && hasY ? "xy" : hasX ? "x" : "y";
+  return s.flipX && axis !== "xy" ? (axis === "x" ? "y" : "x") : axis;
+}
+
+function boxesOverlap(a: PlacedSprite, b: PlacedSprite): boolean {
+  return a.left < b.left + b.width && a.left + a.width > b.left && a.top < b.top + b.height && a.top + a.height > b.top;
+}
+
+/**
+ * Neighbour walls, columns, and doors drawn after (in front of) any floor, equipment, or actor in `room`
+ * whose screen box they overlap, plus wall-mounted props/decals drawn over those affected walls.
+ */
+function foregroundCutaways(layout: ShipLayout, placed: readonly PlacedSprite[], room: RoomId, box: { minX: number; minY: number }): Map<string, Cutaway> {
+  const result = new Map<string, Cutaway>();
+  const behind: PlacedSprite[] = [];
+  const cutawayWalls: { sprite: PlacedSprite; cut: Cutaway }[] = [];
+  for (const s of placed) {
+    if (s.room === room) {
+      if (s.kind === "ground" || s.kind === "entity" || s.kind === "actor") behind.push(s);
+      continue;
+    }
+    const axis = cutawayAxis(layout, s);
+    if (axis) {
+      if (behind.some((t) => boxesOverlap(s, t))) {
+        const cut: Cutaway = { axis, x: s.left - box.minX, y: s.top - box.minY, width: s.width, height: s.height };
+        result.set(s.key, cut);
+        cutawayWalls.push({ sprite: s, cut });
+      }
+      continue;
+    }
+    const flags = layout.slices[s.slice]?.flags;
+    const wallMounted = s.kind === "prop" || (s.kind === "entity" && !!flags?.includes("decal") && !flags.includes("chair"));
+    if (!wallMounted) continue;
+    for (const w of cutawayWalls) {
+      if (w.sprite.room === s.room && boxesOverlap(s, w.sprite)) {
+        result.set(s.key, w.cut);
+        break;
+      }
+    }
+  }
+  return result;
+}
+
 /** The scene to draw, from the placed sprites and what is selected, hovered, reachable and lit. */
 export function describeScene(input: SceneInput): Scene {
   const { layout, room, placed, box, people, corpses, drones, equipment, reachable, brokenDoors, selected, selectedDoor, hoverKey, ownCells, doors, looks } = input;
+  const cutaways = foregroundCutaways(layout, placed, room, box);
   const isSelected = (kind: Target["kind"], id: string) => sameTarget(selected, { kind, id } as Target);
   const sprites: SceneSprite[] = [];
   const outlines: SceneOutline[] = [];
@@ -513,7 +581,12 @@ export function describeScene(input: SceneInput): Scene {
       const lit = s.kind !== "actor" && (s.door?.target === room || (s.kind === "wall" && ownCells.has(`${s.cell.x},${s.cell.y}`)));
       const lifted = n === selectedDoor || (reachable.has(n) && hoverKey === `n:${n}`);
       const effect = lit ? undefined : lifted ? "foggedLifted" : "fogged";
-      sprites.push(s.kind === "actor" ? { ...personPicture(s, input, base), role: "person", effect, shadow: "standing", kind: s.kind, slice: s.slice } : { ...tile(), role: "tile", effect, kind: s.kind, slice: s.slice });
+      const cutaway = cutaways.get(s.key);
+      sprites.push(
+        s.kind === "actor"
+          ? { ...personPicture(s, input, base), role: "person", effect, shadow: "standing", kind: s.kind, slice: s.slice }
+          : { ...tile(), role: "tile", effect, ...(cutaway && { cutaway }), kind: s.kind, slice: s.slice },
+      );
       continue;
     }
     const hover = s.key === hoverKey;

@@ -35,7 +35,7 @@ const DRONE = { sheet: "F", x: 0, y: 120, width: 32, height: 56, framesX: 2, ani
 const layout = {
   roomSize: 32,
   sheets: {},
-  slices: { camera: { anims: [{ frames: [0, 1, 2, 1] }] }, door: DOOR, rotational_reactor: REACTOR, core_pilgred: CORE, core_pilgred_upgrade: CORE_UPGRADE, human_tank: TANK, human_tank_full: TANK_FULL, server: SERVER, server_active: SERVER_ACTIVE, base_drone: DRONE },
+  slices: { camera: { anims: [{ frames: [0, 1, 2, 1] }] }, door: DOOR, rotational_reactor: REACTOR, core_pilgred: CORE, core_pilgred_upgrade: CORE_UPGRADE, human_tank: TANK, human_tank_full: TANK_FULL, server: SERVER, server_active: SERVER_ACTIVE, base_drone: DRONE, poster: { flags: ["decal"] }, chair: { flags: ["chair"] } },
   rooms: [],
   autoBind: {},
 } as unknown as ShipLayout;
@@ -435,5 +435,31 @@ describe("smoke", () => {
       { key: "d1", x: 16 - -100, y: 24 - -50, footprint: [1, 1], at: 2 },
       { key: "e2", x: 32 - -100, y: 48 - -50, footprint: [1, 1], at: 4 },
     ]);
+  });
+});
+
+describe("cutaway", () => {
+  it("marks foreground neighbour walls, columns, doors, and wall-mounted decals/props", () => {
+    const backWall = placed({ key: "n_back", room: NEXT, kind: "wall", slice: "BIG_WALL_R", left: 0, top: 0, width: 48, height: 66 });
+    const ownWall = placed({ key: "own_wall", room: HERE, kind: "wall", slice: "BIG_WALL_L", left: 0, top: 0, width: 48, height: 66 });
+    const floor = placed({ key: "f0", room: HERE, kind: "ground", left: 0, top: 20, width: 32, height: 16 });
+    const frontR = placed({ key: "n_front_r", room: NEXT, kind: "wall", slice: "BIG_WALL_R", left: 10, top: 10, width: 48, height: 66 });
+    const frontL = placed({ key: "n_front_l", room: NEXT, kind: "wall", slice: "WALL_L_DECK", left: 0, top: 0, width: 32, height: 81 });
+    const column = placed({ key: "n_col", room: NEXT, kind: "wall", slice: "COLUMN", left: 10, top: 10, width: 32, height: 65 });
+    const poster = placed({ key: "n_poster", room: NEXT, kind: "entity", slice: "poster", left: 20, top: 15, width: 20, height: 35 });
+    const prop = placed({ key: "n_prop", room: NEXT, kind: "prop", slice: "wall_sign", left: 20, top: 15, width: 16, height: 16 });
+    const chair = placed({ key: "n_chair", room: NEXT, kind: "entity", slice: "chair", left: 20, top: 15, width: 16, height: 24 });
+    const farWall = placed({ key: "n_far", room: NEXT, kind: "wall", slice: "BIG_WALL_R", left: 200, top: 200, width: 48, height: 66 });
+    const s = scene([backWall, ownWall, floor, frontR, frontL, column, poster, prop, chair, farWall]);
+    const byKey = new Map(s.sprites.map((sp) => [sp.key, sp.cutaway]));
+    expect(byKey.get("n_back")).toBeUndefined();
+    expect(byKey.get("own_wall")).toBeUndefined();
+    expect(byKey.get("n_front_r")).toEqual({ axis: "x", x: 110, y: 60, width: 48, height: 66 });
+    expect(byKey.get("n_front_l")?.axis).toBe("y");
+    expect(byKey.get("n_col")?.axis).toBe("xy");
+    expect(byKey.get("n_poster")).toEqual(byKey.get("n_front_r"));
+    expect(byKey.get("n_prop")).toEqual(byKey.get("n_front_r"));
+    expect(byKey.get("n_chair")).toBeUndefined();
+    expect(byKey.get("n_far")).toBeUndefined();
   });
 });

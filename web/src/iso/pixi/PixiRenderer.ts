@@ -19,16 +19,16 @@
 // and rebuilds its textures and programs when it comes back. This only stops drawing while it is lost
 // and draws once it is back, since nothing else would ask for a frame.
 
-import { Application, Container, type Filter, Rectangle, RendererType, Sprite, Texture, TextureStyle, TilingSprite } from "pixi.js";
+import { Application, Container, type Filter, Rectangle, RendererType, Sprite, Texture, TextureStyle, TilingSprite, UniformGroup } from "pixi.js";
 // Pixi's shader code without `new Function`, which the CSP forbids (web/public/_headers).
 import "pixi.js/unsafe-eval";
 import { FX_SHEET } from "../../art/assets.ts";
 import { keyedUrl } from "../../art/keyedSprite.ts";
-import { animId, animStep, frameAt, PACE_SPEED, type FrameUpdate, type Scene, type SceneImage, type SceneOutline, type ScenePicture, type SceneSprite, type ShipTurn } from "../scene.ts";
+import { animId, animStep, type Cutaway, frameAt, PACE_SPEED, type FrameUpdate, type Scene, type SceneImage, type SceneOutline, type ScenePicture, type SceneSprite, type ShipTurn } from "../scene.ts";
 import { shiftTile, stepTurn, tilePosition, type TurnLimits } from "../skyTurn.ts";
 import { starfield, starLayer } from "../starfield.ts";
 import { ESP, espPulse, filterKey, lookOf } from "./effects.ts";
-import { EspFilters, lookFilter } from "./filters.ts";
+import { cutawayFilter, EspFilters, lookFilter } from "./filters.ts";
 import { RoomFire } from "./fire.ts";
 import { RoomSmoke } from "./smoke.ts";
 
@@ -192,8 +192,10 @@ export class PixiRenderer {
   private loading = 0;
   private raf = 0;
   private resize: ResizeObserver | null = null;
-  /** Filters by look (filterKey), and the outlines' two, made once the renderer is up. */
+  /** Filters by look (filterKey), cutaway filters by axis+padding, and the outlines' two, made once the renderer is up. */
   private readonly looks = new Map<string, Filter>();
+  private readonly cutaways = new Map<string, Filter>();
+  private readonly cameraUniforms = new UniformGroup({ uCamera: { value: new Float32Array([0, 0]), type: "vec2<f32>" } });
   private esp: { pulsing: EspFilters; faint: EspFilters } | null = null;
   /** Whether any outline that pulses is showing, which keeps frames coming. */
   private pulsing = false;
@@ -378,6 +380,9 @@ export class PixiRenderer {
     const x = Math.round(camera.x);
     const y = Math.round(camera.y);
     this.world.position.set(x, y);
+    const cam = this.cameraUniforms.uniforms.uCamera as Float32Array;
+    cam[0] = x;
+    cam[1] = y;
     if (!this.reducedMotion.matches) {
       const dx = camera.x - this.camera.x;
       const dy = camera.y - this.camera.y;
@@ -479,6 +484,7 @@ export class PixiRenderer {
     // Textures stay cached for the next renderer; only this one's sprites and filters go.
     if (this.ready) this.app.destroy({ removeView: true }, { children: true });
     for (const f of this.looks.values()) f.destroy();
+    for (const f of this.cutaways.values()) f.destroy();
     this.esp?.pulsing.destroy();
     this.esp?.faint.destroy();
     this.fire.destroy();
@@ -502,6 +508,16 @@ export class PixiRenderer {
     sprite.position.set(x, y);
   }
 
+  private getCutawayFilter(cut: Cutaway): Filter {
+    const key = `${cut.axis}|${cut.x},${cut.y},${cut.width},${cut.height}`;
+    let filter = this.cutaways.get(key);
+    if (!filter) {
+      filter = cutawayFilter(cut, this.cameraUniforms, this.app.renderer.resolution);
+      this.cutaways.set(key, filter);
+    }
+    return filter;
+  }
+
   /** Fog as a tint; anything else as the filter for that look, shared with every sprite that has it. */
   private paintSprite(d: Drawn, s: SceneSprite) {
     const look = lookOf(s);
@@ -512,7 +528,13 @@ export class PixiRenderer {
       filter = lookFilter(look, (token) => this.color(token), this.app.renderer.resolution);
       this.looks.set(key, filter);
     }
-    if (d.sprite.filters?.[0] !== filter) d.sprite.filters = filter ? [filter] : [];
+    const next: Filter[] = [];
+    if (filter) next.push(filter);
+    if (s.cutaway && this.esp) next.push(this.getCutawayFilter(s.cutaway));
+    const cur = d.sprite.filters ?? [];
+    if (cur.length !== next.length || cur.some((f, i) => f !== next[i])) {
+      d.sprite.filters = next;
+    }
   }
 
   /** Shown only while a wall covers the person; faint for someone in another room, which doesn't pulse. */

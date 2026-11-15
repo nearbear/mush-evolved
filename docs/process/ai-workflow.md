@@ -3968,3 +3968,9 @@ Two hidden-information choices made by Claude, not the owner, worth a look: (1) 
 ## 2026-11-15: Incident disease list no longer pinned by a test
 
 - Owner added Migraine and Sinus Storm to `config.diseases.incidentDiseases` and asked that changing the list need no other edits. The incident code already read the list from config; only a test pinned its exact values. Claude replaced it with an invariant (non-empty, no duplicates, each entry in `allDiseases` with a modifier and stats) and removed the hard-coded names from `implemented-rules.md`.
+
+### 2026-11-15 — Ordered-dither cutaway for foreground walls (PixiJS)
+
+- **Decided (user):** Try a 4×4 Bayer ordered-dither cutaway for foreground neighbour walls, doors, columns, and wall-mounted props/decals in the PixiJS renderer (DOM renderer left untouched).
+- **What worked:** Computing the cutaway in world-space pixels against the host wall's 2:1 iso-sloped box (`Cutaway` in `web/src/iso/scene.ts`, `cutawayFilter` in `web/src/iso/pixi/filters.ts`) keeps overlapping walls aligned, avoids screen-door swim on camera pan, and dissolves wall-mounted props at the same height as their host wall.
+- **What needed correction:** The first shader failed to link in WebGL2 because `uOutputFrame` in the fragment shader lacked `highp` to match the vertex shader, making filtered walls invisible; adding `highp` and replacing the `int[16]` Bayer table with a bitwise calculation fixed it.
