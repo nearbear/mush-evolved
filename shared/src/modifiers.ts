@@ -26,6 +26,7 @@ import { engineer } from "./modifiers/engineer.ts";
 import { escape } from "./modifiers/escape.ts";
 import { expert } from "./modifiers/expert.ts";
 import { first_aid } from "./modifiers/first_aid.ts";
+import { frugivore } from "./modifiers/frugivore.ts";
 import { green_thumb } from "./modifiers/green_thumb.ts";
 import { gunman } from "./modifiers/gunman.ts";
 import { gunner } from "./modifiers/gunner.ts";
@@ -35,7 +36,6 @@ import { maintenance_agent } from "./modifiers/maintenance_agent.ts";
 import { medic } from "./modifiers/medic.ts";
 import { mycologist } from "./modifiers/mycologist.ts";
 import { observant } from "./modifiers/observant.ts";
-import { opportunist } from "./modifiers/opportunist.ts";
 import { paranoid } from "./modifiers/paranoid.ts";
 import { persistent } from "./modifiers/persistent.ts";
 import { physicist } from "./modifiers/physicist.ts";
@@ -200,6 +200,7 @@ export const MODIFIERS: Record<string, Modifier> = {
   escape,
   expert,
   first_aid,
+  frugivore,
   green_thumb,
   gunman,
   gunner,
@@ -209,7 +210,6 @@ export const MODIFIERS: Record<string, Modifier> = {
   medic,
   mycologist,
   observant,
-  opportunist,
   paranoid,
   persistent,
   physicist,

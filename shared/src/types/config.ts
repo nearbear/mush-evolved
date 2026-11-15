@@ -622,6 +622,7 @@ export interface GameConfig {
     missBonus: number; // Added to the hunter's chance after each miss.
     followShare: number; // Share of the hunters whose kind `follows: "share"` that follow a jump (travel or leaving orbit), rounded up.
     patrolTargetChance: number; // Chance a hunter picking a target aims at a patrol ship in flight (one at random), when any is out.
+    meridonScramblerChance: number; // Chance a hunter picking a target aims at a random shooting teammate when FUNGUS_SCRAMBLER is complete (owner, 2026-11-14).
     // What a destroyed hunter leaves in space: weights by piece count (index = count), and by item type for each piece.
     debris: { count: number[]; types: Record<string, number> };
     types: Record<HunterType, HunterTypeConfig>;

@@ -1463,7 +1463,7 @@
       "STEROIDS": "Produces 4 anabolic steroids.",
       "MYCOSCAN": "Detects spores on a healthy crew member.",
       "PATULINE_SCRAMBLER": "The infected can no longer communicate on the Mush channel.",
-      "FUNGUS_SCRAMBLER": "Hunters have a 20% chance on each shot of targeting one of their own.",
+      "FUNGUS_SCRAMBLER": "Hunters have a 20% chance when selecting a new target of targeting one of their own.",
       "PHEROMODEM": "The tracker can now be used to communicate on the Mush channel.",
       "CONSTIPASPORE_SERUM": "Raises the cost of creating spores by 2.",
       "MYCO_ALARM": "Produces 5 MycoAlarms.",

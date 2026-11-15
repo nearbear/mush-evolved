@@ -3817,3 +3817,13 @@ Small refactor on request: `GameRoom.social` called four bot-line parsers (item,
 
 - **Decision (owner):** Once `AUTO_WATERING` is complete, each cycle change rolls a 25% chance per burning room (no daily cap) to extinguish it before fires spread or deal damage, including fires started on that same cycle. Extinguishing posts NERON's `fireExtinguishedSprinklers` in global chat without the room name.
 - **What worked:** Implementing it at the start of `fireCycle` in `shared/src/fire.ts` keeps it pure, seeded, and naturally integrates with `pruneReports` on `tick`.
+
+### 2026-11-14 — Meridon scrambler (`FUNGUS_SCRAMBLER`) research
+- **Decision (owner):** Once `FUNGUS_SCRAMBLER` is complete, each hunter selecting a new target has a 20% chance (`config.hunters.meridonScramblerChance`) to target a random other shooting hunter (excluding self and asteroids), falling back to normal targeting if none exist. Hits deal damage through `damageHunter` (silent, no log entry) and clear `target = null`; if the targeted teammate is already gone before the hunter's turn, it clears `target` and spends that action picking a new target.
+- **What worked:** Clarifying the four edge-case questions upfront via `ask_question` before touching code kept the implementation and tests clean and unambiguous. Also caught that `huntersAct` needed a liveness check so a hunter killed by a teammate earlier in the same cycle doesn't still take its remaining actions.
+
+### 2026-11-14: Frugivore skill (`frugivore`)
+
+- **Decision (owner):** Renamed English display name from `Fruitarian` to `Frugivore` (`names.en.json`, `web/src/locales/en.json`). Implemented `frugivore` (`modifiers/frugivore.ts`): humans gain `+1` AP on eating a banana (`config.frugivore.bananaAp`) and `+2` AP on eating an alien fruit (`config.frugivore.alienFruitAp`), capped at `maxAp`, with no other effect (no fruit lore, does not apply to Mush).
+- **What worked:** Using `onConsume` in `modifiers/frugivore.ts` automatically restricts the bonus to humans because `consumedByMush` skips skill `onConsume` hooks.
+- **Verification note:** `shared` (`skills.test.ts` including the 5 new `frugivore` tests) and `web` tests passed; `npm run verify` hit two unrelated failures from other work in the checkout (`shared/tests/autoWatering.test.ts` and `tools/tests/leaks/fields.test.ts` for `opportunistTitles: opportunist.test.ts`).

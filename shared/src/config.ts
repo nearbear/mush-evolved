@@ -341,6 +341,8 @@ export const DEFAULT_CONFIG: GameConfig = {
     followShare: 0.5,
     // Owner, 2026-10-28 (patrol plan, phase 4): eMush's 15% to aim at a patrol ship in flight, when one is out.
     patrolTargetChance: 0.15,
+    // Owner, 2026-11-14: Meridon scrambler (FUNGUS_SCRAMBLER) gives a 20% chance to target a random shooting teammate.
+    meridonScramblerChance: 0.2,
     // Owner, 2026-10-28 (patrol plan, phase 5): eMush's 1 piece (2/3) or 2 (1/3), metal scraps 2 : space capsule 1 : plastic scraps 1.
     debris: { count: [0, 2, 1], types: { metal_scraps: 2, space_capsule: 1, plastic_scraps: 1 } },
     // Owner, 2026-11-12 (#388): eMush's kinds (`HunterConfigData`). Draw weights 10/1/1/1/2, the Arack, asteroid and Trax
