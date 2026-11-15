@@ -516,6 +516,8 @@ export interface GameConfig {
     neronParticipation: { percent: number };
     // Automatic sprinklers (AUTO_WATERING; owner, 2026-11-14): each burning room has `extinguishChance` per cycle to go out before acting, announced in global chat without the room.
     autoWatering: { extinguishChance: number };
+    // Trail reducer (TRAIL_REDUCER; owner, 2026-11-14): halves the share of "share" hunters following a jump (50% -> 25%).
+    trailReducer: { followMultiplier: number };
   };
   pilgred: {
     cost: { ap: number }; // AP spent to take part in repairing PILGRED (owner, 2026-10-21; the original's REPAIR_PILGRED, 2).

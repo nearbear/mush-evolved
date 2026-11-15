@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { ACTIONS } from "../src/actions.ts";
 import { DEFAULT_CONFIG, PRESELECTION } from "../src/config.ts";
-import { huntersPerCyclePoints } from "../src/hunters.ts";
+import { huntersFollow, huntersPerCyclePoints } from "../src/hunters.ts";
 import { followingHuntersShare } from "../src/modifiers.ts";
 import { joinShip } from "../src/preselection.ts";
 import { parseGameMessage } from "../src/protocol.ts";
-import { RESEARCH_COMPLETE, researchStatus } from "../src/research.ts";
+import { PROJECT_STATUS } from "../src/projects.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameConfig, GameState } from "../src/types.ts";
 import { clone, costOf, makeSeats, must, nextCycle, noHunters, noIncidents, offered, player } from "./support.ts";
@@ -320,6 +320,63 @@ describe("hunters following a jump", () => {
     expect(followingHuntersShare(2, s, {})).toBe(1);
     player(s, "p1").alive = false;
     expect(followingHuntersShare(0.5, s, registry)).toBe(0.5);
+  });
+
+  it("Trail Reducer halves the following share (50% -> 25%) for share hunters on travel and leave orbit, leaving Trax unaffected", () => {
+    expect(PROJECT_STATUS.TRAIL_REDUCER).toBe("full");
+    expect(DEFAULT_CONFIG.project.trailReducer.followMultiplier).toBe(0.5);
+    const partial = jumpReady(4);
+    partial.projects.TRAIL_REDUCER = 99;
+    expect(must(applyAction(partial, "p0", travel)).hunters.list).toHaveLength(2);
+
+    const expectedShare = DEFAULT_CONFIG.hunters.followShare * DEFAULT_CONFIG.project.trailReducer.followMultiplier;
+    for (const n of [1, 2, 4, 8]) {
+      const s = jumpReady(n);
+      s.projects.TRAIL_REDUCER = 100;
+      expect(must(applyAction(s, "p0", travel)).hunters.list).toHaveLength(Math.ceil(n * expectedShare));
+    }
+
+    const orb = jumpReady(8);
+    orb.projects.TRAIL_REDUCER = 100;
+    orb.navigation.orbit = "planet-x";
+    expect(must(applyAction(orb, "p0", leave)).hunters.list).toHaveLength(Math.ceil(8 * expectedShare));
+
+    // Mix via travel (no Arack, which blocks travel): 4 plain -> 1 follows; 2 Trax -> both follow; 1 asteroid + 1 dice -> never follow.
+    const mixedTravel = jumpReady(0);
+    mixedTravel.projects.TRAIL_REDUCER = 100;
+    mixedTravel.hunters.list = [
+      { id: "h1", hp: 6, hitChance: 0.8, target: null, type: "hunter", countdown: null },
+      { id: "h2", hp: 6, hitChance: 0.8, target: null, type: "hunter", countdown: null },
+      { id: "h3", hp: 6, hitChance: 0.8, target: null, type: "hunter", countdown: null },
+      { id: "h4", hp: 6, hitChance: 0.8, target: null, type: "hunter", countdown: null },
+      { id: "t1", hp: 10, hitChance: 0.5, target: null, type: "trax", countdown: null },
+      { id: "t2", hp: 10, hitChance: 0.5, target: null, type: "trax", countdown: null },
+      { id: "a1", hp: 20, hitChance: 1, target: null, type: "asteroid", countdown: 6 },
+      { id: "d1", hp: 30, hitChance: 0.6, target: null, type: "dice", countdown: null },
+    ];
+    const afterTravel = must(applyAction(mixedTravel, "p0", travel)).hunters.list;
+    expect(afterTravel.filter((h) => h.type === "trax")).toHaveLength(2);
+    expect(afterTravel.filter((h) => h.type === "hunter")).toHaveLength(1);
+    expect(afterTravel.filter((h) => h.type === "asteroid" || h.type === "dice")).toHaveLength(0);
+
+    // Aracks ("share") are also halved by Trail Reducer when huntersFollow runs.
+    const withAracks = jumpReady(0);
+    withAracks.projects.TRAIL_REDUCER = 100;
+    withAracks.hunters.list = [
+      { id: "s1", hp: 6, hitChance: 0.4, target: null, type: "spider", countdown: null },
+      { id: "s2", hp: 6, hitChance: 0.4, target: null, type: "spider", countdown: null },
+      { id: "s3", hp: 6, hitChance: 0.4, target: null, type: "spider", countdown: null },
+      { id: "s4", hp: 6, hitChance: 0.4, target: null, type: "spider", countdown: null },
+    ];
+    huntersFollow(withAracks);
+    expect(withAracks.hunters.list).toHaveLength(1);
+
+    // Stacks with crewFollowingHunters hooks.
+    const hooked = jumpReady(1);
+    hooked.projects.TRAIL_REDUCER = 100;
+    player(hooked, "p1").modifiers = ["tactics"];
+    const registry = { tactics: { crewFollowingHunters: (share: number) => share * 0.66 } };
+    expect(followingHuntersShare(0.5, hooked, registry)).toBeCloseTo(0.5 * 0.66 * 0.5);
   });
 });
 

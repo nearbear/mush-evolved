@@ -128,6 +128,8 @@ export const PROJECT_STATUS: Readonly<Partial<Record<ProjectId, ProjectStatus>>>
   AUXILIARY_TERMINAL: "full",
   // Each burning room has a 25% chance per cycle to go out before acting, announced globally without the room (owner, 2026-11-14; fire.ts).
   AUTO_WATERING: "full",
+  // Halves the share of "share" hunters following a jump (50% -> 25%) (owner, 2026-11-14; modifiers.ts `followingHuntersShare`).
+  TRAIL_REDUCER: "full",
 };
 
 export function projectStatus(project: string): ProjectStatus {
