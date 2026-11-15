@@ -3746,3 +3746,17 @@ Small refactor on request: `GameRoom.social` called four bot-line parsers (item,
 
 - **Decision (owner):** Completing `EXTRA_HYDROPONPOTS` spawns 3 empty hydropots (`tree_pot`) on the floor of the Hydroponic Garden (`HYDROPONIC_CENTER`), with no extra room log line beyond the standard project completion log at NERON's Core. Tunable in `config.project.extraHydropots`.
 - **Implementation:** Added `config.project.extraHydropots` (`shared/src/types/config.ts`, `shared/src/config.ts`), spawned the pots in `onProjectCompleted` (`shared/src/projectEffects.ts`), marked `EXTRA_HYDROPONPOTS: "full"` in `PROJECT_STATUS` (`shared/src/projects.ts`), and added unit tests in `shared/tests/extraHydropots.test.ts`.
+
+### 2026-11-14 — Chef (`cook`) skill
+
+- **Decided by the owner:** Chef (`cook`) grants +4 Cook points on pick (`config.cook.pointsOnPick`) and +4 at each day start (`config.cook.pointsPerDay`), held up to `config.cook.capPoints` (8). Alien fruit lore (`FRUIT_LORE_SKILLS`), `FOOD_RETAILER` NERON project bonus, and Cook-point spending on `cook` (0 AP, `paidBy: "cook"`, not `fungal_cuisine`) were already in place.
+- **What worked:** `cookPointsPerDay`, `config.cook.capPoints`, `FRUIT_LORE_SKILLS`, `FOOD_RETAILER`, and `CookAction` Cook-point spending were already built for `maintenance_agent` and `fruits`, so implementing Chef required only `modifiers/cook.ts`, `config.cook.pointsPerDay`/`pointsOnPick`, `RESOURCE_SKILLS.cook`, `SKILL_STATUS.cook = "full"`, and `shared/tests/cook.test.ts`.
+
+### 2026-11-14 — Teslatron reservoir project (`PATROLSHIP_EXTRA_AMMO`)
+- **Decision (owner):** Completing `PATROLSHIP_EXTRA_AMMO` raises patrol ships' max charges by 6 (`10 -> 16`, Pasiphae unaffected; `config.project.patrolShipExtraAmmo.extraCharges = 6`), adds +6 current charges to all non-destroyed patrol ships on completion (capped at the new max), and swaps `spaceship` to `spaceship_upgrade_a` in both the bays (`IsoRoom`) and flight cockpit (`PatrolCockpit`). Marked `"full"` in `PROJECT_STATUS`.
+- **What worked:** `patrolMaxCharges` in `shared/src/patrol.ts`, `onProjectCompleted` in `shared/src/projectEffects.ts`, `roomLooks` in `web/src/iso/IsoRoom.tsx`, and `ShipSprite` in `web/src/hud/PatrolCockpit.tsx` all fit existing project and scenery-swap patterns cleanly.
+
+### 2026-11-14: Constipaspore serum research (`CONSTIPASPORE_SERUM`)
+
+- **Decision (owner):** Completing `CONSTIPASPORE_SERUM` adds `config.spores.constipasporeExtraAp` (2 AP) to `extract_spore` (from 1 to 3 AP). Fertile's first daily extraction stays 0 AP (overrides the serum), and completion emits only the standard `researchCompleted` public log line.
+- **Implementation:** Added `spores.constipasporeExtraAp: 2` in `shared/src/types/config.ts` and `shared/src/config.ts`, checked `state.research.CONSTIPASPORE_SERUM >= RESEARCH_COMPLETE` in `ExtractSporeAction.getCost` (`shared/src/actions/extract_spore.ts`, after `freeExtraction`), and marked `CONSTIPASPORE_SERUM: "full"` in `RESEARCH_STATUS` (`shared/src/research.ts`). Added unit tests in `shared/tests/spores.test.ts`, `shared/tests/fertile.test.ts`, and `shared/tests/research.test.ts`.

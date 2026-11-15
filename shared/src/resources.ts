@@ -19,7 +19,7 @@ const RESOURCE_SKILLS: Partial<Record<ResourceId, readonly string[]>> = {
   core: ["designer"],
   pilgred: ["physicist"],
   garden: ["botanic", "maintenance_agent"],
-  cook: ["maintenance_agent"],
+  cook: ["cook", "maintenance_agent"],
 };
 
 /** Whether a player could gain this resource: they hold some, or one of their skills grants it. Lets the UI hide counters they can never use. */

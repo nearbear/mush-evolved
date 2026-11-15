@@ -18,6 +18,7 @@ import { astrophysician } from "./modifiers/astrophysician.ts";
 import { botanic } from "./modifiers/botanic.ts";
 import { caffeinomaniac } from "./modifiers/caffeinomaniac.ts";
 import { computer } from "./modifiers/computer.ts";
+import { cook } from "./modifiers/cook.ts";
 import { creative } from "./modifiers/creative.ts";
 import { designer } from "./modifiers/designer.ts";
 import { engineer } from "./modifiers/engineer.ts";
@@ -186,6 +187,7 @@ export const MODIFIERS: Record<string, Modifier> = {
   botanic,
   caffeinomaniac,
   computer,
+  cook,
   creative,
   designer,
   engineer,
