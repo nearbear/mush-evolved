@@ -36,7 +36,7 @@ function restIn(room: string, label: string): Goal {
       return bed ? act(bed) : failed("bed_taken");
     },
     keepAcrossCycle(view, memory, _newDay, goals) {
-      if (goals.some((def) => (def.id === "travel" || def.id === "expeditionPrep") && def.options(view, memory).length > 0)) return false;
+      if (goals.some((def) => (def.id === "travel" || def.id === "expeditionPrep" || def.id === "expeditionLaunch") && def.options(view, memory).length > 0)) return false;
       return !(view.hunters.count > 0 && goals.some((def) => HUNTER_GOALS.has(def.id) && def.options(view, memory).length > 0));
     },
   };

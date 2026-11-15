@@ -1,10 +1,10 @@
 import { Action, type ActionCost, isString } from "./action.ts";
 import { equipmentHere } from "../equipment.ts";
-import { PROJECT_COMPLETE, PROJECT_IDS, projectSkills, type ProjectId } from "../projects.ts";
+import { PROJECT_COMPLETE, PROJECT_IDS, projectDone, projectSkills, type ProjectId } from "../projects.ts";
 import { relayGainRange, rollRelayGain, touchRelay } from "../relay.ts";
 import { logPublic } from "../log.ts";
 import { removeStatus } from "../statuses.ts";
-import { offeredProjects, onProjectCompleted } from "../projectEffects.ts";
+import { completeProject, offeredProjects } from "../projectEffects.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
 export type ProjectActionData = { type: "project"; equipment: string; project: string };
@@ -41,7 +41,7 @@ export class ProjectAction extends Action<ProjectActionData> {
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: ProjectActionData): string | null {
     if (!equipmentHere(state, player, "NERON_CORE").some((core) => core.id === target.equipment)) return "cant_project";
     if (!(PROJECT_IDS as readonly string[]).includes(target.project)) return "no_such_project";
-    if ((state.projects[target.project] ?? 0) >= PROJECT_COMPLETE) return "project_done";
+    if (projectDone(state, target.project as ProjectId)) return "project_done";
     if (!offeredProjects(state, player).includes(target.project as ProjectId)) return "invalid_project";
     if (player.statuses.includes("dirty")) return "dirty";
     return null;
@@ -56,13 +56,12 @@ export class ProjectAction extends Action<ProjectActionData> {
     const gain = genius ? PROJECT_COMPLETE : rollRelayGain(state, relayGainRange(state.config.project.progress, player, projectSkills(project), state.relay.projects[project]));
     if (!genius) touchRelay(state.relay.projects, project, player.id);
     const progress = Math.min(PROJECT_COMPLETE, (state.projects[project] ?? 0) + gain);
-    state.projects[project] = progress;
     logPublic(state, player.room, progress >= PROJECT_COMPLETE ? "projectCompleted" : "projectWorked", { name: player.character, project, percent: progress });
     if (progress >= PROJECT_COMPLETE) {
       // Retire the 3 offered projects when one of them finishes; completing an unoffered project via cheat retires only itself.
-      const retired = batch.includes(project) ? new Set(batch) : new Set([project]);
-      state.projectDeck = state.projectDeck.filter((id) => !retired.has(id));
-      onProjectCompleted(state, project);
+      completeProject(state, project, batch.includes(project) ? batch : [project]);
+    } else {
+      state.projects[project] = progress;
     }
   }
 }

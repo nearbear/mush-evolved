@@ -892,7 +892,6 @@
     "summonStoppedNoPath": "Te han convocado a: {{room}}, pero no hay camino hasta allí desde donde estás.",
     "loseMorale": "Has perdido {{amount}} punto de moral.",
     "gainMorale": "Has ganado {{amount}} punto de moral.",
-    "opportunistTitle": "Has ganado {{ap}} PA al convertirte en {{title}} por primera vez.",
     "actionCostChanged": "Tu acción en cola ({{action}}) se ha cancelado porque su coste ha cambiado: ahora cuesta {{ap}} PA y {{mp}} PM.",
     "actionDropped": "Tu acción en cola ({{action}}) ya no era posible y se ha descartado.",
     "becomeDirty": "¡Tienes suciedad por todas partes! Te has ensuciado.",

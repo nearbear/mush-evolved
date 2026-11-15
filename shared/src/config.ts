@@ -307,6 +307,7 @@ export const DEFAULT_CONFIG: GameConfig = {
     neronParticipation: { percent: 5 },
     autoWatering: { extinguishChance: 0.25 },
     trailReducer: { followMultiplier: 0.5 },
+    extraDrone: { room: "NEXUS_ROOM", count: 1 },
   },
   // Owner, 2026-10-21: repairing PILGRED uses the original's numbers (DIG_RATE 6, PILGRED_MOD 2, DIG_BOOST 4, -2 per repeat),
   // 2 AP, 25% dirty; the Physicist gains 1 PILGRED point a day and holds 2.
@@ -329,8 +330,6 @@ export const DEFAULT_CONFIG: GameConfig = {
   guard: { cost: { ap: 1 } },
   // Lethargy (owner, 2026-11-01): +1 AP a cycle from the 4th cycle change spent lying down, AP cap doubled.
   lethargy: { cyclesLying: 4, bonusAp: 1, maxApMultiplier: 2 },
-  // Opportunist (owner, 2026-11-14): +5 AP the first time you gain each title, capped at maxAp.
-  opportunist: { ap: 5 },
   // Confirmed 2026-10-14: showering costs 2 AP, 1 less with soap in your inventory; a Mush takes 4 damage.
   shower: { cost: { ap: 2, soapDiscountAp: 1, waterResistantAp: 1 }, effect: { mushDamage: 4 }, injuryChance: 0.02 },
   transfer: { injuryChance: 0.01 },

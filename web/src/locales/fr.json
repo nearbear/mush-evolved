@@ -892,7 +892,6 @@
     "summonStoppedNoPath": "Vous avez été convoqué(e) : {{room}}, mais aucun chemin n'y mène depuis là où vous êtes.",
     "loseMorale": "Vous avez perdu {{amount}} point de moral.",
     "gainMorale": "Vous avez gagné {{amount}} point de moral.",
-    "opportunistTitle": "Vous avez gagné {{ap}} PA en devenant {{title}} pour la première fois.",
     "actionCostChanged": "Votre action en attente ({{action}}) a été annulée car son coût a changé : elle coûte maintenant {{ap}} PA et {{mp}} PM.",
     "actionDropped": "Votre action en attente ({{action}}) n'était plus possible et a été annulée.",
     "becomeDirty": "Vous êtes sale ! Vous venez de vous salir.",

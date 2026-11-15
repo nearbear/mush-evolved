@@ -1,6 +1,7 @@
-import { applyInput, DEFAULT_CONFIG, legalIn, startGame, viewFor, type LogLine } from "@mush2/shared";
+import { applyAction, applyInput, breakDoor, DEFAULT_CONFIG, doorId, legalIn, shortestPath, startGame, viewFor, type Action, type LogLine, type RoomId } from "@mush2/shared";
 import { describe, expect, it } from "vitest";
 import { GoalBot, LogParrotBot, WanderBot } from "../src/bots.ts";
+import { goTo } from "../src/bots/goals/blocks.ts";
 import type { BotSocial, GoalDef } from "../src/bots/goals/index.ts";
 import { seats } from "../src/testing/fakes.ts";
 
@@ -127,5 +128,63 @@ describe("GoalBot social messages", () => {
 
     expect(await bot.decideAction(viewFor(game, "p0"))).toBeNull();
     expect(bot.takeSocial()).toEqual(messages[2]);
+  });
+});
+
+describe("broken door routing", () => {
+  it("reports a broken door on arrival and routes around it instead of walking back and forth", async () => {
+    const rooms = DEFAULT_CONFIG.rooms;
+    // Find A -> C -> D where breaking C|D forces C -> A -> ... -> D (the A->C->A->C loop if forgotten).
+    let startRoom: RoomId | undefined;
+    let midRoom: RoomId | undefined;
+    let targetRoom: RoomId | undefined;
+    outer: for (const a of Object.keys(rooms)) {
+      for (const c of rooms[a] ?? []) {
+        for (const d of rooms[c] ?? []) {
+          if (d === a || (rooms[a] ?? []).includes(d)) continue;
+          const direct = shortestPath(rooms, a, d);
+          const around = shortestPath(rooms, c, d, (x, y) => doorId(x, y) !== doorId(c, d));
+          if (direct?.length === 2 && direct[0] === c && direct[1] === d && around && around[0] === a) {
+            startRoom = a;
+            midRoom = c;
+            targetRoom = d;
+            break outer;
+          }
+        }
+      }
+    }
+    expect(startRoom).toBeDefined();
+    let game = startGame({ seats: seats(0), config, seed: 1, rulesVersion: "test" });
+    const id = game.players[0]!.id;
+    const p = game.players.find((x) => x.id === id)!;
+    p.room = startRoom!;
+    p.ap = 12;
+    p.mp = 12;
+    breakDoor(game, doorId(midRoom!, targetRoom!));
+
+    const walkGoal: GoalDef = {
+      id: "walkToTarget",
+      priority: 10,
+      options: (v) =>
+        v.you.room === targetRoom
+          ? []
+          : [{ id: "walkToTarget", key: "walkToTarget", label: "walk", step: (v2) => goTo(v2, targetRoom!) ?? { kind: "done" } }],
+    };
+    const bot = new GoalBot(1, 0, [walkGoal]);
+    const taken: Action[] = [];
+    for (let t = 0; t < 30; t++) {
+      const action = await bot.decideAction(viewFor(game, id));
+      if (action === null || action.type === "ready") break;
+      const res = applyAction(game, id, action);
+      expect(res.ok).toBe(true);
+      if (res.ok) game = res.state;
+      taken.push(action);
+    }
+
+    expect(game.players.find((x) => x.id === id)!.room).toBe(targetRoom);
+    expect(taken.some((a) => a.type === "report_door" && a.door === doorId(midRoom!, targetRoom!))).toBe(true);
+    const moves = taken.filter((a): a is Extract<Action, { type: "move" }> => a.type === "move").map((a) => a.to);
+    expect(moves.slice(0, 2)).toEqual([midRoom, startRoom]);
+    expect(moves.at(-1)).toBe(targetRoom);
   });
 });

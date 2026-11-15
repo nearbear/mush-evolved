@@ -134,6 +134,8 @@ export const PROJECT_STATUS: Readonly<Partial<Record<ProjectId, ProjectStatus>>>
   AUTO_WATERING: "full",
   // Halves the share of "share" hunters following a jump (50% -> 25%) (owner, 2026-11-14; modifiers.ts `followingHuntersShare`).
   TRAIL_REDUCER: "full",
+  // Completing it spawns 1 support drone on the Nexus floor (projectEffects.ts).
+  EXTRA_DRONE: "full",
 };
 
 export function projectStatus(project: string): ProjectStatus {

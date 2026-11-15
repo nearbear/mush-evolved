@@ -2,7 +2,7 @@ import { leaveTerminal } from "../spot.ts";
 import { Action, peopleHere, isString } from "./action.ts";
 import { getUp } from "./lie_down.ts";
 import { endsAccommodation } from "../actionTarget.ts";
-import { logPublic } from "../log.ts";
+import { logPublic, withNimbleActor } from "../log.ts";
 import { arrive } from "../spot.ts";
 import { leaveAccommodation, offeredBy, pushing } from "../accommodation.ts";
 import type { Action as AnyAction, GameState, PlayerId, PlayerState } from "../types.ts";
@@ -68,8 +68,10 @@ export function wheelAlong(state: GameState, pusher: PlayerState, from: string):
   getUp(pushed);
   pushed.room = pusher.room;
   arrive(pushed, from);
-  logPublic(state, from, "left", { name: pushed.character, room: pusher.room });
-  logPublic(state, pusher.room, "entered", { name: pushed.character, room: from });
+  withNimbleActor(null, () => {
+    logPublic(state, from, "left", { name: pushed.character, room: pusher.room });
+    logPublic(state, pusher.room, "entered", { name: pushed.character, room: from });
+  });
 }
 
 export class AccommodateAction extends Action<AccommodateActionData> {

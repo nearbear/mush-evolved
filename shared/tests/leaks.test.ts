@@ -81,8 +81,6 @@ function ship(): { state: GameState; sentinels: Sentinel[] } {
     p.skills.push(str(`skill-${p.id}`, room));
     p.bookSkill = str(`bookSkill-${p.id}`, room);
     p.mushSkills.push(str(`mushSkill-${p.id}`, own));
-    // biome-ignore lint/suspicious/noExplicitAny: sentinel title id so any leak is caught
-    p.opportunistTitles = [str(`opportunistTitle-${p.id}`, []) as any];
     p.lyingIn = str(`lyingIn-${p.id}`, room);
     p.lyingSince = num(`lyingSince-${p.id}`, []);
     p.spot = { kind: "door", door: str(`spot-${p.id}`, room) };

@@ -6,6 +6,7 @@ import { CANCEL_HOLD_LINE, HOLD_JUMP_LINE, JUMP_NOW_LINE, crewAboard, formatPlan
 import { canAfford, goTo, roomsWith, travelAp } from "../src/bots/goals/blocks.ts";
 import { commsOfficer } from "../src/bots/goals/commsOfficer.ts";
 import { contactSol } from "../src/bots/goals/contactSol.ts";
+import { expeditionLaunch } from "../src/bots/goals/expeditionLaunch.ts";
 import { EXPEDITION_CHANNEL_NAME, expeditionPlan } from "../src/bots/goals/expeditionPlan.ts";
 import { expeditionPrep, isFitForExpedition, isPriorityExpeditionClaimant, requiredExpeditionGear } from "../src/bots/goals/expeditionPrep.ts";
 import { activeSharedPlanet } from "../src/bots/planetShare.ts";
@@ -2419,5 +2420,185 @@ describe("expeditionPrep: priority claiming, gear rules, drop iTrackie, and ICAR
     if (!next3.ok) return;
     const { game: recovered } = await untilReady(next3.state, botA, bot);
     expect(recovered.items.some((i) => i.at.kind === "player" && i.at.id === botA && i.type === ITRACKIE_ITEM)).toBe(true);
+  });
+
+  it("drops expedition gear to recover iTrackie if inventory is full on return, then shares the report", async () => {
+    const { game: start, botA } = prepSetup(["HYDROCARBON"]);
+    let game = edit(start, botA, (p) => {
+      p.room = DEFAULT_CONFIG.expedition.room;
+      p.ap = 6;
+      p.mp = 6;
+    });
+    // Drop iTrackie in ICARUS and fill all 3 inventory slots with gear.
+    game = {
+      ...game,
+      items: [
+        ...game.items.filter((i) => !(i.at.kind === "player" && i.at.id === botA && i.type !== ITRACKIE_ITEM)),
+        { id: "gear-suit", type: "space_suit", at: { kind: "player", id: botA } },
+        { id: "gear-drill", type: "drill", at: { kind: "player", id: botA } },
+        { id: "gear-compass", type: "quad_compass", at: { kind: "player", id: botA } },
+      ].map((i) =>
+        i.at.kind === "player" && i.at.id === botA && i.type === ITRACKIE_ITEM
+          ? { ...i, at: { kind: "room" as const, id: DEFAULT_CONFIG.expedition.room } }
+          : i,
+      ),
+      navigation: { ...game.navigation, arriving: null, orbit: "planet-1" },
+      expeditions: [
+        {
+          id: "exp-1",
+          planet: "Testaria",
+          day: 1,
+          cycle: game.cycle,
+          members: [botA],
+          crew: [game.players.find((p) => p.id === botA)!.character],
+          events: [
+            { sector: "LANDING", kind: "nothing" },
+            { sector: "HYDROCARBON", kind: "fuel", amount: 2 },
+          ],
+        },
+      ],
+    };
+
+    const bot = new GoalBot(1, 2, [expeditionPrep]);
+    const { game: after } = await play(game, botA, bot, 4);
+    expect(after.items.some((i) => i.at.kind === "player" && i.at.id === botA && i.type === ITRACKIE_ITEM)).toBe(true);
+    expect(after.sharedReports).toHaveLength(1);
+    expect(after.sharedReports[0]!.text).toBe("Planet: Testaria\nExplored: HYDROCARBON");
+  });
+});
+
+describe("expeditionLaunch: Pilot walks to ICARUS, summons open plan, and launches", () => {
+  function orbitSetup(opts: { sectors?: { tag: string; explored: boolean }[]; instant?: boolean } = {}) {
+    const cfg = opts.instant ? { ...config, instantExpeditions: true } : config;
+    const { game: base, id: pilot } = setup(1, cfg);
+    const crew = base.players.find((p) => p.alive && p.role === "human" && p.id !== pilot && !p.modifiers.includes("wheelchair"))!.id;
+    const sectors = (opts.sectors ?? [
+      { tag: "FOREST", explored: false },
+      { tag: "OXYGEN", explored: false },
+    ]).map((s) => ({ tag: s.tag as GameState["planets"][string][number]["sectors"][number]["tag"], explored: s.explored }));
+
+    let game = edit(base, pilot, (p) => {
+      p.skills = ["pilot"];
+      p.modifiers = [];
+      p.room = "LABORATORY";
+      p.ap = 10;
+      p.mp = 12;
+    });
+    game = edit(game, crew, (p) => {
+      p.room = "SPACESHIP_BAY_A";
+      p.ap = 10;
+      p.mp = 12;
+    });
+    game = {
+      ...game,
+      planets: {
+        ...game.planets,
+        [pilot]: [
+          {
+            id: "planet-orbit",
+            name: "Orbis",
+            direction: "north",
+            distance: 1,
+            picture: 1,
+            sectors,
+            revealed: sectors.length,
+          },
+        ],
+      },
+      navigation: { ...game.navigation, arriving: null, orbit: "planet-orbit" },
+      sharedPlanets: [
+        {
+          id: "sp-1",
+          planet: "planet-orbit",
+          by: pilot,
+          day: 1,
+          cycleOfDay: 1,
+          stale: false,
+          text: formatPlanetShare({ name: "Orbis", direction: "north", distance: 1, sectors: sectors.map((s) => s.tag) }),
+        },
+      ],
+    };
+    const chRes = applyInput(game, { type: "createChannel", by: pilot, name: EXPEDITION_CHANNEL_NAME, members: [crew] });
+    expect(chRes.ok).toBe(true);
+    if (!chRes.ok) throw new Error("createChannel failed");
+    game = chRes.state;
+    const channelId = game.channels[game.channels.length - 1]!.id;
+    const planRes = applyInput(game, {
+      type: "postPlan",
+      by: pilot,
+      plan: {
+        channel: channelId,
+        room: DEFAULT_CONFIG.expedition.room,
+        purpose: "expedition",
+        slots: [{ kind: "onCall", holder: crew, outcome: null }],
+      },
+    });
+    expect(planRes.ok).toBe(true);
+    if (!planRes.ok) throw new Error("postPlan failed");
+    const planId = planRes.state.plans[0]!.id;
+    const claimRes = applyAction(planRes.state, crew, { type: "claim_slot", plan: planId, slot: 0 });
+    expect(claimRes.ok).toBe(true);
+    if (!claimRes.ok) throw new Error("claim_slot failed");
+    return { game: claimRes.state, pilot, crew, planId };
+  }
+
+  it("is only offered to a Pilot in orbit when unexplored sectors remain and no other Pilot owns the open plan", () => {
+    const { game, pilot, crew } = orbitSetup();
+    const nonPilot = edit(game, pilot, (p) => (p.skills = []));
+    expect(expeditionLaunch.options(viewFor(nonPilot, pilot), memory())).toEqual([]);
+
+    const notOrbiting = { ...game, navigation: { ...game.navigation, orbit: null } };
+    expect(expeditionLaunch.options(viewFor(notOrbiting, pilot), memory())).toEqual([]);
+
+    const allExplored = orbitSetup({ sectors: [{ tag: "FOREST", explored: true }] }).game;
+    const allExploredInIcarus = edit(allExplored, pilot, (p) => (p.room = DEFAULT_CONFIG.expedition.room));
+    expect(expeditionLaunch.options(viewFor(allExploredInIcarus, pilot), memory())).toEqual([]);
+
+    const withReport = {
+      ...allExplored,
+      sharedReports: [{ id: "sr-1", report: "ex-1", text: "Planet: Orbis\nExplored: FOREST", by: crew, day: 1, cycleOfDay: 1 }],
+    };
+    const mem = memory();
+    mem.reports.explored.set("Orbis", ["FOREST"]);
+    expect(expeditionLaunch.options(viewFor(withReport, pilot), mem)).toEqual([]);
+
+    const otherPilot = edit(game, crew, (p) => (p.skills = ["pilot"]));
+    expect(expeditionLaunch.options(viewFor(otherPilot, crew), memory())).toEqual([]);
+
+    expect(expeditionLaunch.options(viewFor(game, pilot), memory())).toHaveLength(1);
+  });
+
+  it("walks to ICARUS, runs summon on the open plan, and launches with icarus_takeoff", async () => {
+    const { game: start, pilot, crew, planId } = orbitSetup({ instant: true });
+    const bot = new GoalBot(1, 2, [expeditionLaunch]);
+    const { game: after, taken } = await untilReady(start, pilot, bot);
+
+    expect(taken.some((a) => a.type === "summon" && a.plan === planId)).toBe(true);
+    expect(taken.some((a) => a.type === "icarus_takeoff")).toBe(true);
+    expect(after.plans.find((p) => p.id === planId)!.status).toBe("called");
+    // Summoned crew member walked to ICARUS and joined the expedition.
+    expect(after.expeditions.length).toBeGreaterThanOrEqual(1);
+    expect(after.expeditions[0]!.members).toContain(pilot);
+    expect(after.expeditions[0]!.members).toContain(crew);
+  });
+
+  it("waits in ICARUS when short on AP and launches on the next cycle", async () => {
+    const { game: start, pilot } = orbitSetup({ instant: true });
+    const lowAp = edit(start, pilot, (p) => {
+      p.room = DEFAULT_CONFIG.expedition.room;
+      p.ap = 1;
+    });
+    const bot = new GoalBot(1, 2, [expeditionLaunch]);
+    const { game: summoned, taken: taken1 } = await untilReady(lowAp, pilot, bot);
+    expect(taken1.some((a) => a.type === "summon")).toBe(true);
+    expect(taken1.some((a) => a.type === "icarus_takeoff")).toBe(false);
+    expect(summoned.players.find((p) => p.id === pilot)!.room).toBe(DEFAULT_CONFIG.expedition.room);
+
+    const next = newCycle(edit(summoned, pilot, (p) => (p.ap = 6)));
+    expect(next.ok).toBe(true);
+    if (!next.ok) return;
+    const { game: launched, taken: taken2 } = await untilReady(next.state, pilot, bot);
+    expect(taken2.some((a) => a.type === "icarus_takeoff")).toBe(true);
+    expect(launched.expeditions).toHaveLength(1);
   });
 });
