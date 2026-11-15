@@ -636,3 +636,9 @@
   margin: 0;
   padding: 0 var(--space-2);
 }
+
+/* Pink Eye (blurredVision): the iTrackie's text and the action buttons are blurred. Visual only; screen readers still read them. */
+.itrackie.blurred-vision .itrackie-tabs-root,
+button.blurred-vision {
+  filter: blur(1.5px);
+}

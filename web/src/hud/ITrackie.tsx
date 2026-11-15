@@ -8,7 +8,7 @@ import { Fragment, memo, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
 import { Tabs } from "@base-ui/react/tabs";
-import { FEATURE_CHANNELS, ITRACKIE_ITEM, GRAVEYARD_CHANNEL, MUSH_CHANNEL, jsonEqual, type ChannelId, type LogLine, type FeatureChannel, type PlayerView, type SharedPlanetId, type SharedReportId, type ThreadId } from "@mush2/shared";
+import { blurredVision, FEATURE_CHANNELS, ITRACKIE_ITEM, GRAVEYARD_CHANNEL, MUSH_CHANNEL, jsonEqual, type ChannelId, type LogLine, type FeatureChannel, type PlayerView, type SharedPlanetId, type SharedReportId, type ThreadId } from "@mush2/shared";
 import { useChatReadStore, useReadSnapshot } from "../chatRead.ts";
 import { readAllOn, unreadByFeature, unreadByTab, type TabId } from "./chatTabs.ts";
 import { MarkAllContext } from "./unreadDivider.ts";
@@ -193,7 +193,7 @@ export function ITrackie({
 
   return (
     <MarkAllContext.Provider value={markedAll}>
-    <div className="hud-card itrackie">
+    <div className={blurredVision(view) ? "hud-card itrackie blurred-vision" : "hud-card itrackie"}>
       <ExpeditionReportDialog report={view.expeditions.find((r) => r.id === report)} onClose={() => setReport(null)} canShare={view.canShareReports} onShare={onShareReport} />
       <Tabs.Root className="itrackie-tabs-root" value={activeTab} onValueChange={(v) => setTab(v as TabId)}>
         <Tabs.List className="itrackie-tabs">

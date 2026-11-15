@@ -699,6 +699,7 @@ export interface GameConfig {
     fullBellyAt: number; // Satiety at which a human has the full belly status and can't eat (confirmed 2026-10-14).
     hungryAfterCycles: number; // Cycles after satiety reaches 0 before the hungry status starts (confirmed 2026-10-14).
     hpPerCycle: number; // HP a hungry human loses each cycle (confirmed 2026-10-14).
+    tapewormHungryAfterCycles: number; // `hungryAfterCycles` for a human with a tapeworm (owner, 2026-11-15).
   };
   dismantle: {
     cost: { ap: number }; // AP spent to dismantle an item (confirmed 2026-10-13).

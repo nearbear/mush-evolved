@@ -60,6 +60,9 @@ import { skin_inflammation_disease } from "./modifiers/skin_inflammation_disease
 import { smallpox_disease } from "./modifiers/smallpox_disease.ts";
 import { rejuvenation_disease } from "./modifiers/rejuvenation_disease.ts";
 import { mush_allergy_disease } from "./modifiers/mush_allergy_disease.ts";
+import { acid_reflux_disease } from "./modifiers/acid_reflux_disease.ts";
+import { tapeworm_disease } from "./modifiers/tapeworm_disease.ts";
+import { pink_eye_disease } from "./modifiers/pink_eye_disease.ts";
 import { gastroenteritis_disease } from "./modifiers/gastroenteritis_disease.ts";
 import { broken_nose_injury } from "./modifiers/broken_nose_injury.ts";
 import type { ActionCost } from "./actions.ts";
@@ -80,6 +83,7 @@ type FoldHooks = Record<
   | "sporesPerDay"
   | "healAmount"
   | "satietyPerCycle"
+  | "mealAp"
   | "punchDamage"
   | "turretDamage"
   | "hullRepairAmount"
@@ -252,6 +256,9 @@ export const MODIFIERS: Record<string, Modifier> = {
   smallpox_disease,
   rejuvenation_disease,
   mush_allergy_disease,
+  acid_reflux_disease,
+  tapeworm_disease,
+  pink_eye_disease,
   // Injuries
   broken_nose_injury,
 };
@@ -542,6 +549,10 @@ export const bandageHealAmount = (state: Readonly<GameState>, player: Readonly<P
 /** Satiety a human loses each cycle: the configured loss folded through the player's modifiers. */
 export const satietyLoss = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
   fold("satietyPerCycle", state.config.hunger.satietyPerCycle, state, player, registry);
+
+/** AP a human gains from eating food (satiety above 0), before the AP cap: the meal's AP folded through the player's modifiers. */
+export const mealApGain = (state: Readonly<GameState>, player: Readonly<PlayerState>, ap: number, registry: ModifierRegistry = MODIFIERS) =>
+  fold("mealAp", ap, state, player, registry);
 
 /** Care points a player gains at the start of a day: nothing by default, plus whatever their skills grant. */
 export const carePointsGain = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
