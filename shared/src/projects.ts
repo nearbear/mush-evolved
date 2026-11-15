@@ -84,6 +84,8 @@ export type ProjectStatus = "full" | "partial" | "none";
 
 /** Implementation status shown in the NERON core's project list. Update it when a project gains effects. */
 export const PROJECT_STATUS: Readonly<Partial<Record<ProjectId, ProjectStatus>>> = {
+  // Patrol ship, Pasiphae, and Icarus takeoff cost 1 AP less (owner, 2026-11-14; modifiers.ts `actionCost`).
+  PATROL_SHIP_LAUNCHER: "full",
   // The shield absorbs 67% of a hit instead of 33% (owner, 2026-10-24; ship.ts).
   PLASMA_SHIELD: "full",
   // Reports every fire: burning rooms turn red on the minimap and show on the alert bar (owner, 2026-11-02; #444).

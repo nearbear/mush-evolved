@@ -3721,3 +3721,10 @@ The Items tab's Spawn row became a picker: a search field (accent- and case-inse
 ## 2026-11-14: machine-line check moved out of GameRoom
 
 Small refactor on request: `GameRoom.social` called four bot-line parsers (item, fire, tank, jump-hold) inline to decide whether a chat line wakes bots. That check is now `isMachineLine` in `server/src/bots/machineLines.ts`, so a new bots' line format is added next to the others instead of in `GameRoom`. Behavior unchanged; a small test covers every format. What needed correction: the first test used made-up item and room ids, which the parsers rightly reject (tank lines must name a tank room).
+
+- **Takeoff thruster (`PATROL_SHIP_LAUNCHER`)** (2026-11-14, owner): Asked three open questions before coding (scope of discount, discount amount, iso bay platform art swap). Owner chose: discount applies to patrol ships, Pasiphae (`takeoff`), and Icarus expeditions (`icarus_takeoff`); 1 AP less (floor 0 AP); and swap bay platforms to `bay_alpha_platform_upgrade` / `bay_beta_platform_upgrade` in `IsoRoom.tsx`. Implemented via `config.project.patrolShipLauncher.takeoffApDiscount`, `actionCost` in `shared/src/modifiers.ts`, `PROJECT_STATUS.PATROL_SHIP_LAUNCHER = "full"`, and `roomLooks` in `web/src/iso/IsoRoom.tsx`. What worked: `actionCost` and `roomLooks` already held the exact patterns for `CHIPSET_ACCELERATION`, `BAY_DOOR_XXL`, and `PLASMA_SHIELD`, and the upgraded platform slices were already in `ship-art.json`.
+
+### 2026-11-14 — Alpha Bay 2 bay door paint order
+
+- **Cause:** `bay_window` (20×1 entity in the back wall row off the floor) was clipped onto `floor.y0` by `clip()` in `web/src/iso/placement.ts`, making its box overlap `cupboard3` and `dynarcade` in Alpha Bay 2 (`SPACESHIP_BAY_AA`) and fall back to anchor `depth` (35 > 17 and 24).
+- **Fix:** Exempt `bay_window` and `bay_window_upgrade` from `clip()` in `tileSortables` so their footprint stays on the back wall row behind floor furniture, and added a regression test in `web/tests/iso/placement.test.ts`.

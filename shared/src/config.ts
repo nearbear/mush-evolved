@@ -284,6 +284,7 @@ export const DEFAULT_CONFIG: GameConfig = {
     foodRetailer: { room: "NEXUS_ROOM", items: ["output_tube", "input_tube", "input_tube"] },
     quantumSensors: { extraSectors: 1 },
     chipsetAcceleration: { scanApDiscount: 1 },
+    patrolShipLauncher: { takeoffApDiscount: 1 },
     fissionCoffeeRoaster: { cycles: [1, 5] },
     dynarcade: { room: "SPACESHIP_BAY_AA", cost: { ap: 1 }, successChance: 0.33, failureMultiplier: 1.5, morale: 2, injuryChance: 0.33 },
   },

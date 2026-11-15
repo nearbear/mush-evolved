@@ -129,6 +129,7 @@ export function roomLooks(
   neronThread?: boolean,
   bayDoorXxl?: boolean,
   plasmaShield?: boolean,
+  takeoffThruster?: boolean,
 ): ReadonlyMap<string, string> {
   const looks = new Map<string, string>([
     ["auxiliary_terminal_neron", neronThread ? "auxiliary_terminal_neron_upgrade_b" : "auxiliary_terminal_neron_upgrade_a"],
@@ -138,6 +139,10 @@ export function roomLooks(
   if (superCalcBuilt) looks.set("server", "server_active");
   if (bayDoorXxl) looks.set("bay_window", "bay_window_upgrade");
   if (plasmaShield) looks.set("plasma_shield", "plasma_shield_upgrade");
+  if (takeoffThruster) {
+    looks.set("bay_alpha_platform", "bay_alpha_platform_upgrade");
+    looks.set("bay_beta_platform", "bay_beta_platform_upgrade");
+  }
   return looks;
 }
 
@@ -592,9 +597,10 @@ export function IsoRoom({
   const neronThread = (projects?.NERON_PROJECT_THREAD ?? 0) >= PROJECT_COMPLETE;
   const bayDoorXxl = (projects?.BAY_DOOR_XXL ?? 0) >= PROJECT_COMPLETE;
   const plasmaShield = (projects?.PLASMA_SHIELD ?? 0) >= PROJECT_COMPLETE;
+  const takeoffThruster = (projects?.PATROL_SHIP_LAUNCHER ?? 0) >= PROJECT_COMPLETE;
   const looks = useMemo(
-    () => roomLooks(pilgredRepaired, humanTankFull, superCalcBuilt, neronThread, bayDoorXxl, plasmaShield),
-    [pilgredRepaired, humanTankFull, superCalcBuilt, neronThread, bayDoorXxl, plasmaShield],
+    () => roomLooks(pilgredRepaired, humanTankFull, superCalcBuilt, neronThread, bayDoorXxl, plasmaShield, takeoffThruster),
+    [pilgredRepaired, humanTankFull, superCalcBuilt, neronThread, bayDoorXxl, plasmaShield, takeoffThruster],
   );
   const imageInput = { layout, room, people: byId, walkers, seats, corpses, drones, looks };
 

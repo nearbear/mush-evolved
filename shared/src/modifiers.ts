@@ -290,6 +290,10 @@ export function actionCost(base: ActionCost, ctx: CostContext, registry: Modifie
   if (ctx.action.type === "scan_planet" && projectDone(ctx.state, "CHIPSET_ACCELERATION")) {
     cost.ap -= ctx.state.config.project.chipsetAcceleration.scanApDiscount;
   }
+  // Takeoff thruster (owner, 2026-11-14): patrol ship, Pasiphae, and Icarus takeoff cost 1 AP less.
+  if ((ctx.action.type === "takeoff" || ctx.action.type === "icarus_takeoff") && projectDone(ctx.state, "PATROL_SHIP_LAUNCHER")) {
+    cost.ap -= ctx.state.config.project.patrolShipLauncher.takeoffApDiscount;
+  }
   // A broken Stellar antenna makes the four Comms terminal actions cost more (owner, 2026-11-08); other actions at the terminal don't.
   if (COMMS_ACTIONS.includes(ctx.action.type) && isBrokenIn(ctx.state, "MOTOR_ROOM", "MOTOR_ROOM:STELLAR_ANTENNA")) {
     cost.ap += ctx.state.config.antenna.brokenApSurcharge;
