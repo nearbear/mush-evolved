@@ -352,6 +352,8 @@
     "getUp": "Se lever",
     "guard": "Garder",
     "stopGuarding": "Cesser de garder",
+    "enterNimble": "Passer en mode agile",
+    "exitNimble": "Quitter le mode agile",
     "accommodate": "Pousser le fauteuil",
     "acceptAccommodation": "Accepter l'aide",
     "stopAccommodation": "Mettre fin à l'aide",
@@ -797,6 +799,7 @@
     "super_inactive": "Grand inactif",
     "focused": "Concentré",
     "hopeless": "Sans espoir",
+    "nimble": "Agile",
     "contaminated": "Contamination : {{level}}",
     "desc": {
       "dirty": "Vous ne pouvez pas faire de recherche. Prendre une douche l'enlève.",
@@ -830,7 +833,8 @@
       "super_inactive": "Ne s'est pas connecté depuis 48 heures. Logistique l'ignore aussi. Prend fin dès sa connexion.",
       "focused": "Accède à un terminal avec un air concentré. Prend fin quand il le ferme, s'éloigne ou quitte la salle.",
       "contaminated": "Un humain que vous avez contaminé. À sa capacité maximale, il devient Mush.",
-      "hopeless": "À 0 de moral. Tout gain de moral y met fin. Un humain encore Sans espoir à la fin du cycle meurt."
+      "hopeless": "À 0 de moral. Tout gain de moral y met fin. Un humain encore Sans espoir à la fin du cycle meurt.",
+      "nimble": "Toutes vos actions publiques dans une salle (déplacements compris) deviennent secrètes. Vous seul voyez cet état."
     }
   },
   "itemAttr": {
@@ -945,6 +949,8 @@
     "punched": "{{name}} a frappé {{target}}.",
     "guarded": "{{name}} garde la salle.",
     "stoppedGuarding": "{{name}} a cessé de garder la salle.",
+    "enteredNimble": "Vous êtes passé en mode agile.",
+    "exitedNimble": "Vous avez quitté le mode agile.",
     "interrogated": "{{name}} a interrogé {{target}}.",
     "chitchatted": "{{name}} a papoté avec {{target}}.",
     "comforted": "{{name}} a réconforté {{target}}.",
@@ -1314,7 +1320,7 @@
       "fertile": "Chaque jour, vous pouvez générer un spore gratuitement.",
       "ninja": "Vos attaques de corps-à-corps deviennent des actions anonymes.",
       "sapper": "Vos chances de succès pour le Sabotage d'équipement ou d'objets sont triplées.",
-      "nimble_fingers": "Vos actions monter et démonter sont discrètes sur les Caméras.",
+      "nimble_fingers": "Vous permet d'entrer et de sortir du mode agile pour 0 PA. En mode agile, toutes vos actions publiques dans une salle (déplacements compris) deviennent secrètes.",
       "water_resistant": "Se doucher ne vous fait perdre aucun PV et coûte 1 PA au plus, avec ou sans savon.",
       "traitor": "Probabilités de résultats négatifs dans les expéditions auxquelles vous participez sont multipliées par 2.",
       "doorman": "Chaque jour, vous pouvez Saboter une Porte gratuitement.",

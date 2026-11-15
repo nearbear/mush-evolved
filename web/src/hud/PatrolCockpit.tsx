@@ -146,7 +146,7 @@ export function PatrolCockpit({ view, ship, layout, onAction }: Props) {
             </button>
             {shoot && (
               <ActionButton view={view} option={shoot} onAction={onAction} className="big space-shoot">
-                <ActionLabel text={t("actions.turretAttack")} cost={shoot.cost} chance={shoot.chance} visibility={actionVisibility(shoot.action.type)} />
+                <ActionLabel text={t("actions.turretAttack")} cost={shoot.cost} chance={shoot.chance} visibility={actionVisibility(shoot.action.type, view)} />
               </ActionButton>
             )}
             <button type="button" aria-label={t("patrol.nextTarget")} disabled={list.length < 2} onClick={() => step(1)}>
@@ -166,7 +166,7 @@ export function PatrolCockpit({ view, ship, layout, onAction }: Props) {
                 onAction={onAction}
                 hint={option.action.type === "collect_scrap" && ship.debris ? t("patrol.debris", { count: ship.debris }) : undefined}
               >
-                <ActionLabel text={names.action(option.action.type)} cost={option.cost} chance={option.chance} visibility={actionVisibility(option.action.type)} />
+                <ActionLabel text={names.action(option.action.type)} cost={option.cost} chance={option.chance} visibility={actionVisibility(option.action.type, view)} />
               </ActionButton>
             ))}
           </div>

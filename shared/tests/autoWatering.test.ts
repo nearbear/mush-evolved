@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { PROJECT_COMPLETE, PROJECT_STATUS } from "../src/projects.ts";
+import { applyInput } from "../src/replay.ts";
 import { createGame, viewFor } from "../src/rules.ts";
 import type { GameConfig, GameState } from "../src/types.ts";
-import { makeSeats, nextCycle, player, setProgress } from "./support.ts";
+import { makeSeats, must, player, setProgress } from "./support.ts";
 
 const HERE = "REFECTORY";
 const ELSEWHERE = "MEDLAB";
@@ -33,7 +34,7 @@ describe("Automatic sprinklers (AUTO_WATERING)", () => {
     const s = ship({ extinguishChance: 1 });
     setProgress(s, { project: "AUTO_WATERING" }, PROJECT_COMPLETE - 1);
     s.fires = [HERE];
-    const after = nextCycle(s);
+    const after = must(applyInput(s, { type: "cycle", at: 0 }));
     expect(after.fires).toEqual([HERE]);
     expect(globalSystem(after).filter((m) => m?.key === "fireExtinguishedSprinklers")).toHaveLength(0);
     expect(player(after, "p0").hp).toBe(player(s, "p0").hp - s.config.fire.damage);
@@ -43,11 +44,11 @@ describe("Automatic sprinklers (AUTO_WATERING)", () => {
     const s = ship({ extinguishChance: 1 }, { spreadChance: 1, hullChance: 1 });
     setProgress(s, { project: "AUTO_WATERING" }, PROJECT_COMPLETE);
     s.fires = [HERE, "CORRIDOR_A"];
-    s.reports.fires.push({ room: HERE, by: "chao" });
+    s.reports.push({ kind: "fire", room: HERE, by: "p0" });
 
-    const after = nextCycle(s);
+    const after = must(applyInput(s, { type: "cycle", at: 0 }));
     expect(after.fires).toEqual([]);
-    expect(after.reports.fires).toEqual([]);
+    expect(after.reports).toEqual([]);
     expect(player(after, "p0").hp).toBe(player(s, "p0").hp);
     expect(after.ship.hull).toBe(s.ship.hull);
     const messages = globalSystem(after).filter((m) => m?.key === "fireExtinguishedSprinklers");
@@ -62,7 +63,7 @@ describe("Automatic sprinklers (AUTO_WATERING)", () => {
     setProgress(s, { project: "AUTO_WATERING" }, PROJECT_COMPLETE);
     s.pendingFires = [HERE];
 
-    const after = nextCycle(s);
+    const after = must(applyInput(s, { type: "cycle", at: 0 }));
     expect(after.fires).toEqual([]);
     expect(globalSystem(after)).toContainEqual({ key: "fireStarted" });
     expect(globalSystem(after)).toContainEqual({ key: "fireExtinguishedSprinklers" });
@@ -74,7 +75,7 @@ describe("Automatic sprinklers (AUTO_WATERING)", () => {
     setProgress(s, { project: "AUTO_WATERING" }, PROJECT_COMPLETE);
     s.fires = [HERE];
 
-    const after = nextCycle(s);
+    const after = must(applyInput(s, { type: "cycle", at: 0 }));
     expect(after.fires).toEqual([HERE]);
     expect(globalSystem(after).filter((m) => m?.key === "fireExtinguishedSprinklers")).toHaveLength(0);
     expect(player(after, "p0").hp).toBe(player(s, "p0").hp - s.config.fire.damage);

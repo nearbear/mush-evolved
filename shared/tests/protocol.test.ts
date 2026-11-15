@@ -748,6 +748,8 @@ describe("actions from a client", () => {
     get_up: [{ type: "get_up" }],
     guard: [{ type: "guard" }],
     stop_guarding: [{ type: "stop_guarding" }],
+    enter_nimble: [{ type: "enter_nimble" }],
+    exit_nimble: [{ type: "exit_nimble" }],
     accommodate: [{ type: "accommodate", target: "p1" }],
     accept_accommodation: [{ type: "accept_accommodation", target: "p1" }],
     stop_accommodation: [{ type: "stop_accommodation", target: "p1" }],

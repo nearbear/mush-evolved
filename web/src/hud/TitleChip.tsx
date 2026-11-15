@@ -5,7 +5,7 @@ import { TITLE_ICONS } from "../art/assets.ts";
 import { useNames } from "../i18n/names.ts";
 
 /** A title's line of succession: the holder in bold, anyone who lost it struck through, anyone without it muted. */
-export function TitleSuccession({ title, preselection = false }: { title: TitleView; preselection?: boolean }) {
+export function TitleSuccession({ entry: title, preselection = false }: { entry: TitleView; preselection?: boolean }) {
   const names = useNames();
   const holderIndex = title.holder !== null ? title.line.indexOf(title.holder) : -1;
   return (
@@ -50,7 +50,7 @@ export function TitlesChip({ titles, preselection = false }: { titles: TitleView
                     <img src={TITLE_ICONS[title.id]} alt="" />
                     <span>{names.title(title.id)}</span>
                   </h3>
-                  <TitleSuccession title={title} preselection={preselection} />
+                  <TitleSuccession entry={title} preselection={preselection} />
                 </section>
               ))}
             </div>
@@ -86,7 +86,7 @@ export function TitleChip({ entry: title, preselection = false }: { entry: Title
           <Popover.Popup className="tooltip resource-card title-card">
             <strong>{name}</strong>
             <p>{t("titles.line")}</p>
-            <TitleSuccession title={title} preselection={preselection} />
+            <TitleSuccession entry={title} preselection={preselection} />
           </Popover.Popup>
         </Popover.Positioner>
       </Popover.Portal>

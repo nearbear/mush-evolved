@@ -346,6 +346,8 @@
     "getUp": "Get up",
     "guard": "Guard",
     "stopGuarding": "Stop guarding",
+    "enterNimble": "Enter Nimble mode",
+    "exitNimble": "Exit Nimble mode",
     "accommodate": "Accommodate",
     "acceptAccommodation": "Accept accommodation",
     "stopAccommodation": "End accommodation",
@@ -784,6 +786,7 @@
     "focused": "Focused",
     "contaminated": "Contamination: {{level}}",
     "hopeless": "Hopeless",
+    "nimble": "Nimble",
     "desc": {
       "dirty": "Can't research. Taking a shower removes it.",
       "full_belly": "You can't eat more until you are hungrier.",
@@ -816,7 +819,8 @@
       "super_inactive": "Hasn't connected for 48 hours. Also skipped by the Logistics Expert. Ends as soon as they connect.",
       "focused": "At a terminal, looking at its screen. Ends when they close it, walk off or leave the room.",
       "contaminated": "A human you have contaminated. At their capacity they turn Mush.",
-      "hopeless": "At 0 morale. Any morale gain ends it. A human still Hopeless when the cycle ends dies."
+      "hopeless": "At 0 morale. Any morale gain ends it. A human still Hopeless when the cycle ends dies.",
+      "nimble": "All of your room-level public actions (including movement) become secret. Only you can see this status."
     }
   },
   "itemAttr": {
@@ -929,6 +933,8 @@
     "punched": "{{name}} punched {{target}}.",
     "guarded": "{{name}} is guarding the room.",
     "stoppedGuarding": "{{name}} stopped guarding the room.",
+    "enteredNimble": "You entered Nimble mode.",
+    "exitedNimble": "You exited Nimble mode.",
     "interrogated": "{{name}} interrogated {{target}}.",
     "chitchatted": "{{name}} chitchatted with {{target}}.",
     "comforted": "{{name}} comforted {{target}}.",
@@ -1387,7 +1393,7 @@
       "fertile": "Each day, you can create a spore for free.",
       "ninja": "Your melee attacks become anonymous actions.",
       "sapper": "Your chances of success when Sabotaging equipment or items are tripled.",
-      "nimble_fingers": "Your assemble and dismantle actions are discreet on Cameras.",
+      "nimble_fingers": "Allows you to enter and exit Nimble mode for 0 AP. In Nimble mode, all of your room-level public actions (including movement) become secret.",
       "water_resistant": "Taking a shower doesn't cost you any HP, and costs 1 AP at most, soap or not.",
       "traitor": "Expedition: You can see what the next sector will be.\nExpedition: Once per expedition, for free, force a bad event to occur in the next cycle.",
       "doorman": "Each day, you can Sabotage a Door for free.",

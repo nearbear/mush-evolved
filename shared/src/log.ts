@@ -69,8 +69,28 @@ export function startLogSeen(state: Readonly<GameState>, p: PlayerState): void {
   p.logSeen = state.log.filter((e) => seesLine(e, p) && inLogWindow(state, e, window)).length;
 }
 
+let nimbleActorId: PlayerId | null = null;
+
+/**
+ * Runs `fn` with `actor` marked as acting in Nimble mode: any room-level `logPublic` call (`room !== undefined`)
+ * becomes `logSecretIn` for `actor` in that room. Ship-wide announcements (`room === undefined`) stay public.
+ */
+export function withNimbleActor<T>(actor: PlayerId, fn: () => T): T {
+  const prev = nimbleActorId;
+  nimbleActorId = actor;
+  try {
+    return fn();
+  } finally {
+    nimbleActorId = prev;
+  }
+}
+
 /** Mutates a state that the caller already cloned. */
 export function logPublic(state: GameState, room: RoomId | undefined, key: string, params?: LogParams, level?: "warning"): void {
+  if (room !== undefined && nimbleActorId !== null) {
+    logSecretIn(state, nimbleActorId, room, key, params);
+    return;
+  }
   pushLog(state, { key, ...(params && { params }), ...(room !== undefined && { room }), visibleTo: "all", ...(level && { level }) });
 }
 
@@ -89,14 +109,31 @@ export function logPrivate(state: GameState, actor: PlayerId, key: string, param
 export function logSecret(state: GameState, actor: PlayerId, key: string, params?: LogParams, hideFrom?: PlayerId): void {
   const p = state.players.find((pl) => pl.id === actor);
   if (!p) return;
+  logSecretIn(state, actor, p.room, key, params, hideFrom);
+}
+
+/**
+ * Same as `logSecret`, but evaluates witnesses and cameras in `room` explicitly (used for `move` in Nimble mode,
+ * where `left` is logged in `from` after `player.room` has already changed to `to`).
+ */
+export function logSecretIn(
+  state: GameState,
+  actor: PlayerId,
+  room: RoomId,
+  key: string,
+  params?: LogParams,
+  hideFrom?: PlayerId,
+): void {
+  const p = state.players.find((pl) => pl.id === actor);
+  if (!p) return;
   if (p.outcastBy !== undefined) {
-    outcastLine(state, p.room, "secret", key, params);
+    outcastLine(state, room, "secret", key, params);
     return;
   }
-  const witnesses = state.players.filter((o) => o.id !== actor && o.alive && o.room === p.room && o.id !== hideFrom);
-  const witnessed = hideFrom === undefined ? state.players.some((o) => o.id !== actor && o.alive && o.room === p.room) : witnesses.length > 0;
-  const visibleTo = cameraSees(state, p.room, params) ? "all" : !witnessed ? [actor] : hideFrom === undefined ? "all" : [actor, ...witnesses.map((o) => o.id)];
-  pushLog(state, { key, ...(params && { params }), room: p.room, visibleTo, kind: "secret", ...spilled(visibleTo) });
+  const witnesses = state.players.filter((o) => o.id !== actor && o.alive && o.room === room && o.id !== hideFrom);
+  const witnessed = hideFrom === undefined ? state.players.some((o) => o.id !== actor && o.alive && o.room === room) : witnesses.length > 0;
+  const visibleTo = cameraSees(state, room, params) ? "all" : !witnessed ? [actor] : hideFrom === undefined ? "all" : [actor, ...witnesses.map((o) => o.id)];
+  pushLog(state, { key, ...(params && { params }), room, visibleTo, kind: "secret", ...spilled(visibleTo) });
 }
 
 /**

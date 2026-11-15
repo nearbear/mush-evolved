@@ -3,6 +3,7 @@ import { isInactive } from "../inactivity.ts";
 import { logPrivate } from "../log.ts";
 import { swapMinds } from "../mind.ts";
 import { hasSkill } from "../skills.ts";
+import { removeStatus } from "../statuses.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
 export type BodyTransferActionData = { type: "body_transfer"; target: string };
@@ -52,6 +53,8 @@ export class BodyTransferAction extends Action<BodyTransferActionData> {
   override apply(state: GameState, player: PlayerState, target: BodyTransferActionData): void {
     const victim = state.players.find((o) => o.id === target.target)!; // checked, so it exists
     const taker = player.character;
+    removeStatus(player, "nimble");
+    removeStatus(victim, "nimble");
     swapMinds(state, player, victim);
     // `player` is the old body, now the victim's (human); `victim` is the Mush's new body.
     delete state.contamination[victim.id];

@@ -76,6 +76,7 @@ export function killPlayer(state: GameState, player: PlayerState, cause: DeathCa
   if (!player.alive) return;
   player.alive = false;
   removeStatus(player, "guardian");
+  removeStatus(player, "nimble");
   player.hp = 0;
   player.ready = false;
   player.current = null;

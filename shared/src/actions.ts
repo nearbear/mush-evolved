@@ -89,6 +89,7 @@ import { ComfortAction } from "./actions/comfort.ts";
 import { AttackAction } from "./actions/attack.ts";
 import { ShareAction } from "./actions/share.ts";
 import { GuardAction, StopGuardingAction } from "./actions/guard.ts";
+import { EnterNimbleAction, ExitNimbleAction, NIMBLE } from "./actions/nimble.ts";
 import { ProtectAction } from "./actions/protect.ts";
 import { GetUpAction, LieDownAction } from "./actions/lie_down.ts";
 import { ReportEquipmentAction, ReportFireAction } from "./actions/report.ts";
@@ -230,6 +231,8 @@ const REGISTRY = {
   report_equipment: new ReportEquipmentAction(),
   guard: new GuardAction(),
   stop_guarding: new StopGuardingAction(),
+  enter_nimble: new EnterNimbleAction(),
+  exit_nimble: new ExitNimbleAction(),
   protect: new ProtectAction(),
   accommodate: new AccommodateAction(),
   accept_accommodation: new AcceptAccommodationAction(),
@@ -269,5 +272,11 @@ export const ACTIONS: { [T in ActionType]: ActionDef<ActionOf<T>> } = REGISTRY;
 /** Whether an action type is done in a terminal's window (`Action.terminal`), so not offered on the inspect panel. */
 export const actionInTerminal = (type: ActionType): boolean => ACTIONS[type].terminal;
 
-/** Whether an action type is public, private, secret or covert. A fixed property of the type, so safe for the client to show. */
-export const actionVisibility = (type: ActionType): ActionVisibility => ACTIONS[type].visibility;
+const SHIP_WIDE_ACTIONS: ReadonlySet<ActionType> = new Set(["travel", "leave_orbit", "return_to_sol"]);
+
+/** Whether an action type is public, private, secret or covert. In Nimble mode, room-level public actions become secret. */
+export const actionVisibility = (type: ActionType, view?: { readonly statuses: readonly string[] }): ActionVisibility => {
+  const base = ACTIONS[type].visibility;
+  if (base === "public" && view?.statuses.includes(NIMBLE) && !SHIP_WIDE_ACTIONS.has(type)) return "secret";
+  return base;
+};

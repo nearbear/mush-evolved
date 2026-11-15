@@ -9,9 +9,10 @@
 import { expirePlans, plansView, strikeSlots } from "./plans.ts";
 import { bindPerformAction } from "./actions/summon.ts";
 import { applyCheats, makeHuman, shipInvincible, type Cheat, type RoleCheat } from "./cheats.ts";
-import { ACTIONS, type ActionDef } from "./actions.ts";
+import { ACTIONS, actionVisibility, type ActionDef } from "./actions.ts";
 import { ARACK_AROUND, AT_CAPACITY, COOLDOWN, DIRTY, NO_DEBRIS, NO_SPACE, PASIPHAE_INTACT, REACTOR_BROKEN } from "./actions/action.ts";
 import { getUp } from "./actions/lie_down.ts";
+import { isNimble } from "./actions/nimble.ts";
 import { researchNeedsView } from "./actions/research.ts";
 import { equipmentHere } from "./equipment.ts";
 import { jellyCycle, leakOxygen } from "./breakage.ts";
@@ -41,7 +42,7 @@ import { clone, dayOf, fail, findPlayer, type ActionResult } from "./helpers.ts"
 
 export { dayOf };
 import { damage, healDaily, hasMushDied } from "./death.ts";
-import { activitySeen, inLogWindow, logPrivate, logWindowOf, pruneLog, pushLog, seesLine, startLogSeen } from "./log.ts";
+import { activitySeen, inLogWindow, logPrivate, logWindowOf, pruneLog, pushLog, seesLine, startLogSeen, withNimbleActor } from "./log.ts";
 import { recordAction } from "./history.ts";
 import { ringMycoAlarms } from "./mycoalarm.ts";
 import { planetsOf } from "./planets.ts";
@@ -303,18 +304,22 @@ export function performAction(next: GameState, actor: PlayerState, action: Actio
   actor.mp -= cost.mp;
   if (cost.paidBy) actor.resources[cost.paidBy] -= 1;
   const room = actor.room;
-  if (chance < 1) {
-    const succeeded = rollFloat(next) < chance;
-    def.recordOutcome(next, actor, succeeded);
-    if (succeeded) def.apply(next, actor, action);
-    else {
-      def.fail(next, actor, action);
-      actionFailed(next, actor, cost.ap);
+  const run = () => {
+    if (chance < 1) {
+      const succeeded = rollFloat(next) < chance;
+      def.recordOutcome(next, actor, succeeded);
+      if (succeeded) def.apply(next, actor, action);
+      else {
+        def.fail(next, actor, action);
+        actionFailed(next, actor, cost.ap);
+      }
+    } else {
+      def.recordOutcome(next, actor, true);
+      def.apply(next, actor, action);
     }
-  } else {
-    def.recordOutcome(next, actor, true);
-    def.apply(next, actor, action);
-  }
+  };
+  if (isNimble(actor)) withNimbleActor(actor.id, run);
+  else run();
   // After apply, so an action that reveals your own history (Chitchat) doesn't show itself.
   if (def.recorded) recordAction(next, actor, action.type);
   if (dirtyChance > 0) {
@@ -636,7 +641,7 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
         // Mush see a contaminated human's level, like a status, on people in their room.
         ...(contamination !== undefined ? { contamination } : {}),
         // A busy bar, never the action: only when its log entry could reach you.
-        ...(here && o.current && activitySeen(state, room, ACTIONS[o.current.action.type].visibility, o)
+        ...(here && o.current && activitySeen(state, room, actionVisibility(o.current.action.type, o), o)
           ? { busy: { since: o.current.since, until: o.current.until } }
           : {}),
       };

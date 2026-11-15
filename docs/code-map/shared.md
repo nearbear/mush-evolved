@@ -110,3 +110,4 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 - `actions/coup.ts` and `coup.ts`: the Politician's Coup (`PlayerState.coupPending`) and its cycle-change resolution into the Commander title.
 - `actions/anathema.ts`: the Persecutor's Anathema (the Outcast status, `PlayerState.outcastBy`).
 - `actions/protect.ts`: the Bodyguard's Protect (`PlayerState.protectedBy`, `protecting`/`protected` statuses).
+- `actions/nimble.ts`: Nimble Fingers (`enter_nimble` / `exit_nimble` toggling the private `nimble` status; `withNimbleActor` in `log.ts` converts room-level `logPublic` calls into `logSecretIn`).

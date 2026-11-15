@@ -336,7 +336,7 @@ const diseaseStatusIcons = Object.fromEntries(DEFAULT_CONFIG.diseases.allDisease
 // Mankind's Only Hope has no status icon in the original (it was a skill there), so its skill icon stands in;
 // Bodyguard's statuses (protecting/protected) use Bodyguard's brick-wall skill icon (`unconcerned.png`).
 const traitSkillIcons = urls(
-  import.meta.glob<string>("../../../Mush/www/img/icons/skills/{mankind_only_hope,unconcerned}.png", { eager: true, query: "?url", import: "default" }),
+  import.meta.glob<string>("../../../Mush/www/img/icons/skills/{mankind_only_hope,unconcerned,nimble_fingers}.png", { eager: true, query: "?url", import: "default" }),
 );
 export const STATUS_ICONS: Readonly<Record<string, string>> = {
   ...diseaseStatusIcons,
@@ -364,6 +364,8 @@ export const STATUS_ICONS: Readonly<Record<string, string>> = {
   focused: statusIconFiles["moduling"]!,
   // At 0 morale (owner, 2026-11-11): the original's worried face. Its `suicidal` icon is left out on purpose.
   hopeless: statusIconFiles["demoralized"]!,
+  // Nimble mode (Nimble Fingers): reuses the Nimble Fingers skill icon.
+  nimble: traitSkillIcons["nimble_fingers"]!,
 };
 /**
  * A class for a status icon that is another status's art recoloured at render time (owner, 2026-10-31, #145): no new
