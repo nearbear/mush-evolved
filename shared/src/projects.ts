@@ -84,6 +84,8 @@ export type ProjectStatus = "full" | "partial" | "none";
 
 /** Implementation status shown in the NERON core's project list. Update it when a project gains effects. */
 export const PROJECT_STATUS: Readonly<Partial<Record<ProjectId, ProjectStatus>>> = {
+  // Every attack on the Daedalus (damageShip) is reduced by 1 before the shield, floor 0 (owner, 2026-11-14; ship.ts).
+  ARMOUR_CORRIDOR: "full",
   // Patrol ship, Pasiphae, and Icarus takeoff cost 1 AP less (owner, 2026-11-14; modifiers.ts `actionCost`).
   PATROL_SHIP_LAUNCHER: "full",
   // The shield absorbs 67% of a hit instead of 33% (owner, 2026-10-24; ship.ts).
