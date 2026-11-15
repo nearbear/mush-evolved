@@ -34,6 +34,14 @@ Keeping the ship alive is triage, and code does it better than a model: free, de
 
 A multi-day run needs a bot to remember what it saw. `BotMemory` grows typed facts the bot observed itself (for example a fire seen in a room, with the day and cycle), never free text, so the reason for "No free-text notes" still holds. It is kept in the room's storage, per seat, outside game state, the record and every view, so a restart no longer wipes it. A replay still never needs it (bot rule 9).
 
+**Built (#440, 2026-11-14).** The stored shape and deploy policy, as proposed on #440:
+
+- **Where:** one key per bot seat, `bot:<seat>` (`server/src/bots/memoryStore.ts`), written in the same `GameRoom.persist` put as `"game"`, so memory and state can't disagree after a crash (a `cancelHold` saved without the matching `Jump: off`). Read back in `onStart`, before the first turn. Deleted with everything else when storage is reclaimed.
+- **What:** `BotMemorySnapshot`, plain data: the facts the bot saw (`shrinks`, `once`, `today`, `ended`, `visited`, `lastExpedition`, `items`, `fires`, `jump`, `asteroidsOnly`, `combustion`, `heading`), the Commander's jump flags (`holdSince`, `cancelHold`, `justJumped`, `failedReason`), and the bot's RNG and day/cycle/HP counters. Not stored: the computed `scripted`, `language`, `roll` and `reserve`, and the current goal (a `Goal` holds closures): after a restart the bot chooses again, which costs a model bot one call. `ModelBot`'s per-cycle choice counters aren't stored either; the game's call budget is (`modelCalls`).
+- **Across deploys:** `BOT_MEMORY_VERSION`. A field added since is restored at a fresh bot's value (`{ ...fresh, ...stored }`); a renamed or reshaped field bumps the version, and a snapshot of another version is dropped (logged `bot_memory_dropped`) with no converters. Memory is a cache of what the bot saw: dropping it does no more harm than a restart did before.
+- **Interface:** optional `snapshot()` and `restore()` on `Bot`; `GoalBot` (and so `ModelBot`) implements them, `WanderBot` and `LogParrotBot` don't. `GameRoom` never looks inside a snapshot.
+- **Rejected:** rebuilding memory by replaying the record and feeding each bot its past views: O(game length) per wake, and a model bot's choices can't be rebuilt without asking the model again.
+
 ### 4. Structured coordination, open to scripted bots
 
 Conversation stays model-only. But a scripted bot can read anything structured that a human can also read, and neither of these is a backchannel:
@@ -208,7 +216,7 @@ No goal sends `get_up`: any other action already gets a bot out of bed (`getUp` 
 5. **Refused inputs fail the goal.** `GameRoom` tells the bot when an input it sent was refused (by the rules, or the chat rate limit). The goal fails at once instead of being stepped again.
 6. **No loops.** Each goal (by its `key`) that finished or failed this cycle is left out of the options until the next cycle. Without this, a goal that fails without changing the view (no path) would be chosen again at once, forever, and two failing goals could alternate.
 
-The bot's memory is fields on the `ModelBot` or scripted bot object today (to move to room storage, "Direction", point 3): the current goal, the goals done or failed this cycle, the goals done today, the rooms visited this cycle, the Shrinks seen or announced, and the last chat message it has seen.
+The bot's memory is fields on the `ModelBot` or scripted bot object, saved to room storage with the game ("Direction", point 3, #440; all but the current goal): the current goal, the goals done or failed this cycle, the goals done today, the rooms visited this cycle, the Shrinks seen or announced, and the last chat message it has seen.
 
 **Interrupts:**
 
@@ -280,7 +288,6 @@ Suspicion, accusations and other social goals are left for later; they need thei
 
 - Which language the ship uses, and so which language bots write in: #95.
 - The chat window: how many messages, and how far back, go in the prompt. Start small and measure with `npm run model-trial` (#224).
-- **Bot memory in room storage** (direction set 2026-11-10; replaces the 2026-11-05 question). Found 2026-11-05: a restart wipes `BotMemory`, so a Shrink bot announces itself again and once-a-day goals repeat. To design: the stored shape and how it changes across deploys.
 - **Reporting a damaged oxygen tank** when the bot has no key: chat is model-only, so a scripted bot needs something structured. A plan with a repair slot is Claude's suggestion, not asked.
 - **The day plan for scripted readers:** which parts go in a plan or the priority so a scripted NERON admin and crew can act on it, and what the harness uses when no model is called.
 - **Eden's rules** (`docs/plans/balance.md`): the options and briefing in "Direction", point 6, can't be finished until they exist. NERON's priority needs its own rule pass too.

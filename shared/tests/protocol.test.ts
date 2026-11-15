@@ -512,6 +512,7 @@ describe("cheats and lifecycle wire parser (#107)", () => {
       expect(parse({ type: "roleCheat", role, extra: 1 })).toEqual({ type: "roleCheat", role });
     }
     expect(parse({ type: "solCheat", extra: 1 })).toEqual({ type: "solCheat" });
+    expect(parse({ type: "cheatRoom", extra: 1 })).toEqual({ type: "cheatRoom" });
     expect(parse({ type: "clearQueue", extra: 1 })).toEqual({ type: "clearQueue" });
     expect(parse({ type: "acknowledgeTransfer", extra: 1 })).toEqual({ type: "acknowledgeTransfer" });
   });

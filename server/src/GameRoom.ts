@@ -72,6 +72,8 @@ import { buildRouterPrompt, parseRouterReply, routerInput } from "./router.ts";
 import { BOT_CHAT_CHAIN_DEPTH, LogParrotBot, ModelBot, WanderBot, type Bot } from "./bots.ts";
 import { parseFireLine } from "./bots/fireShare.ts";
 import { parseItemLine } from "./bots/itemShare.ts";
+import { parseJumpHold } from "./bots/planetShare.ts";
+import { BOT_MEMORY_PREFIX, botMemoryKey } from "./bots/memoryStore.ts";
 import type { BotMessage } from "./prompt.ts";
 import { finishedEntry, gameStoreFor } from "./gameStore.ts";
 import { shipRow, shipStoreFor } from "./shipStore.ts";
@@ -388,7 +390,7 @@ export class GameRoom extends Server<Env> {
     this.blocked = (await this.ctx.storage.list({ prefix: "blocked:" })).size;
     if (dropped) await this.recordDropped();
     else if (this.reclaimAt !== null && stored.reclaimAt === undefined) await this.persist();
-    this.initBots();
+    this.initBots(await this.ctx.storage.list({ prefix: BOT_MEMORY_PREFIX }));
     this.scheduleBots();
     await this.scheduleTick();
   }
@@ -799,8 +801,9 @@ export class GameRoom extends Server<Env> {
 
   private async launch(seats: Seat[], tokens: Record<string, PlayerId>, overrides: ConfigOverrides, forcedRoles?: Record<PlayerId, Role>): Promise<void> {
     const now = Date.now();
-    // End cycle is for testing (only where cheats are allowed, owner, 2026-10-19) and single player.
-    this.overrides = this.cheatsAllowed ? { ...overrides, manualCycles: true } : overrides;
+    // End cycle is for testing (only where cheats are allowed, owner, 2026-10-19) and single player. So is the cheat
+    // room (#170): recorded in the overrides now, so turning the flag on or off later never adds or removes it.
+    this.overrides = this.cheatsAllowed ? { ...overrides, manualCycles: true, cheatRoom: true } : overrides;
     const config = resolveConfig(this.overrides);
     this.clockCycle = clockCycle(now, cycleMs(this.env, config.cycleHours));
     const setup: GameSetup = {
@@ -885,7 +888,7 @@ export class GameRoom extends Server<Env> {
       return;
     }
     if (
-      ((msg.type === "cheat" || msg.type === "roleCheat" || msg.type === "solCheat" || msg.type === "leaveShip") ||
+      ((msg.type === "cheat" || msg.type === "roleCheat" || msg.type === "solCheat" || msg.type === "cheatRoom" || msg.type === "leaveShip") ||
         (msg.type === "action" && (msg.action.type === "self_disease" || msg.action.type === "self_injury" || msg.action.type === "warp_to_planet"))) &&
       !this.cheatsAllowed
     ) {
@@ -917,7 +920,7 @@ export class GameRoom extends Server<Env> {
         ? await this.act({ ...msg, by, at: Date.now() })
         : msg.type === "walk"
           ? await this.act({ ...msg, by }, undefined, this.game.players.find((p) => p.id === by)?.room)
-          : msg.type === "clearQueue" || msg.type === "acknowledgeTransfer" || msg.type === "cheat" || msg.type === "roleCheat" || msg.type === "solCheat"
+          : msg.type === "clearQueue" || msg.type === "acknowledgeTransfer" || msg.type === "cheat" || msg.type === "roleCheat" || msg.type === "solCheat" || msg.type === "cheatRoom"
             ? await this.act({ ...msg, by })
             : await this.social(playerId, by, msg);
     if (error) this.send(connection, { type: "error", message: error });
@@ -975,7 +978,7 @@ export class GameRoom extends Server<Env> {
   private async social(
     playerId: PlayerId,
     by: PlayerId,
-    msg: Exclude<GameClientMessage, { type: "action" | "clearQueue" | "acknowledgeTransfer" | "walk" | "cheat" | "roleCheat" | "solCheat" | "setModel" | "clearModel" | "leaveShip" | "chatPage" | "chatRead" }>,
+    msg: Exclude<GameClientMessage, { type: "action" | "clearQueue" | "acknowledgeTransfer" | "walk" | "cheat" | "roleCheat" | "solCheat" | "cheatRoom" | "setModel" | "clearModel" | "leaveShip" | "chatPage" | "chatRead" }>,
     /** A chat message's reply depth (`BOT_CHAT_CHAIN_DEPTH`): 0 unless a bot is replying to chat. */
     depth = 0,
   ): Promise<string | null> {
@@ -1001,9 +1004,10 @@ export class GameRoom extends Server<Env> {
       msg.type === "chat" || msg.type === "sharePlanet" || msg.type === "shareReport" ? { ...msg, by, text: moderated.text } : { ...msg, by, name: moderated.text };
     const error = await this.act(input, moderated.text === raw ? undefined : raw);
     if (!error && msg.type === "chat") {
-      // A bots' item or fire line (itemShare.ts, fireShare.ts) is for code to parse, not a message to answer: no router
-      // call, nobody woken.
-      if (parseItemLine(moderated.text) === null && parseFireLine(moderated.text) === null) this.wakeBots(playerId, msg.channel, depth);
+      // A bots' item, fire or jump line (itemShare.ts, fireShare.ts, planetShare.ts) is for code to parse, not a
+      // message to answer: no router call, nobody woken.
+      const machineLine = parseItemLine(moderated.text) !== null || parseFireLine(moderated.text) !== null || parseJumpHold(moderated.text) !== null;
+      if (!machineLine) this.wakeBots(playerId, msg.channel, depth);
       // Posting reads the channel (#400): your own message is never unread, nor anything before it.
       if (!this.isBotSeat(playerId)) await this.raiseChatRead(playerId, { [msg.channel]: this.game.chatSeq[msg.channel] ?? 0 });
     }
@@ -1315,14 +1319,17 @@ export class GameRoom extends Server<Env> {
     return !!p && p.current === null && p.queue.length === 0 && legalActions(this.game!, p.id).length > 0;
   }
 
-  private initBots(): void {
+  /** Makes a bot for every bot seat without one; `memories` (keys `bot:<seat>`, after a restart) are given back to them (#440). */
+  private initBots(memories: ReadonlyMap<string, unknown> = new Map()): void {
     for (const p of this.game?.players ?? []) {
       if (!p.isBot || this.bots.has(p.mind)) continue;
       const seed = (): number => crypto.getRandomValues(new Uint32Array(1))[0]!;
-      this.bots.set(
-        p.mind,
-        p.botKind === "wander" ? new WanderBot(seed()) : p.botKind === "model" ? new ModelBot(this.gate(), seed(), undefined, undefined, this.language ?? undefined) : new LogParrotBot(),
-      );
+      const bot: Bot =
+        p.botKind === "wander" ? new WanderBot(seed()) : p.botKind === "model" ? new ModelBot(this.gate(), seed(), undefined, undefined, this.language ?? undefined) : new LogParrotBot();
+      const stored = memories.get(botMemoryKey(p.mind));
+      // Another version's snapshot is dropped (fresh memory); the next save overwrites it.
+      if (stored !== undefined && bot.restore && !bot.restore(stored)) logWarn("bot_memory_dropped", { roomId: this.name, seat: p.mind });
+      this.bots.set(p.mind, bot);
     }
   }
 
@@ -1484,7 +1491,10 @@ export class GameRoom extends Server<Env> {
     const writes: Promise<unknown>[] = [];
     // Storage deletes at most 128 keys a call.
     for (let i = 0; i < deletes.length; i += 128) writes.push(this.ctx.storage.delete(deletes.slice(i, i + 128)));
-    writes.push(this.ctx.storage.put({ ...entries, game: stored }));
+    // Each bot's memory goes in the same put as the game (#440), so the two can't disagree after a crash.
+    const memories: Record<string, unknown> = {};
+    for (const [seat, bot] of this.bots) if (bot.snapshot) memories[botMemoryKey(seat)] = bot.snapshot();
+    writes.push(this.ctx.storage.put({ ...entries, ...memories, game: stored }));
     await Promise.all(writes);
   }
 

@@ -57,7 +57,7 @@ export const setOutPots: GoalDef = {
     const carried = carriesEmptyPot(view);
     if (!carried && memory.once.has(STORAGE_CHECKED)) return [];
     const target = carried ? view.config.gardenRoom : POT_STORAGE;
-    if (!canAfford(view, target, 0, memory.reserve)) return [];
+    if (!canAfford(view, target, 0, memory.reserve, memory)) return [];
     const label = carried
       ? `Set out the empty hydropots you carry ${where(view, target)}` // i18n-ignore: model prompt text, not player-visible
       : `Fetch the empty hydropots ${where(view, target)} and set them out in the garden`; // i18n-ignore: model prompt text, not player-visible

@@ -64,7 +64,7 @@ export const eat: GoalDef = {
     if (bestFood(view)) return [eatAt(view.you.room, "Eat food you carry or that is here")];
     const kitchens = roomsWith(view, ["KITCHEN", "COFFEE_DISPENSER"]);
     const places = nearest(view, [...new Set([...kitchens, view.config.gardenRoom])]);
-    const room = places.find((r) => !memory.ended.has(`eat:${r}`) && canAfford(view, r, 0, 0));
+    const room = places.find((r) => !memory.ended.has(`eat:${r}`) && canAfford(view, r, 0, 0, memory));
     if (!room) return [];
     const what = room === view.config.gardenRoom ? "a banana from the garden" : "a ration or a coffee";
     return [eatAt(room, `Eat: get ${what} ${where(view, room)}`)];

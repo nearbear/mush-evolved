@@ -4,6 +4,7 @@
 
 import type { FireMemory } from "../fireShare.ts";
 import type { ItemMemory } from "../itemShare.ts";
+import type { JumpMemory } from "../planetShare.ts";
 import type { Action, GameClientMessage, LobbyLanguage, PlanetDirection, PlayerView, RoomId } from "@mush2/shared";
 
 /**
@@ -26,8 +27,8 @@ export type GoalStep =
   | { kind: "failed"; reason: string };
 
 /**
- * What a bot remembers, all of it in the bot object's memory: never in game state, the record, storage or a view, and
- * lost on a restart (the bot just chooses again). Only what the bot saw itself.
+ * What a bot remembers: only what the bot saw itself, never in game state, the record or a view. Saved in room storage
+ * per seat (`memoryStore.ts`, #440), so a restart keeps it; a field added here needs a place in `BotMemorySnapshot`.
  */
 export interface BotMemory {
   /** AP kept for emergencies: work goals stop rather than spend it (`BOT_AP_RESERVE`). */
@@ -65,8 +66,10 @@ export interface BotMemory {
   readonly fires: FireMemory;
   /** Last fuel reading the Commander saw in the combustion chamber (`null` if unknown or cleared by traveling, #421). */
   combustion: number | null;
-  /** Cycle when the Commander started holding the jump (`null` when not holding, #421). */
+  /** Cycle when the Commander started holding the jump (`null` when not holding, #421); `"Jump: off"` clears it. */
   holdSince: number | null;
+  /** The Commander's jump lines in global chat, folded in as read (`planetShare.ts`, #427). */
+  readonly jump: JumpMemory;
   /** Last heading seen on a Command terminal (`null` until visited, #421). */
   heading: PlanetDirection | null;
   /** True when the Commander jumped or gave up while holding and still needs to post `"Jump: off"` (#421). */

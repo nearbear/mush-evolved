@@ -6,6 +6,7 @@
 import { breakEquipment, breakItem, workingBreakable } from "./breakage.ts";
 import { isFireproof } from "./drones.ts";
 import { ITEM_TYPES, isWorking, itemsIn } from "./items.ts";
+import { CHEAT_ROOM } from "./cheatRoom.ts";
 import { shipInvincible } from "./cheats.ts";
 import { pushChat } from "./chat.ts";
 import { damage } from "./death.ts";
@@ -16,7 +17,7 @@ import { roll, rollFloat, rollInt } from "./rng.ts";
 import type { GameState, RoomId } from "./types.ts";
 
 /** The Daedalus's own rooms: every room but the patrol ships' (incidents and fire stay aboard). */
-export const daedalusRooms = (state: Readonly<GameState>): RoomId[] => Object.keys(state.config.rooms).filter((room) => !inCraft(room));
+export const daedalusRooms = (state: Readonly<GameState>): RoomId[] => Object.keys(state.config.rooms).filter((room) => !inCraft(room) && room !== CHEAT_ROOM);
 
 export const isOnFire = (state: Readonly<GameState>, room: RoomId): boolean => state.fires.includes(room);
 

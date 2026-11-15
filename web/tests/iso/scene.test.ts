@@ -153,7 +153,7 @@ describe("describeScene", () => {
 
   it("loops the reactors on their own, at their rhythm, stepping down their column", () => {
     const s = only(scene([placed({ slice: "rotational_reactor", width: 228, height: 182, sx: 350, sy: 0 })]));
-    expect(s.anim).toMatchObject({ frames: [0, 1, 2], frameMs: [100 / 3, 100 / 3, 100 / 3], loops: "forever" });
+    expect(s.anim).toMatchObject({ frames: [0, 1, 2], frameMs: Array(3).fill((2 * (1000 / 30)) / 1.4), loops: "forever" });
     expect(frameAt(s.image, 2)).toEqual({ sx: 350, sy: 364 });
   });
 
@@ -299,15 +299,15 @@ describe("roomLooks and ambient animations", () => {
 
   it("animates the planets hologram, bay lights, bay doors, plasma shield coils, and NERON auxiliary terminals", () => {
     expect(realScene("planets").anim).toMatchObject({ frames: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], frameMs: Array(10).fill(3 * tick), loops: "forever" });
-    expect(realScene("bay_light").anim).toMatchObject({ frames: [0, 1, 2, 3, 4, 5], frameMs: Array(6).fill(2 * tick), loops: "forever" });
+    expect(realScene("bay_light").anim).toMatchObject({ frames: [0, 1, 2, 3, 4, 5], frameMs: Array(6).fill((2 * tick) / 0.7), loops: "forever" });
 
     const baseBayDoor = realScene("bay_window", roomLooks(false));
     expect(baseBayDoor.image.frame.sy).toBe(realLayout.slices.bay_window!.y);
-    expect(baseBayDoor.anim).toMatchObject({ frames: Array.from({ length: 16 }, (_, i) => i), frameMs: Array(16).fill(2 * tick), loops: "forever" });
+    expect(baseBayDoor.anim).toMatchObject({ frames: Array.from({ length: 16 }, (_, i) => i), frameMs: Array(16).fill((2 * tick) / 0.7), loops: "forever" });
 
     const xxlBayDoor = realScene("bay_window", roomLooks(false, false, false, false, true, false));
     expect(xxlBayDoor.image.frame.sy).toBe(realLayout.slices.bay_window_upgrade!.y);
-    expect(xxlBayDoor.anim).toMatchObject({ frames: Array.from({ length: 16 }, (_, i) => i), frameMs: Array(16).fill(2 * tick), loops: "forever" });
+    expect(xxlBayDoor.anim).toMatchObject({ frames: Array.from({ length: 16 }, (_, i) => i), frameMs: Array(16).fill((2 * tick) / 0.7), loops: "forever" });
 
     expect(realScene("plasma_shield", roomLooks(false)).anim).toBeUndefined();
     const shieldUp = realScene("plasma_shield", roomLooks(false, false, false, false, false, true));
@@ -329,8 +329,11 @@ describe("roomLooks and ambient animations", () => {
   it("applies AMBIENT_SPEED multipliers to tuned ambient animations", () => {
     const ms = (slice: string, looks?: ReadonlyMap<string, string>) => realScene(slice, looks).anim!.frameMs as number[];
     expect(ms("radar_trans_void")).toEqual(Array(4).fill(2 * tick));
-    expect(ms("rotational_reactor")).toEqual(Array(8).fill(1 * tick));
-    expect(ms("emergency_reactor")).toEqual(Array(8).fill(1 * tick));
+    expect(ms("rotational_reactor")).toEqual(Array(8).fill((2 * tick) / 1.4));
+    expect(ms("emergency_reactor")).toEqual(Array(8).fill((2 * tick) / 1.4));
+    expect(ms("bay_light")).toEqual(Array(6).fill((2 * tick) / 0.7));
+    expect(ms("bay_window", roomLooks(false))).toEqual(Array(16).fill((2 * tick) / 0.7));
+    expect(ms("bay_window", roomLooks(false, false, false, false, true, false))).toEqual(Array(16).fill((2 * tick) / 0.7));
     expect(ms("tank_fuel_right_front")).toEqual(Array(6).fill(8 * tick));
     expect(ms("tank_fuel_left_back")).toEqual(Array(6).fill(8 * tick));
     expect(ms("surgery_console")).toEqual(Array(8).fill(6 * tick));

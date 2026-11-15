@@ -21,8 +21,8 @@ export const repairHull: GoalDef = {
     const here = view.actions.some((o) => o.action.type === "repair_hull");
     const room = here
       ? view.you.room
-      : nearest(view, roomsHolding(memory, "metal_scraps")).find((r) => !memory.ended.has(`repairHull:${r}`) && canAfford(view, r, view.config.hullRepairAp, memory.reserve));
-    if (room === undefined || !canAfford(view, room, view.config.hullRepairAp, memory.reserve)) return [];
+      : nearest(view, roomsHolding(memory, "metal_scraps")).find((r) => !memory.ended.has(`repairHull:${r}`) && canAfford(view, r, view.config.hullRepairAp, memory.reserve, memory));
+    if (room === undefined || !canAfford(view, room, view.config.hullRepairAp, memory.reserve, memory)) return [];
     return [workAt("repairHull", room, `Patch the hull with the metal scrap ${where(view, room)}`, (v) => v.actions.find((o) => o.action.type === "repair_hull"))];
   },
 };

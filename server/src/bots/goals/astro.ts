@@ -107,7 +107,7 @@ export function astroOptions(view: PlayerView, memory: BotMemory, ignoreDirty: b
   if (work === null) return [];
   const ap = work.kind === "analyze" || work.kind === "scan" ? work.ap : 0;
   if (ap > 0 && !ignoreDirty && view.statuses.includes("dirty")) return [];
-  const room = roomsWith(view, [ASTRO]).find((r) => !memory.ended.has(`astro:${r}`) && canAfford(view, r, ap, memory.reserve));
+  const room = roomsWith(view, [ASTRO]).find((r) => !memory.ended.has(`astro:${r}`) && canAfford(view, r, ap, memory.reserve, memory));
   if (!room) return [];
   return [
     {

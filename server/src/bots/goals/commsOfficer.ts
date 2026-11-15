@@ -33,7 +33,7 @@ export function commsOfficerOptions(view: PlayerView, memory: BotMemory, ignoreD
   if (!ignoreDirty && view.statuses.includes("dirty")) return [];
   const ap = nextCommsAp(view);
   const room = roomsWith(view, [COM_CENTER]).find(
-    (r) => !memory.ended.has(`commsOfficer:${r}`) && canAfford(view, r, ap, memory.reserve),
+    (r) => !memory.ended.has(`commsOfficer:${r}`) && canAfford(view, r, ap, memory.reserve, memory),
   );
   if (!room) return [];
   return [

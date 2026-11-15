@@ -4,6 +4,7 @@
 // mislead them (accepted by the owner, 2026-11-12). Tags and directions are ids (the bots' language is #95).
 
 import { inCraft, PLANET_DIRECTIONS, PLANET_TAGS, type PlanetDirection, type PlanetView, type PlayerView } from "@mush2/shared";
+import type { BotMemory } from "./goals/types.ts";
 
 /** A planet as a share in the bots' format describes it. `null` is a sector not analyzed yet. */
 export interface SharedPlanetInfo {
@@ -57,42 +58,61 @@ export function parseJumpHold(text: string): "hold" | "now" | "off" | null {
   return null;
 }
 
-/** The current jump announcement in global chat: since which cycle, and whether it is due now. Null when none is up. */
-function jumpState(view: PlayerView): { since: number; now: number | null } | null {
-  let since: number | null = null;
-  let now: number | null = null;
+/**
+ * What a bot knows of the Commander's jump lines (`BotMemory.jump`, #427): folded in by `ChatLine.seq` as they are
+ * read, since global chat keeps only its latest pages and a line can scroll out while its hold is still up.
+ */
+export interface JumpMemory {
+  /** The global-chat position read up to (`ChatLine.seq`). */
+  seq: number;
+  /** Cycle of the first hold or jump-now line since the last `"Jump: off"`, or null when no jump is up. */
+  since: number | null;
+  /** Cycle of the first `"Jump: now"` since the last `"Jump: off"`, or null. */
+  now: number | null;
+}
+
+export const newJumpMemory = (): JumpMemory => ({ seq: -1, since: null, now: null });
+
+/**
+ * Folds the new global-chat jump lines into the bot's memory and returns the current jump state. `"Jump: off"` also
+ * clears `holdSince`: the hold it timed is over. Idempotent, so every helper below calls it first.
+ */
+export function observeJump(view: PlayerView, memory: BotMemory): JumpMemory {
+  const jump = memory.jump;
   for (const m of view.chat) {
-    if (m.system || m.channel !== "global") continue;
+    if (m.system || m.channel !== "global" || m.seq <= jump.seq) continue;
+    jump.seq = m.seq;
     const kind = parseJumpHold(m.text);
     if (kind === "off") {
-      since = null;
-      now = null;
+      jump.since = null;
+      jump.now = null;
+      memory.holdSince = null;
     } else if (kind !== null) {
-      since ??= m.cycle;
-      if (kind === "now") now ??= m.cycle;
+      jump.since ??= m.cycle;
+      if (kind === "now") jump.now ??= m.cycle;
     }
   }
-  return since === null ? null : { since, now };
+  return jump;
 }
 
 /** Cycle when the current jump hold started in global chat (a hold or jump-now line not yet followed by "off"), or null (#421). */
-export function holdStartCycle(view: PlayerView): number | null {
-  return jumpState(view)?.since ?? null;
+export function holdStartCycle(view: PlayerView, memory: BotMemory): number | null {
+  return observeJump(view, memory).since;
 }
 
 /** Whether a Commander jump hold is currently up in global chat (#421). */
-export function isHoldingJump(view: PlayerView): boolean {
-  return jumpState(view) !== null;
+export function isHoldingJump(view: PlayerView, memory: BotMemory): boolean {
+  return observeJump(view, memory).since !== null;
 }
 
 /** Whether the Commander has announced the jump is due (`"Jump: now"`, not yet followed by `"Jump: off"`): pilots stay docked (#421). */
-export function isJumpDue(view: PlayerView): boolean {
-  return jumpNowCycle(view) !== null;
+export function isJumpDue(view: PlayerView, memory: BotMemory): boolean {
+  return jumpNowCycle(view, memory) !== null;
 }
 
 /** Cycle when the current `"Jump: now"` was posted, or null when none is up (#421). */
-export function jumpNowCycle(view: PlayerView): number | null {
-  return jumpState(view)?.now ?? null;
+export function jumpNowCycle(view: PlayerView, memory: BotMemory): number | null {
+  return observeJump(view, memory).now;
 }
 
 /**

@@ -30,6 +30,7 @@ export function SettingsDialog({
   onCheat,
   onRoleCheat,
   onSolCheat,
+  onCheatRoom,
   onLeaveShip,
   onLeave,
   open,
@@ -43,6 +44,8 @@ export function SettingsDialog({
   onRoleCheat: (role: RoleCheat) => void;
   /** Return to Sol now (cheat): ends the game. */
   onSolCheat: () => void;
+  /** Go to the cheat room (#170). Absent on a ship without one, and while you're in it. */
+  onCheatRoom?: (() => void) | undefined;
   /** Leave ship (cheat): the server frees the account and closes the socket, which sends the client to the lobby. */
   onLeaveShip: () => void;
   /** Back to the lobby. The seat stays this account's: the lobby boards it back onto the same ship. */
@@ -136,6 +139,7 @@ export function SettingsDialog({
                 </button>
               ))}
             </div>
+            {onCheatRoom && <button type="button" onClick={onCheatRoom}>{t("settings.cheats.goToCheatRoom")}</button>}
             <button type="button" onClick={onSolCheat}>{t("settings.cheats.returnToSol")}</button>
             <button type="button" onClick={onLeaveShip}>{t("settings.cheats.leaveShip")}</button>
           </fieldset>

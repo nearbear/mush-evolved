@@ -12,7 +12,7 @@ export function researchOptions(view: PlayerView, memory: BotMemory, assumeClean
   if (!assumeClean && view.statuses.includes("dirty")) return [];
   if (RESEARCH_IDS.every((id) => (view.research[id] ?? 0) >= RESEARCH_COMPLETE)) return [];
   const cost = view.you.resources.comp > 0 ? 0 : view.config.researchAp;
-  const lab = roomsWith(view, ["RESEARCH_LAB"]).find((room) => !memory.ended.has(`research:${room}`) && canAfford(view, room, cost, deskWorkReserve(view, memory)));
+  const lab = roomsWith(view, ["RESEARCH_LAB"]).find((room) => !memory.ended.has(`research:${room}`) && canAfford(view, room, cost, deskWorkReserve(view, memory), memory));
   return lab ? [workAt("research", lab, `Research ${where(view, lab)}, the most advanced research first`, (v) => mostAdvanced(v, "research", (a) => v.research[a.research] ?? 0), deskWorkReserve)] : [];
 }
 

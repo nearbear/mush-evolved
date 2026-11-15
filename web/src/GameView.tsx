@@ -2,7 +2,7 @@
 // the server decides what is legal and sends it in view.actions. No socket either: see GameScreen.
 
 import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
-import { CORPSE_ITEM, SUPPORT_DRONE_ITEM, isLostPlace, legalIn, type Action, type BotPause, type CharacterId, type Cheat, type GameClientMessage, type PlayerView, type RoleCheat, type RoomId, type Spot, type Target } from "@mush2/shared";
+import { CHEAT_ROOM, CORPSE_ITEM, SUPPORT_DRONE_ITEM, isLostPlace, legalIn, type Action, type BotPause, type CharacterId, type Cheat, type GameClientMessage, type PlayerView, type RoleCheat, type RoomId, type Spot, type Target } from "@mush2/shared";
 import { useTranslation } from "react-i18next";
 import { ActionQueue } from "./hud/ActionQueue.tsx";
 import { BottomNav, type MobilePanel } from "./hud/BottomNav.tsx";
@@ -217,6 +217,7 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
         onCheat={(cheat: Cheat, on: boolean) => post({ type: "cheat", cheat, on })}
         onRoleCheat={(role: RoleCheat) => post({ type: "roleCheat", role })}
         onSolCheat={() => post({ type: "solCheat" })}
+        onCheatRoom={Object.hasOwn(view.rooms, CHEAT_ROOM) && view.you.room !== CHEAT_ROOM ? () => post({ type: "cheatRoom" }) : undefined}
         onLeaveShip={() => post({ type: "leaveShip" })}
       />
       {!mobile && transport && <div className="game-transport">{transport}</div>}
