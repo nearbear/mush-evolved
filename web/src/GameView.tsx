@@ -4,6 +4,7 @@
 import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
 import { CHEAT_ROOM, CORPSE_ITEM, SUPPORT_DRONE_ITEM, isLostPlace, legalIn, type Action, type BotPause, type CharacterId, type Cheat, type GameClientMessage, type KubeOpId, type PlayerView, type RoleCheat, type RoomId, type Spot, type Target } from "@mush2/shared";
 import { useTranslation } from "react-i18next";
+import { Hint } from "./hud/IconButton.tsx";
 import { ActionQueue } from "./hud/ActionQueue.tsx";
 import { BottomNav, type MobilePanel } from "./hud/BottomNav.tsx";
 import { DeathNotice } from "./hud/DeathNotice.tsx";
@@ -220,7 +221,6 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
         cheatsAllowed={cheatsAllowed && !readOnly}
         onCheat={(cheat: Cheat, on: boolean) => post({ type: "cheat", cheat, on })}
         onRoleCheat={(role: RoleCheat) => post({ type: "roleCheat", role })}
-        onSolCheat={() => post({ type: "solCheat" })}
         onCheatRoom={Object.hasOwn(view.rooms, CHEAT_ROOM) && view.you.room !== CHEAT_ROOM ? () => post({ type: "cheatRoom" }) : undefined}
         onLeaveShip={() => post({ type: "leaveShip" })}
       />
@@ -289,11 +289,6 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
             ) : (
               <section className="iso-room loading">{t("common.loadingShip")}</section>
             )}
-            {view.roomOnFire && (
-              <div className="room-fire" role="status">
-                <img src={FIRE_ICON} alt="" /> {t("roomList.onFire")}
-              </div>
-            )}
             {you.alive && <RoomList view={view} layout={layout} reachable={reachable} onSelect={(target) => { select(target); setFocusActions((n) => n + 1); }} onMove={move} quiet={readOnly} />}
             {mobile && <ShipOverlay view={view} />}
             {!mobile && you.alive && <SelfHud view={view} onInspect={() => select({ kind: "player", id: you.id })} />}
@@ -311,6 +306,13 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
               {inRoom && (
                 <div className="room-title">
                   <h2 id={roomTitleId}>{names.room(you.room)}</h2>
+                  <div className="room-icons" role="status">
+                    {view.roomOnFire && (
+                      <Hint label={t("roomList.onFire")}>
+                        <img src={FIRE_ICON} alt={t("roomList.onFire")} />
+                      </Hint>
+                    )}
+                  </div>
                 </div>
               )}
               <Minimap

@@ -251,7 +251,3 @@
   flex-wrap: wrap;
   gap: var(--space-3);
 }
-/* The fire notice goes under the ID card. */
-.room-view:has(> .self-hud-top) .room-fire {
-  top: calc(0.5rem + var(--id-card) + var(--space-2));
-}
