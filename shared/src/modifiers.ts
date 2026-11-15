@@ -31,6 +31,7 @@ import { lethargy } from "./modifiers/lethargy.ts";
 import { logistics } from "./modifiers/logistics.ts";
 import { maintenance_agent } from "./modifiers/maintenance_agent.ts";
 import { medic } from "./modifiers/medic.ts";
+import { mycologist } from "./modifiers/mycologist.ts";
 import { observant } from "./modifiers/observant.ts";
 import { paranoid } from "./modifiers/paranoid.ts";
 import { persistent } from "./modifiers/persistent.ts";
@@ -163,6 +164,8 @@ export interface Modifier extends Partial<FoldHooks> {
   onShower?: (next: GameState, player: PlayerState) => void;
   /** Runs after the player consumes an item, once its own AP and satiety are applied. Mutates a state the caller already cloned. */
   onConsume?: (next: GameState, player: PlayerState, item: ItemState) => void;
+  /** Runs after the player heals someone (heal or use_bandage), once HP is restored. Mutates a state the caller already cloned. */
+  onHeal?: (next: GameState, player: PlayerState, patient: PlayerState) => void;
   /** Runs once when the player picks this skill (not for other modifiers). Mutates a state the caller already cloned. */
   onPick?: (next: GameState, player: PlayerState) => void;
   /** Runs whenever the ship moves */
@@ -196,6 +199,7 @@ export const MODIFIERS: Record<string, Modifier> = {
   logistics,
   maintenance_agent,
   medic,
+  mycologist,
   observant,
   paranoid,
   persistent,
@@ -602,6 +606,11 @@ export function consumedByMush(next: GameState, player: PlayerState, item: ItemS
 /** Runs every onConsume hook of the player's modifiers. Mutates a state the caller already cloned. */
 export function consumed(next: GameState, player: PlayerState, item: ItemState, registry: ModifierRegistry = MODIFIERS): void {
   for (const id of modifierIds(player)) registry[id]?.onConsume?.(next, player, item);
+}
+
+/** Runs every onHeal hook of the healer's modifiers. Mutates a state the caller already cloned. */
+export function healed(next: GameState, healer: PlayerState, patient: PlayerState, registry: ModifierRegistry = MODIFIERS): void {
+  for (const id of modifierIds(healer)) registry[id]?.onHeal?.(next, healer, patient);
 }
 
 /** Runs the picked skill's onPick hook. Mutates a state the caller already cloned. */

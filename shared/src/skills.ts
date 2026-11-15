@@ -179,6 +179,8 @@ export type SkillStatus = "full" | "partial" | "none";
 export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillStatus>>> = {
   // Heal bonus, research bonus, and reads drug properties; no operations.
   medic: "partial",
+  // Each heal or bandage by a human Mycologist removes 1 contamination from a human patient, silently (owner, 2026-11-14, modifiers/mycologist.ts).
+  mycologist: "full",
   // 16 cycles of room log (owner, 2026-11-05, #365, log.ts) and cancels Found dead on expeditions (owner, 2026-11-08, #357); no movement sources, ship logs or List.
   hunt: "partial",
   // Apprenticeship (owner, 2026-11-05, actions/apprenticeship.ts).

@@ -3735,3 +3735,9 @@ Small refactor on request: `GameRoom.social` called four bot-line parsers (item,
 
 - **Decision (owner):** Maintenance Agent grants +1 Engineer (`eng`), +1 Garden (`garden`), and +1 Cook (`cook`) point on pick and each day, sharing `config.engineer.capPoints` (2) and `config.botany.capPoints` (4), with `config.cook.capPoints` = 8. Cook points pay for `cook` only (0 AP, `paidBy: "cook"`), not `fungal_cuisine`.
 - **What worked:** `RESOURCE_IDS`, `paidBy`, `ActionLabel`, and `ResourceChips` already supported `"cook"`, so adding `cookPointsPerDay`, `cookPointsGain`, `modifiers/maintenance_agent.ts`, `CookAction.getCost`, and `RESOURCE_SKILLS` entries slotted cleanly into the existing modifier and resource architecture.
+
+### 2026-11-14 — Mycologist skill
+
+- **Decision (owner):** A human Mycologist's `heal` (Sick Bay or Medikit) and `use_bandage` actions remove 1 contamination (`heal.effect.mycologistSpores`) from a human patient (self included, even at full HP), without curing `fungal_infection_disease`. Does nothing if the healer is Mush, and removes contamination silently (no extra log or Mush-channel notice, so healing doesn't act as a spore detector).
+- **Implementation:** Added `onHeal` to `Modifier` and `healed()` in `shared/src/modifiers.ts`, `removeContamination()` in `shared/src/infection.ts`, and `shared/src/modifiers/mycologist.ts`; wired `healed()` into `HealAction` and `UseBandageAction`, and marked `mycologist: "full"` in `shared/src/skills.ts`.
+- **What worked:** Asking the 4 open rule questions up front (target effect, bandage inclusion, Mush Mycologist behavior, and visibility/silence) resolved the tension between the flavor text (`fungal_infection_disease`) and the effect text / upstream eMush (`1 spore` on heal).

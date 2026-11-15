@@ -2,7 +2,7 @@ import { Action, type ActionCost, peopleHere, isString } from "./action.ts";
 import { heal as healHp } from "../death.ts";
 import { itemsIn, removeItem, isWorking } from "../items.ts";
 import { logPublic } from "../log.ts";
-import { bandageHealAmount } from "../modifiers.ts";
+import { bandageHealAmount, healed } from "../modifiers.ts";
 import type { GameState, ItemState, PlayerState } from "../types.ts";
 
 export type UseBandageActionData = { type: "use_bandage"; target: string };
@@ -38,6 +38,7 @@ export class UseBandageAction extends Action<UseBandageActionData> {
     const patient = state.players.find((o) => o.id === target.target)!; // checked, so it exists
     removeItem(state, bandageOf(state, player)!.id);
     healHp(state, patient, bandageHealAmount(state, player));
+    healed(state, player, patient);
     logPublic(state, player.room, patient.id === player.id ? "bandagedSelf" : "bandaged", { name: player.character, target: patient.character });
   }
 }
