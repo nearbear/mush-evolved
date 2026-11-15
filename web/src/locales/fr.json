@@ -1106,6 +1106,7 @@
     "fireBurns": "Le feu brûle tous ceux qui sont dans la pièce.",
     "fireBrokeItem": "Le feu a endommagé : {{item}}.",
     "fireDestroyedItem": "Le feu a détruit : {{item}}.",
+    "fireKilledPlant": "Le feu a tué le plant : {{item}}.",
     "repaired": "{{name}} a réparé l'équipement « {{equipment}} ».",
     "repairFailed": "Vous n'avez pas réussi à réparer l'équipement « {{equipment}} ».",
     "itemRepaired": "{{name}} a réparé l'objet : {{item}}.",

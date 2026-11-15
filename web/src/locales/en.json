@@ -1085,6 +1085,7 @@
     "fireBurns": "The fire burns everyone in the room.",
     "fireBrokeItem": "The fire broke the {{item}}.",
     "fireDestroyedItem": "The fire destroyed the {{item}}.",
+    "fireKilledPlant": "The fire killed the {{item}} plant.",
     "repaired": "{{name}} repaired the {{equipment}}.",
     "repairFailed": "You failed to repair the {{equipment}}.",
     "itemRepaired": "{{name}} repaired the {{item}}.",

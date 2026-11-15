@@ -3,6 +3,7 @@
 // 2026-11-01); only the living in a burning room see that it burns (`PlayerView.roomOnFire`). Fire burns no oxygen.
 // Putting one out is actions/extinguish.ts.
 
+import { isPlanted } from "./botany.ts";
 import { breakEquipment, breakItem, workingBreakable } from "./breakage.ts";
 import { isFireproof } from "./drones.ts";
 import { ITEM_TYPES, isWorking, itemsIn } from "./items.ts";
@@ -16,12 +17,16 @@ import { projectDone } from "./projects.ts";
 import { forgetReports } from "./reports.ts";
 import { inCraft } from "./patrol.ts";
 import { roll, rollFloat, rollInt } from "./rng.ts";
-import type { GameState, RoomId } from "./types.ts";
+import type { GameState, ItemState, RoomId } from "./types.ts";
 
 /** The Daedalus's own rooms: every room but the patrol ships' (incidents and fire stay aboard). */
 export const daedalusRooms = (state: Readonly<GameState>): RoomId[] => Object.keys(state.config.rooms).filter((room) => !inCraft(room) && room !== CHEAT_ROOM);
 
 export const isOnFire = (state: Readonly<GameState>, room: RoomId): boolean => state.fires.includes(room);
+
+/** Whether the Hydroponics center (`PLANT_CONTROLLER`) in the garden room is working, protecting plants there from fire. */
+export const isGardenProtected = (state: Readonly<GameState>): boolean =>
+  (state.equipment[state.config.botany.gardenRoom] ?? []).some((e) => e.type === "PLANT_CONTROLLER" && !e.broken);
 
 /** At a cycle change, before incidents and fires act: lights each room a Pyromaniac set (actions/ignite.ts). */
 export function ignitePending(state: GameState): void {
@@ -41,10 +46,12 @@ export function startFire(state: GameState, room: RoomId): void {
 /**
  * At each cycle change, after incidents (so a fire acts in the cycle it starts): each room that was burning either
  * spreads to a neighbour not on fire (`spreadChance`, at most `maxSpreads` a cycle; a fire it starts acts from the next
- * cycle) or does damage: each breakable piece of equipment and each breakable item on the floor (with a room log line) breaks with `breakChance`, the hull loses `hullDamage` with
+ * cycle) or does damage: each breakable piece of equipment and each breakable item on the floor (with a room log line)
+ * breaks with `breakChance`, each planted hydropot on the floor loses its plant (leaving an empty pot) unless it is in
+ * the garden room while the Hydroponics center was working before incidents/fire, the hull loses `hullDamage` with
  * `hullChance`, and everyone present loses `damage` HP. Mutates a state the caller already cloned.
  */
-export function fireCycle(state: GameState): void {
+export function fireCycle(state: GameState, gardenProtected = isGardenProtected(state)): void {
   if (projectDone(state, "AUTO_WATERING")) {
     const chance = state.config.project.autoWatering.extinguishChance;
     state.fires = state.fires.filter((room) => {
@@ -71,6 +78,16 @@ export function fireCycle(state: GameState): void {
       if (rollFloat(state) >= config.breakChance) continue;
       breakItem(state, item);
       logPublic(state, room, ITEM_TYPES[item.type]!.isDestroyedWhenBroken ? "fireDestroyedItem" : "fireBrokeItem", { item: item.type });
+    }
+    // Hydropots (`tree_pot`) are immune to fire and breakage, but fire kills the plant inside (leaving an empty pot)
+    // unless the pot is in the garden room and the Hydroponics center was working before incidents and fire ran.
+    if (!(room === state.config.botany.gardenRoom && gardenProtected)) {
+      for (const pot of itemsIn(state, { kind: "room", id: room }).filter(isPlanted)) {
+        if (rollFloat(state) >= config.breakChance) continue;
+        const { species } = pot.plant;
+        delete (pot as ItemState).plant;
+        logPublic(state, room, "fireKilledPlant", { item: species });
+      }
     }
     if (rollFloat(state) < config.hullChance) {
       const loss = roll(state, config.hullDamage);

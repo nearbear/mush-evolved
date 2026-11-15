@@ -434,6 +434,77 @@ describe("fire", () => {
     expect(nextCycle(s).items.find((i) => i.id === "knife-floor")?.broken).toBeUndefined();
   });
 
+  it("kills unprotected floor plants (leaving empty hydropots), spares empty pots, carried plants, and misses", () => {
+    const s = burning({ spreadChance: 0, breakChance: 1, hullChance: 0 });
+    const floor = { kind: "room" as const, id: HERE };
+    const plant = { species: "fruit_banana", age: null, thirst: 0 as const, sick: false };
+    s.items.push(
+      { id: "pot-floor", type: "tree_pot", at: floor, plant: { ...plant } },
+      { id: "pot-empty", type: "tree_pot", at: floor },
+      { id: "pot-carried", type: "tree_pot", at: { kind: "player", id: "p0" }, plant: { ...plant } },
+    );
+    const after = nextCycle(s);
+    const item = (id: string) => after.items.find((i) => i.id === id);
+    expect(item("pot-floor")?.plant).toBeUndefined();
+    expect(item("pot-floor")?.broken).toBeUndefined();
+    expect(item("pot-empty")?.broken).toBeUndefined();
+    expect(item("pot-carried")?.plant).toBeDefined();
+    expect(viewFor(after, "p0").log.filter((e) => e.key === "fireKilledPlant")).toEqual([expect.objectContaining({ params: { item: "fruit_banana" } })]);
+    expect(viewFor(after, "p2").log.filter((e) => e.key === "fireKilledPlant")).toEqual([]);
+
+    const miss = burning({ spreadChance: 0, breakChance: 0, hullChance: 0 });
+    miss.items.push({ id: "pot-floor", type: "tree_pot", at: floor, plant: { ...plant } });
+    expect(nextCycle(miss).items.find((i) => i.id === "pot-floor")?.plant).toBeDefined();
+  });
+
+  it("protects plants in the Hydroponic Garden while the Hydroponics center isn't broken, including the cycle it breaks", () => {
+    const GARDEN = "HYDROPONIC_CENTER";
+    const s = burning({ spreadChance: 0, breakChance: 1, hullChance: 0 });
+    s.fires = [GARDEN];
+    s.players[0]!.room = GARDEN;
+    s.items.push({
+      id: "garden-pot",
+      type: "tree_pot",
+      at: { kind: "room", id: GARDEN },
+      plant: { species: "fruit_banana", age: null, thirst: 0, sick: false },
+    });
+
+    // Cycle 1: PLANT_CONTROLLER starts working, breaks from fire, but the plant is protected for this cycle.
+    const after1 = nextCycle(s);
+    expect(equipment(after1, "HYDROPONIC_CENTER:PLANT_CONTROLLER").broken).toBe(true);
+    expect(after1.items.find((i) => i.id === "garden-pot")?.plant).toBeDefined();
+    expect(viewFor(after1, "p0").log.filter((e) => e.key === "fireKilledPlant")).toEqual([]);
+
+    // Cycle 2: PLANT_CONTROLLER is already broken at cycle start, so fire kills the plant (leaving an empty pot).
+    const after2 = nextCycle(after1);
+    expect(after2.items.find((i) => i.id === "garden-pot")?.plant).toBeUndefined();
+    expect(viewFor(after2, "p0").log.filter((e) => e.key === "fireKilledPlant")).toEqual([expect.objectContaining({ params: { item: "fruit_banana" } })]);
+  });
+
+  it("protects Hydroponic Garden plants on the cycle an incident breaks the Hydroponics center", () => {
+    const GARDEN = "HYDROPONIC_CENTER";
+    const config = noHunters(only("equipment_breakdown"));
+    const s = ship({
+      ...config,
+      fire: { ...config.fire, spreadChance: 0, breakChance: 1, hullChance: 0 },
+    });
+    // Break every other breakable equipment so equipment_breakdown must pick PLANT_CONTROLLER.
+    for (const eq of Object.values(s.equipment).flat()) {
+      if (eq.id !== "HYDROPONIC_CENTER:PLANT_CONTROLLER" && isBreakable(s, eq.type)) eq.broken = true;
+    }
+    s.fires = [GARDEN];
+    s.incidentPoints = 100;
+    s.items.push({
+      id: "garden-pot",
+      type: "tree_pot",
+      at: { kind: "room", id: GARDEN },
+      plant: { species: "fruit_banana", age: null, thirst: 0, sick: false },
+    });
+    const after = nextCycle(s);
+    expect(equipment(after, "HYDROPONIC_CENTER:PLANT_CONTROLLER").broken).toBe(true);
+    expect(after.items.find((i) => i.id === "garden-pot")?.plant).toBeDefined();
+  });
+
   it("spreads instead of doing damage, at most 2 rooms a cycle, and new fires act from the next cycle", () => {
     const s = burning({ spreadChance: 1 });
     s.fires = [HERE, ELSEWHERE, "CORRIDOR_A"];

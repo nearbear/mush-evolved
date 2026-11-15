@@ -3847,3 +3847,14 @@ Small refactor on request: `GameRoom.social` called four bot-line parsers (item,
 
 - **Decision (owner):** Implement the `disheartening_contact` Mush skill, renamed to **Demoralizer** in English (internal id `disheartening_contact` kept for stored-state compatibility). Grants the **Demoralize** (`demoralize`) action: 2 AP, no daily limit or cooldown, blocked in pre-selection; targets any living roommate (human or Mush), offered even at 0 morale so it does not leak private morale, and lowers their morale by 2 (clamped at 0). Covert (`logCovert`) and `aggressive`; the victim receives the standard private `loseMorale` line.
 - **What worked:** Existing `Action` registry, `logCovert`, `gainMorale`, and `aggressive` tag modifiers (Pacifist/Bodyguard) handled all surcharges, camera/Observant/Outcast reveal, and UI target routing without custom wiring.
+
+### 2026-11-14 — Hydroponics center fire protection for plants
+
+- **Decision (owner):** Hydropots (`tree_pot`) remain immune to fire and breakage, but fire kills the plant inside a planted hydropot on the floor at `fire.breakChance` (leaving an empty pot, public room log `fireKilledPlant`). Plants in `HYDROPONIC_CENTER` are protected while `PLANT_CONTROLLER` is working, snapshotted before `incidentsCycle` and `fireCycle` so `incidentsCycle` stays before `fireCycle` (incident-started fires still act the same cycle) while plants stay protected on the cycle an incident or fire breaks `PLANT_CONTROLLER`.
+- **What worked:** Asking the four open questions (`tree_pot` fire behavior, empty pots, same-cycle `PLANT_CONTROLLER` breakage, and `incidentsCycle` vs `fireCycle` order) up front avoided guessing and kept the change small and clean.
+
+## 2026-11-14: Doors as targets (planning, #330)
+
+- Designed doors as their own sparse state (`GameState.doors`, id = sorted room pair) rather than equipment entries, since a door belongs to two rooms and duplicate `broken` flags would drift. Owner answered the rule questions (blocks everyone, repair 25% with usual factors, Doorman targeted/0 AP/daily/secret, reportable from both rooms).
+- Used `npm run emush` to settle whether ordinary Sabotage hits doors: the door's action list has `repair_percent_25` and no sabotage, and only the separate door sabotage action breaks doors. `spec` returned nothing twice (silent failure), so the answer came from `find`/`outline` line positions instead; worth making `spec` report errors.
+- The new decision overrides #444's "doors are not reportable"; updated that line in rules-design.md. #330 rewritten as the whole story with six slices.

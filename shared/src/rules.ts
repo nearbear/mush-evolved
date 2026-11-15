@@ -16,7 +16,7 @@ import { researchNeedsView } from "./actions/research.ts";
 import { equipmentHere } from "./equipment.ts";
 import { jellyCycle, leakOxygen } from "./breakage.ts";
 import { newProjectDeck } from "./projects.ts";
-import { fireCycle, ignitePending, isOnFire } from "./fire.ts";
+import { fireCycle, ignitePending, isGardenProtected, isOnFire } from "./fire.ts";
 import { alertsFor, fireReported } from "./reports.ts";
 import { incidentsCycle } from "./incidents.ts";
 import { initNpc, newNpcState, npcCycle } from "./npcs.ts";
@@ -463,8 +463,9 @@ function advanceCycle(state: GameState, at?: number): void {
   // After the cycle's opening line, so incident and fire lines follow it. A fire acts in the cycle it starts.
   neronParticipationCycle(state);
   ignitePending(state);
+  const gardenProtected = isGardenProtected(state);
   incidentsCycle(state, day);
-  fireCycle(state);
+  fireCycle(state, gardenProtected);
   leakOxygen(state);
   jellyCycle(state);
   npcCycle(state);
