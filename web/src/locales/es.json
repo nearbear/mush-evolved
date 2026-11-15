@@ -1768,6 +1768,7 @@
       "contaminate": "Añadir contaminación",
       "spawn": "Hacer aparecer un objeto",
       "teleport": "Teletransportarse a una sala",
+      "breakDoor": "Romper una puerta",
       "returnToSol": "Volver a Sol",
       "returnToEden": "Viajar a Edén"
     }

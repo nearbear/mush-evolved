@@ -4,7 +4,7 @@
 
 import { Dialog } from "@base-ui/react/dialog";
 import { Tabs } from "@base-ui/react/tabs";
-import { DEFAULT_CONFIG, KUBE_OPS, kubeChoices, type KubeChoiceSource, type KubeGroup, type KubeOpId, type PlayerView, type RoomId } from "@mush2/shared";
+import { DEFAULT_CONFIG, KUBE_OPS, doorRooms, kubeChoices, type KubeChoiceSource, type KubeGroup, type KubeOpId, type PlayerView, type RoomId } from "@mush2/shared";
 import { useId, useState, type CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
 import { EMPTY_SLOT_ICON, itemIcon } from "../art/assets.ts";
@@ -75,7 +75,14 @@ function KubeRow({ op, view, source, onKube }: { op: KubeOpId; view: PlayerView;
       </button>
     );
   }
-  const nameOf = (value: string) => (kind === "ailment" ? t(`status.${value}` as never, { defaultValue: value }) : kind === "item" ? names.item(value) : names.room(value));
+  const nameOf = (value: string) =>
+    kind === "ailment"
+      ? t(`status.${value}` as never, { defaultValue: value })
+      : kind === "item"
+        ? names.item(value)
+        : kind === "door"
+          ? doorRooms(value).map(names.room).join(" ↔ ")
+          : names.room(value);
   const parsed = Number(number);
   const valid = kind !== "number" || (number !== "" && Number.isInteger(parsed) && parsed >= 0);
   return (

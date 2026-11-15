@@ -10,10 +10,11 @@ import { MoveAction, type MoveActionData } from "./move.ts";
 import { findPlayer } from "../helpers.ts";
 import { logPrivate } from "../log.ts";
 import { shortestPath } from "../paths.ts";
+import { doorId, doorsOf } from "../doors.ts";
 import { findPlan, finishPlan } from "../plans.ts";
 import { emptyQueue } from "../queueCore.ts";
 import { standUp } from "../spot.ts";
-import type { GameState, Plan, PlayerId, PlayerState, RoomId } from "../types.ts";
+import type { DoorId, GameState, Plan, PlayerId, PlayerState, RoomId } from "../types.ts";
 
 /**
  * `performAction` (rules.ts), bound by rules.ts as it loads. Importing it here would make an import cycle (rules.ts
@@ -41,6 +42,7 @@ export type SummonActionData = { type: "summon"; plan: string };
 const STOP_KEYS: Record<string, string> = {
   cant_afford: "summonStoppedCantAfford",
   not_adjacent: "summonStoppedDoor",
+  door_broken: "summonStoppedDoor",
   being_pushed: "summonStoppedPushed",
   no_path: "summonStoppedNoPath",
 };
@@ -50,6 +52,10 @@ const STOP_KEYS: Record<string, string> = {
  * with an `actionDropped` line), they get out of bed, and each door along `shortestPath` from where they stand now is
  * a live `move`, checked when they reach it. A refused or unaffordable step stops them there; doors already walked
  * stay walked. Only the holder learns why. Returns whether they arrived. Mutates a state the caller already cloned.
+ *
+ * Broken doors (#330): the holder knows only the doors of rooms they stand in on the way, so the route avoids those
+ * and is worked out again in each room; a broken door further on is found only on reaching it, and walked around then.
+ * The route never uses a door state the holder couldn't have seen.
  */
 export function walk(state: GameState, holderId: PlayerId, to: RoomId): boolean {
   const holder = findPlayer(state, holderId);
@@ -57,10 +63,15 @@ export function walk(state: GameState, holderId: PlayerId, to: RoomId): boolean 
   if (holder.room !== to) {
     emptyQueue(state, holder, true);
     getUp(holder);
-    const route = shortestPath(state.config.rooms, holder.room, to);
-    if (!route) return stopped(state, holder, to, "no_path");
-    for (const room of route) {
-      const move: MoveActionData = { type: "move", to: room };
+    const seen = new Set<DoorId>();
+    // Each step either reaches a room one door nearer (on what the holder knows) or learns a broken door, so this
+    // ends; the bound is only a guard.
+    for (let guard = 0; holder.room !== to; guard++) {
+      for (const door of doorsOf(state, holder.room)) if (door.broken) seen.add(door.id);
+      const route = shortestPath(state.config.rooms, holder.room, to, (a, b) => !seen.has(doorId(a, b)));
+      if (!route) return stopped(state, holder, to, "no_path");
+      if (guard > 4 * Object.keys(state.config.rooms).length) return stopped(state, holder, to, "no_path");
+      const move: MoveActionData = { type: "move", to: route[0]! };
       const refused = MOVE.check(state, holder, move);
       if (refused !== null || !step(state, holder, move)) return stopped(state, holder, to, refused ?? "cant_afford");
     }

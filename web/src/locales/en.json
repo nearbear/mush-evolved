@@ -1837,6 +1837,7 @@
       "contaminate": "Add contamination",
       "spawn": "Spawn an item",
       "teleport": "Teleport to a room",
+      "breakDoor": "Break a door",
       "returnToSol": "Return to Sol",
       "returnToEden": "Return to Eden"
     }

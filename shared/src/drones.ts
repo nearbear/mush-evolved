@@ -16,6 +16,7 @@ import { ITEM_TYPES, itemsIn } from "./items.ts";
 import { logPublic } from "./log.ts";
 import type { Npc } from "./npcs.ts";
 import { shortestPath } from "./paths.ts";
+import { isDoorBroken, openDoors } from "./doors.ts";
 import { offShip } from "./patrol.ts";
 import { rollFloat, rollInt, rollShuffle } from "./rng.ts";
 import type { DroneState, Equipment, GameState, ItemState, LogParams, RoomId } from "./types.ts";
@@ -119,7 +120,7 @@ function sensorStep(state: Readonly<GameState>, item: Readonly<ItemState>, room:
   if (hasUpgrade(item, "firefighter")) targets.push((r) => isOnFire(state, r));
   targets.push((r) => droneRepairTarget(state, r) !== undefined);
   for (const match of targets) {
-    const step = shortestPath(state.config.rooms, room, (r) => r !== room && !offShip(r) && match(r))?.[0];
+    const step = shortestPath(state.config.rooms, room, (r) => r !== room && !offShip(r) && match(r), openDoors(state))?.[0];
     if (step) return step;
   }
   return undefined;
@@ -127,7 +128,8 @@ function sensorStep(state: Readonly<GameState>, item: Readonly<ItemState>, room:
 
 /** Moves a drone in `room` (on its floor, or carried there) to a neighbouring room's floor aboard the Daedalus (Sensor pathfinding first if upgraded, else random), with public lines in both. Returns where it ends up. */
 function wander(state: GameState, item: ItemState, drone: DroneState, room: RoomId): RoomId {
-  const neighbours = (state.config.rooms[room] ?? []).filter((r) => !offShip(r));
+  // A broken door (#330) stops a drone like anyone else.
+  const neighbours = (state.config.rooms[room] ?? []).filter((r) => !offShip(r) && !isDoorBroken(state, room, r));
   if (neighbours.length === 0) return room;
   const to = (hasUpgrade(item, "sensor") && sensorStep(state, item, room)) || neighbours[rollInt(state, neighbours.length)]!;
   item.at = { kind: "room", id: to };

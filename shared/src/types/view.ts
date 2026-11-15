@@ -13,7 +13,7 @@ import type { ChannelId, ChatLine, ChatMessage, ChatThread, PrivateChannel, Shar
 import type { Plan } from "./plan.ts";
 import type { MovementRules } from "./config.ts";
 import type { ActionInProgress, PlayerState, Spot } from "./player.ts";
-import type { ExpeditionReport, GameState, HunterType, ShipResources } from "./state.ts";
+import type { DoorId, ExpeditionReport, GameState, HunterType, ShipResources } from "./state.ts";
 
 /** Room equipment as a client sees it. */
 export interface EquipmentView {
@@ -230,6 +230,8 @@ export interface PlayerView {
   roomItems: ItemView[];
   /** Equipment in the room you are in. */
   roomEquipment: EquipmentView[];
+  /** The doors of the room you are in (doors.ts, #330): where each leads and whether it is broken. Empty for the dead. */
+  doors: DoorView[];
   /** Whether the room you are in is on fire (fire.ts). Only the living in a burning room learn it; the crew-wide notice names no room. */
   roomOnFire: boolean;
   /** Burning rooms reported ship-wide, by a player or by Fire detectors (reports.ts, #444). Only to the living. */
@@ -474,4 +476,12 @@ export type ExpeditionReportView = Omit<ExpeditionReport, "members"> & {
 export interface SeatView extends Omit<PlayerView, "log" | "chat"> {
   log: LogEntry[];
   chat: ChatMessage[];
+}
+
+/** One door of your room, as `PlayerView.doors` lists it. */
+export interface DoorView {
+  id: DoorId;
+  /** The room on its other side. */
+  to: RoomId;
+  broken?: true;
 }

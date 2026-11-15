@@ -200,6 +200,11 @@ export interface GameCore {
   failureStreaks: Record<PlayerId, Record<string, number>>;
   /** The incident pool (incidents.ts): points earned each cycle change and spent on incidents. Never sent to anyone (#189). */
   incidentPoints: number;
+  /**
+   * Doors' state (doors.ts, #330), by `doorId`: only doors that aren't working are listed. A door's state reaches only
+   * the living in either room it joins (`PlayerView.doors`).
+   */
+  doors: Record<DoorId, DoorState>;
   /** Burning rooms (fire.ts), in the order they caught fire. Only the living in a burning room see it (`PlayerView.roomOnFire`). */
   fires: RoomId[];
   /**
@@ -349,4 +354,12 @@ export interface Planet {
    * (expeditions.ts): each sector is explored once. Never sent, not even to the finder (owner, 2026-10-31).
    */
   sectors: { tag: PlanetTag; known: boolean; explored?: true }[];
+}
+
+/** A door between two rooms (doors.ts, #330): the two room ids, sorted and joined with `|` (`doorId`). */
+export type DoorId = string;
+
+/** A door's stored state. A working door has no entry in `GameState.doors`. */
+export interface DoorState {
+  broken?: true;
 }

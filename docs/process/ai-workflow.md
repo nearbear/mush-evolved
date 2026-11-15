@@ -3867,3 +3867,9 @@ Small refactor on request: `GameRoom.social` called four bot-line parsers (item,
 ### 2026-11-14 — Nimble Fingers rework (`nimble_fingers`)
 - **Decision (owner):** Nimble Fingers lets a Mush enter and exit Nimble mode (`enter_nimble` / `exit_nimble`, 0 AP, instant, private log, private `nimble` status cleared on death, skill reset, or body transfer). While in Nimble mode, all room-level `logPublic` calls during the actor's actions (including `move`'s `left` and `entered`) become `logSecretIn` in that room; ship-wide announcements (`room === undefined`) stay public.
 - **What worked:** Wrapping `def.apply`/`def.fail` in `withNimbleActor` inside `performAction` and adding `logSecretIn(state, actor, room, ...)` handled all 44 room-level `logPublic` actions and `move` uniformly without touching individual action files.
+
+## 2026-11-14: Doors, slice 1 (door model and blocking, #330)
+
+Built slice 1 of #330 from the issue's decided design: `doors.ts` (`doorId` = sorted room ids joined with `|`, sparse `GameState.doors`, `doorsOf`, `breakDoor`/`repairDoor`), `PlayerView.doors` (own room, living only), broken doors blocking `move`, Guard, Sensor drones (pathing and wandering) and the summons walk, plus a Superkube "Break a door" dev option. `shortestPath` grew an optional `open` door test rather than a second path function.
+
+Two hidden-information choices made by Claude, not the owner, worth a look: (1) the summons walk plans only around broken doors the holder has stood next to on the way, re-planning in each room, instead of routing on the true state (which would reveal a far door's state through the detour); (2) view-based walks (bots, tips, `viewPath`) treat only the viewer's own room's broken doors as shut. What worked: the normalizer and stored-shape tests flagged the new dict (`game.doors` needed adding to `DICTS`). Needed correction: one test expectation (miscounted a detour's length).

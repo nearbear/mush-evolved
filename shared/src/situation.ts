@@ -6,14 +6,27 @@ import { moveCost } from "./modifiers.ts";
 import { shortestPath } from "./paths.ts";
 import type { PlayerView, RoomId } from "./types.ts";
 
+/**
+ * The door test a walk planned from one player's view uses (#330): the broken doors of the viewer's own room are shut;
+ * every other door, whose state the view doesn't carry, is taken as working.
+ */
+export function viewDoorsOpen(view: Pick<PlayerView, "you" | "doors">): (from: RoomId, to: RoomId) => boolean {
+  const here = view.you.room;
+  const shut = new Set(view.doors.filter((d) => d.broken).map((d) => d.to));
+  return (from, to) => !((from === here && shut.has(to)) || (to === here && shut.has(from)));
+}
+
+/** The shortest walk from `from` to `room` the viewer knows of (`viewDoorsOpen`), or null. */
+export const viewPath = (view: PlayerView, from: RoomId, room: RoomId): RoomId[] | null => shortestPath(view.rooms, from, room, viewDoorsOpen(view));
+
 /** Doors to cross from where the viewer stands to `room` (0 when there), or null when there is no way. */
 export function doorCount(view: PlayerView, room: RoomId): number | null {
-  return shortestPath(view.rooms, view.you.room, room)?.length ?? null;
+  return viewPath(view, view.you.room, room)?.length ?? null;
 }
 
 /** AP a walk to `room` costs from here: MP first, then AP converted when the MP runs short. Null if there's no way or not enough. */
 export function travelAp(view: PlayerView, room: RoomId): number | null {
-  const path = shortestPath(view.rooms, view.you.room, room);
+  const path = viewPath(view, view.you.room, room);
   if (path === null) return null;
   let points = { ap: view.you.ap, mp: view.you.mp };
   let spent = 0;

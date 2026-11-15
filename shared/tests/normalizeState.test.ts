@@ -87,6 +87,7 @@ function handFilled() {
   } satisfies Partial<PlayerState>);
   game.items[0]!.hiddenBy = a.id;
   Object.assign(game.items[1]!, { of: b.id, builds: "x", charges: 2, teaches: "y", spores: 1, broken: true, jelly: 3, plant: { species: "fruit_banana", age: null, thirst: 2, sick: true } });
+  game.doors = { "CORRIDOR_A|LABORATORY": { broken: true } };
   game.space = [{ id: "d1", type: "metal_scraps", plant: { species: "fruit_banana", age: 1, thirst: 0, sick: false } }];
   game.equipment.BRIDGE = [{ id: "BRIDGE:X", type: "X", broken: true, jelly: 2 }];
   game.log.push({ id: 77, cycle: 1, at: 5, key: "k", params: { n: 1, s: "t" }, room: "BRIDGE", visibleTo: [a.id], level: "warning" });

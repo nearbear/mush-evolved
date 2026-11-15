@@ -1,17 +1,20 @@
 // Walking routes through the ship's room graph (`config.rooms`), for the summons walk (actions/summon.ts) and Sensor
-// support drones (drones.ts).
+// support drones (drones.ts), and for bots and tips through situation.ts. Broken doors (doors.ts) are left out by
+// passing `open`.
 
 import type { DeepReadonly, RoomId } from "./types.ts";
 
 /**
  * The rooms to walk through, door by door, to get from `from` to `to` (or the nearest room matching a predicate),
  * ending at the reached room, or null if there is no way. Empty when `from` matches. Breadth-first, trying exits in
- * adjacency-list order, so the same graph always gives the same route and breaks ties by door order.
+ * adjacency-list order, so the same graph always gives the same route and breaks ties by door order. `open` says
+ * whether the door from one room to the next can be walked through (every door, if left out).
  */
 export function shortestPath(
   rooms: DeepReadonly<Record<RoomId, RoomId[]>>,
   from: RoomId,
   to: RoomId | ((room: RoomId) => boolean),
+  open: (from: RoomId, to: RoomId) => boolean = () => true,
 ): RoomId[] | null {
   const match = typeof to === "function" ? to : (room: RoomId) => room === to;
   if (match(from)) return [];
@@ -20,7 +23,7 @@ export function shortestPath(
   for (let i = 0; i < frontier.length; i++) {
     const room = frontier[i]!;
     for (const next of rooms[room] ?? []) {
-      if (cameFrom.has(next)) continue;
+      if (cameFrom.has(next) || !open(room, next)) continue;
       cameFrom.set(next, room);
       if (match(next)) {
         const path: RoomId[] = [];

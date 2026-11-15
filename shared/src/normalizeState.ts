@@ -43,6 +43,7 @@ import type {
   ConfigOverrides,
   Container,
   DeepReadonly,
+  DoorState,
   Equipment,
   ActiveExpedition,
   ExpeditionEvent,
@@ -728,6 +729,11 @@ export function normalizeNavigation(raw: Partial<Navigation>): Navigation {
   });
 }
 
+/** A door's state (doors.ts, #330). */
+export function normalizeDoor(raw: Partial<DoorState>): DoorState {
+  return stripUndefined<DoorState>({ broken: raw.broken });
+}
+
 export function normalizeReport(raw: Partial<Report>): Report {
   const t = "Report";
   switch (raw.kind) {
@@ -1004,6 +1010,8 @@ export function normalizeCore(raw: Partial<GameCore>, _ctx: NormalizeContext, mo
     space: need(raw, "space", t).map(normalizeDebris),
     failureStreaks: dict(need(raw, "failureStreaks", t)),
     incidentPoints: need(raw, "incidentPoints", t),
+    // Doors (#330): every door working in a game stored before them.
+    doors: mapValues(added(raw, "doors", {}), normalizeDoor),
     fires: copy(need(raw, "fires", t)),
     // Reports (#444): none in a game stored before them.
     reports: added(raw, "reports", []).map(normalizeReport),

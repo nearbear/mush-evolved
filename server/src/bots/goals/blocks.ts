@@ -6,7 +6,7 @@ import {
   doorCount,
   moveCost,
   roomsWith,
-  shortestPath,
+  viewPath,
   type Action,
   type ActionOption,
   type PlayerView,
@@ -21,7 +21,7 @@ export { canAfford as rawCanAfford, nearest, roomsWith, travelAp } from "@mush2/
 
 /** Simulates walking `fromRoom -> toRoom` starting with `(ap, mp)` and returns remaining points, or null if unreachable. */
 export function walkBudget(view: PlayerView, fromRoom: RoomId, toRoom: RoomId, ap: number, mp: number): { ap: number; mp: number } | null {
-  const path = shortestPath(view.rooms, fromRoom, toRoom);
+  const path = viewPath(view, fromRoom, toRoom);
   if (path === null) return null;
   let points = { ap, mp };
   for (let i = 0; i < path.length; i++) {
@@ -78,7 +78,7 @@ export const failed = (reason: string): GoalStep => ({ kind: "failed", reason })
  * turn, so a bot walked somewhere else (a plan's summons) re-paths by itself.
  */
 export function goTo(view: PlayerView, room: RoomId): GoalStep | null {
-  const path = shortestPath(view.rooms, view.you.room, room);
+  const path = viewPath(view, view.you.room, room);
   if (path === null) return failed("no_path");
   if (path.length === 0) return null;
   const move = find(view, "move", (m) => m.to === path[0]);

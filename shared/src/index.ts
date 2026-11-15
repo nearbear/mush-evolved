@@ -39,6 +39,7 @@ export * from "./navigation.ts";
 export * from "./ship.ts";
 export * from "./paths.ts";
 export * from "./situation.ts";
+export * from "./doors.ts";
 export * from "./spot.ts";
 export * from "./titles.ts";
 export * from "./comms.ts";

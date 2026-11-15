@@ -17,6 +17,7 @@ import { researchNeedsView } from "./actions/research.ts";
 import { equipmentHere } from "./equipment.ts";
 import { jellyCycle, leakOxygen } from "./breakage.ts";
 import { newProjectDeck } from "./projects.ts";
+import { doorsOf } from "./doors.ts";
 import { fireCycle, ignitePending, isGardenProtected, isOnFire } from "./fire.ts";
 import { alertsFor, fireReported } from "./reports.ts";
 import { incidentsCycle } from "./incidents.ts";
@@ -179,6 +180,7 @@ export function createGame(
     hunters: newHunters(),
     turrets: {},
     incidentPoints: 0,
+    doors: {},
     fires: [],
     reports: [],
     pendingFires: [],
@@ -667,6 +669,8 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     inventorySlots: inventorySlots(state, you),
     roomItems: you.alive ? visibleItemsIn(state, { kind: "room", id: you.room }, you).map((item) => itemView(item, you)) : [],
     roomEquipment: you.alive ? (state.equipment[you.room] ?? []).map((e) => equipmentView(state, e, you)) : [],
+    // Your room's doors (#330): a door's state reaches only the living on either side of it.
+    doors: you.alive ? doorsOf(state, you.room) : [],
     roomOnFire: you.alive && isOnFire(state, you.room),
     // Reported fires, by players or Fire detectors (#444); an unreported fire's room reaches nobody.
     burningRooms: you.alive ? state.fires.filter((room) => fireReported(state, room)) : [],

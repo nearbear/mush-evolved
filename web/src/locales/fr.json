@@ -1768,6 +1768,7 @@
       "contaminate": "Ajouter une contamination",
       "spawn": "Faire apparaître un objet",
       "teleport": "Se téléporter dans une pièce",
+      "breakDoor": "Casser une porte",
       "returnToSol": "Rentrer sur Sol",
       "returnToEden": "Aller sur Éden"
     }

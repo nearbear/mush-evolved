@@ -11,6 +11,7 @@ import { cheatItem } from "./cheatStock.ts";
 import { CHEAT_ROOM } from "./cheatRoom.ts";
 import { addDisease, removeDisease } from "./diseases.ts";
 import { clone, fail, findPlayer, type ActionResult } from "./helpers.ts";
+import { allDoors, breakDoor } from "./doors.ts";
 import { contaminate } from "./infection.ts";
 import { ITEM_TYPES, newItemId, startCharges } from "./items.ts";
 import { enterRoom, enteredRoom } from "./modifiers.ts";
@@ -18,10 +19,10 @@ import { logPublic } from "./log.ts";
 import { inCraft } from "./patrol.ts";
 import { addStatus, isImmune, type StatusId } from "./statuses.ts";
 import { endGame, winnerOnArrival } from "./victory.ts";
-import type { DeepReadonly, GameConfig, GameState, PlayerId, PlayerState, RoomId } from "./types.ts";
+import type { DeepReadonly, DoorId, GameConfig, GameState, PlayerId, PlayerState, RoomId } from "./types.ts";
 
-/** What an option's argument is: nothing, a whole number, one of the ship's ailments, an item type, or a room. */
-export type KubeArgKind = "none" | "number" | "ailment" | "item" | "room";
+/** What an option's argument is: nothing, a whole number, one of the ship's ailments, an item type, a room, or a door. */
+export type KubeArgKind = "none" | "number" | "ailment" | "item" | "room" | "door";
 
 /** The window's tabs. */
 export type KubeGroup = "health" | "items" | "travel" | "destinations";
@@ -129,6 +130,12 @@ export const KUBE_OPS = {
       return null;
     },
   },
+  // Breaks a working door of the Daedalus (#330), silently, as a stuck door would.
+  breakDoor: {
+    group: "travel",
+    arg: "door",
+    apply: (state, _me, arg) => (breakDoor(state, arg as DoorId) ? null : "door_broken"),
+  },
   // End the game immediately by arriving at Sol or Eden (development route to a finished game and its replay).
   returnToSol: arriveAt("sol", "returnedToSol"),
   returnToEden: arriveAt("eden", "returnedToEden"),
@@ -143,7 +150,7 @@ export const isKubeOp = (value: unknown): value is KubeOpId => typeof value === 
  * `{ rooms: view.rooms, diseases: DEFAULT_CONFIG.diseases }` (the view carries no disease lists).
  */
 export interface KubeChoiceSource {
-  readonly rooms: Readonly<Record<RoomId, unknown>>;
+  readonly rooms: Readonly<Record<RoomId, readonly RoomId[]>>;
   readonly diseases: { readonly allDiseases: readonly StatusId[]; readonly allDisorders: readonly StatusId[]; readonly allInjuries: readonly StatusId[] };
 }
 
@@ -152,11 +159,13 @@ const ailments = (config: KubeChoiceSource): StatusId[] => [...config.diseases.a
 
 /**
  * What an argument of `kind` may be on a ship with this config, in the order the window lists them: the ship's
- * ailments, every item type, or the Daedalus's rooms with the Laboratory first (the cheat room and the crafts left out).
+ * ailments, every item type, the Daedalus's rooms with the Laboratory first (the cheat room and the crafts left out),
+ * or the Daedalus's doors.
  */
 export function kubeChoices(config: KubeChoiceSource, kind: Exclude<KubeArgKind, "none" | "number">): string[] {
   if (kind === "ailment") return ailments(config);
   if (kind === "item") return Object.keys(ITEM_TYPES);
+  if (kind === "door") return allDoors(config.rooms);
   const rooms = Object.keys(config.rooms).filter((room) => room !== CHEAT_ROOM && !inCraft(room));
   return [...rooms.filter((r) => r === "LABORATORY"), ...rooms.filter((r) => r !== "LABORATORY")];
 }
