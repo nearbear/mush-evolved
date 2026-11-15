@@ -9,8 +9,9 @@ import type { PlayerState } from "./types.ts";
  * Ids are the lowercase ids from the original design table (`Mush/derived/data/Data/skills.json`, human, not
  * beta), which are also the icon file names under `Mush/www/img/icons/skills`. The last ten are on a character's
  * list on eMushpedia but not retained in the original (the first seven) or new in eMush (the last three, which
- * have no icon, though Maintenance Agent uses the removed Dreamer icon). Mankind's Only Hope is left out: it is Chun's trait here (owner, 2026-10-18;
- * `modifiers/mankind_only_hope.ts`).
+ * have no icon, though Maintenance Agent uses the removed Dreamer icon, Bodyguard uses Independent's brick wall
+ * icon, Independent uses the removed Daunting icon, and Infantryman uses the removed Crazy Eye icon). Mankind's Only
+ * Hope is left out: it is Chun's trait here (owner, 2026-10-18; `modifiers/mankind_only_hope.ts`).
  */
 export const SKILLS = [
   "engineer",
@@ -46,13 +47,11 @@ export const SKILLS = [
   "genius",
   "observant",
   "torturer",
-  "crazy_eye",
   "logistics",
   "rebel",
   "escape",
   "neron_only_friend",
   "stickler",
-  "daunting",
   "juge",
   "creative",
   "fast_backward",
@@ -239,7 +238,9 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   epigenetics: "full",
   // Mush skill: the one-use body swap (owner, 2026-10-24, body_transfer.ts).
   transfert: "full",
-  // Mush skill: spores into food (owner, 2026-10-24, fungal_cuisine.ts); no Hygienist or Cook-point interaction.
+  // 50% chance to resist Mush contamination and physical diseases, humans only (owner, 2026-11-14, infection.ts, diseases.ts).
+  strong_skin: "full",
+  // Mush skill: spores into food (owner, 2026-10-24, fungal_cuisine.ts); no Cook-point interaction or hyperfreezing.
   fungus_cook: "partial",
   // Mush skill: eat a spore for 4 HP and 4 AP (owner, 2026-11-04, actions/consume_spore.ts).
   phagocytosis: "full",
@@ -291,10 +292,16 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   bacterial_contact: "partial",
   // Instantly complete a research, project, or repair (owner, 2026-10-25, actions/become_genius.ts).
   genius: "full",
+  // +4 Cook points a day and 4 when picked (owner, 2026-11-14, modifiers/cook.ts); alien fruit lore (fruits.ts) and FOOD_RETAILER project bonus (projects.ts).
+  cook: "full",
   // +1 Engineer, Garden, and Cook point a day and 1 of each when picked (owner, 2026-11-14, modifiers/maintenance_agent.ts).
   maintenance_agent: "full",
   // Expedition: -1 damage per hit, +1 Alien Steak on Provision events, and chosen last on Kill events (expeditions.ts).
   survival: "full",
+  // +5 AP (capped at maxAp) the first time you gain each title while having the skill (owner, 2026-11-14, modifiers/opportunist.ts).
+  opportunist: "full",
+  // Protect a crewmate for 1 AP; aggressive actions targeting them in the same room cost +2 AP (owner, 2026-11-14, actions/protect.ts, modifiers/bodyguard.ts).
+  bodyguard: "full",
 };
 
 export function skillStatus(skill: string): SkillStatus {

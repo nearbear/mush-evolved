@@ -45,27 +45,42 @@ export function CommsCenter({ terminal, view, onAction }: Props) {
       <Tabs.Panel value="overview">
         <div className="research-list">
           <section className="research-item comms-sol" aria-label={t("actions.contactSol")}>
-            <Spectrogram db={db} linked={view.comms.linked} status={view.comms.linked ? t("comms.linked") : t("comms.unlinked")} />
-            <span>{t("comms.solSignal", { db, strength: t(`comms.strength.${signalStrength(db)}`) })}</span>
-            {!view.comms.linked ? <span>{t("comms.linkNeeded")}</span> : !officer && <span>{t("comms.officerOnly")}</span>}
             {contactSol && (
               <ActionButton className="big comms-sol-contact" view={view} option={contactSol} onAction={onAction}>
                 <ActionLabel text={t("actions.contactSol")} cost={contactSol.cost} chance={contactSol.chance} />
               </ActionButton>
             )}
+            <Spectrogram
+              db={db}
+              linked={view.comms.linked}
+              status={view.comms.linked ? t("comms.linked") : t("comms.unlinked")}
+              signal={t("comms.solSignal", { db, strength: t(`comms.strength.${signalStrength(db)}`) })}
+            />
+            {!view.comms.linked ? <span className="sub">{t("comms.linkNeeded")}</span> : !officer && <span className="sub">{t("comms.officerOnly")}</span>}
           </section>
 
           <section className="research-item" aria-label={t("comms.neronTitle")}>
             <div className="research-body">
               <strong>{t("comms.neronVersion", { version: screen.neron.version })}</strong>
-              <progress max={100} value={screen.neron.progress} />
-              <span>{t("comms.neronProgress", { percent: screen.neron.progress })}</span>
+              <div className="research-progress">
+                <div
+                  className="kit-progress neron"
+                  role="progressbar"
+                  aria-label={t("comms.neronTitle")}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={screen.neron.progress}
+                  style={{ "--value": screen.neron.progress / 100 } as CSSProperties}
+                />
+                <span>{t("research.percent", { percent: screen.neron.progress })}</span>
+                {neron && (
+                  <ActionButton view={view} option={neron} onAction={onAction}>
+                    <ActionLabel text={t("actions.updateNeron")} cost={neron.cost} chance={neron.chance} />
+                  </ActionButton>
+                )}
+              </div>
+              <span className="sub">{t("comms.neronProgress", { percent: screen.neron.progress })}</span>
             </div>
-            {neron && (
-              <ActionButton view={view} option={neron} onAction={onAction}>
-                <ActionLabel text={t("actions.updateNeron")} cost={neron.cost} chance={neron.chance} />
-              </ActionButton>
-            )}
           </section>
         </div>
       </Tabs.Panel>

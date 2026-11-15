@@ -88,6 +88,12 @@ export const PROJECT_STATUS: Readonly<Partial<Record<ProjectId, ProjectStatus>>>
   ARMOUR_CORRIDOR: "full",
   // Patrol ship, Pasiphae, and Icarus takeoff cost 1 AP less (owner, 2026-11-14; modifiers.ts `actionCost`).
   PATROL_SHIP_LAUNCHER: "full",
+  // Patrol ships hold +6 max charges (10 -> 16) and gain +6 current charges on completion (owner, 2026-11-14; patrol.ts, projectEffects.ts).
+  PATROLSHIP_EXTRA_AMMO: "full",
+  // Every patrol ship hit does +1 damage, stacking with Cygni (owner, 2026-11-14; patrol.ts, patrol_attack.ts).
+  PATROLSHIP_BLASTER_GUN: "full",
+  // Turrets recharge twice as fast each cycle (owner, 2026-11-14; hunters.ts).
+  TURRET_EXTRA_FIRERATE: "full",
   // The shield absorbs 67% of a hit instead of 33% (owner, 2026-10-24; ship.ts).
   PLASMA_SHIELD: "full",
   // Reports every fire: burning rooms turn red on the minimap and show on the alert bar (owner, 2026-11-02; #444).
@@ -110,6 +116,8 @@ export const PROJECT_STATUS: Readonly<Partial<Record<ProjectId, ProjectStatus>>>
   CALL_OF_DIRTY: "full",
   // Completing it spawns 3 empty hydropots on the Hydroponic Garden floor (owner, 2026-11-14; projectEffects.ts).
   EXTRA_HYDROPONPOTS: "full",
+  // Any offered project above 0% gains +5% per cycle; at most one can complete per cycle (owner, 2026-11-14; projectEffects.ts).
+  NERON_PROJECT_THREAD: "full",
 };
 
 export function projectStatus(project: string): ProjectStatus {

@@ -15,9 +15,11 @@ import { RESEARCH_COMPLETE } from "./research.ts";
 import { skillsOf } from "./skills.ts";
 import { antic_perfume } from "./modifiers/antic_perfume.ts";
 import { astrophysician } from "./modifiers/astrophysician.ts";
+import { bodyguard } from "./modifiers/bodyguard.ts";
 import { botanic } from "./modifiers/botanic.ts";
 import { caffeinomaniac } from "./modifiers/caffeinomaniac.ts";
 import { computer } from "./modifiers/computer.ts";
+import { cook } from "./modifiers/cook.ts";
 import { creative } from "./modifiers/creative.ts";
 import { designer } from "./modifiers/designer.ts";
 import { engineer } from "./modifiers/engineer.ts";
@@ -33,6 +35,7 @@ import { maintenance_agent } from "./modifiers/maintenance_agent.ts";
 import { medic } from "./modifiers/medic.ts";
 import { mycologist } from "./modifiers/mycologist.ts";
 import { observant } from "./modifiers/observant.ts";
+import { opportunist } from "./modifiers/opportunist.ts";
 import { paranoid } from "./modifiers/paranoid.ts";
 import { persistent } from "./modifiers/persistent.ts";
 import { physicist } from "./modifiers/physicist.ts";
@@ -61,6 +64,7 @@ import { gastroenteritis_disease } from "./modifiers/gastroenteritis_disease.ts"
 import { broken_nose_injury } from "./modifiers/broken_nose_injury.ts";
 import type { ActionCost } from "./actions.ts";
 import type { ActionTag } from "./actions/action.ts";
+import type { TitleId } from "./titles.ts";
 import type { Action, GameState, ItemState, MovementRules, PlayerState } from "./types.ts";
 
 /** A numeric hook: takes the running value and returns the adjusted one. Must be pure. */
@@ -188,6 +192,8 @@ export interface Modifier extends Partial<FoldHooks> {
   onEnterRoom?: (next: GameState, player: PlayerState, tools: EnterRoomTools) => void;
   /** Runs when a player enters a room with another player */
   onEncounter?: (next: GameState, player: PlayerState, other: PlayerState) => void;
+  /** Runs when the player gains a ship title (initial assignment, succession, or coup). Mutates a state the caller already cloned. */
+  onTitleGained?: (next: GameState, player: PlayerState, title: TitleId) => void;
 }
 
 export type ModifierRegistry = Readonly<Record<string, Modifier>>;
@@ -200,6 +206,7 @@ export const MODIFIERS: Record<string, Modifier> = {
   botanic,
   caffeinomaniac,
   computer,
+  cook,
   creative,
   designer,
   engineer,
@@ -215,6 +222,7 @@ export const MODIFIERS: Record<string, Modifier> = {
   medic,
   mycologist,
   observant,
+  opportunist,
   paranoid,
   persistent,
   physicist,
@@ -225,6 +233,7 @@ export const MODIFIERS: Record<string, Modifier> = {
   space_tactics,
   sprint,
   sturdy,
+  bodyguard,
   // Character traits
   hyperactive,
   immunity,
@@ -508,17 +517,23 @@ export function moveCost(
   return { ap: rules.apPerConversion, mpAfter: converted - rules.mpPerMove };
 }
 
-/** Spores the Mush faction may extract per day: the configured count folded through the extracting player's modifiers. */
-export const sporesPerDay = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
-  fold("sporesPerDay", state.config.spores.perDay, state, player, registry);
+/** Spores the Mush faction may extract per day: the configured count (less ANTISPORE_GAZ) folded through the extracting player's modifiers. */
+export const sporesPerDay = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) => {
+  const reduction = (state.research.ANTISPORE_GAZ ?? 0) >= RESEARCH_COMPLETE ? state.config.spores.antisporeReduction : 0;
+  return Math.max(0, fold("sporesPerDay", state.config.spores.perDay - reduction, state, player, registry));
+};
 
-/** HP a heal restores: the configured amount folded through the healer's modifiers. */
+/** Extra HP heal and bandage restore once the Ultra-healing ointment research completes (owner, 2026-11-14). */
+const ointmentHealBonus = (state: Readonly<GameState>): number =>
+  (state.research.HEALING_OINTMANT ?? 0) >= RESEARCH_COMPLETE ? state.config.heal.effect.ointmentBonusHp : 0;
+
+/** HP a heal restores: the configured amount folded through the healer's modifiers, plus HEALING_OINTMANT if complete. */
 export const healAmount = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
-  fold("healAmount", state.config.heal.effect.hp, state, player, registry);
+  fold("healAmount", state.config.heal.effect.hp, state, player, registry) + ointmentHealBonus(state);
 
-/** HP a bandage restores (owner, 2026-11-07, #397): the configured amount folded through the same `healAmount` hook. */
+/** HP a bandage restores (owner, 2026-11-07, #397): the configured amount folded through the same `healAmount` hook, plus HEALING_OINTMANT if complete. */
 export const bandageHealAmount = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
-  fold("healAmount", state.config.bandage.effect.hp, state, player, registry);
+  fold("healAmount", state.config.bandage.effect.hp, state, player, registry) + ointmentHealBonus(state);
 
 /** Satiety a human loses each cycle: the configured loss folded through the player's modifiers. */
 export const satietyLoss = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
@@ -643,6 +658,11 @@ export function healed(next: GameState, healer: PlayerState, patient: PlayerStat
 /** Runs the picked skill's onPick hook. Mutates a state the caller already cloned. */
 export function skillPicked(next: GameState, player: PlayerState, skill: string, registry: ModifierRegistry = MODIFIERS): void {
   registry[skill]?.onPick?.(next, player);
+}
+
+/** Runs every onTitleGained hook of the player's modifiers. Mutates a state the caller already cloned. */
+export function titleGained(next: GameState, player: PlayerState, title: TitleId, registry: ModifierRegistry = MODIFIERS): void {
+  for (const id of eventIds(player)) registry[id]?.onTitleGained?.(next, player, title);
 }
 
 /** Runs every onCycle hook of each living player, in seat order. Mutates a state the caller already cloned. */

@@ -9,7 +9,7 @@
 // (Land, Collect scrap: whatever the view offers on its command, less Examine). Collect scrap's tooltip says how much
 // debris floats nearby (the view leaves the count out while a patrol ship can't collect); when the rules refuse it (no debris, or a patrol ship while the Pasiphae exists) it shows disabled with why.
 
-import { HUNTER_TYPES, actionVisibility, patrolShip, type Action, type HunterView, type PlayerView, type ShipLayout } from "@mush2/shared";
+import { HUNTER_TYPES, PROJECT_COMPLETE, actionVisibility, patrolShip, type Action, type HunterView, type PlayerView, type ShipLayout } from "@mush2/shared";
 import { useState, type CSSProperties, type KeyboardEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { FX_CHARGE, FX_SHIELD, HUNTER_SPRITES, HUNTER_SPRITES_SMALL } from "../art/assets.ts";
@@ -75,6 +75,8 @@ export function PatrolCockpit({ view, ship, layout, onAction }: Props) {
   };
 
   const [sky] = useState(spaceSky);
+  const extraAmmo = (view.projects.PATROLSHIP_EXTRA_AMMO ?? 0) >= PROJECT_COMPLETE;
+  const blasterGun = (view.projects.PATROLSHIP_BLASTER_GUN ?? 0) >= PROJECT_COMPLETE;
   // The pack: how many of each kind are not the target, in `HUNTER_TYPES` order.
   const pack = HUNTER_TYPES.map((type) => ({ type, count: list.filter((h) => h.type === type && h !== target).length })).filter((k) => k.count > 0);
 
@@ -89,7 +91,7 @@ export function PatrolCockpit({ view, ship, layout, onAction }: Props) {
       <div className="space-scene">
         <div className="space-ship">
           <span className="space-sway">
-            <ShipSprite layout={layout} ship={ship.id} />
+            <ShipSprite layout={layout} ship={ship.id} extraAmmo={extraAmmo} blasterGun={blasterGun} />
           </span>
           <CraftReadout name={names.room(ship.id)} hp={ship.armor} />
         </div>
@@ -213,9 +215,20 @@ function ChargeRow({ count }: { count: number }) {
   );
 }
 
-/** The ship as it stands in its bay: the room art's `spaceship` slice (or the Pasiphae's), at 1x. */
-function ShipSprite({ layout, ship }: { layout: ShipLayout | undefined; ship: string }) {
-  const slice = layout?.slices[patrolShip(ship)?.kind === "pasiphae" ? "pasiphae" : "spaceship"]; // i18n-ignore: slice names
+/** The ship as it stands in its bay: the room art's `spaceship` slice (or its upgrade / the Pasiphae's), at 1x. */
+function ShipSprite({ layout, ship, extraAmmo, blasterGun }: { layout: ShipLayout | undefined; ship: string; extraAmmo: boolean; blasterGun: boolean }) {
+  const kind = patrolShip(ship)?.kind;
+  const sliceName =
+    kind === "pasiphae"
+      ? "pasiphae"
+      : extraAmmo && blasterGun
+        ? "spaceship_upgrade_ab"
+        : extraAmmo
+          ? "spaceship_upgrade_a"
+          : blasterGun
+            ? "spaceship_upgrade_b"
+            : "spaceship"; // i18n-ignore: slice names
+  const slice = layout?.slices[sliceName];
   const url = layout && slice && atlasUrl(layout, slice.sheet);
   if (!slice || !url) return null;
   const style: CSSProperties = { width: slice.width, height: slice.height, backgroundImage: `url(${url})`, backgroundPosition: `-${slice.x}px -${slice.y}px` };

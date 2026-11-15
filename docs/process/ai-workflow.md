@@ -3762,3 +3762,60 @@ Small refactor on request: `GameRoom.social` called four bot-line parsers (item,
 - Correction: the first test run failed because the first human in small seeded games is usually Chao (hyperactive, no bed AP); the test strips that trait.
 - Follow-up: added an `onContaminate(next, player, amount)` modifier hook, run by `contaminated` (modifiers.ts) at the end of `contaminate` (infection.ts) after the rise or conversion, through `eventIds` so a Mush's diseases are reached too; it does not run when contamination is refused.
 - Follow-up: Mush Allergy (20–32 cycles) built on the new `onContaminate` hook: a spore that leaves its holder human kills them; one that converts them doesn't. Asked the owner for the death cause, since causes are public and a new "allergy" cause would reveal the spike; the owner chose `injury`.
+### 2026-11-14 — Chef (`cook`) skill
+
+- **Decided by the owner:** Chef (`cook`) grants +4 Cook points on pick (`config.cook.pointsOnPick`) and +4 at each day start (`config.cook.pointsPerDay`), held up to `config.cook.capPoints` (8). Alien fruit lore (`FRUIT_LORE_SKILLS`), `FOOD_RETAILER` NERON project bonus, and Cook-point spending on `cook` (0 AP, `paidBy: "cook"`, not `fungal_cuisine`) were already in place.
+- **What worked:** `cookPointsPerDay`, `config.cook.capPoints`, `FRUIT_LORE_SKILLS`, `FOOD_RETAILER`, and `CookAction` Cook-point spending were already built for `maintenance_agent` and `fruits`, so implementing Chef required only `modifiers/cook.ts`, `config.cook.pointsPerDay`/`pointsOnPick`, `RESOURCE_SKILLS.cook`, `SKILL_STATUS.cook = "full"`, and `shared/tests/cook.test.ts`.
+
+### 2026-11-14 — Teslatron reservoir project (`PATROLSHIP_EXTRA_AMMO`)
+- **Decision (owner):** Completing `PATROLSHIP_EXTRA_AMMO` raises patrol ships' max charges by 6 (`10 -> 16`, Pasiphae unaffected; `config.project.patrolShipExtraAmmo.extraCharges = 6`), adds +6 current charges to all non-destroyed patrol ships on completion (capped at the new max), and swaps `spaceship` to `spaceship_upgrade_a` in both the bays (`IsoRoom`) and flight cockpit (`PatrolCockpit`). Marked `"full"` in `PROJECT_STATUS`.
+- **What worked:** `patrolMaxCharges` in `shared/src/patrol.ts`, `onProjectCompleted` in `shared/src/projectEffects.ts`, `roomLooks` in `web/src/iso/IsoRoom.tsx`, and `ShipSprite` in `web/src/hud/PatrolCockpit.tsx` all fit existing project and scenery-swap patterns cleanly.
+
+### 2026-11-14: Constipaspore serum research (`CONSTIPASPORE_SERUM`)
+
+- **Decision (owner):** Completing `CONSTIPASPORE_SERUM` adds `config.spores.constipasporeExtraAp` (2 AP) to `extract_spore` (from 1 to 3 AP). Fertile's first daily extraction stays 0 AP (overrides the serum), and completion emits only the standard `researchCompleted` public log line.
+- **Implementation:** Added `spores.constipasporeExtraAp: 2` in `shared/src/types/config.ts` and `shared/src/config.ts`, checked `state.research.CONSTIPASPORE_SERUM >= RESEARCH_COMPLETE` in `ExtractSporeAction.getCost` (`shared/src/actions/extract_spore.ts`, after `freeExtraction`), and marked `CONSTIPASPORE_SERUM: "full"` in `RESEARCH_STATUS` (`shared/src/research.ts`). Added unit tests in `shared/tests/spores.test.ts`, `shared/tests/fertile.test.ts`, and `shared/tests/research.test.ts`.
+
+### 2026-11-14 — Guarana cappuccino research (GUARANA_CAPUCCINO)
+- **What:** Implemented `GUARANA_CAPUCCINO` (`RESEARCH_STATUS`: `"full"`): humans consuming `coffee` gain `config.research.guaranaExtraAp` (1) extra AP in `shared/src/actions/consume.ts` (capped at `maxAp`, stacking with `caffeinomaniac`; Mush still gain 0 AP). Wired `view.research` into `IsoRoom.tsx` via `GameView.tsx` so `roomLooks` swaps `coffee` to `coffee_upgrade_b` (or `coffee_upgrade_ab` when combined with `FISSION_COFFEE_ROASTER`, and `coffee_upgrade_a` for `FISSION_COFFEE_ROASTER` alone), matching `upgrades.xml` and `ship-art.json`.
+- **Verification:** Added `shared/tests/guaranaCapuccino.test.ts` and updated `web/tests/iso/scene.test.ts`; ran `npm run verify` and `npm run build`.
+
+### 2026-11-14 — Hygienist skill (`strong_skin`)
+- **Decision (owner):** Human Hygienists have a 50% (`config.strongSkin.resistOdds`) chance to silently resist Mush contamination (`contaminate`, rolling once for all spores on a fungal-cuisine meal) and a 50% chance to silently resist physical diseases (`config.diseases.allDiseases` in `addDisease`, excluding disorders, injuries, and Mush holders).
+- **What worked:** Checking `reference/emush` via `npm run emush` and `Mush/derived/data/Data/skills.json` surfaced the exact mechanics and edge cases (all-or-nothing on fungal cuisine, physical-disease-only, humans-only) to confirm with the owner before editing. Changing `consume.ts` from a per-spore loop to `contaminate(state, player, item.spores)` kept all-or-nothing fungal cuisine simple.
+- **What needed correction:** Initial test used seat `p1` (Chun, who has `immunity`), so `contaminate` was always blocked; switching the test seat to `p2` verified the 50% roll.
+
+### 2026-11-14 — Blaster gun project (`PATROLSHIP_BLASTER_GUN`)
+- **Decision (owner):** Completing `PATROLSHIP_BLASTER_GUN` adds +1 damage on every patrol ship hit (`config.project.patrolShipBlasterGun.extraDamage = 1`), stacking with Cygni's +1, and swaps `spaceship` to `spaceship_upgrade_b` (or `spaceship_upgrade_ab` when combined with `PATROLSHIP_EXTRA_AMMO`) in both the bays (`IsoRoom`) and flight cockpit (`PatrolCockpit`). Marked `"full"` in `PROJECT_STATUS`.
+- **What worked:** `patrolBlasterBonus` in `shared/src/patrol.ts` mirrors `patrolDamageBonus` in `comms.ts`, `PatrolAttackAction` adds both, and `Mush/clients/iso/xml/upgrades.xml` already had the `spaceship_upgrade_b` / `spaceship_upgrade_ab` slices wired into `ship-art.json`. Config only, so no `STATE_VERSION` bump.
+
+### 2026-11-14: Antispore gas research (`ANTISPORE_GAZ`)
+- **Decision (owner / original `research.json`):** Completing `ANTISPORE_GAZ` reduces the Mush daily spore extraction cap (`sporesPerDay`) by `config.spores.antisporeReduction` (2, from 4 to 2, clamped at 0), with the standard `researchCompleted` public log line only.
+- **What worked:** `sporesPerDay` already folded `config.spores.perDay` in `shared/src/modifiers.ts`, and `RESEARCH_REQUIRES.ANTISPORE_GAZ` + en/fr/es locale strings were already in place, so wiring `antisporeReduction` into `sporesPerDay` and marking `RESEARCH_STATUS.ANTISPORE_GAZ = "full"` took minimal, clean changes.
+
+### 2026-11-14 — Inverted pulsator project (`TURRET_EXTRA_FIRERATE`)
+- **Decision (owner):** Implemented the `TURRET_EXTRA_FIRERATE` NERON project ("Inverted pulsator"): once complete, working turrets recharge twice as fast each cycle (`turretRechargePerCycle` in `shared/src/hunters.ts`, `config.project.turretExtraFirerate.rechargeMultiplier` = 2, so 2 charges per cycle up to the 4-charge cap; broken turrets and patrol ships unaffected). Marked `TURRET_EXTRA_FIRERATE: "full"` in `PROJECT_STATUS`.
+- **What worked:** Existing `huntersCycle` and `config.project` structure made it a clean, isolated change with zero stored-state or view changes, covered by `shared/tests/invertedPulsator.test.ts`.
+
+### 2026-11-14 — Remove Daunting and Crazy Eye skills; move Crazy Eye icon to Infantryman
+
+- **Decision (owner):** removed `daunting` and `crazy_eye` from `SKILLS` (now 64 human skills) and their locale entries (`names.*.json` and `web/src/locales/*.json`), bumped `STATE_VERSION` to 118 with `upgradeTo118` stripping them from `skills`/`bookSkill`, and remapped `crazy_eye`'s icon to `infantryman` in `web/src/art/assets.ts` (while keeping `daunting`'s earlier remap to `unconcerned`).
+
+### 2026-11-14 — NERON participation (`NERON_PROJECT_THREAD`)
+
+- **Decision (owner):** Once `NERON_PROJECT_THREAD` is complete, each cycle advances every currently offered project (`offeredProjects(state)`) strictly above 0% by 5% (`config.project.neronParticipation.percent`). At most one project can complete per cycle (any other offered project reaching 100% is capped at 99% before the batch retires), and a ship-wide public log (`neronProjectCompleted`) is emitted only when a project completes.
+- **What worked:** Reusing `offeredProjects`, `onProjectCompleted`, and `logPublic(state, undefined, ...)` in `shared/src/projectEffects.ts` kept the implementation small and aligned with the 3-project proposal system.
+
+### 2026-11-14: Ultra-healing ointment research (`HEALING_OINTMANT`)
+
+- **Decision (owner):** Completing `HEALING_OINTMANT` (requires `medikit` in the lab, not consumed) adds `heal.effect.ointmentBonusHp` (1) extra HP to both `heal` (Medikit / Sick Bay) and `use_bandage`, for everyone (humans and Mush, stacking with `medic`), with the standard `researchCompleted` log line only.
+- **Implementation:** Added `heal.effect.ointmentBonusHp: 1` in `shared/src/types/config.ts` and `shared/src/config.ts`, added `ointmentHealBonus` to `healAmount` and `bandageHealAmount` in `shared/src/modifiers.ts`, and marked `HEALING_OINTMANT: "full"` in `RESEARCH_STATUS` (`shared/src/research.ts`). Added unit tests in `shared/tests/heal.test.ts` and `shared/tests/bandage.test.ts`.
+
+### 2026-11-14 — Bodyguard skill (`bodyguard`) and `protect` action
+
+- **Decision (owner):** Implemented the Bodyguard skill (`actions/protect.ts`, `modifiers/bodyguard.ts`). `protect` costs 1 AP, is timed, logs publicly (`protected`), and targets any living roommate not already protected (Mush included). Switching targets replaces the old VIP; no separate stop action. While both are alive and in the same room, every `aggressive`-tagged action targeting the VIP (`target === vip.id`) costs +2 AP, including by the Bodyguard themselves, stacking with Pacifist and repricing queued actions; room-wide `guard` and area-weapon attacks without a `target` are not taxed. Both get public statuses (`protecting` and `protected`) in the room showing who protects whom (`OtherPlayerView.protectedBy` / `protecting`, `OwnPlayerView.protecting`). Persists across movement and ends when either dies.
+- **What worked:** Reusing `roomActionCost` (checking `tags.includes("aggressive")` and `action.target === vip.id`) gave queued-action repricing and Pacifist stacking for free.
+
+## 2026-11-14: Fungal cuisine food effects on conversion
+- **Decision (owner):** Reverted the 2026-10-24 decision that conversion from Fungal cuisine skips food effects; food gains (AP, HP, morale, etc.) now apply before contamination/conversion to prevent surprise AP loss.
+- **Changes:** `shared/src/actions/consume.ts` already ran `contaminate` after food effects, so updated its stale comment, updated `docs/rules/rules-design.md` and `docs/rules/implemented-rules.md`, and added a conversion-with-effects regression test in `shared/tests/fungal_cuisine.test.ts`.

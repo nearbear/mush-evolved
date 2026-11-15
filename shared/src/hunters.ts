@@ -16,6 +16,7 @@ import { newItemId, sameContainer } from "./items.ts";
 import { logPublic } from "./log.ts";
 import { followingHuntersShare, hunterPointsPerCycle, waveShrinkChance } from "./modifiers.ts";
 import { type PatrolShip, patrolShip, rechargePatrolShips, shipsInFlight } from "./patrol.ts";
+import { projectDone } from "./projects.ts";
 import { roll, rollFloat, rollInt, rollShuffle, rollWeighted } from "./rng.ts";
 import { damageShip } from "./ship.ts";
 import { type GameState, HUNTER_TYPES, type Hunter, type HunterTarget, type HunterType, type PlayerState } from "./types.ts";
@@ -45,6 +46,12 @@ export function allTurrets(state: Readonly<GameState>) {
 /** A broken turret shows 0 and keeps its own charges for when it is repaired (owner, 2026-10-25). */
 export const turretCharges = (state: Readonly<GameState>, turret: string): number =>
   allTurrets(state).some((t) => t.id === turret && t.broken) ? 0 : state.turrets[turret] ?? state.config.turrets.charges;
+
+/** Charges each working turret regains per cycle: doubled once Inverted pulsator (`TURRET_EXTRA_FIRERATE`) is complete. */
+export function turretRechargePerCycle(state: Readonly<Pick<GameState, "config" | "projects">>): number {
+  const base = state.config.turrets.rechargePerCycle;
+  return projectDone(state, "TURRET_EXTRA_FIRERATE") ? base * state.config.project.turretExtraFirerate.rechargeMultiplier : base;
+}
 
 /** A new hunter of a kind, at full hp and with no target yet. Mutates a state the caller already cloned. */
 export function newHunter(state: GameState, type: HunterType): Hunter {
@@ -99,8 +106,9 @@ export function huntersCycle(state: GameState, day: number): void {
     destroyShip(state);
     return;
   }
+  const recharge = turretRechargePerCycle(state);
   for (const turret of allTurrets(state).filter((t) => !t.broken)) {
-    const charges = Math.min(state.config.turrets.charges, turretCharges(state, turret.id) + state.config.turrets.rechargePerCycle);
+    const charges = Math.min(state.config.turrets.charges, turretCharges(state, turret.id) + recharge);
     if (charges >= state.config.turrets.charges) delete state.turrets[turret.id];
     else state.turrets[turret.id] = charges;
   }

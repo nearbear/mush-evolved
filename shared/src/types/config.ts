@@ -267,6 +267,8 @@ export interface GameConfig {
     effect: { spores: number }; // Spores one extraction gives (confirmed 2026-10-13).
     perDay: number; // Spores the whole Mush faction may extract per day, before modifiers (confirmed 2026-10-14).
     max: number; // Spores one Mush may hold; extraction is refused at it (owner, 2026-11-10, balance review decision 8).
+    constipasporeExtraAp: number; // Extra AP added to extract_spore once CONSTIPASPORE_SERUM completes (owner, 2026-11-14).
+    antisporeReduction: number; // Daily spore extraction cap reduction once ANTISPORE_GAZ completes (2026-11-14).
   };
   heal: {
     cost: {
@@ -276,6 +278,7 @@ export interface GameConfig {
     effect: {
       hp: number; // HP a heal restores before modifiers (confirmed 2026-10-15).
       medicBonusHp: number; // Extra HP a heal restores for a player with the medic skill (owner, 2026-10-15).
+      ointmentBonusHp: number; // Extra HP heal and bandage restore once HEALING_OINTMANT completes (owner, 2026-11-14).
       nursePointsPerDay: number; // Care points the nurse skill (`first_aid`) grants at the start of each day and when picked (owner, 2026-10-15).
       mycologistSpores: number; // Contamination removed per heal/bandage by a human Mycologist (owner, 2026-11-14).
     };
@@ -309,6 +312,10 @@ export interface GameConfig {
   pacifist: {
     aggressiveApSurcharge: number; // Extra AP for each aggressive action in a Pacifist's room, theirs too (owner, 2026-10-18).
   };
+  bodyguard: {
+    cost: { ap: number }; // AP to Protect a crewmate (owner, 2026-11-14).
+    aggressiveApSurcharge: number; // Extra AP for each aggressive action targeting the VIP while both are alive in the same room, theirs too (owner, 2026-11-14).
+  };
   antenna: {
     brokenApSurcharge: number; // Extra AP for contacting Sol, decoding a rebel base, contacting Xyloph and updating NERON while the Stellar antenna (Motor Room) is broken (owner, 2026-11-08).
   };
@@ -338,6 +345,8 @@ export interface GameConfig {
     dirtyChance: number; // Chance of getting the dirty status after cooking.
     injuryChance: number; // Chance of getting the injured status after cooking (owner, 2026-10-16: 25%).
     capPoints: number; // Most Cook points (`resources.cook`) a player can hold (owner, 2026-11-14: 8).
+    pointsPerDay: number; // Cook points the `cook` (Chef) skill grants at the start of each day (owner, 2026-11-14: 4).
+    pointsOnPick: number; // Cook points it grants when picked (owner, 2026-11-14: 4).
   };
   expressCook: {
     cost: { ap: number }; // AP spent to express cook a ration with a reachable microwave (owner, 2026-10-19: 0).
@@ -462,6 +471,7 @@ export interface GameConfig {
     assayMarks: number[];
     spoilChance: number;
     contaminate: { cost: { ap: number } }; // Saboteur's Contaminate (owner, 2026-10-31: Sabotage's 1 AP).
+    guaranaExtraAp: number; // Extra AP coffee gives humans once GUARANA_CAPUCCINO completes (1).
   };
   project: {
     offerCount: number; // Projects offered at NERON's core at a time (owner, 2026-11-14: 3).
@@ -478,6 +488,12 @@ export interface GameConfig {
     chipsetAcceleration: { scanApDiscount: number };
     // Takeoff thruster (owner, 2026-11-14): patrol ship, Pasiphae, and Icarus takeoff cost -takeoffApDiscount AP.
     patrolShipLauncher: { takeoffApDiscount: number };
+    // Teslatron reservoir (PATROLSHIP_EXTRA_AMMO; owner, 2026-11-14): patrol ships hold +extraCharges max charges and gain +extraCharges on completion (capped at new max; Pasiphae unaffected).
+    patrolShipExtraAmmo: { extraCharges: number };
+    // Blaster gun (PATROLSHIP_BLASTER_GUN; owner, 2026-11-14): patrol ship hits deal +extraDamage (stacks with Cygni).
+    patrolShipBlasterGun: { extraDamage: number };
+    // Inverted pulsator (TURRET_EXTRA_FIRERATE; owner, 2026-11-14): turrets recharge rechargeMultiplier times as fast each cycle.
+    turretExtraFirerate: { rechargeMultiplier: number };
     // Armoured corridors (owner, 2026-11-14): every attack on the Daedalus (damageShip) is reduced by damageReduction before the shield, floor 0.
     armourCorridor: { damageReduction: number };
     // Fission Coffee Roaster (owner, 2026-11-02; eMushpedia *Torréfacteur à fission*): coffee machine regenerates at these cycles of each day (C1, C5; every cycle with PILGRED).
@@ -486,6 +502,7 @@ export interface GameConfig {
     dynarcade: { room: RoomId; cost: { ap: number }; successChance: number; failureMultiplier: number; morale: number; injuryChance: number };
     // Extra hydropots (EXTRA_HYDROPONPOTS; owner, 2026-11-14): completing it puts `count` empty hydropots on the floor of `room`.
     extraHydropots: { room: RoomId; count: number };
+    neronParticipation: { percent: number };
   };
   pilgred: {
     cost: { ap: number }; // AP spent to take part in repairing PILGRED (owner, 2026-10-21; the original's REPAIR_PILGRED, 2).
@@ -569,6 +586,8 @@ export interface GameConfig {
   // Skill Lethargy (owner, 2026-11-01): from the `cyclesLying`th cycle change spent lying down on, each one gives
   // `bonusAp` more AP; the AP cap is multiplied by `maxApMultiplier`.
   lethargy: { cyclesLying: number; bonusAp: number; maxApMultiplier: number };
+  // Skill Opportunist (owner, 2026-11-14): +ap the first time you gain each title, capped at maxAp.
+  opportunist: { ap: number };
   shower: {
     cost: {
       ap: number; // AP spent to shower, before the soap discount (confirmed 2026-10-14).
@@ -730,6 +749,9 @@ export interface GameConfig {
   };
   anticPerfume: {
     immuneCycles: number; // Cycles of infection immunity the antic_perfume skill grants after each shower (confirmed 2026-10-16); a new shower resets it, no stacking.
+  };
+  strongSkin: {
+    resistOdds: number; // Chance a human Hygienist resists a Mush contamination or physical disease (owner, 2026-11-14).
   };
   inactivity: {
     inactiveAfterHours: number; // Real hours without connecting (and a full AP gauge) before a player goes inactive at a cycle change (owner, 2026-10-31).

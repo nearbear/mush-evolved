@@ -58,6 +58,7 @@ import { expeditionReturnAt, lostPlayers, onExpedition, withCrew } from "./exped
 import { ICARUS_EQUIPMENT } from "./actions/icarus_takeoff.ts";
 import { canScavenge, interfaceId, isLostPlace, newPatrolShips, offShip, PATROL_INTERFACE, PATROL_SHIPS, shipAboard } from "./patrol.ts";
 import { preselectionCycle } from "./preselection.ts";
+import { neronParticipationCycle } from "./projectEffects.ts";
 import { SUCCESSION, TITLE_IDS, assignTitles, noTitles } from "./titles.ts";
 import type {
   Action,
@@ -460,6 +461,7 @@ function advanceCycle(state: GameState, at?: number): void {
   huntersCycle(state, day);
   pushLog(state, { key: newDay ? "dayBegins" : "cycleBegins", params: newDay ? { day } : { cycle: state.cycle }, visibleTo: "all" });
   // After the cycle's opening line, so incident and fire lines follow it. A fire acts in the cycle it starts.
+  neronParticipationCycle(state);
   ignitePending(state);
   incidentsCycle(state, day);
   fireCycle(state);
@@ -567,6 +569,8 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
   // A dead body is a corpse item, not a person in a room: nobody gets a dead player's room.
   const living = others.filter((o) => o.alive);
   const logWindow = logWindowOf(state, you);
+  const protectingOf = (id: PlayerId) => state.players.find((p) => p.alive && p.protectedBy === id)?.id;
+  const yourProtecting = protectingOf(you.id);
   // Nobody's account name goes out while the game runs, not even your own: people are known by character.
   // Who cursed you is never sent, even to you; nor which seat plays you, whether you used Transfer, or your action
   // history (only Interrogate and Chitchat reveal it, history.ts), nor Lethargy's count (`lyingSince`; only its AP shows).
@@ -576,6 +580,7 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     mind: _mind,
     transferUsed: _transferUsed,
     epigeneticsUsed: _epigeneticsUsed,
+    opportunistTitles: _opportunistTitles,
     history: _history,
     lastSeenAt: _lastSeenAt,
     inactivity: _inactivity,
@@ -590,6 +595,7 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
   return {
     you: {
       ...yours,
+      ...(yourProtecting !== undefined ? { protecting: yourProtecting } : {}),
       statuses: [...you.statuses],
       mushSkills: [...you.mushSkills],
       current: you.current && { action: you.current.action, since: you.current.since, until: you.current.until },
@@ -622,6 +628,9 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
         ...(here && o.spot && state.config.sharedSpots ? { spot: { ...o.spot } } : {}),
         // Who pushes whose wheelchair is public to the room (owner, 2026-10-19).
         ...(here && o.pushedBy !== undefined ? { pushedBy: o.pushedBy } : {}),
+        // Who protects whom (Bodyguard) is public to the room (owner, 2026-11-14).
+        ...(here && o.protectedBy !== undefined ? { protectedBy: o.protectedBy } : {}),
+        ...(here && protectingOf(o.id) !== undefined ? { protecting: protectingOf(o.id) } : {}),
         // Mush see a contaminated human's level, like a status, on people in their room.
         ...(contamination !== undefined ? { contamination } : {}),
         // A busy bar, never the action: only when its log entry could reach you.

@@ -83,8 +83,12 @@ export function SignalSection() {
         return (
           <Figure key={note} caption={note}>
             <div className="m2k-signal">
-              <Spectrogram db={db} linked={linked} status={t(linked ? "comms.linked" : "comms.unlinked")} />
-              <span>{t("comms.solSignal", { db, strength: t(`comms.strength.${signalStrength(db)}`) })}</span>
+              <Spectrogram
+                db={db}
+                linked={linked}
+                status={t(linked ? "comms.linked" : "comms.unlinked")}
+                signal={t("comms.solSignal", { db, strength: t(`comms.strength.${signalStrength(db)}`) })}
+              />
             </div>
           </Figure>
         );

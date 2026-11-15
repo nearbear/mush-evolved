@@ -88,12 +88,12 @@ export const DEFAULT_CONFIG: GameConfig = {
   fungalCuisine: { cost: { ap: 1 } },
   // Confirmed 2026-10-13/14: extracting costs 1 AP and gives 1 spore; each Mush waits 4 cycles between extractions
   // and the faction shares 4 per day (skills and research will raise it).
-  spores: { cost: { ap: 1 }, effect: { spores: 1 }, perDay: 4, max: 2 },
+  spores: { cost: { ap: 1 }, effect: { spores: 1 }, perDay: 4, max: 2, constipasporeExtraAp: 2, antisporeReduction: 2 },
   // Confirmed 2026-10-15: healing needs a medikit in your inventory; 2 AP on someone else, 3 on yourself, restores 3 HP.
   // Anyone can heal in the sick bay without a medikit; the medic skill adds 2 HP, the nurse 2 care points a day.
   heal: {
     cost: { apOther: 2, apSelf: 3 },
-    effect: { hp: 3, medicBonusHp: 2, nursePointsPerDay: 2, mycologistSpores: 1 },
+    effect: { hp: 3, medicBonusHp: 2, ointmentBonusHp: 1, nursePointsPerDay: 2, mycologistSpores: 1 },
     rooms: ["SICK_BAY"],
     dirtyChance: 0.05,
   },
@@ -123,6 +123,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   punch: { cost: { ap: 1 }, effect: { damage: [1, 2], sturdyBonusDamage: 1 }, crit: { chance: 0.2, damage: [2, 3] }, successChance: 0.6, inactiveTargetSuccessChance: 0.9, dirtyChance: 0.25 },
   // Owner, 2026-10-18: Ian's Pacifist makes aggressive actions in his room cost 2 more AP, his own included.
   pacifist: { aggressiveApSurcharge: 2 },
+  // Owner, 2026-11-14: Bodyguard's Protect costs 1 AP and adds 2 AP to aggressive actions targeting the VIP while both are together.
+  bodyguard: { cost: { ap: 1 }, aggressiveApSurcharge: 2 },
   // Owner, 2026-11-08: while the Stellar antenna is broken, contacting Sol, decoding a rebel base, contacting Xyloph and updating NERON cost this much more AP.
   antenna: { brokenApSurcharge: 1 },
   // Owner, 2026-11-08: while any Gravity Simulator is broken, every crew member gains this much less MP at each cycle change and from each AP-to-MP conversion.
@@ -191,7 +193,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   },
   // Confirmed 2026-10-16: cooking an uncooked ration costs 1 AP, only in the refectory.
   // Owner, 2026-11-14: Cook points cap at 8.
-  cook: { cost: { ap: 1 }, rooms: ["REFECTORY"], dirtyChance: 0.25, injuryChance: 0.01, capPoints: 8 },
+  cook: { cost: { ap: 1 }, rooms: ["REFECTORY"], dirtyChance: 0.25, injuryChance: 0.01, capPoints: 8, pointsPerDay: 4, pointsOnPick: 4 },
   // Owner, 2026-10-19: express cook is free, anywhere you can reach a microwave, and spends one of its 4 charges;
   // it regains one each day. Consequences for using it come later.
   expressCook: { cost: { ap: 0 }, charges: { start: 4, max: 4, perDay: 1 }, dirtyChance: 0.05 },
@@ -256,7 +258,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   interrogate: { cost: { ap: 1 }, damage: 1, dirtyChance: 0.15, injuryChance: 0.1 },
   // Decided 2026-10-16: working on a research costs 2 AP. Owner, 2026-10-26: its progress follows the original's relay formula, 6-9% at difficulty 10.
   // Owner, 2026-10-31 (docs/plans/research-sabotage.md): assays at the quarter marks, 5% noise, Contaminate costs 1 AP.
-  research: { cost: { ap: 2 }, progress: { rate: 6, mod: 10, skillBoost: 4, relayPenalty: 2 }, dirtyChance: 0.15, assayMarks: [25, 50, 75, 100], spoilChance: 0.05, contaminate: { cost: { ap: 1 } } },
+  research: { cost: { ap: 2 }, progress: { rate: 6, mod: 10, skillBoost: 4, relayPenalty: 2 }, dirtyChance: 0.15, assayMarks: [25, 50, 75, 100], spoilChance: 0.05, contaminate: { cost: { ap: 1 } }, guaranaExtraAp: 1 },
   // Owner, 2026-11-08: a scan succeeds 80% of the time, 50% while the Planet scanner (Motor Room) is broken.
   // Decided 2026-10-19 (docs/plans/astro.md): scan 3 AP, x1.25 per failure in a row (the 50% was the original's); x1.25 per failure in a row; analysis 2 AP; 2 planets per player.
   // Owner, 2026-10-22: planets get a direction and a distance (2 to 9 fuel, unique on the ship), and grow with the day.
@@ -288,10 +290,14 @@ export const DEFAULT_CONFIG: GameConfig = {
     quantumSensors: { extraSectors: 1 },
     chipsetAcceleration: { scanApDiscount: 1 },
     patrolShipLauncher: { takeoffApDiscount: 1 },
+    patrolShipExtraAmmo: { extraCharges: 6 },
+    patrolShipBlasterGun: { extraDamage: 1 },
+    turretExtraFirerate: { rechargeMultiplier: 2 },
     armourCorridor: { damageReduction: 1 },
     fissionCoffeeRoaster: { cycles: [1, 5] },
     dynarcade: { room: "SPACESHIP_BAY_AA", cost: { ap: 1 }, successChance: 0.33, failureMultiplier: 1.5, morale: 2, injuryChance: 0.33 },
     extraHydropots: { room: "HYDROPONIC_CENTER", count: 3 },
+    neronParticipation: { percent: 5 },
   },
   // Owner, 2026-10-21: repairing PILGRED uses the original's numbers (DIG_RATE 6, PILGRED_MOD 2, DIG_BOOST 4, -2 per repeat),
   // 2 AP, 25% dirty; the Physicist gains 1 PILGRED point a day and holds 2.
@@ -314,6 +320,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   guard: { cost: { ap: 1 } },
   // Lethargy (owner, 2026-11-01): +1 AP a cycle from the 4th cycle change spent lying down, AP cap doubled.
   lethargy: { cyclesLying: 4, bonusAp: 1, maxApMultiplier: 2 },
+  // Opportunist (owner, 2026-11-14): +5 AP the first time you gain each title, capped at maxAp.
+  opportunist: { ap: 5 },
   // Confirmed 2026-10-14: showering costs 2 AP, 1 less with soap in your inventory; a Mush takes 4 damage.
   shower: { cost: { ap: 2, soapDiscountAp: 1, waterResistantAp: 1 }, effect: { mushDamage: 4 }, injuryChance: 0.02 },
   transfer: { injuryChance: 0.01 },
@@ -536,6 +544,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   hopeless: { deathMorale: 1 },
   creative: { refundOdds: 0.5 },
   anticPerfume: { immuneCycles: 2 },
+  strongSkin: { resistOdds: 0.5 },
   // Owner, 2026-10-31 (#145): real time, not cycles.
   inactivity: { inactiveAfterHours: 24, superAfterHours: 48 },
   logistics: { ap: 1 },

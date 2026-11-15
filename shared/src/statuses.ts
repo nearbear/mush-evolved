@@ -24,6 +24,9 @@ const FIXED_STATUS_PUBLIC = {
   accommodated: true,
   // Owner, 2026-10-24: the Outcast status is public to the room (who cursed them is not).
   outcast: true,
+  // Owner, 2026-11-14: Bodyguard's Protect gives both the bodyguard and the VIP public statuses in the room.
+  protecting: true,
+  protected: true,
   // Owner, 2026-11-06: guarding is public to the room.
   guardian: true,
   broken_nose_injury: false,
@@ -38,7 +41,7 @@ const FIXED_STATUS_PUBLIC = {
   hopeless: false,
 } as const;
 
-export const STATUS_IDS = ["dirty", "full_belly", "hungry", "immune", "immunity", "pacifist", "hyperactive", "mankind_only_hope", "wheelchair", "accommodated", "outcast", "guardian", "broken_nose_injury", "genius", "inactive", "super_inactive", "focused", "hopeless"] as const;
+export const STATUS_IDS = ["dirty", "full_belly", "hungry", "immune", "immunity", "pacifist", "hyperactive", "mankind_only_hope", "wheelchair", "accommodated", "outcast", "protecting", "protected", "guardian", "broken_nose_injury", "genius", "inactive", "super_inactive", "focused", "hopeless"] as const;
 export type StatusId = string;
 export function statusIdsFor(diseases: readonly string[]): string[] {
   return [...new Set([...STATUS_IDS, ...diseases])];
@@ -94,8 +97,9 @@ export function isPacifist(p: Readonly<PlayerState>): boolean {
 }
 
 /** Every status the player has, stored and derived. */
-export function statusesOf(state: Readonly<Pick<GameState, "config" | "cycle">>, p: Readonly<PlayerState>): string[] {
+export function statusesOf(state: Readonly<Pick<GameState, "config" | "cycle" | "players">>, p: Readonly<PlayerState>): string[] {
   const inactivity = inactivityOf(p);
+  const protecting = p.alive && state.players.some((o) => o.alive && o.protectedBy === p.id);
   return [
     ...p.statuses,
     ...(isFullBelly(state, p) ? ["full_belly"] : []),
@@ -107,6 +111,8 @@ export function statusesOf(state: Readonly<Pick<GameState, "config" | "cycle">>,
     ...(p.modifiers.includes("wheelchair") ? ["wheelchair"] : []),
     ...(p.pushedBy !== undefined ? ["accommodated"] : []),
     ...(p.outcastBy !== undefined ? ["outcast"] : []),
+    ...(protecting ? ["protecting"] : []),
+    ...(p.alive && p.protectedBy !== undefined ? ["protected"] : []),
     ...(inactivity !== null ? [inactivity] : []),
     // At a terminal with its window open (spot.ts, #192).
     ...(p.spot?.kind === "occupancy" ? ["focused"] : []),
@@ -115,7 +121,7 @@ export function statusesOf(state: Readonly<Pick<GameState, "config" | "cycle">>,
 }
 
 /** The statuses anyone may see on this player. */
-export function publicStatusesOf(state: Readonly<Pick<GameState, "config" | "cycle">>, p: Readonly<PlayerState>): string[] {
+export function publicStatusesOf(state: Readonly<Pick<GameState, "config" | "cycle" | "players">>, p: Readonly<PlayerState>): string[] {
   return statusesOf(state, p).filter((id) => !state.config.diseases.allDiseases.includes(id) && (STATUS_PUBLIC[id] ?? false));
 }
 

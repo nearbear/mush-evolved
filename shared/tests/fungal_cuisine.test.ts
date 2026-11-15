@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
+import { ITEM_TYPES } from "../src/items.ts";
 import { applyAction, createGame, legalActions, viewFor } from "../src/rules.ts";
 import type { GameState } from "../src/types.ts";
 import { makeSeats, must, mustApply, player } from "./support.ts";
@@ -45,6 +46,19 @@ describe("Fungal cuisine", () => {
     expect(eaten.contamination.p2).toBe(1);
     expect(player(eaten, "p2").role).toBe("human");
     expect(item(eaten)).toBeUndefined();
+  });
+
+  it("still gives food effects when eating it converts the human to Mush", () => {
+    const state = trap(ship());
+    const p2 = player(state, "p2");
+    p2.ap = 2;
+    p2.hp = 5;
+    state.contamination.p2 = DEFAULT_CONFIG.infection.capacity - 1;
+    const eaten = mustApply(state, "p2", { type: "consume", item: "i-banana" });
+    const banana = ITEM_TYPES.fruit_banana.consume!;
+    expect(player(eaten, "p2").role).toBe("mush");
+    expect(player(eaten, "p2").ap).toBe(2 + banana.ap);
+    expect(player(eaten, "p2").hp).toBe(5 + (banana.hp ?? 0));
   });
 
   it("does nothing to a Mush who eats it", () => {

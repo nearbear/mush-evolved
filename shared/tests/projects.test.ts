@@ -3,12 +3,12 @@ import { advanceNeron } from "../src/comms.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import projets from "@mush2/assets/derived/data/Data/projets.json";
 import { offeredProjects } from "../src/projectEffects.ts";
-import { PROJECT_COMPLETE, PROJECT_IDS, PROJECTS, projectSkills } from "../src/projects.ts";
+import { PROJECT_COMPLETE, PROJECT_IDS, PROJECT_STATUS, PROJECTS, projectSkills } from "../src/projects.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, setCheat, viewFor } from "../src/rules.ts";
 import { addStatus } from "../src/statuses.ts";
 import type { Action } from "../src/types.ts";
-import { makeSeats, must, mustApply, offered, pickSkill, setProgress } from "./support.ts";
+import { makeSeats, must, mustApply, nextCycle, offered, pickSkill, setProgress } from "./support.ts";
 
 const seats = makeSeats(3, "others");
 const work = (project: string): Action => ({ type: "project", equipment: "NEXUS_ROOM:NERON_CORE", project });
@@ -258,5 +258,84 @@ describe("NERON projects", () => {
   it("parses from the wire, and rejects a missing project", () => {
     expect(parseGameMessage(JSON.stringify({ type: "action", action: work("PLASMA_SHIELD") }))).toEqual({ type: "action", action: work("PLASMA_SHIELD") });
     expect(parseGameMessage(JSON.stringify({ type: "action", action: { type: "project", equipment: "x" } }))).toBeNull();
+  });
+});
+
+describe("NERON participation (NERON_PROJECT_THREAD)", () => {
+  const STEP = DEFAULT_CONFIG.project.neronParticipation.percent;
+
+  it("pins the config rate and marks NERON_PROJECT_THREAD as full", () => {
+    expect(STEP).toBe(5);
+    expect(PROJECT_STATUS.NERON_PROJECT_THREAD).toBe("full");
+  });
+
+  it("does not advance projects before NERON_PROJECT_THREAD is complete", () => {
+    let s = game();
+    const [first] = offeredProjects(s);
+    s.projects.NERON_PROJECT_THREAD = 50;
+    s.projects[first!] = 20;
+    s = nextCycle(s);
+    expect(s.projects[first!]).toBe(20);
+    expect(s.projects.NERON_PROJECT_THREAD).toBe(50);
+  });
+
+  it("advances only offered projects above 0% each cycle without logging when none finish", () => {
+    let s = game();
+    s.projects.NERON_PROJECT_THREAD = PROJECT_COMPLETE;
+    const [a, b, c] = offeredProjects(s) as [string, string, string];
+    const unoffered = PROJECT_IDS.find((id) => id !== "NERON_PROJECT_THREAD" && id !== a && id !== b && id !== c)!;
+    s.projects[a] = 10;
+    s.projects[b] = 0;
+    s.projects[unoffered] = 30;
+    const logsBefore = s.log.length;
+    s = nextCycle(s);
+    expect(s.projects[a]).toBe(10 + STEP);
+    expect(s.projects[b]).toBe(0);
+    expect(s.projects[c]).toBeUndefined();
+    expect(s.projects[unoffered]).toBe(30);
+    expect(s.log.slice(logsBefore).some((e) => e.key === "neronProjectCompleted")).toBe(false);
+  });
+
+  it("completes a project that reaches 100%, applies its effect, retires the batch, and logs ship-wide", () => {
+    let s = game();
+    s.projects.NERON_PROJECT_THREAD = PROJECT_COMPLETE;
+    // Put NOISE_REDUCER, BRIC_BROC, WHOS_WHO at the front of projectDeck.
+    s.projectDeck = ["NOISE_REDUCER", "BRIC_BROC", "WHOS_WHO", ...s.projectDeck.filter((id) => !["NOISE_REDUCER", "BRIC_BROC", "WHOS_WHO"].includes(id))];
+    s.projects.NOISE_REDUCER = PROJECT_COMPLETE - STEP;
+    s.projects.BRIC_BROC = 20;
+    s.players[1]!.room = "REFECTORY";
+    s.players[2]!.alive = false;
+    const maxApBefore = viewFor(s, "p0").maxAp;
+    s = nextCycle(s);
+    expect(s.projects.NOISE_REDUCER).toBe(PROJECT_COMPLETE);
+    expect(s.projects.BRIC_BROC).toBe(20 + STEP);
+    expect(viewFor(s, "p0").maxAp).toBe(maxApBefore + DEFAULT_CONFIG.project.noiseReducer.maxAp);
+    // Batch retired: next 3 offered projects exclude NOISE_REDUCER, BRIC_BROC, WHOS_WHO.
+    const nextBatch = offeredProjects(s);
+    expect(nextBatch).toHaveLength(3);
+    expect(nextBatch).not.toContain("NOISE_REDUCER");
+    expect(nextBatch).not.toContain("BRIC_BROC");
+    expect(nextBatch).not.toContain("WHOS_WHO");
+    // Ship-wide log visible in other rooms and to the dead.
+    const logLine = s.log.find((e) => e.key === "neronProjectCompleted");
+    expect(logLine).toMatchObject({ key: "neronProjectCompleted", params: { project: "NOISE_REDUCER" }, visibleTo: "all" });
+    expect(logLine?.room).toBeUndefined();
+    expect(viewFor(s, "p1").log.some((e) => e.key === "neronProjectCompleted")).toBe(true);
+    expect(viewFor(s, "p2").log.some((e) => e.key === "neronProjectCompleted")).toBe(true);
+  });
+
+  it("completes at most one project per cycle when multiple reach 100%", () => {
+    let s = game();
+    s.projects.NERON_PROJECT_THREAD = PROJECT_COMPLETE;
+    s.projectDeck = ["NOISE_REDUCER", "EXTRA_HYDROPONPOTS", "WHOS_WHO", ...s.projectDeck.filter((id) => !["NOISE_REDUCER", "EXTRA_HYDROPONPOTS", "WHOS_WHO"].includes(id))];
+    s.projects.NOISE_REDUCER = PROJECT_COMPLETE - 1;
+    s.projects.EXTRA_HYDROPONPOTS = PROJECT_COMPLETE - 1;
+    const potsBefore = s.items.filter((i) => i.type === "tree_pot").length;
+    s = nextCycle(s);
+    expect(s.projects.NOISE_REDUCER).toBe(PROJECT_COMPLETE);
+    expect(s.projects.EXTRA_HYDROPONPOTS).toBe(PROJECT_COMPLETE - 1);
+    expect(s.items.filter((i) => i.type === "tree_pot")).toHaveLength(potsBefore);
+    expect(s.log.filter((e) => e.key === "neronProjectCompleted")).toHaveLength(1);
+    expect(offeredProjects(s)).not.toContain("EXTRA_HYDROPONPOTS");
   });
 });

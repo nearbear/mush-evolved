@@ -84,6 +84,7 @@ function ship(): { state: GameState; sentinels: Sentinel[] } {
     p.lyingSince = num(`lyingSince-${p.id}`, []);
     p.spot = { kind: "door", door: str(`spot-${p.id}`, room) };
     p.pushedBy = str(`pushedBy-${p.id}`, room);
+    p.protectedBy = str(`protectedBy-${p.id}`, room);
     p.accommodationOffers = [{ by: str(`accommodationOffers-${p.id}`, own), until: num(`accommodationOfferUntil-${p.id}`, own) }];
     p.current = {
       action: { type: "take", item: str(`current-${p.id}`, own) },

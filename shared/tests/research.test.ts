@@ -279,6 +279,7 @@ describe("research", () => {
 
   it("completing STEROIDS spawns 4 anabolic steroids on the laboratory floor and marks status full", () => {
     expect(RESEARCH_STATUS.STEROIDS).toBe("full");
+    expect(RESEARCH_STATUS.CONSTIPASPORE_SERUM).toBe("full");
     const s = game();
     setProgress(s, { research: "STEROIDS" }, RESEARCH_COMPLETE - 1);
     s.rng = CLEAN;
@@ -288,6 +289,7 @@ describe("research", () => {
   });
 
   it("completing DRUG_DISPENSER adds the DRUG_DISP equipment to the medlab, once (owner, 2026-11-10)", () => {
+    expect(RESEARCH_STATUS.DRUG_DISPENSER).toBe("full");
     const s = game();
     expect((s.equipment.SICK_BAY ?? []).some((e) => e.type === "DRUG_DISP")).toBe(false);
     setProgress(s, { research: "DRUG_DISPENSER" }, RESEARCH_COMPLETE - 1);

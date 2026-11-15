@@ -19,6 +19,26 @@ describe("skillIcon", () => {
     expect(icon).toContain("conceptor");
   });
 
+  it("moves Independent's brick wall icon to Bodyguard and Daunting's icon to Independent", () => {
+    const bodyguard = skillIcon("bodyguard");
+    expect(bodyguard).not.toBe(EMPTY_SLOT_ICON);
+    expect(bodyguard).toContain("unconcerned");
+
+    const independent = skillIcon("unconcerned");
+    expect(independent).not.toBe(EMPTY_SLOT_ICON);
+    expect(independent).toContain("daunting");
+
+    expect(skillIcon("daunting")).toBe(EMPTY_SLOT_ICON);
+  });
+
+  it("maps infantryman to the former crazy_eye icon and removes crazy_eye", () => {
+    const infantryman = skillIcon("infantryman");
+    expect(infantryman).not.toBe(EMPTY_SLOT_ICON);
+    expect(infantryman).toContain("crazy_eye");
+
+    expect(skillIcon("crazy_eye")).toBe(EMPTY_SLOT_ICON);
+  });
+
   it("returns EMPTY_SLOT_ICON for an unknown skill", () => {
     expect(skillIcon("unknown_skill_id")).toBe(EMPTY_SLOT_ICON);
   });

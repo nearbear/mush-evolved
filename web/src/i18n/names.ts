@@ -101,6 +101,7 @@ const ACTION_NAME_KEYS = {
   premonition: "actions.premonition",
   comfort: "actions.comfort",
   anathema: "actions.anathema",
+  protect: "actions.protect",
   coup: "actions.coup",
   fiery_speech: "actions.fierySpeech",
   boring_speech: "actions.boringSpeech",

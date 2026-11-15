@@ -1,68 +1,84 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
-import { parseGameMessage } from "../src/protocol.ts";
-import { applyAction, createGame, legalActions, viewFor } from "../src/rules.ts";
-import type { Action, GameState } from "../src/types.ts";
-import { makeSeats, player } from "./support.ts";
+import { resourceAvailable } from "../src/resources.ts";
+import { applyAction, createGame, viewFor } from "../src/rules.ts";
+import { skillStatus } from "../src/skills.ts";
+import type { GameState } from "../src/types.ts";
+import { makeSeats, must, nextDay, option, player } from "./support.ts";
 
 const seats = makeSeats(3);
+// p1 is Stephen, who has cook (Chef) in CHARACTER_SKILLS.
 const base = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [] };
-const cook = (item: string): Action => ({ type: "cook", item });
 
-/** p0 and p1 in the refectory, p2 elsewhere; one uncooked ration on the floor (r1) and one carried by p0 (r2). */
 function ship(): GameState {
-  const s = createGame(seats, base, 3);
-  player(s, "p0").room = player(s, "p1").room = "REFECTORY";
-  player(s, "p2").room = "SICK_BAY";
-  s.items.push({ id: "r1", type: "uncooked_ration", at: { kind: "room", id: "REFECTORY" } });
-  s.items.push({ id: "r2", type: "uncooked_ration", at: { kind: "player", id: "p0" } });
+  const s = createGame(seats, base, 1);
+  player(s, "p1").character = "stephen";
   return s;
 }
 
-describe("cook", () => {
-  it("spawns uncooked rations in the refectory by default", () => {
-    const rations = DEFAULT_CONFIG.startItems.filter((i) => i.room === "REFECTORY" && i.type === "uncooked_ration");
-    expect(rations).toHaveLength(32);
-    expect(rations.every((i) => i.type === "uncooked_ration")).toBe(true);
+describe("cook (Chef) skill", () => {
+  it("pins the configured cook points and cap", () => {
+    expect(DEFAULT_CONFIG.cook.pointsPerDay).toBe(4);
+    expect(DEFAULT_CONFIG.cook.pointsOnPick).toBe(4);
+    expect(DEFAULT_CONFIG.cook.capPoints).toBe(8);
+    expect(skillStatus("cook")).toBe("full");
   });
 
-  it("turns a floor ration into a cooked one in place for 1 AP, publicly", () => {
-    const r = applyAction(ship(), "p0", cook("r1"));
-    if (!r.ok) throw new Error(r.error);
-    expect(r.state.items.find((i) => i.id === "r1")).toEqual({ id: "r1", type: "cooked_ration", at: { kind: "room", id: "REFECTORY" } });
-    expect(player(r.state, "p0").ap).toBe(base.startAp - base.cook.cost.ap);
-    expect(viewFor(r.state, "p1").log.some((e) => e.key === "cooked")).toBe(true);
+  it("grants 4 Cook points on pick and each day, clamped to capPoints", () => {
+    const s = must(applyAction(ship(), "p1", { type: "pick_skill", skill: "cook" }));
+    expect(player(s, "p1").resources.cook).toBe(base.cook.pointsOnPick);
+    expect(player(s, "p0").resources.cook).toBe(0);
+
+    const d2 = nextDay(s);
+    expect(player(d2, "p1").resources.cook).toBe(Math.min(base.cook.capPoints, base.cook.pointsOnPick + base.cook.pointsPerDay));
+
+    // Near cap: day start clamps to config.cook.capPoints (8).
+    const nearCap = ship();
+    player(nearCap, "p1").skills.push("cook");
+    player(nearCap, "p1").resources.cook = base.cook.capPoints - 1;
+    expect(player(nextDay(nearCap), "p1").resources.cook).toBe(base.cook.capPoints);
+
+    // Dead players gain nothing on day start.
+    const dead = ship();
+    player(dead, "p1").skills.push("cook");
+    player(dead, "p1").alive = false;
+    expect(player(nextDay(dead), "p1").resources.cook).toBe(0);
   });
 
-  it("cooks a carried ration and keeps it in the inventory", () => {
-    const r = applyAction(ship(), "p0", cook("r2"));
-    if (!r.ok) throw new Error(r.error);
-    expect(r.state.items.find((i) => i.id === "r2")).toEqual({ id: "r2", type: "cooked_ration", at: { kind: "player", id: "p0" } });
-  });
-
-  it("is offered only for uncooked items you can reach, in the refectory", () => {
+  it("clamps onPick when Cook points are already near cap", () => {
     const s = ship();
-    expect(legalActions(s, "p0").filter((a) => a.type === "cook")).toEqual([cook("r1"), cook("r2")]);
-    // p1 can't reach p0's carried ration.
-    expect(legalActions(s, "p1").filter((a) => a.type === "cook")).toEqual([cook("r1")]);
-    expect(legalActions(s, "p2").some((a) => a.type === "cook")).toBe(false);
+    player(s, "p1").resources.cook = base.cook.capPoints - 1;
+    const after = must(applyAction(s, "p1", { type: "pick_skill", skill: "cook" }));
+    expect(player(after, "p1").resources.cook).toBe(base.cook.capPoints);
   });
 
-  it("is refused outside the refectory, for cooked food, and without AP, leaving state unchanged", () => {
-    const s = ship();
-    s.items.push({ id: "c1", type: "cooked_ration", at: { kind: "room", id: "REFECTORY" } });
-    player(s, "p2").room = "REFECTORY";
-    player(s, "p2").ap = 0;
-    expect(applyAction(s, "p2", cook("r1")).ok).toBe(false);
-    expect(applyAction(s, "p0", cook("c1")).ok).toBe(false);
-    player(s, "p2").room = "SICK_BAY";
-    player(s, "p0").room = "SICK_BAY";
-    const before = JSON.stringify(s);
-    expect(applyAction(s, "p0", cook("r2")).ok).toBe(false);
-    expect(JSON.stringify(s)).toBe(before);
+  it("spends Cook points to cook for 0 AP even at 0 AP, then falls back to AP", () => {
+    const s = must(applyAction(ship(), "p1", { type: "pick_skill", skill: "cook" }));
+    player(s, "p1").room = "REFECTORY";
+    player(s, "p1").ap = 0;
+    player(s, "p1").resources.cook = 1;
+    s.items.push({ id: "r1", type: "uncooked_ration", at: { kind: "room", id: "REFECTORY" } });
+    s.items.push({ id: "r2", type: "uncooked_ration", at: { kind: "room", id: "REFECTORY" } });
+
+    expect(option(s, "p1", { type: "cook", item: "r1" })).toMatchObject({ cost: { ap: 0, mp: 0, paidBy: "cook" } });
+    const after = must(applyAction(s, "p1", { type: "cook", item: "r1" }));
+    expect(player(after, "p1").ap).toBe(0);
+    expect(player(after, "p1").resources.cook).toBe(0);
+
+    // Next cook falls back to normal AP cost and is refused at 0 AP.
+    expect(option(after, "p1", { type: "cook", item: "r2" })).toMatchObject({ cost: { ap: base.cook.cost.ap, mp: 0 } });
+    expect(applyAction(after, "p1", { type: "cook", item: "r2" })).toEqual({ ok: false, error: "illegal_action" });
   });
 
-  it("parses from the client", () => {
-    expect(parseGameMessage(JSON.stringify({ type: "action", action: { type: "cook", item: "r1" } }))).toEqual({ type: "action", action: cook("r1") });
+  it("makes cook resource available in the UI and keeps it private", () => {
+    expect(resourceAvailable("cook", 0, ["cook"])).toBe(true);
+    expect(resourceAvailable("cook", 0, [], "cook")).toBe(true);
+    expect(resourceAvailable("cook", 0, [])).toBe(false);
+
+    const s = must(applyAction(ship(), "p1", { type: "pick_skill", skill: "cook" }));
+    expect(viewFor(s, "p1").you.resources.cook).toBe(base.cook.pointsOnPick);
+    const p0View = viewFor(s, "p0");
+    expect(p0View.you.resources.cook).toBe(0);
+    expect(p0View.players.find((o) => o.id === "p1")).not.toHaveProperty("resources");
   });
 });

@@ -4,6 +4,7 @@ import { ITEM_TYPES, canReachItem, removeItem } from "../items.ts";
 import { logSecret } from "../log.ts";
 import { consumed, consumedByMush } from "../modifiers.ts";
 import { rationApBonus } from "../comms.ts";
+import { RESEARCH_COMPLETE } from "../research.ts";
 import { applyDrug } from "../drugs.ts";
 import { applyFruit, rollFruitDiseases } from "../fruits.ts";
 import { contaminate } from "../infection.ts";
@@ -49,8 +50,9 @@ export class ConsumeAction extends Action<ConsumeActionData> {
       return;
     }
     const { ap, mp = 0, satiety, morale = 0, hp = 0 } = ITEM_TYPES[item.type]!.consume!;
+    const coffeeBonus = item.type === "coffee" && (state.research.GUARANA_CAPUCCINO ?? 0) >= RESEARCH_COMPLETE ? state.config.research.guaranaExtraAp : 0;
     healHp(state, player, hp);
-    changeAP(state, player, ap + rationApBonus(state, item.type));
+    changeAP(state, player, ap + rationApBonus(state, item.type) + coffeeBonus);
     changeMP(state, player, mp);
     gainMorale(state, player, morale);
     if (player.role === "human") {
@@ -61,9 +63,9 @@ export class ConsumeAction extends Action<ConsumeActionData> {
     applyFruit(state, player, item.type);
     consumed(state, player, item);
     logSecret(state, player.id, "consumed", { name: player.character, item: item.type });
-    // Fungal cuisine: a human is contaminated first, one level per spore; a conversion ends the meal with no food effects.
+    // Fungal cuisine: food effects apply first, then the human is contaminated by the item's spore level (even if it converts them).
     if (player.role === "human" && item.spores) {
-      for (let i = 0; i < item.spores && player.role === "human"; i++) contaminate(state, player);
+      contaminate(state, player, item.spores);
     }
   }
 }

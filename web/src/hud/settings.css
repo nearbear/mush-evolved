@@ -532,7 +532,7 @@ li.research-item-blocked .research-progress {
   width: 100%;
 }
 
-/* The Com center's link with Sol: the spectrum, its text and the big Contact Sol button, each across the whole row. */
+/* The Com center's link with Sol: the big Contact Sol button, the spectrum, and its caption, each across the whole row. */
 .research-item.comms-sol {
   flex-direction: column;
   align-items: stretch;

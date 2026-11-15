@@ -97,6 +97,10 @@ export interface OtherPlayerView {
   spot?: Spot;
   /** Who is pushing their wheelchair. Public to anyone in your room (empty for people elsewhere). */
   pushedBy?: PlayerId;
+  /** Who is protecting this player (Bodyguard). Public to anyone in your room (absent for people elsewhere). */
+  protectedBy?: PlayerId;
+  /** Who this player is protecting (Bodyguard). Public to anyone in your room (absent for people elsewhere). */
+  protecting?: PlayerId;
   /** Skills they have chosen. Public to anyone in your room (empty for people elsewhere). */
   skills: string[];
   /** The skill in their book slot, learned from a book. Public to anyone in your room (absent for people elsewhere). */
@@ -176,7 +180,7 @@ export type YouView = Omit<
   | "energizeUntil"
   | "perceptionUntil"
   | "pendingDiseases"
-> & { current: ActionInProgress | null; queue: Action[] };
+> & { current: ActionInProgress | null; queue: Action[]; protecting?: PlayerId };
 
 /** A hunter as a turret or a patrol ship's cockpit shows it: its kind, hp, and an asteroid's cycle changes to impact (null otherwise). */
 export interface HunterView {
