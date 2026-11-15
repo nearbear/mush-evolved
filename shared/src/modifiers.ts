@@ -64,6 +64,10 @@ import { acid_reflux_disease } from "./modifiers/acid_reflux_disease.ts";
 import { tapeworm_disease } from "./modifiers/tapeworm_disease.ts";
 import { pink_eye_disease } from "./modifiers/pink_eye_disease.ts";
 import { gastroenteritis_disease } from "./modifiers/gastroenteritis_disease.ts";
+import { sinus_storm_disease } from "./modifiers/sinus_storm_disease.ts";
+import { migraine_disease } from "./modifiers/migraine_disease.ts";
+import { slight_nausea_disease } from "./modifiers/slight_nausea_disease.ts";
+import { food_poisoning_disease } from "./modifiers/food_poisoning_disease.ts";
 import { broken_nose_injury } from "./modifiers/broken_nose_injury.ts";
 import type { ActionCost } from "./actions.ts";
 import type { ActionTag } from "./actions/action.ts";
@@ -95,6 +99,8 @@ type FoldHooks = Record<
   | "computerPointsCap"
   | "failureStreakMultiplier"
   | "analysisSectors"
+  | "neronProgress"
+  | "rebelGain"
   | "pilgredPointsPerDay"
   | "gardenPointsPerDay"
   | "cookPointsPerDay"
@@ -259,6 +265,10 @@ export const MODIFIERS: Record<string, Modifier> = {
   acid_reflux_disease,
   tapeworm_disease,
   pink_eye_disease,
+  sinus_storm_disease,
+  migraine_disease,
+  slight_nausea_disease,
+  food_poisoning_disease,
   // Injuries
   broken_nose_injury,
 };
@@ -590,6 +600,14 @@ export const failureStreakMultiplier = (state: Readonly<GameState>, player: Read
 export const analysisSectors = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
   fold("analysisSectors", 1, state, player, registry) +
   (projectDone(state, "QUANTUM_SENSORS") ? state.config.project.quantumSensors.extraSectors : 0);
+
+/** NERON update progress one update action adds: `base` (`config.comms.neron.progressPercent`) folded (Migraine halves it). */
+export const neronProgress = (state: Readonly<GameState>, player: Readonly<PlayerState>, base: number, registry: ModifierRegistry = MODIFIERS) =>
+  fold("neronProgress", base, state, player, registry);
+
+/** Progress one rebel decode adds: the rolled `base` (comms.ts, `rollRebelGain`) folded (Migraine halves it). */
+export const rebelGain = (state: Readonly<GameState>, player: Readonly<PlayerState>, base: number, registry: ModifierRegistry = MODIFIERS) =>
+  fold("rebelGain", base, state, player, registry);
 
 /** The chance a hunter wave comes smaller: nothing by default, plus what each living holder of Space Tactics brings (they don't stack). */
 export function waveShrinkChance(state: Readonly<GameState>, registry: ModifierRegistry = MODIFIERS): number {

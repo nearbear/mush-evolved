@@ -114,7 +114,11 @@ export function rechargePatrolShips(state: GameState): void {
 /** Who may fly: Pilots only for now (answer 3; the BIOS piloting lock and spaceship keys come later). */
 // Gastroenteris grounds a Pilot (owner, 2026-11-14); a Mush's diseases have no effect (diseases.ts).
 export const canFly = (player: Readonly<PlayerState>): boolean =>
-  hasSkill(player, "pilot") && (player.role === "mush" || !player.modifiers.includes("gastroenteritis_disease"));
+  hasSkill(player, "pilot") &&
+  (player.role === "mush" || !GROUNDING_DISEASES.some((id) => player.modifiers.includes(id)));
+
+/** Diseases that keep a human Pilot from flying (owner: Gastroenteritis 2026-11-14, Slight Nausea 2026-11-15). */
+const GROUNDING_DISEASES: readonly string[] = ["gastroenteritis_disease", "slight_nausea_disease"];
 
 /** Docked ships whose interface is in the player's room. */
 export function dockedHere(state: Readonly<GameState>, player: Readonly<PlayerState>): PatrolShip[] {

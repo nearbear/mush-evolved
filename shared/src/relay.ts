@@ -34,12 +34,20 @@ export type Sample = RelayToken & { contaminatedBy?: PlayerId };
  */
 export type ResearchPool = { tokens: Sample[]; pending: Sample[] };
 
-/** A token's worth before the penalty: `rate * mod / 10` (rounded down), plus `skillBoost` for each matching skill. */
+/** What Migraine takes off each relay contribution (owner, 2026-11-15). */
+export const MIGRAINE_RELAY_MALUS = 2;
+
+/**
+ * A contribution's worth before the penalty: `rate * mod / 10` (rounded down), plus `skillBoost` for each matching skill,
+ * minus `MIGRAINE_RELAY_MALUS` for a human with Migraine, never below 0.
+ */
 export function tokenBase(config: Readonly<RelayProgressConfig>, player: Readonly<PlayerState>, skills: readonly SkillId[]): number {
   let base = Math.floor((config.rate * config.mod) / 10);
   for (const skill of skills) if (hasSkill(player, skill)) base += config.skillBoost;
-  return base;
+  if (player.role === "human" && player.modifiers.includes("migraine_disease")) base -= MIGRAINE_RELAY_MALUS;
+  return Math.max(0, base);
 }
+
 
 /** Makes this player's token, drawing its roll from the seeded RNG. */
 export function makeToken(state: GameState, config: Readonly<RelayProgressConfig>, player: Readonly<PlayerState>, skills: readonly SkillId[]): RelayToken {
@@ -155,7 +163,7 @@ export interface RelayStreak {
 }
 
 /**
- * The gain range of one contribution: `rate * mod / 10` (rounded down), plus `skillBoost` for each matching skill, minus
+ * The gain range of one contribution: its base (`tokenBase`), minus
  * `relayPenalty` for each contribution in a row this player has just made (it resets once someone else contributes; the
  * noRelayPenalty cheat waives it), never below 0. The gain is rolled in [min, min + min / 2].
  */
@@ -167,8 +175,7 @@ export function relayGainRange(
 ): { min: number; max: number } {
   const relaying = last?.lastBy === player.id && !player.cheats.includes("noRelayPenalty");
   const streak = relaying ? last.streak : 0;
-  let base = Math.floor((config.rate * config.mod) / 10);
-  for (const skill of skills) if (hasSkill(player, skill)) base += config.skillBoost;
+  const base = tokenBase(config, player, skills);
   const min = Math.max(0, Math.min(100, base - streak * config.relayPenalty));
   return { min, max: Math.min(100, min + (min >> 1)) };
 }
