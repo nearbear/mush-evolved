@@ -503,6 +503,8 @@ export interface GameConfig {
     // Extra hydropots (EXTRA_HYDROPONPOTS; owner, 2026-11-14): completing it puts `count` empty hydropots on the floor of `room`.
     extraHydropots: { room: RoomId; count: number };
     neronParticipation: { percent: number };
+    // Automatic sprinklers (AUTO_WATERING; owner, 2026-11-14): each burning room has `extinguishChance` per cycle to go out before acting, announced in global chat without the room.
+    autoWatering: { extinguishChance: number };
   };
   pilgred: {
     cost: { ap: number }; // AP spent to take part in repairing PILGRED (owner, 2026-10-21; the original's REPAIR_PILGRED, 2).
@@ -762,6 +764,10 @@ export interface GameConfig {
   };
   caffeinomaniac: {
     ap: number; // Extra AP the caffeinomaniac skill gives on consuming a coffee, capped at maxAp (confirmed 2026-10-16).
+  };
+  frugivore: {
+    bananaAp: number; // Extra AP the frugivore skill gives a human on eating a banana, capped at maxAp (owner, 2026-11-14).
+    alienFruitAp: number; // Extra AP the frugivore skill gives a human on eating an alien fruit, capped at maxAp (owner, 2026-11-14).
   };
   action: {
     durationMs: number; // Server time every timed action takes (owner: 2 seconds on 2026-10-17, 1.5 seconds since 2026-10-24).

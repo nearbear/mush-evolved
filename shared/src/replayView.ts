@@ -147,7 +147,7 @@ export interface Mark {
 const DEATH_KEYS = new Set(["died"]);
 const CONVERSION_KEYS = new Set(["converted"]);
 // A fire starting or going out, not each cycle it burns (fireBurns), which would put a pip on every one (owner, 2026-11-05).
-const FIRE_KEYS = new Set(["ignited", "fireStarted", "fireExtinguished", "extinguishFailed"]);
+const FIRE_KEYS = new Set(["ignited", "fireStarted", "fireExtinguished", "fireExtinguishedSprinklers", "extinguishFailed"]);
 
 const maxId = (list: readonly { id: number }[]): number => list.reduce((m, e) => Math.max(m, e.id), 0);
 

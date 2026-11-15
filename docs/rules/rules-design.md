@@ -8,6 +8,8 @@ The record of answered rule decisions and the design for the rules that are not 
 
 ## Decisions received
 
+- **Automatic sprinklers (`AUTO_WATERING`)** (2026-11-14, owner): once complete, each cycle change rolls `config.project.autoWatering.extinguishChance` (25%) per burning room with no daily cap, before fires act (spread/damage), including fires started on that same cycle. Extinguishing a fire posts NERON's global chat line (`fireExtinguishedSprinklers`) without the room name.
+
 - **NERON participation (`NERON_PROJECT_THREAD`)** (2026-11-14, owner): once complete, each cycle change advances every currently offered project (`offeredProjects(state)`) strictly above 0% by `config.project.neronParticipation.percent` (5%). At most one project can complete per cycle (any other offered project that would reach 100% is capped at 99% before the batch retires from `projectDeck`). Emits a ship-wide public log (`neronProjectCompleted`) only when a project completes; silent otherwise.
 
 - **Opportunist (`opportunist`)** (2026-11-14, owner): +5 AP (`config.opportunist.ap`, capped at `maxAp`) the first time a living player (human or Mush) gains each of the three ship titles (`commander`, `neron_admin`, `comms_officer`) while having the skill — including initial Mush-selection assignment (`issueTitles`), succession (`refreshTitles`), and Politician's coup (`coupCycle`). Does not trigger retroactively if picked while already holding a title. Private log line (`opportunistTitle`) to the player; `PlayerState.opportunistTitles` is never sent.

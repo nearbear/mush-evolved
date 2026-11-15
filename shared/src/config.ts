@@ -298,6 +298,7 @@ export const DEFAULT_CONFIG: GameConfig = {
     dynarcade: { room: "SPACESHIP_BAY_AA", cost: { ap: 1 }, successChance: 0.33, failureMultiplier: 1.5, morale: 2, injuryChance: 0.33 },
     extraHydropots: { room: "HYDROPONIC_CENTER", count: 3 },
     neronParticipation: { percent: 5 },
+    autoWatering: { extinguishChance: 0.25 },
   },
   // Owner, 2026-10-21: repairing PILGRED uses the original's numbers (DIG_RATE 6, PILGRED_MOD 2, DIG_BOOST 4, -2 per repeat),
   // 2 AP, 25% dirty; the Physicist gains 1 PILGRED point a day and holds 2.
@@ -549,6 +550,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   inactivity: { inactiveAfterHours: 24, superAfterHours: 48 },
   logistics: { ap: 1 },
   caffeinomaniac: { ap: 2 },
+  frugivore: { bananaAp: 1, alienFruitAp: 2 },
   // Confirmed 2026-10-16: carrying a heavy item adds this much to every move's MP cost, once.
   heavy: { mpPenalty: 2 },
   // Decided 2026-10-17 (owner): every action but ready and access takes a fixed time (2 s, cut to 1.5 s on 2026-10-24) and happens when its bar runs out;

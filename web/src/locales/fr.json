@@ -1091,6 +1091,7 @@
     "equipmentBroken": "NERON : panne de l'équipement « {{equipment}} ».",
     "itemBroken": "NERON : panne de l'objet « {{item}} ».",
     "fireStarted": "NERON : un incendie s'est déclaré à bord !",
+    "fireExtinguishedSprinklers": "NERON : les arroseurs automatiques ont éteint un incendie.",
     "fireReported": "NERON : {{name}} signale un incendie ({{room}}).",
     "equipmentReported": "NERON : {{name}} signale une panne de l'équipement « {{equipment}} » ({{room}}).",
     "tremor": "La pièce est violemment secouée !",

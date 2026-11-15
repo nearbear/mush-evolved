@@ -3812,3 +3812,8 @@ Small refactor on request: `GameRoom.social` called four bot-line parsers (item,
 ## 2026-11-14: Fungal cuisine food effects on conversion
 - **Decision (owner):** Reverted the 2026-10-24 decision that conversion from Fungal cuisine skips food effects; food gains (AP, HP, morale, etc.) now apply before contamination/conversion to prevent surprise AP loss.
 - **Changes:** `shared/src/actions/consume.ts` already ran `contaminate` after food effects, so updated its stale comment, updated `docs/rules/rules-design.md` and `docs/rules/implemented-rules.md`, and added a conversion-with-effects regression test in `shared/tests/fungal_cuisine.test.ts`.
+
+### 2026-11-14: Automatic sprinklers (AUTO_WATERING)
+
+- **Decision (owner):** Once `AUTO_WATERING` is complete, each cycle change rolls a 25% chance per burning room (no daily cap) to extinguish it before fires spread or deal damage, including fires started on that same cycle. Extinguishing posts NERON's `fireExtinguishedSprinklers` in global chat without the room name.
+- **What worked:** Implementing it at the start of `fireCycle` in `shared/src/fire.ts` keeps it pure, seeded, and naturally integrates with `pruneReports` on `tick`.

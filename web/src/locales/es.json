@@ -1091,6 +1091,7 @@
     "equipmentBroken": "NERON: el equipo «{{equipment}}» se ha averiado.",
     "itemBroken": "NERON: el objeto «{{item}}» se ha averiado.",
     "fireStarted": "NERON: ¡se ha declarado un incendio a bordo!",
+    "fireExtinguishedSprinklers": "NERON: los aspersores automáticos han apagado un incendio.",
     "fireReported": "NERON: {{name}} informa de un incendio en {{room}}.",
     "equipmentReported": "NERON: {{name}} informa de que el equipo «{{equipment}}» de {{room}} está averiado.",
     "tremor": "¡La sala tiembla violentamente!",

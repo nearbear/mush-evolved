@@ -12,6 +12,7 @@ import { pushChat } from "./chat.ts";
 import { damage } from "./death.ts";
 import { destroyShip } from "./hunters.ts";
 import { logPublic } from "./log.ts";
+import { projectDone } from "./projects.ts";
 import { forgetReports } from "./reports.ts";
 import { inCraft } from "./patrol.ts";
 import { roll, rollFloat, rollInt } from "./rng.ts";
@@ -44,6 +45,14 @@ export function startFire(state: GameState, room: RoomId): void {
  * `hullChance`, and everyone present loses `damage` HP. Mutates a state the caller already cloned.
  */
 export function fireCycle(state: GameState): void {
+  if (projectDone(state, "AUTO_WATERING")) {
+    const chance = state.config.project.autoWatering.extinguishChance;
+    state.fires = state.fires.filter((room) => {
+      if (rollFloat(state) >= chance) return true;
+      pushChat(state, "global", { from: null, isBot: false, text: "", system: { key: "fireExtinguishedSprinklers" } });
+      return false;
+    });
+  }
   const config = state.config.fire;
   let spreads = 0;
   for (const room of [...state.fires]) {
