@@ -78,6 +78,10 @@ export const DEFAULT_CONFIG: GameConfig = {
   spike: { cost: { ap: 1 }, cooldownCycles: 4 },
   bodyTransfer: { cost: { ap: 0 } },
   resetSkills: { cost: { ap: 2 } },
+  // Owner, 2026-11-14: Mass Mouldering costs 2 AP and 0 spores, once per game (2 AP drain omitted).
+  massMouldering: { cost: { ap: 2 } },
+  // Owner, 2026-11-14: Demoralizer (disheartening_contact) costs 2 AP and lowers a living roommate's morale by 2.
+  demoralize: { cost: { ap: 2 }, morale: 2 },
   // Owner, 2026-11-05: the Apprentice skill's apprenticeship action costs 1 AP.
   apprenticeship: { cost: { ap: 1 } },
   // Owner, 2026-11-04: the pneumatic tube is free to use.
@@ -293,11 +297,13 @@ export const DEFAULT_CONFIG: GameConfig = {
     patrolShipExtraAmmo: { extraCharges: 6 },
     patrolShipBlasterGun: { extraDamage: 1 },
     turretExtraFirerate: { rechargeMultiplier: 2 },
+    neronTargetingAssist: { accuracyFactor: 1.25 },
     armourCorridor: { damageReduction: 1 },
     fissionCoffeeRoaster: { cycles: [1, 5] },
     dynarcade: { room: "SPACESHIP_BAY_AA", cost: { ap: 1 }, successChance: 0.33, failureMultiplier: 1.5, morale: 2, injuryChance: 0.33 },
     extraHydropots: { room: "HYDROPONIC_CENTER", count: 3 },
     neronParticipation: { percent: 5 },
+    autoWatering: { extinguishChance: 0.25 },
   },
   // Owner, 2026-10-21: repairing PILGRED uses the original's numbers (DIG_RATE 6, PILGRED_MOD 2, DIG_BOOST 4, -2 per repeat),
   // 2 AP, 25% dirty; the Physicist gains 1 PILGRED point a day and holds 2.
@@ -340,6 +346,8 @@ export const DEFAULT_CONFIG: GameConfig = {
     followShare: 0.5,
     // Owner, 2026-10-28 (patrol plan, phase 4): eMush's 15% to aim at a patrol ship in flight, when one is out.
     patrolTargetChance: 0.15,
+    // Owner, 2026-11-14: Meridon scrambler (FUNGUS_SCRAMBLER) gives a 20% chance to target a random shooting teammate.
+    meridonScramblerChance: 0.2,
     // Owner, 2026-10-28 (patrol plan, phase 5): eMush's 1 piece (2/3) or 2 (1/3), metal scraps 2 : space capsule 1 : plastic scraps 1.
     debris: { count: [0, 2, 1], types: { metal_scraps: 2, space_capsule: 1, plastic_scraps: 1 } },
     // Owner, 2026-11-12 (#388): eMush's kinds (`HunterConfigData`). Draw weights 10/1/1/1/2, the Arack, asteroid and Trax
@@ -415,7 +423,7 @@ export const DEFAULT_CONFIG: GameConfig = {
     chance: {
       CAMERA: 0.25, OXYGEN_TANK: 0.25, FUEL_TANK: 0.25, SHOWER: 0.25,
       ASTRO_MODULE: 0.12, PILOT_MODULE: 0.12, BEAT_BOX: 0.12, SOFA: 0.12, MYCOSCAN: 0.12, COMBUSTION_CHAMBER_ACCESS: 0.12,
-      PLANET_SCANNER: 0.12, STELLAR_ANTENNA: 0.12, SUPER_CALC: 0.12, KITCHEN: 0.12, COFFEE_DISPENSER: 0.12, TURRET_COMMAND: 0.12,
+      PLANET_SCANNER: 0.12, PLANT_CONTROLLER: 0.12, STELLAR_ANTENNA: 0.12, SUPER_CALC: 0.12, KITCHEN: 0.12, COFFEE_DISPENSER: 0.12, TURRET_COMMAND: 0.12,
       COM_CENTER: 0.06, RESEARCH_LAB: 0.06, GRAVITY_SIMULATOR: 0.06, EMERGENCY_REACTOR: 0.06, ROTATIONAL_REACTOR: 0.06, NERON_CORE: 0.06,
       NERON_BIOS_TERM: 0.03,
     },
@@ -549,6 +557,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   inactivity: { inactiveAfterHours: 24, superAfterHours: 48 },
   logistics: { ap: 1 },
   caffeinomaniac: { ap: 2 },
+  frugivore: { bananaAp: 1, alienFruitAp: 2 },
   // Confirmed 2026-10-16: carrying a heavy item adds this much to every move's MP cost, once.
   heavy: { mpPenalty: 2 },
   // Decided 2026-10-17 (owner): every action but ready and access takes a fixed time (2 s, cut to 1.5 s on 2026-10-24) and happens when its bar runs out;

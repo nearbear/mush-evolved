@@ -1,5 +1,5 @@
 import { Action, type ActionCost, type ActionVisibility, isString } from "./action.ts";
-import { EQUIPMENT_TYPES } from "../equipment.ts";
+import { EQUIPMENT_TYPES, isEquipmentEnabled } from "../equipment.ts";
 import { ITEM_TYPES, canReachItem, removeItem } from "../items.ts";
 import { logPrivate } from "../log.ts";
 import { hasSkill } from "../skills.ts";
@@ -91,4 +91,4 @@ const targetItems = (state: Readonly<GameState>, player: Readonly<PlayerState>) 
   state.items.filter((i) => (ITEM_TYPES[i.type]?.dismantle || ITEM_TYPES[i.type]?.canBeSabotaged) && canReachItem(state, player, i) && (i.shield ?? 0) < state.config.reinforce.max);
 
 const targetEquipment = (state: Readonly<GameState>, player: Readonly<PlayerState>) =>
-  (state.equipment[player.room] ?? []).filter((e) => (EQUIPMENT_TYPES[e.type]?.dismantle || EQUIPMENT_TYPES[e.type]?.canBeSabotaged) && (e.shield ?? 0) < state.config.reinforce.max);
+  (state.equipment[player.room] ?? []).filter((e) => (EQUIPMENT_TYPES[e.type]?.dismantle || EQUIPMENT_TYPES[e.type]?.canBeSabotaged) && isEquipmentEnabled(state, e) && (e.shield ?? 0) < state.config.reinforce.max);

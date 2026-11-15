@@ -740,6 +740,8 @@ describe("actions from a client", () => {
     fungal_cuisine: [{ type: "fungal_cuisine", item: "i1" }],
     body_transfer: [{ type: "body_transfer", target: "p1" }],
     reset_skills: [{ type: "reset_skills" }],
+    mass_mouldering: [{ type: "mass_mouldering" }],
+    demoralize: [{ type: "demoralize", target: "p1" }],
     lie_down: [{ type: "lie_down", equipment: "e1" }],
     report_fire: [{ type: "report_fire" }],
     report_equipment: [{ type: "report_equipment", equipment: "e1" }],

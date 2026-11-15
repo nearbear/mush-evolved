@@ -94,6 +94,8 @@ export const PROJECT_STATUS: Readonly<Partial<Record<ProjectId, ProjectStatus>>>
   PATROLSHIP_BLASTER_GUN: "full",
   // Turrets recharge twice as fast each cycle (owner, 2026-11-14; hunters.ts).
   TURRET_EXTRA_FIRERATE: "full",
+  // Turret and patrol ship shots gain x1.25 hit chance for everyone (owner, 2026-11-14; modifiers.ts `actionSuccessRate`).
+  NERON_TARGETING_ASSIST: "full",
   // The shield absorbs 67% of a hit instead of 33% (owner, 2026-10-24; ship.ts).
   PLASMA_SHIELD: "full",
   // Reports every fire: burning rooms turn red on the minimap and show on the alert bar (owner, 2026-11-02; #444).
@@ -118,6 +120,10 @@ export const PROJECT_STATUS: Readonly<Partial<Record<ProjectId, ProjectStatus>>>
   EXTRA_HYDROPONPOTS: "full",
   // Any offered project above 0% gains +5% per cycle; at most one can complete per cycle (owner, 2026-11-14; projectEffects.ts).
   NERON_PROJECT_THREAD: "full",
+  // Sick bay and engine room auxiliary NERON terminals stay offline (no access/project/coup/breakage, black screen) until complete (owner, 2026-11-14; equipment.ts).
+  AUXILIARY_TERMINAL: "full",
+  // Each burning room has a 25% chance per cycle to go out before acting, announced globally without the room (owner, 2026-11-14; fire.ts).
+  AUTO_WATERING: "full",
 };
 
 export function projectStatus(project: string): ProjectStatus {

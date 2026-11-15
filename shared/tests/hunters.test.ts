@@ -5,6 +5,7 @@ import { huntersPerCyclePoints } from "../src/hunters.ts";
 import { followingHuntersShare } from "../src/modifiers.ts";
 import { joinShip } from "../src/preselection.ts";
 import { parseGameMessage } from "../src/protocol.ts";
+import { RESEARCH_COMPLETE, researchStatus } from "../src/research.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameConfig, GameState } from "../src/types.ts";
 import { clone, costOf, makeSeats, must, nextCycle, noHunters, noIncidents, offered, player } from "./support.ts";
@@ -351,5 +352,80 @@ describe("an ignored battle", () => {
     expect(hullHits).toBeGreaterThan(1);
     expect(s.ship.hull).toBe(0);
     expect([s.phase, s.winner, s.ending]).toEqual(["ended", "mush", "ship_destroyed"]);
+  });
+});
+
+describe("Meridon scrambler (FUNGUS_SCRAMBLER)", () => {
+  const scrambler = (chance: number): Partial<GameConfig> => ({ hunters: { ...DEFAULT_CONFIG.hunters, meridonScramblerChance: chance } });
+
+  it("pins the 20% chance and marks FUNGUS_SCRAMBLER full", () => {
+    expect(DEFAULT_CONFIG.hunters.meridonScramblerChance).toBe(0.2);
+    expect(researchStatus("FUNGUS_SCRAMBLER")).toBe("full");
+  });
+
+  it("does nothing until FUNGUS_SCRAMBLER reaches 100%", () => {
+    const s = ship(scrambler(1));
+    s.research.FUNGUS_SCRAMBLER = RESEARCH_COMPLETE - 1;
+    s.hunters.list.push({ id: "h2", hp: 6, hitChance: 1, target: { kind: "ship" }, type: "hunter", countdown: null });
+    const next = nextCycle(s);
+    expect(next.hunters.list.find((h) => h.id === "h1")?.target).toEqual({ kind: "ship" });
+  });
+
+  it("targets another shooting hunter (never self or an asteroid) and falls back when alone", () => {
+    const solo = ship(scrambler(1));
+    solo.research.FUNGUS_SCRAMBLER = RESEARCH_COMPLETE;
+    solo.hunters.list.push({ id: "ast", hp: 20, hitChance: 1, target: null, type: "asteroid", countdown: 6 });
+    expect(nextCycle(solo).hunters.list.find((h) => h.id === "h1")?.target).toEqual({ kind: "ship" });
+
+    const pair = ship(scrambler(1));
+    pair.research.FUNGUS_SCRAMBLER = RESEARCH_COMPLETE;
+    pair.hunters.list.push({ id: "ast", hp: 20, hitChance: 1, target: null, type: "asteroid", countdown: 6 });
+    pair.hunters.list.push({ id: "h2", hp: 6, hitChance: 1, target: { kind: "ship" }, type: "hunter", countdown: null });
+    expect(nextCycle(pair).hunters.list.find((h) => h.id === "h1")?.target).toEqual({ kind: "hunter", id: "h2" });
+
+    let teammatePicks = 0;
+    for (let seed = 1; seed <= 100; seed++) {
+      const s = ship();
+      s.rng = seed;
+      s.research.FUNGUS_SCRAMBLER = RESEARCH_COMPLETE;
+      s.hunters.list.push({ id: "h2", hp: 6, hitChance: 1, target: { kind: "ship" }, type: "hunter", countdown: null });
+      if (nextCycle(s).hunters.list.find((h) => h.id === "h1")?.target?.kind === "hunter") teammatePicks++;
+    }
+    expect(teammatePicks).toBeGreaterThan(5);
+    expect(teammatePicks).toBeLessThan(40);
+  });
+
+  it("damages the targeted teammate (respecting armor), drops debris on kill, clears its own target, and skips dead teammates' remaining actions", () => {
+    const s = ship(scrambler(0));
+    s.research.FUNGUS_SCRAMBLER = RESEARCH_COMPLETE;
+    s.hunters.list = [
+      { id: "h1", hp: 6, hitChance: 1, target: { kind: "hunter", id: "h2" }, type: "hunter", countdown: null },
+      { id: "h2", hp: 2, hitChance: 1, target: { kind: "ship" }, type: "hunter", countdown: null },
+      { id: "d1", hp: 30, hitChance: 1, target: { kind: "hunter", id: "h3" }, type: "hunter", countdown: null },
+      { id: "h3", hp: 10, hitChance: 1, target: { kind: "ship" }, type: "dice", countdown: null },
+    ];
+    // Make h1 kill h2 (hp 2 <= min damage 2) before h2 can shoot the Daedalus; d1 hits dice h3 (armor 1 reduces 2..4 to 1..3).
+    const logBefore = s.log.length;
+    const hullBefore = s.ship.hull;
+    const next = nextCycle(s);
+    expect(next.hunters.list.some((h) => h.id === "h2")).toBe(false);
+    expect(next.space.length).toBeGreaterThan(0);
+    expect(next.hunters.list.find((h) => h.id === "h1")?.target).toBeNull();
+    expect(next.hunters.list.find((h) => h.id === "d1")?.target).toBeNull();
+    expect(next.hunters.list.find((h) => h.id === "h3")!.hp).toBeLessThan(10);
+    expect(next.hunters.list.find((h) => h.id === "h3")!.hp).toBeGreaterThanOrEqual(7);
+    // h2 never shot the Daedalus; only h3 (dice, 3 actions) shot the Daedalus.
+    expect(next.log.slice(logBefore).some((e) => e.key.includes("hunter") || e.key.includes("Hunter"))).toBe(false);
+    expect(next.ship.hull).toBeLessThan(hullBefore);
+  });
+
+  it("spends its action picking a new target when its targeted teammate was already destroyed", () => {
+    const s = ship(scrambler(0));
+    s.research.FUNGUS_SCRAMBLER = RESEARCH_COMPLETE;
+    s.hunters.list = [{ id: "h1", hp: 6, hitChance: 1, target: { kind: "hunter", id: "gone" }, type: "hunter", countdown: null }];
+    const hullBefore = s.ship.hull;
+    const next = nextCycle(s);
+    expect(next.hunters.list[0]!.target).toEqual({ kind: "ship" });
+    expect(next.ship.hull).toBe(hullBefore);
   });
 });

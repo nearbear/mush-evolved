@@ -218,6 +218,49 @@ describe("caffeinomaniac", () => {
   });
 });
 
+describe("frugivore", () => {
+  function eat(skills: string[], ap: number, type: string, role: "human" | "mush" = "human"): GameState {
+    const state = createGame(seats, { ...config, startSkills: [] }, 7);
+    const p = state.players[0]!;
+    p.skills = skills;
+    p.ap = ap;
+    p.role = role;
+    state.items.push({ id: "item-eat", type, at: { kind: "player", id: "p0" } });
+    const r = applyAction(state, "p0", { type: "consume", item: "item-eat" });
+    if (!r.ok) throw new Error(r.error);
+    return r.state;
+  }
+
+  it("pins the configured extra AP values", () => {
+    expect([DEFAULT_CONFIG.frugivore.bananaAp, DEFAULT_CONFIG.frugivore.alienFruitAp]).toEqual([1, 2]);
+  });
+
+  it("adds bananaAp when a human eats a banana", () => {
+    const banana = ITEM_TYPES.fruit_banana!.consume!.ap;
+    expect(eat([], 0, "fruit_banana").players[0]!.ap).toBe(banana);
+    expect(eat(["frugivore"], 0, "fruit_banana").players[0]!.ap).toBe(banana + config.frugivore.bananaAp);
+  });
+
+  it("adds alienFruitAp when a human eats an alien fruit", () => {
+    const baseState = createGame(seats, { ...config, startSkills: [] }, 7);
+    const fruitAp = ITEM_TYPES.fruit01!.consume!.ap + baseState.fruits.fruit01!.ap;
+    expect(eat([], 0, "fruit01").players[0]!.ap).toBe(fruitAp);
+    expect(eat(["frugivore"], 0, "fruit01").players[0]!.ap).toBe(fruitAp + config.frugivore.alienFruitAp);
+  });
+
+  it("is capped at maxAp", () => {
+    const max = DEFAULT_CONFIG.maxAp;
+    expect(eat(["frugivore"], max - 1, "fruit01").players[0]!.ap).toBe(max);
+  });
+
+  it("does not trigger for non-fruit consumables or for Mush", () => {
+    const withoutBonus = eat([], 0, "cooked_ration").players[0]!.ap;
+    expect(eat(["frugivore"], 0, "cooked_ration").players[0]!.ap).toBe(withoutBonus);
+    expect(eat(["frugivore"], 0, "fruit_banana", "mush").players[0]!.ap).toBe(0);
+    expect(eat(["frugivore"], 0, "fruit01", "mush").players[0]!.ap).toBe(0);
+  });
+});
+
 describe("character skill lists", () => {
   const fresh = () => createGame(makeSeats(CHARACTERS.length), { ...DEFAULT_CONFIG, startInventory: [], startItems: [] }, 42);
 

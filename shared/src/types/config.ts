@@ -262,6 +262,13 @@ export interface GameConfig {
   resetSkills: {
     cost: { ap: number }; // The Mush skill Epigenetics: 2 AP (owner, 2026-11-13).
   };
+  massMouldering: {
+    cost: { ap: number }; // The Mush skill Mass Mouldering: 2 AP, 0 spores (owner, 2026-11-14).
+  };
+  demoralize: {
+    cost: { ap: number }; // The Mush skill Demoralizer (disheartening_contact): 2 AP, no limit (owner, 2026-11-14).
+    morale: number; // Morale lost by the target (2).
+  };
   spores: {
     cost: { ap: number }; // AP spent to extract a spore (confirmed 2026-10-13).
     effect: { spores: number }; // Spores one extraction gives (confirmed 2026-10-13).
@@ -494,6 +501,8 @@ export interface GameConfig {
     patrolShipBlasterGun: { extraDamage: number };
     // Inverted pulsator (TURRET_EXTRA_FIRERATE; owner, 2026-11-14): turrets recharge rechargeMultiplier times as fast each cycle.
     turretExtraFirerate: { rechargeMultiplier: number };
+    // Heuristic targeting (NERON_TARGETING_ASSIST; owner, 2026-11-14): turret and patrol ship shots gain accuracyFactor (x1.25) hit chance for everyone.
+    neronTargetingAssist: { accuracyFactor: number };
     // Armoured corridors (owner, 2026-11-14): every attack on the Daedalus (damageShip) is reduced by damageReduction before the shield, floor 0.
     armourCorridor: { damageReduction: number };
     // Fission Coffee Roaster (owner, 2026-11-02; eMushpedia *Torréfacteur à fission*): coffee machine regenerates at these cycles of each day (C1, C5; every cycle with PILGRED).
@@ -503,6 +512,8 @@ export interface GameConfig {
     // Extra hydropots (EXTRA_HYDROPONPOTS; owner, 2026-11-14): completing it puts `count` empty hydropots on the floor of `room`.
     extraHydropots: { room: RoomId; count: number };
     neronParticipation: { percent: number };
+    // Automatic sprinklers (AUTO_WATERING; owner, 2026-11-14): each burning room has `extinguishChance` per cycle to go out before acting, announced in global chat without the room.
+    autoWatering: { extinguishChance: number };
   };
   pilgred: {
     cost: { ap: number }; // AP spent to take part in repairing PILGRED (owner, 2026-10-21; the original's REPAIR_PILGRED, 2).
@@ -620,6 +631,7 @@ export interface GameConfig {
     missBonus: number; // Added to the hunter's chance after each miss.
     followShare: number; // Share of the hunters whose kind `follows: "share"` that follow a jump (travel or leaving orbit), rounded up.
     patrolTargetChance: number; // Chance a hunter picking a target aims at a patrol ship in flight (one at random), when any is out.
+    meridonScramblerChance: number; // Chance a hunter picking a target aims at a random shooting teammate when FUNGUS_SCRAMBLER is complete (owner, 2026-11-14).
     // What a destroyed hunter leaves in space: weights by piece count (index = count), and by item type for each piece.
     debris: { count: number[]; types: Record<string, number> };
     types: Record<HunterType, HunterTypeConfig>;
@@ -762,6 +774,10 @@ export interface GameConfig {
   };
   caffeinomaniac: {
     ap: number; // Extra AP the caffeinomaniac skill gives on consuming a coffee, capped at maxAp (confirmed 2026-10-16).
+  };
+  frugivore: {
+    bananaAp: number; // Extra AP the frugivore skill gives a human on eating a banana, capped at maxAp (owner, 2026-11-14).
+    alienFruitAp: number; // Extra AP the frugivore skill gives a human on eating an alien fruit, capped at maxAp (owner, 2026-11-14).
   };
   action: {
     durationMs: number; // Server time every timed action takes (owner: 2 seconds on 2026-10-17, 1.5 seconds since 2026-10-24).

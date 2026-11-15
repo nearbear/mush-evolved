@@ -17,6 +17,7 @@ import { logPublic } from "./log.ts";
 import { followingHuntersShare, hunterPointsPerCycle, waveShrinkChance } from "./modifiers.ts";
 import { type PatrolShip, patrolShip, rechargePatrolShips, shipsInFlight } from "./patrol.ts";
 import { projectDone } from "./projects.ts";
+import { RESEARCH_COMPLETE } from "./research.ts";
 import { roll, rollFloat, rollInt, rollShuffle, rollWeighted } from "./rng.ts";
 import { damageShip } from "./ship.ts";
 import { type GameState, HUNTER_TYPES, type Hunter, type HunterTarget, type HunterType, type PlayerState } from "./types.ts";
@@ -126,6 +127,7 @@ export function huntersCycle(state: GameState, day: number): void {
 function huntersAct(state: GameState): void {
   for (const hunter of [...state.hunters.list]) {
     if (state.ship.hull === 0 || state.phase !== "playing") return;
+    if (!state.hunters.list.some((h) => h.id === hunter.id)) continue;
     if (hunter.countdown !== null) {
       hunter.countdown = Math.max(0, hunter.countdown - 1);
       if (hunter.countdown === 0) asteroidImpact(state, hunter);
@@ -133,20 +135,26 @@ function huntersAct(state: GameState): void {
     }
     for (let i = 0; i < state.config.hunters.types[hunter.type].actions; i++) {
       if (state.ship.hull === 0 || state.phase !== "playing") return;
+      if (!state.hunters.list.some((h) => h.id === hunter.id)) break;
       hunterAction(state, hunter);
     }
   }
 }
 
 /**
- * One action: pick a target, or shoot at it. A hit on the Daedalus makes it pick again; a hit on a patrol ship (its
- * kind's damage in armor, a line in the ship's room for its pilot; owner, 2026-10-28) keeps its aim until the ship is gone.
+ * One action: pick a target, or shoot at it. A hit on the Daedalus or a teammate hunter (Meridon scrambler) makes it
+ * pick again; a hit on a patrol ship (its kind's damage in armor, a line in the ship's room for its pilot; owner,
+ * 2026-10-28) keeps its aim until the ship is gone.
  */
 function hunterAction(state: GameState, hunter: Hunter): void {
   const config = state.config.hunters;
   const kind = config.types[hunter.type];
+  if (hunter.target?.kind === "hunter") {
+    const targetId = hunter.target.id;
+    if (!state.hunters.list.some((h) => h.id === targetId)) hunter.target = null;
+  }
   if (hunter.target === null) {
-    hunter.target = pickTarget(state);
+    hunter.target = pickTarget(state, hunter);
     return;
   }
   if (rollFloat(state) >= hunter.hitChance) {
@@ -157,6 +165,11 @@ function hunterAction(state: GameState, hunter: Hunter): void {
   const amount = roll(state, kind.damage);
   if (hunter.target.kind === "ship") {
     damageShip(state, amount);
+    hunter.target = null;
+    return;
+  }
+  if (hunter.target.kind === "hunter") {
+    damageHunter(state, hunter.target.id, amount);
     hunter.target = null;
     return;
   }
@@ -177,8 +190,17 @@ function asteroidImpact(state: GameState, asteroid: Hunter): void {
   logPublic(state, undefined, "asteroidImpact", undefined, "warning");
 }
 
-/** eMush's order: a patrol ship in flight (15%, one at random), else the Daedalus. Players out in space come later. */
-function pickTarget(state: GameState): HunterTarget {
+/**
+ * With Meridon scrambler (`FUNGUS_SCRAMBLER`), a 20% chance to aim at another shooting hunter (not self, not an
+ * asteroid); otherwise eMush's order: a patrol ship in flight (15%, one at random), else the Daedalus.
+ */
+function pickTarget(state: GameState, hunter: Readonly<Hunter>): HunterTarget {
+  if ((state.research.FUNGUS_SCRAMBLER ?? 0) >= RESEARCH_COMPLETE) {
+    const teammates = state.hunters.list.filter((h) => h.id !== hunter.id && state.config.hunters.types[h.type].actions > 0);
+    if (teammates.length > 0 && rollFloat(state) < state.config.hunters.meridonScramblerChance) {
+      return { kind: "hunter", id: teammates[rollInt(state, teammates.length)]!.id };
+    }
+  }
   const flying = shipsInFlight(state);
   if (flying.length > 0 && rollFloat(state) < state.config.hunters.patrolTargetChance) return { kind: "patrol", id: flying[rollInt(state, flying.length)]!.id };
   return { kind: "ship" };
@@ -194,7 +216,7 @@ export function retargetHunters(state: GameState, ship: PatrolShip, to: HunterTa
  * reach (`shipsInFlight` leaves it out). Mutates a cloned state.
  */
 export function retargetNow(state: GameState, ship: PatrolShip): void {
-  for (const hunter of state.hunters.list) if (hunter.target?.kind === "patrol" && hunter.target.id === ship.id) hunter.target = pickTarget(state);
+  for (const hunter of state.hunters.list) if (hunter.target?.kind === "patrol" && hunter.target.id === ship.id) hunter.target = pickTarget(state, hunter);
 }
 
 /**

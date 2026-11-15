@@ -1,6 +1,6 @@
 import { Action, type ActionVisibility, isString } from "./action.ts";
 import { breakEquipment, breakItem, isBreakable } from "../breakage.ts";
-import { EQUIPMENT_TYPES } from "../equipment.ts";
+import { EQUIPMENT_TYPES, isEquipmentEnabled } from "../equipment.ts";
 import { ITEM_TYPES, canReachItem, isWorking } from "../items.ts";
 import { logSecret } from "../log.ts";
 import { isFortified } from "./reinforce.ts";
@@ -76,7 +76,7 @@ export class SabotageAction extends Action<SabotageActionData> {
 }
 
 export const sabotageableEquipment = (state: Readonly<GameState>, player: Readonly<PlayerState>) =>
-  (state.equipment[player.room] ?? []).filter((e) => !e.broken && EQUIPMENT_TYPES[e.type]?.canBeSabotaged && isBreakable(state, e.type));
+  (state.equipment[player.room] ?? []).filter((e) => !e.broken && EQUIPMENT_TYPES[e.type]?.canBeSabotaged && isBreakable(state, e.type) && isEquipmentEnabled(state, e));
 
 export const sabotageableItems = (state: Readonly<GameState>, player: Readonly<PlayerState>) =>
   state.items.filter((i) => isWorking(i) && ITEM_TYPES[i.type]?.canBeSabotaged && ITEM_TYPES[i.type]?.canBreak && canReachItem(state, player, i));

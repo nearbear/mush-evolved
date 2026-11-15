@@ -3819,3 +3819,54 @@ Small refactor on request: `GameRoom.social` called four bot-line parsers (item,
 ## 2026-11-14: Fungal cuisine food effects on conversion
 - **Decision (owner):** Reverted the 2026-10-24 decision that conversion from Fungal cuisine skips food effects; food gains (AP, HP, morale, etc.) now apply before contamination/conversion to prevent surprise AP loss.
 - **Changes:** `shared/src/actions/consume.ts` already ran `contaminate` after food effects, so updated its stale comment, updated `docs/rules/rules-design.md` and `docs/rules/implemented-rules.md`, and added a conversion-with-effects regression test in `shared/tests/fungal_cuisine.test.ts`.
+
+### 2026-11-14: Automatic sprinklers (AUTO_WATERING)
+
+- **Decision (owner):** Once `AUTO_WATERING` is complete, each cycle change rolls a 25% chance per burning room (no daily cap) to extinguish it before fires spread or deal damage, including fires started on that same cycle. Extinguishing posts NERON's `fireExtinguishedSprinklers` in global chat without the room name.
+- **What worked:** Implementing it at the start of `fireCycle` in `shared/src/fire.ts` keeps it pure, seeded, and naturally integrates with `pruneReports` on `tick`.
+
+### 2026-11-14 — Meridon scrambler (`FUNGUS_SCRAMBLER`) research
+- **Decision (owner):** Once `FUNGUS_SCRAMBLER` is complete, each hunter selecting a new target has a 20% chance (`config.hunters.meridonScramblerChance`) to target a random other shooting hunter (excluding self and asteroids), falling back to normal targeting if none exist. Hits deal damage through `damageHunter` (silent, no log entry) and clear `target = null`; if the targeted teammate is already gone before the hunter's turn, it clears `target` and spends that action picking a new target.
+- **What worked:** Clarifying the four edge-case questions upfront via `ask_question` before touching code kept the implementation and tests clean and unambiguous. Also caught that `huntersAct` needed a liveness check so a hunter killed by a teammate earlier in the same cycle doesn't still take its remaining actions.
+
+### 2026-11-14: Frugivore skill (`frugivore`)
+
+- **Decision (owner):** Renamed English display name from `Fruitarian` to `Frugivore` (`names.en.json`, `web/src/locales/en.json`). Implemented `frugivore` (`modifiers/frugivore.ts`): humans gain `+1` AP on eating a banana (`config.frugivore.bananaAp`) and `+2` AP on eating an alien fruit (`config.frugivore.alienFruitAp`), capped at `maxAp`, with no other effect (no fruit lore, does not apply to Mush).
+- **What worked:** Using `onConsume` in `modifiers/frugivore.ts` automatically restricts the bonus to humans because `consumedByMush` skips skill `onConsume` hooks.
+- **Verification note:** `shared` (`skills.test.ts` including the 5 new `frugivore` tests) and `web` tests passed; `npm run verify` hit two unrelated failures from other work in the checkout (`shared/tests/autoWatering.test.ts` and `tools/tests/leaks/fields.test.ts` for `opportunistTitles: opportunist.test.ts`).
+
+### 2026-11-14 — Desktop topbar titles popover
+
+- **Decision:** Replaced the three individual `TitleChip` items in the desktop `TopBar` (`ShipResources` with `compactTitles`) with a single commander-icon `TitlesChip` button (`TITLE_ICONS.commander`) that opens one popover showing all three titles and their lines of succession side by side. Kept the per-title `TitleChip` layout in mobile `ShipOverlay`.
+- **Succession styling:** Extracted `TitleSuccession` (`TitleChip.tsx`) for both views: the current holder is bold at full opacity, anyone without the title has reduced opacity (`.title-card li:not(.holder)`), and players ahead of the current holder (or everyone when vacant after pre-selection) are struck through (`.title-card li.lost`).
+
+- **2026-11-14 — Hydroponics center (`PLANT_CONTROLLER`) breakage & rename:** Owner decided to rename `PLANT_CONTROLLER` to "Hydroponics center" (fr: "Centre hydroponique", es: "Central hidropónica") and make it breakable and sabotageable (`canBeSabotaged: true`) with the Command terminal's base repair chance (`0.12`). Asked clarifying questions up front on sabotage/reinforcement and fr/es translations (avoiding collision with the `HYDROPONIC_CENTER` room's Spanish name "Centro hidropónico"); implemented in `shared/src/equipment.ts`, `shared/src/config.ts`, and `shared/src/locales/names.{en,fr,es}.json` with a unit test in `shared/tests/incidents.test.ts`.
+
+### 2026-11-14 — Mass Mouldering (`massggedon`)
+- **Decision (owner):** Implement Mass Mouldering (`mass_mouldering` action for `massggedon`): 2 AP, 0 spores, once per game (follows mind on Transfer), private with `spore` tag (triggers myco-alarms), makes every living player including the actor dirty via `soil()` (apron and Stickler still block it), omitting the original 2 AP drain. Skill marked `full` and en/fr/es descriptions updated.
+- **What worked:** Clarifying the 4 open rule questions up front before coding, then mirroring the `epigenetics` / `reset_skills` pattern across `shared` (`PlayerState.massMoulderingUsed`, `MIND_FIELDS`, `YouView`, `normalizeState`, `leakFields`, `leaks.test.ts`) and `web` locales.
+
+### 2026-11-14: Heuristic targeting project (`NERON_TARGETING_ASSIST`)
+- **Decision (owner):** Once `NERON_TARGETING_ASSIST` is complete, both `turret_attack` and `patrol_attack` gain a multiplicative `×1.25` hit-chance bonus (`config.project.neronTargetingAssist.accuracyFactor`) for everyone on the crew (human and Mush alike, dropping the original `projets.json` 4-character restriction), stacking with skills and failure streaks up to the 99% cap in `actionSuccessRate` (`shared/src/modifiers.ts`). Marked `"full"` in `PROJECT_STATUS`.
+- **What worked:** `actionSuccessRate` is already the single place for action hit-chance modifiers (used by both `applyAction` and `viewFor`), so adding the project check there automatically updates both rolled odds and the UI display without touching `turret_attack.ts` or `patrol_attack.ts`.
+
+### 2026-11-14 — Demoralizer (Mush skill `disheartening_contact`)
+
+- **Decision (owner):** Implement the `disheartening_contact` Mush skill, renamed to **Demoralizer** in English (internal id `disheartening_contact` kept for stored-state compatibility). Grants the **Demoralize** (`demoralize`) action: 2 AP, no daily limit or cooldown, blocked in pre-selection; targets any living roommate (human or Mush), offered even at 0 morale so it does not leak private morale, and lowers their morale by 2 (clamped at 0). Covert (`logCovert`) and `aggressive`; the victim receives the standard private `loseMorale` line.
+- **What worked:** Existing `Action` registry, `logCovert`, `gainMorale`, and `aggressive` tag modifiers (Pacifist/Bodyguard) handled all surcharges, camera/Observant/Outcast reveal, and UI target routing without custom wiring.
+
+### 2026-11-14 — Hydroponics center fire protection for plants
+
+- **Decision (owner):** Hydropots (`tree_pot`) remain immune to fire and breakage, but fire kills the plant inside a planted hydropot on the floor at `fire.breakChance` (leaving an empty pot, public room log `fireKilledPlant`). Plants in `HYDROPONIC_CENTER` are protected while `PLANT_CONTROLLER` is working, snapshotted before `incidentsCycle` and `fireCycle` so `incidentsCycle` stays before `fireCycle` (incident-started fires still act the same cycle) while plants stay protected on the cycle an incident or fire breaks `PLANT_CONTROLLER`.
+- **What worked:** Asking the four open questions (`tree_pot` fire behavior, empty pots, same-cycle `PLANT_CONTROLLER` breakage, and `incidentsCycle` vs `fireCycle` order) up front avoided guessing and kept the change small and clean.
+
+## 2026-11-14: Doors as targets (planning, #330)
+
+- Designed doors as their own sparse state (`GameState.doors`, id = sorted room pair) rather than equipment entries, since a door belongs to two rooms and duplicate `broken` flags would drift. Owner answered the rule questions (blocks everyone, repair 25% with usual factors, Doorman targeted/0 AP/daily/secret, reportable from both rooms).
+- Used `npm run emush` to settle whether ordinary Sabotage hits doors: the door's action list has `repair_percent_25` and no sabotage, and only the separate door sabotage action breaks doors. `spec` returned nothing twice (silent failure), so the answer came from `find`/`outline` line positions instead; worth making `spec` report errors.
+- The new decision overrides #444's "doors are not reportable"; updated that line in rules-design.md. #330 rewritten as the whole story with six slices.
+
+### 2026-11-14: Auxiliary terminals (`AUXILIARY_TERMINAL`)
+- **Decision (owner):** Until `AUXILIARY_TERMINAL` is complete, `SICK_BAY:neron_sick` and `MOTOR_ROOM:neron_engine` stay completely offline (no `access`, `project`, `coup`, breakage, sabotage, green jelly, reinforce, or relay view, even with `freeHacking`) and show only the static black-screen `auxiliary_terminal_neron` sprite; once complete, they work as NERON cores (including `coup`) and animate (`_upgrade_a` or `_upgrade_b` with `NERON_PROJECT_THREAD`).
+- **What worked:** Gating `equipmentHere` and `AccessAction`/`breakage`/`sabotage`/`reinforce` via `isEquipmentEnabled` kept existing `NERON_CORE` bindings and stored-room compatibility intact with no `STATE_VERSION` bump. Checking `roomsWith(view, ["NERON_CORE"])` also caught `GoalBot`'s project goal (`server/src/bots/goals/project.ts`) so bots don't walk to offline auxiliary terminals before the project completes.
+- Follow-up (same day): owner amended Doorman (first use each day free, then 2 AP, covert), named Defective piston sensors (`DOOR_SENSOR`) as the only door auto-reporter with a yellow minimap marker, and confirmed Sensor drones repair doors; four remaining gaps answered via a multiple-choice question. Note: one unquoted heredoc ran backticked words as commands and posted a half-updated issue body; fixed by writing the edit script to a file first.

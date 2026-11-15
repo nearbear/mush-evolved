@@ -98,6 +98,7 @@ export const PLAYER_STATE_FIELDS: Record<string, FieldRule> = {
   mind: { reach: "never", test: "leaks.test.ts", note: "Which seat plays the body; would reveal a Transfer." },
   transferUsed: { reach: "never", test: "leaks.test.ts" },
   epigeneticsUsed: { reach: "never", test: "leaks.test.ts" },
+  massMoulderingUsed: { reach: "never", test: "leaks.test.ts" },
   opportunistTitles: { reach: "never", test: "opportunist.test.ts", note: "Titles that already triggered Opportunist; never sent." },
   bodyTakenBy: { reach: "own", test: "body_transfer.test.ts", note: "The victim's pop-up; never to anyone else." },
   role: { reach: "own", test: "leaks.test.ts", note: "Death announces it crew-wide (death.test.ts); everyone's once the game has ended (victory.test.ts)." },

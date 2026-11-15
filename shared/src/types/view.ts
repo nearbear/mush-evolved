@@ -171,6 +171,7 @@ export type YouView = Omit<
   | "mind"
   | "transferUsed"
   | "epigeneticsUsed"
+  | "massMoulderingUsed"
   | "history"
   | "current"
   | "queue"

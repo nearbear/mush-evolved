@@ -449,6 +449,7 @@ export function normalizePlayer(raw: Partial<PlayerState>, mode: QueueMode): Pla
     mind: need(raw, "mind", t),
     transferUsed: raw.transferUsed,
     epigeneticsUsed: raw.epigeneticsUsed,
+    massMoulderingUsed: raw.massMoulderingUsed,
     apprenticeUsed: raw.apprenticeUsed,
     geniusUsed: raw.geniusUsed,
     opportunistTitles: opt(raw.opportunistTitles, copy),
@@ -746,6 +747,8 @@ export function normalizeHunterTarget(raw: Partial<HunterTarget>): HunterTarget 
       return stripUndefined<HunterTarget>({ kind: "ship" });
     case "patrol":
       return stripUndefined<HunterTarget>({ kind: "patrol", id: need(raw, "id", t) });
+    case "hunter":
+      return stripUndefined<HunterTarget>({ kind: "hunter", id: need(raw, "id", t) });
     default:
       throw unknownVariant(t, "kind", raw.kind satisfies undefined);
   }

@@ -236,6 +236,8 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   skilful: "partial",
   // Mush skill: the one-use reset of the Mush skills (owner, 2026-11-13, actions/reset_skills.ts).
   epigenetics: "full",
+  // Mush skill: once per game, 2 AP and 0 spores, makes every living player dirty via soil() (owner, 2026-11-14, actions/mass_mouldering.ts; 2 AP drain omitted).
+  massggedon: "full",
   // Mush skill: the one-use body swap (owner, 2026-10-24, body_transfer.ts).
   transfert: "full",
   // 50% chance to resist Mush contamination and physical diseases, humans only (owner, 2026-11-14, infection.ts, diseases.ts).
@@ -302,6 +304,10 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   opportunist: "full",
   // Protect a crewmate for 1 AP; aggressive actions targeting them in the same room cost +2 AP (owner, 2026-11-14, actions/protect.ts, modifiers/bodyguard.ts).
   bodyguard: "full",
+  // +1 AP on eating a banana and +2 AP on eating an alien fruit, humans only (owner, 2026-11-14, modifiers/frugivore.ts).
+  frugivore: "full",
+  // Mush skill (Demoralizer): 2 AP, covert + aggressive, lowers a living roommate's morale by 2 (owner, 2026-11-14, actions/demoralize.ts).
+  disheartening_contact: "full",
 };
 
 export function skillStatus(skill: string): SkillStatus {

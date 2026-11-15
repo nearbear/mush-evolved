@@ -26,6 +26,7 @@ import { engineer } from "./modifiers/engineer.ts";
 import { escape } from "./modifiers/escape.ts";
 import { expert } from "./modifiers/expert.ts";
 import { first_aid } from "./modifiers/first_aid.ts";
+import { frugivore } from "./modifiers/frugivore.ts";
 import { green_thumb } from "./modifiers/green_thumb.ts";
 import { gunman } from "./modifiers/gunman.ts";
 import { gunner } from "./modifiers/gunner.ts";
@@ -35,7 +36,6 @@ import { maintenance_agent } from "./modifiers/maintenance_agent.ts";
 import { medic } from "./modifiers/medic.ts";
 import { mycologist } from "./modifiers/mycologist.ts";
 import { observant } from "./modifiers/observant.ts";
-import { opportunist } from "./modifiers/opportunist.ts";
 import { paranoid } from "./modifiers/paranoid.ts";
 import { persistent } from "./modifiers/persistent.ts";
 import { physicist } from "./modifiers/physicist.ts";
@@ -213,6 +213,7 @@ export const MODIFIERS: Record<string, Modifier> = {
   escape,
   expert,
   first_aid,
+  frugivore,
   green_thumb,
   gunman,
   gunner,
@@ -222,7 +223,6 @@ export const MODIFIERS: Record<string, Modifier> = {
   medic,
   mycologist,
   observant,
-  opportunist,
   paranoid,
   persistent,
   physicist,
@@ -362,6 +362,10 @@ export function actionSuccessRate(base: number, ctx: CostContext, registry: Modi
   // Carrying the oscilloscope multiplies the odds of the repairing actions (owner, 2026-10-28). Once however many are carried.
   if ((ctx.action.type === "repair_hull" || ctx.action.type === "renovate") && ctx.state.items.some((i) => i.type === "oscilloscope" && isWorking(i) && i.at.kind === "player" && i.at.id === ctx.actor.id)) {
     chance *= ctx.state.config.oscilloscope.repairFactor;
+  }
+  // Heuristic targeting (owner, 2026-11-14): x1.25 aim on turret and patrol ship shots for everyone on the crew.
+  if ((ctx.action.type === "turret_attack" || ctx.action.type === "patrol_attack") && projectDone(ctx.state, "NERON_TARGETING_ASSIST")) {
+    chance *= ctx.state.config.project.neronTargetingAssist.accuracyFactor;
   }
   // Hooks can't make a price negative. A move's MP is a net change and can already be negative (a conversion
   // gives more than the move spends), so the floor is 0 or the base, whichever is lower.
