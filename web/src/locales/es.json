@@ -1721,6 +1721,7 @@
     "search": "Buscar objetos",
     "spawnItem": "Hacer aparecer: {{item}}",
     "noMatch": "Ningún objeto coincide.",
+    "clickToTeleport": "Haz clic en una sala para teletransportarte ahí",
     "tabs": {
       "health": "Salud",
       "items": "Objetos",

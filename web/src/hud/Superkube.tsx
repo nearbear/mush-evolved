@@ -4,11 +4,12 @@
 
 import { Dialog } from "@base-ui/react/dialog";
 import { Tabs } from "@base-ui/react/tabs";
-import { DEFAULT_CONFIG, KUBE_OPS, kubeChoices, type KubeChoiceSource, type KubeGroup, type KubeOpId, type PlayerView } from "@mush2/shared";
-import { useId, useState } from "react";
+import { DEFAULT_CONFIG, KUBE_OPS, kubeChoices, type KubeChoiceSource, type KubeGroup, type KubeOpId, type PlayerView, type RoomId } from "@mush2/shared";
+import { useId, useState, type CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
 import { EMPTY_SLOT_ICON, itemIcon } from "../art/assets.ts";
 import { useNames } from "../i18n/names.ts";
+import { RoomCaption, SHIP_PLAN, ShipPlanSvg } from "../scene/ShipPlanMap.tsx";
 import { FramedDialog } from "./FramedDialog.tsx";
 
 const GROUPS: readonly KubeGroup[] = ["health", "items", "travel"];
@@ -42,6 +43,8 @@ export function SuperkubeOpener({ view, onKube }: { view: PlayerView; onKube: Se
               {OPS.filter((op) => KUBE_OPS[op].group === group).map((op) =>
                 KUBE_OPS[op].arg === "item" ? (
                   <KubeItemPicker key={op} op={op} source={source} onKube={onKube} />
+                ) : KUBE_OPS[op].arg === "room" ? (
+                  <KubeTravelMap key={op} op={op} view={view} onKube={onKube} />
                 ) : (
                   <KubeRow key={op} op={op} view={view} source={source} onKube={onKube} />
                 ),
@@ -137,6 +140,47 @@ function KubeItemPicker({ op, source, onKube }: { op: KubeOpId; source: KubeChoi
           ))}
         </div>
       )}
+    </section>
+  );
+}
+
+/**
+ * The Travel tab's minimap: every room on the Daedalus is clickable and teleports you there at once.
+ */
+function KubeTravelMap({ op, view, onKube }: { op: KubeOpId; view: PlayerView; onKube: SendKube }) {
+  const { t } = useTranslation();
+  const [pointed, setPointed] = useState<RoomId | null>(null);
+  const people = [view.you, ...view.players];
+  const reachable = new Set(SHIP_PLAN.rooms.map((r) => r.id));
+
+  return (
+    <section
+      className="minimap expanded kube-minimap"
+      style={{ "--cols": SHIP_PLAN.width } as CSSProperties}
+      aria-label={t(`kube.ops.${op}`)}
+      onPointerLeave={(e) => e.pointerType !== "touch" && setPointed(null)}
+    >
+      <ShipPlanSvg
+        here={view.you.room}
+        youId={view.you.id}
+        people={people}
+        unidentified={view.unidentified}
+        reachable={reachable}
+        burningRooms={view.burningRooms}
+        pointed={pointed}
+        interactive
+        onPoint={setPointed}
+        onSelectRoom={(room) => onKube(op, room)}
+      />
+      <RoomCaption
+        pointed={pointed}
+        here={view.you.room}
+        youId={view.you.id}
+        people={people}
+        unidentified={view.unidentified}
+        burningRooms={view.burningRooms}
+        emptyText={t("kube.clickToTeleport")}
+      />
     </section>
   );
 }

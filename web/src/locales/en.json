@@ -1792,6 +1792,7 @@
     "search": "Search items",
     "spawnItem": "Spawn {{item}}",
     "noMatch": "No item matches.",
+    "clickToTeleport": "Click a room to teleport there",
     "tabs": {
       "health": "Health",
       "items": "Items",

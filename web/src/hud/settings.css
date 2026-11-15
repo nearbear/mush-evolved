@@ -713,3 +713,12 @@ li.research-item-blocked .research-progress {
   height: 50px;
   border-radius: 4px;
 }
+
+/* The Travel tab's minimap: fills the dialog width and highlights rooms on hover. */
+.kube-minimap {
+  width: 100%;
+}
+
+.kube-minimap .minimap-room:hover {
+  opacity: 0.95;
+}

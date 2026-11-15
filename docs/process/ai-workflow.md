@@ -3687,3 +3687,8 @@ Bug: switching the Superkube window to Items or Travel closed it. Cause: GameVie
 ### 2026-11-14: Superkube item picker (#170)
 
 The Items tab's Spawn row became a picker: a search field (accent- and case-insensitive, over the translated name and the id, every word must match), a grid of `.pick-tile` buttons with each item's 50x50 icon at 1x over its name, sorted by name in the current language, and one Spawn button naming the picked item. Picking is single-click; only the button sends. No memo: the panel mounts only while its tab is open. New en/fr/es strings `kube.search`, `kube.spawnItem`, `kube.noMatch`; two DOM tests.
+
+### 2026-11-14 — Superkube Travel minimap
+
+- **What was built:** Extracted the shared SVG deck plan and room caption from `Minimap.tsx` into `web/src/scene/ShipPlanMap.tsx` and used it in `Superkube.tsx` (`KubeTravelMap`) for the Travel tab, so clicking (or pressing Enter/Space on) any room teleports there immediately (`teleport` kube op).
+- **What worked:** Reusing `ShipPlanSvg` and `RoomCaption` kept crew busts, fire highlights, and room labels consistent between the corner minimap and the Superkube without duplicating layout logic.
