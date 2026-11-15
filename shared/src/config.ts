@@ -658,9 +658,13 @@ export const DEFAULT_CONFIG: GameConfig = {
       "mush_allergy_disease",
       "acid_reflux_disease",
       "tapeworm_disease",
-      "pink_eye_disease"],
+      "pink_eye_disease",
+      "sinus_storm_disease",
+      "migraine_disease",
+      "slight_nausea_disease",
+      "food_poisoning_disease"],
     // Owner, 2026-11-14: what the disease incident can give.
-    incidentDiseases: ["cold_disease", "skin_inflammation_disease"],
+    incidentDiseases: ["cold_disease", "skin_inflammation_disease", "migraine_disease", "sinus_storm_disease"],
     allDisorders: ["depression_disorder"],
     allInjuries: ["broken_nose_injury"],
     allDiseaseStats: [
@@ -680,7 +684,12 @@ export const DEFAULT_CONFIG: GameConfig = {
       // Owner, 2026-11-15.
       {label: "tapeworm_disease", type: "disease", durationMin: 20, durationMax: 32},
       // Owner, 2026-11-15.
-      {label: "pink_eye_disease", type: "disease", durationMin: 8, durationMax: 12}],
+      {label: "pink_eye_disease", type: "disease", durationMin: 8, durationMax: 12},
+      // Owner, 2026-11-15.
+      {label: "sinus_storm_disease", type: "disease", durationMin: 8, durationMax: 12},
+      {label: "migraine_disease", type: "disease", durationMin: 8, durationMax: 12},
+      {label: "slight_nausea_disease", type: "disease", durationMin: 12, durationMax: 20},
+      {label: "food_poisoning_disease", type: "disease", durationMin: 8, durationMax: 12}],
     allDisorderStats: [{type: "disorder", resistance: 8}],
     allInjuryStats: [{type: "injury"}],
     },

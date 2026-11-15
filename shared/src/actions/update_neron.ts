@@ -1,6 +1,7 @@
 import { Action, type ActionCost, type ActionVisibility, isString } from "./action.ts";
 import { advanceNeron, canUseComms, comTerminalsHere } from "../comms.ts";
 import { logPrivate } from "../log.ts";
+import { neronProgress } from "../modifiers.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
 export type UpdateNeronActionData = { type: "update_neron"; equipment: string };
@@ -39,7 +40,7 @@ export class UpdateNeronAction extends Action<UpdateNeronActionData> {
 
   override apply(state: GameState, player: PlayerState, _target: UpdateNeronActionData): void {
     const version = state.comms.neron.version;
-    const project = advanceNeron(state, state.config.comms.neron.progressPercent);
+    const project = advanceNeron(state, neronProgress(state, player, state.config.comms.neron.progressPercent));
     if (state.comms.neron.version === version) {
       logPrivate(state, player.id, "neronUpdating", { percent: state.comms.neron.progress });
       return;
