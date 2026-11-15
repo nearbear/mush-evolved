@@ -484,3 +484,63 @@ describe("Hydroponic incubator", () => {
     }
   });
 });
+
+describe("Nano ladybugs", () => {
+  function ladybugsShip(progress = PROJECT_COMPLETE, broken = false): GameState {
+    const s = createGame(
+      makeSeats(3),
+      noIncidents(noHunters({ ...DEFAULT_CONFIG, mushCount: 0, botany: { ...cfg, sickChancePerCycle: 1 } })),
+      3,
+    );
+    s.projects.PARASITE_ELIM = progress;
+    if (broken) {
+      (s.equipment[GARDEN] ?? []).find((e) => e.type === "PLANT_CONTROLLER")!.broken = true;
+    }
+    return s;
+  }
+
+  it("marks PARASITE_ELIM as full", () => {
+    expect(projectStatus("PARASITE_ELIM")).toBe("full");
+  });
+
+  it("prevents healthy floor and carried plants in the garden from falling sick, without curing sick ones", () => {
+    const s = ladybugsShip();
+    const [floorPot, carriedPot] = planted(s);
+    floorPot!.plant = { species: BANANA, age: 0, thirst: 0, sick: false };
+    carriedPot!.plant = { species: BANANA, age: null, thirst: 0, sick: false };
+    carriedPot!.at = { kind: "player", id: "p0" };
+    player(s, "p0").room = GARDEN;
+
+    const alreadySick = emptyPot(s);
+    alreadySick.plant = { species: BANANA, age: null, thirst: 0, sick: true };
+
+    const next = nextCycle(s);
+    expect(item(next, floorPot!.id).plant!.sick).toBe(false);
+    expect(item(next, carriedPot!.id).plant!.sick).toBe(false);
+    expect(item(next, alreadySick.id).plant!.sick).toBe(true);
+  });
+
+  it("still lets plants outside the garden fall sick", () => {
+    const s = ladybugsShip();
+    const [labFloorPot, labCarriedPot] = planted(s);
+    labFloorPot!.at = { kind: "room", id: "LABORATORY" };
+    labCarriedPot!.at = { kind: "player", id: "p0" };
+    player(s, "p0").room = "LABORATORY";
+
+    const next = nextCycle(s);
+    expect(item(next, labFloorPot!.id).plant!.sick).toBe(true);
+    expect(item(next, labCarriedPot!.id).plant!.sick).toBe(true);
+  });
+
+  it("does nothing while the project is incomplete or the Hydroponics center is broken", () => {
+    const incomplete = nextCycle(ladybugsShip(PROJECT_COMPLETE - 1));
+    for (const pot of planted(incomplete)) {
+      expect(pot.plant!.sick).toBe(true);
+    }
+
+    const broken = nextCycle(ladybugsShip(PROJECT_COMPLETE, true));
+    for (const pot of planted(broken)) {
+      expect(pot.plant!.sick).toBe(true);
+    }
+  });
+});

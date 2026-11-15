@@ -51,20 +51,25 @@ export const plantControllerWorking = (state: Readonly<GameState>): boolean =>
 
 /**
  * At every cycle change: young plants age by one (2× in the garden while `HYDROPONIC_INCUBATOR` is complete and
- * `PLANT_CONTROLLER` is working), and each healthy plant, young or adult, may fall sick (`sickChancePerCycle`, seeded).
- * Mutates a state the caller already cloned.
+ * `PLANT_CONTROLLER` is working), and each healthy plant, young or adult, may fall sick (`sickChancePerCycle`, seeded)
+ * unless `PARASITE_ELIM` is complete, `PLANT_CONTROLLER` is working, and the pot is in the garden. Mutates a state
+ * the caller already cloned.
  */
 export function botanyCycle(state: GameState): void {
   const { botany, project } = state.config;
-  const incubatorActive = projectDone(state, "HYDROPONIC_INCUBATOR") && plantControllerWorking(state);
+  const controllerWorking = plantControllerWorking(state);
+  const incubatorActive = projectDone(state, "HYDROPONIC_INCUBATOR") && controllerWorking;
+  const parasiteElimActive = projectDone(state, "PARASITE_ELIM") && controllerWorking;
   for (const pot of state.items) {
     if (!isPlanted(pot)) continue;
     const { plant } = pot;
+    const inGarden = potRoom(state, pot) === botany.gardenRoom;
     if (plant.age !== null) {
-      const rate = incubatorActive && potRoom(state, pot) === botany.gardenRoom ? project.hydroponicIncubator.growthMultiplier : 1;
+      const rate = incubatorActive && inGarden ? project.hydroponicIncubator.growthMultiplier : 1;
       plant.age += rate;
     }
     if (plant.sick) continue;
+    if (parasiteElimActive && inGarden) continue;
     if (rollFloat(state) < botany.sickChancePerCycle) plant.sick = true;
   }
 }
