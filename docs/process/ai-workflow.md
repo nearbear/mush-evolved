@@ -3760,3 +3760,8 @@ Small refactor on request: `GameRoom.social` called four bot-line parsers (item,
 
 - **Decision (owner):** Completing `CONSTIPASPORE_SERUM` adds `config.spores.constipasporeExtraAp` (2 AP) to `extract_spore` (from 1 to 3 AP). Fertile's first daily extraction stays 0 AP (overrides the serum), and completion emits only the standard `researchCompleted` public log line.
 - **Implementation:** Added `spores.constipasporeExtraAp: 2` in `shared/src/types/config.ts` and `shared/src/config.ts`, checked `state.research.CONSTIPASPORE_SERUM >= RESEARCH_COMPLETE` in `ExtractSporeAction.getCost` (`shared/src/actions/extract_spore.ts`, after `freeExtraction`), and marked `CONSTIPASPORE_SERUM: "full"` in `RESEARCH_STATUS` (`shared/src/research.ts`). Added unit tests in `shared/tests/spores.test.ts`, `shared/tests/fertile.test.ts`, and `shared/tests/research.test.ts`.
+
+### 2026-11-14 — Guarana cappuccino research (GUARANA_CAPUCCINO)
+- **What:** Implemented `GUARANA_CAPUCCINO` (`RESEARCH_STATUS`: `"full"`): humans consuming `coffee` gain `config.research.guaranaExtraAp` (1) extra AP in `shared/src/actions/consume.ts` (capped at `maxAp`, stacking with `caffeinomaniac`; Mush still gain 0 AP). Wired `view.research` into `IsoRoom.tsx` via `GameView.tsx` so `roomLooks` swaps `coffee` to `coffee_upgrade_b` (or `coffee_upgrade_ab` when combined with `FISSION_COFFEE_ROASTER`, and `coffee_upgrade_a` for `FISSION_COFFEE_ROASTER` alone), matching `upgrades.xml` and `ship-art.json`.
+- **Verification:** Added `shared/tests/guaranaCapuccino.test.ts` and updated `web/tests/iso/scene.test.ts`; ran `npm run verify` and `npm run build`.
+

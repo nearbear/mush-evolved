@@ -1602,7 +1602,7 @@
   "comms": {
     "linked": "Contact avec Sol établi.",
     "unlinked": "Aucun contact avec Sol.",
-    "solSignal": "Signal : {{db}} dB ({{strength}})",
+    "solSignal": "({{db}} dB, {{strength}})",
     "strength": {
       "faint": "à peine perceptible",
       "weak": "faible",

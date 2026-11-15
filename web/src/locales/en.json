@@ -1677,7 +1677,7 @@
   "comms": {
     "linked": "Link with Sol established.",
     "unlinked": "No link with Sol.",
-    "solSignal": "Signal: {{db}} dB ({{strength}})",
+    "solSignal": "({{db}} dB, {{strength}})",
     "strength": {
       "faint": "faint",
       "weak": "weak",

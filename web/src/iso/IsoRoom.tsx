@@ -21,7 +21,7 @@
 import { Suspense, lazy, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ComponentType, type MouseEvent, type PointerEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { createPortal } from "react-dom";
-import { CAMERA_EQUIPMENT, CORPSE_ITEM, DYNARCADE_EQUIPMENT, EQUIPMENT_TYPES, PROJECT_COMPLETE, SUPPORT_DRONE_ITEM, SUPER_CALC_EQUIPMENT, type EquipmentView, type RoomId, type RoomLayout, type ShipLayout, type Spot, type Target } from "@mush2/shared";
+import { CAMERA_EQUIPMENT, CORPSE_ITEM, DYNARCADE_EQUIPMENT, EQUIPMENT_TYPES, PROJECT_COMPLETE, RESEARCH_COMPLETE, SUPPORT_DRONE_ITEM, SUPER_CALC_EQUIPMENT, type EquipmentView, type RoomId, type RoomLayout, type ShipLayout, type Spot, type Target } from "@mush2/shared";
 import type { Bubble } from "../scene/useSpeechBubbles.ts";
 import { useNames } from "../i18n/names.ts";
 import { CAMERA_SLICES, equipmentByTileKey, roomAsBuilt } from "./equipmentTiles.ts";
@@ -121,7 +121,7 @@ function chairAt(layout: ShipLayout, room: RoomLayout | undefined, cell: { x: nu
   return t ? layout.slices[t.slice]?.dir ?? "" : undefined;
 }
 
-/** Scenery swaps (`looks`) from completed ship projects and stateful equipment. */
+/** Scenery swaps (`looks`) from completed ship projects, researches, and stateful equipment. */
 export function roomLooks(
   pilgredRepaired: boolean,
   humanTankFull?: boolean,
@@ -130,6 +130,9 @@ export function roomLooks(
   bayDoorXxl?: boolean,
   plasmaShield?: boolean,
   takeoffThruster?: boolean,
+  extraAmmo?: boolean,
+  fissionCoffee?: boolean,
+  guaranaCoffee?: boolean,
 ): ReadonlyMap<string, string> {
   const looks = new Map<string, string>([
     ["auxiliary_terminal_neron", neronThread ? "auxiliary_terminal_neron_upgrade_b" : "auxiliary_terminal_neron_upgrade_a"],
@@ -143,6 +146,10 @@ export function roomLooks(
     looks.set("bay_alpha_platform", "bay_alpha_platform_upgrade");
     looks.set("bay_beta_platform", "bay_beta_platform_upgrade");
   }
+  if (extraAmmo) looks.set("spaceship", "spaceship_upgrade_a");
+  if (fissionCoffee && guaranaCoffee) looks.set("coffee", "coffee_upgrade_ab");
+  else if (fissionCoffee) looks.set("coffee", "coffee_upgrade_a");
+  else if (guaranaCoffee) looks.set("coffee", "coffee_upgrade_b");
   return looks;
 }
 
@@ -181,6 +188,7 @@ export function IsoRoom({
   pilgredRepaired,
   humanTankFull,
   projects,
+  research,
   pace,
   planet,
   turn,
@@ -246,6 +254,8 @@ export function IsoRoom({
   humanTankFull?: boolean;
   /** Visible NERON projects (percent done); completed ones swap bay doors, plasma shield coils and auxiliary terminals. */
   projects?: Readonly<Record<string, number>>;
+  /** Visible researches (percent done); completed ones swap equipment looks such as the coffee machine. */
+  research?: Readonly<Record<string, number>>;
   /** How fast the ship is going: the stars behind it stream at that rate. */
   pace: ShipPace;
   /** The planet the ship orbits, as an image URL (public), or null. */
@@ -598,9 +608,12 @@ export function IsoRoom({
   const bayDoorXxl = (projects?.BAY_DOOR_XXL ?? 0) >= PROJECT_COMPLETE;
   const plasmaShield = (projects?.PLASMA_SHIELD ?? 0) >= PROJECT_COMPLETE;
   const takeoffThruster = (projects?.PATROL_SHIP_LAUNCHER ?? 0) >= PROJECT_COMPLETE;
+  const extraAmmo = (projects?.PATROLSHIP_EXTRA_AMMO ?? 0) >= PROJECT_COMPLETE;
+  const fissionCoffee = (projects?.FISSION_COFFEE_ROASTER ?? 0) >= PROJECT_COMPLETE;
+  const guaranaCoffee = (research?.GUARANA_CAPUCCINO ?? 0) >= RESEARCH_COMPLETE;
   const looks = useMemo(
-    () => roomLooks(pilgredRepaired, humanTankFull, superCalcBuilt, neronThread, bayDoorXxl, plasmaShield, takeoffThruster),
-    [pilgredRepaired, humanTankFull, superCalcBuilt, neronThread, bayDoorXxl, plasmaShield, takeoffThruster],
+    () => roomLooks(pilgredRepaired, humanTankFull, superCalcBuilt, neronThread, bayDoorXxl, plasmaShield, takeoffThruster, extraAmmo, fissionCoffee, guaranaCoffee),
+    [pilgredRepaired, humanTankFull, superCalcBuilt, neronThread, bayDoorXxl, plasmaShield, takeoffThruster, extraAmmo, fissionCoffee, guaranaCoffee],
   );
   const imageInput = { layout, room, people: byId, walkers, seats, corpses, drones, looks };
 

@@ -463,6 +463,7 @@ export interface GameConfig {
     assayMarks: number[];
     spoilChance: number;
     contaminate: { cost: { ap: number } }; // Saboteur's Contaminate (owner, 2026-10-31: Sabotage's 1 AP).
+    guaranaExtraAp: number; // Extra AP coffee gives humans once GUARANA_CAPUCCINO completes (1).
   };
   project: {
     offerCount: number; // Projects offered at NERON's core at a time (owner, 2026-11-14: 3).

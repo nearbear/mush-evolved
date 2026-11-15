@@ -6,6 +6,7 @@
 
 // Data and lookups only, so config.ts can import it; the manoeuvre itself is in actions/takeoff.ts.
 
+import { projectDone } from "./projects.ts";
 import { hasSkill } from "./skills.ts";
 import type { Equipment, GameConfig, GameState, PlayerId, PlayerState, RoomId } from "./types.ts";
 
@@ -68,6 +69,13 @@ export const patrolEquipment = (): Record<RoomId, Equipment[]> =>
 /** Shots a ship holds when full: none for the Pasiphae, which can't shoot. */
 export const maxCharges = (charges: number, ship: PatrolShip): number => (ship.kind === "pasiphae" ? 0 : charges);
 
+/** Shots a ship holds when full in `state`: +extraCharges once Teslatron reservoir (PATROLSHIP_EXTRA_AMMO) is complete. */
+export function patrolMaxCharges(state: Readonly<Pick<GameState, "config" | "projects">>, ship: PatrolShip): number {
+  if (ship.kind === "pasiphae") return 0;
+  const extra = projectDone(state, "PATROLSHIP_EXTRA_AMMO") ? state.config.project.patrolShipExtraAmmo.extraCharges : 0;
+  return state.config.patrol.charges + extra;
+}
+
 /** Every ship docked, at full armor and charges. */
 export const newPatrolShips = (config: GameConfig): GameState["patrolShips"] =>
   Object.fromEntries(PATROL_SHIPS.map((s) => [s.id, { armor: config.patrol.armor[s.kind], charges: maxCharges(config.patrol.charges, s), out: false, destroyed: false, onPlanet: null }]));
@@ -94,7 +102,7 @@ export const onPlanet = (state: Readonly<GameState>, ship: Readonly<PatrolShip>)
 export function rechargePatrolShips(state: GameState): void {
   for (const ship of PATROL_SHIPS) {
     const shipState = state.patrolShips[ship.id]!;
-    if (!shipState.out) shipState.charges = Math.min(maxCharges(state.config.patrol.charges, ship), shipState.charges + state.config.patrol.rechargePerCycle);
+    if (!shipState.out) shipState.charges = Math.min(patrolMaxCharges(state, ship), shipState.charges + state.config.patrol.rechargePerCycle);
   }
 }
 

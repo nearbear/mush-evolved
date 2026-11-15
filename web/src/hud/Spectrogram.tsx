@@ -76,9 +76,11 @@ interface Props {
   linked: boolean;
   /** The link's status, shown centred at the top of the plot. */
   status: string;
+  /** Signal reading shown in parentheses beside the status. */
+  signal?: string;
 }
 
-export const Spectrogram = memo(function Spectrogram({ db, linked, status }: Props) {
+export const Spectrogram = memo(function Spectrogram({ db, linked, status, signal: signalText }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   // The loop reads the latest props through a ref, so a new view doesn't restart it.
   const signal = useRef({ db, linked });
@@ -163,7 +165,7 @@ export const Spectrogram = memo(function Spectrogram({ db, linked, status }: Pro
       </div>
       <div className="spectrogram-plot">
         <canvas ref={canvasRef} aria-hidden="true" />
-        <strong className="spectrogram-status">{status}</strong>
+        <strong className="spectrogram-status">{signalText ? `${status} ${signalText}` : status}</strong>
       </div>
     </div>
   );

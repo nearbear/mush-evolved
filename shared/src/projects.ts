@@ -88,6 +88,8 @@ export const PROJECT_STATUS: Readonly<Partial<Record<ProjectId, ProjectStatus>>>
   ARMOUR_CORRIDOR: "full",
   // Patrol ship, Pasiphae, and Icarus takeoff cost 1 AP less (owner, 2026-11-14; modifiers.ts `actionCost`).
   PATROL_SHIP_LAUNCHER: "full",
+  // Patrol ships hold +6 max charges (10 -> 16) and gain +6 current charges on completion (owner, 2026-11-14; patrol.ts, projectEffects.ts).
+  PATROLSHIP_EXTRA_AMMO: "full",
   // The shield absorbs 67% of a hit instead of 33% (owner, 2026-10-24; ship.ts).
   PLASMA_SHIELD: "full",
   // Reports every fire: burning rooms turn red on the minimap and show on the alert bar (owner, 2026-11-02; #444).
