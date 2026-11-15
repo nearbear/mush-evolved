@@ -3717,3 +3717,7 @@ The Items tab's Spawn row became a picker: a search field (accent- and case-inse
 - Enabled `pointer-events: auto` on `.room-icons` (since `.room-title` has `pointer-events: none`) and `.room-icons:empty { display: none }`.
 
 - **Dynarcade project (`CALL_OF_DIRTY`, 2026-11-14):** Owner confirmed 1 AP, 33% base chance (×1.5 per consecutive miss) for +2 morale, 33% chance of standard 2 HP injury on play (no guaranteed HP loss), private win/loss log, any living player (Mush included) when working, and no video game addiction disorder yet. Marked `DYNARCADE` `builtOnly` so it is omitted from `SPACESHIP_BAY_AA` until `CALL_OF_DIRTY` completes (`projectEffects.ts`, `equipmentTiles.ts`), and hid `spaceship_broken` in `IsoRoom.tsx` once complete.
+
+## 2026-11-14: machine-line check moved out of GameRoom
+
+Small refactor on request: `GameRoom.social` called four bot-line parsers (item, fire, tank, jump-hold) inline to decide whether a chat line wakes bots. That check is now `isMachineLine` in `server/src/bots/machineLines.ts`, so a new bots' line format is added next to the others instead of in `GameRoom`. Behavior unchanged; a small test covers every format. What needed correction: the first test used made-up item and room ids, which the parsers rightly reject (tank lines must name a tank room).
