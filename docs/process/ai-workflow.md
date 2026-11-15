@@ -3923,3 +3923,7 @@ Two hidden-information choices made by Claude, not the owner, worth a look: (1) 
 ### 2026-11-14 — Nano ladybugs project (`PARASITE_ELIM`)
 - **Decision (owner):** Once `PARASITE_ELIM` is complete, healthy plants in `botany.gardenRoom` (floor or carried, via `potRoom`) never fall sick on cycle change (`botanyCycle`) while `PLANT_CONTROLLER` (Hydroponics center) is working; already-sick plants stay sick until treated.
 - **Implementation:** Updated `botanyCycle` in `shared/src/botany.ts` to skip the `sickChancePerCycle` roll for garden plants when `PARASITE_ELIM` is complete and `plantControllerWorking(state)` is true, marked `PARASITE_ELIM` as `"full"` in `PROJECT_STATUS`, updated `projects.descriptions.PARASITE_ELIM` in `web/src/locales/{en,fr,es}.json`, and added unit tests in `shared/tests/botany.test.ts`.
+
+### 2026-11-14 — Remove leftover partial Opportunist implementation
+- **Change:** Removed the unimplemented `opportunist` rule scaffolding left behind without `modifiers/opportunist.ts` (`SKILL_STATUS.opportunist`, `config.opportunist`, `PlayerState.opportunistTitles` and its `normalizeState`/`rules`/`leakFields`/`leaks.test.ts` plumbing, `Modifier.onTitleGained` / `titleGained`, `opportunistTitle` locale strings in `en`/`es`/`fr`, and the `implemented-rules.md` / `code-map/shared.md` entries), keeping `opportunist` as an unimplemented pickable skill.
+- **Verification:** `npm run build` passed; `npm test` passed all suites.

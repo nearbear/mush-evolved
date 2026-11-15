@@ -603,8 +603,6 @@ export interface GameConfig {
   // Skill Lethargy (owner, 2026-11-01): from the `cyclesLying`th cycle change spent lying down on, each one gives
   // `bonusAp` more AP; the AP cap is multiplied by `maxApMultiplier`.
   lethargy: { cyclesLying: number; bonusAp: number; maxApMultiplier: number };
-  // Skill Opportunist (owner, 2026-11-14): +ap the first time you gain each title, capped at maxAp.
-  opportunist: { ap: number };
   shower: {
     cost: {
       ap: number; // AP spent to shower, before the soap discount (confirmed 2026-10-14).
