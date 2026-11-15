@@ -136,6 +136,8 @@ describe("describeScene", () => {
     expect(only(scene([door], { hoverKey: "t5", selectedDoor: NEXT }))).toMatchObject({ role: "door", reachable: true, effect: "doorHover" });
     expect(only(scene([door], { selectedDoor: NEXT })).effect).toBe("selected");
     expect(only(scene([door], { hoverKey: "t5", reachable: new Set() })).effect).toBeUndefined();
+    expect(only(scene([door], { reachable: new Set(), brokenDoors: new Set([NEXT]) }))).toMatchObject({ role: "door", reachable: false, effect: "broken" });
+    expect(only(scene([door], { reachable: new Set(), brokenDoors: new Set([NEXT]), selectedDoor: NEXT })).effect).toBe("selected");
   });
 
   it("keeps selected equipment's glow while it is hovered", () => {

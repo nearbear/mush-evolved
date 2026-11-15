@@ -93,19 +93,25 @@ export function RoomList({
     },
     {
       key: "exits",
-      entries: exits.map((to) => ({
-        key: to,
-        label: reachable.has(to)
-          ? t("roomList.doorCost", { room: names.room(to), cost: doorCost() })
-          : view.you.mp < mpPerMove && view.you.ap < apPerConversion
-            ? t("roomList.doorNoPoints", { room: names.room(to), mp, ap })
-            : t("roomList.doorOutOfReach", { room: names.room(to) }),
-        // Focusable but inert, so a reader still hears the exit and why it does nothing.
-        disabled: !reachable.has(to),
-        // A move is an action, so it takes a double press like every action button.
-        double: true,
-        onClick: () => onMove(to),
-      })),
+      entries: exits.map((to) => {
+        const door = view.doors.find((d) => d.to === to);
+        const broken = door?.broken === true;
+        return {
+          key: to,
+          label: broken
+            ? t("roomList.doorBroken", { room: names.room(to) })
+            : reachable.has(to)
+              ? t("roomList.doorCost", { room: names.room(to), cost: doorCost() })
+              : view.you.mp < mpPerMove && view.you.ap < apPerConversion
+                ? t("roomList.doorNoPoints", { room: names.room(to), mp, ap })
+                : t("roomList.doorOutOfReach", { room: names.room(to) }),
+          // Focusable but inert when unreachable (unless broken, which selects the door to inspect/repair).
+          disabled: !reachable.has(to) && !broken,
+          // A move is an action, so it takes a double press like every action button; selecting a broken door does not.
+          double: !broken,
+          onClick: () => (broken && door ? onSelect({ kind: "door", id: door.id }) : onMove(to)),
+        };
+      }),
     },
   ] as const;
 

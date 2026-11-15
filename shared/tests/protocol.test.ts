@@ -699,7 +699,7 @@ describe("actions from a client", () => {
     turret_attack: [{ type: "turret_attack", equipment: "e1", hunter: "h1" }],
     patrol_attack: [{ type: "patrol_attack", equipment: "e1", hunter: "h1" }],
     repair_hull: [{ type: "repair_hull", item: "i1" }],
-    repair: [{ type: "repair", equipment: "e1" }],
+    repair: [{ type: "repair", equipment: "e1" }, { type: "repair", door: "BRIDGE|CORRIDOR_FRONT" }],
     extinguish: [{ type: "extinguish", item: "i1" }],
     ignite: [{ type: "ignite" }],
     u_turn: [{ type: "u_turn" }],

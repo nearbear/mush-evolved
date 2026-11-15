@@ -1,11 +1,15 @@
 import { Action, type ActionCost, isString } from "./action.ts";
 import { isBreakable } from "../breakage.ts";
+import { doorOtherRoom, doorsOf, repairDoor } from "../doors.ts";
 import { ITEM_TYPES, canReachItem, isWorking, itemsIn } from "../items.ts";
 import { logPrivate, logPublic } from "../log.ts";
 import { removeStatus } from "../statuses.ts";
-import type { GameState, PlayerState } from "../types.ts";
+import type { DoorId, GameState, PlayerState } from "../types.ts";
 
-export type RepairActionData = { type: "repair"; equipment: string } | { type: "repair"; item: string };
+export type RepairActionData =
+  | { type: "repair"; equipment: string }
+  | { type: "repair"; item: string }
+  | { type: "repair"; door: DoorId };
 
 /** The item that makes a repair `config.repair.wrenchFactor` times as likely, carried. */
 export const WRENCH_ITEM = "wrench";
@@ -28,6 +32,7 @@ export class RepairAction extends Action<RepairActionData> {
   override parse(raw: Readonly<Record<string, unknown>>): RepairActionData | null {
     if (isString(raw.item)) return { type: "repair", item: raw.item };
     if (isString(raw.equipment)) return { type: "repair", equipment: raw.equipment };
+    if (isString(raw.door)) return { type: "repair", door: raw.door };
     return null;
   }
 
@@ -40,7 +45,9 @@ export class RepairAction extends Action<RepairActionData> {
     if (player.statuses.includes("genius")) return 1; // Owner, 2026-11-05: Genius makes the next repair certain.
     const base = "item" in target
       ? (brokenItems(state, player).find((i) => i.id === target.item) && ITEM_TYPES[state.items.find((i) => i.id === target.item)!.type]?.repairChance) || 0
-      : state.config.repair.chance[brokenHere(state, player).find((e) => e.id === target.equipment)?.type ?? ""] ?? 0;
+      : "door" in target
+        ? brokenDoorsHere(state, player).some((d) => d.id === target.door) ? (state.config.repair.chance.DOOR ?? 0) : 0
+        : state.config.repair.chance[brokenHere(state, player).find((e) => e.id === target.equipment)?.type ?? ""] ?? 0;
     const wrench = itemsIn(state, { kind: "player", id: player.id }).some((item) => item.type === WRENCH_ITEM && isWorking(item));
     return Math.min(1, base * (wrench ? state.config.repair.wrenchFactor : 1));
   }
@@ -49,11 +56,13 @@ export class RepairAction extends Action<RepairActionData> {
     return [
       ...brokenHere(state, player).map((e): RepairActionData => ({ type: "repair", equipment: e.id })),
       ...brokenItems(state, player).map((i): RepairActionData => ({ type: "repair", item: i.id })),
+      ...brokenDoorsHere(state, player).map((d): RepairActionData => ({ type: "repair", door: d.id })),
     ];
   }
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: RepairActionData): string | null {
     if ("item" in target) return brokenItems(state, player).some((i) => i.id === target.item) ? null : "cant_repair";
+    if ("door" in target) return brokenDoorsHere(state, player).some((d) => d.id === target.door) ? null : "cant_repair";
     return brokenHere(state, player).some((e) => e.id === target.equipment) ? null : "cant_repair";
   }
 
@@ -63,6 +72,12 @@ export class RepairAction extends Action<RepairActionData> {
       delete item.broken;
       removeStatus(player, "genius");
       logPublic(state, player.room, "itemRepaired", { name: player.character, item: item.type });
+      return;
+    }
+    if ("door" in target) {
+      repairDoor(state, target.door);
+      removeStatus(player, "genius");
+      logPublic(state, player.room, "doorRepaired", { name: player.character, room: doorOtherRoom(target.door, player.room)! });
       return;
     }
     const equipment = state.equipment[player.room]!.find((e) => e.id === target.equipment)!; // checked, so it exists
@@ -76,6 +91,10 @@ export class RepairAction extends Action<RepairActionData> {
       logPrivate(state, player.id, "itemRepairFailed", { item: state.items.find((i) => i.id === target.item)!.type });
       return;
     }
+    if ("door" in target) {
+      logPrivate(state, player.id, "doorRepairFailed", { room: doorOtherRoom(target.door, player.room)! });
+      return;
+    }
     const type = state.equipment[player.room]!.find((e) => e.id === target.equipment)!.type;
     logPrivate(state, player.id, "repairFailed", { equipment: type });
   }
@@ -87,3 +106,7 @@ const brokenHere = (state: Readonly<GameState>, player: Readonly<PlayerState>) =
 /** Broken items you can reach whose type can be repaired. */
 const brokenItems = (state: Readonly<GameState>, player: Readonly<PlayerState>) =>
   state.items.filter((i) => !isWorking(i) && ITEM_TYPES[i.type]?.repairChance !== undefined && canReachItem(state, player, i));
+
+/** Broken doors of the player's current room. */
+const brokenDoorsHere = (state: Readonly<GameState>, player: Readonly<PlayerState>) =>
+  doorsOf(state, player.room).filter((d) => d.broken);

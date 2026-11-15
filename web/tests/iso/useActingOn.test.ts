@@ -32,6 +32,7 @@ describe("actionTarget", () => {
     expect(actionTarget(heal)).toEqual({ kind: "player", id: "p2" });
     expect(actionTarget({ type: "vaccinate", target: "p2" })).toEqual({ kind: "player", id: "p2" });
     expect(actionTarget(examine)).toEqual({ kind: "equipment", id: "e2" });
+    expect(actionTarget({ type: "repair", door: "BRIDGE|CORRIDOR_FRONT" })).toEqual({ kind: "door", id: "BRIDGE|CORRIDOR_FRONT" });
     expect(actionTarget({ type: "move", to: "BRIDGE" } as Action)).toBeNull();
     expect(actionTarget({ type: "ready" })).toBeNull();
   });

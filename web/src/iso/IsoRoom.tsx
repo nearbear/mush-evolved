@@ -21,7 +21,7 @@
 import { Suspense, lazy, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ComponentType, type MouseEvent, type PointerEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { createPortal } from "react-dom";
-import { CAMERA_EQUIPMENT, CORPSE_ITEM, DYNARCADE_EQUIPMENT, EQUIPMENT_TYPES, PROJECT_COMPLETE, RESEARCH_COMPLETE, SUPPORT_DRONE_ITEM, SUPER_CALC_EQUIPMENT, type EquipmentView, type RoomId, type RoomLayout, type ShipLayout, type Spot, type Target } from "@mush2/shared";
+import { CAMERA_EQUIPMENT, CORPSE_ITEM, DYNARCADE_EQUIPMENT, EQUIPMENT_TYPES, PROJECT_COMPLETE, RESEARCH_COMPLETE, SUPPORT_DRONE_ITEM, SUPER_CALC_EQUIPMENT, doorOtherRoom, type EquipmentView, type RoomId, type RoomLayout, type ShipLayout, type Spot, type Target } from "@mush2/shared";
 import type { Bubble } from "../scene/useSpeechBubbles.ts";
 import { useNames } from "../i18n/names.ts";
 import { CAMERA_SLICES, equipmentByTileKey, roomAsBuilt } from "./equipmentTiles.ts";
@@ -172,6 +172,7 @@ export function IsoRoom({
   drones,
   equipment,
   reachable,
+  brokenDoors,
   selected,
   selectedDoor,
   actingOn,
@@ -220,6 +221,8 @@ export function IsoRoom({
   /** Equipment in this room, from the view. Only these sprites are clickable. */
   equipment: EquipmentView[];
   reachable: Set<RoomId>;
+  /** Rooms whose door from this room is broken (drawn shut and marked). */
+  brokenDoors?: ReadonlySet<RoomId>;
   selected: Target | null;
   /** The door whose target is shown in the peek bar, if any. */
   selectedDoor: RoomId | null;
@@ -572,7 +575,10 @@ export function IsoRoom({
     if (atTerminal && mySpot?.kind === "occupancy") return;
     const { target } = actingOn;
     let cell: { x: number; y: number } | undefined;
-    if (target.kind === "door") cell = doorSpot(layout, roomLayout, target.to, cells);
+    if (target.kind === "door") {
+      const to = "to" in target ? target.to : doorOtherRoom(target.id, room);
+      cell = to ? doorSpot(layout, roomLayout, to, cells) : undefined;
+    }
     else if (target.kind === "equipment") {
       const key = [...equipmentByKey].find(([, e]) => e.id === target.id)?.[0];
       cell = key ? standSpot(layout, roomLayout, Number(key.slice(1)), cells) : undefined;
@@ -647,6 +653,7 @@ export function IsoRoom({
         beds,
         equipment: equipmentByKey,
         reachable,
+        brokenDoors,
         selected,
         selectedDoor,
         hoverKey,
@@ -657,7 +664,7 @@ export function IsoRoom({
         turn,
         fireSlots,
       }),
-    [scene, box, walkersKey, walkersLook, doorsKey, seatsKey, occupants, nearby, corpses, drones, equipmentByKey, reachable, selected, selectedDoor, hoverKey, ownCells, looks, pace, planet, turn, fireSlots],
+    [scene, box, walkersKey, walkersLook, doorsKey, seatsKey, occupants, nearby, corpses, drones, equipmentByKey, reachable, brokenDoors, selected, selectedDoor, hoverKey, ownCells, looks, pace, planet, turn, fireSlots],
   );
   // Badges and bubbles go over the people in this room.
   const anchors = drawn.sprites.flatMap((s): Anchor[] => {

@@ -75,9 +75,11 @@ export function InspectPanel({
       ? names.character(resolved.person.character)
       : resolved?.kind === "equipment"
         ? names.equipment(resolved.equipment.type)
-        : resolved
-          ? names.itemOf(resolved.item)
-          : undefined;
+        : resolved?.kind === "door"
+          ? t("peek.doorTo", { room: names.room(resolved.door.to) })
+          : resolved
+            ? names.itemOf(resolved.item)
+            : undefined;
 
   return (
     <aside className="panel inspect" ref={root} tabIndex={-1}>
@@ -187,6 +189,19 @@ function Details({ view, layout, resolved, onAction }: { view: PlayerView; layou
           <ThingMarks jelly={resolved.item.jelly} shield={resolved.item.shield} spores={resolved.item.spores} />
           {resolved.item.drone && <DroneUpgrades upgrades={resolved.item.drone.upgrades} />}
           {resolved.item.charges !== undefined && <div className="sub inspect-charges">{t("itemAttr.charges", { count: resolved.item.charges })}</div>}
+        </>
+      );
+    case "door":
+      return (
+        <>
+          <div className="inspect-name">
+            <strong>{t("peek.doorTo", { room: names.room(resolved.door.to) })}</strong>
+          </div>
+          {resolved.door.broken && (
+            <div className="sub inspect-broken">
+              <img src={BROKEN_ICON} alt="" /> {t("roomList.broken")}
+            </div>
+          )}
         </>
       );
   }

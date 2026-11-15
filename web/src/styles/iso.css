@@ -127,6 +127,9 @@
 .fx-selected {
   filter: drop-shadow(0 0 2px var(--highlight));
 }
+.fx-broken {
+  filter: drop-shadow(0 0 2px var(--danger));
+}
 .iso-layer {
   position: absolute;
   left: 0;

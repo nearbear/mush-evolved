@@ -16,7 +16,6 @@ import { attackWeapon, optionsOn, resolveTarget } from "./targets.ts";
 export function PeekBar({
   view,
   target,
-  door,
   reachable,
   onAction,
   onMove,
@@ -26,7 +25,6 @@ export function PeekBar({
   view: PlayerView;
   /** Already resolved by the caller; yourself when nothing else is selected, so the bar never goes away. */
   target: Target;
-  door: RoomId | null;
   reachable: Set<RoomId>;
   onAction: (action: Action) => void;
   onMove: (to: RoomId) => void;
@@ -47,16 +45,31 @@ export function PeekBar({
           : names.action(action.type);
     return <ActionLabel text={text} cost={cost} chance={chance} visibility={actionVisibility(action.type, view)} />;
   };
-  if (door) {
-    const canGo = reachable.has(door);
+  const resolved = resolveTarget(view, target);
+  if (!resolved) return null;
+  if (resolved.kind === "door") {
+    const { door } = resolved;
+    const canGo = reachable.has(door.to);
+    const options = optionsOn(view, target).filter((o) => o.action.type !== "examine");
     return (
-      <Bar heading={t("peek.doorTo", { room: names.room(door) })} sub={canGo ? undefined : t("peek.noAccess")}>
-        {canGo && <DoublePressButton onPress={() => onMove(door)}>{t("common.go")}</DoublePressButton>}
+      <Bar
+        heading={t("peek.doorTo", { room: names.room(door.to) })}
+        sub={door.broken ? t("roomList.broken") : canGo ? undefined : t("peek.noAccess")}
+        more={
+          <button type="button" onClick={onMore} aria-label={t("peek.more")}>
+            …
+          </button>
+        }
+      >
+        {canGo && <DoublePressButton onPress={() => onMove(door.to)}>{t("common.go")}</DoublePressButton>}
+        {options.map((o) => (
+          <ActionButton key={JSON.stringify(o.action)} view={view} option={o} onAction={onAction}>
+            {labelFor(o)}
+          </ActionButton>
+        ))}
       </Bar>
     );
   }
-  const resolved = resolveTarget(view, target);
-  if (!resolved) return null;
   // The phone layout shows given names only, so the surname stays out of the bar.
   const name =
     resolved.kind === "player" ? names.characterGiven(resolved.person.character) : resolved.kind === "equipment" ? names.equipment(resolved.equipment.type) : names.itemOf(resolved.item);

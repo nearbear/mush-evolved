@@ -1,7 +1,7 @@
 // The kit's in-game HUD sections: top bar, ship card (phone), Inspect, inventory, action queue, tip, peek bar and the
 // status and item attribute icon catalogs. Each renders the real component on a sample view (samples.ts). Dev-only.
 
-import { DEFAULT_CONFIG, statusIdsFor, type PlayerView, type RoomId, type Target } from "@mush2/shared";
+import { DEFAULT_CONFIG, doorId, statusIdsFor, type PlayerView, type RoomId, type Target } from "@mush2/shared";
 import { useState } from "react";
 import { ActionQueue } from "../hud/ActionQueue.tsx";
 import { InspectPanel } from "../hud/InspectPanel.tsx";
@@ -239,15 +239,15 @@ export function PeekBarSection() {
       row="m2k-stack"
     >
       <Figure caption="Yourself (the default)">
-        <PeekBar view={humanView} target={self(humanView)} door={null} reachable={NO_ROOMS} onAction={noop} onMove={noop} onMore={noop} />
+        <PeekBar view={humanView} target={self(humanView)} reachable={NO_ROOMS} onAction={noop} onMove={noop} onMore={noop} />
       </Figure>
       {equipment && (
         <Figure caption="Equipment">
-          <PeekBar view={humanView} target={{ kind: "equipment", id: equipment.id }} door={null} reachable={NO_ROOMS} onAction={noop} onMove={noop} onMore={noop} />
+          <PeekBar view={humanView} target={{ kind: "equipment", id: equipment.id }} reachable={NO_ROOMS} onAction={noop} onMove={noop} onMore={noop} />
         </Figure>
       )}
       <Figure caption="A door you can't go through">
-        <PeekBar view={humanView} target={self(humanView)} door="CORRIDOR_A" reachable={NO_ROOMS} onAction={noop} onMove={noop} onMore={noop} />
+        <PeekBar view={humanView} target={{ kind: "door", id: humanView.doors[0]?.id ?? doorId(humanView.you.room, "CORRIDOR_A") }} reachable={NO_ROOMS} onAction={noop} onMove={noop} onMore={noop} />
       </Figure>
     </Section>
   );

@@ -55,6 +55,8 @@ export class ExamineAction extends Action<ExamineActionData> {
         logPrivate(state, player.id, "examineItem", { item: item?.type ?? target.target.id });
         return;
       }
+      case "door":
+        return;
     }
   }
 }

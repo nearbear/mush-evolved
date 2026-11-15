@@ -11,6 +11,7 @@ import type { Action, PlayerId, Target } from "./types.ts";
 export function namedTarget(a: Action): Target | null {
   if ("equipment" in a) return { kind: "equipment", id: a.equipment };
   if ("item" in a) return { kind: "item", id: a.item };
+  if ("door" in a) return { kind: "door", id: a.door };
   // Before `weapon`: an attack with a target is aimed at the person.
   if ("target" in a) return typeof a.target === "string" ? { kind: "player", id: a.target } : a.target;
   if ("weapon" in a) return { kind: "item", id: a.weapon };
@@ -32,5 +33,5 @@ export function actionTarget(a: Action): Target | null {
 export function endsAccommodation(action: Action, by: PlayerId, visibility: ActionVisibility): boolean {
   if (visibility !== "public" || action.type === "accommodate" || action.type === "accept_accommodation" || action.type === "stop_accommodation") return false;
   const target = actionTarget(action);
-  return target?.kind === "equipment" || (target?.kind === "player" && target.id !== by);
+  return target?.kind === "equipment" || target?.kind === "door" || (target?.kind === "player" && target.id !== by);
 }

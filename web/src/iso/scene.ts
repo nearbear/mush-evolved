@@ -218,8 +218,9 @@ export function doorAnim(slice: SliceInfo | undefined, state: DoorState | undefi
  * - `fogged`: another room, dimmed. `foggedLifted`: the same, a little brighter (its door is selected, or hovered and reachable).
  * - `hover`: an interactive thing under the mouse. `doorHover`: a reachable door under the mouse, brighter, with an accent glow.
  * - `selected`: the current selection, with a highlight glow.
+ * - `broken`: a broken door, with a danger glow.
  */
-export type SceneEffect = "fogged" | "foggedLifted" | "hover" | "doorHover" | "selected";
+export type SceneEffect = "fogged" | "foggedLifted" | "hover" | "doorHover" | "selected" | "broken";
 
 /** What a sprite is, for renderers that label their output (the DOM one keeps the class names the screenshot tools look for). */
 export type SceneRole = "tile" | "door" | "equipment" | "person" | "corpse" | "drone";
@@ -354,6 +355,8 @@ export interface SceneInput {
   /** Sprite key -> the equipment it draws (this room only). */
   equipment: ReadonlyMap<string, EquipmentView>;
   reachable: ReadonlySet<RoomId>;
+  /** Rooms whose door from this room is broken (drawn shut and marked). */
+  brokenDoors?: ReadonlySet<RoomId>;
   selected: Target | null;
   selectedDoor: RoomId | null;
   /** The key of the hovered sprite, or `n:<room>` for a hovered room behind a door. */
@@ -455,7 +458,7 @@ function ambientAnim(frames: readonly number[], frameMs: readonly number[], star
 
 /** The scene to draw, from the placed sprites and what is selected, hovered, reachable and lit. */
 export function describeScene(input: SceneInput): Scene {
-  const { layout, room, placed, box, people, corpses, drones, equipment, reachable, selected, selectedDoor, hoverKey, ownCells, doors, looks } = input;
+  const { layout, room, placed, box, people, corpses, drones, equipment, reachable, brokenDoors, selected, selectedDoor, hoverKey, ownCells, doors, looks } = input;
   const isSelected = (kind: Target["kind"], id: string) => sameTarget(selected, { kind, id } as Target);
   const sprites: SceneSprite[] = [];
   const outlines: SceneOutline[] = [];
@@ -518,9 +521,11 @@ export function describeScene(input: SceneInput): Scene {
         ? ambientAnim(ambient.frames, ticksToMs(ambient.rhythm, ambient.frames.length, AMBIENT_SPEED[drawnSlice] ?? 1), ambientStarts.get(s.key) ?? 0)
         : undefined;
     if (s.door) {
-      const canGo = reachable.has(s.door.target as RoomId);
+      const to = s.door.target as RoomId;
+      const canGo = reachable.has(to);
+      const broken = brokenDoors?.has(to) ?? false;
       // Hovering a door you can go through outshines its selection.
-      const effect = canGo && hover ? "doorHover" : s.door.target === selectedDoor ? "selected" : undefined;
+      const effect = canGo && hover ? "doorHover" : s.door.target === selectedDoor ? "selected" : broken ? "broken" : undefined;
       sprites.push({ ...tile(), role: "door", reachable: canGo, effect, kind: s.kind, slice: s.slice });
       continue;
     }

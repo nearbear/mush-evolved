@@ -50,7 +50,7 @@ export function DomScene({ scene, ref }: SceneRendererProps) {
   );
 }
 
-const EFFECT_CLASS = { fogged: "fx-fogged", foggedLifted: "fx-fogged-lifted", hover: "fx-hover", doorHover: "fx-door-hover", selected: "fx-selected" } as const;
+const EFFECT_CLASS = { fogged: "fx-fogged", foggedLifted: "fx-fogged-lifted", hover: "fx-hover", doorHover: "fx-door-hover", selected: "fx-selected", broken: "fx-broken" } as const;
 
 function classOf(s: SceneSprite): string {
   const person = s.role === "person" || s.role === "corpse";

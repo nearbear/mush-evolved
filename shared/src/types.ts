@@ -1,4 +1,5 @@
 import type { CharacterId } from "./characters.ts";
+import type { DoorId } from "./types/state.ts";
 
 export * from "./types/chat.ts";
 export * from "./types/config.ts";
@@ -133,8 +134,12 @@ export interface PlantState {
 
 /**
  * Something a player can inspect and act on: a person, a piece of room
- * equipment, or an item.
+ * equipment, an item, or a door.
  */
-export type Target = { kind: "player"; id: PlayerId } | { kind: "equipment"; id: string } | { kind: "item"; id: ItemId };
+export type Target =
+  | { kind: "player"; id: PlayerId }
+  | { kind: "equipment"; id: string }
+  | { kind: "item"; id: ItemId }
+  | { kind: "door"; id: DoorId };
 
 export type { Action } from "./actions.ts";

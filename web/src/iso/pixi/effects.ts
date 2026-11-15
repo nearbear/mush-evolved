@@ -7,7 +7,7 @@
 import type { SceneSprite } from "../scene.ts";
 
 /** A CSS color token the look is drawn in, read from the page so styles/tokens.css stays the source. */
-export type Token = "--accent" | "--highlight";
+export type Token = "--accent" | "--highlight" | "--danger";
 
 export interface Shadow {
   /** Offset and Gaussian sigma, in CSS pixels. */
@@ -57,6 +57,9 @@ export function lookOf(s: SceneSprite): Look {
       break;
     case "selected":
       look.glow = { token: "--highlight", sigma: 1 };
+      break;
+    case "broken":
+      look.glow = { token: "--danger", sigma: 1 };
       break;
   }
   return look;

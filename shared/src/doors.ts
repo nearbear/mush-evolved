@@ -16,6 +16,12 @@ export function doorRooms(id: DoorId): [RoomId, RoomId] {
   return [id.slice(0, at), id.slice(at + 1)];
 }
 
+/** The room on the other side of `id` from `room`, or undefined if `room` isn't one of its ends. */
+export function doorOtherRoom(id: DoorId, room: RoomId): RoomId | undefined {
+  const [a, b] = doorRooms(id);
+  return a === room ? b : b === room ? a : undefined;
+}
+
 /** Whether the door between `a` and `b` is broken. */
 export const isDoorBroken = (state: DeepReadonly<Pick<GameState, "doors">>, a: RoomId, b: RoomId): boolean => state.doors[doorId(a, b)]?.broken === true;
 

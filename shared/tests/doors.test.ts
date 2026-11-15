@@ -2,6 +2,8 @@
 // one else learns its state.
 import { describe, expect, it } from "vitest";
 import { walk } from "../src/actions/summon.ts";
+import { WRENCH_ITEM } from "../src/actions/repair.ts";
+import { actionTarget, endsAccommodation } from "../src/actionTarget.ts";
 import { CHEAT_ROOM } from "../src/cheatRoom.ts";
 import { DEFAULT_CONFIG, resolveConfig } from "../src/config.ts";
 import { allDoors, breakDoor, doorId, doorRooms, doorsOf, isDoor, isDoorBroken, repairDoor } from "../src/doors.ts";
@@ -12,7 +14,7 @@ import { applyInput } from "../src/replay.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { doorCount, viewPath } from "../src/situation.ts";
 import type { GameState, ItemState } from "../src/types.ts";
-import { clone, makeSeats, mustApply, nextCycle, noHunters, noIncidents, player } from "./support.ts";
+import { clone, makeSeats, mustApply, nextCycle, noHunters, noIncidents, option, player } from "./support.ts";
 
 const LAB_DOOR = doorId("CORRIDOR_A", "LABORATORY");
 const quiet = noIncidents(noHunters(DEFAULT_CONFIG));
@@ -224,5 +226,88 @@ describe("the Superkube's Break a door", () => {
     expect(isDoorBroken(r.state, "LABORATORY", "CORRIDOR_A")).toBe(true);
     expect(applyInput(r.state, { type: "kube", by, op: "breakDoor", arg: LAB_DOOR })).toMatchObject({ ok: false, error: "door_broken" });
     expect(applyInput(s, { type: "kube", by, op: "breakDoor", arg: "LABORATORY|REFECTORY" })).toMatchObject({ ok: false, error: "bad_argument" });
+  });
+});
+
+describe("repairing a door", () => {
+  const LAB_SICK = doorId("LABORATORY", "SICK_BAY");
+
+  it("pins the door repair chance at 0.25", () => {
+    expect(DEFAULT_CONFIG.repair.chance.DOOR).toBe(0.25);
+  });
+
+  it("is offered on both sides of a broken door, scales with wrench, Technician and Genius, and is refused elsewhere or on a working door", () => {
+    const s = ship();
+    breakDoor(s, LAB_SICK);
+    const base = s.config.repair.chance.DOOR!;
+    expect(option(s, "p0", { type: "repair", door: LAB_SICK })).toMatchObject({ chance: base, cost: { ap: s.config.repair.cost.ap } });
+    expect(option(s, "p2", { type: "repair", door: LAB_SICK })).toMatchObject({ chance: base, cost: { ap: s.config.repair.cost.ap } });
+    expect(option(s, "p3", { type: "repair", door: LAB_SICK })).toBeUndefined();
+    expect(option(s, "p0", { type: "repair", door: LAB_DOOR })).toBeUndefined();
+
+    // Carrying a wrench multiplies by wrenchFactor; Technician multiplies by engineerFactor; Genius makes it certain.
+    s.items.push({ id: "w1", type: WRENCH_ITEM, at: { kind: "player", id: "p0" } });
+    expect(option(s, "p0", { type: "repair", door: LAB_SICK })?.chance).toBeCloseTo(base * s.config.repair.wrenchFactor);
+    player(s, "p0").skills.push("engineer");
+    expect(option(s, "p0", { type: "repair", door: LAB_SICK })?.chance).toBeCloseTo(
+      Math.min(1, base * s.config.repair.wrenchFactor * s.config.repair.engineerFactor),
+    );
+    player(s, "p0").statuses.push("genius");
+    expect(option(s, "p0", { type: "repair", door: LAB_SICK })?.chance).toBe(1);
+
+    // Illegal targets leave state unchanged.
+    const before = JSON.stringify(s);
+    expect(applyAction(s, "p0", { type: "repair", door: LAB_DOOR })).toMatchObject({ ok: false, error: "illegal_action" });
+    expect(applyAction(s, "p3", { type: "repair", door: LAB_SICK })).toMatchObject({ ok: false, error: "illegal_action" });
+    expect(JSON.stringify(s)).toBe(before);
+  });
+
+  it("repairs the door publicly on success and logs privately on failure", () => {
+    const sure = createGame(
+      makeSeats(4),
+      { ...quiet, mushCount: 1, startItems: [], startSkills: [], repair: { ...quiet.repair, chance: { ...quiet.repair.chance, DOOR: 1 } } },
+      3,
+    );
+    player(sure, "p0").room = "LABORATORY";
+    player(sure, "p1").room = "LABORATORY";
+    player(sure, "p2").room = "SICK_BAY";
+    for (const p of sure.players) Object.assign(p, { ap: 10, mp: 10 });
+    breakDoor(sure, LAB_SICK);
+    player(sure, "p0").statuses.push("genius");
+
+    const fixed = mustApply(sure, "p0", { type: "repair", door: LAB_SICK });
+    expect(isDoorBroken(fixed, "LABORATORY", "SICK_BAY")).toBe(false);
+    expect(fixed.doors).toEqual({});
+    expect(player(fixed, "p0").statuses).not.toContain("genius");
+    expect(fixed.log.at(-1)).toMatchObject({
+      key: "doorRepaired",
+      room: "LABORATORY",
+      visibleTo: "all",
+      params: { name: player(sure, "p0").character, room: "SICK_BAY" },
+    });
+    expect(moves(fixed, "p0")).toContain("SICK_BAY");
+
+    const never = createGame(
+      makeSeats(4),
+      { ...quiet, mushCount: 1, startItems: [], startSkills: [], repair: { ...quiet.repair, chance: { ...quiet.repair.chance, DOOR: 0.0001 } } },
+      3,
+    );
+    player(never, "p0").room = "LABORATORY";
+    player(never, "p1").room = "LABORATORY";
+    for (const p of never.players) Object.assign(p, { ap: 10, mp: 10 });
+    breakDoor(never, LAB_SICK);
+    const failed = mustApply(never, "p0", { type: "repair", door: LAB_SICK });
+    expect(isDoorBroken(failed, "LABORATORY", "SICK_BAY")).toBe(true);
+    expect(failed.log.find((e) => e.key === "doorRepairFailed")).toMatchObject({
+      visibleTo: ["p0"],
+      params: { room: "SICK_BAY" },
+    });
+    expect(viewFor(failed, "p1").log.some((e) => e.key === "doorRepairFailed")).toBe(false);
+  });
+
+  it("targets the door for walk-up and ends accommodation", () => {
+    const repair = { type: "repair", door: LAB_SICK } as const;
+    expect(actionTarget(repair)).toEqual({ kind: "door", id: LAB_SICK });
+    expect(endsAccommodation(repair, "p0", "public")).toBe(true);
   });
 });

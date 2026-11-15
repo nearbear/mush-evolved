@@ -2,7 +2,7 @@
 // the server decides what is legal and sends it in view.actions. No socket either: see GameScreen.
 
 import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
-import { CHEAT_ROOM, CORPSE_ITEM, SUPPORT_DRONE_ITEM, isLostPlace, legalIn, type Action, type BotPause, type CharacterId, type Cheat, type GameClientMessage, type KubeOpId, type PlayerView, type RoleCheat, type RoomId, type Spot, type Target } from "@mush2/shared";
+import { CHEAT_ROOM, CORPSE_ITEM, SUPPORT_DRONE_ITEM, doorId, doorOtherRoom, isLostPlace, legalIn, type Action, type BotPause, type CharacterId, type Cheat, type GameClientMessage, type KubeOpId, type PlayerView, type RoleCheat, type RoomId, type Spot, type Target } from "@mush2/shared";
 import { useTranslation } from "react-i18next";
 import { Hint } from "./hud/IconButton.tsx";
 import { ActionQueue } from "./hud/ActionQueue.tsx";
@@ -96,7 +96,6 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
   // A replay stepping back from the end reopens it for the next time the end comes (the derived-state pattern).
   const [endClosed, setEndClosed] = useState(false);
   if (endClosed && view.phase !== "ended") setEndClosed(false);
-  const [peekDoor, setPeekDoor] = useState<RoomId | null>(null);
   // Bumped when the room list selects something, to move focus to where its actions are (a screen reader's next step).
   const [focusActions, setFocusActions] = useState(0);
   // biome-ignore lint/correctness/useExhaustiveDependencies: `focusActions` is a trigger, read from the DOM once the selection has rendered.
@@ -106,14 +105,10 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
     const first = panel?.querySelector<HTMLElement>(mobile ? ".peek-actions button:not([inert])" : ".inspect-actions button");
     (first ?? panel)?.focus();
   }, [focusActions]);
-  const here = view.you.room;
-  // biome-ignore lint/correctness/useExhaustiveDependencies: `here` is a trigger: arriving somewhere new clears the door peek.
-  useEffect(() => setPeekDoor(null), [here]);
   const body = view.you.id;
   // biome-ignore lint/correctness/useExhaustiveDependencies: `body` is a trigger: a Transfer moves you to another body, so a selection made from the old one is dropped.
   useEffect(() => {
     setSelected(null);
-    setPeekDoor(null);
     setTerminalId(null);
   }, [body]);
 
@@ -186,15 +181,12 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
   const select = (t: Target | null) => {
     markSelected();
     setSelected(t);
-    setPeekDoor(null);
   };
-  const tapDoor = (to: RoomId) => {
-    markSelected();
-    setSelected(null);
-    setPeekDoor(to);
-  };
+  const tapDoor = (to: RoomId) => select({ kind: "door", id: doorId(you.room, to) });
   // Fall back to yourself when nothing is selected or the selection is gone (left the room, item moved away).
   const target: Target = selected && resolveTarget(view, selected) ? selected : { kind: "player", id: you.id };
+  const selectedDoor = target.kind === "door" ? doorOtherRoom(target.id, you.room) ?? null : null;
+  const brokenDoors = useMemo(() => new Set(view.doors.filter((d) => d.broken).map((d) => d.to)), [view.doors]);
 
   // The Superkube's options (#170): a cheat input, so only while cheats are allowed, and never in a replay.
   const kube = cheatsAllowed && !readOnly ? (op: KubeOpId, arg?: string | number) => post(arg === undefined ? { type: "kube", op } : { type: "kube", op, arg }) : undefined;
@@ -265,8 +257,9 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
                 onZoomStep={(dir) => setZoom((z) => stepZoom(z, dir) ?? z)}
                 equipment={view.roomEquipment}
                 reachable={reachable}
+                brokenDoors={brokenDoors}
                 selected={target}
-                selectedDoor={peekDoor}
+                selectedDoor={selectedDoor}
                 actingOn={actingOn}
                 sentCount={sentCount}
                 atTerminal={terminalId !== null}
@@ -352,7 +345,6 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
         <PeekBar
           view={view}
           target={target}
-          door={peekDoor}
           reachable={reachable}
           onAction={act}
           onMove={move}
