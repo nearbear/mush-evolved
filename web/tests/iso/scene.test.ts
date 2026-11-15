@@ -417,3 +417,23 @@ describe("doors", () => {
     expect(s.sprites.map((p) => p.anim?.frames[0])).toEqual([0, 12]);
   });
 });
+
+describe("smoke", () => {
+  it("emits smoke sources for broken doors and broken equipment right after their sprite", () => {
+    const floor = placed({ key: "f0", kind: "ground" });
+    const door = placed({ key: "d1", kind: "door", slice: "door", cell: { x: 2, y: 1 }, door: { target: NEXT } });
+    const workingEq = placed({ key: "e1", kind: "entity", slice: "server", cell: { x: 3, y: 2 } });
+    const brokenEq = placed({ key: "e2", kind: "entity", slice: "rotational_reactor", cell: { x: 4, y: 2 } });
+    const s = scene([floor, door, workingEq, brokenEq], {
+      brokenDoors: new Set([NEXT]),
+      equipment: new Map([
+        ["e1", { id: "eq1", type: "NERON", broken: false }],
+        ["e2", { id: "eq2", type: "REACTOR", broken: true }],
+      ]),
+    });
+    expect(s.smoke).toEqual([
+      { key: "d1", x: 16 - -100, y: 24 - -50, footprint: [1, 1], at: 2 },
+      { key: "e2", x: 32 - -100, y: 48 - -50, footprint: [1, 1], at: 4 },
+    ]);
+  });
+});

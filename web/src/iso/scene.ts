@@ -297,6 +297,8 @@ export interface Scene {
   room: RoomId;
   /** The burning room's floor cells, each with its place in the paint order; empty when it isn't on fire. */
   fire: readonly SceneFireCell[];
+  /** Broken doors and broken equipment in this room, each with its place in the paint order. */
+  smoke: readonly SceneSmokeSource[];
 }
 
 /** A cell's centre below its anchor (its top corner), in pixels. */
@@ -309,6 +311,18 @@ export interface SceneFireCell {
   /** The cell's centre in the scene. */
   x: number;
   y: number;
+  at: number;
+}
+
+/** One broken door or equipment emitting smoke, drawn just after its sprite (before `sprites[at]`). */
+export interface SceneSmokeSource {
+  key: string;
+  /** The anchor cell's top corner in scene pixels. */
+  x: number;
+  y: number;
+  /** Footprint size in grid cells `[w, h]`. */
+  footprint: readonly [number, number];
+  /** Index in `Scene.sprites` immediately after the emitting sprite. */
   at: number;
 }
 
@@ -462,6 +476,17 @@ export function describeScene(input: SceneInput): Scene {
   const isSelected = (kind: Target["kind"], id: string) => sameTarget(selected, { kind, id } as Target);
   const sprites: SceneSprite[] = [];
   const outlines: SceneOutline[] = [];
+  const smoke: SceneSmokeSource[] = [];
+  const addSmoke = (s: PlacedSprite, sliceId: string) => {
+    const anchor = gridToPx(s.cell.x, s.cell.y);
+    smoke.push({
+      key: s.key,
+      x: anchor.x - box.minX,
+      y: anchor.y - box.minY,
+      footprint: layout.slices[sliceId]?.footprint ?? [1, 1],
+      at: sprites.length,
+    });
+  };
   const ambientStarts = spreadAmbient(placed, input);
   // Where each placed sprite's pictures start in `sprites` (a drone is two), for the fire's places in the paint order.
   const firstSprite: number[] = [];
@@ -527,6 +552,7 @@ export function describeScene(input: SceneInput): Scene {
       // Hovering a door you can go through outshines its selection.
       const effect = canGo && hover ? "doorHover" : s.door.target === selectedDoor ? "selected" : broken ? "broken" : undefined;
       sprites.push({ ...tile(), role: "door", reachable: canGo, effect, kind: s.kind, slice: s.slice });
+      if (broken) addSmoke(s, s.slice);
       continue;
     }
     const eq = equipment.get(s.key);
@@ -534,6 +560,7 @@ export function describeScene(input: SceneInput): Scene {
       // Selected equipment keeps its glow while hovered.
       const effect = isSelected("equipment", eq.id) ? "selected" : hover ? "hover" : undefined;
       sprites.push({ ...tile(), anim, role: "equipment", effect, kind: s.kind, slice: s.slice });
+      if (eq.broken) addSmoke(s, drawnSlice);
       continue;
     }
     sprites.push({ ...tile(), anim, role: "tile", kind: s.kind, slice: s.slice });
@@ -559,5 +586,6 @@ export function describeScene(input: SceneInput): Scene {
     turn: input.turn ?? null,
     room,
     fire,
+    smoke,
   };
 }
