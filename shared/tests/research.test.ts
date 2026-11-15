@@ -279,6 +279,7 @@ describe("research", () => {
 
   it("completing STEROIDS spawns 4 anabolic steroids on the laboratory floor and marks status full", () => {
     expect(RESEARCH_STATUS.STEROIDS).toBe("full");
+    expect(RESEARCH_STATUS.CONSTIPASPORE_SERUM).toBe("full");
     const s = game();
     setProgress(s, { research: "STEROIDS" }, RESEARCH_COMPLETE - 1);
     s.rng = CLEAN;

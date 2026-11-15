@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
+import { RESEARCH_COMPLETE } from "../src/research.ts";
 import { applyAction, createGame } from "../src/rules.ts";
 import type { GameState } from "../src/types.ts";
 import { costOf, makeSeats, must, nextDay, player } from "./support.ts";
@@ -44,5 +45,14 @@ describe("fertile", () => {
 
   it("does nothing for a Mush without the skill", () => {
     expect(costOf(ship(false), "p0", extract).ap).toBe(config.spores.cost.ap);
+  });
+
+  it("stays free on the first extraction even when CONSTIPASPORE_SERUM is complete", () => {
+    const s = ship();
+    s.research.CONSTIPASPORE_SERUM = RESEARCH_COMPLETE;
+    expect(costOf(s, "p0", extract).ap).toBe(0);
+    const once = must(applyAction(s, "p0", extract));
+    expect(player(once, "p0").ap).toBe(5);
+    expect(costOf(once, "p0", extract).ap).toBe(config.spores.cost.ap + config.spores.constipasporeExtraAp);
   });
 });

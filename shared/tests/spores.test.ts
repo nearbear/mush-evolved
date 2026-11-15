@@ -2,9 +2,10 @@ import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { MODIFIERS } from "../src/modifiers.ts";
 import { parseGameMessage } from "../src/protocol.ts";
+import { RESEARCH_COMPLETE } from "../src/research.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameState } from "../src/types.ts";
-import { makeSeats, player, mustApply, nextCycle, offered } from "./support.ts";
+import { costOf, makeSeats, player, mustApply, nextCycle, offered } from "./support.ts";
 
 const seats = makeSeats(6);
 const config = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], maxAp: 99, startAp: 50 };
@@ -93,6 +94,26 @@ describe("spore extraction", () => {
     const before = JSON.stringify(s);
     expect(applyAction(s, "p0", extract).ok).toBe(false);
     expect(JSON.stringify(s)).toBe(before);
+  });
+
+  it("costs constipasporeExtraAp more AP once CONSTIPASPORE_SERUM is complete", () => {
+    expect(DEFAULT_CONFIG.spores.constipasporeExtraAp).toBe(2);
+    const partial = ship();
+    partial.research.CONSTIPASPORE_SERUM = RESEARCH_COMPLETE - 1;
+    expect(costOf(partial, "p0", extract).ap).toBe(config.spores.cost.ap);
+
+    const done = ship();
+    done.research.CONSTIPASPORE_SERUM = RESEARCH_COMPLETE;
+    const expectedCost = config.spores.cost.ap + config.spores.constipasporeExtraAp;
+    expect(costOf(done, "p0", extract).ap).toBe(expectedCost);
+    const after = mustApply(done, "p0", extract);
+    expect(player(after, "p0").ap).toBe(config.startAp - expectedCost);
+
+    player(done, "p0").ap = expectedCost - 1;
+    expect(viewFor(done, "p0").actions.find((o) => o.action.type === "extract_spore")).toMatchObject({ lacks: ["ap"] });
+    const before = JSON.stringify(done);
+    expect(applyAction(done, "p0", extract).ok).toBe(false);
+    expect(JSON.stringify(done)).toBe(before);
   });
 
   it("parses from the wire", () => {

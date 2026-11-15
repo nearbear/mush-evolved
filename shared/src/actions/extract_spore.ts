@@ -1,6 +1,7 @@
 import { Action, AT_CAPACITY, IN_PRESELECTION, type ActionVisibility } from "./action.ts";
 import { logSecret } from "../log.ts";
 import { sporesPerDay } from "../modifiers.ts";
+import { RESEARCH_COMPLETE } from "../research.ts";
 import { hasSkill } from "../skills.ts";
 import { addStatus } from "../statuses.ts";
 import type { GameState, PlayerState } from "../types.ts";
@@ -21,7 +22,8 @@ export class ExtractSporeAction extends Action<ExtractSporeActionData> {
 
   override getCost(state: Readonly<GameState>, player: Readonly<PlayerState>): { ap: number; mp: number } {
     if (freeExtraction(player)) return { ap: 0, mp: 0 };
-    return { ap: state.config.spores.cost.ap, mp: 0 };
+    const extra = (state.research.CONSTIPASPORE_SERUM ?? 0) >= RESEARCH_COMPLETE ? state.config.spores.constipasporeExtraAp : 0;
+    return { ap: state.config.spores.cost.ap + extra, mp: 0 };
   }
 
   override getCandidates(): ExtractSporeActionData[] {
