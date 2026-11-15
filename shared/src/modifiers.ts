@@ -489,13 +489,17 @@ export const sporesPerDay = (state: Readonly<GameState>, player: Readonly<Player
   return Math.max(0, fold("sporesPerDay", state.config.spores.perDay - reduction, state, player, registry));
 };
 
-/** HP a heal restores: the configured amount folded through the healer's modifiers. */
-export const healAmount = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
-  fold("healAmount", state.config.heal.effect.hp, state, player, registry);
+/** Extra HP heal and bandage restore once the Ultra-healing ointment research completes (owner, 2026-11-14). */
+const ointmentHealBonus = (state: Readonly<GameState>): number =>
+  (state.research.HEALING_OINTMANT ?? 0) >= RESEARCH_COMPLETE ? state.config.heal.effect.ointmentBonusHp : 0;
 
-/** HP a bandage restores (owner, 2026-11-07, #397): the configured amount folded through the same `healAmount` hook. */
+/** HP a heal restores: the configured amount folded through the healer's modifiers, plus HEALING_OINTMANT if complete. */
+export const healAmount = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
+  fold("healAmount", state.config.heal.effect.hp, state, player, registry) + ointmentHealBonus(state);
+
+/** HP a bandage restores (owner, 2026-11-07, #397): the configured amount folded through the same `healAmount` hook, plus HEALING_OINTMANT if complete. */
 export const bandageHealAmount = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
-  fold("healAmount", state.config.bandage.effect.hp, state, player, registry);
+  fold("healAmount", state.config.bandage.effect.hp, state, player, registry) + ointmentHealBonus(state);
 
 /** Satiety a human loses each cycle: the configured loss folded through the player's modifiers. */
 export const satietyLoss = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>

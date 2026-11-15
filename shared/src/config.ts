@@ -93,7 +93,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Anyone can heal in the sick bay without a medikit; the medic skill adds 2 HP, the nurse 2 care points a day.
   heal: {
     cost: { apOther: 2, apSelf: 3 },
-    effect: { hp: 3, medicBonusHp: 2, nursePointsPerDay: 2, mycologistSpores: 1 },
+    effect: { hp: 3, medicBonusHp: 2, ointmentBonusHp: 1, nursePointsPerDay: 2, mycologistSpores: 1 },
     rooms: ["SICK_BAY"],
     dirtyChance: 0.05,
   },

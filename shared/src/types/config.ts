@@ -276,6 +276,7 @@ export interface GameConfig {
     effect: {
       hp: number; // HP a heal restores before modifiers (confirmed 2026-10-15).
       medicBonusHp: number; // Extra HP a heal restores for a player with the medic skill (owner, 2026-10-15).
+      ointmentBonusHp: number; // Extra HP heal and bandage restore once HEALING_OINTMANT completes (owner, 2026-11-14).
       nursePointsPerDay: number; // Care points the nurse skill (`first_aid`) grants at the start of each day and when picked (owner, 2026-10-15).
       mycologistSpores: number; // Contamination removed per heal/bandage by a human Mycologist (owner, 2026-11-14).
     };

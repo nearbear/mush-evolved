@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { MODIFIERS } from "../src/modifiers.ts";
+import { RESEARCH_COMPLETE } from "../src/research.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameState, PlayerId } from "../src/types.ts";
 import { makeSeats, player, offered, mustApply, withoutDrugs } from "./support.ts";
@@ -94,5 +95,23 @@ describe("bandages", () => {
     const r = mustApply(s, "p0", bandage("p1"));
     expect(viewFor(r, "p1").log.some((e) => e.key === "bandaged")).toBe(true);
     expect(JSON.stringify(viewFor(r, "p2"))).not.toContain("bandaged");
+  });
+
+  it("restores ointmentBonusHp extra HP once HEALING_OINTMANT is complete (humans and Mush, stacking with medic)", () => {
+    const partial = ship();
+    partial.research.HEALING_OINTMANT = RESEARCH_COMPLETE - 1;
+    expect(player(mustApply(partial, "p0", bandage("p1")), "p1").hp).toBe(5 + effect.hp);
+
+    const done = ship();
+    done.research.HEALING_OINTMANT = RESEARCH_COMPLETE;
+    expect(player(mustApply(done, "p0", bandage("p1")), "p1").hp).toBe(5 + effect.hp + config.heal.effect.ointmentBonusHp);
+
+    const mushMedic = ship();
+    mushMedic.research.HEALING_OINTMANT = RESEARCH_COMPLETE;
+    player(mushMedic, "p0").role = "mush";
+    player(mushMedic, "p0").skills.push("medic");
+    expect(player(mustApply(mushMedic, "p0", bandage("p1")), "p1").hp).toBe(
+      5 + effect.hp + config.heal.effect.medicBonusHp + config.heal.effect.ointmentBonusHp,
+    );
   });
 });

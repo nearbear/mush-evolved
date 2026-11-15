@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { MODIFIERS, healAmount } from "../src/modifiers.ts";
 import { parseGameMessage } from "../src/protocol.ts";
+import { RESEARCH_COMPLETE, researchStatus } from "../src/research.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameState, PlayerId } from "../src/types.ts";
 import { makeSeats, player, offered, withoutDrugs } from "./support.ts";
@@ -112,5 +113,29 @@ describe("healing", () => {
       type: "action",
       action: heal("p1"),
     });
+  });
+
+  it("restores ointmentBonusHp extra HP once HEALING_OINTMANT is complete (humans and Mush, stacking with medic)", () => {
+    expect(effect.ointmentBonusHp).toBe(1);
+    expect(researchStatus("HEALING_OINTMANT")).toBe("full");
+
+    const partial = ship();
+    partial.research.HEALING_OINTMANT = RESEARCH_COMPLETE - 1;
+    expect(healAmount(partial, player(partial, "p0"))).toBe(effect.hp);
+
+    const done = ship();
+    done.research.HEALING_OINTMANT = RESEARCH_COMPLETE;
+    const afterHuman = applyAction(done, "p0", heal("p1"));
+    if (!afterHuman.ok) throw new Error(afterHuman.error);
+    expect(player(afterHuman.state, "p1").hp).toBe(5 + effect.hp + effect.ointmentBonusHp);
+
+    // Stacks with medic and applies to Mush healers too.
+    const mushMedic = ship();
+    mushMedic.research.HEALING_OINTMANT = RESEARCH_COMPLETE;
+    player(mushMedic, "p0").role = "mush";
+    player(mushMedic, "p0").skills.push("medic");
+    const afterMush = applyAction(mushMedic, "p0", heal("p1"));
+    if (!afterMush.ok) throw new Error(afterMush.error);
+    expect(player(afterMush.state, "p1").hp).toBe(5 + effect.hp + effect.medicBonusHp + effect.ointmentBonusHp);
   });
 });
