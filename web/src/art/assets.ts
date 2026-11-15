@@ -396,6 +396,10 @@ skillIcons["designer"] = skillIcons["conceptor"]!;
 // Maintenance Agent takes the icon from the removed Dreamer (oisif) skill.
 skillIcons["maintenance_agent"] = skillIcons["oisif"]!;
 delete skillIcons["oisif"];
+// Bodyguard takes Independent's (unconcerned) brick wall icon; Independent takes Daunting's icon.
+skillIcons["bodyguard"] = skillIcons["unconcerned"]!;
+skillIcons["unconcerned"] = skillIcons["daunting"]!;
+delete skillIcons["daunting"];
 export const skillIcon = (id: string): string => skillIcons[id] ?? EMPTY_SLOT_ICON;
 /** Green jelly on an item or equipment, as Mush see it: the Electro-slime skill's icon. */
 export const JELLY_ICON = skillIcons["electro_slime"]!;
