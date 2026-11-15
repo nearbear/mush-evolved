@@ -9,8 +9,9 @@ import type { PlayerState } from "./types.ts";
  * Ids are the lowercase ids from the original design table (`Mush/derived/data/Data/skills.json`, human, not
  * beta), which are also the icon file names under `Mush/www/img/icons/skills`. The last ten are on a character's
  * list on eMushpedia but not retained in the original (the first seven) or new in eMush (the last three, which
- * have no icon, though Maintenance Agent uses the removed Dreamer icon). Mankind's Only Hope is left out: it is Chun's trait here (owner, 2026-10-18;
- * `modifiers/mankind_only_hope.ts`).
+ * have no icon, though Maintenance Agent uses the removed Dreamer icon, Bodyguard uses Independent's brick wall
+ * icon, Independent uses the removed Daunting icon, and Infantryman uses the removed Crazy Eye icon). Mankind's Only
+ * Hope is left out: it is Chun's trait here (owner, 2026-10-18; `modifiers/mankind_only_hope.ts`).
  */
 export const SKILLS = [
   "engineer",
@@ -46,13 +47,11 @@ export const SKILLS = [
   "genius",
   "observant",
   "torturer",
-  "crazy_eye",
   "logistics",
   "rebel",
   "escape",
   "neron_only_friend",
   "stickler",
-  "daunting",
   "juge",
   "creative",
   "fast_backward",
@@ -299,6 +298,8 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   maintenance_agent: "full",
   // Expedition: -1 damage per hit, +1 Alien Steak on Provision events, and chosen last on Kill events (expeditions.ts).
   survival: "full",
+  // +5 AP (capped at maxAp) the first time you gain each title while having the skill (owner, 2026-11-14, modifiers/opportunist.ts).
+  opportunist: "full",
 };
 
 export function skillStatus(skill: string): SkillStatus {

@@ -246,12 +246,16 @@ describe("character skill lists", () => {
     for (const list of Object.values(CHARACTER_SKILLS)) expect(list.length).toBeGreaterThanOrEqual(SKILL_SLOTS);
   });
 
-  it("does not include the removed Dreamer (oisif) skill, and includes maintenance_agent", () => {
+  it("does not include the removed Dreamer (oisif), Crazy Eye (crazy_eye), or Daunting (daunting) skills, and includes maintenance_agent", () => {
     expect(SKILLS as readonly string[]).not.toContain("oisif");
     expect(isSkill("oisif")).toBe(false);
+    expect(SKILLS as readonly string[]).not.toContain("crazy_eye");
+    expect(isSkill("crazy_eye")).toBe(false);
+    expect(SKILLS as readonly string[]).not.toContain("daunting");
+    expect(isSkill("daunting")).toBe(false);
     expect(SKILLS as readonly string[]).toContain("maintenance_agent");
     expect(isSkill("maintenance_agent")).toBe(true);
-    expect(SKILLS.length).toBe(66);
+    expect(SKILLS.length).toBe(64);
   });
 
   it("marks fully implemented skills in SKILL_STATUS", () => {

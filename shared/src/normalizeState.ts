@@ -84,7 +84,7 @@ import type {
  * override key. A step lands in a deploy of its own (docs/ops/deploy.md: roll back only to the same version). Something
  * that never reached a deploy (test or production) is in no stored snapshot, so changing or removing it needs no step.
  */
-export const STATE_VERSION = 117;
+export const STATE_VERSION = 118;
 
 /**
  * The oldest stored version this build reads: 114, the shape the normalizers were written against. A snapshot below it
@@ -173,8 +173,26 @@ const upgradeTo117: UpgradeStep = {
   },
 };
 
+/** Before 118, the removed `crazy_eye` and `daunting` skills could be held by players. */
+const upgradeTo118: UpgradeStep = {
+  to: 118,
+  ids: ["SKILLS.crazy_eye", "SKILLS.daunting"],
+  run: (game) => {
+    const players = game.players as Array<Record<string, unknown>> | undefined;
+    if (!players) return;
+    for (const p of players) {
+      if (Array.isArray(p.skills)) {
+        p.skills = p.skills.filter((s) => s !== "crazy_eye" && s !== "daunting");
+      }
+      if (p.bookSkill === "crazy_eye" || p.bookSkill === "daunting") {
+        delete p.bookSkill;
+      }
+    }
+  },
+};
+
 /** Every step, in order of `to`: `upgradeTo115`, `upgradeTo116`, ... */
-export const UPGRADE_STEPS: readonly UpgradeStep[] = [upgradeTo115, upgradeTo116, upgradeTo117];
+export const UPGRADE_STEPS: readonly UpgradeStep[] = [upgradeTo115, upgradeTo116, upgradeTo117, upgradeTo118];
 
 /**
  * Brings a stored snapshot from version `from` to `STATE_VERSION`, before it is normalized: runs every step with
@@ -433,6 +451,7 @@ export function normalizePlayer(raw: Partial<PlayerState>, mode: QueueMode): Pla
     epigeneticsUsed: raw.epigeneticsUsed,
     apprenticeUsed: raw.apprenticeUsed,
     geniusUsed: raw.geniusUsed,
+    opportunistTitles: opt(raw.opportunistTitles, copy),
     bodyTakenBy: raw.bodyTakenBy,
     role: need(raw, "role", t),
     alpha: need(raw, "alpha", t),

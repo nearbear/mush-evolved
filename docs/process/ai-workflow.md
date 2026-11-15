@@ -3781,3 +3781,7 @@ Small refactor on request: `GameRoom.social` called four bot-line parsers (item,
 ### 2026-11-14 — Inverted pulsator project (`TURRET_EXTRA_FIRERATE`)
 - **Decision (owner):** Implemented the `TURRET_EXTRA_FIRERATE` NERON project ("Inverted pulsator"): once complete, working turrets recharge twice as fast each cycle (`turretRechargePerCycle` in `shared/src/hunters.ts`, `config.project.turretExtraFirerate.rechargeMultiplier` = 2, so 2 charges per cycle up to the 4-charge cap; broken turrets and patrol ships unaffected). Marked `TURRET_EXTRA_FIRERATE: "full"` in `PROJECT_STATUS`.
 - **What worked:** Existing `huntersCycle` and `config.project` structure made it a clean, isolated change with zero stored-state or view changes, covered by `shared/tests/invertedPulsator.test.ts`.
+
+### 2026-11-14 — Remove Daunting and Crazy Eye skills; move Crazy Eye icon to Infantryman
+
+- **Decision (owner):** removed `daunting` and `crazy_eye` from `SKILLS` (now 64 human skills) and their locale entries (`names.*.json` and `web/src/locales/*.json`), bumped `STATE_VERSION` to 118 with `upgradeTo118` stripping them from `skills`/`bookSkill`, and remapped `crazy_eye`'s icon to `infantryman` in `web/src/art/assets.ts` (while keeping `daunting`'s earlier remap to `unconcerned`).

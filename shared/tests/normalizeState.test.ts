@@ -479,6 +479,21 @@ describe("upgrade", () => {
     upgrade({ game: raw, overrides }, 116);
     expect(normalizeGame(raw, overrides).players[0]!.cheats).toEqual(["infiniteAp"]);
   });
+
+  it("upgradeTo118 drops the removed crazy_eye and daunting skills and keeps the others", () => {
+    const { game, overrides } = fresh();
+    const raw = stored(game);
+    raw.players[0].skills = ["gunman", "crazy_eye", "daunting"];
+    raw.players[0].bookSkill = "crazy_eye";
+    raw.players[1].bookSkill = "daunting";
+    raw.players[2].bookSkill = "medic";
+    upgrade({ game: raw, overrides }, 117);
+    const normalized = normalizeGame(raw, overrides);
+    expect(normalized.players[0]!.skills).toEqual(["gunman"]);
+    expect(normalized.players[0]!.bookSkill).toBeUndefined();
+    expect(normalized.players[1]!.bookSkill).toBeUndefined();
+    expect(normalized.players[2]!.bookSkill).toBe("medic");
+  });
 });
 
 describe("normalizeFrame (#384)", () => {

@@ -31,6 +31,14 @@ describe("skillIcon", () => {
     expect(skillIcon("daunting")).toBe(EMPTY_SLOT_ICON);
   });
 
+  it("maps infantryman to the former crazy_eye icon and removes crazy_eye", () => {
+    const infantryman = skillIcon("infantryman");
+    expect(infantryman).not.toBe(EMPTY_SLOT_ICON);
+    expect(infantryman).toContain("crazy_eye");
+
+    expect(skillIcon("crazy_eye")).toBe(EMPTY_SLOT_ICON);
+  });
+
   it("returns EMPTY_SLOT_ICON for an unknown skill", () => {
     expect(skillIcon("unknown_skill_id")).toBe(EMPTY_SLOT_ICON);
   });
