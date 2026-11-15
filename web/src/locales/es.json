@@ -1718,6 +1718,9 @@
     "title": "Superkube",
     "close": "Cerrar",
     "apply": "Aplicar",
+    "search": "Buscar objetos",
+    "spawnItem": "Hacer aparecer: {{item}}",
+    "noMatch": "Ningún objeto coincide.",
     "tabs": {
       "health": "Salud",
       "items": "Objetos",

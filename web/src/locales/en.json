@@ -1789,6 +1789,9 @@
     "title": "Superkube",
     "close": "Close",
     "apply": "Apply",
+    "search": "Search items",
+    "spawnItem": "Spawn {{item}}",
+    "noMatch": "No item matches.",
     "tabs": {
       "health": "Health",
       "items": "Items",

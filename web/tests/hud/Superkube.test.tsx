@@ -62,4 +62,25 @@ describe("SuperkubeOpener", () => {
     fireEvent.click(applyFor("Teleport to a room"));
     expect(onKube).toHaveBeenCalledWith("teleport", "LABORATORY");
   });
+
+  it("spawns the item picked from the searched grid", () => {
+    const onKube = open();
+    fireEvent.click(screen.getByRole("tab", { name: "Items" }));
+    const spawn = screen.getByRole("button", { name: "Spawn an item" }) as HTMLButtonElement;
+    expect(spawn.disabled).toBe(true);
+    const tiles = () => screen.getAllByRole("button", { pressed: false });
+    const all = tiles().length;
+    fireEvent.change(screen.getByLabelText("Search items"), { target: { value: "blaster" } });
+    expect(tiles().length).toBeLessThan(all);
+    fireEvent.click(screen.getByRole("button", { name: "Blaster" }));
+    fireEvent.click(screen.getByRole("button", { name: "Spawn Blaster" }));
+    expect(onKube).toHaveBeenCalledWith("spawn", "blaster");
+  });
+
+  it("says so when no item matches", () => {
+    open();
+    fireEvent.click(screen.getByRole("tab", { name: "Items" }));
+    fireEvent.change(screen.getByLabelText("Search items"), { target: { value: "zzzz" } });
+    expect(screen.getByText("No item matches.")).toBeTruthy();
+  });
 });

@@ -692,3 +692,24 @@ li.research-item-blocked .research-progress {
   flex: 1 1 8rem;
   min-width: 0;
 }
+
+/* The Spawn picker: a grid of item tiles, each the 50x50 icon at 1x over its name. */
+.kube-item-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(5.5rem, 1fr));
+  gap: var(--space-1);
+  margin-top: var(--space-2);
+}
+
+.kube-item {
+  font-size: 0.75rem;
+  line-height: 1.2;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.kube-item > img {
+  width: 50px;
+  height: 50px;
+  border-radius: 4px;
+}

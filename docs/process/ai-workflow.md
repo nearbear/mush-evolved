@@ -3679,3 +3679,11 @@ Added `shared/src/kube.ts`: the `KUBE_OPS` table and a pure `applyKube`, reached
 - **Built:** `GoalBot` reports any fire or broken equipment in its room as a free reflex before its goal. `fireShare.ts` now takes the fire count from the alert bar (`view.alerts.fires`) and burning rooms from reports (`view.burningRooms`), so the `Fire: in` and `Fire: out` chat lines went away; only `Fire: clear in <ROOM>` stays, because a report can't say where a fire isn't. Exact counts also replaced the "searched everywhere, give up" guess.
 - **Found:** bots have no goal that repairs equipment, so a breakdown report helps humans and #443's oxygen tank, but no bot acts on it yet. Left for the owner to decide, along with the explore plan (advised against: exploring costs MP only, and plans are for rosters).
 - **Measured:** 10 seeds against a fresh main baseline: fire numbers unchanged (0.09 rooms lit and put out a cycle), chat 386 → 356, days within noise (−0.11).
+
+### 2026-11-14: Superkube window closed on tab change (#170)
+
+Bug: switching the Superkube window to Items or Travel closed it. Cause: GameView's desktop "click outside the Inspect panel resets the selection" listener treated clicks in the portaled dialog as outside `.inspect`, so the selection fell back to yourself and the opener (and its dialog) unmounted. Fix: clicks inside any `[role='dialog']` count as inside. The isolated Superkube DOM test couldn't catch it, since the reset lives in GameView; worth remembering for any window opened from the Inspect panel.
+
+### 2026-11-14: Superkube item picker (#170)
+
+The Items tab's Spawn row became a picker: a search field (accent- and case-insensitive, over the translated name and the id, every word must match), a grid of `.pick-tile` buttons with each item's 50x50 icon at 1x over its name, sorted by name in the current language, and one Spawn button naming the picked item. Picking is single-click; only the button sends. No memo: the panel mounts only while its tab is open. New en/fr/es strings `kube.search`, `kube.spawnItem`, `kube.noMatch`; two DOM tests.

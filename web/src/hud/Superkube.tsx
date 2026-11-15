@@ -7,6 +7,7 @@ import { Tabs } from "@base-ui/react/tabs";
 import { DEFAULT_CONFIG, KUBE_OPS, kubeChoices, type KubeChoiceSource, type KubeGroup, type KubeOpId, type PlayerView } from "@mush2/shared";
 import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { EMPTY_SLOT_ICON, itemIcon } from "../art/assets.ts";
 import { useNames } from "../i18n/names.ts";
 import { FramedDialog } from "./FramedDialog.tsx";
 
@@ -38,9 +39,13 @@ export function SuperkubeOpener({ view, onKube }: { view: PlayerView; onKube: Se
           </Tabs.List>
           {GROUPS.map((group) => (
             <Tabs.Panel key={group} className="settings-panel" value={group}>
-              {OPS.filter((op) => KUBE_OPS[op].group === group).map((op) => (
-                <KubeRow key={op} op={op} view={view} source={source} onKube={onKube} />
-              ))}
+              {OPS.filter((op) => KUBE_OPS[op].group === group).map((op) =>
+                KUBE_OPS[op].arg === "item" ? (
+                  <KubeItemPicker key={op} op={op} source={source} onKube={onKube} />
+                ) : (
+                  <KubeRow key={op} op={op} view={view} source={source} onKube={onKube} />
+                ),
+              )}
             </Tabs.Panel>
           ))}
         </Tabs.Root>
@@ -88,5 +93,50 @@ function KubeRow({ op, view, source, onKube }: { op: KubeOpId; view: PlayerView;
         {t("kube.apply")}
       </button>
     </div>
+  );
+}
+
+/** Lowercase without accents, so "epee" finds "Épée". */
+const fold = (text: string) => text.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
+
+/**
+ * An item option (Spawn) as a picker: a search field over the item names (and ids), a grid of icon tiles sorted by
+ * name, and one button that sends the picked item. Picking is single-click; only the button sends.
+ */
+function KubeItemPicker({ op, source, onKube }: { op: KubeOpId; source: KubeChoiceSource; onKube: SendKube }) {
+  const { t, i18n } = useTranslation();
+  const names = useNames();
+  const searchId = useId();
+  const [query, setQuery] = useState("");
+  const [picked, setPicked] = useState<string | null>(null);
+  // About a hundred items, and the panel is mounted only while its tab is open: cheap enough to build per render.
+  const items = kubeChoices(source, "item")
+    .map((type) => ({ type, name: names.item(type) }))
+    .map((it) => ({ ...it, key: `${fold(it.name)} ${fold(it.type)}` }))
+    .sort((a, b) => a.name.localeCompare(b.name, i18n.language));
+  const words = fold(query).split(/\s+/).filter(Boolean);
+  const shown = words.length === 0 ? items : items.filter((it) => words.every((w) => it.key.includes(w)));
+  return (
+    <section className="kube-items" aria-label={t(`kube.ops.${op}`)}>
+      <div className="settings-row kube-row">
+        <label htmlFor={searchId}>{t("kube.search")}</label>
+        <input id={searchId} type="search" value={query} onChange={(e) => setQuery(e.target.value)} />
+        <button type="button" disabled={picked === null} onClick={() => picked && onKube(op, picked)}>
+          {picked ? t("kube.spawnItem", { item: names.item(picked) }) : t(`kube.ops.${op}`)}
+        </button>
+      </div>
+      {shown.length === 0 ? (
+        <p className="sub">{t("kube.noMatch")}</p>
+      ) : (
+        <div className="kube-item-grid">
+          {shown.map((it) => (
+            <button key={it.type} type="button" className="pick-tile kube-item" aria-pressed={picked === it.type} onClick={() => setPicked(it.type)}>
+              <img src={itemIcon(it.type) ?? EMPTY_SLOT_ICON} alt="" aria-hidden="true" draggable={false} />
+              <span>{it.name}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </section>
   );
 }

@@ -131,7 +131,8 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
     if (mobile) return;
     const reset = (e: MouseEvent) => {
       if (selectedByThisClick.current) return;
-      if (e.target instanceof Element && !e.target.closest(".inspect")) setSelected(null);
+      // A window opened from the panel (the Superkube, a document) is portaled outside it; clicks inside it count as inside.
+      if (e.target instanceof Element && !e.target.closest(".inspect, [role='dialog']")) setSelected(null);
     };
     document.addEventListener("click", reset);
     return () => document.removeEventListener("click", reset);
