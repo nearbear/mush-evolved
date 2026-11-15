@@ -156,6 +156,12 @@ export function bite(state: GameState, player: PlayerState): void {
   damage(state, other, BITE_DAMAGE, "injury");
 }
 
+/** Logs publicly that the player's stomach grumbles (Tapeworm), when they can have special logs. */
+export function rumble(state: GameState, player: PlayerState): void {
+  if (!canHaveSpecialLogs(player)) return;
+  logPublic(state, player.room, "rumble", { name: player.character });
+}
+
 /**
  * Logs that the player vomits, when they can have special logs. Alone, they throw up on themselves; otherwise a random
  * other living player in the room is the target. Whoever is hit gets dirty (soil: an apron or Stickler can block it).
@@ -184,4 +190,12 @@ export function spreadByTouch(state: GameState, a: PlayerState, b: PlayerState):
   const fromB = spreading(b);
   for (const id of fromA) addDisease(state, b, id as StatusId);
   for (const id of fromB) addDisease(state, a, id as StatusId);
+}
+
+/**
+ * Whether your screen's text is blurred (Pink Eye, owner 2026-11-15): the iTrackie and the action buttons. Read from
+ * your own view only (your statuses carry your diseases); a Mush carries it without suffering it.
+ */
+export function blurredVision(view: { statuses: readonly string[]; you: { role: string } }): boolean {
+  return view.you.role !== "mush" && view.statuses.includes("pink_eye_disease");
 }

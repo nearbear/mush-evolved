@@ -68,13 +68,17 @@ export function isFullBelly(state: Readonly<Pick<GameState, "config">>, p: Reado
   return p.satiety >= state.config.hunger.fullBellyAt;
 }
 
-/** Hungry once satiety has stayed at 0 for `hungryAfterCycles` cycles; the count restarts whenever satiety reaches 0 again. */
+/**
+ * Hungry once satiety has stayed at 0 for `hungryAfterCycles` cycles (`tapewormHungryAfterCycles` with a tapeworm); the
+ * count restarts whenever satiety reaches 0 again.
+ */
 export function isHungry(state: Readonly<Pick<GameState, "config" | "cycle">>, p: Readonly<PlayerState>): boolean {
   return (
     p.role === "human" &&
     p.satiety === 0 &&
     p.satietyZeroSince !== null &&
-    state.cycle - p.satietyZeroSince >= state.config.hunger.hungryAfterCycles
+    state.cycle - p.satietyZeroSince >=
+      (p.modifiers.includes("tapeworm_disease") ? state.config.hunger.tapewormHungryAfterCycles : state.config.hunger.hungryAfterCycles)
   );
 }
 
