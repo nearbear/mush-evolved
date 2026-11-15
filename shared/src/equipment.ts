@@ -2,6 +2,7 @@
 // Which equipment is in which room comes from the original map (see
 // placedEquipment in shipLayout.ts); this file only names the types.
 
+import { projectDone } from "./projects.ts";
 import type { TitleId } from "./titles.ts";
 import type { GameState, PlayerState } from "./types.ts";
 
@@ -86,9 +87,16 @@ export const DYNARCADE_EQUIPMENT = "DYNARCADE";
 /** Id of the camera installed in a room (at most one per room). */
 export const cameraEquipmentId = (room: string): string => `${room}:${CAMERA_EQUIPMENT}`;
 
-/** The working equipment of this type in the player's room, or none: broken equipment does nothing (breakage.ts). */
+/** Auxiliary NERON terminals on the map, offline until the `AUXILIARY_TERMINAL` project completes. */
+export const AUXILIARY_TERMINAL_IDS: ReadonlySet<string> = new Set(["SICK_BAY:neron_sick", "MOTOR_ROOM:neron_engine"]);
+
+/** Whether a piece of equipment is online (not an auxiliary terminal waiting for `AUXILIARY_TERMINAL`). */
+export const isEquipmentEnabled = (state: Readonly<Pick<GameState, "projects">>, equipment: Readonly<{ id: string }>): boolean =>
+  !AUXILIARY_TERMINAL_IDS.has(equipment.id) || projectDone(state, "AUXILIARY_TERMINAL");
+
+/** The working equipment of this type in the player's room, or none: broken or offline equipment does nothing (breakage.ts). */
 export const equipmentHere = (state: Readonly<GameState>, player: Readonly<PlayerState>, type: string) =>
-  (state.equipment[player.room] ?? []).filter((equipment) => equipment.type === type && !equipment.broken);
+  (state.equipment[player.room] ?? []).filter((equipment) => equipment.type === type && !equipment.broken && isEquipmentEnabled(state, equipment));
 
 /** Whether the equipment with this id in `room` is broken (breakage.ts). */
 export const isBrokenIn = (state: Readonly<GameState>, room: string, id: string): boolean =>

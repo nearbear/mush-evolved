@@ -134,10 +134,12 @@ export function roomLooks(
   blasterGun?: boolean,
   fissionCoffee?: boolean,
   guaranaCoffee?: boolean,
+  auxiliaryTerminal?: boolean,
 ): ReadonlyMap<string, string> {
-  const looks = new Map<string, string>([
-    ["auxiliary_terminal_neron", neronThread ? "auxiliary_terminal_neron_upgrade_b" : "auxiliary_terminal_neron_upgrade_a"],
-  ]);
+  const looks = new Map<string, string>();
+  if (auxiliaryTerminal) {
+    looks.set("auxiliary_terminal_neron", neronThread ? "auxiliary_terminal_neron_upgrade_b" : "auxiliary_terminal_neron_upgrade_a");
+  }
   if (pilgredRepaired) looks.set("core_pilgred", "core_pilgred_upgrade");
   if (humanTankFull) looks.set("human_tank", "human_tank_full");
   if (superCalcBuilt) looks.set("server", "server_active");
@@ -607,6 +609,7 @@ export function IsoRoom({
   const ringOf = new Map(neighbors.map((n) => [n.id as string, n.ring]));
   const byId = new Map([...drawnPeople, ...neighbors.flatMap((n) => n.people)].map((o) => [o.id, o]));
   const superCalcBuilt = equipment.some((e) => e.type === SUPER_CALC_EQUIPMENT);
+  const auxiliaryTerminal = (projects?.AUXILIARY_TERMINAL ?? 0) >= PROJECT_COMPLETE;
   const neronThread = (projects?.NERON_PROJECT_THREAD ?? 0) >= PROJECT_COMPLETE;
   const bayDoorXxl = (projects?.BAY_DOOR_XXL ?? 0) >= PROJECT_COMPLETE;
   const plasmaShield = (projects?.PLASMA_SHIELD ?? 0) >= PROJECT_COMPLETE;
@@ -616,8 +619,8 @@ export function IsoRoom({
   const fissionCoffee = (projects?.FISSION_COFFEE_ROASTER ?? 0) >= PROJECT_COMPLETE;
   const guaranaCoffee = (research?.GUARANA_CAPUCCINO ?? 0) >= RESEARCH_COMPLETE;
   const looks = useMemo(
-    () => roomLooks(pilgredRepaired, humanTankFull, superCalcBuilt, neronThread, bayDoorXxl, plasmaShield, takeoffThruster, extraAmmo, blasterGun, fissionCoffee, guaranaCoffee),
-    [pilgredRepaired, humanTankFull, superCalcBuilt, neronThread, bayDoorXxl, plasmaShield, takeoffThruster, extraAmmo, blasterGun, fissionCoffee, guaranaCoffee],
+    () => roomLooks(pilgredRepaired, humanTankFull, superCalcBuilt, neronThread, bayDoorXxl, plasmaShield, takeoffThruster, extraAmmo, blasterGun, fissionCoffee, guaranaCoffee, auxiliaryTerminal),
+    [pilgredRepaired, humanTankFull, superCalcBuilt, neronThread, bayDoorXxl, plasmaShield, takeoffThruster, extraAmmo, blasterGun, fissionCoffee, guaranaCoffee, auxiliaryTerminal],
   );
   const imageInput = { layout, room, people: byId, walkers, seats, corpses, drones, looks };
 

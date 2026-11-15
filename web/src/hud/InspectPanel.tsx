@@ -244,7 +244,7 @@ function EquipmentSprite({ view, layout, equipment }: { view: PlayerView; layout
   const tile = room?.tiles[Number(entry?.[0].slice(1))];
   const rawSlice = equipment.type === SUPER_CALC_EQUIPMENT ? "server_active" : tile?.slice;
   const sliceName =
-    rawSlice === "auxiliary_terminal_neron"
+    rawSlice === "auxiliary_terminal_neron" && (view.projects.AUXILIARY_TERMINAL ?? 0) >= PROJECT_COMPLETE
       ? (view.projects.NERON_PROJECT_THREAD ?? 0) >= PROJECT_COMPLETE
         ? "auxiliary_terminal_neron_upgrade_b"
         : "auxiliary_terminal_neron_upgrade_a"

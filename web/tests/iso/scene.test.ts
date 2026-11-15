@@ -282,9 +282,9 @@ describe("roomLooks and ambient animations", () => {
       }),
     );
 
-  it("maps project-driven scenery looks with auxiliary terminals always active", () => {
+  it("maps project-driven scenery looks with auxiliary terminals off until AUXILIARY_TERMINAL", () => {
     const base = roomLooks(false);
-    expect(base.get("auxiliary_terminal_neron")).toBe("auxiliary_terminal_neron_upgrade_a");
+    expect(base.has("auxiliary_terminal_neron")).toBe(false);
     expect(base.has("bay_window")).toBe(false);
     expect(base.has("plasma_shield")).toBe(false);
     expect(base.has("bay_alpha_platform")).toBe(false);
@@ -292,7 +292,11 @@ describe("roomLooks and ambient animations", () => {
     expect(base.has("spaceship")).toBe(false);
     expect(base.has("coffee")).toBe(false);
 
-    const upgraded = roomLooks(true, true, true, true, true, true, true, true, true, true, true);
+    const auxOnly = roomLooks(false, false, false, true, false, false, false, false, false, false, false, true);
+    expect(auxOnly.get("auxiliary_terminal_neron")).toBe("auxiliary_terminal_neron_upgrade_b");
+    expect(roomLooks(false, false, false, false, false, false, false, false, false, false, false, true).get("auxiliary_terminal_neron")).toBe("auxiliary_terminal_neron_upgrade_a");
+
+    const upgraded = roomLooks(true, true, true, true, true, true, true, true, true, true, true, true);
     expect(upgraded.get("auxiliary_terminal_neron")).toBe("auxiliary_terminal_neron_upgrade_b");
     expect(upgraded.get("bay_window")).toBe("bay_window_upgrade");
     expect(upgraded.get("plasma_shield")).toBe("plasma_shield_upgrade");
@@ -329,11 +333,15 @@ describe("roomLooks and ambient animations", () => {
       loops: "forever",
     });
 
-    const neronA = realScene("auxiliary_terminal_neron", roomLooks(false));
+    const neronOff = realScene("auxiliary_terminal_neron", roomLooks(false));
+    expect(neronOff.image.frame.sy).toBe(realLayout.slices.auxiliary_terminal_neron!.y);
+    expect(neronOff.anim).toBeUndefined();
+
+    const neronA = realScene("auxiliary_terminal_neron", roomLooks(false, false, false, false, false, false, false, false, false, false, false, true));
     expect(neronA.image.frame.sy).toBe(realLayout.slices.auxiliary_terminal_neron_upgrade_a!.y);
     expect(neronA.anim).toMatchObject({ frames: [0, 1, 2, 3, 4, 5, 6, 7], frameMs: Array(8).fill(4 * tick), loops: "forever" });
 
-    const neronB = realScene("auxiliary_terminal_neron", roomLooks(false, false, false, true, false, false));
+    const neronB = realScene("auxiliary_terminal_neron", roomLooks(false, false, false, true, false, false, false, false, false, false, false, true));
     expect(neronB.image.frame.sy).toBe(realLayout.slices.auxiliary_terminal_neron_upgrade_b!.y);
     expect(neronB.anim).toMatchObject({ frames: [0, 1, 2, 3, 4, 5, 6, 7], frameMs: Array(8).fill(4 * tick), loops: "forever" });
   });

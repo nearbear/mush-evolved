@@ -995,7 +995,7 @@ describe("project order (#428)", () => {
   /** A human at the NERON core with AP, offered `deck` (dealt first), with `progress` already on the ship's projects. */
   function atCore(progress: Record<string, number> = {}, deck: ProjectId[] = ["PATROL_SHIP_LAUNCHER", "FIRE_SENSOR", "PLASMA_SHIELD"]) {
     const { game: start, id } = setup();
-    const core = roomsWith(viewFor(start, id), ["NERON_CORE"])[0]!;
+    const core = "NEXUS_ROOM";
     const game = edit(start, id, (p) => {
       p.room = core;
       p.ap = 10;

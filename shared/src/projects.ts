@@ -120,6 +120,8 @@ export const PROJECT_STATUS: Readonly<Partial<Record<ProjectId, ProjectStatus>>>
   EXTRA_HYDROPONPOTS: "full",
   // Any offered project above 0% gains +5% per cycle; at most one can complete per cycle (owner, 2026-11-14; projectEffects.ts).
   NERON_PROJECT_THREAD: "full",
+  // Sick bay and engine room auxiliary NERON terminals stay offline (no access/project/coup/breakage, black screen) until complete (owner, 2026-11-14; equipment.ts).
+  AUXILIARY_TERMINAL: "full",
   // Each burning room has a 25% chance per cycle to go out before acting, announced globally without the room (owner, 2026-11-14; fire.ts).
   AUTO_WATERING: "full",
 };

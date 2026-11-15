@@ -8,22 +8,23 @@ import { forgetReports } from "./reports.ts";
 import { getUp } from "./actions/lie_down.ts";
 import { pushChat } from "./chat.ts";
 import { loseLink } from "./comms.ts";
+import { isEquipmentEnabled } from "./equipment.ts";
 import { ITEM_TYPES, removeItem } from "./items.ts";
 import type { Equipment, GameState, ItemState, RoomId } from "./types.ts";
 
 /** Whether equipment of this type can break: only types with a repair chance in `config.repair.chance`. */
 export const isBreakable = (state: Readonly<GameState>, type: string): boolean => state.config.repair.chance[type] !== undefined;
 
-/** The breakable equipment in a room that still works. */
+/** The breakable equipment in a room that still works and is online. */
 export const workingBreakable = (state: Readonly<GameState>, room: RoomId): Equipment[] =>
-  (state.equipment[room] ?? []).filter((equipment) => !equipment.broken && isBreakable(state, equipment.type));
+  (state.equipment[room] ?? []).filter((equipment) => !equipment.broken && isBreakable(state, equipment.type) && isEquipmentEnabled(state, equipment));
 
 /**
- * Breaks a piece of equipment, if it can break and isn't broken yet. NERON names the equipment, not the room, in global
+ * Breaks a piece of equipment, if it can break, is online, and isn't broken yet. NERON names the equipment, not the room, in global
  * chat (owner, 2026-10-25) unless `announce` is false (sabotage is silent). Whoever lies on it gets up. Mutates a state the caller already cloned.
  */
 export function breakEquipment(state: GameState, equipment: Equipment, announce = true): void {
-  if (equipment.broken || !isBreakable(state, equipment.type)) return;
+  if (equipment.broken || !isBreakable(state, equipment.type) || !isEquipmentEnabled(state, equipment)) return;
   equipment.broken = true;
   forgetReports(state, { equipment: equipment.id }); // Broken again, it starts unreported (#444).
   for (const p of state.players) if (p.lyingIn === equipment.id) getUp(p);
