@@ -3777,3 +3777,7 @@ Small refactor on request: `GameRoom.social` called four bot-line parsers (item,
 ### 2026-11-14: Antispore gas research (`ANTISPORE_GAZ`)
 - **Decision (owner / original `research.json`):** Completing `ANTISPORE_GAZ` reduces the Mush daily spore extraction cap (`sporesPerDay`) by `config.spores.antisporeReduction` (2, from 4 to 2, clamped at 0), with the standard `researchCompleted` public log line only.
 - **What worked:** `sporesPerDay` already folded `config.spores.perDay` in `shared/src/modifiers.ts`, and `RESEARCH_REQUIRES.ANTISPORE_GAZ` + en/fr/es locale strings were already in place, so wiring `antisporeReduction` into `sporesPerDay` and marking `RESEARCH_STATUS.ANTISPORE_GAZ = "full"` took minimal, clean changes.
+
+### 2026-11-14 — Inverted pulsator project (`TURRET_EXTRA_FIRERATE`)
+- **Decision (owner):** Implemented the `TURRET_EXTRA_FIRERATE` NERON project ("Inverted pulsator"): once complete, working turrets recharge twice as fast each cycle (`turretRechargePerCycle` in `shared/src/hunters.ts`, `config.project.turretExtraFirerate.rechargeMultiplier` = 2, so 2 charges per cycle up to the 4-charge cap; broken turrets and patrol ships unaffected). Marked `TURRET_EXTRA_FIRERATE: "full"` in `PROJECT_STATUS`.
+- **What worked:** Existing `huntersCycle` and `config.project` structure made it a clean, isolated change with zero stored-state or view changes, covered by `shared/tests/invertedPulsator.test.ts`.

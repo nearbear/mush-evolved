@@ -290,6 +290,7 @@ export const DEFAULT_CONFIG: GameConfig = {
     patrolShipLauncher: { takeoffApDiscount: 1 },
     patrolShipExtraAmmo: { extraCharges: 6 },
     patrolShipBlasterGun: { extraDamage: 1 },
+    turretExtraFirerate: { rechargeMultiplier: 2 },
     armourCorridor: { damageReduction: 1 },
     fissionCoffeeRoaster: { cycles: [1, 5] },
     dynarcade: { room: "SPACESHIP_BAY_AA", cost: { ap: 1 }, successChance: 0.33, failureMultiplier: 1.5, morale: 2, injuryChance: 0.33 },
