@@ -60,7 +60,7 @@ export function InspectPanel({
         : action.type === "upgrade_drone"
           ? t("actions.upgradeDroneWith", { upgrade: names.droneUpgrade(action.upgrade) })
           : names.action(action.type);
-    return <ActionLabel text={text} cost={cost} chance={chance} visibility={actionVisibility(action.type)} />;
+    return <ActionLabel text={text} cost={cost} chance={chance} visibility={actionVisibility(action.type, view)} />;
   };
   const resolved = resolveTarget(view, target);
   const options = optionsOn(view, target);

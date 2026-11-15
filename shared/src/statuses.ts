@@ -39,9 +39,11 @@ const FIXED_STATUS_PUBLIC = {
   focused: true,
   // Owner, 2026-11-11: at 0 morale; private, Mush included (a Mush never dies of it, so no one else may see it).
   hopeless: false,
+  // Owner, 2026-11-14: Nimble mode (Nimble Fingers); private to its holder.
+  nimble: false,
 } as const;
 
-export const STATUS_IDS = ["dirty", "full_belly", "hungry", "immune", "immunity", "pacifist", "hyperactive", "mankind_only_hope", "wheelchair", "accommodated", "outcast", "protecting", "protected", "guardian", "broken_nose_injury", "genius", "inactive", "super_inactive", "focused", "hopeless"] as const;
+export const STATUS_IDS = ["dirty", "full_belly", "hungry", "immune", "immunity", "pacifist", "hyperactive", "mankind_only_hope", "wheelchair", "accommodated", "outcast", "protecting", "protected", "guardian", "broken_nose_injury", "genius", "inactive", "super_inactive", "focused", "hopeless", "nimble"] as const;
 export type StatusId = string;
 export function statusIdsFor(diseases: readonly string[]): string[] {
   return [...new Set([...STATUS_IDS, ...diseases])];

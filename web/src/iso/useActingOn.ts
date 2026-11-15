@@ -36,14 +36,14 @@ export function begun(prev: Queue, next: Queue): Action | undefined {
   return undefined;
 }
 
-export function useActingOn(you: PlayerView["you"] | undefined): { actingOn: ActingOn | null; sentCount: number; sent: (action: Action) => void } {
+export function useActingOn(you: PlayerView["you"] | undefined, statuses?: readonly string[]): { actingOn: ActingOn | null; sentCount: number; sent: (action: Action) => void } {
   const [actingOn, setActingOn] = useState<ActingOn | null>(null);
   /** Actions sent so far, queued or not: sending any of them gets you up from a chair (IsoRoom). */
   const [sentCount, setSentCount] = useState(0);
   const walkFor = (action: Action | undefined) => {
     const target = action?.type === "move" ? { kind: "door" as const, to: action.to } : action && actionTarget(action);
     if (!action || !target) return;
-    const visibility = actionVisibility(action.type);
+    const visibility = actionVisibility(action.type, statuses ? { statuses } : undefined);
     const endsPush = !!you && endsAccommodation(action, you.id, visibility);
     setActingOn((a) => ({ target, n: (a?.n ?? 0) + 1, share: visibility === "public", endsPush, ...(action.type === "access" && { seats: true }) }));
   };

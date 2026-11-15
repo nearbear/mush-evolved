@@ -250,6 +250,8 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   fertile: "full",
   // Mush skill: showering costs at most 1 AP and no HP (owner reading of eMushpedia, 2026-10-27, actions/shower.ts).
   water_resistant: "full",
+  // Mush skill: enter/exit Nimble mode for 0 AP; room-level public actions become secret (owner, 2026-11-14, actions/nimble.ts).
+  nimble_fingers: "full",
   //Increases success rate, injury chance, and dirty chance by 20%
   expert: "full",
   // Free turret shots from Shoot points (owner, 2026-10-25) and +1 expedition strength with a working gun (owner,

@@ -45,7 +45,7 @@ export function PeekBar({
         : action.type === "upgrade_drone"
           ? t("actions.upgradeDroneWith", { upgrade: names.droneUpgrade(action.upgrade) })
           : names.action(action.type);
-    return <ActionLabel text={text} cost={cost} chance={chance} visibility={actionVisibility(action.type)} />;
+    return <ActionLabel text={text} cost={cost} chance={chance} visibility={actionVisibility(action.type, view)} />;
   };
   if (door) {
     const canGo = reachable.has(door);

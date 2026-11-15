@@ -1,5 +1,6 @@
 import { Action, type ActionVisibility } from "./action.ts";
 import { hasSkill } from "../skills.ts";
+import { removeStatus } from "../statuses.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
 export type ResetSkillsActionData = { type: "reset_skills" };
@@ -33,6 +34,7 @@ export class ResetSkillsAction extends Action<ResetSkillsActionData> {
 
   override apply(_state: GameState, player: PlayerState): void {
     player.mushSkills = player.mushSkills.filter((s) => s === "epigenetics");
+    removeStatus(player, "nimble");
     player.epigeneticsUsed = true;
   }
 }

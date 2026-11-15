@@ -90,6 +90,8 @@ const ACTION_NAME_KEYS = {
   get_up: "actions.getUp",
   guard: "actions.guard",
   stop_guarding: "actions.stopGuarding",
+  enter_nimble: "actions.enterNimble",
+  exit_nimble: "actions.exitNimble",
   accommodate: "actions.accommodate",
   accept_accommodation: "actions.acceptAccommodation",
   stop_accommodation: "actions.stopAccommodation",
