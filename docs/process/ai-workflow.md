@@ -3927,3 +3927,18 @@ Two hidden-information choices made by Claude, not the owner, worth a look: (1) 
 ### 2026-11-14 — Remove leftover partial Opportunist implementation
 - **Change:** Removed the unimplemented `opportunist` rule scaffolding left behind without `modifiers/opportunist.ts` (`SKILL_STATUS.opportunist`, `config.opportunist`, `PlayerState.opportunistTitles` and its `normalizeState`/`rules`/`leakFields`/`leaks.test.ts` plumbing, `Modifier.onTitleGained` / `titleGained`, `opportunistTitle` locale strings in `en`/`es`/`fr`, and the `implemented-rules.md` / `code-map/shared.md` entries), keeping `opportunist` as an unimplemented pickable skill.
 - **Verification:** `npm run build` passed; `npm test` passed all suites.
+
+### 2026-11-14 — Nimble mode witnessed logs stay plain public
+
+- **Decision (owner):** Witnessed or camera-seen room-level `logPublic` calls while in Nimble mode must stay plain public (`kind: undefined`, `leaked: undefined`) rather than `kind: "secret", leaked: true`, so Nimble mode never leaks a Mush via the secret badge. Also scoped `withNimbleActor` so non-actor events (`killPlayer`, `wheelAlong`) and nested `performAction` calls (e.g. `summon` walks) are not rewritten under the Nimble actor.
+- **Files:** `shared/src/log.ts`, `shared/src/rules.ts`, `shared/src/death.ts`, `shared/src/actions/accommodate.ts`, `shared/tests/nimble.test.ts`, `docs/rules/rules-design.md`, `docs/rules/implemented-rules.md`.
+
+### 2026-11-14 — Route around all known broken doors in `viewDoorsOpen`
+
+- **Change:** Updated `viewDoorsOpen` in `shared/src/situation.ts` to treat broken doors from `view.brokenDoors` (`DOOR_SENSOR`) and `view.alerts.reports` (`kind: "door"`) as shut in addition to `view.doors` in the viewer's own room, preventing bots from forgetting a broken door they just reported and bouncing `A -> C -> A -> C`.
+- **Files:** `shared/src/situation.ts`, `shared/tests/doors.test.ts`, `server/tests/goals.test.ts`.
+
+### 2026-11-14: Bot expedition launch (`expeditionLaunch`) and full-inventory iTrackie recovery
+
+- **What was done:** Added [`expeditionLaunch`](server/src/bots/goals/expeditionLaunch.ts) (priority 73.5, registered in `SOLO_GOALS` and `rest.ts`'s wakeup list) so a Pilot in orbit with unexplored sectors walks to `ICARUS`, runs `summon` on their open `"expedition"` plan, and launches with `icarus_takeoff` (waiting in `ICARUS` if short on AP). Updated `recoverITrackieGoal` in [`expeditionPrep`](server/src/bots/goals/expeditionPrep.ts) so returning crew bots with a full inventory drop expedition gear first to pick their `itrackie` back up before `observeReports` emits `shareReport`.
+- **What needed correction:** Initial unit test assumed `PlanetView.sectors` carries `explored` booleans, whereas `PlanetView.sectors` is `(string | null)[]` (revealed tags only). Fixed `hasKnownUnexplored` to compare `exploredOn(memory, orbitName)` against known sector count and fall back to `offered(view, "icarus_takeoff")` once in `ICARUS` (recording `noTakeoff:<orbitName>` in `memory.once` if unavailable).

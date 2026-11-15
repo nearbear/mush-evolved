@@ -4,10 +4,13 @@ import { DEFAULT_CONFIG } from "../src/config.ts";
 import { killPlayer } from "../src/death.ts";
 import { cure } from "../src/infection.ts";
 import { CAMERA_EQUIPMENT } from "../src/equipment.ts";
+import { ITRACKIE_ITEM } from "../src/items.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { queueAction } from "../src/queue.ts";
+import { createChannel } from "../src/chat.ts";
+import { postPlan } from "../src/plans.ts";
 import type { GameState } from "../src/types.ts";
-import { makeSeats, mustApply, nextCycle, option, player } from "./support.ts";
+import { makeSeats, must, mustApply, nextCycle, option, player } from "./support.ts";
 
 const base = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [] };
 const ROOM_A = Object.keys(base.rooms).find((r) => base.rooms[r]!.length >= 2)!;
@@ -83,16 +86,16 @@ describe("nimble fingers", () => {
     player(dropped, "p1").room = ROOM_A;
     expect(viewFor(dropped, "p1").log.some((l) => l.key === "dropped")).toBe(false);
 
-    // With a witness present, the drop becomes leaked room history with the secret kind.
+    // With a witness present, the drop stays plain public (no secret badge that would give the Mush away).
     player(s, "p1").room = ROOM_A;
     const witnessed = mustApply(s, "p0", { type: "drop", item: "test-item-1" });
     const p1Log = viewFor(witnessed, "p1").log.at(-1)!;
     expect(p1Log.key).toBe("dropped");
-    expect(p1Log.kind).toBe("secret");
-    expect(p1Log.leaked).toBe(true);
+    expect(p1Log.kind).toBeUndefined();
+    expect(p1Log.leaked).toBeUndefined();
   });
 
-  it("hides movement between empty rooms without cameras, and reveals it when entering or leaving a room with a player or camera", () => {
+  it("hides movement between empty rooms without cameras, and stays public when entering or leaving a room with a player or camera", () => {
     const baseNimble = mustApply(ship(), "p0", { type: "enter_nimble" });
 
     // Empty ROOM_A -> empty ROOM_B (no cameras): both left and entered are hidden.
@@ -103,23 +106,25 @@ describe("nimble fingers", () => {
     player(quiet, "p1").room = ROOM_B;
     expect(viewFor(quiet, "p1").log.some((l) => l.key === "entered")).toBe(false);
 
-    // Camera in ROOM_A -> empty ROOM_B: left is leaked in ROOM_A, entered is hidden in ROOM_B.
+    // Camera in ROOM_A -> empty ROOM_B: left looks public in ROOM_A, entered is hidden in ROOM_B.
     const camLeave = mustApply(ship(), "p0", { type: "enter_nimble" });
     camLeave.equipment[ROOM_A] = [{ id: "cam-a", type: CAMERA_EQUIPMENT }];
     const leftCam = mustApply(camLeave, "p0", { type: "move", to: ROOM_B });
     player(leftCam, "p1").room = ROOM_A;
     const leftEntry = viewFor(leftCam, "p1").log.find((l) => l.key === "left");
-    expect(leftEntry?.kind).toBe("secret");
-    expect(leftEntry?.leaked).toBe(true);
+    expect(leftEntry).toBeDefined();
+    expect(leftEntry?.kind).toBeUndefined();
+    expect(leftEntry?.leaked).toBeUndefined();
     player(leftCam, "p1").room = ROOM_B;
     expect(viewFor(leftCam, "p1").log.some((l) => l.key === "entered")).toBe(false);
 
-    // Empty ROOM_A -> ROOM_C with p1: left is hidden in ROOM_A, entered is leaked in ROOM_C.
+    // Empty ROOM_A -> ROOM_C with p1: left is hidden in ROOM_A, entered looks public in ROOM_C.
     const intoWitness = mustApply(ship(), "p0", { type: "enter_nimble" });
     const enteredWitness = mustApply(intoWitness, "p0", { type: "move", to: ROOM_C });
     const enteredEntry = viewFor(enteredWitness, "p1").log.find((l) => l.key === "entered");
-    expect(enteredEntry?.kind).toBe("secret");
-    expect(enteredEntry?.leaked).toBe(true);
+    expect(enteredEntry).toBeDefined();
+    expect(enteredEntry?.kind).toBeUndefined();
+    expect(enteredEntry?.leaked).toBeUndefined();
     player(enteredWitness, "p1").room = ROOM_A;
     expect(viewFor(enteredWitness, "p1").log.some((l) => l.key === "left")).toBe(false);
   });
@@ -168,5 +173,45 @@ describe("nimble fingers", () => {
 
     const dropped = mustApply(s, "p0", { type: "drop", item: "test-item-1" });
     expect(viewFor(dropped, "p0").log.at(-1)?.kind).toBeUndefined();
+  });
+
+  it("does not hide a death caused during a Nimble action", () => {
+    let killed = mustApply(ship(), "p0", { type: "enter_nimble" });
+    player(killed, "p1").room = ROOM_A;
+    player(killed, "p1").hp = 1;
+    while (player(killed, "p1").alive) {
+      killed = mustApply(killed, "p0", { type: "attack", target: "p1", weapon: "test-item-1" });
+    }
+    expect(player(killed, "p1").alive).toBe(false);
+
+    // Even with no other living witness in ROOM_A when p1 dies, the death line stays public room history.
+    player(killed, "p2").room = ROOM_A;
+    const diedLine = viewFor(killed, "p2").log.find((l) => l.key === "died");
+    expect(diedLine).toBeDefined();
+    expect(diedLine?.kind).toBeUndefined();
+    expect(diedLine?.visibleTo).toBe("all");
+  });
+
+  it("does not apply Nimble mode to another player's summons moves", () => {
+    let s = mustApply(ship(), "p0", { type: "enter_nimble" });
+    s.items.push(
+      { id: "it-0", type: ITRACKIE_ITEM, at: { kind: "player", id: "p0" } },
+      { id: "it-1", type: ITRACKIE_ITEM, at: { kind: "player", id: "p1" } },
+    );
+    s = must(createChannel(s, "p0", "ops", ["p1"]));
+    const channel = s.channels.find((c) => c.name === "ops")!.id;
+    s = must(postPlan(s, "p0", { channel, room: ROOM_A, purpose: "meal", slots: [{ kind: "onCall" }] }));
+    const plan = s.plans[0]!.id;
+    s = mustApply(s, "p1", { type: "claim_slot", plan, slot: 0 });
+
+    // p1 walks from ROOM_C -> ROOM_A (adjacent). p0 is Nimble in ROOM_A, p1 is not Nimble.
+    const summoned = mustApply(s, "p0", { type: "summon", plan });
+    expect(player(summoned, "p1").room).toBe(ROOM_A);
+
+    // p1's departure from ROOM_C (where only p2 was, then p1 left) and arrival in ROOM_A stay public under p1's name.
+    const p1Left = summoned.log.find((l) => l.key === "left" && l.params?.name === player(summoned, "p1").character);
+    expect(p1Left).toBeDefined();
+    expect(p1Left?.kind).toBeUndefined();
+    expect(p1Left?.visibleTo).toBe("all");
   });
 });
