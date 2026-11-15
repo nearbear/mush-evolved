@@ -101,7 +101,7 @@ describe("botany: the day change", () => {
   it("a plant sown at cycle 1 that needs 8 cycles is adult and produces from cycle 1 of the next day", () => {
     let s = ship({ growCycles: { [BANANA]: 8 } });
     s.items = s.items.filter((i) => !i.plant);
-    s = mustApply(s, "p0", { type: "sow", item: emptyPot(s).id, fruit: giveBanana(s) });
+    s = mustApply(s, "p0", { type: "sow", item: giveBanana(s) });
     const pot = planted(s)[0]!.id;
     expect(item(s, pot).plant).toEqual({ species: BANANA, age: 0, thirst: 0, sick: false });
     for (let c = 0; c < s.config.cyclesPerDay - 1; c++) s = nextCycle(s);
@@ -247,27 +247,40 @@ describe("botany: treat and hidden sickness", () => {
 });
 
 describe("botany: sow", () => {
-  it("needs a carried fruit and an empty pot in reach, uses the fruit up, and is public", () => {
+  it("needs a reachable fruit and an empty pot in reach, uses the fruit up, and is public", () => {
     const s = ship();
     expect(offered(s, "p0").some((x) => x.type === "sow")).toBe(false);
     const fruit = giveBanana(s);
     const pot = emptyPot(s).id;
-    expect(offered(s, "p0")).toContainEqual({ type: "sow", item: pot, fruit });
+    expect(offered(s, "p0")).toContainEqual({ type: "sow", item: fruit });
     const ap = player(s, "p0").ap;
-    const next = mustApply(s, "p0", { type: "sow", item: pot, fruit });
+    const next = mustApply(s, "p0", { type: "sow", item: fruit });
     expect(item(next, pot).plant).toEqual({ species: BANANA, age: 0, thirst: 0, sick: false });
     expect(next.items.some((i) => i.id === fruit)).toBe(false);
     expect(player(next, "p0").ap).toBe(ap - cfg.sow.cost.ap);
     expect(next.log.find((e) => e.key === "sowedPlant")).toMatchObject({ room: GARDEN, visibleTo: "all" });
   });
 
-  it("refuses a planted pot, a fruit on the floor, and someone else's fruit", () => {
+  it("can sow a fruit on the floor, preferring a floor pot over a carried pot", () => {
     const s = ship();
     const fruit = giveBanana(s);
-    expect(applyAction(s, "p0", { type: "sow", item: planted(s)[0]!.id, fruit }).ok).toBe(false);
-    expect(applyAction(s, "p1", { type: "sow", item: emptyPot(s).id, fruit }).ok).toBe(false);
     item(s, fruit).at = { kind: "room", id: GARDEN };
-    expect(applyAction(s, "p0", { type: "sow", item: emptyPot(s).id, fruit }).ok).toBe(false);
+    s.items.push({ id: "carried-pot", type: "tree_pot", at: { kind: "player", id: "p0" } });
+    const pot = emptyPot(s).id;
+    expect(offered(s, "p0")).toContainEqual({ type: "sow", item: fruit });
+    const next = mustApply(s, "p0", { type: "sow", item: fruit });
+    expect(item(next, pot).plant).toEqual({ species: BANANA, age: 0, thirst: 0, sick: false });
+    expect(item(next, "carried-pot").plant).toBeUndefined();
+    expect(next.items.some((i) => i.id === fruit)).toBe(false);
+  });
+
+  it("refuses when no empty pot is in reach, someone else's fruit, or a non-fruit", () => {
+    const s = ship();
+    const fruit = giveBanana(s);
+    expect(applyAction(s, "p1", { type: "sow", item: fruit }).ok).toBe(false);
+    item(s, emptyPot(s).id).at = { kind: "room", id: "LABORATORY" };
+    expect(applyAction(s, "p0", { type: "sow", item: fruit }).ok).toBe(false);
+    expect(applyAction(s, "p0", { type: "sow", item: planted(s)[0]!.id }).ok).toBe(false);
   });
 });
 
@@ -302,11 +315,11 @@ describe("botany: garden points", () => {
 });
 
 describe("botany: protocol", () => {
-  it("parses water, treat and sow, and rejects a sow without a fruit", () => {
-    for (const action of [{ type: "water", item: "i" }, { type: "treat", item: "i" }, { type: "sow", item: "i", fruit: "f" }]) {
+  it("parses water, treat and sow, and rejects a sow without an item", () => {
+    for (const action of [{ type: "water", item: "i" }, { type: "treat", item: "i" }, { type: "sow", item: "i" }]) {
       expect(parseGameMessage(JSON.stringify({ type: "action", action }))).toEqual({ type: "action", action });
     }
-    expect(parseGameMessage(JSON.stringify({ type: "action", action: { type: "sow", item: "i" } }))).toBeNull();
+    expect(parseGameMessage(JSON.stringify({ type: "action", action: { type: "sow" } }))).toBeNull();
   });
 
   it("an illegal action leaves the state unchanged", () => {

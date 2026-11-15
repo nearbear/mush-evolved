@@ -724,7 +724,7 @@ describe("actions from a client", () => {
     express_cook: [{ type: "express_cook", item: "i1" }],
     water: [{ type: "water", item: "i1" }],
     treat: [{ type: "treat", item: "i1" }],
-    sow: [{ type: "sow", item: "i1", fruit: "i2" }],
+    sow: [{ type: "sow", item: "i1" }],
     build: [{ type: "build", item: "i1" }],
     jettison: [{ type: "jettison", item: "i1" }],
     install: [{ type: "install", item: "i1" }],

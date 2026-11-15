@@ -3890,3 +3890,14 @@ Two hidden-information choices made by Claude, not the owner, worth a look: (1) 
 ### 2026-11-14 — Door reports and Defective piston sensors (#330, slice 3)
 - Implemented `report_door` (`ReportDoorAction`), the `door` variant on `Report` / `AlertReport`, `forgetReports` on `breakDoor`, and `DOOR_SENSOR` (`doorsDetected`, `PROJECT_STATUS.DOOR_SENSOR = "full"`, `PlayerView.brokenDoors`).
 - Client updates: `ShipResources` alert list now includes broken doors in the `alerts` breakdown count and formats both rooms (`alertDoor` / `alertDoorDetector`), `ShipPlanSvg` highlights `brokenDoors` in danger yellow once `DOOR_SENSOR` is complete, and en/fr/es locales gained `reportDoor`, `doorReported`, `alertDoor`, and `alertDoorDetector`.
+
+### 2026-11-14 — Trail reducer NERON project (`TRAIL_REDUCER`)
+- **Decision (owner):** Once `TRAIL_REDUCER` is complete, `followingHuntersShare` multiplies the following share by `config.project.trailReducer.followMultiplier` (`0.5`, turning `0.5` into `0.25`) on every jump (`travel`, `leave_orbit`, `warp_to_planet`), keeping `Math.ceil` and affecting only `follows: "share"` hunters (plain hunters and Aracks; Trax still all follow).
+- **What worked:** `followingHuntersShare` and `huntersFollow` were already factored cleanly, so the project only needed a config knob, one multiplier check in `followingHuntersShare`, `PROJECT_STATUS.TRAIL_REDUCER = "full"`, and tests.
+
+- **2026-11-14 — Stuck door incident (#330 slice 5).** Added `stuck_door` to `INCIDENT_IDS` and `DEFAULT_CONFIG.incidents.catalog` (`cost: 3`, `weight: 10`), picking a random working Daedalus door via `allDoors` + `breakDoor` (silent, clears any prior report). Added tests in `shared/tests/incidents.test.ts` covering cost/weight, silent breakage, hidden-information isolation, and skipping when all doors are broken.
+
+### 2026-11-14: Sow from floor on the fruit itself
+
+- **Decision (owner):** `sow` targets a reachable fruit (`canReachItem`, carried or on the room floor) instead of targeting a pot with a carried fruit, and plants into a reachable empty hydropot (preferring a floor pot over a carried pot).
+- **What worked:** Moving the action target to the fruit (`SowActionData = { type: "sow"; item: string }`) eliminated the need for a `Sow (Fruit)` disambiguation label on pots and simplified the bot `sowJob` goal so bots can sow straight from the garden floor.

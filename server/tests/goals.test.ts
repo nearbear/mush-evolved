@@ -747,7 +747,7 @@ describe("tendPlants", () => {
     const pots = after.items.filter((i) => i.type === "tree_pot" && i.at.kind === "room" && i.at.id === garden);
     expect(pots.every((p) => p.plant && p.plant.thirst === 0)).toBe(true);
     expect(pots.some((p) => p.plant?.sick)).toBe(false);
-    expect(taken.map((a) => a.type).filter((t) => t !== "move")).toEqual(["take", "sow", "water", "water", "treat"]);
+    expect(taken.map((a) => a.type).filter((t) => t !== "move")).toEqual(["sow", "water", "water", "treat"]);
     expect(after.items.some((i) => i.id === "test-banana")).toBe(false);
   });
 
@@ -800,7 +800,7 @@ describe("sowHere and setOutPots", () => {
     game.items.push({ id: "test-banana", type: "fruit_banana", at: { kind: "room", id: garden } });
     game.items.push({ id: "test-pot", type: "tree_pot", at: { kind: "player", id } });
     const { game: after, taken } = await oneCycle(game, id, new GoalBot(1, 2, [sowHere]));
-    expect(taken.map((a) => a.type)).toEqual(["take", "sow"]);
+    expect(taken.map((a) => a.type)).toEqual(["sow"]);
     expect(after.items.find((i) => i.id === "test-pot")!.plant).toBeUndefined();
     expect(onFloor(after, garden).filter((i) => i.type === "tree_pot").every((p) => p.plant)).toBe(true);
   });
@@ -830,8 +830,8 @@ describe("sowHere and setOutPots", () => {
     const bot = new GoalBot(1, 2, [sowHere, setOutPots, tendPlants]);
     const { game: after, taken } = await oneCycle(game, id, bot);
     const kinds = taken.map((a) => a.type).filter((t) => t !== "move");
-    // The banana first (the Green Thumb pots are dropped to free a slot), then the pots, then watering.
-    expect(kinds).toEqual(["drop", "take", "sow", "drop", "take", "take", "drop", "drop", "water", "water"]);
+    // The banana first (sown straight from the floor), then the Green Thumb pots, storage pots, then watering.
+    expect(kinds).toEqual(["sow", "drop", "drop", "take", "take", "drop", "drop", "water", "water"]);
     expect(onFloor(after, POT_STORAGE).some((i) => i.type === "tree_pot")).toBe(false);
     expect(onFloor(after, garden).filter((i) => i.type === "tree_pot")).toHaveLength(7);
     expect(after.items.some((i) => i.id === "test-banana")).toBe(false);
