@@ -131,6 +131,7 @@ export function roomLooks(
   plasmaShield?: boolean,
   takeoffThruster?: boolean,
   extraAmmo?: boolean,
+  blasterGun?: boolean,
   fissionCoffee?: boolean,
   guaranaCoffee?: boolean,
 ): ReadonlyMap<string, string> {
@@ -146,7 +147,9 @@ export function roomLooks(
     looks.set("bay_alpha_platform", "bay_alpha_platform_upgrade");
     looks.set("bay_beta_platform", "bay_beta_platform_upgrade");
   }
-  if (extraAmmo) looks.set("spaceship", "spaceship_upgrade_a");
+  if (extraAmmo && blasterGun) looks.set("spaceship", "spaceship_upgrade_ab");
+  else if (extraAmmo) looks.set("spaceship", "spaceship_upgrade_a");
+  else if (blasterGun) looks.set("spaceship", "spaceship_upgrade_b");
   if (fissionCoffee && guaranaCoffee) looks.set("coffee", "coffee_upgrade_ab");
   else if (fissionCoffee) looks.set("coffee", "coffee_upgrade_a");
   else if (guaranaCoffee) looks.set("coffee", "coffee_upgrade_b");
@@ -609,11 +612,12 @@ export function IsoRoom({
   const plasmaShield = (projects?.PLASMA_SHIELD ?? 0) >= PROJECT_COMPLETE;
   const takeoffThruster = (projects?.PATROL_SHIP_LAUNCHER ?? 0) >= PROJECT_COMPLETE;
   const extraAmmo = (projects?.PATROLSHIP_EXTRA_AMMO ?? 0) >= PROJECT_COMPLETE;
+  const blasterGun = (projects?.PATROLSHIP_BLASTER_GUN ?? 0) >= PROJECT_COMPLETE;
   const fissionCoffee = (projects?.FISSION_COFFEE_ROASTER ?? 0) >= PROJECT_COMPLETE;
   const guaranaCoffee = (research?.GUARANA_CAPUCCINO ?? 0) >= RESEARCH_COMPLETE;
   const looks = useMemo(
-    () => roomLooks(pilgredRepaired, humanTankFull, superCalcBuilt, neronThread, bayDoorXxl, plasmaShield, takeoffThruster, extraAmmo, fissionCoffee, guaranaCoffee),
-    [pilgredRepaired, humanTankFull, superCalcBuilt, neronThread, bayDoorXxl, plasmaShield, takeoffThruster, extraAmmo, fissionCoffee, guaranaCoffee],
+    () => roomLooks(pilgredRepaired, humanTankFull, superCalcBuilt, neronThread, bayDoorXxl, plasmaShield, takeoffThruster, extraAmmo, blasterGun, fissionCoffee, guaranaCoffee),
+    [pilgredRepaired, humanTankFull, superCalcBuilt, neronThread, bayDoorXxl, plasmaShield, takeoffThruster, extraAmmo, blasterGun, fissionCoffee, guaranaCoffee],
   );
   const imageInput = { layout, room, people: byId, walkers, seats, corpses, drones, looks };
 

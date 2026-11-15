@@ -482,6 +482,8 @@ export interface GameConfig {
     patrolShipLauncher: { takeoffApDiscount: number };
     // Teslatron reservoir (PATROLSHIP_EXTRA_AMMO; owner, 2026-11-14): patrol ships hold +extraCharges max charges and gain +extraCharges on completion (capped at new max; Pasiphae unaffected).
     patrolShipExtraAmmo: { extraCharges: number };
+    // Blaster gun (PATROLSHIP_BLASTER_GUN; owner, 2026-11-14): patrol ship hits deal +extraDamage (stacks with Cygni).
+    patrolShipBlasterGun: { extraDamage: number };
     // Armoured corridors (owner, 2026-11-14): every attack on the Daedalus (damageShip) is reduced by damageReduction before the shield, floor 0.
     armourCorridor: { damageReduction: number };
     // Fission Coffee Roaster (owner, 2026-11-02; eMushpedia *Torréfacteur à fission*): coffee machine regenerates at these cycles of each day (C1, C5; every cycle with PILGRED).

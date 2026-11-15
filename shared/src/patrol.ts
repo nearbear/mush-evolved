@@ -76,6 +76,11 @@ export function patrolMaxCharges(state: Readonly<Pick<GameState, "config" | "pro
   return state.config.patrol.charges + extra;
 }
 
+/** Extra damage on every patrol ship hit once Blaster gun (PATROLSHIP_BLASTER_GUN) is complete (owner, 2026-11-14). */
+export function patrolBlasterBonus(state: Readonly<Pick<GameState, "config" | "projects">>): number {
+  return projectDone(state, "PATROLSHIP_BLASTER_GUN") ? state.config.project.patrolShipBlasterGun.extraDamage : 0;
+}
+
 /** Every ship docked, at full armor and charges. */
 export const newPatrolShips = (config: GameConfig): GameState["patrolShips"] =>
   Object.fromEntries(PATROL_SHIPS.map((s) => [s.id, { armor: config.patrol.armor[s.kind], charges: maxCharges(config.patrol.charges, s), out: false, destroyed: false, onPlanet: null }]));

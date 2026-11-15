@@ -4,6 +4,7 @@ import { manoeuvre } from "../src/actions/takeoff.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { cameraEquipmentId } from "../src/equipment.ts";
 import { commandId, interfaceId, PATROL_SHIPS, patrolShip } from "../src/patrol.ts";
+import { PROJECT_COMPLETE, projectStatus } from "../src/projects.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameConfig, GameState } from "../src/types.ts";
@@ -206,6 +207,21 @@ describe("shooting from a patrol ship", () => {
     partial.hunters.list[0]!.hp = 10;
     partial.comms.rebels.push({ base: "CYGNI", calledAt: partial.cycle, expiresAt: partial.cycle + 10, progress: 99 });
     expect(10 - mustApply(partial, "p0", shoot("h1")).hunters.list[0]!.hp).toBe(4);
+  });
+
+  it("does 1 more damage once Blaster gun (PATROLSHIP_BLASTER_GUN) is complete, stacking with Cygni", () => {
+    expect(projectStatus("PATROLSHIP_BLASTER_GUN")).toBe("full");
+    expect(DEFAULT_CONFIG.project.patrolShipBlasterGun.extraDamage).toBe(1);
+    const hit = (progress: number, cygni = false) => {
+      const s = flying(shot({ chance: 1, damage: [4, 4] }));
+      s.hunters.list[0]!.hp = 10;
+      s.projects.PATROLSHIP_BLASTER_GUN = progress;
+      if (cygni) s.comms.rebels.push({ base: "CYGNI", calledAt: s.cycle, expiresAt: s.cycle + 10, progress: 100 });
+      return 10 - mustApply(s, "p0", shoot("h1")).hunters.list[0]!.hp;
+    };
+    const bonus = DEFAULT_CONFIG.project.patrolShipBlasterGun.extraDamage;
+    const cygniBonus = DEFAULT_CONFIG.comms.rebel.cygniPatrolDamage;
+    expect([hit(PROJECT_COMPLETE - 1), hit(PROJECT_COMPLETE), hit(PROJECT_COMPLETE, true)]).toEqual([4, 4 + bonus, 4 + bonus + cygniBonus]);
   });
 
   it("a miss costs a charge too; its streak (x1.25 a miss) is its own, apart from the turrets'", () => {

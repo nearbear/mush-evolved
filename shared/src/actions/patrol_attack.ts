@@ -2,7 +2,7 @@ import { Action, IN_PRESELECTION, type ActionCost, type ActionVisibility, isStri
 import { patrolDamageBonus } from "../comms.ts";
 import { damageHunter } from "../hunters.ts";
 import { logPrivate } from "../log.ts";
-import { commandId, onPlanet, shipAboard, type PatrolShip } from "../patrol.ts";
+import { commandId, onPlanet, patrolBlasterBonus, shipAboard, type PatrolShip } from "../patrol.ts";
 import { roll } from "../rng.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
@@ -55,7 +55,7 @@ export class PatrolAttackAction extends Action<PatrolAttackActionData> {
 
   override apply(state: GameState, player: PlayerState, target: PatrolAttackActionData): void {
     spendCharge(state, player);
-    const amount = roll(state, state.config.patrol.shot.damage) + patrolDamageBonus(state);
+    const amount = roll(state, state.config.patrol.shot.damage) + patrolDamageBonus(state) + patrolBlasterBonus(state);
     if (damageHunter(state, target.hunter, amount)) logPrivate(state, player.id, "patrolKill");
     else logPrivate(state, player.id, "turretHit", { damage: amount });
   }

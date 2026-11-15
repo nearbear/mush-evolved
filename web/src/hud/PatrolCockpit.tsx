@@ -76,6 +76,7 @@ export function PatrolCockpit({ view, ship, layout, onAction }: Props) {
 
   const [sky] = useState(spaceSky);
   const extraAmmo = (view.projects.PATROLSHIP_EXTRA_AMMO ?? 0) >= PROJECT_COMPLETE;
+  const blasterGun = (view.projects.PATROLSHIP_BLASTER_GUN ?? 0) >= PROJECT_COMPLETE;
   // The pack: how many of each kind are not the target, in `HUNTER_TYPES` order.
   const pack = HUNTER_TYPES.map((type) => ({ type, count: list.filter((h) => h.type === type && h !== target).length })).filter((k) => k.count > 0);
 
@@ -90,7 +91,7 @@ export function PatrolCockpit({ view, ship, layout, onAction }: Props) {
       <div className="space-scene">
         <div className="space-ship">
           <span className="space-sway">
-            <ShipSprite layout={layout} ship={ship.id} extraAmmo={extraAmmo} />
+            <ShipSprite layout={layout} ship={ship.id} extraAmmo={extraAmmo} blasterGun={blasterGun} />
           </span>
           <CraftReadout name={names.room(ship.id)} hp={ship.armor} />
         </div>
@@ -214,10 +215,19 @@ function ChargeRow({ count }: { count: number }) {
   );
 }
 
-/** The ship as it stands in its bay: the room art's `spaceship` slice (or `spaceship_upgrade_a` / the Pasiphae's), at 1x. */
-function ShipSprite({ layout, ship, extraAmmo }: { layout: ShipLayout | undefined; ship: string; extraAmmo: boolean }) {
+/** The ship as it stands in its bay: the room art's `spaceship` slice (or its upgrade / the Pasiphae's), at 1x. */
+function ShipSprite({ layout, ship, extraAmmo, blasterGun }: { layout: ShipLayout | undefined; ship: string; extraAmmo: boolean; blasterGun: boolean }) {
   const kind = patrolShip(ship)?.kind;
-  const sliceName = kind === "pasiphae" ? "pasiphae" : extraAmmo ? "spaceship_upgrade_a" : "spaceship"; // i18n-ignore: slice names
+  const sliceName =
+    kind === "pasiphae"
+      ? "pasiphae"
+      : extraAmmo && blasterGun
+        ? "spaceship_upgrade_ab"
+        : extraAmmo
+          ? "spaceship_upgrade_a"
+          : blasterGun
+            ? "spaceship_upgrade_b"
+            : "spaceship"; // i18n-ignore: slice names
   const slice = layout?.slices[sliceName];
   const url = layout && slice && atlasUrl(layout, slice.sheet);
   if (!slice || !url) return null;
