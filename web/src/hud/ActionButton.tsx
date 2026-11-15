@@ -8,13 +8,15 @@ import { useTranslation } from "react-i18next";
 import { ConsumeEffects } from "./ConsumeEffects.tsx";
 import { HP_ICON, STATUS_ICONS } from "../art/assets.ts";
 import { SINGLE_PRESS_ACTIONS, useDoublePress } from "./DoublePress.tsx";
-import { affordable, type Action, type ActionOption, type PlayerView } from "@mush2/shared";
+import { affordable, blurredVision, type Action, type ActionOption, type PlayerView } from "@mush2/shared";
 
 /** A button that does the action on a double press (useDoublePress; one press for SINGLE_PRESS_ACTIONS), or the disabled one with the reason when you lack the points. */
 export function ActionButton(props: { view: PlayerView; option: ActionOption; onAction: (action: Action) => void; children: ReactNode; className?: string; hint?: string }) {
-  const { view, option, children, className, hint } = props;
+  const { view, option, children, hint } = props;
+  // Pink Eye blurs the buttons' text (blurredVision); the card that opens from one stays readable.
+  const className = blurredVision(view) ? [props.className, "blurred-vision"].filter(Boolean).join(" ") : props.className;
   if (!affordable(option)) return <DisabledActionButton view={view} blocked={option} className={className} hint={hint}>{children}</DisabledActionButton>;
-  return <EnabledActionButton {...props} />;
+  return <EnabledActionButton {...props} className={className} />;
 }
 
 function EnabledActionButton({ view, option, onAction, children, className, hint }: { view: PlayerView; option: ActionOption; onAction: (action: Action) => void; children: ReactNode; className?: string | undefined; hint?: string | undefined }) {

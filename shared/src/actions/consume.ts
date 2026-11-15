@@ -2,7 +2,7 @@ import { Action, isString } from "./action.ts";
 import { heal as healHp } from "../death.ts";
 import { ITEM_TYPES, canReachItem, removeItem } from "../items.ts";
 import { logSecret } from "../log.ts";
-import { consumed, consumedByMush } from "../modifiers.ts";
+import { consumed, consumedByMush, mealApGain } from "../modifiers.ts";
 import { rationApBonus } from "../comms.ts";
 import { RESEARCH_COMPLETE } from "../research.ts";
 import { applyDrug } from "../drugs.ts";
@@ -52,7 +52,9 @@ export class ConsumeAction extends Action<ConsumeActionData> {
     const { ap, mp = 0, satiety, morale = 0, hp = 0 } = ITEM_TYPES[item.type]!.consume!;
     const coffeeBonus = item.type === "coffee" && (state.research.GUARANA_CAPUCCINO ?? 0) >= RESEARCH_COMPLETE ? state.config.research.guaranaExtraAp : 0;
     healHp(state, player, hp);
-    changeAP(state, player, ap + rationApBonus(state, item.type) + coffeeBonus);
+    const apGained = ap + rationApBonus(state, item.type) + coffeeBonus;
+    // Food (satiety above 0) goes through the `mealAp` fold (Tapeworm halves it); a drug's AP does not.
+    changeAP(state, player, satiety > 0 ? mealApGain(state, player, apGained) : apGained);
     changeMP(state, player, mp);
     gainMorale(state, player, morale);
     if (player.role === "human") {

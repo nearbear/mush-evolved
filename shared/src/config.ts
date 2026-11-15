@@ -434,7 +434,7 @@ export const DEFAULT_CONFIG: GameConfig = {
     engineerFactor: 2,
     oxygenLeak: 1,
   },
-  hunger: { satietyPerCycle: 1, fullBellyAt: 3, hungryAfterCycles: 24, hpPerCycle: 1 },
+  hunger: { satietyPerCycle: 1, fullBellyAt: 3, hungryAfterCycles: 24, hpPerCycle: 1, tapewormHungryAfterCycles: 8 },
   // Confirmed 2026-10-13: dismantle cost and default odds; a type's own odds are `ItemType.dismantle.chance` (knife and blaster 50%, owner 2026-10-22).
   dismantle: { cost: { ap: 3 }, successChance: 0.12, dirtyChance: 0.25, injuryChance: 0.05 },
   // Owner, 2026-10-31 (docs/plans/expedition.md): phase 1. Event weights 4/3/2/1 as on the wiki. Phase 2 (2026-11-07,
@@ -655,7 +655,10 @@ export const DEFAULT_CONFIG: GameConfig = {
       "space_rabies_disease",
       "smallpox_disease",
       "rejuvenation_disease",
-      "mush_allergy_disease"],
+      "mush_allergy_disease",
+      "acid_reflux_disease",
+      "tapeworm_disease",
+      "pink_eye_disease"],
     // Owner, 2026-11-14: what the disease incident can give.
     incidentDiseases: ["cold_disease", "skin_inflammation_disease"],
     allDisorders: ["depression_disorder"],
@@ -671,7 +674,13 @@ export const DEFAULT_CONFIG: GameConfig = {
       // Owner, 2026-11-14.
       {label: "rejuvenation_disease", type: "disease", durationMin: 8, durationMax: 12},
       // Owner, 2026-11-14.
-      {label: "mush_allergy_disease", type: "disease", durationMin: 20, durationMax: 32}],
+      {label: "mush_allergy_disease", type: "disease", durationMin: 20, durationMax: 32},
+      // Owner, 2026-11-15.
+      {label: "acid_reflux_disease", type: "disease", durationMin: 12, durationMax: 20},
+      // Owner, 2026-11-15.
+      {label: "tapeworm_disease", type: "disease", durationMin: 20, durationMax: 32},
+      // Owner, 2026-11-15.
+      {label: "pink_eye_disease", type: "disease", durationMin: 8, durationMax: 12}],
     allDisorderStats: [{type: "disorder", resistance: 8}],
     allInjuryStats: [{type: "injury"}],
     },
