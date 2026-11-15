@@ -7,6 +7,7 @@
 import { gainMorale } from "./adjustStats.ts";
 import { breakEquipment, breakItem, workingBreakable } from "./breakage.ts";
 import { damage } from "./death.ts";
+import { addDisease } from "./diseases.ts";
 import { pushChat } from "./chat.ts";
 import { daedalusRooms, isOnFire, startFire } from "./fire.ts";
 import { ITEM_TYPES, isWorking, itemsIn } from "./items.ts";
@@ -15,7 +16,7 @@ import { projectDone } from "./projects.ts";
 import { roll, rollFloat, rollInt, rollWeighted } from "./rng.ts";
 import type { DeepReadonly, Equipment, GameConfig, GameState, ItemState, PlayerId, PlayerState, RoomId } from "./types.ts";
 
-/** The built incidents. Not built: stuck door (doors aren't objects yet) and disease (#214). */
+/** The built incidents. Not built: stuck door (doors aren't objects yet). */
 export const INCIDENT_IDS = [
   "tremor",
   "fire",
@@ -25,6 +26,7 @@ export const INCIDENT_IDS = [
   "metal_plate",
   "fuel_leak",
   "equipment_breakdown",
+  "disease",
 ] as const;
 export type IncidentId = (typeof INCIDENT_IDS)[number];
 
@@ -32,6 +34,7 @@ export type IncidentId = (typeof INCIDENT_IDS)[number];
 interface Spending {
   panicked: Set<PlayerId>;
   plated: Set<PlayerId>;
+  sickened: Set<PlayerId>;
 }
 
 interface Incident {
@@ -81,6 +84,14 @@ const breakOne = (type?: string): Incident => {
     },
   };
 };
+
+/** The incident's diseases this player doesn't have yet. */
+const catchable = (state: Readonly<GameState>, p: Readonly<PlayerState>): string[] =>
+  state.config.diseases.incidentDiseases.filter((d) => !p.modifiers.includes(d));
+
+/** Anyone living aboard, Mush included (they carry it without suffering it), once per cycle each, who can still catch one. */
+const sickenable = (state: Readonly<GameState>, sickened: ReadonlySet<PlayerId>): PlayerState[] =>
+  aboard(state).filter((p) => !sickened.has(p.id) && catchable(state, p).length > 0);
 
 const INCIDENTS: Record<IncidentId, Incident> = {
   // One room with crew; everyone there loses their own 1-3 HP roll (owner, 2026-11-01).
@@ -132,6 +143,17 @@ const INCIDENTS: Record<IncidentId, Incident> = {
       damage(state, victim, roll(state, state.config.incidents.metalPlate.damage), "metal_plate");
     },
   },
+  // Owner, 2026-11-14: one person aboard, Mush included, once per cycle each, catches a random disease from
+  // `config.diseases.incidentDiseases` they don't have yet, told privately.
+  disease: {
+    possible: (state, { sickened }) => sickenable(state, sickened).length > 0,
+    apply: (state, { sickened }) => {
+      const victim = pick(state, sickenable(state, sickened));
+      sickened.add(victim.id);
+      addDisease(state, victim, pick(state, catchable(state, victim)));
+      logPrivate(state, victim.id, "incidentDisease");
+    },
+  },
 };
 
 /**
@@ -157,7 +179,7 @@ export function incidentsCycle(state: GameState, day: number): void {
   if (state.incidentPoints <= 0 || rollFloat(state) >= state.incidentPoints / state.config.incidents.rollPoints) return;
   // Bric-a-brac (owner, 2026-11-08): one roll per cycle change, made only once incidents are due; if it succeeds they are bought as usual but none happens.
   const prevented = projectDone(state, "BRIC_BROC") && rollFloat(state) < state.config.project.bricBroc.preventChance;
-  const spending: Spending = { panicked: new Set(), plated: new Set() };
+  const spending: Spending = { panicked: new Set(), plated: new Set(), sickened: new Set() };
   const { catalog } = state.config.incidents;
   let announced = false;
   while (state.phase === "playing") {
