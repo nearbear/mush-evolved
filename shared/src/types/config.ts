@@ -511,6 +511,8 @@ export interface GameConfig {
     dynarcade: { room: RoomId; cost: { ap: number }; successChance: number; failureMultiplier: number; morale: number; injuryChance: number };
     // Extra hydropots (EXTRA_HYDROPONPOTS; owner, 2026-11-14): completing it puts `count` empty hydropots on the floor of `room`.
     extraHydropots: { room: RoomId; count: number };
+    // Heat lamps (HEAT_LAMP; owner, 2026-11-14): each producing plant in `botany.gardenRoom` (floor or carried) has `extraFruitChance` (50%) of producing an extra fruit at day start.
+    heatLamp: { extraFruitChance: number };
     neronParticipation: { percent: number };
     // Automatic sprinklers (AUTO_WATERING; owner, 2026-11-14): each burning room has `extinguishChance` per cycle to go out before acting, announced in global chat without the room.
     autoWatering: { extinguishChance: number };

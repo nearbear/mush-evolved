@@ -4,6 +4,7 @@
 
 import { ITEM_TYPES, TREE_POT_ITEM, produceItem, newItemId } from "./items.ts";
 import { logPublic } from "./log.ts";
+import { projectDone } from "./projects.ts";
 import { rollFloat } from "./rng.ts";
 import { hasSkill } from "./skills.ts";
 import type { GameState, ItemState, ItemView, PlantState, PlayerState, RoomId } from "./types.ts";
@@ -68,7 +69,8 @@ export function growCyclesFor(state: Readonly<GameState>, species: string): numb
  * gets thirstier, stopping at dried. Mutates a state the caller already cloned.
  */
 export function botanyDay(state: GameState): void {
-  const { botany, ship } = state.config;
+  const { botany, ship, project } = state.config;
+  const heatLamp = projectDone(state, "HEAT_LAMP");
   for (const pot of state.items.filter(isPlanted)) {
     const { plant } = pot;
     const room = potRoom(state, pot);
@@ -80,6 +82,10 @@ export function botanyDay(state: GameState): void {
       state.ship.oxygen = Math.min(ship.oxygen.max, state.ship.oxygen + botany.oxygenPerPlant);
       produceFruit(state, pot);
       logPublic(state, room, "plantProduced", { item: plant.species });
+      if (heatLamp && room === botany.gardenRoom && rollFloat(state) < project.heatLamp.extraFruitChance) {
+        produceFruit(state, pot);
+        logPublic(state, room, "plantExtraFruit", { item: plant.species });
+      }
     }
     plant.thirst = Math.min(2, plant.thirst + 1) as PlantState["thirst"];
   }

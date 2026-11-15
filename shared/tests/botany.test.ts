@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
+import { PROJECT_COMPLETE, projectStatus } from "../src/projects.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { GameConfig, GameState, ItemState, PlantState } from "../src/types.ts";
@@ -314,5 +315,88 @@ describe("botany: protocol", () => {
     applyAction(s, "p0", { type: "treat", item: "nope" });
     expect(JSON.stringify(s)).toBe(before);
     expect(must(applyAction(s, "p0", { type: "treat", item: planted(s)[0]!.id }))).not.toBe(s);
+  });
+});
+
+describe("botany: heat lamps", () => {
+  function heatShip(extraFruitChance = DEFAULT_CONFIG.project.heatLamp.extraFruitChance, progress = PROJECT_COMPLETE): GameState {
+    const s = createGame(
+      makeSeats(3),
+      noIncidents(noHunters({
+        ...DEFAULT_CONFIG,
+        mushCount: 0,
+        botany: { ...cfg, sickChancePerCycle: 0 },
+        project: { ...DEFAULT_CONFIG.project, heatLamp: { extraFruitChance } },
+      })),
+      3,
+    );
+    s.projects.HEAT_LAMP = progress;
+    return lastCycleOfDay(s);
+  }
+
+  it("uses the confirmed config values and project status", () => {
+    expect(DEFAULT_CONFIG.project.heatLamp).toEqual({ extraFruitChance: 0.5 });
+    expect(projectStatus("HEAT_LAMP")).toBe("full");
+  });
+
+  it("produces an extra fruit and logs plantExtraFruit for floor and carried plants in the garden", () => {
+    const s = heatShip(1);
+    const [floorPot, carriedPot] = planted(s);
+    // Free p0's inventory so both produced fruits fit instead of overflowing onto the garden floor.
+    s.items = s.items.filter((i) => !(i.at.kind === "player" && i.at.id === "p0"));
+    carriedPot!.at = { kind: "player", id: "p0" };
+    player(s, "p0").room = GARDEN;
+
+    const next = nextCycle(s);
+    expect(bananas(next).filter((b) => b.at.kind === "room" && b.at.id === GARDEN)).toHaveLength(2);
+    expect(bananas(next).filter((b) => b.at.kind === "player" && b.at.id === "p0")).toHaveLength(2);
+    expect(next.log.filter((e) => e.key === "plantProduced")).toHaveLength(2);
+    expect(next.log.filter((e) => e.key === "plantExtraFruit")).toHaveLength(2);
+    expect(next.log.find((e) => e.key === "plantExtraFruit")).toMatchObject({
+      room: GARDEN,
+      visibleTo: "all",
+      params: { item: BANANA },
+    });
+  });
+
+  it("does not apply outside the garden or to non-producing plants", () => {
+    const s = heatShip(1);
+    const [labPot, sickPot] = planted(s);
+    labPot!.at = { kind: "room", id: "LABORATORY" };
+    sickPot!.plant!.sick = true;
+
+    const next = nextCycle(s);
+    expect(bananas(next)).toHaveLength(1);
+    expect(bananas(next)[0]!.at).toEqual({ kind: "room", id: "LABORATORY" });
+    expect(next.log.filter((e) => e.key === "plantExtraFruit")).toHaveLength(0);
+  });
+
+  it("does nothing before Heat lamps is complete or when extraFruitChance is 0", () => {
+    const incomplete = nextCycle(heatShip(1, PROJECT_COMPLETE - 1));
+    expect(bananas(incomplete)).toHaveLength(2);
+    expect(incomplete.log.filter((e) => e.key === "plantExtraFruit")).toHaveLength(0);
+
+    const zeroChance = nextCycle(heatShip(0, PROJECT_COMPLETE));
+    expect(bananas(zeroChance)).toHaveLength(2);
+    expect(zeroChance.log.filter((e) => e.key === "plantExtraFruit")).toHaveLength(0);
+  });
+
+  it("rolls the 50% chance deterministically per plant", () => {
+    let minCount = Infinity;
+    let maxCount = -Infinity;
+    for (let seed = 1; seed <= 12; seed++) {
+      const s = createGame(
+        makeSeats(3),
+        noIncidents(noHunters({ ...DEFAULT_CONFIG, mushCount: 0, botany: { ...cfg, sickChancePerCycle: 0 } })),
+        seed,
+      );
+      s.projects.HEAT_LAMP = PROJECT_COMPLETE;
+      const next = nextCycle(lastCycleOfDay(s));
+      const count = bananas(next).length;
+      minCount = Math.min(minCount, count);
+      maxCount = Math.max(maxCount, count);
+    }
+    expect(minCount).toBe(2);
+    expect(maxCount).toBeGreaterThan(2);
   });
 });

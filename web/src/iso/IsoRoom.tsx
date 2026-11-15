@@ -135,6 +135,8 @@ export function roomLooks(
   fissionCoffee?: boolean,
   guaranaCoffee?: boolean,
   auxiliaryTerminal?: boolean,
+  heatLamp?: boolean,
+  hydroponicIncubator?: boolean,
 ): ReadonlyMap<string, string> {
   const looks = new Map<string, string>();
   if (auxiliaryTerminal) {
@@ -155,6 +157,9 @@ export function roomLooks(
   if (fissionCoffee && guaranaCoffee) looks.set("coffee", "coffee_upgrade_ab");
   else if (fissionCoffee) looks.set("coffee", "coffee_upgrade_a");
   else if (guaranaCoffee) looks.set("coffee", "coffee_upgrade_b");
+  if (hydroponicIncubator && heatLamp) looks.set("garden", "garden_upgrade_ab");
+  else if (hydroponicIncubator) looks.set("garden", "garden_upgrade_a");
+  else if (heatLamp) looks.set("garden", "garden_upgrade_b");
   return looks;
 }
 
@@ -624,9 +629,11 @@ export function IsoRoom({
   const blasterGun = (projects?.PATROLSHIP_BLASTER_GUN ?? 0) >= PROJECT_COMPLETE;
   const fissionCoffee = (projects?.FISSION_COFFEE_ROASTER ?? 0) >= PROJECT_COMPLETE;
   const guaranaCoffee = (research?.GUARANA_CAPUCCINO ?? 0) >= RESEARCH_COMPLETE;
+  const heatLamp = (projects?.HEAT_LAMP ?? 0) >= PROJECT_COMPLETE;
+  const hydroponicIncubator = (projects?.HYDROPONIC_INCUBATOR ?? 0) >= PROJECT_COMPLETE;
   const looks = useMemo(
-    () => roomLooks(pilgredRepaired, humanTankFull, superCalcBuilt, neronThread, bayDoorXxl, plasmaShield, takeoffThruster, extraAmmo, blasterGun, fissionCoffee, guaranaCoffee, auxiliaryTerminal),
-    [pilgredRepaired, humanTankFull, superCalcBuilt, neronThread, bayDoorXxl, plasmaShield, takeoffThruster, extraAmmo, blasterGun, fissionCoffee, guaranaCoffee, auxiliaryTerminal],
+    () => roomLooks(pilgredRepaired, humanTankFull, superCalcBuilt, neronThread, bayDoorXxl, plasmaShield, takeoffThruster, extraAmmo, blasterGun, fissionCoffee, guaranaCoffee, auxiliaryTerminal, heatLamp, hydroponicIncubator),
+    [pilgredRepaired, humanTankFull, superCalcBuilt, neronThread, bayDoorXxl, plasmaShield, takeoffThruster, extraAmmo, blasterGun, fissionCoffee, guaranaCoffee, auxiliaryTerminal, heatLamp, hydroponicIncubator],
   );
   const imageInput = { layout, room, people: byId, walkers, seats, corpses, drones, looks };
 
