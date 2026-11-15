@@ -289,6 +289,7 @@ describe("research", () => {
   });
 
   it("completing DRUG_DISPENSER adds the DRUG_DISP equipment to the medlab, once (owner, 2026-11-10)", () => {
+    expect(RESEARCH_STATUS.DRUG_DISPENSER).toBe("full");
     const s = game();
     expect((s.equipment.SICK_BAY ?? []).some((e) => e.type === "DRUG_DISP")).toBe(false);
     setProgress(s, { research: "DRUG_DISPENSER" }, RESEARCH_COMPLETE - 1);
