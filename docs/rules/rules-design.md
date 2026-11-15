@@ -8,6 +8,7 @@ The record of answered rule decisions and the design for the rules that are not 
 
 ## Decisions received
 
+- **Antispore gas (`ANTISPORE_GAZ`)** (2026-11-14, owner): once complete, reduces the Mush daily spore extraction cap (`sporesPerDay`) by `config.spores.antisporeReduction` (2, from 4 to 2, clamped at 0). Standard `researchCompleted` public log line only.
 - **Constipaspore serum (`CONSTIPASPORE_SERUM`)** (2026-11-14, owner): once complete, raises `extract_spore` cost by `config.spores.constipasporeExtraAp` (2 AP, from 1 to 3 AP). Fertile's first daily extraction still costs 0 AP (overrides the serum). Standard `researchCompleted` public log line only.
 - **Chef (`cook`)** (2026-11-14, owner): grants +4 Cook (`cook`) points on pick and at each day start, held up to `config.cook.capPoints` (8). Alien fruit lore (`FRUIT_LORE_SKILLS`), the `FOOD_RETAILER` NERON project bonus, and Cook-point spending on `cook` (0 AP, `paidBy: "cook"`, not `fungal_cuisine`) were already wired.
 - **Maintenance Agent** (2026-11-14, owner): grants +1 Engineer (`eng`), +1 Garden (`garden`), and +1 Cook (`cook`) point on pick and at each day start, sharing `config.engineer.capPoints` (2) and `config.botany.capPoints` (4), with `config.cook.capPoints` = 8. Cook points pay for `cook` only (0 AP, `paidBy: "cook"`), not `fungal_cuisine`.

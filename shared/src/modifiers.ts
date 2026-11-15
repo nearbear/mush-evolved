@@ -483,9 +483,11 @@ export function moveCost(
   return { ap: rules.apPerConversion, mpAfter: converted - rules.mpPerMove };
 }
 
-/** Spores the Mush faction may extract per day: the configured count folded through the extracting player's modifiers. */
-export const sporesPerDay = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
-  fold("sporesPerDay", state.config.spores.perDay, state, player, registry);
+/** Spores the Mush faction may extract per day: the configured count (less ANTISPORE_GAZ) folded through the extracting player's modifiers. */
+export const sporesPerDay = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) => {
+  const reduction = (state.research.ANTISPORE_GAZ ?? 0) >= RESEARCH_COMPLETE ? state.config.spores.antisporeReduction : 0;
+  return Math.max(0, fold("sporesPerDay", state.config.spores.perDay - reduction, state, player, registry));
+};
 
 /** HP a heal restores: the configured amount folded through the healer's modifiers. */
 export const healAmount = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
