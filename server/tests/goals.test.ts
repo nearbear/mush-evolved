@@ -7,6 +7,8 @@ import { canAfford, goTo, roomsWith, travelAp } from "../src/bots/goals/blocks.t
 import { commsOfficer } from "../src/bots/goals/commsOfficer.ts";
 import { contactSol } from "../src/bots/goals/contactSol.ts";
 import { EXPEDITION_CHANNEL_NAME, expeditionPlan } from "../src/bots/goals/expeditionPlan.ts";
+import { expeditionPrep, isFitForExpedition, isPriorityExpeditionClaimant, requiredExpeditionGear } from "../src/bots/goals/expeditionPrep.ts";
+import { activeSharedPlanet } from "../src/bots/planetShare.ts";
 import { SOLO_GOALS } from "../src/bots/goals/index.ts";
 import { repairHull } from "../src/bots/goals/repairHull.ts";
 import { rest } from "../src/bots/goals/rest.ts";
@@ -110,6 +112,7 @@ const memory = (scripted = true) => ({
   cancelHold: false,
   justJumped: false,
   failedReason: null as string | null,
+  expeditionPrep: null,
   roll: roll0,
 });
 
@@ -333,7 +336,7 @@ describe("GoalBot", () => {
       p.skills = ["metaliciste"];
       p.room = "STORAGE_FRONT";
     });
-    const { game: after, taken } = await play(game, id, new GoalBot(1, 2, [snoop]), 3);
+    const { game: after, taken } = await play(game, id, new GoalBot(1, 2, [snoop]), 8);
     expect(taken).toEqual([{ type: "snoop" }]);
     const mine = (g: typeof game) => g.items.filter((i) => i.at.kind === "player" && i.at.id === id).length;
     expect(mine(after)).toBe(mine(game) + 1);
@@ -2222,5 +2225,199 @@ describe("expeditionPlan: Pilot creates channel & expedition plan on travel", ()
     const { game: reposted } = await play(jump2, id, bot, 2);
     expect(reposted.channels.filter((c) => c.name === EXPEDITION_CHANNEL_NAME)).toHaveLength(1);
     expect(reposted.plans.filter((p) => p.status === "open")).toHaveLength(1);
+  });
+});
+
+describe("expeditionPrep: priority claiming, gear rules, drop iTrackie, and ICARUS wait", () => {
+  function prepSetup(sectors: string[] = ["HYDROCARBON", "FOREST", "INTELLIGENT", "CAVE", "MOUNTAIN"]) {
+    const { game: base, id: pilot } = setup();
+    const humans = base.players.filter((p) => p.alive && p.role === "human" && p.id !== pilot && !p.modifiers.includes("wheelchair"));
+    const botA = humans[0]!.id;
+    const botB = humans[1]!.id;
+    // Share a planet in the bots' format and start traveling toward it.
+    let game: GameState = {
+      ...base,
+      navigation: { ...base.navigation, arriving: { planet: "planet-1", distance: 2 } },
+      sharedPlanets: [
+        {
+          id: "share-1",
+          planet: "planet-1",
+          by: pilot,
+          day: 1,
+          cycleOfDay: 1,
+          stale: false,
+          text: formatPlanetShare({ name: "Testaria", direction: "north", distance: 2, sectors }),
+        },
+      ],
+    };
+    const chRes = applyInput(game, {
+      type: "createChannel",
+      by: pilot,
+      name: EXPEDITION_CHANNEL_NAME,
+      members: [botA, botB],
+    });
+    expect(chRes.ok).toBe(true);
+    if (!chRes.ok) throw new Error("createChannel failed");
+    game = chRes.state;
+    const channelId = game.channels[game.channels.length - 1]!.id;
+    const planRes = applyInput(game, {
+      type: "postPlan",
+      by: pilot,
+      plan: {
+        channel: channelId,
+        room: DEFAULT_CONFIG.expedition.room,
+        purpose: "expedition",
+        slots: [{ kind: "onCall" }, { kind: "onCall" }],
+      },
+    });
+    expect(planRes.ok).toBe(true);
+    if (!planRes.ok) throw new Error("postPlan failed");
+    return { game: planRes.state, pilot, botA, botB, planId: planRes.state.plans[0]!.id };
+  }
+
+  it("reads the active non-stale shared planet while traveling or orbiting", () => {
+    const { game, botA } = prepSetup(["OXYGEN", "HYDROCARBON"]);
+    const info = activeSharedPlanet(viewFor(game, botA));
+    expect(info).toEqual({ name: "Testaria", direction: "north", distance: 2, sectors: ["OXYGEN", "HYDROCARBON"] });
+    const staleOnly = { ...game, sharedPlanets: game.sharedPlanets.map((s) => ({ ...s, stale: true })) };
+    expect(activeSharedPlanet(viewFor(staleOnly, botA))).toBeNull();
+  });
+
+  it("computes required gear from the planet's sectors and bot skills", () => {
+    const { game, botA } = prepSetup();
+    const plain = viewFor(edit(game, botA, (p) => (p.skills = [])), botA);
+    expect(requiredExpeditionGear(["HYDROCARBON", "FOREST", "INTELLIGENT", "CAVE", "MOUNTAIN"], plain)).toEqual([
+      "space_suit",
+      "drill",
+      "quad_compass",
+      "white_flag",
+      "rope",
+    ]);
+    // With OXYGEN, no space_suit; with only 1 rope tag, no rope; with diplomacy, no white_flag.
+    const diplomat = viewFor(edit(game, botA, (p) => (p.skills = ["diplomacy"])), botA);
+    expect(requiredExpeditionGear(["OXYGEN", "CAVE", "INTELLIGENT"], diplomat)).toEqual(["quad_compass"]);
+    // Polymath also covers INTELLIGENT without white_flag.
+    const polymath = viewFor(edit(game, botA, (p) => (p.skills = ["polymath"])), botA);
+    expect(requiredExpeditionGear(["OXYGEN", "INTELLIGENT"], polymath)).toEqual([]);
+  });
+
+  it("identifies priority claimants and unfit bots accurately", () => {
+    const { game, botA } = prepSetup(["INTELLIGENT"]);
+    expect(isPriorityExpeditionClaimant(viewFor(edit(game, botA, (p) => (p.skills = ["diplomacy"])), botA), ["INTELLIGENT"])).toBe(true);
+    expect(isPriorityExpeditionClaimant(viewFor(edit(game, botA, (p) => (p.skills = ["diplomacy"])), botA), ["FOREST"])).toBe(false);
+    expect(isPriorityExpeditionClaimant(viewFor(edit(game, botA, (p) => (p.skills = ["sprint"])), botA), ["FOREST"])).toBe(true);
+    expect(isPriorityExpeditionClaimant(viewFor(edit(game, botA, (p) => (p.skills = ["survival"])), botA), ["FOREST"])).toBe(true);
+    expect(isPriorityExpeditionClaimant(viewFor(edit(game, botA, (p) => (p.skills = ["botanic"])), botA), ["FOREST"])).toBe(true);
+    expect(isPriorityExpeditionClaimant(viewFor(edit(game, botA, (p) => (p.skills = ["polymath"])), botA), ["FOREST"])).toBe(true);
+
+    // Gunman only counts as priority when carrying a working gun.
+    const gunmanNoGun = viewFor(edit(game, botA, (p) => (p.skills = ["gunman"])), botA);
+    expect(isPriorityExpeditionClaimant(gunmanNoGun, ["FOREST"])).toBe(false);
+    const withBlaster = {
+      ...edit(game, botA, (p) => (p.skills = ["gunman"])),
+      items: [...game.items, { id: "test-gun", type: "blaster", at: { kind: "player" as const, id: botA }, charges: 3 }],
+    };
+    expect(isPriorityExpeditionClaimant(viewFor(withBlaster, botA), ["FOREST"])).toBe(true);
+
+    // Unfit checks.
+    expect(isFitForExpedition(viewFor(edit(game, botA, (p) => (p.hp = 4)), botA))).toBe(false);
+    expect(isFitForExpedition(viewFor(edit(game, botA, (p) => p.modifiers.push("wheelchair")), botA))).toBe(false);
+    expect(isFitForExpedition(viewFor(edit(game, botA, (p) => { p.satiety = 0; p.satietyZeroSince = -30; }), botA))).toBe(false);
+  });
+
+  it("lets priority bots claim immediately and non-priority fit bots claim after a 1-cycle wait", async () => {
+    const { game: start, botA, botB, planId } = prepSetup(["FOREST"]);
+    let game = edit(start, botA, (p) => (p.skills = ["sprint"]));
+    game = edit(game, botB, (p) => (p.skills = []));
+    const memA = memory();
+    const memB = memory();
+    const goalBotB = new GoalBot(2, 2, [expeditionPrep]);
+
+    // Cycle 0: priority botA is offered claim_slot immediately; non-priority botB waits.
+    expect(expeditionPrep.options(viewFor(game, botA), memA)).toHaveLength(1);
+    expect(expeditionPrep.options(viewFor(game, botB), memB)).toEqual([]);
+    await goalBotB.decideAction(viewFor(game, botB));
+    goalBotB.takeSocial();
+    expect(game.plans.find((p) => p.id === planId)!.slots[0]!.holder).toBeNull();
+
+    const { game: afterA } = await untilReady(game, botA, new GoalBot(1, 2, [expeditionPrep]));
+    const planAfterA = afterA.plans.find((p) => p.id === planId)!;
+    expect(planAfterA.slots[0]!.holder).toBe(botA);
+    expect(planAfterA.slots[1]!.holder).toBeNull();
+
+    // Advance 1 cycle (still traveling): now non-priority fit botB can claim the remaining slot.
+    const next = newCycle(afterA);
+    expect(next.ok).toBe(true);
+    if (!next.ok) return;
+    const stillTraveling = { ...next.state, navigation: { ...next.state.navigation, arriving: { planet: "planet-1", distance: 1 } } };
+    expect(expeditionPrep.options(viewFor(stillTraveling, botB), memB)).toHaveLength(1);
+    const { game: afterB } = await untilReady(stillTraveling, botB, goalBotB);
+    const planAfterB = afterB.plans.find((p) => p.id === planId)!;
+    expect(planAfterB.slots[1]!.holder).toBe(botB);
+  });
+
+  it("fetches needed gear from known rooms, walks to ICARUS, drops iTrackie before takeoff, and recovers it after", async () => {
+    const { game: start, botA } = prepSetup(["HYDROCARBON", "OXYGEN"]);
+    let game = edit(start, botA, (p) => {
+      p.skills = ["survival"];
+      p.room = "CORRIDOR_A";
+      p.ap = 10;
+      p.mp = 12;
+    });
+    const bot = new GoalBot(1, 2, [expeditionPrep]);
+    // Teach botA that drill is in STORAGE_FRONT via itemShare global chat.
+    const shared = applyInput(game, { type: "chat", channel: "global", text: "Item: drill in STORAGE_FRONT", by: botA });
+    expect(shared.ok).toBe(true);
+    if (!shared.ok) return;
+    game = shared.state;
+
+    // While traveling: botA claims slot, walks to STORAGE_FRONT, picks up drill, walks to ICARUS, and waits.
+    const { game: inIcarus } = await untilReady(game, botA, bot);
+    const me = inIcarus.players.find((p) => p.id === botA)!;
+    expect(me.room).toBe(DEFAULT_CONFIG.expedition.room);
+    expect(inIcarus.items.some((i) => i.at.kind === "player" && i.at.id === botA && i.type === "drill")).toBe(true);
+    // Still holds iTrackie while traveling (not orbiting yet).
+    expect(inIcarus.items.some((i) => i.at.kind === "player" && i.at.id === botA && i.type === ITRACKIE_ITEM)).toBe(true);
+
+    // Ship arrives in orbit: botA drops iTrackie in ICARUS to free an inventory slot and stays in ICARUS.
+    const orbiting: GameState = {
+      ...inIcarus,
+      navigation: { ...inIcarus.navigation, arriving: null, orbit: "planet-1" },
+    };
+    const next = newCycle(orbiting);
+    expect(next.ok).toBe(true);
+    if (!next.ok) return;
+    const { game: readyForTakeoff, taken } = await untilReady(next.state, botA, bot);
+    expect(taken.some((a) => a.type === "drop")).toBe(true);
+    expect(readyForTakeoff.items.some((i) => i.at.kind === "player" && i.at.id === botA && i.type === ITRACKIE_ITEM)).toBe(false);
+    expect(readyForTakeoff.players.find((p) => p.id === botA)!.room).toBe(DEFAULT_CONFIG.expedition.room);
+
+    // Even after view.plans disappears (no iTrackie), botA stays waiting in ICARUS for takeoff.
+    const next2 = newCycle(readyForTakeoff);
+    expect(next2.ok).toBe(true);
+    if (!next2.ok) return;
+    const { game: stillWaiting } = await untilReady(next2.state, botA, bot);
+    expect(stillWaiting.players.find((p) => p.id === botA)!.room).toBe(DEFAULT_CONFIG.expedition.room);
+
+    // After expedition completes (expeditions array grows), botA recovers its iTrackie from ICARUS floor.
+    const afterExpedition: GameState = {
+      ...stillWaiting,
+      expeditions: [
+        {
+          id: "exp-1",
+          planet: "Testaria",
+          day: 1,
+          cycle: stillWaiting.cycle,
+          members: [botA],
+          lostAt: [],
+          events: [],
+        },
+      ],
+    };
+    const next3 = newCycle(afterExpedition);
+    expect(next3.ok).toBe(true);
+    if (!next3.ok) return;
+    const { game: recovered } = await untilReady(next3.state, botA, bot);
+    expect(recovered.items.some((i) => i.at.kind === "player" && i.at.id === botA && i.type === ITRACKIE_ITEM)).toBe(true);
   });
 });

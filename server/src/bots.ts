@@ -160,6 +160,7 @@ export class GoalBot implements Bot {
       cancelHold: false,
       justJumped: false,
       failedReason: null,
+      expeditionPrep: null,
       roll: (n) => {
         let i: number;
         [i, this.rng] = nextInt(this.rng, n);
@@ -195,6 +196,7 @@ export class GoalBot implements Bot {
       cancelHold: m.cancelHold,
       justJumped: m.justJumped,
       failedReason: m.failedReason,
+      expeditionPrep: m.expeditionPrep ? { ...m.expeditionPrep } : null,
     };
   }
 
@@ -234,6 +236,7 @@ export class GoalBot implements Bot {
     m.cancelHold = s.cancelHold;
     m.justJumped = s.justJumped;
     m.failedReason = s.failedReason;
+    m.expeditionPrep = s.expeditionPrep ? { ...s.expeditionPrep } : null;
     return true;
   }
 

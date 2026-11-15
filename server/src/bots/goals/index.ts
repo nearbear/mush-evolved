@@ -5,6 +5,7 @@ import { commsOfficer } from "./commsOfficer.ts";
 import { contactSol } from "./contactSol.ts";
 import { eat } from "./eat.ts";
 import { expeditionPlan } from "./expeditionPlan.ts";
+import { expeditionPrep } from "./expeditionPrep.ts";
 import { explore } from "./explore.ts";
 import { extinguish } from "./extinguish.ts";
 import { patrolShootHunters } from "./patrolShootHunters.ts";
@@ -45,6 +46,7 @@ export const SOLO_GOALS: readonly GoalDef[] = [
   repairOxygen,
   patrolShootHunters,
   shootHunters,
+  expeditionPrep,
   shower,
   repairHull,
   contactSol,

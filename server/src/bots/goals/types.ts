@@ -16,6 +16,15 @@ import type { Action, GameClientMessage, LobbyLanguage, PlanetDirection, PlayerV
  */
 export type BotSocial = Extract<GameClientMessage, { type: "sharePlanet" | "shareReport" | "chat" | "createChannel" | "postPlan" }>;
 
+/** Expedition prep state remembered across turns (including after dropping iTrackie before takeoff). */
+export interface ExpeditionPrepMemory {
+  planId: string;
+  seenCycle: number;
+  ready: boolean;
+  expeditions: number;
+  done?: boolean;
+}
+
 /** What an expedition goes for: an Oxygen sector or a Hydrocarbon sector (owner, 2026-11-12, #417). */
 export type ExpeditionKind = "oxygen" | "fuel";
 
@@ -85,6 +94,8 @@ export interface BotMemory {
   justJumped: boolean;
   /** Failure reason saved while `"Jump: off"` is posted before failing `travel` (#421). */
   failedReason: string | null;
+  /** Active expedition plan prep state (first-seen cycle for wait timing, and ready-in-ICARUS state after dropping iTrackie). */
+  expeditionPrep: ExpeditionPrepMemory | null;
   /** A seeded roll in [0, n), for choices with no better reason (the bot's own RNG, never `Math.random`). */
   roll(n: number): number;
 }
