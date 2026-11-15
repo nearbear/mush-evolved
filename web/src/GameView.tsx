@@ -96,6 +96,13 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
   // A replay stepping back from the end reopens it for the next time the end comes (the derived-state pattern).
   const [endClosed, setEndClosed] = useState(false);
   if (endClosed && view.phase !== "ended") setEndClosed(false);
+  // A door's id is the same from both sides, so arriving in a new room clears any selected door instead of
+  // keeping "Door to <the room you left>" selected.
+  const [lastRoom, setLastRoom] = useState(view.you.room);
+  if (lastRoom !== view.you.room) {
+    setLastRoom(view.you.room);
+    if (selected?.kind === "door") setSelected(null);
+  }
   // Bumped when the room list selects something, to move focus to where its actions are (a screen reader's next step).
   const [focusActions, setFocusActions] = useState(0);
   // biome-ignore lint/correctness/useExhaustiveDependencies: `focusActions` is a trigger, read from the DOM once the selection has rendered.
