@@ -26,7 +26,7 @@ import { newLostAnalysis, rollAtSelection } from "./lostAnalysis.ts";
 import { hopelessCycle } from "./morale.ts";
 import { relayView } from "./relayView.ts";
 import { itemsIn, rechargeMicrowaves, startCharges, visibleItemsIn } from "./items.ts";
-import { actionFailed, apGain, mpGain, carePointsGain, channelLimit, computerPointsCap, computerPointsGain, shootPointsGain, cycleChanged, designerPointsGain, engineerPointsGain, gardenPointsGain, dailyMoraleLoss, inventorySlots, movementRules, pilgredPointsGain, satietyLoss } from "./modifiers.ts";
+import { actionFailed, apGain, mpGain, carePointsGain, channelLimit, computerPointsCap, computerPointsGain, cookPointsGain, shootPointsGain, cycleChanged, designerPointsGain, engineerPointsGain, gardenPointsGain, dailyMoraleLoss, inventorySlots, movementRules, pilgredPointsGain, satietyLoss } from "./modifiers.ts";
 import { contaminationSeenBy, convert } from "./infection.ts";
 import { isHungry, publicStatusesOf, statusesOf } from "./statuses.ts";
 import { coupCycle } from "./coup.ts";
@@ -480,6 +480,7 @@ function grantCarePoints(state: GameState): void {
     p.resources.eng = Math.min(state.config.engineer.capPoints, p.resources.eng + engineerPointsGain(state, p));
     p.resources.pilgred = Math.min(state.config.pilgred.capPoints, p.resources.pilgred + pilgredPointsGain(state, p));
     p.resources.garden = Math.min(state.config.botany.capPoints, p.resources.garden + gardenPointsGain(state, p));
+    p.resources.cook = Math.min(state.config.cook.capPoints, p.resources.cook + cookPointsGain(state, p));
   }
 }
 

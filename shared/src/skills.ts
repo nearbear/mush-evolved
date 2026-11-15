@@ -289,6 +289,8 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   bacterial_contact: "partial",
   // Instantly complete a research, project, or repair (owner, 2026-10-25, actions/become_genius.ts).
   genius: "full",
+  // +1 Engineer, Garden, and Cook point a day and 1 of each when picked (owner, 2026-11-14, modifiers/maintenance_agent.ts).
+  maintenance_agent: "full",
   // Expedition: -1 damage per hit, +1 Alien Steak on Provision events, and chosen last on Kill events (expeditions.ts).
   survival: "full",
 };

@@ -334,6 +334,7 @@ export interface GameConfig {
     rooms: RoomId[]; // Rooms where food can be cooked (confirmed 2026-10-16).
     dirtyChance: number; // Chance of getting the dirty status after cooking.
     injuryChance: number; // Chance of getting the injured status after cooking (owner, 2026-10-16: 25%).
+    capPoints: number; // Most Cook points (`resources.cook`) a player can hold (owner, 2026-11-14: 8).
   };
   expressCook: {
     cost: { ap: number }; // AP spent to express cook a ration with a reachable microwave (owner, 2026-10-19: 0).
@@ -424,6 +425,10 @@ export interface GameConfig {
     capPoints: number; // Most Engineer points (`resources.eng`) a player can hold (owner, 2026-11-09).
     pointsPerDay: number; // Engineer points the `engineer` skill grants at the start of each day.
     pointsOnPick: number; // Engineer points it grants when picked.
+  };
+  maintenanceAgent: {
+    pointsPerDay: { eng: number; garden: number; cook: number }; // Points the `maintenance_agent` skill grants at the start of each day (owner, 2026-11-14).
+    pointsOnPick: { eng: number; garden: number; cook: number }; // Points it grants when picked (owner, 2026-11-14).
   };
   sprinter: {
     extraMpPerConversion: number; // Extra MP the `sprint` skill gets from each AP-to-MP conversion (owner, 2026-10-24; eMushpedia).

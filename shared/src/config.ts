@@ -190,7 +190,8 @@ export const DEFAULT_CONFIG: GameConfig = {
     capPoints: 4,
   },
   // Confirmed 2026-10-16: cooking an uncooked ration costs 1 AP, only in the refectory.
-  cook: { cost: { ap: 1 }, rooms: ["REFECTORY"], dirtyChance: 0.25, injuryChance: 0.01 },
+  // Owner, 2026-11-14: Cook points cap at 8.
+  cook: { cost: { ap: 1 }, rooms: ["REFECTORY"], dirtyChance: 0.25, injuryChance: 0.01, capPoints: 8 },
   // Owner, 2026-10-19: express cook is free, anywhere you can reach a microwave, and spends one of its 4 charges;
   // it regains one each day. Consequences for using it come later.
   expressCook: { cost: { ap: 0 }, charges: { start: 4, max: 4, perDay: 1 }, dirtyChance: 0.05 },
@@ -216,6 +217,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   designer: { capPoints: 4, pointsPerDay: 2 },
   // Owner, 2026-11-09: the engineer skill holds up to 2 Engineer points, gains 1 a day and 2 when picked; they pay for repair, dismantle, reinforce, hull repair, install, uninstall and renovate.
   engineer: { capPoints: 2, pointsPerDay: 1, pointsOnPick: 2 },
+  // Owner, 2026-11-14: Maintenance Agent grants +1 Engineer, +1 Garden, and +1 Cook point a day and 1 of each when picked, sharing the existing caps.
+  maintenanceAgent: { pointsPerDay: { eng: 1, garden: 1, cook: 1 }, pointsOnPick: { eng: 1, garden: 1, cook: 1 } },
   // Owner, 2026-10-25 (the original skills.json): Gunman +2 Shoot points a day (max 4); Gunner doubles turret odds and damage;
   // Persistent's streak grows by x1.5 a miss instead of x1.25; Space Tactics shrinks 50% of waves by 33%; Polymath +2 channels, +1 Computer point a day, +2 cap.
   gunman: { capPoints: 4, pointsPerDay: 2 },

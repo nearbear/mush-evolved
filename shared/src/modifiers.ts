@@ -29,6 +29,7 @@ import { gunman } from "./modifiers/gunman.ts";
 import { gunner } from "./modifiers/gunner.ts";
 import { lethargy } from "./modifiers/lethargy.ts";
 import { logistics } from "./modifiers/logistics.ts";
+import { maintenance_agent } from "./modifiers/maintenance_agent.ts";
 import { medic } from "./modifiers/medic.ts";
 import { observant } from "./modifiers/observant.ts";
 import { paranoid } from "./modifiers/paranoid.ts";
@@ -84,6 +85,7 @@ type FoldHooks = Record<
   | "analysisSectors"
   | "pilgredPointsPerDay"
   | "gardenPointsPerDay"
+  | "cookPointsPerDay"
   | "heavyMpPenalty"
   | "cleanManoeuvreChance"
   | "maxAp"
@@ -192,6 +194,7 @@ export const MODIFIERS: Record<string, Modifier> = {
   gunner,
   lethargy,
   logistics,
+  maintenance_agent,
   medic,
   observant,
   paranoid,
@@ -543,6 +546,10 @@ export function waveShrinkChance(state: Readonly<GameState>, registry: ModifierR
 /** Garden points a player gains at the start of a day: nothing by default, plus what the botanist skill grants. */
 export const gardenPointsGain = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
   fold("gardenPointsPerDay", 0, state, player, registry);
+
+/** Cook points a player gains at the start of a day: nothing by default, plus what skills grant. */
+export const cookPointsGain = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
+  fold("cookPointsPerDay", 0, state, player, registry);
 
 /** HP a punch removes: the rolled base damage folded through the puncher's modifiers. */
 export const punchDamage = (state: Readonly<GameState>, player: Readonly<PlayerState>, base: number, registry: ModifierRegistry = MODIFIERS) =>

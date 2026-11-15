@@ -10,6 +10,8 @@ The record of answered rule decisions and the design for the rules that are not 
 
 - **Maintenance Agent** (2026-11-14, owner): grants +1 Engineer (`eng`), +1 Garden (`garden`), and +1 Cook (`cook`) point on pick and at each day start, sharing `config.engineer.capPoints` (2) and `config.botany.capPoints` (4), with `config.cook.capPoints` = 8. Cook points pay for `cook` only (0 AP, `paidBy: "cook"`), not `fungal_cuisine`.
 
+- **Maintenance Agent** (2026-11-14, owner): grants +1 Engineer (`eng`), +1 Garden (`garden`), and +1 Cook (`cook`) point on pick and at each day start, sharing `config.engineer.capPoints` (2) and `config.botany.capPoints` (4), with `config.cook.capPoints` = 8. Cook points pay for `cook` only (0 AP, `paidBy: "cook"`), not `fungal_cuisine`.
+
 - **Alien fruits** (2026-11-14, owner; backend built in [#437](https://github.com/nearbear/mush2/issues/437), client tooltips/art in [#438](https://github.com/nearbear/mush2/issues/438); replaces eMush's per-trait rolls, which leave most alien fruits worse than a banana). Goal: every alien plant is worth planting over a banana.
   - **Species and source**: the original's 12 alien species (its `Data.ods` Skins rows 1–12, icons `fruit01`–`fruit12`, Lianube to Filandru; `fruit00` is the banana and `fruit13`, Citrouïd, is the Halloween event fruit, left out), each species' traits fixed for the whole ship (seeded at creation). Expedition Harvest events drop a random alien fruit instead of bananas; the ship starts with none. Bananas are unchanged (+1 AP, +1 satiety, +1 morale, +1 HP, 36 cycles).
   - **Base**: every fruit gives 1 satiety and 1 AP, outside the budget.

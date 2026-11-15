@@ -3730,3 +3730,8 @@ Small refactor on request: `GameRoom.social` called four bot-line parsers (item,
 - **Fix:** Exempt `bay_window` and `bay_window_upgrade` from `clip()` in `tileSortables` so their footprint stays on the back wall row behind floor furniture, and added a regression test in `web/tests/iso/placement.test.ts`.
 
 - **Armoured corridors (`ARMOUR_CORRIDOR`)** (2026-11-14, owner): Asked three open questions before coding (before vs after plasma shield, hunter shots only vs all `damageShip` including asteroid impacts, minimum damage 0 vs 1). Owner chose: reduce incoming attack by 1 before the plasma shield splits it, apply to all `damageShip` calls (hunter shots and asteroid impacts), and floor at 0. Implemented via `config.project.armourCorridor.damageReduction` (`1`), `damageShip` in `shared/src/ship.ts`, and `PROJECT_STATUS.ARMOUR_CORRIDOR = "full"`. What worked: `damageShip` was already the single choke point for hunter and asteroid damage to the Daedalus.
+
+### 2026-11-14: Maintenance Agent skill (`maintenance_agent`)
+
+- **Decision (owner):** Maintenance Agent grants +1 Engineer (`eng`), +1 Garden (`garden`), and +1 Cook (`cook`) point on pick and each day, sharing `config.engineer.capPoints` (2) and `config.botany.capPoints` (4), with `config.cook.capPoints` = 8. Cook points pay for `cook` only (0 AP, `paidBy: "cook"`), not `fungal_cuisine`.
+- **What worked:** `RESOURCE_IDS`, `paidBy`, `ActionLabel`, and `ResourceChips` already supported `"cook"`, so adding `cookPointsPerDay`, `cookPointsGain`, `modifiers/maintenance_agent.ts`, `CookAction.getCost`, and `RESOURCE_SKILLS` entries slotted cleanly into the existing modifier and resource architecture.
