@@ -1,4 +1,4 @@
-import { CHAT_PAGE, DEFAULT_CONFIG, SHIP_ROOMS, applyAction, applyInput, legalIn, pushChat, newCycle, shortestPath, startGame, viewFor, type Action, type CharacterId, type GameState, type PlayerView, type ProjectId } from "@mush2/shared";
+import { CHAT_PAGE, DEFAULT_CONFIG, ITRACKIE_ITEM, SHIP_ROOMS, applyAction, applyInput, legalIn, pushChat, newCycle, shortestPath, startGame, viewFor, type Action, type CharacterId, type GameState, type PlayerView, type ProjectId } from "@mush2/shared";
 import { describe, expect, it } from "vitest";
 import { GOAL_MAX_ACTIONS, GoalBot } from "../src/bots.ts";
 import { astro, chooseDestination, judgePlanet } from "../src/bots/goals/astro.ts";
@@ -6,6 +6,7 @@ import { CANCEL_HOLD_LINE, HOLD_JUMP_LINE, JUMP_NOW_LINE, crewAboard, formatPlan
 import { canAfford, goTo, roomsWith, travelAp } from "../src/bots/goals/blocks.ts";
 import { commsOfficer } from "../src/bots/goals/commsOfficer.ts";
 import { contactSol } from "../src/bots/goals/contactSol.ts";
+import { EXPEDITION_CHANNEL_NAME, expeditionPlan } from "../src/bots/goals/expeditionPlan.ts";
 import { SOLO_GOALS } from "../src/bots/goals/index.ts";
 import { repairHull } from "../src/bots/goals/repairHull.ts";
 import { rest } from "../src/bots/goals/rest.ts";
@@ -2148,5 +2149,78 @@ describe("oxygen tanks (tankShare.ts, repairOxygen goal, #443)", () => {
     observeTanks(view, m);
     expect(repairOxygen.options(view, m).map((g) => g.key)[0]).toMatch(/^repairOxygen:go:/);
     expect(m.tanks.claims.size).toBe(0);
+  });
+});
+
+describe("expeditionPlan: Pilot creates channel & expedition plan on travel", () => {
+  const pilotSetup = (largerBay = false) => {
+    const { game: base, id } = setup();
+    let game = edit(base, id, (p) => {
+      p.skills = ["pilot"];
+    });
+    if (largerBay) {
+      game = { ...game, projects: { ...game.projects, ICARUS_LARGER_BAY: 100 } };
+    }
+    const traveling = { ...game, navigation: { ...game.navigation, arriving: { planet: null, distance: 1 } } };
+    return { game: traveling, id };
+  };
+
+  it("is only offered to a Pilot with an iTrackie while traveling", () => {
+    const { game, id } = pilotSetup();
+    const nonPilot = edit(game, id, (p) => (p.skills = []));
+    expect(expeditionPlan.options(viewFor(nonPilot, id), memory())).toEqual([]);
+    const notTraveling = { ...game, navigation: { ...game.navigation, arriving: null } };
+    expect(expeditionPlan.options(viewFor(notTraveling, id), memory())).toEqual([]);
+    const noITrackie = { ...game, items: game.items.filter((i) => !(i.at.kind === "player" && i.at.id === id && i.type === ITRACKIE_ITEM)) };
+    expect(expeditionPlan.options(viewFor(noITrackie, id), memory())).toEqual([]);
+    expect(expeditionPlan.options(viewFor(game, id), memory())).toHaveLength(1);
+  });
+
+  it("creates an Expedition channel and posts a plan for ICARUS with up to maxCrew onCall slots", async () => {
+    const { game: start, id } = pilotSetup(false);
+    const bot = new GoalBot(1, 2, [expeditionPlan]);
+    const { game: after } = await play(start, id, bot, 2);
+    const channel = after.channels.find((c) => c.name === EXPEDITION_CHANNEL_NAME && c.createdBy === id);
+    expect(channel).toBeDefined();
+    expect(channel!.members.length).toBeGreaterThan(1);
+    const plan = after.plans.find((p) => p.channel === channel!.id && p.status === "open");
+    expect(plan).toMatchObject({
+      author: id,
+      room: DEFAULT_CONFIG.expedition.room,
+      purpose: "expedition",
+    });
+    expect(plan!.slots).toHaveLength(DEFAULT_CONFIG.expedition.maxCrew - 1);
+    expect(plan!.slots.every((s) => s.kind === "onCall")).toBe(true);
+    expect(expeditionPlan.options(viewFor(after, id), memory())).toEqual([]);
+  });
+
+  it("uses largerBayCrew (6) when ICARUS_LARGER_BAY is completed", async () => {
+    const { game: start, id } = pilotSetup(true);
+    const bot = new GoalBot(1, 2, [expeditionPlan]);
+    const { game: after } = await play(start, id, bot, 2);
+    const plan = after.plans.find((p) => p.purpose === "expedition" && p.status === "open");
+    expect(plan).toBeDefined();
+    expect(plan!.slots).toHaveLength(DEFAULT_CONFIG.expedition.largerBayCrew - 1);
+  });
+
+  it("cancels the open plan if the ship finishes traveling without orbiting, and reuses the channel on the next jump", async () => {
+    const { game: start, id } = pilotSetup(false);
+    const bot = new GoalBot(1, 2, [expeditionPlan]);
+    const { game: posted } = await play(start, id, bot, 2);
+    expect(posted.plans.filter((p) => p.status === "open")).toHaveLength(1);
+
+    // Arrive in empty space (no orbit): newCycle clears traveling and orbit stays null.
+    const next = newCycle(posted);
+    expect(next.ok).toBe(true);
+    if (!next.ok) return;
+    const { game: cancelled, taken } = await play(next.state, id, bot, 1);
+    expect(taken).toContainEqual({ type: "cancel_plan", plan: posted.plans[0]!.id });
+    expect(cancelled.plans.find((p) => p.id === posted.plans[0]!.id)!.status).toBe("cancelled");
+
+    // Next jump: reuses the existing Expedition channel instead of creating a duplicate.
+    const jump2 = { ...cancelled, navigation: { ...cancelled.navigation, arriving: { planet: null, distance: 1 } } };
+    const { game: reposted } = await play(jump2, id, bot, 2);
+    expect(reposted.channels.filter((c) => c.name === EXPEDITION_CHANNEL_NAME)).toHaveLength(1);
+    expect(reposted.plans.filter((p) => p.status === "open")).toHaveLength(1);
   });
 });

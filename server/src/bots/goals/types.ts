@@ -10,11 +10,11 @@ import type { ReportMemory } from "../reportShare.ts";
 import type { Action, GameClientMessage, LobbyLanguage, PlanetDirection, PlayerView, RoomId } from "@mush2/shared";
 
 /**
- * A message a goal sends that isn't an action (#417, #421): sharing a planet, sharing an expedition report, or a
- * global-chat signal. It goes through the same path as a person's (`GameRoom.social`: rate limit, moderation, the
- * rules), and is recorded like one.
+ * A message a goal sends that isn't an action (#417, #421): sharing a planet, sharing an expedition report, a
+ * global-chat signal, creating a private channel, or posting a plan. It goes through the same path as a person's
+ * (`GameRoom.social`: rate limit, moderation, the rules), and is recorded like one.
  */
-export type BotSocial = Extract<GameClientMessage, { type: "sharePlanet" | "shareReport" | "chat" }>;
+export type BotSocial = Extract<GameClientMessage, { type: "sharePlanet" | "shareReport" | "chat" | "createChannel" | "postPlan" }>;
 
 /** What an expedition goes for: an Oxygen sector or a Hydrocarbon sector (owner, 2026-11-12, #417). */
 export type ExpeditionKind = "oxygen" | "fuel";

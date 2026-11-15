@@ -39,8 +39,9 @@ export interface Bot {
   /** Optional: the message its last turn wants posted (at most one), taken once. The room posts it like a player's. */
   takeMessage?(): BotMessage | null;
   /**
-   * Optional: a message that isn't an action or chat (sharing a planet, #417) its last turn wants sent, taken once. The
-   * room sends it like a player's (`GameRoom.social`); a refusal comes back through `refused`. The turn returns no action.
+   * Optional: a message that isn't an action or chat (sharing a planet or report, creating a channel, posting a plan)
+   * its last turn wants sent, taken once. The room sends it like a player's (`GameRoom.social`); a refusal comes back
+   * through `refused`. The turn returns no action.
    */
   takeSocial?(): BotSocial | null;
   /**

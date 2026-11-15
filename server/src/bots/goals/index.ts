@@ -4,6 +4,7 @@ import { astro } from "./astro.ts";
 import { commsOfficer } from "./commsOfficer.ts";
 import { contactSol } from "./contactSol.ts";
 import { eat } from "./eat.ts";
+import { expeditionPlan } from "./expeditionPlan.ts";
 import { explore } from "./explore.ts";
 import { extinguish } from "./extinguish.ts";
 import { patrolShootHunters } from "./patrolShootHunters.ts";
@@ -51,6 +52,7 @@ export const SOLO_GOALS: readonly GoalDef[] = [
   tendPlants,
   travel,
   astro,
+  expeditionPlan,
   commsOfficer,
   crewShootHunters,
   research,
