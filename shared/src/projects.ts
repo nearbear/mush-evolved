@@ -108,6 +108,8 @@ export const PROJECT_STATUS: Readonly<Partial<Record<ProjectId, ProjectStatus>>>
   BRIC_BROC: "full",
   // Completing it adds the Dynarcade in Alpha Bay 2 (hiding the broken patrol ship); anyone can play for 1 AP (owner, 2026-11-14).
   CALL_OF_DIRTY: "full",
+  // Completing it spawns 3 empty hydropots on the Hydroponic Garden floor (owner, 2026-11-14; projectEffects.ts).
+  EXTRA_HYDROPONPOTS: "full",
 };
 
 export function projectStatus(project: string): ProjectStatus {

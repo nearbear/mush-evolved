@@ -3741,3 +3741,8 @@ Small refactor on request: `GameRoom.social` called four bot-line parsers (item,
 - **Decision (owner):** A human Mycologist's `heal` (Sick Bay or Medikit) and `use_bandage` actions remove 1 contamination (`heal.effect.mycologistSpores`) from a human patient (self included, even at full HP), without curing `fungal_infection_disease`. Does nothing if the healer is Mush, and removes contamination silently (no extra log or Mush-channel notice, so healing doesn't act as a spore detector).
 - **Implementation:** Added `onHeal` to `Modifier` and `healed()` in `shared/src/modifiers.ts`, `removeContamination()` in `shared/src/infection.ts`, and `shared/src/modifiers/mycologist.ts`; wired `healed()` into `HealAction` and `UseBandageAction`, and marked `mycologist: "full"` in `shared/src/skills.ts`.
 - **What worked:** Asking the 4 open rule questions up front (target effect, bandage inclusion, Mush Mycologist behavior, and visibility/silence) resolved the tension between the flavor text (`fungal_infection_disease`) and the effect text / upstream eMush (`1 spore` on heal).
+
+## 2026-11-14: Extra hydropots project (`EXTRA_HYDROPONPOTS`)
+
+- **Decision (owner):** Completing `EXTRA_HYDROPONPOTS` spawns 3 empty hydropots (`tree_pot`) on the floor of the Hydroponic Garden (`HYDROPONIC_CENTER`), with no extra room log line beyond the standard project completion log at NERON's Core. Tunable in `config.project.extraHydropots`.
+- **Implementation:** Added `config.project.extraHydropots` (`shared/src/types/config.ts`, `shared/src/config.ts`), spawned the pots in `onProjectCompleted` (`shared/src/projectEffects.ts`), marked `EXTRA_HYDROPONPOTS: "full"` in `PROJECT_STATUS` (`shared/src/projects.ts`), and added unit tests in `shared/tests/extraHydropots.test.ts`.

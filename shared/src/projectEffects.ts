@@ -5,7 +5,7 @@
 import { updateMaxValues } from "./adjustStats.ts";
 import { DYNARCADE_EQUIPMENT } from "./equipment.ts";
 import { PROJECT_IDS, projectDone, type ProjectId } from "./projects.ts";
-import { newItemId } from "./items.ts";
+import { newItemId, TREE_POT_ITEM } from "./items.ts";
 import type { DeepReadonly, GameConfig, GameCore, GameState, PlayerState } from "./types.ts";
 
 /**
@@ -37,5 +37,10 @@ export function onProjectCompleted(state: GameState, project: ProjectId): void {
     const id = `${room}:${DYNARCADE_EQUIPMENT}`;
     const list = (state.equipment[room] ??= []);
     if (!list.some((e) => e.id === id)) list.push({ id, type: DYNARCADE_EQUIPMENT });
+  }
+  // Extra hydropots (EXTRA_HYDROPONPOTS; owner, 2026-11-14): spawns `count` empty hydropots on the floor of `room`.
+  if (project === "EXTRA_HYDROPONPOTS") {
+    const { room, count } = state.config.project.extraHydropots;
+    for (let i = 0; i < count; i++) state.items.push({ id: newItemId(state), type: TREE_POT_ITEM, at: { kind: "room", id: room } });
   }
 }

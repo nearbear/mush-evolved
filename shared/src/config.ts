@@ -291,6 +291,7 @@ export const DEFAULT_CONFIG: GameConfig = {
     armourCorridor: { damageReduction: 1 },
     fissionCoffeeRoaster: { cycles: [1, 5] },
     dynarcade: { room: "SPACESHIP_BAY_AA", cost: { ap: 1 }, successChance: 0.33, failureMultiplier: 1.5, morale: 2, injuryChance: 0.33 },
+    extraHydropots: { room: "HYDROPONIC_CENTER", count: 3 },
   },
   // Owner, 2026-10-21: repairing PILGRED uses the original's numbers (DIG_RATE 6, PILGRED_MOD 2, DIG_BOOST 4, -2 per repeat),
   // 2 AP, 25% dirty; the Physicist gains 1 PILGRED point a day and holds 2.
