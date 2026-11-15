@@ -6,13 +6,15 @@ import type { FireMemory } from "../fireShare.ts";
 import type { TankMemory } from "../tankShare.ts";
 import type { ItemMemory } from "../itemShare.ts";
 import type { JumpMemory } from "../planetShare.ts";
+import type { ReportMemory } from "../reportShare.ts";
 import type { Action, GameClientMessage, LobbyLanguage, PlanetDirection, PlayerView, RoomId } from "@mush2/shared";
 
 /**
- * A message a goal sends that isn't an action (#417, #421): sharing a planet or a global-chat signal. It goes through
- * the same path as a person's (`GameRoom.social`: rate limit, moderation, the rules), and is recorded like one.
+ * A message a goal sends that isn't an action (#417, #421): sharing a planet, sharing an expedition report, or a
+ * global-chat signal. It goes through the same path as a person's (`GameRoom.social`: rate limit, moderation, the
+ * rules), and is recorded like one.
  */
-export type BotSocial = Extract<GameClientMessage, { type: "sharePlanet" | "chat" }>;
+export type BotSocial = Extract<GameClientMessage, { type: "sharePlanet" | "shareReport" | "chat" }>;
 
 /** What an expedition goes for: an Oxygen sector or a Hydrocarbon sector (owner, 2026-11-12, #417). */
 export type ExpeditionKind = "oxygen" | "fuel";
@@ -73,6 +75,8 @@ export interface BotMemory {
   holdSince: number | null;
   /** The Commander's jump lines in global chat, folded in as read (`planetShare.ts`, #427). */
   readonly jump: JumpMemory;
+  /** Explored sectors from shared expedition reports, and which reports were seen or shared (`reportShare.ts`). */
+  readonly reports: ReportMemory;
   /** Last heading seen on a Command terminal (`null` until visited, #421). */
   heading: PlanetDirection | null;
   /** True when the Commander jumped or gave up while holding and still needs to post `"Jump: off"` (#421). */

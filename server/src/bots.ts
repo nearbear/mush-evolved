@@ -11,6 +11,7 @@ import { newFireMemory, observeFires } from "./bots/fireShare.ts";
 import { newTankMemory, observeTanks } from "./bots/tankShare.ts";
 import { newItemMemory, observeItems } from "./bots/itemShare.ts";
 import { holdStartCycle, isHoldingJump, newJumpMemory } from "./bots/planetShare.ts";
+import { newReportMemory, observeReports } from "./bots/reportShare.ts";
 import { readSnapshot, BOT_MEMORY_VERSION, type BotMemorySnapshot } from "./bots/memoryStore.ts";
 import { buildPrompt, describeLogEntry, observeShrinks, parseReply, type BotMessage } from "./prompt.ts";
 import type { ModelGate } from "./model.ts";
@@ -153,6 +154,7 @@ export class GoalBot implements Bot {
       combustion: null,
       holdSince: null,
       jump: newJumpMemory(),
+      reports: newReportMemory(),
       heading: null,
       cancelHold: false,
       justJumped: false,
@@ -187,6 +189,7 @@ export class GoalBot implements Bot {
       combustion: m.combustion,
       holdSince: m.holdSince,
       jump: { ...m.jump },
+      reports: { explored: [...m.reports.explored].map(([k, v]) => [k, [...v]]), seen: [...m.reports.seen], shared: [...m.reports.shared] },
       heading: m.heading,
       cancelHold: m.cancelHold,
       justJumped: m.justJumped,
@@ -221,6 +224,11 @@ export class GoalBot implements Bot {
     m.combustion = s.combustion;
     m.holdSince = s.holdSince;
     Object.assign(m.jump, s.jump);
+    Object.assign(m.reports, {
+      explored: new Map(s.reports.explored.map(([k, v]) => [k, [...v]])),
+      seen: new Set(s.reports.seen),
+      shared: new Set(s.reports.shared),
+    });
     m.heading = s.heading;
     m.cancelHold = s.cancelHold;
     m.justJumped = s.justJumped;
@@ -275,8 +283,9 @@ export class GoalBot implements Bot {
       this.goal.onInterrupt?.(this.memory);
       this.end(false);
     }
-    // Where shared items lie (itemShare.ts): likewise, one line a turn.
-    const report = fires.post ?? tanks.post ?? observeItems(view, this.memory);
+    // Expedition reports (reportShare.ts) and shared items (itemShare.ts): likewise, one message a turn.
+    const sharedReport = observeReports(view, this.memory, !fires.post && !tanks.post);
+    const report = fires.post ?? tanks.post ?? sharedReport ?? observeItems(view, this.memory);
     if (report) {
       this.social = report;
       return null;

@@ -42,6 +42,7 @@ export interface BotMemorySnapshot {
   combustion: number | null;
   holdSince: number | null;
   jump: JumpMemory;
+  reports: { explored: [string, string[]][]; seen: string[]; shared: string[] };
   heading: PlanetDirection | null;
   cancelHold: boolean;
   justJumped: boolean;
