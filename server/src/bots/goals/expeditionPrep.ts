@@ -152,6 +152,17 @@ function stepPrep(view: PlayerView, memory: BotMemory, planId: string, slotIndex
   return { kind: "wait" };
 }
 
+const GEAR_TO_DROP: readonly SharedItem[] = ["space_suit", "drill", "quad_compass", "white_flag", "rope"];
+
+function dropToRecoverITrackie(view: PlayerView) {
+  if (view.inventory.length < view.inventorySlots) return undefined;
+  for (const type of GEAR_TO_DROP) {
+    const drop = find(view, "drop", (a) => view.inventory.some((i) => i.id === a.item && i.type === type));
+    if (drop) return drop;
+  }
+  return find(view, "drop", (a) => view.inventory.some((i) => i.id === a.item && i.type !== ITRACKIE_ITEM));
+}
+
 function recoverITrackieGoal(): Goal {
   return {
     id: "expeditionPrep",
@@ -159,7 +170,9 @@ function recoverITrackieGoal(): Goal {
     label: "Pick up your iTrackie after returning from the expedition", // i18n-ignore: model prompt text, not player-visible
     step(v) {
       const take = find(v, "take", (a) => v.roomItems.some((i) => i.id === a.item && i.type === ITRACKIE_ITEM && !i.broken));
-      return take ? act(take) : { kind: "done" };
+      if (take) return act(take);
+      const drop = dropToRecoverITrackie(v);
+      return drop ? act(drop) : { kind: "done" };
     },
   };
 }
@@ -177,11 +190,13 @@ export const expeditionPrep: GoalDef = {
     syncPrepMemory(view, memory);
 
     const hasITrackie = view.inventory.some((i) => i.type === ITRACKIE_ITEM && !i.broken);
+    const itrackieInRoom = view.roomItems.some((i) => i.type === ITRACKIE_ITEM && !i.broken);
     if (
       !hasITrackie &&
+      itrackieInRoom &&
       (memory.expeditionPrep === null || memory.expeditionPrep.done === true) &&
-      view.inventory.length < view.inventorySlots &&
-      find(view, "take", (a) => view.roomItems.some((i) => i.id === a.item && i.type === ITRACKIE_ITEM && !i.broken))
+      (find(view, "take", (a) => view.roomItems.some((i) => i.id === a.item && i.type === ITRACKIE_ITEM && !i.broken)) ||
+        dropToRecoverITrackie(view) !== undefined)
     ) {
       return [recoverITrackieGoal()];
     }
