@@ -12,7 +12,7 @@ import { useNames } from "../i18n/names.ts";
 import { RoomCaption, SHIP_PLAN, ShipPlanSvg } from "../scene/ShipPlanMap.tsx";
 import { FramedDialog } from "./FramedDialog.tsx";
 
-const GROUPS: readonly KubeGroup[] = ["health", "items", "travel"];
+const GROUPS: readonly KubeGroup[] = ["health", "items", "travel", "destinations"];
 const OPS = Object.keys(KUBE_OPS) as KubeOpId[];
 
 export type SendKube = (op: KubeOpId, arg?: string | number) => void;

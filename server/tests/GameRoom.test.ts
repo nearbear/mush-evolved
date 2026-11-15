@@ -2420,12 +2420,17 @@ describe("GameRoom storage reclamation (#339)", () => {
     return { room, storage, db, bucket, tokens };
   }
 
+  async function endViaKube(room: GameRoom, conn: ReturnType<typeof connect>) {
+    await send(room, conn, { type: "cheatRoom" });
+    await send(room, conn, { type: "kube", op: "returnToSol" });
+  }
+
   it("waits until both listed and replayReady are true, then waits 48 hours before deleting", async () => {
     vi.spyOn(console, "warn").mockImplementation(() => {});
     // Case 1: listed is false (no D1), replayReady is true -> no reclaimAt scheduled, nothing deleted even after 48h.
     const noDb = await launchedShip({ db: null });
     const c1 = connect(noDb.room, noDb.tokens[0]!);
-    await send(noDb.room, c1, { type: "solCheat" });
+    await endViaKube(noDb.room, c1);
     expect((noDb.storage.data.get("game") as { listed: boolean; replayReady: boolean; reclaimAt?: number })).toMatchObject({
       listed: false,
       replayReady: true,
@@ -2441,7 +2446,7 @@ describe("GameRoom storage reclamation (#339)", () => {
     // Case 2: listed is true, replayReady is false (no R2) -> no reclaimAt scheduled, nothing deleted even after 48h.
     const noBucket = await launchedShip({ bucket: null });
     const c2 = connect(noBucket.room, noBucket.tokens[0]!);
-    await send(noBucket.room, c2, { type: "solCheat" });
+    await endViaKube(noBucket.room, c2);
     expect((noBucket.storage.data.get("game") as { listed: boolean; replayReady: boolean; reclaimAt?: number })).toMatchObject({
       listed: true,
       replayReady: false,
@@ -2475,7 +2480,7 @@ describe("GameRoom storage reclamation (#339)", () => {
     const c0 = connect(room, tokens[0]!);
     await send(room, c0, { type: "chat", channel: CHAT_CHANNELS[0], text: "what the fuck" });
     await send(room, c0, { type: "chat", channel: CHAT_CHANNELS[0], text: "   " });
-    await send(room, c0, { type: "solCheat" });
+    await endViaKube(room, c0);
 
     const expectedReclaim = Date.now() + RECLAIM_DELAY_MS;
     expect(storage.alarm).toBe(expectedReclaim);
@@ -2518,7 +2523,7 @@ describe("GameRoom storage reclamation (#339)", () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const { room, storage, bucket, tokens } = await launchedShip();
     const c0 = connect(room, tokens[0]!);
-    await send(room, c0, { type: "solCheat" });
+    await endViaKube(room, c0);
     const reclaimAt = storage.alarm!;
 
     // Missing moderation.json (or chunk / index): keeps storage and reschedules with backoff.
@@ -2569,7 +2574,7 @@ describe("GameRoom storage reclamation (#339)", () => {
     const room = asRoom(storage, CHEATS);
     const token = await room.setupSinglePlayer("Solo", "chun", "en");
     const c = connect(room, token);
-    await send(room, c, { type: "solCheat" });
+    await endViaKube(room, c);
     expect((storage.data.get("game") as { listed: boolean; replayReady: boolean; reclaimAt?: number })).toMatchObject({
       listed: true,
       replayReady: true,

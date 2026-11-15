@@ -36,7 +36,6 @@ export function SampleTopBar({ view, ...rest }: { view: PlayerView } & Partial<P
       cheatsAllowed={false}
       onCheat={noop}
       onRoleCheat={noop}
-      onSolCheat={noop}
       onLeaveShip={noop}
       {...rest}
     />

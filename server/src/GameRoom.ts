@@ -887,7 +887,7 @@ export class GameRoom extends Server<Env> {
       return;
     }
     if (
-      ((msg.type === "cheat" || msg.type === "roleCheat" || msg.type === "solCheat" || msg.type === "cheatRoom" || msg.type === "kube" || msg.type === "leaveShip") ||
+      ((msg.type === "cheat" || msg.type === "roleCheat" || msg.type === "cheatRoom" || msg.type === "kube" || msg.type === "leaveShip") ||
         (msg.type === "action" && msg.action.type === "warp_to_planet")) &&
       !this.cheatsAllowed
     ) {
@@ -924,7 +924,7 @@ export class GameRoom extends Server<Env> {
         ? await this.act({ ...msg, by, at: Date.now() })
         : msg.type === "walk"
           ? await this.act({ ...msg, by }, undefined, this.game.players.find((p) => p.id === by)?.room)
-          : msg.type === "clearQueue" || msg.type === "acknowledgeTransfer" || msg.type === "cheat" || msg.type === "roleCheat" || msg.type === "solCheat" || msg.type === "cheatRoom" || msg.type === "kube"
+          : msg.type === "clearQueue" || msg.type === "acknowledgeTransfer" || msg.type === "cheat" || msg.type === "roleCheat" || msg.type === "cheatRoom" || msg.type === "kube"
             ? await this.act({ ...msg, by })
             : await this.social(playerId, by, msg);
     if (error) this.send(connection, { type: "error", message: error });
@@ -982,7 +982,7 @@ export class GameRoom extends Server<Env> {
   private async social(
     playerId: PlayerId,
     by: PlayerId,
-    msg: Exclude<GameClientMessage, { type: "action" | "clearQueue" | "acknowledgeTransfer" | "walk" | "cheat" | "roleCheat" | "solCheat" | "cheatRoom" | "kube" | "setModel" | "clearModel" | "leaveShip" | "chatPage" | "chatRead" }>,
+    msg: Exclude<GameClientMessage, { type: "action" | "clearQueue" | "acknowledgeTransfer" | "walk" | "cheat" | "roleCheat" | "cheatRoom" | "kube" | "setModel" | "clearModel" | "leaveShip" | "chatPage" | "chatRead" }>,
     /** A chat message's reply depth (`BOT_CHAT_CHAIN_DEPTH`): 0 unless a bot is replying to chat. */
     depth = 0,
   ): Promise<string | null> {

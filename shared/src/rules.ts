@@ -38,11 +38,10 @@ import { rollFloat, shuffle, streamFor } from "./rng.ts";
 import { chatChannels, chatMarkKey, chatPageOf, markedText, readChannels } from "./chat.ts";
 import { moderateName } from "./moderation.ts";
 import { clone, dayOf, fail, findPlayer, type ActionResult } from "./helpers.ts";
-import { endGame, winnerOnArrival } from "./victory.ts";
 
 export { dayOf };
 import { damage, healDaily, hasMushDied } from "./death.ts";
-import { activitySeen, inLogWindow, logPrivate, logPublic, logWindowOf, pruneLog, pushLog, seesLine, startLogSeen } from "./log.ts";
+import { activitySeen, inLogWindow, logPrivate, logWindowOf, pruneLog, pushLog, seesLine, startLogSeen } from "./log.ts";
 import { recordAction } from "./history.ts";
 import { ringMycoAlarms } from "./mycoalarm.ts";
 import { planetsOf } from "./planets.ts";
@@ -365,21 +364,6 @@ export function setRoleCheat(state: GameState, playerId: PlayerId, role: RoleChe
   if (role === "mush" && p.role === "human") convert(next, p);
   else if (role === "human") makeHuman(p, next.cycle);
   applyCheats(next, p);
-  return { ok: true, state: next };
-}
-
-/**
- * Returns the ship to Sol now (development cheat, gated by the server like setCheat): the game ends as Return to Sol
- * ends it (actions/return_to_sol.ts), with the decided winner, without PILGRED or the Commander. A quick way to a
- * finished game in dev, for its listing and replay (`docs/process/commands.md`).
- */
-export function solCheat(state: GameState, playerId: PlayerId): ActionResult {
-  const p = findPlayer(state, playerId);
-  if (!p) return fail("unknown_player");
-  if (state.phase !== "playing") return fail("game_over");
-  const next = clone(state);
-  logPublic(next, undefined, "returnedToSol", { name: p.character });
-  endGame(next, winnerOnArrival(next), "sol");
   return { ok: true, state: next };
 }
 

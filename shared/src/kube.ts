@@ -14,15 +14,17 @@ import { clone, fail, findPlayer, type ActionResult } from "./helpers.ts";
 import { contaminate } from "./infection.ts";
 import { ITEM_TYPES, newItemId, startCharges } from "./items.ts";
 import { enterRoom, enteredRoom } from "./modifiers.ts";
+import { logPublic } from "./log.ts";
 import { inCraft } from "./patrol.ts";
 import { addStatus, isImmune, type StatusId } from "./statuses.ts";
+import { endGame, winnerOnArrival } from "./victory.ts";
 import type { DeepReadonly, GameConfig, GameState, PlayerId, PlayerState, RoomId } from "./types.ts";
 
 /** What an option's argument is: nothing, a whole number, one of the ship's ailments, an item type, or a room. */
 export type KubeArgKind = "none" | "number" | "ailment" | "item" | "room";
 
 /** The window's tabs. */
-export type KubeGroup = "health" | "items" | "travel";
+export type KubeGroup = "health" | "items" | "travel" | "destinations";
 
 interface KubeOp {
   group: KubeGroup;
@@ -38,6 +40,17 @@ const setStat = (stat: "hp" | "morale" | "ap" | "mp", min: number): KubeOp => ({
   apply: (_state, me, arg) => {
     const max = { hp: me.maxHp, morale: me.maxMorale, ap: me.maxAp, mp: me.maxMp }[stat];
     me[stat] = Math.max(min, Math.min(max, arg as number));
+    return null;
+  },
+});
+
+/** Ends the game by arriving at `ending`, logging `logKey` publicly with the player's character. */
+const arriveAt = (ending: "sol" | "eden", logKey: "returnedToSol" | "returnedToEden"): KubeOp => ({
+  group: "destinations",
+  arg: "none",
+  apply: (state, me) => {
+    logPublic(state, undefined, logKey, { name: me.character });
+    endGame(state, winnerOnArrival(state), ending);
     return null;
   },
 });
@@ -116,6 +129,9 @@ export const KUBE_OPS = {
       return null;
     },
   },
+  // End the game immediately by arriving at Sol or Eden (development route to a finished game and its replay).
+  returnToSol: arriveAt("sol", "returnedToSol"),
+  returnToEden: arriveAt("eden", "returnedToEden"),
 } satisfies Record<string, KubeOp>;
 
 export type KubeOpId = keyof typeof KUBE_OPS;

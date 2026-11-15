@@ -95,4 +95,13 @@ describe("SuperkubeOpener", () => {
     fireEvent.change(screen.getByLabelText("Search items"), { target: { value: "zzzz" } });
     expect(screen.getByText("No item matches.")).toBeTruthy();
   });
+
+  it("sends returnToSol and returnToEden from the Destinations tab", () => {
+    const onKube = open();
+    fireEvent.click(screen.getByRole("tab", { name: "Destinations" }));
+    fireEvent.click(screen.getByRole("button", { name: "Return to Sol" }));
+    expect(onKube).toHaveBeenCalledWith("returnToSol");
+    fireEvent.click(screen.getByRole("button", { name: "Return to Eden" }));
+    expect(onKube).toHaveBeenCalledWith("returnToEden");
+  });
 });

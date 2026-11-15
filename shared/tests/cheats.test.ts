@@ -112,17 +112,6 @@ describe("spores and role cheats", () => {
     expect(parseGameMessage(JSON.stringify({ type: "roleCheat", role: "mush" }))).toEqual({ type: "roleCheat", role: "mush" });
     expect(parseGameMessage(JSON.stringify({ type: "roleCheat", role: "god" }))).toBeNull();
   });
-
-  it("the Sol cheat ends the game as Return to Sol does, once, and is parsed from the wire", () => {
-    const s = fresh();
-    const r = applyInput(s, { type: "solCheat", by: "p1" });
-    if (!r.ok) throw new Error(r.error);
-    // A Mush is aboard and alive at the start, so the Mush win.
-    expect(r.state).toMatchObject({ phase: "ended", winner: "mush", ending: "sol" });
-    expect(r.state.log.at(-1)).toMatchObject({ key: "returnedToSol", params: { name: player(s, "p1").character }, visibleTo: "all" });
-    expect(applyInput(r.state, { type: "solCheat", by: "p1" })).toMatchObject({ ok: false, error: "game_over" });
-    expect(parseGameMessage(JSON.stringify({ type: "solCheat" }))).toEqual({ type: "solCheat" });
-  });
 });
 
 describe("relay and title cheats", () => {
