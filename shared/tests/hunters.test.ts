@@ -6,6 +6,7 @@ import { followingHuntersShare } from "../src/modifiers.ts";
 import { joinShip } from "../src/preselection.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { PROJECT_STATUS } from "../src/projects.ts";
+import { RESEARCH_COMPLETE, researchStatus } from "../src/research.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameConfig, GameState } from "../src/types.ts";
 import { clone, costOf, makeSeats, must, nextCycle, noHunters, noIncidents, offered, player } from "./support.ts";
