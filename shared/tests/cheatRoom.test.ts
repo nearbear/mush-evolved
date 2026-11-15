@@ -161,7 +161,7 @@ describe("cheat room", () => {
 
     it("gives a disease the ship's own duration for it, seen only by you", () => {
       const base = resolveConfig({ cheatRoom: true });
-      const allDiseaseStats = base.diseases.allDiseases.map((_, i) => ({ type: "disease", durationMin: 30 + i, durationMax: 30 + i }));
+      const allDiseaseStats = base.diseases.allDiseases.map((label, i) => ({ label, type: "disease", durationMin: 30 + i, durationMax: 30 + i }));
       const s = createGame(makeSeats(3), { ...base, mushCount: 1, diseases: { ...base.diseases, allDiseaseStats } }, 7);
       const human = s.players.find((pl) => pl.role === "human")!;
       human.room = CHEAT_ROOM;

@@ -43,6 +43,8 @@ export interface DiseaseCatagories {
 }
 
 export interface DiseaseStats {
+  /** The disease these numbers belong to: its id (an entry of `allDiseases`). `diseaseStats` (diseases.ts) finds a disease's numbers by it. */
+  label?: string,
   type: string,
   durationMin?: number,
   durationMax?: number,

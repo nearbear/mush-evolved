@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
-import { addDisease } from "../src/diseases.ts";
+import { addDisease, diseaseStats } from "../src/diseases.ts";
 import { cycleChanged, enterRoom } from "../src/modifiers.ts";
 import { createGame, newCycle } from "../src/rules.ts";
 import { nextInt } from "../src/rng.ts";
@@ -85,7 +85,7 @@ describe("Cold disease", () => {
   it("spreads from a sick player to the other, whoever walks in", () => {
     for (const mover of ["sick", "healthy"] as const) {
       const state = createGame(makeSeats(4), config, 1);
-      const stats = state.config.diseases.allDiseaseStats[state.config.diseases.allDiseases.indexOf("cold_disease")];
+      const stats = diseaseStats(state, "cold_disease");
       if (stats) state.config.diseases.allDiseaseStats[0] = { ...stats, roomSpread: 1 }; // replaced, not edited: the stats object may be shared
       const sick = player(state, "p0");
       const healthy = player(state, "p1");

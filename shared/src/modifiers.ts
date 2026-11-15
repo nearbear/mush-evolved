@@ -50,6 +50,8 @@ import { lying_down } from "./modifiers/lying_down.ts";
 import { cold_disease } from "./modifiers/cold_disease.ts";
 import { extreme_tinnitus_disease } from "./modifiers/extreme_tinnitus_disease.ts";
 import { fungal_infection_disease } from "./modifiers/fungal_infection_disease.ts";
+import { space_rabies_disease } from "./modifiers/space_rabies_disease.ts";
+import { skin_inflammation_disease } from "./modifiers/skin_inflammation_disease.ts";
 import { gastroenteritis_disease } from "./modifiers/gastroenteritis_disease.ts";
 import { broken_nose_injury } from "./modifiers/broken_nose_injury.ts";
 import type { ActionCost } from "./actions.ts";
@@ -87,7 +89,8 @@ type FoldHooks = Record<
   | "maxAp"
   | "maxMp"
   | "maxMorale"
-  | "maxHp",
+  | "maxHp"
+  | "damageTaken",
   FoldHook
 >;
 
@@ -101,6 +104,17 @@ export interface CostContext {
   action: Action;
   tags: readonly ActionTag[];
 }
+
+/**
+ * What an onEnterRoom hook may call from the actions layer. The move action passes them in, because a modifier cannot
+ * import an action (the actions import the modifiers, and a cycle breaks their classes).
+ */
+export interface EnterRoomTools {
+  /** The player strikes a random other player in the room with a weapon they carry, at no AP cost (actions/attack.ts). */
+  attackWithHeldWeapon: (state: GameState, player: PlayerState) => void;
+}
+
+const NO_TOOLS: EnterRoomTools = { attackWithHeldWeapon: () => {} };
 
 export interface Modifier extends Partial<FoldHooks> {
   /** Adjusts what one of the holder's own actions costs. Must be pure. */
@@ -152,7 +166,7 @@ export interface Modifier extends Partial<FoldHooks> {
   /** Runs whenever the ship moves */
   onShipMovement?: (next: GameState, player: PlayerState) => void;
   /** Runs after the holder moves into a room, whoever is there (a move action). Mutates a state the caller already cloned. */
-  onEnterRoom?: (next: GameState, player: PlayerState) => void;
+  onEnterRoom?: (next: GameState, player: PlayerState, tools: EnterRoomTools) => void;
   /** Runs when a player enters a room with another player */
   onEncounter?: (next: GameState, player: PlayerState, other: PlayerState) => void;
 }
@@ -203,6 +217,8 @@ export const MODIFIERS: Record<string, Modifier> = {
   extreme_tinnitus_disease,
   fungal_infection_disease,
   gastroenteritis_disease,
+  skin_inflammation_disease,
+  space_rabies_disease,
   // Injuries
   broken_nose_injury,
 };
@@ -543,6 +559,10 @@ export const maxMp = (state: Readonly<GameState>, player: Readonly<PlayerState>,
 export const maxMorale = (state: Readonly<GameState>, player: Readonly<PlayerState>, base: number, registry: ModifierRegistry = MODIFIERS) =>
   fold("maxMorale", base, state, player, registry);
 
+/** HP damage the player is about to take (Space Rabies adds 1); `damage` (death.ts) applies it to every loss. */
+export const damageTaken = (state: Readonly<GameState>, player: Readonly<PlayerState>, base: number, registry: ModifierRegistry = MODIFIERS) =>
+  fold("damageTaken", base, state, player, registry);
+
 /** Max Hp */
 export const maxHp = (state: Readonly<GameState>, player: Readonly<PlayerState>, base: number, registry: ModifierRegistry = MODIFIERS) =>
   fold("maxHp", base, state, player, registry);
@@ -593,8 +613,8 @@ export function shipMoved(next: GameState, registry: ModifierRegistry = MODIFIER
   }
 }
 /** Runs every onEnterRoom hook of the player's modifiers, once they are in the new room. Mutates a state the caller already cloned. */
-export function enteredRoom(next: GameState, player: PlayerState, registry: ModifierRegistry = MODIFIERS): void {
-  for (const id of eventIds(player)) registry[id]?.onEnterRoom?.(next, player);
+export function enteredRoom(next: GameState, player: PlayerState, tools: EnterRoomTools = NO_TOOLS, registry: ModifierRegistry = MODIFIERS): void {
+  for (const id of eventIds(player)) registry[id]?.onEnterRoom?.(next, player, tools);
 }
 
 /**

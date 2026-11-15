@@ -3,7 +3,7 @@ import { DEFAULT_CONFIG } from "../src/config.ts";
 import { canLaunchExpedition } from "../src/expeditions.ts";
 import { canFly } from "../src/patrol.ts";
 import { addDisease, removeDisease, spreadByTouch } from "../src/diseases.ts";
-import { cycleChanged, enteredRoom } from "../src/modifiers.ts";
+import { consumed, cycleChanged, enteredRoom } from "../src/modifiers.ts";
 import { createGame } from "../src/rules.ts";
 import type { GameConfig } from "../src/types.ts";
 import { makeSeats, noHunters, player } from "./support.ts";
@@ -28,14 +28,14 @@ describe("Gastroenteris on a Mush", () => {
     }
   });
 
-  it("spreads by STT or DTT only for a disease with spreadByDTT (the fungal infection)", () => {
+  it("spreads by STT or DTT only for a disease with spreadByDTT (the fungal infection, not the tinnitus)", () => {
     const state = createGame(makeSeats(4), noHunters(config), 3);
     const [a, b] = [player(state, "p0"), player(state, "p1")];
     addDisease(state, a, "fungal_infection_disease");
-    addDisease(state, a, "gastroenteritis_disease");
+    addDisease(state, a, "extreme_tinnitus_disease");
     spreadByTouch(state, a, b);
     expect(b.modifiers).toContain("fungal_infection_disease");
-    expect(b.modifiers).not.toContain("gastroenteritis_disease");
+    expect(b.modifiers).not.toContain("extreme_tinnitus_disease");
   });
 
   it("grounds a Pilot: no takeoff and no Icarus takeoff, until it is cured", () => {
@@ -48,5 +48,18 @@ describe("Gastroenteris on a Mush", () => {
     expect(canLaunchExpedition(state, pilot)).toBe(false); // icarus_takeoff (actions/icarus_takeoff.ts)
     removeDisease(state, pilot, "gastroenteritis_disease");
     expect(canFly(pilot)).toBe(true);
+  });
+
+  it("costs a human 1 AP whenever they consume something, and a Mush nothing", () => {
+    const state = createGame(makeSeats(4), noHunters(config), 3);
+    const human = state.players.find((p) => p.role === "human")!;
+    const mush = state.players.find((p) => p.role === "mush")!;
+    for (const p of [human, mush]) addDisease(state, p, "gastroenteritis_disease");
+    const item = { id: "x", type: "coffee", at: { kind: "player", id: human.id } } as const;
+    human.ap = mush.ap = 5;
+    consumed(state, human, item);
+    consumed(state, mush, item);
+    expect(human.ap).toBe(4);
+    expect(mush.ap).toBe(5);
   });
 });

@@ -2,7 +2,7 @@ import { Action, IN_PRESELECTION, peopleHere, type ActionTag, isString } from ".
 import { damage } from "../death.ts";
 import { itemsIn, removeItem, isWorking } from "../items.ts";
 import { logPublic } from "../log.ts";
-import { roll } from "../rng.ts";
+import { roll, rollFloat, rollInt } from "../rng.ts";
 import type { DeepReadonly, WeaponStats } from "../types/config.ts";
 import type { GameState, ItemState, PlayerState } from "../types.ts";
 
@@ -110,3 +110,21 @@ function spend(state: GameState, target: AttackActionData): ItemState {
   return weapon;
 }
 
+
+/**
+ * The attacker swings a weapon they carry at a random other living player in the room, with the attack action's own
+ * roll, damage, charge and public lines, and no AP cost (Space Rabies). Does nothing without a usable weapon or anyone
+ * to hit. An area weapon has no target and hits the whole room.
+ */
+export function attackWithHeldWeapon(state: GameState, attacker: PlayerState): void {
+  const weapons = usableWeapons(state, attacker);
+  const others = peopleHere(state, attacker);
+  if (weapons.length === 0 || others.length === 0) return;
+  const weapon = weapons[rollInt(state, weapons.length)]!;
+  const data: AttackActionData = state.config.weapons.types[weapon.type]!.area
+    ? { type: "attack", weapon: weapon.id }
+    : { type: "attack", weapon: weapon.id, target: others[rollInt(state, others.length)]!.id };
+  const action = new AttackAction();
+  if (rollFloat(state) < action.getSuccessChance(state, attacker, data)) action.apply(state, attacker, data);
+  else action.fail(state, attacker, data);
+}

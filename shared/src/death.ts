@@ -10,6 +10,7 @@ import type { CharacterId } from "./characters.ts";
 import { removeFromChannel, pushChat } from "./chat.ts";
 import { CORPSE_ITEM, ITRACKIE_ITEM, sameContainer, newItemId } from "./items.ts";
 import { logPublic } from "./log.ts";
+import { damageTaken } from "./modifiers.ts";
 import { PATROL_SHIPS } from "./patrol.ts";
 import { removeStatus } from "./statuses.ts";
 import { strikeSlots } from "./plans.ts";
@@ -50,7 +51,9 @@ export function damage(state: GameState, player: PlayerState, amount: number, ca
     player.hp = player.maxHp;
     return;
   }
-  player.hp = Math.max(0, player.hp - amount);
+  // Modifiers can make a loss bigger (Space Rabies), never turn a zero into a loss.
+  const dealt = amount > 0 ? damageTaken(state, player, amount) : amount;
+  player.hp = Math.max(0, player.hp - dealt);
   if (player.hp === 0) killPlayer(state, player, cause);
 }
 
