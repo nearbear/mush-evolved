@@ -34,7 +34,15 @@
     "orbit": "En orbite autour de {{name}}",
     "expedition": "Expédition sur {{planet}} : {{names}}, retour dans {{time}}",
     "expeditionShip": "Expédition sur {{planet}} à bord du {{ship}} : {{names}}, retour dans {{time}}",
-    "lost": "{{name}} a disparu sur {{planet}}"
+    "lost": "{{name}} a disparu sur {{planet}}",
+    "alertFire": "Incendie : {{room}} (signalé par {{name}})",
+    "alertFireDetector": "Incendie : {{room}} ({{detector}})",
+    "alertBroken": "En panne : {{equipment}}, {{room}} (signalé par {{name}})",
+    "alertBrokenDetector": "En panne : {{equipment}}, {{room}} ({{detector}})",
+    "alertsUnreported_one": "1 autre non signalé",
+    "alertsUnreported_other": "{{count}} autres non signalés",
+    "alertsUnreported_many": "{{count}} autres non signalés",
+    "alertsNone": "Aucun incendie ni panne signalé"
   },
   "peek": {
     "doorTo": "Porte vers {{room}}",
@@ -95,7 +103,6 @@
       "instantActions": "Actions instantanées",
       "noRelayPenalty": "Pas de pénalité de relais",
       "freeHacking": "Terminaux sans restriction",
-      "selfDisease": "Self Disease",
       "anySkill": "Choisir n'importe quelle compétence",
       "alwaysClean": "Toujours propre",
       "easyTravel": "Voyage facile",
@@ -339,6 +346,8 @@
     "stt": "STT",
     "extractSpore": "Extraire une spore",
     "lieDown": "S'allonger",
+    "reportFire": "Signaler l'incendie",
+    "reportEquipment": "Signaler la panne",
     "getUp": "Se lever",
     "guard": "Garder",
     "stopGuarding": "Cesser de garder",
@@ -374,8 +383,6 @@
     "becomeGenius": "Coup de génie",
     "apprenticeship": "Apprentissage",
     "pickSkill": "Choisir une compétence",
-    "selfDisease": "S'infliger la maladie",
-    "selfInjury": "S'infliger une blessure",
     "easyTravel": "Sauter vers une planète",
     "visibility": {
       "private": "Privée",
@@ -476,7 +483,11 @@
     "planet_not_found": "Cette planète n'est pas l'une des vôtres.",
     "share_text_invalid": "Un texte partagé doit faire au plus 500 caractères et 20 lignes, et ne pas être vide.",
     "report_share_forbidden": "Il vous faut votre iTrackie pour partager un rapport.",
-    "report_not_found": "Vous n'étiez pas de cette expédition."
+    "report_not_found": "Vous n'étiez pas de cette expédition.",
+    "not_in_cheat_room": "Vous devez être dans la salle de triche.",
+    "already_has": "Vous l'avez déjà.",
+    "mush_immune": "Un Mush ne peut pas attraper de maladie.",
+    "cannot_contaminate": "Vous ne pouvez pas être contaminé."
   },
   "terminal": {
     "close": "Fermer",
@@ -1065,6 +1076,8 @@
     "equipmentBroken": "NERON : panne de l'équipement « {{equipment}} ».",
     "itemBroken": "NERON : panne de l'objet « {{item}} ».",
     "fireStarted": "NERON : un incendie s'est déclaré à bord !",
+    "fireReported": "NERON : {{name}} signale un incendie ({{room}}).",
+    "equipmentReported": "NERON : {{name}} signale une panne de l'équipement « {{equipment}} » ({{room}}).",
     "tremor": "La pièce est violemment secouée !",
     "panicAttack": "Vous faites une crise de panique.",
     "metalPlate": "Une plaque de métal tombe sur {{name}} !",
@@ -1704,6 +1717,29 @@
     "lostAnalysisTitle": "L'analyse perdue de Finola",
     "lostAnalysisHeadline": "Dépistage de l'infection de l'équipage au départ. Les personnes notées négatives n'étaient pas Mush.",
     "negative": "Négatif"
+  },
+  "kube": {
+    "open": "Ouvrir",
+    "title": "Superkube",
+    "close": "Fermer",
+    "apply": "Appliquer",
+    "tabs": {
+      "health": "Santé",
+      "items": "Objets",
+      "travel": "Voyage"
+    },
+    "ops": {
+      "ailment": "S'infliger une affection",
+      "cure": "Tout soigner",
+      "hp": "Fixer les PV",
+      "morale": "Fixer le moral",
+      "ap": "Fixer les PA",
+      "mp": "Fixer les PM",
+      "dirty": "Se salir",
+      "contaminate": "Ajouter une contamination",
+      "spawn": "Faire apparaître un objet",
+      "teleport": "Se téléporter dans une pièce"
+    }
   },
   "bodyTaken": {
     "title": "On vous a volé votre corps !",

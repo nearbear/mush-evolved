@@ -5,10 +5,11 @@
 import { type ReactNode, useLayoutEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
-import { actionVisibility, type Action, type ActionOption, type PlayerView, type RoomId, type Target } from "@mush2/shared";
+import { actionVisibility, SUPERKUBE, type Action, type ActionOption, type PlayerView, type RoomId, type Target } from "@mush2/shared";
 import { ActionLabel } from "./ActionLabel.tsx";
 import { ActionButton } from "./ActionButton.tsx";
 import { DoublePressButton } from "./DoublePress.tsx";
+import { SuperkubeOpener, type SendKube } from "./Superkube.tsx";
 import { useKeepFocus } from "./useKeepFocus.ts";
 import { attackWeapon, optionsOn, resolveTarget } from "./targets.ts";
 
@@ -20,6 +21,7 @@ export function PeekBar({
   onAction,
   onMove,
   onMore,
+  onKube,
 }: {
   view: PlayerView;
   /** Already resolved by the caller; yourself when nothing else is selected, so the bar never goes away. */
@@ -29,6 +31,8 @@ export function PeekBar({
   onAction: (action: Action) => void;
   onMove: (to: RoomId) => void;
   onMore: () => void;
+  /** Sends a Superkube option (#170); given only while cheats are allowed. */
+  onKube?: SendKube | undefined;
 }) {
   const { t } = useTranslation();
   const names = useNames();
@@ -67,6 +71,7 @@ export function PeekBar({
         </button>
       }
     >
+      {onKube && resolved.kind === "equipment" && resolved.equipment.type === SUPERKUBE && <SuperkubeOpener view={view} onKube={onKube} />}
       {optionsOn(view, target)
         .filter((o) => o.action.type !== "examine")
         .map((o) => (

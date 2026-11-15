@@ -250,27 +250,6 @@ describe("GameRoom input handling", () => {
 describe("GameRoom cheats", () => {
   const cheatMsg = { type: "cheat", cheat: "infiniteHp", on: true };
 
-  it("gates Self Disease on ALLOW_CHEATS and applies it privately when enabled", async () => {
-    const { room: closed, storage } = await newRoom(3);
-    const closedConn = connect(closed, "tok0");
-    await send(closed, closedConn, { type: "action", action: { type: "self_disease" } });
-    expect(lastMsg(closedConn)).toEqual({ type: "error", message: "cheats_disabled" });
-    expect(lastView(closedConn).statuses).not.toContain("cold_disease");
-    expect([...storage.data.keys()].some((key) => key.startsWith("input:"))).toBe(false);
-
-    // addDisease skips a Mush, and roles are random: force p0 human.
-    const { room: devRoom } = await newRoom(3, new FakeStorage(), CHEATS, { p0: "human" });
-    const devConn = connect(devRoom, "tok0");
-    await send(devRoom, devConn, { type: "cheat", cheat: "selfDisease", on: true });
-    expect(lastView(devConn).you.cheats).toContain("selfDisease");
-    expect(lastView(devConn).actions.some((option) => option.action.type === "self_disease")).toBe(true);
-    await send(devRoom, devConn, { type: "action", action: { type: "self_disease" } });
-    // The disease is drawn at random from allDiseases (owner, 2026-10-27).
-    const got = lastView(devConn).statuses.filter((status) => DEFAULT_CONFIG.diseases.allDiseases.includes(status));
-    expect(got).toHaveLength(1);
-    expect(lastView(connect(devRoom, "tok1")).players.find((person) => person.id === "p0")?.statuses).not.toContain(got[0]);
-  });
-
   it("refuses cheat inputs unless ALLOW_CHEATS is set, and records nothing", async () => {
     const { room, storage } = await newRoom(3);
     const c = connect(room, "tok0");
@@ -295,6 +274,24 @@ describe("GameRoom cheats", () => {
     expect(lastView(a).roomEquipment.some((e) => e.type === "SUPERKUBE")).toBe(true);
     // The others get a fresh view too, with no log line about it.
     expect(lastView(b).log).toHaveLength(logBefore);
+  });
+
+  it("takes Superkube options only where cheats are allowed and from inside the cheat room (#170)", async () => {
+    const { room: closed, storage } = await newRoom(3);
+    const closedConn = connect(closed, "tok0");
+    await send(closed, closedConn, { type: "kube", op: "dirty" });
+    expect(lastMsg(closedConn)).toEqual({ type: "error", message: "cheats_disabled" });
+    expect([...storage.data.keys()].some((k) => k.startsWith("input:"))).toBe(false);
+
+    const { room } = await newRoom(3, new FakeStorage(), CHEATS);
+    const a = connect(room, "tok0");
+    await send(room, a, { type: "kube", op: "dirty" });
+    expect(lastMsg(a)).toEqual({ type: "error", message: "not_in_cheat_room" });
+    await send(room, a, { type: "cheatRoom" });
+    await send(room, a, { type: "kube", op: "dirty" });
+    expect(lastView(a).statuses).toContain("dirty");
+    await send(room, a, { type: "kube", op: "teleport", arg: "LABORATORY" });
+    expect(lastView(a).you.room).toBe("LABORATORY");
   });
 
   it("tells the client whether cheats are allowed", async () => {

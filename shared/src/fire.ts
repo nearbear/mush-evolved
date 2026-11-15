@@ -12,6 +12,7 @@ import { pushChat } from "./chat.ts";
 import { damage } from "./death.ts";
 import { destroyShip } from "./hunters.ts";
 import { logPublic } from "./log.ts";
+import { forgetReports } from "./reports.ts";
 import { inCraft } from "./patrol.ts";
 import { roll, rollFloat, rollInt } from "./rng.ts";
 import type { GameState, RoomId } from "./types.ts";
@@ -32,6 +33,7 @@ export function ignitePending(state: GameState): void {
 export function startFire(state: GameState, room: RoomId): void {
   if (isOnFire(state, room)) return;
   state.fires.push(room);
+  forgetReports(state, { room }); // A relit fire starts unreported (#444).
   pushChat(state, "global", { from: null, isBot: false, text: "", system: { key: "fireStarted" } });
 }
 

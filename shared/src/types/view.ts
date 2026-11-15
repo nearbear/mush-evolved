@@ -7,6 +7,7 @@ import type { RebelBaseId, XylophEntryId } from "../comms.ts";
 import type { TurnSide } from "../navigation.ts";
 import type { PlanetDirection } from "../planets.ts";
 import type { TitleId } from "../titles.ts";
+import type { Alerts } from "../reports.ts";
 import type { Action, BotKind, DocumentState, ItemId, LogEntry, LogLine, PlayerId, Role, RoomId } from "../types.ts";
 import type { ChannelId, ChatLine, ChatMessage, ChatThread, PrivateChannel, SharedPlanet, SharedReport, SharedReportId } from "./chat.ts";
 import type { Plan } from "./plan.ts";
@@ -226,8 +227,13 @@ export interface PlayerView {
   roomEquipment: EquipmentView[];
   /** Whether the room you are in is on fire (fire.ts). Only the living in a burning room learn it; the crew-wide notice names no room. */
   roomOnFire: boolean;
-  /** Burning rooms revealed ship-wide once the Fire Detectors project is complete. Only to the living. */
+  /** Burning rooms reported ship-wide, by a player or by Fire detectors (reports.ts, #444). Only to the living. */
   burningRooms: RoomId[];
+  /**
+   * The alert bar (reports.ts, #444): how many fires and broken pieces of equipment there are aboard, reported or not,
+   * and where the reported ones are. Unreported ones are only counted. Zero and empty for the dead.
+   */
+  alerts: Alerts;
   /**
    * History of the room you are in (public entries) plus every entry private
    * to you. Other rooms' public history is never sent. Without ids: they come from one counter per game, so a gap

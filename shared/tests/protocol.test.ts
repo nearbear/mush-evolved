@@ -517,6 +517,15 @@ describe("cheats and lifecycle wire parser (#107)", () => {
     expect(parse({ type: "acknowledgeTransfer", extra: 1 })).toEqual({ type: "acknowledgeTransfer" });
   });
 
+  it("parses a Superkube option, leaving its argument's kind to applyKube (#170)", () => {
+    expect(parse({ type: "kube", op: "cure", extra: 1 })).toEqual({ type: "kube", op: "cure" });
+    expect(parse({ type: "kube", op: "hp", arg: 5 })).toEqual({ type: "kube", op: "hp", arg: 5 });
+    expect(parse({ type: "kube", op: "teleport", arg: "LABORATORY" })).toEqual({ type: "kube", op: "teleport", arg: "LABORATORY" });
+    for (const bad of [{ op: "constructor" }, { op: "nope" }, { op: "hp", arg: 1.5 }, { op: "hp", arg: null }, { op: "spawn", arg: "x".repeat(65) }, { op: "spawn", arg: ["a"] }]) {
+      expect(parse({ type: "kube", ...bad })).toBeNull();
+    }
+  });
+
   const BAD_CHEAT_INPUTS: Array<[label: string, msg: unknown]> = [
     ["cheat unknown cheat name", { type: "cheat", cheat: "godMode", on: true }],
     ["cheat prototype constructor", { type: "cheat", cheat: "constructor", on: true }],
@@ -732,6 +741,8 @@ describe("actions from a client", () => {
     body_transfer: [{ type: "body_transfer", target: "p1" }],
     reset_skills: [{ type: "reset_skills" }],
     lie_down: [{ type: "lie_down", equipment: "e1" }],
+    report_fire: [{ type: "report_fire" }],
+    report_equipment: [{ type: "report_equipment", equipment: "e1" }],
     get_up: [{ type: "get_up" }],
     guard: [{ type: "guard" }],
     stop_guarding: [{ type: "stop_guarding" }],
@@ -757,8 +768,6 @@ describe("actions from a client", () => {
     apprenticeship: [{ type: "apprenticeship", target: "p1", skill: SKILLS[0] }],
     read_book: [{ type: "read_book", item: "i1" }],
     tear: [{ type: "tear", item: "i1" }],
-    self_disease: [{ type: "self_disease" }],
-    self_injury: [{ type: "self_injury" }],
   };
   const all = Object.values(SAMPLES).flat();
   const asAction = (action: unknown) => parse({ type: "action", action });

@@ -1935,11 +1935,11 @@ describe("fires (fireShare.ts, extinguish goal, #429)", () => {
   const fire = "LABORATORY";
 
   it("reads only its own format and a real room", () => {
-    for (const news of ["in", "out", "clear"] as const) expect(parseFireLine(formatFireLine({ news, room: "CORRIDOR_A" }))).toEqual({ news, room: "CORRIDOR_A" });
-    for (const text of ["Fire: in NOWHERE", "fire: in CORRIDOR_A", "Fire: hot in CORRIDOR_A", "Fire: in CORRIDOR_A now"]) expect(parseFireLine(text)).toBeNull();
+    expect(parseFireLine(formatFireLine({ room: "CORRIDOR_A" }))).toEqual({ room: "CORRIDOR_A" });
+    for (const text of ["Fire: clear in NOWHERE", "fire: clear in CORRIDOR_A", "Fire: in CORRIDOR_A", "Fire: clear in CORRIDOR_A now"]) expect(parseFireLine(text)).toBeNull();
   });
 
-  it("counts NERON's notice, says a searched room is clear and a burning one burns, and others learn from the lines", () => {
+  it("counts fires from the alert bar, says a searched room is clear, and learns burning rooms from reports (#444)", () => {
     const { game: start, id } = at("CORRIDOR_A");
     const game = ignite(start, fire);
     const m = memory();
@@ -1947,26 +1947,54 @@ describe("fires (fireShare.ts, extinguish goal, #429)", () => {
     expect(seen.news).toBe(true);
     expect(seen.post?.text).toBe("Fire: clear in CORRIDOR_A");
     expect(m.fires.active).toBe(1);
-    // In the burning room: it says so.
-    const there = edit(game, id, (p) => (p.room = fire));
-    const found = observeFires(viewFor(there, id), m);
-    expect(found.post?.text).toBe(`Fire: in ${fire}`);
-    expect([...m.fires.burning]).toEqual([fire]);
-    // Another bot learns it from chat and says nothing.
-    const said = applyInput(there, { ...found.post!, by: id });
+    // Another bot reads the clear line and skips that room.
+    const said = applyInput(game, { ...seen.post!, by: id });
     expect(said.ok).toBe(true);
     if (!said.ok) return;
     const other = said.state.players.find((p) => p.id !== id && p.alive)!.id;
     const theirs = memory();
-    const heard = observeFires(viewFor(edit(said.state, other, (p) => (p.room = "CORRIDOR_C")), other), theirs);
+    observeFires(viewFor(edit(said.state, other, (p) => (p.room = "CORRIDOR_C")), other), theirs);
+    expect(theirs.fires.checked.has("CORRIDOR_A")).toBe(true);
+    // In the burning room: it knows at once, posts nothing, and the reflex reports it.
+    const there = edit(said.state, id, (p) => (p.room = fire));
+    const found = observeFires(viewFor(there, id), m);
+    expect(found.post).toBeNull();
+    expect([...m.fires.burning]).toEqual([fire]);
+    const reported = applyInput(there, { type: "action", by: id, action: { type: "report_fire" } });
+    expect(reported.ok).toBe(true);
+    if (!reported.ok) return;
+    // The other bot learns it from the report.
+    observeFires(viewFor(edit(reported.state, other, (p) => (p.room = "CORRIDOR_C")), other), theirs);
     expect([...theirs.fires.burning]).toEqual([fire]);
-    expect(heard.post).toBeNull(); // nothing unlocated, so no clear line for CORRIDOR_C
-    // Put out: the bot standing there says so, and every count drops.
-    const out = structuredClone(said.state);
+    // Put out: every count drops.
+    const out = structuredClone(reported.state);
     out.fires = [];
-    expect(observeFires(viewFor(out, id), m).post?.text).toBe(`Fire: out in ${fire}`);
+    expect(observeFires(viewFor(out, id), m).post).toBeNull();
     expect(m.fires.active).toBe(0);
     expect(m.fires.burning.size).toBe(0);
+  });
+
+  it("reports a fire and broken equipment it stands next to, before its goal (#444)", async () => {
+    const { game: start, id } = at(fire);
+    const game = ignite(start, fire);
+    const broken = structuredClone(game);
+    const equipment = broken.equipment[fire]!.find((e) => broken.config.repair.chance[e.type] !== undefined)!;
+    equipment.broken = true;
+    const bot = new GoalBot(1, 2, [extinguish]);
+    const first = await bot.decideAction(viewFor(broken, id));
+    expect(first?.type).toMatch(/^report_(fire|equipment)$/);
+    const r1 = applyInput(broken, { type: "action", by: id, action: first! });
+    expect(r1.ok).toBe(true);
+    if (!r1.ok) return;
+    const second = await bot.decideAction(viewFor(r1.state, id));
+    expect(second?.type).toMatch(/^report_(fire|equipment)$/);
+    expect(second?.type).not.toBe(first?.type);
+    const r2 = applyInput(r1.state, { type: "action", by: id, action: second! });
+    expect(r2.ok).toBe(true);
+    if (!r2.ok) return;
+    expect(r2.state.reports).toHaveLength(2);
+    // Nothing left to report: it gets on with the fire.
+    expect((await bot.decideAction(viewFor(r2.state, id)))?.type).not.toMatch(/^report_/);
   });
 
   it("with the Fire sensor, trusts it and posts nothing", () => {
@@ -1981,12 +2009,9 @@ describe("fires (fireShare.ts, extinguish goal, #429)", () => {
 
   it("fetches an extinguisher it heard about, puts out a known fire (reserve included), and leaves it in a corridor", async () => {
     const { game: start, id } = at("CORRIDOR_A", 6);
-    let game = ignite(start, fire);
-    // Told where the fire is; the extinguisher in CORRIDOR_A it sees itself.
-    const told = applyInput(game, { type: "chat", channel: "global", text: `Fire: in ${fire}`, by: id });
-    expect(told.ok).toBe(true);
-    if (!told.ok) return;
-    game = told.state;
+    const game = ignite(start, fire);
+    // Someone reported the fire; the extinguisher in CORRIDOR_A it sees itself.
+    game.reports.push({ kind: "fire", room: fire, by: game.players.find((p) => p.id !== id)!.id });
     const bot = new GoalBot(3, 2, [extinguish]);
     const { game: end, taken } = await play(game, id, bot, 40);
     expect(taken.some((a) => a.type === "take")).toBe(true);

@@ -6,7 +6,7 @@ import { startCharges } from "./items.ts";
 import { removeStatus } from "./statuses.ts";
 import type { GameState, PlayerState } from "./types.ts";
 
-export const CHEATS = ["infiniteAp", "infiniteMp", "infiniteMorale", "infiniteHp", "infiniteSpores", "infiniteCharges", "instantActions", "noRelayPenalty", "freeHacking", "selfDisease", "anySkill", "alwaysClean", "easyTravel", "invincible", "fastExpeditions"] as const;
+export const CHEATS = ["infiniteAp", "infiniteMp", "infiniteMorale", "infiniteHp", "infiniteSpores", "infiniteCharges", "instantActions", "noRelayPenalty", "freeHacking", "anySkill", "alwaysClean", "easyTravel", "invincible", "fastExpeditions"] as const;
 export type Cheat = (typeof CHEATS)[number];
 
 /** Instant role switches (one-shot buttons, not toggles). */
@@ -40,7 +40,6 @@ const REFILL: Record<Cheat, (p: PlayerState, state: GameState) => void> = {
   instantActions: () => {}, // no stat to refill; queue.ts reads the flag
   noRelayPenalty: () => {}, // relay.ts reads the flag
   freeHacking: () => {}, // titles.ts, actions/research.ts and projectEffects.ts read the flag
-  selfDisease: () => {},
   anySkill: () => {}, // actions/pick_skill.ts reads the flag
   alwaysClean: (p) => removeStatus(p, "dirty"), // dirt is added mid-action; this runs after it
   easyTravel: () => {}, // actions/warp_to_planet.ts and leave_orbit.ts read the flag

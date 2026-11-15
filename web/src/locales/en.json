@@ -34,7 +34,14 @@
     "orbit": "Orbiting {{name}}",
     "expedition": "Expedition to {{planet}}: {{names}}, back in {{time}}",
     "expeditionShip": "Expedition to {{planet}} in {{ship}}: {{names}}, back in {{time}}",
-    "lost": "{{name}} is lost on {{planet}}"
+    "lost": "{{name}} is lost on {{planet}}",
+    "alertFire": "Fire in {{room}} (reported by {{name}})",
+    "alertFireDetector": "Fire in {{room}} ({{detector}})",
+    "alertBroken": "Broken {{equipment}} in {{room}} (reported by {{name}})",
+    "alertBrokenDetector": "Broken {{equipment}} in {{room}} ({{detector}})",
+    "alertsUnreported_one": "1 more unreported",
+    "alertsUnreported_other": "{{count}} more unreported",
+    "alertsNone": "No fires or breakdowns reported"
   },
   "peek": {
     "doorTo": "Door to {{room}}",
@@ -94,7 +101,6 @@
       "instantActions": "Instant actions",
       "noRelayPenalty": "No relay penalty",
       "freeHacking": "Unrestricted terminals",
-      "selfDisease": "Self Disease",
       "anySkill": "Pick any skill",
       "alwaysClean": "Always clean",
       "easyTravel": "Easy travel",
@@ -334,6 +340,8 @@
     "stt": "STT",
     "extractSpore": "Extract spore",
     "lieDown": "Lie down",
+    "reportFire": "Report fire",
+    "reportEquipment": "Report breakdown",
     "getUp": "Get up",
     "guard": "Guard",
     "stopGuarding": "Stop guarding",
@@ -369,8 +377,6 @@
     "becomeGenius": "Eureka moment",
     "apprenticeship": "Apprenticeship",
     "pickSkill": "Pick a skill",
-    "selfDisease": "Self Disease",
-    "selfInjury": "Self Injury",
     "easyTravel": "Warp to a planet",
     "visibility": {
       "private": "Private",
@@ -470,7 +476,11 @@
     "planet_not_found": "That planet isn't one of yours.",
     "share_text_invalid": "Shared text needs to be up to 500 characters and 20 lines, and not empty.",
     "report_share_forbidden": "You need your iTrackie to share a report.",
-    "report_not_found": "You weren't on that expedition."
+    "report_not_found": "You weren't on that expedition.",
+    "not_in_cheat_room": "You need to be in the cheat room.",
+    "already_has": "You already have that.",
+    "mush_immune": "A Mush can't catch a disease.",
+    "cannot_contaminate": "You can't be contaminated."
   },
   "terminal": {
     "close": "Close",
@@ -1045,6 +1055,8 @@
     "equipmentBroken": "NERON: the {{equipment}} has broken down.",
     "itemBroken": "NERON: the {{item}} has broken down.",
     "fireStarted": "NERON: a fire has broken out aboard!",
+    "fireReported": "NERON: {{name}} reports a fire in {{room}}.",
+    "equipmentReported": "NERON: {{name}} reports that the {{equipment}} in {{room}} is broken.",
     "tremor": "The room shakes violently!",
     "panicAttack": "You have a panic attack.",
     "metalPlate": "A metal plate falls on {{name}}!",
@@ -1776,6 +1788,29 @@
     "lostAnalysisTitle": "Finola's lost analysis",
     "lostAnalysisHeadline": "Crew infection screening at departure. Those listed as negative were not Mush.",
     "negative": "Negative"
+  },
+  "kube": {
+    "open": "Open",
+    "title": "Superkube",
+    "close": "Close",
+    "apply": "Apply",
+    "tabs": {
+      "health": "Health",
+      "items": "Items",
+      "travel": "Travel"
+    },
+    "ops": {
+      "ailment": "Give yourself an ailment",
+      "cure": "Cure everything",
+      "hp": "Set HP",
+      "morale": "Set morale",
+      "ap": "Set AP",
+      "mp": "Set MP",
+      "dirty": "Make yourself dirty",
+      "contaminate": "Add contamination",
+      "spawn": "Spawn an item",
+      "teleport": "Teleport to a room"
+    }
   },
   "bodyTaken": {
     "title": "Your body has been taken!",

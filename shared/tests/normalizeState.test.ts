@@ -12,6 +12,7 @@ import {
   normalizeFullView,
   normalizeGame,
   normalizeHunterTarget,
+  normalizeReport,
   normalizeOverrides,
   normalizePlanSlot,
   normalizePlanTask,
@@ -26,7 +27,7 @@ import {
   normalizeFrame,
   type UpgradeStep,
 } from "../src/normalizeState.ts";
-import type { ConfigOverrides, Container, GameState, HunterTarget, PlanSlot, PlanTask, PlayerState, Spot } from "../src/types.ts";
+import type { ConfigOverrides, Container, GameState, HunterTarget, PlanSlot, Report, PlanTask, PlayerState, Spot } from "../src/types.ts";
 import { play } from "./randomGame.ts";
 import { addProbes, probesIn } from "./storedShape.ts";
 import { makeSeats } from "./support.ts";
@@ -331,6 +332,7 @@ describe("union normalizers", () => {
     ["PlanSlot", normalizePlanSlot, { kind: "task", task: { type: "heal", target: "p1" }, holder: null, done: false }, "kind"],
     ["PlanTask", normalizePlanTask, { type: "bring", itemType: "medikit" }, "type"],
     ["DocumentState", normalizeDocument, { kind: "lost_analysis", rows: [] }, "kind"],
+    ["Report", normalizeReport, { kind: "fire", room: "BRIDGE", by: "p1" }, "kind"],
   ];
 
   for (const [type, normalize, valid, key] of cases) {
@@ -354,6 +356,10 @@ describe("union normalizers", () => {
     ship: { kind: "ship" },
     patrol: { kind: "patrol", id: "PATROL_SHIP_ALPHA_TAMARIN" },
   };
+  const reports: { [K in Report["kind"]]: Extract<Report, { kind: K }> } = {
+    fire: { kind: "fire", room: "BRIDGE", by: "p1" },
+    equipment: { kind: "equipment", equipment: "BRIDGE:COMMUNICATION_CENTER", by: "p2" },
+  };
   const tasks: { [K in PlanTask["type"]]: Extract<PlanTask, { type: K }> } = {
     research: { type: "research", research: "r" },
     project: { type: "project", project: "p" },
@@ -373,6 +379,7 @@ describe("union normalizers", () => {
     ["Container", normalizeContainer, Object.values(containers)],
     ["Spot", normalizeSpot, Object.values(spots).flat()],
     ["HunterTarget", normalizeHunterTarget, Object.values(targets)],
+    ["Report", normalizeReport, Object.values(reports)],
     ["PlanTask", normalizePlanTask, Object.values(tasks)],
     ["PlanSlot", normalizePlanSlot, Object.values(slots).flat()],
     ["DocumentState", normalizeDocument, [{ kind: "lost_analysis", rows: [{ character: "chun", negative: true }, { character: "chao", negative: false }] }]],
@@ -463,6 +470,14 @@ describe("upgrade", () => {
     upgrade({ game: raw, overrides }, 115);
     expect(raw.relay.projects).toEqual({ PLASMA_SHIELD: { lastBy: "p1", streak: 2 } });
     expect(normalizeGame(raw, overrides).relay.projects).toEqual({ PLASMA_SHIELD: { lastBy: "p1", streak: 2 } });
+  });
+
+  it("upgradeTo117 drops the removed selfDisease cheat (#170) and keeps the others", () => {
+    const { game, overrides } = fresh();
+    const raw = stored(game);
+    raw.players[0].cheats = ["infiniteAp", "selfDisease"];
+    upgrade({ game: raw, overrides }, 116);
+    expect(normalizeGame(raw, overrides).players[0]!.cheats).toEqual(["infiniteAp"]);
   });
 });
 

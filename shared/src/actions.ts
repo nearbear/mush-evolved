@@ -89,6 +89,7 @@ import { AttackAction } from "./actions/attack.ts";
 import { ShareAction } from "./actions/share.ts";
 import { GuardAction, StopGuardingAction } from "./actions/guard.ts";
 import { GetUpAction, LieDownAction } from "./actions/lie_down.ts";
+import { ReportEquipmentAction, ReportFireAction } from "./actions/report.ts";
 import { ShowerAction } from "./actions/shower.ts";
 import { SpikeAction } from "./actions/spike.ts";
 import { FungalCuisineAction } from "./actions/fungal_cuisine.ts";
@@ -98,8 +99,6 @@ import { TransferAction } from "./actions/transfer.ts";
 import { WaterAction } from "./actions/water.ts";
 import { TreatAction } from "./actions/treat.ts";
 import { SowAction } from "./actions/sow.ts";
-import { SelfDiseaseAction } from "./actions/self_disease.ts";
-import { SelfInjuryAction } from "./actions/self_injury.ts";
 import type { GameState, PlayerState } from "./types.ts";
 
 export type ActionType = Action["type"];
@@ -220,6 +219,8 @@ const REGISTRY = {
   reset_skills: new ResetSkillsAction(),
   lie_down: new LieDownAction(),
   get_up: new GetUpAction(),
+  report_fire: new ReportFireAction(),
+  report_equipment: new ReportEquipmentAction(),
   guard: new GuardAction(),
   stop_guarding: new StopGuardingAction(),
   accommodate: new AccommodateAction(),
@@ -244,8 +245,6 @@ const REGISTRY = {
   become_genius: new BecomeGeniusAction(),
   read_book: new ReadBookAction(),
   tear: new TearAction(),
-  self_disease: new SelfDiseaseAction(),
-  self_injury: new SelfInjuryAction(),
   warp_to_planet: new WarpToPlanetAction(),
   claim_slot: new ClaimSlotAction(),
   withdraw_slot: new WithdrawSlotAction(),

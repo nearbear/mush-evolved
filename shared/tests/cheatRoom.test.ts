@@ -1,4 +1,4 @@
-// The cheat room (#170): dev ships only, door-less, one of every item, a coffee machine and the Superkube.
+// The cheat room (#170): dev ships only, door-less, holding only the Superkube.
 import { describe, expect, it } from "vitest";
 import { CHEAT_ROOM, SUPERKUBE } from "../src/cheatRoom.ts";
 import { resolveConfig } from "../src/config.ts";
@@ -9,6 +9,7 @@ import { shortestPath } from "../src/paths.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { applyInput, replayGame } from "../src/replay.ts";
 import { ICARUS_CRAFT } from "../src/patrol.ts";
+import { KUBE_OPS, kubeChoices, type KubeOpId } from "../src/kube.ts";
 import { makeSeats } from "./support.ts";
 
 const devShip = () => createGame(makeSeats(3), { ...resolveConfig({ cheatRoom: true }), mushCount: 1 }, 7);
@@ -22,7 +23,7 @@ describe("cheat room", () => {
 
     const dev = devShip();
     expect(dev.config.rooms[CHEAT_ROOM]).toEqual([]);
-    expect(dev.equipment[CHEAT_ROOM]!.map((e) => e.type)).toEqual(["COFFEE_DISPENSER", SUPERKUBE]);
+    expect(dev.equipment[CHEAT_ROOM]!.map((e) => e.type)).toEqual([SUPERKUBE]);
   });
 
   it("reads the override back out of a resolved config", () => {
@@ -30,16 +31,8 @@ describe("cheat room", () => {
     expect(overridesOf(resolveConfig()).cheatRoom).toBeUndefined();
   });
 
-  it("holds exactly one of each item type", () => {
-    const types = itemsIn(devShip(), { kind: "room", id: CHEAT_ROOM }).map((i) => i.type);
-    expect([...types].sort()).toEqual(Object.keys(ITEM_TYPES).sort());
-  });
-
-  it("has a working coffee machine", () => {
-    const s = devShip();
-    s.players[0]!.room = CHEAT_ROOM;
-    const r = applyAction(s, "p0", { type: "dispense", equipment: `${CHEAT_ROOM}:COFFEE_DISPENSER` });
-    expect(r.ok).toBe(true);
+  it("holds nothing but the Superkube: no items on its floor", () => {
+    expect(itemsIn(devShip(), { kind: "room", id: CHEAT_ROOM })).toEqual([]);
   });
 
   it("is reached by no route and left out of random events", () => {
@@ -54,7 +47,7 @@ describe("cheat room", () => {
   describe("going in (the cheatRoom input)", () => {
     const go = (s: ReturnType<typeof devShip>, by = "p0") => applyInput(s, { type: "cheatRoom", by });
 
-    it("takes you there for free, with no log line, and shows you its contents", () => {
+    it("takes you there for free, with no log line, and shows you the Superkube", () => {
       const s = devShip();
       const before = s.players[0]!;
       const r = go(s);
@@ -66,11 +59,9 @@ describe("cheat room", () => {
       expect(r.state.log).toEqual(s.log);
       const view = viewFor(r.state, "p0");
       expect(view.roomEquipment.map((e) => e.type)).toContain(SUPERKUBE);
-      expect(view.roomItems).toHaveLength(Object.keys(ITEM_TYPES).length);
-      // Someone outside sees neither its items nor its equipment (the room they leave sees you vanish).
+      // Someone outside doesn't see its equipment (the room they leave sees you vanish).
       const other = viewFor(r.state, "p1");
       expect(other.roomEquipment.some((e) => e.type === SUPERKUBE)).toBe(false);
-      expect(other.roomItems.length).toBeLessThan(view.roomItems.length);
     });
 
     it("gets you out of bed first", () => {
@@ -111,6 +102,144 @@ describe("cheat room", () => {
       const setup = { seats: makeSeats(3), config: { ...resolveConfig({ cheatRoom: true }), mushCount: 1 }, seed: 7 };
       const state = replayGame(setup, [{ type: "cheatRoom", by: "p0" }]);
       expect(state.players[0]!.room).toBe(CHEAT_ROOM);
+    });
+  });
+
+  describe("the Superkube (the kube input)", () => {
+    type S = ReturnType<typeof devShip>;
+    /** A dev ship with a human `p` already in the cheat room. */
+    const inRoom = (): { s: S; p: string } => {
+      const s = devShip();
+      const human = s.players.find((pl) => pl.role === "human")!;
+      human.room = CHEAT_ROOM;
+      return { s, p: human.id };
+    };
+    const kube = (s: S, by: string, op: KubeOpId, arg?: string | number) => applyInput(s, { type: "kube", by, op, ...(arg !== undefined && { arg }) });
+    const ok = (r: ReturnType<typeof kube>) => {
+      if (!r.ok) throw new Error(r.error);
+      return r.state;
+    };
+    const me = (s: S, id: string) => s.players.find((pl) => pl.id === id)!;
+
+    it("is refused on a ship without the room, from outside it, from a bot, and with a bad argument", () => {
+      const plain = createGame(makeSeats(3), { ...resolveConfig(), mushCount: 1 }, 7);
+      expect(kube(plain, "p0", "dirty")).toMatchObject({ ok: false, error: "no_cheat_room" });
+      expect(kube(devShip(), "p0", "dirty")).toMatchObject({ ok: false, error: "not_in_cheat_room" });
+      const { s, p } = inRoom();
+      me(s, p).isBot = true;
+      expect(kube(s, p, "dirty")).toMatchObject({ ok: false, error: "bot" });
+      const fresh = inRoom();
+      expect(kube(fresh.s, fresh.p, "hp", -1)).toMatchObject({ ok: false, error: "bad_argument" });
+      expect(kube(fresh.s, fresh.p, "hp", "3")).toMatchObject({ ok: false, error: "bad_argument" });
+      expect(kube(fresh.s, fresh.p, "dirty", 1)).toMatchObject({ ok: false, error: "bad_argument" });
+      expect(kube(fresh.s, fresh.p, "spawn", "no_such_item")).toMatchObject({ ok: false, error: "bad_argument" });
+      expect(kube(fresh.s, fresh.p, "teleport", CHEAT_ROOM)).toMatchObject({ ok: false, error: "bad_argument" });
+      expect(kube(fresh.s, fresh.p, "teleport", ICARUS_CRAFT)).toMatchObject({ ok: false, error: "bad_argument" });
+      expect(kube(fresh.s, fresh.p, "nope" as KubeOpId)).toMatchObject({ ok: false, error: "unknown_option" });
+    });
+
+    it("never shows up in the actions", () => {
+      const { s, p } = inRoom();
+      const types = viewFor(s, p).actions.map((o) => o.action.type as string);
+      expect(types.some((t) => t === "kube" || Object.hasOwn(KUBE_OPS, t))).toBe(false);
+    });
+
+    it("gives a chosen disease, disorder or injury, but no disease to a Mush", () => {
+      const { s, p } = inRoom();
+      const { allDiseases, allDisorders, allInjuries } = s.config.diseases;
+      let next = s;
+      for (const name of [allDiseases[0]!, allDisorders[0]!, allInjuries[0]!]) next = ok(kube(next, p, "ailment", name));
+      expect(me(next, p).modifiers).toEqual(expect.arrayContaining([allDiseases[0], allDisorders[0], allInjuries[0]]));
+      expect(kube(next, p, "ailment", allDiseases[0]!)).toMatchObject({ ok: false, error: "already_has" });
+
+      const mush = devShip();
+      const m = mush.players.find((pl) => pl.role === "mush")!;
+      m.room = CHEAT_ROOM;
+      expect(kube(mush, m.id, "ailment", allDiseases[0]!)).toMatchObject({ ok: false, error: "mush_immune" });
+      expect(me(ok(kube(mush, m.id, "ailment", allInjuries[0]!)), m.id).modifiers).toContain(allInjuries[0]);
+    });
+
+    it("gives a disease the ship's own duration for it, seen only by you", () => {
+      const base = resolveConfig({ cheatRoom: true });
+      const allDiseaseStats = base.diseases.allDiseases.map((_, i) => ({ type: "disease", durationMin: 30 + i, durationMax: 30 + i }));
+      const s = createGame(makeSeats(3), { ...base, mushCount: 1, diseases: { ...base.diseases, allDiseaseStats } }, 7);
+      const human = s.players.find((pl) => pl.role === "human")!;
+      human.room = CHEAT_ROOM;
+      const other = s.players.find((pl) => pl.id !== human.id)!.id;
+      const name = s.config.diseases.allDiseases[2]!;
+      const next = ok(kube(s, human.id, "ailment", name));
+      expect(me(next, human.id).diseaseTrackers).toMatchObject([{ name, duration: 32 }]);
+      expect(viewFor(next, human.id).statuses).toContain(name);
+      expect(viewFor(next, other).players.find((pl) => pl.id === human.id)?.statuses).not.toContain(name);
+    });
+
+    it("cures every ailment and contamination", () => {
+      const { s, p } = inRoom();
+      const { allDiseases, allInjuries } = s.config.diseases;
+      let next = ok(kube(s, p, "ailment", allDiseases[1]!));
+      next = ok(kube(next, p, "ailment", allInjuries[0]!));
+      next = ok(kube(next, p, "contaminate"));
+      next = ok(kube(next, p, "cure"));
+      expect(me(next, p).modifiers.filter((m) => [...allDiseases, ...allInjuries].includes(m))).toEqual([]);
+      expect(me(next, p).diseaseTrackers).toEqual([]);
+      expect(next.contamination[p]).toBeUndefined();
+    });
+
+    it("sets HP, morale, AP and MP, within 1 (HP) or 0 and the max", () => {
+      const { s, p } = inRoom();
+      let next = ok(kube(s, p, "hp", 3));
+      next = ok(kube(next, p, "morale", 0));
+      next = ok(kube(next, p, "ap", 999));
+      next = ok(kube(next, p, "mp", 2));
+      const pl = me(next, p);
+      expect([pl.hp, pl.morale, pl.ap, pl.mp]).toEqual([3, 0, pl.maxAp, 2]);
+      expect(me(ok(kube(next, p, "hp", 0)), p)).toMatchObject({ hp: 1, alive: true });
+    });
+
+    it("makes you dirty, with no log line", () => {
+      const { s, p } = inRoom();
+      const next = ok(kube(s, p, "dirty"));
+      expect(me(next, p).statuses).toContain("dirty");
+      expect(next.log).toEqual(s.log);
+    });
+
+    it("adds contamination to a human, refuses a Mush", () => {
+      const { s, p } = inRoom();
+      expect(ok(kube(s, p, "contaminate")).contamination[p]).toBe(1);
+      const mush = devShip();
+      const m = mush.players.find((pl) => pl.role === "mush")!;
+      m.room = CHEAT_ROOM;
+      expect(kube(mush, m.id, "contaminate")).toMatchObject({ ok: false, error: "cannot_contaminate" });
+    });
+
+    it("spawns an item on the floor, with a recipe or a skill where it needs one", () => {
+      const { s, p } = inRoom();
+      const floor = (st: S) => itemsIn(st, { kind: "room", id: CHEAT_ROOM });
+      const type = Object.keys(ITEM_TYPES)[0]!;
+      const once = ok(kube(s, p, "spawn", type));
+      const twice = ok(kube(once, p, "spawn", type));
+      expect(floor(twice).filter((i) => i.type === type)).toHaveLength(2);
+      expect(new Set(twice.items.map((i) => i.id)).size).toBe(twice.items.length);
+      expect(floor(ok(kube(s, p, "spawn", "blueprint")))[0]?.builds).toBeDefined();
+    });
+
+    it("teleports you out to any Daedalus room, Laboratory first, with no log line", () => {
+      const { s, p } = inRoom();
+      expect(kubeChoices(s.config, "room")[0]).toBe("LABORATORY");
+      const next = ok(kube(s, p, "teleport", "REFECTORY"));
+      expect(me(next, p).room).toBe("REFECTORY");
+      expect(next.log).toEqual(s.log);
+    });
+
+    it("replays", () => {
+      const setup = { seats: makeSeats(3), config: { ...resolveConfig({ cheatRoom: true }), mushCount: 1 }, seed: 7 };
+      const human = createGame(setup.seats, setup.config, setup.seed).players.find((pl) => pl.role === "human")!.id;
+      const state = replayGame(setup, [
+        { type: "cheatRoom", by: human },
+        { type: "kube", by: human, op: "ap", arg: 1 },
+        { type: "kube", by: human, op: "teleport", arg: "LABORATORY" },
+      ]);
+      expect(me(state, human)).toMatchObject({ ap: 1, room: "LABORATORY" });
     });
   });
 });

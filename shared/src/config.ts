@@ -301,6 +301,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   accommodate: { cost: { ap: 0 }, offerMs: 5 * 60_000 },
   plans: { expiryDays: 1, slotsPerPlan: 12, finishedKept: 1 },
   lieDown: { cost: { ap: 0 } },
+  report: { cost: { ap: 0 } },
   // Owner, 2026-11-06: guarding costs 1 AP; stopping is free.
   guard: { cost: { ap: 1 } },
   // Lethargy (owner, 2026-11-01): +1 AP a cycle from the 4th cycle change spent lying down, AP cap doubled.

@@ -6,6 +6,7 @@
 import type { GameClientMessage } from "./protocol.ts";
 import { joinShip } from "./preselection.ts";
 import { acknowledgeTransfer } from "./mind.ts";
+import { applyKube } from "./kube.ts";
 import { cheatRoomCheat, createGame, newCycle, setCheat, setRoleCheat, solCheat, type ActionResult } from "./rules.ts";
 import { clearQueue, dropQueues, queueAction, tick } from "./queue.ts";
 import { walk } from "./spot.ts";
@@ -13,6 +14,7 @@ import { createChannel, createThread, inviteToChannel, leaveChannel, sendChat, t
 import { sharePlanet } from "./sharedPlanets.ts";
 import { shareReport } from "./sharedReports.ts";
 import { postPlan } from "./plans.ts";
+import { pruneReports } from "./reports.ts";
 import { inactivate, seen } from "./inactivity.ts";
 import type { ConfigOverrides, GameConfig, GameState, PlayerId, Role, Seat } from "./types.ts";
 import type { HistoryStep } from "./viewHistory.ts";
@@ -85,6 +87,12 @@ export function startGame(setup: GameSetup): GameState {
 
 /** The single entry point for changing a game. */
 export function applyInput(state: GameState, input: Input): ActionResult {
+  const result = applyInputOnly(state, input);
+  // Reports last until their problem is fixed, however it got fixed (reports.ts, #444).
+  return result.ok ? { ok: true, state: pruneReports(result.state) } : result;
+}
+
+function applyInputOnly(state: GameState, input: Input): ActionResult {
   switch (input.type) {
     case "action":
       return queueAction(state, input.by, input.action, input.at);
@@ -132,6 +140,8 @@ export function applyInput(state: GameState, input: Input): ActionResult {
       return solCheat(state, input.by);
     case "cheatRoom":
       return cheatRoomCheat(state, input.by);
+    case "kube":
+      return applyKube(state, input.by, input.op, input.arg);
   }
 }
 
