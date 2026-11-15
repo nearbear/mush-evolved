@@ -536,6 +536,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   hopeless: { deathMorale: 1 },
   creative: { refundOdds: 0.5 },
   anticPerfume: { immuneCycles: 2 },
+  strongSkin: { resistOdds: 0.5 },
   // Owner, 2026-10-31 (#145): real time, not cycles.
   inactivity: { inactiveAfterHours: 24, superAfterHours: 48 },
   logistics: { ap: 1 },

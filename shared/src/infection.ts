@@ -5,6 +5,8 @@
 import { pushChat } from "./chat.ts";
 import { logPrivate } from "./log.ts";
 import { contaminationCapacity } from "./modifiers.ts";
+import { rollFloat } from "./rng.ts";
+import { hasSkill } from "./skills.ts";
 import { isImmune } from "./statuses.ts";
 import { MUSH_CHANNEL, type GameState, type PlayerState } from "./types.ts";
 
@@ -14,6 +16,7 @@ import { MUSH_CHANNEL, type GameState, type PlayerState } from "./types.ts";
  */
 export function contaminate(state: GameState, human: PlayerState, amount = 1): void {
   if (human.role !== "human" || !human.alive || isImmune(state, human)) return;
+  if (hasSkill(human, "strong_skin") && rollFloat(state) < state.config.strongSkin.resistOdds) return;
   const level = (state.contamination[human.id] ?? 0) + amount;
   const capacity = contaminationCapacity(state, human);
   if (level >= capacity) {

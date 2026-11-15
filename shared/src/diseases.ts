@@ -1,4 +1,4 @@
-import { roll, rollInt } from "./rng.ts";
+import { roll, rollFloat, rollInt } from "./rng.ts";
 import { skillPicked } from "./modifiers.ts";
 import { addStatus, removeStatus, type StatusId } from "./statuses.ts";
 import type { DiseaseStats, GameState, PlayerState } from "./types.ts";
@@ -24,6 +24,14 @@ export function diseaseStats(state: Readonly<GameState>, name: string): DiseaseS
 export function addDisease(state: GameState, player: PlayerState, name: StatusId){
     if(player.modifiers.includes(name)){
         return;
+    }
+    if (
+      player.role === "human" &&
+      state.config.diseases.allDiseases.includes(name) &&
+      hasSkill(player, "strong_skin") &&
+      rollFloat(state) < state.config.strongSkin.resistOdds
+    ) {
+      return;
     }
     if(state.config.diseases.allInjuries.includes(name)){
     player.modifiers.push(name);

@@ -735,6 +735,9 @@ export interface GameConfig {
   anticPerfume: {
     immuneCycles: number; // Cycles of infection immunity the antic_perfume skill grants after each shower (confirmed 2026-10-16); a new shower resets it, no stacking.
   };
+  strongSkin: {
+    resistOdds: number; // Chance a human Hygienist resists a Mush contamination or physical disease (owner, 2026-11-14).
+  };
   inactivity: {
     inactiveAfterHours: number; // Real hours without connecting (and a full AP gauge) before a player goes inactive at a cycle change (owner, 2026-10-31).
     superAfterHours: number; // Real hours since they last connected before an inactive player is super inactive (owner, 2026-10-31).
