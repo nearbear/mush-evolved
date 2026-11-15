@@ -4,8 +4,9 @@
 
 import { updateMaxValues } from "./adjustStats.ts";
 import { DYNARCADE_EQUIPMENT } from "./equipment.ts";
+import { logPublic } from "./log.ts";
 import { PATROL_SHIPS, patrolMaxCharges } from "./patrol.ts";
-import { PROJECT_IDS, projectDone, type ProjectId } from "./projects.ts";
+import { PROJECT_COMPLETE, PROJECT_IDS, projectDone, type ProjectId } from "./projects.ts";
 import { newItemId, TREE_POT_ITEM } from "./items.ts";
 import type { DeepReadonly, GameConfig, GameCore, GameState, PlayerState } from "./types.ts";
 
@@ -53,5 +54,38 @@ export function onProjectCompleted(state: GameState, project: ProjectId): void {
   if (project === "EXTRA_HYDROPONPOTS") {
     const { room, count } = state.config.project.extraHydropots;
     for (let i = 0; i < count; i++) state.items.push({ id: newItemId(state), type: TREE_POT_ITEM, at: { kind: "room", id: room } });
+  }
+}
+
+/**
+ * NERON participation (`NERON_PROJECT_THREAD`; owner, 2026-11-14): once complete, each cycle advances every
+ * currently offered project strictly above 0% by `config.project.neronParticipation.percent` (5%). At most one
+ * project can complete per cycle (any other that would reach 100% is capped at 99% before the batch retires).
+ */
+export function neronParticipationCycle(state: GameState): void {
+  if (!projectDone(state, "NERON_PROJECT_THREAD")) return;
+  const offered = offeredProjects(state);
+  const step = state.config.project.neronParticipation.percent;
+  let completed: ProjectId | undefined;
+  for (const id of offered) {
+    const current = state.projects[id] ?? 0;
+    if (current <= 0 || current >= PROJECT_COMPLETE) continue;
+    const next = Math.min(PROJECT_COMPLETE, current + step);
+    if (next >= PROJECT_COMPLETE) {
+      if (completed === undefined) {
+        state.projects[id] = PROJECT_COMPLETE;
+        completed = id;
+      } else {
+        state.projects[id] = PROJECT_COMPLETE - 1;
+      }
+    } else {
+      state.projects[id] = next;
+    }
+  }
+  if (completed !== undefined) {
+    const retired = new Set(offered);
+    state.projectDeck = state.projectDeck.filter((id) => !retired.has(id));
+    logPublic(state, undefined, "neronProjectCompleted", { project: completed });
+    onProjectCompleted(state, completed);
   }
 }

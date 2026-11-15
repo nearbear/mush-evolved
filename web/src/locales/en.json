@@ -1057,6 +1057,7 @@
     "planetShared": "{{name}} shared a planet.",
     "planetShareUpdated": "{{name}} updated a shared planet.",
     "bricBrocPrevented": "NERON: general patching up has held the Daedalus together; no incident struck this cycle.",
+    "neronProjectCompleted": "NERON: the {{project}} project is complete.",
     "equipmentBroken": "NERON: the {{equipment}} has broken down.",
     "itemBroken": "NERON: the {{item}} has broken down.",
     "fireStarted": "NERON: a fire has broken out aboard!",

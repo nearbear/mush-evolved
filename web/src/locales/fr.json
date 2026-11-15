@@ -1078,6 +1078,7 @@
     "planetShared": "{{name}} a partagé une planète.",
     "planetShareUpdated": "{{name}} a mis à jour une planète partagée.",
     "bricBrocPrevented": "NERON : le rafistolage général a tenu le Daedalus ensemble ; aucun incident n'a frappé ce cycle.",
+    "neronProjectCompleted": "NERON : le projet {{project}} est terminé.",
     "equipmentBroken": "NERON : panne de l'équipement « {{equipment}} ».",
     "itemBroken": "NERON : panne de l'objet « {{item}} ».",
     "fireStarted": "NERON : un incendie s'est déclaré à bord !",

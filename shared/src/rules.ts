@@ -58,6 +58,7 @@ import { expeditionReturnAt, lostPlayers, onExpedition, withCrew } from "./exped
 import { ICARUS_EQUIPMENT } from "./actions/icarus_takeoff.ts";
 import { canScavenge, interfaceId, isLostPlace, newPatrolShips, offShip, PATROL_INTERFACE, PATROL_SHIPS, shipAboard } from "./patrol.ts";
 import { preselectionCycle } from "./preselection.ts";
+import { neronParticipationCycle } from "./projectEffects.ts";
 import { SUCCESSION, TITLE_IDS, assignTitles, noTitles } from "./titles.ts";
 import type {
   Action,
@@ -460,6 +461,7 @@ function advanceCycle(state: GameState, at?: number): void {
   huntersCycle(state, day);
   pushLog(state, { key: newDay ? "dayBegins" : "cycleBegins", params: newDay ? { day } : { cycle: state.cycle }, visibleTo: "all" });
   // After the cycle's opening line, so incident and fire lines follow it. A fire acts in the cycle it starts.
+  neronParticipationCycle(state);
   ignitePending(state);
   incidentsCycle(state, day);
   fireCycle(state);

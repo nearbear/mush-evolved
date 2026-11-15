@@ -3785,3 +3785,13 @@ Small refactor on request: `GameRoom.social` called four bot-line parsers (item,
 ### 2026-11-14 — Remove Daunting and Crazy Eye skills; move Crazy Eye icon to Infantryman
 
 - **Decision (owner):** removed `daunting` and `crazy_eye` from `SKILLS` (now 64 human skills) and their locale entries (`names.*.json` and `web/src/locales/*.json`), bumped `STATE_VERSION` to 118 with `upgradeTo118` stripping them from `skills`/`bookSkill`, and remapped `crazy_eye`'s icon to `infantryman` in `web/src/art/assets.ts` (while keeping `daunting`'s earlier remap to `unconcerned`).
+
+### 2026-11-14 — NERON participation (`NERON_PROJECT_THREAD`)
+
+- **Decision (owner):** Once `NERON_PROJECT_THREAD` is complete, each cycle advances every currently offered project (`offeredProjects(state)`) strictly above 0% by 5% (`config.project.neronParticipation.percent`). At most one project can complete per cycle (any other offered project reaching 100% is capped at 99% before the batch retires), and a ship-wide public log (`neronProjectCompleted`) is emitted only when a project completes.
+- **What worked:** Reusing `offeredProjects`, `onProjectCompleted`, and `logPublic(state, undefined, ...)` in `shared/src/projectEffects.ts` kept the implementation small and aligned with the 3-project proposal system.
+
+### 2026-11-14: Ultra-healing ointment research (`HEALING_OINTMANT`)
+
+- **Decision (owner):** Completing `HEALING_OINTMANT` (requires `medikit` in the lab, not consumed) adds `heal.effect.ointmentBonusHp` (1) extra HP to both `heal` (Medikit / Sick Bay) and `use_bandage`, for everyone (humans and Mush, stacking with `medic`), with the standard `researchCompleted` log line only.
+- **Implementation:** Added `heal.effect.ointmentBonusHp: 1` in `shared/src/types/config.ts` and `shared/src/config.ts`, added `ointmentHealBonus` to `healAmount` and `bandageHealAmount` in `shared/src/modifiers.ts`, and marked `HEALING_OINTMANT: "full"` in `RESEARCH_STATUS` (`shared/src/research.ts`). Added unit tests in `shared/tests/heal.test.ts` and `shared/tests/bandage.test.ts`.

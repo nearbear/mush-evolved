@@ -116,6 +116,8 @@ export const PROJECT_STATUS: Readonly<Partial<Record<ProjectId, ProjectStatus>>>
   CALL_OF_DIRTY: "full",
   // Completing it spawns 3 empty hydropots on the Hydroponic Garden floor (owner, 2026-11-14; projectEffects.ts).
   EXTRA_HYDROPONPOTS: "full",
+  // Any offered project above 0% gains +5% per cycle; at most one can complete per cycle (owner, 2026-11-14; projectEffects.ts).
+  NERON_PROJECT_THREAD: "full",
 };
 
 export function projectStatus(project: string): ProjectStatus {
