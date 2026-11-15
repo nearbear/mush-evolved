@@ -265,6 +265,10 @@ export interface GameConfig {
   massMouldering: {
     cost: { ap: number }; // The Mush skill Mass Mouldering: 2 AP, 0 spores (owner, 2026-11-14).
   };
+  demoralize: {
+    cost: { ap: number }; // The Mush skill Demoralizer (disheartening_contact): 2 AP, no limit (owner, 2026-11-14).
+    morale: number; // Morale lost by the target (2).
+  };
   spores: {
     cost: { ap: number }; // AP spent to extract a spore (confirmed 2026-10-13).
     effect: { spores: number }; // Spores one extraction gives (confirmed 2026-10-13).

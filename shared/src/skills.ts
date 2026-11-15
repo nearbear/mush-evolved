@@ -306,6 +306,8 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   bodyguard: "full",
   // +1 AP on eating a banana and +2 AP on eating an alien fruit, humans only (owner, 2026-11-14, modifiers/frugivore.ts).
   frugivore: "full",
+  // Mush skill (Demoralizer): 2 AP, covert + aggressive, lowers a living roommate's morale by 2 (owner, 2026-11-14, actions/demoralize.ts).
+  disheartening_contact: "full",
 };
 
 export function skillStatus(skill: string): SkillStatus {

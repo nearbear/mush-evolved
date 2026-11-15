@@ -3842,3 +3842,8 @@ Small refactor on request: `GameRoom.social` called four bot-line parsers (item,
 ### 2026-11-14: Heuristic targeting project (`NERON_TARGETING_ASSIST`)
 - **Decision (owner):** Once `NERON_TARGETING_ASSIST` is complete, both `turret_attack` and `patrol_attack` gain a multiplicative `×1.25` hit-chance bonus (`config.project.neronTargetingAssist.accuracyFactor`) for everyone on the crew (human and Mush alike, dropping the original `projets.json` 4-character restriction), stacking with skills and failure streaks up to the 99% cap in `actionSuccessRate` (`shared/src/modifiers.ts`). Marked `"full"` in `PROJECT_STATUS`.
 - **What worked:** `actionSuccessRate` is already the single place for action hit-chance modifiers (used by both `applyAction` and `viewFor`), so adding the project check there automatically updates both rolled odds and the UI display without touching `turret_attack.ts` or `patrol_attack.ts`.
+
+### 2026-11-14 — Demoralizer (Mush skill `disheartening_contact`)
+
+- **Decision (owner):** Implement the `disheartening_contact` Mush skill, renamed to **Demoralizer** in English (internal id `disheartening_contact` kept for stored-state compatibility). Grants the **Demoralize** (`demoralize`) action: 2 AP, no daily limit or cooldown, blocked in pre-selection; targets any living roommate (human or Mush), offered even at 0 morale so it does not leak private morale, and lowers their morale by 2 (clamped at 0). Covert (`logCovert`) and `aggressive`; the victim receives the standard private `loseMorale` line.
+- **What worked:** Existing `Action` registry, `logCovert`, `gainMorale`, and `aggressive` tag modifiers (Pacifist/Bodyguard) handled all surcharges, camera/Observant/Outcast reveal, and UI target routing without custom wiring.

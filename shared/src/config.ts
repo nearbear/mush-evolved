@@ -80,6 +80,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   resetSkills: { cost: { ap: 2 } },
   // Owner, 2026-11-14: Mass Mouldering costs 2 AP and 0 spores, once per game (2 AP drain omitted).
   massMouldering: { cost: { ap: 2 } },
+  // Owner, 2026-11-14: Demoralizer (disheartening_contact) costs 2 AP and lowers a living roommate's morale by 2.
+  demoralize: { cost: { ap: 2 }, morale: 2 },
   // Owner, 2026-11-05: the Apprentice skill's apprenticeship action costs 1 AP.
   apprenticeship: { cost: { ap: 1 } },
   // Owner, 2026-11-04: the pneumatic tube is free to use.
