@@ -291,6 +291,10 @@
   background: none;
   cursor: help;
 }
+.status-card ul {
+  margin: var(--space-2) 0 0;
+  padding-left: 1.1rem;
+}
 .status-card {
   max-width: min(16rem, calc(100vw - 2rem));
 }
