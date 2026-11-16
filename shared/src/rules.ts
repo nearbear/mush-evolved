@@ -43,7 +43,7 @@ import { clone, dayOf, fail, findPlayer, type ActionResult } from "./helpers.ts"
 
 export { dayOf };
 import { damage, healDaily, hasMushDied } from "./death.ts";
-import { activitySeen, inLogWindow, logPrivate, logWindowOf, pruneLog, pushLog, seesLine, startLogSeen, withNimbleActor } from "./log.ts";
+import { activitySeen, inLogWindow, logPrivate, logWindowOf, pruneLog, seesLine, startLogSeen, withNimbleActor } from "./log.ts";
 import { recordAction } from "./history.ts";
 import { ringMycoAlarms } from "./mycoalarm.ts";
 import { planetsOf } from "./planets.ts";
@@ -470,8 +470,7 @@ function advanceCycle(state: GameState, at?: number): void {
   arriveShip(state);
   huntersCycle(state, day);
   merchantsCycle(state);
-  pushLog(state, { key: newDay ? "dayBegins" : "cycleBegins", params: newDay ? { day } : { cycle: state.cycle }, visibleTo: "all" });
-  // After the cycle's opening line, so incident and fire lines follow it. A fire acts in the cycle it starts.
+  // A fire acts in the cycle it starts.
   neronParticipationCycle(state);
   ignitePending(state);
   const gardenProtected = isGardenProtected(state);

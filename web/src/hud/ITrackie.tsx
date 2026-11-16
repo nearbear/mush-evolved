@@ -239,14 +239,18 @@ export function ITrackie({
             <Scroller items={roomLog.length}>
               {/* aria-live is off here: new entries are spoken by the announcer (announce.ts), so a hidden tab still announces and bursts are batched. */}
               <div role="log" aria-live="off" aria-label={t(TAB_TITLES.room)}>
-              <ol className="feed">
-                {roomLog.map((e, i) => (
-                  <Fragment key={i}>
-                    {roomLog[i - 1]?.cycle !== e.cycle && <CycleDivider cycle={e.cycle} cyclesPerDay={view.config.cyclesPerDay} />}
-                    <LogRow entry={e} canRead={e.key === "expeditionReturned" && view.expeditions.some((r) => r.id === e.params?.report)} onRead={setReport} />
-                  </Fragment>
-                ))}
-              </ol>
+              {roomLog.length === 0 ? (
+                <p className="sub">{t("itrackie.roomEmpty")}</p>
+              ) : (
+                <ol className="feed">
+                  {roomLog.map((e, i) => (
+                    <Fragment key={i}>
+                      {roomLog[i - 1]?.cycle !== e.cycle && <CycleDivider cycle={e.cycle} cyclesPerDay={view.config.cyclesPerDay} />}
+                      <LogRow entry={e} canRead={e.key === "expeditionReturned" && view.expeditions.some((r) => r.id === e.params?.report)} onRead={setReport} />
+                    </Fragment>
+                  ))}
+                </ol>
+              )}
               </div>
             </Scroller>
           </Tabs.Panel>

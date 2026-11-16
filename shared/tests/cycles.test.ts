@@ -32,7 +32,7 @@ describe("cycles on the clock", () => {
     const next = must(applyInput(readied, { type: "cycle", at: 0 }));
     expect(next.cycle).toBe(s.cycle + 1);
     expect(next.players.every((p) => p.ap === config.startAp + config.apPerCycle && !p.ready)).toBe(true);
-    expect(next.log.at(-1)).toMatchObject({ key: "cycleBegins", visibleTo: "all" });
+    expect(next.log).toEqual(readied.log);
   });
 
   it("refuses once the game is over", () => {
@@ -54,7 +54,6 @@ describe("launching mid-day", () => {
     s = nextCycle(s);
     expect(viewFor(s, "p0")).toMatchObject({ day: 2, cycleOfDay: 1 });
     expect(player(s, "p0").morale).toBeLessThan(morale);
-    expect(s.log.at(-1)).toMatchObject({ key: "dayBegins", params: { day: 2 } });
   });
 
   it("counts hunger from the first cycle the ship had", () => {

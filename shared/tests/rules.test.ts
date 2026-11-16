@@ -101,7 +101,6 @@ describe("applyAction", () => {
       const v = viewFor(state, "p0");
       expect([v.day, v.cycleOfDay]).toEqual([2, 1]);
       expect(state.players.every((p) => p.morale === start - DEFAULT_CONFIG.moralePerDay)).toBe(true);
-      expect(state.log.some((e) => e.key === "dayBegins" && e.params?.day === 2 && e.visibleTo === "all")).toBe(true);
     });
 
     it("never takes morale below 0 and skips the dead", () => {

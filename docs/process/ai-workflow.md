@@ -4009,3 +4009,12 @@ Two hidden-information choices made by Claude, not the owner, worth a look: (1) 
 ### 2026-11-15 — Infantryman skill and customized blaster
 - **Decision (owner):** implemented `infantryman` (`modifiers/infantryman.ts`): doubles turret hit chance (`x2`, stacking with Gunner), grants +1 Shoot point on pick and +1 per day (sharing `gunman.capPoints` = 4), and spawns a `customized_blaster` (`ItemState.owner` set to the taker). Only the creator can fire it (`attack`), while others can carry/drop/hide it; it has regular blaster combat stats, `expoStrength: 2` (+1 over regular blaster, counted for the crew regardless of carrier), and counts for Shooter and Centauri. Shares the `blaster` item icon and displays an item attribute badge using `skillIcon("infantryman")`.
 - **What worked:** keeping `ItemState.owner` server-only (never in `ItemView`) avoided leaking who took `infantryman` across rooms, and reusing `ItemAttrIcons` kept the UI change minimal.
+
+### 2026-11-15 — Drop cycle-begins room log lines and add empty room log caption
+- **Decision (owner):** stopped pushing `cycleBegins` / `dayBegins` ship-wide log lines in `newCycle` (`shared/src/rules.ts`), since `CycleDivider` already shows `Day X · Cycle Y` in the feed. Added an empty-state caption (`itrackie.roomEmpty` with `.sub`) in `ITrackie.tsx` when `roomLog` has no entries.
+- **Note:** kept `cycleBegins` / `dayBegins` in the locale files so older stored game snapshots (`storedRooms.test.ts`) still resolve their log keys.
+
+### 2026-11-15: Scripted bot `repairDoor` goal
+- Added [repairDoor.ts](server/src/bots/goals/repairDoor.ts) and registered it in `SOLO_GOALS` ([index.ts](server/src/bots/goals/index.ts)).
+- Confirmed design knobs with owner before implementing: priority `56` (just above `repairHull` at `55`), preserves `BOT_AP_RESERVE` (`2`), and uses `view.alerts.reports` only without chat claiming.
+- Added unit tests in [goals.test.ts](server/tests/goals.test.ts) covering in-room repair with AP reserve, routing to the nearest reachable side of a reported broken door, and skipping unreachable reported doors.
