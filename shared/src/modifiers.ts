@@ -402,6 +402,10 @@ export function actionInjuryRate(base: number, ctx: CostContext, registry: Modif
     const hook = registry[id]?.actionInjuryRate;
     if (hook) chance = hook(chance, ctx);
   }
+  // Floor heating (owner, 2026-11-15): halves the random injury chance on every action (50% reduction).
+  if (projectDone(ctx.state, "FLOOR_HEATING")) {
+    chance *= ctx.state.config.project.floorHeating.injuryFactor;
+  }
   // Hooks can't make a price negative. A move's MP is a net change and can already be negative (a conversion
   // gives more than the move spends), so the floor is 0 or the base, whichever is lower.
   return chance;

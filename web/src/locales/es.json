@@ -1610,7 +1610,7 @@
       "CALL_OF_DIRTY": "Habilita la Dynarcade en la bahía Alfa 2. Te desahogas a costa de algún moratón y recuperas moral.",
       "BEAT_BOX": "Habilita el tocadiscos en la bahía Alfa 2. Permite relajarse escuchando música.",
       "THALASSO": "Si no eres Mush, cada ducha tiene un 25 % de probabilidad de darte +1 PV, o +1 de moral, o +2 PM.",
-      "FLOOR_HEATING": "Reduce un 25 % las heridas causadas por acciones.",
+      "FLOOR_HEATING": "Reduce un 50 % las heridas causadas por acciones.",
       "NOISE_REDUCER": "Aumenta en 2 los PA máximos de cada compañero.",
       "NERON_TARGETING_ASSIST": "Aumenta la puntería en vuelo y en torreta un 25 %.",
       "PARASITE_ELIM": "En el jardín, las plantas nunca enferman.",

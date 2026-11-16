@@ -534,6 +534,8 @@ export interface GameConfig {
     extraDrone: { room: RoomId; count: number };
     // Oxygenated ducts (OXY_MORE; 2026-11-15): each cycle has `saveChance` (20%) to prevent all oxygen loss (burn and tank leaks), announced in global chat.
     oxyMore: { saveChance: number };
+    // Floor heating (FLOOR_HEATING; 2026-11-15): multiplies every action's injury chance by `injuryFactor` (0.5, a 50% reduction).
+    floorHeating: { injuryFactor: number };
   };
   pilgred: {
     cost: { ap: number }; // AP spent to take part in repairing PILGRED (owner, 2026-10-21; the original's REPAIR_PILGRED, 2).

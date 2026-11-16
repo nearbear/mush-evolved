@@ -145,6 +145,8 @@ export const PROJECT_STATUS: Readonly<Partial<Record<ProjectId, ProjectStatus>>>
   ICARUS_LAVATORY: "full",
   // Each cycle has a 20% chance to prevent all oxygen loss (burn and broken tank leaks), announced globally (owner, 2026-11-15; ship.ts, breakage.ts).
   OXY_MORE: "full",
+  // Halves the random injury chance on every action (50% reduction) (owner, 2026-11-15; modifiers.ts `actionInjuryRate`).
+  FLOOR_HEATING: "full",
 };
 
 export function projectStatus(project: string): ProjectStatus {
