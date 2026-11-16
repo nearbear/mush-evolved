@@ -88,10 +88,10 @@ function ReturnToSol({ terminal, view, onAction }: Props) {
 }
 
 /** A greyed-out button for something that can't be done right now, with the reason on hover, focus or tap (as DisabledActionButton). */
-export function UnavailableButton({ reason, ap, children, className }: { reason: string; ap: number; children: string; className?: string }) {
+export function UnavailableButton({ reason, ap, children, className, big = true }: { reason: string; ap: number; children: string; className?: string; big?: boolean }) {
   return (
     <Popover.Root>
-      <Popover.Trigger openOnHover delay={200} className={`big action-disabled${className ? ` ${className}` : ""}`} aria-disabled="true" render={<button type="button" />}>
+      <Popover.Trigger openOnHover delay={200} className={`${big ? "big " : ""}action-disabled${className ? ` ${className}` : ""}`} aria-disabled="true" render={<button type="button" />}>
         <ActionLabel text={children} cost={{ ap, mp: 0 }} />
       </Popover.Trigger>
       <Popover.Portal>

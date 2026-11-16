@@ -129,6 +129,10 @@ export interface PublicConfig {
   /** AP the Command terminal's Sol and Eden buttons cost, so the greyed-out ones can show it. */
   returnToSolAp: number;
   edenAp: number;
+  /** AP the Command terminal's steering buttons cost, so the greyed-out ones can show it. */
+  turnAp: number;
+  travelAp: number;
+  leaveOrbitAp: number;
   xylophAp: number;
   /** AP closing a merchant's deal costs, for the greyed-out deals at the Com center. */
   merchantDealAp: number;

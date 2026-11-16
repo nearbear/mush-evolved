@@ -1865,8 +1865,6 @@
     "warning": "Travel burns all the fuel in the combustion chamber, and the ship goes that far. With none loaded the AP is wasted. Every planet not lying exactly ahead at that distance is lost.",
     "unavailableCommanderOnly": "Only the Commander can steer the ship.",
     "unavailableTraveling": "The ship is traveling.",
-    "unavailableInOrbit": "Leave orbit first.",
-    "unavailableNotInOrbit": "The ship is not in orbit.",
     "unavailable": "Unavailable right now."
   },
   "turret": {

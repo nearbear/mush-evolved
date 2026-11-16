@@ -1798,8 +1798,6 @@
     "warning": "Voyager brûle tout le fuel de la chambre de combustion, et le vaisseau avance d'autant. Sans fuel chargé, les PA sont perdus. Toute planète qui ne se trouve pas droit devant à cette distance est perdue.",
     "unavailableCommanderOnly": "Seul le Commandant peut diriger le vaisseau.",
     "unavailableTraveling": "Le vaisseau est en route.",
-    "unavailableInOrbit": "Quittez l'orbite d'abord.",
-    "unavailableNotInOrbit": "Le vaisseau n'est pas en orbite.",
     "unavailable": "Indisponible pour le moment."
   },
   "turret": {

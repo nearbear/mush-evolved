@@ -1798,8 +1798,6 @@
     "warning": "Viajar quema todo el combustible de la cámara de combustión, y la nave avanza esa distancia. Sin combustible cargado se pierden los PA. Todo planeta que no esté justo delante a esa distancia se pierde.",
     "unavailableCommanderOnly": "Solo el Comandante puede dirigir la nave.",
     "unavailableTraveling": "La nave está viajando.",
-    "unavailableInOrbit": "Sal de la órbita primero.",
-    "unavailableNotInOrbit": "La nave no está en órbita.",
     "unavailable": "No disponible en este momento."
   },
   "turret": {

@@ -161,6 +161,13 @@
 .ship-navigation-row > button {
   flex: 1;
 }
+.ship-navigation-turns {
+  flex-wrap: nowrap;
+}
+.ship-navigation-turns > button {
+  min-width: 0;
+  font-size: 1rem;
+}
 /* A flat compass: the heading in the middle, the directions either side of it fading out. */
 .ship-compass {
   display: grid;

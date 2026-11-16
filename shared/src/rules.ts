@@ -54,7 +54,7 @@ import { commandTerminalsHere, isPilgredRepaired } from "./pilgred.ts";
 import { biosTerminalsHere, newBios } from "./bios.ts";
 import { callNextRebel, commsCycle, commsTerminalView, comTerminalsHere, newComms } from "./comms.ts";
 import { botanyCycle, botanyDay, plantView } from "./botany.ts";
-import { burnOxygen, shipView, startShip } from "./ship.ts";
+import { burnOxygen, rollOxygenSaved, shipView, startShip } from "./ship.ts";
 import { merchantsCycle, newMerchants } from "./merchants.ts";
 import { allTurrets, huntersCycle, newHunters, startHunters, turretCharges, turretsHere } from "./hunters.ts";
 import { expeditionReturnAt, lostPlayers, onExpedition, withCrew } from "./expeditions.ts";
@@ -431,7 +431,8 @@ function advanceCycle(state: GameState, at?: number): void {
   coupCycle(state);
   diseaseTrackerCycleChange(state);
   cycleChanged(state);
-  burnOxygen(state);
+  const oxygenSaved = rollOxygenSaved(state);
+  burnOxygen(state, oxygenSaved);
   commsCycle(state);
   botanyCycle(state);
   const { cyclesPerDay } = state.config;
@@ -476,7 +477,7 @@ function advanceCycle(state: GameState, at?: number): void {
   const gardenProtected = isGardenProtected(state);
   incidentsCycle(state, day);
   fireCycle(state, gardenProtected);
-  leakOxygen(state);
+  leakOxygen(state, oxygenSaved);
   jellyCycle(state);
   npcCycle(state);
   preselectionCycle(state);
@@ -701,7 +702,7 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
       to: [...(state.bonds[playerId] ?? [])],
       from: state.players.filter((o) => state.bonds[o.id]?.includes(playerId)).map((o) => o.id),
     },
-    config: { heavyMpPenalty: state.config.heavy.mpPenalty, actionQueueCap: state.config.action.queueCap, sharedSpots: state.config.sharedSpots, setupId: state.config.setupId, returnToSolAp: state.config.pilgred.returnCost.ap, edenAp: state.config.pilgred.edenCost.ap, xylophAp: state.config.comms.xyloph.cost.ap, merchantDealAp: state.config.merchants.deal.cost.ap,
+    config: { heavyMpPenalty: state.config.heavy.mpPenalty, actionQueueCap: state.config.action.queueCap, sharedSpots: state.config.sharedSpots, setupId: state.config.setupId, returnToSolAp: state.config.pilgred.returnCost.ap, edenAp: state.config.pilgred.edenCost.ap, turnAp: state.config.navigation.turn.cost.ap, travelAp: state.config.navigation.travel.cost.ap, leaveOrbitAp: state.config.navigation.leaveOrbit.cost.ap, xylophAp: state.config.comms.xyloph.cost.ap, merchantDealAp: state.config.merchants.deal.cost.ap,
       researchAp: state.config.research.cost.ap, projectAp: state.config.project.cost.ap, pilgredAp: state.config.pilgred.cost.ap,
       hullRepairAp: state.config.hullRepair.cost.ap, turretAp: state.config.turrets.cost.ap,
       takeoffAp: state.config.patrol.takeoff.cost.ap, landAp: state.config.patrol.land.cost.ap, patrolShotAp: state.config.patrol.shot.cost.ap, showerAp: state.config.shower.cost.ap, lieDownAp: state.config.lieDown.cost.ap,
