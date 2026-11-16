@@ -3,6 +3,7 @@ import { BLUEPRINTS } from "../src/blueprints.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { pickSectors, runExpedition, winChance } from "../src/expeditions.ts";
 import { nextDue } from "../src/queue.ts";
+import { projectStatus } from "../src/projects.ts";
 import { PLANET_TAG_IDS } from "../src/planets.ts";
 import { applyInput } from "../src/replay.ts";
 import { FAST_EXPEDITION_STEP_MS } from "../src/cheats.ts";
@@ -1462,5 +1463,26 @@ describe("expeditions, phase 5: hold extension, patrol-ship landings, no droppin
     // Back aboard, dropping works again.
     const back = runOut(away);
     expect(offered(back, "p1")).toContainEqual(drop);
+  });
+
+  it("ICARUS_LAVATORY keeps Icarus crews clean on return silently, not patrol-ship solo landings", () => {
+    const s = timedGame({ tags: ["FOREST"], config: { dirtyChance: 1 }, events: only({ kind: "nothing", weight: 1 }) });
+    s.projects.ICARUS_LAVATORY = 100;
+    const back = runOut(go(s));
+    for (const id of ["p0", "p1", "p2", "p3"] as const) {
+      expect(player(back, id).statuses).not.toContain("dirty");
+      expect(back.log.some((e) => e.visibleTo !== "all" && e.visibleTo.includes(id) && e.key !== "expeditionReturned" && e.key !== "expeditionTakeoff")).toBe(false);
+    }
+
+    const solo = flying({ tags: ["FOREST"], config: { dirtyChance: 1 }, events: only({ kind: "nothing", weight: 1 }) });
+    solo.projects.ICARUS_LAVATORY = 100;
+    const landed = runOut(must(applyAction(solo, "p0", landOn)));
+    expect(player(landed, "p0").statuses).toContain("dirty");
+  });
+
+  it("marks ICARUS_LARGER_BAY, ICARUS_LAVATORY and AUTO_RETURN_ICARUS as fully implemented", () => {
+    expect(projectStatus("ICARUS_LARGER_BAY")).toBe("full");
+    expect(projectStatus("ICARUS_LAVATORY")).toBe("full");
+    expect(projectStatus("AUTO_RETURN_ICARUS")).toBe("full");
   });
 });

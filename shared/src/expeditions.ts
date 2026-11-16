@@ -244,8 +244,8 @@ function returnExpedition(state: GameState, landed = true): void {
     const p = state.players.find((q) => q.id === id)!;
     if (!ship && p.alive && p.room === craft) {
       board(p, rules.room);
-      // A crew that never left (nobody had a spacesuit) stays clean.
-      if (landed && rollFloat(state) < rules.dirtyChance) soil(state, p);
+      // A crew that never left (nobody had a spacesuit) or a ship with ICARUS_LAVATORY stays clean.
+      if (landed && !projectDone(state, "ICARUS_LAVATORY") && rollFloat(state) < rules.dirtyChance) soil(state, p);
     }
     // A lost member isn't back: they stay on the planet (owner, 2026-11-08).
     if (!(p.alive && isLostPlace(p.room))) logPrivate(state, p.id, "expeditionReturned", { planet: report.planet, report: report.id });

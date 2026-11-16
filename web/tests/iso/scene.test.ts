@@ -299,7 +299,7 @@ describe("roomLooks and ambient animations", () => {
     expect(auxOnly.get("auxiliary_terminal_neron")).toBe("auxiliary_terminal_neron_upgrade_b");
     expect(roomLooks(false, false, false, false, false, false, false, false, false, false, false, true).get("auxiliary_terminal_neron")).toBe("auxiliary_terminal_neron_upgrade_a");
 
-    const upgraded = roomLooks(true, true, true, true, true, true, true, true, true, true, true, true, true, true);
+    const upgraded = roomLooks(true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true);
     expect(upgraded.get("auxiliary_terminal_neron")).toBe("auxiliary_terminal_neron_upgrade_b");
     expect(upgraded.get("bay_window")).toBe("bay_window_upgrade");
     expect(upgraded.get("plasma_shield")).toBe("plasma_shield_upgrade");
@@ -314,6 +314,9 @@ describe("roomLooks and ambient animations", () => {
     expect(upgraded.get("garden")).toBe("garden_upgrade_ab");
     expect(roomLooks(false, false, false, false, false, false, false, false, false, false, false, false, true, false).get("garden")).toBe("garden_upgrade_b");
     expect(roomLooks(false, false, false, false, false, false, false, false, false, false, false, false, false, true).get("garden")).toBe("garden_upgrade_a");
+    expect(upgraded.get("icarus")).toBe("icarus_upgrade_ab");
+    expect(roomLooks(false, false, false, false, false, false, false, false, false, false, false, false, false, false, true, false).get("icarus")).toBe("icarus_upgrade_a");
+    expect(roomLooks(false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, true).get("icarus")).toBe("icarus_upgrade_b");
     expect(upgraded.get("core_pilgred")).toBe("core_pilgred_upgrade");
     expect(upgraded.get("human_tank")).toBe("human_tank_full");
     expect(upgraded.get("server")).toBe("server_active");

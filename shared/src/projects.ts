@@ -137,6 +137,12 @@ export const PROJECT_STATUS: Readonly<Partial<Record<ProjectId, ProjectStatus>>>
   EXTRA_DRONE: "full",
   // On jump or leaving orbit, patrol ships in flight dock cleanly in their bays with their pilots and cargo (owner, 2026-11-12; actions/land.ts).
   MAGNETIC_NET: "full",
+  // On jump or leaving orbit, an expedition away (Icarus or patrol ship on a planet) is recalled safe instead of lost (owner, 2026-11-07, #356; expeditions.ts).
+  AUTO_RETURN_ICARUS: "full",
+  // The Icarus holds 6 crew instead of 4 (owner, 2026-11-09, #359; expeditions.ts).
+  ICARUS_LARGER_BAY: "full",
+  // Returning from an Icarus expedition never makes the crew dirty (owner, 2026-11-15; expeditions.ts).
+  ICARUS_LAVATORY: "full",
   // Each cycle has a 20% chance to prevent all oxygen loss (burn and broken tank leaks), announced globally (owner, 2026-11-15; ship.ts, breakage.ts).
   OXY_MORE: "full",
 };
