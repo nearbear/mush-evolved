@@ -4018,3 +4018,7 @@ Two hidden-information choices made by Claude, not the owner, worth a look: (1) 
 - Added [repairDoor.ts](server/src/bots/goals/repairDoor.ts) and registered it in `SOLO_GOALS` ([index.ts](server/src/bots/goals/index.ts)).
 - Confirmed design knobs with owner before implementing: priority `56` (just above `repairHull` at `55`), preserves `BOT_AP_RESERVE` (`2`), and uses `view.alerts.reports` only without chat claiming.
 - Added unit tests in [goals.test.ts](server/tests/goals.test.ts) covering in-room repair with AP reserve, routing to the nearest reachable side of a reported broken door, and skipping unreachable reported doors.
+
+### 2026-11-15: Hacker kit item, config, and translations
+- Added `HACKER_KIT_ITEM` (`"hacker_kit"`) and its `ITEM_TYPES` entry in `shared/src/items.ts`, `GameConfig.hack` in `shared/src/types/config.ts`, `DEFAULT_CONFIG.hack` and the `CORRIDOR_B` start item in `shared/src/config.ts`, and `items.hacker_kit` in `shared/src/locales/names.{en,fr,es}.json`.
+- Placed `actions.hack` in `web/src/locales/{en,fr,es}.json` instead of `shared/src/locales/names.*.json`, because `shared/src/locales/names.*.json` only holds `rooms`/`equipment`/`items`/`skills` and `web/src/i18n/index.ts` spreads `names` over `ui` (which would have overwritten `ui.actions`).

@@ -79,6 +79,9 @@ export const STEROIDS_MP = 8;
 /** The customized blaster spawned by picking the `infantryman` skill (modifiers/infantryman.ts). */
 export const CUSTOMIZED_BLASTER_ITEM = "customized_blaster";
 
+/** Hacker kit: lets a player attempt to hack equipment/terminals. */
+export const HACKER_KIT_ITEM = "hacker_kit";
+
 /** The drugs (drugs.ts): their effects are drawn per ship, so each is only a consumable here. */
 export const DRUG_ITEMS: readonly string[] = Array.from({ length: 12 }, (_, i) => `drug_${i}`);
 
@@ -169,6 +172,7 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   oscilloscope: { heavy: true, dismantle: { metal: 2, plastic: 0, chance: 0.06 }, canBreak: true, canBeSabotaged: true, repairChance: 0.06 },
   apron: { canBreak: true, canBeSabotaged: true, repairChance: 0.25 },
   protection_gloves: { canBreak: true, canBeSabotaged: true, repairChance: 0.25 },
+  [HACKER_KIT_ITEM]: { canBreak: true, canBeSabotaged: true, repairChance: 0.06, breaksInOverload: true },
   // Owner, 2026-10-21: a skill book (the original's Apprentron) carries its skill in `ItemState.teaches`; destroyed by reading.
   [BOOK_ITEM]: {},
   // Owner, 2026-10-21: Xyloph rewards (comms.ts), dropped on the bridge. No effect yet. Named after their icons.

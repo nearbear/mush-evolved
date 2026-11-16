@@ -1,5 +1,6 @@
 import shipRooms from "@mush2/assets/derived/ship-rooms.json";
 import { ALIEN_FRUIT_ITEMS, BOOK_ITEM, ITRACKIE_ITEM } from "./itemIds.ts";
+import { HACKER_KIT_ITEM } from "./items.ts";
 import { CHEAT_ROOM, cheatRoomEquipment } from "./cheatRoom.ts";
 import { EQUIPMENT_TYPES } from "./equipment.ts";
 import { ICARUS_CRAFT, patrolEquipment, patrolRooms } from "./patrol.ts";
@@ -104,6 +105,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Owner, 2026-10-25 (wiki): hiding an item and searching the room each cost 1 AP.
   hide: { cost: { ap: 1 } },
   search: { cost: { ap: 1 } },
+  hack: { cost: { ap: 2 }, successChance: 0.25, computerFactor: 2 },
   // Owner, 2026-11-01 (eMushpedia "Création du Mycoscan"): checking your spore level on the MycoScan is free, once a day.
   drugDispenser: { cost: { ap: 0 }, resetCycles: [1, 4] },
   checkSpores: { cost: { ap: 0 } },
@@ -622,6 +624,7 @@ export const DEFAULT_CONFIG: GameConfig = {
      { type: "apron", room: "SICK_BAY" },
      { type: "protection_gloves", room: "SICK_BAY" },
     { type: "camera", room: "CORRIDOR_A" },
+    { type: HACKER_KIT_ITEM, room: "CORRIDOR_B" },
     // #411: a support drone starts in the front corridor (drones.ts).
     { type: "support_drone", room: "CORRIDOR_A" },
     // Owner, 2026-10-25: an extinguisher in each of the front and rear corridors, for now (the original's are in storages).
