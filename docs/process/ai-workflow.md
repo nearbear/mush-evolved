@@ -4083,3 +4083,9 @@ Two hidden-information choices made by Claude, not the owner, worth a look: (1) 
 ### 2026-11-15 — XXL bay doors (`BAY_DOOR_XXL`)
 - **Decision (owner):** `BAY_DOOR_XXL` makes patrol ship and Pasiphae takeoff and landing manoeuvres 100% clean for everyone (per eMushpedia, rather than the archived Haxe's ×1.5), and applies to patrol ships and the Pasiphae only (not Icarus expedition `LANDING`).
 - **What worked:** `cleanManoeuvreChance` in `modifiers.ts` was already the single choke point, and `IsoRoom.tsx` / locales already had the visual and text wiring.
+
+### 2026-11-16 — Scrap heap NERON project (`TRASH_LOAD`)
+
+- **Decision (owner):** Implemented the `TRASH_LOAD` (Scrap heap) NERON project to spawn 7 items (`thick_tube`, `plastic_scraps`, a uniform random skill `book`, a uniform random gun `blueprint` from `MISSILE_LAUNCHER` / `SNIPER_RIFFLE` / `MACHINE_GUN` with `SNIPER_RIFFLE` and `MACHINE_GUN` added to `BLUEPRINTS` from `blueprints.json`, `rope`, `bandage`, and one uniform random item from `knife` / `soap` / `tree_pot` / `protection_gloves`) distributed across the 5 storage rooms in a randomly shuffled, repeating order, and updated the `en`/`fr`/`es` project descriptions accordingly.
+- **What worked:** All 10 item types (including `protection_gloves` and `tree_pot`) and `sniper_riffle`/`machine_gun` translations were already present in `items.ts` and `names.*.json`; `projectEffects.ts` handled all completion paths (work, NERON update, NERON participation) in one place.
+- **Needed correction:** None.

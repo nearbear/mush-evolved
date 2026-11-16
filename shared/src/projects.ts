@@ -155,6 +155,8 @@ export const PROJECT_STATUS: Readonly<Partial<Record<ProjectId, ProjectStatus>>>
   THALASSO: "full",
   // Completing it spawns 8 metal scraps on the Engine Room floor (owner, 2026-11-15; projectEffects.ts).
   DISMANTLING: "full",
+  // Completing it spawns one item from each pool across the storage rooms in shuffled order (owner, 2026-11-16; projectEffects.ts).
+  TRASH_LOAD: "full",
 };
 
 export function projectStatus(project: string): ProjectStatus {

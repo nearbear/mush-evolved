@@ -19,6 +19,9 @@ export const BLUEPRINTS: Record<string, Blueprint> = {
   SOFA: { needs: ["metal_scraps", "thick_tube"], makes: { equipment: "SOFA" } },
   // Decided 2026-10-16: the original's first (weighted) recipe. The item has no effect yet.
   MISSILE_LAUNCHER: { needs: ["thick_tube", "metal_scraps", "plastic_scraps"], makes: { item: "missile_launcher" } },
+  // Weapon blueprints (owner, 2026-11-16, blueprints.json): Lizaro Jungle and Old Faithful.
+  SNIPER_RIFFLE: { needs: ["metal_scraps", "metal_scraps", "plastic_scraps"], makes: { item: "sniper_riffle" } },
+  MACHINE_GUN: { needs: ["metal_scraps", "metal_scraps", "metal_scraps", "metal_scraps"], makes: { item: "machine_gun" } },
   // Expedition gear (owner, 2026-11-08, #357): the original's recipes (blueprints.json's weighted list).
   ECHO_SOUNDER: { needs: ["metal_scraps", "plastic_scraps"], makes: { item: "echo_sounder" } },
   HEAT_SEEKER: { needs: ["metal_scraps", "plastic_scraps"], makes: { item: "thermosensor" } },

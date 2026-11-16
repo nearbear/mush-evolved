@@ -540,6 +540,8 @@ export interface GameConfig {
     thalasso: { chance: number; hp: number; morale: number; mp: number };
     // Dismantling (DISMANTLING; owner, 2026-11-15): completing it puts `count` metal scraps on the floor of `room` (the engine room).
     dismantling: { room: RoomId; count: number };
+    // Scrap heap (TRASH_LOAD; owner, 2026-11-16): completing it spawns one item per pool across `rooms` in shuffled order (wrapping).
+    trashLoad: { rooms: readonly RoomId[]; weaponBlueprints: readonly string[]; misc: readonly string[] };
   };
   pilgred: {
     cost: { ap: number }; // AP spent to take part in repairing PILGRED (owner, 2026-10-21; the original's REPAIR_PILGRED, 2).

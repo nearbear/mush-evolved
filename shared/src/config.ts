@@ -1,6 +1,6 @@
 import shipRooms from "@mush2/assets/derived/ship-rooms.json";
 import { ALIEN_FRUIT_ITEMS, BOOK_ITEM, ITRACKIE_ITEM } from "./itemIds.ts";
-import { HACKER_KIT_ITEM } from "./items.ts";
+import { HACKER_KIT_ITEM, TREE_POT_ITEM } from "./items.ts";
 import { CHEAT_ROOM, cheatRoomEquipment } from "./cheatRoom.ts";
 import { EQUIPMENT_TYPES } from "./equipment.ts";
 import { ICARUS_CRAFT, patrolEquipment, patrolRooms } from "./patrol.ts";
@@ -318,6 +318,11 @@ export const DEFAULT_CONFIG: GameConfig = {
     floorHeating: { injuryFactor: 0.5 },
     thalasso: { chance: 0.25, hp: 1, morale: 1, mp: 2 },
     dismantling: { room: "MOTOR_ROOM", count: 8 },
+    trashLoad: {
+      rooms: ["STORAGE_FRONT", "STORAGE_A_0", "STORAGE_A_1", "STORAGE_B_0", "STORAGE_B_1"],
+      weaponBlueprints: ["MISSILE_LAUNCHER", "SNIPER_RIFFLE", "MACHINE_GUN"],
+      misc: ["knife", "soap", TREE_POT_ITEM, "protection_gloves"],
+    },
   },
   // Owner, 2026-10-21: repairing PILGRED uses the original's numbers (DIG_RATE 6, PILGRED_MOD 2, DIG_BOOST 4, -2 per repeat),
   // 2 AP, 25% dirty; the Physicist gains 1 PILGRED point a day and holds 2.

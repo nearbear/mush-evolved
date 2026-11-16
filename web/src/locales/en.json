@@ -1681,7 +1681,7 @@
       "EXTRA_DRONE": "Adds a drone in the Nexus to look after the Daedalus.",
       "FISSION_COFFEE_ROASTER": "The coffee machine also recharges at cycle 5.",
       "TRAIL_REDUCER": "Cuts the number of attackers that follow you after a trip by 50%.",
-      "TRASH_LOAD": "Produces 4 metal scraps and 4 plastic scraps.",
+      "TRASH_LOAD": "Generates a thick tube, plastic scrap, a skill book, a weapon blueprint, a rope, a bandage, and either a knife, soap, a hydropot, or protective gloves across the storage rooms.",
       "CALL_OF_DIRTY": "Makes the Dynarcade available in Alpha Bay 2. Blow off steam at the cost of a few bruises; it restores morale.",
       "BEAT_BOX": "Makes the jukebox available in Alpha Bay 2. Relax by listening to music.",
       "THALASSO": "If you aren't Mush, each shower has three separate 25% chances of giving you +1 health, +1 morale, and +2 movement points.",
