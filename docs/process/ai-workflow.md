@@ -4000,3 +4000,8 @@ Two hidden-information choices made by Claude, not the owner, worth a look: (1) 
 - Extended `RepairTarget`, `droneRepairTarget`, and `repair` in `shared/src/drones.ts` so support drones repair broken doors in their room (after broken equipment, before floor items) at `config.repair.chance.DOOR` (0.25) and log `droneRepairedDoor` / `droneRepairFailedDoor` publicly with `doorOtherRoom`.
 - Added `log.droneRepairedDoor` and `log.droneRepairFailedDoor` in `en`, `fr`, and `es` locales.
 - Added drone door repair and Sensor pathfinding tests in `shared/tests/drones.test.ts`, and updated `shared/tests/doors.test.ts` ("go around a broken door to their target") to use a Sensor+Firefighter drone routing around a broken door toward a fire since drones now repair broken doors in their own room.
+
+## 2026-11-15: merchants wrap-up, leak-check catch (#143)
+
+- Leak-check (run at wrap-up, after the commit) found that trading away an inactive Mush revealed the role: `killPlayer` with cause `traded` skipped the corpse and announcements, but `hasMushDied` still filled the public human tank. The commit message had claimed the trade revealed nothing. The owner decided the tank fills anyway (the reveal is accepted), so only comments and docs changed. Lesson: leak-check should run before committing, not after; the "no corpse, no announcement" reasoning missed a derived public signal.
+- Leak-check also added never-visible markers for `merchantRng` and `merchants.nextId` to `leaks.test.ts`, which the leak-fields list claimed covered them but didn't.

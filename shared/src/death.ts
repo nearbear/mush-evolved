@@ -39,7 +39,8 @@ export const DEATH_CAUSES = [
   "exploration_lost",
   "daedalus_destroyed",
   // Traded away to a merchant ship (merchants.ts, #143): no corpse, and no room line or NERON announcement for now
-  // (whether it is announced like a death is still open, docs/plans/merchants.md), so the trade never reveals the role.
+  // (whether it is announced like a death is still open, docs/plans/merchants.md). A traded Mush still counts as a dead
+  // Mush and fills the Sick Bay's human tank (`hasMushDied`), so the trade can reveal the role (owner, 2026-11-15).
   "traded",
 ] as const;
 export type DeathCause = (typeof DEATH_CAUSES)[number];
