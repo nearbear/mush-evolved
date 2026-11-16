@@ -1146,6 +1146,8 @@
     "droneRepairFailed": "{{drone}} a tenté de réparer l'équipement « {{equipment}} », sans succès.",
     "droneRepairedItem": "{{drone}} a réparé l'objet : {{item}}.",
     "droneRepairFailedItem": "{{drone}} a tenté de réparer l'objet : {{item}}, sans succès.",
+    "droneRepairedDoor": "{{drone}} a réparé la porte vers {{room}}.",
+    "droneRepairFailedDoor": "{{drone}} a tenté de réparer la porte vers {{room}}, sans succès.",
     "droneLeft": "{{drone}} est parti vers : {{room}}.",
     "droneEntered": "{{drone}} est arrivé de : {{room}}.",
     "droneExtinguished": "{{drone}} a éteint l'incendie !",

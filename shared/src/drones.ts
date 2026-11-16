@@ -17,10 +17,10 @@ import { logPublic } from "./log.ts";
 import { newDrone } from "./droneIdentity.ts";
 import type { Npc } from "./npcs.ts";
 import { shortestPath } from "./paths.ts";
-import { isDoorBroken, openDoors } from "./doors.ts";
+import { doorOtherRoom, doorsOf, isDoorBroken, openDoors, repairDoor } from "./doors.ts";
 import { offShip } from "./patrol.ts";
 import { rollFloat, rollInt } from "./rng.ts";
-import type { DroneState, Equipment, GameState, ItemState, LogParams, RoomId } from "./types.ts";
+import type { DoorId, DroneState, Equipment, GameState, ItemState, LogParams, RoomId } from "./types.ts";
 
 export { DRONE_MAX_SERIAL, DRONE_NAMES, newDrone } from "./droneIdentity.ts";
 
@@ -47,15 +47,18 @@ export function droneChance(state: Readonly<GameState>, base: number, failures: 
   return Math.min(maxChance, base * failureMultiplier ** failures);
 }
 
-type RepairTarget = { equipment: Equipment; chance: number } | { item: ItemState; chance: number };
+type RepairTarget = { equipment: Equipment; chance: number } | { door: DoorId; chance: number } | { item: ItemState; chance: number };
 
 /**
- * What a drone in `room` would repair: the room's first broken repairable equipment, in the room's order, else the
- * first broken repairable item on its floor, in creation order, never one someone hid (owner, 2026-11-11).
+ * What a drone in `room` would repair: the room's first broken repairable equipment, in the room's order, else its
+ * first broken door, else the first broken repairable item on its floor, in creation order, never one someone hid
+ * (owner, 2026-11-11).
  */
 export function droneRepairTarget(state: Readonly<GameState>, room: RoomId): RepairTarget | undefined {
   const equipment = (state.equipment[room] ?? []).find((e) => e.broken && isBreakable(state, e.type));
   if (equipment) return { equipment, chance: state.config.repair.chance[equipment.type]! };
+  const door = doorsOf(state, room).find((d) => d.broken);
+  if (door) return { door: door.id, chance: state.config.repair.chance.DOOR! };
   const item = itemsIn(state, { kind: "room", id: room }).find((i) => i.broken && i.hiddenBy === undefined && ITEM_TYPES[i.type]?.repairChance !== undefined);
   return item && { item, chance: ITEM_TYPES[item.type]!.repairChance! };
 }
@@ -67,6 +70,14 @@ function repair(state: GameState, drone: DroneState, room: RoomId): boolean {
   const success = rollFloat(state) < droneChance(state, target.chance, drone.failures.repair);
   // Owner, 2026-11-11: a success resets the count, as for the crew (eMush keeps it).
   drone.failures.repair = success ? 0 : drone.failures.repair + 1;
+  if ("door" in target) {
+    if (success) repairDoor(state, target.door);
+    logPublic(state, room, success ? "droneRepairedDoor" : "droneRepairFailedDoor", {
+      ...droneParams(drone),
+      room: doorOtherRoom(target.door, room)!,
+    });
+    return true;
+  }
   const what: LogParams = "equipment" in target ? { equipment: target.equipment.type } : { item: target.item.type };
   const key = "equipment" in target ? (success ? "droneRepaired" : "droneRepairFailed") : success ? "droneRepairedItem" : "droneRepairFailedItem";
   // A repaired turret gets its charges back on its own (hunters.ts reads `broken`), as with Repair.

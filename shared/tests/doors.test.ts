@@ -7,6 +7,7 @@ import { actionTarget, endsAccommodation } from "../src/actionTarget.ts";
 import { CHEAT_ROOM } from "../src/cheatRoom.ts";
 import { DEFAULT_CONFIG, resolveConfig } from "../src/config.ts";
 import { allDoors, breakDoor, doorId, doorRooms, doorsOf, isDoor, isDoorBroken, repairDoor } from "../src/doors.ts";
+import { startFire } from "../src/fire.ts";
 import { SUPPORT_DRONE_ITEM } from "../src/items.ts";
 import { normalizeGame, overridesOf } from "../src/normalizeState.ts";
 import { shortestPath } from "../src/paths.ts";
@@ -173,10 +174,10 @@ describe("Sensor drones and broken doors", () => {
 
   it("go around a broken door to their target", () => {
     const s = calm();
-    s.equipment.LABORATORY![0]!.broken = true;
-    breakDoor(s, LAB_DOOR);
-    const drone = addDrone(s, "CORRIDOR_A", ["sensor"]);
-    expect(roomOf(nextCycle(s), drone.id)).toBe("SICK_BAY");
+    startFire(s, "CORRIDOR_C");
+    breakDoor(s, doorId("SPACESHIP_BAY_A", "CORRIDOR_C"));
+    const drone = addDrone(s, "CORRIDOR_B", ["sensor", "firefighter"]);
+    expect(roomOf(nextCycle(s), drone.id)).toBe("SPACESHIP_BAY_B");
   });
 
   it("never wander through one", () => {

@@ -3995,3 +3995,8 @@ Two hidden-information choices made by Claude, not the owner, worth a look: (1) 
 - Added a Merchants tab to the Com center terminal (`web/src/hud/Merchants.tsx`): each ship in orbit with its kind, departure, hail (adapted from the original's French `trade_events` text into en/fr/es) and deals. A deal with a `close_deal` option gets a double-press button; any other is a greyed button whose popover gives the rules' `blocked` reason, or "Comms Officer only". `view.config.merchantDealAp` carries the price for the greyed buttons.
 - Four tabs overflow 360px in French and Spanish, so the Com center's tab list lets its labels wrap and share the line (`.comms-tab-list`). Not yet checked in a screenshot.
 - What needed care: matching existing catalog terms (fr "affaire", es "trato", "nave mercante") rather than inventing new ones.
+
+### 2026-11-15 — Support drone door repairs (Slice 6 of #330)
+- Extended `RepairTarget`, `droneRepairTarget`, and `repair` in `shared/src/drones.ts` so support drones repair broken doors in their room (after broken equipment, before floor items) at `config.repair.chance.DOOR` (0.25) and log `droneRepairedDoor` / `droneRepairFailedDoor` publicly with `doorOtherRoom`.
+- Added `log.droneRepairedDoor` and `log.droneRepairFailedDoor` in `en`, `fr`, and `es` locales.
+- Added drone door repair and Sensor pathfinding tests in `shared/tests/drones.test.ts`, and updated `shared/tests/doors.test.ts` ("go around a broken door to their target") to use a Sensor+Firefighter drone routing around a broken door toward a fire since drones now repair broken doors in their own room.
