@@ -4056,3 +4056,8 @@ Two hidden-information choices made by Claude, not the owner, worth a look: (1) 
 ### 2026-11-15 — Floor heating project (`FLOOR_HEATING`)
 - **Decision (owner):** Implement the `FLOOR_HEATING` NERON project with a 50% reduction in action injury chance (`config.project.floorHeating.injuryFactor = 0.5`, instead of the original 25%).
 - **Implementation:** Added `floorHeating: { injuryFactor: 0.5 }` to `GameConfig` / `DEFAULT_CONFIG`, applied it in `actionInjuryRate` (`shared/src/modifiers.ts`), marked `FLOOR_HEATING: "full"` in `PROJECT_STATUS` (`shared/src/projects.ts`), updated the en/fr/es project descriptions in `web/src/locales/`, and added unit tests in `shared/tests/floorHeating.test.ts`.
+
+### 2026-11-15: Thalasso NERON project (`THALASSO`)
+
+- **Decision (owner):** Implement `THALASSO` directly on `SHOWER` (keeping `SHOWER` equipment unchanged) for living non-Mush players, rolling three independent 25% chances (`config.project.thalasso`) for +1 HP, +1 morale, and +2 MP (each capped at max), with private log lines (`thalassoHp`, `gainMorale`, `thalassoMp`) and updated en/fr/es project descriptions.
+- **What worked:** Clarifying equipment replacement vs. project check, stat caps, and private logging upfront kept `ShowerAction.apply` small and clean; testing 0/1/2/3 simultaneous boons and `skin_inflammation_disease` death edge case verified the independent-roll behavior.

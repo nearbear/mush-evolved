@@ -8,6 +8,7 @@ The record of answered rule decisions and the design for the rules that are not 
 
 ## Decisions received
 
+- **Thalasso (`THALASSO`)** (2026-11-15, owner): once complete, showering on `SHOWER` as a living non-Mush player rolls three independent 25% chances (`config.project.thalasso`) for +1 HP, +1 morale, and +2 MP, each capped at `maxHp`/`maxMorale`/`maxMp`, with private log lines (`thalassoHp`, `gainMorale`, `thalassoMp`). `SHOWER` equipment stays unchanged; en/fr/es project descriptions updated for independent rolls.
 - **Floor heating (`FLOOR_HEATING`)** (2026-11-15, owner): once complete, multiplies every action's random injury chance by `config.project.floorHeating.injuryFactor` (`0.5`, a 50% reduction instead of the original's 25%) for everyone on the crew (human and Mush), stacking multiplicatively with `expert` (`actionInjuryRate` in `modifiers.ts`). en/fr/es project descriptions updated from 25% to 50%.
 
 - **Sinus Storm, Migraine, Slight Nausea, Food Poisoning** (2026-11-15, owner): effects and durations as listed in `implemented-rules.md`. Sinus Storm's "30% less accuracy when piloting" is a patrol ship's shot ×0.7; Migraine's "-2% when relaying" is −2 on each relay contribution's base (research, NERON projects, PILGRED); Food Poisoning's "unable to eat" blocks food and drugs; none of the four joins the alien-fruit disease pool.

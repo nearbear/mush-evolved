@@ -536,6 +536,8 @@ export interface GameConfig {
     oxyMore: { saveChance: number };
     // Floor heating (FLOOR_HEATING; 2026-11-15): multiplies every action's injury chance by `injuryFactor` (0.5, a 50% reduction).
     floorHeating: { injuryFactor: number };
+    // Thalasso (THALASSO; 2026-11-15): for non-Mush players, each shower rolls independently at `chance` (25%) for +`hp` health, +`morale` morale, and +`mp` MP (each capped at max).
+    thalasso: { chance: number; hp: number; morale: number; mp: number };
   };
   pilgred: {
     cost: { ap: number }; // AP spent to take part in repairing PILGRED (owner, 2026-10-21; the original's REPAIR_PILGRED, 2).

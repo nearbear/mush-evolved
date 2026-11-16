@@ -1,9 +1,12 @@
 import { Action, type ActionVisibility, isString } from "./action.ts";
-import { damage } from "../death.ts";
+import { changeMP, gainMorale } from "../adjustStats.ts";
+import { damage, heal } from "../death.ts";
 import { EQUIPMENT_TYPES } from "../equipment.ts";
 import { itemsIn, isWorking } from "../items.ts";
 import { logPrivate } from "../log.ts";
 import { showered } from "../modifiers.ts";
+import { projectDone } from "../projects.ts";
+import { rollFloat } from "../rng.ts";
 import { hasSkill } from "../skills.ts";
 import { removeStatus } from "../statuses.ts";
 import type { GameState, PlayerState } from "../types.ts";
@@ -40,7 +43,24 @@ export class ShowerAction extends Action<ShowerActionData> {
     const burns = player.role === "mush" && !hasSkill(player, "water_resistant");
     logPrivate(state, player.id, burns ? "showeredMush" : "showered");
     showered(state, player);
-    if (burns) damage(state, player, state.config.shower.effect.mushDamage, "injury");
+    if (burns) {
+      damage(state, player, state.config.shower.effect.mushDamage, "injury");
+      return;
+    }
+    if (player.alive && player.role !== "mush" && projectDone(state, "THALASSO")) {
+      const { chance, hp, morale, mp } = state.config.project.thalasso;
+      if (rollFloat(state) < chance) {
+        heal(state, player, hp);
+        logPrivate(state, player.id, "thalassoHp", { amount: hp });
+      }
+      if (rollFloat(state) < chance) {
+        gainMorale(state, player, morale);
+      }
+      if (rollFloat(state) < chance) {
+        changeMP(state, player, mp);
+        logPrivate(state, player.id, "thalassoMp", { amount: mp });
+      }
+    }
   }
 
   showerCost(state: Readonly<GameState>, player: Readonly<PlayerState>): number {

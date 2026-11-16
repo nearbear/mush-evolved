@@ -147,6 +147,8 @@ export const PROJECT_STATUS: Readonly<Partial<Record<ProjectId, ProjectStatus>>>
   OXY_MORE: "full",
   // Halves the random injury chance on every action (50% reduction) (owner, 2026-11-15; modifiers.ts `actionInjuryRate`).
   FLOOR_HEATING: "full",
+  // Non-Mush showers roll independently (25% each) for +1 HP, +1 morale, and +2 MP, each capped at max (owner, 2026-11-15; actions/shower.ts).
+  THALASSO: "full",
 };
 
 export function projectStatus(project: string): ProjectStatus {
