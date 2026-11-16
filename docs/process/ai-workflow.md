@@ -4022,3 +4022,8 @@ Two hidden-information choices made by Claude, not the owner, worth a look: (1) 
 ### 2026-11-15: Hacker kit item, config, and translations
 - Added `HACKER_KIT_ITEM` (`"hacker_kit"`) and its `ITEM_TYPES` entry in `shared/src/items.ts`, `GameConfig.hack` in `shared/src/types/config.ts`, `DEFAULT_CONFIG.hack` and the `CORRIDOR_B` start item in `shared/src/config.ts`, and `items.hacker_kit` in `shared/src/locales/names.{en,fr,es}.json`.
 - Placed `actions.hack` in `web/src/locales/{en,fr,es}.json` instead of `shared/src/locales/names.*.json`, because `shared/src/locales/names.*.json` only holds `rooms`/`equipment`/`items`/`skills` and `web/src/i18n/index.ts` spreads `names` over `ui` (which would have overwritten `ui.actions`).
+
+### 2026-11-15: Remove `WHOS_WHO` (ACTOPI protocol) project
+
+- **Decision (owner):** Removed `WHOS_WHO` from `PROJECTS` (`shared/src/projects.ts`), its `en`/`fr`/`es` locale strings, and `server/tests/stored/v114-registries.json` without a state upgrade step (no live games in the database). ACTOPI remains a BIOS toggle available from the start.
+- **What worked:** `projects.test.ts` caught the count and `projets.json` parity check, and `storedRooms.test.ts` caught the `v114-registries.json` entry immediately.

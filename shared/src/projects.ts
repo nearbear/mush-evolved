@@ -44,7 +44,6 @@ export const PROJECTS = [
   { id: "FISSION_COFFEE_ROASTER", skills: ["caffeinomaniac", "physicist"] },
   { id: "TRAIL_REDUCER", skills: ["pilot", "engineer"] },
   { id: "TRASH_LOAD", skills: [] },
-  { id: "WHOS_WHO", skills: [] },
   { id: "CALL_OF_DIRTY", skills: [] },
   { id: "BEAT_BOX", skills: [] },
   { id: "THALASSO", skills: [] },

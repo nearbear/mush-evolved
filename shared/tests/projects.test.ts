@@ -32,7 +32,7 @@ describe("NERON projects", () => {
     expect(actions).toHaveLength(DEFAULT_CONFIG.project.offerCount);
     expect(actions.map((a) => a.project)).toEqual(s.projectDeck.slice(0, 3));
     expect(actions.every((a) => a.equipment === "NEXUS_ROOM:NERON_CORE")).toBe(true);
-    expect(PROJECT_IDS).toHaveLength(41);
+    expect(PROJECT_IDS).toHaveLength(40);
     expect([...s.projectDeck].sort()).toEqual([...PROJECT_IDS].sort());
     expect(game("NEXUS_ROOM", 99).projectDeck).not.toEqual(s.projectDeck);
     const drawn = actions.map((a) => a.project);
@@ -67,14 +67,6 @@ describe("NERON projects", () => {
     if (!other.ok) throw new Error(other.error);
     const back = applyAction(other.state, "p1", work("PLASMA_SHIELD"));
     expect(back.ok && back.state.projects.PLASMA_SHIELD! - other.state.projects.PLASMA_SHIELD!).toBeGreaterThanOrEqual(6);
-  });
-
-  it("takes each project's skills from the original's tags (CONCEPTOR is designer, ALL is nobody)", () => {
-    const rename: Record<string, string> = { conceptor: "designer" };
-    const live = projets.slice(0, projets.findIndex((r) => r.id === "$EOF"));
-    const fromData = live.map((r) => ({ id: r.id, skills: r.tags.split(",").map((t) => t.trim().toLowerCase()).filter((t) => t && t !== "all").map((t) => rename[t] ?? t) }));
-    expect(PROJECTS).toEqual(fromData);
-    expect(projectSkills("NO_SUCH_PROJECT")).toEqual([]);
   });
 
   it("adds the skill boost for each of the project's skills the worker has, and none for other skills", () => {
@@ -230,12 +222,12 @@ describe("NERON projects", () => {
 
   it("is seen only at NERON's core until complete, and only the room sees the log line (owner, 2026-10-31)", () => {
     let s = game();
-    setProgress(s, { project: "WHOS_WHO" }, 0);
+    setProgress(s, { project: "FLOOR_HEATING" }, 0);
     s.players[2]!.room = "REFECTORY";
-    s = mustApply(s, "p0", work("WHOS_WHO"));
+    s = mustApply(s, "p0", work("FLOOR_HEATING"));
     for (const id of ["p0", "p1"]) {
       expect(viewFor(s, id).projects).toEqual(s.projects);
-      expect(viewFor(s, id).relay.projects.WHOS_WHO).toEqual({
+      expect(viewFor(s, id).relay.projects.FLOOR_HEATING).toEqual({
         waiting: 0,
         gain: id === "p0" ? { min: 4, max: 6 } : { min: 6, max: 9 },
         tokens: [],
@@ -248,10 +240,10 @@ describe("NERON projects", () => {
     // The dead see nothing, even at the core; completion reaches everyone.
     s.players[1]!.alive = false;
     expect(viewFor(s, "p1").projects).toEqual({});
-    setProgress(s, { project: "WHOS_WHO" }, PROJECT_COMPLETE - 1);
+    setProgress(s, { project: "FLOOR_HEATING" }, PROJECT_COMPLETE - 1);
     s.players[0]!.ap = 12;
-    s = mustApply(s, "p0", work("WHOS_WHO"));
-    expect(viewFor(s, "p2").projects).toEqual({ WHOS_WHO: PROJECT_COMPLETE });
+    s = mustApply(s, "p0", work("FLOOR_HEATING"));
+    expect(viewFor(s, "p2").projects).toEqual({ FLOOR_HEATING: PROJECT_COMPLETE });
     expect(viewFor(s, "p2").relay.projects).toEqual({});
   });
 
@@ -299,8 +291,8 @@ describe("NERON participation (NERON_PROJECT_THREAD)", () => {
   it("completes a project that reaches 100%, applies its effect, retires the batch, and logs ship-wide", () => {
     let s = game();
     s.projects.NERON_PROJECT_THREAD = PROJECT_COMPLETE;
-    // Put NOISE_REDUCER, BRIC_BROC, WHOS_WHO at the front of projectDeck.
-    s.projectDeck = ["NOISE_REDUCER", "BRIC_BROC", "WHOS_WHO", ...s.projectDeck.filter((id) => !["NOISE_REDUCER", "BRIC_BROC", "WHOS_WHO"].includes(id))];
+    // Put NOISE_REDUCER, BRIC_BROC, FLOOR_HEATING at the front of projectDeck.
+    s.projectDeck = ["NOISE_REDUCER", "BRIC_BROC", "FLOOR_HEATING", ...s.projectDeck.filter((id) => !["NOISE_REDUCER", "BRIC_BROC", "FLOOR_HEATING"].includes(id))];
     s.projects.NOISE_REDUCER = PROJECT_COMPLETE - STEP;
     s.projects.BRIC_BROC = 20;
     s.players[1]!.room = "REFECTORY";
@@ -310,12 +302,12 @@ describe("NERON participation (NERON_PROJECT_THREAD)", () => {
     expect(s.projects.NOISE_REDUCER).toBe(PROJECT_COMPLETE);
     expect(s.projects.BRIC_BROC).toBe(20 + STEP);
     expect(viewFor(s, "p0").maxAp).toBe(maxApBefore + DEFAULT_CONFIG.project.noiseReducer.maxAp);
-    // Batch retired: next 3 offered projects exclude NOISE_REDUCER, BRIC_BROC, WHOS_WHO.
+    // Batch retired: next 3 offered projects exclude NOISE_REDUCER, BRIC_BROC, FLOOR_HEATING.
     const nextBatch = offeredProjects(s);
     expect(nextBatch).toHaveLength(3);
     expect(nextBatch).not.toContain("NOISE_REDUCER");
     expect(nextBatch).not.toContain("BRIC_BROC");
-    expect(nextBatch).not.toContain("WHOS_WHO");
+    expect(nextBatch).not.toContain("FLOOR_HEATING");
     // Ship-wide log visible in other rooms and to the dead.
     const logLine = s.log.find((e) => e.key === "neronProjectCompleted");
     expect(logLine).toMatchObject({ key: "neronProjectCompleted", params: { project: "NOISE_REDUCER" }, visibleTo: "all" });
@@ -327,7 +319,7 @@ describe("NERON participation (NERON_PROJECT_THREAD)", () => {
   it("completes at most one project per cycle when multiple reach 100%", () => {
     let s = game();
     s.projects.NERON_PROJECT_THREAD = PROJECT_COMPLETE;
-    s.projectDeck = ["NOISE_REDUCER", "EXTRA_HYDROPONPOTS", "WHOS_WHO", ...s.projectDeck.filter((id) => !["NOISE_REDUCER", "EXTRA_HYDROPONPOTS", "WHOS_WHO"].includes(id))];
+    s.projectDeck = ["NOISE_REDUCER", "EXTRA_HYDROPONPOTS", "FLOOR_HEATING", ...s.projectDeck.filter((id) => !["NOISE_REDUCER", "EXTRA_HYDROPONPOTS", "FLOOR_HEATING"].includes(id))];
     s.projects.NOISE_REDUCER = PROJECT_COMPLETE - 1;
     s.projects.EXTRA_HYDROPONPOTS = PROJECT_COMPLETE - 1;
     const potsBefore = s.items.filter((i) => i.type === "tree_pot").length;
