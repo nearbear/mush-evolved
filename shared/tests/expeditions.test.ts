@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { BLUEPRINTS } from "../src/blueprints.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
+import { addDisease } from "../src/diseases.ts";
 import { pickSectors, runExpedition, winChance } from "../src/expeditions.ts";
 import { nextDue } from "../src/queue.ts";
 import { projectStatus } from "../src/projects.ts";
@@ -69,12 +70,18 @@ const floor = (s: GameState, type: string) => s.items.filter((i) => i.type === t
 const harvested = (s: GameState, room = ICARUS) => s.items.filter((i) => expedition.loot.harvest.includes(i.type) && i.at.kind === "room" && i.at.id === room).length;
 
 describe("expeditions, phase 1 (instant, as in single player)", () => {
-  it("is offered to a Pilot at the Icarus in orbit of a planet with an unexplored sector, and to no one else", () => {
+  it("is offered to anyone (unless grounded) at the Icarus in orbit of a planet with an unexplored sector", () => {
     const s = game();
-    expect(offered(s, "p0")).toContainEqual(takeoff);
-    expect(option(s, "p0", takeoff)?.cost.ap).toBe(expedition.cost.ap);
-    expect(offered(s, "p1")).not.toContainEqual(takeoff);
-    expect(applyAction(s, "p1", takeoff).ok).toBe(false);
+    for (const id of ["p0", "p1"]) {
+      expect(offered(s, id)).toContainEqual(takeoff);
+      expect(option(s, id, takeoff)?.cost.ap).toBe(expedition.cost.ap);
+    }
+    const grounded = structuredClone(s);
+    const p1 = player(grounded, "p1");
+    if (p1.role === "mush") p1.role = "human";
+    addDisease(grounded, p1, "gastroenteritis_disease");
+    expect(offered(grounded, "p1")).not.toContainEqual(takeoff);
+    expect(applyAction(grounded, "p1", takeoff).ok).toBe(false);
 
     const away = structuredClone(s);
     player(away, "p0").room = "LABORATORY";
@@ -97,6 +104,7 @@ describe("expeditions, phase 1 (instant, as in single player)", () => {
 
   it("an illegal takeoff leaves the state unchanged", () => {
     const s = game();
+    s.navigation.orbit = null;
     const before = JSON.stringify(s);
     expect(applyAction(s, "p1", takeoff).ok).toBe(false);
     expect(JSON.stringify(s)).toBe(before);
@@ -386,12 +394,20 @@ describe("expeditions, phases 3 and 4, slice A: events and fights", () => {
     expect([expedition.survivalProvision, expedition.mushTrapChance, expedition.loot.artifacts.length]).toEqual([1, 0.5, 9]);
   });
 
-  it("a living Pilot or the Antigrav propeller makes the landing Nothing", () => {
+  it("an ungrounded living Pilot or the Antigrav propeller makes the landing Nothing", () => {
     const crash = only({ kind: "nothing", weight: 1 }, { kind: "catastrophe", weight: 1 });
     expect(event(go(game({ tags: ["FOREST"], events: crash })), 0).kind).toBe("nothing");
+    const groundedPilot = game({ tags: ["FOREST"], events: crash });
+    const p0 = player(groundedPilot, "p0");
+    if (p0.role === "mush") p0.role = "human";
+    addDisease(groundedPilot, p0, "gastroenteritis_disease");
+    expect(runExpedition(structuredClone(groundedPilot), player(groundedPilot, "p1")).events[0]!.kind).toBe("catastrophe");
     const noPilot = game({ tags: ["FOREST"], events: crash });
     player(noPilot, "p0").skills = [];
     expect(runExpedition(structuredClone(noPilot), player(noPilot, "p0")).events[0]!.kind).toBe("catastrophe");
+    const xxlOnly = structuredClone(noPilot);
+    xxlOnly.projects.BAY_DOOR_XXL = 100;
+    expect(runExpedition(xxlOnly, player(xxlOnly, "p0")).events[0]!.kind).toBe("catastrophe");
     noPilot.projects.ICARUS_ANTIGRAV_PROPELLER = 100;
     const s = structuredClone(noPilot);
     expect(runExpedition(s, player(s, "p0")).events[0]!.kind).toBe("nothing");
@@ -1354,6 +1370,15 @@ describe("expeditions, phase 5: hold extension, patrol-ship landings, no droppin
     expect(harvested(t, LONGANE.bay)).toBeGreaterThan(0);
     expect(inShip(t)).toEqual([]);
     expect(viewFor(t, "p0").log.some((e) => e.key === "expeditionReturned")).toBe(true);
+  });
+
+  it("a non-pilot landing a patrol ship still rolls LANDING even with Antigrav propeller", () => {
+    const crash = only({ kind: "nothing", weight: 1 }, { kind: "catastrophe", weight: 1 });
+    const s = flying({ tags: ["FOREST"], events: crash });
+    player(s, "p0").skills = [];
+    s.projects.ICARUS_ANTIGRAV_PROPELLER = 100;
+    const next = runOut(must(applyAction(s, "p0", landOn)));
+    expect(next.expeditions[0]!.events[0]!.kind).toBe("catastrophe");
   });
 
   it("without a spacesuit the pilot never sets down: the ship docks in its bay and the pilot is told why", () => {

@@ -810,7 +810,7 @@ function equipmentView(state: GameState, { id, type, broken, jelly, shield }: Eq
   // so Renovate being offered tells nothing new (owner, 2026-10-28).
   const ship = type === PATROL_INTERFACE ? PATROL_SHIPS.find((s) => interfaceId(s) === id) : undefined;
   const shipState = ship && state.patrolShips[ship.id];
-  const docked = shipState && !shipState.out && { armor: shipState.armor, maxArmor: state.config.patrol.armor[ship.kind] };
+  const docked = shipState && !shipState.out && !shipState.destroyed && { armor: shipState.armor, maxArmor: state.config.patrol.armor[ship.kind] };
   // The Icarus is missing from its bay while away or once lost (owner, 2026-11-07); both are public anyway.
   const out = shipState?.out || (type === ICARUS_EQUIPMENT && ((state.expedition !== null && state.expedition.ship === null) || state.icarusLost));
   return { id, type, ...(broken && { broken }), ...(jelly !== undefined && viewer.role === "mush" && viewer.alive && { jelly }), ...(shield !== undefined && seesShield(viewer) && { shield }), ...(out && { out: true as const }), ...(shipState?.destroyed && { destroyed: true as const }), ...docked };

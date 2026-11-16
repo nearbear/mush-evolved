@@ -733,6 +733,6 @@ export function enterRoom(state: GameState, player: PlayerState, registry: Modif
   }
 }
 
-/** Chance a patrol ship's takeoff or landing is clean (patrol.ts): the configured chance folded through the pilot's modifiers. */
+/** Chance a patrol ship's takeoff or landing is clean (patrol.ts): 1 once XXL bay doors is complete, else the configured chance folded through the pilot's modifiers. */
 export const cleanManoeuvreChance = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
-  fold("cleanManoeuvreChance", state.config.patrol.cleanChance, state, player, registry);
+  projectDone(state, "BAY_DOOR_XXL") ? 1 : fold("cleanManoeuvreChance", state.config.patrol.cleanChance, state, player, registry);

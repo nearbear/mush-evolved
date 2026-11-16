@@ -4071,3 +4071,15 @@ Two hidden-information choices made by Claude, not the owner, worth a look: (1) 
 ### 2026-11-15 — `spawnInRoom` helper refactor
 
 - **Refactor:** Added `spawnInRoom(state, room, type, count = 1, extra?)` to `shared/src/items.ts` (applying `startCharges` and optional per-item `extra` object or factory) and replaced the repeated `for (...) state.items.push({ id: newItemId(state), ... })` room-spawning loops across `projectEffects.ts`, `merchants.ts`, `expeditions.ts`, `mycoalarm.ts`, `actions/research.ts`, `actions/dismantle.ts`, `drugs.ts`, `botany.ts`, `death.ts`, and `comms.ts`.
+
+### 2026-11-15 — Non-pilot flight (patrol ships, Pasiphae, Icarus)
+- **Decision (owner):** Non-pilots can fly patrol ships, the Pasiphae, and the Icarus before the pilot lock is built. Rough manoeuvres that drop a ship's armor to 0 destroy it (`destroyPatrolShip`: pilot dies on takeoff, spared in the bay on landing). A grounded Pilot (Gastroenteritis or Slight Nausea) does not make an Icarus landing safe, and `ICARUS_ANTIGRAV_PROPELLER` applies to the Icarus only (not patrol-ship planet landings).
+- **What worked:** `canFly`, `manoeuvre`, and `canLaunchExpedition` were already factored cleanly. Catching `expeditionStep`'s `canFly(p)` check (which had meant "ungrounded Pilot" and would have made every non-pilot safe on Icarus landing) and `dockedHere`/`equipmentView` needing `!shipState.destroyed` for ships destroyed on landing avoided subtle bugs.
+
+### 2026-11-15 — Smoke on front-edge (bottom-left / bottom-right) broken doors
+- **Bug:** `describeScene` in `web/src/iso/scene.ts` only emitted `smoke` entries for broken doors in `s.room === room`. Because `placement.ts` omits `DOOR_BL` / `DOOR_BR` when the neighbour room is drawn and renders the neighbour's door (`s.room !== room && s.door?.target === room`) instead, broken doors on the bottom-left and bottom-right edges of a room never emitted smoke.
+- **Fix:** Added `if (s.door?.target === room && brokenDoors?.has(n)) addSmoke(s, s.slice);` in the `s.room !== room` branch of `describeScene` and covered it with a unit test in `web/tests/iso/scene.test.ts`.
+
+### 2026-11-15 — XXL bay doors (`BAY_DOOR_XXL`)
+- **Decision (owner):** `BAY_DOOR_XXL` makes patrol ship and Pasiphae takeoff and landing manoeuvres 100% clean for everyone (per eMushpedia, rather than the archived Haxe's ×1.5), and applies to patrol ships and the Pasiphae only (not Icarus expedition `LANDING`).
+- **What worked:** `cleanManoeuvreChance` in `modifiers.ts` was already the single choke point, and `IsoRoom.tsx` / locales already had the visual and text wiring.

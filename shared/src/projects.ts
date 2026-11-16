@@ -87,6 +87,8 @@ export const PROJECT_STATUS: Readonly<Partial<Record<ProjectId, ProjectStatus>>>
   ARMOUR_CORRIDOR: "full",
   // Patrol ship, Pasiphae, and Icarus takeoff cost 1 AP less (owner, 2026-11-14; modifiers.ts `actionCost`).
   PATROL_SHIP_LAUNCHER: "full",
+  // Patrol ship and Pasiphae takeoff and landing manoeuvres are always clean (owner, 2026-11-15; modifiers.ts `cleanManoeuvreChance`).
+  BAY_DOOR_XXL: "full",
   // Patrol ships hold +6 max charges (10 -> 16) and gain +6 current charges on completion (owner, 2026-11-14; patrol.ts, projectEffects.ts).
   PATROLSHIP_EXTRA_AMMO: "full",
   // Every patrol ship hit does +1 damage, stacking with Cygni (owner, 2026-11-14; patrol.ts, patrol_attack.ts).

@@ -51,8 +51,8 @@ import type { CreatureLoot, ExpeditionEvent, ExpeditionEventRule, ExpeditionRepo
 export const LANDING = "LANDING";
 
 /**
- * Who may launch: a Pilot, for now (owner, 2026-10-31). The one place this is decided, so the NERON piloting lock can
- * open it to everyone later.
+ * Who may launch: anyone who can fly (owner, 2026-11-15). Kept as one helper so the NERON piloting lock can gate it
+ * later.
  */
 export const canLaunchExpedition = (_state: Readonly<GameState>, player: Readonly<PlayerState>): boolean => canFly(player);
 
@@ -187,9 +187,11 @@ export function expeditionStep(state: GameState): void {
   const ctx: Ctx = { state, crew: members(), carried: away.carried, report, planet, redraw: false };
   if (!away.landed) {
     away.landed = true;
-    // A safe landing (owner, 2026-11-08): a living Pilot aboard or the Antigrav propeller.
+    // A safe landing (owner, 2026-11-08, 2026-11-15): an ungrounded living Pilot aboard, or the Antigrav propeller (Icarus only).
     // The Pilot flies the Icarus, so one without a spacesuit still lands it.
-    const safe = ctx.crew.some((p) => withCrew(state, p) && canFly(p)) || projectDone(state, "ICARUS_ANTIGRAV_PROPELLER");
+    const safe =
+      ctx.crew.some((p) => withCrew(state, p) && canFly(p) && hasSkill(p, "pilot")) ||
+      (away.ship === null && projectDone(state, "ICARUS_ANTIGRAV_PROPELLER"));
     report.events.push(resolve(ctx, LANDING, safe ? [] : rules.events[LANDING]!));
   } else if (planet) {
     const sector = planet.sectors[away.sectors.shift()!]!;

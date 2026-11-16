@@ -1,7 +1,7 @@
 import { Action, type ActionVisibility, isString } from "./action.ts";
 import { endPushToLeave } from "./accommodate.ts";
 import { damage } from "../death.ts";
-import { destroyShip } from "../hunters.ts";
+import { destroyPatrolShip, destroyShip } from "../hunters.ts";
 import { logPrivate, logSecret } from "../log.ts";
 import { isTraveling } from "../navigation.ts";
 import { cleanManoeuvreChance } from "../modifiers.ts";
@@ -14,8 +14,9 @@ export type TakeoffActionData = { type: "takeoff"; equipment: string };
 
 /**
  * Take off in a docked patrol ship or the Pasiphae from its interface in the bay (owner, 2026-10-24, docs/plans/patrol.md):
- * 2 AP, always works, and moves the pilot alone into the ship's room. Pilots only for now. Secret: the line goes in the
- * bay before the pilot leaves, so whoever is there (or a camera) sees it. A push the pilot is part of ends.
+ * 2 AP, always works, and moves the pilot alone into the ship's room. Non-pilots can fly (owner, 2026-11-15; pilot lock
+ * comes later). Secret: the line goes in the bay before the pilot leaves, so whoever is there (or a camera) sees it. A
+ * push the pilot is part of ends.
  */
 export class TakeoffAction extends Action<TakeoffActionData> {
   override visibility: ActionVisibility = "secret";
@@ -65,8 +66,8 @@ export function board(player: PlayerState, room: RoomId): void {
 
 /**
  * A takeoff or landing: clean at `cleanManoeuvreChance` (eMush: 20%; a Pilot always), otherwise rough. Rough costs the
- * hull 2 to 4 straight through the shield, the ship 1 armor, and the pilot 0 to 2 hp, told only to the pilot (owner,
- * 2026-10-24); the crew sees the hull counter. Never rough yet, since only Pilots fly. Mutates a cloned state.
+ * hull 2 to 4 straight through the shield, the ship 1 armor (destroying it at 0: owner, 2026-11-15), and the pilot 0 to 2
+ * hp, told only to the pilot (owner, 2026-10-24); the crew sees the hull counter. Mutates a cloned state.
  */
 export function manoeuvre(state: GameState, pilot: PlayerState, ship: PatrolShip): void {
   const chance = cleanManoeuvreChance(state, pilot);
@@ -80,5 +81,6 @@ export function manoeuvre(state: GameState, pilot: PlayerState, ship: PatrolShip
   state.ship.hull = Math.max(0, state.ship.hull - hull);
   logPrivate(state, pilot.id, "patrolRough", { hull, armor: rough.armor, hp });
   damage(state, pilot, hp, "patrol_ship_explosion");
+  if (shipState.armor === 0) destroyPatrolShip(state, ship, "patrolDestroyed");
   if (state.ship.hull === 0) destroyShip(state);
 }
