@@ -4027,3 +4027,8 @@ Two hidden-information choices made by Claude, not the owner, worth a look: (1) 
 
 - **Decision (owner):** Removed `WHOS_WHO` from `PROJECTS` (`shared/src/projects.ts`), its `en`/`fr`/`es` locale strings, and `server/tests/stored/v114-registries.json` without a state upgrade step (no live games in the database). ACTOPI remains a BIOS toggle available from the start.
 - **What worked:** `projects.test.ts` caught the count and `projets.json` parity check, and `storedRooms.test.ts` caught the `v114-registries.json` entry immediately.
+
+### 2026-11-15 — Hacker kit & `hack` action
+
+- **Decision (user):** Implemented the `hack` action (`shared/src/actions/hack.ts`) using `HACKER_KIT_ITEM` (`CORRIDOR_B` start, breakable, sabotagable, overload-breakable, `repairChance: 0.06`, no dismantle). Targets any working, enabled title-locked terminal (`PILOT_MODULE`, `COM_CENTER`, `NERON_BIOS_TERM`) in the player's room when the player lacks access (held or vacant). Costs 2 AP or 1 Computer point, 25% base with 1.25× failure streak, doubled by Computer Scientist (`shared/src/modifiers/computer.ts` `actionSucessRate`), private visibility (`hacked`/`hackFailed`), and grants access via `PlayerState.hackedEquipment` until leaving the room (`arrive`/`board`).
+- **What worked:** All title-locked systems (`comms.ts`, `bios.ts`, `pilgred.ts`, `navigation.ts`, `close_deal.ts`) already routed through `hasTitleAccess`, and `terminalLogin` (`web/src/hud/terminalUsername.ts`) accepted an optional `equipmentId` cleanly.

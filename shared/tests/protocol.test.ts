@@ -672,6 +672,7 @@ describe("actions from a client", () => {
     upgrade_drone: [{ type: "upgrade_drone", item: "i1", upgrade: "turbo" }],
     dismantle: [{ type: "dismantle", item: "i1" }, { type: "dismantle", equipment: "e1" }],
     access: [{ type: "access", equipment: "e1" }],
+    hack: [{ type: "hack", equipment: "e1" }],
     research: [{ type: "research", equipment: "e1", research: "r1" }],
     spoil_research: [{ type: "spoil_research", equipment: "e1", research: "r1" }],
     contaminate: [{ type: "contaminate", equipment: "e1", research: "r1" }],

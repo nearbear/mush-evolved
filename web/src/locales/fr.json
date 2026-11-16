@@ -1142,6 +1142,8 @@
     "fireKilledPlant": "Le feu a tué le plant : {{item}}.",
     "repaired": "{{name}} a réparé l'équipement « {{equipment}} ».",
     "repairFailed": "Vous n'avez pas réussi à réparer l'équipement « {{equipment}} ».",
+    "hacked": "Vous avez forcé l'accès à l'équipement « {{equipment}} ».",
+    "hackFailed": "Vous n'avez pas réussi à forcer l'accès à l'équipement « {{equipment}} ».",
     "doorRepaired": "{{name}} a réparé la porte vers {{room}}.",
     "doorRepairFailed": "Vous n'avez pas réussi à réparer la porte vers {{room}}.",
     "doorSabotaged": "{{name}} a saboté la porte vers {{room}}.",

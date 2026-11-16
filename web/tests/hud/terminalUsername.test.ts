@@ -15,9 +15,9 @@ test("every character gets a plain lowercase name", () => {
 
 describe("terminalLogin", () => {
   // Only the fields terminalLogin reads.
-  const view = (character: string, holder: string | null, cheats: string[] = []) =>
+  const view = (character: string, holder: string | null, cheats: string[] = [], hackedEquipment?: string[]) =>
     ({
-      you: { character, cheats, skills: [], bookSkill: null, mushSkills: [] },
+      you: { character, cheats, skills: [], bookSkill: null, mushSkills: [], ...(hackedEquipment && { hackedEquipment }) },
       titles: [{ id: "commander", holder }],
     }) as unknown as PlayerView;
 
@@ -31,5 +31,19 @@ describe("terminalLogin", () => {
   });
   it("logs a title bypasser in as the holder", () => {
     expect(terminalLogin("PILOT_MODULE", view("chao", "jinsu", ["freeHacking"]))).toEqual({ user: "jkim", access: "hacked" });
+  });
+  it("logs a hacker in as the holder (or themselves when vacant) when the equipment is hacked", () => {
+    expect(terminalLogin("PILOT_MODULE", view("chao", "jinsu", [], ["BRIDGE:pilot"]), "BRIDGE:pilot")).toEqual({
+      user: "jkim",
+      access: "hacked",
+    });
+    expect(terminalLogin("PILOT_MODULE", view("chao", null, [], ["BRIDGE:pilot"]), "BRIDGE:pilot")).toEqual({
+      user: "cwang",
+      access: "hacked",
+    });
+    expect(terminalLogin("PILOT_MODULE", view("chao", "jinsu", [], ["OTHER:eq"]), "BRIDGE:pilot")).toEqual({
+      user: "cwang",
+      access: "limited",
+    });
   });
 });

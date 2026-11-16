@@ -1121,6 +1121,8 @@
     "fireKilledPlant": "The fire killed the {{item}} plant.",
     "repaired": "{{name}} repaired the {{equipment}}.",
     "repairFailed": "You failed to repair the {{equipment}}.",
+    "hacked": "You hacked the {{equipment}}.",
+    "hackFailed": "You failed to hack the {{equipment}}.",
     "doorRepaired": "{{name}} repaired the door to {{room}}.",
     "doorRepairFailed": "You failed to repair the door to {{room}}.",
     "doorSabotaged": "{{name}} sabotaged the door to {{room}}.",

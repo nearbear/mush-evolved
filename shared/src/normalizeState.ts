@@ -478,6 +478,7 @@ export function normalizePlayer(raw: Partial<PlayerState>, mode: QueueMode): Pla
     interrogatedToday: raw.interrogatedToday,
     snoopedToday: opt(raw.snoopedToday, copy),
     mycoscannedToday: raw.mycoscannedToday,
+    hackedEquipment: opt(raw.hackedEquipment, copy),
     history: copy(need(raw, "history", t)),
     logSeen: need(raw, "logSeen", t),
     accommodationOffers: opt(raw.accommodationOffers, (offers) => offers.map(normalizeAccommodationOffer)),

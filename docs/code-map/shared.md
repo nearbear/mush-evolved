@@ -81,7 +81,7 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 - `history.ts`: each body's action history (`recordAction`, called from `performAction`) and `revealHistory`, the private reveal lines Interrogate and Chitchat write.
 - `resources.ts`: per-player skill point pools.
 - `skills.ts`: the human skills, each character's pickable list (`CHARACTER_SKILLS`), `SKILL_SLOTS`, the Mush skills (`MUSH_SKILLS`, `MUSH_SKILL_SLOTS`), and `skillsOf`/`hasSkill` (picked skills, the book slot, and Mush skills).
-- `titles.ts`: `TITLE_IDS`, each title's line (`SUCCESSION`), `successor` (pure), `assignTitles` (at creation) and `refreshTitles` (after a death, going inactive or coming back).
+- `titles.ts`: `TITLE_IDS`, each title's line (`SUCCESSION`), `successor` (pure), `assignTitles` (at creation), `refreshTitles` (after a death, going inactive or coming back), `bypassesTitles`, `hasHackedEquipment`, and `hasTitleAccess` (holder, bypasses, or active `hackedEquipment` in the current room).
 - `statuses.ts`: stored and derived statuses.
 - `inactivity.ts`: inactive and super inactive (#145): `isInactive`, `isSuperInactive`, `inactivityOf`, `inactivityCycle` (from `advanceCycle`, given the clock cycle's server time), `markSeen`, and the server's `seen` and `inactivate` inputs.
 - `morale.ts`: `hopelessCycle`, death at 0 morale (Hopeless humans die when a cycle ends; each death costs every living player morale). `isHopeless` is in `statuses.ts`.

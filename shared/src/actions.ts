@@ -11,6 +11,7 @@ import { CookAction } from "./actions/cook.ts";
 import { ExpressCookAction } from "./actions/express_cook.ts";
 import { DismantleAction } from "./actions/dismantle.ts";
 import { AccessAction } from "./actions/access.ts";
+import { HackAction } from "./actions/hack.ts";
 import type { ActionCost, ActionTag, ActionVisibility } from "./actions/action.ts";
 import { DispenseAction } from "./actions/dispense.ts";
 import { PlayArcadeAction } from "./actions/play_arcade.ts";
@@ -153,6 +154,7 @@ const REGISTRY = {
   drop: new TransferAction("drop"),
   dismantle: new DismantleAction(),
   access: new AccessAction(),
+  hack: new HackAction(),
   research: new ResearchAction(),
   spoil_research: new SpoilResearchAction(),
   contaminate: new ContaminateAction(),

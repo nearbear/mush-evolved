@@ -7,6 +7,7 @@
 
 import { pushChat } from "./chat.ts";
 import type { CharacterId } from "./characters.ts";
+import { EQUIPMENT_TYPES, isEquipmentEnabled } from "./equipment.ts";
 import type { GameState, PlayerState, PlayerId } from "./types.ts";
 import { hasSkill } from "./skills.ts";
 
@@ -55,11 +56,27 @@ export function bypassesTitles(p: Readonly<Pick<PlayerState, "cheats" | "skills"
 }
 
 /**
- * Whether a player may use something locked to a title: they hold it, or they bypass titles. Every
- * title-locked action (none are built yet; return to Sol will be the first) checks this, not `state.titles`.
+ * Whether a player's state/view marks `equipmentId` as currently hacked.
+ */
+export function hasHackedEquipment(p: Readonly<Pick<PlayerState, "hackedEquipment">>, equipmentId: string): boolean {
+  return p.hackedEquipment?.includes(equipmentId) ?? false;
+}
+
+/**
+ * Whether a player may use something locked to a title: they hold it, they bypass titles, or they have
+ * an active hack on a working, enabled equipment in their current room that requires that title.
+ * Every title-locked action checks this, not `state.titles`.
  */
 export function hasTitleAccess(state: Readonly<GameState>, p: Readonly<PlayerState>, title: TitleId): boolean {
-  return state.titles[title] === p.id || bypassesTitles(p, title);
+  if (state.titles[title] === p.id || bypassesTitles(p, title)) return true;
+  if (!p.hackedEquipment?.length) return false;
+  return (state.equipment[p.room] ?? []).some(
+    (e) =>
+      p.hackedEquipment!.includes(e.id) &&
+      !e.broken &&
+      isEquipmentEnabled(state, e) &&
+      EQUIPMENT_TYPES[e.type]?.title === title,
+  );
 }
 
 /**

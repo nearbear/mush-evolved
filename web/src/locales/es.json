@@ -1142,6 +1142,8 @@
     "fireKilledPlant": "El fuego ha matado la planta: {{item}}.",
     "repaired": "{{name}} ha reparado el equipo «{{equipment}}».",
     "repairFailed": "No has conseguido reparar el equipo «{{equipment}}».",
+    "hacked": "Has hackeado el equipo «{{equipment}}».",
+    "hackFailed": "No has conseguido hackear el equipo «{{equipment}}».",
     "doorRepaired": "{{name}} ha reparado la puerta a {{room}}.",
     "doorRepairFailed": "No has conseguido reparar la puerta a {{room}}.",
     "doorSabotaged": "{{name}} ha saboteado la puerta a {{room}}.",

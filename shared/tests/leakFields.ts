@@ -137,6 +137,7 @@ export const PLAYER_STATE_FIELDS: Record<string, FieldRule> = {
   chitchatToday: { reach: "own", test: "history.test.ts", note: "Only gates Chitchat; roommates never see it." },
   interrogatedToday: { reach: "own", test: "history.test.ts", note: "Only gates Interrogate; roommates never see it." },
   mycoscannedToday: { reach: "own", test: "mycoscan.test.ts", note: "Only gates the MycoScan check; roommates never see it." },
+  hackedEquipment: { reach: "own", test: "hack.test.ts", note: "Equipment ids you hacked in your current room (cleared on leaving); never sent to others." },
   snoopedToday: { reach: "own", test: "snoop.test.ts", note: "Only gates Snoop; roommates never see it." },
   history: { reach: "never", test: "leaks.test.ts", note: "Revealed only as private log lines, by Interrogate and Chitchat (history.ts)." },
   logSeen: { reach: "own", test: "logWindow.test.ts", note: "As `PlayerView.logSeen`. Counts only lines this body could see, so it says nothing about hidden ones." },

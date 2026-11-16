@@ -2,7 +2,7 @@
 // no spaces (Wang Chao -> cwang, Kim Jin Su -> jkim). Several surnames come first in the full name, so the surname
 // is whatever is left once the given name is taken out.
 
-import { bypassesTitles, characterGivenName, characterName, EQUIPMENT_TYPES, type PlayerView } from "@mush2/shared";
+import { bypassesTitles, characterGivenName, characterName, EQUIPMENT_TYPES, hasHackedEquipment, type PlayerView } from "@mush2/shared";
 
 export function terminalUsername(character: string): string {
   const given = characterGivenName(character);
@@ -20,11 +20,11 @@ export interface TerminalLogin {
  * A terminal that needs a title says access is limited to anyone who doesn't hold it, unless they got in with the
  * hacker kit, which logs them in as the holder (when there is one). Everyone else is logged in as themselves.
  */
-export function terminalLogin(type: string, view: PlayerView): TerminalLogin {
+export function terminalLogin(type: string, view: PlayerView, equipmentId?: string): TerminalLogin {
   const title = EQUIPMENT_TYPES[type]?.title;
   const holder = title ? view.titles.find((entry) => entry.id === title)?.holder : null;
   const mine = view.you.character;
-  const hacked = !!title && holder !== mine && holder != null && bypassesTitles(view.you, title);
+  const hacked = !!title && holder !== mine && (bypassesTitles(view.you, title) || (equipmentId !== undefined && hasHackedEquipment(view.you, equipmentId)));
   const limited = !!title && holder !== mine && !hacked;
-  return { user: terminalUsername(hacked ? holder : mine), access: hacked ? "hacked" : limited ? "limited" : "granted" };
+  return { user: terminalUsername((hacked ? holder : null) ?? mine), access: hacked ? "hacked" : limited ? "limited" : "granted" };
 }

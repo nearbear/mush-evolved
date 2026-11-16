@@ -23,7 +23,7 @@ function TerminalFigure({ view, terminal, note }: { view: PlayerView; terminal: 
   return (
     <Figure caption={note ? `${name}, ${note}` : name}>
       <div className="terminal-popup kit-panel m2k-terminal m2k-terminal-tall">
-        <TerminalFrame name={name} type={terminal.type} login={terminalLogin(terminal.type, view)} onClose={noop}>
+        <TerminalFrame name={name} type={terminal.type} login={terminalLogin(terminal.type, view, terminal.id)} onClose={noop}>
           <TerminalBody terminal={terminal} view={view} onAction={noop} onSharePlanet={noop} />
         </TerminalFrame>
       </div>

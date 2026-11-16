@@ -60,6 +60,7 @@ export function board(player: PlayerState, room: RoomId): void {
   delete player.spot;
   delete player.enteredFrom;
   removeStatus(player, "guardian"); // changing room ends guarding (guard.ts)
+  delete player.hackedEquipment;
 }
 
 /**

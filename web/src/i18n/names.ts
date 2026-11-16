@@ -13,6 +13,7 @@ const ACTION_NAME_KEYS = {
   drop: "actions.drop",
   dismantle: "actions.dismantle",
   access: "actions.access",
+  hack: "actions.hack",
   research: "actions.research",
   spoil_research: "actions.spoilResearch",
   contaminate: "actions.contaminate",

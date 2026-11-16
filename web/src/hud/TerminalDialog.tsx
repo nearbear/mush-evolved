@@ -68,7 +68,7 @@ export function TerminalDialog({ terminal, view, onAction, onClose, onSharePlane
               key={terminal.id}
               name={names.equipment(terminal.type)}
               type={terminal.type}
-              login={terminalLogin(terminal.type, view)}
+              login={terminalLogin(terminal.type, view, terminal.id)}
               onClose={onClose}
               titleId={titleId}
             >
