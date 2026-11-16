@@ -8,7 +8,7 @@ import { endAccommodationOnDeath } from "./accommodation.ts";
 import { shipInvincible } from "./cheats.ts";
 import type { CharacterId } from "./characters.ts";
 import { removeFromChannel, pushChat } from "./chat.ts";
-import { CORPSE_ITEM, ITRACKIE_ITEM, sameContainer, newItemId } from "./items.ts";
+import { CORPSE_ITEM, ITRACKIE_ITEM, sameContainer, spawnInRoom } from "./items.ts";
 import { logPublic, withNimbleActor } from "./log.ts";
 import { damageTaken } from "./modifiers.ts";
 import { PATROL_SHIPS } from "./patrol.ts";
@@ -91,7 +91,7 @@ export function killPlayer(state: GameState, player: PlayerState, cause: DeathCa
   state.items = state.items.filter((i) => !(sameContainer(i.at, mine) && i.type === ITRACKIE_ITEM));
   for (const item of state.items) if (sameContainer(item.at, mine)) item.at = { kind: "room", id: player.room };
   const traded = cause === "traded";
-  if (!traded) state.items.push({ id: newItemId(state), type: CORPSE_ITEM, at: { kind: "room", id: player.room }, of: player.id });
+  if (!traded) spawnInRoom(state, player.room, CORPSE_ITEM, 1, { of: player.id });
 
   // Bonds and contamination are void. The dead player's plan claims go with their channels (removeFromChannel, below).
   delete state.bonds[player.id];

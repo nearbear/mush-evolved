@@ -35,7 +35,7 @@ import { FAST_EXPEDITION_STEP_MS, fastExpeditions } from "./cheats.ts";
 import { soil } from "./dirt.ts";
 import { rebelContacted } from "./comms.ts";
 import { contaminate } from "./infection.ts";
-import { CORPSE_ITEM, isWorking, itemsIn, newItemId, removeItem, sameContainer } from "./items.ts";
+import { CORPSE_ITEM, isWorking, itemsIn, removeItem, sameContainer, spawnInRoom } from "./items.ts";
 import { logPrivate, logPublic } from "./log.ts";
 import { isTraveling } from "./navigation.ts";
 import { retargetNow } from "./hunters.ts";
@@ -701,6 +701,6 @@ function died(ctx: Ctx, event: ExpeditionEvent, p: PlayerState): void {
 
 /** `count` items of `type` on the floor of the craft, which unloads them in the bay on its return. Returns how many. */
 function drop(state: GameState, type: string, count: number): number {
-  for (let i = 0; i < count; i++) state.items.push({ id: newItemId(state), type, at: { kind: "room", id: expeditionCraft(state) } });
+  spawnInRoom(state, expeditionCraft(state), type, count);
   return count;
 }

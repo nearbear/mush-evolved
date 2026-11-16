@@ -4067,3 +4067,7 @@ Two hidden-information choices made by Claude, not the owner, worth a look: (1) 
 
 - **Decision (owner):** Implemented the `DISMANTLING` NERON project to spawn 8 `metal_scraps` items on the Engine Room (`MOTOR_ROOM`) floor on completion (instead of the original game's 5), and updated the `en`/`fr`/`es` project descriptions accordingly.
 - **What worked:** Reusing `onProjectCompleted` in `shared/src/projectEffects.ts` and `config.project.dismantling` (`{ room: "MOTOR_ROOM", count: 8 }`) matched `EXTRA_HYDROPONPOTS` and `EXTRA_DRONE` with zero state-version or view changes needed.
+
+### 2026-11-15 — `spawnInRoom` helper refactor
+
+- **Refactor:** Added `spawnInRoom(state, room, type, count = 1, extra?)` to `shared/src/items.ts` (applying `startCharges` and optional per-item `extra` object or factory) and replaced the repeated `for (...) state.items.push({ id: newItemId(state), ... })` room-spawning loops across `projectEffects.ts`, `merchants.ts`, `expeditions.ts`, `mycoalarm.ts`, `actions/research.ts`, `actions/dismantle.ts`, `drugs.ts`, `botany.ts`, `death.ts`, and `comms.ts`.

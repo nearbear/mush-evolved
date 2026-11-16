@@ -5,7 +5,7 @@
 // controls on lockers touches one place.
 
 import { inventorySlots } from "./modifiers.ts";
-import type { Container, DeepReadonly, GameConfig, GameState, ItemState, PlayerState } from "./types.ts";
+import type { Container, DeepReadonly, GameConfig, GameState, ItemState, PlayerState, RoomId } from "./types.ts";
 import { ALIEN_FRUIT_ITEMS, BOOK_ITEM, ITRACKIE_ITEM } from "./itemIds.ts";
 
 export { ALIEN_FRUIT_ITEMS, BOOK_ITEM, ITRACKIE_ITEM } from "./itemIds.ts";
@@ -296,4 +296,23 @@ export function produceItem(next: GameState, player: Readonly<PlayerState>, type
   const item: ItemState = { id: newItemId(next), type, at: inInventory ? mine : { kind: "room", id: player.room }, ...(charges !== undefined && { charges }) };
   next.items.push(item);
   return { item, inInventory };
+}
+
+/**
+ * Spawns `count` (default 1) items of `type` on the floor of `room`, with any
+ * default start charges and optional per-item `extra` fields. Mutates a state
+ * the caller already cloned.
+ */
+export function spawnInRoom(
+  state: GameState,
+  room: RoomId,
+  type: string,
+  count = 1,
+  extra?: Partial<Omit<ItemState, "id" | "type" | "at">> | (() => Partial<Omit<ItemState, "id" | "type" | "at">>),
+): void {
+  const charges = startCharges(state.config, type);
+  for (let i = 0; i < count; i++) {
+    const fields = typeof extra === "function" ? extra() : extra;
+    state.items.push({ id: newItemId(state), type, at: { kind: "room", id: room }, ...(charges !== undefined && { charges }), ...fields });
+  }
 }

@@ -11,7 +11,7 @@
 
 import { killPlayer } from "./death.ts";
 import { isInactive } from "./inactivity.ts";
-import { newItemId } from "./items.ts";
+import { spawnInRoom } from "./items.ts";
 import { type HasRng, roll, rollFloat, rollInt, rollShuffle, rollWeighted } from "./rng.ts";
 import { hasSkill, type SkillId } from "./skills.ts";
 import type { DeepReadonly, GameState, ItemState, MerchantView, PlayerState, RoomId } from "./types.ts";
@@ -189,9 +189,7 @@ export function closeDeal(state: GameState, merchantId: string, index: number): 
     }
   }
   const room = state.config.merchants.deliveryRoom;
-  for (const asset of deal.receive) {
-    for (let n = 0; n < asset.count; n++) state.items.push({ id: newItemId(state), type: asset.item, at: { kind: "room", id: room } });
-  }
+  for (const asset of deal.receive) spawnInRoom(state, room, asset.item, asset.count);
   state.merchants.list = state.merchants.list.filter((m) => m.id !== merchantId);
   return traded;
 }

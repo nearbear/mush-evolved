@@ -4,7 +4,7 @@
 // entry with no actor in it, so the crew learns that a Mush acted, not who.
 
 import { logPublic } from "./log.ts";
-import { newItemId, isWorking } from "./items.ts";
+import { isWorking, spawnInRoom } from "./items.ts";
 import type { GameState, RoomId } from "./types.ts";
 
 export const MYCO_ALARM_ITEM = "myco_alarm";
@@ -23,5 +23,5 @@ export function ringMycoAlarms(state: GameState, room: RoomId): void {
 
 /** Mutates a state the caller already cloned. */
 export function dropMycoAlarms(state: GameState, room: RoomId): void {
-  for (let i = 0; i < MYCO_ALARM_YIELD; i++) state.items.push({ id: newItemId(state), type: MYCO_ALARM_ITEM, at: { kind: "room", id: room } });
+  spawnInRoom(state, room, MYCO_ALARM_ITEM, MYCO_ALARM_YIELD);
 }

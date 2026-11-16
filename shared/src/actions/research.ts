@@ -3,7 +3,7 @@ import { ANY_CONSUMABLE, RESEARCH_COMPLETE, RESEARCH_IDS, RESEARCH_REQUIRES, RES
 import { logPrivate, logPublic } from "../log.ts";
 import { resetDrugDispenser } from "../drugs.ts";
 import { DRUG_DISPENSER_EQUIPMENT, equipmentHere, SUPER_CALC_EQUIPMENT } from "../equipment.ts";
-import { ITEM_TYPES, newItemId, removeItem, STEROIDS_ITEM, STEROIDS_YIELD } from "../items.ts";
+import { ITEM_TYPES, removeItem, spawnInRoom, STEROIDS_ITEM, STEROIDS_YIELD } from "../items.ts";
 import { xylophFound } from "../comms.ts";
 import { makeToken, type ResearchPool } from "../relay.ts";
 import { assayDue, researchProgress, runAssay, type SampleCounts } from "../assay.ts";
@@ -112,15 +112,11 @@ function completeResearch(state: GameState, room: RoomId, research: ResearchId):
   }
   // Owner, 2026-10-25: completing it leaves one serum on the lab floor.
   if (research === "ANTI_MUSH_SERUM") {
-    state.items.push({ id: newItemId(state), type: ANTI_MUSH_SERUM_ITEM, at: { kind: "room", id: room } });
+    spawnInRoom(state, room, ANTI_MUSH_SERUM_ITEM);
     logPublic(state, room, "serumBuilt");
   }
   // Owner, 2026-11-01: completing it spawns 4 anabolic steroids on the lab floor (no extra log line).
-  if (research === "STEROIDS") {
-    for (let i = 0; i < STEROIDS_YIELD; i++) {
-      state.items.push({ id: newItemId(state), type: STEROIDS_ITEM, at: { kind: "room", id: room } });
-    }
-  }
+  if (research === "STEROIDS") spawnInRoom(state, room, STEROIDS_ITEM, STEROIDS_YIELD);
   // Owner, 2026-11-10: completing it adds the Drug Dispenser (DRUG_DISP) to the Medlab for good.
   if (research === "DRUG_DISPENSER") {
     const medlab = "SICK_BAY";
