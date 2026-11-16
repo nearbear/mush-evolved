@@ -33,6 +33,7 @@ import type { FruitDisease, FruitEffect, PendingDisease } from "./fruits.ts";
 import type { FullView, SeatStart, SeatStarts } from "./fullView.ts";
 import { PROJECT_IDS } from "./projects.ts";
 import type { RebelCall } from "./comms.ts";
+import type { GiveAsset, Merchant, MerchantDeal, MerchantsState, ReceiveAsset } from "./merchants.ts";
 import type { RelayPool, RelayStreak, RelayToken, ResearchPool, Sample } from "./relay.ts";
 import type { DiseaseTracker } from "./diseases.ts";
 import type {
@@ -782,6 +783,53 @@ export function normalizeHunters(raw: Partial<Hunters>): Hunters {
   return stripUndefined<Hunters>({ points: need(raw, "points", t), since: need(raw, "since", t), list: need(raw, "list", t).map(normalizeHunter), nextId: need(raw, "nextId", t) });
 }
 
+export function normalizeGiveAsset(raw: Partial<GiveAsset>): GiveAsset {
+  const t = "GiveAsset";
+  switch (raw.kind) {
+    case "crew":
+      return stripUndefined<GiveAsset>({ kind: "crew", count: need(raw, "count", t) });
+    case "item":
+      return stripUndefined<GiveAsset>({ kind: "item", item: need(raw, "item", t), count: need(raw, "count", t) });
+    case "oxygen":
+    case "fuel":
+      return stripUndefined<GiveAsset>({ kind: raw.kind, count: need(raw, "count", t) });
+    default:
+      throw unknownVariant(t, "kind", raw.kind satisfies undefined);
+  }
+}
+
+export function normalizeReceiveAsset(raw: Partial<ReceiveAsset>): ReceiveAsset {
+  const t = "ReceiveAsset";
+  switch (raw.kind) {
+    case "item":
+      return stripUndefined<ReceiveAsset>({ kind: "item", item: need(raw, "item", t), count: need(raw, "count", t) });
+    default:
+      throw unknownVariant(t, "kind", raw.kind satisfies undefined);
+  }
+}
+
+export function normalizeMerchantDeal(raw: Partial<MerchantDeal>): MerchantDeal {
+  const t = "MerchantDeal";
+  return stripUndefined<MerchantDeal>({ give: need(raw, "give", t).map(normalizeGiveAsset), receive: need(raw, "receive", t).map(normalizeReceiveAsset), skill: raw.skill });
+}
+
+export function normalizeMerchant(raw: Partial<Merchant>): Merchant {
+  const t = "Merchant";
+  return stripUndefined<Merchant>({
+    id: need(raw, "id", t),
+    kind: need(raw, "kind", t),
+    event: need(raw, "event", t),
+    arrivedAt: need(raw, "arrivedAt", t),
+    leavesAt: need(raw, "leavesAt", t),
+    deals: need(raw, "deals", t).map(normalizeMerchantDeal),
+  });
+}
+
+export function normalizeMerchants(raw: Partial<MerchantsState>): MerchantsState {
+  const t = "MerchantsState";
+  return stripUndefined<MerchantsState>({ list: need(raw, "list", t).map(normalizeMerchant), nextId: need(raw, "nextId", t) });
+}
+
 type PatrolShip = GameCore["patrolShips"][string];
 
 export function normalizePatrolShip(raw: Partial<PatrolShip>): PatrolShip {
@@ -1007,6 +1055,8 @@ export function normalizeCore(raw: Partial<GameCore>, _ctx: NormalizeContext, mo
     icarusLost: added(raw, "icarusLost", false),
     navigation: normalizeNavigation(need(raw, "navigation", t)),
     hunters: normalizeHunters(need(raw, "hunters", t)),
+    // Merchants (#143): none in orbit in a game stored before them.
+    merchants: normalizeMerchants(added(raw, "merchants", { list: [], nextId: 1 })),
     turrets: dict(need(raw, "turrets", t)),
     patrolShips: mapValues(need(raw, "patrolShips", t), normalizePatrolShip),
     space: need(raw, "space", t).map(normalizeDebris),
@@ -1041,6 +1091,8 @@ export function normalizeGame(raw: Partial<Omit<GameState, "config">>, overrides
     // A game saved before the NPCs had a stream of their own derives one from where its `rng` stands.
     npcs: normalizeNpcs(added(raw, "npcs", newNpcState(need(raw, "rng", t)))),
     lostAnalysis: normalizeLostAnalysis(added(raw, "lostAnalysis", lostAnalysisFor(raw, config))),
+    // A game saved before merchants (#143) derives their stream from where its `rng` stands.
+    merchantRng: added(raw, "merchantRng", streamFor(need(raw, "rng", t), "merchants")),
     chatOutbox: normalizeOutbox(need(raw, "chatOutbox", t)),
   });
 }

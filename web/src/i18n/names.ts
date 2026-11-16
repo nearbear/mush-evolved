@@ -33,6 +33,7 @@ const ACTION_NAME_KEYS = {
   decode_rebel: "actions.decodeRebel",
   contact_xyloph: "actions.contactXyloph",
   update_neron: "actions.updateNeron",
+  close_deal: "actions.closeDeal",
   set_bios: "actions.setBios",
   scan_planet: "actions.scanPlanet",
   turret_attack: "actions.turretAttack",

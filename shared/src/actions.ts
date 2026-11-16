@@ -30,6 +30,7 @@ import { ReturnToSolAction } from "./actions/return_to_sol.ts";
 import { ContactSolAction } from "./actions/contact_sol.ts";
 import { DecodeRebelAction } from "./actions/decode_rebel.ts";
 import { ContactXylophAction } from "./actions/contact_xyloph.ts";
+import { CloseDealAction } from "./actions/close_deal.ts";
 import { UpdateNeronAction } from "./actions/update_neron.ts";
 import { SetBiosAction } from "./actions/set_bios.ts";
 import { ScanPlanetAction } from "./actions/scan_planet.ts";
@@ -172,6 +173,7 @@ const REGISTRY = {
   decode_rebel: new DecodeRebelAction(),
   contact_xyloph: new ContactXylophAction(),
   update_neron: new UpdateNeronAction(),
+  close_deal: new CloseDealAction(),
   set_bios: new SetBiosAction(),
   scan_planet: new ScanPlanetAction(),
   analyze_planet: new AnalyzePlanetAction(),

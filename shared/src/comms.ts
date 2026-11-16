@@ -10,6 +10,7 @@ import { BOOK_ITEM, newItemId } from "./items.ts";
 import { DOCUMENT_ITEM } from "./lostAnalysis.ts";
 import { PROJECT_IDS, projectDone } from "./projects.ts";
 import { completeProject } from "./projectEffects.ts";
+import { merchantsView } from "./merchants.ts";
 import { roll, rollInt } from "./rng.ts";
 import { hasSkill, SKILLS } from "./skills.ts";
 import { hasTitleAccess } from "./titles.ts";
@@ -265,7 +266,7 @@ export function advanceNeron(state: GameState, percent: number): string | undefi
 }
 
 /** What the Com center terminal shows anyone standing at it. The drawn Xyloph entries are listed in database order, so the draw order stays out. */
-export function commsTerminalView(state: Readonly<GameState>): CommsTerminalView {
+export function commsTerminalView(state: Readonly<GameState>, viewer: Readonly<PlayerState>): CommsTerminalView {
   const { comms } = state;
   const last = comms.rebels.at(-1);
   const upcoming = REBEL_BASES[comms.rebels.length];
@@ -281,5 +282,6 @@ export function commsTerminalView(state: Readonly<GameState>): CommsTerminalView
     xylophLeft: xylophLeft(state).length,
     xylophFound: XYLOPH_IDS.filter((id) => xylophFound(state, id)),
     neron: { ...comms.neron },
+    merchants: merchantsView(state, viewer),
   };
 }

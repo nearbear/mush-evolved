@@ -42,7 +42,7 @@ export function seatStarts(state: Readonly<GameState>): SeatStarts {
 export function fullViewFor(state: Readonly<GameState>, starts: Readonly<SeatStarts> | null): FullView {
   // The outbox only carries copies of pages already in the history, on their way to storage. The NPCs' queue lists
   // names not yet given (npcs.ts). The lost analysis's stream and rows are server-only until printed (#394).
-  const { rng: _rng, npcs: _npcs, lostAnalysis: _lostAnalysis, chatOutbox: _outbox, ...rest } = state;
+  const { rng: _rng, npcs: _npcs, lostAnalysis: _lostAnalysis, merchantRng: _merchantRng, chatOutbox: _outbox, ...rest } = state;
   return clone({ ...rest, starts }) as FullView;
 }
 

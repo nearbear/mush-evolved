@@ -1,6 +1,7 @@
 import type { BiosState } from "../bios.ts";
 import type { CharacterId } from "../characters.ts";
 import type { CommsState } from "../comms.ts";
+import type { MerchantsState } from "../merchants.ts";
 import type { DrugDispenserState, DrugEffect } from "../drugs.ts";
 import type { FruitEffect } from "../fruits.ts";
 import type { LostAnalysisState } from "../lostAnalysis.ts";
@@ -180,6 +181,11 @@ export interface GameCore {
    * many there are, to everyone.
    */
   hunters: { points: number; since: number | null; list: Hunter[]; nextId: number };
+  /**
+   * Merchant ships in orbit (merchants.ts, #143): kind, hail, deals and when each leaves. Shown only to the living at a
+   * Com center terminal (`comms.terminal.merchants`); `nextId` never.
+   */
+  merchants: MerchantsState;
   /** Charges left in each turret, by its `TURRET_COMMAND` equipment id; absent = full. To the living in a turret room. */
   turrets: Record<string, number>;
   /**
@@ -233,6 +239,8 @@ export interface GameState extends GameCore {
   npcs: NpcState;
   /** Finola's lost analysis (#394): its own stream, then the rows rolled at Mush selection. Server-only until printed; not in the full view. */
   lostAnalysis: LostAnalysisState;
+  /** The merchants' own stream (merchants.ts), seeded apart from `rng` so arrivals don't shift the rest of the game. Not in the full view. */
+  merchantRng: RngState;
   /** Pages to store and delete, which the server takes after every input. Not in the full view. */
   chatOutbox: ChatOutbox;
 }

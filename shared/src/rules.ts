@@ -55,6 +55,7 @@ import { biosTerminalsHere, newBios } from "./bios.ts";
 import { callNextRebel, commsCycle, commsTerminalView, comTerminalsHere, newComms } from "./comms.ts";
 import { botanyCycle, botanyDay, plantView } from "./botany.ts";
 import { burnOxygen, shipView, startShip } from "./ship.ts";
+import { merchantsCycle, newMerchants } from "./merchants.ts";
 import { allTurrets, huntersCycle, newHunters, startHunters, turretCharges, turretsHere } from "./hunters.ts";
 import { expeditionReturnAt, lostPlayers, onExpedition, withCrew } from "./expeditions.ts";
 import { ICARUS_EQUIPMENT } from "./actions/icarus_takeoff.ts";
@@ -129,6 +130,7 @@ export function createGame(
     rng,
     npcs: newNpcState(seed, npcSeed),
     lostAnalysis: newLostAnalysis(seed),
+    merchantRng: streamFor(seed, "merchants"),
     cycle: startCycle,
     phase: "playing",
     preselection: preselection !== null,
@@ -178,6 +180,7 @@ export function createGame(
     expedition: null,
     icarusLost: false,
     hunters: newHunters(),
+    merchants: newMerchants(),
     turrets: {},
     incidentPoints: 0,
     doors: {},
@@ -466,6 +469,7 @@ function advanceCycle(state: GameState, at?: number): void {
   const { day } = dayOf(state);
   arriveShip(state);
   huntersCycle(state, day);
+  merchantsCycle(state);
   pushLog(state, { key: newDay ? "dayBegins" : "cycleBegins", params: newDay ? { day } : { cycle: state.cycle }, visibleTo: "all" });
   // After the cycle's opening line, so incident and fire lines follow it. A fire acts in the cycle it starts.
   neronParticipationCycle(state);
@@ -698,7 +702,7 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
       to: [...(state.bonds[playerId] ?? [])],
       from: state.players.filter((o) => state.bonds[o.id]?.includes(playerId)).map((o) => o.id),
     },
-    config: { heavyMpPenalty: state.config.heavy.mpPenalty, actionQueueCap: state.config.action.queueCap, sharedSpots: state.config.sharedSpots, setupId: state.config.setupId, returnToSolAp: state.config.pilgred.returnCost.ap, edenAp: state.config.pilgred.edenCost.ap, xylophAp: state.config.comms.xyloph.cost.ap,
+    config: { heavyMpPenalty: state.config.heavy.mpPenalty, actionQueueCap: state.config.action.queueCap, sharedSpots: state.config.sharedSpots, setupId: state.config.setupId, returnToSolAp: state.config.pilgred.returnCost.ap, edenAp: state.config.pilgred.edenCost.ap, xylophAp: state.config.comms.xyloph.cost.ap, merchantDealAp: state.config.merchants.deal.cost.ap,
       researchAp: state.config.research.cost.ap, projectAp: state.config.project.cost.ap, pilgredAp: state.config.pilgred.cost.ap,
       hullRepairAp: state.config.hullRepair.cost.ap, turretAp: state.config.turrets.cost.ap,
       takeoffAp: state.config.patrol.takeoff.cost.ap, landAp: state.config.patrol.land.cost.ap, patrolShotAp: state.config.patrol.shot.cost.ap, showerAp: state.config.shower.cost.ap, lieDownAp: state.config.lieDown.cost.ap,
@@ -725,7 +729,7 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     researchNeeds: you.alive && equipmentHere(state, you, "RESEARCH_LAB").length > 0 ? researchNeedsView(state, you.room) : null,
     pilgredRepaired: isPilgredRepaired(state),
     humanTankFull: hasMushDied(state),
-    comms: { linked: state.comms.linked, terminal: you.alive && comTerminalsHere(state, you).length > 0 ? commsTerminalView(state) : null },
+    comms: { linked: state.comms.linked, terminal: you.alive && comTerminalsHere(state, you).length > 0 ? commsTerminalView(state, you) : null },
     bios: you.alive && biosTerminalsHere(state, you).length > 0 ? { ...state.bios } : null,
     // Only the crew sees a report (owner, 2026-10-31), and only while alive, like their private log lines.
     expeditions: you.alive

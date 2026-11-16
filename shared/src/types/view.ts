@@ -4,6 +4,7 @@ import type { BiosState } from "../bios.ts";
 import type { DrugEffect } from "../drugs.ts";
 import type { FruitEffect } from "../fruits.ts";
 import type { RebelBaseId, XylophEntryId } from "../comms.ts";
+import type { DealBlock, MerchantDeal, MerchantKind } from "../merchants.ts";
 import type { TurnSide } from "../navigation.ts";
 import type { PlanetDirection } from "../planets.ts";
 import type { TitleId } from "../titles.ts";
@@ -129,6 +130,8 @@ export interface PublicConfig {
   returnToSolAp: number;
   edenAp: number;
   xylophAp: number;
+  /** AP closing a merchant's deal costs, for the greyed-out deals at the Com center. */
+  merchantDealAp: number;
   /**
    * Base AP prices of the actions a bot plans to walk to (server/src/bots/goals/), before modifiers and free skill points:
    * a bot sees a real price only for actions in its own room. Never used to work out legality.
@@ -460,6 +463,20 @@ export interface CommsTerminalView {
   /** The entries drawn so far, in database order (not draw order), for the terminal's grid of deciphered cells. */
   xylophFound: XylophEntryId[];
   neron: { version: number; progress: number };
+  /**
+   * Merchant ships in orbit (merchants.ts, #143), oldest first, with their deals in order. `blocked` is why the deal
+   * can't be closed now (by whoever stands at this terminal), null if it can; the comms officer closes one with
+   * `close_deal` (merchant id, deal index) from `view.actions`.
+   */
+  merchants: MerchantView[];
+}
+
+export interface MerchantView {
+  id: string;
+  kind: MerchantKind;
+  event: string;
+  leavesAt: number;
+  deals: (MerchantDeal & { blocked: DealBlock | null })[];
 }
 
 /** An expedition report as its members see it (expeditions.ts). */

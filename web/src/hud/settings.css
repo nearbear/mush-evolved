@@ -527,6 +527,47 @@ li.research-item-blocked .research-progress {
   padding-inline: 12px;
 }
 
+/* The Com center has four tabs, too many for one line at 360px in French or Spanish: they share the line and their
+   labels wrap inside the tab instead. */
+.comms-tab-list .settings-tab {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding-inline: 10px;
+  white-space: normal;
+  text-align: center;
+}
+
+/* The Merchants tab: each ship's name and departure, its hail as a quote, then its deals, each with its button. */
+.merchant + .merchant {
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--edge);
+}
+.merchant-hail {
+  margin: 0.25rem 0;
+  font-style: italic;
+}
+.merchant-deals {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.merchant-deal {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.25rem 0.5rem;
+}
+.merchant-deal-terms {
+  display: flex;
+  flex: 1 1 12rem;
+  flex-direction: column;
+  min-width: 0;
+}
+
 .xyloph-contact,
 .comms-sol-contact {
   width: 100%;

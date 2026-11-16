@@ -1,6 +1,6 @@
 # Merchant ships (plan)
 
-Status: **design in progress, 2026-11-15.** The answers under "Decided" are the owner's (2026-11-15, recorded in `docs/rules/rules-design.md`, "Trading crew to merchant ships"). Everything under "Proposed" and "Open questions" is Claude's draft and not a rule until the owner answers. Issue: [#143](https://github.com/nearbear/mush2/issues/143). Related: [#144](https://github.com/nearbear/mush2/issues/144) (titles), [#145](https://github.com/nearbear/mush2/issues/145) (inactive), [#45](https://github.com/nearbear/mush2/issues/45) (spectators), [#410](https://github.com/nearbear/mush2/issues/410) (drones), [#357](https://github.com/nearbear/mush2/issues/357) (artifacts).
+Status: **phase 1 started, 2026-11-15**: the rules skeleton is built (`shared/src/merchants.ts`, `actions/close_deal.ts`; see "Built" below). The answers under "Decided" are the owner's (2026-11-15, recorded in `docs/rules/rules-design.md`, "Trading crew to merchant ships"). Everything under "Proposed" and "Open questions" is Claude's draft and not a rule until the owner answers. Issue: [#143](https://github.com/nearbear/mush2/issues/143). Related: [#144](https://github.com/nearbear/mush2/issues/144) (titles), [#145](https://github.com/nearbear/mush2/issues/145) (inactive), [#45](https://github.com/nearbear/mush2/issues/45) (spectators), [#410](https://github.com/nearbear/mush2/issues/410) (drones), [#357](https://github.com/nearbear/mush2/issues/357) (artifacts).
 
 ## Sources (reference, not decided)
 
@@ -78,6 +78,14 @@ At each cycle change after pre-selection, one roll at `config.merchants.arrivalC
 3. Tech ship, archeologists, scrappers, librarians: mostly data once item deals work. Scrappers' collection is the one new cycle step.
 
 Phases 2 and 3 would be new issues under an epic rather than more of [#143](https://github.com/nearbear/mush2/issues/143), which is Public beta work.
+
+## Built (phase 1, first slice, 2026-11-15)
+
+Owner's calls for this slice: merchants live in their own `state.merchants`, not in the hunter list; the transport has only HUMAN_VS_FUEL and HUMAN_VS_OXY (with their Diplomacy and Botanic deals). Rules only, no client. Arrival (0.25 a cycle), expiry, leaving on travel and leaving orbit, the terminal view (`comms.terminal.merchants`, each deal with why it's blocked), and `close_deal`: payment from storage floors (not hidden items), tanks and inactive crew (`killPlayer` cause `traded`), delivery to Front Storage, the merchant leaving after a deal. Every merchant roll uses its own stream (`GameState.merchantRng`), so merchants never shift the game's other rolls.
+
+Claude's interim choices, to confirm: capsules received are items on the floor while fuel and oxygen paid come from the tanks (the original's `OXY_CAPSULE`/`FUEL_CAPSULE` on both sides); the original's `RATION` is `uncooked_ration`; a skill deal needs someone alive in the officer's room with the skill (eMush); `close_deal` needs the title but not the link with Sol, and a broken Stellar antenna doesn't make it dearer; the merchant leaves once a deal is closed (eMush); a traded player gets no room line or NERON announcement (question 6) and the officer's line is private.
+
+Built since: the terminal UI, a Merchants tab in the Com center (`web/src/hud/Merchants.tsx`). Next session: refusing a hail (cost?), the remaining transport hails once question 1 is answered (tree pots, PILGRED, projects), and a spectator view for traded players (#45).
 
 ## Open questions (owner)
 

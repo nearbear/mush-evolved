@@ -1,5 +1,5 @@
-// The Com center terminal's window, in three tabs: Overview (the link with Sol, drawn as a spectrogram, and NERON's update), Xyloph, and the
-// rebel bases that called. The screen (`view.comms.terminal`) is read-only for anyone at the terminal; every button comes from view.actions.
+// The Com center terminal's window, in four tabs: Overview (the link with Sol, drawn as a spectrogram, and NERON's update), Xyloph, the
+// rebel bases that called, and the merchant ships in orbit (Merchants.tsx). The screen (`view.comms.terminal`) is read-only for anyone at the terminal; every button comes from view.actions.
 
 import { Tabs } from "@base-ui/react/tabs";
 import { Tooltip } from "@base-ui/react/tooltip";
@@ -11,6 +11,7 @@ import { useNames } from "../i18n/names.ts";
 import { ActionButton } from "./ActionButton.tsx";
 import { ActionLabel } from "./ActionLabel.tsx";
 import { UnavailableButton } from "./CommandTerminal.tsx";
+import { Merchants } from "./Merchants.tsx";
 import { signalStrength, solDb, Spectrogram } from "./Spectrogram.tsx";
 import "./settings.css";
 
@@ -20,7 +21,7 @@ interface Props {
   onAction: (action: Action) => void;
 }
 
-type CommsTab = "overview" | "xyloph" | "rebels";
+type CommsTab = "overview" | "xyloph" | "rebels" | "merchants";
 
 export function CommsCenter({ terminal, view, onAction }: Props) {
   const { t } = useTranslation();
@@ -37,10 +38,11 @@ export function CommsCenter({ terminal, view, onAction }: Props) {
   const db = solDb(screen.solChance);
   return (
     <Tabs.Root className="settings-tabs" value={tab} onValueChange={(value) => setTab(value as CommsTab)}>
-      <Tabs.List className="settings-tab-list progress-tab-list" aria-label={names.equipment(terminal.type)}>
+      <Tabs.List className="settings-tab-list progress-tab-list comms-tab-list" aria-label={names.equipment(terminal.type)}>
         <Tabs.Tab className="settings-tab" value="overview">{t("comms.overviewTitle")}</Tabs.Tab>
         <Tabs.Tab className="settings-tab" value="xyloph">{t("comms.xylophTitle")}</Tabs.Tab>
         <Tabs.Tab className="settings-tab" value="rebels">{t("comms.rebelsTitle")}</Tabs.Tab>
+        <Tabs.Tab className="settings-tab" value="merchants">{t("comms.merchants.tab", { count: screen.merchants.length })}</Tabs.Tab>
       </Tabs.List>
       <Tabs.Panel value="overview">
         <div className="research-list">
@@ -211,6 +213,11 @@ export function CommsCenter({ terminal, view, onAction }: Props) {
             )}
             </ul>
           </section>
+      </Tabs.Panel>
+      <Tabs.Panel value="merchants">
+        <section aria-label={t("comms.merchants.title")}>
+          <Merchants merchants={screen.merchants} terminalId={terminal.id} officer={officer} view={view} onAction={onAction} />
+        </section>
       </Tabs.Panel>
     </Tabs.Root>
   );

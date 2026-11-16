@@ -315,6 +315,33 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Owner, 2026-10-19 and 2026-10-21 (docs/plans/comms.md): every comms action is 2 AP. Sol: 4%, +4% per failure, floor 4%.
   // Rebels: avg of two 1..40 draws, +100% each for Rebel and Kivanç, a window of 8..16 cycles. NERON update: 25% per action.
   // Cygni: +1 damage on every patrol ship hit once reached (owner, 2026-11-07; eMush stacks it with the blaster gun).
+  // Merchant ships (owner, 2026-11-15, #143): about 2 a day, 4 cycles in orbit, 2 AP a deal, paid from storage,
+  // delivered to Front Storage. The transport's deals are the original's HUMAN_VS_FUEL and HUMAN_VS_OXY (owner: crew,
+  // fuel and oxygen only in the first slice); capsules received are items, fuel and oxygen paid come from the tanks.
+  merchants: {
+    arrivalChance: 0.25,
+    stayCycles: 4,
+    deal: { cost: { ap: 2 } },
+    storageRooms: ["STORAGE_FRONT", "STORAGE_A_0", "STORAGE_A_1", "STORAGE_B_0", "STORAGE_B_1"],
+    deliveryRoom: "STORAGE_FRONT",
+    kinds: {
+      transport: {
+        weight: 1,
+        events: {
+          HUMAN_VS_FUEL: [
+            { give: [{ kind: "crew", count: [1, 1] }], receive: [{ kind: "item", item: "fuel_capsule", count: [8, 12] }] },
+            { give: [{ kind: "crew", count: [2, 2] }], receive: [{ kind: "item", item: "fuel_capsule", count: [10, 30] }], skill: "diplomacy" },
+            { give: [{ kind: "item", item: "uncooked_ration", count: [4, 4] }], receive: [{ kind: "item", item: "fuel_capsule", count: [2, 4] }], skill: "botanic" },
+          ],
+          HUMAN_VS_OXY: [
+            { give: [{ kind: "crew", count: [1, 1] }], receive: [{ kind: "item", item: "oxy_capsule", count: [5, 10] }] },
+            { give: [{ kind: "fuel", count: [5, 10] }], receive: [{ kind: "item", item: "oxy_capsule", count: [10, 20] }], skill: "diplomacy" },
+            { give: [{ kind: "crew", count: [2, 2] }], receive: [{ kind: "item", item: "oxy_capsule", count: [10, 20] }], skill: "diplomacy" },
+          ],
+        },
+      },
+    },
+  },
   comms: {
     sol: { cost: { ap: 2 }, startChance: 4, chancePerFail: 4, radioExpertFactor: 2, radioExpertRoomFactor: 1.5 },
     rebel: { cost: { ap: 2 }, gainMax: 40, windowMin: 8, windowMax: 16, rebelBonus: 1, kivancBonus: 1, kaladaanMorale: 6, cygniMorale: 3, cygniPatrolDamage: 1, siriusRationAp: 1 },

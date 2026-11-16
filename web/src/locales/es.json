@@ -417,6 +417,7 @@
     "contactSol": "Establecer contacto con Sol",
     "decodeRebel": "Decodificar señal rebelde",
     "contactXyloph": "Contactar con Xyloph",
+    "closeDeal": "Cerrar el trato",
     "updateNeron": "Actualizar NERON",
     "setBios": "Cambiar un ajuste de la BIOS",
     "turnShip": "Orientar la nave",
@@ -631,7 +632,8 @@
     "exploration": "aventurero desafortunado",
     "exploration_combat": "aventurero poco preparado para el combate",
     "exploration_lost": "aventurero perdido",
-    "daedalus_destroyed": "Daedalus destruido"
+    "daedalus_destroyed": "Daedalus destruido",
+    "traded": "vendido a una nave mercante"
   },
   "itrackie": {
     "visibility": {
@@ -1047,6 +1049,7 @@
     "rebelDecoded": "Has decodificado parte de la señal de {{base}}: {{percent}} % decodificado.",
     "rebelContacted": "Has decodificado toda la señal: contacto establecido con {{base}}.",
     "xylophContacted": "Has contactado con Xyloph: {{entry}}",
+    "merchantDealClosed": "Has cerrado un trato con una nave mercante.",
     "neronUpdating": "Has trabajado en la actualización de NERON: {{percent}} % hecho.",
     "neronUpdated": "NERON pasa a la versión {{version}}.",
     "neronUpdatedProject": "NERON pasa a la versión {{version}}. El proyecto {{project}} está terminado.",
@@ -1678,6 +1681,43 @@
     "neronTitle": "Actualización de NERON",
     "neronVersion": "NERON versión {{version}}",
     "neronProgress": "{{percent}} % hacia la próxima actualización. Cada actualización termina un proyecto de NERON.",
+    "merchants": {
+      "tab_zero": "Mercaderes",
+      "tab_one": "Mercaderes ({{count}})",
+      "tab_many": "Mercaderes ({{count}})",
+      "tab_other": "Mercaderes ({{count}})",
+      "title": "Naves mercantes en órbita",
+      "none": "Ninguna nave mercante en órbita.",
+      "leaves_one": "Se va en {{count}} ciclo.",
+      "leaves_many": "Se va en {{count}} ciclos.",
+      "leaves_other": "Se va en {{count}} ciclos.",
+      "dealsLabel": "Tratos",
+      "give": "Entregas: {{list}}",
+      "receive": "Recibes: {{list}}",
+      "item": "{{count}} × {{item}}",
+      "crew_one": "{{count}} tripulante inactivo",
+      "crew_many": "{{count}} tripulantes inactivos",
+      "crew_other": "{{count}} tripulantes inactivos",
+      "oxygen": "{{count}} de oxígeno de los tanques",
+      "fuel": "{{count}} de combustible de los tanques",
+      "needsSkill": "Hace falta alguien con la habilidad {{skill}} en la sala del Oficial de Comunicaciones.",
+      "officerOnly": "Solo el Oficial de Comunicaciones puede cerrar un trato.",
+      "unavailable": "Este trato no se puede cerrar ahora mismo.",
+      "blocked": {
+        "skill": "Nadie en la sala del Oficial de Comunicaciones tiene la habilidad {{skill}}.",
+        "crew": "No hay suficientes tripulantes inactivos a bordo.",
+        "item": "No hay suficiente {{item}} en el suelo de los almacenes.",
+        "oxygen": "No hay suficiente oxígeno en los tanques.",
+        "fuel": "No hay suficiente combustible en los tanques."
+      },
+      "kinds": {
+        "transport": "Nave de transporte"
+      },
+      "hails": {
+        "HUMAN_VS_FUEL": "Tenemos un excedente de anticongelante y nos falta comida para esta noche. ¿Os interesa?",
+        "HUMAN_VS_OXY": "¡Aloha! Vuestros organismos son fascinantes, sobre todo cómo convertís vuestros residuos orgánicos en metano. Increíble... ¡Os damos un buen montón de oxígeno a cambio de uno de vuestros amigos!"
+      }
+    },
     "rebels": {
       "WOLF": {
         "name": "Niños Perdidos de Wolf",

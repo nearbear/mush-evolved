@@ -692,6 +692,7 @@ describe("actions from a client", () => {
     decode_rebel: [{ type: "decode_rebel", equipment: "e1", base: "b1" }],
     contact_xyloph: [{ type: "contact_xyloph", equipment: "e1" }],
     update_neron: [{ type: "update_neron", equipment: "e1" }],
+    close_deal: [{ type: "close_deal", equipment: "e1", merchant: "m1", deal: 0 }],
     set_bios: [{ type: "set_bios", equipment: "e1", option: BIOS_OPTIONS[0]!, value: true }],
     scan_planet: [{ type: "scan_planet", equipment: "e1" }],
     analyze_planet: [{ type: "analyze_planet", equipment: "e1", planet: "pl1" }],
@@ -801,8 +802,8 @@ describe("actions from a client", () => {
         if (action.type === "dismantle" || action.type === "reinforce") continue;
         const { [key]: _dropped, ...missing } = action as Record<string, unknown>;
         if (!(action.type === "attack" && key === "target")) expect(asAction(missing), `${action.type} without ${key}`).toBeNull();
-        // A plan's slot is an index: a number is its right type, so it gets a wrong one.
-        const wrong = key === "slot" ? "7" : 7;
+        // A plan's slot and a merchant deal are indexes: a number is their right type, so they get a wrong one.
+        const wrong = key === "slot" || key === "deal" ? "7" : 7;
         expect(asAction({ ...action, [key]: wrong }), `${action.type} with a wrongly typed ${key}`).toBeNull();
       }
     }

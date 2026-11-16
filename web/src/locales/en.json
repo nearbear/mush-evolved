@@ -410,6 +410,7 @@
     "contactSol": "Establish link with Sol",
     "decodeRebel": "Decode rebel signal",
     "contactXyloph": "Contact Xyloph",
+    "closeDeal": "Close the deal",
     "updateNeron": "Update NERON",
     "setBios": "Change a BIOS setting",
     "turnShip": "Turn the ship",
@@ -623,7 +624,8 @@
     "exploration": "unfortunate adventurer",
     "exploration_combat": "not cut out for combat",
     "exploration_lost": "lost explorer",
-    "daedalus_destroyed": "Daedalus destroyed"
+    "daedalus_destroyed": "Daedalus destroyed",
+    "traded": "traded away"
   },
   "itrackie": {
     "visibility": {
@@ -1031,6 +1033,7 @@
     "rebelDecoded": "You decoded part of the signal from {{base}}: {{percent}}% decoded.",
     "rebelContacted": "You decoded the whole signal: contact made with {{base}}.",
     "xylophContacted": "You contacted Xyloph: {{entry}}",
+    "merchantDealClosed": "You closed a deal with a merchant ship.",
     "neronUpdating": "You worked on NERON's update: {{percent}}% done.",
     "neronUpdated": "NERON is now version {{version}}.",
     "neronUpdatedProject": "NERON is now version {{version}}. The {{project}} project is complete.",
@@ -1748,6 +1751,40 @@
     "neronTitle": "NERON update",
     "neronVersion": "NERON version {{version}}",
     "neronProgress": "{{percent}}% toward the next update. Each update completes a NERON project.",
+    "merchants": {
+      "tab_zero": "Merchants",
+      "tab_one": "Merchants ({{count}})",
+      "tab_other": "Merchants ({{count}})",
+      "title": "Merchant ships in orbit",
+      "none": "No merchant ship in orbit.",
+      "leaves_one": "Leaves in {{count}} cycle.",
+      "leaves_other": "Leaves in {{count}} cycles.",
+      "dealsLabel": "Deals",
+      "give": "You give: {{list}}",
+      "receive": "You get: {{list}}",
+      "item": "{{count}} × {{item}}",
+      "crew_one": "{{count}} inactive crew member",
+      "crew_other": "{{count}} inactive crew members",
+      "oxygen": "{{count}} oxygen from the tanks",
+      "fuel": "{{count}} fuel from the tanks",
+      "needsSkill": "Needs someone with the {{skill}} skill in the Comms Officer's room.",
+      "officerOnly": "Only the Comms Officer can close a deal.",
+      "unavailable": "This deal can't be closed right now.",
+      "blocked": {
+        "skill": "Nobody in the Comms Officer's room has the {{skill}} skill.",
+        "crew": "There aren't enough inactive crew members aboard.",
+        "item": "There isn't enough {{item}} on the storage room floors.",
+        "oxygen": "There isn't enough oxygen in the tanks.",
+        "fuel": "There isn't enough fuel in the tanks."
+      },
+      "kinds": {
+        "transport": "Transport ship"
+      },
+      "hails": {
+        "HUMAN_VS_FUEL": "We have a surplus of antifreeze and nothing to eat tonight. Interested?",
+        "HUMAN_VS_OXY": "Aloha! Your bodies are truly fascinating, especially the way you turn your organic waste into methane. Incredible... We'll give you plenty of oxygen for one of your friends!"
+      }
+    },
     "rebels": {
       "WOLF": {
         "name": "Lost Children of Wolf",

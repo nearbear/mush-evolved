@@ -13,6 +13,8 @@ import {
   normalizeGame,
   normalizeHunterTarget,
   normalizeReport,
+  normalizeGiveAsset,
+  normalizeReceiveAsset,
   normalizeOverrides,
   normalizePlanSlot,
   normalizePlanTask,
@@ -27,6 +29,7 @@ import {
   normalizeFrame,
   type UpgradeStep,
 } from "../src/normalizeState.ts";
+import type { GiveAsset, ReceiveAsset } from "../src/merchants.ts";
 import type { ConfigOverrides, Container, GameState, HunterTarget, PlanSlot, Report, PlanTask, PlayerState, Spot } from "../src/types.ts";
 import { play } from "./randomGame.ts";
 import { addProbes, probesIn } from "./storedShape.ts";
@@ -336,6 +339,8 @@ describe("union normalizers", () => {
     ["PlanTask", normalizePlanTask, { type: "bring", itemType: "medikit" }, "type"],
     ["DocumentState", normalizeDocument, { kind: "lost_analysis", rows: [] }, "kind"],
     ["Report", normalizeReport, { kind: "fire", room: "BRIDGE", by: "p1" }, "kind"],
+    ["GiveAsset", normalizeGiveAsset, { kind: "crew", count: 1 }, "kind"],
+    ["ReceiveAsset", normalizeReceiveAsset, { kind: "item", item: "oxy_capsule", count: 5 }, "kind"],
   ];
 
   for (const [type, normalize, valid, key] of cases) {
@@ -365,6 +370,15 @@ describe("union normalizers", () => {
     equipment: { kind: "equipment", equipment: "BRIDGE:COMMUNICATION_CENTER", by: "p2" },
     door: { kind: "door", door: "BRIDGE|FRONT_CORRIDOR", by: "p1" },
   };
+  const gives: { [K in GiveAsset["kind"]]: Extract<GiveAsset, { kind: K }> } = {
+    crew: { kind: "crew", count: 2 },
+    item: { kind: "item", item: "uncooked_ration", count: 4 },
+    oxygen: { kind: "oxygen", count: 3 },
+    fuel: { kind: "fuel", count: 7 },
+  };
+  const receives: { [K in ReceiveAsset["kind"]]: Extract<ReceiveAsset, { kind: K }> } = {
+    item: { kind: "item", item: "fuel_capsule", count: 9 },
+  };
   const tasks: { [K in PlanTask["type"]]: Extract<PlanTask, { type: K }> } = {
     research: { type: "research", research: "r" },
     project: { type: "project", project: "p" },
@@ -385,6 +399,8 @@ describe("union normalizers", () => {
     ["Spot", normalizeSpot, Object.values(spots).flat()],
     ["HunterTarget", normalizeHunterTarget, Object.values(targets)],
     ["Report", normalizeReport, Object.values(reports)],
+    ["GiveAsset", normalizeGiveAsset, Object.values(gives)],
+    ["ReceiveAsset", normalizeReceiveAsset, Object.values(receives)],
     ["PlanTask", normalizePlanTask, Object.values(tasks)],
     ["PlanSlot", normalizePlanSlot, Object.values(slots).flat()],
     ["DocumentState", normalizeDocument, [{ kind: "lost_analysis", rows: [{ character: "chun", negative: true }, { character: "chao", negative: false }] }]],

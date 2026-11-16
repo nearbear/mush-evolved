@@ -3982,3 +3982,16 @@ Two hidden-information choices made by Claude, not the owner, worth a look: (1) 
 - **What needed correction:** `npm run emush -- spec` returned empty output on about half its runs (the AcceptTrade spec never came back), so accept cost and expiry came from the owner rather than upstream. Claude's "one merchant at a time" and "deliver to the bridge" recommendations were overruled (several at once; Front Storage).
 
 - **2026-11-15 — Doors slice 4: Doorman (`sabotage_door`) (#330):** Implemented `sabotage_door { door }` (`shared/src/actions/sabotage_door.ts`), `config.doorman.cost.ap` (2 AP after the first free use each day), `PlayerState.doormanToday` (cleared at day start, included in `MIND_FIELDS` for Transfer, listed in `leakFields.ts`), covert `doorSabotaged` log line, and en/fr/es locale entries (`actions.sabotageDoor`, `log.doorSabotaged`). Existing `namedTarget`, `actionTarget`, and `optionsOn` routing already surfaces door-targeted actions on the Inspect panel and phone peek bar.
+
+## 2026-11-15: Merchant ships, phase 1 first slice (#143)
+
+- **What:** rules-only skeleton for merchant ships: `shared/src/merchants.ts` (state, arrival roll, 4-cycle stay, leaving on travel/leave orbit, deal templates in `config.merchants`, payment check and payment, delivery to Front Storage), `actions/close_deal.ts`, `comms.terminal.merchants` in the view, `killPlayer` cause `traded` (no corpse, no room line, no NERON line). No client.
+- **Owner's calls this session:** merchants in their own `state.merchants` (not the hunter list); only HUMAN_VS_FUEL and HUMAN_VS_OXY for now.
+- **Claude's interim choices, listed in `docs/plans/merchants.md` to confirm:** capsules received as items, fuel/oxygen paid from tanks; eMush's skill gate (someone alive in the officer's room); no link with Sol needed; the merchant leaves after a deal; traded deaths unannounced.
+- **Needed correction:** the arrival roll first drew from the game's main `rng`, which shifted every later roll and broke two unrelated seeded tests (a bot's travel test saw a fire; a coffee test's player stopped acting). Fixed by giving merchants their own stream (`GameState.merchantRng`, like `npcs`), kept out of every view, so adding a random system no longer perturbs existing games or tests. Worth doing up front for any new per-cycle random roll.
+
+## 2026-11-15: merchants terminal tab (#143)
+
+- Added a Merchants tab to the Com center terminal (`web/src/hud/Merchants.tsx`): each ship in orbit with its kind, departure, hail (adapted from the original's French `trade_events` text into en/fr/es) and deals. A deal with a `close_deal` option gets a double-press button; any other is a greyed button whose popover gives the rules' `blocked` reason, or "Comms Officer only". `view.config.merchantDealAp` carries the price for the greyed buttons.
+- Four tabs overflow 360px in French and Spanish, so the Com center's tab list lets its labels wrap and share the line (`.comms-tab-list`). Not yet checked in a screenshot.
+- What needed care: matching existing catalog terms (fr "affaire", es "trato", "nave mercante") rather than inventing new ones.

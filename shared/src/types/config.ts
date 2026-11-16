@@ -1,4 +1,5 @@
 import type { IncidentId } from "../incidents.ts";
+import type { DealTemplate, MerchantKind } from "../merchants.ts";
 import type { PlanetDirection } from "../planets.ts";
 import type { PlantState, RoomId } from "../types.ts";
 import type { StatusId } from "../statuses.ts";
@@ -536,6 +537,16 @@ export interface GameConfig {
     returnCost: { ap: number }; // AP spent to return to Sol at the Command terminal (owner, 2026-10-21; the original's SET_PILGRED_TO_SOL, 2).
     // Coffee regeneration cycles of each day when PILGRED is repaired (owner, 2026-11-02; the original's C1, C3, C5, C7).
     coffeeCycles: number[];
+  };
+  // Merchant ships (merchants.ts; owner, 2026-11-15, #143).
+  merchants: {
+    arrivalChance: number; // Chance of an arrival at each cycle change after pre-selection (owner: about 2 a day; 0.25 x 8 cycles).
+    stayCycles: number; // Cycles a merchant stays in orbit (owner, 4).
+    deal: { cost: { ap: number } }; // AP the comms officer spends to close a deal (owner, 2).
+    storageRooms: RoomId[]; // Rooms whose floors pay for item deals (owner: any storage).
+    deliveryRoom: RoomId; // Where bought items appear (owner: Front Storage).
+    // Each kind's arrival weight and hails: event id -> its deals (the original's trade_events), in order.
+    kinds: Record<MerchantKind, { weight: number; events: Record<string, DealTemplate[]> }>;
   };
   comms: {
     sol: {

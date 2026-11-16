@@ -417,6 +417,7 @@
     "contactSol": "Établir le contact avec Sol",
     "decodeRebel": "Décoder un signal rebelle",
     "contactXyloph": "Contacter Xyloph",
+    "closeDeal": "Conclure l'affaire",
     "updateNeron": "Mettre à jour NERON",
     "setBios": "Modifier un réglage du BIOS",
     "turnShip": "Orienter le vaisseau",
@@ -631,7 +632,8 @@
     "exploration": "aventurier malchanceux",
     "exploration_combat": "aventurier pas assez combatif",
     "exploration_lost": "aventurier perdu",
-    "daedalus_destroyed": "Daedalus détruit"
+    "daedalus_destroyed": "Daedalus détruit",
+    "traded": "vendu à un vaisseau marchand"
   },
   "itrackie": {
     "visibility": {
@@ -1047,6 +1049,7 @@
     "rebelDecoded": "Vous avez décodé une partie du signal de {{base}} : {{percent}} % décodé.",
     "rebelContacted": "Vous avez décodé tout le signal : contact établi avec {{base}}.",
     "xylophContacted": "Vous avez contacté Xyloph : {{entry}}",
+    "merchantDealClosed": "Vous avez conclu une affaire avec un vaisseau marchand.",
     "neronUpdating": "Vous avez travaillé à la mise à jour de NERON : {{percent}} % effectué.",
     "neronUpdated": "NERON passe en version {{version}}.",
     "neronUpdatedProject": "NERON passe en version {{version}}. Le projet {{project}} est terminé.",
@@ -1678,6 +1681,43 @@
     "neronTitle": "Mise à jour de NERON",
     "neronVersion": "NERON version {{version}}",
     "neronProgress": "{{percent}} % vers la prochaine mise à jour. Chaque mise à jour termine un projet NERON.",
+    "merchants": {
+      "tab_zero": "Marchands",
+      "tab_one": "Marchands ({{count}})",
+      "tab_many": "Marchands ({{count}})",
+      "tab_other": "Marchands ({{count}})",
+      "title": "Vaisseaux marchands en orbite",
+      "none": "Aucun vaisseau marchand en orbite.",
+      "leaves_one": "Repart dans {{count}} cycle.",
+      "leaves_many": "Repart dans {{count}} cycles.",
+      "leaves_other": "Repart dans {{count}} cycles.",
+      "dealsLabel": "Affaires",
+      "give": "Vous donnez : {{list}}",
+      "receive": "Vous recevez : {{list}}",
+      "item": "{{count}} × {{item}}",
+      "crew_one": "{{count}} membre d'équipage inactif",
+      "crew_many": "{{count}} membres d'équipage inactifs",
+      "crew_other": "{{count}} membres d'équipage inactifs",
+      "oxygen": "{{count}} d'oxygène des réservoirs",
+      "fuel": "{{count}} de fuel des réservoirs",
+      "needsSkill": "Il faut quelqu'un avec la compétence {{skill}} dans la pièce du Responsable Communications.",
+      "officerOnly": "Seul le Responsable Communications peut conclure une affaire.",
+      "unavailable": "Cette affaire ne peut pas être conclue pour l'instant.",
+      "blocked": {
+        "skill": "Personne dans la pièce du Responsable Communications n'a la compétence {{skill}}.",
+        "crew": "Il n'y a pas assez de membres d'équipage inactifs à bord.",
+        "item": "Il n'y a pas assez de {{item}} au sol des entrepôts.",
+        "oxygen": "Il n'y a pas assez d'oxygène dans les réservoirs.",
+        "fuel": "Il n'y a pas assez de fuel dans les réservoirs."
+      },
+      "kinds": {
+        "transport": "Vaisseau de transport"
+      },
+      "hails": {
+        "HUMAN_VS_FUEL": "Nous avons un surplus d'antigel et il nous manque à manger pour ce soir, ça vous dit ?",
+        "HUMAN_VS_OXY": "Aloha, vos organismes sont vraiment passionnants, surtout la méthanisation de vos déchets organiques, incroyable... Nous vous échangeons un de vos amis contre des réserves d'oxygène conséquentes !"
+      }
+    },
     "rebels": {
       "WOLF": {
         "name": "Enfants Perdus de Wolf",
