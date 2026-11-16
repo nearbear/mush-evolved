@@ -687,6 +687,7 @@
       "mush": "Canal Mush",
       "graveyard": "Cimetière"
     },
+    "roomEmpty": "Aucun événement pour l'instant.",
     "mushPlaceholder": "Message aux Mush…",
     "graveyardPlaceholder": "Message aux morts…",
     "readOnly": "Les morts peuvent lire, mais pas écrire.",
@@ -881,6 +882,8 @@
     "sickDesc": "Cette plante est malade : elle ne produira ni fruits ni oxygène tant qu'elle n'est pas traitée.",
     "label": "Attributs de l'objet",
     "heavy": "Lourd",
+    "customized": "Customisé",
+    "customizedDesc": "Seul son créateur peut s'en servir pour tirer. +1 force en expédition.",
     "charges_one": "{{count}} charge restante",
     "charges_many": "{{count}} charges restantes",
     "charges_other": "{{count}} charges restantes",

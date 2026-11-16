@@ -76,6 +76,9 @@ export const STEROIDS_ITEM = "steroids";
 export const STEROIDS_YIELD = 4;
 export const STEROIDS_MP = 8;
 
+/** The customized blaster spawned by picking the `infantryman` skill (modifiers/infantryman.ts). */
+export const CUSTOMIZED_BLASTER_ITEM = "customized_blaster";
+
 /** The drugs (drugs.ts): their effects are drawn per ship, so each is only a consumable here. */
 export const DRUG_ITEMS: readonly string[] = Array.from({ length: 12 }, (_, i) => `drug_${i}`);
 
@@ -99,6 +102,7 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   // Weapons (owner, 2026-10-22, from the English wiki): their combat numbers are `config.weapons`. Named after their icons.
   knife: { dismantle: { metal: 1, plastic: 0, chance: 0.5 }, canBreak: true, canBeSabotaged: true, repairChance: 0.25 },
   blaster: { dismantle: { metal: 1, plastic: 0, chance: 0.25 }, canBreak: true, canBeSabotaged: true, repairChance: 0.25 },
+  [CUSTOMIZED_BLASTER_ITEM]: { dismantle: { metal: 1, plastic: 0, chance: 0.25 }, canBreak: true, canBeSabotaged: true, repairChance: 0.25 },
   natamy_riffle: { dismantle: { metal: 1, plastic: 0, chance: 0.12 }, canBreak: true, canBeSabotaged: true, repairChance: 0.12 },
   // Lizaro Jungle.
   sniper_riffle: { dismantle: { metal: 1, plastic: 0, extra: ["thick_tube"], chance: 0.12 }, canBreak: true, canBeSabotaged: true, repairChance: 0.12 },

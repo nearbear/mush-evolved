@@ -678,6 +678,7 @@
       "mush": "Mush channel",
       "graveyard": "Graveyard"
     },
+    "roomEmpty": "No events yet.",
     "mushPlaceholder": "Message the Mush…",
     "graveyardPlaceholder": "Message the dead…",
     "readOnly": "The dead can read, but not post.",
@@ -866,6 +867,8 @@
     "sickDesc": "This plant is sick: it makes neither fruit nor oxygen until it is treated.",
     "label": "Item attributes",
     "heavy": "Heavy",
+    "customized": "Customized",
+    "customizedDesc": "Only its creator can fire it. +1 expedition strength.",
     "charges_one": "{{count}} charge left",
     "charges_other": "{{count}} charges left",
     "heavyDesc": "Carrying it makes every move between rooms cost {{mp}} extra movement points, regardless of how many heavy objects you are carrying. The Solid skill cancels this."

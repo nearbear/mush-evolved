@@ -91,6 +91,7 @@ export class AttackAction extends Action<AttackActionData> {
 /** Carried weapons that can be used now: with a charge left, if they use charges. */
 function usableWeapons(state: Readonly<GameState>, player: Readonly<PlayerState>): ItemState[] {
   return itemsIn(state, { kind: "player", id: player.id }).filter((i) => {
+    if (i.owner !== undefined && i.owner !== player.id) return false;
     const stats = state.config.weapons.types[i.type];
     return stats && isWorking(i) && (stats.charges === undefined || (i.charges ?? 0) > 0);
   });

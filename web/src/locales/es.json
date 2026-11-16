@@ -687,6 +687,7 @@
       "mush": "Canal Mush",
       "graveyard": "Cementerio"
     },
+    "roomEmpty": "Todavía no hay eventos.",
     "mushPlaceholder": "Mensaje a los Mush…",
     "graveyardPlaceholder": "Mensaje a los muertos…",
     "readOnly": "Los muertos pueden leer, pero no escribir.",
@@ -881,6 +882,8 @@
     "sickDesc": "Esta planta está enferma: no producirá ni frutos ni oxígeno hasta que se trate.",
     "label": "Atributos del objeto",
     "heavy": "Pesado",
+    "customized": "Personalizado",
+    "customizedDesc": "Solo su creador puede disparar con él. +1 de fuerza en expedición.",
     "charges_one": "Queda {{count}} carga",
     "charges_many": "Quedan {{count}} cargas",
     "charges_other": "Quedan {{count}} cargas",

@@ -60,4 +60,8 @@ describe("itemViewIcon", () => {
     expect(itemViewIcon({ type: "tree_pot", plant: { species: "fruit_banana", age: null, thirst: 0 } })).toContain("tree_banana");
     expect(itemViewIcon({ type: "tree_pot" })).toContain("tree_pot");
   });
+
+  it("renders the regular blaster icon for customized_blaster", () => {
+    expect(itemViewIcon({ type: "customized_blaster" })).toBe(itemViewIcon({ type: "blaster" }));
+  });
 });

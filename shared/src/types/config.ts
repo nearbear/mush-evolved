@@ -425,6 +425,11 @@ export interface GameConfig {
     accuracyFactor: number; // The `gunner` skill multiplies the chance to hit from a turret by this (owner, 2026-10-24; the data's MulActionOdd 2.0).
     damageFactor: number; // ...and the damage of a hit (owner, 2026-10-24).
   };
+  infantryman: {
+    accuracyFactor: number; // The `infantryman` skill multiplies the chance to hit from a turret by this (owner, 2026-11-15).
+    pointsPerDay: number; // Shoot points the `infantryman` skill grants at the start of each day (owner, 2026-11-15).
+    pointsOnPick: number; // Shoot points the `infantryman` skill grants when picked (owner, 2026-11-15).
+  };
   persistent: {
     failureMultiplier: number; // The `persistent` skill's per-miss multiplier on a failure streak (turret, astro scan), replacing the usual one when higher (owner, 2026-10-25).
   };

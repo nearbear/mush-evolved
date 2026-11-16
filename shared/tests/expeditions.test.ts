@@ -1151,7 +1151,7 @@ describe("expeditions, phase 4, slice D: skills", () => {
 
   it("the guns are every weapon but the knife (melee) and the grenade (thrown)", () => {
     const guns = Object.entries(DEFAULT_CONFIG.weapons.types).filter(([, w]) => w.gun).map(([type]) => type);
-    expect(guns.sort()).toEqual(["blaster", "machine_gun", "missile_launcher", "natamy_riffle", "sniper_riffle"]);
+    expect(guns.sort()).toEqual(["blaster", "customized_blaster", "machine_gun", "missile_launcher", "natamy_riffle", "sniper_riffle"]);
   });
 
   it("with the Centauri base contacted, each working blaster adds 1", () => {

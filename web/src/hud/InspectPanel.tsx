@@ -5,7 +5,7 @@ import { useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
 import type { CSSProperties, ReactNode } from "react";
-import { actionVisibility, CHARACTERS, ITEM_TYPES, PROJECT_COMPLETE, characterGivenName, characterName, SUPER_CALC_EQUIPMENT, SUPERKUBE, type Action, type ActionOption, type EquipmentView, type PlayerView, type ShipLayout, type Target } from "@mush2/shared";
+import { actionVisibility, CHARACTERS, CUSTOMIZED_BLASTER_ITEM, ITEM_TYPES, PROJECT_COMPLETE, characterGivenName, characterName, SUPER_CALC_EQUIPMENT, SUPERKUBE, type Action, type ActionOption, type EquipmentView, type PlayerView, type ShipLayout, type Target } from "@mush2/shared";
 import { BROKEN_ICON, characterImage, CONTAMINATED_ICON, JELLY_ICON, portrait, SHIELD_ICON } from "../art/assets.ts";
 import { useMobile } from "../useMobile.ts";
 import { atlasUrl } from "../iso/shipLayout.ts";
@@ -179,7 +179,7 @@ function Details({ view, layout, resolved, onAction }: { view: PlayerView; layou
             <strong>{names.itemOf(resolved.item)}</strong>
             {resolved.item.drone && <div className="sub inspect-drone">{names.drone(resolved.item.drone.name, resolved.item.drone.serial)}</div>}
           </div>
-          <ItemAttrIcons heavy={ITEM_TYPES[resolved.item.type]?.heavy === true} mpPenalty={view.config.heavyMpPenalty} />
+          <ItemAttrIcons heavy={ITEM_TYPES[resolved.item.type]?.heavy === true} mpPenalty={view.config.heavyMpPenalty} customized={resolved.item.type === CUSTOMIZED_BLASTER_ITEM} />
           {resolved.item.broken && (
             <div className="sub inspect-broken">
               <img src={BROKEN_ICON} alt="" /> {t("roomList.broken")}

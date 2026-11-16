@@ -622,7 +622,7 @@ function fight(ctx: Ctx, event: ExpeditionEvent, creature: string): void {
   const isGun = (i: ItemState) => weapons[i.type]!.gun === true;
   const shooters = members.filter((p) => hasSkill(p, "gunman") && counted.some((i) => isGun(i) && i.at.kind === "player" && i.at.id === p.id));
   crew += shooters.length * rules.shooterBonus;
-  if (rebelContacted(state, "CENTAURI")) crew += counted.filter((i) => i.type === rules.centauri.item).length * rules.centauri.bonus;
+  if (rebelContacted(state, "CENTAURI")) crew += counted.filter((i) => i.type === rules.centauri.item || i.type === "customized_blaster").length * rules.centauri.bonus;
   const withAllGrenades = crew + grenades.reduce((sum, g) => sum + weapons[g.type]!.expoStrength, 0);
   let used = 0;
   for (const grenade of grenades) {

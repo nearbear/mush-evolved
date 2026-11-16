@@ -15,7 +15,7 @@ const RESOURCE_SKILLS: Partial<Record<ResourceId, readonly string[]>> = {
   heal: ["first_aid"],
   eng: ["engineer", "maintenance_agent"],
   comp: ["computer", "polymath"],
-  shoot: ["gunman"],
+  shoot: ["gunman", "infantryman"],
   core: ["designer"],
   pilgred: ["physicist"],
   garden: ["botanic", "maintenance_agent"],

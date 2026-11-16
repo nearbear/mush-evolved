@@ -240,6 +240,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Owner, 2026-10-27: Astrophysicist scans for 1 AP less and each remote analysis reveals 1 extra sector (the original skills.json).
   astrophysicist: { scanApDiscount: 1, extraSectors: 1 },
   gunner: { accuracyFactor: 2, damageFactor: 2 },
+  // Owner, 2026-11-15: Infantryman doubles turret hit chance, grants +1 Shoot point/day and on pick (shared cap), and gives a customized blaster.
+  infantryman: { accuracyFactor: 2, pointsPerDay: 1, pointsOnPick: 1 },
   persistent: { failureMultiplier: 1.5 },
   spaceTactics: { chance: 0.5, shrink: 0.33 },
   polymath: { channels: 2, computerPointsPerDay: 1, computerCapBonus: 2 },
@@ -565,6 +567,7 @@ export const DEFAULT_CONFIG: GameConfig = {
     types: {
       knife: { melee: true, damage: [1, 5], accuracy: 0.6, expoStrength: 1, dirtyChance: 0.25, repairChance: 0.12 },
       blaster: { gun: true, damage: [2, 3], accuracy: 0.5, expoStrength: 1, charges: 3, dirtyChance: 0, repairChance: 0.12 },
+      customized_blaster: { gun: true, damage: [2, 3], accuracy: 0.5, expoStrength: 2, charges: 3, dirtyChance: 0, repairChance: 0.12 },
       natamy_riffle: { gun: true, damage: [2, 4], mushDamage: [6, 13], accuracy: 0.5, expoStrength: 1, charges: 3, dirtyChance: 0, repairChance: 0.12 },
       // Lizaro Jungle.
       sniper_riffle: { gun: true, damage: [3, 5], accuracy: 0.99, expoStrength: 1, charges: 1, dirtyChance: 0, repairChance: 0.12 },

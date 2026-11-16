@@ -30,6 +30,7 @@ import { frugivore } from "./modifiers/frugivore.ts";
 import { green_thumb } from "./modifiers/green_thumb.ts";
 import { gunman } from "./modifiers/gunman.ts";
 import { gunner } from "./modifiers/gunner.ts";
+import { infantryman } from "./modifiers/infantryman.ts";
 import { lethargy } from "./modifiers/lethargy.ts";
 import { logistics } from "./modifiers/logistics.ts";
 import { maintenance_agent } from "./modifiers/maintenance_agent.ts";
@@ -224,6 +225,7 @@ export const MODIFIERS: Record<string, Modifier> = {
   green_thumb,
   gunman,
   gunner,
+  infantryman,
   lethargy,
   logistics,
   maintenance_agent,
