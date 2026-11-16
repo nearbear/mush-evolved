@@ -538,6 +538,8 @@ export interface GameConfig {
     floorHeating: { injuryFactor: number };
     // Thalasso (THALASSO; 2026-11-15): for non-Mush players, each shower rolls independently at `chance` (25%) for +`hp` health, +`morale` morale, and +`mp` MP (each capped at max).
     thalasso: { chance: number; hp: number; morale: number; mp: number };
+    // Dismantling (DISMANTLING; owner, 2026-11-15): completing it puts `count` metal scraps on the floor of `room` (the engine room).
+    dismantling: { room: RoomId; count: number };
   };
   pilgred: {
     cost: { ap: number }; // AP spent to take part in repairing PILGRED (owner, 2026-10-21; the original's REPAIR_PILGRED, 2).

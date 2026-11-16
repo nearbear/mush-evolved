@@ -1676,7 +1676,7 @@
       "RADAR_TRANS_VOID": "The star antenna doubles the progress of attempts to connect with Sol.",
       "MAGNETIC_NET": "When the Daedalus moves, patrol ships are brought back on board automatically.",
       "FOOD_RETAILER": "Creates 2 pneumatic input tubes and 1 pneumatic output tube. Items can be sent through the input tubes to the output tube.",
-      "DISMANTLING": "Produces 5 metal scraps in the engine room.",
+      "DISMANTLING": "Produces 8 metal scraps in the engine room.",
       "AUTO_RETURN_ICARUS": "The Icarus returns to the Daedalus by itself if the mission fails.",
       "EXTRA_DRONE": "Adds a drone in the Nexus to look after the Daedalus.",
       "FISSION_COFFEE_ROASTER": "The coffee machine also recharges at cycle 5.",

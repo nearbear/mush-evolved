@@ -151,6 +151,8 @@ export const PROJECT_STATUS: Readonly<Partial<Record<ProjectId, ProjectStatus>>>
   FLOOR_HEATING: "full",
   // Non-Mush showers roll independently (25% each) for +1 HP, +1 morale, and +2 MP, each capped at max (owner, 2026-11-15; actions/shower.ts).
   THALASSO: "full",
+  // Completing it spawns 8 metal scraps on the Engine Room floor (owner, 2026-11-15; projectEffects.ts).
+  DISMANTLING: "full",
 };
 
 export function projectStatus(project: string): ProjectStatus {

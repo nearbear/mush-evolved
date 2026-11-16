@@ -1603,7 +1603,7 @@
       "RADAR_TRANS_VOID": "La antena estelar duplica el avance de los intentos de conexión con Sol.",
       "MAGNETIC_NET": "Cuando el Daedalus se desplaza, las naves patrulla vuelven a bordo automáticamente.",
       "FOOD_RETAILER": "Crea 2 tubos neumáticos de entrada y 1 tubo neumático de salida. Los objetos enviados por los tubos de entrada llegan al tubo de salida.",
-      "DISMANTLING": "Genera 5 restos metálicos en la sala de máquinas.",
+      "DISMANTLING": "Genera 8 restos metálicos en la sala de máquinas.",
       "AUTO_RETURN_ICARUS": "El Icarus vuelve solo al Daedalus si la misión fracasa.",
       "EXTRA_DRONE": "Añade un dron en el Nexus para cuidar del Daedalus.",
       "FISSION_COFFEE_ROASTER": "La máquina de café también se recarga en el ciclo 5.",

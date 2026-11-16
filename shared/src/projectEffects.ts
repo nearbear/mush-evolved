@@ -64,6 +64,11 @@ function onProjectCompleted(state: GameState, project: ProjectId): void {
       state.items.push({ id: newItemId(state), type: SUPPORT_DRONE_ITEM, at: { kind: "room", id: room }, drone: newDrone(state) });
     }
   }
+  // Dismantling (DISMANTLING; owner, 2026-11-15): spawns `count` metal scraps on the floor of `room` (the engine room).
+  if (project === "DISMANTLING") {
+    const { room, count } = state.config.project.dismantling;
+    for (let i = 0; i < count; i++) state.items.push({ id: newItemId(state), type: "metal_scraps", at: { kind: "room", id: room } });
+  }
 }
 
 /** Marks `project` complete, retires `retire` from the proposal deck, and runs its one-time completion effects. */

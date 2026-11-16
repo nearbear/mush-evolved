@@ -1603,7 +1603,7 @@
       "RADAR_TRANS_VOID": "L'antenne stellaire double les progrès des tentatives de connexion avec Sol.",
       "MAGNETIC_NET": "Quand le Daedalus se déplace, les patrouilleurs sont automatiquement ramenés à bord.",
       "FOOD_RETAILER": "Crée 2 tuyaux pneumatiques d'entrée et 1 tuyau pneumatique de sortie. Les objets envoyés dans les tuyaux d'entrée arrivent au tuyau de sortie.",
-      "DISMANTLING": "Génère 5 débris métalliques dans la salle des moteurs.",
+      "DISMANTLING": "Génère 8 débris métalliques dans la salle des moteurs.",
       "AUTO_RETURN_ICARUS": "L'Icarus retourne automatiquement dans le Daedalus si la mission échoue.",
       "EXTRA_DRONE": "Ajoute un drone dans le Nexus pour prendre soin du Daedalus.",
       "FISSION_COFFEE_ROASTER": "La machine à café se recharge aussi au cycle 5.",
