@@ -1480,7 +1480,8 @@ describe("expeditions, phase 5: hold extension, patrol-ship landings, no droppin
     expect(player(landed, "p0").statuses).toContain("dirty");
   });
 
-  it("marks ICARUS_LARGER_BAY, ICARUS_LAVATORY and AUTO_RETURN_ICARUS as fully implemented", () => {
+  it("marks ICARUS_ANTIGRAV_PROPELLER, ICARUS_LARGER_BAY, ICARUS_LAVATORY and AUTO_RETURN_ICARUS as fully implemented", () => {
+    expect(projectStatus("ICARUS_ANTIGRAV_PROPELLER")).toBe("full");
     expect(projectStatus("ICARUS_LARGER_BAY")).toBe("full");
     expect(projectStatus("ICARUS_LAVATORY")).toBe("full");
     expect(projectStatus("AUTO_RETURN_ICARUS")).toBe("full");

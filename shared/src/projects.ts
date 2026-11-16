@@ -139,6 +139,8 @@ export const PROJECT_STATUS: Readonly<Partial<Record<ProjectId, ProjectStatus>>>
   MAGNETIC_NET: "full",
   // On jump or leaving orbit, an expedition away (Icarus or patrol ship on a planet) is recalled safe instead of lost (owner, 2026-11-07, #356; expeditions.ts).
   AUTO_RETURN_ICARUS: "full",
+  // Any expedition landing is safe (Nothing) even without a living Pilot aboard (owner, 2026-11-08; expeditions.ts).
+  ICARUS_ANTIGRAV_PROPELLER: "full",
   // The Icarus holds 6 crew instead of 4 (owner, 2026-11-09, #359; expeditions.ts).
   ICARUS_LARGER_BAY: "full",
   // Returning from an Icarus expedition never makes the crew dirty (owner, 2026-11-15; expeditions.ts).
