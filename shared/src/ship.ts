@@ -4,11 +4,12 @@
 // Hunters damage the hull (100) and the plasma shield (50 of 100), which absorbs 33% of each hit out of its own points, 67% with
 // the Plasma Shield project (owner, 2026-10-24, hunters.ts); at 0 the hull takes all of it. All of it is public.
 
+import { pushChat } from "./chat.ts";
 import { shipInvincible } from "./cheats.ts";
 import { damage } from "./death.ts";
 import { logPublic } from "./log.ts";
 import { projectDone } from "./projects.ts";
-import { rollInt } from "./rng.ts";
+import { rollFloat, rollInt } from "./rng.ts";
 import type { DeepReadonly, GameConfig, GameState, PlayerView, ShipResources } from "./types.ts";
 
 export function startShip(config: GameConfig): ShipResources {
@@ -29,10 +30,22 @@ export function shipMax(config: DeepReadonly<GameConfig>): ShipResources {
 }
 
 /**
- * At each cycle change: with oxygen already at 0, one random living crew member dies (Mush included); then the
- * ship burns its oxygen. So a ship that runs dry gets one cycle of grace. Mutates a state the caller already cloned.
+ * Roll once per cycle for Oxygenated ducts (`OXY_MORE`): when complete, a 20% roll prevents all passive oxygen loss
+ * for the cycle (normal burn and broken tank leaks) and posts a NERON announcement.
  */
-export function burnOxygen(state: GameState): void {
+export function rollOxygenSaved(state: GameState): boolean {
+  if (!projectDone(state, "OXY_MORE")) return false;
+  if (rollFloat(state) >= state.config.project.oxyMore.saveChance) return false;
+  pushChat(state, "global", { from: null, isBot: false, text: "", system: { key: "oxygenSavedDucts" } });
+  return true;
+}
+
+/**
+ * At each cycle change: with oxygen already at 0, one random living crew member dies (Mush included); then the
+ * ship burns its oxygen (unless Oxygenated ducts saved oxygen this cycle). So a ship that runs dry gets one cycle of grace.
+ * Mutates a state the caller already cloned.
+ */
+export function burnOxygen(state: GameState, oxygenSaved = false): void {
   if (shipInvincible(state)) return;
   if (state.ship.oxygen === 0) {
     const living = state.players.filter((p) => p.alive);
@@ -43,7 +56,9 @@ export function burnOxygen(state: GameState): void {
       damage(state, victim, victim.hp, "asphyxia");
     }
   }
-  state.ship.oxygen = Math.max(0, state.ship.oxygen - state.config.ship.oxygen.perCycle);
+  if (!oxygenSaved) {
+    state.ship.oxygen = Math.max(0, state.ship.oxygen - state.config.ship.oxygen.perCycle);
+  }
 }
 
 /** The percent of a hit the shield takes: none while the BIOS has it off, more once the Plasma Shield project is done. */
