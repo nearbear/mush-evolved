@@ -136,6 +136,8 @@ export const PROJECT_STATUS: Readonly<Partial<Record<ProjectId, ProjectStatus>>>
   TRAIL_REDUCER: "full",
   // Completing it spawns 1 support drone on the Nexus floor (projectEffects.ts).
   EXTRA_DRONE: "full",
+  // On jump or leaving orbit, patrol ships in flight dock cleanly in their bays with their pilots and cargo (owner, 2026-11-12; actions/land.ts).
+  MAGNETIC_NET: "full",
 };
 
 export function projectStatus(project: string): ProjectStatus {

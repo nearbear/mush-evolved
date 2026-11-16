@@ -423,6 +423,10 @@ describe("hunters and ships in flight", () => {
   });
 
   describe("with Magnetic net (owner, 2026-11-12)", () => {
+    it("is marked fully implemented in projectStatus", () => {
+      expect(projectStatus("MAGNETIC_NET")).toBe("full");
+    });
+
     const terminal = "COMMAND_CENTER:PILOT_MODULE";
     /** p0 flies Longane, p2 commands from the bridge, p1 waits in Bay Alpha; the net is done. */
     function netted(config: Partial<GameConfig> = {}): GameState {
