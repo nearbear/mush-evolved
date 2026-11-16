@@ -587,6 +587,7 @@ export function describeScene(input: SceneInput): Scene {
           ? { ...personPicture(s, input, base), role: "person", effect, shadow: "standing", kind: s.kind, slice: s.slice }
           : { ...tile(), role: "tile", effect, ...(cutaway && { cutaway }), kind: s.kind, slice: s.slice },
       );
+      if (s.door?.target === room && brokenDoors?.has(n)) addSmoke(s, s.slice);
       continue;
     }
     const hover = s.key === hoverKey;

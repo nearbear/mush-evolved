@@ -439,6 +439,16 @@ describe("smoke", () => {
       { key: "e2", x: 32 - -100, y: 48 - -50, footprint: [1, 1], at: 4 },
     ]);
   });
+
+  it("emits smoke for a broken door on a front edge drawn from the neighbour room", () => {
+    const floor = placed({ key: "f0", kind: "ground" });
+    const frontDoor = placed({ key: `${NEXT}/d1`, room: NEXT, kind: "door", slice: "door", cell: { x: 2, y: 1 }, door: { target: HERE } });
+    const otherDoor = placed({ key: `${NEXT}/d2`, room: NEXT, kind: "door", slice: "door", cell: { x: 3, y: 1 }, door: { target: "OTHER" as never } });
+    const s = scene([floor, frontDoor, otherDoor], { brokenDoors: new Set([NEXT]) });
+    expect(s.smoke).toEqual([
+      { key: `${NEXT}/d1`, x: 16 - -100, y: 24 - -50, footprint: [1, 1], at: 2 },
+    ]);
+  });
 });
 
 describe("cutaway", () => {
