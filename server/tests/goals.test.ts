@@ -1,4 +1,4 @@
-import { CHAT_PAGE, DEFAULT_CONFIG, ITRACKIE_ITEM, SHIP_ROOMS, applyAction, applyInput, legalIn, pushChat, newCycle, shortestPath, startGame, viewFor, type Action, type CharacterId, type GameState, type PlayerView, type ProjectId } from "@mush2/shared";
+import { CHAT_PAGE, DEFAULT_CONFIG, ITRACKIE_ITEM, SHIP_ROOMS, applyAction, applyInput, breakDoor, doorId, doorRooms, legalIn, pushChat, newCycle, shortestPath, startGame, viewFor, type Action, type CharacterId, type GameState, type PlayerView, type ProjectId } from "@mush2/shared";
 import { describe, expect, it } from "vitest";
 import { GOAL_MAX_ACTIONS, GoalBot } from "../src/bots.ts";
 import { astro, chooseDestination, judgePlanet } from "../src/bots/goals/astro.ts";
@@ -11,6 +11,7 @@ import { EXPEDITION_CHANNEL_NAME, expeditionPlan } from "../src/bots/goals/exped
 import { expeditionPrep, isFitForExpedition, isPriorityExpeditionClaimant, requiredExpeditionGear } from "../src/bots/goals/expeditionPrep.ts";
 import { activeSharedPlanet } from "../src/bots/planetShare.ts";
 import { SOLO_GOALS } from "../src/bots/goals/index.ts";
+import { repairDoor } from "../src/bots/goals/repairDoor.ts";
 import { repairHull } from "../src/bots/goals/repairHull.ts";
 import { rest } from "../src/bots/goals/rest.ts";
 import { research } from "../src/bots/goals/research.ts";
@@ -2656,5 +2657,78 @@ describe("expeditionLaunch: Pilot walks to ICARUS, summons open plan, and launch
     const { game: launched, taken: taken2 } = await untilReady(next.state, pilot, bot);
     expect(taken2.some((a) => a.type === "icarus_takeoff")).toBe(true);
     expect(launched.expeditions).toHaveLength(1);
+  });
+});
+
+describe("repairDoor goal", () => {
+  it("repairs a broken door in its current room while preserving BOT_AP_RESERVE", async () => {
+    const { game: base, id } = setup();
+    const neighbor = base.config.rooms["LABORATORY"]![0]!;
+    const door = doorId("LABORATORY", neighbor);
+    const broken = edit(base, id, (p) => {
+      p.room = "LABORATORY";
+      p.ap = 5;
+      p.statuses = ["genius"]; // 100% repair success
+    });
+    breakDoor(broken, door);
+
+    // At reserve (ap = 2), repairDoor is not offered (would dip below BOT_AP_RESERVE = 2).
+    const atReserve = edit(broken, id, (p) => (p.ap = 2));
+    expect(repairDoor.options(viewFor(atReserve, id), memory())).toEqual([]);
+
+    // With spare AP above reserve, the bot repairs the broken door in its room.
+    const bot = new GoalBot(1, 2, [repairDoor]);
+    const { game: after, taken } = await play(broken, id, bot, 4);
+    expect(taken).toContainEqual({ type: "repair", door });
+    expect(after.doors[door]).toBeUndefined();
+  });
+
+  it("routes to a reported broken door on the nearest reachable side", async () => {
+    const { game: base, id } = setup();
+    // Pick a door not adjacent to CORRIDOR_A so the bot has to walk to the nearer endpoint.
+    const door = doorId("CORRIDOR_C", base.config.rooms["CORRIDOR_C"]![0]!);
+    const [a, b] = doorRooms(door);
+    const closer = shortestPath(base.config.rooms, "CORRIDOR_A", a)!.length <= shortestPath(base.config.rooms, "CORRIDOR_A", b)!.length ? a : b;
+    const otherId = base.players.find((p) => p.id !== id)!.id;
+
+    const broken = edit(base, id, (p) => {
+      p.room = "CORRIDOR_A";
+      p.ap = 10;
+      p.mp = 12;
+      p.statuses = ["genius"];
+    });
+    breakDoor(broken, door);
+    broken.reports.push({ kind: "door", door, by: otherId });
+
+    expect(repairDoor.options(viewFor(broken, id), memory()).map((g) => g.key)).toEqual([`repairDoor:go:${closer}`]);
+
+    const bot = new GoalBot(1, 2, [repairDoor]);
+    const { game: after, taken } = await play(broken, id, bot, 10);
+    expect(taken.some((a) => a.type === "move")).toBe(true);
+    expect(taken).toContainEqual({ type: "repair", door });
+    expect(after.doors[door]).toBeUndefined();
+    expect(after.players.find((p) => p.id === id)!.room).toBe(closer);
+  });
+
+  it("skips a reported broken door whose sides are unreachable", () => {
+    const { game: base, id } = setup();
+    const otherId = base.players.find((p) => p.id !== id)!.id;
+    const distantDoor = doorId("CORRIDOR_C", base.config.rooms["CORRIDOR_C"]![0]!);
+
+    // Isolate the bot in LABORATORY by breaking every door out of LABORATORY, and mark here ended so only reported distant doors are considered.
+    const isolated = edit(base, id, (p) => {
+      p.room = "LABORATORY";
+      p.ap = 10;
+      p.mp = 12;
+    });
+    for (const exit of isolated.config.rooms["LABORATORY"]!) {
+      breakDoor(isolated, doorId("LABORATORY", exit));
+    }
+    breakDoor(isolated, distantDoor);
+    isolated.reports.push({ kind: "door", door: distantDoor, by: otherId });
+
+    const mem = memory();
+    mem.ended.add("repairDoor:here");
+    expect(repairDoor.options(viewFor(isolated, id), mem)).toEqual([]);
   });
 });
