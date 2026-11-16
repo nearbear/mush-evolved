@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
+import { breakEquipment } from "../src/breakage.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
+import { killPlayer } from "../src/death.ts";
 import { HACKER_KIT_ITEM, ITEM_TYPES } from "../src/items.ts";
+import { swapMinds } from "../src/mind.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { hasTitleAccess } from "../src/titles.ts";
 import type { Action, GameConfig, GameState } from "../src/types.ts";
@@ -172,6 +175,34 @@ describe("Hack action", () => {
     expect(hasTitleAccess(afterLeave, player(afterLeave, "p1"), "commander")).toBe(false);
     const afterReturn = mustApply(afterLeave, "p1", { type: "move", to: "COMMAND_CENTER" });
     expect(hasTitleAccess(afterReturn, player(afterReturn, "p1"), "commander")).toBe(false);
+  });
+
+  it("clears hackedEquipment on terminal break, death, and mind transfer", () => {
+    const s = ship({ ...config, hack: { ...config.hack, successChance: 1 } });
+    const hackedBoth = mustApply(mustApply(s, "p1", { type: "hack", equipment: PILOT_ID }), "p1", { type: "hack", equipment: COMMS_ID });
+    expect(player(hackedBoth, "p1").hackedEquipment).toEqual([PILOT_ID, COMMS_ID]);
+
+    // Breaking one terminal strips only that terminal's id (and deletes the field when empty).
+    const broken = clone(hackedBoth);
+    breakEquipment(broken, broken.equipment.COMMAND_CENTER!.find((e) => e.id === PILOT_ID)!);
+    expect(player(broken, "p1").hackedEquipment).toEqual([COMMS_ID]);
+    // Repairing the terminal does not restore hacked access.
+    broken.equipment.COMMAND_CENTER!.find((e) => e.id === PILOT_ID)!.broken = false;
+    expect(hasTitleAccess(broken, player(broken, "p1"), "commander")).toBe(false);
+    breakEquipment(broken, broken.equipment.COMMAND_CENTER!.find((e) => e.id === COMMS_ID)!);
+    expect(player(broken, "p1").hackedEquipment).toBeUndefined();
+
+    // Dying clears hackedEquipment.
+    const dead = clone(hackedBoth);
+    killPlayer(dead, player(dead, "p1"), "injury");
+    expect(player(dead, "p1").hackedEquipment).toBeUndefined();
+
+    // Mind transfer clears hackedEquipment on both bodies.
+    const swapped = clone(hackedBoth);
+    player(swapped, "p2").hackedEquipment = [COMMS_ID];
+    swapMinds(swapped, player(swapped, "p1"), player(swapped, "p2"));
+    expect(player(swapped, "p1").hackedEquipment).toBeUndefined();
+    expect(player(swapped, "p2").hackedEquipment).toBeUndefined();
   });
 
   it("never leaks hackedEquipment to other players' views", () => {

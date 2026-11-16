@@ -10,6 +10,7 @@ import { ConfirmPanel } from "./ConfirmPanel.tsx";
 import { ActionButton } from "./ActionButton.tsx";
 import { ActionLabel } from "./ActionLabel.tsx";
 import { ShipNavigation } from "./ShipNavigation.tsx";
+import { terminalLogin } from "./terminalUsername.ts";
 import "./settings.css";
 import "./terminal.css";
 
@@ -59,7 +60,7 @@ function ReturnToSol({ terminal, view, onAction }: Props) {
   const { t } = useTranslation();
   const [confirming, setConfirming] = useState(false);
   const option = view.actions.find(({ action: a }) => a.type === "return_to_sol" && a.equipment === terminal.id);
-  const commander = view.titles.find((title) => title.id === "commander")?.holder === view.you.character;
+  const commander = terminalLogin(terminal.type, view, terminal.id).access !== "limited";
   return (
     option ? (
       <>

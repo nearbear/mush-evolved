@@ -102,6 +102,7 @@ export function killPlayer(state: GameState, player: PlayerState, cause: DeathCa
   for (const other of state.players) if (other.outcastBy === player.id) delete other.outcastBy;
   delete player.protectedBy;
   for (const other of state.players) if (other.protectedBy === player.id) delete other.protectedBy;
+  delete player.hackedEquipment;
 
   for (const channel of state.channels.filter((c) => c.members.includes(player.id))) {
     if (removeFromChannel(state, channel.id, player.id)) systemMessage(state, channel.id, "leftThisWorld", { name: player.character });

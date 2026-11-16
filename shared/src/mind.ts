@@ -39,6 +39,7 @@ export function swapMinds(state: GameState, a: PlayerState, b: PlayerState): voi
     p.current = null;
     p.queue = [];
     p.ready = false;
+    delete p.hackedEquipment;
     startLogSeen(state, p); // the count of what the body saw before is not the new mind's (#365)
   }
 }

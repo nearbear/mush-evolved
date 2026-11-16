@@ -13,6 +13,7 @@ import { ActionLabel } from "./ActionLabel.tsx";
 import { UnavailableButton } from "./CommandTerminal.tsx";
 import { Merchants } from "./Merchants.tsx";
 import { signalStrength, solDb, Spectrogram } from "./Spectrogram.tsx";
+import { terminalLogin } from "./terminalUsername.ts";
 import "./settings.css";
 
 interface Props {
@@ -33,7 +34,7 @@ export function CommsCenter({ terminal, view, onAction }: Props) {
   const contactSol = find("contact_sol");
   const xyloph = find("contact_xyloph");
   const neron = find("update_neron");
-  const officer = view.titles.find((title) => title.id === "comms_officer")?.holder === view.you.character;
+  const officer = terminalLogin(terminal.type, view, terminal.id).access !== "limited";
   if (!screen) return null;
   const db = solDb(screen.solChance);
   return (
@@ -47,10 +48,18 @@ export function CommsCenter({ terminal, view, onAction }: Props) {
       <Tabs.Panel value="overview">
         <div className="research-list">
           <section className="research-item comms-sol" aria-label={t("actions.contactSol")}>
-            {contactSol && (
+            {contactSol ? (
               <ActionButton className="big comms-sol-contact" view={view} option={contactSol} onAction={onAction}>
                 <ActionLabel text={t("actions.contactSol")} cost={contactSol.cost} chance={contactSol.chance} />
               </ActionButton>
+            ) : (
+              <UnavailableButton
+                className="comms-sol-contact"
+                reason={view.comms.linked ? t("comms.solAlreadyLinked") : t("comms.solUnavailable")}
+                ap={view.config.contactSolAp}
+              >
+                {t("actions.contactSol")}
+              </UnavailableButton>
             )}
             <Spectrogram
               db={db}

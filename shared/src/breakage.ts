@@ -27,7 +27,14 @@ export function breakEquipment(state: GameState, equipment: Equipment, announce 
   if (equipment.broken || !isBreakable(state, equipment.type) || !isEquipmentEnabled(state, equipment)) return;
   equipment.broken = true;
   forgetReports(state, { equipment: equipment.id }); // Broken again, it starts unreported (#444).
-  for (const p of state.players) if (p.lyingIn === equipment.id) getUp(p);
+  for (const p of state.players) {
+    if (p.lyingIn === equipment.id) getUp(p);
+    if (p.hackedEquipment) {
+      const rest = p.hackedEquipment.filter((id) => id !== equipment.id);
+      if (rest.length === 0) delete p.hackedEquipment;
+      else p.hackedEquipment = rest;
+    }
+  }
   if (equipment.type === "COM_CENTER") loseLink(state);
   if (announce) pushChat(state, "global", { from: null, isBot: false, text: "", system: { key: "equipmentBroken", params: { equipment: equipment.type } } });
 }
@@ -64,8 +71,9 @@ export function jellyCycle(state: GameState): void {
   }
 }
 
-/** At each cycle change: every broken oxygen tank leaks `config.repair.oxygenLeak` oxygen. */
-export function leakOxygen(state: GameState): void {
+/** At each cycle change: every broken oxygen tank leaks `config.repair.oxygenLeak` oxygen, unless Oxygenated ducts saved oxygen this cycle. */
+export function leakOxygen(state: GameState, oxygenSaved = false): void {
+  if (oxygenSaved) return;
   const leaking = Object.values(state.equipment).flat().filter((e) => e.type === "OXYGEN_TANK" && e.broken).length;
   state.ship.oxygen = Math.max(0, state.ship.oxygen - leaking * state.config.repair.oxygenLeak);
 }

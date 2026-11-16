@@ -5,6 +5,7 @@ import { BIOS_OPTIONS, type Action, type EquipmentView, type PlayerView } from "
 import { useTranslation } from "react-i18next";
 import { ActionButton } from "./ActionButton.tsx";
 import { ActionLabel } from "./ActionLabel.tsx";
+import { terminalLogin } from "./terminalUsername.ts";
 import "./settings.css";
 
 interface Props {
@@ -24,7 +25,7 @@ export function BiosTerminal({ terminal, view, onAction }: Props) {
   }));
   return (
     <div className="research-list" role="group" aria-label={t("bios.label")}>
-      {options.every(({ offer }) => !offer) && <p>{t("bios.adminOnly")}</p>}
+      {terminalLogin(terminal.type, view, terminal.id).access === "limited" && <p>{t("bios.adminOnly")}</p>}
       {options.map(({ option, on, offer }) => (
         <section key={option} className="research-item" aria-label={t(`bios.${option}.name`)}>
           <div className="research-body">
