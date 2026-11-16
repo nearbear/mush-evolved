@@ -762,6 +762,7 @@ describe("actions from a client", () => {
     use_bandage: [{ type: "use_bandage", target: "p1" }],
     vaccinate: [{ type: "vaccinate", target: "p1" }],
     punch: [{ type: "punch", target: "p1" }],
+    throw_out: [{ type: "throw_out", target: "p1", to: "CORRIDOR_1" }],
     interrogate: [{ type: "interrogate", target: "p1" }],
     chitchat: [{ type: "chitchat", target: "p1" }],
     premonition: [{ type: "premonition", target: "p1" }],

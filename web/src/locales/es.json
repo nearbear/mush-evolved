@@ -366,6 +366,7 @@
     "vaccinate": "Vacunar",
     "useBandage": "Usar venda",
     "punch": "Golpear",
+    "throwOut": "Echar",
     "interrogate": "Interrogar",
     "chitchat": "Charlar",
     "premonition": "Presentimiento",
@@ -970,6 +971,8 @@
     "bandaged": "{{name}} vendó a {{target}}.",
     "bandagedSelf": "{{name}} se vendó a sí mismo/a.",
     "punched": "{{name}} golpeó a {{target}}.",
+    "threwOut": "{{name}} echó a {{target}} hacia {{room}}.",
+    "thrownIn": "{{target}} fue arrojado desde {{room}}.",
     "guarded": "{{name}} vigila la sala.",
     "stoppedGuarding": "{{name}} dejó de vigilar la sala.",
     "enteredNimble": "Entraste en modo ágil.",
@@ -1128,6 +1131,7 @@
     "itemBroken": "NERON: el objeto «{{item}}» se ha averiado.",
     "fireStarted": "NERON: ¡se ha declarado un incendio a bordo!",
     "fireExtinguishedSprinklers": "NERON: los aspersores automáticos han apagado un incendio.",
+    "oxygenSavedDucts": "NERON: los conductos oxigenados han ahorrado el oxígeno de la tripulación este ciclo.",
     "fireReported": "NERON: {{name}} informa de un incendio en {{room}}.",
     "equipmentReported": "NERON: {{name}} informa de que el equipo «{{equipment}}» de {{room}} está averiado.",
     "doorReported": "NERON: {{name}} informa de que la puerta entre {{room}} y {{other}} está rota.",
@@ -1164,6 +1168,10 @@
     "extinguishFailed": "No has conseguido apagar el incendio.",
     "reportShared": "{{name}} ha compartido el informe de la expedición a {{planet}}.",
     "reportShareAppended": "{{name}} ha completado el informe compartido de la expedición a {{planet}}."
+  },
+  "throwOut": {
+    "confirm": "¿A qué sala echar a {{name}}?",
+    "back": "Volver"
   },
   "skills": {
     "title": "Elegir una habilidad",
@@ -1681,6 +1689,8 @@
     "rebelStatusLost": "Señal perdida",
     "xylophLinkNeeded": "Necesitas contacto con Sol antes de poder contactar con Xyloph.",
     "xylophUnavailable": "No se puede contactar con Xyloph en este momento.",
+    "solAlreadyLinked": "El contacto con Sol ya está establecido.",
+    "solUnavailable": "No se puede contactar con Sol en este momento.",
     "xylophAllFound": "Ya se encontraron los {{count}} datos, así que Xyloph no tiene nada más que contarte.",
     "xylophTitle": "Xyloph",
     "xylophUndeciphered": "Aún sin descifrar.",
@@ -1785,7 +1795,12 @@
     "leaveOrbit": "Salir de la órbita",
     "jumpConfirm": "Atención: mover la nave puede tener consecuencias graves. Las naves patrulla en vuelo se pierden con sus pilotos, una expedición que siga fuera queda abandonada, y una señal rebelde en decodificación se pierde. Consulta a tus compañeros antes de continuar.",
     "jumpBack": "Volver",
-    "warning": "Viajar quema todo el combustible de la cámara de combustión, y la nave avanza esa distancia. Sin combustible cargado se pierden los PA. Todo planeta que no esté justo delante a esa distancia se pierde."
+    "warning": "Viajar quema todo el combustible de la cámara de combustión, y la nave avanza esa distancia. Sin combustible cargado se pierden los PA. Todo planeta que no esté justo delante a esa distancia se pierde.",
+    "unavailableCommanderOnly": "Solo el Comandante puede dirigir la nave.",
+    "unavailableTraveling": "La nave está viajando.",
+    "unavailableInOrbit": "Sal de la órbita primero.",
+    "unavailableNotInOrbit": "La nave no está en órbita.",
+    "unavailable": "No disponible en este momento."
   },
   "turret": {
     "label": "Hunters a tiro",

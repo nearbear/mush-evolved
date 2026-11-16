@@ -104,6 +104,7 @@ const ACTION_NAME_KEYS = {
   use_bandage: "actions.useBandage",
   vaccinate: "actions.vaccinate",
   punch: "actions.punch",
+  throw_out: "actions.throwOut",
   interrogate: "actions.interrogate",
   chitchat: "actions.chitchat",
   premonition: "actions.premonition",

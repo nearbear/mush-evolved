@@ -360,6 +360,7 @@
     "vaccinate": "Vaccinate",
     "useBandage": "Use bandage",
     "punch": "Punch",
+    "throwOut": "Throw out",
     "interrogate": "Interrogate",
     "chitchat": "Chitchat",
     "premonition": "Premonition",
@@ -954,6 +955,8 @@
     "bandaged": "{{name}} bandaged {{target}}.",
     "bandagedSelf": "{{name}} bandaged themself.",
     "punched": "{{name}} punched {{target}}.",
+    "threwOut": "{{name}} threw {{target}} out into {{room}}.",
+    "thrownIn": "{{target}} was thrown in from {{room}}.",
     "guarded": "{{name}} is guarding the room.",
     "stoppedGuarding": "{{name}} stopped guarding the room.",
     "enteredNimble": "You entered Nimble mode.",
@@ -1107,6 +1110,7 @@
     "itemBroken": "NERON: the {{item}} has broken down.",
     "fireStarted": "NERON: a fire has broken out aboard!",
     "fireExtinguishedSprinklers": "NERON: the automatic sprinklers have put out a fire.",
+    "oxygenSavedDucts": "NERON: the oxygenated ducts have saved the crew's oxygen this cycle.",
     "fireReported": "NERON: {{name}} reports a fire in {{room}}.",
     "equipmentReported": "NERON: {{name}} reports that the {{equipment}} in {{room}} is broken.",
     "doorReported": "NERON: {{name}} reports that the door between {{room}} and {{other}} is broken.",
@@ -1143,6 +1147,10 @@
     "extinguishFailed": "You failed to put out the fire.",
     "reportShared": "{{name}} shared the report of the expedition to {{planet}}.",
     "reportShareAppended": "{{name}} added to the shared report of the expedition to {{planet}}."
+  },
+  "throwOut": {
+    "confirm": "Throw {{name}} out into which room?",
+    "back": "Back"
   },
   "skills": {
     "title": "Choose a skill",
@@ -1366,7 +1374,7 @@
       "medic": "You can read the properties of medicines.\nYou have a +4% bonus on each Laboratory Research.\nYour Heal actions restore 2 more HP.\nYou can perform Operations.",
       "first_aid": "You get +2 free Heal action points each day.\nYou can read the properties of medicines.\nYou get 1 extra option when dispensing drugs.",
       "leadership": "Action: Fiery Speech- For 2 AP, give all crewmembers in the room 2 morale.",
-      "sturdy": "Your melee attacks deal 1 extra point of damage (Does not stack with Wrestler or Mutation).\nYou have no penalties for heavy objects.\nAction: Throw Out- For 2 AP, move crewmember to a random adjacent room (Costs 1 less on inactive crewmembers).",
+      "sturdy": "Your melee attacks deal 1 extra point of damage (Does not stack with Wrestler or Mutation).\nYou have no penalties for heavy objects.\nAction: Throw Out- For 2 AP, move crewmember to an adjacent room (Costs 1 less on inactive crewmembers).",
       "sprint": "You gain 2 more MP on each AP-to-MP conversion (does not stack with the Scooter).\nExpedition: Your team will visit 1 additional sector.",
       "fireman": "You will always succeed at Extinguishing fires when using an Extinguisher.\nAction: Extinguish Manually- For 1 AP, Attempt to extinguish a fire without an Extinguisher.\nYou get a bonus for developing certain NERON Projects.",
       "hunt": "You can see logs from up to 16 cycles ago.\nYou can see where crewmembers move to and from.\nYou can see what ships crewmembers use to takeoff and land.\nYou can print the List on the Tabulator.\nExpedition: You will always find crewmembers alive in MIA sectors.",
@@ -1384,7 +1392,7 @@
       "physicist": "You get 1 PILGRED repair action point per day.\nYou get a bonus for developing certain NERON Projects.",
       "apprentice": "Action: Apprenticeship- Once per game, for 1 AP, copy a skill from a crewmember in the room.",
       "premonition": "Action: Premonition- For 1 Morale, you can see another crewmate's last action.",
-      "wrestler": "Your melee attacks deal 2 extra damage (Does not stack with Solid or Mutation).\nAction: Throw Out- For 2 AP, move crewmember to a random adjacent room (Costs 1 less on inactive crewmembers).",
+      "wrestler": "Your melee attacks deal 2 extra damage (Does not stack with Solid or Mutation).\nAction: Throw Out- For 2 AP, move crewmember to an adjacent room (Costs 1 less on inactive crewmembers).",
       "green_thumb": "Gives you two extra hydropots when picked.\nPlants you graft will start at 25% of their total growth time.",
       "genius": "Action: Eureka moment- Once per game, for free, make the next Research, Project, or Repair you work on finish instantly.",
       "observant": "The Search action costs you 1 AP less.\nYou have a 25% chance to reveal covert actions done in your room.",
@@ -1751,6 +1759,8 @@
     "rebelStatusLost": "Signal lost",
     "xylophLinkNeeded": "You need a link with Sol before you can contact Xyloph.",
     "xylophUnavailable": "Xyloph cannot be contacted right now.",
+    "solAlreadyLinked": "The link with Sol is already established.",
+    "solUnavailable": "Sol cannot be contacted right now.",
     "xylophAllFound": "All {{count}} entries have been found, so Xyloph has nothing more to tell you.",
     "xylophTitle": "Xyloph",
     "xylophUndeciphered": "Not yet deciphered.",
@@ -1852,7 +1862,12 @@
     "leaveOrbit": "Leave orbit",
     "jumpConfirm": "Warning: moving the ship can have major consequences. Patrol ships in flight are lost with their pilots, an expedition still out is stranded, and a rebel signal being decoded is lost. Consult your crewmates before going ahead.",
     "jumpBack": "Back",
-    "warning": "Travel burns all the fuel in the combustion chamber, and the ship goes that far. With none loaded the AP is wasted. Every planet not lying exactly ahead at that distance is lost."
+    "warning": "Travel burns all the fuel in the combustion chamber, and the ship goes that far. With none loaded the AP is wasted. Every planet not lying exactly ahead at that distance is lost.",
+    "unavailableCommanderOnly": "Only the Commander can steer the ship.",
+    "unavailableTraveling": "The ship is traveling.",
+    "unavailableInOrbit": "Leave orbit first.",
+    "unavailableNotInOrbit": "The ship is not in orbit.",
+    "unavailable": "Unavailable right now."
   },
   "turret": {
     "label": "Hunters in range",

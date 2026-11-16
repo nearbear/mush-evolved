@@ -127,6 +127,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Confirmed 2026-10-15: punch costs 1 AP, misses 40% of the time. Owner, 2026-10-24: damage is a uniform 1 to 2 (the wiki).
   // Confirmed 2026-10-16: the sturdy (Solid) skill adds 1 to punch damage.
   punch: { cost: { ap: 1 }, effect: { damage: [1, 2], sturdyBonusDamage: 1 }, crit: { chance: 0.2, damage: [2, 3] }, successChance: 0.6, inactiveTargetSuccessChance: 0.9, dirtyChance: 0.25 },
+  // Owner, 2026-11-15: Wrestler and Solid can throw a roommate into an adjacent room through an unbroken door (2 AP, 1 AP on an inactive target).
+  throwOut: { cost: { ap: 2, inactiveAp: 1 } },
   // Owner, 2026-10-18: Ian's Pacifist makes aggressive actions in his room cost 2 more AP, his own included.
   pacifist: { aggressiveApSurcharge: 2 },
   // Owner, 2026-11-14: Bodyguard's Protect costs 1 AP and adds 2 AP to aggressive actions targeting the VIP while both are together.
@@ -312,6 +314,7 @@ export const DEFAULT_CONFIG: GameConfig = {
     autoWatering: { extinguishChance: 0.25 },
     trailReducer: { followMultiplier: 0.5 },
     extraDrone: { room: "NEXUS_ROOM", count: 1 },
+    oxyMore: { saveChance: 0.2 },
   },
   // Owner, 2026-10-21: repairing PILGRED uses the original's numbers (DIG_RATE 6, PILGRED_MOD 2, DIG_BOOST 4, -2 per repeat),
   // 2 AP, 25% dirty; the Physicist gains 1 PILGRED point a day and holds 2.

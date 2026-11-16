@@ -2,12 +2,13 @@
 // was tapped in the room (a person, equipment, or a door), or yourself by default, so you can act without
 // leaving the room view. Examine is never shown here (it lives in the Inspect panel behind More). Legality comes from the view, like the Inspect panel.
 
-import { type ReactNode, useLayoutEffect, useRef } from "react";
+import { type ReactNode, useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
 import { actionVisibility, SUPERKUBE, type Action, type ActionOption, type PlayerView, type RoomId, type Target } from "@mush2/shared";
 import { ActionLabel } from "./ActionLabel.tsx";
 import { ActionButton } from "./ActionButton.tsx";
+import { collapseThrowOut, ThrowOutDialog } from "./ThrowOutDialog.tsx";
 import { DoublePressButton } from "./DoublePress.tsx";
 import { SuperkubeOpener, type SendKube } from "./Superkube.tsx";
 import { useKeepFocus } from "./useKeepFocus.ts";
@@ -45,6 +46,7 @@ export function PeekBar({
           : names.action(action.type);
     return <ActionLabel text={text} cost={cost} chance={chance} visibility={actionVisibility(action.type, view)} />;
   };
+  const [throwingOut, setThrowingOut] = useState(false);
   const resolved = resolveTarget(view, target);
   if (!resolved) return null;
   if (resolved.kind === "door") {
@@ -74,25 +76,40 @@ export function PeekBar({
   const name =
     resolved.kind === "player" ? names.characterGiven(resolved.person.character) : resolved.kind === "equipment" ? names.equipment(resolved.equipment.type) : names.itemOf(resolved.item);
   const isBot = resolved.kind === "player" && resolved.person.isBot;
+  const { options: peekOptions, throwOut } = collapseThrowOut(
+    optionsOn(view, target).filter((o) => o.action.type !== "examine"),
+  );
   return (
-    <Bar
-      heading={name}
-      isBot={isBot}
-      more={
-        <button type="button" onClick={onMore} aria-label={t("peek.more")}>
-          …
-        </button>
-      }
-    >
-      {onKube && resolved.kind === "equipment" && resolved.equipment.type === SUPERKUBE && <SuperkubeOpener view={view} onKube={onKube} />}
-      {optionsOn(view, target)
-        .filter((o) => o.action.type !== "examine")
-        .map((o) => (
-        <ActionButton key={JSON.stringify(o.action)} view={view} option={o} onAction={onAction}>
-          {labelFor(o)}
-        </ActionButton>
-      ))}
-    </Bar>
+    <>
+      <Bar
+        heading={name}
+        isBot={isBot}
+        more={
+          <button type="button" onClick={onMore} aria-label={t("peek.more")}>
+            …
+          </button>
+        }
+      >
+        {onKube && resolved.kind === "equipment" && resolved.equipment.type === SUPERKUBE && <SuperkubeOpener view={view} onKube={onKube} />}
+        {peekOptions.map((o) => (
+          <ActionButton
+            key={JSON.stringify(o.action)}
+            view={view}
+            option={o}
+            onAction={o.action.type === "throw_out" ? () => setThrowingOut(true) : onAction}
+          >
+            {labelFor(o)}
+          </ActionButton>
+        ))}
+      </Bar>
+      <ThrowOutDialog
+        open={throwingOut}
+        targetName={name}
+        options={throwOut}
+        onClose={() => setThrowingOut(false)}
+        onAction={onAction}
+      />
+    </>
   );
 }
 

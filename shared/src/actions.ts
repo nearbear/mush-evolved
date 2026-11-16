@@ -85,6 +85,7 @@ import { AnathemaAction } from "./actions/anathema.ts";
 import { CoupAction } from "./actions/coup.ts";
 import { BoringSpeechAction, FierySpeechAction } from "./actions/speech.ts";
 import { PunchAction } from "./actions/punch.ts";
+import { ThrowOutAction } from "./actions/throw_out.ts";
 import { InterrogateAction } from "./actions/interrogate.ts";
 import { ChitchatAction } from "./actions/chitchat.ts";
 import { PremonitionAction } from "./actions/premonition.ts";
@@ -249,6 +250,7 @@ const REGISTRY = {
   vaccinate: new VaccinateAction(),
   use_bandage: new UseBandageAction(),
   punch: new PunchAction(),
+  throw_out: new ThrowOutAction(),
   interrogate: new InterrogateAction(),
   chitchat: new ChitchatAction(),
   premonition: new PremonitionAction(),

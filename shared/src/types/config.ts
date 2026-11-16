@@ -318,6 +318,9 @@ export interface GameConfig {
     inactiveTargetSuccessChance: number; // The same on an inactive target (owner, 2026-10-31, eMush: 90%).
     dirtyChance: number; // Chance of getting the dirty status after punching (confirmed 2026-10-13).
   };
+  throwOut: {
+    cost: { ap: number; inactiveAp: number }; // AP to throw a roommate into an adjacent room (1 AP less when target is inactive; owner, 2026-11-15).
+  };
   pacifist: {
     aggressiveApSurcharge: number; // Extra AP for each aggressive action in a Pacifist's room, theirs too (owner, 2026-10-18).
   };
@@ -529,6 +532,8 @@ export interface GameConfig {
     trailReducer: { followMultiplier: number };
     // Extra drone (EXTRA_DRONE; 2026-11-14): completing it puts `count` support drone(s) on the floor of `room` (the Nexus).
     extraDrone: { room: RoomId; count: number };
+    // Oxygenated ducts (OXY_MORE; 2026-11-15): each cycle has `saveChance` (20%) to prevent all oxygen loss (burn and tank leaks), announced in global chat.
+    oxyMore: { saveChance: number };
   };
   pilgred: {
     cost: { ap: number }; // AP spent to take part in repairing PILGRED (owner, 2026-10-21; the original's REPAIR_PILGRED, 2).

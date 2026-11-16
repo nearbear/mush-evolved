@@ -186,8 +186,10 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   apprentice: "full",
   // Flying patrol ships and the Pasiphae, clean takeoffs and landings, doubled patrol-ship shot odds, and expedition piloting (patrol.ts, modifiers/pilot.ts, expeditions.ts).
   pilot: "full",
-  // Heavy-item penalty and punch damage only; no Throw Out.
-  sturdy: "partial",
+  // Heavy-item penalty, +1 punch damage, and Throw Out (owner, 2026-10-16, 2026-11-15).
+  sturdy: "full",
+  // +2 punch damage and Throw Out (owner, 2026-11-15, actions/throw_out.ts).
+  wrestler: "full",
   // Free heal points (2/day) and reads drug properties and gets +1 Drug Dispenser option (owner, 2026-11-13).
   first_aid: "full",
   // Premonition: reveals a crewmate's last action for 1 morale (owner, 2026-11-13, actions/premonition.ts).

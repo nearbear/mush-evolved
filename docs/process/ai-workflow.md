@@ -4032,3 +4032,22 @@ Two hidden-information choices made by Claude, not the owner, worth a look: (1) 
 
 - **Decision (user):** Implemented the `hack` action (`shared/src/actions/hack.ts`) using `HACKER_KIT_ITEM` (`CORRIDOR_B` start, breakable, sabotagable, overload-breakable, `repairChance: 0.06`, no dismantle). Targets any working, enabled title-locked terminal (`PILOT_MODULE`, `COM_CENTER`, `NERON_BIOS_TERM`) in the player's room when the player lacks access (held or vacant). Costs 2 AP or 1 Computer point, 25% base with 1.25× failure streak, doubled by Computer Scientist (`shared/src/modifiers/computer.ts` `actionSucessRate`), private visibility (`hacked`/`hackFailed`), and grants access via `PlayerState.hackedEquipment` until leaving the room (`arrive`/`board`).
 - **What worked:** All title-locked systems (`comms.ts`, `bios.ts`, `pilgred.ts`, `navigation.ts`, `close_deal.ts`) already routed through `hasTitleAccess`, and `terminalLogin` (`web/src/hud/terminalUsername.ts`) accepted an optional `equipmentId` cleanly.
+
+### 2026-11-15 — Oxygenated ducts (`OXY_MORE`)
+- **Decision (owner):** Once `OXY_MORE` is complete, each cycle change has a 20% chance (`config.project.oxyMore.saveChance`) to prevent all passive oxygen loss for that cycle (both normal `burnOxygen` and broken `OXYGEN_TANK` `leakOxygen`), posting NERON's `oxygenSavedDucts` in global chat; if oxygen is already at 0, the asphyxia death still occurs.
+- **Implementation:** Added `rollOxygenSaved` in `shared/src/ship.ts` called once per cycle in `advanceCycle` (`shared/src/rules.ts`) and passed into `burnOxygen` and `leakOxygen` (`shared/src/breakage.ts`); marked `OXY_MORE: "full"` in `shared/src/projects.ts`; added `oxygenSavedDucts` to `en`/`fr`/`es` locales; tested in `shared/tests/oxyMore.test.ts`.
+
+### 2026-11-15 — Hacker kit remaining plan items
+- **Completed remaining items from `docs/plans/hacker_kit_plan.md`:**
+  - Cleared `player.hackedEquipment` on death (`killPlayer` in `shared/src/death.ts`), mind transfer (`swapMinds` in `shared/src/mind.ts`), and terminal breakage (`breakEquipment` in `shared/src/breakage.ts`), with tests in `shared/tests/hack.test.ts`.
+  - Added `HackTerminalButton` inside `CommandTerminal.tsx`, `CommsCenter.tsx`, and `BiosTerminal.tsx` (inside tab panels so `.terminal-body > .settings-tabs` layout is preserved) and updated title-locked helper text (`commander`, `officer`, `bios.adminOnly`) to check `terminalLogin(...).access !== "limited"` so hacked players and bypassers don't see "only the title holder" messages.
+  - Recorded the Hacker kit & `hack` decision in `docs/rules/rules-design.md`.
+
+### 2026-11-15 — Throw Out (`throw_out` for `wrestler` and `sturdy`)
+- **Decision (owner):** Implemented `throw_out { target, to }` for `wrestler` and `sturdy` (both now `full`). 2 AP base, 1 AP on an inactive target; tagged `aggressive`; 100% success; throws a living roommate into a chosen adjacent room with an unbroken door, interrupting their timed action and queue, standing them up from bed, ending any wheelchair push, clearing `guardian`, setting `enteredFrom` to the origin room, and logging publicly in both rooms (`threwOut`, `thrownIn`). In the UI, `InspectPanel` and `PeekBar` collapse the per-room options into one button that opens `ConfirmPanel` (`ThrowOutDialog.tsx`) to pick the destination room.
+- **What worked:** Separating the per-room action candidates in `shared` (`{ target, to }`) from the UI collapsing (`collapseThrowOut`) kept `shared` stateless and let `ConfirmPanel` handle the room picker without touching the terminal modal.
+
+### 2026-11-15 — Keep Command terminal and Contact Sol buttons visible when unavailable
+
+- **Change**: Updated `ShipNavigation` (`web/src/hud/ShipNavigation.tsx`) and `CommsCenter` (`web/src/hud/CommsCenter.tsx`) so Turn left, Turn right, Travel, Leave orbit, and Establish link with Sol always render as `UnavailableButton` (with `aria-disabled="true"` and a hover/focus/tap reason) rather than disappearing when not offered in `view.actions`. Added `turnAp`, `travelAp`, and `leaveOrbitAp` to `PublicConfig` (`shared/src/types/view.ts`, `shared/src/rules.ts`) so disabled steering buttons display their AP cost.
+- **Verification**: Added `web/tests/hud/terminalDisabledButtons.test.tsx`; `npm run verify` (3734 tests in 250 files) and `npm run build` passed.

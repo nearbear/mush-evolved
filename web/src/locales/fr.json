@@ -366,6 +366,7 @@
     "vaccinate": "Vacciner",
     "useBandage": "Utiliser un bandage",
     "punch": "Frapper",
+    "throwOut": "Mettre à la porte",
     "interrogate": "Interroger",
     "chitchat": "Papoter",
     "premonition": "Pressentiment",
@@ -970,6 +971,8 @@
     "bandaged": "{{name}} a posé un bandage à {{target}}.",
     "bandagedSelf": "{{name}} s'est posé un bandage.",
     "punched": "{{name}} a frappé {{target}}.",
+    "threwOut": "{{name}} a mis {{target}} à la porte vers {{room}}.",
+    "thrownIn": "{{target}} a été jeté depuis {{room}}.",
     "guarded": "{{name}} garde la salle.",
     "stoppedGuarding": "{{name}} a cessé de garder la salle.",
     "enteredNimble": "Vous êtes passé en mode agile.",
@@ -1128,6 +1131,7 @@
     "itemBroken": "NERON : panne de l'objet « {{item}} ».",
     "fireStarted": "NERON : un incendie s'est déclaré à bord !",
     "fireExtinguishedSprinklers": "NERON : les arroseurs automatiques ont éteint un incendie.",
+    "oxygenSavedDucts": "NERON : les conduites oxygénées ont économisé l'oxygène de l'équipage ce cycle.",
     "fireReported": "NERON : {{name}} signale un incendie ({{room}}).",
     "equipmentReported": "NERON : {{name}} signale une panne de l'équipement « {{equipment}} » ({{room}}).",
     "doorReported": "NERON : {{name}} signale que la porte entre {{room}} et {{other}} est cassée.",
@@ -1164,6 +1168,10 @@
     "extinguishFailed": "Vous n'avez pas réussi à éteindre l'incendie.",
     "reportShared": "{{name}} a partagé le rapport de l'expédition sur {{planet}}.",
     "reportShareAppended": "{{name}} a complété le rapport partagé de l'expédition sur {{planet}}."
+  },
+  "throwOut": {
+    "confirm": "Dans quelle salle jeter {{name}} ?",
+    "back": "Retour"
   },
   "skills": {
     "title": "Choisir une compétence",
@@ -1681,6 +1689,8 @@
     "rebelStatusLost": "Signal perdu",
     "xylophLinkNeeded": "Il faut un contact avec Sol avant de pouvoir contacter Xyloph.",
     "xylophUnavailable": "Xyloph ne peut pas être contacté pour le moment.",
+    "solAlreadyLinked": "Le contact avec Sol est déjà établi.",
+    "solUnavailable": "Sol ne peut pas être contacté pour le moment.",
     "xylophAllFound": "Les {{count}} données ont toutes été trouvées : Xyloph n'a plus rien à vous apprendre.",
     "xylophTitle": "Xyloph",
     "xylophUndeciphered": "Pas encore déchiffrée.",
@@ -1785,7 +1795,12 @@
     "leaveOrbit": "Quitter l'orbite",
     "jumpConfirm": "Attention : déplacer le vaisseau peut avoir des conséquences majeures. Les patrouilleurs en vol sont perdus avec leurs pilotes, une expédition encore dehors est abandonnée, et un signal rebelle en cours de décodage est perdu. Consultez vos coéquipiers avant de continuer.",
     "jumpBack": "Retour",
-    "warning": "Voyager brûle tout le fuel de la chambre de combustion, et le vaisseau avance d'autant. Sans fuel chargé, les PA sont perdus. Toute planète qui ne se trouve pas droit devant à cette distance est perdue."
+    "warning": "Voyager brûle tout le fuel de la chambre de combustion, et le vaisseau avance d'autant. Sans fuel chargé, les PA sont perdus. Toute planète qui ne se trouve pas droit devant à cette distance est perdue.",
+    "unavailableCommanderOnly": "Seul le Commandant peut diriger le vaisseau.",
+    "unavailableTraveling": "Le vaisseau est en route.",
+    "unavailableInOrbit": "Quittez l'orbite d'abord.",
+    "unavailableNotInOrbit": "Le vaisseau n'est pas en orbite.",
+    "unavailable": "Indisponible pour le moment."
   },
   "turret": {
     "label": "Hunters à portée",

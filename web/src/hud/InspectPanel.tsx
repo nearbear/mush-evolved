@@ -1,7 +1,7 @@
 // Left panel: whatever is selected (a person, room equipment, or an item),
 // with the actions the server allows on it. Falls back to your own character. The asset credits close the panel.
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
 import type { CSSProperties, ReactNode } from "react";
@@ -21,6 +21,7 @@ import { ActionLabel } from "./ActionLabel.tsx";
 import { SkillSlots } from "./SkillSlots.tsx";
 import { StatusIcon, StatusIcons } from "./StatusIcons.tsx";
 import { ActionButton } from "./ActionButton.tsx";
+import { collapseThrowOut, ThrowOutDialog } from "./ThrowOutDialog.tsx";
 import { useKeepFocus } from "./useKeepFocus.ts";
 import { attackWeapon, optionsOn, resolveTarget, type Resolved } from "./targets.ts";
 
@@ -62,8 +63,9 @@ export function InspectPanel({
           : names.action(action.type);
     return <ActionLabel text={text} cost={cost} chance={chance} visibility={actionVisibility(action.type, view)} />;
   };
+  const [throwingOut, setThrowingOut] = useState(false);
   const resolved = resolveTarget(view, target);
-  const options = optionsOn(view, target);
+  const { options, throwOut } = collapseThrowOut(optionsOn(view, target));
   // A printed document's Read (#394) is client-only, so it is not one of the options, but it sits with them.
   const doc = resolved?.kind === "item" ? resolved.item.document : undefined;
   // The Superkube's Open (#170) is a cheat, not an action, so it isn't one of the options either.
@@ -99,11 +101,25 @@ export function InspectPanel({
           {doc && <DocumentReader document={doc} />}
           {kube && <SuperkubeOpener view={view} onKube={kube} />}
           {options.map((o) => (
-            <ActionButton key={JSON.stringify(o.action)} view={view} option={o} onAction={onAction}>
+            <ActionButton
+              key={JSON.stringify(o.action)}
+              view={view}
+              option={o}
+              onAction={o.action.type === "throw_out" ? () => setThrowingOut(true) : onAction}
+            >
               {labelFor(o)}
             </ActionButton>
           ))}
         </div>
+      )}
+      {targetName && (
+        <ThrowOutDialog
+          open={throwingOut}
+          targetName={targetName}
+          options={throwOut}
+          onClose={() => setThrowingOut(false)}
+          onAction={onAction}
+        />
       )}
       </div>
     </aside>
