@@ -43,6 +43,7 @@ import { GreenJellyAction } from "./actions/green_jelly.ts";
 import { ReinforceAction } from "./actions/reinforce.ts";
 import { UpgradeDroneAction } from "./actions/upgrade_drone.ts";
 import { SabotageAction } from "./actions/sabotage.ts";
+import { SabotageDoorAction } from "./actions/sabotage_door.ts";
 import { ExtinguishAction } from "./actions/extinguish.ts";
 import { ExtinguishManuallyAction } from "./actions/extinguish_manually.ts";
 import { TakeoffAction } from "./actions/takeoff.ts";
@@ -182,6 +183,7 @@ const REGISTRY = {
   extinguish: new ExtinguishAction(),
   ignite: new IgniteAction(),
   sabotage: new SabotageAction(),
+  sabotage_door: new SabotageDoorAction(),
   reinforce: new ReinforceAction(),
   upgrade_drone: new UpgradeDroneAction(),
   green_jelly: new GreenJellyAction(),

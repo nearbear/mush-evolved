@@ -15,7 +15,8 @@ import { applyInput } from "../src/replay.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { doorCount, viewPath } from "../src/situation.ts";
 import type { GameState, ItemState } from "../src/types.ts";
-import { clone, makeSeats, mustApply, nextCycle, noHunters, noIncidents, option, player } from "./support.ts";
+import { CAMERA_EQUIPMENT } from "../src/equipment.ts";
+import { clone, costOf, makeSeats, mustApply, nextCycle, nextDay, noHunters, noIncidents, offered, option, player } from "./support.ts";
 
 const LAB_DOOR = doorId("CORRIDOR_A", "LABORATORY");
 const quiet = noIncidents(noHunters(DEFAULT_CONFIG));
@@ -317,5 +318,105 @@ describe("repairing a door", () => {
     const repair = { type: "repair", door: LAB_SICK } as const;
     expect(actionTarget(repair)).toEqual({ kind: "door", id: LAB_SICK });
     expect(endsAccommodation(repair, "p0", "public")).toBe(true);
+  });
+});
+
+describe("Doorman (sabotage_door)", () => {
+  const LAB_SICK = doorId("LABORATORY", "SICK_BAY");
+
+  function mushShip(withSkill = true): GameState {
+    const s = ship();
+    player(s, "p0").role = "mush";
+    player(s, "p0").mushSkills = withSkill ? ["doorman"] : [];
+    player(s, "p1").role = "human";
+    player(s, "p2").role = "human";
+    player(s, "p3").role = "human";
+    return s;
+  }
+
+  it("pins Doorman's repeat cost at 2 AP", () => {
+    expect(DEFAULT_CONFIG.doorman.cost.ap).toBe(2);
+  });
+
+  it("lets a Mush with Doorman break a working door for free once a day, then for 2 AP, and resets the next day", () => {
+    const s = mushShip();
+    const first = { type: "sabotage_door", door: LAB_DOOR } as const;
+    const second = { type: "sabotage_door", door: LAB_SICK } as const;
+
+    expect(costOf(s, "p0", first).ap).toBe(0);
+    const apBefore = player(s, "p0").ap;
+    const once = mustApply(s, "p0", first);
+    expect(player(once, "p0").ap).toBe(apBefore);
+    expect(player(once, "p0").doormanToday).toBe(true);
+    expect(isDoorBroken(once, "CORRIDOR_A", "LABORATORY")).toBe(true);
+    expect(option(once, "p0", first)).toBeUndefined();
+
+    // Second sabotage the same day costs config.doorman.cost.ap.
+    expect(costOf(once, "p0", second).ap).toBe(once.config.doorman.cost.ap);
+    const twice = mustApply(once, "p0", second);
+    expect(player(twice, "p0").ap).toBe(apBefore - once.config.doorman.cost.ap);
+    expect(isDoorBroken(twice, "LABORATORY", "SICK_BAY")).toBe(true);
+
+    // Next day resets the free daily use.
+    const next = nextDay(once);
+    expect(player(next, "p0").doormanToday).toBeUndefined();
+    expect(costOf(next, "p0", second).ap).toBe(0);
+  });
+
+  it("is only offered to a Mush with Doorman on working doors of their room, and illegal calls leave state unchanged", () => {
+    const noSkill = mushShip(false);
+    expect(offered(noSkill, "p0").some((a) => a.type === "sabotage_door")).toBe(false);
+    expect(offered(noSkill, "p1").some((a) => a.type === "sabotage_door")).toBe(false);
+
+    const s = mushShip();
+    breakDoor(s, LAB_SICK);
+    const offeredDoors = offered(s, "p0").filter((a) => a.type === "sabotage_door");
+    expect(offeredDoors).toEqual([{ type: "sabotage_door", door: LAB_DOOR }]);
+
+    // Not enough AP on repeat use.
+    const once = mustApply(mushShip(), "p0", { type: "sabotage_door", door: LAB_DOOR });
+    player(once, "p0").ap = once.config.doorman.cost.ap - 1;
+    const beforeLowAp = JSON.stringify(once);
+    expect(applyAction(once, "p0", { type: "sabotage_door", door: LAB_SICK }).ok).toBe(false);
+    expect(JSON.stringify(once)).toBe(beforeLowAp);
+
+    // Illegal targets (already broken, another room's door, non-Mush, missing skill) leave state unchanged.
+    const otherDoor = doorId("CORRIDOR_B", "REFECTORY");
+    const before = JSON.stringify(s);
+    expect(applyAction(s, "p0", { type: "sabotage_door", door: LAB_SICK })).toMatchObject({ ok: false, error: "illegal_action" });
+    expect(applyAction(s, "p0", { type: "sabotage_door", door: otherDoor })).toMatchObject({ ok: false, error: "illegal_action" });
+    expect(applyAction(s, "p1", { type: "sabotage_door", door: LAB_DOOR })).toMatchObject({ ok: false, error: "illegal_action" });
+    expect(applyAction(noSkill, "p0", { type: "sabotage_door", door: LAB_DOOR })).toMatchObject({ ok: false, error: "illegal_action" });
+    expect(JSON.stringify(s)).toBe(before);
+  });
+
+  it("is covert: roommates do not see the log unless a camera is in the room, and doormanToday stays private", () => {
+    const s = mushShip();
+    const after = mustApply(s, "p0", { type: "sabotage_door", door: LAB_DOOR });
+    const entry = after.log.find((e) => e.key === "doorSabotaged");
+    expect(entry).toMatchObject({
+      key: "doorSabotaged",
+      kind: "covert",
+      room: "LABORATORY",
+      visibleTo: ["p0"],
+      params: { name: player(s, "p0").character, room: "CORRIDOR_A" },
+    });
+    expect(viewFor(after, "p0").log.some((e) => e.key === "doorSabotaged")).toBe(true);
+    expect(viewFor(after, "p1").log.some((e) => e.key === "doorSabotaged")).toBe(false);
+    expect(viewFor(after, "p2").log.some((e) => e.key === "doorSabotaged")).toBe(false);
+    expect(JSON.stringify(viewFor(after, "p1"))).not.toContain("doormanToday");
+    expect(JSON.stringify(viewFor(after, "p0"))).toContain("doormanToday");
+
+    // With a working camera in the room, roommates see it.
+    const camShip = mushShip();
+    camShip.equipment.LABORATORY.push({ id: "cam1", type: CAMERA_EQUIPMENT });
+    const caught = mustApply(camShip, "p0", { type: "sabotage_door", door: LAB_DOOR });
+    expect(caught.log.find((e) => e.key === "doorSabotaged")?.visibleTo).toBe("all");
+    expect(viewFor(caught, "p1").log.some((e) => e.key === "doorSabotaged")).toBe(true);
+
+    // Targets the door for walk-up and does not end accommodation (covert).
+    const action = { type: "sabotage_door", door: LAB_DOOR } as const;
+    expect(actionTarget(action)).toEqual({ kind: "door", id: LAB_DOOR });
+    expect(endsAccommodation(action, "p0", "covert")).toBe(false);
   });
 });

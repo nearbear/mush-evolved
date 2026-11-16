@@ -130,6 +130,7 @@ export const PLAYER_STATE_FIELDS: Record<string, FieldRule> = {
   geniusUsed: { reach: "own", test: "genius.test.ts", note: "Only stops Eureka moment being used again; roommates never see it." },
   apprenticeUsed: { reach: "own", test: "apprenticeship.test.ts", note: "Only stops Apprentice being picked again; roommates never see it." },
   fertileToday: { reach: "own", test: "fertile.test.ts", note: "Only gates the free extraction; roommates never see it." },
+  doormanToday: { reach: "own", test: "doors.test.ts", note: "Only gates Doorman's free daily door sabotage; roommates never see it." },
   boringToday: { reach: "own", test: "speech.test.ts", note: "Only gates the Boring speech; roommates never see it." },
   chitchatToday: { reach: "own", test: "history.test.ts", note: "Only gates Chitchat; roommates never see it." },
   interrogatedToday: { reach: "own", test: "history.test.ts", note: "Only gates Interrogate; roommates never see it." },

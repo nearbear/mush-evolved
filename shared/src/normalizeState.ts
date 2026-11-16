@@ -471,6 +471,7 @@ export function normalizePlayer(raw: Partial<PlayerState>, mode: QueueMode): Pla
     inactivity: raw.inactivity,
     boringToday: raw.boringToday,
     fertileToday: raw.fertileToday,
+    doormanToday: raw.doormanToday,
     chitchatToday: raw.chitchatToday,
     interrogatedToday: raw.interrogatedToday,
     snoopedToday: opt(raw.snoopedToday, copy),

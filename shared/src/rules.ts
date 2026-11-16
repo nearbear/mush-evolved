@@ -439,6 +439,7 @@ function advanceCycle(state: GameState, at?: number): void {
     for (const p of state.players) {
       delete p.boringToday;
       delete p.fertileToday;
+      delete p.doormanToday;
       delete p.chitchatToday;
       delete p.interrogatedToday;
       delete p.snoopedToday;

@@ -690,6 +690,8 @@ export interface GameConfig {
   ignite: { cost: { ap: number } };
   // Owner, 2026-11-07: a Mush breaks equipment or an item (actions/sabotage.ts), at the target's repair chance or `defaultChance` for an item without one.
   sabotage: { cost: { ap: number }; defaultChance: number; sapperFactor: number };
+  // Owner, 2026-11-14 (#330): Doorman's door sabotage (actions/sabotage_door.ts): first use each day is free, later ones cost `cost.ap`.
+  doorman: { cost: { ap: number } };
   greenJelly: { cost: { ap: number }; maxCycles: number };
   // Owner, 2026-11-07: an Engineer reinforces equipment or an item (actions/reinforce.ts) with one scrap, `gain` by scrap type, up to `max`.
   reinforce: { cost: { ap: number }; chance: number; max: number; fortifiedAt: number; gain: Record<string, number> };

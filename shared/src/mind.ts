@@ -13,7 +13,7 @@ export function bodyOf(state: Readonly<GameState>, mind: PlayerId): PlayerId | u
 }
 
 /** What belongs to the player rather than the body, so it moves in a Transfer. Everything else stays with the body. */
-const MIND_FIELDS = ["mind", "name", "isBot", "botKind", "role", "alpha", "mushSkills", "spores", "transferUsed", "epigeneticsUsed", "massMoulderingUsed", "fertileToday", "bodyTakenBy", "cheats", "lastSeenAt"] as const;
+const MIND_FIELDS = ["mind", "name", "isBot", "botKind", "role", "alpha", "mushSkills", "spores", "transferUsed", "epigeneticsUsed", "massMoulderingUsed", "fertileToday", "doormanToday", "bodyTakenBy", "cheats", "lastSeenAt"] as const;
 
 /**
  * Swaps the minds of bodies `a` and `b`: the fields in MIND_FIELDS, the spike cooldown. Private log lines are

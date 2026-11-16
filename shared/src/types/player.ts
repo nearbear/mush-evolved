@@ -100,6 +100,8 @@ export interface PlayerState extends Seat {
   boringToday?: boolean;
   /** The Fertile skill's free spore extraction was used today (reset each day; moves with the mind in a Transfer). */
   fertileToday?: boolean;
+  /** The Doorman skill's free door sabotage was used today (reset each day; moves with the mind in a Transfer). */
+  doormanToday?: boolean;
   /** True once this player has chitchatted with a Confident today (chitchat.ts); cleared at day start. Never sent. */
   chitchatToday?: boolean;
   /** True once the Torturer has interrogated someone today (interrogate.ts); cleared at day start. Never sent. */

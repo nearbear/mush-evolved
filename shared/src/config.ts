@@ -414,6 +414,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   ignite: { cost: { ap: 4 } },
   // Owner, 2026-11-07: the Mush sabotage action (actions/sabotage.ts).
   sabotage: { cost: { ap: 1 }, defaultChance: 0.12, sapperFactor: 3 },
+  // Owner, 2026-11-14 (#330): Doorman's door sabotage (actions/sabotage_door.ts): first use each day is free, later ones cost 2 AP.
+  doorman: { cost: { ap: 2 } },
   // Owner, 2026-11-07: Green Jelly (actions/green_jelly.ts) breaks its target after 1 to `maxCycles` cycle changes.
   greenJelly: { cost: { ap: 1 }, maxCycles: 4 },
   // Owner, 2026-11-07: Reinforce (actions/reinforce.ts): 1 AP, 35%, one scrap for 10 (metal) or 5 (plastic) shielding, at most 50; at 25 or more it can't be sabotaged or dismantled.

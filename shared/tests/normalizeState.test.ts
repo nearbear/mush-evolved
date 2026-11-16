@@ -72,6 +72,7 @@ function handFilled() {
     inactivity: "inactive",
     boringToday: true,
     fertileToday: true,
+    doormanToday: true,
     chitchatToday: true,
     interrogatedToday: true,
     snoopedToday: ["FRONT_STORAGE"],
