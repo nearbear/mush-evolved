@@ -11,7 +11,7 @@
 import { pushChat } from "./chat.ts";
 import { newItemId } from "./items.ts";
 import { killPlayer } from "./death.ts";
-import { clone, fail, type ActionResult } from "./helpers.ts";
+import { cloneState, fail, type ActionResult } from "./helpers.ts";
 import { logPrivate, startLogSeen } from "./log.ts";
 import { callNextRebel } from "./comms.ts";
 import { rollAtSelection } from "./lostAnalysis.ts";
@@ -29,7 +29,7 @@ export function joinShip(state: GameState, seat: Seat): ActionResult {
   if (!rules || !state.preselection || state.phase !== "playing" || state.players.length >= rules.seats) return fail("ship_closed");
   if (state.players.some((p) => p.character === seat.character)) return fail("character_taken");
   if (state.players.some((p) => p.id === seat.id)) return fail("duplicate_seat");
-  const next = clone(state);
+  const next = cloneState(state);
   const player = newPlayer(seat, next.config, next.cycle, "human");
   next.players.push(player);
   startLogSeen(next, player);

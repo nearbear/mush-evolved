@@ -4,7 +4,7 @@
 // per-viewer preference kept in localStorage, like `fogDepth.ts`.
 
 import { useSyncExternalStore } from "react";
-import { unreadCount, type ChannelId, type ChatLine, type ChatRead, type LogLine, type PlayerView } from "@mush2/shared";
+import { DEFAULT_CONFIG, unreadCount, type ChannelId, type ChatLine, type ChatRead, type LogLine, type PlayerView } from "@mush2/shared";
 import { arrivedIn, isArrived, type Arrived } from "./chatRead.ts";
 
 export type Urgency = "polite" | "assertive";
@@ -134,6 +134,7 @@ export const URGENT_LOG_KEYS: ReadonlySet<string> = new Set([
   "randomInjury",
   "attacked",
   "attackedArea",
+  ...Object.values(DEFAULT_CONFIG.weapons.types).flatMap((w) => w.hitOutcomes.map((o) => o.log)),
   "died",
   "diedHuman",
   "diedMush",

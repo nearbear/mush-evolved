@@ -97,6 +97,8 @@ export interface ItemState {
   drone?: DroneState;
   /** For a document (`DOCUMENT_ITEM`, lostAnalysis.ts): what is printed on it. Public to whoever can see the item. */
   document?: DocumentState;
+  /** For a customized blaster (modifiers/infantryman.ts): the player who created it and is the only one who can fire it. */
+  owner?: PlayerId;
 }
 
 /** One line of a printed document: a character (a body) and whether it is marked "negative" (not Mush). */

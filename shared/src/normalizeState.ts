@@ -32,7 +32,8 @@ import type { DrugDispenserState, DrugEffect } from "./drugs.ts";
 import type { FruitDisease, FruitEffect, PendingDisease } from "./fruits.ts";
 import type { FullView, SeatStart, SeatStarts } from "./fullView.ts";
 import { PROJECT_IDS } from "./projects.ts";
-import type { RebelCall } from "./comms.ts";
+import type { GiveAsset, MerchantDeal, ReceiveAsset } from "./merchants.ts";
+import type { FeedEntry, MerchantData, RebelData, Signal, SignalsState } from "./signals.ts";
 import type { RelayPool, RelayStreak, RelayToken, ResearchPool, Sample } from "./relay.ts";
 import type { DiseaseTracker } from "./diseases.ts";
 import type {
@@ -85,7 +86,7 @@ import type {
  * override key. A step lands in a deploy of its own (docs/ops/deploy.md: roll back only to the same version). Something
  * that never reached a deploy (test or production) is in no stored snapshot, so changing or removing it needs no step.
  */
-export const STATE_VERSION = 118;
+export const STATE_VERSION = 120;
 
 /**
  * The oldest stored version this build reads: 114, the shape the normalizers were written against. A snapshot below it
@@ -192,8 +193,76 @@ const upgradeTo118: UpgradeStep = {
   },
 };
 
+/**
+ * Before 119, merchant ships in orbit were `game.merchants` (`{ list: { id, kind, event, arrivedAt, leavesAt, deals }[],
+ * nextId }`); they are now merchant signals in `game.signals` (signals.ts). Each becomes an active signal waiting for
+ * Contact, with an empty feed; one already gone was dropped then, so there is no history to carry over.
+ */
+const upgradeTo119: UpgradeStep = {
+  to: 119,
+  paths: ["game.merchants"],
+  run: (game) => {
+    const merchants = game.merchants as { list?: Array<Record<string, unknown>> } | undefined;
+    delete game.merchants;
+    if (!merchants?.list || game.signals) return;
+    const counts: Record<string, number> = {};
+    game.signals = {
+      list: merchants.list.map((m, i) => {
+        const kind = m.kind as string;
+        counts[kind] = (kind in counts ? counts[kind]! : 0) + 1;
+        return {
+          id: `signal-${i + 1}`,
+          kind: "merchant",
+          arrivedAt: m.arrivedAt,
+          endsAt: m.leavesAt,
+          status: "active",
+          step: "hail",
+          number: counts[kind],
+          feed: [],
+          merchant: { kind, event: m.event, deals: m.deals },
+        };
+      }),
+      nextId: merchants.list.length + 1,
+    };
+  },
+};
+
+/**
+ * Before 120, rebel calls were `game.comms.rebels` (`{ base, calledAt, expiresAt, progress }[]`); they are now rebel
+ * signals in `game.signals` (signals.ts, docs/plans/signals.md step 3), after the signals already there, oldest first.
+ * A call decoded to 100% is `reached`, one past its window `lost` (with the "Signal lost" line at its end), the rest
+ * active. The feed of earlier decodes was never kept, so it starts empty.
+ */
+const upgradeTo120: UpgradeStep = {
+  to: 120,
+  paths: ["game.comms.rebels", "game.signals"],
+  run: (game) => {
+    const comms = game.comms as { rebels?: Array<{ base: string; calledAt: number; expiresAt: number; progress: number }> } | undefined;
+    const rebels = comms?.rebels;
+    if (comms) delete comms.rebels;
+    if (!rebels) return;
+    const signals = (game.signals !== undefined ? game.signals : { list: [], nextId: 1 }) as { list: unknown[]; nextId: number };
+    for (const call of rebels) {
+      const reached = call.progress >= 100;
+      const lost = !reached && (game.cycle as number) >= call.expiresAt;
+      signals.list.push({
+        id: `signal-${signals.nextId++}`,
+        kind: "rebel",
+        arrivedAt: call.calledAt,
+        endsAt: call.expiresAt,
+        status: reached ? "reached" : lost ? "lost" : "active",
+        step: "decoding",
+        number: 1,
+        feed: lost ? [{ from: "system", at: call.expiresAt, key: "signals.lost", closes: true }] : [],
+        rebel: { base: call.base, progress: call.progress },
+      });
+    }
+    game.signals = signals;
+  },
+};
+
 /** Every step, in order of `to`: `upgradeTo115`, `upgradeTo116`, ... */
-export const UPGRADE_STEPS: readonly UpgradeStep[] = [upgradeTo115, upgradeTo116, upgradeTo117, upgradeTo118];
+export const UPGRADE_STEPS: readonly UpgradeStep[] = [upgradeTo115, upgradeTo116, upgradeTo117, upgradeTo118, upgradeTo119, upgradeTo120];
 
 /**
  * Brings a stored snapshot from version `from` to `STATE_VERSION`, before it is normalized: runs every step with
@@ -300,6 +369,7 @@ function itemFields(raw: Partial<SpaceDebris>, t: string): AllKeys<SpaceDebris> 
     shield: raw.shield,
     drone: opt(raw.drone, normalizeDrone),
     document: opt(raw.document, normalizeDocument),
+    owner: raw.owner,
   };
 }
 
@@ -471,10 +541,12 @@ export function normalizePlayer(raw: Partial<PlayerState>, mode: QueueMode): Pla
     inactivity: raw.inactivity,
     boringToday: raw.boringToday,
     fertileToday: raw.fertileToday,
+    doormanToday: raw.doormanToday,
     chitchatToday: raw.chitchatToday,
     interrogatedToday: raw.interrogatedToday,
     snoopedToday: opt(raw.snoopedToday, copy),
     mycoscannedToday: raw.mycoscannedToday,
+    hackedEquipment: opt(raw.hackedEquipment, copy),
     history: copy(need(raw, "history", t)),
     logSeen: need(raw, "logSeen", t),
     accommodationOffers: opt(raw.accommodationOffers, (offers) => offers.map(normalizeAccommodationOffer)),
@@ -693,11 +765,6 @@ export function normalizeShip(raw: Partial<ShipResources>): ShipResources {
   });
 }
 
-export function normalizeRebelCall(raw: Partial<RebelCall>): RebelCall {
-  const t = "RebelCall";
-  return stripUndefined<RebelCall>({ base: need(raw, "base", t), calledAt: need(raw, "calledAt", t), expiresAt: need(raw, "expiresAt", t), progress: need(raw, "progress", t) });
-}
-
 type Comms = GameCore["comms"];
 
 export function normalizeComms(raw: Partial<Comms>): Comms {
@@ -706,7 +773,6 @@ export function normalizeComms(raw: Partial<Comms>): Comms {
   return stripUndefined<Comms>({
     linked: need(raw, "linked", t),
     solChance: need(raw, "solChance", t),
-    rebels: need(raw, "rebels", t).map(normalizeRebelCall),
     xyloph: copy(need(raw, "xyloph", t)),
     neron: stripUndefined<Comms["neron"]>({ version: need(neron, "version", "CommsState.neron"), progress: need(neron, "progress", "CommsState.neron") }),
   });
@@ -779,6 +845,79 @@ type Hunters = GameCore["hunters"];
 export function normalizeHunters(raw: Partial<Hunters>): Hunters {
   const t = "Hunters";
   return stripUndefined<Hunters>({ points: need(raw, "points", t), since: need(raw, "since", t), list: need(raw, "list", t).map(normalizeHunter), nextId: need(raw, "nextId", t) });
+}
+
+export function normalizeGiveAsset(raw: Partial<GiveAsset>): GiveAsset {
+  const t = "GiveAsset";
+  switch (raw.kind) {
+    case "crew":
+      return stripUndefined<GiveAsset>({ kind: "crew", count: need(raw, "count", t) });
+    case "item":
+      return stripUndefined<GiveAsset>({ kind: "item", item: need(raw, "item", t), count: need(raw, "count", t) });
+    case "oxygen":
+    case "fuel":
+      return stripUndefined<GiveAsset>({ kind: raw.kind, count: need(raw, "count", t) });
+    default:
+      throw unknownVariant(t, "kind", raw.kind satisfies undefined);
+  }
+}
+
+export function normalizeReceiveAsset(raw: Partial<ReceiveAsset>): ReceiveAsset {
+  const t = "ReceiveAsset";
+  switch (raw.kind) {
+    case "item":
+      return stripUndefined<ReceiveAsset>({ kind: "item", item: need(raw, "item", t), count: need(raw, "count", t) });
+    default:
+      throw unknownVariant(t, "kind", raw.kind satisfies undefined);
+  }
+}
+
+export function normalizeMerchantDeal(raw: Partial<MerchantDeal>): MerchantDeal {
+  const t = "MerchantDeal";
+  return stripUndefined<MerchantDeal>({ give: need(raw, "give", t).map(normalizeGiveAsset), receive: need(raw, "receive", t).map(normalizeReceiveAsset), skill: raw.skill });
+}
+
+export function normalizeMerchantData(raw: Partial<MerchantData>): MerchantData {
+  const t = "MerchantData";
+  return stripUndefined<MerchantData>({ kind: need(raw, "kind", t), event: need(raw, "event", t), deals: need(raw, "deals", t).map(normalizeMerchantDeal) });
+}
+
+export function normalizeFeedEntry(raw: Partial<FeedEntry>): FeedEntry {
+  const t = "FeedEntry";
+  return stripUndefined<FeedEntry>({
+    from: need(raw, "from", t),
+    at: need(raw, "at", t),
+    officer: raw.officer,
+    key: need(raw, "key", t),
+    params: opt(raw.params, dict),
+    closes: raw.closes,
+  });
+}
+
+export function normalizeSignal(raw: Partial<Signal>): Signal {
+  const t = "Signal";
+  return stripUndefined<Signal>({
+    id: need(raw, "id", t),
+    kind: need(raw, "kind", t),
+    arrivedAt: need(raw, "arrivedAt", t),
+    endsAt: need(raw, "endsAt", t),
+    status: need(raw, "status", t),
+    step: need(raw, "step", t),
+    number: need(raw, "number", t),
+    feed: need(raw, "feed", t).map(normalizeFeedEntry),
+    merchant: opt(raw.merchant, normalizeMerchantData),
+    rebel: opt(raw.rebel, normalizeRebelData),
+  });
+}
+
+export function normalizeRebelData(raw: Partial<RebelData>): RebelData {
+  const t = "RebelData";
+  return stripUndefined<RebelData>({ base: need(raw, "base", t), progress: need(raw, "progress", t) });
+}
+
+export function normalizeSignals(raw: Partial<SignalsState>): SignalsState {
+  const t = "SignalsState";
+  return stripUndefined<SignalsState>({ list: need(raw, "list", t).map(normalizeSignal), nextId: need(raw, "nextId", t) });
 }
 
 type PatrolShip = GameCore["patrolShips"][string];
@@ -1006,6 +1145,8 @@ export function normalizeCore(raw: Partial<GameCore>, _ctx: NormalizeContext, mo
     icarusLost: added(raw, "icarusLost", false),
     navigation: normalizeNavigation(need(raw, "navigation", t)),
     hunters: normalizeHunters(need(raw, "hunters", t)),
+    // Signals (docs/plans/signals.md): none in a game stored before merchants (#143); upgradeTo119 moved those.
+    signals: normalizeSignals(added(raw, "signals", { list: [], nextId: 1 })),
     turrets: dict(need(raw, "turrets", t)),
     patrolShips: mapValues(need(raw, "patrolShips", t), normalizePatrolShip),
     space: need(raw, "space", t).map(normalizeDebris),
@@ -1040,6 +1181,8 @@ export function normalizeGame(raw: Partial<Omit<GameState, "config">>, overrides
     // A game saved before the NPCs had a stream of their own derives one from where its `rng` stands.
     npcs: normalizeNpcs(added(raw, "npcs", newNpcState(need(raw, "rng", t)))),
     lostAnalysis: normalizeLostAnalysis(added(raw, "lostAnalysis", lostAnalysisFor(raw, config))),
+    // A game saved before merchants (#143) derives their stream from where its `rng` stands.
+    merchantRng: added(raw, "merchantRng", streamFor(need(raw, "rng", t), "merchants")),
     chatOutbox: normalizeOutbox(need(raw, "chatOutbox", t)),
   });
 }

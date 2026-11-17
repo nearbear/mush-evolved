@@ -8,7 +8,7 @@ import { endAccommodationOnDeath } from "./accommodation.ts";
 import { shipInvincible } from "./cheats.ts";
 import type { CharacterId } from "./characters.ts";
 import { removeFromChannel, pushChat } from "./chat.ts";
-import { CORPSE_ITEM, ITRACKIE_ITEM, sameContainer, newItemId } from "./items.ts";
+import { CORPSE_ITEM, ITRACKIE_ITEM, sameContainer, spawnInRoom } from "./items.ts";
 import { logPublic, withNimbleActor } from "./log.ts";
 import { damageTaken } from "./modifiers.ts";
 import { PATROL_SHIPS } from "./patrol.ts";
@@ -38,6 +38,10 @@ export const DEATH_CAUSES = [
   "exploration_combat",
   "exploration_lost",
   "daedalus_destroyed",
+  // Traded away to a merchant ship (merchants.ts, #143): no corpse, and no room line or NERON announcement for now
+  // (whether it is announced like a death is still open, docs/plans/merchants.md). A traded Mush still counts as a dead
+  // Mush and fills the Sick Bay's human tank (`hasMushDied`), so the trade can reveal the role (owner, 2026-11-15).
+  "traded",
 ] as const;
 export type DeathCause = (typeof DEATH_CAUSES)[number];
 
@@ -86,7 +90,8 @@ export function killPlayer(state: GameState, player: PlayerState, cause: DeathCa
   const mine = { kind: "player", id: player.id } as const;
   state.items = state.items.filter((i) => !(sameContainer(i.at, mine) && i.type === ITRACKIE_ITEM));
   for (const item of state.items) if (sameContainer(item.at, mine)) item.at = { kind: "room", id: player.room };
-  state.items.push({ id: newItemId(state), type: CORPSE_ITEM, at: { kind: "room", id: player.room }, of: player.id });
+  const traded = cause === "traded";
+  if (!traded) spawnInRoom(state, player.room, CORPSE_ITEM, 1, { of: player.id });
 
   // Bonds and contamination are void. The dead player's plan claims go with their channels (removeFromChannel, below).
   delete state.bonds[player.id];
@@ -97,6 +102,7 @@ export function killPlayer(state: GameState, player: PlayerState, cause: DeathCa
   for (const other of state.players) if (other.outcastBy === player.id) delete other.outcastBy;
   delete player.protectedBy;
   for (const other of state.players) if (other.protectedBy === player.id) delete other.protectedBy;
+  delete player.hackedEquipment;
 
   for (const channel of state.channels.filter((c) => c.members.includes(player.id))) {
     if (removeFromChannel(state, channel.id, player.id)) systemMessage(state, channel.id, "leftThisWorld", { name: player.character });
@@ -108,8 +114,8 @@ export function killPlayer(state: GameState, player: PlayerState, cause: DeathCa
   // The room always gets a line, without the role; NERON's crew-wide announcement reveals it, unless the BIOS has
   // death announcements off (bios.ts). Both give the cause, never the killer (#177).
   loseShipOnPlanet(state, player);
-  withNimbleActor(null, () => logPublic(state, player.room, "died", { name: player.character, cause }));
-  if (state.bios.death_announcements) {
+  if (!traded) withNimbleActor(null, () => logPublic(state, player.room, "died", { name: player.character, cause }));
+  if (!traded && state.bios.death_announcements) {
     systemMessage(state, "global", player.role === "mush" ? "diedMush" : "diedHuman", { name: player.character, cause });
   }
   refreshTitles(state);

@@ -1,0 +1,187 @@
+import { describe, expect, it } from "vitest";
+import { jump } from "../src/actions/travel.ts";
+import { DEFAULT_CONFIG } from "../src/config.ts";
+import { arriveMerchant, type MerchantDeal, merchantsCycle, merchantsInOrbit } from "../src/merchants.ts";
+import { addSignal, type Signal } from "../src/signals.ts";
+import { applyAction, createGame, viewFor } from "../src/rules.ts";
+import type { Action, GameConfig, GameState } from "../src/types.ts";
+import { clone, costOf, makeSeats, must, nextCycle, noHunters, noIncidents, offered, player } from "./support.ts";
+
+const TERMINAL = "COMMAND_CENTER:COM_CENTER";
+const cfg = DEFAULT_CONFIG.merchants;
+const close = (signal: string, deal: number): Action => ({ type: "close_deal", equipment: TERMINAL, signal, deal });
+
+/** Four players on the bridge; p0 is the Comms Officer. No merchant arrives on its own unless `arrival` says so. */
+function ship(arrival = 0): GameState {
+  const config: GameConfig = { ...noIncidents(noHunters(DEFAULT_CONFIG)), merchants: { ...cfg, arrivalChance: arrival } };
+  const s = createGame(makeSeats(4), config, 7);
+  for (const p of s.players) p.room = "COMMAND_CENTER";
+  s.titles.comms_officer = "p0";
+  return s;
+}
+
+/** A transport with the given deals, in orbit now and already contacted (its deals on offer). */
+function withMerchant(s: GameState, deals: MerchantDeal[]): Signal {
+  const m = addSignal(s, "merchant", s.cycle + cfg.stayCycles, { merchant: { kind: "transport", event: "HUMAN_VS_FUEL", deals } });
+  m.step = "offers";
+  return m;
+}
+
+const blocked = (s: GameState, deal: number) => viewFor(s, "p0").comms.terminal?.signals?.find((sig) => sig.kind === "merchant")?.merchant?.deals[deal]?.blocked;
+
+const crewForFuel: MerchantDeal = { give: [{ kind: "crew", count: 1 }], receive: [{ kind: "item", item: "fuel_capsule", count: 9 }] };
+const storageCount = (s: GameState, type: string) => s.items.filter((i) => i.type === type && i.at.kind === "room" && i.at.id === cfg.deliveryRoom).length;
+
+describe("merchant ships", () => {
+  it("uses the owner's numbers: about 2 a day, 4 cycles, 2 AP a deal, delivered to Front Storage", () => {
+    expect([cfg.arrivalChance * DEFAULT_CONFIG.cyclesPerDay, cfg.stayCycles, cfg.deal.cost.ap, cfg.deliveryRoom]).toEqual([2, 4, 2, "STORAGE_FRONT"]);
+  });
+
+  describe("arrival and departure", () => {
+    it("arrives at a cycle change with its deals rolled within the original's ranges", () => {
+      const s = nextCycle(ship(1));
+      expect(merchantsInOrbit(s)).toHaveLength(1);
+      const signal = merchantsInOrbit(s)[0]!;
+      const m = signal.merchant!;
+      expect(m.kind).toBe("transport");
+      expect(signal.endsAt).toBe(s.cycle + cfg.stayCycles);
+      expect([signal.step, signal.feed]).toEqual(["hail", []]);
+      const templates = cfg.kinds.transport.events[m.event]!;
+      expect(m.deals).toHaveLength(templates.length);
+      m.deals.forEach((deal, i) => {
+        const t = templates[i]!;
+        expect(deal.skill).toBe(t.skill);
+        deal.receive.forEach((a, j) => {
+          const [min, max] = t.receive[j]!.count;
+          expect(a.count).toBeGreaterThanOrEqual(min);
+          expect(a.count).toBeLessThanOrEqual(max);
+        });
+      });
+    });
+
+    it("doesn't arrive before Mush are chosen", () => {
+      const config: GameConfig = {
+        ...noIncidents(noHunters(DEFAULT_CONFIG)),
+        merchants: { ...cfg, arrivalChance: 1 },
+        preselection: { seats: 4, endsOn: { day: 3, cycle: 8 }, mushCount: "auto", twoMushAbove: 8, minPlayers: 1 },
+      };
+      const s = createGame([], config, 7);
+      expect(s.preselection).toBe(true);
+      merchantsCycle(s);
+      expect(merchantsInOrbit(s)).toEqual([]);
+      expect(s.signals.list).toEqual([]);
+    });
+
+    it("several can be in orbit at once", () => {
+      let s = ship(1);
+      s = nextCycle(nextCycle(s));
+      expect(merchantsInOrbit(s).length).toBe(2);
+      expect(new Set(merchantsInOrbit(s).map((m) => m.id)).size).toBe(2);
+    });
+
+    it("is lost once its stay is over, and kept in the list", () => {
+      let s = ship();
+      arriveMerchant(s, "transport");
+      for (let i = 0; i < cfg.stayCycles - 1; i++) s = nextCycle(s);
+      expect(merchantsInOrbit(s)).toHaveLength(1);
+      s = nextCycle(s);
+      expect(merchantsInOrbit(s)).toEqual([]);
+      expect(s.signals.list.filter((m) => m.kind === "merchant").map((m) => m.status)).toEqual(["lost"]);
+    });
+
+    it("is left behind when the Daedalus travels", () => {
+      const s = ship();
+      arriveMerchant(s, "transport");
+      jump(s, player(s, "p0"), 1);
+      expect(merchantsInOrbit(s)).toEqual([]);
+      expect(s.signals.list.filter((m) => m.kind === "merchant").map((m) => m.status)).toEqual(["lost"]);
+    });
+  });
+
+  describe("closing a deal", () => {
+    it("is offered only to the comms officer at the terminal, for 2 AP", () => {
+      const s = ship();
+      const m = withMerchant(s, [{ give: [{ kind: "fuel", count: 1 }], receive: [{ kind: "item", item: "oxy_capsule", count: 2 }] }]);
+      expect(offered(s, "p0")).toContainEqual(close(m.id, 0));
+      expect(costOf(s, "p0", close(m.id, 0))?.ap).toBe(cfg.deal.cost.ap);
+      expect(offered(s, "p1").some((a) => a.type === "close_deal")).toBe(false);
+      player(s, "p0").room = "FRONT_CORRIDOR";
+      expect(offered(s, "p0").some((a) => a.type === "close_deal")).toBe(false);
+    });
+
+    it("trades a random inactive player: dead, no corpse, no announcement, items dropped where they stood", () => {
+      const s = ship();
+      const away = player(s, "p3");
+      away.room = "LABORATORY";
+      away.inactivity = "inactive";
+      s.items.push({ id: "item-x", type: "knife", at: { kind: "player", id: "p3" } });
+      const m = withMerchant(s, [crewForFuel]);
+      const logBefore = s.log.length;
+      const chatBefore = s.chat.length;
+      const next = must(applyAction(s, "p0", close(m.id, 0)));
+      expect(player(next, "p3").alive).toBe(false);
+      expect(next.items.some((i) => i.type === "corpse")).toBe(false);
+      expect(next.items.find((i) => i.id === "item-x")?.at).toEqual({ kind: "room", id: "LABORATORY" });
+      expect(storageCount(next, "fuel_capsule")).toBe(storageCount(s, "fuel_capsule") + 9);
+      expect(merchantsInOrbit(next)).toEqual([]);
+      expect(player(next, "p0").ap).toBe(player(s, "p0").ap - cfg.deal.cost.ap);
+      // Nothing public: only the officer's private line. The trade never names the role.
+      const added = next.log.slice(logBefore);
+      expect(added.map((e) => [e.key, e.visibleTo])).toEqual([["merchantDealClosed", ["p0"]]]);
+      expect(next.chat.length).toBe(chatBefore);
+    });
+
+    it("an active player is never traded; with too few inactive crew the deal is shown blocked", () => {
+      const s = ship();
+      const m = withMerchant(s, [crewForFuel]);
+      expect(offered(s, "p0")).not.toContainEqual(close(m.id, 0));
+      expect(applyAction(s, "p0", close(m.id, 0)).ok).toBe(false);
+      expect(blocked(s, 0)).toBe("crew");
+    });
+
+    it("pays fuel and oxygen from the tanks", () => {
+      const s = ship();
+      s.ship.fuel = 10;
+      const m = withMerchant(s, [{ give: [{ kind: "fuel", count: 6 }], receive: [{ kind: "item", item: "oxy_capsule", count: 12 }] }]);
+      const next = must(applyAction(s, "p0", close(m.id, 0)));
+      expect(next.ship.fuel).toBe(4);
+      expect(storageCount(next, "oxy_capsule")).toBe(storageCount(s, "oxy_capsule") + 12);
+      s.ship.fuel = 5;
+      expect(blocked(s, 0)).toBe("fuel");
+    });
+
+    it("pays items from the storage rooms' floors, never hidden ones", () => {
+      const s = ship();
+      s.items = s.items.filter((i) => i.type !== "uncooked_ration");
+      s.items.push({ id: "r1", type: "uncooked_ration", at: { kind: "room", id: "STORAGE_A_0" } });
+      s.items.push({ id: "r2", type: "uncooked_ration", at: { kind: "room", id: "STORAGE_B_1" }, hiddenBy: "p2" });
+      s.items.push({ id: "r3", type: "uncooked_ration", at: { kind: "room", id: "REFECTORY" } });
+      s.items.push({ id: "r4", type: "uncooked_ration", at: { kind: "player", id: "p1" } });
+      const m = withMerchant(s, [{ give: [{ kind: "item", item: "uncooked_ration", count: 1 }], receive: [{ kind: "item", item: "fuel_capsule", count: 2 }] }]);
+      const next = must(applyAction(s, "p0", close(m.id, 0)));
+      expect(next.items.map((i) => i.id)).not.toContain("r1");
+      expect(next.items.map((i) => i.id)).toEqual(expect.arrayContaining(["r2", "r3", "r4"]));
+      // With only the hidden one left in storage, the deal is blocked: hidden items never count.
+      m.merchant!.deals[0]!.give = [{ kind: "item", item: "uncooked_ration", count: 2 }];
+      expect(blocked(s, 0)).toBe("item");
+    });
+
+    it("a skill deal needs someone alive in the officer's room with the skill (eMush)", () => {
+      const s = ship();
+      const m = withMerchant(s, [{ give: [{ kind: "fuel", count: 1 }], receive: [{ kind: "item", item: "oxy_capsule", count: 1 }], skill: "diplomacy" }]);
+      for (const p of s.players) p.skills = [];
+      expect(blocked(s, 0)).toBe("skill");
+      player(s, "p2").skills = ["diplomacy"];
+      expect(offered(s, "p0")).toContainEqual(close(m.id, 0));
+    });
+
+    it("an illegal deal leaves the state unchanged", () => {
+      const s = ship();
+      const m = withMerchant(s, [crewForFuel]);
+      const before = clone(s);
+      expect(applyAction(s, "p0", close("merchant-404", 0)).ok).toBe(false);
+      expect(applyAction(s, "p1", close(m.id, 0)).ok).toBe(false);
+      expect(s).toEqual(before);
+    });
+  });
+});

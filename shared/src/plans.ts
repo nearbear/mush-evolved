@@ -8,7 +8,7 @@
 // plans in step with deaths, channel exits, completions and the day tick. Nothing here locks AP or MP.
 
 import { chatChannels, privateChannelId } from "./chat.ts";
-import { clone, dayOf, fail, findPlayer, isRecord, type ActionResult } from "./helpers.ts";
+import { clone, cloneState, dayOf, fail, findPlayer, isRecord, type ActionResult } from "./helpers.ts";
 import { ITEM_TYPES } from "./items.ts";
 import { isPilgredRepaired } from "./pilgred.ts";
 import { PROJECT_COMPLETE, PROJECT_IDS } from "./projects.ts";
@@ -120,7 +120,7 @@ export function postPlan(state: GameState, authorId: PlayerId, draft: PlanDraft)
     }
   }
 
-  const next = clone(state);
+  const next = cloneState(state);
   next.plans.push({
     id: `plan-${next.nextPlanId++}`,
     channel: channel.id,

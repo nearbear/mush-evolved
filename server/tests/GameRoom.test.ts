@@ -41,6 +41,18 @@ import {
   type Setup,
 } from "@mush2/shared";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
+const { configBump } = vi.hoisted(() => ({ configBump: { maxAp: undefined as number | undefined } }));
+vi.mock("../../shared/src/config.ts", async (importOriginal) => {
+  const mod = await importOriginal<typeof import("../../shared/src/config.ts")>();
+  return {
+    ...mod,
+    resolveConfig: (o?: Parameters<typeof mod.resolveConfig>[0]) => {
+      const resolved = mod.resolveConfig(o);
+      return configBump.maxAp !== undefined ? { ...resolved, maxAp: configBump.maxAp } : resolved;
+    },
+  };
+});
 import { AccountStore } from "../src/accountStore.ts";
 import { BOT_CHAT_CHAIN_DEPTH } from "../src/bots.ts";
 import { GameStore } from "../src/gameStore.ts";
@@ -504,14 +516,13 @@ describe("GameRoom persistence", () => {
 
   it("picks up a balance change (an edit to DEFAULT_CONFIG) on the next load", async () => {
     const { storage } = await newRoom();
-    const before = DEFAULT_CONFIG.maxAp;
     try {
-      DEFAULT_CONFIG.maxAp = 99;
+      configBump.maxAp = 99;
       const revived = asRoom(storage);
       await revived.onStart();
       expect(gameOf(revived).config.maxAp).toBe(99);
     } finally {
-      DEFAULT_CONFIG.maxAp = before;
+      configBump.maxAp = undefined;
     }
   });
 

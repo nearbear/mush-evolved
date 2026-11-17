@@ -672,6 +672,7 @@ describe("actions from a client", () => {
     upgrade_drone: [{ type: "upgrade_drone", item: "i1", upgrade: "turbo" }],
     dismantle: [{ type: "dismantle", item: "i1" }, { type: "dismantle", equipment: "e1" }],
     access: [{ type: "access", equipment: "e1" }],
+    hack: [{ type: "hack", equipment: "e1" }],
     research: [{ type: "research", equipment: "e1", research: "r1" }],
     spoil_research: [{ type: "spoil_research", equipment: "e1", research: "r1" }],
     contaminate: [{ type: "contaminate", equipment: "e1", research: "r1" }],
@@ -692,6 +693,9 @@ describe("actions from a client", () => {
     decode_rebel: [{ type: "decode_rebel", equipment: "e1", base: "b1" }],
     contact_xyloph: [{ type: "contact_xyloph", equipment: "e1" }],
     update_neron: [{ type: "update_neron", equipment: "e1" }],
+    contact_signal: [{ type: "contact_signal", equipment: "e1", signal: "s1" }],
+    close_deal: [{ type: "close_deal", equipment: "e1", signal: "s1", deal: 0 }],
+    refuse_signal: [{ type: "refuse_signal", equipment: "e1", signal: "s1" }],
     set_bios: [{ type: "set_bios", equipment: "e1", option: BIOS_OPTIONS[0]!, value: true }],
     scan_planet: [{ type: "scan_planet", equipment: "e1" }],
     analyze_planet: [{ type: "analyze_planet", equipment: "e1", planet: "pl1" }],
@@ -704,6 +708,7 @@ describe("actions from a client", () => {
     ignite: [{ type: "ignite" }],
     u_turn: [{ type: "u_turn" }],
     sabotage_expedition: [{ type: "sabotage_expedition" }],
+    sabotage_door: [{ type: "sabotage_door", door: "BRIDGE|CORRIDOR_FRONT" }],
     extinguish_manually: [{ type: "extinguish_manually" }],
     takeoff: [{ type: "takeoff", equipment: "e1" }],
     icarus_takeoff: [{ type: "icarus_takeoff", equipment: "e1" }],
@@ -759,6 +764,7 @@ describe("actions from a client", () => {
     use_bandage: [{ type: "use_bandage", target: "p1" }],
     vaccinate: [{ type: "vaccinate", target: "p1" }],
     punch: [{ type: "punch", target: "p1" }],
+    throw_out: [{ type: "throw_out", target: "p1", to: "CORRIDOR_1" }],
     interrogate: [{ type: "interrogate", target: "p1" }],
     chitchat: [{ type: "chitchat", target: "p1" }],
     premonition: [{ type: "premonition", target: "p1" }],
@@ -800,8 +806,8 @@ describe("actions from a client", () => {
         if (action.type === "dismantle" || action.type === "reinforce") continue;
         const { [key]: _dropped, ...missing } = action as Record<string, unknown>;
         if (!(action.type === "attack" && key === "target")) expect(asAction(missing), `${action.type} without ${key}`).toBeNull();
-        // A plan's slot is an index: a number is its right type, so it gets a wrong one.
-        const wrong = key === "slot" ? "7" : 7;
+        // A plan's slot and a merchant deal are indexes: a number is their right type, so they get a wrong one.
+        const wrong = key === "slot" || key === "deal" ? "7" : 7;
         expect(asAction({ ...action, [key]: wrong }), `${action.type} with a wrongly typed ${key}`).toBeNull();
       }
     }

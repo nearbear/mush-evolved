@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { BodyTakenDialog } from "../hud/BodyTakenDialog.tsx";
+import { CommsCenter } from "../hud/CommsCenter.tsx";
 import { DeathNotice } from "../hud/DeathNotice.tsx";
 import { EndScreen } from "../hud/EndScreen.tsx";
 import { ITrackie } from "../hud/ITrackie.tsx";
@@ -15,7 +16,7 @@ import { useNames } from "../i18n/names.ts";
 import { useShipLayout } from "../iso/shipLayout.ts";
 import type { EquipmentView, PlayerView } from "@mush2/shared";
 import { Figure, noop, Section } from "./KitSection.tsx";
-import { bodyTakenView, chatView, deadMushView, deadView, edenView, mushChatView, mushWinView, patrolHuntersView, patrolView, terminalSamples, turretHuntersSample } from "./samples.ts";
+import { bodyTakenView, chatView, deadMushView, deadView, edenView, mushChatView, mushWinView, patrolHuntersView, patrolView, signalsNoAccessSample, signalsSample, terminalSamples, turretHuntersSample } from "./samples.ts";
 
 function TerminalFigure({ view, terminal, note }: { view: PlayerView; terminal: EquipmentView; note?: string }) {
   const names = useNames();
@@ -23,7 +24,7 @@ function TerminalFigure({ view, terminal, note }: { view: PlayerView; terminal: 
   return (
     <Figure caption={note ? `${name}, ${note}` : name}>
       <div className="terminal-popup kit-panel m2k-terminal m2k-terminal-tall">
-        <TerminalFrame name={name} type={terminal.type} login={terminalLogin(terminal.type, view)} onClose={noop}>
+        <TerminalFrame name={name} type={terminal.type} login={terminalLogin(terminal.type, view, terminal.id)} onClose={noop}>
           <TerminalBody terminal={terminal} view={view} onAction={noop} onSharePlanet={noop} />
         </TerminalFrame>
       </div>
@@ -93,6 +94,43 @@ export function SignalSection() {
           </Figure>
         );
       })}
+    </Section>
+  );
+}
+
+function SignalsFigure({ view, terminal, note, signal }: { view: PlayerView; terminal: EquipmentView; note: string; signal?: string }) {
+  const names = useNames();
+  const name = names.equipment(terminal.type);
+  return (
+    <Figure caption={note}>
+      <div className="terminal-popup kit-panel m2k-terminal m2k-terminal-tall">
+        <TerminalFrame name={name} type={terminal.type} login={terminalLogin(terminal.type, view, terminal.id)} onClose={noop}>
+          <CommsCenter terminal={terminal} view={view} onAction={noop} initialTab="signals" initialSignal={signal} />
+        </TerminalFrame>
+      </div>
+    </Figure>
+  );
+}
+
+export function SignalsTabSection() {
+  const { view, terminal, merchant, rebel } = signalsSample;
+  return (
+    <Section
+      id="signals-tab"
+      heading="Signals"
+      about={
+        <>
+          <code>hud/Signals.tsx</code> and <code>hud/SignalConversation.tsx</code> in <code>CommsCenter</code>: the
+          Comms Officer&apos;s list (Active with the next rebel call, Inactive), a transport&apos;s conversation after
+          Contact with its deals, and Wolf&apos;s call after two decodes (garbled by <code>garble.ts</code>). Last, the
+          tab without Comms Officer access. Built through the rules (<code>signalsSample</code>).
+        </>
+      }
+    >
+      <SignalsFigure view={view} terminal={terminal} note="Comms Officer: the list" />
+      <SignalsFigure view={view} terminal={terminal} signal={merchant} note="A transport's deals" />
+      <SignalsFigure view={view} terminal={terminal} signal={rebel} note="A rebel call, partly decoded" />
+      <SignalsFigure {...signalsNoAccessSample} note="Without Comms Officer access" />
     </Section>
   );
 }

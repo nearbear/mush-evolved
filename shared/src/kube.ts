@@ -10,7 +10,7 @@ import { updateMaxValues } from "./adjustStats.ts";
 import { cheatItem } from "./cheatStock.ts";
 import { CHEAT_ROOM } from "./cheatRoom.ts";
 import { addDisease, removeDisease } from "./diseases.ts";
-import { clone, fail, findPlayer, type ActionResult } from "./helpers.ts";
+import { cloneState, fail, findPlayer, type ActionResult } from "./helpers.ts";
 import { allDoors, breakDoor } from "./doors.ts";
 import { contaminate } from "./infection.ts";
 import { ITEM_TYPES, newItemId, startCharges } from "./items.ts";
@@ -196,7 +196,7 @@ export function applyKube(state: GameState, playerId: PlayerId, op: KubeOpId, ar
   if (!def) return fail("unknown_option");
   const bad = argError(state.config, def.arg, arg);
   if (bad) return fail(bad);
-  const next = clone(state);
+  const next = cloneState(state);
   const error = def.apply(next, findPlayer(next, playerId)!, arg);
   return error ? fail(error) : { ok: true, state: next };
 }

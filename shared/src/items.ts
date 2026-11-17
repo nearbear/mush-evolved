@@ -5,7 +5,7 @@
 // controls on lockers touches one place.
 
 import { inventorySlots } from "./modifiers.ts";
-import type { Container, DeepReadonly, GameConfig, GameState, ItemState, PlayerState } from "./types.ts";
+import type { Container, DeepReadonly, GameConfig, GameState, ItemState, PlayerState, RoomId } from "./types.ts";
 import { ALIEN_FRUIT_ITEMS, BOOK_ITEM, ITRACKIE_ITEM } from "./itemIds.ts";
 
 export { ALIEN_FRUIT_ITEMS, BOOK_ITEM, ITRACKIE_ITEM } from "./itemIds.ts";
@@ -76,6 +76,12 @@ export const STEROIDS_ITEM = "steroids";
 export const STEROIDS_YIELD = 4;
 export const STEROIDS_MP = 8;
 
+/** The customized blaster spawned by picking the `infantryman` skill (modifiers/infantryman.ts). */
+export const CUSTOMIZED_BLASTER_ITEM = "customized_blaster";
+
+/** Hacker kit: lets a player attempt to hack equipment/terminals. */
+export const HACKER_KIT_ITEM = "hacker_kit";
+
 /** The drugs (drugs.ts): their effects are drawn per ship, so each is only a consumable here. */
 export const DRUG_ITEMS: readonly string[] = Array.from({ length: 12 }, (_, i) => `drug_${i}`);
 
@@ -99,6 +105,7 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   // Weapons (owner, 2026-10-22, from the English wiki): their combat numbers are `config.weapons`. Named after their icons.
   knife: { dismantle: { metal: 1, plastic: 0, chance: 0.5 }, canBreak: true, canBeSabotaged: true, repairChance: 0.25 },
   blaster: { dismantle: { metal: 1, plastic: 0, chance: 0.25 }, canBreak: true, canBeSabotaged: true, repairChance: 0.25 },
+  [CUSTOMIZED_BLASTER_ITEM]: { dismantle: { metal: 1, plastic: 0, chance: 0.25 }, canBreak: true, canBeSabotaged: true, repairChance: 0.25 },
   natamy_riffle: { dismantle: { metal: 1, plastic: 0, chance: 0.12 }, canBreak: true, canBeSabotaged: true, repairChance: 0.12 },
   // Lizaro Jungle.
   sniper_riffle: { dismantle: { metal: 1, plastic: 0, extra: ["thick_tube"], chance: 0.12 }, canBreak: true, canBeSabotaged: true, repairChance: 0.12 },
@@ -165,6 +172,7 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   oscilloscope: { heavy: true, dismantle: { metal: 2, plastic: 0, chance: 0.06 }, canBreak: true, canBeSabotaged: true, repairChance: 0.06 },
   apron: { canBreak: true, canBeSabotaged: true, repairChance: 0.25 },
   protection_gloves: { canBreak: true, canBeSabotaged: true, repairChance: 0.25 },
+  [HACKER_KIT_ITEM]: { canBreak: true, canBeSabotaged: true, repairChance: 0.06, breaksInOverload: true },
   // Owner, 2026-10-21: a skill book (the original's Apprentron) carries its skill in `ItemState.teaches`; destroyed by reading.
   [BOOK_ITEM]: {},
   // Owner, 2026-10-21: Xyloph rewards (comms.ts), dropped on the bridge. No effect yet. Named after their icons.
@@ -281,6 +289,35 @@ export function removeItem(state: GameState, id: string): ItemState {
   return state.items.splice(index, 1)[0]!;
 }
 
+/** Takes an item out of the game if it is still present, returning it (or undefined if already removed). */
+export function removeItemIfPresent(state: GameState, id: string): ItemState | undefined {
+  const index = state.items.findIndex((i) => i.id === id);
+  if (index < 0) return undefined;
+  return state.items.splice(index, 1)[0]!;
+}
+
+/**
+ * Moves a carried item from `{ kind: "player", id: player.id }` to `{ kind: "room", id: player.room }`.
+ * Respects `ITEM_TYPES[item.type]?.canDrop !== false` unless `bypassCanDrop` is true (e.g. combat fumbles).
+ * Returns `true` if the item was moved, `false` if it was not carried by `player` or cannot be dropped.
+ */
+export function dropWeapon(
+  state: GameState,
+  player: Readonly<PlayerState>,
+  item: ItemState,
+  options?: { bypassCanDrop?: boolean },
+): boolean {
+  if (item.at.kind !== "player" || item.at.id !== player.id) return false;
+  if (!options?.bypassCanDrop && ITEM_TYPES[item.type]?.canDrop === false) return false;
+  const index = state.items.findIndex((i) => i.id === item.id);
+  if (index < 0) return false;
+  const [moved] = state.items.splice(index, 1) as [ItemState];
+  delete moved.hiddenBy;
+  moved.at = { kind: "room", id: player.room };
+  state.items.push(moved);
+  return true;
+}
+
 export function produceItem(next: GameState, player: Readonly<PlayerState>, type: string): { item: ItemState; inInventory: boolean } {
   const mine: Container = { kind: "player", id: player.id };
   const inInventory = hasSpace(next, mine);
@@ -288,4 +325,23 @@ export function produceItem(next: GameState, player: Readonly<PlayerState>, type
   const item: ItemState = { id: newItemId(next), type, at: inInventory ? mine : { kind: "room", id: player.room }, ...(charges !== undefined && { charges }) };
   next.items.push(item);
   return { item, inInventory };
+}
+
+/**
+ * Spawns `count` (default 1) items of `type` on the floor of `room`, with any
+ * default start charges and optional per-item `extra` fields. Mutates a state
+ * the caller already cloned.
+ */
+export function spawnInRoom(
+  state: GameState,
+  room: RoomId,
+  type: string,
+  count = 1,
+  extra?: Partial<Omit<ItemState, "id" | "type" | "at">> | (() => Partial<Omit<ItemState, "id" | "type" | "at">>),
+): void {
+  const charges = startCharges(state.config, type);
+  for (let i = 0; i < count; i++) {
+    const fields = typeof extra === "function" ? extra() : extra;
+    state.items.push({ id: newItemId(state), type, at: { kind: "room", id: room }, ...(charges !== undefined && { charges }), ...fields });
+  }
 }

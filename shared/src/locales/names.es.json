@@ -81,6 +81,7 @@
     "super_talky": "iTrackie",
     "wrench": "Llave inglesa",
     "blaster": "Blaster",
+    "customized_blaster": "Bláster personalizado",
     "medikit": "Botiquín",
     "bandage": "Venda",
     "coffee": "Café",
@@ -163,7 +164,8 @@
     "thermosensor": "Termosensor",
     "trad_module": "Módulo Babel",
     "white_flag": "Bandera blanca",
-    "old_shirt": "Vieja camiseta"
+    "old_shirt": "Vieja camiseta",
+    "hacker_kit": "Kit de hacker"
   },
   "skills": {
     "names": {

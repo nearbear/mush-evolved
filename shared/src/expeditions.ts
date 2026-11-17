@@ -35,7 +35,7 @@ import { FAST_EXPEDITION_STEP_MS, fastExpeditions } from "./cheats.ts";
 import { soil } from "./dirt.ts";
 import { rebelContacted } from "./comms.ts";
 import { contaminate } from "./infection.ts";
-import { CORPSE_ITEM, isWorking, itemsIn, newItemId, removeItem, sameContainer } from "./items.ts";
+import { CORPSE_ITEM, isWorking, itemsIn, removeItem, sameContainer, spawnInRoom } from "./items.ts";
 import { logPrivate, logPublic } from "./log.ts";
 import { isTraveling } from "./navigation.ts";
 import { retargetNow } from "./hunters.ts";
@@ -51,8 +51,8 @@ import type { CreatureLoot, ExpeditionEvent, ExpeditionEventRule, ExpeditionRepo
 export const LANDING = "LANDING";
 
 /**
- * Who may launch: a Pilot, for now (owner, 2026-10-31). The one place this is decided, so the NERON piloting lock can
- * open it to everyone later.
+ * Who may launch: anyone who can fly (owner, 2026-11-15). Kept as one helper so the NERON piloting lock can gate it
+ * later.
  */
 export const canLaunchExpedition = (_state: Readonly<GameState>, player: Readonly<PlayerState>): boolean => canFly(player);
 
@@ -187,9 +187,11 @@ export function expeditionStep(state: GameState): void {
   const ctx: Ctx = { state, crew: members(), carried: away.carried, report, planet, redraw: false };
   if (!away.landed) {
     away.landed = true;
-    // A safe landing (owner, 2026-11-08): a living Pilot aboard or the Antigrav propeller.
+    // A safe landing (owner, 2026-11-08, 2026-11-15): an ungrounded living Pilot aboard, or the Antigrav propeller (Icarus only).
     // The Pilot flies the Icarus, so one without a spacesuit still lands it.
-    const safe = ctx.crew.some((p) => withCrew(state, p) && canFly(p)) || projectDone(state, "ICARUS_ANTIGRAV_PROPELLER");
+    const safe =
+      ctx.crew.some((p) => withCrew(state, p) && canFly(p) && hasSkill(p, "pilot")) ||
+      (away.ship === null && projectDone(state, "ICARUS_ANTIGRAV_PROPELLER"));
     report.events.push(resolve(ctx, LANDING, safe ? [] : rules.events[LANDING]!));
   } else if (planet) {
     const sector = planet.sectors[away.sectors.shift()!]!;
@@ -244,8 +246,8 @@ function returnExpedition(state: GameState, landed = true): void {
     const p = state.players.find((q) => q.id === id)!;
     if (!ship && p.alive && p.room === craft) {
       board(p, rules.room);
-      // A crew that never left (nobody had a spacesuit) stays clean.
-      if (landed && rollFloat(state) < rules.dirtyChance) soil(state, p);
+      // A crew that never left (nobody had a spacesuit) or a ship with ICARUS_LAVATORY stays clean.
+      if (landed && !projectDone(state, "ICARUS_LAVATORY") && rollFloat(state) < rules.dirtyChance) soil(state, p);
     }
     // A lost member isn't back: they stay on the planet (owner, 2026-11-08).
     if (!(p.alive && isLostPlace(p.room))) logPrivate(state, p.id, "expeditionReturned", { planet: report.planet, report: report.id });
@@ -622,7 +624,7 @@ function fight(ctx: Ctx, event: ExpeditionEvent, creature: string): void {
   const isGun = (i: ItemState) => weapons[i.type]!.gun === true;
   const shooters = members.filter((p) => hasSkill(p, "gunman") && counted.some((i) => isGun(i) && i.at.kind === "player" && i.at.id === p.id));
   crew += shooters.length * rules.shooterBonus;
-  if (rebelContacted(state, "CENTAURI")) crew += counted.filter((i) => i.type === rules.centauri.item).length * rules.centauri.bonus;
+  if (rebelContacted(state, "CENTAURI")) crew += counted.filter((i) => i.type === rules.centauri.item || i.type === "customized_blaster").length * rules.centauri.bonus;
   const withAllGrenades = crew + grenades.reduce((sum, g) => sum + weapons[g.type]!.expoStrength, 0);
   let used = 0;
   for (const grenade of grenades) {
@@ -701,6 +703,6 @@ function died(ctx: Ctx, event: ExpeditionEvent, p: PlayerState): void {
 
 /** `count` items of `type` on the floor of the craft, which unloads them in the bay on its return. Returns how many. */
 function drop(state: GameState, type: string, count: number): number {
-  for (let i = 0; i < count; i++) state.items.push({ id: newItemId(state), type, at: { kind: "room", id: expeditionCraft(state) } });
+  spawnInRoom(state, expeditionCraft(state), type, count);
   return count;
 }

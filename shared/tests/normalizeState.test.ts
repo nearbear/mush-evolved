@@ -13,6 +13,8 @@ import {
   normalizeGame,
   normalizeHunterTarget,
   normalizeReport,
+  normalizeGiveAsset,
+  normalizeReceiveAsset,
   normalizeOverrides,
   normalizePlanSlot,
   normalizePlanTask,
@@ -27,6 +29,7 @@ import {
   normalizeFrame,
   type UpgradeStep,
 } from "../src/normalizeState.ts";
+import type { GiveAsset, ReceiveAsset } from "../src/merchants.ts";
 import type { ConfigOverrides, Container, GameState, HunterTarget, PlanSlot, Report, PlanTask, PlayerState, Spot } from "../src/types.ts";
 import { play } from "./randomGame.ts";
 import { addProbes, probesIn } from "./storedShape.ts";
@@ -48,7 +51,8 @@ const withoutQueues = (game: GameState): GameState => {
 
 const fresh = () => ({ game: createGame(makeSeats(3), DEFAULT_CONFIG, 7), overrides: {} as ConfigOverrides });
 // A seeded random game some way in (#335): chat, channels, items moved, cycles passed, actions under way.
-const played = () => ({ game: play(600, 11).state, overrides: { manualCycles: true } as ConfigOverrides });
+const PLAYED_STATE = play(600, 11).state;
+const played = () => ({ game: PLAYED_STATE, overrides: { manualCycles: true } as ConfigOverrides });
 
 /** A fresh game with every optional field and every collection a random game leaves empty filled in by hand. */
 function handFilled() {
@@ -72,6 +76,7 @@ function handFilled() {
     inactivity: "inactive",
     boringToday: true,
     fertileToday: true,
+    doormanToday: true,
     chitchatToday: true,
     interrogatedToday: true,
     snoopedToday: ["FRONT_STORAGE"],
@@ -335,6 +340,8 @@ describe("union normalizers", () => {
     ["PlanTask", normalizePlanTask, { type: "bring", itemType: "medikit" }, "type"],
     ["DocumentState", normalizeDocument, { kind: "lost_analysis", rows: [] }, "kind"],
     ["Report", normalizeReport, { kind: "fire", room: "BRIDGE", by: "p1" }, "kind"],
+    ["GiveAsset", normalizeGiveAsset, { kind: "crew", count: 1 }, "kind"],
+    ["ReceiveAsset", normalizeReceiveAsset, { kind: "item", item: "oxy_capsule", count: 5 }, "kind"],
   ];
 
   for (const [type, normalize, valid, key] of cases) {
@@ -364,6 +371,15 @@ describe("union normalizers", () => {
     equipment: { kind: "equipment", equipment: "BRIDGE:COMMUNICATION_CENTER", by: "p2" },
     door: { kind: "door", door: "BRIDGE|FRONT_CORRIDOR", by: "p1" },
   };
+  const gives: { [K in GiveAsset["kind"]]: Extract<GiveAsset, { kind: K }> } = {
+    crew: { kind: "crew", count: 2 },
+    item: { kind: "item", item: "uncooked_ration", count: 4 },
+    oxygen: { kind: "oxygen", count: 3 },
+    fuel: { kind: "fuel", count: 7 },
+  };
+  const receives: { [K in ReceiveAsset["kind"]]: Extract<ReceiveAsset, { kind: K }> } = {
+    item: { kind: "item", item: "fuel_capsule", count: 9 },
+  };
   const tasks: { [K in PlanTask["type"]]: Extract<PlanTask, { type: K }> } = {
     research: { type: "research", research: "r" },
     project: { type: "project", project: "p" },
@@ -384,6 +400,8 @@ describe("union normalizers", () => {
     ["Spot", normalizeSpot, Object.values(spots).flat()],
     ["HunterTarget", normalizeHunterTarget, Object.values(targets)],
     ["Report", normalizeReport, Object.values(reports)],
+    ["GiveAsset", normalizeGiveAsset, Object.values(gives)],
+    ["ReceiveAsset", normalizeReceiveAsset, Object.values(receives)],
     ["PlanTask", normalizePlanTask, Object.values(tasks)],
     ["PlanSlot", normalizePlanSlot, Object.values(slots).flat()],
     ["DocumentState", normalizeDocument, [{ kind: "lost_analysis", rows: [{ character: "chun", negative: true }, { character: "chao", negative: false }] }]],
@@ -497,6 +515,69 @@ describe("upgrade", () => {
     expect(normalized.players[0]!.bookSkill).toBeUndefined();
     expect(normalized.players[1]!.bookSkill).toBeUndefined();
     expect(normalized.players[2]!.bookSkill).toBe("medic");
+  });
+
+  it("upgradeTo119 moves stored merchants into signals, active and waiting for Contact", () => {
+    const { game, overrides } = fresh();
+    const raw = stored(game);
+    delete raw.signals;
+    const deals = [{ give: [{ kind: "fuel", count: 3 }], receive: [{ kind: "item", item: "oxy_capsule", count: 6 }] }];
+    raw.merchants = {
+      list: [
+        { id: "merchant-4", kind: "transport", event: "HUMAN_VS_OXY", arrivedAt: 10, leavesAt: 14, deals },
+        { id: "merchant-5", kind: "transport", event: "HUMAN_VS_FUEL", arrivedAt: 11, leavesAt: 15, deals: [] },
+      ],
+      nextId: 6,
+    };
+    upgrade({ game: raw, overrides }, 118);
+    const normalized = normalizeGame(raw, overrides);
+    expect("merchants" in normalized).toBe(false);
+    expect(normalized.signals.nextId).toBe(3);
+    expect(normalized.signals.list[0]).toEqual({
+      id: "signal-1",
+      kind: "merchant",
+      arrivedAt: 10,
+      endsAt: 14,
+      status: "active",
+      step: "hail",
+      number: 1,
+      feed: [],
+      merchant: { kind: "transport", event: "HUMAN_VS_OXY", deals },
+    });
+    expect(normalized.signals.list[1]).toMatchObject({ id: "signal-2", number: 2, merchant: { event: "HUMAN_VS_FUEL", deals: [] } });
+  });
+
+  it("upgradeTo120 moves stored rebel calls into signals after the ones there: reached, lost or active", () => {
+    const { game, overrides } = fresh();
+    const raw = stored(game);
+    raw.cycle = 20;
+    raw.signals = { list: [], nextId: 4 };
+    raw.comms.rebels = [
+      { base: "WOLF", calledAt: 1, expiresAt: 12, progress: 100 },
+      { base: "SIRIUS", calledAt: 9, expiresAt: 18, progress: 30 },
+      { base: "CENTAURI", calledAt: 17, expiresAt: 30, progress: 55 },
+    ];
+    upgrade({ game: raw, overrides }, 119);
+    const normalized = normalizeGame(raw, overrides);
+    expect("rebels" in normalized.comms).toBe(false);
+    expect(normalized.signals.nextId).toBe(7);
+    expect(normalized.signals.list.map((s) => [s.id, s.status])).toEqual([
+      ["signal-4", "reached"],
+      ["signal-5", "lost"],
+      ["signal-6", "active"],
+    ]);
+    expect(normalized.signals.list[2]).toEqual({
+      id: "signal-6",
+      kind: "rebel",
+      arrivedAt: 17,
+      endsAt: 30,
+      status: "active",
+      step: "decoding",
+      number: 1,
+      feed: [],
+      rebel: { base: "CENTAURI", progress: 55 },
+    });
+    expect(normalized.signals.list[1]!.feed).toEqual([{ from: "system", at: 18, key: "signals.lost", closes: true }]);
   });
 });
 

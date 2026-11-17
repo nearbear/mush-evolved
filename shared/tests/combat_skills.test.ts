@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { TREE_POT_ITEM } from "../src/items.ts";
-import { channelLimit, computerPointsCap } from "../src/modifiers.ts";
+import { channelLimit, computerPointsCap, weaponOutcomeWeight } from "../src/modifiers.ts";
 import { SKILL_SLOTS, skillStatus } from "../src/skills.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameConfig, GameState } from "../src/types.ts";
@@ -75,6 +75,91 @@ describe("Gunman", () => {
     const s = ship();
     give(s, "p0", "gunman");
     expect(viewFor(s, "p0").you.resources.shoot).toBe(0);
+  });
+
+  it("doubles critical hit and non-fumble miss weights on firearms only", () => {
+    const s = ship();
+    const p0 = player(s, "p0");
+    const blaster = s.config.weapons.types.blaster!;
+    const knife = s.config.weapons.types.knife!;
+
+    expect(weaponOutcomeWeight(5, { state: s, player: p0, weapon: blaster, kind: "hit", critical: true, fumble: false })).toBe(5);
+    expect(weaponOutcomeWeight(5, { state: s, player: p0, weapon: blaster, kind: "miss", critical: false, fumble: false })).toBe(5);
+
+    give(s, "p0", "gunman");
+    expect(weaponOutcomeWeight(5, { state: s, player: p0, weapon: blaster, kind: "hit", critical: true, fumble: false })).toBe(10);
+    expect(weaponOutcomeWeight(5, { state: s, player: p0, weapon: blaster, kind: "hit", critical: false, fumble: false })).toBe(5);
+    expect(weaponOutcomeWeight(5, { state: s, player: p0, weapon: blaster, kind: "miss", critical: false, fumble: false })).toBe(10);
+    expect(weaponOutcomeWeight(5, { state: s, player: p0, weapon: blaster, kind: "miss", critical: false, fumble: true })).toBe(5);
+
+    expect(weaponOutcomeWeight(5, { state: s, player: p0, weapon: knife, kind: "hit", critical: true, fumble: false })).toBe(5);
+    expect(weaponOutcomeWeight(5, { state: s, player: p0, weapon: knife, kind: "miss", critical: false, fumble: false })).toBe(5);
+    expect(skillStatus("gunman")).toBe("full");
+  });
+
+  it("doubles critical-hit odds and halves relative fumble odds on guns only, not knife or grenade", () => {
+    const gunCfg: GameConfig = {
+      ...DEFAULT_CONFIG,
+      mushCount: 1,
+      startItems: [],
+      weapons: {
+        ...DEFAULT_CONFIG.weapons,
+        types: {
+          ...DEFAULT_CONFIG.weapons.types,
+          blaster: {
+            ...DEFAULT_CONFIG.weapons.types.blaster!,
+            accuracy: 0,
+            missOutcomes: [
+              { weight: 10, log: "BLASTER_FAILED_SHOT" },
+              { weight: 10, fumble: true, log: "BLASTER_BREAK_WEAPON", effects: { weaponEffect: "break" } },
+            ],
+          },
+          knife: {
+            ...DEFAULT_CONFIG.weapons.types.knife!,
+            accuracy: 1,
+            hitOutcomes: [
+              { weight: 10, log: "KNIFE_SUCCESSFUL_HIT_10_HAEMORRHAGE" },
+              { weight: 10, critical: true, log: "KNIFE_INSTAGIB_BLED", effects: { instantKill: "target" } },
+            ],
+          },
+          grenade: {
+            ...DEFAULT_CONFIG.weapons.types.grenade!,
+            accuracy: 1,
+            hitOutcomes: [
+              { weight: 10, log: "GRENADE_SUCCESSFUL_THROW_SPLASH_DAMAGE_ALL", effects: { weaponEffect: "destroy" } },
+              { weight: 10, critical: true, log: "GRENADE_CRITICAL_THROW_SPLASH_DAMAGE_ALL_BREAK_ITEMS_SPLASH_WOUNDS", effects: { weaponEffect: "destroy" } },
+            ],
+          },
+        },
+      },
+    };
+
+    const countOutcomes = (weaponType: string, withGunman: boolean, targetId?: string): number => {
+      let special = 0;
+      for (let seed = 1; seed <= 120; seed++) {
+        const s = createGame(makeSeats(3), noHunters(gunCfg), seed);
+        for (const p of s.players) p.room = "SICK_BAY";
+        if (withGunman) give(s, "p0", "gunman");
+        s.items.push({ id: "w", type: weaponType, at: { kind: "player", id: "p0" }, charges: 3 });
+        const act: Action = targetId ? { type: "attack", weapon: "w", target: targetId } : { type: "attack", weapon: "w" };
+        const after = must(applyAction(s, "p0", act));
+        const lastLog = after.log[after.log.length - 1]!.key;
+        if (
+          lastLog === "BLASTER_BREAK_WEAPON" ||
+          lastLog === "KNIFE_INSTAGIB_BLED" ||
+          lastLog === "GRENADE_CRITICAL_THROW_SPLASH_DAMAGE_ALL_BREAK_ITEMS_SPLASH_WOUNDS"
+        ) {
+          special++;
+        }
+      }
+      return special;
+    };
+
+    // Blaster fumbles drop from ~50% (10/(10+10)) to ~33% (10/(20+10)) with Gunman.
+    expect(countOutcomes("blaster", true, "p1")).toBeLessThan(countOutcomes("blaster", false, "p1"));
+    // Knife and grenade are not guns, so Gunman leaves their outcome distribution unchanged.
+    expect(countOutcomes("knife", true, "p1")).toBe(countOutcomes("knife", false, "p1"));
+    expect(countOutcomes("grenade", true)).toBe(countOutcomes("grenade", false));
   });
 });
 

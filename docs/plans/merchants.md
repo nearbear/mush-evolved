@@ -1,0 +1,103 @@
+# Merchant ships (plan)
+
+Status: **phase 1 started, 2026-11-15**: the rules skeleton is built (`shared/src/merchants.ts`, `actions/close_deal.ts`; see "Built" below). The answers under "Decided" are the owner's (2026-11-15, recorded in `docs/rules/rules-design.md`, "Trading crew to merchant ships"). Everything under "Proposed" and "Open questions" is Claude's draft and not a rule until the owner answers. Issue: [#143](https://github.com/nearbear/mush2/issues/143). Related: [#144](https://github.com/nearbear/mush2/issues/144) (titles), [#145](https://github.com/nearbear/mush2/issues/145) (inactive), [#45](https://github.com/nearbear/mush2/issues/45) (spectators), [#410](https://github.com/nearbear/mush2/issues/410) (drones), [#357](https://github.com/nearbear/mush2/issues/357) (artifacts).
+
+## Sources (reference, not decided)
+
+- **The original Mush.** The `TRANSPORT` ship (`Mush/derived/data/Data/ships.json`: 16 hp, hit 80, dodge 50, no attack, not aggro) sits in the space battle, and `Protocol.HunterState.LockTransport` lets hunters shoot at it. Its deals are the 7 events in `Mush/derived/data/DataEvents/trade_events.json` (`FOREST_DEAL`, `PILGREDISSIM`, `GOOD_PROJECTIONS`, `TECHNO_REWRITE`, `HUMAN_VS_FUEL`, `HUMAN_VS_OXY`, `HUMAN_VS_TREE`). Each is a hail with answers of the form `deal_in` / `deal_out` (`4-10x[RATION]`, `1x{RD_PLAYERS}`, `1x{RD_PROJECT}`, `1x{REPAIR_PILGRED}`), some gated by `need_skills` (`DIPLOMACY`, `BOTANIC`), and the last is always "Jamais" (refuse). The French flavour text is CC BY-NC-SA and can be adapted with attribution.
+- **eMush** (`npm run emush`, clean-room). A trade is generated when a transport arrives: one template uniformly from those still eligible (PILGREDISSIM drops once PILGRED is done; the project deals drop once no NERON project is left), each asset's quantity rolled uniformly in its range, a roll of 0 removing that asset from the deal. eMush adds a Treasure Hunt deal (rations or a crew member for a tablet). Its accept action and expiry could not be extracted.
+
+## Decided (owner, 2026-11-15)
+
+### Every merchant
+
+- **Arrival:** random, about 2 a day on average (more or fewer on a given day), with no cap per game. Several merchants can be in orbit at once. **Kind weights (2026-11-16):** `transport: 6`, `scrappers: 2`, `mercenaries: 2`, `tech: 1`, `archeologists: 1`, `librarians: 1`.
+- **Stay:** 4 cycles. A merchant can no longer be contacted once the Daedalus travels.
+- **Answering:** only the comms officer, at the Com center terminal, with a deal action costing 2 AP.
+- **Who sees the offers:** ~~anyone on the bridge, by looking at the comms terminal, the way the Xyloph entries are seen today.~~ Superseded 2026-11-16: only someone with access to the Comms Officer title, in the Signals tab (`docs/plans/signals.md`).
+- **Paying with items:** from any storage (read: the floors of the five storage rooms, `STORAGE_FRONT`, `STORAGE_A_0`, `STORAGE_A_1`, `STORAGE_B_0`, `STORAGE_B_1`; oxygen and fuel from the ship's tanks).
+- **Paying with crew:** inactive players only, from anywhere on the ship. This replaces the 2026-10-31 note "inactive crew from Storage, super inactive crew from any room".
+- **Delivery:** whatever the crew buys appears on the Front Storage floor.
+- **Not enough to pay:** a deal the ship can't pay for (for example, too few inactive players) is still shown, disabled, with the reason.
+- **A traded player** counts as a death, but with no corpse and no morale loss. Their items drop where they stood.
+- **The officer decides alone:** no vote and no delay.
+- **Shooting a merchant:** a merchant that is shot flees at the end of the cycle, with a ship-wide NERON announcement; only a **hit** makes it flee (not a miss). It can be destroyed and drops wreckage; fleeing or being destroyed closes its conversation with the comms officer. The mercenaries are the exception (below).
+- **Announcements (2026-11-16):** arrivals are announced ship-wide (already built); accepted deals and traded-player deaths have **no** announcement.
+
+### Mercenaries (decided)
+
+- They sell an escort: the ship stays and shoots hunters for a number of cycles, and **follows the Daedalus on travel like a Trax** while hired.
+- **Deals (2026-11-16):**
+  - `0–3 fuel + 0–3 oxygen` (totaling 3) for **4 cycles**.
+  - `DIPLOMACY`: `4 rations` for **8 cycles**.
+  - `DIPLOMACY`: `1 inactive player` for **32 cycles**.
+- **Combat & stats (2026-11-16):** **14 HP**, regenerating **3 HP/day**; fires **2 shots per cycle**, each equal to **base patrol ship damage with no upgrades**.
+- Only a **hit** angers them, not a miss. Angry mercenaries immediately target the Daedalus if attacked by one of its crew, **but will not pursue the Daedalus ever if it flees** (superseding the 2026-11-15 "follow it on travel like a Trax" note for angered mercenaries). NERON announces ship-wide that the mercenaries have been angered.
+
+### Other kinds
+
+- **Tech ship (2026-11-16):**
+  - `1x hydropot` (tree pot) → `1x drone` (`support_drone`).
+  - `6x plastic scrap` → `1x random weapon blueprint` (requires Shooter).
+  - `6x fuel` → `1x blaster` (requires Shooter).
+- **Archeologists:** three deals: 1 artifact for 1 random artifact; 2 artifacts for 1 specific artifact from their own stock; 3 artifacts for a starmap fragment. **(2026-11-16):** they stock **3 random non-repeating artifacts**, and the "random artifact" deal yields one **different from both the offered stock and the traded artifact**.
+- **Scrappers (2026-11-16):** **8 HP**, drop scraps equal to a hunter when destroyed; collect **1 scrap per cycle** from space wreckage; sell metal scrap for `X fuel + Y oxygen = 2 × metal scrap` and plastic scrap for `X fuel + Y oxygen = 1 × plastic scrap` (comms officer chooses X and Y to balance).
+- **Librarians (2026-11-16):**
+  - `4–6 rations` → `2 random non-repeating skill books`.
+  - `1 random inactive` → `2 random non-repeating skill books`.
+  - `1 skill book` → `1 random skill book` (requires Diplomat).
+- **Transport (2026-11-16):** all 7 original deals: `HUMAN_VS_FUEL`, `HUMAN_VS_OXY`, `FOREST_DEAL`, `HUMAN_VS_TREE` (including the `IAN_SOULTON` option), `GOOD_PROJECTIONS`, `PILGREDISSIM` (only the 3 random players deal, and only appears once 3 inactive players exist), and `TECHNO_REWRITE` (not random inputs — the comms officer selects the projects to give away via a dropdown, yielding random projects).
+- **Deferred:** androids that replace inactive players, sold by the tech ship.
+
+## Proposed (Claude, not decided)
+
+### Arrival roll
+
+At each cycle change after pre-selection, one roll at `config.merchants.arrivalChance` = 0.25 (8 cycles a day × 0.25 = 2 a day), the kind drawn by `config.merchants.kinds[kind].weight`. Several in orbit at once means each merchant has its own id, offer and expiry; the terminal lists them one after another.
+
+### Merchant kinds
+
+| Kind | Offers | Wants | Skill deals |
+|---|---|---|---|
+| Transport | the original's resource deals: oxygen, fuel, tree pots, PILGRED repair | inactive crew, rations, tree pots, fuel | Diplomat, Botanist (as the original) |
+| Mercenaries | an escort contract | fuel, rations, weapons, grenades | Diplomat: a longer contract for the same price |
+| Tech ship | `support_drone`, gear blueprints | scraps, artifacts, inactive crew | Robotics Expert: a cheaper drone |
+| Archeologists | the three deals above | artifacts | none |
+| Scrappers | what they have collected (scraps, space capsules) | rations, fuel, oxygen | none |
+| Librarians | skill books (random skills), and possibly the original's project deals (`GOOD_PROJECTIONS`, `TECHNO_REWRITE`) | inactive crew, rations, fuel | Diplomat |
+
+### Mercenaries
+
+- **Contracts:** short (3 cycles) or long (6 cycles), priced in config; both listed as deals.
+- **While hired:** at each cycle change, after the hunters act, the mercenary shoots a random hunter with the Trax's numbers (2–3 damage, 50% hit). Hunters can target it (the original's `LockTransport`), and if it dies the contract ends. The contract ends early if the Daedalus travels (open question 2).
+- **Once angered:** it becomes a hostile hunter with its current hp and the Trax's attack, follows every jump (`follows: "all"`), and stays until destroyed. Nothing paid is refunded.
+- **Confirm prompt:** every player gets a confirm dialog before firing at any merchant, and no automatic hunter targeting ever selects one.
+- **What the crew learns:** the NERON line says the mercenaries were angered, not who fired or from where. Turret shots are seen by whoever is in that turret room, so the crew deduces it from who was in which turret.
+
+### State and code
+
+- `shared/src/merchants.ts`: `MERCHANT_KINDS` (weight, hp, reaction to being shot, deal templates written as in the original, with min–max ranges and an optional skill), `merchantCycle` (arrival, expiry, scrapper collection, mercenary shots, fleeing), and an action `close_deal` (`merchant`, `deal`).
+- **Where a merchant lives:** recommended as an entry in `state.hunters.list` with a `merchant` field (kind, offer, expiry, contract, angered). Shooting, hp, display and hunter targeting then come for free, and angering is a flag flip. The cost: everything that counts hunters (waves, `arackAround`, `shootingHunters`, the victory and bot checks, travel following) must skip non-hostile merchants. The alternative, a separate `state.merchants`, is cleaner but rebuilds targeting and display.
+- **View:** each merchant's kind and hp in the space view as for hunters; the offers in `PlayerView.comms.terminal` only for the living on the bridge; the officer's `close_deal` options through `view.actions`.
+- **Traded crew:** `killPlayer` with a `traded` cause: no body, no morale loss, inventory dropped in their room, titles passed on, spectator view ([#45](https://github.com/nearbear/mush2/issues/45)). A traded Mush still fills the Sick Bay's human tank like any dead Mush, so the crew can tell the role that way (owner, 2026-11-15, after leak-check found it); nothing else in the trade reveals it.
+- **Single player:** a comms officer bot goal to answer deals ([#316](https://github.com/nearbear/mush2/issues/316) style), or merchants do nothing there.
+
+### Phases
+
+1. The shared system (arrival, stay, terminal, `close_deal`, payment from storage, delivery, traded crew, fleeing when shot) with the Transport's deals. This closes [#143](https://github.com/nearbear/mush2/issues/143).
+2. Mercenaries: escort contract, friendly shots, angering, following.
+3. Tech ship, archeologists, scrappers, librarians: mostly data once item deals work. Scrappers' collection is the one new cycle step.
+
+Phases 2 and 3 would be new issues under an epic rather than more of [#143](https://github.com/nearbear/mush2/issues/143), which is Public beta work.
+
+## Built (phase 1, first slice, 2026-11-15)
+
+Owner's calls for this slice: merchants live in their own `state.merchants`, not in the hunter list; the transport has only HUMAN_VS_FUEL and HUMAN_VS_OXY (with their Diplomacy and Botanic deals). Rules only, no client. Arrival (0.25 a cycle), expiry, leaving on travel and leaving orbit, the terminal view (`comms.terminal.merchants`, each deal with why it's blocked), and `close_deal`: payment from storage floors (not hidden items), tanks and inactive crew (`killPlayer` cause `traded`), delivery to Front Storage, the merchant leaving after a deal. Every merchant roll uses its own stream (`GameState.merchantRng`), so merchants never shift the game's other rolls.
+
+Claude's interim choices, to confirm: capsules received are items on the floor while fuel and oxygen paid come from the tanks (the original's `OXY_CAPSULE`/`FUEL_CAPSULE` on both sides); the original's `RATION` is `uncooked_ration`; a skill deal needs someone alive in the officer's room with the skill (eMush); `close_deal` needs the title but not the link with Sol, and a broken Stellar antenna doesn't make it dearer; the merchant leaves once a deal is closed (eMush); a traded player gets no room line or NERON announcement (question 6) and the officer's line is private.
+
+Built since: the terminal UI, first as a Merchants tab, then (2026-11-16) as merchant signals in the Com center's Signals tab (`docs/plans/signals.md`): `state.merchants` moved into `state.signals`, Contact (`contact_signal`) comes before any deal, refusing is free (`refuse_signal`), and only Comms Officer access sees the offers. Next session: the remaining transport hails once question 1 is answered (tree pots, PILGRED, projects), and a spectator view for traded players (#45).
+
+## Open questions (owner)
+
+All initial merchant design questions answered on 2026-11-16.

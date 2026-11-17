@@ -3959,6 +3959,12 @@ Two hidden-information choices made by Claude, not the owner, worth a look: (1) 
 - **What needed correction:** Importing `initNpc` from `npcs.ts` inside `projectEffects.ts` exposed a circular module-init order where `drones.ts` had not finished defining `supportDrone` when `npcs.ts` built its top-level `NPCS` map. Making the NPC registry lookup lazy (`npcs()`) in `npcs.ts` resolved the cycle cleanly.
 - **Correction (same task, later):** the lazy `npcs()` registry hid the symptom in `npcs.ts` but not the cycle: the full suite then failed 113 tests elsewhere (`Class extends value undefined` in `lie_down.ts`, `isGardenProtected is not a function` in `fire.ts`), because `projectEffects.ts -> npcs.ts -> drones.ts -> fire.ts/doors.ts/...` loaded modules half-initialized. Reverted `npcs.ts` and moved `newDrone`, `DRONE_NAMES` and `DRONE_MAX_SERIAL` into a leaf module, `droneIdentity.ts` (re-exported by `drones.ts`); `projectEffects.ts` sets `drone: newDrone(state)` directly. Lesson: running only the new test file missed a cross-module import-order break; run the whole shared suite after adding an import edge between rules modules. Also added a test for completion by a NERON update (#414's acceptance list).
 
+### 2026-11-15: The Commander bot leaves orbit (#417, slice 2's remainder)
+
+- **What:** the scripted Commander leaves orbit once the shared expedition reports cover every sector of the planet, no expedition is out and nobody is in a craft; `orbitExplored` (`reportShare.ts`) now backs both this and the Pilot's launch check. Crew lost on the planet are left behind (owner's call, asked mid-task).
+- **What worked:** the issue's comment thread pointed at the exact gap, and the report-sharing plumbing had already been built "for leave_orbit", so the change was small. Running a fresh `main` baseline in a throwaway worktree in parallel with the change gave a same-seed comparison without stashing a shared checkout.
+- **What needed correction:** the bot's chamber reading only reset on `shipTraveled`; leaving orbit (`leftOrbit`) also changes the level, caught while writing the goal. The first test asserted the whole action list over 60 turns and caught the follow-on escape jump; it now stops at the leave.
+- **Measured:** oxygen at 0 in 39 → 36 runs and asphyxia 399 → 356 deaths, but mean days 5.83 → 5.70: depression (361 → 423) is now the leading killer, so the "ships last longer" half of slice 4 isn't met.
 ## 2026-11-15: Incident disease list no longer pinned by a test
 
 - Owner added Migraine and Sinus Storm to `config.diseases.incidentDiseases` and asked that changing the list need no other edits. The incident code already read the list from config; only a test pinned its exact values. Claude replaced it with an invariant (non-empty, no duplicates, each entry in `allDiseases` with a modifier and stats) and removed the hard-coded names from `implemented-rules.md`.
@@ -3966,3 +3972,203 @@ Two hidden-information choices made by Claude, not the owner, worth a look: (1) 
 ## 2026-11-16: `weakness` disease log helper
 
 Added `weakness(state, player)` to `shared/src/diseases.ts`, following the sneeze/itchy/rumble pattern: a public log "(Player) does seem very energetic" (key `weakness`, en/fr/es) in the player's room, gated by `canHaveSpecialLogs`. Test in `disease_logs.test.ts`. Not yet hooked to any disease; the English wording was taken as given (possibly meant "doesn't"), and the fr/es lines were made gender-neutral.
+### 2026-11-15 — Ordered-dither cutaway for foreground walls (PixiJS)
+
+- **Decided (user):** Try a 4×4 Bayer ordered-dither cutaway for foreground neighbour walls, doors, columns, and wall-mounted props/decals in the PixiJS renderer (DOM renderer left untouched).
+- **What worked:** Computing the cutaway in world-space pixels against the host wall's 2:1 iso-sloped box (`Cutaway` in `web/src/iso/scene.ts`, `cutawayFilter` in `web/src/iso/pixi/filters.ts`) keeps overlapping walls aligned, avoids screen-door swim on camera pan, and dissolves wall-mounted props at the same height as their host wall.
+- **What needed correction:** The first shader failed to link in WebGL2 because `uOutputFrame` in the fragment shader lacked `highp` to match the vertex shader, making filtered walls invisible; adding `highp` and replacing the `int[16]` Bayer table with a bitwise calculation fixed it.
+
+## 2026-11-15: merchant ships design (#143)
+
+- **Decision (owner):** #143 grows from the original's single transport into six kinds of merchant ship (transport, mercenaries, tech ship, archeologists, scrappers, librarians). The owner answered the issue's open questions plus new ones: about 2 merchants a day with no cap and several at once, a 4-cycle stay, contact lost when the ship travels, the comms officer alone answers at the Com center terminal for 2 AP, offers seen at that terminal by anyone on the bridge, items paid from storage rooms and delivered to Front Storage, inactive crew tradable from anywhere, a trade counted as a death with no corpse or morale loss. Mercenaries hit by a shot turn hostile and follow like a Trax, and the other kinds flee. Recorded in `docs/rules/rules-design.md`; plan and remaining questions in `docs/plans/merchants.md`.
+- **What worked:** the original's `trade_events.json` and the eMush clean-room spec gave a concrete template (deal ranges, skill-gated answers, eligibility filters) to propose from. Presenting one shared system with a table per kind kept the six ideas comparable, and the owner answered 14 numbered questions in one reply.
+- **What needed correction:** `npm run emush -- spec` returned empty output on about half its runs (the AcceptTrade spec never came back), so accept cost and expiry came from the owner rather than upstream. Claude's "one merchant at a time" and "deliver to the bridge" recommendations were overruled (several at once; Front Storage).
+
+- **2026-11-15 — Doors slice 4: Doorman (`sabotage_door`) (#330):** Implemented `sabotage_door { door }` (`shared/src/actions/sabotage_door.ts`), `config.doorman.cost.ap` (2 AP after the first free use each day), `PlayerState.doormanToday` (cleared at day start, included in `MIND_FIELDS` for Transfer, listed in `leakFields.ts`), covert `doorSabotaged` log line, and en/fr/es locale entries (`actions.sabotageDoor`, `log.doorSabotaged`). Existing `namedTarget`, `actionTarget`, and `optionsOn` routing already surfaces door-targeted actions on the Inspect panel and phone peek bar.
+
+## 2026-11-15: Merchant ships, phase 1 first slice (#143)
+
+- **What:** rules-only skeleton for merchant ships: `shared/src/merchants.ts` (state, arrival roll, 4-cycle stay, leaving on travel/leave orbit, deal templates in `config.merchants`, payment check and payment, delivery to Front Storage), `actions/close_deal.ts`, `comms.terminal.merchants` in the view, `killPlayer` cause `traded` (no corpse, no room line, no NERON line). No client.
+- **Owner's calls this session:** merchants in their own `state.merchants` (not the hunter list); only HUMAN_VS_FUEL and HUMAN_VS_OXY for now.
+- **Claude's interim choices, listed in `docs/plans/merchants.md` to confirm:** capsules received as items, fuel/oxygen paid from tanks; eMush's skill gate (someone alive in the officer's room); no link with Sol needed; the merchant leaves after a deal; traded deaths unannounced.
+- **Needed correction:** the arrival roll first drew from the game's main `rng`, which shifted every later roll and broke two unrelated seeded tests (a bot's travel test saw a fire; a coffee test's player stopped acting). Fixed by giving merchants their own stream (`GameState.merchantRng`, like `npcs`), kept out of every view, so adding a random system no longer perturbs existing games or tests. Worth doing up front for any new per-cycle random roll.
+
+## 2026-11-15: merchants terminal tab (#143)
+
+- Added a Merchants tab to the Com center terminal (`web/src/hud/Merchants.tsx`): each ship in orbit with its kind, departure, hail (adapted from the original's French `trade_events` text into en/fr/es) and deals. A deal with a `close_deal` option gets a double-press button; any other is a greyed button whose popover gives the rules' `blocked` reason, or "Comms Officer only". `view.config.merchantDealAp` carries the price for the greyed buttons.
+- Four tabs overflow 360px in French and Spanish, so the Com center's tab list lets its labels wrap and share the line (`.comms-tab-list`). Not yet checked in a screenshot.
+- What needed care: matching existing catalog terms (fr "affaire", es "trato", "nave mercante") rather than inventing new ones.
+
+### 2026-11-15 — Support drone door repairs (Slice 6 of #330)
+- Extended `RepairTarget`, `droneRepairTarget`, and `repair` in `shared/src/drones.ts` so support drones repair broken doors in their room (after broken equipment, before floor items) at `config.repair.chance.DOOR` (0.25) and log `droneRepairedDoor` / `droneRepairFailedDoor` publicly with `doorOtherRoom`.
+- Added `log.droneRepairedDoor` and `log.droneRepairFailedDoor` in `en`, `fr`, and `es` locales.
+- Added drone door repair and Sensor pathfinding tests in `shared/tests/drones.test.ts`, and updated `shared/tests/doors.test.ts` ("go around a broken door to their target") to use a Sensor+Firefighter drone routing around a broken door toward a fire since drones now repair broken doors in their own room.
+
+## 2026-11-15: merchants wrap-up, leak-check catch (#143)
+
+- Leak-check (run at wrap-up, after the commit) found that trading away an inactive Mush revealed the role: `killPlayer` with cause `traded` skipped the corpse and announcements, but `hasMushDied` still filled the public human tank. The commit message had claimed the trade revealed nothing. The owner decided the tank fills anyway (the reveal is accepted), so only comments and docs changed. Lesson: leak-check should run before committing, not after; the "no corpse, no announcement" reasoning missed a derived public signal.
+- Leak-check also added never-visible markers for `merchantRng` and `merchants.nextId` to `leaks.test.ts`, which the leak-fields list claimed covered them but didn't.
+
+### 2026-11-15 — Infantryman skill and customized blaster
+- **Decision (owner):** implemented `infantryman` (`modifiers/infantryman.ts`): doubles turret hit chance (`x2`, stacking with Gunner), grants +1 Shoot point on pick and +1 per day (sharing `gunman.capPoints` = 4), and spawns a `customized_blaster` (`ItemState.owner` set to the taker). Only the creator can fire it (`attack`), while others can carry/drop/hide it; it has regular blaster combat stats, `expoStrength: 2` (+1 over regular blaster, counted for the crew regardless of carrier), and counts for Shooter and Centauri. Shares the `blaster` item icon and displays an item attribute badge using `skillIcon("infantryman")`.
+- **What worked:** keeping `ItemState.owner` server-only (never in `ItemView`) avoided leaking who took `infantryman` across rooms, and reusing `ItemAttrIcons` kept the UI change minimal.
+
+### 2026-11-15 — Drop cycle-begins room log lines and add empty room log caption
+- **Decision (owner):** stopped pushing `cycleBegins` / `dayBegins` ship-wide log lines in `newCycle` (`shared/src/rules.ts`), since `CycleDivider` already shows `Day X · Cycle Y` in the feed. Added an empty-state caption (`itrackie.roomEmpty` with `.sub`) in `ITrackie.tsx` when `roomLog` has no entries.
+- **Note:** kept `cycleBegins` / `dayBegins` in the locale files so older stored game snapshots (`storedRooms.test.ts`) still resolve their log keys.
+
+### 2026-11-15: Scripted bot `repairDoor` goal
+- Added [repairDoor.ts](server/src/bots/goals/repairDoor.ts) and registered it in `SOLO_GOALS` ([index.ts](server/src/bots/goals/index.ts)).
+- Confirmed design knobs with owner before implementing: priority `56` (just above `repairHull` at `55`), preserves `BOT_AP_RESERVE` (`2`), and uses `view.alerts.reports` only without chat claiming.
+- Added unit tests in [goals.test.ts](server/tests/goals.test.ts) covering in-room repair with AP reserve, routing to the nearest reachable side of a reported broken door, and skipping unreachable reported doors.
+
+### 2026-11-15: Hacker kit item, config, and translations
+- Added `HACKER_KIT_ITEM` (`"hacker_kit"`) and its `ITEM_TYPES` entry in `shared/src/items.ts`, `GameConfig.hack` in `shared/src/types/config.ts`, `DEFAULT_CONFIG.hack` and the `CORRIDOR_B` start item in `shared/src/config.ts`, and `items.hacker_kit` in `shared/src/locales/names.{en,fr,es}.json`.
+- Placed `actions.hack` in `web/src/locales/{en,fr,es}.json` instead of `shared/src/locales/names.*.json`, because `shared/src/locales/names.*.json` only holds `rooms`/`equipment`/`items`/`skills` and `web/src/i18n/index.ts` spreads `names` over `ui` (which would have overwritten `ui.actions`).
+
+### 2026-11-15: Remove `WHOS_WHO` (ACTOPI protocol) project
+
+- **Decision (owner):** Removed `WHOS_WHO` from `PROJECTS` (`shared/src/projects.ts`), its `en`/`fr`/`es` locale strings, and `server/tests/stored/v114-registries.json` without a state upgrade step (no live games in the database). ACTOPI remains a BIOS toggle available from the start.
+- **What worked:** `projects.test.ts` caught the count and `projets.json` parity check, and `storedRooms.test.ts` caught the `v114-registries.json` entry immediately.
+
+### 2026-11-15 — Hacker kit & `hack` action
+
+- **Decision (user):** Implemented the `hack` action (`shared/src/actions/hack.ts`) using `HACKER_KIT_ITEM` (`CORRIDOR_B` start, breakable, sabotagable, overload-breakable, `repairChance: 0.06`, no dismantle). Targets any working, enabled title-locked terminal (`PILOT_MODULE`, `COM_CENTER`, `NERON_BIOS_TERM`) in the player's room when the player lacks access (held or vacant). Costs 2 AP or 1 Computer point, 25% base with 1.25× failure streak, doubled by Computer Scientist (`shared/src/modifiers/computer.ts` `actionSucessRate`), private visibility (`hacked`/`hackFailed`), and grants access via `PlayerState.hackedEquipment` until leaving the room (`arrive`/`board`).
+- **What worked:** All title-locked systems (`comms.ts`, `bios.ts`, `pilgred.ts`, `navigation.ts`, `close_deal.ts`) already routed through `hasTitleAccess`, and `terminalLogin` (`web/src/hud/terminalUsername.ts`) accepted an optional `equipmentId` cleanly.
+
+### 2026-11-15 — Oxygenated ducts (`OXY_MORE`)
+- **Decision (owner):** Once `OXY_MORE` is complete, each cycle change has a 20% chance (`config.project.oxyMore.saveChance`) to prevent all passive oxygen loss for that cycle (both normal `burnOxygen` and broken `OXYGEN_TANK` `leakOxygen`), posting NERON's `oxygenSavedDucts` in global chat; if oxygen is already at 0, the asphyxia death still occurs.
+- **Implementation:** Added `rollOxygenSaved` in `shared/src/ship.ts` called once per cycle in `advanceCycle` (`shared/src/rules.ts`) and passed into `burnOxygen` and `leakOxygen` (`shared/src/breakage.ts`); marked `OXY_MORE: "full"` in `shared/src/projects.ts`; added `oxygenSavedDucts` to `en`/`fr`/`es` locales; tested in `shared/tests/oxyMore.test.ts`.
+
+### 2026-11-15 — Hacker kit remaining plan items
+- **Completed remaining items from `docs/plans/hacker_kit_plan.md`:**
+  - Cleared `player.hackedEquipment` on death (`killPlayer` in `shared/src/death.ts`), mind transfer (`swapMinds` in `shared/src/mind.ts`), and terminal breakage (`breakEquipment` in `shared/src/breakage.ts`), with tests in `shared/tests/hack.test.ts`.
+  - Added `HackTerminalButton` inside `CommandTerminal.tsx`, `CommsCenter.tsx`, and `BiosTerminal.tsx` (inside tab panels so `.terminal-body > .settings-tabs` layout is preserved) and updated title-locked helper text (`commander`, `officer`, `bios.adminOnly`) to check `terminalLogin(...).access !== "limited"` so hacked players and bypassers don't see "only the title holder" messages.
+  - Recorded the Hacker kit & `hack` decision in `docs/rules/rules-design.md`.
+
+### 2026-11-15 — Throw Out (`throw_out` for `wrestler` and `sturdy`)
+- **Decision (owner):** Implemented `throw_out { target, to }` for `wrestler` and `sturdy` (both now `full`). 2 AP base, 1 AP on an inactive target; tagged `aggressive`; 100% success; throws a living roommate into a chosen adjacent room with an unbroken door, interrupting their timed action and queue, standing them up from bed, ending any wheelchair push, clearing `guardian`, setting `enteredFrom` to the origin room, and logging publicly in both rooms (`threwOut`, `thrownIn`). In the UI, `InspectPanel` and `PeekBar` collapse the per-room options into one button that opens `ConfirmPanel` (`ThrowOutDialog.tsx`) to pick the destination room.
+- **What worked:** Separating the per-room action candidates in `shared` (`{ target, to }`) from the UI collapsing (`collapseThrowOut`) kept `shared` stateless and let `ConfirmPanel` handle the room picker without touching the terminal modal.
+
+### 2026-11-15 — Keep Command terminal and Contact Sol buttons visible when unavailable
+
+- **Change**: Updated `ShipNavigation` (`web/src/hud/ShipNavigation.tsx`) and `CommsCenter` (`web/src/hud/CommsCenter.tsx`) so Turn left, Turn right, Travel, Leave orbit, and Establish link with Sol always render as `UnavailableButton` (with `aria-disabled="true"` and a hover/focus/tap reason) rather than disappearing when not offered in `view.actions`. Added `turnAp`, `travelAp`, and `leaveOrbitAp` to `PublicConfig` (`shared/src/types/view.ts`, `shared/src/rules.ts`) so disabled steering buttons display their AP cost.
+- **Verification**: Added `web/tests/hud/terminalDisabledButtons.test.tsx`; `npm run verify` (3734 tests in 250 files) and `npm run build` passed.
+- **Icarus projects (`ICARUS_LAVATORY`, `ICARUS_LARGER_BAY`, `AUTO_RETURN_ICARUS`)** (2026-11-15, owner): Found that `ICARUS_LARGER_BAY` and `AUTO_RETURN_ICARUS` were already implemented in `shared/src/expeditions.ts` (and `expeditionPlan.ts`), only missing from `PROJECT_STATUS` in `shared/src/projects.ts`. Asked the three open questions for `ICARUS_LAVATORY` and the Icarus art swap; owner chose Icarus returns only (not patrol-ship solo landings), silent (no extra log line), and wiring `icarus_upgrade_a` (`ICARUS_ANTIGRAV_PROPELLER`), `icarus_upgrade_b` (`ICARUS_LARGER_BAY`), and `icarus_upgrade_ab` (both) in `web/src/iso/IsoRoom.tsx` per `Mush/clients/iso/xml/upgrades.xml`. What worked: checking existing `expeditions.ts` and `upgrades.xml` before coding avoided duplicating already-built rules and caught the exact `a`/`b` sprite mapping.
+
+### 2026-11-15 — Floor heating project (`FLOOR_HEATING`)
+- **Decision (owner):** Implement the `FLOOR_HEATING` NERON project with a 50% reduction in action injury chance (`config.project.floorHeating.injuryFactor = 0.5`, instead of the original 25%).
+- **Implementation:** Added `floorHeating: { injuryFactor: 0.5 }` to `GameConfig` / `DEFAULT_CONFIG`, applied it in `actionInjuryRate` (`shared/src/modifiers.ts`), marked `FLOOR_HEATING: "full"` in `PROJECT_STATUS` (`shared/src/projects.ts`), updated the en/fr/es project descriptions in `web/src/locales/`, and added unit tests in `shared/tests/floorHeating.test.ts`.
+
+### 2026-11-15: Thalasso NERON project (`THALASSO`)
+
+- **Decision (owner):** Implement `THALASSO` directly on `SHOWER` (keeping `SHOWER` equipment unchanged) for living non-Mush players, rolling three independent 25% chances (`config.project.thalasso`) for +1 HP, +1 morale, and +2 MP (each capped at max), with private log lines (`thalassoHp`, `gainMorale`, `thalassoMp`) and updated en/fr/es project descriptions.
+- **What worked:** Clarifying equipment replacement vs. project check, stat caps, and private logging upfront kept `ShowerAction.apply` small and clean; testing 0/1/2/3 simultaneous boons and `skin_inflammation_disease` death edge case verified the independent-roll behavior.
+- **Antigrav thrusters (`ICARUS_ANTIGRAV_PROPELLER`)** (2026-11-15, owner): Found that the safe-landing rule (`expeditions.ts`), iso art (`IsoRoom.tsx` `icarus_upgrade_a`/`icarus_upgrade_ab`), and test (`expeditions.test.ts`) were already implemented, and only `ICARUS_ANTIGRAV_PROPELLER: "full"` in `PROJECT_STATUS` (`shared/src/projects.ts`) was missing. Added it and included it in the `projectStatus` test in `shared/tests/expeditions.test.ts`.
+
+### 2026-11-15 — Dismantling NERON project (`DISMANTLING`)
+
+- **Decision (owner):** Implemented the `DISMANTLING` NERON project to spawn 8 `metal_scraps` items on the Engine Room (`MOTOR_ROOM`) floor on completion (instead of the original game's 5), and updated the `en`/`fr`/`es` project descriptions accordingly.
+- **What worked:** Reusing `onProjectCompleted` in `shared/src/projectEffects.ts` and `config.project.dismantling` (`{ room: "MOTOR_ROOM", count: 8 }`) matched `EXTRA_HYDROPONPOTS` and `EXTRA_DRONE` with zero state-version or view changes needed.
+
+### 2026-11-15 — `spawnInRoom` helper refactor
+
+- **Refactor:** Added `spawnInRoom(state, room, type, count = 1, extra?)` to `shared/src/items.ts` (applying `startCharges` and optional per-item `extra` object or factory) and replaced the repeated `for (...) state.items.push({ id: newItemId(state), ... })` room-spawning loops across `projectEffects.ts`, `merchants.ts`, `expeditions.ts`, `mycoalarm.ts`, `actions/research.ts`, `actions/dismantle.ts`, `drugs.ts`, `botany.ts`, `death.ts`, and `comms.ts`.
+
+### 2026-11-15 — Non-pilot flight (patrol ships, Pasiphae, Icarus)
+- **Decision (owner):** Non-pilots can fly patrol ships, the Pasiphae, and the Icarus before the pilot lock is built. Rough manoeuvres that drop a ship's armor to 0 destroy it (`destroyPatrolShip`: pilot dies on takeoff, spared in the bay on landing). A grounded Pilot (Gastroenteritis or Slight Nausea) does not make an Icarus landing safe, and `ICARUS_ANTIGRAV_PROPELLER` applies to the Icarus only (not patrol-ship planet landings).
+- **What worked:** `canFly`, `manoeuvre`, and `canLaunchExpedition` were already factored cleanly. Catching `expeditionStep`'s `canFly(p)` check (which had meant "ungrounded Pilot" and would have made every non-pilot safe on Icarus landing) and `dockedHere`/`equipmentView` needing `!shipState.destroyed` for ships destroyed on landing avoided subtle bugs.
+
+### 2026-11-15 — Smoke on front-edge (bottom-left / bottom-right) broken doors
+- **Bug:** `describeScene` in `web/src/iso/scene.ts` only emitted `smoke` entries for broken doors in `s.room === room`. Because `placement.ts` omits `DOOR_BL` / `DOOR_BR` when the neighbour room is drawn and renders the neighbour's door (`s.room !== room && s.door?.target === room`) instead, broken doors on the bottom-left and bottom-right edges of a room never emitted smoke.
+- **Fix:** Added `if (s.door?.target === room && brokenDoors?.has(n)) addSmoke(s, s.slice);` in the `s.room !== room` branch of `describeScene` and covered it with a unit test in `web/tests/iso/scene.test.ts`.
+
+### 2026-11-15 — XXL bay doors (`BAY_DOOR_XXL`)
+- **Decision (owner):** `BAY_DOOR_XXL` makes patrol ship and Pasiphae takeoff and landing manoeuvres 100% clean for everyone (per eMushpedia, rather than the archived Haxe's ×1.5), and applies to patrol ships and the Pasiphae only (not Icarus expedition `LANDING`).
+- **What worked:** `cleanManoeuvreChance` in `modifiers.ts` was already the single choke point, and `IsoRoom.tsx` / locales already had the visual and text wiring.
+
+### 2026-11-16 — Scrap heap NERON project (`TRASH_LOAD`)
+
+- **Decision (owner):** Implemented the `TRASH_LOAD` (Scrap heap) NERON project to spawn 7 items (`thick_tube`, `plastic_scraps`, a uniform random skill `book`, a uniform random gun `blueprint` from `MISSILE_LAUNCHER` / `SNIPER_RIFFLE` / `MACHINE_GUN` with `SNIPER_RIFFLE` and `MACHINE_GUN` added to `BLUEPRINTS` from `blueprints.json`, `rope`, `bandage`, and one uniform random item from `knife` / `soap` / `tree_pot` / `protection_gloves`) distributed across the 5 storage rooms in a randomly shuffled, repeating order, and updated the `en`/`fr`/`es` project descriptions accordingly.
+- **What worked:** All 10 item types (including `protection_gloves` and `tree_pot`) and `sniper_riffle`/`machine_gun` translations were already present in `items.ts` and `names.*.json`; `projectEffects.ts` handled all completion paths (work, NERON update, NERON participation) in one place.
+- **Needed correction:** None.
+
+## 2026-11-16: Signals tab plan (merchants and rebel bases as conversations)
+
+The owner asked to rework the Com center's Merchants tab into a conversation view. Claude read the merchant and comms code first and asked 8 grounded questions (visibility, AP, logging, title changes, what counts as inactive, dialogue depth, later kinds) instead of guessing at rules; the answers reversed two earlier visibility decisions (non-officers now see nothing). The owner then asked whether rebel bases could join the same tab; Claude checked `decode_rebel.ts` and found the fit (title-gated, open/reached/lost, ends on travel), named what merging would change (non-officers lose rebel progress), and proposed garbled-then-clear text for decodes, which the owner took. Plan in `docs/plans/signals.md`: one `state.signals` list with a per-kind dialogue script (data, so branching and later kinds such as distress calls are new steps), separate actions because log visibility is fixed per action type, client-only delay and typing. Decisions recorded in `rules-design.md`; six small defaults left for the owner to confirm.
+
+## 2026-11-16: Signals, build order 1 (shared)
+
+- **What:** implemented step 1 of `docs/plans/signals.md`. Merchants now live in `GameState.signals` (new `shared/src/signals.ts`: a feed of i18n keys per signal, a per-kind script whose steps gate the actions, an officer-only `signalsView`). New actions `contact_signal` (free, public room line naming only the officer) and `refuse_signal` (free, private); `close_deal` now needs Contact first and names the `signal`. Signals end as `deal`, `refused` or `lost` and stay in the list. `STATE_VERSION` 119 with an upgrade step moving stored `game.merchants`. The old Merchants tab was adapted just enough to keep working (Contact, deals, No thank you; one line without access) until step 2.
+- **What worked:** the existing `hasTitleAccess` made the hacker and new-officer cases free. Tests for leaving orbit and hacking passed on first run. The leak-check skill found no leak.
+- **What needed correction:** the upgrade step first used `??`, which a normalizeState test forbids (a stored null would be replaced). The sketch in the plan held fields the slice doesn't need yet (`rebel`, `reached`, `contacted`); left out and noted in the plan.
+- **Open for the owner (from leak-check):** a hacker who contacts a signal is named in the feed and the public line; Contact also tells the room that something is hailing.
+
+- **What:** two owner changes to Signals step 1 before committing it. (1) Officer lines in a signal's feed are now signed by the Comms Officer title holder even when a hacker acts (`signingOfficer` in `signals.ts`), and `characterUsername` gives the display form the owner named ("prinaldo" for Paola Rinaldo: given initial plus surname). (2) `contact_signal` is private (no room line); NERON instead announces each merchant arrival in crew chat (`merchantHailing`, kind only), matching the existing rebel-call announcement. Tests, locales (en/fr/es), rules-design, implemented-rules, plan and code map updated.
+- **What worked:** the leak-check's two open questions from the previous session surfaced both changes before anything was committed.
+- **Needs confirming:** the username rule applied to surname-first names (Wang Chao → `cwang`, Kim Jin Su → `jkim`) was extrapolated from the one example; with the title vacant, the actor signs (unreachable while the hacker is alive and active, since they would then hold it).
+
+### 2026-11-16: Signals step 2 (web): list, conversation view, audio wave, typing out
+
+- Built the plan's step 2 (`docs/plans/signals.md`): the Com center's Merchants tab became Signals (`Signals.tsx`, Active/Inactive groups), each row opening `SignalConversation.tsx` (header with back button top right, a CSS `AudioWave`, the feed, options from `view.actions`). The 3 s reply delay and typing out are a pure state machine (`signalPlayback.ts`) driven by one timer effect, so it is tested without a browser; the DOM test drives it with fake timers.
+- What worked: keeping the pacing pure made the "history shows whole, new replies pace" rule a one-line initial state (`shown = feed.length` at mount).
+- Needed correction: biome's a11y rules pushed the tap-to-skip feed to a keyboard equivalent (Enter/Space) and a tab stop; a JSX-comment suppression doesn't reach an attribute, it has to be a `//` comment inside the attribute list. The i18n parity test means fr/es drafts land now, not in step 4.
+
+## 2026-11-16: Signals step 2, reworked after the owner's review
+
+- The owner reviewed the uncommitted step 2 (handed over from another session) and asked for: no invented dialogue (only lines from the original, else plain speech), list rows as blue bands like the iTrackie cycle dividers with a kind icon (`stock.png` for merchants) in a tooltip and the caption beside the name, and a conversation that reads like global chat (FeedEntry rows, cycle dividers, the signal's icon and name on the right, no white box, one feed from the bottom, options pinned under it), with each deal a single row: terms, a project-style skill check box, a small Deal! button.
+- Done: the officer greeting is gone from `contactMerchant` (shared tests now find the officer's first line at No thank you or the deal); the remaining officer and transport lines are plain ("We decline your offer.", "Understood.", "Deal accepted."). The feed uses `Scroller`, `FeedEntry` and `CycleDivider`; itrackie.css's cycle band rules now also select `.signal-conversation .feed` (they needed the extra class to beat chat.css, which loads later). The skill box is ticked from the view's `blocked !== "skill"`, so the client still computes no legality.
+- **Needed correction:** the first build had written its own flavour lines (greeting, merchant acceptance and farewell) and a white boxed feed with a separately scrolling options area; the owner wants nothing invented and the chat look reused.
+
+## 2026-11-16: Signals step 2, compact deal rows
+
+The owner found the handed-off deal list hard to read (big Deal! buttons, "You give:/You get:" repeated on every line, nothing between deals). Reworked it to their spec: one pair of column headings, each deal as give ⇄ get across the row (one asset per line), then the skill check box on the left and a small Deal! button on the right, with a divider between deals. What needed correction: the earlier pass used `UnavailableButton`'s default `big` variant and never looked at the result in a browser before handing off.
+Follow-up the same day: the owner asked for each deal on a single row (give ⇄ get, skill, Deal! on the right) and the skill as its icon with its name in a tooltip, dimmed when nobody in the officer's room has it, instead of the project-style check box. The headings stay aligned over the rows through CSS subgrid.
+Second follow-up: the deals moved into the feed's scroll area (under its last line), the refuse button became "No deal!" on the right, and each side of a deal became item tiles with a count in the corner. The count is a new optional `count` on `ItemFace`, so other item tiles can use it later; oxygen, fuel and crew have no item art, so their tiles hold the small UI icons (o2, fuel, p_alive) unscaled.
+
+## 2026-11-16: Signals step 3: rebel bases as signals
+
+- **What:** `state.comms.rebels` moved into `state.signals` as `rebel` signals (`rebel: { base, progress }`, script step `decoding`, new status `reached`). `rebelContacted`, `isOpen` and `endRebelCalls` keep their names and read the list, so Sirius, Centauri, Cygni and Luyten-Ceti's effects didn't change. Each decode is one feed exchange (`decodeRebel` in comms.ts): the officer's plain "Decoding the signal." and the base's message with its progress; 100% closes it as `reached`. Expiry is now a status change in `commsCycle`. The calls and `nextRebel` go only to Comms Officer access. Web: the Rebel bases tab is gone; rebel rows in Signals (16px `rebellion.png`), the next call as a dashed row under Active, the base art and effect tooltip in the conversation header, Decode as the one option, and `garble.ts` for the message. `STATE_VERSION` 120 moves stored calls. The messages are the original's `rebel_center.json` French, with en/es translated from it.
+- **What worked:** keeping the helper names meant the effect code and the bot (`commsOfficer`, which reads only `view.actions`) needed no change. A test-only `rebelCallAt` (no roll) kept other tests' RNG sequences stable.
+- **Needed correction:** `addSignal`'s name numbering compared only merchant kinds, so every rebel would have been "number 2, 3, ..."; it now compares the base too. A comms test assumed only Wolf was calling after its window, but Sirius had called by then. The upgrade step first used `??` again (the normalizeState test catches it).
+- **Choice made without asking:** the garbling hides characters in an order fixed per base (not per base and progress, as the plan sketched), so a later decode never hides a character an earlier one showed.
+
+### 2026-11-16: Signals step 4 (translations, docs, screenshots)
+
+- Reviewed the Signals fr/es strings, then asked Gemini (agy, flash) for a second review. Kept: Spanish agreement with *señal*, "Llamada entrante", "Parte en", "Acceso reservado al…", a Kaladaan grammar fix, the oxygen hail retranslated from the original's French (the es draft had been translated from the English), French "Expire dans", and "le contact avec Sol" / "el contacto con Sol" as elsewhere in the catalog. Rejected: its advice to drop the `_many` plural keys, which the i18n tests require.
+- Screenshots: a live game rarely has merchants and rebel calls at once, so a new design kit section (Signals, `signalsSample` built through the rules) renders the list, a transport's deals, a partly decoded rebel call and the no-access tab. It needed two optional props (`CommsCenter.initialTab`/`initialSignal`, `Signals.initialOpen`). The 360px shot showed a real bug: list captions squeezed into a narrow column beside long names; rows now wrap the caption onto its own line.
+- What needed correction: the running dev server's Vite had a dead file watcher (it served `signals.ts` from before step 3), so the kit crashed; a second Vite on another port worked. The visual-check subagent flagged things that were the kit frame's fixed height (feeds scrolled to the bottom) or by design (a flat wave at rest); one look at the phone shot was needed to separate those from the real caption bug. `verify` once timed out on `survival.test.ts` while another session's test run was going; it passes alone.
+
+### 2026-11-16: Fix `test:slow` replay perspective timeout
+
+- **What:** `npm run test:slow` (`shared/tests/replay.test.ts`, `perspective > gives every seat its own view at every step of a random game, from the full view`) was timing out at >150s for 5 seeds (~56s/seed, and >30s even for 1 seed). Profiling showed ~90%+ of the time was spent in `seatViewFor`: `TransferAction.getCandidates` (`shared/src/actions/transfer.ts`) returned every item on the ship instead of only items in the room (for `take`) or the player's inventory (for `drop`), causing O(N²) `state.items.find` scans in `validate`; and `seatViewFor` (`shared/src/rules.ts`) called both `legalActions` and `unaffordableActions`, running `candidates` and `check` over all `ACTIONS` twice per view.
+- **Fix:** Filtered `TransferAction.getCandidates` to the relevant container (`player.room` for `take`, `player.id` for `drop`), and combined legal + unaffordable action collection in `seatViewFor` into a single pass (`viewActionOptions`).
+- **Result:** `npm run test:slow -w shared` (all 5 seeds, 24 tests) now passes in ~94s (the `perspective` test dropped from ~280s to ~63s).
+
+### 2026-11-16 — Spatial wave radar (`RADAR_TRANS_VOID`)
+
+- **Decision (owner):** Implement `RADAR_TRANS_VOID` ("Spatial wave radar") so that once complete, connection to Sol attempts (`contact_sol`) and diplomacy trades (`close_deal`) cost 1 AP less, and decoding a rebel base (`rollRebelGain`) discards the lower of the two rolls (`Math.max` instead of floored average).
+- **What worked:** `actionCost` in `shared/src/modifiers.ts` already handled project AP discounts cleanly with floor 0 clamping and antenna surcharge stacking; `rollRebelGain` in `shared/src/comms.ts` still draws both rolls so RNG consumption stays uniform. Updated `PROJECT_STATUS` and `en`/`fr`/`es` project descriptions, and added `shared/tests/radar_trans_void.test.ts`.
+
+### 2026-11-16 — Weapon hit/miss outcomes config (from eMush)
+- **Tooling fix**: `npm run emush -- spec` in `tools/src/emush/emush.ts` was returning empty output because `agy` wasn't instructed not to call tools and large config files (`MechanicsData.php`, `EventConfigData.php`) were truncated before the weapon tables. Added a line-range suffix (`file:start-end`) and an explicit no-tools prompt instruction to `runCleanRoomSpec`.
+- **Types & config**: Extended `WeaponStats` in `shared/src/types/config.ts` with `hitOutcomes` and `missOutcomes` (`WeaponHitOutcome`, `WeaponMissOutcome`, `WeaponOutcomeEffects`, `WeaponInjuryEffect`) and populated all 9 weapons in `shared/src/config.ts` (`knife`, `blaster`, `customized_blaster`, `natamy_riffle`, `sniper_riffle`, `machine_gun`, `missile_launcher`, `grenade`, plus unimplemented `bare_hands`) from eMush's `MechanicsData` and `EventConfigData` specs.
+
+## 2026-11-16: Combat Phase 1 — Drop Weapon Helper & Stubbed Combat Injuries
+- **Drop/remove helpers (`shared/src/items.ts`):** Added `dropWeapon(state, player, item, { bypassCanDrop })` to move a carried weapon to the player's room (clearing `hiddenBy` and respecting `canDrop` unless bypassed for combat fumbles) and `removeItemIfPresent(state, id)` for safe removal on explosive backfires.
+- **Combat injuries (`shared/src/modifiers/combat_injuries.ts`, `shared/src/modifiers.ts`, `shared/src/statuses.ts`, `shared/src/config.ts`, `web/src/art/assets.ts`, `web/src/locales/{en,fr,es}.json`):** Stubbed all 14 combat injuries referenced by `configHitOutcomes.ts` plus `destroyed_ears` (`damaged_ears`, `destroyed_ears`, `torn_tongue`, `burst_nose`, `open_air_brain`, `head_trauma`, `haemorrhage`, `critical_haemorrhage`, `busted_arm_joint`, `punctured_lung`, `bruised_shoulder`, `mashed_foot`, `broken_shoulder`, `burnt_hand`), registered them as private statuses with `hurt` icons and draft en/fr/es locale entries.
+- **Injury upgrades (`shared/src/diseases.ts`):** Added `INJURY_UPGRADES` (`damaged_ears` → `destroyed_ears`, `head_trauma` → `open_air_brain`, `haemorrhage` → `critical_haemorrhage`, `bruised_shoulder` → `broken_shoulder`) in `addDisease`, preventing downgrades and fixing `removeDisease` to also drop the removed condition's tracker.
+- **Verification:** Added `shared/tests/combat_injuries.test.ts`; `npm run verify` (3820 tests in 258 files, typecheck, lint) and `npm run build` passed.
+
+## 2026-11-16: Combat Phase 4 — Wire Outcomes into AttackAction & Localization
+- **Outcome selection & effects (`shared/src/actions/attack.ts`):** Updated `AttackAction.apply` and `AttackAction.fail` to fold `hitOutcomes` / `missOutcomes` weights through `weaponOutcomeWeight`, pick an outcome with `rollWeighted`, apply `damageDelta` / `maxDamageDelta` / `instantKill` / `splashDamage` / `apLoss` / `injuries` (specific and random from `allInjuries`) / `weaponEffect` (`drop`, `break`, `destroy`) / `breakRandomItems`, and emit the outcome's public log line. `attackWithHeldWeapon` delegates to `apply` and `fail`.
+- **Localization & announcer (`web/src/locales/{en,fr,es}.json`, `web/src/announce.ts`):** Added all 75 weapon combat outcome `logEvent` strings in `en`, `fr`, and `es`, and added hit outcome log keys to `URGENT_LOG_KEYS`.
+
+## 2026-11-16: Combat Phase 5 — Verification & Docs
+- **Tests (`shared/tests/combat_skills.test.ts`, `shared/tests/attack.test.ts`):** Added end-to-end `gunman` outcome-weight tests (halving relative fumble odds on `blaster` while leaving `knife` and `grenade` unchanged), `attackWithHeldWeapon` outcome delegation, `viewFor` privacy for combat injuries alongside room-public log lines, and deterministic `replayGame` verification for combat outcomes.
+- **Docs (`docs/rules/rules-design.md`, `docs/rules/implemented-rules.md`):** Recorded the weapon outcome tables, `gunman` outcome weight folding, and stubbed combat injury rules.
+
+## 2026-11-16: State cloning, config aliasing guards, and test-suite speedups (`docs/plans/performance.md`)
+- **Runtime (`shared/src/helpers.ts`, `shared/src/fullView.ts`, `shared/src/chat.ts`, `shared/src/`):** Added `cloneState(state)` sharing `state.config` by reference, switched all 24 `clone(state)` sites in `shared/src/`, updated `fullViewFor` to share `state.config` by reference (making `diffView` O(1) on `config`), and switched `sendChat` to shallow copy-on-write over `chat`, `chatSeq`, `chatMarks`, and `chatOutbox`.
+- **Safeguards (`shared/src/config.ts`, `shared/tests/rules.test.ts`, `tools/tests/configAliasing.test.ts`, `server/tests/GameRoom.test.ts`):** Deep-froze `DEFAULT_CONFIG`, added a frozen-`state.config` purity test across `applyAction`, `applyInput`, `tick`, `sendChat`, and `newCycle`, and added `tools/tests/configAliasing.test.ts` to block `.config` writes/casts and `clone(state)` regressions in `shared/src/`. Updated `GameRoom.test.ts` (`picks up a balance change`) to mock `resolveConfig` instead of mutating frozen `DEFAULT_CONFIG.maxAp`.
+- **Test speedups:** Memoized/reused immutable setup states and eliminated redundant deep clones in `normalizeState.test.ts`, `comms.test.ts`, `placement.test.ts`, `floorHeating.test.ts`, `expeditions.test.ts`, and `goals.test.ts` (replacing `JSON.stringify` comparison with `plainEqual`).

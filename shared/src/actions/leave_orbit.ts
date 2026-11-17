@@ -1,5 +1,6 @@
 import { Action, ARACK_AROUND, isString } from "./action.ts";
 import { endRebelCalls } from "../comms.ts";
+import { merchantsLeave } from "../merchants.ts";
 import { arackAround, huntersFollow, loseShipsInFlight } from "../hunters.ts";
 import { pullShipsAboard } from "./land.ts";
 import { strandExpedition } from "../expeditions.ts";
@@ -52,6 +53,7 @@ export class LeaveOrbitAction extends Action<LeaveOrbitActionData> {
     shipMoved(state);
     huntersFollow(state);
     endRebelCalls(state);
+    merchantsLeave(state);
     const orbit = state.navigation.orbit;
     for (const owner of Object.keys(state.planets)) state.planets[owner] = state.planets[owner]!.filter((p) => p.id !== orbit);
     // Every shared planet's entry no longer applies, the planet just left included (owner, 2026-10-31).

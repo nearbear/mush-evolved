@@ -1,10 +1,22 @@
 import shipRooms from "@mush2/assets/derived/ship-rooms.json";
 import { ALIEN_FRUIT_ITEMS, BOOK_ITEM, ITRACKIE_ITEM } from "./itemIds.ts";
+import { HACKER_KIT_ITEM, TREE_POT_ITEM } from "./items.ts";
 import { CHEAT_ROOM, cheatRoomEquipment } from "./cheatRoom.ts";
 import { EQUIPMENT_TYPES } from "./equipment.ts";
 import { ICARUS_CRAFT, patrolEquipment, patrolRooms } from "./patrol.ts";
 import { SKILLS } from "./skills.ts";
 import type { ShipRoom } from "./shipLayout.ts";
+import {
+  BARE_HANDS_OUTCOMES,
+  BLASTER_OUTCOMES,
+  GRENADE_OUTCOMES,
+  KNIFE_OUTCOMES,
+  LIZARO_JUNGLE_OUTCOMES,
+  MISSILE_LAUNCHER_OUTCOMES,
+  NATAMY_RIFLE_OUTCOMES,
+  OLD_FAITHFUL_OUTCOMES,
+} from "./configHitOutcomes.ts";
+import { deepFreeze } from "./helpers.ts";
 import type { ConfigOverrides, ExpeditionEventKind, ExpeditionEventRule, GameConfig, PreselectionRules, RoomId } from "./types.ts";
 
 /** One line of an expedition sector's table: its kind, weight and amount (oxygen, fuel, fruits or rations). */
@@ -20,7 +32,7 @@ const bad = (rule: ExpeditionEventRule): ExpeditionEventRule => ({ ...rule, nega
  */
 export const SHIP_ROOMS: readonly ShipRoom[] = shipRooms;
 
-export const DEFAULT_CONFIG: GameConfig = {
+export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   mushCount: 2,
   preselection: null,
   // Confirmed 2026-10-11: start with 8 AP, gain 1 per cycle (2 while lying in a bed, via the
@@ -104,6 +116,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Owner, 2026-10-25 (wiki): hiding an item and searching the room each cost 1 AP.
   hide: { cost: { ap: 1 } },
   search: { cost: { ap: 1 } },
+  hack: { cost: { ap: 2 }, successChance: 0.25, computerFactor: 2 },
   // Owner, 2026-11-01 (eMushpedia "Création du Mycoscan"): checking your spore level on the MycoScan is free, once a day.
   drugDispenser: { cost: { ap: 0 }, resetCycles: [1, 4] },
   checkSpores: { cost: { ap: 0 } },
@@ -125,6 +138,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Confirmed 2026-10-15: punch costs 1 AP, misses 40% of the time. Owner, 2026-10-24: damage is a uniform 1 to 2 (the wiki).
   // Confirmed 2026-10-16: the sturdy (Solid) skill adds 1 to punch damage.
   punch: { cost: { ap: 1 }, effect: { damage: [1, 2], sturdyBonusDamage: 1 }, crit: { chance: 0.2, damage: [2, 3] }, successChance: 0.6, inactiveTargetSuccessChance: 0.9, dirtyChance: 0.25 },
+  // Owner, 2026-11-15: Wrestler and Solid can throw a roommate into an adjacent room through an unbroken door (2 AP, 1 AP on an inactive target).
+  throwOut: { cost: { ap: 2, inactiveAp: 1 } },
   // Owner, 2026-10-18: Ian's Pacifist makes aggressive actions in his room cost 2 more AP, his own included.
   pacifist: { aggressiveApSurcharge: 2 },
   // Owner, 2026-11-14: Bodyguard's Protect costs 1 AP and adds 2 AP to aggressive actions targeting the VIP while both are together.
@@ -240,6 +255,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Owner, 2026-10-27: Astrophysicist scans for 1 AP less and each remote analysis reveals 1 extra sector (the original skills.json).
   astrophysicist: { scanApDiscount: 1, extraSectors: 1 },
   gunner: { accuracyFactor: 2, damageFactor: 2 },
+  // Owner, 2026-11-15: Infantryman doubles turret hit chance, grants +1 Shoot point/day and on pick (shared cap), and gives a customized blaster.
+  infantryman: { accuracyFactor: 2, pointsPerDay: 1, pointsOnPick: 1 },
   persistent: { failureMultiplier: 1.5 },
   spaceTactics: { chance: 0.5, shrink: 0.33 },
   polymath: { channels: 2, computerPointsPerDay: 1, computerCapBonus: 2 },
@@ -293,6 +310,7 @@ export const DEFAULT_CONFIG: GameConfig = {
     foodRetailer: { room: "NEXUS_ROOM", items: ["output_tube", "input_tube", "input_tube"] },
     quantumSensors: { extraSectors: 1 },
     chipsetAcceleration: { scanApDiscount: 1 },
+    radarTransVoid: { apDiscount: 1 },
     patrolShipLauncher: { takeoffApDiscount: 1 },
     patrolShipExtraAmmo: { extraCharges: 6 },
     patrolShipBlasterGun: { extraDamage: 1 },
@@ -308,6 +326,15 @@ export const DEFAULT_CONFIG: GameConfig = {
     autoWatering: { extinguishChance: 0.25 },
     trailReducer: { followMultiplier: 0.5 },
     extraDrone: { room: "NEXUS_ROOM", count: 1 },
+    oxyMore: { saveChance: 0.2 },
+    floorHeating: { injuryFactor: 0.5 },
+    thalasso: { chance: 0.25, hp: 1, morale: 1, mp: 2 },
+    dismantling: { room: "MOTOR_ROOM", count: 8 },
+    trashLoad: {
+      rooms: ["STORAGE_FRONT", "STORAGE_A_0", "STORAGE_A_1", "STORAGE_B_0", "STORAGE_B_1"],
+      weaponBlueprints: ["MISSILE_LAUNCHER", "SNIPER_RIFFLE", "MACHINE_GUN"],
+      misc: ["knife", "soap", TREE_POT_ITEM, "protection_gloves"],
+    },
   },
   // Owner, 2026-10-21: repairing PILGRED uses the original's numbers (DIG_RATE 6, PILGRED_MOD 2, DIG_BOOST 4, -2 per repeat),
   // 2 AP, 25% dirty; the Physicist gains 1 PILGRED point a day and holds 2.
@@ -315,6 +342,33 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Owner, 2026-10-19 and 2026-10-21 (docs/plans/comms.md): every comms action is 2 AP. Sol: 4%, +4% per failure, floor 4%.
   // Rebels: avg of two 1..40 draws, +100% each for Rebel and Kivanç, a window of 8..16 cycles. NERON update: 25% per action.
   // Cygni: +1 damage on every patrol ship hit once reached (owner, 2026-11-07; eMush stacks it with the blaster gun).
+  // Merchant ships (owner, 2026-11-15, #143): about 2 a day, 4 cycles in orbit, 2 AP a deal, paid from storage,
+  // delivered to Front Storage. The transport's deals are the original's HUMAN_VS_FUEL and HUMAN_VS_OXY (owner: crew,
+  // fuel and oxygen only in the first slice); capsules received are items, fuel and oxygen paid come from the tanks.
+  merchants: {
+    arrivalChance: 0.25,
+    stayCycles: 4,
+    deal: { cost: { ap: 2 } },
+    storageRooms: ["STORAGE_FRONT", "STORAGE_A_0", "STORAGE_A_1", "STORAGE_B_0", "STORAGE_B_1"],
+    deliveryRoom: "STORAGE_FRONT",
+    kinds: {
+      transport: {
+        weight: 1,
+        events: {
+          HUMAN_VS_FUEL: [
+            { give: [{ kind: "crew", count: [1, 1] }], receive: [{ kind: "item", item: "fuel_capsule", count: [8, 12] }] },
+            { give: [{ kind: "crew", count: [2, 2] }], receive: [{ kind: "item", item: "fuel_capsule", count: [10, 30] }], skill: "diplomacy" },
+            { give: [{ kind: "item", item: "uncooked_ration", count: [4, 4] }], receive: [{ kind: "item", item: "fuel_capsule", count: [2, 4] }], skill: "botanic" },
+          ],
+          HUMAN_VS_OXY: [
+            { give: [{ kind: "crew", count: [1, 1] }], receive: [{ kind: "item", item: "oxy_capsule", count: [5, 10] }] },
+            { give: [{ kind: "fuel", count: [5, 10] }], receive: [{ kind: "item", item: "oxy_capsule", count: [10, 20] }], skill: "diplomacy" },
+            { give: [{ kind: "crew", count: [2, 2] }], receive: [{ kind: "item", item: "oxy_capsule", count: [10, 20] }], skill: "diplomacy" },
+          ],
+        },
+      },
+    },
+  },
   comms: {
     sol: { cost: { ap: 2 }, startChance: 4, chancePerFail: 4, radioExpertFactor: 2, radioExpertRoomFactor: 1.5 },
     rebel: { cost: { ap: 2 }, gainMax: 40, windowMin: 8, windowMax: 16, rebelBonus: 1, kivancBonus: 1, kaladaanMorale: 6, cygniMorale: 3, cygniPatrolDamage: 1, siriusRationAp: 1 },
@@ -414,6 +468,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   ignite: { cost: { ap: 4 } },
   // Owner, 2026-11-07: the Mush sabotage action (actions/sabotage.ts).
   sabotage: { cost: { ap: 1 }, defaultChance: 0.12, sapperFactor: 3 },
+  // Owner, 2026-11-14 (#330): Doorman's door sabotage (actions/sabotage_door.ts): first use each day is free, later ones cost 2 AP.
+  doorman: { cost: { ap: 2 } },
   // Owner, 2026-11-07: Green Jelly (actions/green_jelly.ts) breaks its target after 1 to `maxCycles` cycle changes.
   greenJelly: { cost: { ap: 1 }, maxCycles: 4 },
   // Owner, 2026-11-07: Reinforce (actions/reinforce.ts): 1 AP, 35%, one scrap for 10 (metal) or 5 (plastic) shielding, at most 50; at 25 or more it can't be sabotaged or dismantled.
@@ -534,15 +590,18 @@ export const DEFAULT_CONFIG: GameConfig = {
   weapons: {
     cost: { ap: 1 },
     types: {
-      knife: { melee: true, damage: [1, 5], accuracy: 0.6, expoStrength: 1, dirtyChance: 0.25, repairChance: 0.12 },
-      blaster: { gun: true, damage: [2, 3], accuracy: 0.5, expoStrength: 1, charges: 3, dirtyChance: 0, repairChance: 0.12 },
-      natamy_riffle: { gun: true, damage: [2, 4], mushDamage: [6, 13], accuracy: 0.5, expoStrength: 1, charges: 3, dirtyChance: 0, repairChance: 0.12 },
+      knife: { melee: true, damage: [1, 5], accuracy: 0.6, expoStrength: 1, dirtyChance: 0.25, repairChance: 0.12, ...KNIFE_OUTCOMES },
+      blaster: { gun: true, damage: [2, 3], accuracy: 0.5, expoStrength: 1, charges: 3, dirtyChance: 0, repairChance: 0.12, ...BLASTER_OUTCOMES },
+      customized_blaster: { gun: true, damage: [2, 3], accuracy: 0.5, expoStrength: 2, charges: 3, dirtyChance: 0, repairChance: 0.12, ...BLASTER_OUTCOMES },
+      natamy_riffle: { gun: true, damage: [2, 4], mushDamage: [6, 13], accuracy: 0.5, expoStrength: 1, charges: 3, dirtyChance: 0, repairChance: 0.12, ...NATAMY_RIFLE_OUTCOMES },
       // Lizaro Jungle.
-      sniper_riffle: { gun: true, damage: [3, 5], accuracy: 0.99, expoStrength: 1, charges: 1, dirtyChance: 0, repairChance: 0.12 },
+      sniper_riffle: { gun: true, damage: [3, 5], accuracy: 0.99, expoStrength: 1, charges: 1, dirtyChance: 0, repairChance: 0.12, ...LIZARO_JUNGLE_OUTCOMES },
       // Old Faithful.
-      machine_gun: { gun: true, damage: [2, 3], accuracy: 0.5, expoStrength: 2, charges: 12, dirtyChance: 0, repairChance: 0.12 },
-      missile_launcher: { gun: true, damage: [1, 8], accuracy: 0.5, expoStrength: 3, charges: 1, area: { selfDamage: [1, 4] }, dirtyChance: 0, repairChance: 0.12 },
-      grenade: { damage: [0, 10], accuracy: 1, expoStrength: 3, area: { selfDamage: [0, 3] }, consumed: true, dirtyChance: 0, repairChance: null },
+      machine_gun: { gun: true, damage: [2, 3], accuracy: 0.5, expoStrength: 2, charges: 12, dirtyChance: 0, repairChance: 0.12, ...OLD_FAITHFUL_OUTCOMES },
+      missile_launcher: { gun: true, damage: [1, 8], accuracy: 0.5, expoStrength: 3, charges: 1, area: { selfDamage: [1, 4] }, dirtyChance: 0, repairChance: 0.12, ...MISSILE_LAUNCHER_OUTCOMES },
+      grenade: { damage: [0, 10], accuracy: 1, expoStrength: 3, area: { selfDamage: [0, 3] }, consumed: true, dirtyChance: 0, repairChance: null, ...GRENADE_OUTCOMES },
+      // Unarmed (not wired to an action yet).
+      bare_hands: { melee: true, damage: [1, 2], accuracy: 0.6, expoStrength: 0, dirtyChance: 0, repairChance: null, ...BARE_HANDS_OUTCOMES },
     },
   },
   // Confirmed 2026-10-15: nobody starts with a skill; players pick up to three
@@ -590,6 +649,7 @@ export const DEFAULT_CONFIG: GameConfig = {
      { type: "apron", room: "SICK_BAY" },
      { type: "protection_gloves", room: "SICK_BAY" },
     { type: "camera", room: "CORRIDOR_A" },
+    { type: HACKER_KIT_ITEM, room: "CORRIDOR_B" },
     // #411: a support drone starts in the front corridor (drones.ts).
     { type: "support_drone", room: "CORRIDOR_A" },
     // Owner, 2026-10-25: an extinguisher in each of the front and rear corridors, for now (the original's are in storages).
@@ -666,7 +726,23 @@ export const DEFAULT_CONFIG: GameConfig = {
     // Owner, 2026-11-14: what the disease incident can give.
     incidentDiseases: ["cold_disease", "skin_inflammation_disease", "migraine_disease", "sinus_storm_disease"],
     allDisorders: ["depression_disorder"],
-    allInjuries: ["broken_nose_injury"],
+    allInjuries: [
+      "broken_nose_injury",
+      "damaged_ears",
+      "destroyed_ears",
+      "torn_tongue",
+      "burst_nose",
+      "open_air_brain",
+      "head_trauma",
+      "haemorrhage",
+      "critical_haemorrhage",
+      "busted_arm_joint",
+      "punctured_lung",
+      "bruised_shoulder",
+      "mashed_foot",
+      "broken_shoulder",
+      "burnt_hand",
+    ],
     allDiseaseStats: [
       {label: "cold_disease", type: "disease", durationMin: 8, durationMax: 12, roomSpread: 0.02, cycleSpread: 0.04}, 
       {label: "extreme_tinnitus_disease", type: "disease", durationMin: 12, durationMax: 20}, 
@@ -689,11 +765,12 @@ export const DEFAULT_CONFIG: GameConfig = {
       {label: "sinus_storm_disease", type: "disease", durationMin: 8, durationMax: 12},
       {label: "migraine_disease", type: "disease", durationMin: 8, durationMax: 12},
       {label: "slight_nausea_disease", type: "disease", durationMin: 12, durationMax: 20},
-      {label: "food_poisoning_disease", type: "disease", durationMin: 8, durationMax: 12}],
+      {label: "food_poisoning_disease", type: "disease", durationMin: 8, durationMax: 12},
+      ...["broken_nose_injury", "damaged_ears", "destroyed_ears", "torn_tongue", "burst_nose", "open_air_brain", "head_trauma", "haemorrhage", "critical_haemorrhage", "busted_arm_joint", "punctured_lung", "bruised_shoulder", "mashed_foot", "broken_shoulder", "burnt_hand"].map((label) => ({ label, type: "injury" }))],
     allDisorderStats: [{type: "disorder", resistance: 8}],
     allInjuryStats: [{type: "injury"}],
     },
-};
+});
 
 /** A multiplayer ship's pre-selection (docs/rules/rules-design.md, "Joining and Mush selection", decided 2026-10-13). */
 export const PRESELECTION: PreselectionRules = {

@@ -44,6 +44,7 @@ export * from "./doors.ts";
 export * from "./spot.ts";
 export * from "./titles.ts";
 export * from "./comms.ts";
+export * from "./signals.ts";
 export * from "./bios.ts";
 export * from "./victory.ts";
 export * from "./preselection.ts";

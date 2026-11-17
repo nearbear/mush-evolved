@@ -3,7 +3,7 @@
 // Transfer (actions/body_transfer.ts) swaps two bodies' minds (owner, 2026-10-24, rules-design.md "Transfer").
 // Body ids stay put, so other players see no id change; the server resolves each seat to its body with `bodyOf`.
 
-import { clone, fail, findPlayer, type ActionResult } from "./helpers.ts";
+import { cloneState, fail, findPlayer, type ActionResult } from "./helpers.ts";
 import { startLogSeen } from "./log.ts";
 import type { GameState, PlayerId, PlayerState } from "./types.ts";
 
@@ -13,7 +13,7 @@ export function bodyOf(state: Readonly<GameState>, mind: PlayerId): PlayerId | u
 }
 
 /** What belongs to the player rather than the body, so it moves in a Transfer. Everything else stays with the body. */
-const MIND_FIELDS = ["mind", "name", "isBot", "botKind", "role", "alpha", "mushSkills", "spores", "transferUsed", "epigeneticsUsed", "massMoulderingUsed", "fertileToday", "bodyTakenBy", "cheats", "lastSeenAt"] as const;
+const MIND_FIELDS = ["mind", "name", "isBot", "botKind", "role", "alpha", "mushSkills", "spores", "transferUsed", "epigeneticsUsed", "massMoulderingUsed", "fertileToday", "doormanToday", "bodyTakenBy", "cheats", "lastSeenAt"] as const;
 
 /**
  * Swaps the minds of bodies `a` and `b`: the fields in MIND_FIELDS, the spike cooldown. Private log lines are
@@ -39,6 +39,7 @@ export function swapMinds(state: GameState, a: PlayerState, b: PlayerState): voi
     p.current = null;
     p.queue = [];
     p.ready = false;
+    delete p.hackedEquipment;
     startLogSeen(state, p); // the count of what the body saw before is not the new mind's (#365)
   }
 }
@@ -46,7 +47,7 @@ export function swapMinds(state: GameState, a: PlayerState, b: PlayerState): voi
 /** The victim of a Transfer closes the pop-up naming who took their body. Cosmetic; it changes nothing else. */
 export function acknowledgeTransfer(state: GameState, playerId: PlayerId): ActionResult {
   if (findPlayer(state, playerId)?.bodyTakenBy === undefined) return fail("nothing_to_acknowledge");
-  const next = clone(state);
+  const next = cloneState(state);
   delete findPlayer(next, playerId)!.bodyTakenBy;
   return { ok: true, state: next };
 }

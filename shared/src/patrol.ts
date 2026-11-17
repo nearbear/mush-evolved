@@ -7,7 +7,6 @@
 // Data and lookups only, so config.ts can import it; the manoeuvre itself is in actions/takeoff.ts.
 
 import { projectDone } from "./projects.ts";
-import { hasSkill } from "./skills.ts";
 import type { Equipment, GameConfig, GameState, PlayerId, PlayerState, RoomId } from "./types.ts";
 
 export type PatrolKind = "patrol" | "pasiphae";
@@ -107,22 +106,21 @@ export const onPlanet = (state: Readonly<GameState>, ship: Readonly<PatrolShip>)
 export function rechargePatrolShips(state: GameState): void {
   for (const ship of PATROL_SHIPS) {
     const shipState = state.patrolShips[ship.id]!;
-    if (!shipState.out) shipState.charges = Math.min(patrolMaxCharges(state, ship), shipState.charges + state.config.patrol.rechargePerCycle);
+    if (!shipState.out && !shipState.destroyed) shipState.charges = Math.min(patrolMaxCharges(state, ship), shipState.charges + state.config.patrol.rechargePerCycle);
   }
 }
 
-/** Who may fly: Pilots only for now (answer 3; the BIOS piloting lock and spaceship keys come later). */
-// Gastroenteris grounds a Pilot (owner, 2026-11-14); a Mush's diseases have no effect (diseases.ts).
+/** Who may fly: anyone, except humans with Gastroenteritis or Slight Nausea (pilot lock comes later). */
+// Gastroenteris / Slight Nausea grounds a human (owner, 2026-11-14, 2026-11-15); a Mush's diseases have no effect (diseases.ts).
 export const canFly = (player: Readonly<PlayerState>): boolean =>
-  hasSkill(player, "pilot") &&
-  (player.role === "mush" || !GROUNDING_DISEASES.some((id) => player.modifiers.includes(id)));
+  player.role === "mush" || !GROUNDING_DISEASES.some((id) => player.modifiers.includes(id));
 
-/** Diseases that keep a human Pilot from flying (owner: Gastroenteritis 2026-11-14, Slight Nausea 2026-11-15). */
+/** Diseases that keep a human from flying (owner: Gastroenteritis 2026-11-14, Slight Nausea 2026-11-15). */
 const GROUNDING_DISEASES: readonly string[] = ["gastroenteritis_disease", "slight_nausea_disease"];
 
 /** Docked ships whose interface is in the player's room. */
 export function dockedHere(state: Readonly<GameState>, player: Readonly<PlayerState>): PatrolShip[] {
-  return PATROL_SHIPS.filter((s) => s.bay === player.room && !state.patrolShips[s.id]?.out);
+  return PATROL_SHIPS.filter((s) => s.bay === player.room && !state.patrolShips[s.id]?.out && !state.patrolShips[s.id]?.destroyed);
 }
 
 /** The ship whose room the player is in, if any. */

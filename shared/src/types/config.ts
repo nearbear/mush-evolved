@@ -1,4 +1,5 @@
 import type { IncidentId } from "../incidents.ts";
+import type { DealTemplate, MerchantKind } from "../merchants.ts";
 import type { PlanetDirection } from "../planets.ts";
 import type { PlantState, RoomId } from "../types.ts";
 import type { StatusId } from "../statuses.ts";
@@ -60,6 +61,43 @@ export interface DiseaseStats {
 }
 
 
+export interface WeaponInjuryEffect {
+  who: "target" | "attacker" | "splash";
+  /** Specific injury ID (e.g. "damaged_ears", "haemorrhage"), or "random" for a random combat injury. */
+  injury: string;
+  /** Probability 0..1. */
+  chance: number;
+  /** Number of rolls (default 1). */
+  count?: number;
+}
+
+export interface WeaponOutcomeEffects {
+  damageDelta?: number;
+  maxDamageDelta?: number;
+  skillMaxDamage?: boolean;
+  instantKill?: "target" | "attacker";
+  mushMultiplier?: number;
+  apLoss?: { who: "target" | "attacker"; amount: number };
+  injuries?: WeaponInjuryEffect[];
+  weaponEffect?: "drop" | "break" | "destroy";
+  breakRandomItems?: number;
+  splashDamage?: { amount: number; chance?: number };
+}
+
+export interface WeaponHitOutcome {
+  weight: number;
+  critical?: boolean;
+  log: string;
+  effects?: WeaponOutcomeEffects;
+}
+
+export interface WeaponMissOutcome {
+  weight: number;
+  fumble?: boolean;
+  log: string;
+  effects?: WeaponOutcomeEffects;
+}
+
 /** One weapon's numbers (owner, 2026-10-22, from the English wiki; "??" values were set to 12%). */
 export interface WeaponStats {
   damage: [min: number, max: number]; // HP a hit removes, rolled uniformly, both ends included.
@@ -73,6 +111,8 @@ export interface WeaponStats {
   consumed?: boolean; // Used up by using it (grenade).
   dirtyChance: number; // Chance of getting dirty from using it.
   repairChance: number | null; // Breakable, with this repair chance; null: it can't break. Breaking and repair aren't built.
+  hitOutcomes: WeaponHitOutcome[]; // Weighted hit/critical outcomes from eMush MechanicsData / EventConfigData.
+  missOutcomes: WeaponMissOutcome[]; // Weighted miss/fumble outcomes from eMush MechanicsData / EventConfigData.
 }
 
 /** What can happen in one expedition sector (expeditions.ts, owner 2026-10-31). */
@@ -294,6 +334,7 @@ export interface GameConfig {
   };
   hide: { cost: { ap: number } }; // Hiding an item (owner, 2026-10-25, from the wiki: 1 AP).
   search: { cost: { ap: number } }; // Searching the room for hidden items (owner, 2026-10-25, from the wiki: 1 AP).
+  hack: { cost: { ap: number }; successChance: number; computerFactor: number }; // Hacking with a hacker kit.
   /** The Drug Dispenser (owner, 2026-11-11): the cycles of the day it resets on (new list, unused), and what taking a drug costs. */
   drugDispenser: { cost: { ap: number }; resetCycles: number[] };
   checkSpores: { cost: { ap: number } }; // The MycoScan's spore check (owner, 2026-11-01).
@@ -315,6 +356,9 @@ export interface GameConfig {
     successChance: number; // Chance a punch lands, 0 to 1 (confirmed 2026-10-15: it misses 40% of the time).
     inactiveTargetSuccessChance: number; // The same on an inactive target (owner, 2026-10-31, eMush: 90%).
     dirtyChance: number; // Chance of getting the dirty status after punching (confirmed 2026-10-13).
+  };
+  throwOut: {
+    cost: { ap: number; inactiveAp: number }; // AP to throw a roommate into an adjacent room (1 AP less when target is inactive; owner, 2026-11-15).
   };
   pacifist: {
     aggressiveApSurcharge: number; // Extra AP for each aggressive action in a Pacifist's room, theirs too (owner, 2026-10-18).
@@ -424,6 +468,11 @@ export interface GameConfig {
     accuracyFactor: number; // The `gunner` skill multiplies the chance to hit from a turret by this (owner, 2026-10-24; the data's MulActionOdd 2.0).
     damageFactor: number; // ...and the damage of a hit (owner, 2026-10-24).
   };
+  infantryman: {
+    accuracyFactor: number; // The `infantryman` skill multiplies the chance to hit from a turret by this (owner, 2026-11-15).
+    pointsPerDay: number; // Shoot points the `infantryman` skill grants at the start of each day (owner, 2026-11-15).
+    pointsOnPick: number; // Shoot points the `infantryman` skill grants when picked (owner, 2026-11-15).
+  };
   persistent: {
     failureMultiplier: number; // The `persistent` skill's per-miss multiplier on a failure streak (turret, astro scan), replacing the usual one when higher (owner, 2026-10-25).
   };
@@ -493,6 +542,7 @@ export interface GameConfig {
     quantumSensors: { extraSectors: number };
     // CPU Overclocking (owner, 2026-11-01; eMushpedia *Accélération du processeur*): Scan for planets costs -scanApDiscount AP.
     chipsetAcceleration: { scanApDiscount: number };
+    radarTransVoid: { apDiscount: number };
     // Takeoff thruster (owner, 2026-11-14): patrol ship, Pasiphae, and Icarus takeoff cost -takeoffApDiscount AP.
     patrolShipLauncher: { takeoffApDiscount: number };
     // Teslatron reservoir (PATROLSHIP_EXTRA_AMMO; owner, 2026-11-14): patrol ships hold +extraCharges max charges and gain +extraCharges on completion (capped at new max; Pasiphae unaffected).
@@ -522,6 +572,16 @@ export interface GameConfig {
     trailReducer: { followMultiplier: number };
     // Extra drone (EXTRA_DRONE; 2026-11-14): completing it puts `count` support drone(s) on the floor of `room` (the Nexus).
     extraDrone: { room: RoomId; count: number };
+    // Oxygenated ducts (OXY_MORE; 2026-11-15): each cycle has `saveChance` (20%) to prevent all oxygen loss (burn and tank leaks), announced in global chat.
+    oxyMore: { saveChance: number };
+    // Floor heating (FLOOR_HEATING; 2026-11-15): multiplies every action's injury chance by `injuryFactor` (0.5, a 50% reduction).
+    floorHeating: { injuryFactor: number };
+    // Thalasso (THALASSO; 2026-11-15): for non-Mush players, each shower rolls independently at `chance` (25%) for +`hp` health, +`morale` morale, and +`mp` MP (each capped at max).
+    thalasso: { chance: number; hp: number; morale: number; mp: number };
+    // Dismantling (DISMANTLING; owner, 2026-11-15): completing it puts `count` metal scraps on the floor of `room` (the engine room).
+    dismantling: { room: RoomId; count: number };
+    // Scrap heap (TRASH_LOAD; owner, 2026-11-16): completing it spawns one item per pool across `rooms` in shuffled order (wrapping).
+    trashLoad: { rooms: readonly RoomId[]; weaponBlueprints: readonly string[]; misc: readonly string[] };
   };
   pilgred: {
     cost: { ap: number }; // AP spent to take part in repairing PILGRED (owner, 2026-10-21; the original's REPAIR_PILGRED, 2).
@@ -536,6 +596,16 @@ export interface GameConfig {
     returnCost: { ap: number }; // AP spent to return to Sol at the Command terminal (owner, 2026-10-21; the original's SET_PILGRED_TO_SOL, 2).
     // Coffee regeneration cycles of each day when PILGRED is repaired (owner, 2026-11-02; the original's C1, C3, C5, C7).
     coffeeCycles: number[];
+  };
+  // Merchant ships (merchants.ts; owner, 2026-11-15, #143).
+  merchants: {
+    arrivalChance: number; // Chance of an arrival at each cycle change after pre-selection (owner: about 2 a day; 0.25 x 8 cycles).
+    stayCycles: number; // Cycles a merchant stays in orbit (owner, 4).
+    deal: { cost: { ap: number } }; // AP the comms officer spends to close a deal (owner, 2).
+    storageRooms: RoomId[]; // Rooms whose floors pay for item deals (owner: any storage).
+    deliveryRoom: RoomId; // Where bought items appear (owner: Front Storage).
+    // Each kind's arrival weight and hails: event id -> its deals (the original's trade_events), in order.
+    kinds: Record<MerchantKind, { weight: number; events: Record<string, DealTemplate[]> }>;
   };
   comms: {
     sol: {
@@ -690,6 +760,8 @@ export interface GameConfig {
   ignite: { cost: { ap: number } };
   // Owner, 2026-11-07: a Mush breaks equipment or an item (actions/sabotage.ts), at the target's repair chance or `defaultChance` for an item without one.
   sabotage: { cost: { ap: number }; defaultChance: number; sapperFactor: number };
+  // Owner, 2026-11-14 (#330): Doorman's door sabotage (actions/sabotage_door.ts): first use each day is free, later ones cost `cost.ap`.
+  doorman: { cost: { ap: number } };
   greenJelly: { cost: { ap: number }; maxCycles: number };
   // Owner, 2026-11-07: an Engineer reinforces equipment or an item (actions/reinforce.ts) with one scrap, `gain` by scrap type, up to `max`.
   reinforce: { cost: { ap: number }; chance: number; max: number; fortifiedAt: number; gain: Record<string, number> };

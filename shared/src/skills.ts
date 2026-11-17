@@ -186,8 +186,10 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   apprentice: "full",
   // Flying patrol ships and the Pasiphae, clean takeoffs and landings, doubled patrol-ship shot odds, and expedition piloting (patrol.ts, modifiers/pilot.ts, expeditions.ts).
   pilot: "full",
-  // Heavy-item penalty and punch damage only; no Throw Out.
-  sturdy: "partial",
+  // Heavy-item penalty, +1 punch damage, and Throw Out (owner, 2026-10-16, 2026-11-15).
+  sturdy: "full",
+  // +2 punch damage and Throw Out (owner, 2026-11-15, actions/throw_out.ts).
+  wrestler: "full",
   // Free heal points (2/day) and reads drug properties and gets +1 Drug Dispenser option (owner, 2026-11-13).
   first_aid: "full",
   // Premonition: reveals a crewmate's last action for 1 morale (owner, 2026-11-13, actions/premonition.ts).
@@ -254,9 +256,9 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   nimble_fingers: "full",
   //Increases success rate, injury chance, and dirty chance by 20%
   expert: "full",
-  // Free turret shots from Shoot points (owner, 2026-10-25) and +1 expedition strength with a working gun (owner,
-  // 2026-11-08, #358); no fewer clumsy misses or more critical hits on shots.
-  gunman: "partial",
+  // Free turret shots from Shoot points (owner, 2026-10-25), +1 expedition strength with a working gun (owner,
+  // 2026-11-08, #358), and doubled critical hit / non-fumble miss outcome weights on firearms (modifiers/gunman.ts).
+  gunman: "full",
   // Scan for planets costs 1 AP less; remote analyses reveal 1 extra sector; +4 on its two NERON projects (owner, 2026-10-27).
   astrophysician: "full",
   // One extra camera item when picked and free install/uninstall of cameras (owner, 2026-10-27, modifiers/paranoid.ts).
@@ -306,6 +308,8 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   bodyguard: "full",
   // +1 AP on eating a banana and +2 AP on eating an alien fruit, humans only (owner, 2026-11-14, modifiers/frugivore.ts).
   frugivore: "full",
+  // Doubles turret hit chance, +1 Shoot point/day and on pick, and starts with a customized blaster (owner, 2026-11-15, modifiers/infantryman.ts).
+  infantryman: "full",
   // Mush skill (Demoralizer): 2 AP, covert + aggressive, lowers a living roommate's morale by 2 (owner, 2026-11-14, actions/demoralize.ts).
   disheartening_contact: "full",
 };

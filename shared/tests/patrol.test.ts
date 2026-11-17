@@ -2,13 +2,14 @@ import { describe, expect, it } from "vitest";
 import { ACTIONS } from "../src/actions.ts";
 import { manoeuvre } from "../src/actions/takeoff.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
+import { addDisease } from "../src/diseases.ts";
 import { cameraEquipmentId } from "../src/equipment.ts";
 import { commandId, interfaceId, PATROL_SHIPS, patrolShip } from "../src/patrol.ts";
 import { PROJECT_COMPLETE, projectStatus } from "../src/projects.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameConfig, GameState } from "../src/types.ts";
-import { costOf, makeSeats, mustApply, nextCycle, noHunters, offered, option, player } from "./support.ts";
+import { costOf, makeSeats, mustApply, nextCycle, noHunters, offered, option, player, rebelCallAt } from "./support.ts";
 
 const BAY = "SPACESHIP_BAY_A";
 const LONGANE = patrolShip("PATROL_SHIP_A_0")!;
@@ -43,14 +44,38 @@ describe("patrol ship numbers", () => {
 });
 
 describe("taking off", () => {
-  it("a Pilot in a bay is offered each docked ship there, for 2 AP; nobody else is", () => {
+  it("anyone in a bay (unless grounded) is offered each docked ship there, for 2 AP", () => {
     const s = ship();
-    expect(offered(s, "p0").filter((a) => a.type === "takeoff")).toEqual([takeoff(LONGANE), takeoff(JUJUBE), takeoff(patrolShip("PATROL_SHIP_A_2")!)]);
-    expect(costOf(s, "p0", takeoff())).toEqual({ ap: s.config.patrol.takeoff.cost.ap, mp: 0 });
-    expect(offered(s, "p1").some((a) => a.type === "takeoff")).toBe(false);
-    expect(refusal(s, "p1", takeoff())).toBe("cant_fly");
+    for (const id of ["p0", "p1"]) {
+      expect(offered(s, id).filter((a) => a.type === "takeoff")).toEqual([takeoff(LONGANE), takeoff(JUJUBE), takeoff(patrolShip("PATROL_SHIP_A_2")!)]);
+      expect(costOf(s, id, takeoff())).toEqual({ ap: s.config.patrol.takeoff.cost.ap, mp: 0 });
+    }
+    // A human grounded by Gastroenteritis or Slight Nausea can't fly.
+    for (const disease of ["gastroenteritis_disease", "slight_nausea_disease"] as const) {
+      const grounded = ship();
+      const target = player(grounded, "p1");
+      if (target.role === "mush") target.role = "human";
+      addDisease(grounded, target, disease);
+      expect(offered(grounded, "p1").some((a) => a.type === "takeoff")).toBe(false);
+      expect(refusal(grounded, "p1", takeoff())).toBe("cant_fly");
+    }
     // A ship in another bay can't be taken from here.
     expect(refusal(s, "p0", takeoff(patrolShip("PATROL_SHIP_B_0")!))).toBe("no_ship");
+  });
+
+  it("lets a non-pilot fly a patrol ship or the Pasiphae", () => {
+    const pasiphae = patrolShip("PATROL_SHIP_AA_1")!;
+    const s = ship({ patrol: { ...DEFAULT_CONFIG.patrol, cleanChance: 1 } });
+    const out = mustApply(s, "p1", takeoff());
+    expect(player(out, "p1").room).toBe(LONGANE.id);
+    const back = mustApply(out, "p1", land());
+    expect(player(back, "p1").room).toBe(BAY);
+
+    player(s, "p1").room = pasiphae.bay;
+    const outP = mustApply(s, "p1", takeoff(pasiphae));
+    expect(player(outP, "p1").room).toBe(pasiphae.id);
+    const backP = mustApply(outP, "p1", land(pasiphae));
+    expect(player(backP, "p1").room).toBe(pasiphae.bay);
   });
 
   it("moves the pilot alone into the ship's room and marks the ship out", () => {
@@ -198,14 +223,14 @@ describe("shooting from a patrol ship", () => {
     const hit = (base: string | null) => {
       const s = flying(shot({ chance: 1, damage: [4, 4] }));
       s.hunters.list[0]!.hp = 10;
-      if (base) s.comms.rebels.push({ base: base as never, calledAt: s.cycle, expiresAt: s.cycle + 10, progress: 100 });
+      if (base) rebelCallAt(s, base as never, 100);
       return 10 - mustApply(s, "p0", shoot("h1")).hunters.list[0]!.hp;
     };
     expect([hit(null), hit("CYGNI"), hit("SIRIUS")]).toEqual([4, 4 + DEFAULT_CONFIG.comms.rebel.cygniPatrolDamage, 4]);
     // A call still being decoded gives nothing yet.
     const partial = flying(shot({ chance: 1, damage: [4, 4] }));
     partial.hunters.list[0]!.hp = 10;
-    partial.comms.rebels.push({ base: "CYGNI", calledAt: partial.cycle, expiresAt: partial.cycle + 10, progress: 99 });
+    rebelCallAt(partial, "CYGNI", 99);
     expect(10 - mustApply(partial, "p0", shoot("h1")).hunters.list[0]!.hp).toBe(4);
   });
 
@@ -216,7 +241,7 @@ describe("shooting from a patrol ship", () => {
       const s = flying(shot({ chance: 1, damage: [4, 4] }));
       s.hunters.list[0]!.hp = 10;
       s.projects.PATROLSHIP_BLASTER_GUN = progress;
-      if (cygni) s.comms.rebels.push({ base: "CYGNI", calledAt: s.cycle, expiresAt: s.cycle + 10, progress: 100 });
+      if (cygni) rebelCallAt(s, "CYGNI", 100);
       return 10 - mustApply(s, "p0", shoot("h1")).hunters.list[0]!.hp;
     };
     const bonus = DEFAULT_CONFIG.project.patrolShipBlasterGun.extraDamage;
@@ -323,7 +348,7 @@ describe("aboard a ship", () => {
   });
 });
 
-describe("rough manoeuvres (for when non-pilots can fly)", () => {
+describe("rough manoeuvres", () => {
   it("cost the hull 2 to 4 through the shield, the ship 1 armor and the pilot 0 to 2 hp, told only to the pilot", () => {
     const s = ship({ patrol: { ...DEFAULT_CONFIG.patrol, cleanChance: 0 } });
     const p1 = player(s, "p1");
@@ -344,6 +369,47 @@ describe("rough manoeuvres (for when non-pilots can fly)", () => {
     const before = JSON.stringify(s);
     manoeuvre(s, player(s, "p0"), LONGANE);
     expect(JSON.stringify(s)).toBe(before);
+  });
+
+  it("never happen once XXL bay doors (BAY_DOOR_XXL) is complete", () => {
+    expect(projectStatus("BAY_DOOR_XXL")).toBe("full");
+    const s = ship({ patrol: { ...DEFAULT_CONFIG.patrol, cleanChance: 0 } });
+    s.projects.BAY_DOOR_XXL = PROJECT_COMPLETE;
+    const out = mustApply(s, "p1", takeoff());
+    expect(out.ship).toEqual(s.ship);
+    expect(out.patrolShips[LONGANE.id]!.armor).toBe(s.patrolShips[LONGANE.id]!.armor);
+    expect(player(out, "p1").hp).toBe(player(s, "p1").hp);
+    expect(lines(out, "p1", "patrolRough")).toEqual([]);
+    const back = mustApply(out, "p1", land());
+    expect(back.ship).toEqual(s.ship);
+    expect(back.patrolShips[LONGANE.id]!.armor).toBe(s.patrolShips[LONGANE.id]!.armor);
+    expect(player(back, "p1").hp).toBe(player(s, "p1").hp);
+    expect(lines(back, "p1", "patrolRough")).toEqual([]);
+  });
+
+  it("destroy the ship and kill the pilot if a rough takeoff drops armor to 0", () => {
+    const s = ship({ patrol: { ...DEFAULT_CONFIG.patrol, cleanChance: 0 } });
+    s.patrolShips[LONGANE.id]!.armor = 1;
+    const next = mustApply(s, "p1", takeoff());
+    expect(next.patrolShips[LONGANE.id]).toMatchObject({ armor: 0, destroyed: true });
+    expect(player(next, "p1").alive).toBe(false);
+    expect(lines(next, "p0", "patrolDestroyed")).toHaveLength(1);
+    expect(refusal(next, "p0", takeoff())).toBe("no_ship");
+  });
+
+  it("destroy the ship (but spare the pilot in the bay) if a rough landing drops armor to 0", () => {
+    const s = mustApply(ship({ patrol: { ...DEFAULT_CONFIG.patrol, cleanChance: 1 } }), "p1", takeoff());
+    const roughLanding = { ...s, config: { ...s.config, patrol: { ...s.config.patrol, cleanChance: 0 } } };
+    roughLanding.patrolShips[LONGANE.id]!.armor = 1;
+    const next = mustApply(roughLanding, "p1", land());
+    expect(next.patrolShips[LONGANE.id]).toMatchObject({ armor: 0, destroyed: true, out: false });
+    expect(player(next, "p1")).toMatchObject({ alive: true, room: BAY });
+    expect(lines(next, "p0", "patrolDestroyed")).toHaveLength(1);
+    expect(offered(next, "p0").some((a) => a.type === "takeoff" && a.equipment === interfaceId(LONGANE))).toBe(false);
+    expect(refusal(next, "p0", takeoff())).toBe("no_ship");
+    const iface = viewFor(next, "p0").roomEquipment.find((e) => e.id === interfaceId(LONGANE));
+    expect(iface).toMatchObject({ destroyed: true });
+    expect(iface?.armor).toBeUndefined();
   });
 });
 
@@ -423,6 +489,10 @@ describe("hunters and ships in flight", () => {
   });
 
   describe("with Magnetic net (owner, 2026-11-12)", () => {
+    it("is marked fully implemented in projectStatus", () => {
+      expect(projectStatus("MAGNETIC_NET")).toBe("full");
+    });
+
     const terminal = "COMMAND_CENTER:PILOT_MODULE";
     /** p0 flies Longane, p2 commands from the bridge, p1 waits in Bay Alpha; the net is done. */
     function netted(config: Partial<GameConfig> = {}): GameState {

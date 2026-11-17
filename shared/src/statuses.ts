@@ -30,6 +30,21 @@ const FIXED_STATUS_PUBLIC = {
   // Owner, 2026-11-06: guarding is public to the room.
   guardian: true,
   broken_nose_injury: false,
+  // Combat injuries (private, like diseases and broken_nose_injury).
+  damaged_ears: false,
+  destroyed_ears: false,
+  torn_tongue: false,
+  burst_nose: false,
+  open_air_brain: false,
+  head_trauma: false,
+  haemorrhage: false,
+  critical_haemorrhage: false,
+  busted_arm_joint: false,
+  punctured_lung: false,
+  bruised_shoulder: false,
+  mashed_foot: false,
+  broken_shoulder: false,
+  burnt_hand: false,
   // Owner, 2026-11-05: Genius is private to its holder.
   genius: false,
   // Owner, 2026-10-31 (#145): both are public to everyone and float over the head.
@@ -43,7 +58,7 @@ const FIXED_STATUS_PUBLIC = {
   nimble: false,
 } as const;
 
-export const STATUS_IDS = ["dirty", "full_belly", "hungry", "immune", "immunity", "pacifist", "hyperactive", "mankind_only_hope", "wheelchair", "accommodated", "outcast", "protecting", "protected", "guardian", "broken_nose_injury", "genius", "inactive", "super_inactive", "focused", "hopeless", "nimble"] as const;
+export const STATUS_IDS = ["dirty", "full_belly", "hungry", "immune", "immunity", "pacifist", "hyperactive", "mankind_only_hope", "wheelchair", "accommodated", "outcast", "protecting", "protected", "guardian", "broken_nose_injury", "damaged_ears", "destroyed_ears", "torn_tongue", "burst_nose", "open_air_brain", "head_trauma", "haemorrhage", "critical_haemorrhage", "busted_arm_joint", "punctured_lung", "bruised_shoulder", "mashed_foot", "broken_shoulder", "burnt_hand", "genius", "inactive", "super_inactive", "focused", "hopeless", "nimble"] as const;
 export type StatusId = string;
 export function statusIdsFor(diseases: readonly string[]): string[] {
   return [...new Set([...STATUS_IDS, ...diseases])];

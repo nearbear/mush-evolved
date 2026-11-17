@@ -8,7 +8,7 @@
 // moderates the text first. The length limits are the shared planets' (`MAX_SHARED_PLANET_LENGTH`, Claude's reading).
 
 import { chatChannels, pushChat } from "./chat.ts";
-import { clone, dayOf, fail, findPlayer, type ActionResult } from "./helpers.ts";
+import { cloneState, dayOf, fail, findPlayer, type ActionResult } from "./helpers.ts";
 import { MAX_SHARED_PLANET_LENGTH } from "./sharedPlanets.ts";
 import type { GameState, PlayerId, PlayerState, SharedReportId } from "./types.ts";
 
@@ -30,7 +30,7 @@ export function shareReport(state: GameState, playerId: PlayerId, reportId: stri
   const body = text.trim();
   if (!body || body.length > MAX_SHARED_PLANET_LENGTH) return fail("share_text_invalid");
 
-  const next = clone(state);
+  const next = cloneState(state);
   const entry = next.sharedReports.find((s) => s.report === reportId);
   if (entry) {
     pushChat(next, entry.id, { from: p.id, isBot: p.isBot, text: body });

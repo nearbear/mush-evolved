@@ -11,6 +11,7 @@ import { CookAction } from "./actions/cook.ts";
 import { ExpressCookAction } from "./actions/express_cook.ts";
 import { DismantleAction } from "./actions/dismantle.ts";
 import { AccessAction } from "./actions/access.ts";
+import { HackAction } from "./actions/hack.ts";
 import type { ActionCost, ActionTag, ActionVisibility } from "./actions/action.ts";
 import { DispenseAction } from "./actions/dispense.ts";
 import { PlayArcadeAction } from "./actions/play_arcade.ts";
@@ -30,6 +31,9 @@ import { ReturnToSolAction } from "./actions/return_to_sol.ts";
 import { ContactSolAction } from "./actions/contact_sol.ts";
 import { DecodeRebelAction } from "./actions/decode_rebel.ts";
 import { ContactXylophAction } from "./actions/contact_xyloph.ts";
+import { CloseDealAction } from "./actions/close_deal.ts";
+import { ContactSignalAction } from "./actions/contact_signal.ts";
+import { RefuseSignalAction } from "./actions/refuse_signal.ts";
 import { UpdateNeronAction } from "./actions/update_neron.ts";
 import { SetBiosAction } from "./actions/set_bios.ts";
 import { ScanPlanetAction } from "./actions/scan_planet.ts";
@@ -43,6 +47,7 @@ import { GreenJellyAction } from "./actions/green_jelly.ts";
 import { ReinforceAction } from "./actions/reinforce.ts";
 import { UpgradeDroneAction } from "./actions/upgrade_drone.ts";
 import { SabotageAction } from "./actions/sabotage.ts";
+import { SabotageDoorAction } from "./actions/sabotage_door.ts";
 import { ExtinguishAction } from "./actions/extinguish.ts";
 import { ExtinguishManuallyAction } from "./actions/extinguish_manually.ts";
 import { TakeoffAction } from "./actions/takeoff.ts";
@@ -82,6 +87,7 @@ import { AnathemaAction } from "./actions/anathema.ts";
 import { CoupAction } from "./actions/coup.ts";
 import { BoringSpeechAction, FierySpeechAction } from "./actions/speech.ts";
 import { PunchAction } from "./actions/punch.ts";
+import { ThrowOutAction } from "./actions/throw_out.ts";
 import { InterrogateAction } from "./actions/interrogate.ts";
 import { ChitchatAction } from "./actions/chitchat.ts";
 import { PremonitionAction } from "./actions/premonition.ts";
@@ -151,6 +157,7 @@ const REGISTRY = {
   drop: new TransferAction("drop"),
   dismantle: new DismantleAction(),
   access: new AccessAction(),
+  hack: new HackAction(),
   research: new ResearchAction(),
   spoil_research: new SpoilResearchAction(),
   contaminate: new ContaminateAction(),
@@ -171,6 +178,9 @@ const REGISTRY = {
   decode_rebel: new DecodeRebelAction(),
   contact_xyloph: new ContactXylophAction(),
   update_neron: new UpdateNeronAction(),
+  contact_signal: new ContactSignalAction(),
+  close_deal: new CloseDealAction(),
+  refuse_signal: new RefuseSignalAction(),
   set_bios: new SetBiosAction(),
   scan_planet: new ScanPlanetAction(),
   analyze_planet: new AnalyzePlanetAction(),
@@ -182,6 +192,7 @@ const REGISTRY = {
   extinguish: new ExtinguishAction(),
   ignite: new IgniteAction(),
   sabotage: new SabotageAction(),
+  sabotage_door: new SabotageDoorAction(),
   reinforce: new ReinforceAction(),
   upgrade_drone: new UpgradeDroneAction(),
   green_jelly: new GreenJellyAction(),
@@ -243,6 +254,7 @@ const REGISTRY = {
   vaccinate: new VaccinateAction(),
   use_bandage: new UseBandageAction(),
   punch: new PunchAction(),
+  throw_out: new ThrowOutAction(),
   interrogate: new InterrogateAction(),
   chitchat: new ChitchatAction(),
   premonition: new PremonitionAction(),

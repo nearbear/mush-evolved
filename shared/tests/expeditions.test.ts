@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { BLUEPRINTS } from "../src/blueprints.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
+import { addDisease } from "../src/diseases.ts";
 import { pickSectors, runExpedition, winChance } from "../src/expeditions.ts";
 import { nextDue } from "../src/queue.ts";
+import { projectStatus } from "../src/projects.ts";
 import { PLANET_TAG_IDS } from "../src/planets.ts";
 import { applyInput } from "../src/replay.ts";
 import { FAST_EXPEDITION_STEP_MS } from "../src/cheats.ts";
@@ -10,7 +12,7 @@ import { applyAction, createGame, setCheat, viewFor } from "../src/rules.ts";
 import { ACTIONS } from "../src/actions.ts";
 import { commandId, lostPlace, patrolShip, shipsInFlight } from "../src/patrol.ts";
 import type { Action, ExpeditionEventRule, GameConfig, GameState, Planet, PlayerId } from "../src/types.ts";
-import { clone, costOf, makeSeats, must, noHunters, noIncidents, offered, option, player } from "./support.ts";
+import { clone, costOf, makeSeats, must, noHunters, noIncidents, offered, option, player, rebelCallAt } from "./support.ts";
 
 const ICARUS = "ICARUS";
 const takeoff: Action = { type: "icarus_takeoff", equipment: "ICARUS:ICARUS_COMMAND" };
@@ -68,12 +70,18 @@ const floor = (s: GameState, type: string) => s.items.filter((i) => i.type === t
 const harvested = (s: GameState, room = ICARUS) => s.items.filter((i) => expedition.loot.harvest.includes(i.type) && i.at.kind === "room" && i.at.id === room).length;
 
 describe("expeditions, phase 1 (instant, as in single player)", () => {
-  it("is offered to a Pilot at the Icarus in orbit of a planet with an unexplored sector, and to no one else", () => {
+  it("is offered to anyone (unless grounded) at the Icarus in orbit of a planet with an unexplored sector", () => {
     const s = game();
-    expect(offered(s, "p0")).toContainEqual(takeoff);
-    expect(option(s, "p0", takeoff)?.cost.ap).toBe(expedition.cost.ap);
-    expect(offered(s, "p1")).not.toContainEqual(takeoff);
-    expect(applyAction(s, "p1", takeoff).ok).toBe(false);
+    for (const id of ["p0", "p1"]) {
+      expect(offered(s, id)).toContainEqual(takeoff);
+      expect(option(s, id, takeoff)?.cost.ap).toBe(expedition.cost.ap);
+    }
+    const grounded = structuredClone(s);
+    const p1 = player(grounded, "p1");
+    if (p1.role === "mush") p1.role = "human";
+    addDisease(grounded, p1, "gastroenteritis_disease");
+    expect(offered(grounded, "p1")).not.toContainEqual(takeoff);
+    expect(applyAction(grounded, "p1", takeoff).ok).toBe(false);
 
     const away = structuredClone(s);
     player(away, "p0").room = "LABORATORY";
@@ -96,6 +104,7 @@ describe("expeditions, phase 1 (instant, as in single player)", () => {
 
   it("an illegal takeoff leaves the state unchanged", () => {
     const s = game();
+    s.navigation.orbit = null;
     const before = JSON.stringify(s);
     expect(applyAction(s, "p1", takeoff).ok).toBe(false);
     expect(JSON.stringify(s)).toBe(before);
@@ -385,12 +394,20 @@ describe("expeditions, phases 3 and 4, slice A: events and fights", () => {
     expect([expedition.survivalProvision, expedition.mushTrapChance, expedition.loot.artifacts.length]).toEqual([1, 0.5, 9]);
   });
 
-  it("a living Pilot or the Antigrav propeller makes the landing Nothing", () => {
+  it("an ungrounded living Pilot or the Antigrav propeller makes the landing Nothing", () => {
     const crash = only({ kind: "nothing", weight: 1 }, { kind: "catastrophe", weight: 1 });
     expect(event(go(game({ tags: ["FOREST"], events: crash })), 0).kind).toBe("nothing");
+    const groundedPilot = game({ tags: ["FOREST"], events: crash });
+    const p0 = player(groundedPilot, "p0");
+    if (p0.role === "mush") p0.role = "human";
+    addDisease(groundedPilot, p0, "gastroenteritis_disease");
+    expect(runExpedition(structuredClone(groundedPilot), player(groundedPilot, "p1")).events[0]!.kind).toBe("catastrophe");
     const noPilot = game({ tags: ["FOREST"], events: crash });
     player(noPilot, "p0").skills = [];
     expect(runExpedition(structuredClone(noPilot), player(noPilot, "p0")).events[0]!.kind).toBe("catastrophe");
+    const xxlOnly = structuredClone(noPilot);
+    xxlOnly.projects.BAY_DOOR_XXL = 100;
+    expect(runExpedition(xxlOnly, player(xxlOnly, "p0")).events[0]!.kind).toBe("catastrophe");
     noPilot.projects.ICARUS_ANTIGRAV_PROPELLER = 100;
     const s = structuredClone(noPilot);
     expect(runExpedition(s, player(s, "p0")).events[0]!.kind).toBe("nothing");
@@ -911,9 +928,7 @@ describe("expeditions, phase 3, slice C: gear and spacesuits", () => {
   function rate(s: GameState, hit: (next: GameState) => boolean, runs: number): number {
     let hits = 0;
     for (let seed = 1; seed <= runs; seed++) {
-      const t = clone(s);
-      t.rng = seed * 7919;
-      if (hit(go(t))) hits++;
+      if (hit(go({ ...s, rng: seed * 7919 }))) hits++;
     }
     return hits / runs;
   }
@@ -1072,7 +1087,7 @@ describe("expeditions, phase 4, slice D: skills", () => {
   const strengthIn = (s: GameState) => go(s).expeditions[0]!.events.find((e) => e.kind === "fight")!.fight!.strength;
   const uTurn: Action = { type: "u_turn" };
   const sabotage: Action = { type: "sabotage_expedition" };
-  const contactCentauri = (s: GameState) => s.comms.rebels.push({ base: "CENTAURI", calledAt: s.cycle, expiresAt: s.cycle + 10, progress: 100 });
+  const contactCentauri = (s: GameState) => rebelCallAt(s, "CENTAURI", 100);
 
   it("pins the confirmed numbers and the negative events", () => {
     expect([expedition.shooterBonus, expedition.sprinterSectors, expedition.centauri, expedition.uTurn.cost.ap]).toEqual([1, 1, { item: "blaster", bonus: 1 }, 2]);
@@ -1151,7 +1166,7 @@ describe("expeditions, phase 4, slice D: skills", () => {
 
   it("the guns are every weapon but the knife (melee) and the grenade (thrown)", () => {
     const guns = Object.entries(DEFAULT_CONFIG.weapons.types).filter(([, w]) => w.gun).map(([type]) => type);
-    expect(guns.sort()).toEqual(["blaster", "machine_gun", "missile_launcher", "natamy_riffle", "sniper_riffle"]);
+    expect(guns.sort()).toEqual(["blaster", "customized_blaster", "machine_gun", "missile_launcher", "natamy_riffle", "sniper_riffle"]);
   });
 
   it("with the Centauri base contacted, each working blaster adds 1", () => {
@@ -1165,7 +1180,7 @@ describe("expeditions, phase 4, slice D: skills", () => {
     // A call not decoded to the end does nothing.
     const partial = fightGame(30);
     give(partial, "p1", "blaster", 3);
-    partial.comms.rebels.push({ base: "CENTAURI", calledAt: partial.cycle, expiresAt: partial.cycle + 10, progress: 99 });
+    rebelCallAt(partial, "CENTAURI", 99);
     expect(strengthIn(partial)).toBe(5);
   });
 
@@ -1355,6 +1370,15 @@ describe("expeditions, phase 5: hold extension, patrol-ship landings, no droppin
     expect(viewFor(t, "p0").log.some((e) => e.key === "expeditionReturned")).toBe(true);
   });
 
+  it("a non-pilot landing a patrol ship still rolls LANDING even with Antigrav propeller", () => {
+    const crash = only({ kind: "nothing", weight: 1 }, { kind: "catastrophe", weight: 1 });
+    const s = flying({ tags: ["FOREST"], events: crash });
+    player(s, "p0").skills = [];
+    s.projects.ICARUS_ANTIGRAV_PROPELLER = 100;
+    const next = runOut(must(applyAction(s, "p0", landOn)));
+    expect(next.expeditions[0]!.events[0]!.kind).toBe("catastrophe");
+  });
+
   it("without a spacesuit the pilot never sets down: the ship docks in its bay and the pilot is told why", () => {
     const s = flying({ tags: ["FOREST", "DESERT"], suits: false, events: only({ kind: "nothing", weight: 1 }) });
     const t = must(applyAction(s, "p0", landOn));
@@ -1462,5 +1486,27 @@ describe("expeditions, phase 5: hold extension, patrol-ship landings, no droppin
     // Back aboard, dropping works again.
     const back = runOut(away);
     expect(offered(back, "p1")).toContainEqual(drop);
+  });
+
+  it("ICARUS_LAVATORY keeps Icarus crews clean on return silently, not patrol-ship solo landings", () => {
+    const s = timedGame({ tags: ["FOREST"], config: { dirtyChance: 1 }, events: only({ kind: "nothing", weight: 1 }) });
+    s.projects.ICARUS_LAVATORY = 100;
+    const back = runOut(go(s));
+    for (const id of ["p0", "p1", "p2", "p3"] as const) {
+      expect(player(back, id).statuses).not.toContain("dirty");
+      expect(back.log.some((e) => e.visibleTo !== "all" && e.visibleTo.includes(id) && e.key !== "expeditionReturned" && e.key !== "expeditionTakeoff")).toBe(false);
+    }
+
+    const solo = flying({ tags: ["FOREST"], config: { dirtyChance: 1 }, events: only({ kind: "nothing", weight: 1 }) });
+    solo.projects.ICARUS_LAVATORY = 100;
+    const landed = runOut(must(applyAction(solo, "p0", landOn)));
+    expect(player(landed, "p0").statuses).toContain("dirty");
+  });
+
+  it("marks ICARUS_ANTIGRAV_PROPELLER, ICARUS_LARGER_BAY, ICARUS_LAVATORY and AUTO_RETURN_ICARUS as fully implemented", () => {
+    expect(projectStatus("ICARUS_ANTIGRAV_PROPELLER")).toBe("full");
+    expect(projectStatus("ICARUS_LARGER_BAY")).toBe("full");
+    expect(projectStatus("ICARUS_LAVATORY")).toBe("full");
+    expect(projectStatus("AUTO_RETURN_ICARUS")).toBe("full");
   });
 });

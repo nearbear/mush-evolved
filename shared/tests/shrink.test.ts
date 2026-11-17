@@ -121,7 +121,7 @@ describe("Shrink's lying-down morale", () => {
     lie(s0, "p1");
     const s = nextCycle(s0);
     const lines = s.log.slice(s0.log.length);
-    expect(lines.map((l) => l.key)).toEqual(["gainMorale", "cycleBegins"]);
+    expect(lines.map((l) => l.key)).toEqual(["gainMorale"]);
     expect(lines[0]!.visibleTo).toEqual(["p1"]);
   });
 });

@@ -9,10 +9,10 @@ export const ICARUS_EQUIPMENT = "ICARUS_COMMAND";
 
 /**
  * Take off in the Icarus for an expedition (owner, 2026-10-31, docs/plans/expedition.md): `expedition.cost` AP, paid by
- * the launcher alone, at the Icarus while the ship orbits a planet with an unexplored sector. Pilots only for now
- * (`canLaunchExpedition`). Not while the Icarus is away (phase 2). The crew leaves in the Icarus and comes back after
- * its last step (expeditions.ts): the takeoff line is public in the bay, the report goes to the crew only. Never again
- * once the Icarus is lost (`strandExpedition`).
+ * the launcher alone, at the Icarus while the ship orbits a planet with an unexplored sector. Anyone who can fly may
+ * launch (`canLaunchExpedition`, owner 2026-11-15; pilot lock comes later). Not while the Icarus is away (phase 2). The
+ * crew leaves in the Icarus and comes back after its last step (expeditions.ts): the takeoff line is public in the bay,
+ * the report goes to the crew only. Never again once the Icarus is lost (`strandExpedition`).
  */
 export class IcarusTakeoffAction extends Action<IcarusTakeoffActionData> {
   constructor() {

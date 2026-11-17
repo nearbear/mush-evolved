@@ -7,6 +7,7 @@
 // person. The colors are premultiplied, as Pixi's render targets are.
 
 import { Color, Filter, GlProgram, UniformGroup } from "pixi.js";
+import type { Cutaway, CutawayAxis } from "../scene.ts";
 import { ESP, type Look, paddingOf } from "./effects.ts";
 
 // Every shader starts with #version 300 es: without it Pixi compiles the program as WebGL1 GLSL (it
@@ -176,4 +177,81 @@ export class EspFilters {
   destroy() {
     for (const f of this.filters) f.destroy();
   }
+}
+
+// Ordered 4x4 Bayer dither cutaway for foreground walls/doors (and props mounted to them): keeps a
+// 2:1 iso-sloped stub solid at the host wall's floor line and dissolves the upper portion into a faint ghost.
+const cutawayFragment = `#version 300 es
+in vec2 vTextureCoord;
+out vec4 finalColor;
+
+uniform sampler2D uTexture;
+uniform highp vec4 uInputSize;
+uniform highp vec4 uOutputFrame;
+uniform vec2 uCamera;
+uniform vec4 uCutBox;
+uniform float uAxis;
+
+float bayer4(ivec2 p) {
+  int x = p.x & 3;
+  int y = p.y & 3;
+  int a = (((x ^ y) & 1) << 1) | (y & 1);
+  int b = ((((x >> 1) ^ (y >> 1)) & 1) << 1) | ((y >> 1) & 1);
+  return (float((a << 2) | b) + 0.5) / 16.0;
+}
+
+void main(void) {
+  vec4 c = texture(uTexture, vTextureCoord);
+  if (c.a <= 0.0) {
+    finalColor = c;
+    return;
+  }
+  vec2 worldPos = vTextureCoord * uInputSize.xy + uOutputFrame.xy - uCamera;
+
+  float floorY;
+  if (uAxis < 0.5) {
+    // Runs along +x (down-right): bottom-right of uCutBox is lowest.
+    floorY = (uCutBox.y + uCutBox.w) - 0.5 * ((uCutBox.x + uCutBox.z) - worldPos.x);
+  } else if (uAxis < 1.5) {
+    // Runs along +y (down-left): bottom-left of uCutBox is lowest.
+    floorY = (uCutBox.y + uCutBox.w) - 0.5 * (worldPos.x - uCutBox.x);
+  } else {
+    // Column / corner (xy): lowest at bottom-center of uCutBox.
+    floorY = (uCutBox.y + uCutBox.w) - 0.5 * abs(worldPos.x - (uCutBox.x + 0.5 * uCutBox.z));
+  }
+
+  float h = floorY - worldPos.y;
+  const float STUB_H = 18.0;
+  const float FADE_H = 22.0;
+  const float MIN_VIS = 0.15;
+
+  if (h > STUB_H) {
+    float t = clamp((h - STUB_H) / FADE_H, 0.0, 1.0);
+    float vis = mix(1.0, MIN_VIS, t);
+    ivec2 worldPx = ivec2(floor(worldPos));
+    if (bayer4(worldPx) >= vis) {
+      finalColor = vec4(0.0);
+      return;
+    }
+  }
+  finalColor = c;
+}
+`;
+
+const AXIS_INDEX: Readonly<Record<CutawayAxis, number>> = { x: 0, y: 1, xy: 2 };
+
+export function cutawayFilter(cut: Cutaway, camera: UniformGroup, resolution: number): Filter {
+  return new Filter({
+    glProgram: program("iso-cutaway", cutawayFragment),
+    resources: {
+      camera,
+      cutaway: new UniformGroup({
+        uCutBox: { value: new Float32Array([cut.x, cut.y, cut.width, cut.height]), type: "vec4<f32>" },
+        uAxis: { value: AXIS_INDEX[cut.axis], type: "f32" },
+      }),
+    },
+    padding: 0,
+    resolution,
+    antialias: "off",
+  });
 }

@@ -90,6 +90,31 @@
   overflow-wrap: anywhere;
   hyphens: auto;
 }
+/* A count in the face's bottom right corner (ItemFace's `count`), sized off the tile like the label. */
+.item-count {
+  position: absolute;
+  right: 0.06em;
+  bottom: 0;
+  color: #fff;
+  font-size: max(10px, 0.3em);
+  font-weight: bold;
+  line-height: 1.1;
+  text-shadow:
+    -1px 0 #000,
+    1px 0 #000,
+    0 -1px #000,
+    0 1px #000;
+}
+/* A small UI icon (oxygen, fuel, crew) shown in a face at its own size rather than stretched to fill it. */
+.item-face-ui {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+}
+.item-face-ui > img {
+  image-rendering: pixelated;
+}
 .item-action {
   position: absolute;
   top: 2px;

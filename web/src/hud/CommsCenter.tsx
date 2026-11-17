@@ -1,54 +1,68 @@
-// The Com center terminal's window, in three tabs: Overview (the link with Sol, drawn as a spectrogram, and NERON's update), Xyloph, and the
-// rebel bases that called. The screen (`view.comms.terminal`) is read-only for anyone at the terminal; every button comes from view.actions.
+// The Com center terminal's window, in three tabs: Overview (the link with Sol, drawn as a spectrogram, and NERON's
+// update), Xyloph, and Signals (Signals.tsx: every merchant ship and rebel base that reached the Daedalus and its
+// conversation, Comms Officer access only; docs/plans/signals.md). The screen (`view.comms.terminal`) is read-only for
+// anyone at the terminal; every button comes from view.actions.
 
 import { Tabs } from "@base-ui/react/tabs";
 import { Tooltip } from "@base-ui/react/tooltip";
-import { type Action, type EquipmentView, type PlayerView, XYLOPH_IDS } from "@mush2/shared";
+import { type Action, type EquipmentView, isActiveSignal, type PlayerView, XYLOPH_IDS } from "@mush2/shared";
 import { useState, type CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
-import { CHECK_ICON, REBEL_BASE_ICONS, UNCHECK_ICON, XYLOPH_DONE, XYLOPH_TODO } from "../art/assets.ts";
+import { XYLOPH_DONE, XYLOPH_TODO } from "../art/assets.ts";
 import { useNames } from "../i18n/names.ts";
 import { ActionButton } from "./ActionButton.tsx";
 import { ActionLabel } from "./ActionLabel.tsx";
 import { UnavailableButton } from "./CommandTerminal.tsx";
+import { Signals } from "./Signals.tsx";
 import { signalStrength, solDb, Spectrogram } from "./Spectrogram.tsx";
+import { terminalLogin } from "./terminalUsername.ts";
 import "./settings.css";
 
 interface Props {
   terminal: EquipmentView;
   view: PlayerView;
   onAction: (action: Action) => void;
+  /** The tab and the signal's conversation it opens on (the design kit's Signals figures); the game opens on Overview. */
+  initialTab?: CommsTab;
+  initialSignal?: string;
 }
 
-type CommsTab = "overview" | "xyloph" | "rebels";
+type CommsTab = "overview" | "xyloph" | "signals";
 
-export function CommsCenter({ terminal, view, onAction }: Props) {
+export function CommsCenter({ terminal, view, onAction, initialTab = "overview", initialSignal }: Props) {
   const { t } = useTranslation();
   const names = useNames();
-  const [tab, setTab] = useState<CommsTab>("overview");
+  const [tab, setTab] = useState<CommsTab>(initialTab);
   const screen = view.comms.terminal;
-  const find = (type: Action["type"], base?: string) =>
-    view.actions.find(({ action: a }) => a.type === type && "equipment" in a && a.equipment === terminal.id && (base === undefined || ("base" in a && a.base === base)));
+  const find = (type: Action["type"]) => view.actions.find(({ action: a }) => a.type === type && "equipment" in a && a.equipment === terminal.id);
   const contactSol = find("contact_sol");
   const xyloph = find("contact_xyloph");
   const neron = find("update_neron");
-  const officer = view.titles.find((title) => title.id === "comms_officer")?.holder === view.you.character;
+  const officer = terminalLogin(terminal.type, view, terminal.id).access !== "limited";
   if (!screen) return null;
   const db = solDb(screen.solChance);
   return (
     <Tabs.Root className="settings-tabs" value={tab} onValueChange={(value) => setTab(value as CommsTab)}>
-      <Tabs.List className="settings-tab-list progress-tab-list" aria-label={names.equipment(terminal.type)}>
+      <Tabs.List className="settings-tab-list progress-tab-list comms-tab-list" aria-label={names.equipment(terminal.type)}>
         <Tabs.Tab className="settings-tab" value="overview">{t("comms.overviewTitle")}</Tabs.Tab>
         <Tabs.Tab className="settings-tab" value="xyloph">{t("comms.xylophTitle")}</Tabs.Tab>
-        <Tabs.Tab className="settings-tab" value="rebels">{t("comms.rebelsTitle")}</Tabs.Tab>
+        <Tabs.Tab className="settings-tab" value="signals">{t("signals.tab", { count: screen.signals?.filter(isActiveSignal).length ?? 0 })}</Tabs.Tab>
       </Tabs.List>
       <Tabs.Panel value="overview">
         <div className="research-list">
           <section className="research-item comms-sol" aria-label={t("actions.contactSol")}>
-            {contactSol && (
+            {contactSol ? (
               <ActionButton className="big comms-sol-contact" view={view} option={contactSol} onAction={onAction}>
                 <ActionLabel text={t("actions.contactSol")} cost={contactSol.cost} chance={contactSol.chance} />
               </ActionButton>
+            ) : (
+              <UnavailableButton
+                className="comms-sol-contact"
+                reason={view.comms.linked ? t("comms.solAlreadyLinked") : t("comms.solUnavailable")}
+                ap={view.config.contactSolAp}
+              >
+                {t("actions.contactSol")}
+              </UnavailableButton>
             )}
             <Spectrogram
               db={db}
@@ -61,7 +75,14 @@ export function CommsCenter({ terminal, view, onAction }: Props) {
 
           <section className="research-item" aria-label={t("comms.neronTitle")}>
             <div className="research-body">
-              <strong>{t("comms.neronVersion", { version: screen.neron.version })}</strong>
+              <div className="research-title">
+                <strong>{t("comms.neronVersion", { version: screen.neron.version })}</strong>
+                {neron && (
+                  <ActionButton view={view} option={neron} onAction={onAction}>
+                    <ActionLabel text={t("comms.neronUpgrade")} cost={neron.cost} chance={neron.chance} />
+                  </ActionButton>
+                )}
+              </div>
               <div className="research-progress">
                 <div
                   className="kit-progress neron"
@@ -72,12 +93,6 @@ export function CommsCenter({ terminal, view, onAction }: Props) {
                   aria-valuenow={screen.neron.progress}
                   style={{ "--value": screen.neron.progress / 100 } as CSSProperties}
                 />
-                <span>{t("research.percent", { percent: screen.neron.progress })}</span>
-                {neron && (
-                  <ActionButton view={view} option={neron} onAction={onAction}>
-                    <ActionLabel text={t("actions.updateNeron")} cost={neron.cost} chance={neron.chance} />
-                  </ActionButton>
-                )}
               </div>
               <span className="sub">{t("comms.neronProgress", { percent: screen.neron.progress })}</span>
             </div>
@@ -127,90 +142,10 @@ export function CommsCenter({ terminal, view, onAction }: Props) {
           </section>
         </div>
       </Tabs.Panel>
-      <Tabs.Panel value="rebels">
-          <section aria-label={t("comms.rebelsTitle")}>
-            {screen.rebels.length === 0 && <p>{t("comms.noRebels")}</p>}
-            <ul className="research-list">
-              {screen.rebels.map((call) => {
-                const decode = find("decode_rebel", call.base);
-                const status = t(
-                  call.status === "contacted" ? "comms.rebelStatusDecoded" : call.status === "lost" ? "comms.rebelStatusLost" : "comms.rebelStatusOpen",
-                );
-                const effect = t(`comms.rebels.${call.base}.effect`);
-                return (
-                  <li key={call.base} className="research-item">
-                    <Tooltip.Provider delay={300}>
-                      <Tooltip.Root>
-                        <Tooltip.Trigger
-                          className="research-card rebel-icon rebel-icon-button"
-                          aria-label={`${names.rebelBase(call.base)}. ${effect}`}
-                          render={<button type="button" />}
-                        >
-                          <img src={REBEL_BASE_ICONS[call.base]} alt="" />
-                        </Tooltip.Trigger>
-                        <Tooltip.Portal>
-                          <Tooltip.Positioner sideOffset={6}>
-                            <Tooltip.Popup className="tooltip">
-                              <p>{effect}</p>
-                              {call.status === "open" && <p>{t("comms.rebelOpen", { percent: call.progress, count: call.expiresAt - view.cycle })}</p>}
-                            </Tooltip.Popup>
-                          </Tooltip.Positioner>
-                        </Tooltip.Portal>
-                      </Tooltip.Root>
-                    </Tooltip.Provider>
-                    <div className="research-title">
-                      <strong>{names.rebelBase(call.base)}</strong>
-                      <span className="rebel-status">{status}</span>
-                      {call.status === "contacted" ? (
-                        <img src={CHECK_ICON} alt="" />
-                      ) : call.status === "lost" ? (
-                        <span className="rebel-lost" />
-                      ) : (
-                        <img src={UNCHECK_ICON} alt="" />
-                      )}
-                    </div>
-                    <div className="research-body">
-                      <div className="research-progress">
-                        <div className="kit-progress neron" role="progressbar" aria-label={names.rebelBase(call.base)} aria-valuemin={0} aria-valuemax={100} aria-valuenow={call.progress} style={{ "--value": call.progress / 100 } as CSSProperties} />
-                        <span>{t("research.percent", { percent: call.progress })}</span>
-                        {decode && (
-                          <ActionButton view={view} option={decode} onAction={onAction}>
-                            <ActionLabel text={t("actions.decodeRebel")} cost={decode.cost} chance={decode.chance} />
-                          </ActionButton>
-                        )}
-                      </div>
-                    </div>
-                  </li>
-                );
-              })}
-            {screen.nextRebel && (
-              <li className="research-item">
-              <Tooltip.Provider delay={300}>
-                <>
-                  <Tooltip.Root>
-                    <Tooltip.Trigger
-                      className="research-card rebel-icon rebel-icon-button"
-                      aria-label={t("comms.rebelNext", { base: names.rebelBase(screen.nextRebel.base), count: screen.nextRebel.at - view.cycle })}
-                      render={<button type="button" />}
-                    >
-                      <img src={REBEL_BASE_ICONS[screen.nextRebel.base]} alt="" />
-                    </Tooltip.Trigger>
-                    <Tooltip.Portal>
-                      <Tooltip.Positioner sideOffset={6}>
-                        <Tooltip.Popup className="tooltip">{t("comms.rebelNextIn", { count: screen.nextRebel.at - view.cycle })}</Tooltip.Popup>
-                      </Tooltip.Positioner>
-                    </Tooltip.Portal>
-                  </Tooltip.Root>
-                  <div className="research-title">
-                    <strong>{names.rebelBase(screen.nextRebel.base)}</strong>
-                    <span className="rebel-status">{t("comms.rebelUpcoming")}</span>
-                  </div>
-                </>
-              </Tooltip.Provider>
-              </li>
-            )}
-            </ul>
-          </section>
+      <Tabs.Panel value="signals" className="signals-panel">
+        <section className="signals-section" aria-label={t("signals.title")}>
+          <Signals signals={screen.signals} nextRebel={screen.nextRebel} terminalId={terminal.id} view={view} onAction={onAction} initialOpen={initialSignal} />
+        </section>
       </Tabs.Panel>
     </Tabs.Root>
   );

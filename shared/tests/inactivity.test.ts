@@ -128,8 +128,7 @@ describe("inactivity", () => {
     const after = cycleAt(before, h(inactiveAfterHours));
     expect(status(after, "p0")).toBe("inactive");
     // Only a title changing hands is announced (crew chat); the log gets nothing.
-    const newLog = after.log.slice(before.log.length).map((e) => e.key);
-    expect(newLog.every((k) => k === "cycleBegins" || k === "dayBegins")).toBe(true);
+    expect(after.log).toEqual(before.log);
     const back = must(seen(after, h(inactiveAfterHours + 1), "p0"));
     expect(back.log).toEqual(after.log);
   });

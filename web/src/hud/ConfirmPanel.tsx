@@ -11,14 +11,16 @@ interface Props {
   /** Called with false when dismissed without confirming. */
   onOpenChange: (open: boolean) => void;
   message: string;
-  yesLabel: string;
+  yesLabel?: string;
   backLabel: string;
-  onYes: () => void;
+  onYes?: () => void;
+  /** Extra action buttons shown in the button row (e.g. room choices for Throw Out). */
+  actions?: ReactNode;
   /** Shown above the message, e.g. a card for what is being confirmed. */
   children?: ReactNode;
 }
 
-export function ConfirmPanel({ open, onOpenChange, message, yesLabel, backLabel, onYes, children }: Props) {
+export function ConfirmPanel({ open, onOpenChange, message, yesLabel, backLabel, onYes, actions, children }: Props) {
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
@@ -27,12 +29,15 @@ export function ConfirmPanel({ open, onOpenChange, message, yesLabel, backLabel,
           {children}
           <Dialog.Title className="confirm-message">{message}</Dialog.Title>
           <div className="skill-confirm-buttons">
+            {actions}
             <button type="button" onClick={() => onOpenChange(false)}>
               {backLabel}
             </button>
-            <button type="button" onClick={onYes}>
-              {yesLabel}
-            </button>
+            {yesLabel && onYes && (
+              <button type="button" onClick={onYes}>
+                {yesLabel}
+              </button>
+            )}
           </div>
         </Dialog.Popup>
       </Dialog.Portal>

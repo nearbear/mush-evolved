@@ -39,11 +39,11 @@ import { soil } from "./dirt.ts";
 import { rollFloat, shuffle, streamFor } from "./rng.ts";
 import { chatChannels, chatMarkKey, chatPageOf, markedText, readChannels } from "./chat.ts";
 import { moderateName } from "./moderation.ts";
-import { clone, dayOf, fail, findPlayer, type ActionResult } from "./helpers.ts";
+import { clone, cloneState, dayOf, fail, findPlayer, type ActionResult } from "./helpers.ts";
 
 export { dayOf };
 import { damage, healDaily, hasMushDied } from "./death.ts";
-import { activitySeen, inLogWindow, logPrivate, logWindowOf, pruneLog, pushLog, seesLine, startLogSeen, withNimbleActor } from "./log.ts";
+import { activitySeen, inLogWindow, logPrivate, logWindowOf, pruneLog, seesLine, startLogSeen, withNimbleActor } from "./log.ts";
 import { recordAction } from "./history.ts";
 import { ringMycoAlarms } from "./mycoalarm.ts";
 import { planetsOf } from "./planets.ts";
@@ -54,7 +54,9 @@ import { commandTerminalsHere, isPilgredRepaired } from "./pilgred.ts";
 import { biosTerminalsHere, newBios } from "./bios.ts";
 import { callNextRebel, commsCycle, commsTerminalView, comTerminalsHere, newComms } from "./comms.ts";
 import { botanyCycle, botanyDay, plantView } from "./botany.ts";
-import { burnOxygen, shipView, startShip } from "./ship.ts";
+import { burnOxygen, rollOxygenSaved, shipView, startShip } from "./ship.ts";
+import { merchantsCycle } from "./merchants.ts";
+import { newSignals } from "./signals.ts";
 import { allTurrets, huntersCycle, newHunters, startHunters, turretCharges, turretsHere } from "./hunters.ts";
 import { expeditionReturnAt, lostPlayers, onExpedition, withCrew } from "./expeditions.ts";
 import { ICARUS_EQUIPMENT } from "./actions/icarus_takeoff.ts";
@@ -129,6 +131,7 @@ export function createGame(
     rng,
     npcs: newNpcState(seed, npcSeed),
     lostAnalysis: newLostAnalysis(seed),
+    merchantRng: streamFor(seed, "merchants"),
     cycle: startCycle,
     phase: "playing",
     preselection: preselection !== null,
@@ -178,6 +181,7 @@ export function createGame(
     expedition: null,
     icarusLost: false,
     hunters: newHunters(),
+    signals: newSignals(),
     turrets: {},
     incidentPoints: 0,
     doors: {},
@@ -258,6 +262,49 @@ export function legalActions(state: GameState, playerId: PlayerId): Action[] {
   );
 }
 
+const UNAFFORDABLE_REASONS = new Set<string>([
+  "cant_afford",
+  NO_SPACE,
+  COOLDOWN,
+  AT_CAPACITY,
+  DIRTY,
+  NO_DEBRIS,
+  PASIPHAE_INTACT,
+  REACTOR_BROKEN,
+  ARACK_AROUND,
+]);
+
+function actionOption(state: GameState, p: PlayerState, def: ActionDef<Action>, a: Action, lacks: ActionOption["lacks"]): ActionOption {
+  return {
+    action: a,
+    cost: def.cost(state, p, a),
+    chance: def.chance(state, p, a),
+    dirt: def.dirtChanceMods(state, p, a),
+    injury: def.injuryChanceMods(state, p, a),
+    tags: [...def.tagsFor(state, a)],
+    lacks,
+  };
+}
+
+function unaffordableOption(state: GameState, p: PlayerState, def: ActionDef<Action>, a: Action, refused: string): ActionOption {
+  const option = actionOption(state, p, def, a, []);
+  const { cost } = option;
+  option.lacks = [
+    ...(refused === NO_DEBRIS ? (["debris"] as const) : []),
+    ...(refused === PASIPHAE_INTACT ? (["pasiphae"] as const) : []),
+    ...(refused === REACTOR_BROKEN ? (["reactor"] as const) : []),
+    ...(refused === ARACK_AROUND ? (["arack"] as const) : []),
+    ...(refused === DIRTY ? (["clean"] as const) : []),
+    ...(refused === NO_SPACE ? (["space"] as const) : []),
+    ...(refused === COOLDOWN ? (["cooldown"] as const) : []),
+    ...(refused === AT_CAPACITY ? (["capacity"] as const) : []),
+    ...(p.ap < cost.ap ? (["ap"] as const) : []),
+    ...(p.mp < cost.mp ? (["mp"] as const) : []),
+  ];
+  if (refused === COOLDOWN) option.cooldown = def.cooldownLeft(state, p, a);
+  return option;
+}
+
 /**
  * Actions that fail only on cost (`cant_afford`), on room in the inventory (`NO_SPACE`), on a cooldown (`COOLDOWN`), on a shared limit (`AT_CAPACITY`), on being dirty (`DIRTY`) or, for Collect scrap, on no debris (`NO_DEBRIS`) or the Pasiphae still existing (`PASIPHAE_INTACT`), or for Travel and turns on a broken reactor (`REACTOR_BROKEN`), or for Travel and Leave orbit on an Arack around (`ARACK_AROUND`), with the cost and what falls
  * short. For showing them disabled.
@@ -270,20 +317,33 @@ export function unaffordableActions(state: GameState, playerId: PlayerId): Actio
     def.candidates(state, p).flatMap((a): ActionOption[] => {
       if (a.type === "move") return [];
       const refused = def.check(state, p, a);
-      if (refused !== "cant_afford" && refused !== NO_SPACE && refused !== COOLDOWN && refused !== AT_CAPACITY && refused !== DIRTY && refused !== NO_DEBRIS && refused !== PASIPHAE_INTACT && refused !== REACTOR_BROKEN && refused !== ARACK_AROUND) return [];
-      const cost = def.cost(state, p, a);
-      const lacks: ActionOption["lacks"] = [...(refused === NO_DEBRIS ? (["debris"] as const) : []), ...(refused === PASIPHAE_INTACT ? (["pasiphae"] as const) : []), ...(refused === REACTOR_BROKEN ? (["reactor"] as const) : []), ...(refused === ARACK_AROUND ? (["arack"] as const) : []), ...(refused === DIRTY ? (["clean"] as const) : []), ...(refused === NO_SPACE ? (["space"] as const) : []), ...(refused === COOLDOWN ? (["cooldown"] as const) : []), ...(refused === AT_CAPACITY ? (["capacity"] as const) : []), ...(p.ap < cost.ap ? (["ap"] as const) : []), ...(p.mp < cost.mp ? (["mp"] as const) : [])];
-      const option: ActionOption = { action: a, cost, chance: def.chance(state, p, a), dirt: def.dirtChanceMods(state, p, a), injury: def.injuryChanceMods(state, p, a), tags: [...def.tagsFor(state, a)], lacks };
-      if (refused === COOLDOWN) option.cooldown = def.cooldownLeft(state, p, a);
-      return [option];
+      return UNAFFORDABLE_REASONS.has(refused ?? "") ? [unaffordableOption(state, p, def, a, refused!)] : [];
     }),
   );
+}
+
+/** Both legal and unaffordable action options in a single pass over `ACTIONS`, keeping legal options before unaffordable ones. */
+function viewActionOptions(state: GameState, p: PlayerState): ActionOption[] {
+  if (!canAct(state, p)) return [];
+  const legal: ActionOption[] = [];
+  const unaffordable: ActionOption[] = [];
+  for (const def of Object.values(ACTIONS) as ActionDef<Action>[]) {
+    for (const a of def.candidates(state, p)) {
+      const refused = def.check(state, p, a);
+      if (refused === null) {
+        legal.push(actionOption(state, p, def, a, []));
+      } else if (a.type !== "move" && UNAFFORDABLE_REASONS.has(refused)) {
+        unaffordable.push(unaffordableOption(state, p, def, a, refused));
+      }
+    }
+  }
+  return [...legal, ...unaffordable];
 }
 
 /** Does an action at once, skipping the queue and its timing (queue.ts is how players act; this is its last step). */
 export function applyAction(state: GameState, playerId: PlayerId, action: Action): ActionResult {
   const p = findPlayer(state, playerId);
-  const next = clone(state);
+  const next = cloneState(state);
   if (p && canAct(state, p) && performAction(next, findPlayer(next, playerId)!, action)) return { ok: true, state: next };
   return { ok: false, error: "illegal_action" };
 }
@@ -355,7 +415,7 @@ bindPerformAction(performAction);
  */
 export function setCheat(state: GameState, playerId: PlayerId, cheat: Cheat, on: boolean): ActionResult {
   if (!findPlayer(state, playerId)) return fail("unknown_player");
-  const next = clone(state);
+  const next = cloneState(state);
   const p = findPlayer(next, playerId)!;
   p.cheats = p.cheats.filter((c) => c !== cheat);
   if (on) p.cheats.push(cheat);
@@ -366,7 +426,7 @@ export function setCheat(state: GameState, playerId: PlayerId, cheat: Cheat, on:
 /** Switches a player's role at once (development cheat). Like setCheat, the server gates it. */
 export function setRoleCheat(state: GameState, playerId: PlayerId, role: RoleCheat): ActionResult {
   if (!findPlayer(state, playerId)) return fail("unknown_player");
-  const next = clone(state);
+  const next = cloneState(state);
   const p = findPlayer(next, playerId)!;
   if (role === "mush" && p.role === "human") convert(next, p);
   else if (role === "human") makeHuman(p, next.cycle);
@@ -389,7 +449,7 @@ export function cheatRoomCheat(state: GameState, playerId: PlayerId): ActionResu
   if (offShip(p.room) || onExpedition(state, p)) return fail("off_ship");
   const blocked = teleportBlocked(state, p);
   if (blocked) return fail(blocked);
-  const next = clone(state);
+  const next = cloneState(state);
   teleport(next, findPlayer(next, playerId)!, CHEAT_ROOM);
   return { ok: true, state: next };
 }
@@ -400,7 +460,7 @@ export function cheatRoomCheat(state: GameState, playerId: PlayerId): ActionResu
  */
 export function newCycle(state: GameState, at?: number): ActionResult {
   if (state.phase !== "playing") return fail("game_over");
-  const next = clone(state);
+  const next = cloneState(state);
   advanceCycle(next, at);
   return { ok: true, state: next };
 }
@@ -428,7 +488,8 @@ function advanceCycle(state: GameState, at?: number): void {
   coupCycle(state);
   diseaseTrackerCycleChange(state);
   cycleChanged(state);
-  burnOxygen(state);
+  const oxygenSaved = rollOxygenSaved(state);
+  burnOxygen(state, oxygenSaved);
   commsCycle(state);
   botanyCycle(state);
   const { cyclesPerDay } = state.config;
@@ -439,6 +500,7 @@ function advanceCycle(state: GameState, at?: number): void {
     for (const p of state.players) {
       delete p.boringToday;
       delete p.fertileToday;
+      delete p.doormanToday;
       delete p.chitchatToday;
       delete p.interrogatedToday;
       delete p.snoopedToday;
@@ -465,14 +527,14 @@ function advanceCycle(state: GameState, at?: number): void {
   const { day } = dayOf(state);
   arriveShip(state);
   huntersCycle(state, day);
-  pushLog(state, { key: newDay ? "dayBegins" : "cycleBegins", params: newDay ? { day } : { cycle: state.cycle }, visibleTo: "all" });
-  // After the cycle's opening line, so incident and fire lines follow it. A fire acts in the cycle it starts.
+  merchantsCycle(state);
+  // A fire acts in the cycle it starts.
   neronParticipationCycle(state);
   ignitePending(state);
   const gardenProtected = isGardenProtected(state);
   incidentsCycle(state, day);
   fireCycle(state, gardenProtected);
-  leakOxygen(state);
+  leakOxygen(state, oxygenSaved);
   jellyCycle(state);
   npcCycle(state);
   preselectionCycle(state);
@@ -565,7 +627,6 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
   const you = findPlayer(state, playerId);
   if (!you) throw new Error(`Unknown player ${playerId}`);
   const others = state.players.filter((p) => p.id !== playerId);
-  const legal = legalActions(state, playerId);
   const channels = readChannels(state, you);
   // Without ACTOPI, anyone outside your room is a room-only dot: no identity, so no room on their entry.
   const actopi = state.bios.actopi;
@@ -697,7 +758,7 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
       to: [...(state.bonds[playerId] ?? [])],
       from: state.players.filter((o) => state.bonds[o.id]?.includes(playerId)).map((o) => o.id),
     },
-    config: { heavyMpPenalty: state.config.heavy.mpPenalty, actionQueueCap: state.config.action.queueCap, sharedSpots: state.config.sharedSpots, setupId: state.config.setupId, returnToSolAp: state.config.pilgred.returnCost.ap, edenAp: state.config.pilgred.edenCost.ap, xylophAp: state.config.comms.xyloph.cost.ap,
+    config: { heavyMpPenalty: state.config.heavy.mpPenalty, actionQueueCap: state.config.action.queueCap, sharedSpots: state.config.sharedSpots, setupId: state.config.setupId, returnToSolAp: state.config.pilgred.returnCost.ap, edenAp: state.config.pilgred.edenCost.ap, turnAp: state.config.navigation.turn.cost.ap, travelAp: state.config.navigation.travel.cost.ap, leaveOrbitAp: state.config.navigation.leaveOrbit.cost.ap, xylophAp: state.config.comms.xyloph.cost.ap, merchantDealAp: state.config.merchants.deal.cost.ap,
       researchAp: state.config.research.cost.ap, projectAp: state.config.project.cost.ap, pilgredAp: state.config.pilgred.cost.ap,
       hullRepairAp: state.config.hullRepair.cost.ap, turretAp: state.config.turrets.cost.ap,
       takeoffAp: state.config.patrol.takeoff.cost.ap, landAp: state.config.patrol.land.cost.ap, patrolShotAp: state.config.patrol.shot.cost.ap, showerAp: state.config.shower.cost.ap, lieDownAp: state.config.lieDown.cost.ap,
@@ -724,7 +785,7 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     researchNeeds: you.alive && equipmentHere(state, you, "RESEARCH_LAB").length > 0 ? researchNeedsView(state, you.room) : null,
     pilgredRepaired: isPilgredRepaired(state),
     humanTankFull: hasMushDied(state),
-    comms: { linked: state.comms.linked, terminal: you.alive && comTerminalsHere(state, you).length > 0 ? commsTerminalView(state) : null },
+    comms: { linked: state.comms.linked, terminal: you.alive && comTerminalsHere(state, you).length > 0 ? commsTerminalView(state, you) : null },
     bios: you.alive && biosTerminalsHere(state, you).length > 0 ? { ...state.bios } : null,
     // Only the crew sees a report (owner, 2026-10-31), and only while alive, like their private log lines.
     expeditions: you.alive
@@ -771,16 +832,8 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
         line: SUCCESSION[id].flatMap((c) => state.players.filter((p) => p.character === c).map((p) => p.character)),
       };
     }),
-    actions: [...legalOptions(state, you, legal), ...unaffordableActions(state, playerId)],
+    actions: viewActionOptions(state, you),
   };
-}
-
-/** `legal` with what each costs you and its odds. The client displays these and never computes them. */
-function legalOptions(state: GameState, p: PlayerState, legal: Action[]): ActionOption[] {
-  return legal.map((a) => {
-    const def = ACTIONS[a.type] as ActionDef<Action>;
-    return { action: a, cost: def.cost(state, p, a), chance: def.chance(state, p, a), dirt: def.dirtChanceMods(state, p, a), injury: def.injuryChanceMods(state, p, a), tags: [...def.tagsFor(state, a)], lacks: [] };
-  });
 }
 
 /** Whether you can do an offered action now, rather than lacking the points for it. */
@@ -805,7 +858,7 @@ function equipmentView(state: GameState, { id, type, broken, jelly, shield }: Eq
   // so Renovate being offered tells nothing new (owner, 2026-10-28).
   const ship = type === PATROL_INTERFACE ? PATROL_SHIPS.find((s) => interfaceId(s) === id) : undefined;
   const shipState = ship && state.patrolShips[ship.id];
-  const docked = shipState && !shipState.out && { armor: shipState.armor, maxArmor: state.config.patrol.armor[ship.kind] };
+  const docked = shipState && !shipState.out && !shipState.destroyed && { armor: shipState.armor, maxArmor: state.config.patrol.armor[ship.kind] };
   // The Icarus is missing from its bay while away or once lost (owner, 2026-11-07); both are public anyway.
   const out = shipState?.out || (type === ICARUS_EQUIPMENT && ((state.expedition !== null && state.expedition.ship === null) || state.icarusLost));
   return { id, type, ...(broken && { broken }), ...(jelly !== undefined && viewer.role === "mush" && viewer.alive && { jelly }), ...(shield !== undefined && seesShield(viewer) && { shield }), ...(out && { out: true as const }), ...(shipState?.destroyed && { destroyed: true as const }), ...docked };

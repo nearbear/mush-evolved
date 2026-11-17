@@ -137,6 +137,8 @@ export function roomLooks(
   auxiliaryTerminal?: boolean,
   heatLamp?: boolean,
   hydroponicIncubator?: boolean,
+  icarusAntigrav?: boolean,
+  icarusLargerBay?: boolean,
 ): ReadonlyMap<string, string> {
   const looks = new Map<string, string>();
   if (auxiliaryTerminal) {
@@ -160,6 +162,9 @@ export function roomLooks(
   if (hydroponicIncubator && heatLamp) looks.set("garden", "garden_upgrade_ab");
   else if (hydroponicIncubator) looks.set("garden", "garden_upgrade_a");
   else if (heatLamp) looks.set("garden", "garden_upgrade_b");
+  if (icarusAntigrav && icarusLargerBay) looks.set("icarus", "icarus_upgrade_ab");
+  else if (icarusAntigrav) looks.set("icarus", "icarus_upgrade_a");
+  else if (icarusLargerBay) looks.set("icarus", "icarus_upgrade_b");
   return looks;
 }
 
@@ -631,9 +636,11 @@ export function IsoRoom({
   const guaranaCoffee = (research?.GUARANA_CAPUCCINO ?? 0) >= RESEARCH_COMPLETE;
   const heatLamp = (projects?.HEAT_LAMP ?? 0) >= PROJECT_COMPLETE;
   const hydroponicIncubator = (projects?.HYDROPONIC_INCUBATOR ?? 0) >= PROJECT_COMPLETE;
+  const icarusAntigrav = (projects?.ICARUS_ANTIGRAV_PROPELLER ?? 0) >= PROJECT_COMPLETE;
+  const icarusLargerBay = (projects?.ICARUS_LARGER_BAY ?? 0) >= PROJECT_COMPLETE;
   const looks = useMemo(
-    () => roomLooks(pilgredRepaired, humanTankFull, superCalcBuilt, neronThread, bayDoorXxl, plasmaShield, takeoffThruster, extraAmmo, blasterGun, fissionCoffee, guaranaCoffee, auxiliaryTerminal, heatLamp, hydroponicIncubator),
-    [pilgredRepaired, humanTankFull, superCalcBuilt, neronThread, bayDoorXxl, plasmaShield, takeoffThruster, extraAmmo, blasterGun, fissionCoffee, guaranaCoffee, auxiliaryTerminal, heatLamp, hydroponicIncubator],
+    () => roomLooks(pilgredRepaired, humanTankFull, superCalcBuilt, neronThread, bayDoorXxl, plasmaShield, takeoffThruster, extraAmmo, blasterGun, fissionCoffee, guaranaCoffee, auxiliaryTerminal, heatLamp, hydroponicIncubator, icarusAntigrav, icarusLargerBay),
+    [pilgredRepaired, humanTankFull, superCalcBuilt, neronThread, bayDoorXxl, plasmaShield, takeoffThruster, extraAmmo, blasterGun, fissionCoffee, guaranaCoffee, auxiliaryTerminal, heatLamp, hydroponicIncubator, icarusAntigrav, icarusLargerBay],
   );
   const imageInput = { layout, room, people: byId, walkers, seats, corpses, drones, looks };
 

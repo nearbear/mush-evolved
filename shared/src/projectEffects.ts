@@ -3,13 +3,16 @@
 // modifiers.ts for the Noise Reducer); this only refreshes what is stored.
 
 import { updateMaxValues } from "./adjustStats.ts";
+import { BLUEPRINT_ITEM } from "./blueprints.ts";
 import { DYNARCADE_EQUIPMENT } from "./equipment.ts";
 import { logPublic } from "./log.ts";
 import { PATROL_SHIPS, patrolMaxCharges } from "./patrol.ts";
 import { PROJECT_COMPLETE, PROJECT_IDS, projectDone, type ProjectId } from "./projects.ts";
-import { newItemId, SUPPORT_DRONE_ITEM, TREE_POT_ITEM } from "./items.ts";
+import { BOOK_ITEM, spawnInRoom, SUPPORT_DRONE_ITEM, TREE_POT_ITEM } from "./items.ts";
 import { newDrone } from "./droneIdentity.ts";
-import type { DeepReadonly, GameConfig, GameCore, GameState, PlayerState } from "./types.ts";
+import { rollInt, rollShuffle } from "./rng.ts";
+import { SKILLS } from "./skills.ts";
+import type { DeepReadonly, GameConfig, GameCore, GameState, ItemState, PlayerState } from "./types.ts";
 
 /**
  * The unfinished projects currently offered at NERON's core: the first `config.project.offerCount` unfinished entries
@@ -32,7 +35,7 @@ function onProjectCompleted(state: GameState, project: ProjectId): void {
   // The pneumatic tubes (owner, 2026-11-04): an output and two inputs appear on the floor of the configured room (the Nexus).
   if (project === "FOOD_RETAILER") {
     const { room, items } = state.config.project.foodRetailer;
-    for (const type of items) state.items.push({ id: newItemId(state), type, at: { kind: "room", id: room } });
+    for (const type of items) spawnInRoom(state, room, type);
   }
   // Dynarcade (CALL_OF_DIRTY; owner, 2026-11-14): spawns the Dynarcade in Alpha Bay 2 once complete.
   if (project === "CALL_OF_DIRTY") {
@@ -54,14 +57,35 @@ function onProjectCompleted(state: GameState, project: ProjectId): void {
   // Extra hydropots (EXTRA_HYDROPONPOTS; owner, 2026-11-14): spawns `count` empty hydropots on the floor of `room`.
   if (project === "EXTRA_HYDROPONPOTS") {
     const { room, count } = state.config.project.extraHydropots;
-    for (let i = 0; i < count; i++) state.items.push({ id: newItemId(state), type: TREE_POT_ITEM, at: { kind: "room", id: room } });
+    spawnInRoom(state, room, TREE_POT_ITEM, count);
   }
   // Extra drone (EXTRA_DRONE; 2026-11-14): spawns `count` support drone(s) on the floor of `room` (the Nexus).
   if (project === "EXTRA_DRONE") {
     const { room, count } = state.config.project.extraDrone;
-    for (let i = 0; i < count; i++) {
-      // What initNpc does for a support drone, without importing npcs.ts -> drones.ts (an import cycle; droneIdentity.ts).
-      state.items.push({ id: newItemId(state), type: SUPPORT_DRONE_ITEM, at: { kind: "room", id: room }, drone: newDrone(state) });
+    // What initNpc does for a support drone, without importing npcs.ts -> drones.ts (an import cycle; droneIdentity.ts).
+    spawnInRoom(state, room, SUPPORT_DRONE_ITEM, count, () => ({ drone: newDrone(state) }));
+  }
+  // Dismantling (DISMANTLING; owner, 2026-11-15): spawns `count` metal scraps on the floor of `room` (the engine room).
+  if (project === "DISMANTLING") {
+    const { room, count } = state.config.project.dismantling;
+    spawnInRoom(state, room, "metal_scraps", count);
+  }
+  // Scrap heap (TRASH_LOAD; owner, 2026-11-16): spawns one item per pool across `rooms` in shuffled order (wrapping).
+  if (project === "TRASH_LOAD") {
+    const { rooms, weaponBlueprints, misc } = state.config.project.trashLoad;
+    const order = rollShuffle(state, rooms);
+    const pick = <T,>(list: readonly T[]): T => list[rollInt(state, list.length)]!;
+    const items: Array<{ type: string; extra?: Partial<Omit<ItemState, "id" | "type" | "at">> }> = [
+      { type: "thick_tube" },
+      { type: "plastic_scraps" },
+      { type: BOOK_ITEM, extra: { teaches: pick(SKILLS) } },
+      { type: BLUEPRINT_ITEM, extra: { builds: pick(weaponBlueprints) } },
+      { type: "rope" },
+      { type: "bandage" },
+      { type: pick(misc) },
+    ];
+    for (const [i, item] of items.entries()) {
+      spawnInRoom(state, order[i % order.length]!, item.type, 1, item.extra);
     }
   }
 }

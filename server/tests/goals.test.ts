@@ -1,4 +1,4 @@
-import { CHAT_PAGE, DEFAULT_CONFIG, ITRACKIE_ITEM, SHIP_ROOMS, applyAction, applyInput, legalIn, pushChat, newCycle, shortestPath, startGame, viewFor, type Action, type CharacterId, type GameState, type PlayerView, type ProjectId } from "@mush2/shared";
+import { addSignal, CHAT_PAGE, DEFAULT_CONFIG, ITRACKIE_ITEM, SHIP_ROOMS, applyAction, applyInput, breakDoor, doorId, doorRooms, legalIn, pushChat, newCycle, shortestPath, startGame, viewFor, type Action, type CharacterId, type GameState, type PlayerView, type ProjectId, rebelCalls } from "@mush2/shared";
 import { describe, expect, it } from "vitest";
 import { GOAL_MAX_ACTIONS, GoalBot } from "../src/bots.ts";
 import { astro, chooseDestination, judgePlanet } from "../src/bots/goals/astro.ts";
@@ -11,6 +11,7 @@ import { EXPEDITION_CHANNEL_NAME, expeditionPlan } from "../src/bots/goals/exped
 import { expeditionPrep, isFitForExpedition, isPriorityExpeditionClaimant, requiredExpeditionGear } from "../src/bots/goals/expeditionPrep.ts";
 import { activeSharedPlanet } from "../src/bots/planetShare.ts";
 import { SOLO_GOALS } from "../src/bots/goals/index.ts";
+import { repairDoor } from "../src/bots/goals/repairDoor.ts";
 import { repairHull } from "../src/bots/goals/repairHull.ts";
 import { rest } from "../src/bots/goals/rest.ts";
 import { research } from "../src/bots/goals/research.ts";
@@ -55,7 +56,21 @@ function edit(game: GameState, id: string, change: (p: GameState["players"][numb
   return next;
 }
 
-const isLegal = (view: PlayerView, action: Action) => legalIn(view).some((a) => JSON.stringify(a) === JSON.stringify(action));
+function plainEqual(a: unknown, b: unknown): boolean {
+  if (Object.is(a, b)) return true;
+  if (typeof a !== "object" || a === null || typeof b !== "object" || b === null) return false;
+  if (Array.isArray(a) || Array.isArray(b)) {
+    return Array.isArray(a) && Array.isArray(b) && a.length === b.length && a.every((v, i) => plainEqual(v, b[i]));
+  }
+  const ra = a as Record<string, unknown>;
+  const rb = b as Record<string, unknown>;
+  const keysA = Object.keys(ra).filter((k) => ra[k] !== undefined);
+  const keysB = Object.keys(rb).filter((k) => rb[k] !== undefined);
+  if (keysA.length !== keysB.length) return false;
+  return keysA.every((k) => Object.hasOwn(rb, k) && plainEqual(ra[k], rb[k]));
+}
+
+const isLegal = (view: PlayerView, action: Action) => legalIn(view).some((a) => plainEqual(a, action));
 
 /**
  * Plays one bot for `turns` turns: each action it returns must be legal and is applied; `ready` or null starts a new
@@ -1321,6 +1336,62 @@ describe("travel: the Commander (#417)", () => {
   });
 });
 
+describe("travel: the Commander leaves orbit (#417)", () => {
+  /** A Commander in orbit around Orbis (2 sectors, shared in the bots' format) with AP to spare, the chamber empty. */
+  function inOrbit() {
+    const { game: start, id } = setup();
+    const game = edit(start, id, (p) => {
+      p.ap = 8;
+      p.mp = 12;
+    });
+    const finder = game.players.find((p) => p.id !== id)!.id;
+    game.titles.commander = id;
+    game.ship.combustion = 0;
+    game.planets[finder] = [
+      { id: "pl-1", name: "Orbis", direction: "north", distance: 2, size: 2, picture: 1, revealed: 2, sectors: [{ tag: "OXYGEN", known: true, explored: true }, { tag: "FOREST", known: true, explored: true }] },
+    ] as GameState["planets"][string];
+    game.navigation = { ...game.navigation, arriving: null, orbit: "pl-1" };
+    game.sharedPlanets = [{ id: "sp-1", planet: "pl-1", text: formatPlanetShare({ name: "Orbis", direction: "north", distance: 2, sectors: ["OXYGEN", "FOREST"] }), by: finder, day: 1, cycleOfDay: 1, stale: false }];
+    game.sharedReports = [{ id: "sr-1", report: "ex-1", text: "Planet: Orbis\nExplored: OXYGEN, FOREST", by: finder, day: 1, cycleOfDay: 1 }] as GameState["sharedReports"];
+    return { game, id };
+  }
+  const explored = () => {
+    const m = memory();
+    m.reports.explored.set("Orbis", ["OXYGEN", "FOREST"]);
+    return m;
+  };
+
+  it("waits while a sector is unexplored by the shared reports, an expedition is out, or a ship is in flight", () => {
+    const { game, id } = inOrbit();
+    expect(travel.options(viewFor(game, id), explored())).toHaveLength(1);
+    const half = memory();
+    half.reports.explored.set("Orbis", ["OXYGEN"]);
+    expect(travel.options(viewFor(game, id), half)).toEqual([]);
+    expect(travel.options(viewFor(game, id), memory())).toEqual([]);
+    const flying = edit(game, game.players.find((p) => p.id !== id && p.alive)!.id, (p) => (p.room = "ICARUS_CRAFT"));
+    expect(travel.options(viewFor(flying, id), explored())).toEqual([]);
+    expect(travel.options(viewFor({ ...game, titles: { ...game.titles, commander: null } }, id), explored())).toEqual([]);
+  });
+
+  it("checks the chamber, loads 1 fuel, and leaves orbit from the bridge", async () => {
+    const { game, id } = inOrbit();
+    const fuel = game.ship.fuel;
+    const bot = new GoalBot(1, 2, [travel]);
+    let state = game;
+    const work: string[] = [];
+    for (let t = 0; t < 60 && !work.includes("leave_orbit"); t++) {
+      const r = await play(state, id, bot, 1);
+      state = r.game;
+      work.push(...r.taken.map((a) => a.type).filter((type) => type !== "move" && !type.startsWith("report_")));
+    }
+    expect(work).toEqual(["check_combustion", "take_fuel", "load_fuel", "leave_orbit"]);
+    expect(state.navigation.orbit).toBeNull();
+    expect(state.log.some((l) => l.key === "leftOrbit")).toBe(true);
+    expect(state.ship.fuel).toBe(fuel - 1);
+    expect(state.ship.combustion).toBe(0);
+  });
+});
+
 describe("travel holds & escape jumps (#421)", () => {
   type Planet = GameState["planets"][string][number];
   const makeHunters = (n: number): GameState["hunters"]["list"] =>
@@ -1816,7 +1887,8 @@ describe("contactSol and commsOfficer (#222)", () => {
     expect(commsOfficer.options(viewFor(start, id), memory())).toEqual([]);
 
     start.titles.comms_officer = id;
-    start.comms.rebels = [{ base: "WOLF", calledAt: 1, expiresAt: start.cycle + 10, progress: 95 }];
+    start.signals.list = start.signals.list.filter((sig) => sig.kind !== "rebel");
+    addSignal(start, "rebel", start.cycle + 10, { rebel: { base: "WOLF", progress: 95 } });
     const game = edit(start, id, (p) => {
       p.room = "COMMAND_CENTER";
       p.ap = 8;
@@ -1829,7 +1901,7 @@ describe("contactSol and commsOfficer (#222)", () => {
     const step1 = goal!.step(viewFor(game, id), m);
     expect(step1).toMatchObject({ kind: "act", action: { type: "decode_rebel", base: "WOLF" } });
     // 2. Once rebel call is contacted, Xyloph entries remain -> contact_xyloph
-    game.comms.rebels[0]!.progress = 100;
+    rebelCalls(game)[0]!.rebel!.progress = 100;
     const step2 = goal!.step(viewFor(game, id), m);
     expect(step2).toMatchObject({ kind: "act", action: { type: "contact_xyloph" } });
     // 3. Once all Xyloph entries are found -> update_neron
@@ -2600,5 +2672,78 @@ describe("expeditionLaunch: Pilot walks to ICARUS, summons open plan, and launch
     const { game: launched, taken: taken2 } = await untilReady(next.state, pilot, bot);
     expect(taken2.some((a) => a.type === "icarus_takeoff")).toBe(true);
     expect(launched.expeditions).toHaveLength(1);
+  });
+});
+
+describe("repairDoor goal", () => {
+  it("repairs a broken door in its current room while preserving BOT_AP_RESERVE", async () => {
+    const { game: base, id } = setup();
+    const neighbor = base.config.rooms["LABORATORY"]![0]!;
+    const door = doorId("LABORATORY", neighbor);
+    const broken = edit(base, id, (p) => {
+      p.room = "LABORATORY";
+      p.ap = 5;
+      p.statuses = ["genius"]; // 100% repair success
+    });
+    breakDoor(broken, door);
+
+    // At reserve (ap = 2), repairDoor is not offered (would dip below BOT_AP_RESERVE = 2).
+    const atReserve = edit(broken, id, (p) => (p.ap = 2));
+    expect(repairDoor.options(viewFor(atReserve, id), memory())).toEqual([]);
+
+    // With spare AP above reserve, the bot repairs the broken door in its room.
+    const bot = new GoalBot(1, 2, [repairDoor]);
+    const { game: after, taken } = await play(broken, id, bot, 4);
+    expect(taken).toContainEqual({ type: "repair", door });
+    expect(after.doors[door]).toBeUndefined();
+  });
+
+  it("routes to a reported broken door on the nearest reachable side", async () => {
+    const { game: base, id } = setup();
+    // Pick a door not adjacent to CORRIDOR_A so the bot has to walk to the nearer endpoint.
+    const door = doorId("CORRIDOR_C", base.config.rooms["CORRIDOR_C"]![0]!);
+    const [a, b] = doorRooms(door);
+    const closer = shortestPath(base.config.rooms, "CORRIDOR_A", a)!.length <= shortestPath(base.config.rooms, "CORRIDOR_A", b)!.length ? a : b;
+    const otherId = base.players.find((p) => p.id !== id)!.id;
+
+    const broken = edit(base, id, (p) => {
+      p.room = "CORRIDOR_A";
+      p.ap = 10;
+      p.mp = 12;
+      p.statuses = ["genius"];
+    });
+    breakDoor(broken, door);
+    broken.reports.push({ kind: "door", door, by: otherId });
+
+    expect(repairDoor.options(viewFor(broken, id), memory()).map((g) => g.key)).toEqual([`repairDoor:go:${closer}`]);
+
+    const bot = new GoalBot(1, 2, [repairDoor]);
+    const { game: after, taken } = await play(broken, id, bot, 10);
+    expect(taken.some((a) => a.type === "move")).toBe(true);
+    expect(taken).toContainEqual({ type: "repair", door });
+    expect(after.doors[door]).toBeUndefined();
+    expect(after.players.find((p) => p.id === id)!.room).toBe(closer);
+  });
+
+  it("skips a reported broken door whose sides are unreachable", () => {
+    const { game: base, id } = setup();
+    const otherId = base.players.find((p) => p.id !== id)!.id;
+    const distantDoor = doorId("CORRIDOR_C", base.config.rooms["CORRIDOR_C"]![0]!);
+
+    // Isolate the bot in LABORATORY by breaking every door out of LABORATORY, and mark here ended so only reported distant doors are considered.
+    const isolated = edit(base, id, (p) => {
+      p.room = "LABORATORY";
+      p.ap = 10;
+      p.mp = 12;
+    });
+    for (const exit of isolated.config.rooms["LABORATORY"]!) {
+      breakDoor(isolated, doorId("LABORATORY", exit));
+    }
+    breakDoor(isolated, distantDoor);
+    isolated.reports.push({ kind: "door", door: distantDoor, by: otherId });
+
+    const mem = memory();
+    mem.ended.add("repairDoor:here");
+    expect(repairDoor.options(viewFor(isolated, id), mem)).toEqual([]);
   });
 });

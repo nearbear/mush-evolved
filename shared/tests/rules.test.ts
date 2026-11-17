@@ -1,11 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { CHAT_PAGE, MAX_CHAT_LENGTH, sendChat } from "../src/chat.ts";
 import { DEFAULT_CONFIG, SHIP_ROOMS } from "../src/config.ts";
+import { deepFreeze } from "../src/helpers.ts";
 import { ITRACKIE_ITEM } from "../src/items.ts";
 import { logCovert, logPrivate, logSecret } from "../src/log.ts";
 import { apGain, mpGain, moveCost, movementRules, MODIFIERS } from "../src/modifiers.ts";
 import { parseGameMessage } from "../src/protocol.ts";
-import { applyAction, createGame, viewFor } from "../src/rules.ts";
+import { tick } from "../src/queue.ts";
+import { applyInput } from "../src/replay.ts";
+import { applyAction, createGame, newCycle, viewFor } from "../src/rules.ts";
 import { installCameraIn } from "./cameras.ts";
 import { CHAT_CHANNELS, type Action, type ChatChannel, type GameState, type MovementRules, type PlayerId } from "../src/types.ts";
 import { makeSeats, player, mustApply, noIncidents, offered } from "./support.ts";
@@ -101,7 +104,6 @@ describe("applyAction", () => {
       const v = viewFor(state, "p0");
       expect([v.day, v.cycleOfDay]).toEqual([2, 1]);
       expect(state.players.every((p) => p.morale === start - DEFAULT_CONFIG.moralePerDay)).toBe(true);
-      expect(state.log.some((e) => e.key === "dayBegins" && e.params?.day === 2 && e.visibleTo === "all")).toBe(true);
     });
 
     it("never takes morale below 0 and skips the dead", () => {
@@ -145,6 +147,26 @@ describe("applyAction", () => {
     const before = JSON.parse(JSON.stringify(state));
     mustApply(state, "p0", { type: "move", to: "CORRIDOR_A" });
     expect(state).toEqual(before);
+  });
+
+  it("never writes to a deep-frozen state.config", () => {
+    const state = newGame();
+    deepFreeze(state.config);
+    const afterAction = mustApply(state, "p0", { type: "move", to: "CORRIDOR_A" });
+    expect(afterAction.config).toBe(state.config);
+    const afterInput = applyInput(afterAction, { type: "action", by: "p1", action: { type: "move", to: "CORRIDOR_A" }, at: 1000 });
+    expect(afterInput.ok).toBe(true);
+    if (!afterInput.ok) return;
+    const afterTick = tick(afterInput.state, 10_000_000);
+    expect(afterTick.ok).toBe(true);
+    if (!afterTick.ok) return;
+    const afterChat = sendChat(afterTick.state, "p0", "global", "hello");
+    expect(afterChat.ok).toBe(true);
+    if (!afterChat.ok) return;
+    const afterCycle = newCycle(afterChat.state, 10_000_001);
+    expect(afterCycle.ok).toBe(true);
+    if (!afterCycle.ok) return;
+    expect(afterCycle.state.config).toBe(state.config);
   });
 
   it("advances the cycle once everyone is ready, adding 1 AP to what is left", () => {

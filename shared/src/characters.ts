@@ -40,6 +40,17 @@ export function characterName(id: string): string {
   return CHARACTERS.find((c) => c.id === id)?.name ?? id;
 }
 
+/**
+ * A crew member's username, as signed on comms (owner, 2026-11-16: "prinaldo" for Paola Rinaldo): the given name's
+ * first letter and the surname, lower case, spaces dropped. Falls back to the id for one the list doesn't know.
+ */
+export function characterUsername(id: string): string {
+  const c = CHARACTERS.find((ch) => ch.id === id);
+  if (!c) return id;
+  const surname = c.name.replace(c.given, "").trim();
+  return `${c.given[0]}${surname}`.toLowerCase().replace(/\s+/g, "");
+}
+
 /** A crew member's given name, without the surname (several are written surname first). What log lines use. */
 export function characterGivenName(id: string): string {
   return CHARACTERS.find((c) => c.id === id)?.given ?? id;

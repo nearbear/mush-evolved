@@ -10,6 +10,7 @@ import { ConfirmPanel } from "./ConfirmPanel.tsx";
 import { ActionButton } from "./ActionButton.tsx";
 import { ActionLabel } from "./ActionLabel.tsx";
 import { ShipNavigation } from "./ShipNavigation.tsx";
+import { terminalLogin } from "./terminalUsername.ts";
 import "./settings.css";
 import "./terminal.css";
 
@@ -59,7 +60,7 @@ function ReturnToSol({ terminal, view, onAction }: Props) {
   const { t } = useTranslation();
   const [confirming, setConfirming] = useState(false);
   const option = view.actions.find(({ action: a }) => a.type === "return_to_sol" && a.equipment === terminal.id);
-  const commander = view.titles.find((title) => title.id === "commander")?.holder === view.you.character;
+  const commander = terminalLogin(terminal.type, view, terminal.id).access !== "limited";
   return (
     option ? (
       <>
@@ -87,10 +88,10 @@ function ReturnToSol({ terminal, view, onAction }: Props) {
 }
 
 /** A greyed-out button for something that can't be done right now, with the reason on hover, focus or tap (as DisabledActionButton). */
-export function UnavailableButton({ reason, ap, children, className }: { reason: string; ap: number; children: string; className?: string }) {
+export function UnavailableButton({ reason, ap, children, className, big = true }: { reason: string; ap: number; children: string; className?: string; big?: boolean }) {
   return (
     <Popover.Root>
-      <Popover.Trigger openOnHover delay={200} className={`big action-disabled${className ? ` ${className}` : ""}`} aria-disabled="true" render={<button type="button" />}>
+      <Popover.Trigger openOnHover delay={200} className={`${big ? "big " : ""}action-disabled${className ? ` ${className}` : ""}`} aria-disabled="true" render={<button type="button" />}>
         <ActionLabel text={children} cost={{ ap, mp: 0 }} />
       </Popover.Trigger>
       <Popover.Portal>

@@ -1,5 +1,6 @@
 import { Action, ARACK_AROUND, isString, REACTOR_BROKEN } from "./action.ts";
 import { endRebelCalls } from "../comms.ts";
+import { merchantsLeave } from "../merchants.ts";
 import { arackAround, huntersFollow, loseShipsInFlight } from "../hunters.ts";
 import { pullShipsAboard } from "./land.ts";
 import { strandExpedition } from "../expeditions.ts";
@@ -68,6 +69,7 @@ export function jump(state: GameState, player: Readonly<PlayerState>, distance: 
   shipMoved(state);
   huntersFollow(state);
   endRebelCalls(state);
+  merchantsLeave(state);
   const found = planetAt(state, state.navigation.heading, distance);
   for (const owner of Object.keys(state.planets)) {
     state.planets[owner] = owner === found?.[0] ? [found[1]] : [];

@@ -121,6 +121,9 @@ function ship(): { state: GameState; sentinels: Sentinel[] } {
   s.npcs = { rng: num("npcRng", []), droneNames: [str("nextDroneName", [])] };
   // The unprinted lost analysis (#394) reaches nobody.
   s.lostAnalysis = { rng: num("lostAnalysisRng", []), rows: [{ character: str("lostAnalysisRow", []) as CharacterId, negative: true }] };
+  // The merchants' stream (#143) and the signals' id counter reach nobody.
+  s.merchantRng = num("merchantRng", []);
+  s.signals.nextId = num("signalsNextId", []);
   s.sporesToday = num("sporesToday", []);
   s.spikedOn.p0 = num("spikedOn-p0", []);
   s.dispensedOn.anything = num("dispensedOn", []);

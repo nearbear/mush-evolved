@@ -16,12 +16,38 @@ export interface DiseaseTracker {
   forever: boolean;
 }
 
+/**
+ * Injury upgrades: getting a lower-tier injury again (or getting its upgraded form directly) replaces
+ * the lower-tier injury with the higher-tier one; getting a lower-tier injury while already holding
+ * its higher-tier form is a no-op.
+ */
+export const INJURY_UPGRADES: Readonly<Record<string, StatusId>> = {
+  damaged_ears: "destroyed_ears",
+  head_trauma: "open_air_brain",
+  haemorrhage: "critical_haemorrhage",
+  bruised_shoulder: "broken_shoulder",
+};
+
 /** A disease's numbers, found by its `label` (config.ts), not by its place in the list. */
 export function diseaseStats(state: Readonly<GameState>, name: string): DiseaseStats | undefined {
   return state.config.diseases.allDiseaseStats.find((stats) => stats.label === name);
 }
 
 export function addDisease(state: GameState, player: PlayerState, name: StatusId){
+    const upgradeTo = INJURY_UPGRADES[name];
+    if (upgradeTo) {
+      if (player.modifiers.includes(upgradeTo)) return;
+      if (player.modifiers.includes(name)) {
+        removeDisease(state, player, name);
+        name = upgradeTo;
+      }
+    } else {
+      for (const [lower, higher] of Object.entries(INJURY_UPGRADES)) {
+        if (higher === name && player.modifiers.includes(lower)) {
+          removeDisease(state, player, lower);
+        }
+      }
+    }
     if(player.modifiers.includes(name)){
         return;
     }
@@ -61,7 +87,7 @@ export function removeDisease(state: GameState, player: PlayerState, name: Statu
     removeStatus(player, name);
     removeStatus(player, treatedStatus(name));
     updateMaxValues(state, player)
-    player.diseaseTrackers = player.diseaseTrackers.filter((d) => d.complete != true);
+    player.diseaseTrackers = player.diseaseTrackers.filter((d) => !d.complete && d.name !== name);
     //logPrivate(state, player.id, "diseaseCured", {name});
 }
 

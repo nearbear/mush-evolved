@@ -17,7 +17,11 @@ export class TransferAction<T extends "take" | "drop" = "take" | "drop"> extends
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): { type: T; item: string }[] {
-    return state.items.map((item) => ({ type: this.type as T, item: item.id }));
+    const kind = this.type === "take" ? "room" : "player";
+    const id = this.type === "take" ? player.room : player.id;
+    return state.items
+      .filter((item) => item.at.kind === kind && item.at.id === id)
+      .map((item) => ({ type: this.type as T, item: item.id }));
   }
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: { type: T; item: string }): string | null {

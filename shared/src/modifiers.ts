@@ -30,6 +30,7 @@ import { frugivore } from "./modifiers/frugivore.ts";
 import { green_thumb } from "./modifiers/green_thumb.ts";
 import { gunman } from "./modifiers/gunman.ts";
 import { gunner } from "./modifiers/gunner.ts";
+import { infantryman } from "./modifiers/infantryman.ts";
 import { lethargy } from "./modifiers/lethargy.ts";
 import { logistics } from "./modifiers/logistics.ts";
 import { maintenance_agent } from "./modifiers/maintenance_agent.ts";
@@ -69,8 +70,25 @@ import { migraine_disease } from "./modifiers/migraine_disease.ts";
 import { slight_nausea_disease } from "./modifiers/slight_nausea_disease.ts";
 import { food_poisoning_disease } from "./modifiers/food_poisoning_disease.ts";
 import { broken_nose_injury } from "./modifiers/broken_nose_injury.ts";
+import {
+  broken_shoulder,
+  bruised_shoulder,
+  burnt_hand,
+  burst_nose,
+  busted_arm_joint,
+  critical_haemorrhage,
+  damaged_ears,
+  destroyed_ears,
+  haemorrhage,
+  head_trauma,
+  mashed_foot,
+  open_air_brain,
+  punctured_lung,
+  torn_tongue,
+} from "./modifiers/combat_injuries.ts";
 import type { ActionCost } from "./actions.ts";
 import type { ActionTag } from "./actions/action.ts";
+import type { DeepReadonly, WeaponStats } from "./types/config.ts";
 import type { Action, GameState, ItemState, MovementRules, PlayerState } from "./types.ts";
 
 /** A numeric hook: takes the running value and returns the adjusted one. Must be pure. */
@@ -124,6 +142,16 @@ export interface CostContext {
   tags: readonly ActionTag[];
 }
 
+/** What is being weighted, for weapon outcome hooks. */
+export interface WeaponOutcomeContext {
+  state: Readonly<GameState>;
+  player: Readonly<PlayerState>;
+  weapon: DeepReadonly<WeaponStats>;
+  kind: "hit" | "miss";
+  critical: boolean;
+  fumble: boolean;
+}
+
 /**
  * What an onEnterRoom hook may call from the actions layer. The move action passes them in, because a modifier cannot
  * import an action (the actions import the modifiers, and a cycle breaks their classes).
@@ -149,6 +177,8 @@ export interface Modifier extends Partial<FoldHooks> {
   actionInjuryRate?: (cost: number, ctx: CostContext) => number;
   /** Adjusts what one of the holder's own actions dirtiness chance. Must be pure. */
   actionDirtRate?: (cost: number, ctx: CostContext) => number;
+  /** Adjusts the weight of a weapon hit or miss outcome entry. Must be pure. */
+  weaponOutcomeWeight?: (weight: number, ctx: WeaponOutcomeContext) => number;
   /**
    * Adjusts what anyone's action costs in the room where the holder is, the holder's own included (Pacifist).
    * Read when a price is asked for, so nothing is stored when people come and go. Holders stack. Must be pure.
@@ -224,6 +254,7 @@ export const MODIFIERS: Record<string, Modifier> = {
   green_thumb,
   gunman,
   gunner,
+  infantryman,
   lethargy,
   logistics,
   maintenance_agent,
@@ -268,6 +299,20 @@ export const MODIFIERS: Record<string, Modifier> = {
   food_poisoning_disease,
   // Injuries
   broken_nose_injury,
+  damaged_ears,
+  destroyed_ears,
+  torn_tongue,
+  burst_nose,
+  open_air_brain,
+  head_trauma,
+  haemorrhage,
+  critical_haemorrhage,
+  busted_arm_joint,
+  punctured_lung,
+  bruised_shoulder,
+  mashed_foot,
+  broken_shoulder,
+  burnt_hand,
 };
 
 /**
@@ -337,6 +382,10 @@ export function actionCost(base: ActionCost, ctx: CostContext, registry: Modifie
   if (ctx.action.type === "scan_planet" && projectDone(ctx.state, "CHIPSET_ACCELERATION")) {
     cost.ap -= ctx.state.config.project.chipsetAcceleration.scanApDiscount;
   }
+  // Spatial wave radar (owner, 2026-11-16): connection to Sol attempts and diplomacy trades cost 1 AP less.
+  if ((ctx.action.type === "contact_sol" || ctx.action.type === "close_deal") && projectDone(ctx.state, "RADAR_TRANS_VOID")) {
+    cost.ap -= ctx.state.config.project.radarTransVoid.apDiscount;
+  }
   // Takeoff thruster (owner, 2026-11-14): patrol ship, Pasiphae, and Icarus takeoff cost 1 AP less.
   if ((ctx.action.type === "takeoff" || ctx.action.type === "icarus_takeoff") && projectDone(ctx.state, "PATROL_SHIP_LAUNCHER")) {
     cost.ap -= ctx.state.config.project.patrolShipLauncher.takeoffApDiscount;
@@ -400,6 +449,10 @@ export function actionInjuryRate(base: number, ctx: CostContext, registry: Modif
     const hook = registry[id]?.actionInjuryRate;
     if (hook) chance = hook(chance, ctx);
   }
+  // Floor heating (owner, 2026-11-15): halves the random injury chance on every action (50% reduction).
+  if (projectDone(ctx.state, "FLOOR_HEATING")) {
+    chance *= ctx.state.config.project.floorHeating.injuryFactor;
+  }
   // Hooks can't make a price negative. A move's MP is a net change and can already be negative (a conversion
   // gives more than the move spends), so the floor is 0 or the base, whichever is lower.
   return chance;
@@ -414,6 +467,20 @@ export function actionDirtRate(base: number, ctx: CostContext, registry: Modifie
   // Hooks can't make a price negative. A move's MP is a net change and can already be negative (a conversion
   // gives more than the move spends), so the floor is 0 or the base, whichever is lower.
   return chance;
+}
+
+/** Weight of one weapon outcome entry once the attacker's modifiers have had their say; never below 0. */
+export function weaponOutcomeWeight(
+  base: number,
+  ctx: WeaponOutcomeContext,
+  registry: ModifierRegistry = MODIFIERS,
+): number {
+  let weight = base;
+  for (const id of modifierIds(ctx.player)) {
+    const hook = registry[id]?.weaponOutcomeWeight;
+    if (hook) weight = hook(weight, ctx);
+  }
+  return Math.max(0, weight);
 }
 
 /** Morale each living player loses when a day ends: `moralePerDay` through every living player's `crewMoraleLoss` hooks, in seat order; never below 0. */
@@ -727,6 +794,6 @@ export function enterRoom(state: GameState, player: PlayerState, registry: Modif
   }
 }
 
-/** Chance a patrol ship's takeoff or landing is clean (patrol.ts): the configured chance folded through the pilot's modifiers. */
+/** Chance a patrol ship's takeoff or landing is clean (patrol.ts): 1 once XXL bay doors is complete, else the configured chance folded through the pilot's modifiers. */
 export const cleanManoeuvreChance = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
-  fold("cleanManoeuvreChance", state.config.patrol.cleanChance, state, player, registry);
+  projectDone(state, "BAY_DOOR_XXL") ? 1 : fold("cleanManoeuvreChance", state.config.patrol.cleanChance, state, player, registry);

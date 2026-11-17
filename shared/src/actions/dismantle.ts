@@ -1,6 +1,6 @@
 import { Action, type ActionCost, isString } from "./action.ts";
 import { EQUIPMENT_TYPES } from "../equipment.ts";
-import { ITEM_TYPES, canReachItem, newItemId, removeItem } from "../items.ts";
+import { ITEM_TYPES, canReachItem, removeItem, spawnInRoom } from "../items.ts";
 import { logPrivate, logPublic } from "../log.ts";
 import { getUp } from "./lie_down.ts";
 import { isFortified } from "./reinforce.ts";
@@ -88,8 +88,9 @@ export class DismantleAction extends Action<DismantleActionData> {
       scraps = ITEM_TYPES[type]!.dismantle!;
       logPublic(state, player.room, "dismantled", { name: player.character, item: type });
     }
-    const left = [...Array<string>(scraps.metal).fill("metal_scraps"), ...Array<string>(scraps.plastic).fill("plastic_scraps"), ...(scraps.extra ?? [])];
-    for (const type of left) state.items.push({ id: newItemId(state), type, at: { kind: "room", id: player.room } });
+    spawnInRoom(state, player.room, "metal_scraps", scraps.metal);
+    spawnInRoom(state, player.room, "plastic_scraps", scraps.plastic);
+    for (const type of scraps.extra ?? []) spawnInRoom(state, player.room, type);
   }
 }
 

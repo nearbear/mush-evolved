@@ -1,7 +1,7 @@
 // Drugs: 12 item types whose effects are drawn once per ship, at launch (`createGame`), and never change after.
 // Every disease in `config.diseases.allDiseases` is treated by at least one drug.
 
-import { DRUG_ITEMS, newItemId } from "./items.ts";
+import { DRUG_ITEMS, spawnInRoom } from "./items.ts";
 import { changeAP, changeMP, gainMorale } from "./adjustStats.ts";
 import { treatDisease } from "./diseases.ts";
 import { skillsOf } from "./skills.ts";
@@ -63,9 +63,7 @@ export const START_DRUGS = 12;
  * `"medlab-stock"` stream, so `state.rng` doesn't move). Mutates a state the caller already cloned.
  */
 export function stockMedlab(state: GameState, rng: HasRng): void {
-  for (let i = 0; i < START_DRUGS; i++) {
-    state.items.push({ id: newItemId(state), type: DRUG_ITEMS[rollInt(rng, DRUG_ITEMS.length)]!, at: { kind: "room", id: "SICK_BAY" } });
-  }
+  for (let i = 0; i < START_DRUGS; i++) spawnInRoom(state, "SICK_BAY", DRUG_ITEMS[rollInt(rng, DRUG_ITEMS.length)]!);
 }
 
 /** The skills that reveal the drugs' effects: Biologist, Skilful (counts as Biologist), Medic and Nurse (`first_aid`). Mush see them too. */

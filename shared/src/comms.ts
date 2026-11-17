@@ -2,15 +2,21 @@
 // establish the link with Sol at the Com center terminal; with the link up, the Comms Officer decodes rebel bases'
 // calls, contacts Xyloph and updates NERON. The state (`GameState.comms`) is shown read-only to anyone at the
 // terminal; the actions' log lines are private to the actor. The link status itself goes to everyone.
+//
+// Rebel calls are signals (signals.ts; docs/plans/signals.md, step 3): each call is a `rebel` signal in
+// `GameState.signals`, seen only with Comms Officer access. Each decode is one exchange in its feed: the officer's line,
+// then the base's message at the new progress, which the client garbles less as the progress rises. At 100% the whole
+// message comes through and the signal is `reached`.
 
 import { gainMorale } from "./adjustStats.ts";
 import { BLUEPRINT_ITEM, BLUEPRINTS } from "./blueprints.ts";
 import { pushChat } from "./chat.ts";
-import { BOOK_ITEM, newItemId } from "./items.ts";
+import { BOOK_ITEM, spawnInRoom } from "./items.ts";
 import { DOCUMENT_ITEM } from "./lostAnalysis.ts";
 import { PROJECT_IDS, projectDone } from "./projects.ts";
 import { completeProject } from "./projectEffects.ts";
 import { roll, rollInt } from "./rng.ts";
+import { addSignal, loseSignal, officerSays, type Signal, signalsView, say } from "./signals.ts";
 import { hasSkill, SKILLS } from "./skills.ts";
 import { hasTitleAccess } from "./titles.ts";
 import type { CommsTerminalView, DeepReadonly, GameConfig, GameState, ItemState, PlayerState, RoomId } from "./types.ts";
@@ -50,21 +56,11 @@ export const XYLOPH_DROP_ROOM: RoomId = "COMMAND_CENTER";
 export const GENOME_DISK_ITEM = "mush_floppy_disk";
 export const MUSH_SAMPLE_ITEM = "mush_sample";
 
-/** A rebel base's call: when it came, the first cycle it is lost (8 to 16 cycles later, rolled per base), and progress. */
-export interface RebelCall {
-  base: RebelBaseId;
-  calledAt: number;
-  expiresAt: number;
-  progress: number;
-}
-
 export interface CommsState {
   /** Whether the link with Sol is up. Public: every view has it. */
   linked: boolean;
   /** The ship-wide chance (percent) of the next attempt to establish the link, the signal quality. */
   solChance: number;
-  /** Every call so far, in `REBEL_BASES` order. */
-  rebels: RebelCall[];
   /** Xyloph entries drawn so far, in order; never drawn twice. */
   xyloph: XylophEntryId[];
   /** NERON's version (from 1) and the percent done of the next update. */
@@ -73,7 +69,7 @@ export interface CommsState {
 
 /** The state at the start: no link, no calls yet (the first comes with Mush selection, `callNextRebel`). */
 export function newComms(config: DeepReadonly<GameConfig>): CommsState {
-  return { linked: false, solChance: config.comms.sol.startChance, rebels: [], xyloph: [], neron: { version: 1, progress: 0 } };
+  return { linked: false, solChance: config.comms.sol.startChance, xyloph: [], neron: { version: 1, progress: 0 } };
 }
 
 /** Com center terminals in the player's room. */
@@ -86,12 +82,22 @@ export function canUseComms(state: Readonly<GameState>, player: Readonly<PlayerS
   return state.comms.linked && hasTitleAccess(state, player, "comms_officer");
 }
 
-export const isContacted = (call: Readonly<RebelCall>) => call.progress >= REBEL_COMPLETE;
-export const isOpen = (state: Readonly<GameState>, call: Readonly<RebelCall>) => !isContacted(call) && state.cycle < call.expiresAt;
+/**
+ * Every rebel call so far, oldest first (`REBEL_BASES` order): the `rebel` signals. A call's window is its signal's
+ * `arrivedAt` to `endsAt` (8 to 16 cycles, rolled per base).
+ */
+export const rebelCalls = (state: Readonly<GameState>): Signal[] => state.signals.list.filter((s) => s.kind === "rebel") as Signal[];
+
+/** The call of `base`, if it has called. */
+export const rebelCall = (state: Readonly<GameState>, base: string): Signal | undefined => rebelCalls(state).find((s) => s.rebel!.base === base);
+
+export const isContacted = (call: Readonly<Signal>) => (call.rebel?.progress ?? 0) >= REBEL_COMPLETE;
+/** A call that can still be decoded: active, not complete, and its window not over. */
+export const isOpen = (state: Readonly<GameState>, call: Readonly<Signal>) => call.status === "active" && !isContacted(call) && state.cycle < call.endsAt;
 
 /** Whether a base's bonus is in effect: it was decoded to 100%. */
 export function rebelContacted(state: Readonly<GameState>, base: RebelBaseId): boolean {
-  return state.comms.rebels.some((call) => call.base === base && isContacted(call));
+  return rebelCalls(state).some((call) => call.rebel!.base === base && isContacted(call));
 }
 
 /** Whether a Xyloph entry has been drawn (Kivanç's decoding bonus, Zong Chun's ghost for the researches). */
@@ -119,44 +125,80 @@ export function loseLink(state: GameState, qualityLoss = 0): void {
   state.comms.solChance = Math.max(state.config.comms.sol.startChance, state.comms.solChance - qualityLoss);
 }
 
+/** The next base to call, if any are left. */
+export const nextRebelBase = (state: Readonly<GameState>): RebelBaseId | undefined => REBEL_BASES[rebelCalls(state).length];
+
 /**
- * The next base calls, if any are left: once at Mush selection, then once a day in the same cycle (owner,
- * 2026-10-21). Its window is rolled per base. NERON announces it in crew chat only while the link is up; a call
- * missed that way still shows at the terminal and can be decoded until it expires.
+ * `base` calls now: a new rebel signal, decodable until its window (rolled per base) closes. NERON announces it in crew
+ * chat only while the link is up; a call missed that way still shows in the Signals tab and can be decoded until it
+ * expires. Mutates a state the caller already cloned.
  */
-export function callNextRebel(state: GameState): void {
-  const base = REBEL_BASES[state.comms.rebels.length];
-  if (!base) return;
+export function callRebel(state: GameState, base: RebelBaseId): Signal {
   const { windowMin, windowMax } = state.config.comms.rebel;
-  const expiresAt = state.cycle + roll(state, [windowMin, windowMax]);
-  state.comms.rebels.push({ base, calledAt: state.cycle, expiresAt, progress: 0 });
+  const signal = addSignal(state, "rebel", state.cycle + roll(state, [windowMin, windowMax]), { rebel: { base, progress: 0 } });
   if (state.comms.linked) pushChat(state, "global", { from: null, isBot: false, text: "", system: { key: "rebelCalling", params: { base } } });
+  return signal;
+}
+
+/** The next base calls, if any are left: once at Mush selection, then once a day in the same cycle (owner, 2026-10-21). */
+export function callNextRebel(state: GameState): void {
+  const base = nextRebelBase(state);
+  if (base) callRebel(state, base);
 }
 
 /**
  * The ship travels or leaves orbit: every open call ends at once and is lost, partly decoded or not (owner, 2026-11-07,
- * as upstream, where both fire the travel event). Its window closes now, so `isOpen` is false from this cycle on.
+ * as upstream, where both fire the travel event).
  */
 export function endRebelCalls(state: GameState): void {
-  for (const call of state.comms.rebels) if (isOpen(state, call)) call.expiresAt = state.cycle;
-}
-
-/** At a cycle change: the next base calls a day after the last one. Mutates a state the caller already cloned. */
-export function commsCycle(state: GameState): void {
-  const last = state.comms.rebels.at(-1);
-  if (last && state.cycle === last.calledAt + state.config.cyclesPerDay) callNextRebel(state);
+  for (const call of rebelCalls(state)) loseSignal(state, call);
 }
 
 /**
- * One decode's progress: the average of two draws in [1, gainMax], rounded down (the original), plus +100% each for the
- * Rebel skill and for having contacted Kivanç Terzi (additive: both make it x3; owner, 2026-10-21).
+ * At a cycle change: calls whose window is over are lost, then the next base calls a day after the last one. Mutates a
+ * state the caller already cloned.
+ */
+export function commsCycle(state: GameState): void {
+  for (const call of rebelCalls(state)) if (state.cycle >= call.endsAt) loseSignal(state, call);
+  const last = rebelCalls(state).at(-1);
+  if (last && state.cycle === last.arrivedAt + state.config.cyclesPerDay) callNextRebel(state);
+}
+
+/** The feed's key for a base's message, which the client garbles from the progress it is said with. */
+export const rebelMessageKey = (base: RebelBaseId): string => `signals.rebel.message.${base}`;
+
+/**
+ * One decode (actions/decode_rebel.ts) as an exchange in the call's feed: the officer's line, then the base's message
+ * at the new progress. At 100% the message is whole and closes the conversation: the base is reached and its bonus
+ * applies. Returns whether it was reached. Mutates a state the caller already cloned.
+ */
+export function decodeRebel(state: GameState, call: Signal, officer: Readonly<PlayerState>, gain: number): boolean {
+  const rebel = call.rebel!;
+  rebel.progress = Math.min(REBEL_COMPLETE, rebel.progress + gain);
+  officerSays(state, call, officer, "signals.officer.decode");
+  const message = { from: "signal", key: rebelMessageKey(rebel.base), params: { progress: rebel.progress } } as const;
+  if (rebel.progress < REBEL_COMPLETE) {
+    say(state, call, message);
+    return false;
+  }
+  say(state, call, { ...message, closes: true });
+  call.status = "reached";
+  rebelReached(state, rebel.base);
+  return true;
+}
+
+/**
+ * One decode's progress: the average of two draws in [1, gainMax], rounded down (the original), or the higher of the
+ * two once Spatial wave radar (`RADAR_TRANS_VOID`) is complete, plus +100% each for the Rebel skill and for having
+ * contacted Kivanç Terzi (additive: both make it x3; owner, 2026-10-21, 2026-11-16).
  */
 export function rollRebelGain(state: GameState, player: Readonly<PlayerState>): number {
   const { gainMax, rebelBonus, kivancBonus } = state.config.comms.rebel;
-  const a = rollInt(state, gainMax);
-  const b = rollInt(state, gainMax);
+  const a = rollInt(state, gainMax) + 1;
+  const b = rollInt(state, gainMax) + 1;
+  const base = projectDone(state, "RADAR_TRANS_VOID") ? Math.max(a, b) : Math.floor((a + b) / 2);
   const factor = 1 + (hasSkill(player, "rebel") ? rebelBonus : 0) + (xylophFound(state, "KIVANC_TERZI_CONTACT") ? kivancBonus : 0);
-  return Math.floor((a + 1 + b + 1) / 2) * factor;
+  return base * factor;
 }
 
 /** A base's bonus when it is reached, for the ones with a one-off effect (Kaladaan's and Cygni's morale). */
@@ -196,7 +238,7 @@ export function drawXyloph(state: GameState): XylophEntryId | null {
 }
 
 function dropItem(state: GameState, item: Omit<ItemState, "id" | "at">): void {
-  state.items.push({ id: newItemId(state), ...item, at: { kind: "room", id: XYLOPH_DROP_ROOM } });
+  spawnInRoom(state, XYLOPH_DROP_ROOM, item.type, 1, item);
 }
 
 function randomOf<T>(state: GameState, list: readonly T[]): T {
@@ -264,22 +306,22 @@ export function advanceNeron(state: GameState, percent: number): string | undefi
   return project;
 }
 
-/** What the Com center terminal shows anyone standing at it. The drawn Xyloph entries are listed in database order, so the draw order stays out. */
-export function commsTerminalView(state: Readonly<GameState>): CommsTerminalView {
+/**
+ * What the Com center terminal shows anyone standing at it. The drawn Xyloph entries are listed in database order, so
+ * the draw order stays out. The signals, rebel calls included, and the next call's schedule go only to a viewer with
+ * Comms Officer access (owner, 2026-11-16).
+ */
+export function commsTerminalView(state: Readonly<GameState>, viewer: Readonly<PlayerState>): CommsTerminalView {
   const { comms } = state;
-  const last = comms.rebels.at(-1);
-  const upcoming = REBEL_BASES[comms.rebels.length];
-  return {
+  const view: CommsTerminalView = {
     solChance: comms.solChance,
-    rebels: comms.rebels.map((call) => ({
-      base: call.base,
-      progress: call.progress,
-      status: isContacted(call) ? "contacted" : isOpen(state, call) ? "open" : "lost",
-      expiresAt: call.expiresAt,
-    })),
-    ...(last && upcoming && { nextRebel: { base: upcoming, at: last.calledAt + state.config.cyclesPerDay } }),
     xylophLeft: xylophLeft(state).length,
     xylophFound: XYLOPH_IDS.filter((id) => xylophFound(state, id)),
     neron: { ...comms.neron },
   };
+  const signals = signalsView(state, viewer);
+  if (!signals) return view;
+  const last = rebelCalls(state).at(-1);
+  const upcoming = nextRebelBase(state);
+  return { ...view, signals, ...(last && upcoming && { nextRebel: { base: upcoming, at: last.arrivedAt + state.config.cyclesPerDay } }) };
 }

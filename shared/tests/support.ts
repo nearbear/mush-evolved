@@ -2,6 +2,8 @@
 // shape (a renamed view field, a new Seat field) is fixed here once instead of in every test file. Setting up a
 // scenario (who is where, holding what) stays in each test file, next to the tests that depend on it.
 import { CHARACTERS } from "../src/characters.ts";
+import type { RebelBaseId } from "../src/comms.ts";
+import { addSignal, type Signal } from "../src/signals.ts";
 import { EQUIPMENT_TYPES } from "../src/equipment.ts";
 import { DRUG_ITEMS, ITEM_TYPES } from "../src/items.ts";
 import { ANY_CONSUMABLE, RESEARCH_REQUIRES, type ResearchId } from "../src/research.ts";
@@ -142,4 +144,15 @@ export function setProgress(s: GameState, target: { research: string } | { proje
     const project = target.project as ProjectId;
     if (percent < PROJECT_COMPLETE) s.projectDeck = [project, ...s.projectDeck.filter((id) => id !== project)];
   }
+}
+
+/**
+ * Puts `base`'s rebel call in the signals list now, decoded to `progress`, open for `window` cycles, without rolling (so
+ * a test's other rolls don't move). At 100% it is reached, as a decode would leave it, but with no bonus applied
+ * beyond what `rebelContacted` reads.
+ */
+export function rebelCallAt(s: GameState, base: RebelBaseId, progress: number, window = 10): Signal {
+  const signal = addSignal(s, "rebel", s.cycle + window, { rebel: { base, progress } });
+  if (progress >= 100) signal.status = "reached";
+  return signal;
 }

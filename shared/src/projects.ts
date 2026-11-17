@@ -44,7 +44,6 @@ export const PROJECTS = [
   { id: "FISSION_COFFEE_ROASTER", skills: ["caffeinomaniac", "physicist"] },
   { id: "TRAIL_REDUCER", skills: ["pilot", "engineer"] },
   { id: "TRASH_LOAD", skills: [] },
-  { id: "WHOS_WHO", skills: [] },
   { id: "CALL_OF_DIRTY", skills: [] },
   { id: "BEAT_BOX", skills: [] },
   { id: "THALASSO", skills: [] },
@@ -88,6 +87,8 @@ export const PROJECT_STATUS: Readonly<Partial<Record<ProjectId, ProjectStatus>>>
   ARMOUR_CORRIDOR: "full",
   // Patrol ship, Pasiphae, and Icarus takeoff cost 1 AP less (owner, 2026-11-14; modifiers.ts `actionCost`).
   PATROL_SHIP_LAUNCHER: "full",
+  // Patrol ship and Pasiphae takeoff and landing manoeuvres are always clean (owner, 2026-11-15; modifiers.ts `cleanManoeuvreChance`).
+  BAY_DOOR_XXL: "full",
   // Patrol ships hold +6 max charges (10 -> 16) and gain +6 current charges on completion (owner, 2026-11-14; patrol.ts, projectEffects.ts).
   PATROLSHIP_EXTRA_AMMO: "full",
   // Every patrol ship hit does +1 damage, stacking with Cygni (owner, 2026-11-14; patrol.ts, patrol_attack.ts).
@@ -136,6 +137,28 @@ export const PROJECT_STATUS: Readonly<Partial<Record<ProjectId, ProjectStatus>>>
   TRAIL_REDUCER: "full",
   // Completing it spawns 1 support drone on the Nexus floor (projectEffects.ts).
   EXTRA_DRONE: "full",
+  // On jump or leaving orbit, patrol ships in flight dock cleanly in their bays with their pilots and cargo (owner, 2026-11-12; actions/land.ts).
+  MAGNETIC_NET: "full",
+  // On jump or leaving orbit, an expedition away (Icarus or patrol ship on a planet) is recalled safe instead of lost (owner, 2026-11-07, #356; expeditions.ts).
+  AUTO_RETURN_ICARUS: "full",
+  // Any expedition landing is safe (Nothing) even without a living Pilot aboard (owner, 2026-11-08; expeditions.ts).
+  ICARUS_ANTIGRAV_PROPELLER: "full",
+  // The Icarus holds 6 crew instead of 4 (owner, 2026-11-09, #359; expeditions.ts).
+  ICARUS_LARGER_BAY: "full",
+  // Returning from an Icarus expedition never makes the crew dirty (owner, 2026-11-15; expeditions.ts).
+  ICARUS_LAVATORY: "full",
+  // Each cycle has a 20% chance to prevent all oxygen loss (burn and broken tank leaks), announced globally (owner, 2026-11-15; ship.ts, breakage.ts).
+  OXY_MORE: "full",
+  // Halves the random injury chance on every action (50% reduction) (owner, 2026-11-15; modifiers.ts `actionInjuryRate`).
+  FLOOR_HEATING: "full",
+  // Non-Mush showers roll independently (25% each) for +1 HP, +1 morale, and +2 MP, each capped at max (owner, 2026-11-15; actions/shower.ts).
+  THALASSO: "full",
+  // Completing it spawns 8 metal scraps on the Engine Room floor (owner, 2026-11-15; projectEffects.ts).
+  DISMANTLING: "full",
+  // Completing it spawns one item from each pool across the storage rooms in shuffled order (owner, 2026-11-16; projectEffects.ts).
+  TRASH_LOAD: "full",
+  // Connection to Sol attempts and diplomacy trades cost 1 AP less; decoding a rebel base discards the lower of the two rolls (owner, 2026-11-16; modifiers.ts `actionCost`, comms.ts `rollRebelGain`).
+  RADAR_TRANS_VOID: "full",
 };
 
 export function projectStatus(project: string): ProjectStatus {

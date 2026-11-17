@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { actionVisibility } from "../src/actions.ts";
-import { applyXyloph, advanceNeron, drawXyloph, GENOME_DISK_ITEM, MUSH_SAMPLE_ITEM, REBEL_BASES, rollRebelGain, solChance, XYLOPH_ENTRIES, XYLOPH_IDS } from "../src/comms.ts";
+import { applyXyloph, advanceNeron, drawXyloph, GENOME_DISK_ITEM, MUSH_SAMPLE_ITEM, REBEL_BASES, rebelCalls, rollRebelGain, solChance, XYLOPH_ENTRIES, XYLOPH_IDS } from "../src/comms.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { ITEM_TYPES } from "../src/items.ts";
 import { PROJECT_COMPLETE, PROJECT_IDS } from "../src/projects.ts";
@@ -9,7 +9,7 @@ import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { chatChannels } from "../src/chat.ts";
 import { addStatus } from "../src/statuses.ts";
 import type { Action, GameState } from "../src/types.ts";
-import { clone, costOf, makeSeats, must, nextCycle, offered, option, player, noHunters, noIncidents } from "./support.ts";
+import { clone, costOf, makeSeats, must, nextCycle, offered, option, player, noHunters, noIncidents, rebelCallAt } from "./support.ts";
 
 const TERMINAL = "COMMAND_CENTER:COM_CENTER";
 const cfg = DEFAULT_CONFIG.comms;
@@ -104,14 +104,18 @@ describe("communication center", () => {
     it("the first calls at Mush selection, the next one a day later, in the original's order", () => {
       let s = ship();
       for (const p of s.players) p.cheats = ["infiniteHp"]; // the humans must outlive the whole run, or the game ends
-      expect(s.comms.rebels.map((c) => c.base)).toEqual(["WOLF"]);
-      const first = s.comms.rebels[0]!;
-      expect(first.calledAt).toBe(s.cycle);
-      expect(first.expiresAt - first.calledAt).toBeGreaterThanOrEqual(cfg.rebel.windowMin);
-      expect(first.expiresAt - first.calledAt).toBeLessThanOrEqual(cfg.rebel.windowMax);
+      const bases = (state: GameState) => rebelCalls(state).map((c) => c.rebel!.base);
+      expect(bases(s)).toEqual(["WOLF"]);
+      const first = rebelCalls(s)[0]!;
+      expect(first).toMatchObject({ kind: "rebel", status: "active", step: "decoding", number: 1, feed: [], rebel: { base: "WOLF", progress: 0 } });
+      expect(first.arrivedAt).toBe(s.cycle);
+      expect(first.endsAt - first.arrivedAt).toBeGreaterThanOrEqual(cfg.rebel.windowMin);
+      expect(first.endsAt - first.arrivedAt).toBeLessThanOrEqual(cfg.rebel.windowMax);
       for (let i = 0; i < s.config.cyclesPerDay * (REBEL_BASES.length + 1); i++) s = nextCycle(s);
-      expect(s.comms.rebels.map((c) => c.base)).toEqual([...REBEL_BASES]);
-      expect(s.comms.rebels.map((c) => c.calledAt - first.calledAt)).toEqual(REBEL_BASES.map((_, i) => i * s.config.cyclesPerDay));
+      expect(bases(s)).toEqual([...REBEL_BASES]);
+      expect(rebelCalls(s).map((c) => c.arrivedAt - first.arrivedAt)).toEqual(REBEL_BASES.map((_, i) => i * s.config.cyclesPerDay));
+      // Every window has closed by now: each call is lost, with the "Signal lost" line, and kept in the list.
+      expect(rebelCalls(s).every((c) => c.status === "lost" && c.feed.at(-1)?.key === "signals.lost")).toBe(true);
     });
 
     it("NERON announces a call in crew chat only while the link is up", () => {
@@ -120,7 +124,7 @@ describe("communication center", () => {
       expect(s.chat.filter((m) => m.system?.key === "rebelCalling").map((m) => m.system?.params)).toEqual([{ base: "SIRIUS" }]);
       let quiet = ship(false);
       for (let i = 0; i < quiet.config.cyclesPerDay; i++) quiet = nextCycle(quiet);
-      expect(quiet.comms.rebels).toHaveLength(2);
+      expect(rebelCalls(quiet)).toHaveLength(2);
       expect(quiet.chat.some((m) => m.system?.key === "rebelCalling")).toBe(false);
     });
 
@@ -133,9 +137,12 @@ describe("communication center", () => {
       expect(applyAction(ship(false), "p0", decode("WOLF")).ok).toBe(false);
       expect(applyAction(s, "p0", decode("SIRIUS")).ok).toBe(false);
       const expired = clone(s);
-      expired.cycle = expired.comms.rebels[0]!.expiresAt;
+      expired.cycle = rebelCalls(expired)[0]!.endsAt;
       expect(applyAction(expired, "p0", decode("WOLF")).ok).toBe(false);
-      expect(viewFor(expired, "p1").comms.terminal?.rebels[0]?.status).toBe("lost");
+      let lapsed = s;
+      while (lapsed.cycle < rebelCalls(s)[0]!.endsAt) lapsed = nextCycle(lapsed);
+      expect(rebelCalls(lapsed)[0]!.status).toBe("lost");
+      expect(offered(lapsed, "p0")).not.toContainEqual(decode("WOLF"));
     });
 
     it("a decode gains the average of two 1..40 draws; Rebel and Kivanç add +100% each", () => {
@@ -161,19 +168,64 @@ describe("communication center", () => {
       expect([player(next, "p0").ap, player(next, "p0").resources.comp]).toEqual([ap, 0]);
     });
 
-    it("progress is private in the log but shown at the terminal to anyone", () => {
+    it("each decode is an exchange in the call's feed: the officer's line, then the message at the new progress", () => {
       const next = must(applyAction(ship(true), "p0", decode("WOLF")));
-      const progress = next.comms.rebels[0]!.progress;
+      const call = rebelCalls(next)[0]!;
+      const progress = call.rebel!.progress;
+      expect(progress).toBeGreaterThan(0);
+      expect(call.feed).toEqual([
+        { from: "officer", officer: player(next, "p0").character, at: next.cycle, key: "signals.officer.decode" },
+        { from: "signal", at: next.cycle, key: "signals.rebel.message.WOLF", params: { progress } },
+      ]);
+      expect(call.status).toBe("active");
+      const again = must(applyAction(next, "p0", decode("WOLF")));
+      expect(rebelCalls(again)[0]!.feed).toHaveLength(4);
+      expect(rebelCalls(again)[0]!.feed[3]!.params).toEqual({ progress: rebelCalls(again)[0]!.rebel!.progress });
+    });
+
+    it("at 100% the whole message closes the conversation and the call is reached", () => {
+      const s = ship(true);
+      rebelCallAt(s, "KALADAAN", 99, 100);
+      const next = must(applyAction(s, "p0", decode("KALADAAN")));
+      const call = rebelCalls(next).find((c) => c.rebel!.base === "KALADAAN")!;
+      expect(call.status).toBe("reached");
+      expect(call.rebel!.progress).toBe(100);
+      expect(call.feed.at(-1)).toEqual({ from: "signal", at: next.cycle, key: "signals.rebel.message.KALADAAN", params: { progress: 100 }, closes: true });
+      expect(applyAction(next, "p0", decode("KALADAAN")).ok).toBe(false);
+    });
+
+    it("a hacker's decode is signed by the Comms Officer", () => {
+      const s = ship(true);
+      s.titles.comms_officer = "p1";
+      player(s, "p0").hackedEquipment = [TERMINAL];
+      expect(viewFor(s, "p0").comms.terminal?.signals).toHaveLength(1);
+      const next = must(applyAction(s, "p0", decode("WOLF")));
+      expect(rebelCalls(next)[0]!.feed[0]!.officer).toBe(player(s, "p1").character);
+    });
+
+    it("progress is private in the log, and the calls and their schedule go only to Comms Officer access", () => {
+      const next = must(applyAction(ship(true), "p0", decode("WOLF")));
+      const progress = rebelCalls(next)[0]!.rebel!.progress;
       expect(next.log.find((e) => e.key === "rebelDecoded")).toMatchObject({ visibleTo: ["p0"], params: { base: "WOLF", percent: progress } });
       expect(viewFor(next, "p1").log.some((e) => e.key === "rebelDecoded")).toBe(false);
-      expect(viewFor(next, "p1").comms.terminal?.rebels[0]).toMatchObject({ base: "WOLF", progress, status: "open" });
+      const officer = viewFor(next, "p0").comms.terminal!;
+      expect(officer.signals?.[0]).toMatchObject({ kind: "rebel", name: { key: "comms.rebels.WOLF.name" }, status: "active", rebel: { base: "WOLF", progress } });
+      expect(officer.nextRebel).toEqual({ base: "SIRIUS", at: rebelCalls(next)[0]!.arrivedAt + next.config.cyclesPerDay });
+      const other = viewFor(next, "p1").comms.terminal!;
+      expect(other).not.toHaveProperty("signals");
+      expect(other).not.toHaveProperty("nextRebel");
+      expect(JSON.stringify(other)).not.toMatch(/WOLF|SIRIUS|rebel/);
+      // A new officer reads the old officer's decodes; the old one no longer sees them.
+      next.titles.comms_officer = "p1";
+      expect(viewFor(next, "p1").comms.terminal?.signals?.[0]?.feed).toHaveLength(2);
+      expect(viewFor(next, "p0").comms.terminal).not.toHaveProperty("signals");
       player(next, "p1").room = "REFECTORY";
       expect(viewFor(next, "p1").comms.terminal).toBeNull();
     });
 
     /** Decodes `base` (already calling) until it is reached. */
     function reach(s: GameState, base: string): GameState {
-      s.comms.rebels.push({ base: base as never, calledAt: s.cycle, expiresAt: s.cycle + 100, progress: 99 });
+      rebelCallAt(s, base as never, 99, 100);
       return must(applyAction(s, "p0", decode(base)));
     }
 
@@ -232,8 +284,8 @@ describe("communication center", () => {
 
     it("draws by weight", () => {
       const counts: Record<string, number> = {};
+      const s = ship(true);
       for (let seed = 0; seed < 5900; seed++) {
-        const s = ship(true);
         s.rng = seed * 7919;
         const entry = drawXyloph(s)!;
         counts[entry] = (counts[entry] ?? 0) + 1;

@@ -4,6 +4,7 @@ import type { BiosState } from "../bios.ts";
 import type { DrugEffect } from "../drugs.ts";
 import type { FruitEffect } from "../fruits.ts";
 import type { RebelBaseId, XylophEntryId } from "../comms.ts";
+import type { SignalView } from "../signals.ts";
 import type { TurnSide } from "../navigation.ts";
 import type { PlanetDirection } from "../planets.ts";
 import type { TitleId } from "../titles.ts";
@@ -128,7 +129,13 @@ export interface PublicConfig {
   /** AP the Command terminal's Sol and Eden buttons cost, so the greyed-out ones can show it. */
   returnToSolAp: number;
   edenAp: number;
+  /** AP the Command terminal's steering buttons cost, so the greyed-out ones can show it. */
+  turnAp: number;
+  travelAp: number;
+  leaveOrbitAp: number;
   xylophAp: number;
+  /** AP closing a merchant's deal costs, for the greyed-out deals at the Com center. */
+  merchantDealAp: number;
   /**
    * Base AP prices of the actions a bot plans to walk to (server/src/bots/goals/), before modifiers and free skill points:
    * a bot sees a real price only for actions in its own room. Never used to work out legality.
@@ -451,15 +458,22 @@ export interface TitleView {
 export interface CommsTerminalView {
   /** The ship's chance (percent) of establishing the link, before Radio Expert. */
   solChance: number;
-  /** Every rebel call so far: `open` (can be decoded), `contacted` (reached, bonus in effect) or `lost` (expired). */
-  rebels: { base: RebelBaseId; progress: number; status: "open" | "contacted" | "lost"; expiresAt: number }[];
-  /** The next base to call and the cycle it does so (the schedule is fixed); absent before the first call or once all have called. */
+  /**
+   * The next base to call and the cycle it does so (the schedule is fixed); absent before the first call, once all
+   * have called, and, like `signals`, for anyone without Comms Officer access.
+   */
   nextRebel?: { base: RebelBaseId; at: number };
   /** How many Xyloph entries are left to draw. */
   xylophLeft: number;
   /** The entries drawn so far, in database order (not draw order), for the terminal's grid of deciphered cells. */
   xylophFound: XylophEntryId[];
   neron: { version: number; progress: number };
+  /**
+   * The Signals tab (signals.ts): every signal so far, active and inactive, oldest first, with its conversation. Only
+   * for a viewer with access to the Comms Officer title; absent for anyone else, with no count (owner, 2026-11-16). The
+   * officer's options come from `view.actions` (`contact_signal`, `close_deal`, `refuse_signal`, `decode_rebel`).
+   */
+  signals?: SignalView[];
 }
 
 /** An expedition report as its members see it (expeditions.ts). */

@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { ACTIONS } from "../src/actions.ts";
+import { attackWithHeldWeapon } from "../src/actions/attack.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { carriesHeavy, ITEM_TYPES, startCharges } from "../src/items.ts";
 import { parseGameMessage } from "../src/protocol.ts";
+import { nextDue } from "../src/queue.ts";
+import { applyInput, replayGame, startGame, type GameSetup, type Input } from "../src/replay.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { WeaponStats } from "../src/types/config.ts";
 import type { Action, GameConfig, GameState, PlayerId } from "../src/types.ts";
@@ -45,6 +48,43 @@ describe("weapon stats", () => {
     expect(row("grenade")).toEqual([[0, 10], 1, 3, undefined, null]);
     expect([W.missile_launcher!.area, W.grenade!.area, W.grenade!.consumed]).toEqual([{ selfDamage: [1, 4] }, { selfDamage: [0, 3] }, true]);
     expect([W.knife!.dirtyChance, W.blaster!.dirtyChance, base.weapons.cost.ap]).toEqual([0.25, 0, 1]);
+    expect([W.bare_hands!.damage, W.bare_hands!.accuracy, W.bare_hands!.melee, W.bare_hands!.repairChance]).toEqual([[1, 2], 0.6, true, null]);
+  });
+
+  it("populates hitOutcomes and missOutcomes with eMush weights and structured effects", () => {
+    const sum = (xs: readonly { weight: number }[]) => xs.reduce((a, b) => a + b.weight, 0);
+    const totals = (t: string) => [sum(W[t]!.hitOutcomes), sum(W[t]!.missOutcomes)];
+    expect(totals("blaster")).toEqual([84, 83]);
+    expect(totals("customized_blaster")).toEqual([84, 83]);
+    expect(totals("knife")).toEqual([94, 87]);
+    expect(totals("natamy_riffle")).toEqual([90, 79]);
+    expect(totals("sniper_riffle")).toEqual([90, 79]);
+    expect(totals("machine_gun")).toEqual([90, 79]);
+    expect(totals("missile_launcher")).toEqual([53, 12]);
+    expect(totals("grenade")).toEqual([50, 1]);
+    expect(totals("bare_hands")).toEqual([25, 40]);
+
+    for (const stats of Object.values(W)) {
+      expect(stats.hitOutcomes.length).toBeGreaterThan(0);
+      expect(stats.missOutcomes.length).toBeGreaterThan(0);
+      for (const o of [...stats.hitOutcomes, ...stats.missOutcomes]) {
+        expect(o.weight).toBeGreaterThan(0);
+        expect(o.log.length).toBeGreaterThan(0);
+      }
+    }
+
+    expect(W.blaster!.hitOutcomes.find((o) => o.log === "BLASTER_TARGET_HEADSHOT")?.effects?.instantKill).toBe("target");
+    expect(W.natamy_riffle!.hitOutcomes[0]!.effects?.mushMultiplier).toBe(2);
+    expect(W.missile_launcher!.missOutcomes.find((o) => o.log === "ROCKET_LAUNCHER_FUMBLE_6_ITEMS_BACKFIRE_ROCKETTED")?.effects).toEqual({
+      breakRandomItems: 6,
+      instantKill: "attacker",
+    });
+    expect(W.grenade!.hitOutcomes[1]!.effects).toEqual({
+      weaponEffect: "destroy",
+      breakRandomItems: 4,
+      injuries: [{ who: "splash", injury: "random", chance: 1, count: 2 }],
+    });
+    expect(W.bare_hands!.hitOutcomes[0]!.effects?.skillMaxDamage).toBe(true);
   });
 
   it("dismantle: knife and blaster at 50%, the other weapons at the usual odds; never the grenade", () => {
@@ -70,28 +110,30 @@ describe("weapon stats", () => {
 
 describe("attack with a single-target weapon", () => {
   it("a hit costs the AP, spends a charge, deals damage in range and is public", () => {
-    const s = ship("blaster", tuned("blaster", { accuracy: 1 }));
+    const blasterHitLogs = new Set(W.blaster!.hitOutcomes.map((o) => o.log));
+    const s = ship("blaster", tuned("blaster", { accuracy: 1, hitOutcomes: [{ weight: 1, log: "BLASTER_SUCCESSFUL_SHOT" }] }));
     const r = must(applyAction(s, "p0", shoot("p1")));
     const lost = base.startHp - hp(r, "p1");
     expect(lost).toBeGreaterThanOrEqual(W.blaster!.damage[0]);
     expect(lost).toBeLessThanOrEqual(W.blaster!.damage[1]);
     expect(player(r, "p0").ap).toBe(base.startAp - base.weapons.cost.ap);
     expect(r.items.find((i) => i.id === "w")?.charges).toBe(W.blaster!.charges! - 1);
-    expect(viewFor(r, "p2").log.some((e) => e.key === "attacked" && e.params?.item === "blaster")).toBe(true);
+    expect(viewFor(r, "p2").log.some((e) => blasterHitLogs.has(e.key) && e.params?.item === "blaster")).toBe(true);
     expect(hp(r, "p2")).toBe(base.startHp);
   });
 
   it("a miss still costs the AP and a charge, deals no damage and is public", () => {
-    const s = ship("blaster", tuned("blaster", { accuracy: 0 }));
+    const s = ship("blaster", tuned("blaster", { accuracy: 0, missOutcomes: [{ weight: 1, log: "BLASTER_FAILED_SHOT" }] }));
     const r = must(applyAction(s, "p0", shoot("p1")));
     expect(hp(r, "p1")).toBe(base.startHp);
     expect(r.items.find((i) => i.id === "w")?.charges).toBe(W.blaster!.charges! - 1);
-    expect(viewFor(r, "p1").log.some((e) => e.key === "attackMissed")).toBe(true);
+    expect(viewFor(r, "p1").log.some((e) => e.key === "BLASTER_FAILED_SHOT")).toBe(true);
   });
 
   it("rolls every damage value in range over many seeds", () => {
     const seen = new Set<number>();
-    for (let seed = 1; seed <= 200; seed++) seen.add(base.startHp - hp(must(applyAction(ship("knife", tuned("knife", { accuracy: 1 }), seed), "p0", shoot("p1"))), "p1"));
+    const cfg = tuned("knife", { accuracy: 1, hitOutcomes: [{ weight: 1, log: "KNIFE_SUCCESSFUL_HIT_10_HAEMORRHAGE" }] });
+    for (let seed = 1; seed <= 200; seed++) seen.add(base.startHp - hp(must(applyAction(ship("knife", cfg, seed), "p0", shoot("p1"))), "p1"));
     expect([...seen].sort()).toEqual([1, 2, 3, 4, 5]);
   });
 
@@ -150,7 +192,11 @@ describe("attack with a single-target weapon", () => {
 
 describe("area weapons", () => {
   it("the rocket launcher hits everyone in the room, the attacker less, and spends its charge", () => {
-    const s = ship("missile_launcher", tuned("missile_launcher", { accuracy: 1 }));
+    const rocketHitLogs = new Set(W.missile_launcher!.hitOutcomes.map((o) => o.log));
+    const s = ship("missile_launcher", tuned("missile_launcher", {
+      accuracy: 1,
+      hitOutcomes: [{ weight: 1, log: "ROCKET_LAUNCHER_SUCCESSFUL_HIT_2_RANDOM_WOUNDS_4_ITEMS_6_SPLASH" }],
+    }));
     const r = must(applyAction(s, "p0", blast));
     for (const id of ["p1", "p2"]) {
       const lost = base.startHp - hp(r, id);
@@ -162,13 +208,16 @@ describe("area weapons", () => {
     expect(self).toBeLessThanOrEqual(W.missile_launcher!.area!.selfDamage[1]);
     expect(hp(r, "p3")).toBe(base.startHp);
     expect(r.items.find((i) => i.id === "w")?.charges).toBe(0);
-    expect(viewFor(r, "p1").log.some((e) => e.key === "attackedArea")).toBe(true);
+    expect(viewFor(r, "p1").log.some((e) => rocketHitLogs.has(e.key))).toBe(true);
   });
 
-  it("a missed rocket hurts no one", () => {
-    const r = must(applyAction(ship("missile_launcher", tuned("missile_launcher", { accuracy: 0 })), "p0", blast));
+  it("a missed rocket hurts no one on a plain miss", () => {
+    const r = must(applyAction(ship("missile_launcher", tuned("missile_launcher", {
+      accuracy: 0,
+      missOutcomes: [{ weight: 1, log: "ROCKET_LAUNCHER_MISS_10_ITEMS" }],
+    })), "p0", blast));
     for (const id of ["p0", "p1", "p2"]) expect(hp(r, id)).toBe(base.startHp);
-    expect(viewFor(r, "p1").log.some((e) => e.key === "attackAreaMissed")).toBe(true);
+    expect(viewFor(r, "p1").log.some((e) => e.key === "ROCKET_LAUNCHER_MISS_10_ITEMS")).toBe(true);
   });
 
   it("the grenade is used up and hurts the thrower at most 3", () => {
@@ -225,5 +274,186 @@ describe("attack rules", () => {
     expect(parse(blast)).toEqual({ type: "action", action: blast });
     expect(parse({ type: "attack", weapon: "w", target: 3 })).toBeNull();
     expect(parse({ type: "attack" })).toBeNull();
+  });
+});
+
+describe("combat outcomes", () => {
+  it("applies hit instantKill, damageDelta, apLoss, and injuries", () => {
+    const killCfg = tuned("blaster", {
+      accuracy: 1,
+      hitOutcomes: [{ weight: 1, critical: true, log: "BLASTER_TARGET_HEADSHOT", effects: { instantKill: "target" } }],
+    });
+    const killed = must(applyAction(ship("blaster", killCfg), "p0", shoot("p1")));
+    expect(player(killed, "p1").alive).toBe(false);
+    expect(viewFor(killed, "p2").log.some((e) => e.key === "BLASTER_TARGET_HEADSHOT")).toBe(true);
+
+    const apInjuryCfg = tuned("blaster", {
+      accuracy: 1,
+      hitOutcomes: [
+        {
+          weight: 1,
+          critical: true,
+          log: "BLASTER_SHOOTER_PLUS_1_DAMAGE_TARGET_REMOVE_2_AP",
+          effects: {
+            damageDelta: 1,
+            apLoss: { who: "target", amount: 2 },
+            injuries: [{ who: "target", injury: "damaged_ears", chance: 1 }],
+          },
+        },
+      ],
+    });
+    const s = ship("blaster", apInjuryCfg);
+    const apBefore = player(s, "p1").ap;
+    const hit = must(applyAction(s, "p0", shoot("p1")));
+    const lost = base.startHp - hp(hit, "p1");
+    expect(lost).toBeGreaterThanOrEqual(W.blaster!.damage[0] + 1);
+    expect(lost).toBeLessThanOrEqual(W.blaster!.damage[1] + 1);
+    expect(player(hit, "p1").ap).toBe(Math.max(0, apBefore - 2));
+    expect(player(hit, "p1").statuses).toContain("damaged_ears");
+  });
+
+  it("applies random injuries and breakRandomItems on area hits", () => {
+    const cfg = tuned("grenade", {
+      accuracy: 1,
+      hitOutcomes: [
+        {
+          weight: 1,
+          critical: true,
+          log: "GRENADE_CRITICAL_THROW_SPLASH_DAMAGE_ALL_BREAK_ITEMS_SPLASH_WOUNDS",
+          effects: { weaponEffect: "destroy", breakRandomItems: 2, injuries: [{ who: "splash", injury: "random", chance: 1, count: 2 }] },
+        },
+      ],
+    });
+    const s = ship("grenade", cfg);
+    s.items.push(
+      { id: "b1", type: "blaster", at: { kind: "room", id: "SICK_BAY" } },
+      { id: "b2", type: "knife", at: { kind: "room", id: "SICK_BAY" } },
+      { id: "b3", type: "extinguisher", at: { kind: "room", id: "SICK_BAY" } },
+    );
+    const r = must(applyAction(s, "p0", blast));
+    expect(r.items.filter((i) => i.at.kind === "room" && i.at.id === "SICK_BAY" && i.broken)).toHaveLength(2);
+    expect(player(r, "p1").statuses.some((st) => base.diseases.allInjuries.includes(st))).toBe(true);
+    expect(player(r, "p2").statuses.some((st) => base.diseases.allInjuries.includes(st))).toBe(true);
+    expect(player(r, "p3").statuses.some((st) => base.diseases.allInjuries.includes(st))).toBe(false);
+  });
+
+  it("applies miss weaponEffect (drop/break), apLoss, self-injury, and backfire instantKill", () => {
+    const dropCfg = tuned("blaster", {
+      accuracy: 0,
+      missOutcomes: [
+        {
+          weight: 1,
+          fumble: true,
+          log: "BLASTER_SHOOTER_MINUS_1_AP_SHOOTER_DROP_WEAPON_SHOOTER_RANDOM_INJURY",
+          effects: { apLoss: { who: "attacker", amount: 1 }, weaponEffect: "drop", injuries: [{ who: "attacker", injury: "random", chance: 1 }] },
+        },
+      ],
+    });
+    const dropped = must(applyAction(ship("blaster", dropCfg), "p0", shoot("p1")));
+    expect(dropped.items.find((i) => i.id === "w")?.at).toEqual({ kind: "room", id: "SICK_BAY" });
+    expect(player(dropped, "p0").ap).toBe(base.startAp - base.weapons.cost.ap - 1);
+    expect(player(dropped, "p0").statuses.some((st) => base.diseases.allInjuries.includes(st))).toBe(true);
+
+    const breakCfg = tuned("knife", {
+      accuracy: 0,
+      missOutcomes: [
+        {
+          weight: 1,
+          fumble: true,
+          log: "KNIFE_BREAK_WEAPON_SHOOTER_TORN_TONGUE",
+          effects: { weaponEffect: "break", injuries: [{ who: "attacker", injury: "torn_tongue", chance: 1 }] },
+        },
+      ],
+    });
+    const broken = must(applyAction(ship("knife", breakCfg), "p0", shoot("p1")));
+    expect(broken.items.find((i) => i.id === "w")?.broken).toBe(true);
+    expect(player(broken, "p0").statuses).toContain("torn_tongue");
+
+    const backfireCfg = tuned("missile_launcher", {
+      accuracy: 0,
+      missOutcomes: [
+        { weight: 1, fumble: true, log: "ROCKET_LAUNCHER_FUMBLE_6_ITEMS_BACKFIRE_ROCKETTED", effects: { instantKill: "attacker" } },
+      ],
+    });
+    const backfired = must(applyAction(ship("missile_launcher", backfireCfg), "p0", blast));
+    expect(player(backfired, "p0").alive).toBe(false);
+    expect(player(backfired, "p1").alive).toBe(true);
+  });
+
+  it("folds outcome weights through attacker modifiers (gunman increases critical hits)", () => {
+    const cfg = tuned("blaster", {
+      accuracy: 1,
+      hitOutcomes: [
+        { weight: 10, log: "BLASTER_SUCCESSFUL_SHOT" },
+        { weight: 10, critical: true, log: "BLASTER_TARGET_HEADSHOT", effects: { instantKill: "target" } },
+      ],
+    });
+    let baseCrits = 0;
+    let gunmanCrits = 0;
+    for (let seed = 1; seed <= 100; seed++) {
+      const s1 = ship("blaster", cfg, seed);
+      if (!player(must(applyAction(s1, "p0", shoot("p1"))), "p1").alive) baseCrits++;
+      const s2 = ship("blaster", cfg, seed);
+      player(s2, "p0").skills.push("gunman");
+      if (!player(must(applyAction(s2, "p0", shoot("p1"))), "p1").alive) gunmanCrits++;
+    }
+    expect(gunmanCrits).toBeGreaterThan(baseCrits);
+  });
+
+  it("attackWithHeldWeapon delegates to AttackAction outcomes and effects", () => {
+    const cfg = tuned("blaster", {
+      accuracy: 0,
+      missOutcomes: [
+        {
+          weight: 1,
+          fumble: true,
+          log: "BLASTER_SHOOTER_DROP_WEAPON",
+          effects: { weaponEffect: "drop" },
+        },
+      ],
+    });
+    const s = ship("blaster", cfg);
+    attackWithHeldWeapon(s, player(s, "p0"));
+    expect(s.log.some((e) => e.key === "BLASTER_SHOOTER_DROP_WEAPON")).toBe(true);
+    expect(s.items.find((i) => i.id === "w")?.at).toEqual({ kind: "room", id: "SICK_BAY" });
+  });
+
+  it("keeps combat injuries private in viewFor while combat log lines stay room-public", () => {
+    const cfg = tuned("blaster", {
+      accuracy: 1,
+      hitOutcomes: [
+        {
+          weight: 1,
+          critical: true,
+          log: "BLASTER_SHOOTER_PLUS_1_DAMAGE_TARGET_DAMAGED_EARS",
+          effects: { damageDelta: 1, injuries: [{ who: "target", injury: "damaged_ears", chance: 1 }] },
+        },
+      ],
+    });
+    const r = must(applyAction(ship("blaster", cfg), "p0", shoot("p1")));
+    expect(viewFor(r, "p1").statuses).toContain("damaged_ears");
+    expect(viewFor(r, "p2").players.find((o) => o.id === "p1")?.statuses).not.toContain("damaged_ears");
+    expect(viewFor(r, "p2").log.some((e) => e.key === "BLASTER_SHOOTER_PLUS_1_DAMAGE_TARGET_DAMAGED_EARS")).toBe(true);
+    expect(viewFor(r, "p3").log.some((e) => e.key === "BLASTER_SHOOTER_PLUS_1_DAMAGE_TARGET_DAMAGED_EARS")).toBe(false);
+  });
+
+  it("replays combat outcomes deterministically from stored inputs", () => {
+    const replaySeats = makeSeats(16);
+    const replayConfig: GameConfig = { ...base, characterModifiers: {}, startInventory: ["knife"] };
+    const setup: GameSetup = { seats: replaySeats, config: replayConfig, seed: 42, rulesVersion: "test" };
+    let s = startGame(setup);
+    const attackAction = offered(s, "p0").find((a) => a.type === "attack")!;
+    expect(attackAction).toBeDefined();
+    const inputs: Input[] = [{ by: "p0", type: "action", action: attackAction, at: 1 }];
+    s = must(applyInput(s, inputs[0]!));
+    const due = nextDue(s);
+    if (due !== null) {
+      const tickInput: Input = { type: "tick", at: due };
+      inputs.push(tickInput);
+      s = must(applyInput(s, tickInput));
+    }
+    const replayed = replayGame(setup, JSON.parse(JSON.stringify(inputs)) as Input[]);
+    expect(replayed).toEqual(s);
+    expect(replayed.log.some((e) => e.key !== "crewWakes")).toBe(true);
   });
 });

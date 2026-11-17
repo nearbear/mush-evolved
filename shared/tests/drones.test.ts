@@ -2,6 +2,7 @@
 import { describe, expect, it } from "vitest";
 import { BLUEPRINT_ITEM } from "../src/blueprints.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
+import { breakDoor, doorId, isDoorBroken } from "../src/doors.ts";
 import { DRONE_MAX_SERIAL, DRONE_NAMES, droneChance, newDrone } from "../src/drones.ts";
 import { fullViewFor } from "../src/fullView.ts";
 import { INCIDENT_IDS } from "../src/incidents.ts";
@@ -186,6 +187,33 @@ describe("support drones: repairs", () => {
     expect(find(after, drone.id).at).toEqual({ kind: "room", id: HERE });
     expect(after.log.filter((e) => e.key.startsWith("drone"))).toEqual([]);
   });
+
+  it("repairs a broken door in its room (success clears broken state and logs droneRepairedDoor; failure increments failures.repair and logs droneRepairFailedDoor)", () => {
+    const other = DEFAULT_CONFIG.rooms[HERE]![0]!;
+    const id = doorId(HERE, other);
+
+    const sFail = ship(sure(quiet(), false));
+    const failing = addDrone(sFail, HERE);
+    breakDoor(sFail, id);
+    const afterFail = nextCycle(sFail);
+    expect(isDoorBroken(afterFail, HERE, other)).toBe(true);
+    expect(find(afterFail, failing.id).drone!.failures.repair).toBe(1);
+    expect(find(afterFail, failing.id).at).toEqual({ kind: "room", id: HERE });
+    expect(lines(afterFail, "droneRepairFailedDoor")).toEqual([
+      expect.objectContaining({ room: HERE, visibleTo: "all", params: { drone: "Robbie", serial: 42, room: other } }),
+    ]);
+
+    const sOk = ship(sure(quiet(), true));
+    const working = addDrone(sOk, HERE);
+    breakDoor(sOk, id);
+    const afterOk = nextCycle(sOk);
+    expect(isDoorBroken(afterOk, HERE, other)).toBe(false);
+    expect(find(afterOk, working.id).drone!.failures.repair).toBe(0);
+    expect(find(afterOk, working.id).at).toEqual({ kind: "room", id: HERE });
+    expect(lines(afterOk, "droneRepairedDoor")).toEqual([
+      expect.objectContaining({ room: HERE, visibleTo: "all", params: { drone: "Robbie", serial: 42, room: other } }),
+    ]);
+  });
 });
 
 describe("support drones: moving", () => {
@@ -216,6 +244,34 @@ describe("support drones: moving", () => {
       return s.items.filter((i) => i.type === SUPPORT_DRONE_ITEM);
     };
     expect(run()).toEqual(run());
+  });
+
+  it("a sensor drone steps toward a reachable room with a broken door, and falls back to wandering if no broken door is reachable", () => {
+    const s = ship();
+    const drone = addDrone(s, "CORRIDOR_A");
+    drone.drone!.upgrades = ["sensor"];
+    breakDoor(s, doorId("SPACESHIP_BAY_A", "STORAGE_A_0"));
+    const after = nextCycle(s);
+    expect(find(after, drone.id).at).toEqual({ kind: "room", id: "CORRIDOR_B" });
+
+    // Disconnected component with a broken door: unreachable from CORRIDOR_A, so it wanders randomly.
+    const rooms = new Set<string>();
+    const isolatedConfig: GameConfig = {
+      ...quiet(),
+      rooms: {
+        ...quiet().rooms,
+        ISOLATED_A: ["ISOLATED_B"],
+        ISOLATED_B: ["ISOLATED_A"],
+      },
+    };
+    for (let seed = 1; seed <= 20; seed++) {
+      const s2 = ship(isolatedConfig, seed);
+      const d2 = addDrone(s2, "CORRIDOR_A");
+      d2.drone!.upgrades = ["sensor"];
+      breakDoor(s2, doorId("ISOLATED_A", "ISOLATED_B"));
+      rooms.add((find(nextCycle(s2), d2.id).at as { id: string }).id);
+    }
+    expect(rooms.size).toBeGreaterThan(1);
   });
 });
 

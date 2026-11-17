@@ -1,9 +1,13 @@
 import { Action, IN_PRESELECTION, peopleHere, type ActionTag, isString } from "./action.ts";
+import { changeAP } from "../adjustStats.ts";
+import { breakItem } from "../breakage.ts";
 import { damage } from "../death.ts";
-import { itemsIn, removeItem, isWorking } from "../items.ts";
+import { addDisease } from "../diseases.ts";
+import { ITEM_TYPES, dropWeapon, itemsIn, removeItem, removeItemIfPresent, isWorking } from "../items.ts";
 import { logPublic } from "../log.ts";
-import { roll, rollFloat, rollInt } from "../rng.ts";
-import type { DeepReadonly, WeaponStats } from "../types/config.ts";
+import { weaponOutcomeWeight } from "../modifiers.ts";
+import { roll, rollFloat, rollInt, rollShuffle, rollWeighted } from "../rng.ts";
+import type { DeepReadonly, WeaponOutcomeEffects, WeaponStats } from "../types/config.ts";
 import type { GameState, ItemState, PlayerState } from "../types.ts";
 
 /** A weapon aimed at one person, or an area weapon (`WeaponStats.area`), which has no target. */
@@ -66,31 +70,68 @@ export class AttackAction extends Action<AttackActionData> {
   }
 
   override apply(state: GameState, player: PlayerState, target: AttackActionData): void {
-    const { type } = spend(state, target);
+    const weapon = spend(state, target);
+    const { type } = weapon;
     const stats = state.config.weapons.types[type]!;
+    const weights = stats.hitOutcomes.map((o) =>
+      weaponOutcomeWeight(o.weight, { state, player, weapon: stats, kind: "hit", critical: !!o.critical, fumble: false }),
+    );
+    const outcome = stats.hitOutcomes[rollWeighted(state, weights)]!;
+    const effects = outcome.effects;
+
     if (stats.area) {
-      logPublic(state, player.room, "attackedArea", { name: player.character, item: type });
-      for (const victim of peopleHere(state, player)) damage(state, victim, roll(state, stats.damage), "assassinated");
+      const victims = peopleHere(state, player);
+      logPublic(state, player.room, outcome.log, { name: player.character, item: type });
+      if (effects?.instantKill === "target") {
+        for (const victim of victims) damage(state, victim, victim.hp, "assassinated");
+      } else {
+        const range = adjustedDamageRange(stats.damage, effects);
+        for (const victim of victims) damage(state, victim, roll(state, range), "assassinated");
+      }
       damage(state, player, roll(state, stats.area.selfDamage), "assassinated");
+      applyOutcomeEffects(state, player, weapon, victims, effects);
       return;
     }
+
     const victim = state.players.find((o) => o.id === (target as { target: string }).target)!; // checked, so it exists
-    logPublic(state, player.room, "attacked", { name: player.character, target: victim.character, item: type });
-    damage(state, victim, roll(state, victim.role === "mush" && stats.mushDamage ? stats.mushDamage : stats.damage), "assassinated");
+    logPublic(state, player.room, outcome.log, { name: player.character, target: victim.character, item: type });
+    if (effects?.instantKill === "target") {
+      damage(state, victim, victim.hp, "assassinated");
+    } else {
+      const baseRange = victim.role === "mush" && stats.mushDamage ? stats.mushDamage : stats.damage;
+      damage(state, victim, roll(state, adjustedDamageRange(baseRange, effects)), "assassinated");
+    }
+    applyOutcomeEffects(state, player, weapon, [victim], effects);
   }
 
   override fail(state: GameState, player: PlayerState, target: AttackActionData): void {
-    const { type } = spend(state, target);
+    const weapon = spend(state, target);
+    const { type } = weapon;
+    const stats = state.config.weapons.types[type]!;
+    const weights = stats.missOutcomes.map((o) =>
+      weaponOutcomeWeight(o.weight, { state, player, weapon: stats, kind: "miss", critical: false, fumble: !!o.fumble }),
+    );
+    const outcome = stats.missOutcomes[rollWeighted(state, weights)]!;
+
+    const victims = "target" in target
+      ? [state.players.find((o) => o.id === target.target)!]
+      : peopleHere(state, player);
     if ("target" in target) {
-      const victim = state.players.find((o) => o.id === target.target)!;
-      logPublic(state, player.room, "attackMissed", { name: player.character, target: victim.character, item: type });
-    } else logPublic(state, player.room, "attackAreaMissed", { name: player.character, item: type });
+      logPublic(state, player.room, outcome.log, { name: player.character, target: victims[0]!.character, item: type });
+    } else {
+      logPublic(state, player.room, outcome.log, { name: player.character, item: type });
+    }
+    if (outcome.effects?.instantKill === "target") {
+      for (const v of victims) damage(state, v, v.hp, "assassinated");
+    }
+    applyOutcomeEffects(state, player, weapon, victims, outcome.effects);
   }
 }
 
 /** Carried weapons that can be used now: with a charge left, if they use charges. */
 function usableWeapons(state: Readonly<GameState>, player: Readonly<PlayerState>): ItemState[] {
   return itemsIn(state, { kind: "player", id: player.id }).filter((i) => {
+    if (i.owner !== undefined && i.owner !== player.id) return false;
     const stats = state.config.weapons.types[i.type];
     return stats && isWorking(i) && (stats.charges === undefined || (i.charges ?? 0) > 0);
   });
@@ -108,6 +149,58 @@ function spend(state: GameState, target: AttackActionData): ItemState {
   if (stats.charges !== undefined) weapon.charges = weapon.charges! - 1;
   if (stats.consumed) removeItem(state, weapon.id);
   return weapon;
+}
+
+/** Shifts a `[min, max]` damage range by an outcome's `damageDelta` and `maxDamageDelta`, clamped at 0. */
+function adjustedDamageRange(
+  base: readonly [number, number],
+  effects: DeepReadonly<WeaponOutcomeEffects> | undefined,
+): [number, number] {
+  const min = Math.max(0, base[0] + (effects?.damageDelta ?? 0));
+  const max = Math.max(min, base[1] + (effects?.damageDelta ?? 0) + (effects?.maxDamageDelta ?? 0));
+  return [min, max];
+}
+
+/** Applies secondary combat outcome effects (backfire kill, splash damage, AP loss, injuries, weapon drop/break/destroy, room item breakage). */
+function applyOutcomeEffects(
+  state: GameState,
+  attacker: PlayerState,
+  weapon: ItemState,
+  victims: readonly PlayerState[],
+  effects: DeepReadonly<WeaponOutcomeEffects> | undefined,
+): void {
+  if (!effects) return;
+  if (effects.instantKill === "attacker") damage(state, attacker, attacker.hp, "assassinated");
+  if (effects.splashDamage && rollFloat(state) < (effects.splashDamage.chance ?? 1)) {
+    for (const v of victims) damage(state, v, effects.splashDamage.amount, "assassinated");
+  }
+  if (effects.apLoss) {
+    const recipients = effects.apLoss.who === "attacker" ? [attacker] : victims;
+    for (const p of recipients) changeAP(state, p, -effects.apLoss.amount);
+  }
+  if (effects.injuries) {
+    const injuryPool = state.config.diseases.allInjuries;
+    for (const inj of effects.injuries) {
+      const recipients = inj.who === "attacker" ? [attacker] : victims;
+      const count = inj.count ?? 1;
+      for (const recipient of recipients) {
+        if (!recipient.alive) continue;
+        for (let i = 0; i < count; i++) {
+          if (rollFloat(state) < inj.chance) {
+            const id = inj.injury === "random" ? injuryPool[rollInt(state, injuryPool.length)]! : inj.injury;
+            addDisease(state, recipient, id);
+          }
+        }
+      }
+    }
+  }
+  if (effects.weaponEffect === "drop") dropWeapon(state, attacker, weapon, { bypassCanDrop: true });
+  else if (effects.weaponEffect === "break") breakItem(state, weapon);
+  else if (effects.weaponEffect === "destroy") removeItemIfPresent(state, weapon.id);
+  if (effects.breakRandomItems && effects.breakRandomItems > 0) {
+    const breakable = itemsIn(state, { kind: "room", id: attacker.room }).filter((i) => !i.broken && ITEM_TYPES[i.type]?.canBreak);
+    for (const item of rollShuffle(state, breakable).slice(0, effects.breakRandomItems)) breakItem(state, item);
+  }
 }
 
 

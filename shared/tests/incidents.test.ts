@@ -304,7 +304,7 @@ describe("incidents", () => {
     const broken = Object.keys(after.doors);
     expect(broken).toHaveLength(1);
     expect(after.incidentPoints).toBe(0);
-    expect(after.log.slice(s.log.length).map((e) => e.key)).toEqual(["cycleBegins"]);
+    expect(after.log.slice(s.log.length)).toEqual([]);
     expect(globalSystem(after)).toEqual([]);
 
     const [a, b] = doorRooms(broken[0]!);

@@ -1,5 +1,6 @@
 import { DEFAULT_CONFIG, FUEL_CAPSULE_ITEM, PLANET_DIRECTIONS, type Action, type PlanetDirection, type PlayerView, type RoomId } from "@mush2/shared";
 import { dutyPriority, holdsTrigger } from "../duties.ts";
+import { orbitExplored } from "../reportShare.ts";
 import { CANCEL_HOLD_LINE, HOLD_JUMP_LINE, JUMP_NOW_LINE, crewAboard, holdStartCycle, isHoldingJump, isJumpDue, jumpNowCycle, parsePlanetShare, type SharedPlanetInfo } from "../planetShare.ts";
 import { act, failed, find, goTo, nearest, offered, rawCanAfford, roomsWith, where } from "./blocks.ts";
 import type { BotMemory, Goal, GoalDef, GoalStep } from "./types.ts";
@@ -94,12 +95,12 @@ export function jumpDueByChat(view: PlayerView, memory: BotMemory): boolean {
 
 /**
  * The chamber's level from this bot's own latest reading in its log (or remembered in `memory.combustion` across
- * room changes / log pruning), reset to `null` by `shipTraveled`.
+ * room changes / log pruning), reset to `null` by `shipTraveled` or `leftOrbit` (both change the level).
  */
 export function combustionReading(view: PlayerView, memory?: BotMemory): number | null {
   for (let i = view.log.length - 1; i >= 0; i--) {
     const line = view.log[i]!;
-    if (line.key === "shipTraveled") {
+    if (line.key === "shipTraveled" || line.key === "leftOrbit") {
       if (memory) memory.combustion = null;
       return null;
     }
@@ -161,7 +162,13 @@ export const travel: GoalDef = {
         return [travelGoal(view, memory, firstBridge, { direction: null, distance: 1 })];
       }
       memory.holdSince = null;
-      return [];
+      if (!readyToLeaveOrbit(view, memory)) return [];
+      const chamber = combustionReading(view, memory) ?? 0;
+      const carried = view.inventory.filter((i) => i.type === FUEL_CAPSULE_ITEM).length;
+      if (view.ship.fuel + carried + chamber < DEFAULT_CONFIG.navigation.leaveOrbit.fuel) return [];
+      const ap = DEFAULT_CONFIG.navigation.leaveOrbit.cost.ap;
+      const bridge = roomsWith(view, [COMMAND]).find((r) => !memory.ended.has(`leaveOrbit:${r}`) && rawCanAfford(view, r, ap, 0));
+      return bridge ? [leaveOrbitGoal(view, bridge)] : [];
     }
 
     const chamber = combustionReading(view, memory);
@@ -318,6 +325,49 @@ function travelGoal(view: PlayerView, _memory: BotMemory, bridge: RoomId, initia
       memory.cancelHold = isHoldingJump(v, memory) && v.chatChannels.includes("global");
       memory.justJumped = true;
       return act(go);
+    },
+  };
+}
+
+/**
+ * Whether the Commander leaves orbit now (#417; owner, 2026-11-12: "leaves orbit once every sector is explored"): in
+ * orbit, every sector of the planet explored by the shared reports it has read (`orbitExplored`), no expedition under
+ * way and nobody out in a patrol ship or the Icarus (`crewAboard`): leaving strands an expedition and loses ships in flight.
+ * Crew lost on the planet are left behind (owner, 2026-11-15): with every sector explored no expedition would find them.
+ */
+export function readyToLeaveOrbit(view: PlayerView, memory: BotMemory): boolean {
+  return view.navigation.orbiting && view.expedition === null && orbitExplored(view, memory) === true && crewAboard(view);
+}
+
+/**
+ * Leaving orbit (#417): checks the combustion chamber, loads `navigation.leaveOrbit.fuel` from the tanks if short (extra
+ * loaded fuel stays: leaving burns only that much), walks to the bridge and leaves. The ship then travels into empty
+ * space, and `travel` takes over from there with the next shared planet.
+ */
+function leaveOrbitGoal(view: PlayerView, bridge: RoomId): Goal {
+  const dryTanks = new Set<RoomId>();
+  return {
+    id: "travel",
+    key: `leaveOrbit:${bridge}`,
+    label: `Leave orbit from the Command terminal ${where(view, bridge)}: every sector of the planet is explored`, // i18n-ignore: model prompt text, not player-visible
+    step(v, memory) {
+      if (!readyToLeaveOrbit(v, memory)) return { kind: "done" };
+      const level = combustionReading(v, memory);
+      if (level === null) return pauseIfOutOfPoints(v, atChamber(v, () => find(v, "check_combustion")), failed);
+      const need = DEFAULT_CONFIG.navigation.leaveOrbit.fuel - level;
+      if (need > 0) {
+        const carried = v.inventory.filter((i) => i.type === FUEL_CAPSULE_ITEM).length;
+        return pauseIfOutOfPoints(v, fuel(v, need, carried, dryTanks), failed);
+      }
+      const walk = goTo(v, bridge);
+      if (walk) return pauseIfOutOfPoints(v, walk, failed);
+      const leave = find(v, "leave_orbit");
+      if (!leave) {
+        if (lacksOnlyPoints(v, "leave_orbit")) return { kind: "done" };
+        return failed("cant_steer");
+      }
+      memory.combustion = null;
+      return act(leave);
     },
   };
 }
