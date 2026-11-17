@@ -545,7 +545,24 @@ describe("neighborRooms", () => {
 
 describe("doorPassage on the real ship", () => {
   const ship = withoutBuiltOnly({ ...JSON.parse(shipArtJson), ...JSON.parse(shipMapJson) } as ShipLayout);
-  const scene = (r: RoomLayout) => prepareScene(ship, [{ room: r, dx: 0, dy: 0 }, ...neighborRooms(ship, r)]);
+  const scenes = new Map<string, ReturnType<typeof prepareScene>>();
+  const scene = (r: RoomLayout) => {
+    let cached = scenes.get(r.id);
+    if (!cached) {
+      cached = prepareScene(ship, [{ room: r, dx: 0, dy: 0 }, ...neighborRooms(ship, r)]);
+      scenes.set(r.id, cached);
+    }
+    return cached;
+  };
+  const walkables = new Map<string, ReturnType<typeof walkableCells>>();
+  const walkable = (r: RoomLayout) => {
+    let cached = walkables.get(r.id);
+    if (!cached) {
+      cached = walkableCells(ship, r);
+      walkables.set(r.id, cached);
+    }
+    return cached;
+  };
   /** Every pair of rooms with a door between them, from both sides. */
   const pairs = ship.rooms.flatMap((r) =>
     neighborRooms(ship, r).map((n) => ({ from: r, to: n.room, at: r.at! })),
@@ -556,7 +573,7 @@ describe("doorPassage on the real ship", () => {
     const problems: string[] = [];
     for (const { from, to, at } of pairs) {
       const prepared = scene(from);
-      const path = doorPassage(prepared, walkableCells(ship, from), to.id);
+      const path = doorPassage(prepared, walkable(from), to.id);
       if (!path) {
         problems.push(`${from.id} -> ${to.id}: no way through`);
         continue;
@@ -565,7 +582,7 @@ describe("doorPassage on the real ship", () => {
       const door = prepared.statics.find((s) => s.key === inDoor[0]?.door);
       if (!door || (ship.slices[door.slice]?.anims.length ?? 0) < 2) problems.push(`${from.id} -> ${to.id}: no door that opens (${door?.slice})`);
       // The doorway cell next to `to` is where you change rooms: the walk on starts there.
-      const back = doorPassage(scene(to), walkableCells(ship, to), from.id)!;
+      const back = doorPassage(scene(to), walkable(to), from.id)!;
       const cross = inDoor[0]!, other = back.filter((c) => c.door).at(-1)!;
       if (cross.x + at.x !== other.x + to.at!.x || cross.y + at.y !== other.y + to.at!.y) problems.push(`${from.id} -> ${to.id}: doorways differ`);
     }

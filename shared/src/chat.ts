@@ -7,7 +7,7 @@
 import { ITRACKIE_ITEM, itemsIn, isWorking } from "./items.ts";
 import { channelLimit } from "./modifiers.ts";
 import { noITrackieNeeded } from "./comms.ts";
-import { clone, fail, dayOf, findPlayer, type ActionResult } from "./helpers.ts";
+import { cloneState, fail, dayOf, findPlayer, type ActionResult } from "./helpers.ts";
 import { dropChannelPlans, leavePlans } from "./plans.ts";
 import { CHAT_CHANNELS, GRAVEYARD_CHANNEL, MUSH_CHANNEL } from "./types.ts";
 import type { ChannelId, ChatMark, ChatMessage, ChatOutbox, GameState, PlayerId, PlayerState, PrivateChannelId, SharedPlanetId, SharedReportId, ThreadId } from "./types.ts";
@@ -137,7 +137,16 @@ export function sendChat(state: GameState, playerId: PlayerId, channel: ChannelI
   if (!body) return { ok: false, error: "empty_message" };
   if (body.length > MAX_CHAT_LENGTH) return { ok: false, error: "message_too_long" };
 
-  const next = clone(state);
+  const next: GameState = {
+    ...state,
+    chat: state.chat.map((m) => (m.at === undefined ? { ...m } : m)),
+    chatSeq: { ...state.chatSeq },
+    chatMarks: { ...state.chatMarks },
+    chatOutbox: {
+      sealed: state.chatOutbox.sealed.map((p) => ({ ...p, messages: p.messages.map((m) => ({ ...m })) })),
+      dropped: [...state.chatOutbox.dropped],
+    },
+  };
   pushChat(next, channel, { from: p.id, isBot: p.isBot, text: body });
   return { ok: true, state: next };
 }
@@ -190,7 +199,7 @@ export function toggleCheckbox(state: GameState, playerId: PlayerId, channel: Ch
   if (mark.from !== p.id) return fail("message_not_yours");
   if (!mark.tasks.includes(line)) return fail("checkbox_not_found");
 
-  const next = clone(state);
+  const next = cloneState(state);
   const target = next.chatMarks[key]!;
   target.checked = target.checked.includes(line) ? target.checked.filter((l) => l !== line) : [...target.checked, line].sort((a, b) => a - b);
   return { ok: true, state: next };
@@ -215,7 +224,7 @@ export function createThread(state: GameState, playerId: PlayerId, rawName: stri
     if (state.threads.some((t) => t.from === fromMessage)) return fail("thread_exists");
   }
 
-  const next = clone(state);
+  const next = cloneState(state);
   const id: ThreadId = `th-${next.nextThreadId++}`;
   next.threads.push({ id, name, ...(fromMessage !== undefined && { from: fromMessage }), createdBy: playerId, cycle: next.cycle });
   return { ok: true, state: next };
@@ -245,7 +254,7 @@ export function createChannel(state: GameState, playerId: PlayerId, rawName = ""
   if (name.length > MAX_CHANNEL_NAME_LENGTH) return fail("channel_name_invalid");
   if (channelCount(state, playerId) >= channelLimit(state, p)) return fail("channel_limit_reached");
 
-  const next = clone(state);
+  const next = cloneState(state);
   const id: PrivateChannelId = `pc-${next.nextChannelId++}`;
   const channel = { id, name, members: [playerId], createdBy: playerId, ...dayOf(next) };
   next.channels.push(channel);
@@ -263,7 +272,7 @@ export function inviteToChannel(state: GameState, playerId: PlayerId, channelId:
   const channel = state.channels.find((c) => c.id === channelId);
   if (!p || !p.alive || state.phase !== "playing" || !channel?.members.includes(playerId)) return fail("channel_forbidden");
   if (!canJoin(state, channel.members, inviteeId)) return fail("channel_invite_refused");
-  const next = clone(state);
+  const next = cloneState(state);
   next.channels.find((c) => c.id === channelId)!.members.push(inviteeId);
   return { ok: true, state: next };
 }
@@ -278,7 +287,7 @@ function canJoin(state: GameState, members: readonly PlayerId[], inviteeId: Play
 export function leaveChannel(state: GameState, playerId: PlayerId, channelId: PrivateChannelId): ActionResult {
   const channel = state.channels.find((c) => c.id === channelId);
   if (!findPlayer(state, playerId) || !channel?.members.includes(playerId)) return fail("channel_forbidden");
-  const next = clone(state);
+  const next = cloneState(state);
   removeFromChannel(next, channelId, playerId);
   return { ok: true, state: next };
 }

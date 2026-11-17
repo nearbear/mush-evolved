@@ -39,7 +39,7 @@ import { soil } from "./dirt.ts";
 import { rollFloat, shuffle, streamFor } from "./rng.ts";
 import { chatChannels, chatMarkKey, chatPageOf, markedText, readChannels } from "./chat.ts";
 import { moderateName } from "./moderation.ts";
-import { clone, dayOf, fail, findPlayer, type ActionResult } from "./helpers.ts";
+import { clone, cloneState, dayOf, fail, findPlayer, type ActionResult } from "./helpers.ts";
 
 export { dayOf };
 import { damage, healDaily, hasMushDied } from "./death.ts";
@@ -343,7 +343,7 @@ function viewActionOptions(state: GameState, p: PlayerState): ActionOption[] {
 /** Does an action at once, skipping the queue and its timing (queue.ts is how players act; this is its last step). */
 export function applyAction(state: GameState, playerId: PlayerId, action: Action): ActionResult {
   const p = findPlayer(state, playerId);
-  const next = clone(state);
+  const next = cloneState(state);
   if (p && canAct(state, p) && performAction(next, findPlayer(next, playerId)!, action)) return { ok: true, state: next };
   return { ok: false, error: "illegal_action" };
 }
@@ -415,7 +415,7 @@ bindPerformAction(performAction);
  */
 export function setCheat(state: GameState, playerId: PlayerId, cheat: Cheat, on: boolean): ActionResult {
   if (!findPlayer(state, playerId)) return fail("unknown_player");
-  const next = clone(state);
+  const next = cloneState(state);
   const p = findPlayer(next, playerId)!;
   p.cheats = p.cheats.filter((c) => c !== cheat);
   if (on) p.cheats.push(cheat);
@@ -426,7 +426,7 @@ export function setCheat(state: GameState, playerId: PlayerId, cheat: Cheat, on:
 /** Switches a player's role at once (development cheat). Like setCheat, the server gates it. */
 export function setRoleCheat(state: GameState, playerId: PlayerId, role: RoleCheat): ActionResult {
   if (!findPlayer(state, playerId)) return fail("unknown_player");
-  const next = clone(state);
+  const next = cloneState(state);
   const p = findPlayer(next, playerId)!;
   if (role === "mush" && p.role === "human") convert(next, p);
   else if (role === "human") makeHuman(p, next.cycle);
@@ -449,7 +449,7 @@ export function cheatRoomCheat(state: GameState, playerId: PlayerId): ActionResu
   if (offShip(p.room) || onExpedition(state, p)) return fail("off_ship");
   const blocked = teleportBlocked(state, p);
   if (blocked) return fail(blocked);
-  const next = clone(state);
+  const next = cloneState(state);
   teleport(next, findPlayer(next, playerId)!, CHEAT_ROOM);
   return { ok: true, state: next };
 }
@@ -460,7 +460,7 @@ export function cheatRoomCheat(state: GameState, playerId: PlayerId): ActionResu
  */
 export function newCycle(state: GameState, at?: number): ActionResult {
   if (state.phase !== "playing") return fail("game_over");
-  const next = clone(state);
+  const next = cloneState(state);
   advanceCycle(next, at);
   return { ok: true, state: next };
 }

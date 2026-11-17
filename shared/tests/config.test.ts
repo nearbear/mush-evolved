@@ -32,13 +32,12 @@ describe("resolveConfig", () => {
     expect(config.preselection).not.toHaveProperty("extra");
   });
 
-  it("reads DEFAULT_CONFIG on each call, so a balance change reaches every later resolve", () => {
-    const before = DEFAULT_CONFIG.maxAp;
-    try {
-      DEFAULT_CONFIG.maxAp = 99;
-      expect(resolveConfig({ mushCount: 1 }).maxAp).toBe(99);
-    } finally {
-      DEFAULT_CONFIG.maxAp = before;
-    }
+  it("freezes DEFAULT_CONFIG and returns a fresh top-level object on each resolve", () => {
+    expect(Object.isFrozen(DEFAULT_CONFIG)).toBe(true);
+    const a = resolveConfig({ mushCount: 1 });
+    const b = resolveConfig({ mushCount: 1 });
+    expect(a).not.toBe(DEFAULT_CONFIG);
+    expect(a).not.toBe(b);
+    expect(a.maxAp).toBe(DEFAULT_CONFIG.maxAp);
   });
 });

@@ -56,7 +56,21 @@ function edit(game: GameState, id: string, change: (p: GameState["players"][numb
   return next;
 }
 
-const isLegal = (view: PlayerView, action: Action) => legalIn(view).some((a) => JSON.stringify(a) === JSON.stringify(action));
+function plainEqual(a: unknown, b: unknown): boolean {
+  if (Object.is(a, b)) return true;
+  if (typeof a !== "object" || a === null || typeof b !== "object" || b === null) return false;
+  if (Array.isArray(a) || Array.isArray(b)) {
+    return Array.isArray(a) && Array.isArray(b) && a.length === b.length && a.every((v, i) => plainEqual(v, b[i]));
+  }
+  const ra = a as Record<string, unknown>;
+  const rb = b as Record<string, unknown>;
+  const keysA = Object.keys(ra).filter((k) => ra[k] !== undefined);
+  const keysB = Object.keys(rb).filter((k) => rb[k] !== undefined);
+  if (keysA.length !== keysB.length) return false;
+  return keysA.every((k) => Object.hasOwn(rb, k) && plainEqual(ra[k], rb[k]));
+}
+
+const isLegal = (view: PlayerView, action: Action) => legalIn(view).some((a) => plainEqual(a, action));
 
 /**
  * Plays one bot for `turns` turns: each action it returns must be legal and is applied; `ready` or null starts a new

@@ -284,8 +284,8 @@ describe("communication center", () => {
 
     it("draws by weight", () => {
       const counts: Record<string, number> = {};
+      const s = ship(true);
       for (let seed = 0; seed < 5900; seed++) {
-        const s = ship(true);
         s.rng = seed * 7919;
         const entry = drawXyloph(s)!;
         counts[entry] = (counts[entry] ?? 0) + 1;

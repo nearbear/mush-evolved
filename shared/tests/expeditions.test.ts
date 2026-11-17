@@ -928,9 +928,7 @@ describe("expeditions, phase 3, slice C: gear and spacesuits", () => {
   function rate(s: GameState, hit: (next: GameState) => boolean, runs: number): number {
     let hits = 0;
     for (let seed = 1; seed <= runs; seed++) {
-      const t = clone(s);
-      t.rng = seed * 7919;
-      if (hit(go(t))) hits++;
+      if (hit(go({ ...s, rng: seed * 7919 }))) hits++;
     }
     return hits / runs;
   }

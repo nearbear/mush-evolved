@@ -111,7 +111,7 @@ describe("where you stand", () => {
 
   it("can be switched off: walks are refused and nobody's spot is sent", () => {
     const s = must(walk(ship(), "p1", 3, 4, false));
-    s.config.sharedSpots = false;
+    s.config = { ...s.config, sharedSpots: false };
     expect(walk(s, "p1", 5, 6, false)).toEqual({ ok: false, error: "cant_walk" });
     expect(viewFor(s, "p0").players.find((o) => o.id === "p1")?.spot).toBeUndefined();
     expect(viewFor(s, "p0").config.sharedSpots).toBe(false);

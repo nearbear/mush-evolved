@@ -16,6 +16,7 @@ import {
   NATAMY_RIFLE_OUTCOMES,
   OLD_FAITHFUL_OUTCOMES,
 } from "./configHitOutcomes.ts";
+import { deepFreeze } from "./helpers.ts";
 import type { ConfigOverrides, ExpeditionEventKind, ExpeditionEventRule, GameConfig, PreselectionRules, RoomId } from "./types.ts";
 
 /** One line of an expedition sector's table: its kind, weight and amount (oxygen, fuel, fruits or rations). */
@@ -31,7 +32,7 @@ const bad = (rule: ExpeditionEventRule): ExpeditionEventRule => ({ ...rule, nega
  */
 export const SHIP_ROOMS: readonly ShipRoom[] = shipRooms;
 
-export const DEFAULT_CONFIG: GameConfig = {
+export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   mushCount: 2,
   preselection: null,
   // Confirmed 2026-10-11: start with 8 AP, gain 1 per cycle (2 while lying in a bed, via the
@@ -769,7 +770,7 @@ export const DEFAULT_CONFIG: GameConfig = {
     allDisorderStats: [{type: "disorder", resistance: 8}],
     allInjuryStats: [{type: "injury"}],
     },
-};
+});
 
 /** A multiplayer ship's pre-selection (docs/rules/rules-design.md, "Joining and Mush selection", decided 2026-10-13). */
 export const PRESELECTION: PreselectionRules = {

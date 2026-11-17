@@ -6,7 +6,7 @@
 // when the planet is lost. Like chat, this is not an Action, and the server moderates the text first.
 
 import { chatChannels, pushChat } from "./chat.ts";
-import { clone, dayOf, fail, findPlayer, type ActionResult } from "./helpers.ts";
+import { cloneState, dayOf, fail, findPlayer, type ActionResult } from "./helpers.ts";
 import { astroTerminalsHere, planetsOf } from "./planets.ts";
 import type { GameState, PlayerId, PlayerState, SharedPlanetId } from "./types.ts";
 
@@ -34,7 +34,7 @@ export function sharePlanet(state: GameState, playerId: PlayerId, planetId: stri
   const body = text.trim();
   if (!body || body.length > MAX_SHARED_PLANET_LENGTH) return fail("share_text_invalid");
 
-  const next = clone(state);
+  const next = cloneState(state);
   const when = dayOf(next);
   const entry = next.sharedPlanets.find((s) => s.planet === planetId);
   if (entry) {

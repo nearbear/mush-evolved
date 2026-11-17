@@ -17,6 +17,23 @@ export function clone<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
 }
 
+/**
+ * Deep-copy a GameState while sharing `state.config` by reference.
+ * `config` is immutable (DeepReadonly<GameConfig> and frozen at runtime) and must never be mutated.
+ */
+export function cloneState(state: Readonly<GameState>): GameState {
+  const { config, ...rest } = state;
+  return { ...clone(rest), config };
+}
+
+/** Recursively freeze a plain object/array graph in place (for immutable config). */
+export function deepFreeze<T>(value: T): T {
+  if (typeof value !== "object" || value === null || Object.isFrozen(value)) return value;
+  Object.freeze(value);
+  for (const v of Object.values(value)) deepFreeze(v);
+  return value;
+}
+
 export function findPlayer(state: GameState, id: PlayerId): PlayerState | undefined {
   return state.players.find((p) => p.id === id);
 }

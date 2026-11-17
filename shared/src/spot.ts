@@ -12,7 +12,7 @@
 import type { ActionDef } from "./actions.ts";
 import { SHIP_ROOMS } from "./config.ts";
 import { removeStatus } from "./statuses.ts";
-import { clone, fail, findPlayer, type ActionResult } from "./helpers.ts";
+import { cloneState, fail, findPlayer, type ActionResult } from "./helpers.ts";
 import type { Action, GameState, PlayerId, PlayerState, RoomId, Spot } from "./types.ts";
 
 /** How far from the room's origin a cell may be, either way. Rooms are a few dozen cells across. */
@@ -32,7 +32,7 @@ export function walk(state: GameState, playerId: PlayerId, x: number, y: number,
   // In bed or pushed in a wheelchair, you can't wander off (as the client already stops you).
   if (p.lyingIn !== undefined || p.pushedBy !== undefined) return fail("cant_walk");
   if (!isSpotCell(x, y) || (behind && !isSpotCell(behind.x, behind.y))) return fail("cant_walk");
-  const next = clone(state);
+  const next = cloneState(state);
   const me = findPlayer(next, playerId)!;
   const pushed = next.players.find((o) => o.pushedBy === me.id);
   if (pushed) {

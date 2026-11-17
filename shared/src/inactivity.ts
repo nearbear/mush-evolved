@@ -5,7 +5,7 @@
 // clock cycle begins (the `cycle` input's `at`). Single player has no clock cycles, so nobody there goes inactive.
 // Going inactive costs titles (titles.ts) and ends an Outcast's curse. Both statuses are public and never announced.
 
-import { fail, findPlayer, clone, type ActionResult } from "./helpers.ts";
+import { fail, findPlayer, cloneState, type ActionResult } from "./helpers.ts";
 import { refreshTitles } from "./titles.ts";
 import type { GameState, Inactivity, PlayerId, PlayerState } from "./types.ts";
 
@@ -87,7 +87,7 @@ export function markSeen(state: GameState, ids: readonly PlayerId[], at: number)
 /** The `seen` input: the server's list of connected players (by body) and the time. Fails with `unchanged` when it changes nothing, so it isn't recorded. */
 export function seen(state: GameState, ids: readonly PlayerId[], at: number): ActionResult {
   if (state.phase !== "playing") return fail("game_over");
-  const next = clone(state);
+  const next = cloneState(state);
   return markSeen(next, ids, at) ? { ok: true, state: next } : fail("unchanged");
 }
 
@@ -97,7 +97,7 @@ export function inactivate(state: GameState, id: PlayerId): ActionResult {
   const p = findPlayer(state, id);
   if (!p) return fail("no_player");
   if (!p.alive || isInactive(p)) return fail("unchanged");
-  const next = clone(state);
+  const next = cloneState(state);
   goInactive(findPlayer(next, id)!, "inactive");
   refreshTitles(next);
   return { ok: true, state: next };

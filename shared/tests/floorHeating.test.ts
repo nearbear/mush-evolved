@@ -61,17 +61,20 @@ describe("Floor heating (FLOOR_HEATING)", () => {
   });
 
   it("reduces actual injuries rolled when performing actions", () => {
+    const base = game(1);
+    const heated = game(1);
+    heated.projects.FLOOR_HEATING = PROJECT_COMPLETE;
+    const hpBefore = player(base, "p0").hp;
     let baseInjuries = 0;
     let heatedInjuries = 0;
     for (let seed = 1; seed <= 200; seed++) {
-      const s0 = game(seed);
-      const hpBefore = player(s0, "p0").hp;
-      const afterBase = mustApply(s0, "p0", { type: "extinguish_manually" });
+      const rng = seed * 7919;
+      base.rng = rng;
+      const afterBase = mustApply(base, "p0", { type: "extinguish_manually" });
       if (player(afterBase, "p0").hp < hpBefore) baseInjuries += 1;
 
-      const s1 = game(seed);
-      s1.projects.FLOOR_HEATING = PROJECT_COMPLETE;
-      const afterHeated = mustApply(s1, "p0", { type: "extinguish_manually" });
+      heated.rng = rng;
+      const afterHeated = mustApply(heated, "p0", { type: "extinguish_manually" });
       if (player(afterHeated, "p0").hp < hpBefore) heatedInjuries += 1;
     }
     expect(baseInjuries).toBeGreaterThan(heatedInjuries);

@@ -3,7 +3,7 @@
 // Transfer (actions/body_transfer.ts) swaps two bodies' minds (owner, 2026-10-24, rules-design.md "Transfer").
 // Body ids stay put, so other players see no id change; the server resolves each seat to its body with `bodyOf`.
 
-import { clone, fail, findPlayer, type ActionResult } from "./helpers.ts";
+import { cloneState, fail, findPlayer, type ActionResult } from "./helpers.ts";
 import { startLogSeen } from "./log.ts";
 import type { GameState, PlayerId, PlayerState } from "./types.ts";
 
@@ -47,7 +47,7 @@ export function swapMinds(state: GameState, a: PlayerState, b: PlayerState): voi
 /** The victim of a Transfer closes the pop-up naming who took their body. Cosmetic; it changes nothing else. */
 export function acknowledgeTransfer(state: GameState, playerId: PlayerId): ActionResult {
   if (findPlayer(state, playerId)?.bodyTakenBy === undefined) return fail("nothing_to_acknowledge");
-  const next = clone(state);
+  const next = cloneState(state);
   delete findPlayer(next, playerId)!.bodyTakenBy;
   return { ok: true, state: next };
 }

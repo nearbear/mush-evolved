@@ -15,7 +15,7 @@
 import { ACTIONS, actionVisibility, type ActionDef } from "./actions.ts";
 import { expeditionStep } from "./expeditions.ts";
 import { endAccommodationToAct, expireOffers } from "./actions/accommodate.ts";
-import { clone, fail, findPlayer, type ActionResult } from "./helpers.ts";
+import { cloneState, fail, findPlayer, type ActionResult } from "./helpers.ts";
 import { logPrivate } from "./log.ts";
 import { dropped, emptyQueue } from "./queueCore.ts";
 import { getUp } from "./actions/lie_down.ts";
@@ -34,7 +34,7 @@ export function queueAction(state: GameState, playerId: PlayerId, action: Action
   // Checked against things as they are now, like the buttons the player pressed; checked again when its turn comes.
   if (!canAct(state, p) || def.check(state, p, action) !== null) return fail("illegal_action");
   if (p.current && p.queue.length >= state.config.action.queueCap) return fail("queue_full");
-  const next = clone(state);
+  const next = cloneState(state);
   const actor = findPlayer(next, playerId)!;
   if (action.type !== "lie_down") getUp(actor);
   const visibility = actionVisibility(action.type, actor);
@@ -70,7 +70,7 @@ export function clearQueue(state: GameState, playerId: PlayerId, notify = false)
   const p = findPlayer(state, playerId);
   const cancelsCurrent = state.config.action.resolveAt === "end" && p?.current;
   if (!p || (!cancelsCurrent && p.queue.length === 0)) return fail("nothing_queued");
-  const next = clone(state);
+  const next = cloneState(state);
   emptyQueue(next, findPlayer(next, playerId)!, notify);
   return { ok: true, state: next };
 }
@@ -83,7 +83,7 @@ export function clearQueue(state: GameState, playerId: PlayerId, notify = false)
  */
 export function dropQueues(state: GameState): ActionResult {
   if (!state.players.some((p) => p.current !== null || p.queue.length > 0)) return fail("nothing_queued");
-  const next = clone(state);
+  const next = cloneState(state);
   for (const p of next.players) Object.assign(p, { current: null, queue: [] });
   return { ok: true, state: next };
 }
@@ -112,7 +112,7 @@ export function tick(state: GameState, at: number): ActionResult {
     .map((p) => p.id);
   const lapsing = state.players.some((p) => p.accommodationOffers?.some((o) => o.until <= at));
   if (due.length === 0 && !lapsing && !stepDue(state)) return fail("nothing_due");
-  const next = clone(state);
+  const next = cloneState(state);
   next.now = at;
   expireOffers(next);
   for (const id of due) {

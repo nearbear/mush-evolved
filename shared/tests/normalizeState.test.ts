@@ -51,7 +51,8 @@ const withoutQueues = (game: GameState): GameState => {
 
 const fresh = () => ({ game: createGame(makeSeats(3), DEFAULT_CONFIG, 7), overrides: {} as ConfigOverrides });
 // A seeded random game some way in (#335): chat, channels, items moved, cycles passed, actions under way.
-const played = () => ({ game: play(600, 11).state, overrides: { manualCycles: true } as ConfigOverrides });
+const PLAYED_STATE = play(600, 11).state;
+const played = () => ({ game: PLAYED_STATE, overrides: { manualCycles: true } as ConfigOverrides });
 
 /** A fresh game with every optional field and every collection a random game leaves empty filled in by hand. */
 function handFilled() {
