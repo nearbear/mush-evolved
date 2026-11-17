@@ -188,15 +188,17 @@ export function decodeRebel(state: GameState, call: Signal, officer: Readonly<Pl
 }
 
 /**
- * One decode's progress: the average of two draws in [1, gainMax], rounded down (the original), plus +100% each for the
- * Rebel skill and for having contacted Kivanç Terzi (additive: both make it x3; owner, 2026-10-21).
+ * One decode's progress: the average of two draws in [1, gainMax], rounded down (the original), or the higher of the
+ * two once Spatial wave radar (`RADAR_TRANS_VOID`) is complete, plus +100% each for the Rebel skill and for having
+ * contacted Kivanç Terzi (additive: both make it x3; owner, 2026-10-21, 2026-11-16).
  */
 export function rollRebelGain(state: GameState, player: Readonly<PlayerState>): number {
   const { gainMax, rebelBonus, kivancBonus } = state.config.comms.rebel;
-  const a = rollInt(state, gainMax);
-  const b = rollInt(state, gainMax);
+  const a = rollInt(state, gainMax) + 1;
+  const b = rollInt(state, gainMax) + 1;
+  const base = projectDone(state, "RADAR_TRANS_VOID") ? Math.max(a, b) : Math.floor((a + b) / 2);
   const factor = 1 + (hasSkill(player, "rebel") ? rebelBonus : 0) + (xylophFound(state, "KIVANC_TERZI_CONTACT") ? kivancBonus : 0);
-  return Math.floor((a + 1 + b + 1) / 2) * factor;
+  return base * factor;
 }
 
 /** A base's bonus when it is reached, for the ones with a one-off effect (Kaladaan's and Cygni's morale). */

@@ -299,6 +299,7 @@ export const DEFAULT_CONFIG: GameConfig = {
     foodRetailer: { room: "NEXUS_ROOM", items: ["output_tube", "input_tube", "input_tube"] },
     quantumSensors: { extraSectors: 1 },
     chipsetAcceleration: { scanApDiscount: 1 },
+    radarTransVoid: { apDiscount: 1 },
     patrolShipLauncher: { takeoffApDiscount: 1 },
     patrolShipExtraAmmo: { extraCharges: 6 },
     patrolShipBlasterGun: { extraDamage: 1 },

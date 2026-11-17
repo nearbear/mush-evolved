@@ -503,6 +503,7 @@ export interface GameConfig {
     quantumSensors: { extraSectors: number };
     // CPU Overclocking (owner, 2026-11-01; eMushpedia *Accélération du processeur*): Scan for planets costs -scanApDiscount AP.
     chipsetAcceleration: { scanApDiscount: number };
+    radarTransVoid: { apDiscount: number };
     // Takeoff thruster (owner, 2026-11-14): patrol ship, Pasiphae, and Icarus takeoff cost -takeoffApDiscount AP.
     patrolShipLauncher: { takeoffApDiscount: number };
     // Teslatron reservoir (PATROLSHIP_EXTRA_AMMO; owner, 2026-11-14): patrol ships hold +extraCharges max charges and gain +extraCharges on completion (capped at new max; Pasiphae unaffected).

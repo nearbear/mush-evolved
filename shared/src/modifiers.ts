@@ -339,6 +339,10 @@ export function actionCost(base: ActionCost, ctx: CostContext, registry: Modifie
   if (ctx.action.type === "scan_planet" && projectDone(ctx.state, "CHIPSET_ACCELERATION")) {
     cost.ap -= ctx.state.config.project.chipsetAcceleration.scanApDiscount;
   }
+  // Spatial wave radar (owner, 2026-11-16): connection to Sol attempts and diplomacy trades cost 1 AP less.
+  if ((ctx.action.type === "contact_sol" || ctx.action.type === "close_deal") && projectDone(ctx.state, "RADAR_TRANS_VOID")) {
+    cost.ap -= ctx.state.config.project.radarTransVoid.apDiscount;
+  }
   // Takeoff thruster (owner, 2026-11-14): patrol ship, Pasiphae, and Icarus takeoff cost 1 AP less.
   if ((ctx.action.type === "takeoff" || ctx.action.type === "icarus_takeoff") && projectDone(ctx.state, "PATROL_SHIP_LAUNCHER")) {
     cost.ap -= ctx.state.config.project.patrolShipLauncher.takeoffApDiscount;

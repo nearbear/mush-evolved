@@ -1605,7 +1605,7 @@
       "HEAT_LAMP": "En el jardín, un 50 % de probabilidad de producir una fruta extra.",
       "AUXILIARY_TERMINAL": "Se puede acceder al núcleo de NERON también desde la enfermería y la sala de máquinas.",
       "AUTO_WATERING": "Cada incendio tiene un 25 % de probabilidad de apagarse solo en cada ciclo.",
-      "RADAR_TRANS_VOID": "La antena estelar duplica el avance de los intentos de conexión con Sol.",
+      "RADAR_TRANS_VOID": "Los intentos de conexión con Sol y los intercambios diplomáticos cuestan 1 PA menos, y al decodificar una base rebelde se descarta la tirada más baja de las dos.",
       "MAGNETIC_NET": "Cuando el Daedalus se desplaza, las naves patrulla vuelven a bordo automáticamente.",
       "FOOD_RETAILER": "Crea 2 tubos neumáticos de entrada y 1 tubo neumático de salida. Los objetos enviados por los tubos de entrada llegan al tubo de salida.",
       "DISMANTLING": "Genera 8 restos metálicos en la sala de máquinas.",

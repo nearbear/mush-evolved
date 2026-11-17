@@ -1605,7 +1605,7 @@
       "HEAT_LAMP": "Dans le jardin, 50 % de chance de produire un fruit supplémentaire.",
       "AUXILIARY_TERMINAL": "Le cœur de NERON est aussi accessible depuis l'infirmerie et la salle des moteurs.",
       "AUTO_WATERING": "Chaque incendie a 25 % de chance de s'éteindre automatiquement à chaque cycle.",
-      "RADAR_TRANS_VOID": "L'antenne stellaire double les progrès des tentatives de connexion avec Sol.",
+      "RADAR_TRANS_VOID": "Les tentatives de connexion avec Sol et les échanges diplomatiques coûtent 1 PA de moins, et le décodage d'une base rebelle ignore le plus petit des deux jets.",
       "MAGNETIC_NET": "Quand le Daedalus se déplace, les patrouilleurs sont automatiquement ramenés à bord.",
       "FOOD_RETAILER": "Crée 2 tuyaux pneumatiques d'entrée et 1 tuyau pneumatique de sortie. Les objets envoyés dans les tuyaux d'entrée arrivent au tuyau de sortie.",
       "DISMANTLING": "Génère 8 débris métalliques dans la salle des moteurs.",

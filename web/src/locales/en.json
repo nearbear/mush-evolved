@@ -1678,7 +1678,7 @@
       "HEAT_LAMP": "In the garden, a 50% chance of producing an extra fruit.",
       "AUXILIARY_TERMINAL": "NERON's core can also be reached from the sick bay and the engine room.",
       "AUTO_WATERING": "Each fire has a 25% chance of going out by itself every cycle.",
-      "RADAR_TRANS_VOID": "The star antenna doubles the progress of attempts to connect with Sol.",
+      "RADAR_TRANS_VOID": "Connection to Sol attempts and diplomacy trades cost 1 AP less, and decoding a rebel base discards the lower of the two rolls.",
       "MAGNETIC_NET": "When the Daedalus moves, patrol ships are brought back on board automatically.",
       "FOOD_RETAILER": "Creates 2 pneumatic input tubes and 1 pneumatic output tube. Items can be sent through the input tubes to the output tube.",
       "DISMANTLING": "Produces 8 metal scraps in the engine room.",

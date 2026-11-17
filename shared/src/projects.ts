@@ -157,6 +157,8 @@ export const PROJECT_STATUS: Readonly<Partial<Record<ProjectId, ProjectStatus>>>
   DISMANTLING: "full",
   // Completing it spawns one item from each pool across the storage rooms in shuffled order (owner, 2026-11-16; projectEffects.ts).
   TRASH_LOAD: "full",
+  // Connection to Sol attempts and diplomacy trades cost 1 AP less; decoding a rebel base discards the lower of the two rolls (owner, 2026-11-16; modifiers.ts `actionCost`, comms.ts `rollRebelGain`).
+  RADAR_TRANS_VOID: "full",
 };
 
 export function projectStatus(project: string): ProjectStatus {
