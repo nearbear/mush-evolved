@@ -11,7 +11,7 @@ Status: **phase 1 started, 2026-11-15**: the rules skeleton is built (`shared/sr
 
 ### Every merchant
 
-- **Arrival:** random, about 2 a day on average (more or fewer on a given day), with no cap per game. Several merchants can be in orbit at once.
+- **Arrival:** random, about 2 a day on average (more or fewer on a given day), with no cap per game. Several merchants can be in orbit at once. **Kind weights (2026-11-16):** `transport: 6`, `scrappers: 2`, `mercenaries: 2`, `tech: 1`, `archeologists: 1`, `librarians: 1`.
 - **Stay:** 4 cycles. A merchant can no longer be contacted once the Daedalus travels.
 - **Answering:** only the comms officer, at the Com center terminal, with a deal action costing 2 AP.
 - **Who sees the offers:** ~~anyone on the bridge, by looking at the comms terminal, the way the Xyloph entries are seen today.~~ Superseded 2026-11-16: only someone with access to the Comms Officer title, in the Signals tab (`docs/plans/signals.md`).
@@ -21,21 +21,32 @@ Status: **phase 1 started, 2026-11-15**: the rules skeleton is built (`shared/sr
 - **Not enough to pay:** a deal the ship can't pay for (for example, too few inactive players) is still shown, disabled, with the reason.
 - **A traded player** counts as a death, but with no corpse and no morale loss. Their items drop where they stood.
 - **The officer decides alone:** no vote and no delay.
-- **Shooting a merchant:** a merchant that is shot flees at the end of the cycle, with a ship-wide NERON announcement. The mercenaries are the exception (below).
+- **Shooting a merchant:** a merchant that is shot flees at the end of the cycle, with a ship-wide NERON announcement; only a **hit** makes it flee (not a miss). It can be destroyed and drops wreckage; fleeing or being destroyed closes its conversation with the comms officer. The mercenaries are the exception (below).
+- **Announcements (2026-11-16):** arrivals are announced ship-wide (already built); accepted deals and traded-player deaths have **no** announcement.
 
 ### Mercenaries (decided)
 
-- They sell an escort: the ship stays and shoots hunters for a number of cycles.
-- They want fuel, rations, weapons or grenades.
-- Only a **hit** angers them, not a miss. Angry mercenaries become hostile, attack the Daedalus, and follow it on travel like a Trax. NERON announces ship-wide that the mercenaries have been angered.
+- They sell an escort: the ship stays and shoots hunters for a number of cycles, and **follows the Daedalus on travel like a Trax** while hired.
+- **Deals (2026-11-16):**
+  - `0–3 fuel + 0–3 oxygen` (totaling 3) for **4 cycles**.
+  - `DIPLOMACY`: `4 rations` for **8 cycles**.
+  - `DIPLOMACY`: `1 inactive player` for **32 cycles**.
+- **Combat & stats (2026-11-16):** **14 HP**, regenerating **3 HP/day**; fires **2 shots per cycle**, each equal to **base patrol ship damage with no upgrades**.
+- Only a **hit** angers them, not a miss. Angry mercenaries immediately target the Daedalus if attacked by one of its crew, **but will not pursue the Daedalus ever if it flees** (superseding the 2026-11-15 "follow it on travel like a Trax" note for angered mercenaries). NERON announces ship-wide that the mercenaries have been angered.
 
 ### Other kinds
 
-- **Tech ship:** trades drones and blueprints. It is the only kind that sells blueprints.
-- **Archeologists:** three deals: 1 artifact for 1 random artifact; 2 artifacts for 1 specific artifact from their own stock; 3 artifacts for a starmap fragment.
-- **Scrappers:** each cycle in orbit they collect the wreckage floating in space (`state.space`, already dropped by dead hunters) and sell it to the crew.
-- **Librarians:** trade skill books.
-- **Transport:** the original's deals (which ones is still open, below).
+- **Tech ship (2026-11-16):**
+  - `1x hydropot` (tree pot) → `1x drone` (`support_drone`).
+  - `6x plastic scrap` → `1x random weapon blueprint` (requires Shooter).
+  - `6x fuel` → `1x blaster` (requires Shooter).
+- **Archeologists:** three deals: 1 artifact for 1 random artifact; 2 artifacts for 1 specific artifact from their own stock; 3 artifacts for a starmap fragment. **(2026-11-16):** they stock **3 random non-repeating artifacts**, and the "random artifact" deal yields one **different from both the offered stock and the traded artifact**.
+- **Scrappers (2026-11-16):** **8 HP**, drop scraps equal to a hunter when destroyed; collect **1 scrap per cycle** from space wreckage; sell metal scrap for `X fuel + Y oxygen = 2 × metal scrap` and plastic scrap for `X fuel + Y oxygen = 1 × plastic scrap` (comms officer chooses X and Y to balance).
+- **Librarians (2026-11-16):**
+  - `4–6 rations` → `2 random non-repeating skill books`.
+  - `1 random inactive` → `2 random non-repeating skill books`.
+  - `1 skill book` → `1 random skill book` (requires Diplomat).
+- **Transport (2026-11-16):** all 7 original deals: `HUMAN_VS_FUEL`, `HUMAN_VS_OXY`, `FOREST_DEAL`, `HUMAN_VS_TREE` (including the `IAN_SOULTON` option), `GOOD_PROJECTIONS`, `PILGREDISSIM` (only the 3 random players deal, and only appears once 3 inactive players exist), and `TECHNO_REWRITE` (not random inputs — the comms officer selects the projects to give away via a dropdown, yielding random projects).
 - **Deferred:** androids that replace inactive players, sold by the tech ship.
 
 ## Proposed (Claude, not decided)
@@ -89,13 +100,4 @@ Built since: the terminal UI, first as a Merchants tab, then (2026-11-16) as mer
 
 ## Open questions (owner)
 
-1. **Transport deals:** port all 7 of the original's events (with `RD_PLAYERS` meaning inactive crew), or move the two project deals to the librarians?
-2. **Hired mercenaries and travel:** does a hired escort come along when the Daedalus travels, or does the contract end?
-3. **Mercenary numbers:** contract lengths and prices, how many shots a cycle, hp, and its attack once angered.
-4. **Fleeing when shot:** for the other kinds, does a miss also make them flee, or only a hit, as for the mercenaries? Can a merchant be destroyed, and does it drop wreckage?
-5. **Hail announcement:** does NERON announce each arrival ship-wide (kind only), or does the crew learn of it only from the space panel and the terminal?
-6. **Accepted deals:** announced ship-wide, or seen only at the terminal? A traded crew member is a death; is it announced like one?
-7. **Scrappers:** how much wreckage they collect a cycle (all of it?), and what they charge.
-8. **Archeologists:** how many artifacts are in their stock, and can the "random artifact" be the same type as the one given?
-9. **Tech ship and librarians:** prices, which blueprints, and whether skill books are random skills or chosen from a list.
-10. **Kind weights:** equal, or some kinds rarer?
+All initial merchant design questions answered on 2026-11-16.
