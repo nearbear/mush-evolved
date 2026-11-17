@@ -31,6 +31,7 @@ Feature designs in `plans/`, one per file. Each plan's own header is the authori
 | `plans/observability.md` | Server logs, running-ships list, alerts ([#127](https://github.com/nearbear/mush2/issues/127)) | Partly built: logs (#430) and running ships (#431) | Decided 2026-11-14; stories [#430](https://github.com/nearbear/mush2/issues/430)–[#434](https://github.com/nearbear/mush2/issues/434). Not a rules plan. |
 | `plans/merchants.md` | Merchant ships: transport, mercenaries, tech, archeologists, scrappers, librarians ([#143](https://github.com/nearbear/mush2/issues/143)) | Draft | Owner's first answers 2026-11-15; numbers and 10 questions open. |
 | `plans/signals.md` | Signals tab: merchants and rebel bases as conversations at the Com center ([#143](https://github.com/nearbear/mush2/issues/143)) | Not built | Planned and fully answered 2026-11-16. |
+| `plans/performance.md` | State cloning (`cloneState`, `fullViewFor`, `sendChat` COW), `config` mutation guards, and test speedups | Not built | Planned 2026-11-16. Not a rules plan. |
 | `plans/inventory-notes.md` | Shared manual item notes for the crew | Draft | 2026-11-01; not decided. |
 | `plans/balance.md` | Balance goals, targets, AP economy and tuning | Draft | 2026-11-04; not decided. |
 | `plans/balance-review.md` | Claude's review of the balance plan: diagnosis, design tests, the order to decide things in | Review | 2026-11-10; recommendations only. |
