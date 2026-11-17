@@ -69,6 +69,10 @@ import { sinus_storm_disease } from "./modifiers/sinus_storm_disease.ts";
 import { migraine_disease } from "./modifiers/migraine_disease.ts";
 import { slight_nausea_disease } from "./modifiers/slight_nausea_disease.ts";
 import { food_poisoning_disease } from "./modifiers/food_poisoning_disease.ts";
+import { vitamin_deficiency_disease } from "./modifiers/vitamin_deficiency_disease.ts";
+import { flu_disease } from "./modifiers/flu_disease.ts";
+import { rubella_disease } from "./modifiers/rubella_disease.ts";
+import { syphilis_disease } from "./modifiers/syphilis_disease.ts";
 import { broken_nose_injury } from "./modifiers/broken_nose_injury.ts";
 import {
   broken_shoulder,
@@ -297,6 +301,10 @@ export const MODIFIERS: Record<string, Modifier> = {
   migraine_disease,
   slight_nausea_disease,
   food_poisoning_disease,
+  vitamin_deficiency_disease,
+  flu_disease,
+  rubella_disease,
+  syphilis_disease,
   // Injuries
   broken_nose_injury,
   damaged_ears,

@@ -240,3 +240,11 @@ export function spreadByTouch(state: GameState, a: PlayerState, b: PlayerState):
 export function blurredVision(view: { statuses: readonly string[]; you: { role: string } }): boolean {
   return view.you.role !== "mush" && view.statuses.includes("pink_eye_disease");
 }
+
+/**
+ * Whether Rubella keeps the player from cooking (Cook, Express Cook) and repairing (Repair, Repair Hull, Repair
+ * PILGRED, Renovate): a human with it (owner, 2026-11-17). A Mush carries it without effect.
+ */
+export function rubellaBlocks(player: Readonly<PlayerState>): boolean {
+  return player.role === "human" && player.modifiers.includes("rubella_disease");
+}

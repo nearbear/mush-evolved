@@ -4,6 +4,7 @@ import { logPrivate, logPublic } from "../log.ts";
 import { contribute } from "../relay.ts";
 import { isPilgredRepaired, PILGRED_COMPLETE, PILGRED_SKILLS, pilgredTerminalsHere } from "../pilgred.ts";
 import type { GameState, PlayerState } from "../types.ts";
+import { rubellaBlocks } from "../diseases.ts";
 
 export type RepairPilgredActionData = { type: "repair_pilgred"; equipment: string };
 
@@ -41,6 +42,7 @@ export class RepairPilgredAction extends Action<RepairPilgredActionData> {
   }
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: RepairPilgredActionData): string | null {
+    if (rubellaBlocks(player)) return "cant_repair";
     if (!pilgredTerminalsHere(state, player).some((terminal) => terminal.id === target.equipment)) return "cant_repair_pilgred";
     if (isPilgredRepaired(state)) return "pilgred_repaired";
     return null;
