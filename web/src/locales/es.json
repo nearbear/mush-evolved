@@ -949,7 +949,7 @@
     "foams": "{{name}} echa espuma por la boca.",
     "bites": "{{name}} empieza a mordisquear el brazo de {{target}}.",
     "rumble": "¡El estómago de {{name}} ruge!",
-    "weakness": "{{name}} parece tener mucha energía.",
+    "weakness": "{{name}} no parece tener mucha energía.",
     "vomitSelf": "{{name}} vomita sobre sí mismo. ¡Qué asco!",
     "vomitOther": "{{name}} vomita sobre {{target}}. ¡Qué asco!",
     "plantProduced": "Una planta produjo oxígeno y un fruto: {{item}}.",

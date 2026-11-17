@@ -933,7 +933,7 @@
     "foams": "{{name}} foams from the mouth.",
     "bites": "{{name}} starts chewing on {{target}}'s arm.",
     "rumble": "{{name}}'s stomach grumbles!",
-    "weakness": "{{name}} does seem very energetic.",
+    "weakness": "{{name}} doesn't seem very energetic.",
     "vomitSelf": "{{name}} throws up on themselves. Disgusting!",
     "vomitOther": "{{name}} vomits on {{target}}. Disgusting!",
     "plantProduced": "A {{item}} plant produced oxygen and a fruit.",

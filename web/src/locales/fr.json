@@ -949,7 +949,7 @@
     "foams": "{{name}} a de l'écume aux lèvres.",
     "bites": "{{name}} se met à mâchouiller le bras de {{target}}.",
     "rumble": "L'estomac de {{name}} gargouille !",
-    "weakness": "{{name}} semble avoir beaucoup d'énergie.",
+    "weakness": "{{name}} ne semble pas avoir beaucoup d'énergie.",
     "vomitSelf": "{{name}} vomit sur soi-même. Dégoûtant !",
     "vomitOther": "{{name}} vomit sur {{target}}. Dégoûtant !",
     "plantProduced": "Un plant a produit de l'oxygène et un fruit : {{item}}.",
