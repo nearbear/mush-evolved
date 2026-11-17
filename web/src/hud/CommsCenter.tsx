@@ -1,5 +1,6 @@
 // The Com center terminal's window, in four tabs: Overview (the link with Sol, drawn as a spectrogram, and NERON's update), Xyloph, the
-// rebel bases that called, and the merchant ships in orbit (Merchants.tsx, Comms Officer access only). The screen (`view.comms.terminal`) is read-only for anyone at the terminal; every button comes from view.actions.
+// rebel bases that called, and Signals (Signals.tsx: every ship that hailed the Daedalus and its conversation, Comms
+// Officer access only; rebel bases move there in docs/plans/signals.md step 3). The screen (`view.comms.terminal`) is read-only for anyone at the terminal; every button comes from view.actions.
 
 import { Tabs } from "@base-ui/react/tabs";
 import { Tooltip } from "@base-ui/react/tooltip";
@@ -11,7 +12,7 @@ import { useNames } from "../i18n/names.ts";
 import { ActionButton } from "./ActionButton.tsx";
 import { ActionLabel } from "./ActionLabel.tsx";
 import { UnavailableButton } from "./CommandTerminal.tsx";
-import { Merchants } from "./Merchants.tsx";
+import { Signals } from "./Signals.tsx";
 import { signalStrength, solDb, Spectrogram } from "./Spectrogram.tsx";
 import { terminalLogin } from "./terminalUsername.ts";
 import "./settings.css";
@@ -22,7 +23,7 @@ interface Props {
   onAction: (action: Action) => void;
 }
 
-type CommsTab = "overview" | "xyloph" | "rebels" | "merchants";
+type CommsTab = "overview" | "xyloph" | "rebels" | "signals";
 
 export function CommsCenter({ terminal, view, onAction }: Props) {
   const { t } = useTranslation();
@@ -43,7 +44,7 @@ export function CommsCenter({ terminal, view, onAction }: Props) {
         <Tabs.Tab className="settings-tab" value="overview">{t("comms.overviewTitle")}</Tabs.Tab>
         <Tabs.Tab className="settings-tab" value="xyloph">{t("comms.xylophTitle")}</Tabs.Tab>
         <Tabs.Tab className="settings-tab" value="rebels">{t("comms.rebelsTitle")}</Tabs.Tab>
-        <Tabs.Tab className="settings-tab" value="merchants">{t("comms.merchants.tab", { count: screen.signals?.filter((s) => s.kind === "merchant" && isActiveSignal(s)).length ?? 0 })}</Tabs.Tab>
+        <Tabs.Tab className="settings-tab" value="signals">{t("signals.tab", { count: screen.signals?.filter(isActiveSignal).length ?? 0 })}</Tabs.Tab>
       </Tabs.List>
       <Tabs.Panel value="overview">
         <div className="research-list">
@@ -223,9 +224,9 @@ export function CommsCenter({ terminal, view, onAction }: Props) {
             </ul>
           </section>
       </Tabs.Panel>
-      <Tabs.Panel value="merchants">
-        <section aria-label={t("comms.merchants.title")}>
-          <Merchants signals={screen.signals} terminalId={terminal.id} view={view} onAction={onAction} />
+      <Tabs.Panel value="signals" className="signals-panel">
+        <section className="signals-section" aria-label={t("signals.title")}>
+          <Signals signals={screen.signals} terminalId={terminal.id} view={view} onAction={onAction} />
         </section>
       </Tabs.Panel>
     </Tabs.Root>

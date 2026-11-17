@@ -34,7 +34,7 @@ const signalsOf = (s: GameState, id: string) => viewFor(s, id).comms.terminal?.s
 
 describe("signals", () => {
   describe("contact", () => {
-    it("is free, for the comms officer at the terminal, and adds the greeting and the hail", () => {
+    it("is free, for the comms officer at the terminal, and adds the hail", () => {
       const s = ship();
       const m = hailing(s);
       expect(offered(s, "p0")).toContainEqual(contact(m.id));
@@ -46,7 +46,6 @@ describe("signals", () => {
       const after = findSignal(next, m.id)!;
       expect(after.step).toBe("offers");
       expect(after.feed.map((e) => [e.from, e.key, e.officer])).toEqual([
-        ["officer", "signals.officer.greeting", player(s, "p0").character],
         ["signal", `signals.merchant.transport.hail.${m.merchant!.event}`, undefined],
       ]);
       // Once contacted, it can't be contacted again.
@@ -66,8 +65,8 @@ describe("signals", () => {
       const m = hailing(s);
       player(s, "p1").hackedEquipment = [TERMINAL];
       expect(offered(s, "p1")).toContainEqual(contact(m.id));
-      const next = must(applyAction(s, "p1", contact(m.id)));
-      expect(findSignal(next, m.id)!.feed[0]).toMatchObject({ from: "officer", officer: player(s, "p0").character });
+      const next = must(applyAction(must(applyAction(s, "p1", contact(m.id))), "p1", refuse(m.id)));
+      expect(findSignal(next, m.id)!.feed[1]).toMatchObject({ from: "officer", officer: player(s, "p0").character });
       expect(JSON.stringify(findSignal(next, m.id)!.feed)).not.toContain(player(s, "p1").character);
     });
   });
@@ -102,7 +101,7 @@ describe("signals", () => {
       expect(player(next, "p0").ap).toBe(player(s, "p0").ap);
       const after = findSignal(next, m.id)!;
       expect(after.status).toBe("refused");
-      expect(after.feed.slice(2).map((e) => [e.from, e.key, e.closes])).toEqual([
+      expect(after.feed.slice(1).map((e) => [e.from, e.key, e.closes])).toEqual([
         ["officer", "signals.officer.refuse", undefined],
         ["signal", "signals.merchant.transport.farewell", true],
       ]);
@@ -118,7 +117,7 @@ describe("signals", () => {
       const next = must(applyAction(s, "p0", close(m.id, 0)));
       const after = findSignal(next, m.id)!;
       expect(after.status).toBe("deal");
-      expect(after.feed.slice(2).map((e) => [e.from, e.key, e.officer, e.params, e.closes])).toEqual([
+      expect(after.feed.slice(1).map((e) => [e.from, e.key, e.officer, e.params, e.closes])).toEqual([
         ["officer", "signals.officer.deal", player(s, "p0").character, { deal: 0 }, undefined],
         ["signal", "signals.merchant.transport.accept", undefined, undefined, true],
       ]);

@@ -421,7 +421,7 @@
     "contactXyloph": "Contactar con Xyloph",
     "closeDeal": "Cerrar el trato",
     "contactSignal": "Contactar",
-    "refuseSignal": "No, gracias",
+    "refuseSignal": "¡No hay trato!",
     "updateNeron": "Actualizar NERON",
     "setBios": "Cambiar un ajuste de la BIOS",
     "turnShip": "Orientar la nave",
@@ -1705,18 +1705,9 @@
     "neronVersion": "NERON versión {{version}}",
     "neronProgress": "{{percent}} % hacia la próxima actualización. Cada actualización termina un proyecto de NERON.",
     "merchants": {
-      "tab_zero": "Mercaderes",
-      "tab_one": "Mercaderes ({{count}})",
-      "tab_many": "Mercaderes ({{count}})",
-      "tab_other": "Mercaderes ({{count}})",
-      "title": "Naves mercantes en órbita",
-      "none": "Ninguna nave mercante en órbita.",
-      "leaves_one": "Se va en {{count}} ciclo.",
-      "leaves_many": "Se va en {{count}} ciclos.",
-      "leaves_other": "Se va en {{count}} ciclos.",
       "dealsLabel": "Tratos",
-      "give": "Entregas: {{list}}",
-      "receive": "Recibes: {{list}}",
+      "give": "Entregas",
+      "receive": "Recibes",
       "item": "{{count}} × {{item}}",
       "crew_one": "{{count}} tripulante inactivo",
       "crew_many": "{{count}} tripulantes inactivos",
@@ -1724,7 +1715,6 @@
       "oxygen": "{{count}} de oxígeno de los tanques",
       "fuel": "{{count}} de combustible de los tanques",
       "needsSkill": "Hace falta alguien con la habilidad {{skill}} en la sala del Oficial de Comunicaciones.",
-      "accessOnly": "Acceso solo para el Oficial de Comunicaciones.",
       "unavailable": "Este trato no se puede cerrar ahora mismo.",
       "blocked": {
         "skill": "Nadie en la sala del Oficial de Comunicaciones tiene la habilidad {{skill}}.",
@@ -1735,10 +1725,6 @@
       },
       "kinds": {
         "transport": "Nave de transporte"
-      },
-      "hails": {
-        "HUMAN_VS_FUEL": "Tenemos un excedente de anticongelante y nos falta comida para esta noche. ¿Os interesa?",
-        "HUMAN_VS_OXY": "¡Aloha! Vuestros organismos son fascinantes, sobre todo cómo convertís vuestros residuos orgánicos en metano. Increíble... ¡Os damos un buen montón de oxígeno a cambio de uno de vuestros amigos!"
       }
     },
     "rebels": {
@@ -2070,5 +2056,57 @@
       "turbo": "Turbo",
       "sensor": "Sensor"
     }
+  },
+  "signals": {
+    "tab_zero": "Señales",
+    "tab_one": "Señales ({{count}})",
+    "tab_many": "Señales ({{count}})",
+    "tab_other": "Señales ({{count}})",
+    "title": "Señales",
+    "accessOnly": "Acceso solo para el Oficial de Comunicaciones.",
+    "none": "Ninguna señal ha llegado aún al Daedalus.",
+    "active": "Activas",
+    "inactive": "Inactivas",
+    "noneActive": "Ninguna señal activa.",
+    "leaves_one": "Se va en {{count}} ciclo.",
+    "leaves_many": "Se va en {{count}} ciclos.",
+    "leaves_other": "Se va en {{count}} ciclos.",
+    "hailing": "Llamando",
+    "status": {
+      "deal": "Trato cerrado",
+      "refused": "Rechazada",
+      "lost": "Señal perdida"
+    },
+    "kinds": {
+      "merchant": "Mercader"
+    },
+    "back": "Volver",
+    "open": "Abrir la conversación con {{name}}",
+    "feedLabel": "Conversación",
+    "optionsLabel": "Respuestas",
+    "incoming": "Transmisión entrante…",
+    "over": "Esta conversación ha terminado.",
+    "lost": "Señal perdida.",
+    "names": {
+      "merchant": {
+        "transport": "Transporte",
+        "transport_numbered": "Transporte {{n}}"
+      }
+    },
+    "officer": {
+      "refuse": "Rechazamos vuestra oferta.",
+      "deal": "Aceptamos: damos {{give}} y vosotros nos dais {{receive}}."
+    },
+    "merchant": {
+      "transport": {
+        "accept": "Trato hecho.",
+        "farewell": "Entendido.",
+        "hail": {
+          "HUMAN_VS_FUEL": "Tenemos un excedente de anticongelante y nos falta comida para esta noche. ¿Os interesa?",
+          "HUMAN_VS_OXY": "¡Aloha! Vuestros organismos son fascinantes, sobre todo cómo convertís vuestros residuos orgánicos en metano. Increíble... ¡Os damos un buen montón de oxígeno a cambio de uno de vuestros amigos!"
+        }
+      }
+    },
+    "deal": "¡Trato!"
   }
 }

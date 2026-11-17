@@ -414,7 +414,7 @@
     "contactXyloph": "Contact Xyloph",
     "closeDeal": "Close the deal",
     "contactSignal": "Contact",
-    "refuseSignal": "No thank you",
+    "refuseSignal": "No deal!",
     "updateNeron": "Update NERON",
     "setBios": "Change a BIOS setting",
     "turnShip": "Turn the ship",
@@ -1775,23 +1775,15 @@
     "neronVersion": "NERON version {{version}}",
     "neronProgress": "{{percent}}% toward the next update. Each update completes a NERON project.",
     "merchants": {
-      "tab_zero": "Merchants",
-      "tab_one": "Merchants ({{count}})",
-      "tab_other": "Merchants ({{count}})",
-      "title": "Merchant ships in orbit",
-      "none": "No merchant ship in orbit.",
-      "leaves_one": "Leaves in {{count}} cycle.",
-      "leaves_other": "Leaves in {{count}} cycles.",
       "dealsLabel": "Deals",
-      "give": "You give: {{list}}",
-      "receive": "You get: {{list}}",
+      "give": "You give",
+      "receive": "You get",
       "item": "{{count}} × {{item}}",
       "crew_one": "{{count}} inactive crew member",
       "crew_other": "{{count}} inactive crew members",
       "oxygen": "{{count}} oxygen from the tanks",
       "fuel": "{{count}} fuel from the tanks",
       "needsSkill": "Needs someone with the {{skill}} skill in the Comms Officer's room.",
-      "accessOnly": "Comms Officer access only.",
       "unavailable": "This deal can't be closed right now.",
       "blocked": {
         "skill": "Nobody in the Comms Officer's room has the {{skill}} skill.",
@@ -1802,10 +1794,6 @@
       },
       "kinds": {
         "transport": "Transport ship"
-      },
-      "hails": {
-        "HUMAN_VS_FUEL": "We have a surplus of antifreeze and nothing to eat tonight. Interested?",
-        "HUMAN_VS_OXY": "Aloha! Your bodies are truly fascinating, especially the way you turn your organic waste into methane. Incredible... We'll give you plenty of oxygen for one of your friends!"
       }
     },
     "rebels": {
@@ -2126,5 +2114,55 @@
       "turbo": "Turbo",
       "sensor": "Sensor"
     }
+  },
+  "signals": {
+    "tab_zero": "Signals",
+    "tab_one": "Signals ({{count}})",
+    "tab_other": "Signals ({{count}})",
+    "title": "Signals",
+    "accessOnly": "Comms Officer access only.",
+    "none": "No signal has reached the Daedalus yet.",
+    "active": "Active",
+    "inactive": "Inactive",
+    "noneActive": "No active signal.",
+    "leaves_one": "Leaves in {{count}} cycle.",
+    "leaves_other": "Leaves in {{count}} cycles.",
+    "hailing": "Hailing",
+    "status": {
+      "deal": "Deal made",
+      "refused": "Refused",
+      "lost": "Signal lost"
+    },
+    "kinds": {
+      "merchant": "Merchant"
+    },
+    "back": "Back",
+    "open": "Open the conversation with {{name}}",
+    "feedLabel": "Conversation",
+    "optionsLabel": "Replies",
+    "incoming": "Incoming transmission…",
+    "over": "This conversation is over.",
+    "lost": "Signal lost.",
+    "names": {
+      "merchant": {
+        "transport": "Transport",
+        "transport_numbered": "Transport {{n}}"
+      }
+    },
+    "officer": {
+      "refuse": "We decline your offer.",
+      "deal": "We accept: we give {{give}}, you give us {{receive}}."
+    },
+    "merchant": {
+      "transport": {
+        "accept": "Deal accepted.",
+        "farewell": "Understood.",
+        "hail": {
+          "HUMAN_VS_FUEL": "We have a surplus of antifreeze and nothing to eat tonight. Interested?",
+          "HUMAN_VS_OXY": "Aloha! Your bodies are truly fascinating, especially the way you turn your organic waste into methane. Incredible... We'll give you plenty of oxygen for one of your friends!"
+        }
+      }
+    },
+    "deal": "Deal!"
   }
 }

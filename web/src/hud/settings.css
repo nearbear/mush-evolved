@@ -537,35 +537,237 @@ li.research-item-blocked .research-progress {
   text-align: center;
 }
 
-/* The Merchants tab: each ship's name and departure, its hail as a quote, then its deals, each with its button. */
-.merchant + .merchant {
-  padding-top: 0.5rem;
-  border-top: 1px solid var(--edge);
-}
-.merchant-hail {
-  margin: 0.25rem 0;
-  font-style: italic;
-}
-.merchant-deals {
+/* The Signals tab (Signals.tsx): Active and Inactive groups of signals, each row opening its conversation. The list
+   scrolls with the tab panel; only a conversation has a scroll area of its own (its feed). */
+.signal-groups {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 1rem;
+}
+.signal-group-heading {
+  margin: 0 0 0.25rem;
+  font-size: 1em;
+}
+.signal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
-.merchant-deal {
+/* A list row, not a plain button (like a tab or a pick tile): a band in the cycle dividers' title-bar blue
+   (itrackie.css), the kind's icon, the name and its caption on one line. */
+button.signal-entry {
+  margin: 0;
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.25rem 0.5rem;
+  gap: 0.5rem;
+  width: 100%;
+  height: auto;
+  min-height: 44px;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid transparent;
+  border-radius: 0;
+  background: var(--terminal-header-bg);
+  color: #171b5c;
+  font: inherit;
+  text-align: start;
+  text-shadow: none;
+  cursor: pointer;
 }
-.merchant-deal-terms {
+button.signal-entry:hover,
+button.signal-entry:focus-visible {
+  border-color: #171b5c;
+}
+button.signal-entry:not([data-status="active"]) {
+  opacity: 0.7;
+}
+.signal-icon {
+  flex: none;
+  display: block;
+  image-rendering: pixelated;
+}
+.signal-entry-name {
+  flex: none;
+}
+.signal-entry-caption {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.85em;
+}
+.signal-hailing {
+  flex: none;
+  color: var(--warning);
+  font-weight: bold;
+}
+
+/* One conversation (SignalConversation.tsx) fills the panel: the header and wave stay put, the feed scrolls (from the
+   bottom, like global chat), and the options stay pinned under it. */
+.settings-tabs > .signals-panel:has(.signal-conversation) {
   display: flex;
-  flex: 1 1 12rem;
+  flex-direction: column;
+  overflow: hidden;
+}
+.signals-panel:has(.signal-conversation) > .signals-section {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+.signal-conversation {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-height: 6rem;
+}
+.signal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.signal-head-text {
+  display: flex;
   flex-direction: column;
   min-width: 0;
+}
+.signal-back {
+  flex: none;
+}
+.signal-feed .entry-marker .signal-icon {
+  margin-top: 2px;
+}
+/* The signal's lines mirror the officer's: its icon and name on the right. */
+.feed > li.entry.entry-signal {
+  grid-template-columns: minmax(0, 1fr) 32px;
+  grid-template-areas:
+    "head marker"
+    "body marker";
+}
+.entry-signal > .entry-head {
+  justify-content: flex-end;
+}
+.signal-incoming > .entry-body {
+  color: var(--muted);
+  font-style: italic;
+}
+/* Under the feed's last line, in its scroll area; No deal! sits on the right, under the Deal! buttons. */
+.signal-options {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding-top: 0.5rem;
+}
+.signal-options > .signal-refuse {
+  align-self: flex-end;
+  margin: 0;
+}
+.signal-over {
+  margin: 0;
+}
+/* A merchant's deals, each on one row under one pair of headings: what you give ⇄ what you get (item tiles with
+   their counts), the skill it needs as
+   its icon (its name in a tooltip, dimmed when nobody in the officer's room has it), and its small Deal! button on the
+   right, with a divider between deals. The rows share the list's columns (subgrid) so the headings line up. */
+.signal-deals {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto auto;
+  align-self: stretch;
+}
+.signal-deals > ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.signal-deals > ol,
+.signal-deal-headings,
+.signal-deal {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  align-items: center;
+  column-gap: 0.5rem;
+}
+/* The columns are only as wide as a tile or two on a phone, so the headings stay on one line, centred over their
+   tiles, and may run into the gap around ⇄. */
+.signal-deal-headings {
+  padding-bottom: 0.15rem;
+  color: var(--muted);
+  font-size: 0.8em;
+  font-weight: bold;
+  white-space: nowrap;
+  text-align: center;
+}
+.signal-deal {
+  padding: 0.35rem 0;
+  border-top: 1px solid var(--edge);
+}
+.signal-deal-side {
+  --tile: 40px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.signal-deal-asset {
+  display: block;
+}
+.signal-deal-arrow {
+  font-size: 1.2em;
+}
+.signal-deal-skill {
+  image-rendering: pixelated;
+}
+.signal-deal-skill:not([data-met]) {
+  opacity: 0.4;
+}
+.signal-deal > button {
+  margin: 0;
+}
+
+/* The audio wave (AudioWave.tsx): flat at rest, each bar bouncing up to its own peak while the other side speaks. */
+.audio-wave {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 2px;
+  height: 32px;
+  padding-inline: 4px;
+  color: var(--accent);
+}
+.audio-wave > span {
+  flex: 1;
+  height: 100%;
+  border-radius: 1px;
+  background: currentColor;
+  transform: scaleY(0.08);
+  transition: transform 0.3s;
+}
+.audio-wave[data-speaking] > span {
+  animation: audio-wave var(--period) ease-in-out var(--delay) infinite alternate;
+}
+@keyframes audio-wave {
+  from {
+    transform: scaleY(0.12);
+  }
+  to {
+    transform: scaleY(var(--peak));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .audio-wave > span {
+    transition: none;
+  }
+  .audio-wave[data-speaking] > span {
+    animation: none;
+    transform: scaleY(var(--peak));
+  }
 }
 
 .xyloph-contact,

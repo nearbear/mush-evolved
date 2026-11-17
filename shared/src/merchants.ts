@@ -119,10 +119,12 @@ export function merchantsLeave(state: GameState): void {
 /** The feed's key for a line of a merchant ship of `kind` (`hail.<event>`, `accept`, `farewell`). */
 export const merchantLine = (kind: MerchantKind, line: string): string => `signals.merchant.${kind}.${line}`;
 
-/** Contact (actions/contact_signal.ts): the officer's greeting, then the ship's hail; the deals are on offer next. */
-export function contactMerchant(state: GameState, signal: Signal, officer: Readonly<PlayerState>, next: string): void {
+/**
+ * Contact (actions/contact_signal.ts): the ship's hail; the deals are on offer next. No officer greeting: the feed holds
+ * only the original's lines and plain speech (owner, 2026-11-16).
+ */
+export function contactMerchant(state: GameState, signal: Signal, next: string): void {
   const merchant = signal.merchant!;
-  officerSays(state, signal, officer, "signals.officer.greeting");
   say(state, signal, { from: "signal", key: merchantLine(merchant.kind, `hail.${merchant.event}`) });
   signal.step = next;
 }

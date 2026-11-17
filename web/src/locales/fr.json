@@ -421,7 +421,7 @@
     "contactXyloph": "Contacter Xyloph",
     "closeDeal": "Conclure l'affaire",
     "contactSignal": "Contacter",
-    "refuseSignal": "Non merci",
+    "refuseSignal": "Pas de marché !",
     "updateNeron": "Mettre à jour NERON",
     "setBios": "Modifier un réglage du BIOS",
     "turnShip": "Orienter le vaisseau",
@@ -1705,18 +1705,9 @@
     "neronVersion": "NERON version {{version}}",
     "neronProgress": "{{percent}} % vers la prochaine mise à jour. Chaque mise à jour termine un projet NERON.",
     "merchants": {
-      "tab_zero": "Marchands",
-      "tab_one": "Marchands ({{count}})",
-      "tab_many": "Marchands ({{count}})",
-      "tab_other": "Marchands ({{count}})",
-      "title": "Vaisseaux marchands en orbite",
-      "none": "Aucun vaisseau marchand en orbite.",
-      "leaves_one": "Repart dans {{count}} cycle.",
-      "leaves_many": "Repart dans {{count}} cycles.",
-      "leaves_other": "Repart dans {{count}} cycles.",
       "dealsLabel": "Affaires",
-      "give": "Vous donnez : {{list}}",
-      "receive": "Vous recevez : {{list}}",
+      "give": "Vous donnez",
+      "receive": "Vous recevez",
       "item": "{{count}} × {{item}}",
       "crew_one": "{{count}} membre d'équipage inactif",
       "crew_many": "{{count}} membres d'équipage inactifs",
@@ -1724,7 +1715,6 @@
       "oxygen": "{{count}} d'oxygène des réservoirs",
       "fuel": "{{count}} de fuel des réservoirs",
       "needsSkill": "Il faut quelqu'un avec la compétence {{skill}} dans la pièce du Responsable Communications.",
-      "accessOnly": "Accès réservé au Responsable Communications.",
       "unavailable": "Cette affaire ne peut pas être conclue pour l'instant.",
       "blocked": {
         "skill": "Personne dans la pièce du Responsable Communications n'a la compétence {{skill}}.",
@@ -1735,10 +1725,6 @@
       },
       "kinds": {
         "transport": "Vaisseau de transport"
-      },
-      "hails": {
-        "HUMAN_VS_FUEL": "Nous avons un surplus d'antigel et il nous manque à manger pour ce soir, ça vous dit ?",
-        "HUMAN_VS_OXY": "Aloha, vos organismes sont vraiment passionnants, surtout la méthanisation de vos déchets organiques, incroyable... Nous vous échangeons un de vos amis contre des réserves d'oxygène conséquentes !"
       }
     },
     "rebels": {
@@ -2070,5 +2056,57 @@
       "turbo": "Turbo",
       "sensor": "Capteur"
     }
+  },
+  "signals": {
+    "tab_zero": "Signaux",
+    "tab_one": "Signaux ({{count}})",
+    "tab_many": "Signaux ({{count}})",
+    "tab_other": "Signaux ({{count}})",
+    "title": "Signaux",
+    "accessOnly": "Accès réservé au Responsable Communications.",
+    "none": "Aucun signal n'a encore atteint le Daedalus.",
+    "active": "Actifs",
+    "inactive": "Inactifs",
+    "noneActive": "Aucun signal actif.",
+    "leaves_one": "Repart dans {{count}} cycle.",
+    "leaves_many": "Repart dans {{count}} cycles.",
+    "leaves_other": "Repart dans {{count}} cycles.",
+    "hailing": "Appel en cours",
+    "status": {
+      "deal": "Marché conclu",
+      "refused": "Refusé",
+      "lost": "Signal perdu"
+    },
+    "kinds": {
+      "merchant": "Marchand"
+    },
+    "back": "Retour",
+    "open": "Ouvrir la conversation avec {{name}}",
+    "feedLabel": "Conversation",
+    "optionsLabel": "Réponses",
+    "incoming": "Transmission entrante…",
+    "over": "Cette conversation est terminée.",
+    "lost": "Signal perdu.",
+    "names": {
+      "merchant": {
+        "transport": "Transport",
+        "transport_numbered": "Transport {{n}}"
+      }
+    },
+    "officer": {
+      "refuse": "Nous déclinons votre offre.",
+      "deal": "Nous acceptons : nous donnons {{give}}, vous nous donnez {{receive}}."
+    },
+    "merchant": {
+      "transport": {
+        "accept": "Marché conclu.",
+        "farewell": "Compris.",
+        "hail": {
+          "HUMAN_VS_FUEL": "Nous avons un surplus d'antigel et il nous manque à manger pour ce soir, ça vous dit ?",
+          "HUMAN_VS_OXY": "Aloha, vos organismes sont vraiment passionnants, surtout la méthanisation de vos déchets organiques, incroyable... Nous vous échangeons un de vos amis contre des réserves d'oxygène conséquentes !"
+        }
+      }
+    },
+    "deal": "Marché conclu !"
   }
 }

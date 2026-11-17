@@ -1,6 +1,6 @@
 # Signals: the Com center's conversation tab (plan)
 
-Status: **plan, 2026-11-16; build order 1 (shared) built, 2026-11-16; no open questions.** The answers under "Decided" and "Defaults confirmed" are the owner's (2026-11-16). "Proposed" is Claude's design, reviewed with the owner. Related: [#143](https://github.com/nearbear/mush2/issues/143) (merchants), `docs/plans/merchants.md`, `docs/plans/comms.md` (rebel bases).
+Status: **plan, 2026-11-16; build order 1 (shared) and 2 (web) built, 2026-11-16; no open questions.** The answers under "Decided" and "Defaults confirmed" are the owner's (2026-11-16). "Proposed" is Claude's design, reviewed with the owner. Related: [#143](https://github.com/nearbear/mush2/issues/143) (merchants), `docs/plans/merchants.md`, `docs/plans/comms.md` (rebel bases).
 
 ## Goal
 
@@ -99,7 +99,7 @@ Visibility is fixed per action type (`actions/action.ts`), and Contact is public
 
 | Action | Who | Cost | Log | Effect |
 |---|---|---|---|---|
-| `contact_signal` (new) | title access, at a Com center terminal, a merchant signal at `hail` | 0 AP | private (owner, 2026-11-16: no room line; NERON announces each new signal instead) | officer greeting and the hail go into the feed; step → `offers` |
+| `contact_signal` (new) | title access, at a Com center terminal, a merchant signal at `hail` | 0 AP | private (owner, 2026-11-16: no room line; NERON announces each new signal instead) | the hail goes into the feed (no officer greeting, owner 2026-11-16); step → `offers` |
 | `close_deal` (exists) | as today, now only at `offers` | 2 AP | private | officer's choice and the merchant's acceptance go into the feed; status → `deal` |
 | `refuse_signal` (new) | title access, at `offers` | 0 AP | private | "No thank you" and a farewell go into the feed; status → `refused` |
 | `decode_rebel` (exists) | unchanged rules (link, title, clean, 2 AP or a Computer point) | unchanged | private | an officer line and the base's message at the new progress go into the feed; at 100%, status → `reached` |
@@ -149,7 +149,7 @@ Each base gets a full message in en/fr/es locale files. The client garbles it fr
 
 ### Text (i18n, en/fr/es)
 
-New keys under `signals.*`: tab and group names, statuses, officer lines (greeting, "No thank you", choosing a deal), each merchant hail (moved from `comms.merchants.hails`), acceptance and farewell lines per kind, "Signal lost", "incoming…", one full message per rebel base, and the room log line. The transport hails' French comes from the original's `trade_events` (CC BY-NC-SA, attribution as for the other adapted text). Claude drafts the new lines; the owner reviews them.
+New keys under `signals.*`: tab and group names, statuses, officer lines ("No thank you", choosing a deal; no greeting, owner 2026-11-16), each merchant hail (moved from `comms.merchants.hails`), acceptance and farewell lines per kind, "Signal lost", "incoming…", one full message per rebel base, and the room log line. The transport hails' French comes from the original's `trade_events` (CC BY-NC-SA, attribution as for the other adapted text). No invented dialogue (owner, 2026-11-16): lines come from the original or are plain speech.
 
 ### Bots
 
@@ -166,7 +166,7 @@ The single-player Comms Officer bot (`server/src/bots/goals/commsOfficer.ts`) de
 ### Build order (commits)
 
 1. `shared`: `state.signals`, scripts, migrating merchants into it, `contact_signal` and `refuse_signal`, the officer-only view, tests. **Built 2026-11-16.** Differences from the sketch above: `SignalKind` and `SignalStatus` hold only what is built (`rebel` and `reached` come with step 3); there is no `contacted` flag (the script step says it: `hail` until Contact); each signal stores its `number` for the interim name; `close_deal` names the deal's `signal`, not `merchant`; `STATE_VERSION` 119 moves stored `game.merchants` into `game.signals`. Until step 2, the old Merchants tab reads `signals` (Contact, deals, No thank you; one line without access).
-2. `web`: Signals list, conversation view, audio wave, typing out, with merchants. Tab renamed; the Merchants tab removed.
+2. `web`: Signals list, conversation view, audio wave, typing out, with merchants. Tab renamed; the Merchants tab removed. **Built 2026-11-16.** Differences, after the owner's review (2026-11-16): no invented dialogue. The feed holds only lines from the original (the hails) and plain speech: no officer greeting on Contact; "We decline your offer." / "Understood."; "We accept: we give …, you give us …" / "Deal accepted.". The list has no scroll area of its own (the tab panel scrolls it). Each row is a band in the cycle dividers' title-bar blue with the kind's icon (merchants: the inventory icon, `stock.png`), its name in a tooltip, then the signal's name and caption on one line. The conversation is one feed that reads like global chat (`FeedEntry`, cycle dividers, the officer's sprite and username on the left, the signal's icon and name on the right, no white box), scrolling from the bottom, with the options pinned under it. Deals sit under one pair of column headings (You give, You get), with a divider between deals. The options scroll with the feed, under its last line. Each deal is one row: what you give, ⇄, what you get (each asset an item tile with its count in the bottom right corner, its words in a tooltip; oxygen, fuel and crew show their UI icons in the tile), the skill it needs as its icon with its name in a tooltip (dimmed when nobody in the officer's room has it, from the view's `blocked`), and a small Deal! button on the right. The refuse button reads **No deal!** and sits on the right under the deals (owner, 2026-11-16). The feed is a `role="log"` that screen readers hear whole while the text types out, and Enter or Space on it skips the typing like a tap. The fr/es strings are drafts already (the i18n test requires every key in every language); step 4 reviews them.
 3. Rebels into `state.signals`; the Rebel bases tab removed; garbled messages; the next-rebel line in the list.
 4. Translations (fr, es), docs (`implemented-rules.md`, `merchants.md`, `comms.md`, code map), screenshots at phone and desktop width.
 

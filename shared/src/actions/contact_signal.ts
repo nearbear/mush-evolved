@@ -45,7 +45,7 @@ export class ContactSignalAction extends Action<ContactSignalActionData> {
 
   override apply(state: GameState, player: PlayerState, target: ContactSignalActionData): void {
     const signal = findSignal(state, target.signal)!;
-    contactMerchant(state, signal, player, signalOption(signal, "contact")!.next);
+    contactMerchant(state, signal, signalOption(signal, "contact")!.next);
     logPrivate(state, player.id, "signalContacted");
   }
 }

@@ -305,6 +305,8 @@ export const SHIP_RESOURCE_ICONS: Readonly<Record<"oxygen" | "fuel" | "hull" | "
 };
 
 /** The ticked and empty boxes of a checklist (a research terminal's requirements, a project's skills). */
+/** Each signal kind's icon, in the Signals list and beside its lines in a conversation (owner, 2026-11-16: merchants use the inventory icon). */
+export const SIGNAL_KIND_ICONS = { merchant: uiIcons["stock"]! } as const;
 export const CHECK_ICON = uiIcons["check"]!;
 export const UNCHECK_ICON = uiIcons["uncheck"]!;
 
