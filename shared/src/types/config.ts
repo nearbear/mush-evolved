@@ -61,6 +61,43 @@ export interface DiseaseStats {
 }
 
 
+export interface WeaponInjuryEffect {
+  who: "target" | "attacker" | "splash";
+  /** Specific injury ID (e.g. "damaged_ears", "haemorrhage"), or "random" for a random combat injury. */
+  injury: string;
+  /** Probability 0..1. */
+  chance: number;
+  /** Number of rolls (default 1). */
+  count?: number;
+}
+
+export interface WeaponOutcomeEffects {
+  damageDelta?: number;
+  maxDamageDelta?: number;
+  skillMaxDamage?: boolean;
+  instantKill?: "target" | "attacker";
+  mushMultiplier?: number;
+  apLoss?: { who: "target" | "attacker"; amount: number };
+  injuries?: WeaponInjuryEffect[];
+  weaponEffect?: "drop" | "break" | "destroy";
+  breakRandomItems?: number;
+  splashDamage?: { amount: number; chance?: number };
+}
+
+export interface WeaponHitOutcome {
+  weight: number;
+  critical?: boolean;
+  log: string;
+  effects?: WeaponOutcomeEffects;
+}
+
+export interface WeaponMissOutcome {
+  weight: number;
+  fumble?: boolean;
+  log: string;
+  effects?: WeaponOutcomeEffects;
+}
+
 /** One weapon's numbers (owner, 2026-10-22, from the English wiki; "??" values were set to 12%). */
 export interface WeaponStats {
   damage: [min: number, max: number]; // HP a hit removes, rolled uniformly, both ends included.
@@ -74,6 +111,8 @@ export interface WeaponStats {
   consumed?: boolean; // Used up by using it (grenade).
   dirtyChance: number; // Chance of getting dirty from using it.
   repairChance: number | null; // Breakable, with this repair chance; null: it can't break. Breaking and repair aren't built.
+  hitOutcomes: WeaponHitOutcome[]; // Weighted hit/critical outcomes from eMush MechanicsData / EventConfigData.
+  missOutcomes: WeaponMissOutcome[]; // Weighted miss/fumble outcomes from eMush MechanicsData / EventConfigData.
 }
 
 /** What can happen in one expedition sector (expeditions.ts, owner 2026-10-31). */

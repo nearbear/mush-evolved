@@ -45,6 +45,43 @@ describe("weapon stats", () => {
     expect(row("grenade")).toEqual([[0, 10], 1, 3, undefined, null]);
     expect([W.missile_launcher!.area, W.grenade!.area, W.grenade!.consumed]).toEqual([{ selfDamage: [1, 4] }, { selfDamage: [0, 3] }, true]);
     expect([W.knife!.dirtyChance, W.blaster!.dirtyChance, base.weapons.cost.ap]).toEqual([0.25, 0, 1]);
+    expect([W.bare_hands!.damage, W.bare_hands!.accuracy, W.bare_hands!.melee, W.bare_hands!.repairChance]).toEqual([[1, 2], 0.6, true, null]);
+  });
+
+  it("populates hitOutcomes and missOutcomes with eMush weights and structured effects", () => {
+    const sum = (xs: readonly { weight: number }[]) => xs.reduce((a, b) => a + b.weight, 0);
+    const totals = (t: string) => [sum(W[t]!.hitOutcomes), sum(W[t]!.missOutcomes)];
+    expect(totals("blaster")).toEqual([84, 83]);
+    expect(totals("customized_blaster")).toEqual([84, 83]);
+    expect(totals("knife")).toEqual([94, 87]);
+    expect(totals("natamy_riffle")).toEqual([90, 79]);
+    expect(totals("sniper_riffle")).toEqual([90, 79]);
+    expect(totals("machine_gun")).toEqual([90, 79]);
+    expect(totals("missile_launcher")).toEqual([53, 12]);
+    expect(totals("grenade")).toEqual([50, 1]);
+    expect(totals("bare_hands")).toEqual([25, 40]);
+
+    for (const stats of Object.values(W)) {
+      expect(stats.hitOutcomes.length).toBeGreaterThan(0);
+      expect(stats.missOutcomes.length).toBeGreaterThan(0);
+      for (const o of [...stats.hitOutcomes, ...stats.missOutcomes]) {
+        expect(o.weight).toBeGreaterThan(0);
+        expect(o.log.length).toBeGreaterThan(0);
+      }
+    }
+
+    expect(W.blaster!.hitOutcomes.find((o) => o.log === "BLASTER_TARGET_HEADSHOT")?.effects?.instantKill).toBe("target");
+    expect(W.natamy_riffle!.hitOutcomes[0]!.effects?.mushMultiplier).toBe(2);
+    expect(W.missile_launcher!.missOutcomes.find((o) => o.log === "ROCKET_LAUNCHER_FUMBLE_6_ITEMS_BACKFIRE_ROCKETTED")?.effects).toEqual({
+      breakRandomItems: 6,
+      instantKill: "attacker",
+    });
+    expect(W.grenade!.hitOutcomes[1]!.effects).toEqual({
+      weaponEffect: "destroy",
+      breakRandomItems: 4,
+      injuries: [{ who: "splash", injury: "random", chance: 1, count: 2 }],
+    });
+    expect(W.bare_hands!.hitOutcomes[0]!.effects?.skillMaxDamage).toBe(true);
   });
 
   it("dismantle: knife and blaster at 50%, the other weapons at the usual odds; never the grenade", () => {

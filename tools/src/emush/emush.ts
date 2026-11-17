@@ -187,14 +187,23 @@ export function extractBlock(lines: string[], targetLineIndex: number): string {
 
 export function runCleanRoomSpec(emushDir: string, target: string): string {
   const files = listPhpFiles(emushDir);
-  const matchedFiles = files.filter((f) => f.toLowerCase().includes(target.toLowerCase()));
+  const rangeMatch = target.match(/^(.+?):(\d+)-(\d+)$/);
+  const fileQuery = rangeMatch ? rangeMatch[1]! : target;
+  const matchedFiles = files.filter((f) => f.toLowerCase().includes(fileQuery.toLowerCase()));
 
   let snippet = "";
   if (matchedFiles.length > 0) {
     const primaryFile = matchedFiles[0]!;
     const fullPath = join(emushDir, primaryFile);
     const content = readFileSync(fullPath, "utf-8");
-    snippet = `--- File: ${primaryFile} ---\n${content.slice(0, 12000)}`;
+    if (rangeMatch) {
+      const start = Math.max(1, Number(rangeMatch[2]));
+      const end = Number(rangeMatch[3]);
+      const sliced = content.split("\n").slice(start - 1, end).join("\n");
+      snippet = `--- File: ${primaryFile} (lines ${start}-${end}) ---\n${sliced.slice(0, 60000)}`;
+    } else {
+      snippet = `--- File: ${primaryFile} ---\n${content.slice(0, 12000)}`;
+    }
   } else {
     // Search across files, prioritizing ConfigData, Action, Equipment, and Place files
     const hits = searchEmush(emushDir, target, 50);
@@ -235,10 +244,12 @@ export function runCleanRoomSpec(emushDir: string, target: string): string {
   // Check if agy is available to synthesize a clean spec
   const agyPath = process.env.AGY_PATH || "/home/near/.local/bin/agy";
   if (existsSync(agyPath)) {
-    const prompt = `You are a clean-room specification extractor.
+    const prompt = `Read-only mode. Do not call any tools, do not read any files, never run commands. Synthesize ONLY from the PHP Code excerpt provided below.
+
+You are a clean-room specification extractor.
 Your job is to read the following PHP code from eMush and output ONLY a pure behavioral specification for mush2.
-Do NOT output any PHP code, syntax, variable names, or structural code.
-Express all rules, chances, costs, and state transitions in clear English and mathematical formulas.
+Do NOT output any PHP code or PHP syntax.
+Express all rules, chances, weights, log keys, costs, and state transitions in clear English, tables, and mathematical formulas.
 
 Target topic: "${target}"
 
@@ -248,18 +259,18 @@ ${snippet}
 Format your response as:
 ## Feature / Action Name
 - **Preconditions**: (requirements, items, statuses, AP costs)
-- **Probabilities & Formulas**: (exact success/failure % and formulas)
-- **Effects**: (state mutations, inventory, morale/PV)
-- **Visibility & Logs**: (public log text vs. private/secret log events)
+- **Probabilities & Formulas**: (exact success/failure %, weights, and formulas)
+- **Effects**: (state mutations, damage, AP, injuries, inventory, morale/PV)
+- **Visibility & Logs**: (log keys, public log vs. private/secret log events)
 - **Edge Cases & Failure Modes**:`;
 
     try {
-      const res = execFileSync(agyPath, ["-p", prompt, "--mode", "plan", "--model", "gemini-3.8-flash-medium", "--print-timeout", "60s"], {
+      const res = execFileSync(agyPath, ["-p", prompt, "--mode", "plan", "--model", "gemini-3.8-flash-medium", "--print-timeout", "180s"], {
         encoding: "utf-8",
         maxBuffer: 10 * 1024 * 1024,
         stdio: ["pipe", "pipe", "ignore"],
       });
-      return res.trim();
+      if (res.trim()) return res.trim();
     } catch {
       // Fall through to clean structural extraction
     }
