@@ -55,7 +55,8 @@ import { biosTerminalsHere, newBios } from "./bios.ts";
 import { callNextRebel, commsCycle, commsTerminalView, comTerminalsHere, newComms } from "./comms.ts";
 import { botanyCycle, botanyDay, plantView } from "./botany.ts";
 import { burnOxygen, rollOxygenSaved, shipView, startShip } from "./ship.ts";
-import { merchantsCycle, newMerchants } from "./merchants.ts";
+import { merchantsCycle } from "./merchants.ts";
+import { newSignals } from "./signals.ts";
 import { allTurrets, huntersCycle, newHunters, startHunters, turretCharges, turretsHere } from "./hunters.ts";
 import { expeditionReturnAt, lostPlayers, onExpedition, withCrew } from "./expeditions.ts";
 import { ICARUS_EQUIPMENT } from "./actions/icarus_takeoff.ts";
@@ -180,7 +181,7 @@ export function createGame(
     expedition: null,
     icarusLost: false,
     hunters: newHunters(),
-    merchants: newMerchants(),
+    signals: newSignals(),
     turrets: {},
     incidentPoints: 0,
     doors: {},

@@ -10,8 +10,8 @@ import { BOOK_ITEM, spawnInRoom } from "./items.ts";
 import { DOCUMENT_ITEM } from "./lostAnalysis.ts";
 import { PROJECT_IDS, projectDone } from "./projects.ts";
 import { completeProject } from "./projectEffects.ts";
-import { merchantsView } from "./merchants.ts";
 import { roll, rollInt } from "./rng.ts";
+import { signalsView } from "./signals.ts";
 import { hasSkill, SKILLS } from "./skills.ts";
 import { hasTitleAccess } from "./titles.ts";
 import type { CommsTerminalView, DeepReadonly, GameConfig, GameState, ItemState, PlayerState, RoomId } from "./types.ts";
@@ -270,7 +270,7 @@ export function commsTerminalView(state: Readonly<GameState>, viewer: Readonly<P
   const { comms } = state;
   const last = comms.rebels.at(-1);
   const upcoming = REBEL_BASES[comms.rebels.length];
-  return {
+  const view: CommsTerminalView = {
     solChance: comms.solChance,
     rebels: comms.rebels.map((call) => ({
       base: call.base,
@@ -282,6 +282,7 @@ export function commsTerminalView(state: Readonly<GameState>, viewer: Readonly<P
     xylophLeft: xylophLeft(state).length,
     xylophFound: XYLOPH_IDS.filter((id) => xylophFound(state, id)),
     neron: { ...comms.neron },
-    merchants: merchantsView(state, viewer),
   };
+  const signals = signalsView(state, viewer);
+  return signals ? { ...view, signals } : view;
 }

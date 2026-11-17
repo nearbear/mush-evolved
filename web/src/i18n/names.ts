@@ -34,7 +34,9 @@ const ACTION_NAME_KEYS = {
   decode_rebel: "actions.decodeRebel",
   contact_xyloph: "actions.contactXyloph",
   update_neron: "actions.updateNeron",
+  contact_signal: "actions.contactSignal",
   close_deal: "actions.closeDeal",
+  refuse_signal: "actions.refuseSignal",
   set_bios: "actions.setBios",
   scan_planet: "actions.scanPlanet",
   turret_attack: "actions.turretAttack",
@@ -193,6 +195,7 @@ export function useNames() {
     if (typeof params.title === "string") resolved.title = title(params.title);
     if (typeof params.skill === "string") resolved.skill = skill(params.skill);
     if (typeof params.base === "string") resolved.base = rebelBase(params.base);
+    if (typeof params.merchant === "string") resolved.merchant = t(`comms.merchants.kinds.${params.merchant}` as never, { defaultValue: params.merchant });
     if (typeof params.direction === "string") resolved.direction = t(`astro.directions.${params.direction}` as never, { defaultValue: params.direction });
     // A drone's `drone` (its name) and `serial` (shared/src/drones.ts) come together as one name.
     if (typeof params.drone === "string" && typeof params.serial === "number") resolved.drone = drone(params.drone, params.serial);

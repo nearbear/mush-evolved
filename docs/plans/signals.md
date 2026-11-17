@@ -1,6 +1,6 @@
 # Signals: the Com center's conversation tab (plan)
 
-Status: **plan, 2026-11-16, not built; no open questions.** The answers under "Decided" and "Defaults confirmed" are the owner's (2026-11-16). "Proposed" is Claude's design, reviewed with the owner. Related: [#143](https://github.com/nearbear/mush2/issues/143) (merchants), `docs/plans/merchants.md`, `docs/plans/comms.md` (rebel bases).
+Status: **plan, 2026-11-16; build order 1 (shared) built, 2026-11-16; no open questions.** The answers under "Decided" and "Defaults confirmed" are the owner's (2026-11-16). "Proposed" is Claude's design, reviewed with the owner. Related: [#143](https://github.com/nearbear/mush2/issues/143) (merchants), `docs/plans/merchants.md`, `docs/plans/comms.md` (rebel bases).
 
 ## Goal
 
@@ -27,7 +27,7 @@ Replace the Com center terminal's **Merchants** and **Rebel bases** tabs with on
 
 - The first option is a single **Contact**. It starts the dialogue, costs no AP, and writes a **room log** line that **names the officer** and says only that they reached out to someone (not who or what).
 - Everything after Contact is hidden from anyone without access to the Comms Officer title (`hasTitleAccess`: the holder, a hacker with a working hack on the terminal, or a player who took the title).
-- **Non-officers see nothing at all in the Signals tab** (owner, 2026-11-16). This replaces two earlier rules: "anyone on the bridge sees the offers by looking at the comms terminal" (merchants, 2026-11-15) and anyone at the terminal seeing the rebel calls' progress (comms, 2026-10-21). NERON's crew-chat announcement of a new rebel call stays.
+- **Non-officers see nothing at all in the Signals tab** (owner, 2026-11-16). This replaces two earlier rules: "anyone on the bridge sees the offers by looking at the comms terminal" (merchants, 2026-11-15) and anyone at the terminal seeing the rebel calls' progress (comms, 2026-10-21). NERON's crew-chat announcement of a new rebel call stays, and NERON now announces every new signal the same way, merchants included (owner, 2026-11-16: kind only; every action on a signal is private, Contact included). An officer line is signed by the Comms Officer of the time even when a hacker acts (owner, 2026-11-16), shown as a username (`characterUsername`: given name's initial and surname, "prinaldo").
 - **A new officer reads the old conversations** of previous officers, active and inactive.
 - **Trades:** one button per offer, then a **No thank you** that closes the conversation. A deal the ship can't pay for is a **disabled button** with the reason (as decided 2026-11-15).
 - **AP:** only closing a deal costs AP (2, unchanged). Contact and No thank you are free, for now.
@@ -99,7 +99,7 @@ Visibility is fixed per action type (`actions/action.ts`), and Contact is public
 
 | Action | Who | Cost | Log | Effect |
 |---|---|---|---|---|
-| `contact_signal` (new) | title access, at a Com center terminal, a merchant signal at `hail` | 0 AP | public room line naming the officer, "reached out to someone" | officer greeting and the hail go into the feed; step → `offers` |
+| `contact_signal` (new) | title access, at a Com center terminal, a merchant signal at `hail` | 0 AP | private (owner, 2026-11-16: no room line; NERON announces each new signal instead) | officer greeting and the hail go into the feed; step → `offers` |
 | `close_deal` (exists) | as today, now only at `offers` | 2 AP | private | officer's choice and the merchant's acceptance go into the feed; status → `deal` |
 | `refuse_signal` (new) | title access, at `offers` | 0 AP | private | "No thank you" and a farewell go into the feed; status → `refused` |
 | `decode_rebel` (exists) | unchanged rules (link, title, clean, 2 AP or a Computer point) | unchanged | private | an officer line and the base's message at the new progress go into the feed; at 100%, status → `reached` |
@@ -165,7 +165,7 @@ The single-player Comms Officer bot (`server/src/bots/goals/commsOfficer.ts`) de
 
 ### Build order (commits)
 
-1. `shared`: `state.signals`, scripts, migrating merchants into it, `contact_signal` and `refuse_signal`, the officer-only view, tests.
+1. `shared`: `state.signals`, scripts, migrating merchants into it, `contact_signal` and `refuse_signal`, the officer-only view, tests. **Built 2026-11-16.** Differences from the sketch above: `SignalKind` and `SignalStatus` hold only what is built (`rebel` and `reached` come with step 3); there is no `contacted` flag (the script step says it: `hail` until Contact); each signal stores its `number` for the interim name; `close_deal` names the deal's `signal`, not `merchant`; `STATE_VERSION` 119 moves stored `game.merchants` into `game.signals`. Until step 2, the old Merchants tab reads `signals` (Contact, deals, No thank you; one line without access).
 2. `web`: Signals list, conversation view, audio wave, typing out, with merchants. Tab renamed; the Merchants tab removed.
 3. Rebels into `state.signals`; the Rebel bases tab removed; garbled messages; the next-rebel line in the list.
 4. Translations (fr, es), docs (`implemented-rules.md`, `merchants.md`, `comms.md`, code map), screenshots at phone and desktop width.

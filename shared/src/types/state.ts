@@ -1,7 +1,7 @@
 import type { BiosState } from "../bios.ts";
 import type { CharacterId } from "../characters.ts";
 import type { CommsState } from "../comms.ts";
-import type { MerchantsState } from "../merchants.ts";
+import type { SignalsState } from "../signals.ts";
 import type { DrugDispenserState, DrugEffect } from "../drugs.ts";
 import type { FruitEffect } from "../fruits.ts";
 import type { LostAnalysisState } from "../lostAnalysis.ts";
@@ -182,10 +182,11 @@ export interface GameCore {
    */
   hunters: { points: number; since: number | null; list: Hunter[]; nextId: number };
   /**
-   * Merchant ships in orbit (merchants.ts, #143): kind, hail, deals and when each leaves. Shown only to the living at a
-   * Com center terminal (`comms.terminal.merchants`); `nextId` never.
+   * Every signal that reached the Daedalus, active and inactive, with its conversation (signals.ts; merchants.ts for
+   * merchant ships, #143). Shown only to the living with Comms Officer access at a Com center terminal
+   * (`comms.terminal.signals`); `nextId` never.
    */
-  merchants: MerchantsState;
+  signals: SignalsState;
   /** Charges left in each turret, by its `TURRET_COMMAND` equipment id; absent = full. To the living in a turret room. */
   turrets: Record<string, number>;
   /**

@@ -1,9 +1,9 @@
 // The Com center terminal's window, in four tabs: Overview (the link with Sol, drawn as a spectrogram, and NERON's update), Xyloph, the
-// rebel bases that called, and the merchant ships in orbit (Merchants.tsx). The screen (`view.comms.terminal`) is read-only for anyone at the terminal; every button comes from view.actions.
+// rebel bases that called, and the merchant ships in orbit (Merchants.tsx, Comms Officer access only). The screen (`view.comms.terminal`) is read-only for anyone at the terminal; every button comes from view.actions.
 
 import { Tabs } from "@base-ui/react/tabs";
 import { Tooltip } from "@base-ui/react/tooltip";
-import { type Action, type EquipmentView, type PlayerView, XYLOPH_IDS } from "@mush2/shared";
+import { type Action, type EquipmentView, isActiveSignal, type PlayerView, XYLOPH_IDS } from "@mush2/shared";
 import { useState, type CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
 import { CHECK_ICON, REBEL_BASE_ICONS, UNCHECK_ICON, XYLOPH_DONE, XYLOPH_TODO } from "../art/assets.ts";
@@ -43,7 +43,7 @@ export function CommsCenter({ terminal, view, onAction }: Props) {
         <Tabs.Tab className="settings-tab" value="overview">{t("comms.overviewTitle")}</Tabs.Tab>
         <Tabs.Tab className="settings-tab" value="xyloph">{t("comms.xylophTitle")}</Tabs.Tab>
         <Tabs.Tab className="settings-tab" value="rebels">{t("comms.rebelsTitle")}</Tabs.Tab>
-        <Tabs.Tab className="settings-tab" value="merchants">{t("comms.merchants.tab", { count: screen.merchants.length })}</Tabs.Tab>
+        <Tabs.Tab className="settings-tab" value="merchants">{t("comms.merchants.tab", { count: screen.signals?.filter((s) => s.kind === "merchant" && isActiveSignal(s)).length ?? 0 })}</Tabs.Tab>
       </Tabs.List>
       <Tabs.Panel value="overview">
         <div className="research-list">
@@ -225,7 +225,7 @@ export function CommsCenter({ terminal, view, onAction }: Props) {
       </Tabs.Panel>
       <Tabs.Panel value="merchants">
         <section aria-label={t("comms.merchants.title")}>
-          <Merchants merchants={screen.merchants} terminalId={terminal.id} officer={officer} view={view} onAction={onAction} />
+          <Merchants signals={screen.signals} terminalId={terminal.id} view={view} onAction={onAction} />
         </section>
       </Tabs.Panel>
     </Tabs.Root>

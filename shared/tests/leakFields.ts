@@ -78,7 +78,7 @@ export const GAME_STATE_FIELDS: Record<string, FieldRule> = {
   comms: { reach: "room", test: "comms.test.ts", note: "`linked` to everyone; the terminal screen to the living at a Com center terminal, with the Xyloph entries drawn so far (in database order)." },
   titles: { reach: "public", test: "titles.test.ts", note: "Holders and lines, by character (owner, 2026-10-20)." },
   hunters: { reach: "room", test: "hunters.test.ts", note: "How many, to everyone; each hunter's id, kind, hp and countdown to the living in a turret room or flying a patrol ship (kind and countdown: hunterTypes.test.ts); `points`, `since`, `nextId`, `hitChance` and `target` never (leaks.test.ts)." },
-  merchants: { reach: "room", test: "merchants.test.ts", note: "The merchants in orbit and their deals, to the living at a Com center terminal (`comms.terminal.merchants`); `nextId` never." },
+  signals: { reach: "room", test: "signals.test.ts", note: "Every signal and its conversation, only to the living with Comms Officer access at a Com center terminal (`comms.terminal.signals`); `nextId` never." },
   turrets: { reach: "room", test: "hunters.test.ts", note: "Every turret's charges, to the living in a turret room." },
   incidentPoints: { reach: "never", test: "leaks.test.ts", note: "The incident pool (#189): no one, no skill or role." },
   pendingFires: { reach: "never", test: "leaks.test.ts", note: "Rooms a Pyromaniac set to ignite at the next cycle change (2026-11-03)." },

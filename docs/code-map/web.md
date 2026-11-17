@@ -46,7 +46,7 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 - `SatietyInfo.tsx`: `useSatietyLines`, what your satiety's card says (cycles with an empty stomach from `satietyZeroSince`, full belly, hungry); satiety is the first chip of your other resources (`ResourceChips.tsx`) on both layouts.
 - `Credits.tsx`: the asset attribution and the non-commercial line: a footer at the bottom of the lobby, and in the game at the top of the settings dialog, under its header (both layouts).
 - `CommsCenter.tsx`: the Com center terminal window: link status and Sol chance, rebel calls with progress and expiry, Xyloph entries left, NERON version and update, each with its button when the view offers it.
-- `Merchants.tsx`: the Com center's Merchants tab (#143): each merchant ship in orbit with its hail and deals; `close_deal` buttons from the view, greyed ones with the rules' `blocked` reason.
+- `Merchants.tsx`: the Com center's Merchants tab (#143; interim until the Signals tab, `docs/plans/signals.md`): each active merchant signal with its Contact button, then its hail, deals and No thank you; buttons from the view, greyed deals with the rules' `blocked` reason. Without Comms Officer access, one line.
 - `BiosTerminal.tsx`: the BIOS terminal window: each BIOS option with its current value and, for the NERON Admin, a switch button.
 - `HunterList.tsx`: the turret window's hunter list (each hunter's hp and a Shoot button, a charges line above), used by `TurretPanel`. `FxSprite.tsx`: one slice of the original's fx sheet at 1x (hunters, the shield and charge icons).
 - `TurretPanel.tsx`: a turret's window: its charges and each hunter in range (`HunterList`).

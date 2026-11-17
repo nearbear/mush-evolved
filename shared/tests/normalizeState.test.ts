@@ -515,6 +515,36 @@ describe("upgrade", () => {
     expect(normalized.players[1]!.bookSkill).toBeUndefined();
     expect(normalized.players[2]!.bookSkill).toBe("medic");
   });
+
+  it("upgradeTo119 moves stored merchants into signals, active and waiting for Contact", () => {
+    const { game, overrides } = fresh();
+    const raw = stored(game);
+    delete raw.signals;
+    const deals = [{ give: [{ kind: "fuel", count: 3 }], receive: [{ kind: "item", item: "oxy_capsule", count: 6 }] }];
+    raw.merchants = {
+      list: [
+        { id: "merchant-4", kind: "transport", event: "HUMAN_VS_OXY", arrivedAt: 10, leavesAt: 14, deals },
+        { id: "merchant-5", kind: "transport", event: "HUMAN_VS_FUEL", arrivedAt: 11, leavesAt: 15, deals: [] },
+      ],
+      nextId: 6,
+    };
+    upgrade({ game: raw, overrides }, 118);
+    const normalized = normalizeGame(raw, overrides);
+    expect("merchants" in normalized).toBe(false);
+    expect(normalized.signals.nextId).toBe(3);
+    expect(normalized.signals.list[0]).toEqual({
+      id: "signal-1",
+      kind: "merchant",
+      arrivedAt: 10,
+      endsAt: 14,
+      status: "active",
+      step: "hail",
+      number: 1,
+      feed: [],
+      merchant: { kind: "transport", event: "HUMAN_VS_OXY", deals },
+    });
+    expect(normalized.signals.list[1]).toMatchObject({ id: "signal-2", number: 2, merchant: { event: "HUMAN_VS_FUEL", deals: [] } });
+  });
 });
 
 describe("normalizeFrame (#384)", () => {

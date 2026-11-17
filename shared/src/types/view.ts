@@ -4,7 +4,7 @@ import type { BiosState } from "../bios.ts";
 import type { DrugEffect } from "../drugs.ts";
 import type { FruitEffect } from "../fruits.ts";
 import type { RebelBaseId, XylophEntryId } from "../comms.ts";
-import type { DealBlock, MerchantDeal, MerchantKind } from "../merchants.ts";
+import type { SignalView } from "../signals.ts";
 import type { TurnSide } from "../navigation.ts";
 import type { PlanetDirection } from "../planets.ts";
 import type { TitleId } from "../titles.ts";
@@ -468,19 +468,11 @@ export interface CommsTerminalView {
   xylophFound: XylophEntryId[];
   neron: { version: number; progress: number };
   /**
-   * Merchant ships in orbit (merchants.ts, #143), oldest first, with their deals in order. `blocked` is why the deal
-   * can't be closed now (by whoever stands at this terminal), null if it can; the comms officer closes one with
-   * `close_deal` (merchant id, deal index) from `view.actions`.
+   * The Signals tab (signals.ts): every signal so far, active and inactive, oldest first, with its conversation. Only
+   * for a viewer with access to the Comms Officer title; absent for anyone else, with no count (owner, 2026-11-16). The
+   * officer's options come from `view.actions` (`contact_signal`, `close_deal`, `refuse_signal`).
    */
-  merchants: MerchantView[];
-}
-
-export interface MerchantView {
-  id: string;
-  kind: MerchantKind;
-  event: string;
-  leavesAt: number;
-  deals: (MerchantDeal & { blocked: DealBlock | null })[];
+  signals?: SignalView[];
 }
 
 /** An expedition report as its members see it (expeditions.ts). */
