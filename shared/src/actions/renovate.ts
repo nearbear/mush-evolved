@@ -4,6 +4,7 @@ import { logPrivate, logPublic } from "../log.ts";
 import { interfaceId, PATROL_SHIPS, type PatrolShip } from "../patrol.ts";
 import type { GameState, ItemState, PlayerState } from "../types.ts";
 import { HULL_REPAIR_ITEM } from "./repair_hull.ts";
+import { rubellaBlocks } from "../diseases.ts";
 
 export type RenovateActionData = { type: "renovate"; equipment: string };
 
@@ -33,6 +34,7 @@ export class RenovateAction extends Action<RenovateActionData> {
   }
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: RenovateActionData): string | null {
+    if (rubellaBlocks(player)) return "cant_repair";
     if (!damagedHere(state, player).some((ship) => interfaceId(ship) === target.equipment)) return "no_ship";
     if (!scrapFor(state, player)) return "no_scrap";
     return null;

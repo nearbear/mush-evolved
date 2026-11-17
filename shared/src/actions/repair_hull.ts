@@ -4,6 +4,7 @@ import { logPrivate, logPublic } from "../log.ts";
 import { hullRepairAmount } from "../modifiers.ts";
 import { removeStatus } from "../statuses.ts";
 import type { GameState, PlayerState } from "../types.ts";
+import { rubellaBlocks } from "../diseases.ts";
 
 export type RepairHullActionData = { type: "repair_hull"; item: string };
 
@@ -37,6 +38,7 @@ export class RepairHullAction extends Action<RepairHullActionData> {
   }
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: RepairHullActionData): string | null {
+    if (rubellaBlocks(player)) return "cant_repair";
     const item = state.items.find((i) => i.id === target.item);
     if (!item) return "no_such_item";
     if (item.type !== HULL_REPAIR_ITEM || !canReachItem(state, player, item)) return "cant_repair_hull";

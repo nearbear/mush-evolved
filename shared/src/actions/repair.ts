@@ -5,6 +5,7 @@ import { ITEM_TYPES, canReachItem, isWorking, itemsIn } from "../items.ts";
 import { logPrivate, logPublic } from "../log.ts";
 import { removeStatus } from "../statuses.ts";
 import type { DoorId, GameState, PlayerState } from "../types.ts";
+import { rubellaBlocks } from "../diseases.ts";
 
 export type RepairActionData =
   | { type: "repair"; equipment: string }
@@ -61,6 +62,7 @@ export class RepairAction extends Action<RepairActionData> {
   }
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: RepairActionData): string | null {
+    if (rubellaBlocks(player)) return "cant_repair";
     if ("item" in target) return brokenItems(state, player).some((i) => i.id === target.item) ? null : "cant_repair";
     if ("door" in target) return brokenDoorsHere(state, player).some((d) => d.id === target.door) ? null : "cant_repair";
     return brokenHere(state, player).some((e) => e.id === target.equipment) ? null : "cant_repair";
