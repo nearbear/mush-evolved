@@ -1,7 +1,8 @@
 // The kit's sample views, built once at load through the fixture (sampleView.ts). Each is a real `viewFor` result.
 // Dev-only: this page never ships.
 
-import type { EquipmentView, PlayerView } from "@mush2/shared";
+import { type EquipmentView, type GameState, loseSignal, type PlayerView } from "@mush2/shared";
+import { arriveMerchant } from "@mush2/shared/src/merchants.ts";
 import {
   act,
   addHunters,
@@ -129,3 +130,34 @@ export const deadMushView = sampleView(kill(sampleState({ role: "mush", characte
 export const bodyTakenView = sampleView(bodyTaken(sampleState({ character: "eleesha" }), "kuanti"));
 export const edenView = sampleView(ended(sampleState(), "humans", "eden"));
 export const mushWinView = sampleView(ended(sampleState({ role: "mush", character: "kuanti" }), "mush", "humans_dead"));
+
+/**
+ * The Com center's Signals tab, seen by the Comms Officer at the terminal with the link up: Wolf's call decoded twice,
+ * one transport contacted (deals on offer), one still hailing, one refused and one lost. Built through the rules.
+ */
+export const signalsSample = (() => {
+  const s = structuredClone(moveToEquipment(giveTitle(sampleState(), "comms_officer"), "COM_CENTER"));
+  s.comms.linked = true;
+  const terminal = Object.values(s.equipment).flat().find((e) => e.type === "COM_CENTER")!.id;
+  const lost = arriveMerchant(s, "transport");
+  loseSignal(s, lost);
+  const refused = arriveMerchant(s, "transport");
+  const offers = arriveMerchant(s, "transport");
+  arriveMerchant(s, "transport");
+  let next: GameState = s;
+  next = act(next, { type: "contact_signal", equipment: terminal, signal: refused.id });
+  next = act(next, { type: "refuse_signal", equipment: terminal, signal: refused.id });
+  next = act(next, { type: "contact_signal", equipment: terminal, signal: offers.id });
+  const wolf = next.signals.list.find((x) => x.kind === "rebel")!;
+  next = act(next, { type: "decode_rebel", equipment: terminal, base: "WOLF" });
+  next = act(next, { type: "decode_rebel", equipment: terminal, base: "WOLF" });
+  const view = sampleView(next);
+  const equipment = view.roomEquipment.find((e) => e.type === "COM_CENTER")!;
+  return { view, terminal: equipment, merchant: offers.id, rebel: wolf.id };
+})();
+
+/** The same terminal seen by a crew member without Comms Officer access: one line, no count. */
+export const signalsNoAccessSample = (() => {
+  const view = sampleView(moveToEquipment(sampleState(), "COM_CENTER"));
+  return { view, terminal: view.roomEquipment.find((e) => e.type === "COM_CENTER")! };
+})();

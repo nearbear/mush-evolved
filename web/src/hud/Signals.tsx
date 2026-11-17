@@ -18,11 +18,13 @@ interface Props {
   terminalId: string;
   view: PlayerView;
   onAction: (action: Action) => void;
+  /** The signal whose conversation is open at first (the design kit); none in the game. */
+  initialOpen?: string;
 }
 
-export function Signals({ signals, nextRebel, terminalId, view, onAction }: Props) {
+export function Signals({ signals, nextRebel, terminalId, view, onAction, initialOpen }: Props) {
   const { t } = useTranslation();
-  const [openId, setOpenId] = useState<string | null>(null);
+  const [openId, setOpenId] = useState<string | null>(initialOpen ?? null);
   if (!signals) return <p>{t("signals.accessOnly")}</p>;
   const open = openId === null ? undefined : signals.find((s) => s.id === openId);
   if (open) return <SignalConversation key={open.id} signal={open} terminalId={terminalId} view={view} onAction={onAction} onBack={() => setOpenId(null)} />;

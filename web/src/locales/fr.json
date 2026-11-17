@@ -2087,7 +2087,7 @@
     },
     "merchant": {
       "transport": {
-        "accept": "Marché conclu.",
+        "accept": "Affaire conclue.",
         "farewell": "Compris.",
         "hail": {
           "HUMAN_VS_FUEL": "Nous avons un surplus d'antigel et il nous manque à manger pour ce soir, ça vous dit ?",
@@ -2096,15 +2096,15 @@
       }
     },
     "deal": "Marché conclu !",
-    "expires_one": "Perdu dans {{count}} cycle.",
-    "expires_many": "Perdu dans {{count}} cycles.",
-    "expires_other": "Perdu dans {{count}} cycles.",
+    "expires_one": "Expire dans {{count}} cycle.",
+    "expires_many": "Expire dans {{count}} cycles.",
+    "expires_other": "Expire dans {{count}} cycles.",
     "decoded": "{{percent}} % décodé.",
     "next_one": "Prochain signal dans {{count}} cycle.",
     "next_many": "Prochain signal dans {{count}} cycles.",
     "next_other": "Prochain signal dans {{count}} cycles.",
-    "decodeUnavailable": "Il faut la liaison avec Sol pour décoder.",
-    "decodeBlocked": "Vous ne pouvez pas décoder pour l’instant.",
+    "decodeUnavailable": "Il faut le contact avec Sol pour décoder.",
+    "decodeBlocked": "Vous ne pouvez pas décoder pour l'instant.",
     "rebel": {
       "message": {
         "WOLF": "Les enfants perdus de Wolf ont installé plusieurs antennes sur Terre ainsi qu'un centre d'émission à Mumbaï. Nous allons pouvoir émettre sur les ondes radio terriennes les nouvelles de votre odyssée. Vous êtes des héros.",

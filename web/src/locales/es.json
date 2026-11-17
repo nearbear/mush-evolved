@@ -2048,20 +2048,20 @@
     "tab_many": "Señales ({{count}})",
     "tab_other": "Señales ({{count}})",
     "title": "Señales",
-    "accessOnly": "Acceso solo para el Oficial de Comunicaciones.",
+    "accessOnly": "Acceso reservado al Oficial de Comunicaciones.",
     "none": "Ninguna señal ha llegado aún al Daedalus.",
     "active": "Activas",
     "inactive": "Inactivas",
     "noneActive": "Ninguna señal activa.",
-    "leaves_one": "Se va en {{count}} ciclo.",
-    "leaves_many": "Se va en {{count}} ciclos.",
-    "leaves_other": "Se va en {{count}} ciclos.",
-    "hailing": "Llamando",
+    "leaves_one": "Parte en {{count}} ciclo.",
+    "leaves_many": "Parte en {{count}} ciclos.",
+    "leaves_other": "Parte en {{count}} ciclos.",
+    "hailing": "Llamada entrante",
     "status": {
       "deal": "Trato cerrado",
       "refused": "Rechazada",
       "lost": "Señal perdida",
-      "reached": "Decodificado"
+      "reached": "Decodificada"
     },
     "kinds": {
       "merchant": "Mercader",
@@ -2091,7 +2091,7 @@
         "farewell": "Entendido.",
         "hail": {
           "HUMAN_VS_FUEL": "Tenemos un excedente de anticongelante y nos falta comida para esta noche. ¿Os interesa?",
-          "HUMAN_VS_OXY": "¡Aloha! Vuestros organismos son fascinantes, sobre todo cómo convertís vuestros residuos orgánicos en metano. Increíble... ¡Os damos un buen montón de oxígeno a cambio de uno de vuestros amigos!"
+          "HUMAN_VS_OXY": "Aloha, vuestros organismos son realmente apasionantes, sobre todo la metanización de vuestros residuos orgánicos, increíble... ¡Os cambiamos a uno de vuestros amigos por unas reservas de oxígeno considerables!"
         }
       }
     },
@@ -2099,18 +2099,18 @@
     "expires_one": "Se pierde en {{count}} ciclo.",
     "expires_many": "Se pierde en {{count}} ciclos.",
     "expires_other": "Se pierde en {{count}} ciclos.",
-    "decoded": "{{percent}} % decodificado.",
+    "decoded": "{{percent}} % decodificada.",
     "next_one": "Próxima señal en {{count}} ciclo.",
     "next_many": "Próxima señal en {{count}} ciclos.",
     "next_other": "Próxima señal en {{count}} ciclos.",
-    "decodeUnavailable": "Hace falta el enlace con Sol para decodificar.",
+    "decodeUnavailable": "Hace falta el contacto con Sol para decodificar.",
     "decodeBlocked": "No puedes decodificar ahora.",
     "rebel": {
       "message": {
         "WOLF": "Los Niños Perdidos de Wolf han instalado varias antenas en la Tierra y un centro de emisión en Bombay. Podremos emitir por las ondas de radio terrestres las noticias de vuestra odisea. Sois héroes.",
         "SIRIUS": "Os agradecemos toda la información sobre el Mush que nos habéis traído. A cambio, os hemos transferido los planos de la molécula de Shkunz. Si la añadís a vuestras raciones en dosis homeopáticas, deberíais mejorar el rendimiento de vuestra tripulación.",
         "CENTAURI": "Nos alegra conocer a los héroes de la guerra contra el Mush. En nuestro sector, la guerra por el control de las colonias es encarnizada. Para facilitar vuestras exploraciones de superficie, acabamos de transferiros los planos del PL80-Blaster, un potente cañón de plasma que debe manejarse con precaución. ¡Luchad hasta el final!",
-        "KALADAAN": "¡Aquí Kaladaan! Agradecemos a toda la tripulación del Daedalus haber dado al pueblo de Sol la esperanza de un futuro mejor. Desde vuestra partida, la resistencia se organiza y ya hemos infiltrado varias administraciones Mush. ¡La Federación pronto será derrocada y recuperaremos el control de Sol!",
+        "KALADAAN": "¡Aquí Kaladaan! Agradecemos a toda la tripulación del Daedalus por haber dado al pueblo de Sol la esperanza de un futuro mejor. Desde vuestra partida, la resistencia se organiza y ya hemos infiltrado varias administraciones Mush. ¡La Federación pronto será derrocada y recuperaremos el control de Sol!",
         "LUYTEN_CETI": "Nuestro sistema sigue bajo el control del Mush. Debemos trabajar con la mayor discreción y, para ello, hemos desarrollado minúsculas sondas de comunicación colocadas directamente dentro de nuestros cerebros. Acabamos de transferiros sus diseños. Las Sombras de Luyten-Ceti velan por vosotros.",
         "CYGNI": "Saludamos a la tripulación del Daedalus. 61 Cygni fue explorado durante vuestro viaje. La Federación no sabe que toda nuestra formación es humana. Simulamos envíos regulares de información con un Pheromodem avanzado. Burlando la vigilancia del Mush, preparamos desde este sistema el contraataque armado de la rebelión. Los planos de nuestro misil SP2SP-230 se han transferido a NERON."
       }

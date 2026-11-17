@@ -2161,7 +2161,7 @@
     "next_one": "Next signal in {{count}} cycle.",
     "next_other": "Next signal in {{count}} cycles.",
     "decodeUnavailable": "The link with Sol is needed to decode.",
-    "decodeBlocked": "You can’t decode right now.",
+    "decodeBlocked": "You can't decode right now.",
     "rebel": {
       "message": {
         "WOLF": "The Lost Children of Wolf have set up several antennas on Earth and a broadcasting centre in Mumbai. We will be able to broadcast news of your odyssey on Earth's radio waves. You are heroes.",

@@ -8,7 +8,7 @@ import { Tabs } from "@base-ui/react/tabs";
 import { SelfHud, SelfPoints } from "../hud/SelfHud.tsx";
 import { TerminalFrame } from "../hud/TerminalFrame.tsx";
 import { AccountSection, CharacterPickerSection } from "./LobbySections.tsx";
-import { EndingsSection, ITrackieSection, PatrolSection, SignalSection, TerminalBodiesSection } from "./GameSections.tsx";
+import { EndingsSection, ITrackieSection, PatrolSection, SignalSection, SignalsTabSection, TerminalBodiesSection } from "./GameSections.tsx";
 import { InspectSection, InventorySection, ItemAttrIconsSection, PeekBarSection, RoomCornerSection, ShipOverlaySection, StatusIconsSection, TopBarSection } from "./HudSections.tsx";
 import { noop } from "./KitSection.tsx";
 import { PrimitivesSection } from "./PrimitivesSection.tsx";
@@ -37,6 +37,7 @@ const NAV: [id: string, label: string][] = [
   ["terminal", "Terminal frame"],
   ["terminal-bodies", "Terminals"],
   ["sol-signal", "Sol signal"],
+  ["signals-tab", "Signals"],
   ["top-bar", "Top bar"],
   ["self-hud", "Self HUD"],
   ["self-points", "AP and MP"],
@@ -157,6 +158,7 @@ export default function Mush2Kit() {
         </section>
         <TerminalBodiesSection />
         <SignalSection />
+        <SignalsTabSection />
         <TopBarSection />
         <section id="self-hud">
           <h2>Self HUD</h2>

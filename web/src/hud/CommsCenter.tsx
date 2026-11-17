@@ -22,14 +22,17 @@ interface Props {
   terminal: EquipmentView;
   view: PlayerView;
   onAction: (action: Action) => void;
+  /** The tab and the signal's conversation it opens on (the design kit's Signals figures); the game opens on Overview. */
+  initialTab?: CommsTab;
+  initialSignal?: string;
 }
 
 type CommsTab = "overview" | "xyloph" | "signals";
 
-export function CommsCenter({ terminal, view, onAction }: Props) {
+export function CommsCenter({ terminal, view, onAction, initialTab = "overview", initialSignal }: Props) {
   const { t } = useTranslation();
   const names = useNames();
-  const [tab, setTab] = useState<CommsTab>("overview");
+  const [tab, setTab] = useState<CommsTab>(initialTab);
   const screen = view.comms.terminal;
   const find = (type: Action["type"]) => view.actions.find(({ action: a }) => a.type === type && "equipment" in a && a.equipment === terminal.id);
   const contactSol = find("contact_sol");
@@ -140,7 +143,7 @@ export function CommsCenter({ terminal, view, onAction }: Props) {
       </Tabs.Panel>
       <Tabs.Panel value="signals" className="signals-panel">
         <section className="signals-section" aria-label={t("signals.title")}>
-          <Signals signals={screen.signals} nextRebel={screen.nextRebel} terminalId={terminal.id} view={view} onAction={onAction} />
+          <Signals signals={screen.signals} nextRebel={screen.nextRebel} terminalId={terminal.id} view={view} onAction={onAction} initialOpen={initialSignal} />
         </section>
       </Tabs.Panel>
     </Tabs.Root>
