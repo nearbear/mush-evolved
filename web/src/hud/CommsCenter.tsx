@@ -75,7 +75,14 @@ export function CommsCenter({ terminal, view, onAction, initialTab = "overview",
 
           <section className="research-item" aria-label={t("comms.neronTitle")}>
             <div className="research-body">
-              <strong>{t("comms.neronVersion", { version: screen.neron.version })}</strong>
+              <div className="research-title">
+                <strong>{t("comms.neronVersion", { version: screen.neron.version })}</strong>
+                {neron && (
+                  <ActionButton view={view} option={neron} onAction={onAction}>
+                    <ActionLabel text={t("comms.neronUpgrade")} cost={neron.cost} chance={neron.chance} />
+                  </ActionButton>
+                )}
+              </div>
               <div className="research-progress">
                 <div
                   className="kit-progress neron"
@@ -86,12 +93,6 @@ export function CommsCenter({ terminal, view, onAction, initialTab = "overview",
                   aria-valuenow={screen.neron.progress}
                   style={{ "--value": screen.neron.progress / 100 } as CSSProperties}
                 />
-                <span>{t("research.percent", { percent: screen.neron.progress })}</span>
-                {neron && (
-                  <ActionButton view={view} option={neron} onAction={onAction}>
-                    <ActionLabel text={t("actions.updateNeron")} cost={neron.cost} chance={neron.chance} />
-                  </ActionButton>
-                )}
               </div>
               <span className="sub">{t("comms.neronProgress", { percent: screen.neron.progress })}</span>
             </div>

@@ -1689,6 +1689,7 @@
     "neronTitle": "Actualización de NERON",
     "neronVersion": "NERON versión {{version}}",
     "neronProgress": "{{percent}} % hacia la próxima actualización. Cada actualización termina un proyecto de NERON.",
+    "neronUpgrade": "Mejorar",
     "merchants": {
       "dealsLabel": "Tratos",
       "give": "Entregas",

@@ -188,13 +188,15 @@ li.research-item .research-title {
   overflow-wrap: anywhere;
 }
 .research-title .skill-status,
+.research-title > button,
 .research-progress > :not(progress) {
   flex: none;
   margin: 0;
   white-space: nowrap;
 }
-/* The pill sits at the row's right edge. */
-.research-title .skill-status {
+/* The pill or action button sits at the row's right edge. */
+.research-title .skill-status,
+.research-title > button {
   margin-left: auto;
 }
 .research-title > img {
