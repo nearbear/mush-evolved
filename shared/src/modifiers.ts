@@ -88,6 +88,7 @@ import {
 } from "./modifiers/combat_injuries.ts";
 import type { ActionCost } from "./actions.ts";
 import type { ActionTag } from "./actions/action.ts";
+import type { DeepReadonly, WeaponStats } from "./types/config.ts";
 import type { Action, GameState, ItemState, MovementRules, PlayerState } from "./types.ts";
 
 /** A numeric hook: takes the running value and returns the adjusted one. Must be pure. */
@@ -141,6 +142,16 @@ export interface CostContext {
   tags: readonly ActionTag[];
 }
 
+/** What is being weighted, for weapon outcome hooks. */
+export interface WeaponOutcomeContext {
+  state: Readonly<GameState>;
+  player: Readonly<PlayerState>;
+  weapon: DeepReadonly<WeaponStats>;
+  kind: "hit" | "miss";
+  critical: boolean;
+  fumble: boolean;
+}
+
 /**
  * What an onEnterRoom hook may call from the actions layer. The move action passes them in, because a modifier cannot
  * import an action (the actions import the modifiers, and a cycle breaks their classes).
@@ -166,6 +177,8 @@ export interface Modifier extends Partial<FoldHooks> {
   actionInjuryRate?: (cost: number, ctx: CostContext) => number;
   /** Adjusts what one of the holder's own actions dirtiness chance. Must be pure. */
   actionDirtRate?: (cost: number, ctx: CostContext) => number;
+  /** Adjusts the weight of a weapon hit or miss outcome entry. Must be pure. */
+  weaponOutcomeWeight?: (weight: number, ctx: WeaponOutcomeContext) => number;
   /**
    * Adjusts what anyone's action costs in the room where the holder is, the holder's own included (Pacifist).
    * Read when a price is asked for, so nothing is stored when people come and go. Holders stack. Must be pure.
@@ -454,6 +467,20 @@ export function actionDirtRate(base: number, ctx: CostContext, registry: Modifie
   // Hooks can't make a price negative. A move's MP is a net change and can already be negative (a conversion
   // gives more than the move spends), so the floor is 0 or the base, whichever is lower.
   return chance;
+}
+
+/** Weight of one weapon outcome entry once the attacker's modifiers have had their say; never below 0. */
+export function weaponOutcomeWeight(
+  base: number,
+  ctx: WeaponOutcomeContext,
+  registry: ModifierRegistry = MODIFIERS,
+): number {
+  let weight = base;
+  for (const id of modifierIds(ctx.player)) {
+    const hook = registry[id]?.weaponOutcomeWeight;
+    if (hook) weight = hook(weight, ctx);
+  }
+  return Math.max(0, weight);
 }
 
 /** Morale each living player loses when a day ends: `moralePerDay` through every living player's `crewMoraleLoss` hooks, in seat order; never below 0. */

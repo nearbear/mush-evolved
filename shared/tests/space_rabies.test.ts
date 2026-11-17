@@ -41,8 +41,9 @@ describe("Space rabies", () => {
     const [sick, victim] = state.players.filter((p) => p.role === "human");
     sick!.room = victim!.room = "BRIDGE";
     state.items.push({ id: "w", type: "knife", at: { kind: "player", id: sick!.id } });
+    const knifeHits = new Set(DEFAULT_CONFIG.weapons.types.knife!.hitOutcomes.map((o) => o.log));
     for (let i = 0; i < 20; i++) attackWithHeldWeapon(state, sick!);
-    expect(state.log.some((e) => e.key === "attacked")).toBe(true);
+    expect(state.log.some((e) => knifeHits.has(e.key))).toBe(true);
     expect(victim!.hp).toBeLessThan(victim!.maxHp);
   });
 
@@ -51,9 +52,13 @@ describe("Space rabies", () => {
     const [sick, victim] = state.players.filter((p) => p.role === "human");
     sick!.room = victim!.room = "BRIDGE";
     state.items.push({ id: "w", type: "knife", at: { kind: "player", id: sick!.id } });
+    const knifeLogs = new Set([
+      ...DEFAULT_CONFIG.weapons.types.knife!.hitOutcomes.map((o) => o.log),
+      ...DEFAULT_CONFIG.weapons.types.knife!.missOutcomes.map((o) => o.log),
+    ]);
     addDisease(state, sick!, "space_rabies_disease");
     for (let i = 0; i < 200; i++) enteredRoom(state, sick!, { attackWithHeldWeapon });
     expect(state.log.some((e) => e.key === "foams")).toBe(true);
-    expect(state.log.some((e) => e.key === "attacked" || e.key === "attackMissed")).toBe(true);
+    expect(state.log.some((e) => knifeLogs.has(e.key))).toBe(true);
   });
 });

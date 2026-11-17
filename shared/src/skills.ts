@@ -256,9 +256,9 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   nimble_fingers: "full",
   //Increases success rate, injury chance, and dirty chance by 20%
   expert: "full",
-  // Free turret shots from Shoot points (owner, 2026-10-25) and +1 expedition strength with a working gun (owner,
-  // 2026-11-08, #358); no fewer clumsy misses or more critical hits on shots.
-  gunman: "partial",
+  // Free turret shots from Shoot points (owner, 2026-10-25), +1 expedition strength with a working gun (owner,
+  // 2026-11-08, #358), and doubled critical hit / non-fumble miss outcome weights on firearms (modifiers/gunman.ts).
+  gunman: "full",
   // Scan for planets costs 1 AP less; remote analyses reveal 1 extra sector; +4 on its two NERON projects (owner, 2026-10-27).
   astrophysician: "full",
   // One extra camera item when picked and free install/uninstall of cameras (owner, 2026-10-27, modifiers/paranoid.ts).
