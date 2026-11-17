@@ -262,6 +262,49 @@ export function legalActions(state: GameState, playerId: PlayerId): Action[] {
   );
 }
 
+const UNAFFORDABLE_REASONS = new Set<string>([
+  "cant_afford",
+  NO_SPACE,
+  COOLDOWN,
+  AT_CAPACITY,
+  DIRTY,
+  NO_DEBRIS,
+  PASIPHAE_INTACT,
+  REACTOR_BROKEN,
+  ARACK_AROUND,
+]);
+
+function actionOption(state: GameState, p: PlayerState, def: ActionDef<Action>, a: Action, lacks: ActionOption["lacks"]): ActionOption {
+  return {
+    action: a,
+    cost: def.cost(state, p, a),
+    chance: def.chance(state, p, a),
+    dirt: def.dirtChanceMods(state, p, a),
+    injury: def.injuryChanceMods(state, p, a),
+    tags: [...def.tagsFor(state, a)],
+    lacks,
+  };
+}
+
+function unaffordableOption(state: GameState, p: PlayerState, def: ActionDef<Action>, a: Action, refused: string): ActionOption {
+  const option = actionOption(state, p, def, a, []);
+  const { cost } = option;
+  option.lacks = [
+    ...(refused === NO_DEBRIS ? (["debris"] as const) : []),
+    ...(refused === PASIPHAE_INTACT ? (["pasiphae"] as const) : []),
+    ...(refused === REACTOR_BROKEN ? (["reactor"] as const) : []),
+    ...(refused === ARACK_AROUND ? (["arack"] as const) : []),
+    ...(refused === DIRTY ? (["clean"] as const) : []),
+    ...(refused === NO_SPACE ? (["space"] as const) : []),
+    ...(refused === COOLDOWN ? (["cooldown"] as const) : []),
+    ...(refused === AT_CAPACITY ? (["capacity"] as const) : []),
+    ...(p.ap < cost.ap ? (["ap"] as const) : []),
+    ...(p.mp < cost.mp ? (["mp"] as const) : []),
+  ];
+  if (refused === COOLDOWN) option.cooldown = def.cooldownLeft(state, p, a);
+  return option;
+}
+
 /**
  * Actions that fail only on cost (`cant_afford`), on room in the inventory (`NO_SPACE`), on a cooldown (`COOLDOWN`), on a shared limit (`AT_CAPACITY`), on being dirty (`DIRTY`) or, for Collect scrap, on no debris (`NO_DEBRIS`) or the Pasiphae still existing (`PASIPHAE_INTACT`), or for Travel and turns on a broken reactor (`REACTOR_BROKEN`), or for Travel and Leave orbit on an Arack around (`ARACK_AROUND`), with the cost and what falls
  * short. For showing them disabled.
@@ -274,14 +317,27 @@ export function unaffordableActions(state: GameState, playerId: PlayerId): Actio
     def.candidates(state, p).flatMap((a): ActionOption[] => {
       if (a.type === "move") return [];
       const refused = def.check(state, p, a);
-      if (refused !== "cant_afford" && refused !== NO_SPACE && refused !== COOLDOWN && refused !== AT_CAPACITY && refused !== DIRTY && refused !== NO_DEBRIS && refused !== PASIPHAE_INTACT && refused !== REACTOR_BROKEN && refused !== ARACK_AROUND) return [];
-      const cost = def.cost(state, p, a);
-      const lacks: ActionOption["lacks"] = [...(refused === NO_DEBRIS ? (["debris"] as const) : []), ...(refused === PASIPHAE_INTACT ? (["pasiphae"] as const) : []), ...(refused === REACTOR_BROKEN ? (["reactor"] as const) : []), ...(refused === ARACK_AROUND ? (["arack"] as const) : []), ...(refused === DIRTY ? (["clean"] as const) : []), ...(refused === NO_SPACE ? (["space"] as const) : []), ...(refused === COOLDOWN ? (["cooldown"] as const) : []), ...(refused === AT_CAPACITY ? (["capacity"] as const) : []), ...(p.ap < cost.ap ? (["ap"] as const) : []), ...(p.mp < cost.mp ? (["mp"] as const) : [])];
-      const option: ActionOption = { action: a, cost, chance: def.chance(state, p, a), dirt: def.dirtChanceMods(state, p, a), injury: def.injuryChanceMods(state, p, a), tags: [...def.tagsFor(state, a)], lacks };
-      if (refused === COOLDOWN) option.cooldown = def.cooldownLeft(state, p, a);
-      return [option];
+      return UNAFFORDABLE_REASONS.has(refused ?? "") ? [unaffordableOption(state, p, def, a, refused!)] : [];
     }),
   );
+}
+
+/** Both legal and unaffordable action options in a single pass over `ACTIONS`, keeping legal options before unaffordable ones. */
+function viewActionOptions(state: GameState, p: PlayerState): ActionOption[] {
+  if (!canAct(state, p)) return [];
+  const legal: ActionOption[] = [];
+  const unaffordable: ActionOption[] = [];
+  for (const def of Object.values(ACTIONS) as ActionDef<Action>[]) {
+    for (const a of def.candidates(state, p)) {
+      const refused = def.check(state, p, a);
+      if (refused === null) {
+        legal.push(actionOption(state, p, def, a, []));
+      } else if (a.type !== "move" && UNAFFORDABLE_REASONS.has(refused)) {
+        unaffordable.push(unaffordableOption(state, p, def, a, refused));
+      }
+    }
+  }
+  return [...legal, ...unaffordable];
 }
 
 /** Does an action at once, skipping the queue and its timing (queue.ts is how players act; this is its last step). */
@@ -571,7 +627,6 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
   const you = findPlayer(state, playerId);
   if (!you) throw new Error(`Unknown player ${playerId}`);
   const others = state.players.filter((p) => p.id !== playerId);
-  const legal = legalActions(state, playerId);
   const channels = readChannels(state, you);
   // Without ACTOPI, anyone outside your room is a room-only dot: no identity, so no room on their entry.
   const actopi = state.bios.actopi;
@@ -777,16 +832,8 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
         line: SUCCESSION[id].flatMap((c) => state.players.filter((p) => p.character === c).map((p) => p.character)),
       };
     }),
-    actions: [...legalOptions(state, you, legal), ...unaffordableActions(state, playerId)],
+    actions: viewActionOptions(state, you),
   };
-}
-
-/** `legal` with what each costs you and its odds. The client displays these and never computes them. */
-function legalOptions(state: GameState, p: PlayerState, legal: Action[]): ActionOption[] {
-  return legal.map((a) => {
-    const def = ACTIONS[a.type] as ActionDef<Action>;
-    return { action: a, cost: def.cost(state, p, a), chance: def.chance(state, p, a), dirt: def.dirtChanceMods(state, p, a), injury: def.injuryChanceMods(state, p, a), tags: [...def.tagsFor(state, a)], lacks: [] };
-  });
 }
 
 /** Whether you can do an offered action now, rather than lacking the points for it. */
