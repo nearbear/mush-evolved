@@ -6,108 +6,17 @@ import { EQUIPMENT_TYPES } from "./equipment.ts";
 import { ICARUS_CRAFT, patrolEquipment, patrolRooms } from "./patrol.ts";
 import { SKILLS } from "./skills.ts";
 import type { ShipRoom } from "./shipLayout.ts";
-import type { ConfigOverrides, ExpeditionEventKind, ExpeditionEventRule, GameConfig, PreselectionRules, RoomId, WeaponHitOutcome, WeaponMissOutcome } from "./types.ts";
-
-const BLASTER_OUTCOMES: { hitOutcomes: WeaponHitOutcome[]; missOutcomes: WeaponMissOutcome[] } = {
-  hitOutcomes: [
-    { weight: 75, log: "BLASTER_SUCCESSFUL_SHOT" },
-    { weight: 1, critical: true, log: "BLASTER_TARGET_HEADSHOT", effects: { instantKill: "target" } },
-    { weight: 2, critical: true, log: "BLASTER_TARGET_RANDOM_INJURY", effects: { injuries: [{ who: "target", injury: "random", chance: 1 }] } },
-    { weight: 2, critical: true, log: "BLASTER_SHOOTER_PLUS_2_MAX_DAMAGE_20_RANDOM_INJURY_TO_TARGET", effects: { maxDamageDelta: 2, injuries: [{ who: "target", injury: "random", chance: 0.2 }] } },
-    { weight: 2, critical: true, log: "BLASTER_SHOOTER_PLUS_1_DAMAGE_TARGET_DAMAGED_EARS", effects: { damageDelta: 1, injuries: [{ who: "target", injury: "damaged_ears", chance: 1 }] } },
-    {
-      weight: 1,
-      critical: true,
-      log: "BLASTER_SHOOTER_PLUS_2_DAMAGE_TARGET_30_TORN_TONGUE_TARGET_30_BURST_NOSE_TARGET_30_OPEN_AIR_BRAIN_TARGET_30_HEAD_TRAUMA",
-      effects: {
-        damageDelta: 2,
-        injuries: [
-          { who: "target", injury: "torn_tongue", chance: 0.3 },
-          { who: "target", injury: "burst_nose", chance: 0.3 },
-          { who: "target", injury: "open_air_brain", chance: 0.3 },
-          { who: "target", injury: "head_trauma", chance: 0.3 },
-        ],
-      },
-    },
-    { weight: 1, critical: true, log: "BLASTER_SHOOTER_PLUS_1_DAMAGE_TARGET_REMOVE_2_AP", effects: { damageDelta: 1, apLoss: { who: "target", amount: 2 } } },
-  ],
-  missOutcomes: [
-    { weight: 75, log: "BLASTER_FAILED_SHOT" },
-    { weight: 2, fumble: true, log: "BLASTER_BREAK_WEAPON", effects: { weaponEffect: "break" } },
-    { weight: 2, fumble: true, log: "BLASTER_SHOOTER_DROP_WEAPON", effects: { weaponEffect: "drop" } },
-    {
-      weight: 2,
-      fumble: true,
-      log: "BLASTER_SHOOTER_MINUS_1_AP_SHOOTER_DROP_WEAPON_SHOOTER_RANDOM_INJURY",
-      effects: { apLoss: { who: "attacker", amount: 1 }, weaponEffect: "drop", injuries: [{ who: "attacker", injury: "random", chance: 1 }] },
-    },
-    { weight: 1, fumble: true, log: "BLASTER_SHOOTER_MINUS_1_AP_BREAK_WEAPON", effects: { apLoss: { who: "attacker", amount: 1 }, weaponEffect: "break" } },
-    { weight: 1, fumble: true, log: "BLASTER_SHOOTER_MINUS_1_AP", effects: { apLoss: { who: "attacker", amount: 1 } } },
-  ],
-};
-
-/** Heavy-gun hit/miss outcome tables shared by Natamy rifle, Old Faithful, and Lizaro Jungle in eMush. */
-function heavyGunOutcomes(prefix: string, mushMultiplier?: number): { hitOutcomes: WeaponHitOutcome[]; missOutcomes: WeaponMissOutcome[] } {
-  const mush = mushMultiplier !== undefined ? { mushMultiplier } : {};
-  return {
-    hitOutcomes: [
-      {
-        weight: 75,
-        log: `${prefix}_SUCCESSFUL_SHOT`,
-        effects: {
-          ...mush,
-          injuries: [
-            { who: "target", injury: "random", chance: 1 },
-            { who: "target", injury: "haemorrhage", chance: 0.4 },
-            { who: "target", injury: "critical_haemorrhage", chance: 0.1 },
-          ],
-        },
-      },
-      {
-        weight: 5,
-        critical: true,
-        log: `${prefix}_SHOOTER_PLUS_2_MAX_DAMAGE_SHOOTER_MINUS_1_AP_TARGET_CRITICAL_HAEMORRHAGE_40_PERCENTS_TARGET_RANDOM_INJURY`,
-        effects: {
-          ...mush,
-          maxDamageDelta: 2,
-          apLoss: { who: "attacker", amount: 1 },
-          injuries: [
-            { who: "target", injury: "critical_haemorrhage", chance: 0.4 },
-            { who: "target", injury: "random", chance: 1 },
-          ],
-        },
-      },
-      {
-        weight: 5,
-        critical: true,
-        log: `${prefix}_TARGET_MASHED_FOOT`,
-        effects: { ...mush, injuries: [{ who: "target", injury: "mashed_foot", chance: 1 }] },
-      },
-      {
-        weight: 3,
-        critical: true,
-        log: `${prefix}_TARGET_BROKEN_SHOULDER_TARGET_CRITICAL_HAEMORRHAGE_40_PERCENTS_TARGET_HAEMORRHAGE_40_PERCENTS`,
-        effects: {
-          ...mush,
-          injuries: [
-            { who: "target", injury: "broken_shoulder", chance: 1 },
-            { who: "target", injury: "critical_haemorrhage", chance: 0.4 },
-            { who: "target", injury: "haemorrhage", chance: 0.4 },
-          ],
-        },
-      },
-      { weight: 1, critical: true, log: `${prefix}_HEADSHOT`, effects: { instantKill: "target" } },
-      { weight: 1, critical: true, log: `${prefix}_HEADSHOT_2`, effects: { instantKill: "target", apLoss: { who: "attacker", amount: 1 } } },
-    ],
-    missOutcomes: [
-      { weight: 75, log: `${prefix}_FAILED_SHOT` },
-      { weight: 1, fumble: true, log: `${prefix}_TARGET_MINUS_1AP`, effects: { apLoss: { who: "target", amount: 1 } } },
-      { weight: 1, fumble: true, log: `${prefix}_BREAK_WEAPON`, effects: { weaponEffect: "break" } },
-      { weight: 1, fumble: true, log: `${prefix}_SHOOTER_BURNT_HAND`, effects: { injuries: [{ who: "attacker", injury: "burnt_hand", chance: 1 }] } },
-      { weight: 1, fumble: true, log: `${prefix}_SHOOTER_BROKEN_SHOULDER`, effects: { injuries: [{ who: "attacker", injury: "broken_shoulder", chance: 1 }] } },
-    ],
-  };
-}
+import {
+  BARE_HANDS_OUTCOMES,
+  BLASTER_OUTCOMES,
+  GRENADE_OUTCOMES,
+  KNIFE_OUTCOMES,
+  LIZARO_JUNGLE_OUTCOMES,
+  MISSILE_LAUNCHER_OUTCOMES,
+  NATAMY_RIFLE_OUTCOMES,
+  OLD_FAITHFUL_OUTCOMES,
+} from "./configHitOutcomes.ts";
+import type { ConfigOverrides, ExpeditionEventKind, ExpeditionEventRule, GameConfig, PreselectionRules, RoomId } from "./types.ts";
 
 /** One line of an expedition sector's table: its kind, weight and amount (oxygen, fuel, fruits or rations). */
 const ev = (kind: Exclude<ExpeditionEventKind, "fight">, weight: number, amount?: number): ExpeditionEventRule => ({ kind, weight, ...(amount !== undefined && { amount }) });
@@ -680,130 +589,18 @@ export const DEFAULT_CONFIG: GameConfig = {
   weapons: {
     cost: { ap: 1 },
     types: {
-      knife: {
-        melee: true,
-        damage: [1, 5],
-        accuracy: 0.6,
-        expoStrength: 1,
-        dirtyChance: 0.25,
-        repairChance: 0.12,
-        hitOutcomes: [
-          { weight: 75, log: "KNIFE_SUCCESSFUL_HIT_10_HAEMORRHAGE", effects: { injuries: [{ who: "target", injury: "haemorrhage", chance: 0.1 }] } },
-          { weight: 5, critical: true, log: "KNIFE_PLUS_2_DAMAGE_RANDOM_INJURY", effects: { damageDelta: 2, injuries: [{ who: "target", injury: "random", chance: 1 }] } },
-          { weight: 5, critical: true, log: "KNIFE_PLUS_2_DAMAGE_50_CRITICAL_HAEMORRHAGE", effects: { damageDelta: 2, injuries: [{ who: "target", injury: "critical_haemorrhage", chance: 0.5 }] } },
-          {
-            weight: 3,
-            critical: true,
-            log: "KNIFE_PLUS_2_DAMAGE_50_CRITICAL_HAEMORRHAGE_RANDOM_INJURY",
-            effects: { damageDelta: 2, injuries: [{ who: "target", injury: "critical_haemorrhage", chance: 0.5 }, { who: "target", injury: "random", chance: 1 }] },
-          },
-          {
-            weight: 3,
-            critical: true,
-            log: "KNIFE_PLUS_2_DAMAGE_60_CRITICAL_HAEMORRHAGE_BUSTED_ARM_JOINT",
-            effects: { damageDelta: 2, injuries: [{ who: "target", injury: "critical_haemorrhage", chance: 0.6 }, { who: "target", injury: "busted_arm_joint", chance: 1 }] },
-          },
-          { weight: 2, critical: true, log: "KNIFE_INSTAGIB_BLED", effects: { instantKill: "target" } },
-          { weight: 1, critical: true, log: "KNIFE_PLUS_2_DAMAGE_PUNCTURED_LUNG", effects: { damageDelta: 2, injuries: [{ who: "target", injury: "punctured_lung", chance: 1 }] } },
-        ],
-        missOutcomes: [
-          { weight: 75, log: "KNIFE_FAILED_HIT" },
-          { weight: 3, fumble: true, log: "KNIFE_BREAK_WEAPON", effects: { weaponEffect: "break" } },
-          { weight: 3, fumble: true, log: "KNIFE_BREAK_WEAPON_SHOOTER_TORN_TONGUE", effects: { weaponEffect: "break", injuries: [{ who: "attacker", injury: "torn_tongue", chance: 1 }] } },
-          { weight: 2, fumble: true, log: "KNIFE_SHOOTER_BRUISED_SHOULDER", effects: { injuries: [{ who: "attacker", injury: "bruised_shoulder", chance: 1 }] } },
-          { weight: 3, fumble: true, log: "KNIFE_SHOOTER_DROP_WEAPON", effects: { weaponEffect: "drop" } },
-          { weight: 1, fumble: true, log: "KNIFE_SHOOTER_MINUS_2_AP", effects: { apLoss: { who: "attacker", amount: 2 } } },
-        ],
-      },
+      knife: { melee: true, damage: [1, 5], accuracy: 0.6, expoStrength: 1, dirtyChance: 0.25, repairChance: 0.12, ...KNIFE_OUTCOMES },
       blaster: { gun: true, damage: [2, 3], accuracy: 0.5, expoStrength: 1, charges: 3, dirtyChance: 0, repairChance: 0.12, ...BLASTER_OUTCOMES },
       customized_blaster: { gun: true, damage: [2, 3], accuracy: 0.5, expoStrength: 2, charges: 3, dirtyChance: 0, repairChance: 0.12, ...BLASTER_OUTCOMES },
-      natamy_riffle: { gun: true, damage: [2, 4], mushDamage: [6, 13], accuracy: 0.5, expoStrength: 1, charges: 3, dirtyChance: 0, repairChance: 0.12, ...heavyGunOutcomes("NATAMY_RIFLE", 2) },
+      natamy_riffle: { gun: true, damage: [2, 4], mushDamage: [6, 13], accuracy: 0.5, expoStrength: 1, charges: 3, dirtyChance: 0, repairChance: 0.12, ...NATAMY_RIFLE_OUTCOMES },
       // Lizaro Jungle.
-      sniper_riffle: { gun: true, damage: [3, 5], accuracy: 0.99, expoStrength: 1, charges: 1, dirtyChance: 0, repairChance: 0.12, ...heavyGunOutcomes("LIZARO_JUNGLE") },
+      sniper_riffle: { gun: true, damage: [3, 5], accuracy: 0.99, expoStrength: 1, charges: 1, dirtyChance: 0, repairChance: 0.12, ...LIZARO_JUNGLE_OUTCOMES },
       // Old Faithful.
-      machine_gun: { gun: true, damage: [2, 3], accuracy: 0.5, expoStrength: 2, charges: 12, dirtyChance: 0, repairChance: 0.12, ...heavyGunOutcomes("OLD_FAITHFUL") },
-      missile_launcher: {
-        gun: true,
-        damage: [1, 8],
-        accuracy: 0.5,
-        expoStrength: 3,
-        charges: 1,
-        area: { selfDamage: [1, 4] },
-        dirtyChance: 0,
-        repairChance: 0.12,
-        hitOutcomes: [
-          {
-            weight: 40,
-            log: "ROCKET_LAUNCHER_SUCCESSFUL_HIT_2_RANDOM_WOUNDS_4_ITEMS_6_SPLASH",
-            effects: { injuries: [{ who: "target", injury: "random", chance: 1, count: 2 }], breakRandomItems: 4, splashDamage: { amount: 6 } },
-          },
-          { weight: 7, critical: true, log: "ROCKET_LAUNCHER_ROCKETTED", effects: { instantKill: "target" } },
-          {
-            weight: 2,
-            critical: true,
-            log: "ROCKET_LAUNCHER_CRITICAL_MINUS_8_DAMAGE_2_RANDOM_WOUNDS_2_BACKFIRE_WOUNDS_2_ITEMS",
-            effects: {
-              damageDelta: -8,
-              injuries: [
-                { who: "target", injury: "random", chance: 1, count: 2 },
-                { who: "attacker", injury: "random", chance: 1, count: 2 },
-              ],
-              breakRandomItems: 2,
-            },
-          },
-          {
-            weight: 4,
-            critical: true,
-            log: "ROCKET_LAUNCHER_CRITICAL_3_RANDOM_WOUNDS_2_ITEMS",
-            effects: { injuries: [{ who: "target", injury: "random", chance: 1, count: 3 }], breakRandomItems: 2 },
-          },
-        ],
-        missOutcomes: [
-          { weight: 3, log: "ROCKET_LAUNCHER_MISS_10_ITEMS", effects: { breakRandomItems: 10 } },
-          { weight: 3, fumble: true, log: "ROCKET_LAUNCHER_FUMBLE_6_ITEMS", effects: { breakRandomItems: 6 } },
-          { weight: 3, fumble: true, log: "ROCKET_LAUNCHER_FUMBLE_6_ITEMS_BACKFIRE_ROCKETTED", effects: { breakRandomItems: 6, instantKill: "attacker" } },
-          { weight: 3, fumble: true, log: "ROCKET_LAUNCHER_FUMBLE_8_SPLASH_50_PERCENT_4_ITEMS", effects: { splashDamage: { amount: 8, chance: 0.5 }, breakRandomItems: 4 } },
-        ],
-      },
-      grenade: {
-        damage: [0, 10],
-        accuracy: 1,
-        expoStrength: 3,
-        area: { selfDamage: [0, 3] },
-        consumed: true,
-        dirtyChance: 0,
-        repairChance: null,
-        hitOutcomes: [
-          { weight: 40, log: "GRENADE_SUCCESSFUL_THROW_SPLASH_DAMAGE_ALL", effects: { weaponEffect: "destroy" } },
-          {
-            weight: 10,
-            critical: true,
-            log: "GRENADE_CRITICAL_THROW_SPLASH_DAMAGE_ALL_BREAK_ITEMS_SPLASH_WOUNDS",
-            effects: { weaponEffect: "destroy", breakRandomItems: 4, injuries: [{ who: "splash", injury: "random", chance: 1, count: 2 }] },
-          },
-        ],
-        missOutcomes: [
-          { weight: 1, log: "GRENADE_FAILURE_PLACEHOLDER", effects: { weaponEffect: "destroy" } },
-        ],
-      },
+      machine_gun: { gun: true, damage: [2, 3], accuracy: 0.5, expoStrength: 2, charges: 12, dirtyChance: 0, repairChance: 0.12, ...OLD_FAITHFUL_OUTCOMES },
+      missile_launcher: { gun: true, damage: [1, 8], accuracy: 0.5, expoStrength: 3, charges: 1, area: { selfDamage: [1, 4] }, dirtyChance: 0, repairChance: 0.12, ...MISSILE_LAUNCHER_OUTCOMES },
+      grenade: { damage: [0, 10], accuracy: 1, expoStrength: 3, area: { selfDamage: [0, 3] }, consumed: true, dirtyChance: 0, repairChance: null, ...GRENADE_OUTCOMES },
       // Unarmed (not wired to an action yet).
-      bare_hands: {
-        melee: true,
-        damage: [1, 2],
-        accuracy: 0.6,
-        expoStrength: 0,
-        dirtyChance: 0,
-        repairChance: null,
-        hitOutcomes: [
-          { weight: 15, log: "BARE_HANDS_SUCCESSFUL_HIT", effects: { skillMaxDamage: true } },
-          { weight: 5, critical: true, log: "BARE_HANDS_PLUS_1_DAMAGE", effects: { damageDelta: 1, skillMaxDamage: true } },
-          { weight: 5, critical: true, log: "BARE_HANDS_TARGET_BURST_NOSE_TARGET_10_PERCENTS", effects: { skillMaxDamage: true, injuries: [{ who: "target", injury: "burst_nose", chance: 0.1 }] } },
-        ],
-        missOutcomes: [
-          { weight: 30, log: "BARE_HANDS_FAILED_HIT" },
-          { weight: 10, fumble: true, log: "BARE_HANDS_FUMBLE" },
-        ],
-      },
+      bare_hands: { melee: true, damage: [1, 2], accuracy: 0.6, expoStrength: 0, dirtyChance: 0, repairChance: null, ...BARE_HANDS_OUTCOMES },
     },
   },
   // Confirmed 2026-10-15: nobody starts with a skill; players pick up to three
