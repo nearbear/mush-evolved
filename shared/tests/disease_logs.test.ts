@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
-import { bite, foaming } from "../src/diseases.ts";
+import { bite, foaming, weakness } from "../src/diseases.ts";
 import { createGame } from "../src/rules.ts";
 import type { GameConfig } from "../src/types.ts";
 import { makeSeats, noHunters } from "./support.ts";
@@ -29,5 +29,13 @@ describe("foaming and bite", () => {
     const lone = state.log.length;
     bite(state, c!);
     expect(state.log).toHaveLength(lone);
+  });
+
+  it("logs weakness in public, for a human but not for a Mush without bacterial_contact", () => {
+    const state = createGame(makeSeats(4), noHunters(config), 7);
+    weakness(state, state.players.find((p) => p.role === "mush")!);
+    expect(state.log.some((e) => e.key === "weakness")).toBe(false);
+    weakness(state, state.players.find((p) => p.role === "human")!);
+    expect(state.log.filter((e) => e.key === "weakness")).toHaveLength(1);
   });
 });

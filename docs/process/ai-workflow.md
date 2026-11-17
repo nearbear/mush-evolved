@@ -3962,3 +3962,7 @@ Two hidden-information choices made by Claude, not the owner, worth a look: (1) 
 ## 2026-11-15: Incident disease list no longer pinned by a test
 
 - Owner added Migraine and Sinus Storm to `config.diseases.incidentDiseases` and asked that changing the list need no other edits. The incident code already read the list from config; only a test pinned its exact values. Claude replaced it with an invariant (non-empty, no duplicates, each entry in `allDiseases` with a modifier and stats) and removed the hard-coded names from `implemented-rules.md`.
+
+## 2026-11-16: `weakness` disease log helper
+
+Added `weakness(state, player)` to `shared/src/diseases.ts`, following the sneeze/itchy/rumble pattern: a public log "(Player) does seem very energetic" (key `weakness`, en/fr/es) in the player's room, gated by `canHaveSpecialLogs`. Test in `disease_logs.test.ts`. Not yet hooked to any disease; the English wording was taken as given (possibly meant "doesn't"), and the fr/es lines were made gender-neutral.

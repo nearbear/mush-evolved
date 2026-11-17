@@ -165,6 +165,12 @@ export function bite(state: GameState, player: PlayerState): void {
   damage(state, other, BITE_DAMAGE, "injury");
 }
 
+/** Logs "(Player) does seem very energetic" in the player's room, when the player can have special logs. */
+export function weakness(state: GameState, player: PlayerState): void {
+  if (!canHaveSpecialLogs(player)) return;
+  logPublic(state, player.room, "weakness", { name: player.character });
+}
+
 /** Logs publicly that the player's stomach grumbles (Tapeworm), when they can have special logs. */
 export function rumble(state: GameState, player: PlayerState): void {
   if (!canHaveSpecialLogs(player)) return;
