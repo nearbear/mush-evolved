@@ -338,6 +338,7 @@ const statusIconFiles = urls(
   import.meta.glob<string>("../../../Mush/www/img/icons/ui/status/{dirty,belly_full,hungry,immune,pacifist,hyperactive,guardian,disabled,paria,disease,hurt,sleepy,genius_idea,moduling,demoralized}.png", { eager: true, query: "?url", import: "default" }),
 );
 const diseaseStatusIcons = Object.fromEntries(DEFAULT_CONFIG.diseases.allDiseases.map((id) => [id, statusIconFiles["disease"]!]));
+const injuryStatusIcons = Object.fromEntries(DEFAULT_CONFIG.diseases.allInjuries.map((id) => [id, statusIconFiles["hurt"]!]));
 // Mankind's Only Hope has no status icon in the original (it was a skill there), so its skill icon stands in;
 // Bodyguard's statuses (protecting/protected) use Bodyguard's brick-wall skill icon (`unconcerned.png`).
 const traitSkillIcons = urls(
@@ -345,6 +346,7 @@ const traitSkillIcons = urls(
 );
 export const STATUS_ICONS: Readonly<Record<string, string>> = {
   ...diseaseStatusIcons,
+  ...injuryStatusIcons,
   dirty: statusIconFiles["dirty"]!,
   full_belly: statusIconFiles["belly_full"]!,
   hungry: statusIconFiles["hungry"]!,

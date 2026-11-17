@@ -289,6 +289,35 @@ export function removeItem(state: GameState, id: string): ItemState {
   return state.items.splice(index, 1)[0]!;
 }
 
+/** Takes an item out of the game if it is still present, returning it (or undefined if already removed). */
+export function removeItemIfPresent(state: GameState, id: string): ItemState | undefined {
+  const index = state.items.findIndex((i) => i.id === id);
+  if (index < 0) return undefined;
+  return state.items.splice(index, 1)[0]!;
+}
+
+/**
+ * Moves a carried item from `{ kind: "player", id: player.id }` to `{ kind: "room", id: player.room }`.
+ * Respects `ITEM_TYPES[item.type]?.canDrop !== false` unless `bypassCanDrop` is true (e.g. combat fumbles).
+ * Returns `true` if the item was moved, `false` if it was not carried by `player` or cannot be dropped.
+ */
+export function dropWeapon(
+  state: GameState,
+  player: Readonly<PlayerState>,
+  item: ItemState,
+  options?: { bypassCanDrop?: boolean },
+): boolean {
+  if (item.at.kind !== "player" || item.at.id !== player.id) return false;
+  if (!options?.bypassCanDrop && ITEM_TYPES[item.type]?.canDrop === false) return false;
+  const index = state.items.findIndex((i) => i.id === item.id);
+  if (index < 0) return false;
+  const [moved] = state.items.splice(index, 1) as [ItemState];
+  delete moved.hiddenBy;
+  moved.at = { kind: "room", id: player.room };
+  state.items.push(moved);
+  return true;
+}
+
 export function produceItem(next: GameState, player: Readonly<PlayerState>, type: string): { item: ItemState; inInventory: boolean } {
   const mine: Container = { kind: "player", id: player.id };
   const inInventory = hasSpace(next, mine);
