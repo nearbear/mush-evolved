@@ -9,7 +9,7 @@ import { PROJECT_COMPLETE, projectStatus } from "../src/projects.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameConfig, GameState } from "../src/types.ts";
-import { costOf, makeSeats, mustApply, nextCycle, noHunters, offered, option, player } from "./support.ts";
+import { costOf, makeSeats, mustApply, nextCycle, noHunters, offered, option, player, rebelCallAt } from "./support.ts";
 
 const BAY = "SPACESHIP_BAY_A";
 const LONGANE = patrolShip("PATROL_SHIP_A_0")!;
@@ -223,14 +223,14 @@ describe("shooting from a patrol ship", () => {
     const hit = (base: string | null) => {
       const s = flying(shot({ chance: 1, damage: [4, 4] }));
       s.hunters.list[0]!.hp = 10;
-      if (base) s.comms.rebels.push({ base: base as never, calledAt: s.cycle, expiresAt: s.cycle + 10, progress: 100 });
+      if (base) rebelCallAt(s, base as never, 100);
       return 10 - mustApply(s, "p0", shoot("h1")).hunters.list[0]!.hp;
     };
     expect([hit(null), hit("CYGNI"), hit("SIRIUS")]).toEqual([4, 4 + DEFAULT_CONFIG.comms.rebel.cygniPatrolDamage, 4]);
     // A call still being decoded gives nothing yet.
     const partial = flying(shot({ chance: 1, damage: [4, 4] }));
     partial.hunters.list[0]!.hp = 10;
-    partial.comms.rebels.push({ base: "CYGNI", calledAt: partial.cycle, expiresAt: partial.cycle + 10, progress: 99 });
+    rebelCallAt(partial, "CYGNI", 99);
     expect(10 - mustApply(partial, "p0", shoot("h1")).hunters.list[0]!.hp).toBe(4);
   });
 
@@ -241,7 +241,7 @@ describe("shooting from a patrol ship", () => {
       const s = flying(shot({ chance: 1, damage: [4, 4] }));
       s.hunters.list[0]!.hp = 10;
       s.projects.PATROLSHIP_BLASTER_GUN = progress;
-      if (cygni) s.comms.rebels.push({ base: "CYGNI", calledAt: s.cycle, expiresAt: s.cycle + 10, progress: 100 });
+      if (cygni) rebelCallAt(s, "CYGNI", 100);
       return 10 - mustApply(s, "p0", shoot("h1")).hunters.list[0]!.hp;
     };
     const bonus = DEFAULT_CONFIG.project.patrolShipBlasterGun.extraDamage;

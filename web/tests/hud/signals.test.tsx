@@ -18,6 +18,7 @@ vi.hoisted(() => {
 import "../../src/i18n/index.ts";
 import i18n from "../../src/i18n/index.ts";
 import { CommsCenter } from "../../src/hud/CommsCenter.tsx";
+import { garble } from "../../src/hud/garble.ts";
 import { nextPlayback, REPLY_DELAY_MS, skipPlayback, TYPE_MS_PER_CHAR } from "../../src/hud/signalPlayback.ts";
 import { sampleState } from "../../src/designKit/sampleView.ts";
 
@@ -60,6 +61,8 @@ function comms(officer: boolean) {
   const terminal = list.find((e) => e.type === "COM_CENTER")!;
   s.players[0]!.room = room as GameState["players"][number]["room"];
   s.titles.comms_officer = officer ? s.players[0]!.id : null;
+  // Only this test's own signals: no rebel call from the sample game's start.
+  s.signals = { list: [], nextId: 1 };
   const signal = addSignal(s, "merchant", s.cycle + 4, {
     merchant: { kind: "transport", event: "HUMAN_VS_FUEL", deals: [
       { give: [{ kind: "fuel", count: 1 }], receive: [{ kind: "item", item: "ration", count: 2 }] },
@@ -73,6 +76,29 @@ function comms(officer: boolean) {
   );
   return { s, signal, ui };
 }
+
+describe("garble", () => {
+  const text = "Ici Kaladaan ! Nous remercions tout l'équipage.";
+  const hidden = (g: string) => Array.from(g).filter((c, i) => c !== Array.from(text)[i]).length;
+  const letters = Array.from(text).filter((c) => !/\s/.test(c)).length;
+
+  it("hides the missing share of non-space characters, keeps spaces, and shows the whole message at 100%", () => {
+    expect(garble(text, 100, "KALADAAN")).toBe(text);
+    const at40 = garble(text, 40, "KALADAAN");
+    expect(Array.from(at40)).toHaveLength(Array.from(text).length);
+    expect(hidden(at40)).toBeLessThanOrEqual(Math.round(letters * 0.6));
+    expect(hidden(at40)).toBeGreaterThan(letters * 0.4);
+    expect(Array.from(at40).every((c, i) => (/\s/.test(Array.from(text)[i]!) ? c === Array.from(text)[i] : true))).toBe(true);
+    expect(garble(text, 40, "KALADAAN")).toBe(at40);
+  });
+
+  it("only gets clearer as progress rises: what shows at 40% still shows at 70%", () => {
+    const chars = Array.from(text);
+    const at40 = Array.from(garble(text, 40, "WOLF"));
+    const at70 = Array.from(garble(text, 70, "WOLF"));
+    for (let i = 0; i < chars.length; i++) if (at40[i] === chars[i]) expect(at70[i]).toBe(chars[i]);
+  });
+});
 
 describe("Signals tab", () => {
   it("shows a non-officer one line and no count", () => {
@@ -128,5 +154,39 @@ describe("Signals tab", () => {
     fireEvent.click(screen.getByRole("button", { name: "Open the conversation with Transport" }));
     expect(screen.getByText(/surplus of antifreeze/)).toBeTruthy();
     expect(screen.getByText("This conversation is over.")).toBeTruthy();
+  });
+
+  it("lists a rebel call under Active with its progress and the next call, and garbles its message by progress", () => {
+    const { s, ui } = comms(true);
+    s.signals = { list: [], nextId: 1 };
+    const call = addSignal(s, "rebel", s.cycle + 5, { rebel: { base: "WOLF", progress: 40 } });
+    call.feed.push(
+      { from: "officer", officer: s.players[0]!.character, at: s.cycle, key: "signals.officer.decode" },
+      { from: "signal", at: s.cycle, key: "signals.rebel.message.WOLF", params: { progress: 40 } },
+    );
+    render(ui(s));
+    fireEvent.click(screen.getByRole("tab", { name: "Signals (1)" }));
+    expect(screen.getByText("40% decoded. Lost in 5 cycles.")).toBeTruthy();
+    expect(screen.getByText("Black Mages of Sirius")).toBeTruthy();
+    expect(screen.getByText("Next signal in 8 cycles.")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Open the conversation with Lost Children of Wolf" }));
+    expect(screen.getByText("Decoding the signal.")).toBeTruthy();
+    expect(screen.queryByText(/broadcasting centre in Mumbai/)).toBeNull();
+    expect(screen.getByText(/[—…●]/)).toBeTruthy();
+    // The link is down in the sample game: Decode is greyed out, saying why.
+    expect(screen.getByRole("button", { name: /Decode/ }).getAttribute("aria-disabled")).toBe("true");
+  });
+
+  it("shows a reached base's whole message", () => {
+    const { s, ui } = comms(true);
+    s.signals = { list: [], nextId: 1 };
+    const call = addSignal(s, "rebel", s.cycle + 5, { rebel: { base: "WOLF", progress: 100 } });
+    call.status = "reached";
+    call.feed.push({ from: "signal", at: s.cycle, key: "signals.rebel.message.WOLF", params: { progress: 100 }, closes: true });
+    render(ui(s));
+    fireEvent.click(screen.getByRole("tab", { name: "Signals" }));
+    expect(screen.getByText("Decoded")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Open the conversation with Lost Children of Wolf" }));
+    expect(screen.getByText(/broadcasting centre in Mumbai/)).toBeTruthy();
   });
 });

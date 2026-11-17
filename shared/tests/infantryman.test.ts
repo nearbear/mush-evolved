@@ -6,7 +6,7 @@ import { applyAction, applyInput, createGame, viewFor } from "../src/rules.ts";
 import { CHARACTER_SKILLS, skillStatus } from "../src/skills.ts";
 import type { Action, GameConfig, GameState } from "../src/types.ts";
 import { clone } from "../src/helpers.ts";
-import { makeSeats, must, mustApply, nextDay, noHunters, offered, option, pickSkill, player } from "./support.ts";
+import { makeSeats, must, mustApply, nextDay, noHunters, offered, option, pickSkill, player, rebelCallAt } from "./support.ts";
 
 const TURRET_ROOM = "LASER_TURRET_A_0";
 const TURRET = "LASER_TURRET_A_0:TURRET_COMMAND";
@@ -153,7 +153,7 @@ describe("Infantryman", () => {
     player(base, "p1").skills.push("gunman");
     expect(runFight(clone(base))).toBe(6);
     // Centauri counts the customized blaster as a blaster (+1).
-    base.comms.rebels.push({ base: "CENTAURI", calledAt: base.cycle, expiresAt: base.cycle + 10, progress: 100 });
+    rebelCallAt(base, "CENTAURI", 100);
     expect(runFight(clone(base))).toBe(7);
   });
 });

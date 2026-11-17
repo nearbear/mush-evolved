@@ -32,9 +32,8 @@ import type { DrugDispenserState, DrugEffect } from "./drugs.ts";
 import type { FruitDisease, FruitEffect, PendingDisease } from "./fruits.ts";
 import type { FullView, SeatStart, SeatStarts } from "./fullView.ts";
 import { PROJECT_IDS } from "./projects.ts";
-import type { RebelCall } from "./comms.ts";
 import type { GiveAsset, MerchantDeal, ReceiveAsset } from "./merchants.ts";
-import type { FeedEntry, MerchantData, Signal, SignalsState } from "./signals.ts";
+import type { FeedEntry, MerchantData, RebelData, Signal, SignalsState } from "./signals.ts";
 import type { RelayPool, RelayStreak, RelayToken, ResearchPool, Sample } from "./relay.ts";
 import type { DiseaseTracker } from "./diseases.ts";
 import type {
@@ -87,7 +86,7 @@ import type {
  * override key. A step lands in a deploy of its own (docs/ops/deploy.md: roll back only to the same version). Something
  * that never reached a deploy (test or production) is in no stored snapshot, so changing or removing it needs no step.
  */
-export const STATE_VERSION = 119;
+export const STATE_VERSION = 120;
 
 /**
  * The oldest stored version this build reads: 114, the shape the normalizers were written against. A snapshot below it
@@ -228,8 +227,42 @@ const upgradeTo119: UpgradeStep = {
   },
 };
 
+/**
+ * Before 120, rebel calls were `game.comms.rebels` (`{ base, calledAt, expiresAt, progress }[]`); they are now rebel
+ * signals in `game.signals` (signals.ts, docs/plans/signals.md step 3), after the signals already there, oldest first.
+ * A call decoded to 100% is `reached`, one past its window `lost` (with the "Signal lost" line at its end), the rest
+ * active. The feed of earlier decodes was never kept, so it starts empty.
+ */
+const upgradeTo120: UpgradeStep = {
+  to: 120,
+  paths: ["game.comms.rebels", "game.signals"],
+  run: (game) => {
+    const comms = game.comms as { rebels?: Array<{ base: string; calledAt: number; expiresAt: number; progress: number }> } | undefined;
+    const rebels = comms?.rebels;
+    if (comms) delete comms.rebels;
+    if (!rebels) return;
+    const signals = (game.signals !== undefined ? game.signals : { list: [], nextId: 1 }) as { list: unknown[]; nextId: number };
+    for (const call of rebels) {
+      const reached = call.progress >= 100;
+      const lost = !reached && (game.cycle as number) >= call.expiresAt;
+      signals.list.push({
+        id: `signal-${signals.nextId++}`,
+        kind: "rebel",
+        arrivedAt: call.calledAt,
+        endsAt: call.expiresAt,
+        status: reached ? "reached" : lost ? "lost" : "active",
+        step: "decoding",
+        number: 1,
+        feed: lost ? [{ from: "system", at: call.expiresAt, key: "signals.lost", closes: true }] : [],
+        rebel: { base: call.base, progress: call.progress },
+      });
+    }
+    game.signals = signals;
+  },
+};
+
 /** Every step, in order of `to`: `upgradeTo115`, `upgradeTo116`, ... */
-export const UPGRADE_STEPS: readonly UpgradeStep[] = [upgradeTo115, upgradeTo116, upgradeTo117, upgradeTo118, upgradeTo119];
+export const UPGRADE_STEPS: readonly UpgradeStep[] = [upgradeTo115, upgradeTo116, upgradeTo117, upgradeTo118, upgradeTo119, upgradeTo120];
 
 /**
  * Brings a stored snapshot from version `from` to `STATE_VERSION`, before it is normalized: runs every step with
@@ -732,11 +765,6 @@ export function normalizeShip(raw: Partial<ShipResources>): ShipResources {
   });
 }
 
-export function normalizeRebelCall(raw: Partial<RebelCall>): RebelCall {
-  const t = "RebelCall";
-  return stripUndefined<RebelCall>({ base: need(raw, "base", t), calledAt: need(raw, "calledAt", t), expiresAt: need(raw, "expiresAt", t), progress: need(raw, "progress", t) });
-}
-
 type Comms = GameCore["comms"];
 
 export function normalizeComms(raw: Partial<Comms>): Comms {
@@ -745,7 +773,6 @@ export function normalizeComms(raw: Partial<Comms>): Comms {
   return stripUndefined<Comms>({
     linked: need(raw, "linked", t),
     solChance: need(raw, "solChance", t),
-    rebels: need(raw, "rebels", t).map(normalizeRebelCall),
     xyloph: copy(need(raw, "xyloph", t)),
     neron: stripUndefined<Comms["neron"]>({ version: need(neron, "version", "CommsState.neron"), progress: need(neron, "progress", "CommsState.neron") }),
   });
@@ -879,7 +906,13 @@ export function normalizeSignal(raw: Partial<Signal>): Signal {
     number: need(raw, "number", t),
     feed: need(raw, "feed", t).map(normalizeFeedEntry),
     merchant: opt(raw.merchant, normalizeMerchantData),
+    rebel: opt(raw.rebel, normalizeRebelData),
   });
+}
+
+export function normalizeRebelData(raw: Partial<RebelData>): RebelData {
+  const t = "RebelData";
+  return stripUndefined<RebelData>({ base: need(raw, "base", t), progress: need(raw, "progress", t) });
 }
 
 export function normalizeSignals(raw: Partial<SignalsState>): SignalsState {

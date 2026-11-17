@@ -7,13 +7,14 @@
 // that arrives while the conversation is open waits 3 s ("incoming…"), then types out with the wave moving, and the
 // options come back once it has finished. Tapping the feed shows the message whole; the wait can't be skipped. What is
 // already in the feed when the conversation opens is shown whole, so a reload or a new officer reads the history at once.
-// Every option is from view.actions (`contact_signal`, `close_deal`, `refuse_signal`); a deal without one is drawn
-// disabled with the reason the rules give (`blocked`).
+// Every option is from view.actions (`contact_signal`, `close_deal`, `refuse_signal`, `decode_rebel`); a deal without
+// one is drawn disabled with the reason the rules give (`blocked`). A rebel base's message is garbled (garble.ts) by the
+// progress it was said at, so each decode reads clearer, and the whole message comes through at 100%.
 
 import { type Action, type ActionOption, characterUsername, type FeedEntry as SignalFeedEntry, isActiveSignal, type PlayerView, type SignalView } from "@mush2/shared";
 import { Fragment, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { FACTION_ICONS, itemIcon, SHIP_RESOURCE_ICONS, skillIcon } from "../art/assets.ts";
+import { FACTION_ICONS, itemIcon, REBEL_BASE_ICONS, SHIP_RESOURCE_ICONS, skillIcon } from "../art/assets.ts";
 import { useNames } from "../i18n/names.ts";
 import { ActionButton } from "./ActionButton.tsx";
 import { ActionLabel } from "./ActionLabel.tsx";
@@ -21,10 +22,11 @@ import { AudioWave } from "./AudioWave.tsx";
 import { UnavailableButton } from "./CommandTerminal.tsx";
 import { CycleDivider } from "./CycleDivider.tsx";
 import { CrewAvatar, FeedEntry, InfoMarker } from "./FeedEntry.tsx";
+import { garble } from "./garble.ts";
 import { Hint } from "./IconButton.tsx";
 import { ItemFace } from "./ItemFace.tsx";
 import { Scroller } from "./Scroller.tsx";
-import { SignalIcon, useSignalName } from "./Signals.tsx";
+import { SignalIcon, useSignalCaption, useSignalName } from "./Signals.tsx";
 import { nextPlayback, type Playback, skipPlayback } from "./signalPlayback.ts";
 
 type Deal = NonNullable<SignalView["merchant"]>["deals"][number];
@@ -41,6 +43,7 @@ interface Props {
 export function SignalConversation({ signal, terminalId, view, onAction, onBack }: Props) {
   const { t } = useTranslation();
   const name = useSignalName(signal);
+  const caption = useSignalCaption();
   const text = useFeedText(signal);
   const texts = signal.feed.map(text);
   const [playback, setPlayback] = useState<Playback>(() => ({ shown: signal.feed.length, phase: "idle", chars: 0 }));
@@ -60,7 +63,6 @@ export function SignalConversation({ signal, terminalId, view, onAction, onBack 
 
   const skip = () => setPlayback(skipPlayback);
   const pending = playback.shown < signal.feed.length;
-  const active = isActiveSignal(signal);
   const visible = signal.feed.slice(0, playback.shown);
   const current = playback.phase === "typing" ? signal.feed[playback.shown] : undefined;
   const waiting = playback.phase === "waiting" ? signal.feed[playback.shown] : undefined;
@@ -71,11 +73,17 @@ export function SignalConversation({ signal, terminalId, view, onAction, onBack 
   return (
     <section className="signal-conversation" aria-label={name}>
       <header className="signal-head">
+        {signal.rebel && (
+          // The base's art, with what reaching it does in a tooltip (the old Rebel bases tab's card).
+          <Hint label={t(`comms.rebels.${signal.rebel.base}.effect`)}>
+            <button type="button" className="rebel-icon-button signal-head-art" aria-label={t(`comms.rebels.${signal.rebel.base}.effect`)}>
+              <img src={REBEL_BASE_ICONS[signal.rebel.base]} alt="" />
+            </button>
+          </Hint>
+        )}
         <div className="signal-head-text">
           <strong>{name}</strong>
-          <span className="sub">
-            {active ? t("signals.leaves", { count: Math.max(0, signal.endsAt - view.cycle) }) : t(`signals.status.${signal.status as Exclude<SignalView["status"], "active">}`)}
-          </span>
+          <span className="sub">{caption(signal, view.cycle)}</span>
         </div>
         <button type="button" className="signal-back" onClick={onBack}>
           {t("signals.back")}
@@ -163,14 +171,19 @@ function FeedLine({ entry, signal, name, text, typed }: { entry: SignalFeedEntry
   );
 }
 
-/** A feed entry as text in the viewer's language. The officer's deal line names the deal's terms from the signal. */
+/**
+ * A feed entry as text in the viewer's language. The officer's deal line names the deal's terms from the signal; a
+ * rebel base's message is garbled by the progress it was said at.
+ */
 function useFeedText(signal: SignalView): (e: SignalFeedEntry) => string {
   const { t } = useTranslation();
   const terms = useDealTerms();
   return (e) => {
     const deal = e.key === "signals.officer.deal" && typeof e.params?.deal === "number" ? signal.merchant?.deals[e.params.deal] : undefined;
     if (deal) return t("signals.officer.deal", terms(deal));
-    return t(e.key as never, { ...e.params, defaultValue: "" }) as string;
+    const text = t(e.key as never, { ...e.params, defaultValue: "" }) as string;
+    if (signal.rebel && e.from === "signal" && typeof e.params?.progress === "number") return garble(text, e.params.progress, signal.rebel.base);
+    return text;
   };
 }
 
@@ -196,8 +209,43 @@ function useDealTerms(): (deal: Pick<Deal, "give" | "receive">) => { give: strin
   return (deal) => ({ give: list(deal.give.map(asset)), receive: list(deal.receive.map(asset)) });
 }
 
-/** The options at the signal's current step: Contact; or each deal and No deal!; or nothing once it has ended. */
+/**
+ * The options at the signal's current step: Contact; or each deal and No deal!; or Decode for a rebel base; or nothing
+ * once it has ended.
+ */
 function SignalOptions({ signal, terminalId, view, onAction }: Omit<Props, "onBack">) {
+  if (!isActiveSignal(signal)) return <SignalOver />;
+  if (signal.rebel) return <RebelOptions signal={signal} terminalId={terminalId} view={view} onAction={onAction} />;
+  return <MerchantOptions signal={signal} terminalId={terminalId} view={view} onAction={onAction} />;
+}
+
+function SignalOver() {
+  const { t } = useTranslation();
+  return <p className="sub signal-over">{t("signals.over")}</p>;
+}
+
+/** A rebel base's one option: Decode, or a greyed-out Decode saying why (no link, or anything else the rules refuse). */
+function RebelOptions({ signal, terminalId, view, onAction }: Omit<Props, "onBack">) {
+  const { t } = useTranslation();
+  const base = signal.rebel!.base;
+  const decode = view.actions.find(({ action: a }) => a.type === "decode_rebel" && a.equipment === terminalId && a.base === base);
+  return (
+    <div className="signal-options" role="group" aria-label={t("signals.optionsLabel")}>
+      {decode ? (
+        <ActionButton view={view} option={decode} onAction={onAction}>
+          <ActionLabel text={t("actions.decodeRebel")} cost={decode.cost} chance={decode.chance} />
+        </ActionButton>
+      ) : (
+        <UnavailableButton big={false} reason={view.comms.linked ? t("signals.decodeBlocked") : t("signals.decodeUnavailable")} ap={view.config.rebelAp}>
+          {t("actions.decodeRebel")}
+        </UnavailableButton>
+      )}
+    </div>
+  );
+}
+
+/** A merchant's options: Contact; then each deal and No deal!. */
+function MerchantOptions({ signal, terminalId, view, onAction }: Omit<Props, "onBack">) {
   const { t } = useTranslation();
   const names = useNames();
   const asset = useAssetText();
@@ -205,7 +253,6 @@ function SignalOptions({ signal, terminalId, view, onAction }: Omit<Props, "onBa
     view.actions.find(({ action: a }) => a.type === type && a.equipment === terminalId && a.signal === signal.id);
   const dealOption = (deal: number): ActionOption | undefined =>
     view.actions.find(({ action: a }) => a.type === "close_deal" && a.equipment === terminalId && a.signal === signal.id && a.deal === deal);
-  if (!isActiveSignal(signal)) return <p className="sub signal-over">{t("signals.over")}</p>;
   const contact = find("contact_signal");
   const refuse = find("refuse_signal");
   const contacted = signal.feed.length > 0;

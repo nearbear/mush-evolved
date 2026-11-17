@@ -142,11 +142,6 @@ li.research-item .research-card {
 li.research-item .research-title {
   grid-area: title;
 }
-li.research-item /* Rebel base icons are 70x65, not the 50x75 research cards. */
-.research-card.rebel-icon {
-  width: 70px;
-  height: 65px;
-}
 
 .research-body {
   grid-area: body;
@@ -202,19 +197,10 @@ li.research-item /* Rebel base icons are 70x65, not the 50x75 research cards. */
 .research-title .skill-status {
   margin-left: auto;
 }
-/* A rebel base's signal: its status in words, then a checkbox (ticked: decoded, empty: needs decoding, crossed: lost), at
-   the row's top right. The base's effect is in the tooltip on its icon. */
-.research-title .rebel-status {
-  flex: none;
-  margin-left: auto;
-  white-space: nowrap;
-  font-size: 0.75em;
-  line-height: 1.2;
-  text-align: right;
-}
 .research-title > img {
   image-rendering: pixelated;
 }
+/* A rebel base's art in its conversation's header (SignalConversation.tsx), the effect in its tooltip. */
 .rebel-icon-button {
   padding: 0;
   border: 0;
@@ -223,12 +209,6 @@ li.research-item /* Rebel base icons are 70x65, not the 50x75 research cards. */
 }
 .rebel-icon-button img {
   display: block;
-}
-.rebel-lost {
-  display: block;
-  width: 16px;
-  height: 16px;
-  background: url("../../../Mush/www/img/design/yesno.png") -16px 0 no-repeat;
 }
 .research-progress progress,
 .research-progress .kit-progress {
@@ -527,7 +507,7 @@ li.research-item-blocked .research-progress {
   padding-inline: 12px;
 }
 
-/* The Com center has four tabs, too many for one line at 360px in French or Spanish: they share the line and their
+/* The Com center has three tabs, too many for one line at 360px in French or Spanish: they share the line and their
    labels wrap inside the tab instead. */
 .comms-tab-list .settings-tab {
   flex: 1 1 auto;
@@ -583,6 +563,18 @@ button.signal-entry:focus-visible {
 button.signal-entry:not([data-status="active"]) {
   opacity: 0.7;
 }
+/* The next rebel base's call: the same band, but not a button (nothing to open yet), drawn as not here. */
+li.signal-next {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0.25rem 0.5rem;
+  border: 1px dashed #171b5c;
+  background: var(--terminal-header-bg);
+  color: #171b5c;
+  opacity: 0.7;
+}
 .signal-icon {
   flex: none;
   display: block;
@@ -632,6 +624,14 @@ button.signal-entry:not([data-status="active"]) {
   display: flex;
   flex-direction: column;
   min-width: 0;
+}
+.signal-head-art {
+  flex: none;
+  display: block;
+  image-rendering: pixelated;
+}
+.signal-head-text {
+  flex: 1;
 }
 .signal-back {
   flex: none;

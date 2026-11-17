@@ -1,4 +1,4 @@
-import { CHAT_PAGE, DEFAULT_CONFIG, ITRACKIE_ITEM, SHIP_ROOMS, applyAction, applyInput, breakDoor, doorId, doorRooms, legalIn, pushChat, newCycle, shortestPath, startGame, viewFor, type Action, type CharacterId, type GameState, type PlayerView, type ProjectId } from "@mush2/shared";
+import { addSignal, CHAT_PAGE, DEFAULT_CONFIG, ITRACKIE_ITEM, SHIP_ROOMS, applyAction, applyInput, breakDoor, doorId, doorRooms, legalIn, pushChat, newCycle, shortestPath, startGame, viewFor, type Action, type CharacterId, type GameState, type PlayerView, type ProjectId, rebelCalls } from "@mush2/shared";
 import { describe, expect, it } from "vitest";
 import { GOAL_MAX_ACTIONS, GoalBot } from "../src/bots.ts";
 import { astro, chooseDestination, judgePlanet } from "../src/bots/goals/astro.ts";
@@ -1873,7 +1873,8 @@ describe("contactSol and commsOfficer (#222)", () => {
     expect(commsOfficer.options(viewFor(start, id), memory())).toEqual([]);
 
     start.titles.comms_officer = id;
-    start.comms.rebels = [{ base: "WOLF", calledAt: 1, expiresAt: start.cycle + 10, progress: 95 }];
+    start.signals.list = start.signals.list.filter((sig) => sig.kind !== "rebel");
+    addSignal(start, "rebel", start.cycle + 10, { rebel: { base: "WOLF", progress: 95 } });
     const game = edit(start, id, (p) => {
       p.room = "COMMAND_CENTER";
       p.ap = 8;
@@ -1886,7 +1887,7 @@ describe("contactSol and commsOfficer (#222)", () => {
     const step1 = goal!.step(viewFor(game, id), m);
     expect(step1).toMatchObject({ kind: "act", action: { type: "decode_rebel", base: "WOLF" } });
     // 2. Once rebel call is contacted, Xyloph entries remain -> contact_xyloph
-    game.comms.rebels[0]!.progress = 100;
+    rebelCalls(game)[0]!.rebel!.progress = 100;
     const step2 = goal!.step(viewFor(game, id), m);
     expect(step2).toMatchObject({ kind: "act", action: { type: "contact_xyloph" } });
     // 3. Once all Xyloph entries are found -> update_neron

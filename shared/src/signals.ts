@@ -6,23 +6,25 @@
 // out there but not what was said.
 //
 // What each kind may say next is a small script (`SIGNAL_SCRIPTS`): steps, each with the options offered there. It is
-// plain data, so branching dialogue later is new steps, not new code. Built so far: merchants (merchants.ts). Rebel
-// bases move in later (docs/plans/signals.md, build order 3); distress calls and information ships after that.
+// plain data, so branching dialogue later is new steps, not new code. Built so far: merchants (merchants.ts) and rebel
+// bases (comms.ts: each decode is one exchange, the base's message clearer each time). Distress calls and information
+// ships come later (docs/plans/signals.md).
 
 import type { CharacterId } from "./characters.ts";
+import type { RebelBaseId } from "./comms.ts";
 import { type DealBlock, dealBlock, type MerchantDeal, type MerchantKind } from "./merchants.ts";
 import { hasTitleAccess } from "./titles.ts";
 import type { GameState, LogParams, PlayerState } from "./types.ts";
 
-/** The kinds of signal built so far. Rebel bases, distress calls and information ships come later. */
-export const SIGNAL_KINDS = ["merchant"] as const;
+/** The kinds of signal built so far. Distress calls and information ships come later. */
+export const SIGNAL_KINDS = ["merchant", "rebel"] as const;
 export type SignalKind = (typeof SIGNAL_KINDS)[number];
 
 /**
- * `active`: can still be talked to. The rest are history: `deal` (a deal was made), `refused` (No thank you) and `lost`
- * (it left or the ship moved on, contacted or not).
+ * `active`: can still be talked to. The rest are history: `deal` (a deal was made), `refused` (No thank you), `reached`
+ * (a rebel base decoded to 100%) and `lost` (it left, expired or the ship moved on, contacted or not).
  */
-export const SIGNAL_STATUSES = ["active", "deal", "refused", "lost"] as const;
+export const SIGNAL_STATUSES = ["active", "deal", "refused", "reached", "lost"] as const;
 export type SignalStatus = (typeof SIGNAL_STATUSES)[number];
 
 /** One message. Stored as an i18n key and parameters, never as text, so every viewer reads it in their own language. */
@@ -50,13 +52,19 @@ export interface MerchantData {
   deals: MerchantDeal[];
 }
 
+/** What a rebel signal carries (comms.ts): which base calls, and how much of its message is decoded (0 to 100). */
+export interface RebelData {
+  base: RebelBaseId;
+  progress: number;
+}
+
 export interface Signal {
   /** `signal-3`. */
   id: string;
   kind: SignalKind;
   /** The cycle it arrived. */
   arrivedAt: number;
-  /** The first cycle it can't be reached any more (a merchant's stay is over). */
+  /** The first cycle it can't be reached any more (a merchant's stay is over, a rebel call's window has closed). */
   endsAt: number;
   status: SignalStatus;
   /** The current step of its kind's script (`SIGNAL_SCRIPTS`). */
@@ -66,6 +74,7 @@ export interface Signal {
   /** The conversation, oldest first. */
   feed: FeedEntry[];
   merchant?: MerchantData;
+  rebel?: RebelData;
 }
 
 export interface SignalsState {
@@ -77,23 +86,33 @@ export const newSignals = (): SignalsState => ({ list: [], nextId: 1 });
 
 /**
  * One option at a script step. `contact` starts the dialogue (`contact_signal`); `deal` is one button per deal
- * (`close_deal`); `refuse` is No thank you (`refuse_signal`). Later kinds add replies that move to another step and
- * claims that stay disabled until a condition holds (docs/plans/signals.md).
+ * (`close_deal`); `refuse` is No thank you (`refuse_signal`); `decode` decodes a rebel base's message further
+ * (`decode_rebel`). Later kinds add replies that move to another step and claims that stay disabled until a condition
+ * holds (docs/plans/signals.md).
  */
-export type SignalOption = { kind: "contact"; next: string } | { kind: "deal" } | { kind: "refuse" };
+export type SignalOption = { kind: "contact"; next: string } | { kind: "deal" } | { kind: "refuse" } | { kind: "decode" };
 
 export interface SignalScript {
   start: string;
   steps: Record<string, readonly SignalOption[]>;
 }
 
-/** Each kind's dialogue. A merchant: hail (Contact) → offers (each deal, No thank you) → closed. */
+/**
+ * Each kind's dialogue. A merchant: hail (Contact) → offers (each deal, No thank you) → closed. A rebel base: decoding
+ * (Decode, again and again) → reached at 100%. Rebels skip Contact (owner, 2026-11-16).
+ */
 export const SIGNAL_SCRIPTS: Record<SignalKind, SignalScript> = {
   merchant: {
     start: "hail",
     steps: {
       hail: [{ kind: "contact", next: "offers" }],
       offers: [{ kind: "deal" }, { kind: "refuse" }],
+    },
+  },
+  rebel: {
+    start: "decoding",
+    steps: {
+      decoding: [{ kind: "decode" }],
     },
   },
 };
@@ -111,7 +130,7 @@ export const isActiveSignal = (s: Readonly<Pick<Signal, "status">>): boolean => 
 export const findSignal = (state: Readonly<GameState>, id: string): Signal | undefined => state.signals.list.find((s) => s.id === id) as Signal | undefined;
 
 /** Adds a signal of `kind`, active at its script's start. Mutates a state the caller already cloned. */
-export function addSignal(state: GameState, kind: SignalKind, endsAt: number, data: Pick<Signal, "merchant">): Signal {
+export function addSignal(state: GameState, kind: SignalKind, endsAt: number, data: Pick<Signal, "merchant" | "rebel">): Signal {
   const taken = new Set(state.signals.list.filter((s) => s.status === "active" && s.kind === kind && sameSubkind(s, data)).map((s) => s.number));
   let number = 1;
   while (taken.has(number)) number++;
@@ -130,8 +149,9 @@ export function addSignal(state: GameState, kind: SignalKind, endsAt: number, da
   return signal;
 }
 
-/** Two signals share a name: same kind, and for merchants the same ship kind. */
-const sameSubkind = (s: Readonly<Signal>, data: Pick<Signal, "merchant">): boolean => s.merchant?.kind === data.merchant?.kind;
+/** Two signals share a name: same kind, and the same merchant ship kind or the same rebel base. */
+const sameSubkind = (s: Readonly<Signal>, data: Pick<Signal, "merchant" | "rebel">): boolean =>
+  s.merchant?.kind === data.merchant?.kind && s.rebel?.base === data.rebel?.base;
 
 /** Appends a message to the feed, said now. Mutates a state the caller already cloned. */
 export function say(state: Readonly<GameState>, signal: Signal, entry: Omit<FeedEntry, "at">): void {
@@ -163,8 +183,12 @@ export function loseSignal(state: Readonly<GameState>, signal: Signal): void {
   if (signal.status === "active") closeSignal(state, signal, "lost", { from: "system", key: "signals.lost" });
 }
 
-/** The signal's name: its kind's ("Transport"), with a number after it when another was active as it arrived. */
+/**
+ * The signal's name: its kind's ("Transport") or its base's ("Black Mages of Sirius"), with a number after it when
+ * another of the same name was active as it arrived.
+ */
 export function signalName(signal: Readonly<Signal>): { key: string; params?: LogParams } {
+  if (signal.rebel) return { key: `comms.rebels.${signal.rebel.base}.name` };
   const key = signal.merchant ? `signals.names.merchant.${signal.merchant.kind}` : `signals.names.${signal.kind}`;
   return signal.number > 1 ? { key: `${key}_numbered`, params: { n: signal.number } } : { key };
 }
@@ -183,6 +207,8 @@ export interface SignalView {
    * they can (always null once the signal is inactive). The buttons themselves come from `view.actions`.
    */
   merchant?: { kind: MerchantKind; event: string; deals: (MerchantDeal & { blocked: DealBlock | null })[] };
+  /** A rebel base's call: which base and how much is decoded. Each of its feed's messages carries the progress it was said at. */
+  rebel?: RebelData;
 }
 
 /**
@@ -211,5 +237,6 @@ export function signalsView(state: Readonly<GameState>, viewer: Readonly<PlayerS
         })),
       },
     }),
+    ...(s.rebel && { rebel: { ...s.rebel } }),
   }));
 }

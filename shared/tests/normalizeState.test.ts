@@ -545,6 +545,39 @@ describe("upgrade", () => {
     });
     expect(normalized.signals.list[1]).toMatchObject({ id: "signal-2", number: 2, merchant: { event: "HUMAN_VS_FUEL", deals: [] } });
   });
+
+  it("upgradeTo120 moves stored rebel calls into signals after the ones there: reached, lost or active", () => {
+    const { game, overrides } = fresh();
+    const raw = stored(game);
+    raw.cycle = 20;
+    raw.signals = { list: [], nextId: 4 };
+    raw.comms.rebels = [
+      { base: "WOLF", calledAt: 1, expiresAt: 12, progress: 100 },
+      { base: "SIRIUS", calledAt: 9, expiresAt: 18, progress: 30 },
+      { base: "CENTAURI", calledAt: 17, expiresAt: 30, progress: 55 },
+    ];
+    upgrade({ game: raw, overrides }, 119);
+    const normalized = normalizeGame(raw, overrides);
+    expect("rebels" in normalized.comms).toBe(false);
+    expect(normalized.signals.nextId).toBe(7);
+    expect(normalized.signals.list.map((s) => [s.id, s.status])).toEqual([
+      ["signal-4", "reached"],
+      ["signal-5", "lost"],
+      ["signal-6", "active"],
+    ]);
+    expect(normalized.signals.list[2]).toEqual({
+      id: "signal-6",
+      kind: "rebel",
+      arrivedAt: 17,
+      endsAt: 30,
+      status: "active",
+      step: "decoding",
+      number: 1,
+      feed: [],
+      rebel: { base: "CENTAURI", progress: 55 },
+    });
+    expect(normalized.signals.list[1]!.feed).toEqual([{ from: "system", at: 18, key: "signals.lost", closes: true }]);
+  });
 });
 
 describe("normalizeFrame (#384)", () => {

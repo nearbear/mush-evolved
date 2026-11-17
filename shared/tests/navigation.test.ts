@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
+import { rebelCalls } from "../src/comms.ts";
 import { turned } from "../src/navigation.ts";
 import { planetPicture } from "../src/planets.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, setCheat, viewFor } from "../src/rules.ts";
 import type { Action, GameState, Planet } from "../src/types.ts";
-import { makeSeats, must, nextCycle, offered, option, player } from "./support.ts";
+import { makeSeats, must, nextCycle, offered, option, player, rebelCallAt } from "./support.ts";
 
 const seats = makeSeats(3, "others");
 const TERMINAL = "COMMAND_CENTER:PILOT_MODULE";
@@ -141,18 +142,19 @@ describe("ship navigation", () => {
 
   it("travel and leaving orbit end every open rebel call; contacted ones stay, and an empty chamber ends nothing", () => {
     const s = game();
-    s.comms.rebels.push({ base: "SIRIUS", calledAt: s.cycle, expiresAt: s.cycle + 10, progress: 100 });
-    s.comms.rebels[0]!.progress = 40;
-    const status = (state: GameState) => viewFor(state, "p1").comms.terminal?.rebels.map((call) => call.status);
-    expect(status(s)).toEqual(["open", "contacted"]);
+    rebelCallAt(s, "SIRIUS", 100);
+    rebelCalls(s)[0]!.rebel!.progress = 40;
+    const status = (state: GameState) => rebelCalls(state).map((call) => call.status);
+    expect(status(s)).toEqual(["active", "reached"]);
     const flying = must(applyAction(s, "p0", travel));
-    expect(status(flying)).toEqual(["lost", "contacted"]);
-    expect(flying.comms.rebels[1]).toEqual(s.comms.rebels[1]);
-    expect(status(must(applyAction(game(0), "p0", travel)))).toEqual(["open"]);
+    expect(status(flying)).toEqual(["lost", "reached"]);
+    expect(rebelCalls(flying)[0]!.feed.at(-1)).toMatchObject({ from: "system", key: "signals.lost", closes: true });
+    expect(rebelCalls(flying)[1]).toEqual(rebelCalls(s)[1]);
+    expect(status(must(applyAction(game(0), "p0", travel)))).toEqual(["active"]);
     const orbiting = arrived(game());
-    orbiting.comms.rebels.push({ base: "SIRIUS", calledAt: orbiting.cycle, expiresAt: orbiting.cycle + 10, progress: 0 });
+    rebelCallAt(orbiting, "SIRIUS", 0);
     orbiting.ship.combustion = 4;
-    expect(status(orbiting)).toContain("open");
+    expect(status(orbiting)).toContain("active");
     expect(status(must(applyAction(orbiting, "p0", leave))).every((st) => st === "lost")).toBe(true);
   });
 

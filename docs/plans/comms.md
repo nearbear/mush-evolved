@@ -1,6 +1,6 @@
 # Communication center (plan)
 
-Status: **done.** Built 2026-10-21; travel and leaving orbit end open rebel calls since 2026-11-07. `docs/rules/implemented-rules.md` ("Communication center") is the authority on what the code does. The 2026-10-21 answers below supersede decisions 2, 4 and 5 where they differ. What is left is in GitHub issues (see the end).
+Status: **done.** Built 2026-10-21; travel and leaving orbit end open rebel calls since 2026-11-07. Since 2026-11-16 rebel calls are signals, seen only with Comms Officer access (`docs/plans/signals.md` step 3). `docs/rules/implemented-rules.md` ("Communication center") is the authority on what the code does. The 2026-10-21 answers below supersede decisions 2, 4 and 5 where they differ. What is left is in GitHub issues (see the end).
 
 ## What the original gives us
 

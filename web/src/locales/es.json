@@ -1679,21 +1679,6 @@
     "linkNeeded": "Decodificar, contactar con Xyloph y actualizar NERON requieren contacto con Sol.",
     "officerOnly": "Solo el Oficial de Comunicaciones puede decodificar señales, contactar con Xyloph y actualizar NERON.",
     "overviewTitle": "Resumen",
-    "rebelsTitle": "Bases rebeldes",
-    "rebelUpcoming": "Próxima señal",
-    "rebelNext_one": "{{base}}: próxima señal, contactable en {{count}} ciclo.",
-    "rebelNext_many": "{{base}}: próxima señal, contactable en {{count}} ciclos.",
-    "rebelNext_other": "{{base}}: próxima señal, contactable en {{count}} ciclos.",
-    "rebelNextIn_one": "Contactable en {{count}} ciclo.",
-    "rebelNextIn_many": "Contactable en {{count}} ciclos.",
-    "rebelNextIn_other": "Contactable en {{count}} ciclos.",
-    "noRebels": "Ninguna base rebelde ha llamado todavía.",
-    "rebelOpen_one": "{{percent}} % decodificado. La señal se pierde en {{count}} ciclo.",
-    "rebelOpen_many": "{{percent}} % decodificado. La señal se pierde en {{count}} ciclos.",
-    "rebelOpen_other": "{{percent}} % decodificado. La señal se pierde en {{count}} ciclos.",
-    "rebelStatusDecoded": "Decodificado",
-    "rebelStatusOpen": "Por decodificar",
-    "rebelStatusLost": "Señal perdida",
     "xylophLinkNeeded": "Necesitas contacto con Sol antes de poder contactar con Xyloph.",
     "xylophUnavailable": "No se puede contactar con Xyloph en este momento.",
     "solAlreadyLinked": "El contacto con Sol ya está establecido.",
@@ -2075,10 +2060,12 @@
     "status": {
       "deal": "Trato cerrado",
       "refused": "Rechazada",
-      "lost": "Señal perdida"
+      "lost": "Señal perdida",
+      "reached": "Decodificado"
     },
     "kinds": {
-      "merchant": "Mercader"
+      "merchant": "Mercader",
+      "rebel": "Base rebelde"
     },
     "back": "Volver",
     "open": "Abrir la conversación con {{name}}",
@@ -2095,7 +2082,8 @@
     },
     "officer": {
       "refuse": "Rechazamos vuestra oferta.",
-      "deal": "Aceptamos: damos {{give}} y vosotros nos dais {{receive}}."
+      "deal": "Aceptamos: damos {{give}} y vosotros nos dais {{receive}}.",
+      "decode": "Decodificando la señal."
     },
     "merchant": {
       "transport": {
@@ -2107,6 +2095,25 @@
         }
       }
     },
-    "deal": "¡Trato!"
+    "deal": "¡Trato!",
+    "expires_one": "Se pierde en {{count}} ciclo.",
+    "expires_many": "Se pierde en {{count}} ciclos.",
+    "expires_other": "Se pierde en {{count}} ciclos.",
+    "decoded": "{{percent}} % decodificado.",
+    "next_one": "Próxima señal en {{count}} ciclo.",
+    "next_many": "Próxima señal en {{count}} ciclos.",
+    "next_other": "Próxima señal en {{count}} ciclos.",
+    "decodeUnavailable": "Hace falta el enlace con Sol para decodificar.",
+    "decodeBlocked": "No puedes decodificar ahora.",
+    "rebel": {
+      "message": {
+        "WOLF": "Los Niños Perdidos de Wolf han instalado varias antenas en la Tierra y un centro de emisión en Bombay. Podremos emitir por las ondas de radio terrestres las noticias de vuestra odisea. Sois héroes.",
+        "SIRIUS": "Os agradecemos toda la información sobre el Mush que nos habéis traído. A cambio, os hemos transferido los planos de la molécula de Shkunz. Si la añadís a vuestras raciones en dosis homeopáticas, deberíais mejorar el rendimiento de vuestra tripulación.",
+        "CENTAURI": "Nos alegra conocer a los héroes de la guerra contra el Mush. En nuestro sector, la guerra por el control de las colonias es encarnizada. Para facilitar vuestras exploraciones de superficie, acabamos de transferiros los planos del PL80-Blaster, un potente cañón de plasma que debe manejarse con precaución. ¡Luchad hasta el final!",
+        "KALADAAN": "¡Aquí Kaladaan! Agradecemos a toda la tripulación del Daedalus haber dado al pueblo de Sol la esperanza de un futuro mejor. Desde vuestra partida, la resistencia se organiza y ya hemos infiltrado varias administraciones Mush. ¡La Federación pronto será derrocada y recuperaremos el control de Sol!",
+        "LUYTEN_CETI": "Nuestro sistema sigue bajo el control del Mush. Debemos trabajar con la mayor discreción y, para ello, hemos desarrollado minúsculas sondas de comunicación colocadas directamente dentro de nuestros cerebros. Acabamos de transferiros sus diseños. Las Sombras de Luyten-Ceti velan por vosotros.",
+        "CYGNI": "Saludamos a la tripulación del Daedalus. 61 Cygni fue explorado durante vuestro viaje. La Federación no sabe que toda nuestra formación es humana. Simulamos envíos regulares de información con un Pheromodem avanzado. Burlando la vigilancia del Mush, preparamos desde este sistema el contraataque armado de la rebelión. Los planos de nuestro misil SP2SP-230 se han transferido a NERON."
+      }
+    }
   }
 }

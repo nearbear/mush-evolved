@@ -458,9 +458,10 @@ export interface TitleView {
 export interface CommsTerminalView {
   /** The ship's chance (percent) of establishing the link, before Radio Expert. */
   solChance: number;
-  /** Every rebel call so far: `open` (can be decoded), `contacted` (reached, bonus in effect) or `lost` (expired). */
-  rebels: { base: RebelBaseId; progress: number; status: "open" | "contacted" | "lost"; expiresAt: number }[];
-  /** The next base to call and the cycle it does so (the schedule is fixed); absent before the first call or once all have called. */
+  /**
+   * The next base to call and the cycle it does so (the schedule is fixed); absent before the first call, once all
+   * have called, and, like `signals`, for anyone without Comms Officer access.
+   */
   nextRebel?: { base: RebelBaseId; at: number };
   /** How many Xyloph entries are left to draw. */
   xylophLeft: number;
@@ -470,7 +471,7 @@ export interface CommsTerminalView {
   /**
    * The Signals tab (signals.ts): every signal so far, active and inactive, oldest first, with its conversation. Only
    * for a viewer with access to the Comms Officer title; absent for anyone else, with no count (owner, 2026-11-16). The
-   * officer's options come from `view.actions` (`contact_signal`, `close_deal`, `refuse_signal`).
+   * officer's options come from `view.actions` (`contact_signal`, `close_deal`, `refuse_signal`, `decode_rebel`).
    */
   signals?: SignalView[];
 }

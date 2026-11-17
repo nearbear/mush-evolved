@@ -285,7 +285,7 @@ export const MORALE_ICON = statIcons["moral"]!;
 // Tab icons (16x16-ish pixel art). Keys are the names the user chose; see docs/assets/tab-icons.md.
 const uiIcons = urls(
   import.meta.glob<string>(
-    "../../../Mush/www/img/icons/ui/{mush,mush_progressive,starter,o2,fuel,plasma,alert,p_alive,survival,awake,comm,learned,stock,microsc,neron,info,infoalert,local,planet,conceptor,talkie,shield,basicplus,goldplus,notebook,pa_cook,pa_garden,plant_youngling,plant_thirsty,plant_dry,plant_diseased,sat,pa_pilgred,pam,pa_heal,pa_eng,pa_exp,pa_comp,pa_core,pa_shoot,hunter,private,search,spore,talk,wall,fav,triumph,heavy,dead,check,uncheck}.{png,gif}",
+    "../../../Mush/www/img/icons/ui/{mush,mush_progressive,starter,o2,fuel,plasma,alert,p_alive,survival,awake,comm,learned,stock,microsc,neron,info,infoalert,local,planet,conceptor,talkie,shield,basicplus,goldplus,notebook,pa_cook,pa_garden,plant_youngling,plant_thirsty,plant_dry,plant_diseased,sat,pa_pilgred,pam,pa_heal,pa_eng,pa_exp,pa_comp,pa_core,pa_shoot,hunter,private,search,spore,talk,wall,fav,triumph,heavy,dead,check,uncheck,rebellion}.{png,gif}",
     { eager: true, query: "?url", import: "default" },
   ),
 );
@@ -305,8 +305,11 @@ export const SHIP_RESOURCE_ICONS: Readonly<Record<"oxygen" | "fuel" | "hull" | "
 };
 
 /** The ticked and empty boxes of a checklist (a research terminal's requirements, a project's skills). */
-/** Each signal kind's icon, in the Signals list and beside its lines in a conversation (owner, 2026-11-16: merchants use the inventory icon). */
-export const SIGNAL_KIND_ICONS = { merchant: uiIcons["stock"]! } as const;
+/**
+ * Each signal kind's icon, in the Signals list and beside its lines in a conversation (owner, 2026-11-16: merchants use
+ * the inventory icon). Rebel bases use the original's 16px rebellion icon; their 70x65 base art is too big for a row.
+ */
+export const SIGNAL_KIND_ICONS = { merchant: uiIcons["stock"]!, rebel: uiIcons["rebellion"]! } as const;
 export const CHECK_ICON = uiIcons["check"]!;
 export const UNCHECK_ICON = uiIcons["uncheck"]!;
 

@@ -12,7 +12,7 @@ import { applyAction, createGame, setCheat, viewFor } from "../src/rules.ts";
 import { ACTIONS } from "../src/actions.ts";
 import { commandId, lostPlace, patrolShip, shipsInFlight } from "../src/patrol.ts";
 import type { Action, ExpeditionEventRule, GameConfig, GameState, Planet, PlayerId } from "../src/types.ts";
-import { clone, costOf, makeSeats, must, noHunters, noIncidents, offered, option, player } from "./support.ts";
+import { clone, costOf, makeSeats, must, noHunters, noIncidents, offered, option, player, rebelCallAt } from "./support.ts";
 
 const ICARUS = "ICARUS";
 const takeoff: Action = { type: "icarus_takeoff", equipment: "ICARUS:ICARUS_COMMAND" };
@@ -1089,7 +1089,7 @@ describe("expeditions, phase 4, slice D: skills", () => {
   const strengthIn = (s: GameState) => go(s).expeditions[0]!.events.find((e) => e.kind === "fight")!.fight!.strength;
   const uTurn: Action = { type: "u_turn" };
   const sabotage: Action = { type: "sabotage_expedition" };
-  const contactCentauri = (s: GameState) => s.comms.rebels.push({ base: "CENTAURI", calledAt: s.cycle, expiresAt: s.cycle + 10, progress: 100 });
+  const contactCentauri = (s: GameState) => rebelCallAt(s, "CENTAURI", 100);
 
   it("pins the confirmed numbers and the negative events", () => {
     expect([expedition.shooterBonus, expedition.sprinterSectors, expedition.centauri, expedition.uTurn.cost.ap]).toEqual([1, 1, { item: "blaster", bonus: 1 }, 2]);
@@ -1182,7 +1182,7 @@ describe("expeditions, phase 4, slice D: skills", () => {
     // A call not decoded to the end does nothing.
     const partial = fightGame(30);
     give(partial, "p1", "blaster", 3);
-    partial.comms.rebels.push({ base: "CENTAURI", calledAt: partial.cycle, expiresAt: partial.cycle + 10, progress: 99 });
+    rebelCallAt(partial, "CENTAURI", 99);
     expect(strengthIn(partial)).toBe(5);
   });
 

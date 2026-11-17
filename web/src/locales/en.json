@@ -1752,18 +1752,6 @@
     "linkNeeded": "Decoding, contacting Xyloph and updating NERON need the link with Sol.",
     "officerOnly": "Only the Comms Officer can decode signals, contact Xyloph and update NERON.",
     "overviewTitle": "Overview",
-    "rebelsTitle": "Rebel bases",
-    "rebelUpcoming": "Next signal",
-    "rebelNext_one": "{{base}}: next signal, contactable in {{count}} cycle.",
-    "rebelNext_other": "{{base}}: next signal, contactable in {{count}} cycles.",
-    "rebelNextIn_one": "Contactable in {{count}} cycle.",
-    "rebelNextIn_other": "Contactable in {{count}} cycles.",
-    "noRebels": "No rebel base has called yet.",
-    "rebelOpen_one": "{{percent}}% decoded. The signal is lost in {{count}} cycle.",
-    "rebelOpen_other": "{{percent}}% decoded. The signal is lost in {{count}} cycles.",
-    "rebelStatusDecoded": "Decoded",
-    "rebelStatusOpen": "Needs decoding",
-    "rebelStatusLost": "Signal lost",
     "xylophLinkNeeded": "You need a link with Sol before you can contact Xyloph.",
     "xylophUnavailable": "Xyloph cannot be contacted right now.",
     "solAlreadyLinked": "The link with Sol is already established.",
@@ -2131,10 +2119,12 @@
     "status": {
       "deal": "Deal made",
       "refused": "Refused",
-      "lost": "Signal lost"
+      "lost": "Signal lost",
+      "reached": "Decoded"
     },
     "kinds": {
-      "merchant": "Merchant"
+      "merchant": "Merchant",
+      "rebel": "Rebel base"
     },
     "back": "Back",
     "open": "Open the conversation with {{name}}",
@@ -2151,7 +2141,8 @@
     },
     "officer": {
       "refuse": "We decline your offer.",
-      "deal": "We accept: we give {{give}}, you give us {{receive}}."
+      "deal": "We accept: we give {{give}}, you give us {{receive}}.",
+      "decode": "Decoding the signal."
     },
     "merchant": {
       "transport": {
@@ -2163,6 +2154,23 @@
         }
       }
     },
-    "deal": "Deal!"
+    "deal": "Deal!",
+    "expires_one": "Lost in {{count}} cycle.",
+    "expires_other": "Lost in {{count}} cycles.",
+    "decoded": "{{percent}}% decoded.",
+    "next_one": "Next signal in {{count}} cycle.",
+    "next_other": "Next signal in {{count}} cycles.",
+    "decodeUnavailable": "The link with Sol is needed to decode.",
+    "decodeBlocked": "You can’t decode right now.",
+    "rebel": {
+      "message": {
+        "WOLF": "The Lost Children of Wolf have set up several antennas on Earth and a broadcasting centre in Mumbai. We will be able to broadcast news of your odyssey on Earth's radio waves. You are heroes.",
+        "SIRIUS": "Thank you for all the intelligence on the Mush you have brought us. In exchange, we have sent you the plans for the Shkunz molecule. Added to your rations in homeopathic doses, it should improve your crew's output.",
+        "CENTAURI": "We are glad to meet the heroes of the war against the Mush. In our sector, the war for control of the colonies is raging. To help your surface exploration, we have just sent you the plans for the PL80-Blaster, a powerful plasma cannon that must be handled with care. Fight to the end!",
+        "KALADAAN": "This is Kaladaan! We thank the whole crew of the Daedalus for giving the people of Sol hope for a better future. Since you left, the resistance has been organising and we have already infiltrated several Mush administrations. The Federation will soon be overthrown and we will take back control of Sol!",
+        "LUYTEN_CETI": "Our system is still under Mush control. We must work in the utmost secrecy, so we have developed tiny comms probes placed directly inside our brains. Their designs have just been sent to you. The Shadows of Luyten-Ceti watch over you.",
+        "CYGNI": "We salute the crew of the Daedalus. 61 Cygni was explored during your voyage. The Federation does not know that our whole unit is human. We fake regular reports with an advanced Pheromodem. By slipping past the Mush's watch, we are preparing the rebellion's armed counter-attack from this system. The plans for our SP2SP-230 missile have been sent to NERON."
+      }
+    }
   }
 }
