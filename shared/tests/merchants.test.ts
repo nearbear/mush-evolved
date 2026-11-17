@@ -27,7 +27,7 @@ function withMerchant(s: GameState, deals: MerchantDeal[]): Signal {
   return m;
 }
 
-const blocked = (s: GameState, deal: number) => viewFor(s, "p0").comms.terminal?.signals?.[0]?.merchant?.deals[deal]?.blocked;
+const blocked = (s: GameState, deal: number) => viewFor(s, "p0").comms.terminal?.signals?.find((sig) => sig.kind === "merchant")?.merchant?.deals[deal]?.blocked;
 
 const crewForFuel: MerchantDeal = { give: [{ kind: "crew", count: 1 }], receive: [{ kind: "item", item: "fuel_capsule", count: 9 }] };
 const storageCount = (s: GameState, type: string) => s.items.filter((i) => i.type === type && i.at.kind === "room" && i.at.id === cfg.deliveryRoom).length;
@@ -60,9 +60,15 @@ describe("merchant ships", () => {
     });
 
     it("doesn't arrive before Mush are chosen", () => {
-      const s = ship(1);
-      s.hunters.since = null;
+      const config: GameConfig = {
+        ...noIncidents(noHunters(DEFAULT_CONFIG)),
+        merchants: { ...cfg, arrivalChance: 1 },
+        preselection: { seats: 4, endsOn: { day: 3, cycle: 8 }, mushCount: "auto", twoMushAbove: 8, minPlayers: 1 },
+      };
+      const s = createGame([], config, 7);
+      expect(s.preselection).toBe(true);
       merchantsCycle(s);
+      expect(merchantsInOrbit(s)).toEqual([]);
       expect(s.signals.list).toEqual([]);
     });
 
@@ -80,7 +86,7 @@ describe("merchant ships", () => {
       expect(merchantsInOrbit(s)).toHaveLength(1);
       s = nextCycle(s);
       expect(merchantsInOrbit(s)).toEqual([]);
-      expect(s.signals.list.map((m) => m.status)).toEqual(["lost"]);
+      expect(s.signals.list.filter((m) => m.kind === "merchant").map((m) => m.status)).toEqual(["lost"]);
     });
 
     it("is left behind when the Daedalus travels", () => {
@@ -88,7 +94,7 @@ describe("merchant ships", () => {
       arriveMerchant(s, "transport");
       jump(s, player(s, "p0"), 1);
       expect(merchantsInOrbit(s)).toEqual([]);
-      expect(s.signals.list.map((m) => m.status)).toEqual(["lost"]);
+      expect(s.signals.list.filter((m) => m.kind === "merchant").map((m) => m.status)).toEqual(["lost"]);
     });
   });
 
@@ -171,10 +177,10 @@ describe("merchant ships", () => {
 
     it("an illegal deal leaves the state unchanged", () => {
       const s = ship();
-      withMerchant(s, [crewForFuel]);
+      const m = withMerchant(s, [crewForFuel]);
       const before = clone(s);
       expect(applyAction(s, "p0", close("merchant-404", 0)).ok).toBe(false);
-      expect(applyAction(s, "p1", close(s.signals.list[0]!.id, 0)).ok).toBe(false);
+      expect(applyAction(s, "p1", close(m.id, 0)).ok).toBe(false);
       expect(s).toEqual(before);
     });
   });

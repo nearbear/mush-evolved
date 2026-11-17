@@ -80,7 +80,7 @@ describe("Mush selection", () => {
     const m = player(s, mush(s)[0]!);
     expect([m.alpha, m.satietyZeroSince]).toEqual([true, null]);
     expect(Object.values(s.titles).some((t) => t !== null)).toBe(true);
-    expect(s.comms).not.toEqual(s3.comms);
+    expect(s.signals.list.some((sig) => sig.kind === "rebel")).toBe(true);
     expect(joinShip(s, makeSeats(5)[4]!)).toEqual({ ok: false, error: "ship_closed" });
   });
 

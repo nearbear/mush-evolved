@@ -31,6 +31,7 @@ function hailing(s: GameState): Signal {
 }
 
 const signalsOf = (s: GameState, id: string) => viewFor(s, id).comms.terminal?.signals;
+const merchantSignalsOf = (s: GameState, id: string) => signalsOf(s, id)?.filter((v) => v.kind === "merchant");
 
 describe("signals", () => {
   describe("contact", () => {
@@ -136,8 +137,8 @@ describe("signals", () => {
         expect(signal.status).toBe("lost");
         expect(signal.feed.at(-1)).toMatchObject({ from: "system", key: "signals.lost", closes: true });
       }
-      expect(s.signals.list).toHaveLength(2);
-      expect(signalsOf(s, "p0")?.map((v) => v.status)).toEqual(["lost", "lost"]);
+      expect(s.signals.list.filter((sig) => sig.kind === "merchant")).toHaveLength(2);
+      expect(merchantSignalsOf(s, "p0")?.map((v) => v.status)).toEqual(["lost", "lost"]);
     });
 
     it("when the Daedalus travels", () => {
@@ -173,12 +174,12 @@ describe("signals", () => {
       let s = ship();
       const first = hailing(s);
       hailing(s);
-      expect(signalsOf(s, "p0")?.map((v) => v.name)).toEqual([{ key: "signals.names.merchant.transport" }, { key: "signals.names.merchant.transport_numbered", params: { n: 2 } }]);
+      expect(merchantSignalsOf(s, "p0")?.map((v) => v.name)).toEqual([{ key: "signals.names.merchant.transport" }, { key: "signals.names.merchant.transport_numbered", params: { n: 2 } }]);
       s = must(applyAction(s, "p0", contact(first.id)));
       s = must(applyAction(s, "p0", refuse(first.id)));
       // The first is no longer active, so the next one takes its plain name again.
-      hailing(s);
-      expect(signalsOf(s, "p0")?.[2]?.name).toEqual({ key: "signals.names.merchant.transport" });
+      const third = hailing(s);
+      expect(merchantSignalsOf(s, "p0")?.find((v) => v.id === third.id)?.name).toEqual({ key: "signals.names.merchant.transport" });
     });
   });
 
@@ -196,7 +197,7 @@ describe("signals", () => {
     it("the officer sees them only at a Com center terminal", () => {
       const s = ship();
       hailing(s);
-      expect(signalsOf(s, "p0")).toHaveLength(1);
+      expect(merchantSignalsOf(s, "p0")).toHaveLength(1);
       player(s, "p0").room = "FRONT_CORRIDOR";
       expect(viewFor(s, "p0").comms.terminal).toBeNull();
       expect(JSON.stringify(viewFor(s, "p0"))).not.toContain("signal-");
@@ -204,10 +205,10 @@ describe("signals", () => {
 
     it("a hacker with a working hack on the terminal sees them", () => {
       const s = ship();
-      hailing(s);
+      const m = hailing(s);
       player(s, "p1").hackedEquipment = [TERMINAL];
-      expect(signalsOf(s, "p1")).toHaveLength(1);
-      expect(offered(s, "p1")).toContainEqual(contact(s.signals.list[0]!.id));
+      expect(merchantSignalsOf(s, "p1")).toHaveLength(1);
+      expect(offered(s, "p1")).toContainEqual(contact(m.id));
     });
 
     it("a new officer reads the old conversations; the old officer no longer sees them", () => {
@@ -216,7 +217,7 @@ describe("signals", () => {
       s = must(applyAction(s, "p0", contact(m.id)));
       s = must(applyAction(s, "p0", refuse(m.id)));
       s.titles.comms_officer = "p1";
-      expect(signalsOf(s, "p1")?.[0]?.feed.map((e) => e.officer)).toContain(player(s, "p0").character);
+      expect(signalsOf(s, "p1")?.find((v) => v.id === m.id)?.feed.map((e) => e.officer)).toContain(player(s, "p0").character);
       expect(signalsOf(s, "p0")).toBeUndefined();
     });
   });

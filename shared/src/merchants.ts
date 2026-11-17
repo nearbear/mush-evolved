@@ -103,7 +103,7 @@ export function arriveMerchant(state: GameState, kind: MerchantKind): Signal {
  */
 export function merchantsCycle(state: GameState): void {
   for (const m of merchantsInOrbit(state)) if (state.cycle >= m.endsAt) loseSignal(state, m);
-  if (state.hunters.since === null) return;
+  if (state.preselection || state.hunters.since === null) return;
   const { arrivalChance, kinds } = state.config.merchants;
   const kind = withDice(state, (dice) =>
     rollFloat(dice) < arrivalChance ? MERCHANT_KINDS[rollWeighted(dice, MERCHANT_KINDS.map((k) => kinds[k].weight))]! : null,
