@@ -14,7 +14,7 @@ Status: **phase 1 started, 2026-11-15**: the rules skeleton is built (`shared/sr
 - **Arrival:** random, about 2 a day on average (more or fewer on a given day), with no cap per game. Several merchants can be in orbit at once.
 - **Stay:** 4 cycles. A merchant can no longer be contacted once the Daedalus travels.
 - **Answering:** only the comms officer, at the Com center terminal, with a deal action costing 2 AP.
-- **Who sees the offers:** anyone on the bridge, by looking at the comms terminal, the way the Xyloph entries are seen today.
+- **Who sees the offers:** ~~anyone on the bridge, by looking at the comms terminal, the way the Xyloph entries are seen today.~~ Superseded 2026-11-16: only someone with access to the Comms Officer title, in the Signals tab (`docs/plans/signals.md`).
 - **Paying with items:** from any storage (read: the floors of the five storage rooms, `STORAGE_FRONT`, `STORAGE_A_0`, `STORAGE_A_1`, `STORAGE_B_0`, `STORAGE_B_1`; oxygen and fuel from the ship's tanks).
 - **Paying with crew:** inactive players only, from anywhere on the ship. This replaces the 2026-10-31 note "inactive crew from Storage, super inactive crew from any room".
 - **Delivery:** whatever the crew buys appears on the Front Storage floor.
