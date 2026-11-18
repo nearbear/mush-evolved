@@ -85,8 +85,8 @@ import {
   mashed_foot_injury,
   open_air_brain_injury,
   punctured_lung_injury,
-  torn_tongue_injury,
 } from "./modifiers/combat_injuries.ts";
+import { torn_tongue_injury } from "./modifiers/torn_tongue_injury.ts";
 import { burnt_hand_injury } from "./modifiers/burnt_hand_injury.ts";
 import { damaged_ears_injury } from "./modifiers/damaged_ears_injury.ts";
 import { destroyed_ears_injury } from "./modifiers/destroyed_ears_injury.ts";
@@ -231,6 +231,8 @@ export interface Modifier extends Partial<FoldHooks> {
   onPick?: (next: GameState, player: PlayerState) => void;
   /** Damaged or Destroyed Ears: other players' chat posted meanwhile never reaches the holder (`pushChat`, `heardBy`). */
   deaf?: boolean;
+  /** Torn Tongue: no `talking`-tagged action (Action.check), no chat post (`sendChat`), no new private channel (`createChannel`). */
+  mute?: boolean;
   /** Runs whenever the ship moves */
   onShipMovement?: (next: GameState, player: PlayerState) => void;
   /** Runs after the holder moves into a room, whoever is there (a move action). Mutates a state the caller already cloned. */
@@ -769,6 +771,11 @@ export function healed(next: GameState, healer: PlayerState, patient: PlayerStat
 /** Runs the picked skill's onPick hook. Mutates a state the caller already cloned. */
 export function skillPicked(next: GameState, player: PlayerState, skill: string, registry: ModifierRegistry = MODIFIERS): void {
   registry[skill]?.onPick?.(next, player);
+}
+
+/** Whether the player can't speak right now (a `mute` modifier: Torn Tongue): no `talking` action, no chat post. */
+export function isMute(player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS): boolean {
+  return modifierIds(player).some((id) => registry[id]?.mute === true);
 }
 
 /** Whether the player can't hear other players' chat right now (a `deaf` modifier: Damaged or Destroyed Ears). */

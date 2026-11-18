@@ -4277,3 +4277,8 @@ Owner specified Syphilis (20-32 cycles, STT/DTT spread, -3 max morale and HP, +2
 
 - **Decided by the owner:** `ceasefire` (skill `diplomacy`) costs 1 AP (`ceasefire.cost.ap`), once per game per character (`ceasefireUsed` stays with the body on Transfer; Polymath/`skilful` does not get it), blocked in preselection and when a ceasefire is already active in the room. Public room log (`ceasefire`) and public room status (`roomCeasefire` to the living in that room) for 3 cycles (`ceasefire.durationCycles`); stays active in the room even if the diplomat leaves or dies, and blocks all `aggressive`-tagged actions there (`attack`, `punch`, `interrogate`, `throw_out`, `spike`, `body_transfer`, `demoralize`, `guard`).
 - **What worked:** Putting the ceasefire gate in `Action.check` (`refusedCeasefire`) covered every `aggressive`-tagged action in one place without per-action edits, and `storedRooms.test.ts` caught adding `game.ceasefires` to `shared/tests/storedShape.ts`.
+
+## 2026-11-17: `talking` action tag and Torn Tongue
+
+Added a `talking` ActionTag (Fiery speech, Boring speech, Chitchat, Comfort) and gave Torn Tongue its effect: a `mute` modifier flag that `Action.check` uses to refuse any `talking` action (as Ceasefire does for `aggressive`), and that `sendChat` uses to refuse posts in every channel (error `mute`, localized en/fr/es). What worked: the tag seam from issue 30 made this a one-line check instead of a list of action types.
+Follow-up: a muted player also can't create a private channel (`createChannel` refuses with `mute`); others can still invite them.

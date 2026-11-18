@@ -1,4 +1,4 @@
-import { Action, peopleHere } from "./action.ts";
+import { Action, peopleHere, type ActionTag } from "./action.ts";
 import { logPublic } from "../log.ts";
 import { hasSkill } from "../skills.ts";
 import type { GameState, PlayerState } from "../types.ts";
@@ -13,6 +13,7 @@ export type BoringSpeechActionData = { type: "boring_speech" };
  * speaker gains nothing. No daily limit. Public room log.
  */
 export class FierySpeechAction extends Action<FierySpeechActionData> {
+  override tags: readonly ActionTag[] = ["talking"];
   constructor() {
     super("fiery_speech");
   }
@@ -44,6 +45,7 @@ export class FierySpeechAction extends Action<FierySpeechActionData> {
  * `speech.boring.mp` (3) MP, up to `movement.mpCap`. The speaker gains nothing. Public room log.
  */
 export class BoringSpeechAction extends Action<BoringSpeechActionData> {
+  override tags: readonly ActionTag[] = ["talking"];
   constructor() {
     super("boring_speech");
   }
