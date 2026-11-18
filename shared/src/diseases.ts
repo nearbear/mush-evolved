@@ -191,6 +191,12 @@ export function bite(state: GameState, player: PlayerState): void {
   damage(state, other, BITE_DAMAGE, "injury");
 }
 
+/** Logs "(Player) does seem very energetic" in the player's room, when the player can have special logs. */
+export function weakness(state: GameState, player: PlayerState): void {
+  if (!canHaveSpecialLogs(player)) return;
+  logPublic(state, player.room, "weakness", { name: player.character });
+}
+
 /** Logs publicly that the player's stomach grumbles (Tapeworm), when they can have special logs. */
 export function rumble(state: GameState, player: PlayerState): void {
   if (!canHaveSpecialLogs(player)) return;
@@ -233,4 +239,12 @@ export function spreadByTouch(state: GameState, a: PlayerState, b: PlayerState):
  */
 export function blurredVision(view: { statuses: readonly string[]; you: { role: string } }): boolean {
   return view.you.role !== "mush" && view.statuses.includes("pink_eye_disease");
+}
+
+/**
+ * Whether Rubella keeps the player from cooking (Cook, Express Cook) and repairing (Repair, Repair Hull, Repair
+ * PILGRED, Renovate): a human with it (owner, 2026-11-17). A Mush carries it without effect.
+ */
+export function rubellaBlocks(player: Readonly<PlayerState>): boolean {
+  return player.role === "human" && player.modifiers.includes("rubella_disease");
 }

@@ -3,6 +3,7 @@ import { cookable, cookItem } from "./cook.ts";
 import { MICROWAVE_ITEM, canReachItem, isWorking } from "../items.ts";
 import { logPublic } from "../log.ts";
 import type { GameState, ItemState, PlayerState } from "../types.ts";
+import { rubellaBlocks } from "../diseases.ts";
 
 export type ExpressCookActionData = { type: "express_cook"; item: string };
 
@@ -31,6 +32,7 @@ export class ExpressCookAction extends Action<ExpressCookActionData> {
   }
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: ExpressCookActionData): string | null {
+    if (rubellaBlocks(player)) return "cant_cook";
     if (!chargedMicrowave(state, player)) return "no_microwave";
     const item = state.items.find((i) => i.id === target.item);
     if (!item) return "no_such_item";

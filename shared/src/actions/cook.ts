@@ -2,6 +2,7 @@ import { Action, type ActionCost, isString } from "./action.ts";
 import { ITEM_TYPES, canReachItem } from "../items.ts";
 import { logPublic } from "../log.ts";
 import type { GameState, ItemState, PlayerState } from "../types.ts";
+import { rubellaBlocks } from "../diseases.ts";
 
 export type CookActionData = { type: "cook"; item: string };
 
@@ -39,6 +40,7 @@ export class CookAction extends Action<CookActionData> {
   }
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: CookActionData): string | null {
+    if (rubellaBlocks(player)) return "cant_cook";
     if (!cookRoom(state, player)) return "cant_cook";
     const item = state.items.find((i) => i.id === target.item);
     if (!item) return "no_such_item";
