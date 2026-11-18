@@ -1,4 +1,4 @@
-import { Action, peopleHere, isString } from "./action.ts";
+import { Action, peopleHere, isString, type ActionTag } from "./action.ts";
 import { revealHistory } from "../history.ts";
 import { logPublic } from "../log.ts";
 import { hasSkill } from "../skills.ts";
@@ -15,6 +15,7 @@ export type ChitchatActionData = { type: "chitchat"; target: string };
  * tell their morale from it.
  */
 export class ChitchatAction extends Action<ChitchatActionData> {
+  override tags: readonly ActionTag[] = ["talking"];
   constructor() {
     super("chitchat", { target: isString });
   }

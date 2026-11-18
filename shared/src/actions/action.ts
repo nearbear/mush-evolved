@@ -1,4 +1,4 @@
-import { actionCost, actionSuccessRate, actionDirtRate, actionInjuryRate, failureStreakMultiplier, type CostContext } from "../modifiers.ts";
+import { actionCost, actionSuccessRate, actionDirtRate, actionInjuryRate, failureStreakMultiplier, isMute, type CostContext } from "../modifiers.ts";
 import { isBrokenIn } from "../equipment.ts";
 import type { Action as AnyAction, GameState, PlayerState, ResourceId } from "../types.ts";
 
@@ -48,8 +48,9 @@ export type ActionVisibility = "public" | "private" | "secret" | "covert";
  * - `spore`: a Mush ability that rings a myco alarm on the floor of the room where it resolves (mycoalarm.ts).
  * - `melee`: a blow in person: a punch, or an attack with a melee weapon (a knife). No effects yet.
  * - `shoot`: a shot at a hunter from a turret. No effects yet; later ones include Gunner's accuracy and Gunman's pool.
+ * - `talking`: speaking to someone in the room (Fiery speech, Boring speech, Chitchat, Comfort). A mute player (Torn Tongue) can't.
  */
-export type ActionTag = "aggressive" | "spore" | "shoot" | "melee";
+export type ActionTag = "aggressive" | "spore" | "shoot" | "melee" | "talking";
 
 /**
  * What an action costs. `paidBy` names a skill resource (a Computer point, a care point...) that pays for it in place of
@@ -214,13 +215,18 @@ export class Action<T extends { type: string }> {
    * no action can skip the cost check (a modifier can put a price on a free action).
    */
   check(state: Readonly<GameState>, player: Readonly<PlayerState>, target: T): string | null {
-    return this.refusedBroken(state, player, target) ?? this.refusedCeasefire(state, player, target) ?? this.validate(state, player, target) ?? this.canAfford(state, player, target);
+    return this.refusedBroken(state, player, target) ?? this.refusedCeasefire(state, player, target) ?? this.refusedMute(state, player, target) ?? this.validate(state, player, target) ?? this.canAfford(state, player, target);
   }
 
   /** Active Ceasefire in the room blocks all `aggressive`-tagged actions (owner, 2026-11-17). */
   private refusedCeasefire(state: Readonly<GameState>, player: Readonly<PlayerState>, target: T): string | null {
     if ((state.ceasefires[player.room] ?? 0) > 0 && this.tagsFor(state, target).includes("aggressive")) return "ceasefire";
     return null;
+  }
+
+  /** A mute player (Torn Tongue) can't do any `talking`-tagged action (owner, 2026-11-17). */
+  private refusedMute(state: Readonly<GameState>, player: Readonly<PlayerState>, target: T): string | null {
+    return isMute(player) && this.tagsFor(state, target).includes("talking") ? "mute" : null;
   }
 
   /** Broken equipment does nothing (owner, 2026-10-25): no action on it but those marked `onBroken`. Nor does a broken item (owner, 2026-11-07), but `onBrokenItem` ones can still move or dismantle it. */

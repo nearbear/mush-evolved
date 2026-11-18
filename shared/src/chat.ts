@@ -5,7 +5,7 @@
 // rate limits) is the server's job before these run.
 
 import { ITRACKIE_ITEM, itemsIn, isWorking } from "./items.ts";
-import { channelLimit, isDeaf } from "./modifiers.ts";
+import { channelLimit, isDeaf, isMute } from "./modifiers.ts";
 import { noITrackieNeeded } from "./comms.ts";
 import { cloneState, fail, dayOf, findPlayer, type ActionResult } from "./helpers.ts";
 import { dropChannelPlans, leavePlans } from "./plans.ts";
@@ -166,6 +166,8 @@ export function sendChat(state: GameState, playerId: PlayerId, channel: ChannelI
   const p = findPlayer(state, playerId);
   if (!p) return { ok: false, error: "unknown_player" };
   if (!chatChannels(state, p).includes(channel)) return { ok: false, error: "cant_post" };
+  // Torn Tongue: no post in any channel (owner, 2026-11-17).
+  if (isMute(p)) return { ok: false, error: "mute" };
   const body = text.trim();
   if (!body) return { ok: false, error: "empty_message" };
   if (body.length > MAX_CHAT_LENGTH) return { ok: false, error: "message_too_long" };
@@ -283,6 +285,8 @@ function channelCount(state: GameState, playerId: PlayerId): number {
 export function createChannel(state: GameState, playerId: PlayerId, rawName = "", members: readonly PlayerId[] = []): ActionResult {
   const p = findPlayer(state, playerId);
   if (!p || !p.alive || state.phase !== "playing") return fail("channel_forbidden");
+  // Torn Tongue: no new private channel either (owner, 2026-11-17).
+  if (isMute(p)) return fail("mute");
   const name = rawName.trim();
   if (name.length > MAX_CHANNEL_NAME_LENGTH) return fail("channel_name_invalid");
   if (channelCount(state, playerId) >= channelLimit(state, p)) return fail("channel_limit_reached");

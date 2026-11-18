@@ -1,4 +1,4 @@
-import { Action, peopleHere, isString } from "./action.ts";
+import { Action, peopleHere, isString, type ActionTag } from "./action.ts";
 import { logPublic } from "../log.ts";
 import { hasSkill } from "../skills.ts";
 import type { GameState, PlayerState } from "../types.ts";
@@ -13,6 +13,7 @@ export type ComfortActionData = { type: "comfort"; target: string };
  * Public room history.
  */
 export class ComfortAction extends Action<ComfortActionData> {
+  override tags: readonly ActionTag[] = ["talking"];
   constructor() {
     super("comfort", { target: isString });
   }
