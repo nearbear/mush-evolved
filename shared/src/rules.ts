@@ -8,6 +8,7 @@
 
 import { expirePlans, plansView, strikeSlots } from "./plans.ts";
 import { bindPerformAction } from "./actions/summon.ts";
+import { cheatFuelPlanet } from "./actions/warp_to_planet.ts";
 import { applyCheats, makeHuman, shipInvincible, type Cheat, type RoleCheat } from "./cheats.ts";
 import { ACTIONS, actionVisibility, type ActionDef } from "./actions.ts";
 import { ARACK_AROUND, AT_CAPACITY, COOLDOWN, DIRTY, IN_PRESELECTION, NO_DEBRIS, NO_SPACE, PASIPHAE_INTACT, REACTOR_BROKEN } from "./actions/action.ts";
@@ -450,6 +451,7 @@ export function setCheat(state: GameState, playerId: PlayerId, cheat: Cheat, on:
   const p = findPlayer(next, playerId)!;
   p.cheats = p.cheats.filter((c) => c !== cheat);
   if (on) p.cheats.push(cheat);
+  if (on && cheat === "fuelPlanet") cheatFuelPlanet(next, p);
   applyCheats(next, p);
   return { ok: true, state: next };
 }

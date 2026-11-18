@@ -111,7 +111,8 @@
       "cheats": "Cheats"
     },
     "cheatHints": {
-      "fastExpeditions": "2 seconds per sector"
+      "fastExpeditions": "2 seconds per sector",
+      "fuelPlanet": "Warps the ship to a planet with 20 Hydrocarbons sectors that never run out"
     },
     "cheats": {
       "title": "Cheats (development)",
@@ -131,6 +132,7 @@
       "easyTravel": "Easy travel",
       "invincible": "Invincible ship",
       "fastExpeditions": "Fast expeditions",
+      "fuelPlanet": "Orbit a fuel planet",
       "goToCheatRoom": "Go to cheat room",
       "leaveShip": "Leave ship",
       "role": {

@@ -113,7 +113,8 @@
       "cheats": "Trampas"
     },
     "cheatHints": {
-      "fastExpeditions": "2 segundos por sector"
+      "fastExpeditions": "2 segundos por sector",
+      "fuelPlanet": "Lleva la nave a un planeta de 20 sectores de Hidrocarburos que nunca se agotan"
     },
     "cheats": {
       "title": "Trucos (desarrollo)",
@@ -133,6 +134,7 @@
       "easyTravel": "Viaje fácil",
       "invincible": "Nave invencible",
       "fastExpeditions": "Expediciones rápidas",
+      "fuelPlanet": "Órbita de un planeta de combustible",
       "goToCheatRoom": "Ir a la sala de trucos",
       "leaveShip": "Abandonar la nave",
       "role": {

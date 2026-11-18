@@ -4347,6 +4347,10 @@ Asked to implement the machine gun (Old Faithful), Claude checked the code again
 - **Choices:** no numbers in the text (they come from `config`, which the client doesn't have, and would go stale); projects other than Plasma shield (Oxygenated ducts, Armoured corridors) left out to keep it short.
 - **Worked / needed correction:** grepping every write to `state.ship.*` gave the full list of sources and sinks; fr/es are drafts (no `agy` for a second review).
 
+## 2026-11-17: fuelPlanet cheat
+
+Added a `fuelPlanet` dev cheat: switching it on creates a planet with 20 known Hydrocarbon sectors for the player and warps the ship into its orbit (the same `jump` + `arriveShip` the easyTravel warp uses). While it stays on, the cheater's actions unexplore that planet's sectors, so it never runs out — a fixed count with a refill instead of a huge sector list the planet UI would have to render. First draft put the warp in `cheats.ts`, which imported `actions/travel.ts` and made a module cycle (`moduleLoad.test.ts` caught it); the warp moved to `actions/warp_to_planet.ts`.
+
 ## 2026-11-17: Plastenite Armor
 
 - **Decision (owner, from eMush and eMushpedia):** an unbroken armor in inventory absorbs 1 damage from non-critical punches and weapon hits (targeted and area) and from expedition fights, stacking with Survival; at most 1 for several armors; crits, instant kills, self-damage and non-combat damage go through. A fully absorbed hit logs a new public "only found their protections" line.

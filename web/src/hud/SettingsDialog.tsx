@@ -18,8 +18,9 @@ import "./settings.css";
 import "./terminal.css";
 
 /** Cheats that explain themselves in a tooltip on their label. */
-const CHEAT_HINTS: Partial<Record<Cheat, "settings.cheatHints.fastExpeditions">> = {
+const CHEAT_HINTS: Partial<Record<Cheat, "settings.cheatHints.fastExpeditions" | "settings.cheatHints.fuelPlanet">> = {
   fastExpeditions: "settings.cheatHints.fastExpeditions",
+  fuelPlanet: "settings.cheatHints.fuelPlanet",
 };
 
 const ROLE_BUTTON_ORDER: readonly RoleCheat[] = ["human", "mush"];
