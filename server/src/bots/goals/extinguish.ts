@@ -12,7 +12,7 @@ export const EXTINGUISH_PRIORITY = 78;
 
 /**
  * Where a bot leaves an extinguisher once no fire is known (owner, 2026-11-14): the front and rear corridors, central,
- * so anyone can reach one for the next fire. They also start there (`config.ts`).
+ * so anyone can reach one for the next fire (extinguishers spawn in the `storage` pool in `config.ts`).
  */
 export const EXTINGUISHER_HOMES: readonly RoomId[] = ["CORRIDOR_A", "CORRIDOR_C"];
 
