@@ -66,6 +66,7 @@
   overflow: hidden;
   border-radius: 4px;
   background: url("../../../Mush/www/img/design/slot.png") 0 0 / 100% 100% no-repeat;
+  image-rendering: pixelated;
 }
 .item-tile.empty .item-face {
   background: none;
@@ -75,6 +76,7 @@
   height: 100%;
   display: block;
   object-fit: cover;
+  image-rendering: pixelated;
 }
 .item-label {
   position: absolute;
@@ -119,9 +121,38 @@
   position: absolute;
   top: 2px;
   right: 2px;
+  z-index: 2;
   margin: 0;
   padding: 0 var(--space-2);
   font-size: 0.7rem;
+}
+/* Item attributes along the tile's top edge, at 1x pixel size so they fit compact tiles too. */
+.item-slot .status-icons {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  right: 2px;
+  flex-direction: row;
+  gap: 2px;
+  margin: 0;
+}
+.item-slot .status-icon {
+  padding: 1px;
+  border-radius: 3px;
+  background: rgb(0 0 0 / 0.65);
+}
+.item-slot .status-icons img {
+  position: relative;
+  z-index: 1;
+  width: 16px;
+  height: 16px;
+}
+.item-slot .status-icons .status-count span {
+  z-index: 2;
+  min-width: 11px;
+  padding: 0 2px;
+  font-size: 9px;
+  line-height: 11px;
 }
 /* Desktop room zone: more items than fit one row drop to two rows of smaller tiles; beyond two rows it scrolls. */
 .item-grid[data-compact] {

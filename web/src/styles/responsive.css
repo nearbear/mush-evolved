@@ -377,7 +377,7 @@
     margin: 0 auto;
   }
   .inspect-target .inspect-item {
-    --tile: 100cqw;
+    --tile: min(100px, 100cqw);
     margin: 0 auto;
   }
   .inspect-body > .inspect-actions {
