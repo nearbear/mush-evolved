@@ -75,18 +75,14 @@ import { rubella_disease } from "./modifiers/rubella_disease.ts";
 import { syphilis_disease } from "./modifiers/syphilis_disease.ts";
 import { sepsis_disease } from "./modifiers/sepsis_disease.ts";
 import { broken_nose_injury } from "./modifiers/broken_nose_injury.ts";
-import {
-  broken_shoulder_injury,
-  bruised_shoulder_injury,
-  busted_arm_joint_injury,
-  critical_haemorrhage_injury,
-  haemorrhage_injury,
-  head_trauma_injury,
-  mashed_foot_injury,
-  open_air_brain_injury,
-  punctured_lung_injury,
-} from "./modifiers/combat_injuries.ts";
+import { broken_shoulder_injury, bruised_shoulder_injury } from "./modifiers/shoulder_injuries.ts";
+import { mashed_foot_injury } from "./modifiers/mashed_foot_injury.ts";
 import { torn_tongue_injury } from "./modifiers/torn_tongue_injury.ts";
+import { open_air_brain_injury } from "./modifiers/open_air_brain_injury.ts";
+import { head_trauma_injury } from "./modifiers/head_trauma_injury.ts";
+import { critical_haemorrhage_injury, haemorrhage_injury } from "./modifiers/haemorrhage_injury.ts";
+import { busted_arm_joint_injury } from "./modifiers/busted_arm_joint_injury.ts";
+import { punctured_lung_injury } from "./modifiers/punctured_lung_injury.ts";
 import { burnt_hand_injury } from "./modifiers/burnt_hand_injury.ts";
 import { damaged_ears_injury } from "./modifiers/damaged_ears_injury.ts";
 import { destroyed_ears_injury } from "./modifiers/destroyed_ears_injury.ts";
@@ -208,10 +204,23 @@ export interface Modifier extends Partial<FoldHooks> {
    */
   onActionFailed?: (next: GameState, player: PlayerState, apSpent: number) => void;
   /**
+   * Runs after each of the player's actions has resolved (success or failure, its dirt and injury rolls included).
+   * Mutates a state the caller already cloned. The player may already be dead.
+   */
+  onActionDone?: (next: GameState, player: PlayerState) => void;
+  /** Runs when the player becomes dirty (not when they already were). Mutates a state the caller already cloned. */
+  onDirty?: (next: GameState, player: PlayerState) => void;
+  /**
    * Adjusts the AP a player is about to gain at a cycle change's refill (`gain`, already folded through apPerCycle).
    * Unlike the folds it runs once, at the refill, so it may roll (`next.rng`). Never reaches a Mush's diseases.
    */
   onApRefill?: (gain: number, next: GameState, player: PlayerState) => number;
+  /**
+   * At a cycle change's refill spent lying down: whether this modifier spoils the rest, so the bed adds no AP (the bed's
+   * +1 and Lethargy's bonus). May roll (`next.rng`). However many say so, the bonus is lost once (`apRefill`). Reaches
+   * a Mush's diseases too, so a disease hook guards itself with `diseaseAffects`.
+   */
+  spoilsRest?: (next: GameState, player: PlayerState) => boolean;
   /** Runs for each living player at a cycle change, after the AP refill. Mutates a state the caller already cloned. */
   /** (A disease hook also reaches a Mush: it guards its own stat effects with `diseaseAffects`, diseases.ts.) */
   onCycle?: (next: GameState, player: PlayerState) => void;
@@ -231,8 +240,10 @@ export interface Modifier extends Partial<FoldHooks> {
   onPick?: (next: GameState, player: PlayerState) => void;
   /** Damaged or Destroyed Ears: other players' chat posted meanwhile never reaches the holder (`pushChat`, `heardBy`). */
   deaf?: boolean;
-  /** Torn Tongue: no `talking`-tagged action (Action.check), no chat post (`sendChat`), no new private channel (`createChannel`). */
+  /** Torn Tongue, Punctured Lung: no `talking`-tagged action (Action.check), no chat post (`sendChat`), no new private channel (`createChannel`). */
   mute?: boolean;
+  /** Broken Shoulder: can't take a heavy item (TransferAction), and drops any held when it starts. */
+  noHeavy?: boolean;
   /** Runs whenever the ship moves */
   onShipMovement?: (next: GameState, player: PlayerState) => void;
   /** Runs after the holder moves into a room, whoever is there (a move action). Mutates a state the caller already cloned. */
@@ -535,19 +546,39 @@ export function followingHuntersShare(base: number, state: Readonly<GameState>, 
   return Math.min(1, Math.max(0, share));
 }
 
+/** Runs every onActionDone hook the player has. Mutates a state the caller already cloned. */
+export function actionDone(next: GameState, player: PlayerState, registry: ModifierRegistry = MODIFIERS): void {
+  for (const id of modifierIds(player)) registry[id]?.onActionDone?.(next, player);
+}
+
+/** Runs every onDirty hook the player has, once they have just become dirty. Mutates a state the caller already cloned. */
+export function becameDirty(next: GameState, player: PlayerState, registry: ModifierRegistry = MODIFIERS): void {
+  for (const id of modifierIds(player)) registry[id]?.onDirty?.(next, player);
+}
+
 /** Runs every onActionFailed hook the player has. Mutates a state the caller already cloned. */
 export function actionFailed(next: GameState, player: PlayerState, apSpent: number, registry: ModifierRegistry = MODIFIERS): void {
   for (const id of modifierIds(player)) registry[id]?.onActionFailed?.(next, player, apSpent);
 }
 
-/** The AP a player gains at this cycle change's refill: `apGain`, then each modifier's onApRefill. Mutates `next.rng`. */
+/** The AP a player gains at this cycle change's refill: `apGain`, each modifier's onApRefill, then a spoiled rest. Mutates `next.rng`. */
 export function apRefill(next: GameState, player: PlayerState, registry: ModifierRegistry = MODIFIERS): number {
   let gain = apGain(next, player, registry);
   for (const id of modifierIds(player)) {
     const hook = registry[id]?.onApRefill;
     if (hook) gain = hook(gain, next, player);
   }
+  // Rejuvenation, Migraine, Rubella: the first that spoils the rest takes the bed's bonus, once (owner, 2026-11-18).
+  if (player.alive && player.modifiers.includes("lying_down") && modifierIds(player).some((id) => registry[id]?.spoilsRest?.(next, player))) {
+    gain -= bedBonus(next, player, registry);
+  }
   return gain;
+}
+
+/** What lying down adds to the player's AP refill now: the bed's +1 and Lethargy's bonus. */
+export function bedBonus(state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS): number {
+  const awake = { ...player, modifiers: player.modifiers.filter((m) => m !== "lying_down"), lyingSince: undefined };
+  return Math.max(0, apGain(state, player, registry) - apGain(state, awake, registry));
 }
 
 /** Base movement rules folded through the player's modifiers, in list order, plus the heavy-item penalty. */
@@ -773,9 +804,14 @@ export function skillPicked(next: GameState, player: PlayerState, skill: string,
   registry[skill]?.onPick?.(next, player);
 }
 
-/** Whether the player can't speak right now (a `mute` modifier: Torn Tongue): no `talking` action, no chat post. */
+/** Whether the player can't speak right now (a `mute` modifier: Torn Tongue, Punctured Lung): no `talking` action, no chat post. */
 export function isMute(player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS): boolean {
   return modifierIds(player).some((id) => registry[id]?.mute === true);
+}
+
+/** Whether the player can't carry heavy items right now (a `noHeavy` modifier: Broken Shoulder). */
+export function cantCarryHeavy(player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS): boolean {
+  return modifierIds(player).some((id) => registry[id]?.noHeavy === true);
 }
 
 /** Whether the player can't hear other players' chat right now (a `deaf` modifier: Damaged or Destroyed Ears). */

@@ -29,7 +29,7 @@ import { newLostAnalysis, rollAtSelection } from "./lostAnalysis.ts";
 import { hopelessCycle } from "./morale.ts";
 import { relayView } from "./relayView.ts";
 import { itemsIn, rechargeMicrowaves, rechargeScooters, startCharges, visibleItemsIn } from "./items.ts";
-import { actionFailed, apRefill, mpGain, carePointsGain, channelLimit, computerPointsCap, computerPointsGain, cookPointsGain, shootPointsGain, cycleChanged, designerPointsGain, engineerPointsGain, gardenPointsGain, dailyMoraleLoss, inventorySlots, movementRules, pilgredPointsGain, satietyLoss } from "./modifiers.ts";
+import { actionDone, actionFailed, apRefill, mpGain, carePointsGain, channelLimit, computerPointsCap, computerPointsGain, cookPointsGain, shootPointsGain, cycleChanged, designerPointsGain, engineerPointsGain, gardenPointsGain, dailyMoraleLoss, inventorySlots, movementRules, pilgredPointsGain, satietyLoss } from "./modifiers.ts";
 import { contaminationSeenBy, convert } from "./infection.ts";
 import { isHungry, publicStatusesOf, statusesOf } from "./statuses.ts";
 import { coupCycle } from "./coup.ts";
@@ -431,6 +431,8 @@ export function performAction(next: GameState, actor: PlayerState, action: Actio
   }
   // After the action's own log lines; rings on a failure too (owner, 2026-10-18).
   if (def.tags.includes("spore")) ringMycoAlarms(next, room);
+  // After the action and its dirt and injury rolls (Open Air Brain kills here).
+  if (actor.alive) actionDone(next, actor);
   // A research, project or PILGRED this finished strikes out its task slots (plans.ts).
   strikeSlots(next);
   applyCheats(next, actor);

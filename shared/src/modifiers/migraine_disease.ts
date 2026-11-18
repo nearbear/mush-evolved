@@ -1,4 +1,4 @@
-import { diseaseAffects, withoutBedBonus } from "../diseases.ts";
+import { diseaseAffects } from "../diseases.ts";
 import type { Modifier } from "../modifiers.ts";
 import { rollFloat } from "../rng.ts";
 
@@ -16,8 +16,5 @@ export const migraine_disease: Modifier = {
   analysisSectors: (sectors) => sectors - 1,
   neronProgress: (percent) => Math.floor(percent * COMMS_FACTOR),
   rebelGain: (gain) => Math.floor(gain * COMMS_FACTOR),
-  onApRefill(gain, next, player) {
-    if (!player.alive || !diseaseAffects(player) || !player.modifiers.includes("lying_down")) return gain;
-    return rollFloat(next) < NO_REST_CHANCE ? withoutBedBonus(gain, next, player) : gain;
-  },
+  spoilsRest: (next, player) => diseaseAffects(player) && rollFloat(next) < NO_REST_CHANCE,
 };

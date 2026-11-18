@@ -1,6 +1,6 @@
 import { Action, AT_CAPACITY, IN_PRESELECTION, type ActionVisibility } from "./action.ts";
 import { logSecret } from "../log.ts";
-import { sporesPerDay } from "../modifiers.ts";
+import { becameDirty, sporesPerDay } from "../modifiers.ts";
 import { RESEARCH_COMPLETE } from "../research.ts";
 import { hasSkill } from "../skills.ts";
 import { addStatus } from "../statuses.ts";
@@ -42,7 +42,9 @@ export class ExtractSporeAction extends Action<ExtractSporeActionData> {
     if (freeExtraction(player)) player.fertileToday = true;
     player.spores += state.config.spores.effect.spores;
     state.sporesToday += state.config.spores.effect.spores;
+    const wasDirty = player.statuses.includes("dirty");
     addStatus(player, "dirty");
     logSecret(state, player.id, "sporeExtracted", { name: player.character });
+    if (!wasDirty) becameDirty(state, player);
   }
 }

@@ -2,6 +2,7 @@
 
 import { itemsIn } from "./items.ts";
 import { logPrivate } from "./log.ts";
+import { becameDirty } from "./modifiers.ts";
 import { hasSkill } from "./skills.ts";
 import { addStatus } from "./statuses.ts";
 import type { GameState, PlayerState } from "./types.ts";
@@ -19,5 +20,6 @@ export function soil(state: GameState, player: PlayerState): void {
   } else {
     addStatus(player, "dirty");
     logPrivate(state, player.id, "becomeDirty", { name: player.character });
+    becameDirty(state, player);
   }
 }
