@@ -761,6 +761,7 @@ describe("actions from a client", () => {
     stop_accommodation: [{ type: "stop_accommodation", target: "p1" }],
     shower: [{ type: "shower", equipment: "e1" }],
     heal: [{ type: "heal", target: "p1" }],
+    surgery: [{ type: "surgery", target: "p1" }],
     use_bandage: [{ type: "use_bandage", target: "p1" }],
     vaccinate: [{ type: "vaccinate", target: "p1" }],
     punch: [{ type: "punch", target: "p1" }],

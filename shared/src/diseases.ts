@@ -22,10 +22,10 @@ export interface DiseaseTracker {
  * its higher-tier form is a no-op.
  */
 export const INJURY_UPGRADES: Readonly<Record<string, StatusId>> = {
-  damaged_ears: "destroyed_ears",
-  head_trauma: "open_air_brain",
-  haemorrhage: "critical_haemorrhage",
-  bruised_shoulder: "broken_shoulder",
+  damaged_ears_injury: "destroyed_ears_injury",
+  head_trauma_injury: "open_air_brain_injury",
+  haemorrhage_injury: "critical_haemorrhage_injury",
+  bruised_shoulder_injury: "broken_shoulder_injury",
 };
 
 /** A disease's numbers, found by its `label` (config.ts), not by its place in the list. */

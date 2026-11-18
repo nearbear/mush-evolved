@@ -42,6 +42,8 @@ export const DEATH_CAUSES = [
   // (whether it is announced like a death is still open, docs/plans/merchants.md). A traded Mush still counts as a dead
   // Mush and fills the Sick Bay's human tank (`hasMushDied`), so the trade can reveal the role (owner, 2026-11-15).
   "traded",
+  // A failed surgery's sepsis (owner, 2026-11-17).
+  "sepsis",
 ] as const;
 export type DeathCause = (typeof DEATH_CAUSES)[number];
 

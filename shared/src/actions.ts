@@ -73,6 +73,7 @@ import { TravelAction } from "./actions/travel.ts";
 import { TurnShipAction } from "./actions/turn_ship.ts";
 import { ReadyAction } from "./actions/ready.ts";
 import { HealAction } from "./actions/heal.ts";
+import { SurgeryAction } from "./actions/surgery.ts";
 import { VaccinateAction } from "./actions/vaccinate.ts";
 import { UseBandageAction } from "./actions/use_bandage.ts";
 import { InstallAction } from "./actions/install.ts";
@@ -251,6 +252,7 @@ const REGISTRY = {
   stop_accommodation: new StopAccommodationAction(),
   shower: new ShowerAction(),
   heal: new HealAction(),
+  surgery: new SurgeryAction(),
   vaccinate: new VaccinateAction(),
   use_bandage: new UseBandageAction(),
   punch: new PunchAction(),

@@ -254,7 +254,7 @@ export function PeekBarSection() {
 }
 
 /** Every status the game knows, so missing art shows at a glance. */
-const ALL_STATUSES = statusIdsFor(DEFAULT_CONFIG.diseases.allDiseases);
+const ALL_STATUSES = statusIdsFor(DEFAULT_CONFIG.diseases.allDiseases, DEFAULT_CONFIG.diseases.allInjuries);
 
 export function StatusIconsSection() {
   return (

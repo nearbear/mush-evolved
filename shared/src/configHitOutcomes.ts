@@ -11,7 +11,7 @@ export const BLASTER_OUTCOMES: WeaponOutcomes = {
     { weight: 1, critical: true, log: "BLASTER_TARGET_HEADSHOT", effects: { instantKill: "target" } },
     { weight: 2, critical: true, log: "BLASTER_TARGET_RANDOM_INJURY", effects: { injuries: [{ who: "target", injury: "random", chance: 1 }] } },
     { weight: 2, critical: true, log: "BLASTER_SHOOTER_PLUS_2_MAX_DAMAGE_20_RANDOM_INJURY_TO_TARGET", effects: { maxDamageDelta: 2, injuries: [{ who: "target", injury: "random", chance: 0.2 }] } },
-    { weight: 2, critical: true, log: "BLASTER_SHOOTER_PLUS_1_DAMAGE_TARGET_DAMAGED_EARS", effects: { damageDelta: 1, injuries: [{ who: "target", injury: "damaged_ears", chance: 1 }] } },
+    { weight: 2, critical: true, log: "BLASTER_SHOOTER_PLUS_1_DAMAGE_TARGET_DAMAGED_EARS", effects: { damageDelta: 1, injuries: [{ who: "target", injury: "damaged_ears_injury", chance: 1 }] } },
     {
       weight: 1,
       critical: true,
@@ -19,10 +19,10 @@ export const BLASTER_OUTCOMES: WeaponOutcomes = {
       effects: {
         damageDelta: 2,
         injuries: [
-          { who: "target", injury: "torn_tongue", chance: 0.3 },
-          { who: "target", injury: "burst_nose", chance: 0.3 },
-          { who: "target", injury: "open_air_brain", chance: 0.3 },
-          { who: "target", injury: "head_trauma", chance: 0.3 },
+          { who: "target", injury: "torn_tongue_injury", chance: 0.3 },
+          { who: "target", injury: "burst_nose_injury", chance: 0.3 },
+          { who: "target", injury: "open_air_brain_injury", chance: 0.3 },
+          { who: "target", injury: "head_trauma_injury", chance: 0.3 },
         ],
       },
     },
@@ -45,29 +45,29 @@ export const BLASTER_OUTCOMES: WeaponOutcomes = {
 
 export const KNIFE_OUTCOMES: WeaponOutcomes = {
   hitOutcomes: [
-    { weight: 75, log: "KNIFE_SUCCESSFUL_HIT_10_HAEMORRHAGE", effects: { injuries: [{ who: "target", injury: "haemorrhage", chance: 0.1 }] } },
+    { weight: 75, log: "KNIFE_SUCCESSFUL_HIT_10_HAEMORRHAGE", effects: { injuries: [{ who: "target", injury: "haemorrhage_injury", chance: 0.1 }] } },
     { weight: 5, critical: true, log: "KNIFE_PLUS_2_DAMAGE_RANDOM_INJURY", effects: { damageDelta: 2, injuries: [{ who: "target", injury: "random", chance: 1 }] } },
-    { weight: 5, critical: true, log: "KNIFE_PLUS_2_DAMAGE_50_CRITICAL_HAEMORRHAGE", effects: { damageDelta: 2, injuries: [{ who: "target", injury: "critical_haemorrhage", chance: 0.5 }] } },
+    { weight: 5, critical: true, log: "KNIFE_PLUS_2_DAMAGE_50_CRITICAL_HAEMORRHAGE", effects: { damageDelta: 2, injuries: [{ who: "target", injury: "critical_haemorrhage_injury", chance: 0.5 }] } },
     {
       weight: 3,
       critical: true,
       log: "KNIFE_PLUS_2_DAMAGE_50_CRITICAL_HAEMORRHAGE_RANDOM_INJURY",
-      effects: { damageDelta: 2, injuries: [{ who: "target", injury: "critical_haemorrhage", chance: 0.5 }, { who: "target", injury: "random", chance: 1 }] },
+      effects: { damageDelta: 2, injuries: [{ who: "target", injury: "critical_haemorrhage_injury", chance: 0.5 }, { who: "target", injury: "random", chance: 1 }] },
     },
     {
       weight: 3,
       critical: true,
       log: "KNIFE_PLUS_2_DAMAGE_60_CRITICAL_HAEMORRHAGE_BUSTED_ARM_JOINT",
-      effects: { damageDelta: 2, injuries: [{ who: "target", injury: "critical_haemorrhage", chance: 0.6 }, { who: "target", injury: "busted_arm_joint", chance: 1 }] },
+      effects: { damageDelta: 2, injuries: [{ who: "target", injury: "critical_haemorrhage_injury", chance: 0.6 }, { who: "target", injury: "busted_arm_joint_injury", chance: 1 }] },
     },
     { weight: 2, critical: true, log: "KNIFE_INSTAGIB_BLED", effects: { instantKill: "target" } },
-    { weight: 1, critical: true, log: "KNIFE_PLUS_2_DAMAGE_PUNCTURED_LUNG", effects: { damageDelta: 2, injuries: [{ who: "target", injury: "punctured_lung", chance: 1 }] } },
+    { weight: 1, critical: true, log: "KNIFE_PLUS_2_DAMAGE_PUNCTURED_LUNG", effects: { damageDelta: 2, injuries: [{ who: "target", injury: "punctured_lung_injury", chance: 1 }] } },
   ],
   missOutcomes: [
     { weight: 75, log: "KNIFE_FAILED_HIT" },
     { weight: 3, fumble: true, log: "KNIFE_BREAK_WEAPON", effects: { weaponEffect: "break" } },
-    { weight: 3, fumble: true, log: "KNIFE_BREAK_WEAPON_SHOOTER_TORN_TONGUE", effects: { weaponEffect: "break", injuries: [{ who: "attacker", injury: "torn_tongue", chance: 1 }] } },
-    { weight: 2, fumble: true, log: "KNIFE_SHOOTER_BRUISED_SHOULDER", effects: { injuries: [{ who: "attacker", injury: "bruised_shoulder", chance: 1 }] } },
+    { weight: 3, fumble: true, log: "KNIFE_BREAK_WEAPON_SHOOTER_TORN_TONGUE", effects: { weaponEffect: "break", injuries: [{ who: "attacker", injury: "torn_tongue_injury", chance: 1 }] } },
+    { weight: 2, fumble: true, log: "KNIFE_SHOOTER_BRUISED_SHOULDER", effects: { injuries: [{ who: "attacker", injury: "bruised_shoulder_injury", chance: 1 }] } },
     { weight: 3, fumble: true, log: "KNIFE_SHOOTER_DROP_WEAPON", effects: { weaponEffect: "drop" } },
     { weight: 1, fumble: true, log: "KNIFE_SHOOTER_MINUS_2_AP", effects: { apLoss: { who: "attacker", amount: 2 } } },
   ],
@@ -85,8 +85,8 @@ function heavyGunOutcomes(prefix: string, mushMultiplier?: number): WeaponOutcom
           ...mush,
           injuries: [
             { who: "target", injury: "random", chance: 1 },
-            { who: "target", injury: "haemorrhage", chance: 0.4 },
-            { who: "target", injury: "critical_haemorrhage", chance: 0.1 },
+            { who: "target", injury: "haemorrhage_injury", chance: 0.4 },
+            { who: "target", injury: "critical_haemorrhage_injury", chance: 0.1 },
           ],
         },
       },
@@ -99,7 +99,7 @@ function heavyGunOutcomes(prefix: string, mushMultiplier?: number): WeaponOutcom
           maxDamageDelta: 2,
           apLoss: { who: "attacker", amount: 1 },
           injuries: [
-            { who: "target", injury: "critical_haemorrhage", chance: 0.4 },
+            { who: "target", injury: "critical_haemorrhage_injury", chance: 0.4 },
             { who: "target", injury: "random", chance: 1 },
           ],
         },
@@ -108,7 +108,7 @@ function heavyGunOutcomes(prefix: string, mushMultiplier?: number): WeaponOutcom
         weight: 5,
         critical: true,
         log: `${prefix}_TARGET_MASHED_FOOT`,
-        effects: { ...mush, injuries: [{ who: "target", injury: "mashed_foot", chance: 1 }] },
+        effects: { ...mush, injuries: [{ who: "target", injury: "mashed_foot_injury", chance: 1 }] },
       },
       {
         weight: 3,
@@ -117,9 +117,9 @@ function heavyGunOutcomes(prefix: string, mushMultiplier?: number): WeaponOutcom
         effects: {
           ...mush,
           injuries: [
-            { who: "target", injury: "broken_shoulder", chance: 1 },
-            { who: "target", injury: "critical_haemorrhage", chance: 0.4 },
-            { who: "target", injury: "haemorrhage", chance: 0.4 },
+            { who: "target", injury: "broken_shoulder_injury", chance: 1 },
+            { who: "target", injury: "critical_haemorrhage_injury", chance: 0.4 },
+            { who: "target", injury: "haemorrhage_injury", chance: 0.4 },
           ],
         },
       },
@@ -130,8 +130,8 @@ function heavyGunOutcomes(prefix: string, mushMultiplier?: number): WeaponOutcom
       { weight: 75, log: `${prefix}_FAILED_SHOT` },
       { weight: 1, fumble: true, log: `${prefix}_TARGET_MINUS_1AP`, effects: { apLoss: { who: "target", amount: 1 } } },
       { weight: 1, fumble: true, log: `${prefix}_BREAK_WEAPON`, effects: { weaponEffect: "break" } },
-      { weight: 1, fumble: true, log: `${prefix}_SHOOTER_BURNT_HAND`, effects: { injuries: [{ who: "attacker", injury: "burnt_hand", chance: 1 }] } },
-      { weight: 1, fumble: true, log: `${prefix}_SHOOTER_BROKEN_SHOULDER`, effects: { injuries: [{ who: "attacker", injury: "broken_shoulder", chance: 1 }] } },
+      { weight: 1, fumble: true, log: `${prefix}_SHOOTER_BURNT_HAND`, effects: { injuries: [{ who: "attacker", injury: "burnt_hand_injury", chance: 1 }] } },
+      { weight: 1, fumble: true, log: `${prefix}_SHOOTER_BROKEN_SHOULDER`, effects: { injuries: [{ who: "attacker", injury: "broken_shoulder_injury", chance: 1 }] } },
     ],
   };
 }
@@ -195,7 +195,7 @@ export const BARE_HANDS_OUTCOMES: WeaponOutcomes = {
   hitOutcomes: [
     { weight: 15, log: "BARE_HANDS_SUCCESSFUL_HIT", effects: { skillMaxDamage: true } },
     { weight: 5, critical: true, log: "BARE_HANDS_PLUS_1_DAMAGE", effects: { damageDelta: 1, skillMaxDamage: true } },
-    { weight: 5, critical: true, log: "BARE_HANDS_TARGET_BURST_NOSE_TARGET_10_PERCENTS", effects: { skillMaxDamage: true, injuries: [{ who: "target", injury: "burst_nose", chance: 0.1 }] } },
+    { weight: 5, critical: true, log: "BARE_HANDS_TARGET_BURST_NOSE_TARGET_10_PERCENTS", effects: { skillMaxDamage: true, injuries: [{ who: "target", injury: "burst_nose_injury", chance: 0.1 }] } },
   ],
   missOutcomes: [
     { weight: 30, log: "BARE_HANDS_FAILED_HIT" },
