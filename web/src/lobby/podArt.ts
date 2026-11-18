@@ -535,7 +535,7 @@ function drawSticker(ctx: Ctx, r: Rect, rem: number) {
   ctx.textAlign = "center";
   ctx.textBaseline = "top";
   const line = (text: string, font: string, size: number, spacing: number) => {
-    ctx.font = `${font} ${size}px system-ui, sans-serif`;
+    ctx.font = `${font} ${size}px "Kanit", system-ui, sans-serif`;
     ctx.letterSpacing = `${spacing * size}px`;
     // Centred like the CSS, which keeps the trailing letter space.
     ctx.fillText(text, cx + (spacing * size) / 2, y + 0.05 * size);

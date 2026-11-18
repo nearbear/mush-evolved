@@ -2,15 +2,16 @@
 
 /* iTrackie (Base UI Tabs + ScrollArea; they ship unstyled) */
 
-/* The frame is the shared chamfered card (card.css), all four corners cut by --cut, with the panels' blue rim and inner
-   glow (as main.game's .panel has). No overflow clip, so the card's shadow shows. Padding clears the cut corners. */
+/* The frame is the shared chamfered card (card.css), top corners cut like main.game's .panel (bottom square, so --cut
+   is 0 and the pale card's bottom corners stay square too), with the panels' blue rim and inner glow. No overflow
+   clip, so the card's shadow shows. Padding clears the cut corners. */
 .itrackie {
   --pad: 12px;
-  --cut: 13px;
-  --cut-tl: var(--cut);
-  --cut-tr: var(--cut);
-  --cut-br: var(--cut);
-  --cut-bl: var(--cut);
+  --cut: 0px;
+  --cut-tl: 13px;
+  --cut-tr: 13px;
+  --cut-br: 0px;
+  --cut-bl: 0px;
   --card-rim: var(--chrome-line);
   position: relative;
   box-sizing: border-box;
@@ -28,8 +29,8 @@
 .itrackie-tabs {
   display: flex;
   gap: 2px;
-  /* Clear of the panel's cut corners (--cut) on both sides; phones have none, so the padding's width there. */
-  padding-inline: max(var(--cut), var(--pad));
+  /* Clear of the panel's top cut corners (--cut-tl) on both sides; phones have none, so the padding's width there. */
+  padding-inline: max(var(--cut-tl), var(--pad));
   /* The selected tab is 3px taller and overlaps the card's rim, so it opens into the card. */
   margin-bottom: -3px;
 }
