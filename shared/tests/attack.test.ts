@@ -297,7 +297,7 @@ describe("combat outcomes", () => {
           effects: {
             damageDelta: 1,
             apLoss: { who: "target", amount: 2 },
-            injuries: [{ who: "target", injury: "damaged_ears", chance: 1 }],
+            injuries: [{ who: "target", injury: "damaged_ears_injury", chance: 1 }],
           },
         },
       ],
@@ -309,7 +309,7 @@ describe("combat outcomes", () => {
     expect(lost).toBeGreaterThanOrEqual(W.blaster!.damage[0] + 1);
     expect(lost).toBeLessThanOrEqual(W.blaster!.damage[1] + 1);
     expect(player(hit, "p1").ap).toBe(Math.max(0, apBefore - 2));
-    expect(player(hit, "p1").statuses).toContain("damaged_ears");
+    expect(player(hit, "p1").statuses).toContain("damaged_ears_injury");
   });
 
   it("applies random injuries and breakRandomItems on area hits", () => {
@@ -361,13 +361,13 @@ describe("combat outcomes", () => {
           weight: 1,
           fumble: true,
           log: "KNIFE_BREAK_WEAPON_SHOOTER_TORN_TONGUE",
-          effects: { weaponEffect: "break", injuries: [{ who: "attacker", injury: "torn_tongue", chance: 1 }] },
+          effects: { weaponEffect: "break", injuries: [{ who: "attacker", injury: "torn_tongue_injury", chance: 1 }] },
         },
       ],
     });
     const broken = must(applyAction(ship("knife", breakCfg), "p0", shoot("p1")));
     expect(broken.items.find((i) => i.id === "w")?.broken).toBe(true);
-    expect(player(broken, "p0").statuses).toContain("torn_tongue");
+    expect(player(broken, "p0").statuses).toContain("torn_tongue_injury");
 
     const backfireCfg = tuned("missile_launcher", {
       accuracy: 0,
@@ -426,13 +426,13 @@ describe("combat outcomes", () => {
           weight: 1,
           critical: true,
           log: "BLASTER_SHOOTER_PLUS_1_DAMAGE_TARGET_DAMAGED_EARS",
-          effects: { damageDelta: 1, injuries: [{ who: "target", injury: "damaged_ears", chance: 1 }] },
+          effects: { damageDelta: 1, injuries: [{ who: "target", injury: "damaged_ears_injury", chance: 1 }] },
         },
       ],
     });
     const r = must(applyAction(ship("blaster", cfg), "p0", shoot("p1")));
-    expect(viewFor(r, "p1").statuses).toContain("damaged_ears");
-    expect(viewFor(r, "p2").players.find((o) => o.id === "p1")?.statuses).not.toContain("damaged_ears");
+    expect(viewFor(r, "p1").statuses).toContain("damaged_ears_injury");
+    expect(viewFor(r, "p2").players.find((o) => o.id === "p1")?.statuses).not.toContain("damaged_ears_injury");
     expect(viewFor(r, "p2").log.some((e) => e.key === "BLASTER_SHOOTER_PLUS_1_DAMAGE_TARGET_DAMAGED_EARS")).toBe(true);
     expect(viewFor(r, "p3").log.some((e) => e.key === "BLASTER_SHOOTER_PLUS_1_DAMAGE_TARGET_DAMAGED_EARS")).toBe(false);
   });

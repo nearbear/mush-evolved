@@ -64,6 +64,20 @@ describe("Super Calculator in the Nexus", () => {
   });
 });
 
+describe("Surgery Pod in the Sick Bay", () => {
+  const sickBay = roomOf(layout, "SICK_BAY");
+  const pod: EquipmentView = { id: "SICK_BAY:SURGERY_POD", type: "SURGERY_POD" };
+
+  it("is selected from both its console and the pod itself", () => {
+    const keys = equipmentByTileKey(sickBay, [pod]);
+    for (const slice of ["surgery_console", "surgery"]) {
+      const index = sickBay.tiles.findIndex((t) => t.slice === slice);
+      expect(index, slice).toBeGreaterThanOrEqual(0);
+      expect(keys.get(`t${index}`), slice).toEqual(pod);
+    }
+  });
+});
+
 describe("Dynarcade in Alpha Bay 2", () => {
   const bay = roomOf(layout, "SPACESHIP_BAY_AA");
   const dynarcade: EquipmentView = { id: "SPACESHIP_BAY_AA:DYNARCADE", type: "DYNARCADE" };
