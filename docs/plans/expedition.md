@@ -56,7 +56,7 @@ Built as planned, with these readings (Claude, 2026-11-04): takeoff is refused w
 
 Supersedes phase 1's item 4 (timing) and item 13's "comes back on the Icarus" timing; everything else in phase 1 stands.
 
-1. **Pace:** one step every **10 real minutes**, in every game whatever its cycle length. The **Landing** event is the first step, at takeoff + 10 min; sector k resolves at takeoff + 10(k+1) min. The crew is back the moment the last sector resolves (Claude's reading of "Land at +10 min": a full 9-sector trip takes 100 min). In **single player** an expedition resolves instantly, as in phase 1.
+1. **Pace:** one step every **10 real minutes**, in every game whatever its cycle length. The **Landing** event is the first step, at takeoff + 10 min; sector k resolves at takeoff + 10(k+1) min. (Superseded 2026-11-17: the landing resolves at takeoff and sector k at takeoff + 10k min; see "Boarding the Icarus" below.) The crew is back the moment the last sector resolves (Claude's reading of "Land at +10 min": a full 9-sector trip takes 100 min). In **single player** an expedition resolves instantly, as in phase 1.
 2. **Length:** a base of 9 sectors (`config.expedition.sectors`), computed per expedition at takeoff so abilities (Sprinter, phase 4) can raise it later. It still ends early when the planet runs out of unexplored sectors.
 3. **The Icarus is a room** while away, like a patrol ship in flight (`docs/plans/patrol.md`, "Ships are rooms"): the members are in it and in no room of the ship. Room speech, the room log, ACTOPI and private channels with people in your room follow from that. No special expedition channel. The Icarus Bay is drawn without the Icarus while it is out (Claude's reading), and takeoff is not offered.
 4. **Acting while away:** whatever a patrol ship in flight allows (item actions: eating, taking and dropping, healing, `use_bandage` (#397)); nothing that needs the ship's equipment or rooms.
@@ -151,14 +151,14 @@ One rule pass for both phases. Everything in phases 1 and 2 stands except where 
 
 All eMushpedia's effects. One working, unbroken copy carried by a member still with the crew is enough; copies don't stack; nothing is used up.
 
-1. **Spacesuit:** a planet with no Oxygen sector, revealed or not, needs one. A member without one stays in the Icarus: they don't explore, events can't touch them, and their items don't count. If nobody has one, the expedition ends at once and the 4 AP stays spent.
+1. **Spacesuit:** a planet with no Oxygen sector, revealed or not, needs one. ~~A member without one stays in the Icarus: they don't explore, events can't touch them, and their items don't count. If nobody has one, the expedition ends at once and the 4 AP stays spent.~~ Superseded 2026-11-17: checked when boarding and again at takeoff ("Boarding the Icarus" below).
 2. **Compass:** cancels Again; its bearer can't be picked for Lost.
 3. **Rope:** its bearer avoids an Accident in Cave, Mountain and Seismic activity.
 4. **Drill:** doubles the fuel from fuel events.
 5. **Echolocator:** Hydrocarbon sectors are 5× as likely to be picked. **Thermosensor:** Insect, Mankarog, Lost, Predator, Ruminant and Intelligent life sectors are 5× as likely.
 6. **Babel module:** Artifact is twice as likely in Intelligent life. **White flag:** cancels Fight in Intelligent life.
 7. **Where gear comes from:** spacesuits (6), the compass, ropes (4) and the drill in the fixed start list; blueprints for the echolocator, thermosensor, Babel module and white flag in the start list, with the original's recipes. Rooms and recipes (owner, 2026-11-08, at slice C): 6 spacesuits in the Icarus Bay; the compass, ropes and drill in front storage; the four blueprints in the front corridor with stand-in scraps (3 metal, 3 plastic) and an old T-shirt (a new inert item) in the Alpha dorm by the soap. Recipes from the original's weighted list: echolocator, thermosensor (`HEAT_SEEKER`, which is in `blueprints.json` after all) and Babel module 1 metal + 1 plastic scraps each; the white flag an old T-shirt and soap.
-8. **Spacesuit check (owner, 2026-11-08):** once, at takeoff. (The owner added that items can't be dropped on an expedition and nothing breaks in an inventory; the drop rule is not built yet, see slice C.)
+8. **Spacesuit check (owner, 2026-11-08):** once, at takeoff (since 2026-11-17: at boarding and at takeoff). (The owner added that items can't be dropped on an expedition and nothing breaks in an inventory; the drop rule is not built yet, see slice C.)
 
 ### Skills
 
@@ -167,8 +167,8 @@ All eMushpedia's effects. One working, unbroken copy carried by a member still w
 3. **Sprinter (`sprint`):** +1 sector per Sprinter in the crew at takeoff.
 4. **Tracker (`hunt`):** cancels Found dead ("Lost", item 4).
 5. **Centauri:** once the Centauri rebel base is contacted, each working blaster on an expedition adds 1 strength.
-6. **U-turn (`fast_backward`):** a holder on the expedition ends it for 2 AP; the crew comes back at once with what it found; lost members stay lost. A report line names who turned back (crew only); the public timer just ends.
-7. **Traitor (Mush):** a Traitor on the expedition has a free, secret Sabotage action, once per expedition. From the next step on, every sector rolls only its negative events (Nothing if it has none), and a Crystal field is always a Mush trap. Nothing records it anywhere. Negative, per eMushpedia's `Évènements`: Fatigue, Accident, Catastrophe, Fight (not in Ruins), Disease, Lost item, Lost, Found dead, Mush trap, Kill, Kill all, Nothing in an Oxygen sector, Oxygen 8, and Fuel 3 in a Hydrocarbon sector. Not negative: Again, Back, every other Nothing, and all other gains.
+6. **U-turn (`fast_backward`):** a holder on the expedition ends it for 2 AP (and, with Traitor, sees the next sector's tag, 2026-11-17); the crew comes back at once with what it found; lost members stay lost. A report line names who turned back (crew only); the public timer just ends.
+7. **Traitor (Mush):** a Traitor on the expedition has a free, secret Sabotage action, once per expedition. ~~From the next step on, every sector~~ The next sector only (owner, 2026-11-17, correcting this line) rolls only its negative events (Nothing if it has none), and a Crystal field is always a Mush trap. Nothing records it anywhere. Negative, per eMushpedia's `Évènements`: Fatigue, Accident, Catastrophe, Fight (not in Ruins), Disease, Lost item, Lost, Found dead, Mush trap, Kill, Kill all, Nothing in an Oxygen sector, Oxygen 8, and Fuel 3 in a Hydrocarbon sector. Not negative: Again, Back, every other Nothing, and all other gains.
 
 **Build order:** (A) tables, the new kinds, fights and their loot, creatures, the inert artifacts, Survival's steak, landing safety; (B) Lost: the Lost sector, the lost member's place, the alert, finding them, dying when the ship leaves, Tracker; (C) gear and spacesuits: items, placement, every gear effect; (D) skills: Diplomat and Polymath, Shooter, Sprinter, Centauri, U-turn, Traitor. One commit per slice.
 
@@ -190,6 +190,10 @@ All eMushpedia's effects. One working, unbroken copy carried by a member still w
 6. **No dropping:** nothing can be dropped on an expedition (owner, 2026-11-08, confirmed 2026-11-09): not aboard the craft, and not while lost.
 
 **Built (2026-11-09).** Claude's readings: the patrol expedition is the same `ActiveExpedition` with `ship` set, and the crew stays in the ship's room (`expeditionCraft`); the ship's state carries the pilot as `onPlanet` until it docks. A patrol ship that never touches down after a U-turn before the landing is back in flight, not docked. Owner, 2026-11-09: a pilot without a spacesuit on a planet with no Oxygen sector can't land at all; the 2 AP are spent, no expedition starts, the ship docks in its bay and the pilot gets a private line (`patrolNoSpacesuit`), unlike the Icarus. Sprinters count before halving (owner, confirmed). While it is on the planet, Land, Shoot and Collect scrap aren't offered. A found pilot's ship comes back to its bay at once (a public line there) while the pilot comes home with the crew that found them. Any death of the pilot before it docks loses the ship (`loseShipOnPlanet` in `death.ts`, with a NERON line, `patrolLeftOnPlanet`, sent only when the BIOS has death announcements on: owner, 2026-11-09). The landing line (`patrolPlanetLanding`) is public in the ship, where only the pilot is; the public expedition status names the ship.
+
+## Boarding the Icarus, instant landing, next sector (owner, 2026-11-17; built)
+
+Decided and built per `docs/plans/expedition-boarding.md`, which holds the full list and Claude's readings. In short: the landing resolves at takeoff (Icarus and patrol-ship solo landings); the Traitor's Sabotage covers the next sector only; U-turn and Traitor holders still with the crew see the next sector's tag (`PlayerView.expedition.next`, no UI yet); the Icarus is a room you board (`board_icarus`, free, needs room aboard and a working spacesuit unless the planet has an Oxygen sector) and leave (`leave_icarus`), and `icarus_takeoff` works only from inside, with whoever is aboard as the crew (launcher first). Anyone aboard without a suit is put off at takeoff; a suitless launcher is refused. Nothing can be dropped aboard the docked Icarus. Leaving orbit or traveling puts everyone aboard off in the bay. This replaces phase 1's crew pick (item 3), phase 2's landing a step after takeoff (item 1) and slice C's suitless members.
 
 ## Later phases (outline, not decided)
 

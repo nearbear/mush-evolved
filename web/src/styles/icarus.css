@@ -1,0 +1,74 @@
+/* The Icarus (hud/IcarusPanel.tsx): its seats as podiums in the middle, clear of the ID card (top left) and the minimap
+   (top right), with the patrol cockpit's bar (space.css's .space-bar) under them. Leave the Icarus sits under the
+   minimap (.room-corner-action). Podiums at 2x (whole pixels only). */
+.iso-room.icarus-cabin {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+  background: #09092d; /* starfield.ts's SKY, as in the patrol cockpit */
+}
+.icarus-cabin :is(h2, p) {
+  margin: 0;
+}
+.icarus-cabin h2 {
+  font-size: 0.95rem;
+}
+/* Nothing here zooms. */
+.room-view:has(> .icarus-cabin) .zoom-controls {
+  display: none;
+}
+
+/* One column per seat on desktop (4, or 6 with the larger bay); the inline --seats and --half set the counts. */
+.icarus-seats {
+  --figure-zoom: 2;
+  --seat: 5.75rem;
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  /* The top cards' height, so the podiums are centred in the space under them. */
+  padding: 9rem var(--space-2) var(--space-2);
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(var(--seats), var(--seat));
+  justify-content: center;
+  align-content: center;
+  align-items: start;
+  gap: var(--space-2);
+}
+.icarus-seat > .pick-tile {
+  width: 100%;
+  color: #fff;
+}
+/* An empty seat: the bare podium, lined up with the tiles' podiums (their padding and border). */
+.icarus-seat:not(:has(> button)) {
+  display: flex;
+  justify-content: center;
+  padding: calc(var(--space-1) + 2px);
+}
+
+.icarus-bar .icarus-main {
+  padding: 0 var(--space-4);
+}
+
+/* Under the minimap, in its card: small, as wide as the map. */
+.room-corner > button.room-corner-action {
+  height: 1.75rem;
+  margin: 0;
+  padding: 0 var(--space-2);
+  font-size: 0.8rem;
+}
+
+/* Phones: no ID card, but a narrower panel, so the seats go in two rows (2+2, or 3+3) under the minimap, and the ship
+   button stands on the sack (where the zoom buttons were), as in the patrol cockpit. */
+@media (max-width: 1023px) {
+  .icarus-seats {
+    padding-top: 7rem;
+    grid-template-columns: repeat(var(--half), var(--seat));
+  }
+  .room-view:has(> .icarus-cabin) .ship-overlay {
+    right: 0.5rem;
+    bottom: calc(0.5rem + 36px + 0.5rem);
+    max-width: calc(100% - 1rem);
+  }
+}

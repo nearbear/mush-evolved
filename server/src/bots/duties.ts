@@ -36,7 +36,7 @@ export type DutyTrigger =
   | "hunters"
   /** While a plant the bot can see is thirsty, dried, or (for the Botanist) sick. Seen only on arrival in the garden. */
   | "plants"
-  /** Once a game, early: carried empty hydropots, then Front Storage's, go to the garden floor (`setOutPots`). */
+  /** Once a game, early: carried empty hydropots, then any known or storage room's, go to the garden floor (`setOutPots`). */
   | "pots"
   /** While the link with Sol is down (`view.comms.linked`, public). */
   | "linkDown"

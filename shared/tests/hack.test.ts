@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { ACTIONS } from "../src/actions.ts";
 import { breakEquipment } from "../src/breakage.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { killPlayer } from "../src/death.ts";
@@ -213,5 +214,31 @@ describe("Hack action", () => {
     expect(viewFor(after, "p1").you.hackedEquipment).toEqual([PILOT_ID]);
     expect(JSON.stringify(viewFor(after, "p0"))).not.toContain("hackedEquipment");
     expect(JSON.stringify(viewFor(after, "p2"))).not.toContain("hackedEquipment");
+  });
+
+  it("is disabled with the preselection reason during preselection and leaves state unchanged when attempted", () => {
+    const s = ship();
+    s.preselection = true;
+    const hackPilot: Action = { type: "hack", equipment: PILOT_ID };
+
+    expect(offered(s, "p1").some((a) => a.type === "hack")).toBe(false);
+    expect(option(s, "p1", hackPilot)?.lacks).toEqual(["preselection"]);
+    expect(option(s, "p1", { type: "hack", equipment: COMMS_ID })?.lacks).toEqual(["preselection"]);
+
+    // Even when AP is also short, preselection is the leading reason.
+    const lowAp = clone(s);
+    player(lowAp, "p1").ap = 0;
+    expect(option(lowAp, "p1", hackPilot)?.lacks).toEqual(["preselection", "ap"]);
+
+    const before = clone(s);
+    const res = applyAction(s, "p1", hackPilot);
+    expect(res).toEqual({ ok: false, error: "illegal_action" });
+    expect(ACTIONS.hack.check(s, player(s, "p1"), hackPilot)).toBe("preselection");
+    expect(s).toEqual(before);
+
+    // Once preselection ends, hacking is available again.
+    s.preselection = false;
+    expect(offered(s, "p1")).toContainEqual(hackPilot);
+    expect(option(s, "p1", hackPilot)?.lacks).toEqual([]);
   });
 });

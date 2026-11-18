@@ -16,13 +16,12 @@ look is checked once, in the context it has in the game. Sections live in `Mush2
 
 | Section | Component | Also shows |
 |---|---|---|
-| Surface ramps | `designKit/SurfaceSection.tsx`: today's chrome beside ramps D and E (UI coherence step 2; E chosen for now, not yet applied to `tokens.css`) | `TopBar`, `InspectPanel`, `SelfHud`, `SelfPoints`, `ITrackie` together on the page background |
+| Surface ramps | `designKit/SurfaceSection.tsx`: today's chrome beside ramps D and E (UI coherence step 2; E chosen for now, not yet applied to `tokens.css`) | `TopBar`, `InspectPanel`, `SelfHud`, `ITrackie` together on the page background |
 | Ship card | `games/ShipCard.tsx` | |
 | Terminal frame | `hud/TerminalFrame.tsx` | `TabOutline` (`"cut"`) |
 | Terminals | `TerminalBody` (exported from `hud/TerminalDialog.tsx` for this), one per terminal, and the turret again with hunters | research/project lists, PILGRED, `PlanetList` → `SharePlanetForm`, `CommandTerminal` (`ShipNavigation`, `UnavailableButton`, `ConfirmPanel`), `CommsCenter`, `BiosTerminal`, `TurretPanel` (`HunterList`), `RelayDetails`, `ActionButton`, `ActionLabel` |
 | Top bar | `hud/TopBar.tsx` | `CycleCountdown`, `ShipResources`, `TitleChip`, `PreselectionTag`, `BotsPausedTag`, `PlayerSummary` (phone), `SettingsDialog` (gear; `DialogHeader`, `TabOutline` `"round"`, `IconButton`, account settings, `Credits`) |
 | Self HUD | `hud/SelfHud.tsx` (`SelfHud`) | `PlayerSummary`, `ResourceChips`, `StatInfo` |
-| AP and MP | `SelfPoints` | `PipBar` (horizontal and vertical, partial, empty, wrapped) |
 | Ship card (phone) | `hud/ShipOverlay.tsx` | `ShipResources`, `Hint` |
 | Inspect | `hud/InspectPanel.tsx`: you (human, Mush), someone else, equipment, an item, a broken item and broken equipment | `SkillSlots`/`SkillPopover`/`ConfirmPanel`, `StatusIcons`, `ItemFace`, `ActionButton` (enabled and unaffordable) |
 | Inventory | `hud/InventoryOverlay.tsx` | `InventoryPanel`, `ItemIcon`, `ConsumeEffects`, heavy items |

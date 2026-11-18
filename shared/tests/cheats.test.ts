@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CHEATS, type Cheat } from "../src/cheats.ts";
+import { CHEATS, FUEL_PLANET_SECTORS, type Cheat } from "../src/cheats.ts";
 import { CHARACTER_SKILLS, isSkill, SKILLS, SKILL_SLOTS } from "../src/skills.ts";
 import { PROJECT_COMPLETE, PROJECT_IDS } from "../src/projects.ts";
 import { offeredProjects } from "../src/projectEffects.ts";
@@ -266,5 +266,21 @@ describe("any-skill cheat", () => {
     s = cheat(s, "p0", "invincible", false);
     damageShip(s, 40);
     expect(s.ship.hull).toBeLessThan(hull);
+  });
+
+  it("fuelPlanet: switching it on puts the ship in orbit of a known all-Hydrocarbon planet that never runs out", () => {
+    let s = cheat(fresh(), "p0", "fuelPlanet");
+    const planet = s.planets.p0!.find((p) => p.id === s.navigation.orbit)!;
+    expect(s.navigation.arriving).toBeNull();
+    expect(planet.sectors).toHaveLength(FUEL_PLANET_SECTORS);
+    expect(planet.sectors.every((sector) => sector.tag === "HYDROCARBON" && sector.known)).toBe(true);
+    for (const sector of planet.sectors) sector.explored = true;
+    s = cheat(s, "p0", "infiniteAp"); // any action of p0's refills
+    expect(s.planets.p0!.find((p) => p.id === s.navigation.orbit)!.sectors.some((sector) => sector.explored)).toBe(false);
+    // Switching it on again while orbiting it changes nothing.
+    const again = cheat(cheat(s, "p0", "fuelPlanet", false), "p0", "fuelPlanet");
+    expect(again.navigation.orbit).toBe(s.navigation.orbit);
+    // Only the cheater sees the sectors.
+    expect(viewFor(s, "p1").planets).toEqual([]);
   });
 });

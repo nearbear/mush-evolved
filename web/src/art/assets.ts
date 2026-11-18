@@ -416,6 +416,9 @@ delete skillIcons["daunting"];
 // Infantryman takes the icon from the removed Crazy Eye skill.
 skillIcons["infantryman"] = skillIcons["crazy_eye"]!;
 delete skillIcons["crazy_eye"];
+// Epigenetics takes Defacer's icon; Defacer falls back to the empty-slot icon.
+skillIcons["epigenetics"] = skillIcons["defacer"]!;
+delete skillIcons["defacer"];
 export const skillIcon = (id: string): string => skillIcons[id] ?? EMPTY_SLOT_ICON;
 /** Green jelly on an item or equipment, as Mush see it: the Electro-slime skill's icon. */
 export const JELLY_ICON = skillIcons["electro_slime"]!;

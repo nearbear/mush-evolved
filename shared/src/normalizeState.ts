@@ -86,7 +86,7 @@ import type {
  * override key. A step lands in a deploy of its own (docs/ops/deploy.md: roll back only to the same version). Something
  * that never reached a deploy (test or production) is in no stored snapshot, so changing or removing it needs no step.
  */
-export const STATE_VERSION = 120;
+export const STATE_VERSION = 121;
 
 /**
  * The oldest stored version this build reads: 114, the shape the normalizers were written against. A snapshot below it
@@ -262,7 +262,23 @@ const upgradeTo120: UpgradeStep = {
 };
 
 /** Every step, in order of `to`: `upgradeTo115`, `upgradeTo116`, ... */
-export const UPGRADE_STEPS: readonly UpgradeStep[] = [upgradeTo115, upgradeTo116, upgradeTo117, upgradeTo118, upgradeTo119, upgradeTo120];
+/**
+ * Before 121, an expedition away had `landed` (the landing was a step of its own) and `suitless` (members left in the
+ * Icarus for want of a spacesuit). The landing now happens at takeoff and only the suited board (owner, 2026-11-17): an
+ * expedition not yet landed skips its landing, and its suitless members explore.
+ */
+const upgradeTo121: UpgradeStep = {
+  to: 121,
+  paths: ["game.expedition.landed", "game.expedition.suitless"],
+  run: (game) => {
+    const away = game.expedition as Record<string, unknown> | null | undefined;
+    if (!away) return;
+    delete away.landed;
+    delete away.suitless;
+  },
+};
+
+export const UPGRADE_STEPS: readonly UpgradeStep[] = [upgradeTo115, upgradeTo116, upgradeTo117, upgradeTo118, upgradeTo119, upgradeTo120, upgradeTo121];
 
 /**
  * Brings a stored snapshot from version `from` to `STATE_VERSION`, before it is normalized: runs every step with
@@ -1033,14 +1049,13 @@ export function normalizeActiveExpedition(raw: Partial<ActiveExpedition>): Activ
   return stripUndefined<ActiveExpedition>({
     report: need(raw, "report", t),
     planet: need(raw, "planet", t),
-    landed: need(raw, "landed", t),
     sectors: copy(need(raw, "sectors", t)),
     nextAt: need(raw, "nextAt", t),
     carried: mapValues(need(raw, "carried", t), copy),
-    // Slice C (#357): spacesuits weren't needed before it, so everyone under way explores.
-    suitless: copy(added(raw, "suitless", [])),
     // Slice D (#358): nobody could sabotage before it.
     sabotaged: added(raw, "sabotaged", false),
+    // 2026-11-17: before it, a Sabotage covered every sector after it; the one under way keeps covering the next.
+    sabotageNext: added(raw, "sabotageNext", raw.sabotaged === true),
     // Phase 5 (#359): only the Icarus went before it.
     ship: added(raw, "ship", null),
   });

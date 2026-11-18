@@ -1,13 +1,12 @@
 // Who you are and your stats on phones, in the top bar, styled after the desktop ID card (SelfHud): a band in your faction's
-// colour across the top, then your portrait (its faction icon pinned on; tap for your goal), your name and the clock, and
+// colour across the top, then your portrait (tap to inspect yourself), your name and the clock, and
 // your stats two rows deep: AP over MP, HP over morale (values only; each one's tooltip has its capacity and a pip bar),
 // then your other resources, in a column the card's full height, in as many columns as fit. The desktop equivalent is SelfHud, over the room view.
 
 import { characterGivenName, type PlayerView } from "@mush2/shared";
 import { useRef, type ReactNode } from "react";
-import { Popover } from "@base-ui/react/popover";
 import { useTranslation } from "react-i18next";
-import { AP_PIP, FACTION_ICONS, HP_ICON, HP_PIP, MORALE_ICON, MORALE_PIP, MP_PIP, bustIcon } from "../art/assets.ts";
+import { AP_PIP, HP_ICON, HP_PIP, MORALE_ICON, MORALE_PIP, MP_PIP, bustIcon } from "../art/assets.ts";
 import { apColumnHeight } from "./apGauge.ts";
 import { PipBar } from "./PipBar.tsx";
 import { ResourceGrid } from "./ResourceChips.tsx";
@@ -19,34 +18,15 @@ export function factionOf(view: PlayerView) {
   return role === "human" ? "human" : alpha ? "alphaMush" : "betaMush";
 }
 
-/** Your portrait with your faction's icon pinned to it, as on the desktop ID card; its goal is in a popover (hover, focus, or tap: touch has no hover). */
-function FactionCard({ view }: { view: PlayerView }) {
+/** Your portrait, as on the desktop ID card: tapping it inspects you (the Inspect panel). */
+function SelfPortrait({ view, onInspect }: { view: PlayerView; onInspect: () => void }) {
   const { t } = useTranslation();
-  const { role } = view.you;
-  const faction = factionOf(view);
-  const name = t(`faction.${faction}.name`);
   return (
-    <Popover.Root>
-      <Popover.Trigger
-        openOnHover
-        delay={200}
-        nativeButton={false}
-        render={<span role="button" tabIndex={0} />}
-        className="faction-card id-portrait"
-        aria-label={t("faction.about", { name })}
-      >
+    <button type="button" className="id-open" aria-label={t("inspect.self", { character: characterGivenName(view.you.character) })} onClick={onInspect}>
+      <span className="id-portrait">
         <img className="avatar" src={bustIcon(view.you.character)} alt="" />
-        <img className="id-faction" src={FACTION_ICONS[faction]} alt="" />
-      </Popover.Trigger>
-      <Popover.Portal>
-        <Popover.Positioner sideOffset={6}>
-          <Popover.Popup className="tooltip faction-goals">
-            <strong>{t(`faction.${faction}.name`)}</strong>
-            <p>{t(`faction.${role}.goal`)}</p>
-          </Popover.Popup>
-        </Popover.Positioner>
-      </Popover.Portal>
-    </Popover.Root>
+      </span>
+    </button>
   );
 }
 
@@ -89,9 +69,9 @@ function StatChip({ stat, view, value, max, icon, big = false }: { stat: Stat; v
 
 /**
  * `clock` is the top bar's amber day/cycle/countdown plate, set over the faction band's right end (left of the resources); `tags` (pre-selection,
- * AI paused) go under your name; `menu` is the hamburger, on the card's right, after your stats.
+ * AI paused) go under your name; `menu` is the hamburger, on the card's right, after your stats. `onInspect` opens the Inspect panel on you.
  */
-export function PlayerSummary({ view, clock, tags, menu }: { view: PlayerView; clock: ReactNode; tags: ReactNode; menu: ReactNode }) {
+export function PlayerSummary({ view, clock, tags, menu, onInspect }: { view: PlayerView; clock: ReactNode; tags: ReactNode; menu: ReactNode; onInspect: () => void }) {
   const { t } = useTranslation();
   const { you } = view;
   const statsRef = useRef<HTMLDivElement>(null);
@@ -101,7 +81,7 @@ export function PlayerSummary({ view, clock, tags, menu }: { view: PlayerView; c
         <span className="id-band">{t(`idCard.band.${you.role}`)}</span>
         {/* Over the band's right end (top-bar.css); in landscape it follows the name instead. */}
         {clock}
-        <FactionCard view={view} />
+        <SelfPortrait view={view} onInspect={onInspect} />
         <div className="who">
           <strong className="id-value id-name">{characterGivenName(you.character)}</strong>
           {tags && <span className="nameplate-tags">{tags}</span>}

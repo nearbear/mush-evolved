@@ -45,7 +45,29 @@
     "alertsUnreported_one": "1 más sin informar",
     "alertsUnreported_other": "{{count}} más sin informar",
     "alertsUnreported_many": "{{count}} más sin informar",
-    "alertsNone": "No se ha informado de incendios ni averías"
+    "alertsNone": "No se ha informado de incendios ni averías",
+    "info": {
+      "oxygen": {
+        "gain": "<b>Se gana:</b> cada día con las plantas maduras, sanas y regadas, en las expediciones y devolviendo cápsulas de oxígeno a un depósito.",
+        "loss": "<b>Se pierde:</b> una parte se consume cada ciclo, cada depósito de oxígeno roto tiene fugas, y al sacar cápsulas de un depósito.",
+        "zero": "<b>A 0:</b> un tripulante al azar se asfixia en cada cambio de ciclo."
+      },
+      "fuel": {
+        "gain": "<b>Se gana:</b> en las expediciones y devolviendo cápsulas de combustible a un depósito.",
+        "loss": "<b>Se pierde:</b> al sacar cápsulas de un depósito para cargar la cámara de combustión. La nave quema el combustible de la cámara para viajar.",
+        "zero": "<b>A 0:</b> ya no se pueden sacar cápsulas, así que, cuando la cámara se vacía, la nave no puede viajar."
+      },
+      "hull": {
+        "gain": "<b>Se gana:</b> reparándolo con restos de metal.",
+        "loss": "<b>Se pierde:</b> disparos de hunters y asteroides (después de que el escudo de plasma absorba su parte), incendios, y despegues y aterrizajes bruscos de los patrulleros.",
+        "zero": "<b>A 0:</b> el Daedalus queda destruido, todos mueren y ganan los Mush."
+      },
+      "plasmaShield": {
+        "gain": "<b>Se gana:</b> se regenera cada ciclo mientras está activado en la BIOS.",
+        "loss": "<b>Se pierde:</b> absorbe parte de cada impacto de hunters y asteroides (una parte mayor cuando el proyecto Escudo de plasma está terminado).",
+        "zero": "<b>A 0:</b> el casco recibe cada impacto completo, igual que cuando el escudo está desactivado (entonces muestra 0)."
+      }
+    }
   },
   "peek": {
     "doorTo": "Puerta a {{room}}",
@@ -91,7 +113,8 @@
       "cheats": "Trampas"
     },
     "cheatHints": {
-      "fastExpeditions": "2 segundos por sector"
+      "fastExpeditions": "2 segundos por sector",
+      "fuelPlanet": "Lleva la nave a un planeta de 20 sectores de Hidrocarburos que nunca se agotan"
     },
     "cheats": {
       "title": "Trucos (desarrollo)",
@@ -111,6 +134,7 @@
       "easyTravel": "Viaje fácil",
       "invincible": "Nave invencible",
       "fastExpeditions": "Expediciones rápidas",
+      "fuelPlanet": "Órbita de un planeta de combustible",
       "goToCheatRoom": "Ir a la sala de trucos",
       "leaveShip": "Abandonar la nave",
       "role": {
@@ -251,9 +275,7 @@
       "human": "Daedalus · Tripulación",
       "mush": "Daedalus · Mush"
     },
-    "name": "Nombre",
-    "title": "Título",
-    "noTitle": "—"
+    "name": "Nombre"
   },
   "resources": {
     "other": "Otros recursos",
@@ -298,13 +320,8 @@
     }
   },
   "faction": {
-    "about": "{{name}}: lo que quiere tu bando",
     "human": {
-      "name": "Humano",
-      "goal": "Eliminar a los Mush."
-    },
-    "mush": {
-      "goal": "Impedir que se investigue la cura y evitar ser eliminado."
+      "name": "Humano"
     },
     "alphaMush": {
       "name": "Mush alfa"
@@ -414,6 +431,7 @@
     "lacksReactorTravel": "El reactor de emergencia está averiado: el Daedalus no puede viajar hasta que lo reparen.",
     "lacksArack": "Un Arack se ha aferrado al Daedalus: la nave no puede moverse hasta que lo derriben.",
     "lacksReactorTurn": "El reactor lateral de este lado está averiado: el Daedalus no puede girar hacia este lado hasta que lo reparen.",
+    "lacksPreselection": "No disponible durante la preselección: los títulos no se asignan hasta que se elijan los Mush.",
     "lacksMp": "No tienes suficientes PM: cuesta {{need}} y tienes {{have}}.",
     "lacksBoth": "No tienes suficientes PA ni PM: cuesta {{needAp}} PA y {{needMp}} PM, y tienes {{haveAp}} PA y {{haveMp}} PM.",
     "returnToSol": "Volver a Sol",
@@ -445,6 +463,8 @@
     "consumeSpore": "Devorar una espora",
     "fungalCuisine": "Cocina fúngica",
     "takeoff": "Despegar",
+    "board_icarus": "Subir al Ícaro",
+    "leave_icarus": "Salir del Ícaro",
     "icarus_takeoff": "Partir de expedición",
     "land_on_planet": "Aterrizar en el planeta",
     "u_turn": "Volver al Daedalus",
@@ -1035,6 +1055,8 @@
     "historyRevealed": "{{name}} hizo hace poco: {{action}}.",
     "historyNothing": "No averiguaste nada sobre lo que {{name}} hizo hace poco.",
     "punchCrit": "{{name}} le asestó un magnífico puñetazo a {{target}}.",
+    "punchArmor": "{{name}} intentó golpear a {{target}}, pero solo encontró sus protecciones.",
+    "attackArmor": "{{name}} atacó a {{target}} con: {{item}}, pero solo encontró sus protecciones.",
     "anathema": "{{name}} lanzó el anatema sobre {{target}}.",
     "protected": "{{name}} protege ahora a {{target}}.",
     "coup": "{{name}} dio un golpe de Estado en el núcleo de NERON.",
@@ -1218,6 +1240,10 @@
     "massMouldering": "Liberas una nube de esporas de moho por toda la nave.",
     "bodyTransferred": "Te has metido en la piel de {{target}}. {{name}} despierta humano, en tu antiguo cuerpo.",
     "patrolTakeoff": "{{name}} despegó a bordo de {{room}}.",
+    "icarusBoarded": "{{name}} subió al Ícaro.",
+    "icarusLeft": "{{name}} salió del Ícaro.",
+    "icarusDisembarked": "El Daedalus dejó el planeta; regresaste a la Bahía Ícaro.",
+    "icarusNoSpacesuit": "No tienes un traje espacial que funcione y {{planet}} no tiene oxígeno: te quedas en la bahía.",
     "icarusTakeoff": "{{name}} despegó a bordo del Ícaro rumbo a {{planet}}.",
     "expeditionReturned": "De vuelta de {{planet}}. Tu informe de expedición está listo.",
     "patrolLanded": "{{name}} aterrizó a bordo de {{room}}.",
@@ -2026,6 +2052,8 @@
     "lootAboard": "Todo lo encontrado hasta ahora está en el suelo del Ícaro.",
     "lootAboardShip": "Todo lo encontrado hasta ahora está en el suelo de {{ship}}.",
     "icarusAway": "El Ícaro ha salido de expedición.",
+    "seats": "Plazas del Ícaro",
+    "emptySeat": "Plaza libre",
     "lost": {
       "heading": "Te has perdido en {{planet}}",
       "text": "Has perdido a la tripulación. Una expedición a este planeta puede encontrarte; si el Daedalus se va, mueres aquí."

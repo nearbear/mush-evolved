@@ -102,7 +102,8 @@ export const chatView = (() => {
   s = say(s, "botany", "The banana tree is thirsty again.", "p3");
   s = structuredClone(moveTo(s, "ICARUS"));
   s.navigation.orbit = FUGUNYS.id;
-  s = act(s, { type: "icarus_takeoff", equipment: "ICARUS:ICARUS_COMMAND" });
+  s = act(s, { type: "board_icarus", equipment: "ICARUS:ICARUS_COMMAND" });
+  s = act(s, { type: "icarus_takeoff" });
   return sampleView(s);
 })();
 

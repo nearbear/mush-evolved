@@ -44,7 +44,29 @@
     "alertDoorDetector": "Broken door: {{roomA}} – {{roomB}} ({{detector}})",
     "alertsUnreported_one": "1 more unreported",
     "alertsUnreported_other": "{{count}} more unreported",
-    "alertsNone": "No fires or breakdowns reported"
+    "alertsNone": "No fires or breakdowns reported",
+    "info": {
+      "oxygen": {
+        "gain": "<b>Gained:</b> ripe, healthy, watered plants each day, expeditions, and oxygen capsules put back in a tank.",
+        "loss": "<b>Lost:</b> burned every cycle, leaked by each broken oxygen tank, and taken out of a tank as capsules.",
+        "zero": "<b>At 0:</b> a random crew member suffocates at every cycle change."
+      },
+      "fuel": {
+        "gain": "<b>Gained:</b> expeditions, and fuel capsules put back in a tank.",
+        "loss": "<b>Lost:</b> taken out of a tank as capsules, to load into the combustion chamber. The ship burns the chamber's fuel to travel.",
+        "zero": "<b>At 0:</b> no more capsules can be taken, so once the chamber is empty the ship can't travel."
+      },
+      "hull": {
+        "gain": "<b>Gained:</b> repairs with metal scraps.",
+        "loss": "<b>Lost:</b> hunter fire and asteroids (after the plasma shield takes its share), fires, and rough patrol ship takeoffs and landings.",
+        "zero": "<b>At 0:</b> the Daedalus is destroyed, everyone dies and the Mush win."
+      },
+      "plasmaShield": {
+        "gain": "<b>Gained:</b> it regenerates every cycle while it is switched on in the BIOS.",
+        "loss": "<b>Lost:</b> it takes part of every hit from hunters and asteroids (a bigger part once the Plasma shield project is done).",
+        "zero": "<b>At 0:</b> the hull takes every hit in full, as it does while the shield is switched off (it then shows 0)."
+      }
+    }
   },
   "peek": {
     "doorTo": "Door to {{room}}",
@@ -89,7 +111,8 @@
       "cheats": "Cheats"
     },
     "cheatHints": {
-      "fastExpeditions": "2 seconds per sector"
+      "fastExpeditions": "2 seconds per sector",
+      "fuelPlanet": "Warps the ship to a planet with 20 Hydrocarbons sectors that never run out"
     },
     "cheats": {
       "title": "Cheats (development)",
@@ -109,6 +132,7 @@
       "easyTravel": "Easy travel",
       "invincible": "Invincible ship",
       "fastExpeditions": "Fast expeditions",
+      "fuelPlanet": "Orbit a fuel planet",
       "goToCheatRoom": "Go to cheat room",
       "leaveShip": "Leave ship",
       "role": {
@@ -245,9 +269,7 @@
       "human": "Daedalus · Crew",
       "mush": "Daedalus · Mush"
     },
-    "name": "Name",
-    "title": "Title",
-    "noTitle": "—"
+    "name": "Name"
   },
   "resources": {
     "other": "Other resources",
@@ -292,13 +314,8 @@
     }
   },
   "faction": {
-    "about": "{{name}}: what your faction wants",
     "human": {
-      "name": "Human",
-      "goal": "Eliminate the Mush."
-    },
-    "mush": {
-      "goal": "Stop the cure from being researched, and avoid being eliminated."
+      "name": "Human"
     },
     "alphaMush": {
       "name": "Alpha Mush"
@@ -407,6 +424,7 @@
     "lacksReactorTravel": "The Emergency reactor is broken: the ship can't travel until it is repaired.",
     "lacksArack": "An Arack is clinging to the Daedalus: the ship can't move until it is shot down.",
     "lacksReactorTurn": "The lateral reactor on this side is broken: the ship can't turn this way until it is repaired.",
+    "lacksPreselection": "Unavailable during pre-selection: titles aren't assigned until the Mush are chosen.",
     "lacksMp": "Not enough MP: it costs {{need}}, you have {{have}}.",
     "lacksBoth": "Not enough AP or MP: it costs {{needAp}} AP and {{needMp}} MP, you have {{haveAp}} AP and {{haveMp}} MP.",
     "returnToSol": "Return to Sol",
@@ -438,6 +456,8 @@
     "consumeSpore": "Devour a spore",
     "fungalCuisine": "Fungal cuisine",
     "takeoff": "Take off",
+    "board_icarus": "Board the Icarus",
+    "leave_icarus": "Leave the Icarus",
     "icarus_takeoff": "Launch an expedition",
     "land_on_planet": "Land on the planet",
     "u_turn": "Turn back to the Daedalus",
@@ -1019,6 +1039,8 @@
     "historyRevealed": "{{name}} recently did: {{action}}.",
     "historyNothing": "You learned nothing about what {{name}} did recently.",
     "punchCrit": "{{name}} landed a magnificent punch on {{target}}.",
+    "punchArmor": "{{name}} tried to hit {{target}} but only found their protections.",
+    "attackArmor": "{{name}} attacked {{target}} with the {{item}} but only found their protections.",
     "anathema": "{{name}} cast the anathema on {{target}}.",
     "protected": "{{name}} is now protecting {{target}}.",
     "coup": "{{name}} staged a coup at the NERON core.",
@@ -1201,6 +1223,10 @@
     "massMouldering": "You release a cloud of mouldering spores across the ship.",
     "bodyTransferred": "You slipped into {{target}}'s body. {{name}} wakes up human, with your old body.",
     "patrolTakeoff": "{{name}} took off in {{room}}.",
+    "icarusBoarded": "{{name}} boarded the Icarus.",
+    "icarusLeft": "{{name}} left the Icarus.",
+    "icarusDisembarked": "The Daedalus left the planet, so you returned to the Icarus bay.",
+    "icarusNoSpacesuit": "You have no working spacesuit, and {{planet}} has no oxygen: you stay in the bay.",
     "icarusTakeoff": "{{name}} took off in the Icarus for {{planet}}.",
     "expeditionReturned": "Back from {{planet}}. Your expedition report is ready.",
     "patrolLanded": "{{name}} landed {{room}}.",
@@ -2092,6 +2118,8 @@
     "lootAboard": "Everything found so far is on the Icarus's floor.",
     "lootAboardShip": "Everything found so far is on the floor of {{ship}}.",
     "icarusAway": "The Icarus is away on an expedition.",
+    "seats": "Seats in the Icarus",
+    "emptySeat": "Empty seat",
     "lost": {
       "heading": "Lost on {{planet}}",
       "text": "You lost the crew. An expedition to this planet may find you; if the Daedalus leaves it, you die here."

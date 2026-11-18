@@ -268,6 +268,8 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   sprinter: { extraMpPerConversion: 2 },
   // Owner, 2026-11-17: Antigrav Scooter adds 2 MP per AP-to-MP conversion (doesn't stack with Sprinter or itself); 8 charges, 1 spent per conversion, +1 per cycle.
   scooter: { extraMpPerConversion: 2, charges: { start: 8, max: 8, perCycle: 1 } },
+  // Owner, 2026-11-17 (eMush, eMushpedia): Plastenite Armor absorbs 1 combat damage; not crits, accidents or self-damage.
+  plasteniteArmor: { absorb: 1 },
   // Owner, 2026-10-24 (eMushpedia): Anathema costs 1 AP; the Outcast's actions that roll succeed at x0.8.
   anathema: { cost: { ap: 1 }, successFactor: 0.8 },
   // Owner, 2026-11-12: the Politician's Coup costs 3 AP and has a 50% chance to make the actor dirty.
@@ -592,7 +594,7 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   },
   // Owner, 2026-10-22, from the English wiki: 1 AP to use any weapon, carried. Repair and dismantle chances the wiki
   // gives as "??" are 12%. Blaster 2-3 as listed; the rocket's "?-8" is 1-8 and its self-damage 1-4 (Claude's guess,
-  // accepted). Charged weapons start full. Not built: crits, injuries, a dropped knife, breaking equipment, NERON's Core Peace.
+  // accepted). The rocket is aimed at one roommate; its splash outcomes hit the room (owner, 2026-11-17). Charged weapons start full. Not built: crits, injuries, a dropped knife, breaking equipment, NERON's Core Peace.
   weapons: {
     cost: { ap: 1 },
     types: {
@@ -604,8 +606,8 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
       sniper_riffle: { gun: true, damage: [3, 5], accuracy: 0.99, expoStrength: 1, charges: 1, dirtyChance: 0, repairChance: 0.12, ...LIZARO_JUNGLE_OUTCOMES },
       // Old Faithful.
       machine_gun: { gun: true, damage: [2, 3], accuracy: 0.5, expoStrength: 2, charges: 12, dirtyChance: 0, repairChance: 0.12, ...OLD_FAITHFUL_OUTCOMES },
-      missile_launcher: { gun: true, damage: [1, 8], accuracy: 0.5, expoStrength: 3, charges: 1, area: { selfDamage: [1, 4] }, dirtyChance: 0, repairChance: 0.12, ...MISSILE_LAUNCHER_OUTCOMES },
-      grenade: { damage: [0, 10], accuracy: 1, expoStrength: 3, area: { selfDamage: [0, 3] }, consumed: true, dirtyChance: 0, repairChance: null, ...GRENADE_OUTCOMES },
+      missile_launcher: { gun: true, damage: [1, 8], accuracy: 0.5, expoStrength: 3, charges: 1, selfDamage: [1, 4], dirtyChance: 0, repairChance: 0.12, ...MISSILE_LAUNCHER_OUTCOMES },
+      grenade: { damage: [0, 10], accuracy: 1, expoStrength: 3, area: true, selfDamage: [0, 3], consumed: true, dirtyChance: 0, repairChance: null, ...GRENADE_OUTCOMES },
       // Unarmed (not wired to an action yet).
       bare_hands: { melee: true, damage: [1, 2], accuracy: 0.6, expoStrength: 0, dirtyChance: 0, repairChance: null, ...BARE_HANDS_OUTCOMES },
     },
@@ -794,10 +796,11 @@ export const PRESELECTION: PreselectionRules = {
 /**
  * A game's config: `DEFAULT_CONFIG` with its overrides on top (types/config.ts). The keys are copied one by one, so
  * unknown keys in a stored object are ignored, never spread. Runs on every load, so live games pick up balance changes.
+ * Deep-frozen like `DEFAULT_CONFIG`: clones share `state.config`, so nothing may write to it.
  */
 export function resolveConfig(o: ConfigOverrides = {}): GameConfig {
   const p = o.preselection;
-  return {
+  return deepFreeze({
     ...DEFAULT_CONFIG,
     ...(o.mushCount !== undefined && { mushCount: o.mushCount }),
     ...(o.manualCycles !== undefined && { manualCycles: o.manualCycles }),
@@ -808,5 +811,5 @@ export function resolveConfig(o: ConfigOverrides = {}): GameConfig {
     // The cheat room has no doors, so no route reaches it (#170).
     ...(o.cheatRoom && { cheatRoom: true, rooms: { ...DEFAULT_CONFIG.rooms, [CHEAT_ROOM]: [] }, equipment: { ...DEFAULT_CONFIG.equipment, [CHEAT_ROOM]: cheatRoomEquipment() } }),
     ...(p && { preselection: { seats: p.seats, endsOn: { day: p.endsOn.day, cycle: p.endsOn.cycle }, mushCount: p.mushCount ?? "auto", twoMushAbove: p.twoMushAbove, minPlayers: p.minPlayers } }),
-  };
+  });
 }

@@ -8,9 +8,10 @@
 
 import { expirePlans, plansView, strikeSlots } from "./plans.ts";
 import { bindPerformAction } from "./actions/summon.ts";
+import { cheatFuelPlanet } from "./actions/warp_to_planet.ts";
 import { applyCheats, makeHuman, shipInvincible, type Cheat, type RoleCheat } from "./cheats.ts";
 import { ACTIONS, actionVisibility, type ActionDef } from "./actions.ts";
-import { ARACK_AROUND, AT_CAPACITY, COOLDOWN, DIRTY, NO_DEBRIS, NO_SPACE, PASIPHAE_INTACT, REACTOR_BROKEN } from "./actions/action.ts";
+import { ARACK_AROUND, AT_CAPACITY, COOLDOWN, DIRTY, IN_PRESELECTION, NO_DEBRIS, NO_SPACE, PASIPHAE_INTACT, REACTOR_BROKEN } from "./actions/action.ts";
 import { getUp } from "./actions/lie_down.ts";
 import { isNimble } from "./actions/nimble.ts";
 import { researchNeedsView } from "./actions/research.ts";
@@ -59,7 +60,7 @@ import { burnOxygen, rollOxygenSaved, shipView, startShip } from "./ship.ts";
 import { merchantsCycle } from "./merchants.ts";
 import { newSignals } from "./signals.ts";
 import { allTurrets, huntersCycle, newHunters, startHunters, turretCharges, turretsHere } from "./hunters.ts";
-import { expeditionReturnAt, lostPlayers, onExpedition, withCrew } from "./expeditions.ts";
+import { expeditionReturnAt, lostPlayers, maxCrew, nextSectorFor, onExpedition, withCrew } from "./expeditions.ts";
 import { ICARUS_EQUIPMENT } from "./actions/icarus_takeoff.ts";
 import { canScavenge, interfaceId, isLostPlace, newPatrolShips, offShip, PATROL_INTERFACE, PATROL_SHIPS, shipAboard } from "./patrol.ts";
 import { preselectionCycle } from "./preselection.ts";
@@ -124,6 +125,7 @@ export function createGame(
   const startRng = { rng: streamFor(seed, "start-items") };
   const daedalusPool = SHIP_ROOMS.map((r) => r.id);
   const storagePool = config.snoop.rooms;
+  const drawnBlueprints = new Set<string>();
   const starts: Omit<ItemState, "id">[] = [
     ...config.startItems.map((it): Omit<ItemState, "id"> => {
       const room = "room" in it
@@ -132,9 +134,12 @@ export function createGame(
       const builds = it.buildsWeights
         ? (() => {
             const entries = Object.entries(it.buildsWeights);
-            return entries[rollWeighted(startRng, entries.map(([, w]) => w))]![0];
+            const remaining = entries.filter(([k]) => !drawnBlueprints.has(k));
+            const choices = remaining.length > 0 ? remaining : entries;
+            return choices[rollWeighted(startRng, choices.map(([, w]) => w))]![0];
           })()
         : it.builds;
+      if (it.type === "blueprint" && builds !== undefined) drawnBlueprints.add(builds);
       return {
         type: it.type,
         at: { kind: "room", id: room },
@@ -297,6 +302,9 @@ const UNAFFORDABLE_REASONS = new Set<string>([
   ARACK_AROUND,
 ]);
 
+const isUnaffordableReason = (action: Action, refused: string | null): refused is string =>
+  refused !== null && (UNAFFORDABLE_REASONS.has(refused) || (action.type === "hack" && refused === IN_PRESELECTION));
+
 function actionOption(state: GameState, p: PlayerState, def: ActionDef<Action>, a: Action, lacks: ActionOption["lacks"]): ActionOption {
   return {
     action: a,
@@ -313,6 +321,7 @@ function unaffordableOption(state: GameState, p: PlayerState, def: ActionDef<Act
   const option = actionOption(state, p, def, a, []);
   const { cost } = option;
   option.lacks = [
+    ...(refused === IN_PRESELECTION ? (["preselection"] as const) : []),
     ...(refused === NO_DEBRIS ? (["debris"] as const) : []),
     ...(refused === PASIPHAE_INTACT ? (["pasiphae"] as const) : []),
     ...(refused === REACTOR_BROKEN ? (["reactor"] as const) : []),
@@ -340,7 +349,7 @@ export function unaffordableActions(state: GameState, playerId: PlayerId): Actio
     def.candidates(state, p).flatMap((a): ActionOption[] => {
       if (a.type === "move") return [];
       const refused = def.check(state, p, a);
-      return UNAFFORDABLE_REASONS.has(refused ?? "") ? [unaffordableOption(state, p, def, a, refused!)] : [];
+      return isUnaffordableReason(a, refused) ? [unaffordableOption(state, p, def, a, refused)] : [];
     }),
   );
 }
@@ -355,7 +364,7 @@ function viewActionOptions(state: GameState, p: PlayerState): ActionOption[] {
       const refused = def.check(state, p, a);
       if (refused === null) {
         legal.push(actionOption(state, p, def, a, []));
-      } else if (a.type !== "move" && UNAFFORDABLE_REASONS.has(refused)) {
+      } else if (a.type !== "move" && isUnaffordableReason(a, refused)) {
         unaffordable.push(unaffordableOption(state, p, def, a, refused));
       }
     }
@@ -444,6 +453,7 @@ export function setCheat(state: GameState, playerId: PlayerId, cheat: Cheat, on:
   const p = findPlayer(next, playerId)!;
   p.cheats = p.cheats.filter((c) => c !== cheat);
   if (on) p.cheats.push(cheat);
+  if (on && cheat === "fuelPlanet") cheatFuelPlanet(next, p);
   applyCheats(next, p);
   return { ok: true, state: next };
 }
@@ -844,6 +854,7 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
           })
       : [],
     expedition: expeditionView(state, you),
+    icarusSeats: maxCrew(state),
     // Who is lost, and where: a public alert (owner, 2026-11-08, #357; phase 2 accepted it).
     lost: lostPlayers(state).map((p) => ({ name: p.character, planet: orbitName(state) ?? "" })),
     // Your own planets only, and only the tags an analysis revealed (owner, 2026-10-19).
@@ -915,6 +926,8 @@ function expeditionView(state: GameState, you: PlayerState): PlayerView["expedit
   const away = state.expedition;
   if (!away) return null;
   const report = state.expeditions.find((r) => r.id === away.report)!;
+  // The next sector, to a U-turn or Traitor holder still with the crew (owner, 2026-11-17).
+  const next = nextSectorFor(state, you);
   return {
     crew: [...report.crew],
     planet: report.planet,
@@ -922,6 +935,7 @@ function expeditionView(state: GameState, you: PlayerState): PlayerView["expedit
     // The patrol ship that landed (owner, 2026-11-09, #359): public, as its bay shows it out and the crew is named.
     ...(report.ship !== undefined && { ship: report.ship }),
     ...(withCrew(state, you) && report.members.includes(you.id) && { report: report.id }),
+    ...(next !== undefined && { next }),
   };
 }
 

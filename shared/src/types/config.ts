@@ -62,6 +62,7 @@ export interface DiseaseStats {
 
 
 export interface WeaponInjuryEffect {
+  /** `target`: the one person aimed at (none for an area weapon); `splash`: every other living person in the room. */
   who: "target" | "attacker" | "splash";
   /** Specific injury ID (e.g. "damaged_ears_injury", "haemorrhage_injury"), or "random" for a random combat injury. */
   injury: string;
@@ -75,13 +76,13 @@ export interface WeaponOutcomeEffects {
   damageDelta?: number;
   maxDamageDelta?: number;
   skillMaxDamage?: boolean;
-  instantKill?: "target" | "attacker";
+  instantKill?: "target" | "attacker"; // "target" does nothing for an area weapon, which has none.
   mushMultiplier?: number;
   apLoss?: { who: "target" | "attacker"; amount: number };
   injuries?: WeaponInjuryEffect[];
   weaponEffect?: "drop" | "break" | "destroy";
   breakRandomItems?: number;
-  splashDamage?: { amount: number; chance?: number };
+  splashDamage?: { amount: number; chance?: number }; // To every other living person in the room, the target included.
 }
 
 export interface WeaponHitOutcome {
@@ -105,7 +106,8 @@ export interface WeaponStats {
   accuracy: number; // Chance to hit, 0 to 1.
   expoStrength: number; // Strength in an expedition fight (expeditions.ts).
   charges?: number; // Charges it holds and starts with; each use spends one, and it can't be used at 0. Absent: unlimited.
-  area?: { selfDamage: [min: number, max: number] }; // Hits everyone in the room instead of one target; the attacker takes `selfDamage`.
+  area?: true; // No target: the damage roll hits every other living person in the room (grenade).
+  selfDamage?: [min: number, max: number]; // HP the attacker loses on a hit (rocket launcher, grenade).
   melee?: boolean; // Used in person, so the attack is tagged `melee` (knife).
   gun?: boolean; // A gun: neither melee nor thrown (not the knife or grenade). Counts for Shooter in expeditions.
   consumed?: boolean; // Used up by using it (grenade).
@@ -141,7 +143,8 @@ export type ExpeditionEventKind =
   | "found"
   | "foundDead"
   // Phase 3, slice C (owner, 2026-11-08, #357): never drawn. A member without a needed spacesuit stays in the Icarus
-  // (`noSpacesuit`); nobody has one, so the expedition ends at takeoff (`grounded`).
+  // (`noSpacesuit`); nobody has one, so the expedition ends at takeoff (`grounded`). Nothing produces them since boarding
+  // (owner, 2026-11-17); kept for reports stored before it.
   | "noSpacesuit"
   | "grounded"
   // Phase 4, slice D (owner, 2026-11-08, #358): never drawn. A U-turn holder ended the expedition (`who`).
@@ -518,6 +521,9 @@ export interface GameConfig {
   scooter: {
     extraMpPerConversion: number; // Extra MP the Antigrav Scooter gives on each AP-to-MP conversion (owner, 2026-11-17). Does not stack with `sprint` or another scooter.
     charges: { start: number; max: number; perCycle: number }; // Starts with 8 charges, spends 1 per conversion, recharges 1 per cycle (owner, 2026-11-17).
+  };
+  plasteniteArmor: {
+    absorb: number; // Damage a working Plastenite Armor in the target's inventory takes off each non-critical punch or weapon hit and each expedition fight (owner, 2026-11-17). Never below 0; several armors absorb no more than one.
   };
   anathema: {
     cost: { ap: number }; // AP the `juge` (Persecutor) skill's Anathema costs (owner, 2026-10-24; eMushpedia).

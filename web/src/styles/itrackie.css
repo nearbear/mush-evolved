@@ -54,7 +54,7 @@
 }
 .itrackie-card .feed > li,
 .signal-conversation .feed > li {
-  border-bottom-color: rgb(23 27 92 / 0.12);
+  border-bottom-color: var(--terminal-rule);
 }
 /* The cycle band already separates the last row of a cycle from the next, so that row drops its own line. */
 .itrackie-card .feed > li:has(+ li.cycle-divider),

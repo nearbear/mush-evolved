@@ -126,7 +126,7 @@ describe("Infantryman", () => {
       s.planets.p0 = [{ id: "planet-1", name: "Testia", direction: "east", distance: 1, sectors: [{ tag: "HOT", known: true }] }];
       s.navigation.orbit = "planet-1";
       for (const id of ["p0", "p1", "p2"]) {
-        player(s, id).room = "ICARUS";
+        player(s, id).room = "ICARUS_CRAFT"; // aboard the docked Icarus
         s.items.push({ id: `suit-${id}`, type: "space_suit", at: { kind: "player", id } });
       }
       return s;
@@ -143,7 +143,7 @@ describe("Infantryman", () => {
     base.items.push({ id: "cb", type: CUSTOMIZED_BLASTER_ITEM, charges: 3, owner: "p0", at: { kind: "player", id: "p1" } });
 
     const runFight = (st: GameState): number => {
-      const t = mustApply(st, "p0", { type: "icarus_takeoff", equipment: "ICARUS:ICARUS_COMMAND" });
+      const t = mustApply(st, "p0", { type: "icarus_takeoff" });
       return t.expeditions[0]!.events.find((e) => e.kind === "fight")!.fight!.strength;
     };
 

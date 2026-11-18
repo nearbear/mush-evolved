@@ -8,9 +8,10 @@ import { commsOfficer } from "../src/bots/goals/commsOfficer.ts";
 import { contactSol } from "../src/bots/goals/contactSol.ts";
 import { expeditionLaunch } from "../src/bots/goals/expeditionLaunch.ts";
 import { EXPEDITION_CHANNEL_NAME, expeditionPlan } from "../src/bots/goals/expeditionPlan.ts";
-import { expeditionPrep, isFitForExpedition, isPriorityExpeditionClaimant, requiredExpeditionGear } from "../src/bots/goals/expeditionPrep.ts";
+import { ICARUS_BOARD_WAIT_CYCLES, expeditionPrep, isFitForExpedition, isPriorityExpeditionClaimant, requiredExpeditionGear } from "../src/bots/goals/expeditionPrep.ts";
 import { activeSharedPlanet } from "../src/bots/planetShare.ts";
 import { SOLO_GOALS } from "../src/bots/goals/index.ts";
+import { leaveIcarus } from "../src/bots/goals/leaveIcarus.ts";
 import { repairDoor } from "../src/bots/goals/repairDoor.ts";
 import { repairHull } from "../src/bots/goals/repairHull.ts";
 import { rest } from "../src/bots/goals/rest.ts";
@@ -26,7 +27,7 @@ import { snoop } from "../src/bots/goals/snoop.ts";
 import { BOT_EAT_AFTER_CYCLES, eat } from "../src/bots/goals/eat.ts";
 import { tendPlants } from "../src/bots/goals/tendPlants.ts";
 import { sowHere } from "../src/bots/goals/sow.ts";
-import { POT_STORAGE, STORAGE_CHECKED, setOutPots } from "../src/bots/goals/setOutPots.ts";
+import { POT_STORAGES, setOutPots, storageCheckedKey } from "../src/bots/goals/setOutPots.ts";
 import { HOLD_HUNTER_TRIGGER, HOLD_MAX_DAYS, HOLD_MIN_OXYGEN, JUMP_WAIT_CYCLES, sharedDestination, targetJump, travel, turnsTo } from "../src/bots/goals/travel.ts";
 import { helpGoal, helpTasks } from "../src/bots/goals/help.ts";
 import type { BotMemory, GoalDef } from "../src/bots/goals/types.ts";
@@ -42,6 +43,19 @@ import { seats } from "../src/testing/fakes.ts";
 
 // End cycle on, as on the dev server, so a bot with nothing to do ends its cycle instead of waiting for the clock.
 const config = { ...DEFAULT_CONFIG, manualCycles: true };
+const ICARUS_BAY = DEFAULT_CONFIG.expedition.room;
+const ICARUS_CRAFT = DEFAULT_CONFIG.expedition.craft;
+/** The game with the first spacesuit on the ship moved into `id`'s hands. */
+function suited(game: GameState, id: string): GameState {
+  const suit = game.items.find((i) => i.type === "space_suit")!;
+  return { ...game, items: game.items.map((i) => (i === suit ? { ...i, at: { kind: "player" as const, id } } : i)) };
+}
+/** A new cycle that must succeed (summons from an earlier cycle no longer hold the launch). */
+function newCycleOk(game: GameState): GameState {
+  const next = newCycle(game);
+  if (!next.ok) throw new Error("newCycle failed");
+  return next.state;
+}
 
 /** A fresh game and a human seat in it (one seat is Mush). */
 function setup(seed = 1, cfg: typeof config = config): { game: GameState; id: string } {
@@ -746,11 +760,6 @@ describe("tendPlants", () => {
       p.ap = 10;
       p.resources.garden = 0;
     });
-    game.items = game.items.filter((i) => !(i.type === "tree_pot" && i.at.kind === "room" && i.at.id === POT_STORAGE));
-    game.items.push(
-      { id: "sp-1", type: "tree_pot", at: { kind: "room", id: POT_STORAGE } },
-      { id: "sp-2", type: "tree_pot", at: { kind: "room", id: POT_STORAGE } },
-    );
     for (const pot of game.items) if (pot.plant) pot.plant.thirst = 1;
     return { game, id };
   };
@@ -838,48 +847,86 @@ describe("sowHere and setOutPots", () => {
     const { game: start, id } = setup();
     const inGarden = edit(start, id, (p) => (p.room = garden));
     expect(sowHere.options(viewFor(inGarden, id), memory())).toEqual([]);
-    const elsewhere = edit(start, id, (p) => (p.room = POT_STORAGE as typeof p.room));
+    const elsewhere = edit(start, id, (p) => (p.room = POT_STORAGES[0] as typeof p.room));
     elsewhere.items.push({ id: "test-banana", type: "fruit_banana", at: { kind: "player", id } });
     expect(sowHere.options(viewFor(elsewhere, id), memory())).toEqual([]);
   });
 
   it("a Green Thumb Botanist with a full inventory sets out its pots, fetches the storage's, and sows the banana first", async () => {
     const { game: start, id } = setup();
-    const game = edit(start, id, (p) => {
+    let game = edit(start, id, (p) => {
       p.skills = ["botanic", "green_thumb"] as typeof p.skills;
       p.room = garden;
       p.ap = 12;
+      p.mp = 12;
       p.resources.garden = 0;
     });
     game.items = game.items.filter((i) => i.at.kind !== "player" || i.at.id !== id);
     game.items.push({ id: "test-talky", type: "super_talky", at: { kind: "player", id } });
     game.items.push({ id: "gt-1", type: "tree_pot", at: { kind: "player", id } }, { id: "gt-2", type: "tree_pot", at: { kind: "player", id } });
     game.items.push({ id: "test-banana", type: "fruit_banana", at: { kind: "room", id: garden } });
-    game.items = game.items.filter((i) => !(i.type === "tree_pot" && i.at.kind === "room" && i.at.id === POT_STORAGE));
-    game.items.push(
-      { id: "sp-1", type: "tree_pot", at: { kind: "room", id: POT_STORAGE } },
-      { id: "sp-2", type: "tree_pot", at: { kind: "room", id: POT_STORAGE } },
-    );
     for (const pot of game.items) if (pot.plant) pot.plant.thirst = 1;
     const bot = new GoalBot(1, 2, [sowHere, setOutPots, tendPlants]);
-    const { game: after, taken } = await oneCycle(game, id, bot);
-    const kinds = taken.map((a) => a.type).filter((t) => t !== "move");
-    // The banana first (sown straight from the floor), then the Green Thumb pots, storage pots, then watering.
-    expect(kinds).toEqual(["sow", "drop", "drop", "take", "take", "drop", "drop", "water", "water"]);
-    expect(onFloor(after, POT_STORAGE).some((i) => i.type === "tree_pot")).toBe(false);
-    expect(onFloor(after, garden).filter((i) => i.type === "tree_pot")).toHaveLength(7);
-    expect(after.items.some((i) => i.id === "test-banana")).toBe(false);
+    const allTaken: Action[] = [];
+    for (let c = 0; c < 4; c++) {
+      const { game: next, taken } = await oneCycle(game, id, bot);
+      allTaken.push(...taken);
+      game = edit(next, id, (p) => {
+        p.ap = 12;
+        p.mp = 12;
+      });
+      if (onFloor(game, garden).filter((i) => i.type === "tree_pot").length === 7) break;
+    }
+    const kinds = allTaken.map((a) => a.type).filter((t) => t !== "move");
+    // The banana first (sown straight from the floor), then the Green Thumb pots, storage pots, and watering.
+    expect(kinds[0]).toBe("sow");
+    expect(kinds.slice(1, 3)).toEqual(["drop", "drop"]);
+    expect(kinds).toContain("take");
+    expect(kinds).toContain("water");
+    expect(POT_STORAGES.some((r) => onFloor(game, r).some((i) => i.type === "tree_pot"))).toBe(false);
+    expect(onFloor(game, garden).filter((i) => i.type === "tree_pot")).toHaveLength(7);
+    expect(game.items.some((i) => i.id === "test-banana")).toBe(false);
   });
 
-  it("checks the storage once a game", () => {
+  it("checks each storage once a game", () => {
     const { game: start, id } = setup();
     const game = edit(start, id, (p) => (p.skills = ["botanic"] as typeof p.skills));
     const m = memory();
     expect(setOutPots.options(viewFor(game, id), m)).toHaveLength(1);
-    m.once.add(STORAGE_CHECKED);
+    for (const r of POT_STORAGES) m.once.add(storageCheckedKey(r));
     expect(setOutPots.options(viewFor(game, id), m)).toEqual([]);
     const other = edit(start, id, (p) => (p.skills = ["pilot"] as typeof p.skills));
     expect(setOutPots.options(viewFor(other, id), memory())).toEqual([]);
+  });
+
+  it("shares empty non-garden pots via itemShare and fetches them straight from a reported room", async () => {
+    const { game: start, id } = setup();
+    const potRoom = "STORAGE_B_1";
+    const other = start.players.find((p) => p.id !== id)!.id;
+    let game = edit(start, id, (p) => {
+      p.skills = ["botanic"] as typeof p.skills;
+      p.room = garden;
+      p.ap = 12;
+      p.mp = 12;
+    });
+    game.items = game.items.filter((i) => i.type !== "tree_pot" || i.at.kind !== "room" || i.at.id === garden);
+    game.items = game.items.filter((i) => i.at.kind !== "room" || i.at.id !== potRoom);
+    game.items.push({ id: "sp-remote", type: "tree_pot", at: { kind: "room", id: potRoom } });
+    game = edit(game, other, (p) => (p.room = potRoom));
+    const spotterMem = memory();
+    const post = observeItems(viewFor(game, other), spotterMem);
+    expect(post?.text).toBe(`Item: tree_pot in ${potRoom}`);
+    // Garden pots (empty or planted) are not shared as fetchable items.
+    const inGardenMem = memory();
+    expect(observeItems(viewFor(game, id), inGardenMem)).toBeNull();
+    // Botanist reads the report and goes straight to potRoom, then drops the pot in the garden.
+    const bot = new GoalBot(1, 2, [setOutPots]);
+    const said = applyInput(game, { ...post!, by: other });
+    expect(said.ok).toBe(true);
+    if (!said.ok) return;
+    const { game: after, taken } = await oneCycle(said.state, id, bot);
+    expect(taken.some((a) => a.type === "take" && a.item === "sp-remote")).toBe(true);
+    expect(onFloor(after, garden).some((i) => i.id === "sp-remote")).toBe(true);
   });
 });
 
@@ -2641,7 +2688,8 @@ describe("expeditionLaunch: Pilot walks to ICARUS, summons open plan, and launch
     expect(expeditionLaunch.options(viewFor(notOrbiting, pilot), memory())).toEqual([]);
 
     const allExplored = orbitSetup({ sectors: [{ tag: "FOREST", explored: true }] }).game;
-    const allExploredInIcarus = edit(allExplored, pilot, (p) => (p.room = DEFAULT_CONFIG.expedition.room));
+    // Suited, so a refused boarding can only mean the sectors are all explored (or the Icarus can't go).
+    const allExploredInIcarus = suited(edit(allExplored, pilot, (p) => (p.room = ICARUS_BAY)), pilot);
     expect(expeditionLaunch.options(viewFor(allExploredInIcarus, pilot), memory())).toEqual([]);
 
     const withReport = {
@@ -2658,18 +2706,41 @@ describe("expeditionLaunch: Pilot walks to ICARUS, summons open plan, and launch
     expect(expeditionLaunch.options(viewFor(game, pilot), memory())).toHaveLength(1);
   });
 
-  it("walks to ICARUS, runs summon on the open plan, and launches with icarus_takeoff", async () => {
+  it("walks to ICARUS, summons, gives the crew the cycle to board, then boards and launches from inside", async () => {
     const { game: start, pilot, crew, planId } = orbitSetup({ instant: true });
-    const bot = new GoalBot(1, 2, [expeditionLaunch]);
-    const { game: after, taken } = await untilReady(start, pilot, bot);
+    // The crew bot has seen the plan it holds a slot on while it was open (its prep memory).
+    const crewBot = new GoalBot(3, 4, [expeditionPrep]);
+    await crewBot.decideAction(viewFor(start, crew));
+    const pilotBot = new GoalBot(1, 2, [expeditionLaunch]);
+    const { game: summoned, taken: taken1 } = await untilReady(start, pilot, pilotBot);
+    expect(taken1.some((a) => a.type === "summon" && a.plan === planId)).toBe(true);
+    expect(taken1.some((a) => a.type === "board_icarus" || a.type === "icarus_takeoff")).toBe(false);
+    expect(summoned.plans.find((p) => p.id === planId)!.status).toBe("called");
+    expect(summoned.players.find((p) => p.id === crew)!.room).toBe(ICARUS_BAY);
 
-    expect(taken.some((a) => a.type === "summon" && a.plan === planId)).toBe(true);
-    expect(taken.some((a) => a.type === "icarus_takeoff")).toBe(true);
-    expect(after.plans.find((p) => p.id === planId)!.status).toBe("called");
-    // Summoned crew member walked to ICARUS and joined the expedition.
-    expect(after.expeditions.length).toBeGreaterThanOrEqual(1);
+    // The summoned crew bot boards on arrival.
+    const { game: boarded, taken: crewTaken } = await untilReady(summoned, crew, crewBot);
+    expect(crewTaken.some((a) => a.type === "board_icarus")).toBe(true);
+    expect(boarded.players.find((p) => p.id === crew)!.room).toBe(ICARUS_CRAFT);
+
+    const { game: after, taken: taken2 } = await untilReady(boarded, pilot, pilotBot);
+    expect(taken2.map((a) => a.type)).toEqual(["board_icarus", "icarus_takeoff"]);
+    expect(after.expeditions).toHaveLength(1);
     expect(after.expeditions[0]!.members).toContain(pilot);
     expect(after.expeditions[0]!.members).toContain(crew);
+  });
+
+  it("launches without a summoned holder who hasn't boarded by the next cycle", async () => {
+    const { game: start, pilot, crew } = orbitSetup({ instant: true });
+    const bot = new GoalBot(1, 2, [expeditionLaunch]);
+    const { game: summoned } = await untilReady(start, pilot, bot);
+    expect(summoned.players.find((p) => p.id === crew)!.room).toBe(ICARUS_BAY);
+    const next = newCycle(summoned);
+    expect(next.ok).toBe(true);
+    if (!next.ok) return;
+    const { game: after, taken } = await untilReady(next.state, pilot, bot);
+    expect(taken.map((a) => a.type)).toEqual(["board_icarus", "icarus_takeoff"]);
+    expect(after.expeditions[0]!.members).toEqual([pilot]);
   });
 
   it("waits in ICARUS when short on AP and launches on the next cycle", async () => {
@@ -2682,14 +2753,85 @@ describe("expeditionLaunch: Pilot walks to ICARUS, summons open plan, and launch
     const { game: summoned, taken: taken1 } = await untilReady(lowAp, pilot, bot);
     expect(taken1.some((a) => a.type === "summon")).toBe(true);
     expect(taken1.some((a) => a.type === "icarus_takeoff")).toBe(false);
-    expect(summoned.players.find((p) => p.id === pilot)!.room).toBe(DEFAULT_CONFIG.expedition.room);
+    expect(summoned.players.find((p) => p.id === pilot)!.room).toBe(ICARUS_BAY);
 
-    const next = newCycle(edit(summoned, pilot, (p) => (p.ap = 6)));
+    // The next cycle the Pilot boards (free) but still can't afford the takeoff, so waits aboard.
+    const cycle2 = newCycle(summoned);
+    expect(cycle2.ok).toBe(true);
+    if (!cycle2.ok) return;
+    const { game: aboard, taken: taken2a } = await untilReady(edit(cycle2.state, pilot, (p) => (p.ap = 1)), pilot, bot);
+    expect(taken2a.map((a) => a.type)).toEqual(["board_icarus"]);
+    expect(aboard.players.find((p) => p.id === pilot)!.room).toBe(ICARUS_CRAFT);
+    expect(leaveIcarus.options(viewFor(aboard, pilot), memory())).toEqual([]);
+
+    const next = newCycle(edit(aboard, pilot, (p) => (p.ap = 6)));
     expect(next.ok).toBe(true);
     if (!next.ok) return;
     const { game: launched, taken: taken2 } = await untilReady(next.state, pilot, bot);
     expect(taken2.some((a) => a.type === "icarus_takeoff")).toBe(true);
     expect(launched.expeditions).toHaveLength(1);
+  });
+
+  it("on an airless planet, picks up a spacesuit before boarding", async () => {
+    const { game: start, pilot } = orbitSetup({ instant: true, sectors: [{ tag: "FOREST", explored: false }] });
+    const inBay = edit(start, pilot, (p) => (p.room = ICARUS_BAY));
+    expect(inBay.items.some((i) => i.type === "space_suit" && i.at.kind === "room" && i.at.id === ICARUS_BAY)).toBe(true);
+    const bot = new GoalBot(1, 2, [expeditionLaunch]);
+    const { game: summoned, taken: first } = await untilReady(inBay, pilot, bot);
+    expect(first.map((a) => a.type)).toEqual(["take", "summon"]);
+    // The summoned (human) holder doesn't board; the next cycle the Pilot goes, suited.
+    const { game: after, taken } = await untilReady(newCycleOk(summoned), pilot, bot);
+    expect(taken.map((a) => a.type)).toEqual(["board_icarus", "icarus_takeoff"]);
+    expect(after.expeditions).toHaveLength(1);
+  });
+
+  it("on an airless planet with no spacesuit to be had, gives up without summoning", async () => {
+    const { game: start, pilot, planId } = orbitSetup({ sectors: [{ tag: "FOREST", explored: false }] });
+    const noSuits = { ...edit(start, pilot, (p) => (p.room = ICARUS_BAY)), items: start.items.filter((i) => i.type !== "space_suit") };
+    const bot = new GoalBot(1, 2, [expeditionLaunch]);
+    const { game: after, taken } = await untilReady(noSuits, pilot, bot);
+    expect(taken).toEqual([]);
+    expect(after.plans.find((p) => p.id === planId)!.status).toBe("open");
+  });
+
+  it("crew aboard with no takeoff gets off after ICARUS_BOARD_WAIT_CYCLES and gives up on the plan", async () => {
+    const { game: start, pilot, crew } = orbitSetup();
+    const crewBot = new GoalBot(3, 4, [expeditionPrep, leaveIcarus]);
+    await crewBot.decideAction(viewFor(start, crew));
+    const pilotBot = new GoalBot(1, 2, [expeditionLaunch]);
+    const { game: summoned } = await untilReady(start, pilot, pilotBot);
+    let { game } = await untilReady(summoned, crew, crewBot);
+    expect(game.players.find((p) => p.id === crew)!.room).toBe(ICARUS_CRAFT);
+
+    // The Pilot never launches: the crew bot waits aboard, then gets off.
+    for (let c = 1; c < ICARUS_BOARD_WAIT_CYCLES; c++) {
+      const next = newCycle(game);
+      if (!next.ok) throw new Error("newCycle failed");
+      const r = await untilReady(next.state, crew, crewBot);
+      expect(r.taken).toEqual([]);
+      game = r.game;
+    }
+    const last = newCycle(game);
+    if (!last.ok) throw new Error("newCycle failed");
+    const { game: off, taken } = await untilReady(last.state, crew, crewBot);
+    // Off the Icarus, it picks its iTrackie back up from the bay floor and doesn't board again.
+    expect(taken.map((a) => a.type)).toEqual(["leave_icarus", "take"]);
+    expect(off.players.find((p) => p.id === crew)!.room).toBe(ICARUS_BAY);
+    expect(off.items.some((i) => i.at.kind === "player" && i.at.id === crew && i.type === ITRACKIE_ITEM)).toBe(true);
+  });
+});
+
+describe("leaveIcarus: no bot is left aboard the docked Icarus with nothing to wait for", () => {
+  it("gets off at once when not launching or waiting as crew, and is offered nowhere else", async () => {
+    const { game: base, id } = setup();
+    const inBay = edit(base, id, (p) => (p.room = ICARUS_BAY));
+    expect(leaveIcarus.options(viewFor(inBay, id), memory())).toEqual([]);
+    const aboard = edit(base, id, (p) => (p.room = ICARUS_CRAFT));
+    expect(leaveIcarus.options(viewFor(aboard, id), memory())).toHaveLength(1);
+    const bot = new GoalBot(1, 2, SOLO_GOALS);
+    const { game, taken } = await play(aboard, id, bot, 1);
+    expect(taken.map((a) => a.type)).toEqual(["leave_icarus"]);
+    expect(game.players.find((p) => p.id === id)!.room).toBe(ICARUS_BAY);
   });
 });
 
@@ -2733,7 +2875,7 @@ describe("repairDoor goal", () => {
     breakDoor(broken, door);
     broken.reports.push({ kind: "door", door, by: otherId });
 
-    expect(repairDoor.options(viewFor(broken, id), memory()).map((g) => g.key)).toEqual([`repairDoor:go:${closer}`]);
+    expect(repairDoor.options(viewFor(broken, id), memory()).map((g) => g.key)).toEqual([`repairDoor:go:${door}`]);
 
     const bot = new GoalBot(1, 2, [repairDoor]);
     const { game: after, taken } = await play(broken, id, bot, 10);
@@ -2761,7 +2903,64 @@ describe("repairDoor goal", () => {
     isolated.reports.push({ kind: "door", door: distantDoor, by: otherId });
 
     const mem = memory();
-    mem.ended.add("repairDoor:here");
+    for (const exit of isolated.config.rooms["LABORATORY"]!) mem.ended.add(`repairDoor:here:${doorId("LABORATORY", exit)}`);
     expect(repairDoor.options(viewFor(isolated, id), mem)).toEqual([]);
+  });
+
+  it("doesn't walk to the other side of a reported door it can't repair from this side (Rubella)", async () => {
+    const { game: base, id } = setup();
+    const otherId = base.players.find((p) => p.id !== id)!.id;
+    const neighbor = base.config.rooms["LABORATORY"]![0]!;
+    const door = doorId("LABORATORY", neighbor);
+    const sick = edit(base, id, (p) => {
+      p.room = "LABORATORY";
+      p.ap = 10;
+      p.mp = 12;
+      p.modifiers.push("rubella_disease");
+    });
+    breakDoor(sick, door);
+    sick.reports.push({ kind: "door", door, by: otherId });
+
+    expect(repairDoor.options(viewFor(sick, id), memory())).toEqual([]);
+    const { taken } = await play(sick, id, new GoalBot(1, 2, [repairDoor]), 10);
+    expect(taken.filter((a) => a.type === "move")).toEqual([]);
+  });
+
+  it("doesn't swing to the other side after its repair here ended", () => {
+    const { game: base, id } = setup();
+    const otherId = base.players.find((p) => p.id !== id)!.id;
+    const neighbor = base.config.rooms["LABORATORY"]![0]!;
+    const door = doorId("LABORATORY", neighbor);
+    const broken = edit(base, id, (p) => {
+      p.room = "LABORATORY";
+      p.ap = 10;
+      p.mp = 12;
+    });
+    breakDoor(broken, door);
+    broken.reports.push({ kind: "door", door, by: otherId });
+
+    const mem = memory();
+    mem.ended.add(`repairDoor:here:${door}`);
+    expect(repairDoor.options(viewFor(broken, id), mem)).toEqual([]);
+    // From across the ship, the same report is still worth walking to.
+    const far = edit(broken, id, (p) => (p.room = "CORRIDOR_A"));
+    if (!doorRooms(door).includes("CORRIDOR_A")) expect(repairDoor.options(viewFor(far, id), memory()).map((g) => g.key)).toEqual([`repairDoor:go:${door}`]);
+  });
+
+  it("ending the repair of one door here leaves another broken door here open", () => {
+    const { game: base, id } = setup();
+    const [n1, n2] = base.config.rooms["LABORATORY"]!;
+    const first = doorId("LABORATORY", n1!);
+    const second = doorId("LABORATORY", n2!);
+    const broken = edit(base, id, (p) => {
+      p.room = "LABORATORY";
+      p.ap = 10;
+    });
+    breakDoor(broken, first);
+    breakDoor(broken, second);
+
+    const mem = memory();
+    mem.ended.add(`repairDoor:here:${first}`);
+    expect(repairDoor.options(viewFor(broken, id), mem).map((g) => g.key)).toEqual([`repairDoor:here:${second}`]);
   });
 });

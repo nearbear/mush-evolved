@@ -8,6 +8,7 @@ import { expeditionLaunch } from "./expeditionLaunch.ts";
 import { expeditionPlan } from "./expeditionPlan.ts";
 import { expeditionPrep } from "./expeditionPrep.ts";
 import { explore } from "./explore.ts";
+import { leaveIcarus } from "./leaveIcarus.ts";
 import { extinguish } from "./extinguish.ts";
 import { patrolShootHunters } from "./patrolShootHunters.ts";
 import { pickSkill } from "./pickSkill.ts";
@@ -39,6 +40,7 @@ export type { BotMemory, BotSocial, ExpeditionKind, Goal, GoalDef, GoalStep } fr
  * Mush is dead, which waits for the public dead Mush count.
  */
 export const SOLO_GOALS: readonly GoalDef[] = [
+  leaveIcarus,
   returnToSol,
   pickSkill,
   snoop,

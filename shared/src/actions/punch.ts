@@ -2,6 +2,7 @@ import { Action, IN_PRESELECTION, peopleHere, type ActionTag, isString } from ".
 import { damage } from "../death.ts";
 import { isInactive } from "../inactivity.ts";
 import { logPublic } from "../log.ts";
+import { afterArmor } from "../items.ts";
 import { punchDamage } from "../modifiers.ts";
 import { roll, rollFloat } from "../rng.ts";
 import type { GameState, PlayerState } from "../types.ts";
@@ -44,8 +45,11 @@ export class PunchAction extends Action<PunchActionData> {
     const victim = state.players.find((o) => o.id === target.target)!; // checked, so it exists
     const crit = rollFloat(state) < state.config.punch.crit.chance;
     const amount = roll(state, crit ? state.config.punch.crit.damage : state.config.punch.effect.damage);
-    logPublic(state, player.room, crit ? "punchCrit" : "punched", { name: player.character, target: victim.character });
-    damage(state, victim, punchDamage(state, player, amount), "assassinated");
+    const hit = punchDamage(state, player, amount);
+    const dealt = crit ? hit : afterArmor(state, victim, hit); // Plastenite Armor doesn't stop a crit
+    const key = crit ? "punchCrit" : hit > 0 && dealt === 0 ? "punchArmor" : "punched";
+    logPublic(state, player.room, key, { name: player.character, target: victim.character });
+    damage(state, victim, dealt, "assassinated");
   }
 
   override fail(state: GameState, player: PlayerState, target: PunchActionData): void {

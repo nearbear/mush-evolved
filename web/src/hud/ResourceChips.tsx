@@ -1,5 +1,5 @@
 // Your other resources (satiety first, then spores, free IT points, ...) as icons and counts, and a popover with them all:
-// on desktop a card stacking the first two and "…" (SelfHud); on phones a dark column the ID card's full height, two rows
+// on desktop a row of the first three and "…" at the ID card's foot (SelfHud); on phones a dark column the ID card's full height, two rows
 // deep, with as many columns as fit beside AP/MP and HP/morale, the last cell a "…" when some don't (PlayerSummary).
 
 import { Popover } from "@base-ui/react/popover";
@@ -9,8 +9,8 @@ import { RESOURCE_IDS, resourceAvailable, type PlayerView } from "@mush2/shared"
 import { RESOURCE_ICONS, SATIETY_ICON, SPORE_ICON } from "../art/assets.ts";
 import { useSatietyLines } from "./SatietyInfo.tsx";
 
-/** How many resources show before the "…" (the desktop card fits two rows beside the stat cards). */
-const COMPACT_COUNT = 2;
+/** How many resources show before the "…" (what fits in a row across the desktop ID card). */
+const COMPACT_COUNT = 3;
 
 type Chip = { key: string; icon: string; name: string; description?: string; count: number };
 
@@ -62,19 +62,34 @@ function AllResources({ chips, shown, hover, align, className, children }: { chi
   );
 }
 
-/** Desktop: the first two resources one above the other and "…"; the popover also opens on hover (it still opens on tap). */
+/**
+ * Desktop: the first three resources in a row, as the phone's chips. When there are more, "…" follows and the row opens a popover with them
+ * all (on hover too; it still opens on tap); when they all show, it is a plain row, as the phone grid is when nothing is cut.
+ */
 export function CompactResourceChips({ view }: { view: PlayerView }) {
+  const { t, i18n } = useTranslation();
   const chips = useChips(view);
   const shown = chips.slice(0, COMPACT_COUNT);
+  const parts = shown.map((chip) => (
+    <span key={chip.key} className="stat-chip resource-cell">
+      <img src={chip.icon} alt="" />
+      {chip.count}
+    </span>
+  ));
+  if (chips.length <= COMPACT_COUNT) {
+    const list = new Intl.ListFormat(i18n.language, { type: "unit" }).format(shown.map((c) => t("resources.amount", { name: c.name, count: c.count })));
+    return (
+      <span className="resource-stack" role="group" aria-label={t("resources.otherSummary", { list })}>
+        {parts}
+      </span>
+    );
+  }
   return (
     <AllResources chips={chips} shown={shown} hover align="center" className="resource-stack">
-      {shown.map((chip) => (
-        <span key={chip.key} className="resource-chip-part">
-          <img src={chip.icon} alt="" />
-          {chip.count}
-        </span>
-      ))}
-      {chips.length > COMPACT_COUNT && <span aria-hidden="true">…</span>}
+      {parts}
+      <span className="stat-chip resource-cell" aria-hidden="true">
+        …
+      </span>
     </AllResources>
   );
 }

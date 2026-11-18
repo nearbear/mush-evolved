@@ -40,4 +40,16 @@ describe("resolveConfig", () => {
     expect(a).not.toBe(b);
     expect(a.maxAp).toBe(DEFAULT_CONFIG.maxAp);
   });
+
+  it("deep-freezes what it returns, including the parts it builds from overrides", () => {
+    const c = resolveConfig({ cheatRoom: true, preselection: PRESELECTION });
+    expect(Object.isFrozen(c)).toBe(true);
+    expect(Object.isFrozen(c.preselection)).toBe(true);
+    expect(Object.isFrozen(c.preselection!.endsOn)).toBe(true);
+    expect(Object.isFrozen(c.rooms)).toBe(true);
+    expect(Object.isFrozen(c.equipment)).toBe(true);
+    expect(() => {
+      (c as { mushCount: number }).mushCount = 3;
+    }).toThrow(TypeError);
+  });
 });
