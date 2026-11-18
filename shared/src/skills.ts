@@ -194,8 +194,8 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   first_aid: "full",
   // Premonition: reveals a crewmate's last action for 1 morale (owner, 2026-11-13, actions/premonition.ts).
   premonition: "full",
-  // Computer points and their use on research, NERON projects, comms, and planet analysis only; no hacking.
-  computer: "partial",
+  // Computer points (research, NERON projects, comms, planet analysis, hack) and doubled hack odds (modifiers/computer.ts, actions/hack.ts).
+  computer: "full",
   // Reads drug properties, +2 Drug Dispenser options, and +4 research bonus (drugs.ts, research.ts).
   biologist: "full",
   // PILGRED points and the PILGRED repair bonus (owner, 2026-10-21).

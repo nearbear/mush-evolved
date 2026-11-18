@@ -4262,3 +4262,7 @@ Owner specified Syphilis (20-32 cycles, STT/DTT spread, -3 max morale and HP, +2
 
 - Set `.minimap-room.here` in `web/src/styles/minimap.css` to `#ffbf00` (amber).
 - Sampled `butbg.png` (`#008ee5`) for non-adjacent `.minimap-door` and `butbgover.png` (`#00b3ed`) for adjacent `.minimap-door.here`.
+
+## 2026-11-17 — Mark Computer Scientist skill as full
+
+- Updated `SKILL_STATUS.computer` from `"partial"` to `"full"` in `shared/src/skills.ts` (since `hack` and the doubled `hack` odds are implemented) and added a regression check in `shared/tests/skills.test.ts`.
