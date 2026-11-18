@@ -136,6 +136,7 @@ export const PLAYER_STATE_FIELDS: Record<string, FieldRule> = {
   fertileToday: { reach: "own", test: "fertile.test.ts", note: "Only gates the free extraction; roommates never see it." },
   doormanToday: { reach: "own", test: "doors.test.ts", note: "Only gates Doorman's free daily door sabotage; roommates never see it." },
   boringToday: { reach: "own", test: "speech.test.ts", note: "Only gates the Boring speech; roommates never see it." },
+  unheard: { reach: "own", test: "damaged_ears.test.ts", note: "Damaged/Destroyed Ears' unheard messages; the owner gets their readable channels' as `chatUnheard`." },
   chitchatToday: { reach: "own", test: "history.test.ts", note: "Only gates Chitchat; roommates never see it." },
   interrogatedToday: { reach: "own", test: "history.test.ts", note: "Only gates Interrogate; roommates never see it." },
   mycoscannedToday: { reach: "own", test: "mycoscan.test.ts", note: "Only gates the MycoScan check; roommates never see it." },

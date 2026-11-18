@@ -84,3 +84,11 @@ describe("unreadToAnnounce", () => {
     expect(unreadToAnnounce(arrived, counts, null)).toEqual([["global", 1], ["botany", 2]]);
   });
 });
+
+describe("unreadToAnnounce with unheard messages", () => {
+  it("says nothing for a channel whose unread are all unheard", () => {
+    const arrived = new Map([["global", 2]] as const);
+    expect(unreadToAnnounce(arrived, { global: 5 }, { global: 3 }, { global: [[3, 5]] })).toEqual([]);
+    expect(unreadToAnnounce(arrived, { global: 5 }, { global: 3 })).toEqual([["global", 2]]);
+  });
+});

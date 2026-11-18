@@ -1,6 +1,6 @@
 import type { Cheat } from "../cheats.ts";
 import type { CharacterId } from "../characters.ts";
-import type { Action, PlayerId, Role, RoomId, Seat } from "../types.ts";
+import type { Action, ChannelId, PlayerId, Role, RoomId, Seat, SeqRange } from "../types.ts";
 import type { DiseaseTracker } from "../diseases.ts";
 import type { PendingDisease } from "../fruits.ts";
 
@@ -112,6 +112,12 @@ export interface PlayerState extends Seat {
   snoopedToday?: string[];
   /** True once this character has checked their spores on the MycoScan today (check_spores.ts); cleared at day start; stays with the body. Sent to the owner only. */
   mycoscannedToday?: boolean;
+  /**
+   * Damaged or Destroyed Ears (owner, 2026-11-17): the messages, by channel and position, other players posted while this
+   * body was deaf (`pushChat`). They are never sent to it, even after it is cured (`heardBy` in chat.ts), and don't count
+   * as unread. The owner gets its own, for readable channels, as `PlayerView.chatUnheard`.
+   */
+  unheard?: Partial<Record<ChannelId, SeqRange[]>>;
   /** Equipment ids in the current room hacked with a hacker kit (actions/hack.ts); cleared on leaving the room. Sent to the owner only. */
   hackedEquipment?: string[];
   /**
@@ -193,3 +199,4 @@ export interface PlayerState extends Seat {
   cheats: Cheat[];
   /** Development cheat: overrides ACTOPI for what this player sees only. The game's ACTOPI is unchanged. */
 }
+

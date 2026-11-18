@@ -51,3 +51,19 @@ describe("unreadByFeature", () => {
     expect(unreadByFeature(view, { botany: 3, astrophysics: 1, "sp-1": 1 } as Partial<Record<ChannelId, number>>)).toEqual({ astrophysics: 4, expeditions: 1 });
   });
 });
+
+describe("unheard messages (Damaged or Destroyed Ears)", () => {
+  const others = (seqs: number[]) => seqs.map((seq) => ({ seq, from: "p1" }));
+
+  it("place no divider when everything unread is unheard", () => {
+    expect(dividerAt(2, 5, [], "p0", [[2, 5]])).toBeNull();
+  });
+
+  it("move the divider past unheard messages, which aren't drawn", () => {
+    expect(dividerAt(2, 6, others([5]), "p0", [[2, 5]])).toBe(5);
+  });
+
+  it("leave them out of the count", () => {
+    expect(dividerPlacement(2, 10, 0, [[4, 7]]).count).toBe(5);
+  });
+});

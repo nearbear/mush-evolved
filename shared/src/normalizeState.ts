@@ -490,6 +490,7 @@ export function normalizeDiseaseTracker(raw: Partial<DiseaseTracker>): DiseaseTr
   });
 }
 
+
 type AccommodationOffer = NonNullable<PlayerState["accommodationOffers"]>[number];
 
 export function normalizeAccommodationOffer(raw: Partial<AccommodationOffer>): AccommodationOffer {
@@ -548,6 +549,7 @@ export function normalizePlayer(raw: Partial<PlayerState>, mode: QueueMode): Pla
     snoopedToday: opt(raw.snoopedToday, copy),
     mycoscannedToday: raw.mycoscannedToday,
     hackedEquipment: opt(raw.hackedEquipment, copy),
+    unheard: opt(raw.unheard, dict),
     history: copy(need(raw, "history", t)),
     logSeen: need(raw, "logSeen", t),
     accommodationOffers: opt(raw.accommodationOffers, (offers) => offers.map(normalizeAccommodationOffer)),
