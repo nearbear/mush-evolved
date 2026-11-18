@@ -99,7 +99,7 @@
   box-shadow: 0 0 6px var(--panel-shadow);
 }
 /*
- * Phones: who you are, as the desktop ID card (self-hud.css, whose .id-band, .id-portrait, .id-faction and .id-name it
+ * Phones: who you are, as the desktop ID card (self-hud.css, whose .id-band, .id-portrait and .id-name it
  * reuses) on the same pale stock with the same dark outline, but square: a band in your faction's colour across the top,
  * then your portrait (tap for your goal), your name and the clock, your stats (below), your other resources in a dark
  * column the card's full height (the band stops at it), and the menu. The name gets its full width first (grid tracks
@@ -120,25 +120,36 @@
   column-gap: var(--space-2);
   row-gap: var(--space-1);
   align-items: center;
+  position: relative; /* the band's divider (.id-band::after, self-hud.css) spans it */
   padding: 0 var(--space-2) var(--space-1);
   background: var(--terminal-bg);
+  /* The desktop ID card's amber edge: the dark border is the inner line, then a gold line and a dark one outside it. The
+     card is square here, so box-shadows draw them; they sit under the clock, which overlays the card without joining it. */
   border: 1px solid var(--gold-edge);
-  box-shadow: 0 0 6px var(--panel-shadow);
+  box-shadow:
+    0 0 0 1px var(--gold-mid),
+    0 0 0 2px var(--gold-edge),
+    0 0 6px 2px var(--panel-shadow);
   color: var(--text);
 }
 .nameplate.mush {
   --id-faction: var(--mush);
 }
 .nameplate .id-portrait {
-  grid-area: pic;
   width: 40px;
   height: 40px;
-  margin-right: var(--space-1); /* the faction icon overhangs it */
-  cursor: help;
 }
-.nameplate .faction-card:focus-visible {
-  outline: 2px solid var(--id-faction);
-  outline-offset: 2px;
+/* Tap your portrait to inspect yourself (the Inspect panel), as the desktop ID card's .id-open does (self-hud.css). */
+.nameplate .id-open {
+  grid-area: pic;
+  align-self: start;
+  box-sizing: border-box;
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  background: none;
+  display: flex;
 }
 .nameplate .who {
   grid-area: who;
@@ -190,12 +201,6 @@
   height: 32px;
   margin: 0;
   padding: 0 var(--space-2);
-}
-.faction-goals {
-  max-width: 16rem;
-}
-.faction-goals p {
-  margin: var(--space-1) 0 0;
 }
 /* Desktop: the portrait alone in the nameplate; name, faction, and goal are in its popover. */
 .portrait-card {
@@ -288,11 +293,12 @@
   gap: var(--space-1);
   padding: 0 6px;
   border-radius: 999px;
-  background: var(--chrome-0);
-  border: 1px solid var(--panel-rim);
+  /* A terminal's title-bar blue, outlined in the iTrackie feed's row rule, in the card's dark ink. */
+  background: var(--terminal-header-bg);
+  border: 1px solid var(--terminal-rule);
   font-size: 0.7rem;
   line-height: 1.05rem;
-  color: #fff;
+  color: #171b5c;
   font-variant-numeric: tabular-nums;
 }
 .stat-chip img {
@@ -328,7 +334,6 @@
   font-size: 0.75rem;
   font-weight: bold;
   line-height: 16px;
-  color: #fff;
   font-variant-numeric: tabular-nums;
 }
 .resource-cell img {
@@ -353,7 +358,7 @@
   inset: 0;
   display: grid;
   place-items: center;
-  color: #fff;
+  color: #171b5c; /* the chip's ink; the cell's own colour is transparent */
 }
 /* Phones: a stat's card has its pip bar standing beside the text, and its capacity after the name. */
 .stat-info-card {
@@ -369,12 +374,7 @@
   margin-left: var(--space-2);
   font-variant-numeric: tabular-nums;
 }
-.resource-chip-part {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-}
-/* Desktop: your other resources one above the other in a card in the HUD; it opens them all. */
+/* Desktop: your other resources in the ID card (SelfHud; laid out in self-hud.css), as the phone's chips; it opens them all when some don't show. */
 .resource-stack {
   display: flex;
   flex-direction: column;
@@ -386,16 +386,6 @@
   color: #fff;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
   cursor: pointer;
-}
-.resource-stack .resource-chip-part {
-  gap: var(--space-2);
-}
-.resource-stack .resource-chip-part img {
-  image-rendering: pixelated;
-}
-.resource-stack > [aria-hidden] {
-  line-height: 0.6;
-  text-align: center;
 }
 .resource-rest {
   display: flex;

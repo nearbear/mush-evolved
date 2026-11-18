@@ -290,13 +290,8 @@
     }
   },
   "faction": {
-    "about": "{{name}}: what your faction wants",
     "human": {
-      "name": "Human",
-      "goal": "Eliminate the Mush."
-    },
-    "mush": {
-      "goal": "Stop the cure from being researched, and avoid being eliminated."
+      "name": "Human"
     },
     "alphaMush": {
       "name": "Alpha Mush"

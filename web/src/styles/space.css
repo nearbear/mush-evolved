@@ -179,17 +179,13 @@
   }
 }
 
-/* The hunters you are not aiming at, in the bottom-left corner: one sprite a kind with how many, however big the wave.
-   On desktop the AP and MP bars stand in that corner of .room-view, so the pack steps right to clear them. */
+/* The hunters you are not aiming at, in the bottom-left corner: one sprite a kind with how many, however big the wave. */
 .space-pack {
   position: absolute;
   left: 0.5rem;
   bottom: 0.5rem;
   display: flex;
   gap: var(--space-2);
-}
-.room-view:has(.self-points) .space-pack {
-  left: 6rem;
 }
 /* Not a plain button: the sprite is the control, so it drops the Mush button art (as tabs do). */
 button.space-hunter {

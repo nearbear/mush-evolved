@@ -1,5 +1,5 @@
-/* The tip card (#351): centred above the room view's bottom row (AP/MP, the queue, the inventory button), under the
-   inventory popup (3), which may cover it. Same panel look as the AP/MP card. */
+/* The tip card (#351): centred above the room view's bottom row (the queue, the inventory button), under the
+   inventory popup (3), which may cover it. Same panel look as the room's other cards. */
 .tip-card {
   position: absolute;
   left: 50%;

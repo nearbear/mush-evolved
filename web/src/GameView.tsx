@@ -21,7 +21,7 @@ import { PeekBar } from "./hud/PeekBar.tsx";
 import { TerminalDialog } from "./hud/TerminalDialog.tsx";
 import { EndScreen } from "./hud/EndScreen.tsx";
 import { BodyTakenDialog } from "./hud/BodyTakenDialog.tsx";
-import { SelfHud, SelfPoints } from "./hud/SelfHud.tsx";
+import { SelfHud } from "./hud/SelfHud.tsx";
 import { TipCard } from "./hud/TipCard.tsx";
 import { resolveTarget } from "./hud/targets.ts";
 import { TopBar } from "./hud/TopBar.tsx";
@@ -223,6 +223,10 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
         onRoleCheat={(role: RoleCheat) => post({ type: "roleCheat", role })}
         onCheatRoom={Object.hasOwn(view.rooms, CHEAT_ROOM) && view.you.room !== CHEAT_ROOM ? () => post({ type: "cheatRoom" }) : undefined}
         onLeaveShip={() => post({ type: "leaveShip" })}
+        onInspectSelf={() => {
+          select({ kind: "player", id: you.id });
+          setPanel("inspect");
+        }}
       />
       {!mobile && transport && <div className="game-transport">{transport}</div>}
 
@@ -296,10 +300,9 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
             {you.alive && <RoomList view={view} layout={layout} reachable={reachable} onSelect={(target) => { select(target); setFocusActions((n) => n + 1); }} onMove={move} quiet={readOnly} />}
             {mobile && <ShipOverlay view={view} />}
             {!mobile && you.alive && <SelfHud view={view} onInspect={() => select({ kind: "player", id: you.id })} />}
-            {/* Bottom-left: AP and MP (desktop), then the action queue beside them. */}
+            {/* Bottom-left: the action queue. */}
             {you.alive && (
               <div className="room-bottom-left">
-                {!mobile && <SelfPoints view={view} />}
                 <ActionQueue view={view} onClear={readOnly ? undefined : () => post({ type: "clearQueue" })} />
               </div>
             )}

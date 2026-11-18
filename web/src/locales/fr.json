@@ -296,13 +296,8 @@
     }
   },
   "faction": {
-    "about": "{{name}} : ce que veut votre camp",
     "human": {
-      "name": "Humain",
-      "goal": "Éliminer les Mush."
-    },
-    "mush": {
-      "goal": "Empêcher la recherche du remède et éviter d'être éliminé."
+      "name": "Humain"
     },
     "alphaMush": {
       "name": "Mush alpha"

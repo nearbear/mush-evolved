@@ -4,7 +4,7 @@
 
 import type { PlayerView } from "@mush2/shared";
 import { ITrackie } from "../hud/ITrackie.tsx";
-import { SelfHud, SelfPoints } from "../hud/SelfHud.tsx";
+import { SelfHud } from "../hud/SelfHud.tsx";
 import { CHANNELS } from "./GameSections.tsx";
 import { SampleInspect, SampleTopBar } from "./HudSections.tsx";
 import { noop, Section } from "./KitSection.tsx";
@@ -32,9 +32,6 @@ function Screen({ view }: { view: PlayerView }) {
             <div className="room-title">
               <h2>Laboratory</h2>
             </div>
-          </div>
-          <div className="m2k-ramp-points">
-            <SelfPoints view={view} />
           </div>
         </div>
         <div className="m2k-itrackie">

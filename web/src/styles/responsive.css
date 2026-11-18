@@ -257,7 +257,7 @@
     grid-template-areas:
       "band band band band band"
       "pic who clock stats menu";
-    row-gap: 0;
+    row-gap: 2px; /* the stripe's divider (.id-band::after) reaches 2px under it */
   }
   /* Its colour stays as the stripe; only the words go. */
   .nameplate .id-band {

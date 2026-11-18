@@ -296,13 +296,8 @@
     }
   },
   "faction": {
-    "about": "{{name}}: lo que quiere tu bando",
     "human": {
-      "name": "Humano",
-      "goal": "Eliminar a los Mush."
-    },
-    "mush": {
-      "goal": "Impedir que se investigue la cura y evitar ser eliminado."
+      "name": "Humano"
     },
     "alphaMush": {
       "name": "Mush alfa"

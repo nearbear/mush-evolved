@@ -25,6 +25,7 @@ export function TopBar({
   onRoleCheat,
   onCheatRoom,
   onLeaveShip,
+  onInspectSelf,
 }: {
   view: PlayerView;
   /** Phones only: on desktop the summary is the HUD over the room (SelfHud). */
@@ -45,6 +46,8 @@ export function TopBar({
   /** Absent on a ship without the cheat room, and while you're in it (#170). */
   onCheatRoom?: (() => void) | undefined;
   onLeaveShip: () => void;
+  /** Phones: your portrait in the summary opens the Inspect panel on you. */
+  onInspectSelf: () => void;
 }) {
   const { you } = view;
   const { t } = useTranslation();
@@ -113,7 +116,7 @@ export function TopBar({
     <header className="top-bar">
       {/* Desktop zones (UI coherence step 5): time on the left, the ship in the middle, the actions on the right. Phones put the clock, the tags and the menu on the nameplate. */}
       {showSummary ? (
-        <PlayerSummary view={view} clock={clock} tags={tags} menu={menu} />
+        <PlayerSummary view={view} clock={clock} tags={tags} menu={menu} onInspect={onInspectSelf} />
       ) : (
         <div className="cycle">
           {clock}
