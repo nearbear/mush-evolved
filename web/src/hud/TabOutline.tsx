@@ -57,10 +57,14 @@ export function outlinePath(card: Box, tab: Box | null, cut: number, radius: num
   p.push(
     `L${f(r - Math.max(radius, D))} ${f(t + D)}`,
     cr > 0 ? `A${cr} ${cr} 0 0 1 ${f(r - D)} ${f(t + radius)}` : `L${f(r - D)} ${f(t + D)}`,
-    `L${f(r - D)} ${f(b - cut + D - D * Math.SQRT2)}`,
-    `L${f(r - cut - DIAG)} ${f(b - D)}`,
-    `L${f(l + cut + DIAG)} ${f(b - D)}`,
-    `L${f(l + D)} ${f(b - cut + D - D * Math.SQRT2)}`,
+    ...(cut > 0
+      ? [
+          `L${f(r - D)} ${f(b - cut + D - D * Math.SQRT2)}`,
+          `L${f(r - cut - DIAG)} ${f(b - D)}`,
+          `L${f(l + cut + DIAG)} ${f(b - D)}`,
+          `L${f(l + D)} ${f(b - cut + D - D * Math.SQRT2)}`,
+        ]
+      : [`L${f(r - D)} ${f(b - D)}`, `L${f(l + D)} ${f(b - D)}`]),
     "Z",
   );
   return p.join("");
