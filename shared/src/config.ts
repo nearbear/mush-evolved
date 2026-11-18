@@ -794,10 +794,11 @@ export const PRESELECTION: PreselectionRules = {
 /**
  * A game's config: `DEFAULT_CONFIG` with its overrides on top (types/config.ts). The keys are copied one by one, so
  * unknown keys in a stored object are ignored, never spread. Runs on every load, so live games pick up balance changes.
+ * Deep-frozen like `DEFAULT_CONFIG`: clones share `state.config`, so nothing may write to it.
  */
 export function resolveConfig(o: ConfigOverrides = {}): GameConfig {
   const p = o.preselection;
-  return {
+  return deepFreeze({
     ...DEFAULT_CONFIG,
     ...(o.mushCount !== undefined && { mushCount: o.mushCount }),
     ...(o.manualCycles !== undefined && { manualCycles: o.manualCycles }),
@@ -808,5 +809,5 @@ export function resolveConfig(o: ConfigOverrides = {}): GameConfig {
     // The cheat room has no doors, so no route reaches it (#170).
     ...(o.cheatRoom && { cheatRoom: true, rooms: { ...DEFAULT_CONFIG.rooms, [CHEAT_ROOM]: [] }, equipment: { ...DEFAULT_CONFIG.equipment, [CHEAT_ROOM]: cheatRoomEquipment() } }),
     ...(p && { preselection: { seats: p.seats, endsOn: { day: p.endsOn.day, cycle: p.endsOn.cycle }, mushCount: p.mushCount ?? "auto", twoMushAbove: p.twoMushAbove, minPlayers: p.minPlayers } }),
-  };
+  });
 }

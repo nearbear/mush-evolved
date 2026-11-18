@@ -4331,3 +4331,7 @@ Follow-up: a muted player also can't create a private channel (`createChannel` r
 - **What worked:** a handoff plan detailed enough for a fresh session to pick up each slice. Two test helpers, `aboard()` to board everyone and then take off and `why()` to read a refusal code, cut the failing expedition tests from 70 to 24 at once. The survival harness showed the bots' boarding didn't regress (seeds 1-12, same endings).
 - **What needed correction:** the owner corrected an earlier reading: Sabotage was recorded on 2026-11-08 as covering "every sector from then on", but it covers the next sector only. A crew that boarded as soon as it reached the bay timed out before the Pilot arrived (survival seed 11), so crew now wait for the plan's author. The leak check found that boarding's spacesuit check reveals, for free, whether a planet has a hidden Oxygen sector. The owner accepted that leak.
 - **Flake:** one model-bot backoff test in `server/tests/GameRoom.test.ts` failed once under load and passed when rerun.
+
+## 2026-11-17: resolveConfig returns a deep-frozen config
+
+- Follow-up to 9c01b3da: `DEFAULT_CONFIG` was deep-frozen, but `resolveConfig`'s own top-level object (and the parts it builds from overrides: pre-selection, cheat-room rooms/equipment) wasn't, though clones share `state.config`. Wrapped the result in `deepFreeze`; a config test asserts it. Hardening only: nothing wrote to it, and the full suite passed unchanged, which confirmed that.
