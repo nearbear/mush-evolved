@@ -1,5 +1,7 @@
 # Hacker Kit Implementation Plan
 
+Status: **done, closed 2026-11-17.** Built (rules in `docs/rules/implemented-rules.md`, tests in `shared/tests/hack.test.ts` and `web/tests/hud/terminalUsername.test.ts`); the in-dialog `hack` `ActionButton` in Section 5 is **won't do** (owner, 2026-11-17).
+
 ## Decided Rules
 
 1. **Item (`hacker_kit`)**
@@ -99,7 +101,7 @@
     - Check `const hasHack = bypassesTitles(view.you, title) || view.roomEquipment.some((e) => e.type === type && view.you.hackedEquipment?.includes(e.id));`
     - Allow `"hacked"` when `holder !== mine && hasHack` **including when `holder == null` (vacant)**! When `holder == null`, pass `user = terminalUsername(mine)` (or an existing character/login string) so `terminal.login.hacked` renders cleanly instead of `"limited"`.
 - **Terminal Windows (`web/src/hud/CommandTerminal.tsx`, `CommsCenter.tsx`, `BiosTerminal.tsx`)**
-  - When the player lacks access to the terminal, offer the `hack` `ActionButton` (if `view.actions` contains `{ type: "hack", equipment: terminal.id }`) right inside the locked terminal dialog alongside the Inspect panel button, so clicking the terminal directly also exposes **Hack**.
+  - **Won't do (2026-11-17):** When the player lacks access to the terminal, offer the `hack` `ActionButton` (if `view.actions` contains `{ type: "hack", equipment: terminal.id }`) right inside the locked terminal dialog alongside the Inspect panel button, so clicking the terminal directly also exposes **Hack**.
   - Update the read-only helper text (`commander` / `officer` / `bios.adminOnly`) so hacked players don't see `"Only the Comms Officer can..."` or `"Commander only"` when they have unlocked the terminal via `hack` (e.g., check `hasHack` / `login.access !== "limited"` or whether actions are offered in `view.actions`).
 - **Log messages (`web/src/locales/{en,fr,es}.json`)**
   - Add `logs.hackedTerminal` and `logs.hackFailed` in `en.json`, `fr.json`, and `es.json` (plus check `web/tests/` for any log-key coverage tests).
