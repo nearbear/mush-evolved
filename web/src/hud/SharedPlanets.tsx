@@ -53,7 +53,7 @@ export function SharedPlanets({
             <li className="channel-slot">
               <button type="button" className="channel-slot-pick" aria-pressed={current === null} onClick={() => onPick(null)}>
                 {general}
-                <UnreadChip channel="astrophysics" total={view.chatCounts.astrophysics ?? 0} />
+                <UnreadChip channel="astrophysics" total={view.chatCounts.astrophysics ?? 0} unheard={view.chatUnheard?.astrophysics} />
               </button>
             </li>
             {listed.map((e) => (
@@ -62,7 +62,7 @@ export function SharedPlanets({
                   {/* The first line only, to fit a row; who shared it and when head its thread. */}
                   <span className="shared-planet-name">{firstLine(e)}</span>
                   {e.stale && <span className="shared-planet-stale">{t("itrackie.sharedPlanets.stale")}</span>}
-                  <UnreadChip channel={e.id} total={view.chatCounts[e.id] ?? 0} />
+                  <UnreadChip channel={e.id} total={view.chatCounts[e.id] ?? 0} unheard={view.chatUnheard?.[e.id]} />
                 </button>
               </li>
             ))}

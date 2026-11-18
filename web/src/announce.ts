@@ -184,10 +184,15 @@ export function freshIn(seen: Seen | null, view: PlayerView): Fresh {
  * store, N is the channel's unread (`chatCounts − read`), the number its badge shows; a channel with none left (read
  * elsewhere meanwhile) says nothing. With no store (a replay), N is what arrived.
  */
-export function unreadToAnnounce(arrived: ReadonlyMap<ChannelId, number>, counts: PlayerView["chatCounts"], read: Readonly<ChatRead> | null): [ChannelId, number][] {
+export function unreadToAnnounce(
+  arrived: ReadonlyMap<ChannelId, number>,
+  counts: PlayerView["chatCounts"],
+  read: Readonly<ChatRead> | null,
+  unheard?: PlayerView["chatUnheard"],
+): [ChannelId, number][] {
   if (!read) return [...arrived];
   return [...arrived.keys()].flatMap((c): [ChannelId, number][] => {
-    const n = unreadCount(counts, read, c);
+    const n = unreadCount(counts, read, c, unheard);
     return n > 0 ? [[c, n]] : [];
   });
 }

@@ -37,7 +37,7 @@ import { emptyResources } from "./resources.ts";
 import { hasSkill } from "./skills.ts";
 import { soil } from "./dirt.ts";
 import { rollFloat, shuffle, streamFor } from "./rng.ts";
-import { chatChannels, chatMarkKey, chatPageOf, markedText, readChannels } from "./chat.ts";
+import { chatChannels, chatMarkKey, chatPageOf, heardBy, markedText, readChannels } from "./chat.ts";
 import { moderateName } from "./moderation.ts";
 import { clone, cloneState, dayOf, fail, findPlayer, type ActionResult } from "./helpers.ts";
 
@@ -587,11 +587,21 @@ export function chatPageSource(state: Readonly<GameState>, playerId: PlayerId, c
 export function chatPageView(state: Readonly<GameState>, playerId: PlayerId, channel: ChannelId, page: number, stored?: readonly ChatMessage[]): ChatLine[] | null {
   const source = chatPageSource(state, playerId, channel, page);
   const messages = source === "state" ? state.chat : source === "stored" ? stored : undefined;
-  if (!messages) return null;
-  return messages.filter((m) => m.channel === channel && chatPageOf(m.seq) === page).map((m) => {
+  const you = findPlayer(state, playerId);
+  if (!messages || !you) return null;
+  return messages.filter((m) => m.channel === channel && chatPageOf(m.seq) === page && heardBy(you, m)).map((m) => {
     const { id: _id, ...line } = messageView(m, state.chatMarks);
     return line;
   });
+}
+
+/** Your unheard messages in the channels you read now (`PlayerView.chatUnheard`), or nothing when there are none. */
+function unheardView(you: Readonly<PlayerState>, channels: readonly ChannelId[]): Pick<PlayerView, "chatUnheard"> {
+  const entries = channels.flatMap((c) => {
+    const ranges = you.unheard?.[c];
+    return ranges && ranges.length > 0 ? [[c, ranges.map(([a, b]) => [a, b])]] : [];
+  });
+  return entries.length > 0 ? { chatUnheard: Object.fromEntries(entries) } : {};
 }
 
 /** Every thread, as a view carries it (for readers of global chat). */
@@ -658,6 +668,7 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     energizeUntil: _energizeUntil,
     perceptionUntil: _perceptionUntil,
     pendingDiseases: _pendingDiseases,
+    unheard: _unheard,
     ...yours
   } = you;
   return {
@@ -743,8 +754,9 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
       .filter((e) => seesLine(e, you) && inLogWindow(state, e, logWindow))
       .map((e) => (e.visibleTo === "all" ? e : { ...e, visibleTo: [you.id] })),
     logSeen: you.logSeen,
-    chat: state.chat.filter((m) => channels.includes(m.channel)).map((m) => messageView(m, state.chatMarks)),
+    chat: state.chat.filter((m) => channels.includes(m.channel) && heardBy(you, m)).map((m) => messageView(m, state.chatMarks)),
     chatCounts: Object.fromEntries(channels.flatMap((c) => (state.chatSeq[c] ? [[c, state.chatSeq[c]]] : []))),
+    ...unheardView(you, channels),
     chatChannels: chatChannels(state, you),
     readChannels: channels,
     privateChannels: state.channels.filter((c) => c.members.includes(playerId)).map((c) => ({ ...c, members: [...c.members] })),

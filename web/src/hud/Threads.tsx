@@ -92,7 +92,7 @@ export function Threads({
                     <img className="tab-icon" src={TAB_ICONS.threads} alt="" />
                     <span className="thread-name">{th.name}</span>
                     <span className="thread-count">{t("itrackie.threads.messages", { count: counts.get(th.id) ?? 0 })}</span>
-                    <UnreadChip channel={th.id} total={view.chatCounts[th.id] ?? 0} />
+                    <UnreadChip channel={th.id} total={view.chatCounts[th.id] ?? 0} unheard={view.chatUnheard?.[th.id]} />
                   </button>
                 </li>
               ))}

@@ -68,7 +68,7 @@ export function PrivateChannels({
             <li key={c.id} className="channel-slot">
               <button type="button" className="channel-slot-pick" aria-pressed={c.id === current?.id} onClick={() => setPicked(c.id)}>
                 {label(c)}
-                <UnreadChip channel={c.id} total={view.chatCounts[c.id] ?? 0} />
+                <UnreadChip channel={c.id} total={view.chatCounts[c.id] ?? 0} unheard={view.chatUnheard?.[c.id]} />
               </button>
               {onLeave && <IconButton icon="🚪" label={t("channels.leaveNamed", { name: label(c) })} onClick={() => onLeave(c.id)} />}
             </li>

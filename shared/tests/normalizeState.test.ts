@@ -78,6 +78,7 @@ function handFilled() {
     fertileToday: true,
     doormanToday: true,
     chitchatToday: true,
+    unheard: { global: [[3, 9], [12, 13]] },
     interrogatedToday: true,
     snoopedToday: ["FRONT_STORAGE"],
     mycoscannedToday: true,

@@ -144,3 +144,6 @@ export interface ChatOutbox {
   sealed: SealedChatPage[];
   dropped: { channel: ChannelId; pages: number }[];
 }
+
+/** A run of a channel's messages by position, `from` inclusive to `to` exclusive (`ChatMessage.seq`). */
+export type SeqRange = [from: number, to: number];

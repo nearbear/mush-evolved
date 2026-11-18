@@ -739,7 +739,6 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
       "damaged_ears_injury",
       "destroyed_ears_injury",
       "torn_tongue_injury",
-      "burst_nose_injury",
       "open_air_brain_injury",
       "head_trauma_injury",
       "haemorrhage_injury",
@@ -780,7 +779,7 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
       {label: "syphilis_disease", type: "disease", durationMin: 20, durationMax: 32, spreadByDTT: true},
       // Owner, 2026-11-17: from a failed surgery.
       {label: "sepsis_disease", type: "disease", durationMin: 1, durationMax: 3},
-      ...["broken_nose_injury", "damaged_ears_injury", "destroyed_ears_injury", "torn_tongue_injury", "burst_nose_injury", "open_air_brain_injury", "head_trauma_injury", "haemorrhage_injury", "critical_haemorrhage_injury", "busted_arm_joint_injury", "punctured_lung_injury", "bruised_shoulder_injury", "mashed_foot_injury", "broken_shoulder_injury", "burnt_hand_injury"].map((label) => ({ label, type: "injury" }))],
+      ...["broken_nose_injury", "damaged_ears_injury", "destroyed_ears_injury", "torn_tongue_injury", "open_air_brain_injury", "head_trauma_injury", "haemorrhage_injury", "critical_haemorrhage_injury", "busted_arm_joint_injury", "punctured_lung_injury", "bruised_shoulder_injury", "mashed_foot_injury", "broken_shoulder_injury", "burnt_hand_injury"].map((label) => ({ label, type: "injury" }))],
     allDisorderStats: [{type: "disorder", resistance: 8}],
     allInjuryStats: [{type: "injury"}],
     },

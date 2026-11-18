@@ -62,7 +62,7 @@ export function SharedReports({
             <li className="channel-slot">
               <button type="button" className="channel-slot-pick" aria-pressed={picked === null} onClick={() => onPick(null)}>
                 {general}
-                <UnreadChip channel="expeditions" total={view.chatCounts.expeditions ?? 0} />
+                <UnreadChip channel="expeditions" total={view.chatCounts.expeditions ?? 0} unheard={view.chatUnheard?.expeditions} />
               </button>
             </li>
             {listed.map((e) => (
@@ -70,7 +70,7 @@ export function SharedReports({
                 <button type="button" className="channel-slot-pick shared-planet-pick" aria-pressed={e.id === picked} onClick={() => onPick(e.id)}>
                   {/* The first line only, to fit a row; who shared it and when head its thread. */}
                   <span className="shared-planet-name">{firstLine(e)}</span>
-                  <UnreadChip channel={e.id} total={view.chatCounts[e.id] ?? 0} />
+                  <UnreadChip channel={e.id} total={view.chatCounts[e.id] ?? 0} unheard={view.chatUnheard?.[e.id]} />
                 </button>
               </li>
             ))}

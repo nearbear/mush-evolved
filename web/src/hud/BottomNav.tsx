@@ -23,7 +23,7 @@ export function BottomNav({
 }: {
   panel: MobilePanel;
   onChange: (panel: MobilePanel) => void;
-  view: Pick<PlayerView, "readChannels" | "chatCounts">;
+  view: Pick<PlayerView, "readChannels" | "chatCounts" | "chatUnheard">;
 }) {
   const { t } = useTranslation();
   const read = useReadSnapshot();

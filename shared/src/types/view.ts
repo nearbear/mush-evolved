@@ -10,7 +10,7 @@ import type { PlanetDirection } from "../planets.ts";
 import type { TitleId } from "../titles.ts";
 import type { Alerts } from "../reports.ts";
 import type { Action, BotKind, DocumentState, ItemId, LogEntry, LogLine, PlayerId, Role, RoomId } from "../types.ts";
-import type { ChannelId, ChatLine, ChatMessage, ChatThread, PrivateChannel, SharedPlanet, SharedReport, SharedReportId } from "./chat.ts";
+import type { ChannelId, ChatLine, ChatMessage, ChatThread, PrivateChannel, SeqRange, SharedPlanet, SharedReport, SharedReportId } from "./chat.ts";
 import type { Plan } from "./plan.ts";
 import type { MovementRules } from "./config.ts";
 import type { ActionInProgress, PlayerState, Spot } from "./player.ts";
@@ -268,6 +268,11 @@ export interface PlayerView {
   chat: ChatLine[];
   /** Messages ever posted in each of `readChannels`, so its pages and its newest `seq`. Missing means none. */
   chatCounts: Partial<Record<ChannelId, number>>;
+  /**
+   * Messages in your readable channels you couldn't hear (Damaged or Destroyed Ears, `PlayerState.unheard`): never sent,
+   * and not unread (`unreadCount`). Missing when there are none.
+   */
+  chatUnheard?: Partial<Record<ChannelId, SeqRange[]>>;
   /** Channels you may post to right now. */
   chatChannels: ChannelId[];
   /** Channels you may read: `chatChannels`, or for the dead the public ones (and the Mush channel for a dead Mush). */

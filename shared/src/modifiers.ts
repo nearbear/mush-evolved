@@ -78,11 +78,8 @@ import { broken_nose_injury } from "./modifiers/broken_nose_injury.ts";
 import {
   broken_shoulder_injury,
   bruised_shoulder_injury,
-  burst_nose_injury,
   busted_arm_joint_injury,
   critical_haemorrhage_injury,
-  damaged_ears_injury,
-  destroyed_ears_injury,
   haemorrhage_injury,
   head_trauma_injury,
   mashed_foot_injury,
@@ -91,6 +88,8 @@ import {
   torn_tongue_injury,
 } from "./modifiers/combat_injuries.ts";
 import { burnt_hand_injury } from "./modifiers/burnt_hand_injury.ts";
+import { damaged_ears_injury } from "./modifiers/damaged_ears_injury.ts";
+import { destroyed_ears_injury } from "./modifiers/destroyed_ears_injury.ts";
 import type { ActionCost } from "./actions.ts";
 import type { ActionTag } from "./actions/action.ts";
 import type { DeepReadonly, WeaponStats } from "./types/config.ts";
@@ -230,6 +229,8 @@ export interface Modifier extends Partial<FoldHooks> {
   onContaminate?: (next: GameState, player: PlayerState, amount: number) => void;
   /** Runs once when the player picks this skill (not for other modifiers). Mutates a state the caller already cloned. */
   onPick?: (next: GameState, player: PlayerState) => void;
+  /** Damaged or Destroyed Ears: other players' chat posted meanwhile never reaches the holder (`pushChat`, `heardBy`). */
+  deaf?: boolean;
   /** Runs whenever the ship moves */
   onShipMovement?: (next: GameState, player: PlayerState) => void;
   /** Runs after the holder moves into a room, whoever is there (a move action). Mutates a state the caller already cloned. */
@@ -312,7 +313,6 @@ export const MODIFIERS: Record<string, Modifier> = {
   damaged_ears_injury,
   destroyed_ears_injury,
   torn_tongue_injury,
-  burst_nose_injury,
   open_air_brain_injury,
   head_trauma_injury,
   haemorrhage_injury,
@@ -766,6 +766,11 @@ export function healed(next: GameState, healer: PlayerState, patient: PlayerStat
 /** Runs the picked skill's onPick hook. Mutates a state the caller already cloned. */
 export function skillPicked(next: GameState, player: PlayerState, skill: string, registry: ModifierRegistry = MODIFIERS): void {
   registry[skill]?.onPick?.(next, player);
+}
+
+/** Whether the player can't hear other players' chat right now (a `deaf` modifier: Damaged or Destroyed Ears). */
+export function isDeaf(player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS): boolean {
+  return modifierIds(player).some((id) => registry[id]?.deaf === true);
 }
 
 /** Runs every onCycle hook of each living player, in seat order. Mutates a state the caller already cloned. */

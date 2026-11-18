@@ -3,10 +3,7 @@ import type { Modifier } from "../modifiers.ts";
 /** Stubbed combat injuries referenced by weapon outcomes (`configHitOutcomes.ts`). Effects will be added as each injury is designed. */
 const stubInjury = (): Modifier => ({});
 
-export const damaged_ears_injury = stubInjury();
-export const destroyed_ears_injury = stubInjury();
 export const torn_tongue_injury = stubInjury();
-export const burst_nose_injury = stubInjury();
 export const open_air_brain_injury = stubInjury();
 export const head_trauma_injury = stubInjury();
 export const haemorrhage_injury = stubInjury();
