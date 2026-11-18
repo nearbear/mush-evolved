@@ -10,15 +10,17 @@ import { roll, rollFloat, rollInt, rollShuffle, rollWeighted } from "../rng.ts";
 import type { DeepReadonly, WeaponOutcomeEffects, WeaponStats } from "../types/config.ts";
 import type { GameState, ItemState, PlayerState } from "../types.ts";
 
-/** A weapon aimed at one person, or an area weapon (`WeaponStats.area`), which has no target. */
+/** A weapon aimed at one person, or an area weapon (`WeaponStats.area`, the grenade), which has no target. */
 export type AttackActionData = { type: "attack"; weapon: string; target: string } | { type: "attack"; weapon: string };
 
 /**
  * Using a weapon (owner, 2026-10-22, from the English wiki). `weapons.cost.ap` (1), with a weapon you carry that has
  * a charge left if it uses charges. One roll against its accuracy; a hit removes HP rolled in its `damage` range
- * (`mushDamage` on a Mush). An area weapon hits every other living person in the room with a roll each, and the
- * attacker with a `selfDamage` roll. Hit or miss, it spends a charge, and a `consumed` weapon (the grenade) is used up.
- * Hits and misses are public room history.
+ * (`mushDamage` on a Mush). An area weapon (the grenade) has no target and hits every other living person in the room
+ * with a roll each. A weapon with `selfDamage` (rocket launcher, grenade) also hurts the attacker on a hit. The rolled
+ * outcome's effects go to whom they name: the target only (an instant kill, "2 random wounds"), the splash (every other
+ * living person in the room, owner 2026-11-17), or the attacker. Hit or miss, it spends a charge, and a `consumed` weapon
+ * is used up. Hits and misses are public room history.
  */
 export class AttackAction extends Action<AttackActionData> {
   override tags: readonly ActionTag[] = ["aggressive"];
@@ -79,29 +81,24 @@ export class AttackAction extends Action<AttackActionData> {
     const outcome = stats.hitOutcomes[rollWeighted(state, weights)]!;
     const effects = outcome.effects;
 
+    const splash = peopleHere(state, player);
+    let victim: PlayerState | undefined;
     if (stats.area) {
-      const victims = peopleHere(state, player);
       logPublic(state, player.room, outcome.log, { name: player.character, item: type });
-      if (effects?.instantKill === "target") {
-        for (const victim of victims) damage(state, victim, victim.hp, "assassinated");
-      } else {
-        const range = adjustedDamageRange(stats.damage, effects);
-        for (const victim of victims) damage(state, victim, roll(state, range), "assassinated");
-      }
-      damage(state, player, roll(state, stats.area.selfDamage), "assassinated");
-      applyOutcomeEffects(state, player, weapon, victims, effects);
-      return;
-    }
-
-    const victim = state.players.find((o) => o.id === (target as { target: string }).target)!; // checked, so it exists
-    logPublic(state, player.room, outcome.log, { name: player.character, target: victim.character, item: type });
-    if (effects?.instantKill === "target") {
-      damage(state, victim, victim.hp, "assassinated");
+      const range = adjustedDamageRange(stats.damage, effects);
+      for (const v of splash) damage(state, v, roll(state, range), "assassinated");
     } else {
-      const baseRange = victim.role === "mush" && stats.mushDamage ? stats.mushDamage : stats.damage;
-      damage(state, victim, roll(state, adjustedDamageRange(baseRange, effects)), "assassinated");
+      victim = state.players.find((o) => o.id === (target as { target: string }).target)!; // checked, so it exists
+      logPublic(state, player.room, outcome.log, { name: player.character, target: victim.character, item: type });
+      if (effects?.instantKill === "target") {
+        damage(state, victim, victim.hp, "assassinated");
+      } else {
+        const baseRange = victim.role === "mush" && stats.mushDamage ? stats.mushDamage : stats.damage;
+        damage(state, victim, roll(state, adjustedDamageRange(baseRange, effects)), "assassinated");
+      }
     }
-    applyOutcomeEffects(state, player, weapon, [victim], effects);
+    if (stats.selfDamage) damage(state, player, roll(state, stats.selfDamage), "assassinated");
+    applyOutcomeEffects(state, player, weapon, { target: victim, splash }, effects);
   }
 
   override fail(state: GameState, player: PlayerState, target: AttackActionData): void {
@@ -113,18 +110,15 @@ export class AttackAction extends Action<AttackActionData> {
     );
     const outcome = stats.missOutcomes[rollWeighted(state, weights)]!;
 
-    const victims = "target" in target
-      ? [state.players.find((o) => o.id === target.target)!]
-      : peopleHere(state, player);
-    if ("target" in target) {
-      logPublic(state, player.room, outcome.log, { name: player.character, target: victims[0]!.character, item: type });
+    const splash = peopleHere(state, player);
+    const victim = "target" in target ? state.players.find((o) => o.id === target.target)! : undefined;
+    if (victim) {
+      logPublic(state, player.room, outcome.log, { name: player.character, target: victim.character, item: type });
+      if (outcome.effects?.instantKill === "target") damage(state, victim, victim.hp, "assassinated");
     } else {
       logPublic(state, player.room, outcome.log, { name: player.character, item: type });
     }
-    if (outcome.effects?.instantKill === "target") {
-      for (const v of victims) damage(state, v, v.hp, "assassinated");
-    }
-    applyOutcomeEffects(state, player, weapon, victims, outcome.effects);
+    applyOutcomeEffects(state, player, weapon, { target: victim, splash }, outcome.effects);
   }
 }
 
@@ -161,29 +155,30 @@ function adjustedDamageRange(
   return [min, max];
 }
 
-/** Applies secondary combat outcome effects (backfire kill, splash damage, AP loss, injuries, weapon drop/break/destroy, room item breakage). */
+/** Applies secondary combat outcome effects to the target, the splash or the attacker (backfire kill, splash damage, AP loss, injuries, weapon drop/break/destroy, room item breakage). */
 function applyOutcomeEffects(
   state: GameState,
   attacker: PlayerState,
   weapon: ItemState,
-  victims: readonly PlayerState[],
+  hit: { target?: PlayerState; splash: readonly PlayerState[] },
   effects: DeepReadonly<WeaponOutcomeEffects> | undefined,
 ): void {
   if (!effects) return;
+  const targets = hit.target ? [hit.target] : [];
+  const group = (who: "target" | "attacker" | "splash"): readonly PlayerState[] =>
+    who === "attacker" ? [attacker] : who === "splash" ? hit.splash : targets;
   if (effects.instantKill === "attacker") damage(state, attacker, attacker.hp, "assassinated");
   if (effects.splashDamage && rollFloat(state) < (effects.splashDamage.chance ?? 1)) {
-    for (const v of victims) damage(state, v, effects.splashDamage.amount, "assassinated");
+    for (const v of hit.splash) damage(state, v, effects.splashDamage.amount, "assassinated");
   }
   if (effects.apLoss) {
-    const recipients = effects.apLoss.who === "attacker" ? [attacker] : victims;
-    for (const p of recipients) changeAP(state, p, -effects.apLoss.amount);
+    for (const p of group(effects.apLoss.who)) changeAP(state, p, -effects.apLoss.amount);
   }
   if (effects.injuries) {
     const injuryPool = state.config.diseases.allInjuries;
     for (const inj of effects.injuries) {
-      const recipients = inj.who === "attacker" ? [attacker] : victims;
       const count = inj.count ?? 1;
-      for (const recipient of recipients) {
+      for (const recipient of group(inj.who)) {
         if (!recipient.alive) continue;
         for (let i = 0; i < count; i++) {
           if (rollFloat(state) < inj.chance) {
@@ -207,7 +202,7 @@ function applyOutcomeEffects(
 /**
  * The attacker swings a weapon they carry at a random other living player in the room, with the attack action's own
  * roll, damage, charge and public lines, and no AP cost (Space Rabies). Does nothing without a usable weapon or anyone
- * to hit. An area weapon has no target and hits the whole room.
+ * to hit. An area weapon (the grenade) has no target and hits the whole room.
  */
 export function attackWithHeldWeapon(state: GameState, attacker: PlayerState): void {
   const weapons = usableWeapons(state, attacker);

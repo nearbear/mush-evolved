@@ -4281,3 +4281,9 @@ Owner specified Syphilis (20-32 cycles, STT/DTT spread, -3 max morale and HP, +2
 - Updated `server/src/bots/itemShare.ts` to include `tree_pot` in `SHARED_ITEMS` (empty pots outside `gardenRoom` only, so planted or already-gardened pots are not advertised).
 - Updated `server/src/bots/goals/setOutPots.ts` to replace the hardcoded `STORAGE_FRONT` (`POT_STORAGE`) with `roomsHolding(memory, TREE_POT_ITEM)` (excluding `gardenRoom`) first, falling back to checking the nearest unchecked room in `DEFAULT_CONFIG.merchants.storageRooms` (`POT_STORAGES`) once per game via `storageCheckedKey(room)`.
 - Updated `server/tests/goals.test.ts` to remove the `904d8a76` workaround that forced pots into `STORAGE_FRONT`, test natural storage placement across cycles, and verify `itemShare` reporting and fetching for empty non-garden pots.
+
+## 2026-11-17: Rocket launcher outcomes no longer hit the whole room
+
+- **Problem:** the rocket launcher was an untargeted area weapon, so outcomes eMush writes for one target (ROCKETTED instant kill, "2 random wounds") applied to everyone in the room; a probe killed 25% of full-HP victims in one shot.
+- **Decision (owner):** follow eMush. The rocket launcher is aimed at one roommate; only the grenade stays untargeted. `WeaponStats.area` became `area?: true` plus a separate `selfDamage`, and `applyOutcomeEffects` routes each effect by its `who`: target, splash (every other living person in the room, the target included), or attacker.
+- **What worked:** checking the eMush `SplashDamageAll` handler with the clean-room tool before choosing showed the original's weapon has a primary target, which turned an open "who gets the kill?" question into a clear two-option ask.

@@ -592,7 +592,7 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   },
   // Owner, 2026-10-22, from the English wiki: 1 AP to use any weapon, carried. Repair and dismantle chances the wiki
   // gives as "??" are 12%. Blaster 2-3 as listed; the rocket's "?-8" is 1-8 and its self-damage 1-4 (Claude's guess,
-  // accepted). Charged weapons start full. Not built: crits, injuries, a dropped knife, breaking equipment, NERON's Core Peace.
+  // accepted). The rocket is aimed at one roommate; its splash outcomes hit the room (owner, 2026-11-17). Charged weapons start full. Not built: crits, injuries, a dropped knife, breaking equipment, NERON's Core Peace.
   weapons: {
     cost: { ap: 1 },
     types: {
@@ -604,8 +604,8 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
       sniper_riffle: { gun: true, damage: [3, 5], accuracy: 0.99, expoStrength: 1, charges: 1, dirtyChance: 0, repairChance: 0.12, ...LIZARO_JUNGLE_OUTCOMES },
       // Old Faithful.
       machine_gun: { gun: true, damage: [2, 3], accuracy: 0.5, expoStrength: 2, charges: 12, dirtyChance: 0, repairChance: 0.12, ...OLD_FAITHFUL_OUTCOMES },
-      missile_launcher: { gun: true, damage: [1, 8], accuracy: 0.5, expoStrength: 3, charges: 1, area: { selfDamage: [1, 4] }, dirtyChance: 0, repairChance: 0.12, ...MISSILE_LAUNCHER_OUTCOMES },
-      grenade: { damage: [0, 10], accuracy: 1, expoStrength: 3, area: { selfDamage: [0, 3] }, consumed: true, dirtyChance: 0, repairChance: null, ...GRENADE_OUTCOMES },
+      missile_launcher: { gun: true, damage: [1, 8], accuracy: 0.5, expoStrength: 3, charges: 1, selfDamage: [1, 4], dirtyChance: 0, repairChance: 0.12, ...MISSILE_LAUNCHER_OUTCOMES },
+      grenade: { damage: [0, 10], accuracy: 1, expoStrength: 3, area: true, selfDamage: [0, 3], consumed: true, dirtyChance: 0, repairChance: null, ...GRENADE_OUTCOMES },
       // Unarmed (not wired to an action yet).
       bare_hands: { melee: true, damage: [1, 2], accuracy: 0.6, expoStrength: 0, dirtyChance: 0, repairChance: null, ...BARE_HANDS_OUTCOMES },
     },
