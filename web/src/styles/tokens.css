@@ -12,6 +12,10 @@
   --human: #7cc8ff;
   --danger: #ff6b81;
   --warning: #ffb74d;
+  /* Typography */
+  --font-body: "Kanit", system-ui, sans-serif;
+  --font-display: "Days One", "Kanit", system-ui, sans-serif;
+  --font-pixel: "Pixel Square", monospace;
   /* Terminal colors */
   --terminal-bg: #c2f3fc; /* also the iTrackie card (itrackie.css) */
   --terminal-header-bg: #a6eefb; /* a terminal's title bar, down to the tab line (terminal.css) */
