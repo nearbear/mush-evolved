@@ -3,6 +3,7 @@ import { onExpedition } from "../expeditions.ts";
 import { ITEM_TYPES, canTransfer } from "../items.ts";
 import { isLostPlace } from "../patrol.ts";
 import { logPublic } from "../log.ts";
+import { cantCarryHeavy } from "../modifiers.ts";
 import type { Container, GameState, ItemState, PlayerState } from "../types.ts";
 
 export type TransferActionData = { type: "take"; item: string } | { type: "drop"; item: string };
@@ -28,6 +29,8 @@ export class TransferAction<T extends "take" | "drop" = "take" | "drop"> extends
     const item = state.items.find((i) => i.id === target.item);
     if (!item) return "no_such_item";
     if (this.type === "drop" && ITEM_TYPES[item.type]?.canDrop === false) return "cant_transfer";
+    // Broken Shoulder: no heavy item (owner, 2026-11-18).
+    if (this.type === "take" && ITEM_TYPES[item.type]?.heavy && cantCarryHeavy(player)) return "too_heavy";
     // Nothing can be dropped on an expedition (owner, 2026-11-08 and 2026-11-09, #359): aboard its craft or lost on the planet.
     if (this.type === "drop" && (onExpedition(state, player) || isLostPlace(player.room))) return "on_expedition";
     const destination: Container = this.type === "take" ? { kind: "player", id: player.id } : { kind: "room", id: player.room };

@@ -4282,3 +4282,25 @@ Owner specified Syphilis (20-32 cycles, STT/DTT spread, -3 max morale and HP, +2
 
 Added a `talking` ActionTag (Fiery speech, Boring speech, Chitchat, Comfort) and gave Torn Tongue its effect: a `mute` modifier flag that `Action.check` uses to refuse any `talking` action (as Ceasefire does for `aggressive`), and that `sendChat` uses to refuse posts in every channel (error `mute`, localized en/fr/es). What worked: the tag seam from issue 30 made this a one-line check instead of a list of action types.
 Follow-up: a muted player also can't create a private channel (`createChannel` refuses with `mute`); others can still invite them.
+
+## 2026-11-18: Open Air Brain injury
+
+Open Air Brain: -5 max health, -2 max morale, and death of `sepsis` after the player's next action resolves, when they become dirty, or at the next cycle change. Added two generic modifier hooks, `onActionDone` (run at the end of `performAction`) and `onDirty` (run from `soil`, Extract spore and the kube's dirty cheat, only when newly dirty). Needed correction: the owner's first numbers had health and morale swapped against eMushpedia (-5 PV, -2 Moral); asking settled it on the wiki's.
+
+## 2026-11-18: Head Trauma injury
+
+Head Trauma: -3 max health, -3 max morale, a 50% chance to die of `sepsis` after each action (the new `onActionDone` hook) and 25% at each cycle change. The owner's chances replace eMushpedia's row, which repeats Open Air Brain's certain-death text word for word (likely a wiki copy error). Its "cancelled by Open Air Brain" note is not implemented. The chances are tested statistically over 400 rng states, since no helper forces a roll.
+
+## 2026-11-18: Haemorrhage and Critical Haemorrhage
+
+Haemorrhage (-1 max health, -1 health a cycle) and Critical Haemorrhage (-2, -2) share one `bleeding(loss)` factory; bleeding to death uses the existing `injury` cause. The upgrade from one to the other was already in `INJURY_UPGRADES`, which also already covers Head Trauma -> Open Air Brain (the wiki's "cancelled by" note).
+Follow-up: the Head Trauma rate tests timed out (8s against vitest's 5s) when run beside other suites; they now use 200 fixed rng states and a 20s timeout. The rates are deterministic, so this is run time only, not flakiness.
+Follow-up: haemorrhage deaths now have their own cause, `bled` ("blood loss" / "hémorragie" / "pérdida de sangre"), instead of `injury` (owner). The id follows eMush's end-cause naming from memory; reference/emush wasn't available to confirm it.
+
+## 2026-11-18: Busted Arm Joint and Punctured Lung
+
+Busted Arm Joint: +2 AP on actions that already cost AP (not moves, as Burnt Hand), -4 max health, shots x0.8. Punctured Lung: the same +2 AP, -2 max health, -2 health a cycle (`injury` cause), and mute (Torn Tongue's flag). The owner pointed "shooting actions" at Pink Eye's definition, so that test moved into `isShot` (modifiers/shots.ts) and both use it; asking also settled -20% as relative (x0.8). The `cant_speak` error text no longer names the torn tongue, since two injuries mute now.
+
+## 2026-11-18: Bruised Shoulder, Broken Shoulder, Mashed Foot
+
+Bruised Shoulder: -1 max health, shots x0.9. Broken Shoulder: -2 max health, shots x0.8 (both `isShot`, relative as decided for Busted Arm Joint), and a new `noHeavy` modifier flag: `take` refuses a heavy item (`too_heavy`), and the injury's `onPick` drops any carried heavy item into the room with the public "dropped" line (also on the upgrade from Bruised). Mashed Foot: +1 MP per move (`movement` fold), -1 max health, -3 max MP. These were the last stubs, so `modifiers/combat_injuries.ts` is gone.

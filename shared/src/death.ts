@@ -44,6 +44,8 @@ export const DEATH_CAUSES = [
   "traded",
   // A failed surgery's sepsis (owner, 2026-11-17).
   "sepsis",
+  // Bleeding out from Haemorrhage or Critical Haemorrhage (owner, 2026-11-18).
+  "bled",
 ] as const;
 export type DeathCause = (typeof DEATH_CAUSES)[number];
 

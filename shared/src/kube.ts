@@ -14,7 +14,7 @@ import { cloneState, fail, findPlayer, type ActionResult } from "./helpers.ts";
 import { allDoors, breakDoor } from "./doors.ts";
 import { contaminate } from "./infection.ts";
 import { ITEM_TYPES, newItemId, startCharges } from "./items.ts";
-import { enterRoom, enteredRoom } from "./modifiers.ts";
+import { becameDirty, enterRoom, enteredRoom } from "./modifiers.ts";
 import { logPublic } from "./log.ts";
 import { inCraft } from "./patrol.ts";
 import { addStatus, isImmune, type StatusId } from "./statuses.ts";
@@ -93,8 +93,10 @@ export const KUBE_OPS = {
   dirty: {
     group: "health",
     arg: "none",
-    apply: (_state, me) => {
+    apply: (state, me) => {
+      const wasDirty = me.statuses.includes("dirty");
       addStatus(me, "dirty");
+      if (!wasDirty) becameDirty(state, me);
       return null;
     },
   },
