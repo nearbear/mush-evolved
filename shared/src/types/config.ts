@@ -63,7 +63,7 @@ export interface DiseaseStats {
 
 export interface WeaponInjuryEffect {
   who: "target" | "attacker" | "splash";
-  /** Specific injury ID (e.g. "damaged_ears", "haemorrhage"), or "random" for a random combat injury. */
+  /** Specific injury ID (e.g. "damaged_ears_injury", "haemorrhage_injury"), or "random" for a random combat injury. */
   injury: string;
   /** Probability 0..1. */
   chance: number;
@@ -316,6 +316,16 @@ export interface GameConfig {
     max: number; // Spores one Mush may hold; extraction is refused at it (owner, 2026-11-10, balance review decision 8).
     constipasporeExtraAp: number; // Extra AP added to extract_spore once CONSTIPASPORE_SERUM completes (owner, 2026-11-14).
     antisporeReduction: number; // Daily spore extraction cap reduction once ANTISPORE_GAZ completes (2026-11-14).
+  };
+  surgery: {
+    cost: {
+      apOther: number; // AP surgery costs on someone else (owner, 2026-11-17).
+      apSelf: number; // AP surgery costs on yourself (owner, 2026-11-17).
+    };
+    successChance: number; // Base chance to remove an injury (owner, 2026-11-17).
+    medicFactor: number; // Success multiplier for the medic skill (owner, 2026-11-17).
+    nurseFactor: number; // Success multiplier for the nurse skill, `first_aid` (owner, 2026-11-17).
+    dirtyChance: number; // Chance the surgeon gets dirty (owner, 2026-11-17).
   };
   heal: {
     cost: {

@@ -19,7 +19,7 @@ export function StatusIcons({
   protectedBy?: string | undefined;
 }) {
   const { t } = useTranslation();
-  const known = statusIdsFor(DEFAULT_CONFIG.diseases.allDiseases).filter((id) => statuses.includes(id));
+  const known = statusIdsFor(DEFAULT_CONFIG.diseases.allDiseases, DEFAULT_CONFIG.diseases.allInjuries).filter((id) => statuses.includes(id));
   if (known.length === 0 && contamination === undefined) return null;
   const descriptionFor = (id: string): string | undefined => {
     if (id === "protecting" && protecting) return t("status.desc.protectingTarget", { name: protecting });

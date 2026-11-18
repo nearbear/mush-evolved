@@ -14,7 +14,7 @@ import { addDisease, INJURY_UPGRADES } from "../src/diseases.ts";
 import { dropWeapon, removeItemIfPresent } from "../src/items.ts";
 import { MODIFIERS } from "../src/modifiers.ts";
 import { createGame, viewFor } from "../src/rules.ts";
-import { STATUS_IDS, STATUS_PUBLIC } from "../src/statuses.ts";
+import { STATUS_IDS, STATUS_PUBLIC, statusIdsFor } from "../src/statuses.ts";
 import type { GameState } from "../src/types.ts";
 import { makeSeats, noHunters, noIncidents, player } from "./support.ts";
 
@@ -104,18 +104,19 @@ describe("combat injuries", () => {
       expect(DEFAULT_CONFIG.diseases.allInjuries, id).toContain(id);
       expect(DEFAULT_CONFIG.diseases.allDiseaseStats.some((d) => d.label === id && d.type === "injury"), id).toBe(true);
       expect(MODIFIERS[id], id).toBeDefined();
-      expect(STATUS_IDS, id).toContain(id);
-      expect(STATUS_PUBLIC[id], id).toBe(false);
+      expect(statusIdsFor(DEFAULT_CONFIG.diseases.allDiseases, DEFAULT_CONFIG.diseases.allInjuries), id).toContain(id);
+      expect(STATUS_IDS, id).not.toContain(id);
+      expect(STATUS_PUBLIC[id], id).toBeUndefined();
     }
   });
 
   it("keeps combat injuries private in viewFor", () => {
     const s = ship();
     const p0 = player(s, "p0");
-    addDisease(s, p0, "damaged_ears");
+    addDisease(s, p0, "damaged_ears_injury");
 
-    expect(viewFor(s, "p0").statuses).toContain("damaged_ears");
-    expect(viewFor(s, "p1").players.find((p) => p.id === "p0")!.statuses).not.toContain("damaged_ears");
+    expect(viewFor(s, "p0").statuses).toContain("damaged_ears_injury");
+    expect(viewFor(s, "p1").players.find((p) => p.id === "p0")!.statuses).not.toContain("damaged_ears_injury");
   });
 
   it("upgrades lower-tier injuries on repeat application and prevents downgrades", () => {
@@ -147,13 +148,13 @@ describe("combat injuries", () => {
     const s = ship();
     const p0 = player(s, "p0");
 
-    addDisease(s, p0, "damaged_ears");
-    addDisease(s, p0, "destroyed_ears");
+    addDisease(s, p0, "damaged_ears_injury");
+    addDisease(s, p0, "destroyed_ears_injury");
 
-    expect(p0.modifiers).not.toContain("damaged_ears");
-    expect(p0.statuses).not.toContain("damaged_ears");
-    expect(p0.diseaseTrackers.some((t) => t.name === "damaged_ears")).toBe(false);
-    expect(p0.modifiers).toContain("destroyed_ears");
-    expect(p0.statuses).toContain("destroyed_ears");
+    expect(p0.modifiers).not.toContain("damaged_ears_injury");
+    expect(p0.statuses).not.toContain("damaged_ears_injury");
+    expect(p0.diseaseTrackers.some((t) => t.name === "damaged_ears_injury")).toBe(false);
+    expect(p0.modifiers).toContain("destroyed_ears_injury");
+    expect(p0.statuses).toContain("destroyed_ears_injury");
   });
 });

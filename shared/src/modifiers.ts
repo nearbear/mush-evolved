@@ -73,23 +73,24 @@ import { vitamin_deficiency_disease } from "./modifiers/vitamin_deficiency_disea
 import { flu_disease } from "./modifiers/flu_disease.ts";
 import { rubella_disease } from "./modifiers/rubella_disease.ts";
 import { syphilis_disease } from "./modifiers/syphilis_disease.ts";
+import { sepsis_disease } from "./modifiers/sepsis_disease.ts";
 import { broken_nose_injury } from "./modifiers/broken_nose_injury.ts";
 import {
-  broken_shoulder,
-  bruised_shoulder,
-  burnt_hand,
-  burst_nose,
-  busted_arm_joint,
-  critical_haemorrhage,
-  damaged_ears,
-  destroyed_ears,
-  haemorrhage,
-  head_trauma,
-  mashed_foot,
-  open_air_brain,
-  punctured_lung,
-  torn_tongue,
+  broken_shoulder_injury,
+  bruised_shoulder_injury,
+  burst_nose_injury,
+  busted_arm_joint_injury,
+  critical_haemorrhage_injury,
+  damaged_ears_injury,
+  destroyed_ears_injury,
+  haemorrhage_injury,
+  head_trauma_injury,
+  mashed_foot_injury,
+  open_air_brain_injury,
+  punctured_lung_injury,
+  torn_tongue_injury,
 } from "./modifiers/combat_injuries.ts";
+import { burnt_hand_injury } from "./modifiers/burnt_hand_injury.ts";
 import type { ActionCost } from "./actions.ts";
 import type { ActionTag } from "./actions/action.ts";
 import type { DeepReadonly, WeaponStats } from "./types/config.ts";
@@ -305,22 +306,23 @@ export const MODIFIERS: Record<string, Modifier> = {
   flu_disease,
   rubella_disease,
   syphilis_disease,
+  sepsis_disease,
   // Injuries
   broken_nose_injury,
-  damaged_ears,
-  destroyed_ears,
-  torn_tongue,
-  burst_nose,
-  open_air_brain,
-  head_trauma,
-  haemorrhage,
-  critical_haemorrhage,
-  busted_arm_joint,
-  punctured_lung,
-  bruised_shoulder,
-  mashed_foot,
-  broken_shoulder,
-  burnt_hand,
+  damaged_ears_injury,
+  destroyed_ears_injury,
+  torn_tongue_injury,
+  burst_nose_injury,
+  open_air_brain_injury,
+  head_trauma_injury,
+  haemorrhage_injury,
+  critical_haemorrhage_injury,
+  busted_arm_joint_injury,
+  punctured_lung_injury,
+  bruised_shoulder_injury,
+  mashed_foot_injury,
+  broken_shoulder_injury,
+  burnt_hand_injury,
 };
 
 /**

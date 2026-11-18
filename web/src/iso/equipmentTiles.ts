@@ -2,6 +2,10 @@
 
 import { CAMERA_EQUIPMENT, EQUIPMENT_TYPES, SUPER_CALC_EQUIPMENT, placedEquipment, type EquipmentView, type RoomLayout, type ShipLayout, type TilePlacement } from "@mush2/shared";
 
+const SURGERY_POD_EQUIPMENT = "SURGERY_POD";
+/** The Surgery Pod's own sprite (the bed); the binding claims the console beside it (`surgery_console`). */
+const SURGERY_POD_SLICE = "surgery";
+
 /** Tile slices of the camera art, one tile per room in the layout. */
 export const CAMERA_SLICES: ReadonlySet<string> = new Set(["camera", "camera2"]);
 
@@ -61,5 +65,9 @@ export function equipmentByTileKey(roomLayout: RoomLayout | undefined, equipment
   const superCalc = equipment.find((e) => e.type === SUPER_CALC_EQUIPMENT);
   const serverTile = roomLayout?.tiles.findIndex((t) => t.slice === "server" || t.slice === "server_active") ?? -1;
   if (superCalc && serverTile >= 0) extra.push([`t${serverTile}`, superCalc]);
+  // The Surgery Pod is bound to its small console; the pod itself (the big `surgery` sprite) selects it too.
+  const pod = equipment.find((e) => e.type === SURGERY_POD_EQUIPMENT);
+  const podTile = roomLayout?.tiles.findIndex((t) => t.slice === SURGERY_POD_SLICE) ?? -1;
+  if (pod && podTile >= 0) extra.push([`t${podTile}`, pod]);
   return new Map([...placed, ...extra]);
 }
