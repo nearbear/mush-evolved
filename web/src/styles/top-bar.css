@@ -32,7 +32,14 @@
   white-space: nowrap;
 }
 .cycle-countdown {
-  font-variant-numeric: tabular-nums;
+  display: inline-flex;
+  align-items: baseline;
+  font-family: var(--font-pixel);
+}
+.clock-digit {
+  display: inline-flex;
+  justify-content: center;
+  width: 1ch;
 }
 /*
  * The plate's own rim, crossing it top to bottom (through its 2px vertical padding): gold between two dark lines. The
