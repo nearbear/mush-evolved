@@ -5,14 +5,14 @@ import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
 import type { CSSProperties, ReactNode } from "react";
-import { actionVisibility, CHARACTERS, CUSTOMIZED_BLASTER_ITEM, ITEM_TYPES, PROJECT_COMPLETE, characterGivenName, characterName, SUPER_CALC_EQUIPMENT, SUPERKUBE, type Action, type ActionOption, type EquipmentView, type PlayerView, type ShipLayout, type Target } from "@mush2/shared";
-import { BROKEN_ICON, characterImage, CONTAMINATED_ICON, JELLY_ICON, portrait, SHIELD_ICON } from "../art/assets.ts";
+import { actionVisibility, CHARACTERS, PROJECT_COMPLETE, characterGivenName, characterName, SUPER_CALC_EQUIPMENT, SUPERKUBE, type Action, type ActionOption, type EquipmentView, type PlayerView, type ShipLayout, type Target } from "@mush2/shared";
+import { BROKEN_ICON, characterImage, portrait } from "../art/assets.ts";
 import { useMobile } from "../useMobile.ts";
 import { atlasUrl } from "../iso/shipLayout.ts";
 import { equipmentByTileKey, roomAsBuilt } from "../iso/equipmentTiles.ts";
 import { frameRect } from "../iso/placement.ts";
 import { ItemFace } from "./ItemFace.tsx";
-import { ItemAttrIcons } from "./ItemAttrIcons.tsx";
+import { ItemAttrIcons, thingMarkIcons } from "./ItemAttrIcons.tsx";
 import { PlantStates } from "./PlantStates.tsx";
 import { ItemIcon } from "./ItemIcon.tsx";
 import { DocumentReader } from "./DocumentDialog.tsx";
@@ -190,21 +190,19 @@ function Details({ view, layout, resolved, onAction }: { view: PlayerView; layou
             <ItemFace label={names.itemLabel(resolved.item)}>
               <ItemIcon className="item-icon" item={resolved.item} view={view} />
             </ItemFace>
+            <ItemAttrIcons item={resolved.item} mpPenalty={view.config.heavyMpPenalty} />
           </div>
           <div className="inspect-name inspect-item-name">
             <strong>{names.itemOf(resolved.item)}</strong>
             {resolved.item.drone && <div className="sub inspect-drone">{names.drone(resolved.item.drone.name, resolved.item.drone.serial)}</div>}
           </div>
-          <ItemAttrIcons heavy={ITEM_TYPES[resolved.item.type]?.heavy === true} mpPenalty={view.config.heavyMpPenalty} customized={resolved.item.type === CUSTOMIZED_BLASTER_ITEM} />
           {resolved.item.broken && (
             <div className="sub inspect-broken">
               <img src={BROKEN_ICON} alt="" /> {t("roomList.broken")}
             </div>
           )}
-          {resolved.item.plant && <PlantStates plant={resolved.item.plant} view={view} />}
-          <ThingMarks jelly={resolved.item.jelly} shield={resolved.item.shield} spores={resolved.item.spores} />
+          {resolved.item.plant && <PlantStates plant={resolved.item.plant} view={view} icons={false} />}
           {resolved.item.drone && <DroneUpgrades upgrades={resolved.item.drone.upgrades} />}
-          {resolved.item.charges !== undefined && <div className="sub inspect-charges">{t("itemAttr.charges", { count: resolved.item.charges })}</div>}
         </>
       );
     case "door":
@@ -239,30 +237,17 @@ function DroneUpgrades({ upgrades }: { upgrades: readonly string[] }) {
  */
 function ThingMarks({ jelly, shield, spores }: { jelly?: number | undefined; shield?: number | undefined; spores?: number | undefined }) {
   const { t } = useTranslation();
-  if (jelly === undefined && shield === undefined && spores === undefined) return null;
+  const marks = thingMarkIcons({ jelly, shield, spores }, t);
+  if (marks.length === 0) return null;
   return (
     <ul className="status-icons" aria-label={t("itemAttr.label")}>
-      {spores !== undefined && (
-        <li className="status-count">
-          <StatusIcon icon={CONTAMINATED_ICON} name={t("itemAttr.contaminated", { level: spores })} description={t("itemAttr.contaminatedDesc")} visibility="private">
-            <span aria-hidden="true">{spores}</span>
+      {marks.map((mark) => (
+        <li key={mark.key} className="status-count">
+          <StatusIcon icon={mark.icon} name={mark.name} description={mark.description} visibility="private">
+            <span aria-hidden="true">{mark.count}</span>
           </StatusIcon>
         </li>
-      )}
-      {jelly !== undefined && (
-        <li className="status-count">
-          <StatusIcon icon={JELLY_ICON} name={t("itemAttr.jelly", { count: jelly })} description={t("itemAttr.jellyDesc")} visibility="private">
-            <span aria-hidden="true">{jelly}</span>
-          </StatusIcon>
-        </li>
-      )}
-      {shield !== undefined && (
-        <li className="status-count">
-          <StatusIcon icon={SHIELD_ICON} name={t("itemAttr.shield", { shield })} description={t("itemAttr.shieldDesc")} visibility="private">
-            <span aria-hidden="true">{shield}</span>
-          </StatusIcon>
-        </li>
-      )}
+      ))}
     </ul>
   );
 }

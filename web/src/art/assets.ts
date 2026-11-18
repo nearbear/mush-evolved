@@ -285,7 +285,7 @@ export const MORALE_ICON = statIcons["moral"]!;
 // Tab icons (16x16-ish pixel art). Keys are the names the user chose; see docs/assets/tab-icons.md.
 const uiIcons = urls(
   import.meta.glob<string>(
-    "../../../Mush/www/img/icons/ui/{mush,mush_progressive,starter,o2,fuel,plasma,alert,p_alive,survival,awake,comm,learned,stock,microsc,neron,info,infoalert,local,planet,conceptor,talkie,shield,basicplus,goldplus,notebook,pa_cook,pa_garden,plant_youngling,plant_thirsty,plant_dry,plant_diseased,sat,pa_pilgred,pam,pa_heal,pa_eng,pa_exp,pa_comp,pa_core,pa_shoot,hunter,private,search,spore,talk,wall,fav,triumph,heavy,dead,check,uncheck,rebellion}.{png,gif}",
+    "../../../Mush/www/img/icons/ui/{mush,mush_progressive,starter,o2,fuel,plasma,alert,p_alive,survival,awake,comm,learned,stock,microsc,neron,info,infoalert,local,planet,conceptor,talkie,shield,basicplus,goldplus,notebook,pa_cook,pa_garden,plant_youngling,plant_thirsty,plant_dry,plant_diseased,sat,pa_pilgred,pam,pa_heal,pa_eng,pa_exp,pa_comp,pa_core,pa_shoot,hunter,private,search,spore,talk,wall,fav,triumph,heavy,charge,dead,check,uncheck,rebellion}.{png,gif}",
     { eager: true, query: "?url", import: "default" },
   ),
 );
@@ -389,6 +389,7 @@ export function statusIcon(id: string): string {
 }
 /** Item attribute icons, keyed by attribute (the `itemAttr.*` locale keys). */
 export const ITEM_ATTR_ICONS: Readonly<Record<"heavy", string>> = { heavy: uiIcons["heavy"]! };
+export const CHARGES_ICON = uiIcons["charge"]!;
 /** A plant's states, the original's plant_* status icons. */
 export const PLANT_ICONS: Readonly<Record<"young" | "thirsty" | "dried" | "sick", string>> = {
   young: uiIcons["plant_youngling"]!,

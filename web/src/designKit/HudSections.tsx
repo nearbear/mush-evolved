@@ -289,7 +289,7 @@ export function ItemAttrIconsSection() {
       }
     >
       <Figure caption={`Heavy (${DEFAULT_CONFIG.heavy.mpPenalty} MP per move)`}>
-        <ItemAttrIcons heavy mpPenalty={DEFAULT_CONFIG.heavy.mpPenalty} />
+        <ItemAttrIcons item={{ type: "machine_gun" }} mpPenalty={DEFAULT_CONFIG.heavy.mpPenalty} />
       </Figure>
       <Figure caption="Plant: young and thirsty">
         <PlantStates plant={{ species: "fruit_banana", age: 1, thirst: 1 }} />
