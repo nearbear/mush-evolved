@@ -2766,7 +2766,7 @@ describe("repairDoor goal", () => {
     breakDoor(broken, door);
     broken.reports.push({ kind: "door", door, by: otherId });
 
-    expect(repairDoor.options(viewFor(broken, id), memory()).map((g) => g.key)).toEqual([`repairDoor:go:${closer}`]);
+    expect(repairDoor.options(viewFor(broken, id), memory()).map((g) => g.key)).toEqual([`repairDoor:go:${door}`]);
 
     const bot = new GoalBot(1, 2, [repairDoor]);
     const { game: after, taken } = await play(broken, id, bot, 10);
@@ -2794,7 +2794,64 @@ describe("repairDoor goal", () => {
     isolated.reports.push({ kind: "door", door: distantDoor, by: otherId });
 
     const mem = memory();
-    mem.ended.add("repairDoor:here");
+    for (const exit of isolated.config.rooms["LABORATORY"]!) mem.ended.add(`repairDoor:here:${doorId("LABORATORY", exit)}`);
     expect(repairDoor.options(viewFor(isolated, id), mem)).toEqual([]);
+  });
+
+  it("doesn't walk to the other side of a reported door it can't repair from this side (Rubella)", async () => {
+    const { game: base, id } = setup();
+    const otherId = base.players.find((p) => p.id !== id)!.id;
+    const neighbor = base.config.rooms["LABORATORY"]![0]!;
+    const door = doorId("LABORATORY", neighbor);
+    const sick = edit(base, id, (p) => {
+      p.room = "LABORATORY";
+      p.ap = 10;
+      p.mp = 12;
+      p.modifiers.push("rubella_disease");
+    });
+    breakDoor(sick, door);
+    sick.reports.push({ kind: "door", door, by: otherId });
+
+    expect(repairDoor.options(viewFor(sick, id), memory())).toEqual([]);
+    const { taken } = await play(sick, id, new GoalBot(1, 2, [repairDoor]), 10);
+    expect(taken.filter((a) => a.type === "move")).toEqual([]);
+  });
+
+  it("doesn't swing to the other side after its repair here ended", () => {
+    const { game: base, id } = setup();
+    const otherId = base.players.find((p) => p.id !== id)!.id;
+    const neighbor = base.config.rooms["LABORATORY"]![0]!;
+    const door = doorId("LABORATORY", neighbor);
+    const broken = edit(base, id, (p) => {
+      p.room = "LABORATORY";
+      p.ap = 10;
+      p.mp = 12;
+    });
+    breakDoor(broken, door);
+    broken.reports.push({ kind: "door", door, by: otherId });
+
+    const mem = memory();
+    mem.ended.add(`repairDoor:here:${door}`);
+    expect(repairDoor.options(viewFor(broken, id), mem)).toEqual([]);
+    // From across the ship, the same report is still worth walking to.
+    const far = edit(broken, id, (p) => (p.room = "CORRIDOR_A"));
+    if (!doorRooms(door).includes("CORRIDOR_A")) expect(repairDoor.options(viewFor(far, id), memory()).map((g) => g.key)).toEqual([`repairDoor:go:${door}`]);
+  });
+
+  it("ending the repair of one door here leaves another broken door here open", () => {
+    const { game: base, id } = setup();
+    const [n1, n2] = base.config.rooms["LABORATORY"]!;
+    const first = doorId("LABORATORY", n1!);
+    const second = doorId("LABORATORY", n2!);
+    const broken = edit(base, id, (p) => {
+      p.room = "LABORATORY";
+      p.ap = 10;
+    });
+    breakDoor(broken, first);
+    breakDoor(broken, second);
+
+    const mem = memory();
+    mem.ended.add(`repairDoor:here:${first}`);
+    expect(repairDoor.options(viewFor(broken, id), mem).map((g) => g.key)).toEqual([`repairDoor:here:${second}`]);
   });
 });

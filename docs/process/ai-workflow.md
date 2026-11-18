@@ -4319,3 +4319,9 @@ Owner specified Syphilis (20-32 cycles, STT/DTT spread, -3 max morale and HP, +2
 
 Added a `talking` ActionTag (Fiery speech, Boring speech, Chitchat, Comfort) and gave Torn Tongue its effect: a `mute` modifier flag that `Action.check` uses to refuse any `talking` action (as Ceasefire does for `aggressive`), and that `sendChat` uses to refuse posts in every channel (error `mute`, localized en/fr/es). What worked: the tag seam from issue 30 made this a one-line check instead of a list of action types.
 Follow-up: a muted player also can't create a private channel (`createChannel` refuses with `mute`); others can still invite them.
+
+## 2026-11-17: repairDoor bot no longer swings between a door's two sides
+
+- **Bug (from review of 1994a3d6):** a bot standing beside a reported broken door it couldn't repair (Rubella, or after one refused repair ended `repairDoor:here`) planned a walk to the door's other side, then from there back again, about 32 moves a cycle. The single `repairDoor:here` key also meant one ended repair blocked every other broken door in the room.
+- **Fix:** keys are per door (`repairDoor:here:<door>`, `repairDoor:go:<door>`), and the walk skips any door with the bot already on one of its sides, since the other side offers the same repair. Regression tests for Rubella, an ended repair, and two broken doors in one room; they fail on the old goal.
+- **What worked:** reasoning from the plan function alone found the loop; checking the new tests against the old file confirmed they catch it.
