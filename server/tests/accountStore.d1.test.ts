@@ -21,10 +21,14 @@ import { ShipStore } from "../src/shipStore.ts";
 const SERVER = resolve(import.meta.dirname, "..");
 
 let dir: string;
+let prevRegistryPath: string | undefined;
 let proxy: Awaited<ReturnType<typeof getPlatformProxy<{ DB: D1Database }>>>;
 
 beforeAll(async () => {
   dir = mkdtempSync(join(tmpdir(), "mush2-d1-"));
+  prevRegistryPath = process.env.WRANGLER_REGISTRY_PATH;
+  // Keep wrangler's dev registry inside the throwaway dir rather than ~/.config/.wrangler.
+  process.env.WRANGLER_REGISTRY_PATH = join(dir, "registry");
   execFileSync(resolve(SERVER, "../node_modules/.bin/wrangler"), ["d1", "migrations", "apply", "DB", "--local", "--persist-to", dir], {
     cwd: SERVER,
     env: { ...process.env, CI: "true", WRANGLER_SEND_METRICS: "false" },
@@ -40,6 +44,8 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await proxy?.dispose();
+  if (prevRegistryPath === undefined) delete process.env.WRANGLER_REGISTRY_PATH;
+  else process.env.WRANGLER_REGISTRY_PATH = prevRegistryPath;
   if (dir) rmSync(dir, { recursive: true, force: true });
 });
 
