@@ -1,6 +1,6 @@
 import { changeMP } from "../adjustStats.ts";
 import { soil } from "../dirt.ts";
-import { addDisease, diseaseAffects, withoutBedBonus } from "../diseases.ts";
+import { addDisease, diseaseAffects } from "../diseases.ts";
 import { logPrivate } from "../log.ts";
 import type { Modifier } from "../modifiers.ts";
 import { rollFloat, rollInt } from "../rng.ts";
@@ -19,10 +19,7 @@ const CYCLE_DISEASE_CHANCE = 0.03;
 // disease from `config.diseases.incidentDiseases` the player doesn't have yet; lying down, a 30% chance that the bed
 // gives no extra AP (the bed's +1 and Lethargy's bonus). A Mush carries it without suffering any of it.
 export const rejuvenation_disease: Modifier = {
-  onApRefill(gain, next, player) {
-    if (!player.alive || !diseaseAffects(player) || !player.modifiers.includes("lying_down")) return gain;
-    return rollFloat(next) < NO_REST_CHANCE ? withoutBedBonus(gain, next, player) : gain;
-  },
+  spoilsRest: (next, player) => diseaseAffects(player) && rollFloat(next) < NO_REST_CHANCE,
   onCycle(next, player) {
     if (!diseaseAffects(player)) return;
     if (rollFloat(next) < CYCLE_MP_CHANCE && player.mp > 0) changeMP(next, player, -1);

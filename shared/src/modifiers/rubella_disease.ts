@@ -1,5 +1,5 @@
 import { changeMP, updateMaxValues } from "../adjustStats.ts";
-import { addDisease, diseaseAffects, diseaseStats, itchy, withoutBedBonus } from "../diseases.ts";
+import { addDisease, diseaseAffects, diseaseStats, itchy } from "../diseases.ts";
 import type { Modifier } from "../modifiers.ts";
 import { rollFloat } from "../rng.ts";
 
@@ -38,8 +38,5 @@ export const rubella_disease: Modifier = {
     const odds = diseaseStats(next, "rubella_disease")?.roomSpread;
     if (odds != null && rollFloat(next) < odds) addDisease(next, other, "rubella_disease");
   },
-  onApRefill(gain, next, player) {
-    if (!player.alive || !diseaseAffects(player) || !player.modifiers.includes("lying_down")) return gain;
-    return rollFloat(next) < NO_REST_CHANCE ? withoutBedBonus(gain, next, player) : gain;
-  },
+  spoilsRest: (next, player) => diseaseAffects(player) && rollFloat(next) < NO_REST_CHANCE,
 };

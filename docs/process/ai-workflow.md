@@ -4304,3 +4304,7 @@ Busted Arm Joint: +2 AP on actions that already cost AP (not moves, as Burnt Han
 ## 2026-11-18: Bruised Shoulder, Broken Shoulder, Mashed Foot
 
 Bruised Shoulder: -1 max health, shots x0.9. Broken Shoulder: -2 max health, shots x0.8 (both `isShot`, relative as decided for Busted Arm Joint), and a new `noHeavy` modifier flag: `take` refuses a heavy item (`too_heavy`), and the injury's `onPick` drops any carried heavy item into the room with the public "dropped" line (also on the upgrade from Bruised). Mashed Foot: +1 MP per move (`movement` fold), -1 max health, -3 max MP. These were the last stubs, so `modifiers/combat_injuries.ts` is gone.
+
+## 2026-11-18: A spoiled rest loses the bed bonus once
+
+Rejuvenation, Migraine and Rubella each subtracted the bed's bonus in their own `onApRefill`, so a player with two or three of them could lose it twice or more and refill below an awake player. They now answer a `spoilsRest` hook (each still its own 30% roll), and `apRefill` takes `bedBonus` off once if any says yes. `withoutBedBonus` moved from diseases.ts to modifiers.ts as `bedBonus` (it needs `apGain`, and modifiers.ts can't import diseases.ts back).

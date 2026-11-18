@@ -215,6 +215,12 @@ export interface Modifier extends Partial<FoldHooks> {
    * Unlike the folds it runs once, at the refill, so it may roll (`next.rng`). Never reaches a Mush's diseases.
    */
   onApRefill?: (gain: number, next: GameState, player: PlayerState) => number;
+  /**
+   * At a cycle change's refill spent lying down: whether this modifier spoils the rest, so the bed adds no AP (the bed's
+   * +1 and Lethargy's bonus). May roll (`next.rng`). However many say so, the bonus is lost once (`apRefill`). Reaches
+   * a Mush's diseases too, so a disease hook guards itself with `diseaseAffects`.
+   */
+  spoilsRest?: (next: GameState, player: PlayerState) => boolean;
   /** Runs for each living player at a cycle change, after the AP refill. Mutates a state the caller already cloned. */
   /** (A disease hook also reaches a Mush: it guards its own stat effects with `diseaseAffects`, diseases.ts.) */
   onCycle?: (next: GameState, player: PlayerState) => void;
@@ -555,14 +561,24 @@ export function actionFailed(next: GameState, player: PlayerState, apSpent: numb
   for (const id of modifierIds(player)) registry[id]?.onActionFailed?.(next, player, apSpent);
 }
 
-/** The AP a player gains at this cycle change's refill: `apGain`, then each modifier's onApRefill. Mutates `next.rng`. */
+/** The AP a player gains at this cycle change's refill: `apGain`, each modifier's onApRefill, then a spoiled rest. Mutates `next.rng`. */
 export function apRefill(next: GameState, player: PlayerState, registry: ModifierRegistry = MODIFIERS): number {
   let gain = apGain(next, player, registry);
   for (const id of modifierIds(player)) {
     const hook = registry[id]?.onApRefill;
     if (hook) gain = hook(gain, next, player);
   }
+  // Rejuvenation, Migraine, Rubella: the first that spoils the rest takes the bed's bonus, once (owner, 2026-11-18).
+  if (player.alive && player.modifiers.includes("lying_down") && modifierIds(player).some((id) => registry[id]?.spoilsRest?.(next, player))) {
+    gain -= bedBonus(next, player, registry);
+  }
   return gain;
+}
+
+/** What lying down adds to the player's AP refill now: the bed's +1 and Lethargy's bonus. */
+export function bedBonus(state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS): number {
+  const awake = { ...player, modifiers: player.modifiers.filter((m) => m !== "lying_down"), lyingSince: undefined };
+  return Math.max(0, apGain(state, player, registry) - apGain(state, awake, registry));
 }
 
 /** Base movement rules folded through the player's modifiers, in list order, plus the heavy-item penalty. */
