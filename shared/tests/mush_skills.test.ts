@@ -17,8 +17,8 @@ const offered = (state: GameState, id: string) => legalActions(state, id).flatMa
 describe("Mush skills", () => {
   it("has four slots and the original's 26 Mush skills, only some implemented yet (Transfer, Fertile, Pyromaniac, Saboteur, ...)", () => {
     expect([MUSH_SKILL_SLOTS, MUSH_SKILLS.length]).toEqual([4, 27]);
-    const full = ["transfert", "epigenetics", "fertile", "neron_access", "pyromane", "sapper", "electro_slime", "water_resistant", "phagocytosis", "disheartening_contact", "nimble_fingers", "massggedon"];
-    const partial = ["fungus_cook", "traitor", "bacterial_contact"];
+    const full = ["transfert", "epigenetics", "fertile", "neron_access", "pyromane", "sapper", "electro_slime", "water_resistant", "phagocytosis", "disheartening_contact", "nimble_fingers", "massggedon", "traitor"];
+    const partial = ["fungus_cook", "bacterial_contact"];
     for (const skill of MUSH_SKILLS) expect(skillStatus(skill), skill).toBe(full.includes(skill) ? "full" : partial.includes(skill) ? "partial" : "none");
     expect(MUSH_SKILLS.filter((s) => (SKILLS as readonly string[]).includes(s))).toEqual([]);
   });

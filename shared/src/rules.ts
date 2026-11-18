@@ -59,7 +59,7 @@ import { burnOxygen, rollOxygenSaved, shipView, startShip } from "./ship.ts";
 import { merchantsCycle } from "./merchants.ts";
 import { newSignals } from "./signals.ts";
 import { allTurrets, huntersCycle, newHunters, startHunters, turretCharges, turretsHere } from "./hunters.ts";
-import { expeditionReturnAt, lostPlayers, onExpedition, withCrew } from "./expeditions.ts";
+import { expeditionReturnAt, lostPlayers, nextSectorFor, onExpedition, withCrew } from "./expeditions.ts";
 import { ICARUS_EQUIPMENT } from "./actions/icarus_takeoff.ts";
 import { canScavenge, interfaceId, isLostPlace, newPatrolShips, offShip, PATROL_INTERFACE, PATROL_SHIPS, shipAboard } from "./patrol.ts";
 import { preselectionCycle } from "./preselection.ts";
@@ -921,6 +921,8 @@ function expeditionView(state: GameState, you: PlayerState): PlayerView["expedit
   const away = state.expedition;
   if (!away) return null;
   const report = state.expeditions.find((r) => r.id === away.report)!;
+  // The next sector, to a U-turn or Traitor holder still with the crew (owner, 2026-11-17).
+  const next = nextSectorFor(state, you);
   return {
     crew: [...report.crew],
     planet: report.planet,
@@ -928,6 +930,7 @@ function expeditionView(state: GameState, you: PlayerState): PlayerView["expedit
     // The patrol ship that landed (owner, 2026-11-09, #359): public, as its bay shows it out and the crew is named.
     ...(report.ship !== undefined && { ship: report.ship }),
     ...(withCrew(state, you) && report.members.includes(you.id) && { report: report.id }),
+    ...(next !== undefined && { next }),
   };
 }
 

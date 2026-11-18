@@ -8,9 +8,10 @@ import { commsOfficer } from "../src/bots/goals/commsOfficer.ts";
 import { contactSol } from "../src/bots/goals/contactSol.ts";
 import { expeditionLaunch } from "../src/bots/goals/expeditionLaunch.ts";
 import { EXPEDITION_CHANNEL_NAME, expeditionPlan } from "../src/bots/goals/expeditionPlan.ts";
-import { expeditionPrep, isFitForExpedition, isPriorityExpeditionClaimant, requiredExpeditionGear } from "../src/bots/goals/expeditionPrep.ts";
+import { ICARUS_BOARD_WAIT_CYCLES, expeditionPrep, isFitForExpedition, isPriorityExpeditionClaimant, requiredExpeditionGear } from "../src/bots/goals/expeditionPrep.ts";
 import { activeSharedPlanet } from "../src/bots/planetShare.ts";
 import { SOLO_GOALS } from "../src/bots/goals/index.ts";
+import { leaveIcarus } from "../src/bots/goals/leaveIcarus.ts";
 import { repairDoor } from "../src/bots/goals/repairDoor.ts";
 import { repairHull } from "../src/bots/goals/repairHull.ts";
 import { rest } from "../src/bots/goals/rest.ts";
@@ -42,6 +43,19 @@ import { seats } from "../src/testing/fakes.ts";
 
 // End cycle on, as on the dev server, so a bot with nothing to do ends its cycle instead of waiting for the clock.
 const config = { ...DEFAULT_CONFIG, manualCycles: true };
+const ICARUS_BAY = DEFAULT_CONFIG.expedition.room;
+const ICARUS_CRAFT = DEFAULT_CONFIG.expedition.craft;
+/** The game with the first spacesuit on the ship moved into `id`'s hands. */
+function suited(game: GameState, id: string): GameState {
+  const suit = game.items.find((i) => i.type === "space_suit")!;
+  return { ...game, items: game.items.map((i) => (i === suit ? { ...i, at: { kind: "player" as const, id } } : i)) };
+}
+/** A new cycle that must succeed (summons from an earlier cycle no longer hold the launch). */
+function newCycleOk(game: GameState): GameState {
+  const next = newCycle(game);
+  if (!next.ok) throw new Error("newCycle failed");
+  return next.state;
+}
 
 /** A fresh game and a human seat in it (one seat is Mush). */
 function setup(seed = 1, cfg: typeof config = config): { game: GameState; id: string } {
@@ -2674,7 +2688,8 @@ describe("expeditionLaunch: Pilot walks to ICARUS, summons open plan, and launch
     expect(expeditionLaunch.options(viewFor(notOrbiting, pilot), memory())).toEqual([]);
 
     const allExplored = orbitSetup({ sectors: [{ tag: "FOREST", explored: true }] }).game;
-    const allExploredInIcarus = edit(allExplored, pilot, (p) => (p.room = DEFAULT_CONFIG.expedition.room));
+    // Suited, so a refused boarding can only mean the sectors are all explored (or the Icarus can't go).
+    const allExploredInIcarus = suited(edit(allExplored, pilot, (p) => (p.room = ICARUS_BAY)), pilot);
     expect(expeditionLaunch.options(viewFor(allExploredInIcarus, pilot), memory())).toEqual([]);
 
     const withReport = {
@@ -2691,18 +2706,41 @@ describe("expeditionLaunch: Pilot walks to ICARUS, summons open plan, and launch
     expect(expeditionLaunch.options(viewFor(game, pilot), memory())).toHaveLength(1);
   });
 
-  it("walks to ICARUS, runs summon on the open plan, and launches with icarus_takeoff", async () => {
+  it("walks to ICARUS, summons, gives the crew the cycle to board, then boards and launches from inside", async () => {
     const { game: start, pilot, crew, planId } = orbitSetup({ instant: true });
-    const bot = new GoalBot(1, 2, [expeditionLaunch]);
-    const { game: after, taken } = await untilReady(start, pilot, bot);
+    // The crew bot has seen the plan it holds a slot on while it was open (its prep memory).
+    const crewBot = new GoalBot(3, 4, [expeditionPrep]);
+    await crewBot.decideAction(viewFor(start, crew));
+    const pilotBot = new GoalBot(1, 2, [expeditionLaunch]);
+    const { game: summoned, taken: taken1 } = await untilReady(start, pilot, pilotBot);
+    expect(taken1.some((a) => a.type === "summon" && a.plan === planId)).toBe(true);
+    expect(taken1.some((a) => a.type === "board_icarus" || a.type === "icarus_takeoff")).toBe(false);
+    expect(summoned.plans.find((p) => p.id === planId)!.status).toBe("called");
+    expect(summoned.players.find((p) => p.id === crew)!.room).toBe(ICARUS_BAY);
 
-    expect(taken.some((a) => a.type === "summon" && a.plan === planId)).toBe(true);
-    expect(taken.some((a) => a.type === "icarus_takeoff")).toBe(true);
-    expect(after.plans.find((p) => p.id === planId)!.status).toBe("called");
-    // Summoned crew member walked to ICARUS and joined the expedition.
-    expect(after.expeditions.length).toBeGreaterThanOrEqual(1);
+    // The summoned crew bot boards on arrival.
+    const { game: boarded, taken: crewTaken } = await untilReady(summoned, crew, crewBot);
+    expect(crewTaken.some((a) => a.type === "board_icarus")).toBe(true);
+    expect(boarded.players.find((p) => p.id === crew)!.room).toBe(ICARUS_CRAFT);
+
+    const { game: after, taken: taken2 } = await untilReady(boarded, pilot, pilotBot);
+    expect(taken2.map((a) => a.type)).toEqual(["board_icarus", "icarus_takeoff"]);
+    expect(after.expeditions).toHaveLength(1);
     expect(after.expeditions[0]!.members).toContain(pilot);
     expect(after.expeditions[0]!.members).toContain(crew);
+  });
+
+  it("launches without a summoned holder who hasn't boarded by the next cycle", async () => {
+    const { game: start, pilot, crew } = orbitSetup({ instant: true });
+    const bot = new GoalBot(1, 2, [expeditionLaunch]);
+    const { game: summoned } = await untilReady(start, pilot, bot);
+    expect(summoned.players.find((p) => p.id === crew)!.room).toBe(ICARUS_BAY);
+    const next = newCycle(summoned);
+    expect(next.ok).toBe(true);
+    if (!next.ok) return;
+    const { game: after, taken } = await untilReady(next.state, pilot, bot);
+    expect(taken.map((a) => a.type)).toEqual(["board_icarus", "icarus_takeoff"]);
+    expect(after.expeditions[0]!.members).toEqual([pilot]);
   });
 
   it("waits in ICARUS when short on AP and launches on the next cycle", async () => {
@@ -2715,14 +2753,85 @@ describe("expeditionLaunch: Pilot walks to ICARUS, summons open plan, and launch
     const { game: summoned, taken: taken1 } = await untilReady(lowAp, pilot, bot);
     expect(taken1.some((a) => a.type === "summon")).toBe(true);
     expect(taken1.some((a) => a.type === "icarus_takeoff")).toBe(false);
-    expect(summoned.players.find((p) => p.id === pilot)!.room).toBe(DEFAULT_CONFIG.expedition.room);
+    expect(summoned.players.find((p) => p.id === pilot)!.room).toBe(ICARUS_BAY);
 
-    const next = newCycle(edit(summoned, pilot, (p) => (p.ap = 6)));
+    // The next cycle the Pilot boards (free) but still can't afford the takeoff, so waits aboard.
+    const cycle2 = newCycle(summoned);
+    expect(cycle2.ok).toBe(true);
+    if (!cycle2.ok) return;
+    const { game: aboard, taken: taken2a } = await untilReady(edit(cycle2.state, pilot, (p) => (p.ap = 1)), pilot, bot);
+    expect(taken2a.map((a) => a.type)).toEqual(["board_icarus"]);
+    expect(aboard.players.find((p) => p.id === pilot)!.room).toBe(ICARUS_CRAFT);
+    expect(leaveIcarus.options(viewFor(aboard, pilot), memory())).toEqual([]);
+
+    const next = newCycle(edit(aboard, pilot, (p) => (p.ap = 6)));
     expect(next.ok).toBe(true);
     if (!next.ok) return;
     const { game: launched, taken: taken2 } = await untilReady(next.state, pilot, bot);
     expect(taken2.some((a) => a.type === "icarus_takeoff")).toBe(true);
     expect(launched.expeditions).toHaveLength(1);
+  });
+
+  it("on an airless planet, picks up a spacesuit before boarding", async () => {
+    const { game: start, pilot } = orbitSetup({ instant: true, sectors: [{ tag: "FOREST", explored: false }] });
+    const inBay = edit(start, pilot, (p) => (p.room = ICARUS_BAY));
+    expect(inBay.items.some((i) => i.type === "space_suit" && i.at.kind === "room" && i.at.id === ICARUS_BAY)).toBe(true);
+    const bot = new GoalBot(1, 2, [expeditionLaunch]);
+    const { game: summoned, taken: first } = await untilReady(inBay, pilot, bot);
+    expect(first.map((a) => a.type)).toEqual(["take", "summon"]);
+    // The summoned (human) holder doesn't board; the next cycle the Pilot goes, suited.
+    const { game: after, taken } = await untilReady(newCycleOk(summoned), pilot, bot);
+    expect(taken.map((a) => a.type)).toEqual(["board_icarus", "icarus_takeoff"]);
+    expect(after.expeditions).toHaveLength(1);
+  });
+
+  it("on an airless planet with no spacesuit to be had, gives up without summoning", async () => {
+    const { game: start, pilot, planId } = orbitSetup({ sectors: [{ tag: "FOREST", explored: false }] });
+    const noSuits = { ...edit(start, pilot, (p) => (p.room = ICARUS_BAY)), items: start.items.filter((i) => i.type !== "space_suit") };
+    const bot = new GoalBot(1, 2, [expeditionLaunch]);
+    const { game: after, taken } = await untilReady(noSuits, pilot, bot);
+    expect(taken).toEqual([]);
+    expect(after.plans.find((p) => p.id === planId)!.status).toBe("open");
+  });
+
+  it("crew aboard with no takeoff gets off after ICARUS_BOARD_WAIT_CYCLES and gives up on the plan", async () => {
+    const { game: start, pilot, crew } = orbitSetup();
+    const crewBot = new GoalBot(3, 4, [expeditionPrep, leaveIcarus]);
+    await crewBot.decideAction(viewFor(start, crew));
+    const pilotBot = new GoalBot(1, 2, [expeditionLaunch]);
+    const { game: summoned } = await untilReady(start, pilot, pilotBot);
+    let { game } = await untilReady(summoned, crew, crewBot);
+    expect(game.players.find((p) => p.id === crew)!.room).toBe(ICARUS_CRAFT);
+
+    // The Pilot never launches: the crew bot waits aboard, then gets off.
+    for (let c = 1; c < ICARUS_BOARD_WAIT_CYCLES; c++) {
+      const next = newCycle(game);
+      if (!next.ok) throw new Error("newCycle failed");
+      const r = await untilReady(next.state, crew, crewBot);
+      expect(r.taken).toEqual([]);
+      game = r.game;
+    }
+    const last = newCycle(game);
+    if (!last.ok) throw new Error("newCycle failed");
+    const { game: off, taken } = await untilReady(last.state, crew, crewBot);
+    // Off the Icarus, it picks its iTrackie back up from the bay floor and doesn't board again.
+    expect(taken.map((a) => a.type)).toEqual(["leave_icarus", "take"]);
+    expect(off.players.find((p) => p.id === crew)!.room).toBe(ICARUS_BAY);
+    expect(off.items.some((i) => i.at.kind === "player" && i.at.id === crew && i.type === ITRACKIE_ITEM)).toBe(true);
+  });
+});
+
+describe("leaveIcarus: no bot is left aboard the docked Icarus with nothing to wait for", () => {
+  it("gets off at once when not launching or waiting as crew, and is offered nowhere else", async () => {
+    const { game: base, id } = setup();
+    const inBay = edit(base, id, (p) => (p.room = ICARUS_BAY));
+    expect(leaveIcarus.options(viewFor(inBay, id), memory())).toEqual([]);
+    const aboard = edit(base, id, (p) => (p.room = ICARUS_CRAFT));
+    expect(leaveIcarus.options(viewFor(aboard, id), memory())).toHaveLength(1);
+    const bot = new GoalBot(1, 2, SOLO_GOALS);
+    const { game, taken } = await play(aboard, id, bot, 1);
+    expect(taken.map((a) => a.type)).toEqual(["leave_icarus"]);
+    expect(game.players.find((p) => p.id === id)!.room).toBe(ICARUS_BAY);
   });
 });
 

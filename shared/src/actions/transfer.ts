@@ -28,8 +28,9 @@ export class TransferAction<T extends "take" | "drop" = "take" | "drop"> extends
     const item = state.items.find((i) => i.id === target.item);
     if (!item) return "no_such_item";
     if (this.type === "drop" && ITEM_TYPES[item.type]?.canDrop === false) return "cant_transfer";
-    // Nothing can be dropped on an expedition (owner, 2026-11-08 and 2026-11-09, #359): aboard its craft or lost on the planet.
-    if (this.type === "drop" && (onExpedition(state, player) || isLostPlace(player.room))) return "on_expedition";
+    // Nothing can be dropped on an expedition (owner, 2026-11-08 and 2026-11-09, #359): aboard its craft or lost on the
+    // planet; nor aboard the docked Icarus (owner, 2026-11-17).
+    if (this.type === "drop" && (onExpedition(state, player) || isLostPlace(player.room) || player.room === state.config.expedition.craft)) return "on_expedition";
     const destination: Container = this.type === "take" ? { kind: "player", id: player.id } : { kind: "room", id: player.room };
     return canTransfer(state, player, item, destination) ? null : "cant_transfer";
   }

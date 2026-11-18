@@ -143,7 +143,8 @@ export type ExpeditionEventKind =
   | "found"
   | "foundDead"
   // Phase 3, slice C (owner, 2026-11-08, #357): never drawn. A member without a needed spacesuit stays in the Icarus
-  // (`noSpacesuit`); nobody has one, so the expedition ends at takeoff (`grounded`).
+  // (`noSpacesuit`); nobody has one, so the expedition ends at takeoff (`grounded`). Nothing produces them since boarding
+  // (owner, 2026-11-17); kept for reports stored before it.
   | "noSpacesuit"
   | "grounded"
   // Phase 4, slice D (owner, 2026-11-08, #358): never drawn. A U-turn holder ended the expedition (`who`).

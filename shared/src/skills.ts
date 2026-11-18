@@ -288,10 +288,10 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   polymath: "full",
   // Cancels Fight in Intelligent life on expeditions (owner, 2026-11-08, #358); no ceasefire or trade.
   diplomacy: "partial",
-  // End an expedition for 2 AP (owner, 2026-11-08, #358, actions/u_turn.ts); not seeing the next sector.
-  fast_backward: "partial",
-  // Mush skill: a free, secret expedition Sabotage (owner, 2026-11-08, #358, actions/sabotage_expedition.ts); not seeing the next sector.
-  traitor: "partial",
+  // End an expedition for 2 AP (owner, 2026-11-08, #358, actions/u_turn.ts); sees the next sector (owner, 2026-11-17).
+  fast_backward: "full",
+  // Mush skill: a free, secret expedition Sabotage (owner, 2026-11-08, #358, actions/sabotage_expedition.ts) of the next sector; sees the next sector (owner, 2026-11-17).
+  traitor: "full",
   //Mush skill: Allows for accessing Bios.
   neron_access: "full",
   // Mush skill: a Mush with it can show disease special logs, like vomiting (diseases.ts, canHaveSpecialLogs); giving a crewmate a disease is not built.

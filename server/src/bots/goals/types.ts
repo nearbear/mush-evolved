@@ -23,6 +23,10 @@ export interface ExpeditionPrepMemory {
   ready: boolean;
   expeditions: number;
   done?: boolean;
+  /** The plan's author, who launches it: crew boards once the author is in the bay too. */
+  author?: string;
+  /** The cycle this bot boarded the docked Icarus, for `ICARUS_BOARD_WAIT_CYCLES`. */
+  boardedCycle?: number;
 }
 
 /** What an expedition goes for: an Oxygen sector or a Hydrocarbon sector (owner, 2026-11-12, #417). */

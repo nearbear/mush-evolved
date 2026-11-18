@@ -52,6 +52,8 @@ import { ExtinguishAction } from "./actions/extinguish.ts";
 import { ExtinguishManuallyAction } from "./actions/extinguish_manually.ts";
 import { TakeoffAction } from "./actions/takeoff.ts";
 import { IcarusTakeoffAction } from "./actions/icarus_takeoff.ts";
+import { BoardIcarusAction } from "./actions/board_icarus.ts";
+import { LeaveIcarusAction } from "./actions/leave_icarus.ts";
 import { LandOnPlanetAction } from "./actions/land_on_planet.ts";
 import { UTurnAction } from "./actions/u_turn.ts";
 import { SabotageExpeditionAction } from "./actions/sabotage_expedition.ts";
@@ -200,6 +202,8 @@ const REGISTRY = {
   green_jelly: new GreenJellyAction(),
   extinguish_manually: new ExtinguishManuallyAction(),
   takeoff: new TakeoffAction(),
+  board_icarus: new BoardIcarusAction(),
+  leave_icarus: new LeaveIcarusAction(),
   icarus_takeoff: new IcarusTakeoffAction(),
   land_on_planet: new LandOnPlanetAction(),
   u_turn: new UTurnAction(),

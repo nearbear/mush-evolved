@@ -2,7 +2,7 @@
 // the server decides what is legal and sends it in view.actions. No socket either: see GameScreen.
 
 import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
-import { CHEAT_ROOM, CORPSE_ITEM, SUPPORT_DRONE_ITEM, doorId, doorOtherRoom, isLostPlace, legalIn, type Action, type BotPause, type CharacterId, type Cheat, type GameClientMessage, type KubeOpId, type PlayerView, type RoleCheat, type RoomId, type Spot, type Target } from "@mush2/shared";
+import { CHEAT_ROOM, CORPSE_ITEM, ICARUS_CRAFT, SUPPORT_DRONE_ITEM, doorId, doorOtherRoom, isLostPlace, legalIn, type Action, type BotPause, type CharacterId, type Cheat, type GameClientMessage, type KubeOpId, type PlayerView, type RoleCheat, type RoomId, type Spot, type Target } from "@mush2/shared";
 import { useTranslation } from "react-i18next";
 import { Hint } from "./hud/IconButton.tsx";
 import { ActionQueue } from "./hud/ActionQueue.tsx";
@@ -157,8 +157,10 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
 
   const { you } = view;
   const reachable = new Set(legalIn(view).flatMap((a) => (a.type === "move" ? [a.to] : [])));
+  // Away with an expedition, or aboard the docked Icarus (owner, 2026-11-17): both show the Icarus panel.
+  const inIcarus = view.expedition?.report !== undefined || you.room === ICARUS_CRAFT;
   /** The room view shows your room's scene (not death, the patrol cockpit, a lost place or Icarus), so it gets the name plate. */
-  const inRoom = you.alive && !(view.patrolShip && view.expedition?.report === undefined) && !isLostPlace(you.room) && view.expedition?.report === undefined;
+  const inRoom = you.alive && !(view.patrolShip && view.expedition?.report === undefined) && !isLostPlace(you.room) && !inIcarus;
   const occupant = (p: { id: string; isBot: boolean; character: CharacterId; statuses: string[]; busy?: Bar; lying?: string; spot?: Spot; pushedBy?: string }): Occupant => {
     const busy = p.id === you.id && you.current ? { bar: you.current, label: names.action(you.current.action.type) } : p.busy && { bar: p.busy };
     return {
@@ -243,12 +245,13 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
               <PatrolCockpit view={view} ship={view.patrolShip} layout={layout} onAction={act} />
             ) : isLostPlace(you.room) ? (
               <LostPanel view={view} onShareReport={readOnly ? undefined : (report, text) => post({ type: "shareReport", report, text })} />
-            ) : view.expedition?.report !== undefined ? (
+            ) : inIcarus ? (
               <IcarusPanel
                 view={view}
-                expedition={view.expedition}
-                  selected={target}
+                expedition={view.expedition?.report !== undefined ? view.expedition : null}
+                selected={target}
                 onSelect={select}
+                onAction={act}
                 onShareReport={readOnly ? undefined : (report, text) => post({ type: "shareReport", report, text })}
               />
             ) : layout ? (
