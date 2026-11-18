@@ -26,7 +26,7 @@ import { snoop } from "../src/bots/goals/snoop.ts";
 import { BOT_EAT_AFTER_CYCLES, eat } from "../src/bots/goals/eat.ts";
 import { tendPlants } from "../src/bots/goals/tendPlants.ts";
 import { sowHere } from "../src/bots/goals/sow.ts";
-import { POT_STORAGE, STORAGE_CHECKED, setOutPots } from "../src/bots/goals/setOutPots.ts";
+import { POT_STORAGES, setOutPots, storageCheckedKey } from "../src/bots/goals/setOutPots.ts";
 import { HOLD_HUNTER_TRIGGER, HOLD_MAX_DAYS, HOLD_MIN_OXYGEN, JUMP_WAIT_CYCLES, sharedDestination, targetJump, travel, turnsTo } from "../src/bots/goals/travel.ts";
 import { helpGoal, helpTasks } from "../src/bots/goals/help.ts";
 import type { BotMemory, GoalDef } from "../src/bots/goals/types.ts";
@@ -746,11 +746,6 @@ describe("tendPlants", () => {
       p.ap = 10;
       p.resources.garden = 0;
     });
-    game.items = game.items.filter((i) => !(i.type === "tree_pot" && i.at.kind === "room" && i.at.id === POT_STORAGE));
-    game.items.push(
-      { id: "sp-1", type: "tree_pot", at: { kind: "room", id: POT_STORAGE } },
-      { id: "sp-2", type: "tree_pot", at: { kind: "room", id: POT_STORAGE } },
-    );
     for (const pot of game.items) if (pot.plant) pot.plant.thirst = 1;
     return { game, id };
   };
@@ -838,48 +833,86 @@ describe("sowHere and setOutPots", () => {
     const { game: start, id } = setup();
     const inGarden = edit(start, id, (p) => (p.room = garden));
     expect(sowHere.options(viewFor(inGarden, id), memory())).toEqual([]);
-    const elsewhere = edit(start, id, (p) => (p.room = POT_STORAGE as typeof p.room));
+    const elsewhere = edit(start, id, (p) => (p.room = POT_STORAGES[0] as typeof p.room));
     elsewhere.items.push({ id: "test-banana", type: "fruit_banana", at: { kind: "player", id } });
     expect(sowHere.options(viewFor(elsewhere, id), memory())).toEqual([]);
   });
 
   it("a Green Thumb Botanist with a full inventory sets out its pots, fetches the storage's, and sows the banana first", async () => {
     const { game: start, id } = setup();
-    const game = edit(start, id, (p) => {
+    let game = edit(start, id, (p) => {
       p.skills = ["botanic", "green_thumb"] as typeof p.skills;
       p.room = garden;
       p.ap = 12;
+      p.mp = 12;
       p.resources.garden = 0;
     });
     game.items = game.items.filter((i) => i.at.kind !== "player" || i.at.id !== id);
     game.items.push({ id: "test-talky", type: "super_talky", at: { kind: "player", id } });
     game.items.push({ id: "gt-1", type: "tree_pot", at: { kind: "player", id } }, { id: "gt-2", type: "tree_pot", at: { kind: "player", id } });
     game.items.push({ id: "test-banana", type: "fruit_banana", at: { kind: "room", id: garden } });
-    game.items = game.items.filter((i) => !(i.type === "tree_pot" && i.at.kind === "room" && i.at.id === POT_STORAGE));
-    game.items.push(
-      { id: "sp-1", type: "tree_pot", at: { kind: "room", id: POT_STORAGE } },
-      { id: "sp-2", type: "tree_pot", at: { kind: "room", id: POT_STORAGE } },
-    );
     for (const pot of game.items) if (pot.plant) pot.plant.thirst = 1;
     const bot = new GoalBot(1, 2, [sowHere, setOutPots, tendPlants]);
-    const { game: after, taken } = await oneCycle(game, id, bot);
-    const kinds = taken.map((a) => a.type).filter((t) => t !== "move");
-    // The banana first (sown straight from the floor), then the Green Thumb pots, storage pots, then watering.
-    expect(kinds).toEqual(["sow", "drop", "drop", "take", "take", "drop", "drop", "water", "water"]);
-    expect(onFloor(after, POT_STORAGE).some((i) => i.type === "tree_pot")).toBe(false);
-    expect(onFloor(after, garden).filter((i) => i.type === "tree_pot")).toHaveLength(7);
-    expect(after.items.some((i) => i.id === "test-banana")).toBe(false);
+    const allTaken: Action[] = [];
+    for (let c = 0; c < 4; c++) {
+      const { game: next, taken } = await oneCycle(game, id, bot);
+      allTaken.push(...taken);
+      game = edit(next, id, (p) => {
+        p.ap = 12;
+        p.mp = 12;
+      });
+      if (onFloor(game, garden).filter((i) => i.type === "tree_pot").length === 7) break;
+    }
+    const kinds = allTaken.map((a) => a.type).filter((t) => t !== "move");
+    // The banana first (sown straight from the floor), then the Green Thumb pots, storage pots, and watering.
+    expect(kinds[0]).toBe("sow");
+    expect(kinds.slice(1, 3)).toEqual(["drop", "drop"]);
+    expect(kinds).toContain("take");
+    expect(kinds).toContain("water");
+    expect(POT_STORAGES.some((r) => onFloor(game, r).some((i) => i.type === "tree_pot"))).toBe(false);
+    expect(onFloor(game, garden).filter((i) => i.type === "tree_pot")).toHaveLength(7);
+    expect(game.items.some((i) => i.id === "test-banana")).toBe(false);
   });
 
-  it("checks the storage once a game", () => {
+  it("checks each storage once a game", () => {
     const { game: start, id } = setup();
     const game = edit(start, id, (p) => (p.skills = ["botanic"] as typeof p.skills));
     const m = memory();
     expect(setOutPots.options(viewFor(game, id), m)).toHaveLength(1);
-    m.once.add(STORAGE_CHECKED);
+    for (const r of POT_STORAGES) m.once.add(storageCheckedKey(r));
     expect(setOutPots.options(viewFor(game, id), m)).toEqual([]);
     const other = edit(start, id, (p) => (p.skills = ["pilot"] as typeof p.skills));
     expect(setOutPots.options(viewFor(other, id), memory())).toEqual([]);
+  });
+
+  it("shares empty non-garden pots via itemShare and fetches them straight from a reported room", async () => {
+    const { game: start, id } = setup();
+    const potRoom = "STORAGE_B_1";
+    const other = start.players.find((p) => p.id !== id)!.id;
+    let game = edit(start, id, (p) => {
+      p.skills = ["botanic"] as typeof p.skills;
+      p.room = garden;
+      p.ap = 12;
+      p.mp = 12;
+    });
+    game.items = game.items.filter((i) => i.type !== "tree_pot" || i.at.kind !== "room" || i.at.id === garden);
+    game.items = game.items.filter((i) => i.at.kind !== "room" || i.at.id !== potRoom);
+    game.items.push({ id: "sp-remote", type: "tree_pot", at: { kind: "room", id: potRoom } });
+    game = edit(game, other, (p) => (p.room = potRoom));
+    const spotterMem = memory();
+    const post = observeItems(viewFor(game, other), spotterMem);
+    expect(post?.text).toBe(`Item: tree_pot in ${potRoom}`);
+    // Garden pots (empty or planted) are not shared as fetchable items.
+    const inGardenMem = memory();
+    expect(observeItems(viewFor(game, id), inGardenMem)).toBeNull();
+    // Botanist reads the report and goes straight to potRoom, then drops the pot in the garden.
+    const bot = new GoalBot(1, 2, [setOutPots]);
+    const said = applyInput(game, { ...post!, by: other });
+    expect(said.ok).toBe(true);
+    if (!said.ok) return;
+    const { game: after, taken } = await oneCycle(said.state, id, bot);
+    expect(taken.some((a) => a.type === "take" && a.item === "sp-remote")).toBe(true);
+    expect(onFloor(after, garden).some((i) => i.id === "sp-remote")).toBe(true);
   });
 });
 

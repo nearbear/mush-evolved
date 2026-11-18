@@ -56,7 +56,7 @@ export interface BotMemory {
   readonly ended: Set<string>;
   /** Keys of once-a-day jobs done today (tending the garden); cleared when the day changes. */
   readonly today: Set<string>;
-  /** Keys of once-a-game jobs done (checking Front Storage for hydropots, `setOutPots`). */
+  /** Keys of once-a-game jobs done (checking storages for hydropots, `setOutPots`). */
   readonly once: Set<string>;
   /** Rooms the bot has stood in this cycle. */
   readonly visited: Set<RoomId>;
