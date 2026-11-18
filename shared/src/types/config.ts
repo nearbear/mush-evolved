@@ -377,6 +377,10 @@ export interface GameConfig {
     cost: { ap: number }; // AP to Protect a crewmate (owner, 2026-11-14).
     aggressiveApSurcharge: number; // Extra AP for each aggressive action targeting the VIP while both are alive in the same room, theirs too (owner, 2026-11-14).
   };
+  ceasefire: {
+    cost: { ap: number }; // AP cost of Diplomat's Ceasefire (owner, 2026-11-17).
+    durationCycles: number; // Cycles a Ceasefire stays active in the room (owner, 2026-11-17).
+  };
   antenna: {
     brokenApSurcharge: number; // Extra AP for contacting Sol, decoding a rebel base, contacting Xyloph and updating NERON while the Stellar antenna (Motor Room) is broken (owner, 2026-11-08).
   };

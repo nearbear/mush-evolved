@@ -82,6 +82,7 @@ import { JettisonAction } from "./actions/jettison.ts";
 import { PickSkillAction } from "./actions/pick_skill.ts";
 import { ApprenticeshipAction } from "./actions/apprenticeship.ts";
 import { BecomeGeniusAction } from "./actions/become_genius.ts";
+import { CeasefireAction } from "./actions/ceasefire.ts";
 import { ReadBookAction } from "./actions/read_book.ts";
 import { TearAction } from "./actions/tear.ts";
 import { AnathemaAction } from "./actions/anathema.ts";
@@ -269,6 +270,7 @@ const REGISTRY = {
   pick_skill: new PickSkillAction(),
   apprenticeship: new ApprenticeshipAction(),
   become_genius: new BecomeGeniusAction(),
+  ceasefire: new CeasefireAction(),
   read_book: new ReadBookAction(),
   tear: new TearAction(),
   warp_to_planet: new WarpToPlanetAction(),

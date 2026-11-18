@@ -392,6 +392,7 @@
     "deletePlanet": "Supprimer une planète",
     "apprenticeshipOf": "Apprendre {{skill}}",
     "becomeGenius": "Coup de génie",
+    "ceasefire": "Cessez-le-feu",
     "apprenticeship": "Apprentissage",
     "pickSkill": "Choisir une compétence",
     "easyTravel": "Sauter vers une planète",
@@ -1022,6 +1023,7 @@
     "threwOut": "{{name}} a mis {{target}} à la porte vers {{room}}.",
     "thrownIn": "{{target}} a été jeté depuis {{room}}.",
     "guarded": "{{name}} garde la salle.",
+    "ceasefire": "{{name}} a déclaré un cessez-le-feu dans la salle.",
     "stoppedGuarding": "{{name}} a cessé de garder la salle.",
     "enteredNimble": "Vous êtes passé en mode agile.",
     "exitedNimble": "Vous avez quitté le mode agile.",
@@ -2061,6 +2063,9 @@
     "exits_count_many": "{{count}} sorties",
     "brokenEquipment": "{{equipment}} (en panne)",
     "onFire": "Cette pièce est en feu !",
+    "ceasefire_one": "Cessez-le-feu actif ({{count}} cycle restant)",
+    "ceasefire_other": "Cessez-le-feu actif ({{count}} cycles restants)",
+    "ceasefire_many": "Cessez-le-feu actif ({{count}} cycles restants)",
     "broken": "En panne"
   },
   "patrol": {

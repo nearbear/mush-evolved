@@ -523,6 +523,7 @@ export function normalizePlayer(raw: Partial<PlayerState>, mode: QueueMode): Pla
     massMoulderingUsed: raw.massMoulderingUsed,
     apprenticeUsed: raw.apprenticeUsed,
     geniusUsed: raw.geniusUsed,
+    ceasefireUsed: raw.ceasefireUsed,
     bodyTakenBy: raw.bodyTakenBy,
     role: need(raw, "role", t),
     alpha: need(raw, "alpha", t),
@@ -1155,6 +1156,8 @@ export function normalizeCore(raw: Partial<GameCore>, _ctx: NormalizeContext, mo
     // Doors (#330): every door working in a game stored before them.
     doors: mapValues(added(raw, "doors", {}), normalizeDoor),
     fires: copy(need(raw, "fires", t)),
+    // Ceasefire (owner, 2026-11-17): none active in a game stored before it.
+    ceasefires: dict(added(raw, "ceasefires", {})),
     // Reports (#444): none in a game stored before them.
     reports: added(raw, "reports", []).map(normalizeReport),
     pendingFires: copy(need(raw, "pendingFires", t)),

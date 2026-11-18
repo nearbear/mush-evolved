@@ -241,6 +241,8 @@ export interface PlayerView {
   doors: DoorView[];
   /** Whether the room you are in is on fire (fire.ts). Only the living in a burning room learn it; the crew-wide notice names no room. */
   roomOnFire: boolean;
+  /** Cycles remaining on an active Ceasefire in the room you are in (ceasefire.ts), or null if none (and null for the dead). */
+  roomCeasefire: number | null;
   /** Burning rooms reported ship-wide, by a player or by Fire detectors (reports.ts, #444). Only to the living. */
   burningRooms: RoomId[];
   /** Broken doors aboard, only once Defective piston sensors (`DOOR_SENSOR`) is complete (reports.ts, #330). Empty before then and for the dead. */

@@ -4266,3 +4266,8 @@ Owner specified Syphilis (20-32 cycles, STT/DTT spread, -3 max morale and HP, +2
 ## 2026-11-17 — Mark Computer Scientist skill as full
 
 - Updated `SKILL_STATUS.computer` from `"partial"` to `"full"` in `shared/src/skills.ts` (since `hack` and the doubled `hack` odds are implemented) and added a regression check in `shared/tests/skills.test.ts`.
+
+### 2026-11-17: Diplomat's Ceasefire
+
+- **Decided by the owner:** `ceasefire` (skill `diplomacy`) costs 1 AP (`ceasefire.cost.ap`), once per game per character (`ceasefireUsed` stays with the body on Transfer; Polymath/`skilful` does not get it), blocked in preselection and when a ceasefire is already active in the room. Public room log (`ceasefire`) and public room status (`roomCeasefire` to the living in that room) for 3 cycles (`ceasefire.durationCycles`); stays active in the room even if the diplomat leaves or dies, and blocks all `aggressive`-tagged actions there (`attack`, `punch`, `interrogate`, `throw_out`, `spike`, `body_transfer`, `demoralize`, `guard`).
+- **What worked:** Putting the ceasefire gate in `Action.check` (`refusedCeasefire`) covered every `aggressive`-tagged action in one place without per-action edits, and `storedRooms.test.ts` caught adding `game.ceasefires` to `shared/tests/storedShape.ts`.

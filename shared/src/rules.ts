@@ -208,6 +208,7 @@ export function createGame(
     incidentPoints: 0,
     doors: {},
     fires: [],
+    ceasefires: {},
     reports: [],
     pendingFires: [],
     failureStreaks: {},
@@ -508,6 +509,10 @@ function advanceCycle(state: GameState, at?: number): void {
   }
   if (at !== undefined) inactivityCycle(state, at);
   coupCycle(state);
+  for (const [room, left] of Object.entries(state.ceasefires)) {
+    if (left <= 1) delete state.ceasefires[room];
+    else state.ceasefires[room] = left - 1;
+  }
   diseaseTrackerCycleChange(state);
   cycleChanged(state);
   const oxygenSaved = rollOxygenSaved(state);
@@ -754,6 +759,7 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     // Your room's doors (#330): a door's state reaches only the living on either side of it.
     doors: you.alive ? doorsOf(state, you.room) : [],
     roomOnFire: you.alive && isOnFire(state, you.room),
+    roomCeasefire: you.alive ? (state.ceasefires[you.room] ?? null) : null,
     // Reported fires, by players or Fire detectors (#444); an unreported fire's room reaches nobody.
     burningRooms: you.alive ? state.fires.filter((room) => fireReported(state, room)) : [],
     // Broken doors aboard, only once Defective piston sensors is complete (#330).

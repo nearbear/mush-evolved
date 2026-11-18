@@ -214,7 +214,13 @@ export class Action<T extends { type: string }> {
    * no action can skip the cost check (a modifier can put a price on a free action).
    */
   check(state: Readonly<GameState>, player: Readonly<PlayerState>, target: T): string | null {
-    return this.refusedBroken(state, player, target) ?? this.validate(state, player, target) ?? this.canAfford(state, player, target);
+    return this.refusedBroken(state, player, target) ?? this.refusedCeasefire(state, player, target) ?? this.validate(state, player, target) ?? this.canAfford(state, player, target);
+  }
+
+  /** Active Ceasefire in the room blocks all `aggressive`-tagged actions (owner, 2026-11-17). */
+  private refusedCeasefire(state: Readonly<GameState>, player: Readonly<PlayerState>, target: T): string | null {
+    if ((state.ceasefires[player.room] ?? 0) > 0 && this.tagsFor(state, target).includes("aggressive")) return "ceasefire";
+    return null;
   }
 
   /** Broken equipment does nothing (owner, 2026-10-25): no action on it but those marked `onBroken`. Nor does a broken item (owner, 2026-11-07), but `onBrokenItem` ones can still move or dismantle it. */

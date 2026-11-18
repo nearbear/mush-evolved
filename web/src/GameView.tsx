@@ -27,7 +27,7 @@ import { resolveTarget } from "./hud/targets.ts";
 import { TopBar } from "./hud/TopBar.tsx";
 import { ServerClockContext, serverTime, type ServerClock } from "./hud/serverClock.ts";
 import { shipPace, type Corpse, type Drone, type Occupant } from "./iso/scene.ts";
-import { FIRE_ICON, orbitImage } from "./art/assets.ts";
+import { FIRE_ICON, orbitImage, skillIcon } from "./art/assets.ts";
 import { LeavingIsoRoom } from "./iso/LeavingRoom.tsx";
 import { recentDoorMoves } from "./iso/doorMoves.ts";
 import { useCheatRoom, useShipLayout } from "./iso/shipLayout.ts";
@@ -324,6 +324,11 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
                     {view.roomOnFire && (
                       <Hint label={t("roomList.onFire")}>
                         <img src={FIRE_ICON} alt={t("roomList.onFire")} />
+                      </Hint>
+                    )}
+                    {view.roomCeasefire !== null && (
+                      <Hint label={t("roomList.ceasefire", { count: view.roomCeasefire })}>
+                        <img src={skillIcon("diplomacy")} alt={t("roomList.ceasefire", { count: view.roomCeasefire })} />
                       </Hint>
                     )}
                   </div>

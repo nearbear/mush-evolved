@@ -386,6 +386,7 @@
     "deletePlanet": "Delete a planet",
     "apprenticeshipOf": "Learn {{skill}}",
     "becomeGenius": "Eureka moment",
+    "ceasefire": "Ceasefire",
     "apprenticeship": "Apprenticeship",
     "pickSkill": "Pick a skill",
     "easyTravel": "Warp to a planet",
@@ -1006,6 +1007,7 @@
     "threwOut": "{{name}} threw {{target}} out into {{room}}.",
     "thrownIn": "{{target}} was thrown in from {{room}}.",
     "guarded": "{{name}} is guarding the room.",
+    "ceasefire": "{{name}} declared a ceasefire in the room.",
     "stoppedGuarding": "{{name}} stopped guarding the room.",
     "enteredNimble": "You entered Nimble mode.",
     "exitedNimble": "You exited Nimble mode.",
@@ -2124,6 +2126,8 @@
     "exits_count_other": "{{count}} exits",
     "brokenEquipment": "{{equipment}} (broken)",
     "onFire": "This room is on fire!",
+    "ceasefire_one": "Ceasefire active ({{count}} cycle left)",
+    "ceasefire_other": "Ceasefire active ({{count}} cycles left)",
     "broken": "Broken"
   },
   "patrol": {
