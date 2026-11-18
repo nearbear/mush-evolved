@@ -9,10 +9,10 @@
 // accessor below; `fold` does the looping.
 
 import { isBrokenIn } from "./equipment.ts";
-import { carriesHeavy, isWorking } from "./items.ts";
+import { activeScooter, carriesHeavy, isWorking } from "./items.ts";
 import { projectDone } from "./projects.ts";
 import { RESEARCH_COMPLETE } from "./research.ts";
-import { skillsOf } from "./skills.ts";
+import { hasSkill, skillsOf } from "./skills.ts";
 import { antic_perfume } from "./modifiers/antic_perfume.ts";
 import { astrophysician } from "./modifiers/astrophysician.ts";
 import { bodyguard } from "./modifiers/bodyguard.ts";
@@ -558,6 +558,9 @@ export function movementRules(
   for (const id of modifierIds(player)) {
     const hook = registry[id]?.movement;
     if (hook) rules = hook(rules, player, state);
+  }
+  if (!hasSkill(player, "sprint") && activeScooter(state, player)) {
+    rules.mpPerConversion += state.config.scooter.extraMpPerConversion;
   }
   if (player.energizeUntil !== undefined && state.cycle < player.energizeUntil) {
     rules.mpPerConversion += state.config.botany.fruits.buffs.energize.extraMpPerConversion;

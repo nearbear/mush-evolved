@@ -38,11 +38,12 @@ function giveBanana(s: GameState, to = "p0"): string {
 }
 
 describe("botany: the decided numbers and the start", () => {
-  it("starts with an empty pot and two adult banana plants in the garden and two empty pots in front storage", () => {
+  it("starts with an empty pot and two adult banana plants in the garden and two empty pots in storages", () => {
     const s = createGame(makeSeats(3), noIncidents(DEFAULT_CONFIG), 1);
     const where = (room: string) => pots(s).filter((p) => p.at.kind === "room" && p.at.id === room);
+    const inStorages = pots(s).filter((p) => p.at.kind === "room" && DEFAULT_CONFIG.snoop.rooms.includes(p.at.id));
     expect(where(GARDEN).map((p) => p.plant ?? null)).toEqual([null, adult(), adult()]);
-    expect(where("STORAGE_FRONT").map((p) => p.plant ?? null)).toEqual([null, null]);
+    expect(inStorages.map((p) => p.plant ?? null)).toEqual([null, null]);
     expect(pots(s)).toHaveLength(5);
   });
 
@@ -88,6 +89,7 @@ describe("botany: the day change", () => {
 
   it("an unwatered plant goes thirsty, then dried, and stays dried (no death yet)", () => {
     let s = ship();
+    s.ship.oxygen = 40;
     const id = planted(s)[0]!.id;
     const thirst: number[] = [];
     for (let day = 0; day < 4; day++) {

@@ -511,6 +511,10 @@ export interface GameConfig {
   sprinter: {
     extraMpPerConversion: number; // Extra MP the `sprint` skill gets from each AP-to-MP conversion (owner, 2026-10-24; eMushpedia).
   };
+  scooter: {
+    extraMpPerConversion: number; // Extra MP the Antigrav Scooter gives on each AP-to-MP conversion (owner, 2026-11-17). Does not stack with `sprint` or another scooter.
+    charges: { start: number; max: number; perCycle: number }; // Starts with 8 charges, spends 1 per conversion, recharges 1 per cycle (owner, 2026-11-17).
+  };
   anathema: {
     cost: { ap: number }; // AP the `juge` (Persecutor) skill's Anathema costs (owner, 2026-10-24; eMushpedia).
     successFactor: number; // An Outcast's chance on every action that rolls one is multiplied by this (owner, 2026-10-24: x0.8).
@@ -882,7 +886,8 @@ export interface GameConfig {
   characterModifiers: Record<string, string[]>; // Modifiers a character starts with, by character id (traits: Ian pacifist, owner 2026-10-18; Chun immunity and mankind_only_hope, owner 2026-10-18; Terrence wheelchair, owner 2026-10-19; Chao hyperactive, owner 2026-11-08).
   mankindOnlyHope: { moraleLossCut: number }; // How much less morale the crew loses each day while a holder (Chun) is alive (owner, 2026-10-18).
   hopeless: { deathMorale: number }; // Morale every living player loses for each human who dies Hopeless at a cycle's end (owner, 2026-11-11).
-  startItems: { type: string; room: RoomId; builds?: string; teaches?: string; plant?: PlantState }[]; // Items placed in rooms at the start of the game. Types come from ITEM_TYPES in items.ts.
+  /** Items placed in rooms at the start of the game (fixed room, or random from `storage` / `daedalus` pool, optionally with weighted blueprint draws). */
+  startItems: ({ type: string; builds?: string; buildsWeights?: Record<string, number>; teaches?: string; plant?: PlantState } & ({ room: RoomId } | { pool: "storage" | "daedalus" }))[];
   startInventory: string[]; // Item types every player starts carrying (one of each).
   rooms: Record<RoomId, RoomId[]>; // Adjacency list. Movement is only allowed along these edges.
   equipment: Record<RoomId, Equipment[]>; // Equipment in each room at launch, copied into `GameState.equipment`. Types come from EQUIPMENT_TYPES in equipment.ts.

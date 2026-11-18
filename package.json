@@ -23,6 +23,7 @@
     "lint": "biome lint .",
     "lint:md": "markdownlint-cli2",
     "verify": "node tools/src/dev/verify.ts",
+    "verify:web": "node tools/src/dev/verify.ts --web",
     "build": "npm run build -w web",
     "deploy": "echo 'Pick a target: npm run deploy:production, deploy:staging or deploy:test' >&2 && exit 1",
     "deploy:production": "npm run build && npm run deploy:production -w server",

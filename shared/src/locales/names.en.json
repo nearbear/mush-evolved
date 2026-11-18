@@ -165,7 +165,13 @@
     "trad_module": "Babel Module",
     "white_flag": "White Flag",
     "old_shirt": "Old T-Shirt",
-    "hacker_kit": "Hacker kit"
+    "hacker_kit": "Hacker kit",
+    "mad_kube": "MAD Kube",
+    "duct_tape": "Duct Tape",
+    "block_of_post_it": "Block of Post-its",
+    "plastenite_armor": "Plastenite Armor",
+    "sniper_helmet": "Sniper Helmet",
+    "scooter": "Antigrav Scooter"
   },
   "skills": {
     "names": {

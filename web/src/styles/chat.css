@@ -469,13 +469,19 @@
   font-weight: bold;
   line-height: 14px;
 }
-/* "New messages" (#400): before the first message unread when the channel was opened; it stays put as you read. */
+/* "New messages" (#400): before the first message unread when the channel was opened; it stays put as you read.
+   Zero-height overlay on the seam between rows so moving or dismissing it never shifts messages. */
 .feed > li.unread-divider {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  padding: var(--space-1) 0;
+  height: 0;
+  padding: 0;
   border-bottom: 0;
+  overflow: visible;
+  pointer-events: none;
   color: #d8332f;
   font-size: 0.7rem;
   font-weight: bold;

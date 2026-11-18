@@ -303,6 +303,7 @@ describe("character skill lists", () => {
 
   it("marks fully implemented skills in SKILL_STATUS", () => {
     expect(skillStatus("biologist")).toBe("full");
+    expect(skillStatus("computer")).toBe("full");
     expect(skillStatus("pilot")).toBe("full");
     expect(skillStatus("robotics")).toBe("full");
   });

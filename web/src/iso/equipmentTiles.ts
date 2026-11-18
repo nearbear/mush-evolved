@@ -9,6 +9,14 @@ const SURGERY_POD_SLICE = "surgery";
 /** Tile slices of the camera art, one tile per room in the layout. */
 export const CAMERA_SLICES: ReadonlySet<string> = new Set(["camera", "camera2"]);
 
+/** Synthetic hover key shared by all shelf/locker sprites in a room so they highlight as one unit. */
+export const LOCKER_HOVER_KEY = "locker";
+
+/** Whether a slice is part of a room's shelf/storage locker (cupboards and storage-room shelving). */
+export function isLockerSlice(layout: ShipLayout, slice: string): boolean {
+  return !!layout.slices[slice]?.flags.includes("locker") || slice.startsWith("storage_");
+}
+
 /** The built-only tiles (a sofa, the lab's MycoScan) each room of the stripped layout had in the map, by equipment type, where `roomAsBuilt` draws them. */
 const builtTiles = new WeakMap<RoomLayout, ReadonlyMap<string, TilePlacement>>();
 

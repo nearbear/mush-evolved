@@ -89,7 +89,11 @@ export function SignalConversation({ signal, terminalId, view, onAction, onBack 
           {t("signals.back")}
         </button>
       </header>
-      <AudioWave speaking={playback.phase === "typing" && current?.from === "signal"} />
+      <AudioWave
+        speaking={playback.phase === "typing" && current?.from === "signal"}
+        text={texts[playback.shown]}
+        cursor={Math.max(0, playback.chars - 1)}
+      />
       {/* Sticks to the bottom as lines arrive and type out, like global chat (Scroller). */}
       <Scroller items={playback.shown} scrollKey={`${playback.phase}:${playback.chars}`}>
         {/* A log, so a screen reader hears each line once, whole (the typing is aria-hidden). Tapping it, or Enter or

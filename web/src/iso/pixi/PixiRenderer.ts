@@ -3,7 +3,8 @@
 // sprites. It draws the Scene it is given over a star field (starfield.ts) and nothing else: no input (the canvas ignores pointer
 // events; IsoRoom hit-tests), no game state. Pixi stays inside this folder.
 //
-// Pixel-exact at 1x: nearest-neighbour textures, the canvas at devicePixelRatio with CSS size equal
+// Pixel-exact at 1x: nearest-neighbour textures, the canvas at an integer resolution (rounded
+// devicePixelRatio, so fractional DPI like 125% doesn't misalign filter render targets) with CSS size equal
 // to the panel, and whole-pixel positions, rounded here rather than left to Pixi's roundPixels. That
 // rounds each sprite corner on the GPU after a float round trip, so a half pixel (placement centres
 // odd-sized slices on one; the camera and walkers move by fractions) rounds up at some screen heights
@@ -211,7 +212,7 @@ export class PixiRenderer {
       height: Math.max(1, this.host.clientHeight),
       backgroundAlpha: 0,
       antialias: false,
-      resolution: window.devicePixelRatio || 1,
+      resolution: Math.max(1, Math.round(window.devicePixelRatio || 1)),
       autoDensity: true,
       roundPixels: true,
       autoStart: false,

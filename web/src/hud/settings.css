@@ -539,7 +539,7 @@ li.research-item-blocked .research-progress {
   list-style: none;
 }
 /* A list row, not a plain button (like a tab or a pick tile): a band in the cycle dividers' title-bar blue
-   (itrackie.css), the kind's icon, the name and its caption on one line. */
+   (itrackie.css), the kind's icon, the name with its caption underneath, and the overall status on the right. */
 button.signal-entry {
   margin: 0;
   display: flex;
@@ -582,25 +582,30 @@ li.signal-next {
   display: block;
   image-rendering: pixelated;
 }
-/* The row wraps: a caption with less than 8rem beside the name (a long name, a 360px phone) drops to its own line. */
-button.signal-entry,
-li.signal-next {
-  flex-wrap: wrap;
-  row-gap: 0.125rem;
+.signal-entry-main {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
 }
 .signal-entry-name {
-  flex: 0 1 auto;
   min-width: 0;
 }
 .signal-entry-caption {
-  flex: 1 1 8rem;
   min-width: 0;
   font-size: 0.85em;
 }
-.signal-hailing {
+.signal-entry-status {
   flex: none;
+  margin-inline-start: auto;
+  white-space: nowrap;
+  font-size: 0.85em;
+}
+.signal-hailing {
   color: var(--warning);
   font-weight: bold;
+  font-size: 1em;
 }
 
 /* One conversation (SignalConversation.tsx) fills the panel: the header and wave stay put, the feed scrolls (from the
@@ -740,7 +745,7 @@ li.signal-next {
   margin: 0;
 }
 
-/* The audio wave (AudioWave.tsx): flat at rest, each bar bouncing up to its own peak while the other side speaks. */
+/* The audio wave (AudioWave.tsx): flat at rest, each bar driven by --level from the message text while the other side speaks. */
 .audio-wave {
   display: flex;
   flex: none;
@@ -755,26 +760,17 @@ li.signal-next {
   height: 100%;
   border-radius: 1px;
   background: currentColor;
-  transform: scaleY(0.08);
-  transition: transform 0.3s;
+  transform: scaleY(var(--level, 0.08));
+  transition: transform 0.25s ease-out;
 }
 .audio-wave[data-speaking] > span {
-  animation: audio-wave var(--period) ease-in-out var(--delay) infinite alternate;
-}
-@keyframes audio-wave {
-  from {
-    transform: scaleY(0.12);
-  }
-  to {
-    transform: scaleY(var(--peak));
-  }
+  transition: transform 70ms ease-out;
 }
 @media (prefers-reduced-motion: reduce) {
   .audio-wave > span {
     transition: none;
   }
   .audio-wave[data-speaking] > span {
-    animation: none;
     transform: scaleY(var(--peak));
   }
 }

@@ -68,7 +68,7 @@ These are non-negotiable unless I say otherwise.
 - Prefer the simplest thing that works for the vertical slice, and flag scope creep.
 - The databases are currently empty, so it's OK if something bumps the game version for now.
 - Keep a short log in `docs/process/ai-workflow.md` of significant decisions made with AI assistance, including what worked and what needed correction. I plan to write this up. Only ever append to it with `cat >>`; never read or rewrite the whole file (it is large).
-- **Checks and the log happen once, at the very end of a task.** While iterating, run only the tests you need (`npm test -w shared -- rules.test.ts -t "name"`), not the full suite, typecheck or lint after each step. When the whole task is done, run `npm run verify` once (plus `npm run build` if `web` changed), and append one `docs/process/ai-workflow.md` entry for the whole task, not one per sub-step. Rerun `verify` only if you edit code after it passed.
+- **Checks and the log happen once, at the very end of a task.** While iterating, run only the tests you need (`npm test -w shared -- rules.test.ts -t "name"`), not the full suite, typecheck or lint after each step. When the whole task is done, run `npm run verify` once (plus `npm run build` if `web` changed) — or `npm run verify:web` for a `web`-only UI change — and append one `docs/process/ai-workflow.md` entry for the whole task, not one per sub-step. Rerun `verify` only if you edit code after it passed.
 - **Other sessions may be editing this checkout.** If `verify` fails in a file this task didn't touch, don't investigate. Name the failing test in one line, say it looks like someone else's work, and stop.
 - Explain tradeoffs when there is a real choice; I want to understand the code, not just receive it.
 - When you mention a GitHub issue to me, always make it a clickable link to the issue, e.g. [#216](https://github.com/nearbear/mush2/issues/216). The `#216` shorthand is fine as link text, but it must point at the full URL so I can Ctrl+click it.
@@ -82,6 +82,7 @@ Node is on `PATH` via nvm (pinned in the user settings `env`); if `node` isn't f
 - `npm run dev`: wrangler plus Vite (per-worktree ports; `npm run ports`). Needed by `screenshot` and `a11y`.
 - `npm test -w shared -- rules.test.ts -t "name"`: one file or test, while iterating.
 - `npm run verify`: typecheck, lint and all tests in one call, quiet unless something fails. Run it once, at the very end.
+- `npm run verify:web`: typecheck, lint, `web` tests and `build` in one call, for `web`-only UI changes.
 - `npm run build`: production build of `web`, if `web` changed.
 - `npm run dev-state`: the local dev game's state, read-only (`--path players.0` for a part; see the `dev-state` skill). Shows hidden info: debugging only.
 - `npm run layout-query -- <regex>`: search `ship-art.json` and `ship-map.json` (reading them directly is denied).

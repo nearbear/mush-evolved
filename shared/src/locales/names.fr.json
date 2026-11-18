@@ -165,7 +165,13 @@
     "trad_module": "Module Babel",
     "white_flag": "Drapeau blanc",
     "old_shirt": "Vieux t-shirt",
-    "hacker_kit": "Bidouilleur"
+    "hacker_kit": "Bidouilleur",
+    "mad_kube": "MAD Kube",
+    "duct_tape": "Ruban Adhésif",
+    "block_of_post_it": "Bloc de Pense-Bête",
+    "plastenite_armor": "Armure de Plastenite",
+    "sniper_helmet": "Casque de Visée",
+    "scooter": "Trottinette Anti-Grav."
   },
   "skills": {
     "names": {

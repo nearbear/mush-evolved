@@ -1,4 +1,4 @@
-import { Action, isString } from "./action.ts";
+import { Action, type ActionCost, isString } from "./action.ts";
 import { leaveAccommodation } from "../accommodation.ts";
 import { wheelAlong } from "./accommodate.ts";
 import { logPublic } from "../log.ts";
@@ -7,6 +7,8 @@ import { attackWithHeldWeapon } from "./attack.ts";
 import { arrive } from "../spot.ts";
 import { isDoorBroken } from "../doors.ts";
 import { enterRoom, enteredRoom, moveCost, movementRules } from "../modifiers.ts";
+import { activeScooter } from "../items.ts";
+import { hasSkill } from "../skills.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
 export type MoveActionData = { type: "move"; to: string };
@@ -45,7 +47,11 @@ export class MoveAction extends Action<MoveActionData> {
     return { ap: c.ap, mp: player.mp - c.mpAfter };
   }
 
-  override apply(state: GameState, player: PlayerState, target: MoveActionData): void {
+  override apply(state: GameState, player: PlayerState, target: MoveActionData, cost?: ActionCost): void {
+    if (cost && cost.ap > 0 && !hasSkill(player, "sprint")) {
+      const scooter = activeScooter(state, player);
+      if (scooter) scooter.charges = scooter.charges! - 1;
+    }
     const from = player.room;
     player.room = target.to;
     arrive(player, from);

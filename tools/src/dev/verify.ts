@@ -16,13 +16,15 @@ import { slowLines, type VitestReport } from "./slowTests.ts";
 
 const TAIL_LINES = 120;
 const ROOT = resolve(import.meta.dirname, "../../..");
+const webOnly = process.argv.includes("--web");
 /** The root `npm test` runs these, in this order. Kept sequential so timings aren't skewed by contention. */
-const TEST_WORKSPACES = ["shared", "tools", "web", "server"];
+const TEST_WORKSPACES = webOnly ? ["web"] : ["shared", "tools", "web", "server"];
 
 const steps: [name: string, run: () => { ok: boolean; output: string; after?: string[] }][] = [
   ["typecheck", () => npm(["run", "typecheck"])],
   ["lint", () => npm(["run", "lint"])],
   ["test", runTests],
+  ...(webOnly ? [["build", () => npm(["run", "build"])] as [string, () => { ok: boolean; output: string }]] : []),
 ];
 
 let failed = 0;

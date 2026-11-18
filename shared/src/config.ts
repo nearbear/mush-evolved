@@ -1,10 +1,9 @@
 import shipRooms from "@mush2/assets/derived/ship-rooms.json";
-import { ALIEN_FRUIT_ITEMS, BOOK_ITEM, ITRACKIE_ITEM } from "./itemIds.ts";
+import { ALIEN_FRUIT_ITEMS, ITRACKIE_ITEM } from "./itemIds.ts";
 import { HACKER_KIT_ITEM, TREE_POT_ITEM } from "./items.ts";
 import { CHEAT_ROOM, cheatRoomEquipment } from "./cheatRoom.ts";
 import { EQUIPMENT_TYPES } from "./equipment.ts";
 import { ICARUS_CRAFT, patrolEquipment, patrolRooms } from "./patrol.ts";
-import { SKILLS } from "./skills.ts";
 import type { ShipRoom } from "./shipLayout.ts";
 import {
   BARE_HANDS_OUTCOMES,
@@ -265,6 +264,8 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   polymath: { channels: 2, computerPointsPerDay: 1, computerCapBonus: 2 },
   // Owner, 2026-10-24 (eMushpedia): the sprint skill adds 2 MP to each AP-to-MP conversion.
   sprinter: { extraMpPerConversion: 2 },
+  // Owner, 2026-11-17: Antigrav Scooter adds 2 MP per AP-to-MP conversion (doesn't stack with Sprinter or itself); 8 charges, 1 spent per conversion, +1 per cycle.
+  scooter: { extraMpPerConversion: 2, charges: { start: 8, max: 8, perCycle: 1 } },
   // Owner, 2026-10-24 (eMushpedia): Anathema costs 1 AP; the Outcast's actions that roll succeed at x0.8.
   anathema: { cost: { ap: 1 }, successFactor: 0.8 },
   // Owner, 2026-11-12: the Politician's Coup costs 3 AP and has a 50% chance to make the actor dirty.
@@ -392,9 +393,9 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   transfer: { injuryChance: 0.01 },
   // Confirmed 2026-10-14: humans lose 1 satiety per cycle (some things will make it more); at 3 they are full and can't
   // eat; hungry starts 24 cycles after satiety reaches 0 and costs 1 HP per cycle.
-  // Decided 2026-10-19: oxygen 30 of 32, -1 per cycle, nobody survives it at 0; fuel 20 of 100; hull 100. Owner, 2026-10-24: the plasma
+  // Decided 2026-11-17 (matching eMush): oxygen 20 of 32, -1 per cycle, nobody survives it at 0; fuel 20 of 32; hull 100. Owner, 2026-10-24: the plasma
   // shield starts at 50 of 100, +5 a cycle, absorbing 33% of each hit, 67% with the Plasma Shield project.
-  ship: { oxygen: { start: 30, max: 32, perCycle: 1 }, fuel: { start: 20, max: 100 }, combustion: { start: 0, max: 9 }, hull: { start: 100, max: 100 }, plasmaShield: { start: 50, max: 100, absorbPercent: 33, projectAbsorbPercent: 67, regen: 5 } },
+  ship: { oxygen: { start: 20, max: 32, perCycle: 1 }, fuel: { start: 20, max: 32 }, combustion: { start: 0, max: 9 }, hull: { start: 100, max: 100 }, plasmaShield: { start: 50, max: 100, absorbPercent: 33, projectAbsorbPercent: 67, regen: 5 } },
   // Owner, 2026-10-24 (#208): eMush's hunter numbers, the wiki's turret and hull repair.
   hunters: {
     points: { start: 40, perCycle: 6, hardFromDay: 5, hardBonus: 1, veryHardFromDay: 10, veryHardBonus: 2 },
@@ -628,77 +629,69 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   // Decided 2026-10-17 (owner): every action but ready and access takes a fixed time (2 s, cut to 1.5 s on 2026-10-24) and happens when its bar runs out;
   // up to 3 more can wait behind it.
   action: { durationMs: 1500, queueCap: 3, resolveAt: "end" },
-  // PLACEHOLDER items with no effects, so there is something to pick up.
+  // Starting items (matching eMush, 2026-11-17): 4 fixed rooms plus storage_default (5 storages), daedalus_default (27 rooms),
+  // and 4 weighted randomBlueprints (27 rooms). Medlab's 12 drugs (1 of each) are added by `stockMedlab` in `createGame`.
   startItems: [
-    { type: "wrench", room: "LABORATORY" },
-    // Owner, 2026-10-22: the wiki's storage weapons (a knife, two blasters) and a grenade, in front storage.
-    { type: "knife", room: "STORAGE_FRONT" },
-    { type: "blaster", room: "STORAGE_FRONT" },
-    { type: "blaster", room: "STORAGE_FRONT" },
-    { type: "grenade", room: "STORAGE_FRONT" },
-    // Owner, 2026-10-25: the items researches need (research.ts, RESEARCH_REQUIRES), so each one can be done.
-    { type: "mush_sample", room: "STORAGE_FRONT" },
-    { type: "mush_floppy_disk", room: "STORAGE_FRONT" },
-    { type: "body_cat", room: "STORAGE_FRONT" },
-    { type: "water_stick", room: "STORAGE_FRONT" },
-    { type: "super_map", room: "STORAGE_FRONT" },
-    { type: "super_map", room: "CORRIDOR_B" },
-    { type: "super_map", room: "CORRIDOR_B" },
-    { type: "super_map", room: "CORRIDOR_B" },
-    { type: "medikit", room: "SICK_BAY" },
-    // Owner, 2026-11-07 (#397): two bandages in the medlab.
+    // Medlab (`SICK_BAY`): 2 bandages (1 of each of the 12 drugs is added by `stockMedlab`).
     { type: "bandage", room: "SICK_BAY" },
     { type: "bandage", room: "SICK_BAY" },
-     { type: "apron", room: "SICK_BAY" },
-     { type: "protection_gloves", room: "SICK_BAY" },
-    { type: "camera", room: "CORRIDOR_A" },
-    { type: HACKER_KIT_ITEM, room: "CORRIDOR_B" },
-    // #411: a support drone starts in the front corridor (drones.ts).
-    { type: "support_drone", room: "CORRIDOR_A" },
-    // Owner, 2026-10-25: an extinguisher in each of the front and rear corridors, for now (the original's are in storages).
-    { type: "extinguisher", room: "CORRIDOR_A" },
-    { type: "extinguisher", room: "CORRIDOR_C" },
-    { type: "metal_scraps", room: "CORRIDOR_A" },
-    { type: "plastic_scraps", room: "CORRIDOR_A" },
-    // Decided 2026-10-16: a sofa blueprint in the front corridor. The thick tube is a stand-in so it can be built (nothing else makes one yet).
-    { type: "blueprint", builds: "SOFA", room: "CORRIDOR_A" },
-    { type: "thick_tube", room: "CORRIDOR_A" },
-    // Decided 2026-10-16: a rocket launcher blueprint too. The second tube and metal are stand-ins so both blueprints can be built.
-    { type: "blueprint", builds: "MISSILE_LAUNCHER", room: "CORRIDOR_A" },
-    { type: "thick_tube", room: "CORRIDOR_A" },
-    { type: "metal_scraps", room: "CORRIDOR_A" },
-    // Expedition gear (owner, 2026-11-08, #357): 6 spacesuits in the Icarus Bay; the compass, 4 ropes and the drill in
-    // front storage; blueprints for the other four in the front corridor, with stand-in scraps for the three gadgets and
-    // an old T-shirt next to the soap for the white flag.
-    ...Array.from({ length: 6 }, () => ({ type: "space_suit", room: "ICARUS" as RoomId })),
-    { type: "quad_compass", room: "STORAGE_FRONT" },
-    ...Array.from({ length: 4 }, () => ({ type: "rope", room: "STORAGE_FRONT" as RoomId })),
-    { type: "drill", room: "STORAGE_FRONT" },
-    { type: "blueprint", builds: "ECHO_SOUNDER", room: "CORRIDOR_A" },
-    { type: "blueprint", builds: "HEAT_SEEKER", room: "CORRIDOR_A" },
-    { type: "blueprint", builds: "TRAD_MODULE", room: "CORRIDOR_A" },
-    { type: "blueprint", builds: "WHITE_FLAG", room: "CORRIDOR_A" },
-    ...Array.from({ length: 3 }, () => ({ type: "metal_scraps", room: "CORRIDOR_A" as RoomId })),
-    ...Array.from({ length: 3 }, () => ({ type: "plastic_scraps", room: "CORRIDOR_A" as RoomId })),
-    { type: "old_shirt", room: "BEDROOM_A" },
-    // Owner, 2026-10-28: the oscilloscope spawns in Alpha Bay 2 at the start (SPACESHIP_BAY_AA).
-    { type: "oscilloscope", room: "SPACESHIP_BAY_AA" },
-    // Confirmed 2026-10-14: the soap always spawns in the Alpha dorm (for now).
-    { type: "soap", room: "BEDROOM_A" },
-    { type: "freezer", room: "REFECTORY" },
-    // Owner, 2026-10-19: the microwave spawns in the refectory at the start; heavy.
-    { type: "microwave", room: "REFECTORY" },
-    // Owner, 2026-11-03: matching eMush (eMushpedia "Réfectoire" / "Ration standard"), 32 standard rations spawn in the refectory.
+    // Refectory (`REFECTORY`): 32 standard rations, microwave, freezer, mad kube.
     ...Array.from({ length: 32 }, () => ({ type: "uncooked_ration", room: "REFECTORY" as RoomId })),
-    // Owner, 2026-10-22 (replacing the five lab pots of 2026-10-18): the original's garden, an empty pot and two adult
-    // banana plants, plus two empty pots in front storage.
+    { type: "microwave", room: "REFECTORY" },
+    { type: "freezer", room: "REFECTORY" },
+    { type: "mad_kube", room: "REFECTORY" },
+    // Hydroponic Garden (`HYDROPONIC_CENTER`): 1 empty hydropot and 2 adult banana plants.
     { type: "tree_pot", room: "HYDROPONIC_CENTER" },
     { type: "tree_pot", room: "HYDROPONIC_CENTER", plant: { species: "fruit_banana", age: null, thirst: 0, sick: false } },
     { type: "tree_pot", room: "HYDROPONIC_CENTER", plant: { species: "fruit_banana", age: null, thirst: 0, sick: false } },
-    { type: "tree_pot", room: "STORAGE_FRONT" },
-    { type: "tree_pot", room: "STORAGE_FRONT" },
-    // Owner, 2026-10-21: for now, one skill book for every skill on the bridge.
-    ...SKILLS.map((skill) => ({ type: BOOK_ITEM, teaches: skill, room: "COMMAND_CENTER" as RoomId })),
+    // Front Corridor (`CORRIDOR_A`): 1 support drone.
+    { type: "support_drone", room: "CORRIDOR_A" },
+    // `storage_default` (24 items across the 5 storages):
+    ...Array.from({ length: 3 }, () => ({ type: "camera", pool: "storage" as const })),
+    ...Array.from({ length: 2 }, () => ({ type: "extinguisher", pool: "storage" as const })),
+    ...Array.from({ length: 2 }, () => ({ type: "tree_pot", pool: "storage" as const })),
+    ...Array.from({ length: 2 }, () => ({ type: "blaster", pool: "storage" as const })),
+    ...Array.from({ length: 2 }, () => ({ type: "rope", pool: "storage" as const })),
+    { type: "plastenite_armor", pool: "storage" },
+    { type: "wrench", pool: "storage" },
+    { type: "knife", pool: "storage" },
+    { type: "protection_gloves", pool: "storage" },
+    { type: "duct_tape", pool: "storage" },
+    { type: "soap", pool: "storage" },
+    { type: "apron", pool: "storage" },
+    { type: HACKER_KIT_ITEM, pool: "storage" },
+    { type: "block_of_post_it", pool: "storage" },
+    { type: "thick_tube", pool: "storage" },
+    { type: "grenade", pool: "storage" },
+    { type: "drill", pool: "storage" },
+    { type: "quad_compass", pool: "storage" },
+    // `daedalus_default` (11 items across all 27 rooms):
+    ...Array.from({ length: 6 }, () => ({ type: "space_suit", pool: "daedalus" as const })),
+    { type: "medikit", pool: "daedalus" },
+    { type: "scooter", pool: "daedalus" },
+    { type: "blueprint", builds: "SOFA", pool: "daedalus" },
+    { type: "blueprint", builds: "GRENADE", pool: "daedalus" },
+    { type: "old_shirt", pool: "daedalus" },
+    // `randomBlueprints` (4 weighted draws across all 27 rooms):
+    ...Array.from({ length: 4 }, () => ({
+      type: "blueprint",
+      pool: "daedalus" as const,
+      buildsWeights: {
+        ECHO_SOUNDER: 8,
+        OSCILLOSCOPE: 4,
+        SNIPER_RIFFLE: 4,
+        WHITE_FLAG: 4,
+        TRAD_MODULE: 4,
+        EXTINGUISHER: 4,
+        SOFA: 4,
+        SNIPER_HELMET: 2,
+        MISSILE_LAUNCHER: 2,
+        MACHINE_GUN: 2,
+        HEAT_SEEKER: 2,
+        GRENADE: 2,
+        SUPPORT_DRONE: 1,
+      },
+    })),
   ],
   // Confirmed 2026-10-13: every player starts with an iTrackie.
   startInventory: [ITRACKIE_ITEM],

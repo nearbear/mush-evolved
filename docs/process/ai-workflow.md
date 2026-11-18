@@ -4192,6 +4192,17 @@ Owner specified Rubella (12-20 cycles, 2% spread, 50% -1 MP, -3 max HP and moral
 
 Owner specified Syphilis (20-32 cycles, STT/DTT spread, -3 max morale and HP, +2 damage from all sources, 16% special log when moving). Claude asked which special log; owner chose the sneeze. Built from existing hooks only (`damageTaken` as Food Poisoning, `onEnterRoom` with `sneeze`). The replay and server tests that time out on this machine were left alone: the same replay test is as slow on committed main.
 
+### 2026-11-17: Monospaced font for the top bar clock
+
+- Set `font-family: ui-monospace, "Cascadia Code", Menlo, monospace;` on `.cycle-label` in `web/src/styles/top-bar.css` so the top bar clock (day/cycle and countdown) renders in the monospaced font stack.
+  - Correction: "the monospaced font" meant `var(--font-pixel)` (`"Pixel Square", monospace`), not the terminal's `ui-monospace` stack; updated `.cycle-label` in `web/src/styles/top-bar.css` to `font-family: var(--font-pixel);`.
+
+## 2026-11-17 — Resolve starting ship deltas vs. eMush
+
+- **Decision (owner):** Match eMush for starting oxygen (`20 / 32`, was `30 / 32`), fuel max (`32`, was `100`), Medlab drugs (`stockMedlab` spawns 1 of each of the 12 `DRUG_ITEMS` instead of 12 random with replacement), fixed rooms (`SICK_BAY`, `REFECTORY`, `HYDROPONIC_CENTER`, `CORRIDOR_A`), and random pools (`storage_default` across 5 storages, `daedalus_default` and 4 weighted `randomBlueprints` across all 27 Daedalus rooms). Remove vertical-slice stand-ins (66 skill books, research items, `CORRIDOR_A` craft scraps/fixed blueprints, `SPACESHIP_BAY_AA` oscilloscope, extra ropes), add missing `BLUEPRINTS` recipes (`OSCILLOSCOPE`, `EXTINGUISHER`, `GRENADE`, `SNIPER_HELMET`), and add functionless items (`mad_kube`, `duct_tape`, `block_of_post_it`, plus existing `plastenite_armor`, `sniper_helmet`, `scooter`) marked `notImplemented: true` with icons and a "Not implemented" caption in `InspectPanel` / `PeekBar`.
+- **What worked:** Representing pooled items and weighted blueprint draws inside `GameConfig.startItems` (`pool: "storage" | "daedalus"`, `buildsWeights`) meant every test passing `startItems: []` kept an empty ship without touching 50+ test files, and `createGame` stayed deterministic via `streamFor(seed, "start-items")`. Updating tests that pinned old starting locations or ran >20 cycles without refilling oxygen surfaced all downstream assumptions cleanly.
+  - Correction: moved the monospaced font off `.cycle-label` (so Day/Cycle stays in the body font) onto `.cycle-countdown` only, using `ui-monospace, "Cascadia Code", Menlo, monospace` since `Pixel Square` is proportional and has no `GSUB`/`tnum` table (its digits shift).
+  - Switched `.cycle-countdown` in `web/src/styles/top-bar.css` to `font-family: var(--font-pixel)` (`Pixel Square`) and updated `web/src/hud/CycleCountdown.tsx` to wrap each digit in a `1ch` centered `.clock-digit` `<span>` so the countdown keeps the pixel look without shifting.
 ## 2026-11-17: Injury ids, injuries as dynamic statuses, and Surgery
 
 - **Injury ids** (owner): every injury id now ends in `_injury` (14 renamed; `broken_nose_injury` already did). Done with a word-bounded rename across config, statuses, modifiers, locales and tests.
@@ -4207,3 +4218,57 @@ Owner specified Syphilis (20-32 cycles, STT/DTT spread, -3 max morale and HP, +2
 - **Deafness in replays** (owner, same day): the seat view already kept it (`perspective` runs `seatViewFor` on a full view that keeps `deafWindows`); All-seeing (`revealFor`) showed every message. Claude offered marking vs hiding; the owner chose hiding, so `revealFor` filters its merged streams through `heardBy` for the followed body. Tests cover both modes and messages lost before a cure, read from older streams. Two existing slow replay tests timed out in a batch but pass alone.
 - **No notifications for unheard messages** (owner, same day): unread is a per-channel high-water mark against `chatCounts`, and sealed pages leave the state, so the rules couldn't tell afterwards which positions a deaf player missed. Claude replaced the id-based `deafWindows` (and the `onRemove` hook and `deafness.ts` built for it) with `PlayerState.unheard`, seq ranges per channel recorded by `pushChat` for every player whose modifiers are `deaf`. `heardBy` reads it; the owner's ranges go out as `PlayerView.chatUnheard`, and the shared `unreadCount`, the divider (`dividerAt`/`dividerPlacement`), the page bar's count and `unreadToAnnounce` all skip them. Correction along the way: a first `dividerAt` rewrite moved the divider for everyone (past your own first message); restored so only unheard messages move it. The normalizer test caught `unheard` as an unregistered dictionary (`storedShape.ts` DICTS) and a banned `??`.
 - **All-seeing shows unheard messages again** (owner, same day): reversed the earlier choice; `revealFor` no longer filters by `heardBy`. The seat view (`perspective`) still hides them. Tests now pin both.
+
+## 2026-11-17 — Minimap UI updates
+
+- Updated `.room-corner` in `web/src/styles/iso.css` to use the ID card's light stock (`--terminal-bg`) with dark ink tokens (`--text: #171b5c`, `--muted: #4a5a8f`).
+- Right-aligned the room name and moved status icons to the left in `web/src/GameView.tsx`, `web/src/styles/iso.css`, `web/src/scene/ShipPlanMap.tsx`, and `web/src/styles/minimap.css`.
+- Switched `RoomCaption` in `web/src/scene/ShipPlanMap.tsx` to `names.characterGiven` for hovered-room occupant captions.
+- Brightened `.minimap-room.pointed` / `:focus-visible` (`#ffffff` at `0.9` opacity) and desaturated intact `.minimap-door` fills (`#b8c4d4` / `#e2e8f0`) while keeping broken doors yellow in `web/src/styles/minimap.css`.
+
+## 2026-11-17 — Comms center signal list layout
+
+- Stacked each signal row's name and its `% decoded` / `cycles until/remaining` caption inside `.signal-entry-main` in `web/src/hud/Signals.tsx` and `web/src/hud/settings.css`.
+- Moved overall statuses (`Hailing` and inactive outcomes `Deal made`, `Refused`, `Signal lost`, `Decoded`) into a non-wrapping `.signal-entry-status` element pinned to the right (`flex: none; margin-inline-start: auto; white-space: nowrap`).
+- Kept `useSignalCaption` intact for `SignalConversation.tsx` by extracting `useActiveSignalCaption`.
+
+## 2026-11-17 — Minimap dark UI theme palette
+
+- Switched `.room-corner` in `web/src/styles/iso.css` back to dark text (`#fff`, `--muted: #c7d2f0`) over `--chrome-rim` (`#2f4fc0`, the outermost panel glow blue).
+- Updated `web/src/styles/minimap.css` so rooms use `--panel-fill` (`#17172c`), adjacent `.reachable` rooms use `#213578` (inactive tab blue), hovered `.pointed` rooms use `#4e73df`, and `.here` uses `--terminal-bg` (`#c2f3fc`, selected tab cyan).
+
+## 2026-11-17: Antigrav Scooter (`scooter`)
+
+- **Decision (owner):** Implement the `scooter` item like Sprinter's movement bonus (+2 MP per AP-to-MP conversion, carried in inventory and unbroken), without stacking with Sprinter or another scooter, and with no expedition sector bonus. Starts with 8 charges, spends 1 per conversion, and recharges 1 per cycle up to 8.
+- **Implementation:** Added `config.scooter` (`extraMpPerConversion: 2`, `charges: { start: 8, max: 8, perCycle: 1 }`), `startCharges`/`rechargeScooters`/`activeScooter` in `shared/src/items.ts`, removed `notImplemented: true` on `scooter`, applied the bonus in `movementRules` (`shared/src/modifiers.ts`), passed `cost` into `Action.apply` (`shared/src/actions/action.ts`, `shared/src/rules.ts`) so `MoveAction.apply` spends 1 charge only when an AP-to-MP conversion occurred (`cost.ap > 0`) and the player lacks `sprint`, and called `rechargeScooters(state)` each cycle in `advanceCycle`.
+- **What worked:** Passing optional `cost` to `Action.apply` cleanly avoided any false charge deduction when moving with existing MP (`mp >= mpPerMove`) without breaking existing `Action` subclasses.
+
+## 2026-11-17 — Minimap room edges and background swap
+
+- Moved `--chrome-rim` (`#2f4fc0`) to `.minimap-walls` (room edges) in `web/src/styles/minimap.css` and restored `.room-corner` background in `web/src/styles/iso.css` to `--panel-fill` (`#17172c`).
+- **2026-11-17 — Text-driven signal audio wave (`AudioWave.tsx`, `SignalConversation.tsx`, `settings.css`)**: Replaced the fixed CSS sine-bounce animation with a 32-band `spectrumForText` calculation driven by the active character in the incoming message (low-band vowels, high-band sibilants, broadband static on garble noise, dips on spaces/punctuation, and 3-character coarticulation blending).
+
+## 2026-11-17 — Deep space background #121212
+
+- Changed `SKY` in `web/src/iso/starfield.ts` from `0x09092d` to `0x121212` and the matching pre-tile fallback in `web/src/styles/space.css` to `#121212`.
+
+## 2026-11-17 — Minimap deep space background
+
+- Restored `SKY` in `web/src/iso/starfield.ts` (`0x09092d`) and `web/src/styles/space.css` (`#09092d`), and set `.room-corner` in `web/src/styles/iso.css` to `#09092d` (`--card-fill: #09092d`).
+
+## 2026-11-17 — Remove minimap adjacent-room highlight
+
+- Removed the `.minimap.expanded .minimap-room.reachable` rule from `web/src/styles/minimap.css`.
+
+## 2026-11-17 — Minimap cyan doors
+
+- Updated `.minimap-door` in `web/src/styles/minimap.css` to use `var(--accent)` (`#4fc3f7`) at `0.6` opacity for non-adjacent doors, `opacity: 1` for adjacent `.here` doors, and `#ffbf00` amber for `.broken` doors.
+
+## 2026-11-17 — Minimap amber current room & button cyan doors
+
+- Set `.minimap-room.here` in `web/src/styles/minimap.css` to `#ffbf00` (amber).
+- Sampled `butbg.png` (`#008ee5`) for non-adjacent `.minimap-door` and `butbgover.png` (`#00b3ed`) for adjacent `.minimap-door.here`.
+
+## 2026-11-17 — Mark Computer Scientist skill as full
+
+- Updated `SKILL_STATUS.computer` from `"partial"` to `"full"` in `shared/src/skills.ts` (since `hack` and the doubled `hack` odds are implemented) and added a regression check in `shared/tests/skills.test.ts`.

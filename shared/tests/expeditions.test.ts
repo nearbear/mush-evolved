@@ -946,12 +946,13 @@ describe("expeditions, phase 3, slice C: gear and spacesuits", () => {
       babel: { item: "trad_module", tag: "INTELLIGENT", artifactFactor: 2 },
       whiteFlag: { item: "white_flag", tag: "INTELLIGENT" },
     });
-    const count = (type: string, room: string, builds?: string) =>
-      DEFAULT_CONFIG.startItems.filter((i) => i.type === type && i.room === room && i.builds === builds).length;
-    expect(count("space_suit", "ICARUS")).toBe(6);
-    expect([count("quad_compass", "STORAGE_FRONT"), count("rope", "STORAGE_FRONT"), count("drill", "STORAGE_FRONT")]).toEqual([1, 4, 1]);
-    for (const b of ["ECHO_SOUNDER", "HEAT_SEEKER", "TRAD_MODULE", "WHITE_FLAG"]) expect(count("blueprint", "CORRIDOR_A", b)).toBe(1);
-    expect(count("old_shirt", "BEDROOM_A")).toBe(1);
+    const count = (type: string, pool: "storage" | "daedalus") =>
+      DEFAULT_CONFIG.startItems.filter((i) => i.type === type && "pool" in i && i.pool === pool).length;
+    expect(count("space_suit", "daedalus")).toBe(6);
+    expect([count("quad_compass", "storage"), count("rope", "storage"), count("drill", "storage")]).toEqual([1, 2, 1]);
+    expect(count("old_shirt", "daedalus")).toBe(1);
+    const randomBp = DEFAULT_CONFIG.startItems.find((i) => i.type === "blueprint" && i.buildsWeights);
+    for (const b of ["ECHO_SOUNDER", "HEAT_SEEKER", "TRAD_MODULE", "WHITE_FLAG"]) expect(randomBp?.buildsWeights?.[b]).toBeGreaterThan(0);
     expect(BLUEPRINTS.ECHO_SOUNDER).toEqual({ needs: ["metal_scraps", "plastic_scraps"], makes: { item: "echo_sounder" } });
     expect(BLUEPRINTS.HEAT_SEEKER).toEqual({ needs: ["metal_scraps", "plastic_scraps"], makes: { item: "thermosensor" } });
     expect(BLUEPRINTS.TRAD_MODULE).toEqual({ needs: ["metal_scraps", "plastic_scraps"], makes: { item: "trad_module" } });

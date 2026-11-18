@@ -5,7 +5,7 @@ import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
 import type { CSSProperties, ReactNode } from "react";
-import { actionVisibility, CHARACTERS, PROJECT_COMPLETE, characterGivenName, characterName, SUPER_CALC_EQUIPMENT, SUPERKUBE, type Action, type ActionOption, type EquipmentView, type PlayerView, type ShipLayout, type Target } from "@mush2/shared";
+import { actionVisibility, CHARACTERS, ITEM_TYPES, PROJECT_COMPLETE, characterGivenName, characterName, SUPER_CALC_EQUIPMENT, SUPERKUBE, type Action, type ActionOption, type EquipmentView, type PlayerView, type ShipLayout, type Target } from "@mush2/shared";
 import { BROKEN_ICON, characterImage, portrait } from "../art/assets.ts";
 import { useMobile } from "../useMobile.ts";
 import { atlasUrl } from "../iso/shipLayout.ts";
@@ -195,6 +195,7 @@ function Details({ view, layout, resolved, onAction }: { view: PlayerView; layou
           <div className="inspect-name inspect-item-name">
             <strong>{names.itemOf(resolved.item)}</strong>
             {resolved.item.drone && <div className="sub inspect-drone">{names.drone(resolved.item.drone.name, resolved.item.drone.serial)}</div>}
+            {ITEM_TYPES[resolved.item.type]?.notImplemented && <div className="sub">{t("itemAttr.notImplemented")}</div>}
           </div>
           {resolved.item.broken && (
             <div className="sub inspect-broken">

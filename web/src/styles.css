@@ -1,5 +1,6 @@
 /* Global styles, split by area under styles/. Order matters: responsive goes last. */
 @import "./styles/tokens.css";
+@import "./styles/fonts.css";
 @import "@mush2/assets/derived/kit.css";
 @import "./styles/base.css";
 @import "./styles/buttons.css";

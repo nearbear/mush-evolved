@@ -1,6 +1,6 @@
 // ---- Ship resources ---------------------------------------------------------
-// Decided 2026-10-19: oxygen starts at 30 of 32 and one is burned each cycle; at 0 a random living crew member
-// dies every cycle. Fuel (20 of 100, in the tanks) reaches the ship only as capsules carried to the combustion chamber (9 at most, actions/take_fuel.ts).
+// Decided 2026-11-17 (matching eMush): oxygen starts at 20 of 32 and one is burned each cycle; at 0 a random living crew member
+// dies every cycle. Fuel (20 of 32, in the tanks) reaches the ship only as capsules carried to the combustion chamber (9 at most, actions/take_fuel.ts).
 // Hunters damage the hull (100) and the plasma shield (50 of 100), which absorbs 33% of each hit out of its own points, 67% with
 // the Plasma Shield project (owner, 2026-10-24, hunters.ts); at 0 the hull takes all of it. All of it is public.
 

@@ -5,7 +5,7 @@
 import { type ReactNode, useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
-import { actionVisibility, SUPERKUBE, type Action, type ActionOption, type PlayerView, type RoomId, type Target } from "@mush2/shared";
+import { actionVisibility, ITEM_TYPES, SUPERKUBE, type Action, type ActionOption, type PlayerView, type RoomId, type Target } from "@mush2/shared";
 import { ActionLabel } from "./ActionLabel.tsx";
 import { ActionButton } from "./ActionButton.tsx";
 import { collapseThrowOut, ThrowOutDialog } from "./ThrowOutDialog.tsx";
@@ -83,6 +83,7 @@ export function PeekBar({
     <>
       <Bar
         heading={name}
+        sub={resolved.kind === "item" && ITEM_TYPES[resolved.item.type]?.notImplemented ? t("itemAttr.notImplemented") : undefined}
         isBot={isBot}
         more={
           <button type="button" onClick={onMore} aria-label={t("peek.more")}>

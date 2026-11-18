@@ -95,9 +95,9 @@ describe("shower", () => {
     expect(viewFor(r.state, "p2").log.some((e) => e.key === "showered")).toBe(false);
   });
 
-  it("spawns soap in Bedroom Alpha and parses from the client", () => {
+  it("spawns soap in a storage room and parses from the client", () => {
     const s = createGame(seats, DEFAULT_CONFIG, 3);
-    expect(s.items.some((i) => i.type === "soap" && i.at.kind === "room" && i.at.id === "BEDROOM_A")).toBe(true);
+    expect(s.items.some((i) => i.type === "soap" && i.at.kind === "room" && DEFAULT_CONFIG.snoop.rooms.includes(i.at.id))).toBe(true);
     expect(parseGameMessage(JSON.stringify({ type: "action", action: shower }))).toEqual({ type: "action", action: shower });
   });
 });

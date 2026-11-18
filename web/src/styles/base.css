@@ -2,7 +2,7 @@
 
 /* Page backgrounds from the original site: bg_start behind the lobby, bg in game. */
 body {
-  font-family: system-ui, sans-serif;
+  font-family: var(--font-body);
   background: var(--bg) url("../../../Mush/www/img/design/bg.jpg") center top / cover no-repeat fixed;
   color: var(--text);
   margin: 0;
@@ -26,6 +26,11 @@ main {
   max-width: 96rem;
   margin: var(--space-4) auto;
   padding: 0 var(--space-4);
+}
+
+/* Form controls don't inherit font-family from body by default; :where keeps zero specificity so monospace inputs win. */
+:where(button, input, select, textarea) {
+  font-family: inherit;
 }
 
 /* Text fields take their surface's --field-* tokens (tokens.css; cut-card.css on the light card). :where keeps this at

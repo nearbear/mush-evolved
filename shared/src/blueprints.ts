@@ -29,6 +29,10 @@ export const BLUEPRINTS: Record<string, Blueprint> = {
   // #411 (owner, 2026-11-11; eMushpedia "Drone de soutien"): 4 metal scraps and 1 plastic scrap.
   SUPPORT_DRONE: { needs: ["metal_scraps", "metal_scraps", "metal_scraps", "metal_scraps", "plastic_scraps"], makes: { item: "support_drone" } },
   WHITE_FLAG: { needs: ["old_shirt", "soap"], makes: { item: "white_flag" } },
+  OSCILLOSCOPE: { needs: ["metal_scraps", "plastic_scraps"], makes: { item: "oscilloscope" } },
+  EXTINGUISHER: { needs: ["metal_scraps", "oxy_capsule"], makes: { item: "extinguisher" } },
+  GRENADE: { needs: ["oxy_capsule", "fuel_capsule"], makes: { item: "grenade" } },
+  SNIPER_HELMET: { needs: ["metal_scraps", "plastic_scraps"], makes: { item: "sniper_helmet" } },
 };
 
 /** The item type that carries a recipe. Named after its icon, blueprint.jpg. */

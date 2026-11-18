@@ -9,7 +9,7 @@ import { overheadStatuses, STATUS_PUBLIC } from "../src/statuses.ts";
 import type { GameState, PlayerId, Seat } from "../src/types.ts";
 import { makeSeats, must, mustApply, noHunters, noIncidents, offered, option, pickSkill, player } from "./support.ts";
 
-const config = noIncidents(noHunters({ ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [] }));
+const config = noIncidents(noHunters({ ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [], ship: { ...DEFAULT_CONFIG.ship, oxygen: { ...DEFAULT_CONFIG.ship.oxygen, perCycle: 0 } } }));
 const { inactiveAfterHours, superAfterHours } = config.inactivity;
 const HOUR = 3_600_000;
 /** The server time everyone in a fresh ship() was last seen. */

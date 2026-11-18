@@ -8,7 +8,7 @@ import { makeSeats, mustApply, offered } from "./support.ts";
 
 const seats = makeSeats(3, "others");
 // Everyone in the lab, empty-handed; a wrench (item-1) there.
-const newGame = () => createGame(seats, { ...DEFAULT_CONFIG, startInventory: [] }, 42);
+const newGame = () => createGame(seats, { ...DEFAULT_CONFIG, startInventory: [], startItems: [{ type: "wrench", room: "LABORATORY" }, { type: "tree_pot", room: "HYDROPONIC_CENTER" }] }, 42);
 
 const examine = (kind: Target["kind"], id: string): Action => ({ type: "examine", target: { kind, id } as Target });
 

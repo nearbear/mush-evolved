@@ -684,6 +684,7 @@ describe("eat", () => {
   it("eats a ration raw when cooking would dip into the AP reserve", async () => {
     const { game: start, id } = starving(BOT_EAT_AFTER_CYCLES, 2);
     const game = edit(start, id, (p) => (p.room = "REFECTORY"));
+    game.items = game.items.filter((i) => i.at.kind !== "room" || i.at.id !== "REFECTORY" || i.type === "uncooked_ration");
     const bot = new GoalBot(1, 2, [eat]);
     expect((await bot.decideAction(viewFor(game, id)))?.type).toBe("consume");
   });
@@ -745,6 +746,11 @@ describe("tendPlants", () => {
       p.ap = 10;
       p.resources.garden = 0;
     });
+    game.items = game.items.filter((i) => !(i.type === "tree_pot" && i.at.kind === "room" && i.at.id === POT_STORAGE));
+    game.items.push(
+      { id: "sp-1", type: "tree_pot", at: { kind: "room", id: POT_STORAGE } },
+      { id: "sp-2", type: "tree_pot", at: { kind: "room", id: POT_STORAGE } },
+    );
     for (const pot of game.items) if (pot.plant) pot.plant.thirst = 1;
     return { game, id };
   };
@@ -777,8 +783,9 @@ describe("tendPlants", () => {
     const { game, id } = gardener(["botanic"]);
     const bot = new GoalBot(1, 2, [tendPlants]);
     const { game: g } = await oneCycle(game, id, bot);
-    // Step away from the garden: nothing more today.
+    // Step away from the garden (to an empty room so item-sharing doesn't take the turn): nothing more today.
     const away = edit(g, id, (p) => (p.room = "REFECTORY"));
+    away.items = away.items.filter((i) => i.at.kind !== "room" || i.at.id !== "REFECTORY");
     expect(await bot.decideAction(viewFor(away, id))).toEqual({ type: "ready" });
     const tomorrow = edit(away, id, () => {});
     tomorrow.cycle += tomorrow.config.cyclesPerDay;
@@ -848,6 +855,11 @@ describe("sowHere and setOutPots", () => {
     game.items.push({ id: "test-talky", type: "super_talky", at: { kind: "player", id } });
     game.items.push({ id: "gt-1", type: "tree_pot", at: { kind: "player", id } }, { id: "gt-2", type: "tree_pot", at: { kind: "player", id } });
     game.items.push({ id: "test-banana", type: "fruit_banana", at: { kind: "room", id: garden } });
+    game.items = game.items.filter((i) => !(i.type === "tree_pot" && i.at.kind === "room" && i.at.id === POT_STORAGE));
+    game.items.push(
+      { id: "sp-1", type: "tree_pot", at: { kind: "room", id: POT_STORAGE } },
+      { id: "sp-2", type: "tree_pot", at: { kind: "room", id: POT_STORAGE } },
+    );
     for (const pot of game.items) if (pot.plant) pot.plant.thirst = 1;
     const bot = new GoalBot(1, 2, [sowHere, setOutPots, tendPlants]);
     const { game: after, taken } = await oneCycle(game, id, bot);
@@ -1928,8 +1940,11 @@ describe("item sharing (itemShare.ts) and walking to scrap", () => {
   /** A game with every metal scrap in one room, and a bot placed in `room` (default: with the scrap). */
   function scrapGame(at: "with" | "away" = "with"): { game: GameState; id: string; scrapRoom: string; other: string } {
     const { game: start, id } = setup();
-    const scrapRoom = start.items.find((i) => i.type === "metal_scraps" && i.at.kind === "room")!.at.id;
-    for (const i of start.items) if (i.type === "metal_scraps") i.at = { kind: "room", id: scrapRoom };
+    const scrapRoom = "CORRIDOR_A";
+    start.items = start.items.filter((i) => i.at.kind !== "room" || i.at.id !== scrapRoom);
+    for (let k = 0; k < 4; k++) {
+      start.items.push({ id: `test-scrap-${k}`, type: "metal_scraps", at: { kind: "room", id: scrapRoom } });
+    }
     // Only scrap is reported here (extinguishers are too, #429).
     start.items = start.items.filter((i) => i.type !== "extinguisher");
     const other = start.players.find((p) => p.id !== id && p.role === "human")!.id;
@@ -2092,6 +2107,9 @@ describe("fires (fireShare.ts, extinguish goal, #429)", () => {
   it("fetches an extinguisher it heard about, puts out a known fire (reserve included), and leaves it in a corridor", async () => {
     const { game: start, id } = at("CORRIDOR_A", 6);
     const game = ignite(start, fire);
+    if (!game.items.some((i) => i.type === "extinguisher" && i.at.kind === "room" && i.at.id === "CORRIDOR_A")) {
+      game.items.push({ id: "test-ext", type: "extinguisher", at: { kind: "room", id: "CORRIDOR_A" } });
+    }
     // Someone reported the fire; the extinguisher in CORRIDOR_A it sees itself.
     game.reports.push({ kind: "fire", room: fire, by: game.players.find((p) => p.id !== id)!.id });
     const bot = new GoalBot(3, 2, [extinguish]);

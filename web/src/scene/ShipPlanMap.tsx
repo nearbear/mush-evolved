@@ -181,7 +181,7 @@ export function RoomCaption({
   const occupants = pointed ? people.filter((p) => p.room === pointed && p.id !== youId) : [];
   const strangers = pointed ? unidentified.filter((r) => r === pointed).length : 0;
   const who = [
-    ...occupants.map((p) => names.character(p.character)),
+    ...occupants.map((p) => names.characterGiven(p.character)),
     ...(strangers ? [t("minimap.unidentifiedCount", { count: strangers })] : []),
   ].join(", ");
 
@@ -190,12 +190,12 @@ export function RoomCaption({
       {pointed ? (
         <div className="minimap-name">
           <strong>
-            {names.room(pointed)}
             {burningRooms.includes(pointed) && (
               <span className="minimap-fire">
                 <img src={FIRE_ICON} alt={t("minimap.onFire")} />
               </span>
             )}
+            {names.room(pointed)}
           </strong>
           <div className="sub">
             {[

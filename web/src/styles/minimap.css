@@ -1,6 +1,7 @@
 /*
- * Minimap: the deck plan in the room view's top-right corner. Your room is in
- * color; the rest is fog (grey silhouettes, faded people). Doors are amber.
+ * Minimap: the deck plan in the room view's top-right corner. Your room is
+ * amber; the rest is dark indigo. Intact doors use the button cyan (brighter
+ * when adjacent to your room); broken doors are amber.
  */
 
 .room-view {
@@ -24,28 +25,30 @@
   cursor: pointer;
 }
 .minimap-walls {
-  fill: var(--edge);
+  fill: var(--chrome-rim);
   pointer-events: none;
 }
 .minimap-room {
-  fill: #6b7079;
-  opacity: 0.45;
+  fill: var(--panel-fill);
+  opacity: 1;
   outline: none;
-}
-.minimap.expanded .minimap-room.reachable {
-  opacity: 0.7;
 }
 .minimap-room.pointed,
 .minimap-room:focus-visible {
-  opacity: 0.85;
+  fill: #4e73df;
+  opacity: 1;
 }
 .minimap-room.here {
-  fill: var(--highlight);
+  fill: #ffbf00;
   opacity: 1;
+}
+.minimap-room.here.pointed,
+.minimap-room.here:focus-visible {
+  filter: brightness(1.08);
 }
 .minimap-room.burning {
   fill: #e54d2e;
-  opacity: 0.8;
+  opacity: 0.9;
 }
 .minimap-room.burning.here {
   fill: #ff5252;
@@ -54,19 +57,21 @@
 .minimap-room.burning.pointed,
 .minimap-room.burning:focus-visible {
   opacity: 1;
+  filter: brightness(1.15);
 }
 .minimap-door {
-  fill: #ffbf00;
-  opacity: 0.45;
+  fill: #008ee5;
+  opacity: 1;
   pointer-events: none;
 }
 .minimap-door.here {
+  fill: #00b3ed;
   opacity: 1;
 }
 .minimap-door.broken {
-  fill: #ffe600;
+  fill: #ffbf00;
   opacity: 1;
-  filter: drop-shadow(0 0 0.35px #ffe600);
+  filter: drop-shadow(0 0 0.35px #ffbf00);
 }
 .minimap-person {
   opacity: 0.55;
@@ -95,6 +100,9 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.room-corner .minimap-name {
+  text-align: right;
+}
 .minimap-name .sub {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -102,7 +110,7 @@
 .minimap-fire {
   display: inline-flex;
   align-items: center;
-  margin-left: var(--space-2);
+  margin-right: var(--space-2);
   vertical-align: middle;
 }
 .minimap-fire img {

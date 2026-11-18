@@ -55,15 +55,15 @@ export function drawDrugs(state: Pick<GameState, "rng"> & { config: Pick<GameSta
   return out;
 }
 
-/** How many random drugs each ship starts with, in the Medlab (owner, 2026-11-10). */
-export const START_DRUGS = 12;
+/** How many drugs each ship starts with, in the Medlab: one of each type (matching eMush, 2026-11-17). */
+export const START_DRUGS = DRUG_ITEMS.length;
 
 /**
- * Puts `START_DRUGS` drugs, each of a random type, on the Medlab's floor, rolling on `rng` (`createGame` passes its own
+ * Puts one of each drug type on the Medlab's floor in a shuffled order, rolling on `rng` (`createGame` passes its own
  * `"medlab-stock"` stream, so `state.rng` doesn't move). Mutates a state the caller already cloned.
  */
 export function stockMedlab(state: GameState, rng: HasRng): void {
-  for (let i = 0; i < START_DRUGS; i++) spawnInRoom(state, "SICK_BAY", DRUG_ITEMS[rollInt(rng, DRUG_ITEMS.length)]!);
+  for (const drug of rollShuffle(rng, DRUG_ITEMS)) spawnInRoom(state, "SICK_BAY", drug);
 }
 
 /** The skills that reveal the drugs' effects: Biologist, Skilful (counts as Biologist), Medic and Nurse (`first_aid`). Mush see them too. */

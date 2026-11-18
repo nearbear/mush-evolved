@@ -15,14 +15,14 @@ const cycle = (s: ReturnType<typeof game>) => {
 describe("ship resources", () => {
   it("start at the decided values and are public", () => {
     const s = game();
-    expect(s.ship).toEqual({ oxygen: 30, fuel: 20, combustion: 0, hull: 100, plasmaShield: 50 });
-    expect(viewFor(s, "p0").ship).toEqual({ oxygen: s.ship.oxygen, fuel: s.ship.fuel, hull: s.ship.hull, plasmaShield: s.ship.plasmaShield, max: { oxygen: 32, fuel: 100, hull: 100, plasmaShield: 100 } });
+    expect(s.ship).toEqual({ oxygen: 20, fuel: 20, combustion: 0, hull: 100, plasmaShield: 50 });
+    expect(viewFor(s, "p0").ship).toEqual({ oxygen: s.ship.oxygen, fuel: s.ship.fuel, hull: s.ship.hull, plasmaShield: s.ship.plasmaShield, max: { oxygen: 32, fuel: 32, hull: 100, plasmaShield: 100 } });
     expect(viewFor(s, "p3").ship).toEqual(viewFor(s, "p0").ship);
   });
 
   it("burns one oxygen per cycle and kills nobody while any is left", () => {
     const s = cycle(game());
-    expect(s.ship.oxygen).toBe(29);
+    expect(s.ship.oxygen).toBe(19);
     expect(s.players.every((p) => p.alive)).toBe(true);
   });
 
@@ -81,5 +81,22 @@ describe("ship resources", () => {
     expect(s.ship).toMatchObject({ plasmaShield: 0, hull: 93 });
     damageShip(s, 200);
     expect(s.ship.hull).toBe(0);
+  });
+
+  it("places fixed eMush starting items, 24 storage items, 11 daedalus items, and 4 random blueprints", () => {
+    const s = createGame(makeSeats(4, "others"), { ...DEFAULT_CONFIG, startInventory: [] }, 7);
+    const inRoom = (id: string) => s.items.filter((i) => i.at.kind === "room" && i.at.id === id);
+    expect(inRoom("SICK_BAY").filter((i) => i.type === "bandage")).toHaveLength(2);
+    expect(inRoom("REFECTORY").filter((i) => i.type === "freezer")).toHaveLength(1);
+    expect(inRoom("REFECTORY").filter((i) => i.type === "mad_kube")).toHaveLength(1);
+    expect(inRoom("REFECTORY").filter((i) => i.type === "microwave")).toHaveLength(1);
+    expect(inRoom("REFECTORY").filter((i) => i.type === "uncooked_ration")).toHaveLength(32);
+    expect(inRoom("HYDROPONIC_CENTER").filter((i) => i.type === "tree_pot")).toHaveLength(3);
+    expect(inRoom("CORRIDOR_A").some((i) => i.type === "support_drone")).toBe(true);
+    // 2 + 12 (drugs) + 35 + 3 + 1 + 24 + 11 + 4 = 92 items total
+    expect(s.items).toHaveLength(92);
+    // Same seed is deterministic; different seeds distribute pooled items differently.
+    expect(createGame(makeSeats(4, "others"), { ...DEFAULT_CONFIG, startInventory: [] }, 7).items).toEqual(s.items);
+    expect(createGame(makeSeats(4, "others"), { ...DEFAULT_CONFIG, startInventory: [] }, 8).items).not.toEqual(s.items);
   });
 });

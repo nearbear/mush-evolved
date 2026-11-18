@@ -16,7 +16,7 @@ const base = Math.floor((cfg.progress.rate * cfg.progress.mod) / 10);
 
 /** Repairs never soil or injure (`odds` restores them), so no extra log line or status depends on the seed. */
 function game(room = "MOTOR_ROOM", odds = { dirtyChance: 0, injuryChance: 0 }) {
-  const config = noIncidents(noHunters(DEFAULT_CONFIG));
+  const config = noIncidents(noHunters({ ...DEFAULT_CONFIG, ship: { ...DEFAULT_CONFIG.ship, oxygen: { ...DEFAULT_CONFIG.ship.oxygen, perCycle: 0 } } }));
   const state = createGame(seats, { ...config, pilgred: { ...config.pilgred, ...odds } }, 1);
   for (const p of state.players) p.room = room;
   return state;
