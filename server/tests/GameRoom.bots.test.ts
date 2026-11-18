@@ -105,8 +105,13 @@ describe("GameRoom bots", () => {
       vi.stubGlobal("fetch", fetch);
       const { room, storage } = await modelRoom({ ...DEV, ...MODEL });
       const human = connect(room, "tok0");
+      // Actions only: a bot's item-sharing chat line (bots/itemShare.ts) goes out on its first turn
+      // without a model call, so it isn't a sign the bot ignored the pause.
       const byModelBots = () =>
-        [...storage.data].filter(([k, v]) => k.startsWith("input:") && ["p1", "p2", "p3"].includes((v as { input: { by: string } }).input.by)).length;
+        [...storage.data].filter(([k, v]) => {
+          const { input } = v as { input: { by: string; type: string } };
+          return k.startsWith("input:") && input.type === "action" && ["p1", "p2", "p3"].includes(input.by);
+        }).length;
       await vi.advanceTimersByTimeAsync(1000);
       expect(byModelBots()).toBe(0);
       expect(lastMsg(human)).toMatchObject({ type: "view", botsPaused: "unavailable" });

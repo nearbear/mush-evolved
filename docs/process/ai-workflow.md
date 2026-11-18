@@ -4364,6 +4364,10 @@ Added a `fuelPlanet` dev cheat: switching it on creates a planet with 20 known H
 - The five files run in ~8 s wall time instead of ~21 s for the old file. The slowest is now bots + single player (6.4 s, single player alone is 4.4 s); `SLOW_ALLOWED` moved to it (9.5 s). Splitting single player into its own file would balance it further.
 - Correction: a first pass ran `npx prettier`, which isn't the project's formatter (Biome is) and was fetched on the fly; files were regenerated and formatted with Biome. The model-bot backoff test (#114) still flakes about 1 in 3 runs, before and after the split.
 
+## 2026-11-17: Flaky model-backoff bot test
+
+The #114 backoff test in `server/tests/GameRoom.bots.test.ts` failed about 1 run in 3. Logging the stored inputs showed a model bot's item-sharing chat line (`server/src/bots/itemShare.ts`), which a bot posts on its first turn without a model call; the game seed is random per run, so it only fired when a model bot started next to a shared item. An earlier note had blamed load, which was wrong. Fix: the test's `byModelBots()` counts only `action` inputs, matching how the chat tests already skip item lines. Passed 8 runs in a row.
+
 ## 2026-11-17: Icarus panel redesign, step 1 (podiums, launch bar, Leave under the minimap)
 
 - The owner asked for the docked Icarus to look like the patrol cockpit: a bottom-centre TechnoBox with a big Launch expedition button (as Shoot), Leave the Icarus as a small button under the minimap, and the character picker's podiums in the middle, one per seat (4, or 6 with the larger bay).
