@@ -469,7 +469,7 @@
     "illegal_action": "You can't do that right now.",
     "unknown_player": "You aren't seated in this game.",
     "cant_post": "You can't post there.",
-    "mute": "You can't speak with a torn tongue.",
+    "cant_speak": "You can't speak with a torn tongue.",
     "empty_message": "Write something first.",
     "message_too_long": "Messages are limited to {{max}} characters.",
     "too_many_lines": "Messages are limited to {{lines}} lines.",

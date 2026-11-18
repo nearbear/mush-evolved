@@ -476,7 +476,7 @@
     "illegal_action": "No puedes hacer eso ahora mismo.",
     "unknown_player": "No tienes asiento en esta partida.",
     "cant_post": "No puedes escribir ahí.",
-    "mute": "No puedes hablar con la lengua desgarrada.",
+    "cant_speak": "No puedes hablar con la lengua desgarrada.",
     "empty_message": "Escribe algo primero.",
     "message_too_long": "Los mensajes están limitados a {{max}} caracteres.",
     "too_many_lines": "Los mensajes están limitados a {{lines}} líneas.",

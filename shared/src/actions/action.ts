@@ -226,7 +226,7 @@ export class Action<T extends { type: string }> {
 
   /** A mute player (Torn Tongue) can't do any `talking`-tagged action (owner, 2026-11-17). */
   private refusedMute(state: Readonly<GameState>, player: Readonly<PlayerState>, target: T): string | null {
-    return isMute(player) && this.tagsFor(state, target).includes("talking") ? "mute" : null;
+    return isMute(player) && this.tagsFor(state, target).includes("talking") ? "cant_speak" : null;
   }
 
   /** Broken equipment does nothing (owner, 2026-10-25): no action on it but those marked `onBroken`. Nor does a broken item (owner, 2026-11-07), but `onBrokenItem` ones can still move or dismantle it. */

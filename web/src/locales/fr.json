@@ -476,7 +476,7 @@
     "illegal_action": "Vous ne pouvez pas faire cela maintenant.",
     "unknown_player": "Vous n'avez pas de place dans cette partie.",
     "cant_post": "Vous ne pouvez pas écrire ici.",
-    "mute": "Vous ne pouvez pas parler avec la langue arrachée.",
+    "cant_speak": "Vous ne pouvez pas parler avec la langue arrachée.",
     "empty_message": "Écrivez d'abord quelque chose.",
     "message_too_long": "Les messages sont limités à {{max}} caractères.",
     "too_many_lines": "Les messages sont limités à {{lines}} lignes.",

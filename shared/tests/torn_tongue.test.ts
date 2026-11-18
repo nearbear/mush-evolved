@@ -36,7 +36,7 @@ describe("torn tongue injury", () => {
   it("refuses chat posts, in any channel, and only for the injured", () => {
     const s = ship();
     addDisease(s, player(s, "p0"), TONGUE);
-    expect(sendChat(s, "p0", "global", "hello")).toEqual({ ok: false, error: "mute" });
+    expect(sendChat(s, "p0", "global", "hello")).toEqual({ ok: false, error: "cant_speak" });
     expect(sendChat(s, "p1", "global", "hello").ok).toBe(true);
     removeDisease(s, player(s, "p0"), TONGUE);
     expect(sendChat(s, "p0", "global", "hello").ok).toBe(true);
@@ -45,7 +45,7 @@ describe("torn tongue injury", () => {
   it("refuses creating a private channel", () => {
     const s = ship();
     addDisease(s, player(s, "p0"), TONGUE);
-    expect(createChannel(s, "p0", "", ["p1"])).toEqual({ ok: false, error: "mute" });
+    expect(createChannel(s, "p0", "", ["p1"])).toEqual({ ok: false, error: "cant_speak" });
     expect(createChannel(s, "p1", "", ["p0"]).ok).toBe(true);
     removeDisease(s, player(s, "p0"), TONGUE);
     expect(createChannel(s, "p0").ok).toBe(true);
