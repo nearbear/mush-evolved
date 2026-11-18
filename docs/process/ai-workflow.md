@@ -4335,3 +4335,7 @@ Follow-up: a muted player also can't create a private channel (`createChannel` r
 ## 2026-11-17: resolveConfig returns a deep-frozen config
 
 - Follow-up to 9c01b3da: `DEFAULT_CONFIG` was deep-frozen, but `resolveConfig`'s own top-level object (and the parts it builds from overrides: pre-selection, cheat-room rooms/equipment) wasn't, though clones share `state.config`. Wrapped the result in `deepFreeze`; a config test asserts it. Hardening only: nothing wrote to it, and the full suite passed unchanged, which confirmed that.
+
+### 2026-11-17: "Implement Old Faithful" turned out to be done already
+
+Asked to implement the machine gun (Old Faithful), Claude checked the code against the eMush spec (`npm run emush -- spec old_faithful`) before writing anything. Stats, hit and miss tables, heaviness, blueprint, starting draw, Trash Load, locales and tests were all in place, so no code was written. What worked: checking what existed before planning, which avoided duplicating a finished feature. The only change was one stale sentence in `implemented-rules.md` that still said nothing made Lizaro or Old Faithful.
