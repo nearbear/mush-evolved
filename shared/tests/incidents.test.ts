@@ -583,8 +583,11 @@ describe("fire", () => {
     expect(applyAction(s, "p2", { type: "extinguish", item: "x" })).toEqual({ ok: false, error: "illegal_action" });
   });
 
-  it("starts with an extinguisher in the front and rear corridors", () => {
-    expect(DEFAULT_CONFIG.startItems.filter((i) => i.type === "extinguisher").map((i) => i.room)).toEqual(["CORRIDOR_A", "CORRIDOR_C"]);
+  it("starts with two extinguishers in the storage pool", () => {
+    expect(DEFAULT_CONFIG.startItems.filter((i) => i.type === "extinguisher")).toEqual([
+      { type: "extinguisher", pool: "storage" },
+      { type: "extinguisher", pool: "storage" },
+    ]);
   });
 });
 

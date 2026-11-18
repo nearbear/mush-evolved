@@ -27,10 +27,11 @@ describe("drawDrugs", () => {
 });
 
 describe("the Medlab's stock", () => {
-  it("starts with 12 drugs in the Medlab", () => {
+  it("starts with one of each of the 12 drug types in the Medlab", () => {
     const state = createGame(makeSeats(3), DEFAULT_CONFIG, 7);
     const drugs = state.items.filter((i) => DRUG_ITEMS.includes(i.type));
     expect(drugs).toHaveLength(12);
+    expect(drugs.map((i) => i.type).sort()).toEqual([...DRUG_ITEMS].sort());
     expect(drugs.every((i) => i.at.kind === "room" && i.at.id === "SICK_BAY")).toBe(true);
   });
 });

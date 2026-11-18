@@ -4191,3 +4191,15 @@ Owner specified Rubella (12-20 cycles, 2% spread, 50% -1 MP, -3 max HP and moral
 ## 2026-11-17: Syphilis disease
 
 Owner specified Syphilis (20-32 cycles, STT/DTT spread, -3 max morale and HP, +2 damage from all sources, 16% special log when moving). Claude asked which special log; owner chose the sneeze. Built from existing hooks only (`damageTaken` as Food Poisoning, `onEnterRoom` with `sneeze`). The replay and server tests that time out on this machine were left alone: the same replay test is as slow on committed main.
+
+### 2026-11-17: Monospaced font for the top bar clock
+
+- Set `font-family: ui-monospace, "Cascadia Code", Menlo, monospace;` on `.cycle-label` in `web/src/styles/top-bar.css` so the top bar clock (day/cycle and countdown) renders in the monospaced font stack.
+  - Correction: "the monospaced font" meant `var(--font-pixel)` (`"Pixel Square", monospace`), not the terminal's `ui-monospace` stack; updated `.cycle-label` in `web/src/styles/top-bar.css` to `font-family: var(--font-pixel);`.
+
+## 2026-11-17 — Resolve starting ship deltas vs. eMush
+
+- **Decision (owner):** Match eMush for starting oxygen (`20 / 32`, was `30 / 32`), fuel max (`32`, was `100`), Medlab drugs (`stockMedlab` spawns 1 of each of the 12 `DRUG_ITEMS` instead of 12 random with replacement), fixed rooms (`SICK_BAY`, `REFECTORY`, `HYDROPONIC_CENTER`, `CORRIDOR_A`), and random pools (`storage_default` across 5 storages, `daedalus_default` and 4 weighted `randomBlueprints` across all 27 Daedalus rooms). Remove vertical-slice stand-ins (66 skill books, research items, `CORRIDOR_A` craft scraps/fixed blueprints, `SPACESHIP_BAY_AA` oscilloscope, extra ropes), add missing `BLUEPRINTS` recipes (`OSCILLOSCOPE`, `EXTINGUISHER`, `GRENADE`, `SNIPER_HELMET`), and add functionless items (`mad_kube`, `duct_tape`, `block_of_post_it`, plus existing `plastenite_armor`, `sniper_helmet`, `scooter`) marked `notImplemented: true` with icons and a "Not implemented" caption in `InspectPanel` / `PeekBar`.
+- **What worked:** Representing pooled items and weighted blueprint draws inside `GameConfig.startItems` (`pool: "storage" | "daedalus"`, `buildsWeights`) meant every test passing `startItems: []` kept an empty ship without touching 50+ test files, and `createGame` stayed deterministic via `streamFor(seed, "start-items")`. Updating tests that pinned old starting locations or ran >20 cycles without refilling oxygen surfaced all downstream assumptions cleanly.
+  - Correction: moved the monospaced font off `.cycle-label` (so Day/Cycle stays in the body font) onto `.cycle-countdown` only, using `ui-monospace, "Cascadia Code", Menlo, monospace` since `Pixel Square` is proportional and has no `GSUB`/`tnum` table (its digits shift).
+  - Switched `.cycle-countdown` in `web/src/styles/top-bar.css` to `font-family: var(--font-pixel)` (`Pixel Square`) and updated `web/src/hud/CycleCountdown.tsx` to wrap each digit in a `1ch` centered `.clock-digit` `<span>` so the countdown keeps the pixel look without shifting.

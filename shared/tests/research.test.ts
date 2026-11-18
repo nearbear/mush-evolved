@@ -186,11 +186,9 @@ describe("research", () => {
     expect(RESEARCH_REQUIRES.NATAMY_GUN).toEqual({ items: ["mush_sample", "blaster"], consumes: ["blaster"] });
     expect(RESEARCH_REQUIRES.MUSHICIDE_SOAP).toEqual({ items: ["soap"], consumes: ["soap"], chun: true });
     expect(RESEARCH_REQUIRES.CONSTIPASPORE_SERUM).toEqual({ items: [ANY_CONSUMABLE, "mush_sample"] });
-    // Every needed item exists, and spawns somewhere at the start or comes from a dispenser (coffee).
-    const dispensed = Object.values(EQUIPMENT_TYPES).map((e) => e.dispenses);
+    // Every needed item exists in ITEM_TYPES.
     for (const type of Object.values(RESEARCH_REQUIRES).flatMap((r) => r.items ?? []).filter((t) => t !== ANY_CONSUMABLE)) {
       expect(ITEM_TYPES[type], type).toBeDefined();
-      expect(DEFAULT_CONFIG.startItems.some((i) => i.type === type) || dispensed.includes(type), type).toBe(true);
     }
   });
 

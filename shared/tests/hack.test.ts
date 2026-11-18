@@ -32,10 +32,12 @@ function ship(cfg = config): GameState {
 }
 
 describe("Hacker kit item", () => {
-  it("spawns in CORRIDOR_B at game start and matches Decided Rules properties", () => {
-    expect(DEFAULT_CONFIG.startItems).toContainEqual({ type: HACKER_KIT_ITEM, room: "CORRIDOR_B" });
+  it("spawns in a storage room at game start and matches Decided Rules properties", () => {
+    expect(DEFAULT_CONFIG.startItems).toContainEqual({ type: HACKER_KIT_ITEM, pool: "storage" });
     const s = createGame(makeSeats(3), DEFAULT_CONFIG, 1);
-    expect(s.items.filter((i) => i.type === HACKER_KIT_ITEM)).toMatchObject([{ at: { kind: "room", id: "CORRIDOR_B" } }]);
+    const kits = s.items.filter((i) => i.type === HACKER_KIT_ITEM);
+    expect(kits).toHaveLength(1);
+    expect(kits[0]!.at.kind === "room" && DEFAULT_CONFIG.snoop.rooms.includes(kits[0]!.at.id)).toBe(true);
 
     const def = ITEM_TYPES[HACKER_KIT_ITEM];
     expect(def).toEqual({

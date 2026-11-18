@@ -53,7 +53,7 @@ describe("expedition gear sharing (itemShare.ts)", () => {
     const botA = game.players[0]!.id;
     const botB = game.players[1]!.id;
     const room = "CORRIDOR_A";
-    game.items = game.items.filter((i) => i.at.kind !== "room" || i.at.id !== room);
+    game.items = game.items.filter((i) => i.at.kind !== "room" || (i.at.id !== room && i.at.id !== "REFECTORY"));
     game.items.push({ id: "suit-1", type: "space_suit", at: { kind: "room", id: room } });
     game.players[0]!.room = room;
     game.players[1]!.room = "REFECTORY";

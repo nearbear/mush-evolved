@@ -36,7 +36,8 @@ import { inactivityCycle } from "./inactivity.ts";
 import { emptyResources } from "./resources.ts";
 import { hasSkill } from "./skills.ts";
 import { soil } from "./dirt.ts";
-import { rollFloat, shuffle, streamFor } from "./rng.ts";
+import { rollFloat, rollInt, rollWeighted, shuffle, streamFor } from "./rng.ts";
+import { SHIP_ROOMS } from "./config.ts";
 import { chatChannels, chatMarkKey, chatPageOf, markedText, readChannels } from "./chat.ts";
 import { moderateName } from "./moderation.ts";
 import { clone, cloneState, dayOf, fail, findPlayer, type ActionResult } from "./helpers.ts";
@@ -120,8 +121,29 @@ export function createGame(
 
   const players: PlayerState[] = seats.map((s) => newPlayer(s, config, startCycle, mushIds.has(s.id) ? "mush" : "human"));
 
+  const startRng = { rng: streamFor(seed, "start-items") };
+  const daedalusPool = SHIP_ROOMS.map((r) => r.id);
+  const storagePool = config.snoop.rooms;
   const starts: Omit<ItemState, "id">[] = [
-    ...config.startItems.map((it): Omit<ItemState, "id"> => ({ type: it.type, at: { kind: "room", id: it.room }, ...(it.builds !== undefined && { builds: it.builds }), ...(it.teaches !== undefined && { teaches: it.teaches }), ...(it.plant && { plant: { ...it.plant } }), ...chargesFor(config, it.type) })),
+    ...config.startItems.map((it): Omit<ItemState, "id"> => {
+      const room = "room" in it
+        ? it.room
+        : (it.pool === "storage" ? storagePool : daedalusPool)[rollInt(startRng, (it.pool === "storage" ? storagePool : daedalusPool).length)]!;
+      const builds = it.buildsWeights
+        ? (() => {
+            const entries = Object.entries(it.buildsWeights);
+            return entries[rollWeighted(startRng, entries.map(([, w]) => w))]![0];
+          })()
+        : it.builds;
+      return {
+        type: it.type,
+        at: { kind: "room", id: room },
+        ...(builds !== undefined && { builds }),
+        ...(it.teaches !== undefined && { teaches: it.teaches }),
+        ...(it.plant && { plant: { ...it.plant } }),
+        ...chargesFor(config, it.type),
+      };
+    }),
     ...players.flatMap((p) => startInventory(config, p.id)),
   ];
   const items: ItemState[] = starts.map((it, i) => ({ id: `item-${i + 1}`, ...it }));

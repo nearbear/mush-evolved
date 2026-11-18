@@ -897,6 +897,7 @@
     "droneName": "{{name}} #{{serial}}",
     "droneUpgrades": "Upgrades: {{upgrades}}",
     "droneNoUpgrades": "No upgrades",
+    "notImplemented": "Not implemented",
     "young": "Young plant",
     "youngDesc": "This plant is young: it makes neither oxygen nor fruit until it grows up.",
     "thirsty": "Thirsty",

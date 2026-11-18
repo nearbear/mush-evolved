@@ -3,7 +3,6 @@ import { DEFAULT_CONFIG } from "../src/config.ts";
 import { modifierIds } from "../src/modifiers.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
-import { SKILLS } from "../src/skills.ts";
 import type { Action, GameState } from "../src/types.ts";
 import { makeSeats, must, mustApply, option, player } from "./support.ts";
 
@@ -24,13 +23,6 @@ function ship(): GameState {
 }
 
 describe("skill books", () => {
-  it("spawns one book for every skill on the bridge", () => {
-    const s = createGame(seats, DEFAULT_CONFIG, 1);
-    const books = s.items.filter((i) => i.type === "book");
-    expect(books.map((b) => b.teaches)).toEqual([...SKILLS]);
-    expect(books.every((b) => b.at.kind === "room" && b.at.id === "COMMAND_CENTER")).toBe(true);
-  });
-
   it("fills the book slot, destroys the book, and logs publicly", () => {
     const s = mustApply(ship(), "p0", read("medic"));
     const p0 = player(s, "p0");

@@ -44,6 +44,8 @@ export interface ItemType {
   canHide?: boolean;
   /** An electrical overload (incidents.ts) breaks it when it lies on the floor of the room hit (owner, 2026-11-11: drones). */
   breaksInOverload?: boolean;
+  /** True while the item has no gameplay effects yet; the UI shows a "Not implemented" caption. */
+  notImplemented?: boolean;
 }
 
 /**
@@ -207,10 +209,14 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   white_flag: {},
   // The white flag's ingredient, with the soap (owner, 2026-11-08). No effect.
   old_shirt: {},
-  plastenite_armor: { dismantle: { metal: 0, plastic: 1, chance: 0.12 }, canBreak: true, canBeSabotaged: true, repairChance: 0.12 },
-  sniper_helmet: { dismantle: { metal: 1, plastic: 1, chance: 0.12 }, canBreak: true, canBeSabotaged: true, repairChance: 0.25 },
-  scooter: { dismantle: { metal: 2, plastic: 1, chance: 0.25 }, canBreak: true, canBeSabotaged: true, repairChance: 0.25 },
+  plastenite_armor: { dismantle: { metal: 0, plastic: 1, chance: 0.12 }, canBreak: true, canBeSabotaged: true, repairChance: 0.12, notImplemented: true },
+  sniper_helmet: { dismantle: { metal: 1, plastic: 1, chance: 0.12 }, canBreak: true, canBeSabotaged: true, repairChance: 0.25, notImplemented: true },
+  scooter: { dismantle: { metal: 2, plastic: 1, chance: 0.25 }, canBreak: true, canBeSabotaged: true, repairChance: 0.25, notImplemented: true },
   space_suit: { dismantle: { metal: 1, plastic: 1, chance: 0.12 }, canBreak: true, canBeSabotaged: true, repairChance: 0.06 },
+  // Functionless eMush starting items (icon + "Not implemented" caption until their mechanics are built).
+  mad_kube: { notImplemented: true },
+  duct_tape: { notImplemented: true },
+  block_of_post_it: { notImplemented: true },
 };
 
 /** Whether the player carries at least one heavy item. */

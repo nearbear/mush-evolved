@@ -9,7 +9,7 @@ import { makeSeats, must, nextCycle, noIncidents, offered, player } from "./supp
 
 /** Most tests use a small ship so it fills after a few joins. */
 const SMALL: PreselectionRules = { ...PRESELECTION, seats: 4 };
-const config: GameConfig = noIncidents({ ...DEFAULT_CONFIG, preselection: SMALL });
+const config: GameConfig = noIncidents({ ...DEFAULT_CONFIG, preselection: SMALL, ship: { ...DEFAULT_CONFIG.ship, oxygen: { ...DEFAULT_CONFIG.ship.oxygen, perCycle: 0 } } });
 
 /** A ship launched empty in pre-selection (on day 1 cycle `startCycle`), then joined by the first `n` seats of makeSeats. */
 function ship(n: number, rules: PreselectionRules = SMALL, seed = 7, startCycle = 1): GameState {

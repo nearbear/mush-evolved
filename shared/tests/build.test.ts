@@ -22,11 +22,11 @@ function ship(): GameState {
 }
 
 describe("build", () => {
-  it("starts with a sofa blueprint, and what it needs, in the front corridor", () => {
-    const here = DEFAULT_CONFIG.startItems.filter((i) => i.room === "CORRIDOR_A");
-    expect(here).toContainEqual({ type: "blueprint", builds: "SOFA", room: "CORRIDOR_A" });
+  it("starts with the eMush fixed blueprints (SOFA, GRENADE) and 4 random blueprints", () => {
     const s = createGame(seats, DEFAULT_CONFIG, 1);
-    expect(s.items.find((i) => i.type === "blueprint")).toMatchObject({ builds: "SOFA", at: room("CORRIDOR_A") });
+    const bps = s.items.filter((i) => i.type === "blueprint");
+    expect(bps).toHaveLength(6);
+    expect(bps.map((b) => b.builds)).toEqual(expect.arrayContaining(["SOFA", "GRENADE"]));
   });
 
   it("uses ingredients from the floor and the inventory, consumes the blueprint, and adds the sofa for 3 AP, publicly", () => {
@@ -97,9 +97,6 @@ describe("build", () => {
     expect(r2.state.items.find((i) => i.type === "missile_launcher")?.at).toEqual(room("CORRIDOR_A"));
   });
 
-  it("spawns a rocket launcher blueprint in the front corridor", () => {
-    expect(DEFAULT_CONFIG.startItems).toContainEqual({ type: "blueprint", builds: "MISSILE_LAUNCHER", room: "CORRIDOR_A" });
-  });
 
   it("shows which recipe a blueprint carries in the view", () => {
     expect(viewFor(ship(), "p0").roomItems.find((i) => i.id === "bp")).toEqual({ id: "bp", type: "blueprint", builds: "SOFA" });

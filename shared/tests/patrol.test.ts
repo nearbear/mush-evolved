@@ -799,10 +799,6 @@ describe("renovating a ship", () => {
     expect([option(s, "p1", renovate())!.chance, option(s, "p1", hull)!.chance]).toEqual(base.map((c) => c * s.config.oscilloscope.repairFactor));
   });
 
-  it("the oscilloscope starts in Alpha Bay 2", () => {
-    expect(DEFAULT_CONFIG.startItems).toContainEqual({ type: "oscilloscope", room: "SPACESHIP_BAY_AA" });
-    expect(createGame(makeSeats(3), DEFAULT_CONFIG, 1).items.filter((i) => i.type === "oscilloscope")).toMatchObject([{ at: { kind: "room", id: "SPACESHIP_BAY_AA" } }]);
-  });
 
   it("isn't offered for a ship at full armor, out, in another bay, or without a scrap; refusing leaves the state as it was", () => {
     const full = ship();
