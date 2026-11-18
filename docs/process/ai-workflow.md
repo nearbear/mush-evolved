@@ -4271,3 +4271,13 @@ Owner specified Syphilis (20-32 cycles, STT/DTT spread, -3 max morale and HP, +2
 
 - **Decided by the owner:** `ceasefire` (skill `diplomacy`) costs 1 AP (`ceasefire.cost.ap`), once per game per character (`ceasefireUsed` stays with the body on Transfer; Polymath/`skilful` does not get it), blocked in preselection and when a ceasefire is already active in the room. Public room log (`ceasefire`) and public room status (`roomCeasefire` to the living in that room) for 3 cycles (`ceasefire.durationCycles`); stays active in the room even if the diplomat leaves or dies, and blocks all `aggressive`-tagged actions there (`attack`, `punch`, `interrogate`, `throw_out`, `spike`, `body_transfer`, `demoralize`, `guard`).
 - **What worked:** Putting the ceasefire gate in `Action.check` (`refusedCeasefire`) covered every `aggressive`-tagged action in one place without per-action edits, and `storedRooms.test.ts` caught adding `game.ceasefires` to `shared/tests/storedShape.ts`.
+
+### 2026-11-17 — Disable hacker kit `hack` during pre-selection
+- **Decision (owner):** Disable `hack` during pre-selection with the reason shown to the player, since titles are not assigned until Mush selection.
+- **Implementation:** `HackAction.validate` returns `IN_PRESELECTION`, `shared/src/rules.ts` includes `hack` + `IN_PRESELECTION` in unaffordable options with `lacks: ["preselection"]` (without exposing other `IN_PRESELECTION` actions as disabled buttons), and `DisabledActionButton` renders `actions.lacksPreselection` (en/fr/es).
+
+## 2026-11-17 — Fix bot hydropot goal (`setOutPots`) for random storage spawns
+
+- Updated `server/src/bots/itemShare.ts` to include `tree_pot` in `SHARED_ITEMS` (empty pots outside `gardenRoom` only, so planted or already-gardened pots are not advertised).
+- Updated `server/src/bots/goals/setOutPots.ts` to replace the hardcoded `STORAGE_FRONT` (`POT_STORAGE`) with `roomsHolding(memory, TREE_POT_ITEM)` (excluding `gardenRoom`) first, falling back to checking the nearest unchecked room in `DEFAULT_CONFIG.merchants.storageRooms` (`POT_STORAGES`) once per game via `storageCheckedKey(room)`.
+- Updated `server/tests/goals.test.ts` to remove the `904d8a76` workaround that forced pots into `STORAGE_FRONT`, test natural storage placement across cycles, and verify `itemShare` reporting and fetching for empty non-garden pots.

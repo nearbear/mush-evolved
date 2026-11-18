@@ -10,7 +10,7 @@ import { expirePlans, plansView, strikeSlots } from "./plans.ts";
 import { bindPerformAction } from "./actions/summon.ts";
 import { applyCheats, makeHuman, shipInvincible, type Cheat, type RoleCheat } from "./cheats.ts";
 import { ACTIONS, actionVisibility, type ActionDef } from "./actions.ts";
-import { ARACK_AROUND, AT_CAPACITY, COOLDOWN, DIRTY, NO_DEBRIS, NO_SPACE, PASIPHAE_INTACT, REACTOR_BROKEN } from "./actions/action.ts";
+import { ARACK_AROUND, AT_CAPACITY, COOLDOWN, DIRTY, IN_PRESELECTION, NO_DEBRIS, NO_SPACE, PASIPHAE_INTACT, REACTOR_BROKEN } from "./actions/action.ts";
 import { getUp } from "./actions/lie_down.ts";
 import { isNimble } from "./actions/nimble.ts";
 import { researchNeedsView } from "./actions/research.ts";
@@ -297,6 +297,9 @@ const UNAFFORDABLE_REASONS = new Set<string>([
   ARACK_AROUND,
 ]);
 
+const isUnaffordableReason = (action: Action, refused: string | null): refused is string =>
+  refused !== null && (UNAFFORDABLE_REASONS.has(refused) || (action.type === "hack" && refused === IN_PRESELECTION));
+
 function actionOption(state: GameState, p: PlayerState, def: ActionDef<Action>, a: Action, lacks: ActionOption["lacks"]): ActionOption {
   return {
     action: a,
@@ -313,6 +316,7 @@ function unaffordableOption(state: GameState, p: PlayerState, def: ActionDef<Act
   const option = actionOption(state, p, def, a, []);
   const { cost } = option;
   option.lacks = [
+    ...(refused === IN_PRESELECTION ? (["preselection"] as const) : []),
     ...(refused === NO_DEBRIS ? (["debris"] as const) : []),
     ...(refused === PASIPHAE_INTACT ? (["pasiphae"] as const) : []),
     ...(refused === REACTOR_BROKEN ? (["reactor"] as const) : []),
@@ -340,7 +344,7 @@ export function unaffordableActions(state: GameState, playerId: PlayerId): Actio
     def.candidates(state, p).flatMap((a): ActionOption[] => {
       if (a.type === "move") return [];
       const refused = def.check(state, p, a);
-      return UNAFFORDABLE_REASONS.has(refused ?? "") ? [unaffordableOption(state, p, def, a, refused!)] : [];
+      return isUnaffordableReason(a, refused) ? [unaffordableOption(state, p, def, a, refused)] : [];
     }),
   );
 }
@@ -355,7 +359,7 @@ function viewActionOptions(state: GameState, p: PlayerState): ActionOption[] {
       const refused = def.check(state, p, a);
       if (refused === null) {
         legal.push(actionOption(state, p, def, a, []));
-      } else if (a.type !== "move" && UNAFFORDABLE_REASONS.has(refused)) {
+      } else if (a.type !== "move" && isUnaffordableReason(a, refused)) {
         unaffordable.push(unaffordableOption(state, p, def, a, refused));
       }
     }

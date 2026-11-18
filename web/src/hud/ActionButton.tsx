@@ -99,7 +99,9 @@ export function DisabledActionButton({ view, blocked, children, className, hint 
   const { t } = useTranslation();
   const { cost, lacks } = blocked;
   const reason =
-    lacks[0] === "debris"
+    lacks[0] === "preselection"
+      ? t("actions.lacksPreselection")
+      : lacks[0] === "debris"
       ? t("patrol.noDebris")
       : lacks[0] === "pasiphae"
       ? t("actions.lacksPasiphae")

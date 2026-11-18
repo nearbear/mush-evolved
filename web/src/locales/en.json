@@ -245,9 +245,7 @@
       "human": "Daedalus · Crew",
       "mush": "Daedalus · Mush"
     },
-    "name": "Name",
-    "title": "Title",
-    "noTitle": "—"
+    "name": "Name"
   },
   "resources": {
     "other": "Other resources",
@@ -407,6 +405,7 @@
     "lacksReactorTravel": "The Emergency reactor is broken: the ship can't travel until it is repaired.",
     "lacksArack": "An Arack is clinging to the Daedalus: the ship can't move until it is shot down.",
     "lacksReactorTurn": "The lateral reactor on this side is broken: the ship can't turn this way until it is repaired.",
+    "lacksPreselection": "Unavailable during pre-selection: titles aren't assigned until the Mush are chosen.",
     "lacksMp": "Not enough MP: it costs {{need}}, you have {{have}}.",
     "lacksBoth": "Not enough AP or MP: it costs {{needAp}} AP and {{needMp}} MP, you have {{haveAp}} AP and {{haveMp}} MP.",
     "returnToSol": "Return to Sol",

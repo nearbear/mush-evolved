@@ -251,9 +251,7 @@
       "human": "Daedalus · Équipage",
       "mush": "Daedalus · Mush"
     },
-    "name": "Nom",
-    "title": "Titre",
-    "noTitle": "—"
+    "name": "Nom"
   },
   "resources": {
     "other": "Autres ressources",
@@ -414,6 +412,7 @@
     "lacksReactorTravel": "Le réacteur d'urgence est en panne : le Daedalus ne peut pas voyager tant qu'il n'est pas réparé.",
     "lacksArack": "Un Arack s'est accroché au Daedalus : le vaisseau ne peut pas se déplacer tant qu'il n'est pas abattu.",
     "lacksReactorTurn": "Le réacteur latéral de ce côté est en panne : le Daedalus ne peut pas tourner de ce côté tant qu'il n'est pas réparé.",
+    "lacksPreselection": "Indisponible en pré-sélection : les titres ne sont attribués qu'une fois les Mush choisis.",
     "lacksMp": "Pas assez de PM : cela coûte {{need}}, vous en avez {{have}}.",
     "lacksBoth": "Pas assez de PA ni de PM : cela coûte {{needAp}} PA et {{needMp}} PM, vous avez {{haveAp}} PA et {{haveMp}} PM.",
     "returnToSol": "Rentrer sur Sol",

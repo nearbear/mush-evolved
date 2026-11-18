@@ -251,9 +251,7 @@
       "human": "Daedalus · Tripulación",
       "mush": "Daedalus · Mush"
     },
-    "name": "Nombre",
-    "title": "Título",
-    "noTitle": "—"
+    "name": "Nombre"
   },
   "resources": {
     "other": "Otros recursos",
@@ -414,6 +412,7 @@
     "lacksReactorTravel": "El reactor de emergencia está averiado: el Daedalus no puede viajar hasta que lo reparen.",
     "lacksArack": "Un Arack se ha aferrado al Daedalus: la nave no puede moverse hasta que lo derriben.",
     "lacksReactorTurn": "El reactor lateral de este lado está averiado: el Daedalus no puede girar hacia este lado hasta que lo reparen.",
+    "lacksPreselection": "No disponible durante la preselección: los títulos no se asignan hasta que se elijan los Mush.",
     "lacksMp": "No tienes suficientes PM: cuesta {{need}} y tienes {{have}}.",
     "lacksBoth": "No tienes suficientes PA ni PM: cuesta {{needAp}} PA y {{needMp}} PM, y tienes {{haveAp}} PA y {{haveMp}} PM.",
     "returnToSol": "Volver a Sol",
