@@ -99,4 +99,15 @@ describe("ship resources", () => {
     expect(createGame(makeSeats(4, "others"), { ...DEFAULT_CONFIG, startInventory: [] }, 7).items).toEqual(s.items);
     expect(createGame(makeSeats(4, "others"), { ...DEFAULT_CONFIG, startInventory: [] }, 8).items).not.toEqual(s.items);
   });
+
+  it("draws distinct starting blueprints without replacement across seeds", () => {
+    const seats = makeSeats(4, "others");
+    const config = { ...DEFAULT_CONFIG, startInventory: [] };
+    for (let seed = 1; seed <= 50; seed++) {
+      const s = createGame(seats, config, seed);
+      const blueprints = s.items.filter((i) => i.type === "blueprint").map((i) => i.builds);
+      expect(blueprints).toHaveLength(6);
+      expect(new Set(blueprints).size).toBe(6);
+    }
+  });
 });

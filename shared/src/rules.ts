@@ -124,6 +124,7 @@ export function createGame(
   const startRng = { rng: streamFor(seed, "start-items") };
   const daedalusPool = SHIP_ROOMS.map((r) => r.id);
   const storagePool = config.snoop.rooms;
+  const drawnBlueprints = new Set<string>();
   const starts: Omit<ItemState, "id">[] = [
     ...config.startItems.map((it): Omit<ItemState, "id"> => {
       const room = "room" in it
@@ -132,9 +133,12 @@ export function createGame(
       const builds = it.buildsWeights
         ? (() => {
             const entries = Object.entries(it.buildsWeights);
-            return entries[rollWeighted(startRng, entries.map(([, w]) => w))]![0];
+            const remaining = entries.filter(([k]) => !drawnBlueprints.has(k));
+            const choices = remaining.length > 0 ? remaining : entries;
+            return choices[rollWeighted(startRng, choices.map(([, w]) => w))]![0];
           })()
         : it.builds;
+      if (it.type === "blueprint" && builds !== undefined) drawnBlueprints.add(builds);
       return {
         type: it.type,
         at: { kind: "room", id: room },

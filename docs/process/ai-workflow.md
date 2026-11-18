@@ -4282,6 +4282,16 @@ Owner specified Syphilis (20-32 cycles, STT/DTT spread, -3 max morale and HP, +2
 - Updated `server/src/bots/goals/setOutPots.ts` to replace the hardcoded `STORAGE_FRONT` (`POT_STORAGE`) with `roomsHolding(memory, TREE_POT_ITEM)` (excluding `gardenRoom`) first, falling back to checking the nearest unchecked room in `DEFAULT_CONFIG.merchants.storageRooms` (`POT_STORAGES`) once per game via `storageCheckedKey(room)`.
 - Updated `server/tests/goals.test.ts` to remove the `904d8a76` workaround that forced pots into `STORAGE_FRONT`, test natural storage placement across cycles, and verify `itemShare` reporting and fetching for empty non-garden pots.
 
+### 2026-11-17 — Distinct starting blueprints
+- **Decision (owner):** Draw starting `buildsWeights` blueprints in `createGame` without replacement, excluding already-placed starting blueprints (`SOFA`, `GRENADE`), matching eMush's `getBlueprintFromDaedalus` / `getRandomElementsFromProbaCollection`.
+- **What worked:** Filtering `Object.entries(it.buildsWeights)` against a `drawnBlueprints` set in `shared/src/rules.ts` (falling back to all entries if a custom config exhausts the pool) kept the change localized and deterministic; `shared/tests/ship.test.ts` verified all 6 starting blueprints are distinct across 50 seeds.
+
+## 2026-11-17: Rocket launcher outcomes no longer hit the whole room
+
+- **Problem:** the rocket launcher was an untargeted area weapon, so outcomes eMush writes for one target (ROCKETTED instant kill, "2 random wounds") applied to everyone in the room; a probe killed 25% of full-HP victims in one shot.
+- **Decision (owner):** follow eMush. The rocket launcher is aimed at one roommate; only the grenade stays untargeted. `WeaponStats.area` became `area?: true` plus a separate `selfDamage`, and `applyOutcomeEffects` routes each effect by its `who`: target, splash (every other living person in the room, the target included), or attacker.
+- **What worked:** checking the eMush `SplashDamageAll` handler with the clean-room tool before choosing showed the original's weapon has a primary target, which turned an open "who gets the kill?" question into a clear two-option ask.
+
 ### 2026-11-17 — ID card: amber edge all the way around
 - **Request (owner):** the ID card's amber divider should run all the way around the card.
 - **Implementation:** `.id-card` in `web/src/styles/self-hud.css` keeps its dark `--gold-edge` rim as the inner line and adds a `--gold-mid` line and a dark outer line with chained 1px drop-shadows. These follow the cut corner, as `card.css`'s amber variant already does. The level divider already reaches the card edge, so its gold meets the ring's.
