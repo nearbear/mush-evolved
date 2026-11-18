@@ -15,12 +15,33 @@
 }
 /* The item face (see .item-face) at inspect size. */
 .inspect-item {
-  --tile: 96px;
+  position: relative;
+  --tile: 200px;
   width: var(--tile);
+  max-width: 100%;
   margin: var(--space-3) auto var(--space-2);
 }
-.inspect-charges {
-  text-align: center;
+/* Item attributes along the item face's top edge. */
+.inspect-item .status-icons {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  flex-direction: row;
+  gap: 2px;
+  margin: 0;
+}
+.inspect-item .status-icon {
+  padding: 2px;
+  border-radius: 4px;
+  background: rgb(0 0 0 / 0.65);
+}
+.inspect-item .status-icon img {
+  position: relative;
+  z-index: 1;
+}
+.inspect-item .status-count span {
+  z-index: 2;
 }
 .inspect-art {
   display: block;

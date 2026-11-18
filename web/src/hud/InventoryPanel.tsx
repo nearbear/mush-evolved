@@ -11,6 +11,7 @@ import { legalIn, type Action, type ItemView, type PlayerView, type Target } fro
 import { Hint } from "./IconButton.tsx";
 import { ConsumeEffects } from "./ConsumeEffects.tsx";
 import { DoublePressButton } from "./DoublePress.tsx";
+import { ItemAttrIcons } from "./ItemAttrIcons.tsx";
 import { ItemFace } from "./ItemFace.tsx";
 import { ItemIcon } from "./ItemIcon.tsx";
 import { sameTarget } from "./targets.ts";
@@ -129,6 +130,7 @@ export function InventoryPanel({
             </ItemFace>
           </button>
         </Hint>
+        <ItemAttrIcons item={item} mpPenalty={view.config.heavyMpPenalty} />
         {isSelected && legal(type, item) && (
           <DoublePressButton className="item-action" aria-label={`${zone === "room" ? t("actions.take") : t("actions.drop")} ${names.itemOf(item)}`} onPress={() => onAction({ type, item: item.id })}>
             {zone === "room" ? t("actions.take") : t("actions.drop")}
