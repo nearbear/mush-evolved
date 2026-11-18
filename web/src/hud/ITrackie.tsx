@@ -51,7 +51,7 @@ const TAB_TITLES = {
  * Unread messages on each tab (#400): each readable channel's count less the count read, summed by tab. The active tab
  * counts too (owner, 2026-11-08). With no read store (a replay, the design kit), nothing is unread.
  */
-function useUnread(view: Pick<PlayerView, "readChannels" | "chatCounts">): { tabs: Record<TabId, number>; features: Partial<Record<FeatureChannel, number>> } {
+function useUnread(view: Pick<PlayerView, "readChannels" | "chatCounts" | "chatUnheard">): { tabs: Record<TabId, number>; features: Partial<Record<FeatureChannel, number>> } {
   const read = useReadSnapshot();
   return read ? { tabs: unreadByTab(view, read), features: unreadByFeature(view, read) } : { tabs: NO_UNREAD, features: {} };
 }

@@ -77,7 +77,8 @@ export interface Reveal {
 
 /**
  * The all-seeing mode, following `followSeat` (a mind): its own view (`perspective`) with every hidden line of its
- * room added, its own lines from elsewhere, every channel with all its messages, and no log window. `streams` are the
+ * room added, its own lines from elsewhere, every channel with all its messages (those the followed body couldn't hear
+ * included), and no log window. `streams` are the
  * lines and messages seen from the start of the game up to this frame (`mergeStreams`); without them, only what `full`
  * still holds. Throws as `perspective` does.
  */
@@ -97,11 +98,13 @@ export function revealFor(full: Readonly<FullView>, followSeat: PlayerId, stream
     GRAVEYARD_CHANNEL,
     ...full.channels.map((c) => c.id),
   ];
+  // Every message, those the followed body couldn't hear (Damaged or Destroyed Ears) included (owner, 2026-11-17).
+  const chat = streams.chat;
   const view: SeatView = {
     ...own,
     log,
     // The text as typed, with the ticks of this frame (chatMarks).
-    chat: streams.chat.map((m) => messageView(m, full.chatMarks)),
+    chat: chat.map((m) => messageView(m, full.chatMarks)),
     readChannels: readable,
     privateChannels: full.channels.map((c) => ({ ...c, members: [...c.members] })),
     plans: plansView(full, readable),
@@ -109,7 +112,7 @@ export function revealFor(full: Readonly<FullView>, followSeat: PlayerId, stream
     sharedPlanets: sharedPlanetsView(full),
     sharedReports: sharedReportsView(full),
   };
-  return { view, reveal: revealOf(full, log, streams.chat) };
+  return { view, reveal: revealOf(full, log, chat) };
 }
 
 function revealOf(full: Readonly<FullView>, log: readonly LogEntry[], chat: readonly ChatMessage[]): Reveal {

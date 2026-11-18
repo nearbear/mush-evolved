@@ -20,7 +20,7 @@ export const BLASTER_OUTCOMES: WeaponOutcomes = {
         damageDelta: 2,
         injuries: [
           { who: "target", injury: "torn_tongue_injury", chance: 0.3 },
-          { who: "target", injury: "burst_nose_injury", chance: 0.3 },
+          { who: "target", injury: "broken_nose_injury", chance: 0.3 },
           { who: "target", injury: "open_air_brain_injury", chance: 0.3 },
           { who: "target", injury: "head_trauma_injury", chance: 0.3 },
         ],
@@ -195,7 +195,7 @@ export const BARE_HANDS_OUTCOMES: WeaponOutcomes = {
   hitOutcomes: [
     { weight: 15, log: "BARE_HANDS_SUCCESSFUL_HIT", effects: { skillMaxDamage: true } },
     { weight: 5, critical: true, log: "BARE_HANDS_PLUS_1_DAMAGE", effects: { damageDelta: 1, skillMaxDamage: true } },
-    { weight: 5, critical: true, log: "BARE_HANDS_TARGET_BURST_NOSE_TARGET_10_PERCENTS", effects: { skillMaxDamage: true, injuries: [{ who: "target", injury: "burst_nose_injury", chance: 0.1 }] } },
+    { weight: 5, critical: true, log: "BARE_HANDS_TARGET_BURST_NOSE_TARGET_10_PERCENTS", effects: { skillMaxDamage: true, injuries: [{ who: "target", injury: "broken_nose_injury", chance: 0.1 }] } },
   ],
   missOutcomes: [
     { weight: 30, log: "BARE_HANDS_FAILED_HIT" },

@@ -2,7 +2,7 @@ import { Fragment, memo, useCallback, useContext, useLayoutEffect, useRef, useSt
 import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
 import { Menu } from "@base-ui/react/menu";
-import { chatPageOf, jsonEqual, type CharacterId, type ChannelId, type ChatLine, type PlayerView, type ThreadId } from "@mush2/shared";
+import { chatPageOf, countInRanges, jsonEqual, type CharacterId, type ChannelId, type ChatLine, type PlayerView, type SeqRange, type ThreadId } from "@mush2/shared";
 import { pageItems, useChatPages } from "../chatPages.tsx";
 import { useMobile } from "../useMobile.ts";
 import { messageKey, useChatReadStore, useReadCount } from "../chatRead.ts";
@@ -58,6 +58,7 @@ function sameThread(a: ThreadProps, b: ThreadProps): boolean {
     jsonEqual(a.headKey, b.headKey) &&
     v.chat === w.chat &&
     v.chatCounts === w.chatCounts &&
+    v.chatUnheard === w.chatUnheard &&
     v.readChannels === w.readChannels &&
     v.chatChannels === w.chatChannels &&
     v.threads === w.threads &&
@@ -83,7 +84,7 @@ export const Thread = memo(function Thread({ view, channel, placeholder, onSend,
   const advance = useRef<(read: number) => void>(() => {});
   const marking = useReadMarking(channel, total, paging.latest, readable, advance);
   // After `useReadMarking`: its effect marks arrivals in view first, so this one sees them as read.
-  const divider = useUnreadDivider(channel, total, active && readable, live, view.you.id, paging);
+  const divider = useUnreadDivider(channel, total, active && readable, live, view.you.id, paging, view.chatUnheard?.[channel]);
   advance.current = divider.advance;
   const rows = readable && messages.length > 0;
   return (
@@ -172,7 +173,7 @@ function usePaging(view: PlayerView, channel: ChannelId) {
   const shown = page ?? last;
   const messages = older ? (fetched ?? []) : view.chat.filter((m) => m.channel === channel && chatPageOf(m.seq) === shown);
   const go = (to: number | null) => setPicked(to === null || to >= last ? null : Math.max(first, to));
-  return { page: shown, latest: page === null, first, last, newCount: page === null ? 0 : Math.max(0, total - read), messages, loading: older && !fetched, go };
+  return { page: shown, latest: page === null, first, last, newCount: page === null ? 0 : Math.max(0, total - read - countInRanges(view.chatUnheard?.[channel], read, total)), messages, loading: older && !fetched, go };
 }
 
 type Paging = ReturnType<typeof usePaging>;
@@ -257,11 +258,19 @@ function useReadMarking(channel: ChannelId, total: number, latest: boolean, read
  * marks the channel read locally, as the server does, so the divider doesn't come straight back. The bar shows while
  * the divider is out of sight: on an earlier page, or scrolled above the feed. With no read store nothing is placed.
  */
-function useUnreadDivider(channel: ChannelId, total: number, active: boolean, live: readonly ChatLine[], me: string, paging: Paging) {
+function useUnreadDivider(
+  channel: ChannelId,
+  total: number,
+  active: boolean,
+  live: readonly ChatLine[],
+  me: string,
+  paging: Paging,
+  unheard: readonly SeqRange[] | undefined,
+) {
   const store = useChatReadStore();
   const on = !!store && active;
   const [at, setAt] = useState<number | null>(null);
-  const place = () => (store ? dividerAt(store.read(channel), total, live, me) : null);
+  const place = () => (store ? dividerAt(store.read(channel), total, live, me, unheard) : null);
   // biome-ignore lint/correctness/useExhaustiveDependencies: placed when the channel opens, never moved as it is read.
   useEffect(() => {
     setAt(on ? place() : null);
@@ -278,7 +287,7 @@ function useUnreadDivider(channel: ChannelId, total: number, active: boolean, li
     setAt(null);
   }, [markAll]);
 
-  const placement = dividerPlacement(at, total, paging.page);
+  const placement = dividerPlacement(at, total, paging.page, unheard);
   // Whether the divider is on screen. True until an observer says otherwise (jsdom has none).
   const [inView, setInView] = useState(true);
   const el = useRef<HTMLLIElement | null>(null);

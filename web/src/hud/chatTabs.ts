@@ -14,17 +14,17 @@ export function tabOf(channel: ChannelId): TabId {
   return "features";
 }
 
-/** Unread per tab: each readable channel's count less the count read, summed by `tabOf`. */
-export function unreadByTab(view: Pick<PlayerView, "readChannels" | "chatCounts">, read: Readonly<ChatRead>): Record<TabId, number> {
+/** Unread per tab: each readable channel's count less the count read and what you couldn't hear, summed by `tabOf`. */
+export function unreadByTab(view: Pick<PlayerView, "readChannels" | "chatCounts" | "chatUnheard">, read: Readonly<ChatRead>): Record<TabId, number> {
   const counts: Record<TabId, number> = { room: 0, global: 0, threads: 0, features: 0, private: 0, mush: 0, graveyard: 0 };
-  for (const channel of view.readChannels) counts[tabOf(channel)] += unreadCount(view.chatCounts, read, channel);
+  for (const channel of view.readChannels) counts[tabOf(channel)] += unreadCount(view.chatCounts, read, channel, view.chatUnheard);
   return counts;
 }
 
 /** Total unread across all readable channels (#400). */
-export function totalUnread(view: Pick<PlayerView, "readChannels" | "chatCounts">, read: Readonly<ChatRead>): number {
+export function totalUnread(view: Pick<PlayerView, "readChannels" | "chatCounts" | "chatUnheard">, read: Readonly<ChatRead>): number {
   let total = 0;
-  for (const channel of view.readChannels) total += unreadCount(view.chatCounts, read, channel);
+  for (const channel of view.readChannels) total += unreadCount(view.chatCounts, read, channel, view.chatUnheard);
   return total;
 }
 
@@ -41,11 +41,11 @@ export function featureOf(channel: ChannelId): FeatureChannel | null {
 }
 
 /** Unread per feature, for the feature drop-down: each feature's own channel plus its shared entries (#400). */
-export function unreadByFeature(view: Pick<PlayerView, "readChannels" | "chatCounts">, read: Readonly<ChatRead>): Partial<Record<FeatureChannel, number>> {
+export function unreadByFeature(view: Pick<PlayerView, "readChannels" | "chatCounts" | "chatUnheard">, read: Readonly<ChatRead>): Partial<Record<FeatureChannel, number>> {
   const counts: Partial<Record<FeatureChannel, number>> = {};
   for (const channel of view.readChannels) {
     const feature = featureOf(channel);
-    const n = feature ? unreadCount(view.chatCounts, read, channel) : 0;
+    const n = feature ? unreadCount(view.chatCounts, read, channel, view.chatUnheard) : 0;
     if (feature && n > 0) counts[feature] = (counts[feature] ?? 0) + n;
   }
   return counts;

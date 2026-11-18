@@ -6,8 +6,8 @@
 // why it can't leak how far a body's previous mind had read (the reason `logSeen` restarts in `swapMinds`).
 // docs/plans/chat-pages.md, "Read state (#400)".
 
-import { readChannels } from "./chat.ts";
-import type { ChannelId, GameState, PlayerState } from "./types.ts";
+import { countInRanges, readChannels } from "./chat.ts";
+import type { ChannelId, GameState, PlayerState, SeqRange } from "./types.ts";
 
 /** Messages read per channel: the count read, so 3 means `seq` 0 to 2. Missing means none. */
 export type ChatRead = Partial<Record<ChannelId, number>>;
@@ -56,7 +56,17 @@ export function pruneChatRead(state: Readonly<GameState>, read: Readonly<ChatRea
   return Object.fromEntries(entriesOf(read).filter(([channel]) => state.chatSeq[channel] !== undefined)) as ChatRead;
 }
 
-/** Messages in `channel` not read yet: its count (`PlayerView.chatCounts`) less the count read, never below 0. */
-export function unreadCount(counts: Readonly<Partial<Record<ChannelId, number>>>, read: Readonly<ChatRead>, channel: ChannelId): number {
-  return Math.max(0, (counts[channel] ?? 0) - (read[channel] ?? 0));
+/**
+ * Messages in `channel` not read yet: its count (`PlayerView.chatCounts`) less the count read, never below 0, and less
+ * the ones after it you couldn't hear (`PlayerView.chatUnheard`: Damaged or Destroyed Ears), which never notify.
+ */
+export function unreadCount(
+  counts: Readonly<Partial<Record<ChannelId, number>>>,
+  read: Readonly<ChatRead>,
+  channel: ChannelId,
+  unheard?: Readonly<Partial<Record<ChannelId, readonly SeqRange[]>>>,
+): number {
+  const total = counts[channel] ?? 0;
+  const from = read[channel] ?? 0;
+  return Math.max(0, total - from - countInRanges(unheard?.[channel], from, total));
 }

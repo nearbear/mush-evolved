@@ -5,12 +5,12 @@
 // rate limits) is the server's job before these run.
 
 import { ITRACKIE_ITEM, itemsIn, isWorking } from "./items.ts";
-import { channelLimit } from "./modifiers.ts";
+import { channelLimit, isDeaf, isMute } from "./modifiers.ts";
 import { noITrackieNeeded } from "./comms.ts";
 import { cloneState, fail, dayOf, findPlayer, type ActionResult } from "./helpers.ts";
 import { dropChannelPlans, leavePlans } from "./plans.ts";
 import { CHAT_CHANNELS, GRAVEYARD_CHANNEL, MUSH_CHANNEL } from "./types.ts";
-import type { ChannelId, ChatMark, ChatMessage, ChatOutbox, GameState, PlayerId, PlayerState, PrivateChannelId, SharedPlanetId, SharedReportId, ThreadId } from "./types.ts";
+import type { ChannelId, ChatMark, ChatMessage, ChatOutbox, GameState, PlayerId, PlayerState, PrivateChannelId, SeqRange, SharedPlanetId, SharedReportId, ThreadId } from "./types.ts";
 
 /** Longest chat message the rules accept. Moderation trims before this. */
 /** A private channel's id from untrusted input, or null. */
@@ -50,6 +50,12 @@ export function pushChat(state: GameState, channel: ChannelId, message: Omit<Cha
   state.chat.push({ id: state.nextChatId++, seq, cycle: state.cycle, channel, ...message });
   // A checklist keeps its ticks beside the chat, starting from the boxes as typed (phase 2 of the plan).
   if (message.from === null) return;
+  // Whoever is deaf now never hears it (Damaged or Destroyed Ears; owner, 2026-11-17).
+  for (const p of state.players) {
+    if (p.id === message.from || !isDeaf(p)) continue;
+    const unheard = (p.unheard ??= {});
+    unheard[channel] = withSeq(unheard[channel] ?? [], seq);
+  }
   const tasks = taskLines(message.text);
   if (tasks.length > 0) {
     state.chatMarks[chatMarkKey(channel, seq)] = { from: message.from, tasks: tasks.map((t) => t.line), checked: tasks.filter((t) => t.ticked).map((t) => t.line) };
@@ -95,6 +101,33 @@ export function removeFromChannel(state: GameState, channelId: PrivateChannelId,
  * iTrackie, and a dead Mush also the Mush channel. Private channels are gone:
  * dying leaves them.
  */
+/**
+ * Whether `player` hears this message: anything but another player's message posted while they were deaf (Damaged or
+ * Destroyed Ears, `PlayerState.unheard`; owner 2026-11-17). Their own and the game's (system) messages always arrive.
+ */
+export function heardBy(player: Readonly<PlayerState>, m: Readonly<Pick<ChatMessage, "channel" | "seq">>): boolean {
+  return !inRanges(player.unheard?.[m.channel], m.seq);
+}
+
+/** `ranges` with `seq` added: it extends the last range when it follows on, so a deaf stretch stays one range. */
+function withSeq(ranges: readonly SeqRange[], seq: number): SeqRange[] {
+  const last = ranges.at(-1);
+  if (last && last[1] === seq) return [...ranges.slice(0, -1), [last[0], seq + 1]];
+  return [...ranges, [seq, seq + 1]];
+}
+
+/** Whether `seq` is in one of `ranges`. */
+export function inRanges(ranges: readonly SeqRange[] | undefined, seq: number): boolean {
+  return (ranges ?? []).some(([from, to]) => seq >= from && seq < to);
+}
+
+/** How many positions from `from` (inclusive) to `to` (exclusive) are in `ranges`. */
+export function countInRanges(ranges: readonly SeqRange[] | undefined, from: number, to: number): number {
+  let n = 0;
+  for (const [a, b] of ranges ?? []) n += Math.max(0, Math.min(b, to) - Math.max(a, from));
+  return n;
+}
+
 export function readChannels(state: Readonly<GameState>, player: Readonly<PlayerState>): ChannelId[] {
   if (player.alive) return chatChannels(state, player);
   if (state.phase !== "playing") return [];
@@ -133,6 +166,8 @@ export function sendChat(state: GameState, playerId: PlayerId, channel: ChannelI
   const p = findPlayer(state, playerId);
   if (!p) return { ok: false, error: "unknown_player" };
   if (!chatChannels(state, p).includes(channel)) return { ok: false, error: "cant_post" };
+  // Torn Tongue: no post in any channel (owner, 2026-11-17).
+  if (isMute(p)) return { ok: false, error: "cant_speak" };
   const body = text.trim();
   if (!body) return { ok: false, error: "empty_message" };
   if (body.length > MAX_CHAT_LENGTH) return { ok: false, error: "message_too_long" };
@@ -250,6 +285,8 @@ function channelCount(state: GameState, playerId: PlayerId): number {
 export function createChannel(state: GameState, playerId: PlayerId, rawName = "", members: readonly PlayerId[] = []): ActionResult {
   const p = findPlayer(state, playerId);
   if (!p || !p.alive || state.phase !== "playing") return fail("channel_forbidden");
+  // Torn Tongue: no new private channel either (owner, 2026-11-17).
+  if (isMute(p)) return fail("cant_speak");
   const name = rawName.trim();
   if (name.length > MAX_CHANNEL_NAME_LENGTH) return fail("channel_name_invalid");
   if (channelCount(state, playerId) >= channelLimit(state, p)) return fail("channel_limit_reached");
