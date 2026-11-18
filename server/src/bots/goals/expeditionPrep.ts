@@ -8,6 +8,12 @@ import type { BotMemory, Goal, GoalDef, GoalStep } from "./types.ts";
 export const EXPEDITION_PREP_PRIORITY = 73;
 
 const ICARUS = DEFAULT_CONFIG.expedition.room;
+const CRAFT = DEFAULT_CONFIG.expedition.craft;
+/**
+ * Cycles a crew bot waits aboard the docked Icarus for a takeoff before it gets off and gives up on the plan, so a
+ * launch that never comes (the Pilot died, ran out of AP, or was refused) doesn't keep it there for good.
+ */
+export const ICARUS_BOARD_WAIT_CYCLES = 3;
 const ROPE_TAGS: ReadonlySet<string> = new Set(["CAVE", "MOUNTAIN", "SISMIC_ACTIVITY"]);
 const COMPASS_TAGS: ReadonlySet<string> = new Set(["FOREST", "DESERT", "CAVE"]);
 
@@ -113,9 +119,17 @@ function stepPrep(view: PlayerView, memory: BotMemory, planId: string, slotIndex
   syncPrepMemory(view, memory);
   if (memory.expeditionPrep === null || memory.expeditionPrep.done) return { kind: "done" };
 
+  // Aboard the docked Icarus: wait for the takeoff, for a while (`waitingAboard`), then get off and give up.
+  if (view.you.room === CRAFT) {
+    if (waitingAboard(view, memory)) return { kind: "wait" };
+    memory.expeditionPrep.done = true;
+    const leave = find(view, "leave_icarus");
+    return leave ? act(leave) : { kind: "done" };
+  }
+
   const plan = view.plans.find((p) => p.id === planId);
   if (!plan) {
-    if (memory.expeditionPrep.ready && view.you.room === ICARUS && view.navigation.orbiting) return { kind: "wait" };
+    if (memory.expeditionPrep.ready && view.you.room === ICARUS && view.navigation.orbiting) return boardOrWait(view, memory);
     return { kind: "done" };
   }
 
@@ -147,9 +161,35 @@ function stepPrep(view: PlayerView, memory: BotMemory, planId: string, slotIndex
     memory.expeditionPrep.ready = true;
     const drop = dropITrackie(view);
     if (drop) return drop;
+    return boardOrWait(view, memory);
   }
 
   return { kind: "wait" };
+}
+
+/**
+ * In the bay, ready: board the Icarus (owner, 2026-11-17: whoever is aboard at takeoff is the crew) once the plan's
+ * author, who launches it, is in the bay or aboard too (or is dead or unknown), remembering the cycle; until then, or if boarding
+ * is refused (full, no spacesuit), wait in the bay as before boarding existed. Boarding only with the launcher at hand
+ * keeps the wait aboard (`ICARUS_BOARD_WAIT_CYCLES`) short; the launcher waits the cycle of its summons for the
+ * holders in the bay to board (`expeditionLaunch`).
+ */
+function boardOrWait(view: PlayerView, memory: BotMemory): GoalStep {
+  const board = find(view, "board_icarus");
+  if (!board || memory.expeditionPrep === null) return { kind: "wait" };
+  const author = memory.expeditionPrep.author;
+  const launcher = author === undefined ? undefined : view.players.find((p) => p.id === author);
+  if (launcher?.alive && launcher.room !== ICARUS && launcher.room !== CRAFT) return { kind: "wait" };
+  memory.expeditionPrep.boardedCycle = view.cycle;
+  return act(board);
+}
+
+/** A ready crew bot aboard the docked Icarus, still within `ICARUS_BOARD_WAIT_CYCLES` of boarding. */
+export function waitingAboard(view: PlayerView, memory: BotMemory): boolean {
+  const prep = memory.expeditionPrep;
+  if (prep === null || !prep.ready || prep.done === true) return false;
+  if (view.you.room !== CRAFT || !view.navigation.orbiting || view.expedition !== null) return false;
+  return view.cycle - (prep.boardedCycle ?? view.cycle) < ICARUS_BOARD_WAIT_CYCLES;
 }
 
 const GEAR_TO_DROP: readonly SharedItem[] = ["space_suit", "drill", "quad_compass", "white_flag", "rope"];
@@ -179,8 +219,9 @@ function recoverITrackieGoal(): Goal {
 
 /**
  * Claim an `onCall` slot on an open expedition plan, fetch needed gear from known rooms (`itemShare.ts`), walk to
- * `ICARUS` (or remain reachable), drop `itrackie` before takeoff to free an inventory slot, and recover it after
- * returning. Priority claimants (helpful skills for the shared planet) claim immediately; any fit bot claims after a
+ * `ICARUS` (or remain reachable), drop `itrackie` before boarding to free an inventory slot (nothing can be dropped
+ * aboard), board the Icarus once in orbit and wait aboard for the takeoff (`waitingAboard`), and recover the iTrackie
+ * after returning. Priority claimants (helpful skills for the shared planet) claim immediately; any fit bot claims after a
  * 1-cycle wait; ties break by turn order.
  */
 export const expeditionPrep: GoalDef = {
@@ -201,12 +242,18 @@ export const expeditionPrep: GoalDef = {
       return [recoverITrackieGoal()];
     }
 
-    if (memory.expeditionPrep?.ready && !memory.expeditionPrep.done && view.navigation.orbiting && view.expedition === null && view.you.room === ICARUS) {
+    if (
+      memory.expeditionPrep?.ready &&
+      !memory.expeditionPrep.done &&
+      view.navigation.orbiting &&
+      view.expedition === null &&
+      (view.you.room === ICARUS || view.you.room === CRAFT)
+    ) {
       return [
         {
           id: "expeditionPrep",
           key: `expeditionPrep:${memory.expeditionPrep.planId}`,
-          label: "Wait in the Icarus Bay for expedition takeoff", // i18n-ignore: model prompt text, not player-visible
+          label: "Board the Icarus and wait for the expedition takeoff", // i18n-ignore: model prompt text, not player-visible
           step: (v, m) => stepPrep(v, m, memory.expeditionPrep!.planId, null),
         },
       ];
@@ -221,6 +268,7 @@ export const expeditionPrep: GoalDef = {
         seenCycle: view.cycle,
         ready: false,
         expeditions: view.expeditions.length,
+        author: plan.author,
       };
     }
 

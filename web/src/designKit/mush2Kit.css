@@ -234,11 +234,6 @@
   border-radius: 6px;
   box-shadow: 0 0 6px var(--glow), inset 0 0 6px rgb(60 110 255 / 0.5);
 }
-.m2k-ramp-points {
-  position: absolute;
-  left: 0.5rem;
-  bottom: 0.5rem;
-}
 /* The kit's main column is 960px; the comparison needs the game's width. */
 .m2k main:has(#surfaces) {
   max-width: 1400px;

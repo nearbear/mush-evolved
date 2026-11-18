@@ -11,7 +11,7 @@ const config = DEFAULT_CONFIG;
 const LONGANE = patrolShip("PATROL_SHIP_A_0")!;
 const PASIPHAE = patrolShip("PATROL_SHIP_AA_1")!;
 const patrolTakeoff = (ship = LONGANE): Action => ({ type: "takeoff", equipment: interfaceId(ship) });
-const icarusTakeoff: Action = { type: "icarus_takeoff", equipment: "ICARUS:ICARUS_COMMAND" };
+const icarusTakeoff: Action = { type: "icarus_takeoff" };
 const workCore = (project: string): Action => ({ type: "project", equipment: "NEXUS_ROOM:NERON_CORE", project });
 
 const orbitedPlanet: Planet = {
@@ -59,7 +59,9 @@ describe("Takeoff thruster (PATROL_SHIP_LAUNCHER)", () => {
   });
 
   it("reduces Icarus expedition takeoff by 1 AP once complete, and spends the discounted AP", () => {
-    const s = pilotGame("ICARUS");
+    // Aboard the docked Icarus, suited for a planet with no Oxygen sector.
+    const s = pilotGame("ICARUS_CRAFT");
+    s.items.push({ id: "suit", type: "space_suit", at: { kind: "player", id: "p0" } });
     s.planets.p0 = [orbitedPlanet];
     s.navigation.orbit = orbitedPlanet.id;
     expect(option(s, "p0", icarusTakeoff)!.cost.ap).toBe(config.expedition.cost.ap);

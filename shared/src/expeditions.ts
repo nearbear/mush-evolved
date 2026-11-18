@@ -2,7 +2,7 @@
 // ship orbits a planet with unexplored sectors; everyone living in the bay goes, up to `maxCrew`. A landing event, then
 // up to `sectors` unexplored sectors drawn by their tag's `explo` weight, each with an event from its table.
 // Phase 2 (owner, 2026-11-07, #356): the crew is away over time, in the Icarus (`config.expedition.craft`, a room with
-// no doors). The landing is the first step, `stepMs` after takeoff, then one sector per `stepMs`; the server's `tick`
+// no doors). The landing happens at takeoff (owner, 2026-11-17), then one sector per `stepMs`; the server's `tick`
 // runs them (`nextDue`, queue.ts). Members see each event in their report as it happens. The crew is back in the bay
 // as the last sector resolves, or at once when every member is dead, with whatever is in the Icarus (loot, bodies).
 // Single player resolves it all at takeoff (`instantExpeditions`). If the ship jumps while the crew is out, they are
@@ -13,19 +13,24 @@
 // #214. Slice B: getting lost (the member stays on the planet, in a place of their own, and the planet gains a Lost
 // sector), finding them again, and their death when the ship leaves; a Tracker cancels Found dead. A member "with the
 // crew" is alive and in the Icarus (`withCrew`): the lost and the dead take no part in events. Slice C: gear. A
-// planet with no Oxygen sector needs a spacesuit, checked at takeoff: members without one stay in the Icarus and don't
-// explore (`explores`), and with nobody suited the expedition ends at once. The other gear changes which sectors are
+// planet with no Oxygen sector needs a spacesuit (boarding, below). The other gear changes which sectors are
 // picked (`pickSectors`), which events can happen (`cancelled`, `eventWeight`) or what they do. Phase 4, slice D
 // (#358): skills. Diplomat and Polymath cancel Fight in Intelligent life; Polymath also harvests as a Botanist; Shooter
 // and Centauri add strength (`fight`); each Sprinter adds a sector; a U-turn holder ends the expedition (`turnBack`);
-// a Traitor's secret Sabotage (`sabotage`) leaves only negative events from the next step on.
+// a Traitor's secret Sabotage (`sabotage`) leaves only negative events in the next sector; holders of either see
+// the next sector (`nextSectorFor`).
 // Phase 5 (owner, 2026-11-09, #359): the hold extension raises the crew cap (`maxCrew`), and a pilot flying a patrol
 // ship lands on the orbited planet alone (actions/land_on_planet.ts): an expedition like the Icarus's, half as long,
 // whose craft is the ship's room (`expeditionCraft`). One expedition at a time. The ship sits on the planet
 // (`PatrolShip.onPlanet`, out of the hunters' reach) and docks in its bay at the end; it stays there while its pilot is
 // lost, and is lost for good if they die first (death.ts).
+// Boarding (owner, 2026-11-17): the crew boards the docked Icarus one by one (actions/board_icarus.ts, a free action;
+// `boardRefusal`), only with a spacesuit unless the planet has an Oxygen sector, up to `maxCrew`; anyone aboard who can
+// fly launches from inside (actions/icarus_takeoff.ts), and the landing happens at once. Anyone whose suit stopped
+// working since boarding is put off at takeoff. Leaving orbit puts everyone aboard off (`disembarkAll`).
 // Pure: every draw goes through the seeded RNG.
-// The actions are actions/icarus_takeoff.ts and actions/land_on_planet.ts.
+// The actions are actions/board_icarus.ts, actions/leave_icarus.ts, actions/icarus_takeoff.ts and
+// actions/land_on_planet.ts.
 
 import { endPushToLeave } from "./actions/accommodate.ts";
 import { dock } from "./actions/land.ts";
@@ -35,14 +40,14 @@ import { FAST_EXPEDITION_STEP_MS, fastExpeditions } from "./cheats.ts";
 import { soil } from "./dirt.ts";
 import { rebelContacted } from "./comms.ts";
 import { contaminate } from "./infection.ts";
-import { CORPSE_ITEM, isWorking, itemsIn, removeItem, sameContainer, spawnInRoom } from "./items.ts";
+import { CORPSE_ITEM, afterArmor, isWorking, itemsIn, removeItem, sameContainer, spawnInRoom } from "./items.ts";
 import { logPrivate, logPublic } from "./log.ts";
 import { isTraveling } from "./navigation.ts";
 import { retargetNow } from "./hunters.ts";
 import { canFly, isLostPlace, lostPlace, PATROL_SHIPS, patrolShip, type PatrolShip } from "./patrol.ts";
 import { PLANET_TAGS, type PlanetTag } from "./planets.ts";
 import { projectDone } from "./projects.ts";
-import { roll, rollFloat, rollInt, rollShuffle, rollWeighted } from "./rng.ts";
+import { roll, rollFloat, rollInt, rollWeighted } from "./rng.ts";
 import { shipMax } from "./ship.ts";
 import { hasSkill } from "./skills.ts";
 import type { CreatureLoot, ExpeditionEvent, ExpeditionEventRule, ExpeditionReport, GameState, ItemState, Planet, PlayerState, RoomId } from "./types.ts";
@@ -75,10 +80,52 @@ export const hasUnexplored = (planet: Readonly<Planet>): boolean => planet.secto
 export const maxCrew = (state: Readonly<GameState>): number =>
   projectDone(state, "ICARUS_LARGER_BAY") ? state.config.expedition.largerBayCrew : state.config.expedition.maxCrew;
 
-/** Who goes: the launcher, then the others living in the bay in a random order, up to `maxCrew` in all. */
-export function pickCrew(state: GameState, launcher: PlayerState): PlayerState[] {
-  const others = state.players.filter((p) => p.id !== launcher.id && p.alive && p.room === launcher.room);
-  return [launcher, ...rollShuffle(state, others)].slice(0, maxCrew(state));
+/**
+ * Who is aboard the docked Icarus (owner, 2026-11-17): the living in its room while no Icarus expedition is away. They
+ * boarded it (actions/board_icarus.ts) and are the crew of its next takeoff.
+ */
+export const aboardIcarus = (state: Readonly<GameState>): PlayerState[] =>
+  icarusDocked(state) ? state.players.filter((p) => p.alive && p.room === state.config.expedition.craft) : [];
+
+/** Whether the Icarus is in its bay: not away on an expedition, and not lost. */
+export const icarusDocked = (state: Readonly<GameState>): boolean => !state.icarusLost && !(state.expedition !== null && state.expedition.ship === null);
+
+/**
+ * Why this player can't board the docked Icarus now, or null (owner, 2026-11-17): alive in the Icarus Bay, the Icarus
+ * docked, the ship orbiting a planet with an unexplored sector, room aboard (`maxCrew`), and a working spacesuit unless
+ * the planet has an Oxygen sector, so nobody forgets theirs.
+ */
+export function boardRefusal(state: Readonly<GameState>, p: Readonly<PlayerState>): string | null {
+  if (!p.alive) return "dead";
+  if (p.room !== state.config.expedition.room) return "not_in_bay";
+  if (!icarusDocked(state)) return state.icarusLost ? "icarus_lost" : "icarus_away";
+  const planet = orbitedPlanet(state);
+  if (!planet) return "not_in_orbit";
+  if (!hasUnexplored(planet)) return "explored";
+  if (aboardIcarus(state).length >= maxCrew(state)) return "icarus_full";
+  if (needsSpacesuit(planet) && !hasSpacesuit(state, p)) return "no_spacesuit";
+  return null;
+}
+
+/**
+ * Off the docked Icarus into its bay (owner, 2026-11-17): the player, with a public line in the bay unless `quiet`. Once
+ * nobody living is left aboard, whatever is on its floor (a body, say) goes onto the bay's, so nothing is stranded in a
+ * room nobody can reach. Mutates a cloned state.
+ */
+export function leaveIcarus(state: GameState, p: PlayerState, quiet = false): void {
+  const rules = state.config.expedition;
+  board(p, rules.room);
+  if (!quiet) logPublic(state, rules.room, "icarusLeft", { name: p.character });
+  if (aboardIcarus(state).length > 0) return;
+  for (const item of state.items) if (sameContainer(item.at, { kind: "room", id: rules.craft })) item.at = { kind: "room", id: rules.room };
+}
+
+/** The ship left the planet (owner, 2026-11-17): everyone aboard the docked Icarus is back in the bay, each told why. */
+function disembarkAll(state: GameState): void {
+  for (const p of aboardIcarus(state)) {
+    leaveIcarus(state, p, true);
+    logPrivate(state, p.id, "icarusDisembarked", {});
+  }
 }
 
 /** Where the crew of the expedition under way is: the patrol ship that landed, or the Icarus. */
@@ -117,12 +164,22 @@ export function pickSectors(state: GameState, planet: Readonly<Planet>, count = 
 export function runExpedition(state: GameState, launcher: PlayerState, ship?: PatrolShip): ExpeditionReport {
   const planet = orbitedPlanet(state)!;
   const rules = state.config.expedition;
-  const crew = ship ? [launcher] : pickCrew(state, launcher);
+  // The Icarus takes whoever boarded it (owner, 2026-11-17), the launcher first. A planet with no Oxygen sector: anyone
+  // aboard whose spacesuit stopped working since they boarded (green jelly, say) is put off in the bay, told why. The
+  // launcher was checked to have one (actions/icarus_takeoff.ts).
+  if (!ship && needsSpacesuit(planet)) {
+    for (const p of aboardIcarus(state)) {
+      if (hasSpacesuit(state, p)) continue;
+      leaveIcarus(state, p, true);
+      logPrivate(state, p.id, "icarusNoSpacesuit", { planet: planet.name });
+    }
+  }
+  const crew = ship ? [launcher] : [launcher, ...aboardIcarus(state).filter((p) => p.id !== launcher.id)];
   if (ship) {
     logPublic(state, launcher.room, "patrolPlanetLanding", { name: launcher.character, room: ship.id, planet: planet.name });
     state.patrolShips[ship.id]!.onPlanet = launcher.id;
     retargetNow(state, ship);
-  } else logPublic(state, launcher.room, "icarusTakeoff", { name: launcher.character, planet: planet.name });
+  } else logPublic(state, rules.room, "icarusTakeoff", { name: launcher.character, planet: planet.name });
 
   const report: ExpeditionReport = {
     id: `expedition-${state.nextExpeditionId++}`,
@@ -133,38 +190,38 @@ export function runExpedition(state: GameState, launcher: PlayerState, ship?: Pa
     ...(ship && { ship: ship.id }),
   };
   state.expeditions.push(report);
-  for (const p of crew) {
-    endPushToLeave(state, p);
-    if (!ship) board(p, rules.craft);
-  }
-  // A planet with no Oxygen sector, revealed or not: members without a working spacesuit stay in the Icarus (owner,
-  // 2026-11-08, #357), checked once, here.
-  const suitless = needsSpacesuit(planet) ? crew.filter((p) => !carries(state, p, rules.gear.spacesuit)) : [];
+  for (const p of crew) endPushToLeave(state, p);
   state.expedition = {
     report: report.id,
     planet: planet.id,
-    landed: false,
     sectors: [],
     nextAt: state.now + stepMs(state),
     // Items each member carried when they set out, for `deadKeepItems: false`.
     carried: Object.fromEntries(crew.map((p) => [p.id, itemsIn(state, { kind: "player", id: p.id }).map((i) => i.id)])),
-    suitless: suitless.map((p) => p.id),
     sabotaged: false,
+    sabotageNext: false,
     ship: ship?.id ?? null,
   };
-  for (const p of suitless) report.events.push({ sector: LANDING, kind: "noSpacesuit", who: p.character });
-  // Nobody can go out: the expedition ends at once, the AP spent (owner, 2026-11-08).
-  if (suitless.length === crew.length) {
-    report.events.push({ sector: LANDING, kind: "grounded" });
-    returnExpedition(state, false);
-    return report;
-  }
-  // Drawn once the explorers are known, as their gear changes the odds. Each Sprinter who explores adds a sector (owner, 2026-11-08, #358).
-  const sprinters = crew.filter((p) => explores(state, p) && hasSkill(p, "sprint")).length;
+  // Drawn at takeoff, as the crew's gear changes the odds. Each Sprinter adds a sector (owner, 2026-11-08, #358).
+  const sprinters = crew.filter((p) => hasSkill(p, "sprint")).length;
   const sectors = rules.sectors + sprinters * rules.sprinterSectors;
   state.expedition.sectors = pickSectors(state, planet, ship ? Math.floor(sectors / rules.patrol.sectorDivisor) : sectors);
-  if (state.config.instantExpeditions) while (state.expedition) expeditionStep(state);
+  // The landing happens at once (owner, 2026-11-17); the first sector a step later.
+  land(state, report, crew);
+  if (state.expedition.sectors.length === 0 || !crew.some((p) => withCrew(state, p))) returnExpedition(state);
+  else if (state.config.instantExpeditions) while (state.expedition) expeditionStep(state);
   return report;
+}
+
+/**
+ * The landing: its event, drawn from the LANDING table, or Nothing when it is safe (owner, 2026-11-08, 2026-11-15): an
+ * ungrounded living Pilot aboard, or the Antigrav propeller (Icarus only).
+ */
+function land(state: GameState, report: ExpeditionReport, crew: PlayerState[]): void {
+  const away = state.expedition!;
+  const ctx: Ctx = { state, crew, carried: away.carried, report, planet: planetById(state, away.planet), redraw: false };
+  const safe = crew.some((p) => withCrew(state, p) && canFly(p) && hasSkill(p, "pilot")) || (away.ship === null && projectDone(state, "ICARUS_ANTIGRAV_PROPELLER"));
+  report.events.push(resolve(ctx, LANDING, safe ? [] : state.config.expedition.events[LANDING]!));
 }
 
 /** Whether exploring the planet needs a spacesuit: it has no Oxygen sector, revealed or not (owner, 2026-11-08). */
@@ -174,9 +231,9 @@ export const needsSpacesuit = (planet: Readonly<Planet>): boolean => !planet.sec
 export const hasSpacesuit = (state: Readonly<GameState>, p: Readonly<PlayerState>): boolean => carries(state, p, state.config.expedition.gear.spacesuit);
 
 /**
- * The next step of the expedition under way: the landing, or the next sector (marked explored). Then the crew comes
- * back if that was the last one or nobody is left alive; otherwise the next step is `stepMs` later. Mutates a cloned
- * state; the caller checked there is one.
+ * The next sector of the expedition under way (marked explored). Then the crew comes back if that was the last one or
+ * nobody is left with the crew; otherwise the next step is `stepMs` later. Mutates a cloned state; the caller checked
+ * there is one.
  */
 export function expeditionStep(state: GameState): void {
   const away = state.expedition!;
@@ -185,17 +242,11 @@ export function expeditionStep(state: GameState): void {
   const members = () => report.members.map((id) => state.players.find((p) => p.id === id)!);
   const planet = planetById(state, away.planet);
   const ctx: Ctx = { state, crew: members(), carried: away.carried, report, planet, redraw: false };
-  if (!away.landed) {
-    away.landed = true;
-    // A safe landing (owner, 2026-11-08, 2026-11-15): an ungrounded living Pilot aboard, or the Antigrav propeller (Icarus only).
-    // The Pilot flies the Icarus, so one without a spacesuit still lands it.
-    const safe =
-      ctx.crew.some((p) => withCrew(state, p) && canFly(p) && hasSkill(p, "pilot")) ||
-      (away.ship === null && projectDone(state, "ICARUS_ANTIGRAV_PROPELLER"));
-    report.events.push(resolve(ctx, LANDING, safe ? [] : rules.events[LANDING]!));
-  } else if (planet) {
+  if (planet) {
     const sector = planet.sectors[away.sectors.shift()!]!;
     const event = resolve(ctx, sector.tag, rules.events[sector.tag] ?? []);
+    // A Traitor's Sabotage covers this one sector (owner, 2026-11-17).
+    away.sabotageNext = false;
     report.events.push(event);
     // Again: the step is used but the sector isn't explored, so a later expedition can draw it.
     if (event.kind !== "again") sector.explored = true;
@@ -208,8 +259,8 @@ export function expeditionStep(state: GameState): void {
     // The planet is gone (only possible once the ship has left it): nothing left to explore.
     away.sectors = [];
   }
-  // Back when the sectors are done, or nobody is left exploring (all dead, lost, or without a spacesuit).
-  if (away.sectors.length === 0 || !members().some((p) => explores(state, p))) returnExpedition(state);
+  // Back when the sectors are done, or nobody is left with the crew (all dead or lost).
+  if (away.sectors.length === 0 || !members().some((p) => withCrew(state, p))) returnExpedition(state);
   // The fast cheat counts from now, so a step that was due long ago doesn't set off a burst of overdue ones.
   else away.nextAt = fastExpeditions(state) ? Math.max(away.nextAt, state.now) + FAST_EXPEDITION_STEP_MS : away.nextAt + rules.stepMs;
 }
@@ -219,12 +270,11 @@ export function expeditionStep(state: GameState): void {
  * living member may come back dirty (`dirtyChance`). Each member gets a private line pointing at the report; nothing
  * public (owner, 2026-10-31). Mutates a cloned state.
  *
- * A patrol ship (owner, 2026-11-09, #359) docks in its bay with its pilot and cargo, as a landing does (`dock`). One
- * that never touched down (a U-turn before the landing) is back in flight; a pilot without a spacesuit never gets this
- * far (actions/land_on_planet.ts); one whose pilot is lost
- * stays on the planet; one whose pilot died is already gone (death.ts).
+ * A patrol ship (owner, 2026-11-09, #359) docks in its bay with its pilot and cargo, as a landing does (`dock`). A pilot
+ * without a spacesuit never gets this far (actions/land_on_planet.ts); one whose pilot is lost stays on the planet; one
+ * whose pilot died is already gone (death.ts).
  */
-function returnExpedition(state: GameState, landed = true): void {
+function returnExpedition(state: GameState): void {
   const away = state.expedition!;
   const rules = state.config.expedition;
   const report = state.expeditions.find((r) => r.id === away.report)!;
@@ -233,9 +283,7 @@ function returnExpedition(state: GameState, landed = true): void {
   state.expedition = null;
   if (ship) {
     const pilot = state.players.find((p) => p.id === report.members[0])!;
-    const shipState = state.patrolShips[ship.id]!;
-    if (!landed) shipState.onPlanet = null;
-    else if (pilot.alive && pilot.room === craft) {
+    if (pilot.alive && pilot.room === craft) {
       if (rollFloat(state) < rules.dirtyChance) soil(state, pilot);
       dock(state, pilot, ship);
     }
@@ -246,8 +294,8 @@ function returnExpedition(state: GameState, landed = true): void {
     const p = state.players.find((q) => q.id === id)!;
     if (!ship && p.alive && p.room === craft) {
       board(p, rules.room);
-      // A crew that never left (nobody had a spacesuit) or a ship with ICARUS_LAVATORY stays clean.
-      if (landed && !projectDone(state, "ICARUS_LAVATORY") && rollFloat(state) < rules.dirtyChance) soil(state, p);
+      // A ship with ICARUS_LAVATORY keeps its crew clean.
+      if (!projectDone(state, "ICARUS_LAVATORY") && rollFloat(state) < rules.dirtyChance) soil(state, p);
     }
     // A lost member isn't back: they stay on the planet (owner, 2026-11-08).
     if (!(p.alive && isLostPlace(p.room))) logPrivate(state, p.id, "expeditionReturned", { planet: report.planet, report: report.id });
@@ -262,8 +310,7 @@ function returnExpedition(state: GameState, landed = true): void {
 export function turnBack(state: GameState, player: Readonly<PlayerState>): void {
   const report = state.expeditions.find((r) => r.id === state.expedition!.report)!;
   report.events.push({ sector: U_TURN, kind: "uTurn", who: player.character });
-  // Turned back before the landing, the crew never set foot outside, so nobody comes back dirty.
-  returnExpedition(state, state.expedition!.landed);
+  returnExpedition(state);
 }
 
 /** The U-turn's report line's sector key: not a planet tag. */
@@ -273,21 +320,38 @@ export const U_TURN = "U_TURN";
 export const onExpedition = (state: Readonly<GameState>, p: Readonly<PlayerState>): boolean => state.expedition !== null && withCrew(state, p);
 
 /**
- * The Traitor's Sabotage (owner, 2026-11-08, #358): free, secret, once per expedition. From the next step on, each
- * sector draws only its `negative` events (Nothing if none is left). Nothing records it anywhere but the flag, which
- * no view carries. The action (actions/sabotage_expedition.ts) checked it may. Mutates a cloned state.
+ * The Traitor's Sabotage (owner, 2026-11-08, #358; 2026-11-17): free, secret, once per expedition. The next sector draws
+ * only its `negative` events (Nothing if none is left); the ones after it are drawn as usual. Nothing records it
+ * anywhere but the flags, which no view carries. The action (actions/sabotage_expedition.ts) checked it may. Mutates a
+ * cloned state.
  */
 export function sabotage(state: GameState): void {
   state.expedition!.sabotaged = true;
+  state.expedition!.sabotageNext = true;
+}
+
+/**
+ * The next sector's tag, for a member with U-turn or Traitor still with the crew (owner, 2026-11-17, as in eMush): only
+ * that one sector, only while it is next. Undefined for anyone else, or with no sector left.
+ */
+export function nextSectorFor(state: Readonly<GameState>, p: Readonly<PlayerState>): PlanetTag | undefined {
+  const away = state.expedition;
+  if (!away || !onExpedition(state, p) || !(hasSkill(p, "fast_backward") || hasSkill(p, "traitor"))) return undefined;
+  const report = state.expeditions.find((r) => r.id === away.report);
+  if (!report?.members.includes(p.id)) return undefined;
+  const next = away.sectors[0];
+  return next === undefined ? undefined : planetById(state, away.planet)?.sectors[next]?.tag;
 }
 
 /**
  * The Daedalus jumped (travel or leaving orbit) while a crew is out (owner, 2026-11-07, #356). With Magnetic return
  * (`AUTO_RETURN_ICARUS`) the crew is back at once, the sectors left skipped, as on a normal return; NERON says so to
  * everyone. Without it the living members die, the Icarus is lost with everything in it (items, loot, bodies), and no
- * expedition can take off again (`icarusLost`); NERON tells everyone. Mutates a cloned state; nothing if none is out.
+ * expedition can take off again (`icarusLost`); NERON tells everyone. Anyone sitting in the docked Icarus is put off in
+ * its bay first (owner, 2026-11-17). Mutates a cloned state; nothing if none is out.
  */
 export function strandExpedition(state: GameState): void {
+  disembarkAll(state);
   strandCrew(state);
   abandonLost(state);
 }
@@ -332,12 +396,6 @@ export const lostPlayers = (state: Readonly<GameState>): PlayerState[] => state.
 /** Whether a member is still with the crew: alive and in the Icarus, not lost on the planet. */
 export const withCrew = (state: Readonly<GameState>, p: Readonly<PlayerState>): boolean => p.alive && p.room === expeditionCraft(state);
 
-/**
- * Whether a member explores: still with the crew and not left in the Icarus for want of a spacesuit. Only they take
- * part in events, and only their items count (owner, 2026-11-08, #357).
- */
-export const explores = (state: Readonly<GameState>, p: Readonly<PlayerState>): boolean =>
-  withCrew(state, p) && !(state.expedition?.suitless.includes(p.id) ?? false);
 
 /** Whether the player carries a working copy of this item type. */
 const carries = (state: Readonly<GameState>, p: Readonly<PlayerState>, type: string): boolean =>
@@ -350,16 +408,15 @@ const crewCarries = (state: Readonly<GameState>, type: string): boolean => {
   const report = state.expeditions.find((r) => r.id === away.report)!;
   return report.members.some((id) => {
     const p = state.players.find((q) => q.id === id)!;
-    return explores(state, p) && carries(state, p, type);
+    return withCrew(state, p) && carries(state, p, type);
   });
 };
 
-/** When the expedition under way is back, if nothing ends it early: one `stepMs` per step left after the next. */
+/** When the expedition under way is back, if nothing ends it early: one `stepMs` per sector left after the next. */
 export function expeditionReturnAt(state: Readonly<GameState>): number | null {
   const away = state.expedition;
   if (!away) return null;
-  const steps = (away.landed ? 0 : 1) + away.sectors.length;
-  return away.nextAt + (steps - 1) * stepMs(state);
+  return away.nextAt + (away.sectors.length - 1) * stepMs(state);
 }
 
 /** Time between steps: the config's, or 2 seconds under the fastExpeditions development cheat. */
@@ -367,7 +424,7 @@ const stepMs = (state: Readonly<GameState>): number => (fastExpeditions(state) ?
 
 interface Ctx {
   state: GameState;
-  /** Every member, as the step began (the dead, the lost and the suitless included: filter with `explores`). */
+  /** Every member, as the step began (the dead and the lost included: filter with `withCrew`). */
   crew: PlayerState[];
   carried: Record<string, string[]>;
   report: ExpeditionReport;
@@ -380,8 +437,8 @@ interface Ctx {
 function resolve(ctx: Ctx, sector: PlanetTag | typeof LANDING, table: readonly ExpeditionEventRule[]): ExpeditionEvent {
   const { state } = ctx;
   // A cancelled event can't be drawn: the sector rolls among its others, or is Nothing if none is left (owner, 2026-11-08).
-  // Sabotaged by a Traitor: only the negative events can be drawn (owner, 2026-11-08, #358).
-  const sabotaged = state.expedition?.sabotaged ?? false;
+  // Sabotaged by a Traitor: only the negative events can be drawn, in the next sector only (owner, 2026-11-08, #358; 2026-11-17).
+  const sabotaged = state.expedition?.sabotageNext ?? false;
   const weights = table.map((e) => (cancelled(ctx, sector, e) || (sabotaged && !e.negative) ? 0 : eventWeight(ctx, sector, e)));
   if (weights.every((w) => w === 0)) return { sector, kind: "nothing" };
   const rule = table[rollWeighted(state, weights)]!;
@@ -389,7 +446,7 @@ function resolve(ctx: Ctx, sector: PlanetTag | typeof LANDING, table: readonly E
   const kind = rule.kind === "disease" ? "nothing" : rule.kind;
   const event: ExpeditionEvent = { sector, kind };
   const rules = state.config.expedition;
-  const living = () => ctx.crew.filter((p) => explores(state, p));
+  const living = () => ctx.crew.filter((p) => withCrew(state, p));
   const amount = rule.amount ?? 0;
   switch (kind) {
     case "nothing":
@@ -498,7 +555,7 @@ function resolve(ctx: Ctx, sector: PlanetTag | typeof LANDING, table: readonly E
 function cancelled(ctx: Ctx, sector: string, rule: ExpeditionEventRule): boolean {
   const { state } = ctx;
   const { gear } = state.config.expedition;
-  const explorers = ctx.crew.filter((p) => explores(state, p));
+  const explorers = ctx.crew.filter((p) => withCrew(state, p));
   switch (rule.kind) {
     case "foundDead":
       return explorers.some((p) => hasSkill(p, "hunt"));
@@ -614,7 +671,7 @@ function fight(ctx: Ctx, event: ExpeditionEvent, creature: string): void {
   const foe = state.config.expedition.creatures[creature]!;
   const strength = foe.strength.length === 1 ? foe.strength[0]! : foe.strength[rollInt(state, foe.strength.length)]!;
   const weapons = state.config.weapons.types;
-  const members = ctx.crew.filter((p) => explores(state, p));
+  const members = ctx.crew.filter((p) => withCrew(state, p));
   const gear = members.flatMap((p) => itemsIn(state, { kind: "player", id: p.id })).filter((i) => weapons[i.type] !== undefined && isWorking(i));
   const grenades = gear.filter((i) => weapons[i.type]!.consumed);
   let crew = members.length;
@@ -678,7 +735,8 @@ const usable = (state: Readonly<GameState>, item: Readonly<ItemState>): boolean 
   state.config.weapons.types[item.type]!.charges === undefined || (item.charges ?? 0) > 0;
 
 /**
- * Damage to members, each taking theirs as one hit, less `survivalReduction` with the Survival skill. Notes it on the
+ * Damage to members, each taking theirs as one hit, less `survivalReduction` with the Survival skill and, in a fight,
+ * less Plastenite Armor's absorb (both stack; owner, 2026-11-17). Notes it on the
  * event. A member who dies leaves a body in the Icarus, which comes back with it (death.ts); without `deadKeepItems`,
  * what they set out with is lost (the items `killPlayer` dropped on the floor are taken away).
  */
@@ -686,7 +744,8 @@ function hurt(ctx: Ctx, event: ExpeditionEvent, amounts: Map<PlayerState, number
   const { state } = ctx;
   const rules = state.config.expedition;
   for (const [p, amount] of amounts) {
-    const hp = Math.max(0, amount - (hasSkill(p, "survival") ? rules.survivalReduction : 0));
+    const survived = Math.max(0, amount - (hasSkill(p, "survival") ? rules.survivalReduction : 0));
+    const hp = cause === "exploration_combat" ? afterArmor(state, p, survived) : survived;
     (event.hurt ??= []).push({ name: p.character, hp });
     damage(state, p, hp, cause);
     if (!p.alive) died(ctx, event, p);

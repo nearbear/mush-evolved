@@ -4278,6 +4278,43 @@ Owner specified Syphilis (20-32 cycles, STT/DTT spread, -3 max morale and HP, +2
 - **Decided by the owner:** `ceasefire` (skill `diplomacy`) costs 1 AP (`ceasefire.cost.ap`), once per game per character (`ceasefireUsed` stays with the body on Transfer; Polymath/`skilful` does not get it), blocked in preselection and when a ceasefire is already active in the room. Public room log (`ceasefire`) and public room status (`roomCeasefire` to the living in that room) for 3 cycles (`ceasefire.durationCycles`); stays active in the room even if the diplomat leaves or dies, and blocks all `aggressive`-tagged actions there (`attack`, `punch`, `interrogate`, `throw_out`, `spike`, `body_transfer`, `demoralize`, `guard`).
 - **What worked:** Putting the ceasefire gate in `Action.check` (`refusedCeasefire`) covered every `aggressive`-tagged action in one place without per-action edits, and `storedRooms.test.ts` caught adding `game.ceasefires` to `shared/tests/storedShape.ts`.
 
+### 2026-11-17 — Disable hacker kit `hack` during pre-selection
+- **Decision (owner):** Disable `hack` during pre-selection with the reason shown to the player, since titles are not assigned until Mush selection.
+- **Implementation:** `HackAction.validate` returns `IN_PRESELECTION`, `shared/src/rules.ts` includes `hack` + `IN_PRESELECTION` in unaffordable options with `lacks: ["preselection"]` (without exposing other `IN_PRESELECTION` actions as disabled buttons), and `DisabledActionButton` renders `actions.lacksPreselection` (en/fr/es).
+
+## 2026-11-17 — Fix bot hydropot goal (`setOutPots`) for random storage spawns
+
+- Updated `server/src/bots/itemShare.ts` to include `tree_pot` in `SHARED_ITEMS` (empty pots outside `gardenRoom` only, so planted or already-gardened pots are not advertised).
+- Updated `server/src/bots/goals/setOutPots.ts` to replace the hardcoded `STORAGE_FRONT` (`POT_STORAGE`) with `roomsHolding(memory, TREE_POT_ITEM)` (excluding `gardenRoom`) first, falling back to checking the nearest unchecked room in `DEFAULT_CONFIG.merchants.storageRooms` (`POT_STORAGES`) once per game via `storageCheckedKey(room)`.
+- Updated `server/tests/goals.test.ts` to remove the `904d8a76` workaround that forced pots into `STORAGE_FRONT`, test natural storage placement across cycles, and verify `itemShare` reporting and fetching for empty non-garden pots.
+
+### 2026-11-17 — Distinct starting blueprints
+- **Decision (owner):** Draw starting `buildsWeights` blueprints in `createGame` without replacement, excluding already-placed starting blueprints (`SOFA`, `GRENADE`), matching eMush's `getBlueprintFromDaedalus` / `getRandomElementsFromProbaCollection`.
+- **What worked:** Filtering `Object.entries(it.buildsWeights)` against a `drawnBlueprints` set in `shared/src/rules.ts` (falling back to all entries if a custom config exhausts the pool) kept the change localized and deterministic; `shared/tests/ship.test.ts` verified all 6 starting blueprints are distinct across 50 seeds.
+
+## 2026-11-17: Rocket launcher outcomes no longer hit the whole room
+
+- **Problem:** the rocket launcher was an untargeted area weapon, so outcomes eMush writes for one target (ROCKETTED instant kill, "2 random wounds") applied to everyone in the room; a probe killed 25% of full-HP victims in one shot.
+- **Decision (owner):** follow eMush. The rocket launcher is aimed at one roommate; only the grenade stays untargeted. `WeaponStats.area` became `area?: true` plus a separate `selfDamage`, and `applyOutcomeEffects` routes each effect by its `who`: target, splash (every other living person in the room, the target included), or attacker.
+- **What worked:** checking the eMush `SplashDamageAll` handler with the clean-room tool before choosing showed the original's weapon has a primary target, which turned an open "who gets the kill?" question into a clear two-option ask.
+
+### 2026-11-17 — ID card: amber edge all the way around
+- **Request (owner):** the ID card's amber divider should run all the way around the card.
+- **Implementation:** `.id-card` in `web/src/styles/self-hud.css` keeps its dark `--gold-edge` rim as the inner line and adds a `--gold-mid` line and a dark outer line with chained 1px drop-shadows. These follow the cut corner, as `card.css`'s amber variant already does. The level divider already reaches the card edge, so its gold meets the ring's.
+- **Follow-up (owner):** HP and morale are no longer spaced evenly. `.id-vitals` is a subgrid of the card's columns, so HP starts at the card's left edge and morale lines up with AP/MP right of the upright divider. The bars are centred between the level divider and the card's foot (a 5px top padding, with the divider moved to whole pixels). `StatInfo` now always shows `value/max` after the stat's name, not only on phones. `CompactResourceChips` drops its popover when every resource fits (three or fewer). It is then a plain labelled row, as the phone grid is when nothing is cut.
+- **Follow-up (owner):** an amber divider now runs along the faction band's lower edge (`.id-band::after`, placed on the card because the band clips its overflow), meeting the ring at both sides. The phone nameplate gets the same edge, drawn with `box-shadow` rings instead of the desktop's drop-shadow `filter`. The phone card is square, and a filter on it would also outline the clock, which overlays the band; the owner wants the two kept separate. The landscape stripe's row gap went from 0 to 2px so its divider doesn't overlap the row under it.
+- **Follow-up (owner):** the desktop ID card's extra resources (and its "…") now use the phone's dark chips (`stat-chip resource-cell`) in place of bare icon + count. The unused `.resource-chip-part` rules and the squashing `.resource-stack > [aria-hidden]` rule are gone from `top-bar.css`.
+- **Follow-up (owner):** the resource chips on both ID cards now have the terminal background with the iTrackie feed's faint row line as their border, in dark ink. That line became a token, `--terminal-rule`, now also used by `itrackie.css`. The phone's AP/MP/HP/morale chips keep the dark look.
+- **Correction (owner):** the chip border is `--terminal-header-bg` (the terminal title-bar blue), not the iTrackie feed's faint rule; the `--terminal-rule` token is reverted. The look moved to the base `.stat-chip` rule (terminal background, title-bar blue border, dark ink), so the phone's AP/MP/HP/morale chips match the resource chips on both layouts.
+
+## 2026-11-17: Stat and resource chip colours swapped
+
+- Owner asked for the chips' fill to take their old border colour (the terminal title-bar blue, `--terminal-header-bg`) and for the border to take the iTrackie feed's same-cycle row rule (`rgb(23 27 92 / 0.12)`). Both chip kinds share `.stat-chip` in `web/src/styles/top-bar.css`, so it was a two-line change there.
+
+## 2026-11-17: Chip rule token, portrait edge, phone portrait opens Inspect
+
+- The iTrackie feed's same-cycle row rule (`rgb(23 27 92 / 0.12)`) became `--terminal-rule` in `tokens.css`, used by the feed, the stat/resource chips' border and now the ID portrait's border (desktop and phone, replacing the gold-edge ink).
+- On phones the top bar portrait was a popover with the faction's goal; it is now a button (`SelfPortrait` in `PlayerSummary.tsx`) that selects you and switches to the Inspect panel, as the desktop ID card's portrait already did. The faction-goal popover, its CSS and its now-unused locale strings (`faction.about`, `faction.*.goal`, en/fr/es) were removed.
 ## 2026-11-17: `talking` action tag and Torn Tongue
 
 Added a `talking` ActionTag (Fiery speech, Boring speech, Chitchat, Comfort) and gave Torn Tongue its effect: a `mute` modifier flag that `Action.check` uses to refuse any `talking` action (as Ceasefire does for `aggressive`), and that `sendChat` uses to refuse posts in every channel (error `mute`, localized en/fr/es). What worked: the tag seam from issue 30 made this a one-line check instead of a list of action types.
@@ -4304,3 +4341,57 @@ Busted Arm Joint: +2 AP on actions that already cost AP (not moves, as Burnt Han
 ## 2026-11-18: Bruised Shoulder, Broken Shoulder, Mashed Foot
 
 Bruised Shoulder: -1 max health, shots x0.9. Broken Shoulder: -2 max health, shots x0.8 (both `isShot`, relative as decided for Busted Arm Joint), and a new `noHeavy` modifier flag: `take` refuses a heavy item (`too_heavy`), and the injury's `onPick` drops any carried heavy item into the room with the public "dropped" line (also on the upgrade from Bruised). Mashed Foot: +1 MP per move (`movement` fold), -1 max health, -3 max MP. These were the last stubs, so `modifiers/combat_injuries.ts` is gone.
+## 2026-11-17: repairDoor bot no longer swings between a door's two sides
+
+- **Bug (from review of 1994a3d6):** a bot standing beside a reported broken door it couldn't repair (Rubella, or after one refused repair ended `repairDoor:here`) planned a walk to the door's other side, then from there back again, about 32 moves a cycle. The single `repairDoor:here` key also meant one ended repair blocked every other broken door in the room.
+- **Fix:** keys are per door (`repairDoor:here:<door>`, `repairDoor:go:<door>`), and the walk skips any door with the bot already on one of its sides, since the other side offers the same repair. Regression tests for Rubella, an ended repair, and two broken doors in one room; they fail on the old goal.
+- **What worked:** reasoning from the plan function alone found the loop; checking the new tests against the old file confirmed they catch it.
+## 2026-11-17: Expeditions: boarding the Icarus, instant landing, next-sector sight, one-sector Sabotage
+
+- **What:** six slices, planned in `docs/plans/expedition-boarding.md` and built in the `icarus-boarding` worktree. The rules come first: `board_icarus`, `leave_icarus`, takeoff from inside, the spacesuit recheck at takeoff, the instant landing, a Sabotage that covers only the next sector, and `PlayerView.expedition.next` for U-turn and Traitor holders. Then the en/fr/es locales, a temporary `IcarusPanel` while docked aboard, bots that board and then launch (with a `leaveIcarus` goal), tests, and docs. `STATE_VERSION` 121 (`upgradeTo121`).
+- **What worked:** a handoff plan detailed enough for a fresh session to pick up each slice. Two test helpers, `aboard()` to board everyone and then take off and `why()` to read a refusal code, cut the failing expedition tests from 70 to 24 at once. The survival harness showed the bots' boarding didn't regress (seeds 1-12, same endings).
+- **What needed correction:** the owner corrected an earlier reading: Sabotage was recorded on 2026-11-08 as covering "every sector from then on", but it covers the next sector only. A crew that boarded as soon as it reached the bay timed out before the Pilot arrived (survival seed 11), so crew now wait for the plan's author. The leak check found that boarding's spacesuit check reveals, for free, whether a planet has a hidden Oxygen sector. The owner accepted that leak.
+- **Flake:** one model-bot backoff test in `server/tests/GameRoom.test.ts` failed once under load and passed when rerun.
+
+## 2026-11-17: resolveConfig returns a deep-frozen config
+
+- Follow-up to 9c01b3da: `DEFAULT_CONFIG` was deep-frozen, but `resolveConfig`'s own top-level object (and the parts it builds from overrides: pre-selection, cheat-room rooms/equipment) wasn't, though clones share `state.config`. Wrapped the result in `deepFreeze`; a config test asserts it. Hardening only: nothing wrote to it, and the full suite passed unchanged, which confirmed that.
+
+### 2026-11-17: "Implement Old Faithful" turned out to be done already
+
+Asked to implement the machine gun (Old Faithful), Claude checked the code against the eMush spec (`npm run emush -- spec old_faithful`) before writing anything. Stats, hit and miss tables, heaviness, blueprint, starting draw, Trash Load, locales and tests were all in place, so no code was written. What worked: checking what existed before planning, which avoided duplicating a finished feature. The only change was one stale sentence in `implemented-rules.md` that still said nothing made Lizaro or Old Faithful.
+
+## 2026-11-17: Ship resource tooltips explain gain, loss and 0
+
+- **Asked:** tooltips on the four ship resources (oxygen, fuel, hull, plasma shield) saying how each is gained, lost, and what happens at 0.
+- **Done:** each resource's popover in `ShipResources.tsx` (`ResourceInfo`) now lists three lines under "Name: value/max", keys `shipResources.info.<id>.{gain,loss,zero}` in en/fr/es. Text written from the code, not the wiki: oxygen (plants daily, expeditions, capsules returned / per-cycle burn, broken tank leaks, capsules taken / a random crew member suffocates each cycle), fuel (expeditions, capsules returned / capsules taken for the combustion chamber / no capsules, so no travel once the chamber is empty), hull (metal-scrap repair / hunters and asteroids after the shield, fires, rough patrol ship manoeuvres / ship destroyed, Mush win), shield (BIOS-on regen / its share of hits, bigger with the Plasma shield project / hull takes full hits, also when switched off).
+- **Choices:** no numbers in the text (they come from `config`, which the client doesn't have, and would go stale); projects other than Plasma shield (Oxygenated ducts, Armoured corridors) left out to keep it short.
+- **Worked / needed correction:** grepping every write to `state.ship.*` gave the full list of sources and sinks; fr/es are drafts (no `agy` for a second review).
+
+## 2026-11-17: fuelPlanet cheat
+
+Added a `fuelPlanet` dev cheat: switching it on creates a planet with 20 known Hydrocarbon sectors for the player and warps the ship into its orbit (the same `jump` + `arriveShip` the easyTravel warp uses). While it stays on, the cheater's actions unexplore that planet's sectors, so it never runs out — a fixed count with a refill instead of a huge sector list the planet UI would have to render. First draft put the warp in `cheats.ts`, which imported `actions/travel.ts` and made a module cycle (`moduleLoad.test.ts` caught it); the warp moved to `actions/warp_to_planet.ts`.
+
+## 2026-11-17: Plastenite Armor
+
+- **Decision (owner, from eMush and eMushpedia):** an unbroken armor in inventory absorbs 1 damage from non-critical punches and weapon hits (targeted and area) and from expedition fights, stacking with Survival; at most 1 for several armors; crits, instant kills, self-damage and non-combat damage go through. A fully absorbed hit logs a new public "only found their protections" line.
+- **What worked:** the clean-room `emush spec` on the upstream functional tests (AttackCest, HitActionCest, FightEventHandlerCest) gave the crit bypass, the 0 floor and the FOUND_PROTECTIONS log, which the wiki confirmed; the four open points went to the owner in one question.
+- **What needed correction:** the first expedition test assumed a seed would hurt each member by more than 2; rewritten to compare per member against the same seed without armor. Running `git stash` to check whether a failing server test was ours also briefly stashed other sessions' uncommitted work in the shared checkout (restored by `stash pop`); don't use stash in a shared checkout.
+
+## 2026-11-17: Split GameRoom.test.ts by describe group
+
+- `server/tests/GameRoom.test.ts` (2,600 lines, ~9.3 s of tests in one worker) is now five files: `GameRoom.test.ts` (connections, leaks, input, cheats, chat, timed actions, Transfer, persistence), `GameRoom.bots.test.ts` (bots and single player), `GameRoom.joining.test.ts` (cycle clock and pre-selection), `GameRoom.accounts.test.ts` (accounts, plans, finished games, running ships) and `GameRoom.replay.test.ts` (replay history, R2 copy, chat read state, reclamation). Test bodies are byte-for-byte unchanged; the shared helpers moved to `server/tests/gameRoomHarness.ts`.
+- `vi.mock` is hoisted only in test files, so each file keeps its own `vi.mock("partyserver", …)`, and the harness imports `GameRoom` statically (it gets the mocked module because the test file's mock is in place first). The `resolveConfig` mock and `configBump` stay in `GameRoom.test.ts`, the only file that uses them.
+- The five files run in ~8 s wall time instead of ~21 s for the old file. The slowest is now bots + single player (6.4 s, single player alone is 4.4 s); `SLOW_ALLOWED` moved to it (9.5 s). Splitting single player into its own file would balance it further.
+- Correction: a first pass ran `npx prettier`, which isn't the project's formatter (Biome is) and was fetched on the fly; files were regenerated and formatted with Biome. The model-bot backoff test (#114) still flakes about 1 in 3 runs, before and after the split.
+
+## 2026-11-17: Flaky model-backoff bot test
+
+The #114 backoff test in `server/tests/GameRoom.bots.test.ts` failed about 1 run in 3. Logging the stored inputs showed a model bot's item-sharing chat line (`server/src/bots/itemShare.ts`), which a bot posts on its first turn without a model call; the game seed is random per run, so it only fired when a model bot started next to a shared item. An earlier note had blamed load, which was wrong. Fix: the test's `byModelBots()` counts only `action` inputs, matching how the chat tests already skip item lines. Passed 8 runs in a row.
+
+## 2026-11-17: Icarus panel redesign, step 1 (podiums, launch bar, Leave under the minimap)
+
+- The owner asked for the docked Icarus to look like the patrol cockpit: a bottom-centre TechnoBox with a big Launch expedition button (as Shoot), Leave the Icarus as a small button under the minimap, and the character picker's podiums in the middle, one per seat (4, or 6 with the larger bay).
+- Found on the way: the Icarus panel reused the `patrol-cockpit` class, whose CSS hides the room corner, so the minimap was hidden aboard the Icarus. It now has its own `icarus-cabin` class and stylesheet (`styles/icarus.css`).
+- The view had no seat count, so `PlayerView.icarusSeats` (`maxCrew`, public since the project is) was added rather than hardcoding 4/6 in the client. The podium CSS moved from `lobby.css` to `styles/podium.css` with a `Podium` component shared by both screens.
+- Interpretation calls to confirm: whoever is aboard stands on a podium (a `pick-tile` that selects them, replacing the old name buttons); the away state uses the same layout, with the planet, countdown and Read the report in the bar; a patrol ship's landing shows one podium. No visual check was run (the play skill is user-triggered); the 9rem/7rem top padding that keeps podiums clear of the ID card and minimap is an estimate.

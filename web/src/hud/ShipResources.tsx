@@ -1,5 +1,5 @@
 import { Popover } from "@base-ui/react/popover";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import { doorRooms, type PlayerView } from "@mush2/shared";
 import { SHIP_RESOURCE_ICONS } from "../art/assets.ts";
 import { useNames } from "../i18n/names.ts";
@@ -83,6 +83,7 @@ export function ShipResources({
                     {`${name}: ${value}`}
                     {id === "fires" && <AlertList kind="fire" total={alerts.fires} reports={alerts.reports} />}
                     {id === "alerts" && <AlertList kind="equipment" total={alerts.broken} reports={alerts.reports} />}
+                    {(id === "oxygen" || id === "fuel" || id === "hull" || id === "plasmaShield") && <ResourceInfo id={id} />}
                   </Popover.Popup>
                 </Popover.Positioner>
               </Popover.Portal>
@@ -106,6 +107,25 @@ export function ShipResources({
               <TitleChip entry={title} preselection={preselection} />
             </li>
           ))}
+    </ul>
+  );
+}
+
+/** How one of the ship's four resources is gained and lost, and what happens at 0 (rules: ship.ts and the modules it names). */
+function ResourceInfo({ id }: { id: "oxygen" | "fuel" | "hull" | "plasmaShield" }) {
+  // Each line is one whole sentence with its label ("Gained:", "Lost:", "At 0:") in a <b> tag, so translators keep the word order.
+  const bold = { b: <strong /> };
+  return (
+    <ul className="alert-list resource-info">
+      <li>
+        <Trans i18nKey={`shipResources.info.${id}.gain`} components={bold} />
+      </li>
+      <li>
+        <Trans i18nKey={`shipResources.info.${id}.loss`} components={bold} />
+      </li>
+      <li>
+        <Trans i18nKey={`shipResources.info.${id}.zero`} components={bold} />
+      </li>
     </ul>
   );
 }

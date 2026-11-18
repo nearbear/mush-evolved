@@ -5,11 +5,11 @@
 // a hard-coded one. Only bots parse the lines, and only this format; a player can post a false one and mislead them
 // (accepted, as with shared planets). Types and rooms are ids (the bots' language is #95).
 
-import { SHIP_ROOMS, type PlayerView, type RoomId } from "@mush2/shared";
+import { SHIP_ROOMS, TREE_POT_ITEM, type PlayerView, type RoomId } from "@mush2/shared";
 import type { BotMemory, BotSocial } from "./goals/types.ts";
 
 /** The item types bots report. A goal that needs another type shared adds it here. Extinguishers: #429; expedition gear: space_suit, rope, quad_compass, white_flag, drill. */
-export const SHARED_ITEMS = ["metal_scraps", "extinguisher", "space_suit", "rope", "quad_compass", "white_flag", "drill"] as const;
+export const SHARED_ITEMS = ["metal_scraps", "extinguisher", "space_suit", "rope", "quad_compass", "white_flag", "drill", TREE_POT_ITEM] as const;
 export type SharedItem = (typeof SHARED_ITEMS)[number];
 
 const ROOM_IDS: ReadonlySet<string> = new Set(SHIP_ROOMS.map((r) => r.id));
@@ -70,8 +70,10 @@ export function observeItems(view: PlayerView, memory: BotMemory): BotSocial | n
   if (!ROOM_IDS.has(room)) return null;
   let post: BotSocial | null = null;
   for (const type of SHARED_ITEMS) {
-    // A broken one isn't worth crossing the ship for (it can't be used until repaired).
-    const present = view.roomItems.some((i) => i.type === type && !i.broken);
+    // A broken one isn't worth crossing the ship for (it can't be used until repaired); planted or already-gardened pots stay put.
+    const present = view.roomItems.some(
+      (i) => i.type === type && !i.broken && (type !== TREE_POT_ITEM || (!i.plant && room !== view.config.gardenRoom)),
+    );
     setIn(items.rooms, type, room, present);
     if (post === null && view.chatChannels.includes("global") && present !== (items.said.get(type)?.has(room) ?? false)) {
       setIn(items.said, type, room, present);

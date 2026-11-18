@@ -1,4 +1,4 @@
-import { Action, type ActionCost, type ActionVisibility, isString } from "./action.ts";
+import { Action, IN_PRESELECTION, type ActionCost, type ActionVisibility, isString } from "./action.ts";
 import { EQUIPMENT_TYPES, isEquipmentEnabled } from "../equipment.ts";
 import { HACKER_KIT_ITEM, isWorking, itemsIn } from "../items.ts";
 import { logPrivate } from "../log.ts";
@@ -33,6 +33,7 @@ export class HackAction extends Action<HackActionData> {
   }
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: HackActionData): string | null {
+    if (state.preselection) return IN_PRESELECTION;
     if (!hasWorkingKit(state, player)) return "no_hacker_kit";
     const equip = (state.equipment[player.room] ?? []).find((e) => e.id === target.equipment);
     if (!equip) return "cant_hack";

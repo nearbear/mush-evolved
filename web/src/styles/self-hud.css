@@ -1,4 +1,4 @@
-/* Self HUD (SelfHud): your portrait and stats over the room view's top-left corner, AP and MP in its bottom-left, desktop only. The resource chips are shared with the phone top bar. The item zones are in inventory.css. */
+/* Self HUD (SelfHud): your portrait and stats over the room view's top-left corner, desktop only. The resource chips are shared with the phone top bar. The item zones are in inventory.css. */
 
 .resource {
   display: flex;
@@ -57,12 +57,11 @@
   image-rendering: pixelated;
 }
 /*
- * Over the room view. Top-left: your ID card (UI coherence step 7), with HP and morale at half size along its foot. The card is light card stock, like the iTrackie: light surfaces are your own things, dark ones the ship.
- * Bottom-left: AP and MP standing up, with the action queue beside them. The scene around them stays usable.
+ * Over the room view's top-left corner: your ID card (UI coherence step 7), with half-size stat bars under the band (see
+ * .id-card). The card is light card stock, like the iTrackie: light surfaces are your own things, dark ones the ship. The scene around it stays usable.
  */
 .room-view {
-  --hud-card: 56px; /* the bottom row's height, which the tip card clears (tips.css) */
-  --id-card: 8rem; /* the ID card's height; the fire notice goes under it */
+  --hud-card: 56px; /* the bottom row's height (the action queue), which the tip card clears (tips.css) */
 }
 .self-hud-top {
   position: absolute;
@@ -73,7 +72,9 @@
 }
 /*
  * The card: one cut corner (top right) like a keycard. The fill (card.css's --card-fill) is the faction band over the
- * iTrackie's pale stock. Its top (band, portrait, fields) is the button that opens you in Inspect; HP and morale sit under it.
+ * iTrackie's pale stock. Under the band, three sections split by the clock's dividers: identity top left (the portrait and
+ * fields, the button that opens you in Inspect), action top right (AP, MP and the resources), health across the bottom
+ * (HP and morale).
  */
 .id-card {
   --band: 15px;
@@ -86,31 +87,44 @@
   position: relative;
   flex: none;
   box-sizing: border-box;
-  width: 10.5rem;
-  min-height: var(--id-card);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  padding-bottom: var(--space-2);
+  min-width: 10.5rem;
+  display: grid;
+  grid-template-columns: auto auto;
+  grid-template-rows: calc(var(--band) + 1px) auto auto; /* as tall as its content, no taller */
+  grid-template-areas:
+    "band band"
+    "open points"
+    "vitals vitals";
+  justify-content: start;
+  align-items: start;
+  column-gap: var(--space-3);
+  row-gap: var(--space-2);
+  padding: 0 var(--space-2) var(--space-2);
   color: var(--text);
+  /*
+   * The edge matches the dividers: the dark rim is the inner line, then a gold line and a dark one outside it, each 1px,
+   * drawn by chained drop-shadows so they follow the cut corner (as card.css's amber variant does). The level divider's
+   * gold meets the ring's.
+   */
+  filter: drop-shadow(1px 0 0 var(--gold-mid)) drop-shadow(-1px 0 0 var(--gold-mid)) drop-shadow(0 1px 0 var(--gold-mid))
+    drop-shadow(0 -1px 0 var(--gold-mid)) drop-shadow(1px 0 0 var(--gold-edge)) drop-shadow(-1px 0 0 var(--gold-edge))
+    drop-shadow(0 1px 0 var(--gold-edge)) drop-shadow(0 -1px 0 var(--gold-edge)) drop-shadow(0 1px 3px var(--panel-shadow));
 }
 .id-card.mush {
   --id-faction: var(--mush);
 }
 /* Not a plain button, so it drops the button art; the card behind it is the look. */
 .id-card .id-open {
-  flex: 1 0 auto;
+  grid-area: open;
   box-sizing: border-box;
-  width: 100%;
+  width: auto;
   height: auto;
   margin: 0;
-  padding: 0 var(--space-2);
+  padding: 0;
   background: none;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  grid-template-rows: calc(var(--band) + 1px) 1fr;
-  column-gap: var(--space-2);
-  row-gap: var(--space-2);
+  display: flex;
+  align-items: start;
+  gap: var(--space-2);
   color: inherit;
   font: inherit;
   text-align: left;
@@ -118,7 +132,7 @@
 }
 /* Tiny tracked caps across the band, in the outline's dark ink. */
 .id-band {
-  grid-column: 1 / -1;
+  grid-area: band;
   align-self: center;
   padding-top: 1px;
   padding-right: var(--space-3); /* clear of the cut corner */
@@ -132,6 +146,30 @@
   white-space: nowrap;
   text-overflow: ellipsis;
 }
+/*
+ * The band's lower edge: a divider like the others, from rim to rim, its gold meeting the card's amber ring. It is
+ * placed on the card (the band itself clips its overflow), its top dark line over the band's last row. The upright
+ * divider runs up into it. The phone card (.nameplate, top-bar.css) has one too, under its overlaid clock.
+ */
+.id-band::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(var(--band) - 1px);
+  height: 3px;
+  pointer-events: none;
+  background:
+    linear-gradient(var(--gold-mid), var(--gold-mid)) center / 100% 1px no-repeat,
+    linear-gradient(var(--gold-edge), var(--gold-edge)) center / 100% 3px no-repeat;
+}
+.id-card .id-band::after {
+  top: var(--band); /* the card's fill starts 1px down, inside its rim */
+}
+.nameplate .id-band::after {
+  left: -1px; /* over the border, so the gold meets the ring outside it */
+  right: -1px;
+}
 .id-portrait {
   position: relative;
   align-self: start;
@@ -140,25 +178,15 @@
   height: 44px;
   display: grid;
   place-items: center;
-  background: #0d0e2e;
-  border: 1px solid var(--gold-edge);
+  background: var(--terminal-header-bg); /* a terminal's title bar (terminal.css) */
+  border: 1px solid var(--terminal-rule);
 }
 .id-card .avatar {
   width: 32px;
   height: 32px;
   image-rendering: pixelated;
 }
-/* Your faction's icon in a small faction-coloured frame, pinned to the portrait's bottom-right corner. */
-.id-faction {
-  position: absolute;
-  right: -6px;
-  bottom: -6px;
-  padding: 1px;
-  background: #0d0e2e;
-  border: 1px solid var(--id-faction);
-  image-rendering: pixelated;
-}
-/* Labelled fields: a tiny muted caption over each value. */
+/* The name under a tiny muted caption, then any titles you hold (nothing when you hold none). */
 .id-fields {
   display: flex;
   flex-direction: column;
@@ -177,7 +205,7 @@
   line-height: 1.2;
   overflow-wrap: anywhere;
 }
-.id-value + .id-caption {
+.id-titles {
   margin-top: var(--space-1);
 }
 .id-name {
@@ -194,27 +222,77 @@
   outline: 2px solid var(--id-faction);
   outline-offset: 2px;
 }
-/* HP and morale along the card's foot, at half the size they had beside it: 1x sprite pixels, dark ink on the pale stock. */
-.id-vitals {
+/* Half the top bar's size (1x sprite pixels), dark ink on the pale stock: action (AP, MP and the resources) in a column right of identity, health (HP and morale) in one row across the foot, under the columns above. */
+.id-points {
+  grid-area: points;
+  position: relative;
+  align-self: stretch;
   display: flex;
   flex-direction: column;
   align-items: start;
   gap: 2px;
-  padding: 0 var(--space-2);
 }
-.id-vitals .pip-bar {
+.id-vitals {
+  grid-area: vitals;
+  position: relative;
+  /* The card's own columns: HP lines up with the portrait, morale with AP and MP right of the upright divider. */
+  display: grid;
+  grid-template-columns: subgrid;
+  align-items: center;
+  /* Centred between the level divider and the card's foot: 2px under the divider plus this matches the 7px of stock under the bars. */
+  padding-top: 5px;
+}
+/*
+ * The dividers, drawn like the clock's (top-bar.css's .clock-divider): gold between two dark lines, 3px across. The
+ * upright one runs from the band down to the level one, which crosses the card between its rims. Each sits in the
+ * middle of its grid gap.
+ */
+.id-points::before,
+.id-vitals::before {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+}
+.id-points::before {
+  left: calc(-0.5 * var(--space-3) - 1.5px);
+  top: calc(-1 * var(--space-2));
+  bottom: calc(-0.5 * var(--space-2));
+  width: 3px;
+  background:
+    linear-gradient(var(--gold-mid), var(--gold-mid)) center / 1px 100% no-repeat,
+    linear-gradient(var(--gold-edge), var(--gold-edge)) center / 3px 100% no-repeat;
+}
+.id-vitals::before {
+  left: calc(-1 * var(--space-2));
+  right: calc(-1 * var(--space-2));
+  top: calc(-0.5 * var(--space-2) - 1px); /* whole pixels: 3px across, half a pixel under the gap's middle */
+  height: 3px;
+  background:
+    linear-gradient(var(--gold-mid), var(--gold-mid)) center / 100% 1px no-repeat,
+    linear-gradient(var(--gold-edge), var(--gold-edge)) center / 100% 3px no-repeat;
+}
+.id-card .pip-bar {
   --s: 1px;
   gap: 2px;
+  min-height: 13px; /* the heart and face's height, so the two columns' rows line up */
 }
-.id-vitals .pip-icon {
+.id-card .pip-icon {
   margin-right: 1px;
 }
-.id-vitals .pip-icon.big {
+.id-card .pip-icon.big {
   height: 13px; /* 1x the 11x13 heart and face */
   width: auto;
 }
+.id-card .pip-label {
+  min-width: 2.5ch; /* AP and MP's bars start together */
+  margin-right: 0;
+  justify-content: start;
+  color: var(--muted);
+  font-size: 0.65rem;
+  line-height: 1;
+}
 /* The value after the bar; two digits wide so the bars don't shift as it changes. */
-.id-vitals .pip-bar .sub {
+.id-card .pip-bar .sub {
   min-width: 2ch;
   margin-left: var(--space-1);
   font-size: 0.7rem;
@@ -225,16 +303,31 @@
 .pip-icon {
   image-rendering: pixelated;
 }
-/* The resource stack loses its own card: it is at the bottom of the AP/MP one, under a rule. */
-.self-points > .resource-stack {
-  padding: var(--space-1) 0 0;
+/* Your other resources in a row under MP, left to right, as the phone card's chips (top-bar.css's .stat-chip and .resource-cell); the row itself has no card. */
+.id-points > .resource-stack {
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: start;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0;
   background: none;
   border: 0;
-  border-top: 1px solid var(--panel-rim);
   border-radius: 0;
   box-shadow: none;
+  color: var(--text);
+  font-size: 0.75rem;
+  text-shadow: none;
 }
-/* AP/MP and the action queue, bottom-aligned side by side. Only the cards take clicks. */
+/* Nothing to open when every resource shows (CompactResourceChips): a plain row. */
+.id-points > .resource-stack[role="group"] {
+  cursor: default;
+}
+.id-points > .resource-stack:focus-visible {
+  outline: 2px solid var(--id-faction);
+  outline-offset: 2px;
+}
+/* The action queue. Only the cards take clicks. */
 .room-bottom-left {
   position: absolute;
   left: 0.5rem;
@@ -249,32 +342,6 @@
 .room-bottom-left > * {
   pointer-events: auto;
 }
-.self-points {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  position: relative;
-  padding: var(--space-2) var(--space-1) var(--space-1);
-  --cut-tl: 6px;
-  --cut-tr: 6px;
-}
-.self-points-bars {
-  display: flex;
-  gap: 4px;
-}
-/*
- * Both gauges stretch to the taller one's height (a taller AP gauge: Noise Reducer, Lethargy). The labels stay at the top and
- * each bar, with its value, drops to the bottom, so the bars share a bottom line.
- */
-.self-points .pip-bar.vertical .pip-frame {
-  margin-top: auto;
-}
-.self-points .pip-label,
-.self-points .pip-bar .sub {
-  color: #fff;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
-}
-
 .player-summary {
   display: flex;
   align-items: center;

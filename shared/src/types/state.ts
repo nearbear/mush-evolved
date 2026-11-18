@@ -309,7 +309,7 @@ export interface ExpeditionEvent {
   hurt?: { name: CharacterId; hp: number }[];
   /** Members who died here, by character. */
   died?: CharacterId[];
-  /** Who got lost (lost), was found alive (found) or dead (foundDead), stays in the Icarus without a spacesuit (noSpacesuit), or turned back (uTurn), by character. */
+  /** Who got lost (lost), was found alive (found) or dead (foundDead), stayed in the Icarus without a spacesuit (noSpacesuit, old reports only), or turned back (uTurn), by character. */
   who?: CharacterId;
   /** An Accident the victim was spared by an item they carry (a rope), by character and item type. */
   avoided?: { name: CharacterId; item: string };
@@ -332,22 +332,21 @@ export interface ExpeditionReport {
 }
 
 /**
- * An expedition away (expeditions.ts): its report (`ExpeditionReport.id`), the planet (by id), whether it has landed,
- * the sectors still to explore (indices, in order, drawn at takeoff), and when the next step happens (server ms).
- * `carried` is what each member set out with, by item id, for `deadKeepItems: false`. `suitless` are the members who
- * stay in the Icarus for want of a spacesuit on a planet with no Oxygen sector, fixed at takeoff: they don't explore.
- * `sabotaged` once a Traitor aboard used their Sabotage.
+ * An expedition away (expeditions.ts), landed at takeoff: its report (`ExpeditionReport.id`), the planet (by id), the
+ * sectors still to explore (indices, in order, drawn at takeoff), and when the next one happens (server ms). `carried`
+ * is what each member set out with, by item id, for `deadKeepItems: false`. `sabotaged` once a Traitor aboard used
+ * their Sabotage; `sabotageNext` until the sector it covers is resolved.
  */
 export interface ActiveExpedition {
   report: string;
   planet: string;
-  landed: boolean;
   sectors: number[];
   nextAt: number;
   carried: Record<PlayerId, string[]>;
-  suitless: PlayerId[];
-  /** A Traitor sabotaged it (owner, 2026-11-08, #358): from the next step on, only negative events. Never sent. */
+  /** A Traitor sabotaged it (owner, 2026-11-08, #358): once per expedition. Never sent. */
   sabotaged: boolean;
+  /** The next sector is sabotaged (owner, 2026-11-17): it draws only negative events. Never sent. */
+  sabotageNext: boolean;
   /**
    * The patrol ship that landed, by its room id, for a pilot's solo landing (owner, 2026-11-09, #359); null for the
    * Icarus. Its room is the craft the crew is in while away (`expeditionCraft`).

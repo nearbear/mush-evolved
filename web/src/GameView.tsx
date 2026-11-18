@@ -2,7 +2,7 @@
 // the server decides what is legal and sends it in view.actions. No socket either: see GameScreen.
 
 import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
-import { CHEAT_ROOM, CORPSE_ITEM, SUPPORT_DRONE_ITEM, doorId, doorOtherRoom, isLostPlace, legalIn, type Action, type BotPause, type CharacterId, type Cheat, type GameClientMessage, type KubeOpId, type PlayerView, type RoleCheat, type RoomId, type Spot, type Target } from "@mush2/shared";
+import { CHEAT_ROOM, CORPSE_ITEM, ICARUS_CRAFT, SUPPORT_DRONE_ITEM, doorId, doorOtherRoom, isLostPlace, legalIn, type Action, type BotPause, type CharacterId, type Cheat, type GameClientMessage, type KubeOpId, type PlayerView, type RoleCheat, type RoomId, type Spot, type Target } from "@mush2/shared";
 import { useTranslation } from "react-i18next";
 import { Hint } from "./hud/IconButton.tsx";
 import { ActionQueue } from "./hud/ActionQueue.tsx";
@@ -16,12 +16,13 @@ import { Announcer } from "./hud/Announcer.tsx";
 import { ITrackie } from "./hud/ITrackie.tsx";
 import { PatrolCockpit } from "./hud/PatrolCockpit.tsx";
 import { IcarusPanel } from "./hud/IcarusPanel.tsx";
+import { ActionButton } from "./hud/ActionButton.tsx";
 import { LostPanel } from "./hud/LostPanel.tsx";
 import { PeekBar } from "./hud/PeekBar.tsx";
 import { TerminalDialog } from "./hud/TerminalDialog.tsx";
 import { EndScreen } from "./hud/EndScreen.tsx";
 import { BodyTakenDialog } from "./hud/BodyTakenDialog.tsx";
-import { SelfHud, SelfPoints } from "./hud/SelfHud.tsx";
+import { SelfHud } from "./hud/SelfHud.tsx";
 import { TipCard } from "./hud/TipCard.tsx";
 import { resolveTarget } from "./hud/targets.ts";
 import { TopBar } from "./hud/TopBar.tsx";
@@ -157,8 +158,11 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
 
   const { you } = view;
   const reachable = new Set(legalIn(view).flatMap((a) => (a.type === "move" ? [a.to] : [])));
+  // Away with an expedition, or aboard the docked Icarus (owner, 2026-11-17): both show the Icarus panel.
+  const inIcarus = view.expedition?.report !== undefined || you.room === ICARUS_CRAFT;
   /** The room view shows your room's scene (not death, the patrol cockpit, a lost place or Icarus), so it gets the name plate. */
-  const inRoom = you.alive && !(view.patrolShip && view.expedition?.report === undefined) && !isLostPlace(you.room) && view.expedition?.report === undefined;
+  const leaveIcarus = inIcarus ? view.actions.find((o) => o.action.type === "leave_icarus") : undefined;
+  const inRoom = you.alive && !(view.patrolShip && view.expedition?.report === undefined) && !isLostPlace(you.room) && !inIcarus;
   const occupant = (p: { id: string; isBot: boolean; character: CharacterId; statuses: string[]; busy?: Bar; lying?: string; spot?: Spot; pushedBy?: string }): Occupant => {
     const busy = p.id === you.id && you.current ? { bar: you.current, label: names.action(you.current.action.type) } : p.busy && { bar: p.busy };
     return {
@@ -223,6 +227,10 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
         onRoleCheat={(role: RoleCheat) => post({ type: "roleCheat", role })}
         onCheatRoom={Object.hasOwn(view.rooms, CHEAT_ROOM) && view.you.room !== CHEAT_ROOM ? () => post({ type: "cheatRoom" }) : undefined}
         onLeaveShip={() => post({ type: "leaveShip" })}
+        onInspectSelf={() => {
+          select({ kind: "player", id: you.id });
+          setPanel("inspect");
+        }}
       />
       {!mobile && transport && <div className="game-transport">{transport}</div>}
 
@@ -239,12 +247,13 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
               <PatrolCockpit view={view} ship={view.patrolShip} layout={layout} onAction={act} />
             ) : isLostPlace(you.room) ? (
               <LostPanel view={view} onShareReport={readOnly ? undefined : (report, text) => post({ type: "shareReport", report, text })} />
-            ) : view.expedition?.report !== undefined ? (
+            ) : inIcarus ? (
               <IcarusPanel
                 view={view}
-                expedition={view.expedition}
-                  selected={target}
+                expedition={view.expedition?.report !== undefined ? view.expedition : null}
+                selected={target}
                 onSelect={select}
+                onAction={act}
                 onShareReport={readOnly ? undefined : (report, text) => post({ type: "shareReport", report, text })}
               />
             ) : layout ? (
@@ -296,10 +305,9 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
             {you.alive && <RoomList view={view} layout={layout} reachable={reachable} onSelect={(target) => { select(target); setFocusActions((n) => n + 1); }} onMove={move} quiet={readOnly} />}
             {mobile && <ShipOverlay view={view} />}
             {!mobile && you.alive && <SelfHud view={view} onInspect={() => select({ kind: "player", id: you.id })} />}
-            {/* Bottom-left: AP and MP (desktop), then the action queue beside them. */}
+            {/* Bottom-left: the action queue. */}
             {you.alive && (
               <div className="room-bottom-left">
-                {!mobile && <SelfPoints view={view} />}
                 <ActionQueue view={view} onClear={readOnly ? undefined : () => post({ type: "clearQueue" })} />
               </div>
             )}
@@ -344,6 +352,12 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
                 burningRooms={view.burningRooms}
                 brokenDoors={view.brokenDoors}
               />
+              {/* Aboard the docked Icarus (owner, 2026-11-17): Leave the Icarus, small, under the map. */}
+              {leaveIcarus && (
+                <ActionButton view={view} option={leaveIcarus} onAction={act} className="room-corner-action">
+                  {names.action(leaveIcarus.action.type)}
+                </ActionButton>
+              )}
             </div>
           </div>
         </div>

@@ -37,6 +37,7 @@ export function SampleTopBar({ view, ...rest }: { view: PlayerView } & Partial<P
       onCheat={noop}
       onRoleCheat={noop}
       onLeaveShip={noop}
+      onInspectSelf={noop}
       {...rest}
     />
   );

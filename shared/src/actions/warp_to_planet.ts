@@ -1,5 +1,6 @@
 import { Action, isString } from "./action.ts";
-import { astroTerminalsHere, planetsOf } from "../planets.ts";
+import { astroTerminalsHere, freePositions, generatePlanet, planetsOf, type PlanetPosition } from "../planets.ts";
+import { FUEL_PLANET_SECTORS, fuelPlanetOf } from "../cheats.ts";
 import type { GameState, PlayerState } from "../types.ts";
 import { arriveShip } from "../navigation.ts";
 import { jump } from "./travel.ts";
@@ -44,4 +45,29 @@ export class WarpToPlanetAction extends Action<WarpToPlanetActionData> {
 
 function canWarp(state: Readonly<GameState>, player: Readonly<PlayerState>): boolean {
   return player.cheats.includes("easyTravel") && !player.isBot && state.navigation.orbit === null && state.navigation.arriving === null;
+}
+
+/**
+ * The fuelPlanet cheat switched on: a new planet of FUEL_PLANET_SECTORS known Hydrocarbon sectors, the player's, and the
+ * ship warped into its orbit at once, as the easyTravel warp above does: from orbit or mid-travel too, the
+ * other planets are lost and half the hunters follow. Nothing when already orbiting one. Mutates a cloned state.
+ */
+export function cheatFuelPlanet(state: GameState, p: PlayerState): void {
+  if (state.phase !== "playing" || !p.alive || fuelPlanetOf(state, p)) return;
+  let position: PlanetPosition | undefined = freePositions(state)[0];
+  if (!position) {
+    // Every spot is taken: free the nearest one ahead.
+    position = { direction: state.navigation.heading, distance: state.config.astro.distance.min };
+    const spot = position;
+    for (const owner of Object.keys(state.planets)) {
+      state.planets[owner] = state.planets[owner]!.filter((planet) => planet.direction !== spot.direction || planet.distance !== spot.distance);
+    }
+  }
+  const [planet, rng] = generatePlanet(state.rng, `planet-${state.nextPlanetId++}`, position, { min: 2, max: 2 });
+  state.rng = rng;
+  planet.sectors = Array.from({ length: FUEL_PLANET_SECTORS }, () => ({ tag: "HYDROCARBON" as const, known: true }));
+  state.planets[p.id] = [...planetsOf(state, p.id), planet];
+  state.navigation.heading = planet.direction;
+  jump(state, p, planet.distance);
+  arriveShip(state);
 }

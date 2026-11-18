@@ -10,8 +10,8 @@ import type { PlayerView } from "@mush2/shared";
 export type Stat = "ap" | "mp" | "hp" | "morale";
 
 /**
- * `children` is the stat's own display (a pip bar or a chip); the whole of it opens the card. `bar` (phones, whose chips
- * show only the value) stands up beside the text, with the capacity after the name.
+ * `children` is the stat's own display (a pip bar or a chip); the whole of it opens the card, which shows the amount and
+ * capacity after the name. `bar` (phones, whose chips show only the value) stands up beside the text.
  */
 export function StatInfo({ stat, view, value, max, bar, children }: { stat: Stat; view: PlayerView; value: number; max: number; bar?: ReactNode; children: ReactNode }) {
   const { t } = useTranslation();
@@ -36,11 +36,9 @@ export function StatInfo({ stat, view, value, max, bar, children }: { stat: Stat
             <div>
               <strong>
                 {t(`stat.name.${stat}`)}
-                {bar && (
-                  <span className="stat-info-amount">
-                    {value}/{max}
-                  </span>
-                )}
+                <span className="stat-info-amount">
+                  {value}/{max}
+                </span>
               </strong>
               <ul>
                 {lines.map((line) => (

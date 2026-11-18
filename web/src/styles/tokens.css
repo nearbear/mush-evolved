@@ -19,6 +19,7 @@
   /* Terminal colors */
   --terminal-bg: #c2f3fc; /* also the iTrackie card (itrackie.css) */
   --terminal-header-bg: #a6eefb; /* a terminal's title bar, down to the tab line (terminal.css) */
+  --terminal-rule: rgb(23 27 92 / 0.12); /* the line between a feed's rows within one cycle (itrackie.css); the stat chips' and portrait's edge */
   --terminal-font: consola, monospace;
   /* Gold: selection outlines, glows, highlighted map cells. */
   --highlight: #f5c542;

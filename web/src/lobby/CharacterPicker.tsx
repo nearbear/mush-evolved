@@ -3,8 +3,9 @@ import { Tabs } from "@base-ui/react/tabs";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CHARACTERS, CHARACTER_SKILLS, DIFFICULTIES, type CharacterId, type Difficulty } from "@mush2/shared";
-import { STAR_ICON, characterImage, skillIcon, standingSprite } from "../art/assets.ts";
+import { STAR_ICON, characterImage, skillIcon } from "../art/assets.ts";
 import { DialogHeader } from "../hud/DialogHeader.tsx";
+import { Podium } from "../hud/Podium.tsx";
 import { SkillPopover } from "../hud/SkillSlots.tsx";
 import { useNames } from "../i18n/names.ts";
 import { useMobile } from "../useMobile.ts";
@@ -178,10 +179,7 @@ function Crew({
             disabled={!free(c.id)}
             onClick={() => onPick(c.id)}
           >
-            <span className="pod-figure" aria-hidden="true">
-              <span className="pod-podium" />
-              <span className="pod-sprite" style={standingSprite(c.id)} />
-            </span>
+            <Podium character={c.id} />
             <span className="pod-character-name">{c.given}</span>
             {!free(c.id) && <span className="pod-character-taken">{t("lobby.taken")}</span>}
           </button>

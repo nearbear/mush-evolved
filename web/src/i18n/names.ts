@@ -52,6 +52,8 @@ const ACTION_NAME_KEYS = {
   upgrade_drone: "actions.upgradeDrone",
   extinguish_manually: "actions.extinguishManually",
   takeoff: "actions.takeoff",
+  board_icarus: "actions.board_icarus",
+  leave_icarus: "actions.leave_icarus",
   icarus_takeoff: "actions.icarus_takeoff",
   land_on_planet: "actions.land_on_planet",
   u_turn: "actions.u_turn",

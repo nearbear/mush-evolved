@@ -316,29 +316,6 @@ body:has(.pod) {
   font-weight: bold;
   text-transform: uppercase;
 }
-/* The figure at 1x: the 39x21 podium with the 32x48 standing frame's feet on its top face. */
-/* Laid out in source pixels and scaled whole with `zoom`, which scales offsets and backgrounds too. */
-.pod-figure {
-  position: relative;
-  display: block;
-  width: 39px;
-  height: 60px;
-  zoom: var(--figure-zoom);
-  image-rendering: pixelated;
-}
-.pod-podium {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 39px;
-  height: 21px;
-  background: url("../../../Mush/www/img/design/figure.png") no-repeat;
-}
-.pod-sprite {
-  position: absolute;
-  left: 4px;
-  bottom: 10px;
-}
 /* Given names are never translated, so one line is safe; the longest may spill into the gap on phones. */
 .pod-character-name {
   margin-top: 0.1rem;

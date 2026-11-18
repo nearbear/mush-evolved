@@ -6,7 +6,7 @@ import type { FruitEffect } from "../fruits.ts";
 import type { RebelBaseId, XylophEntryId } from "../comms.ts";
 import type { SignalView } from "../signals.ts";
 import type { TurnSide } from "../navigation.ts";
-import type { PlanetDirection } from "../planets.ts";
+import type { PlanetDirection, PlanetTag } from "../planets.ts";
 import type { TitleId } from "../titles.ts";
 import type { Alerts } from "../reports.ts";
 import type { Action, BotKind, DocumentState, ItemId, LogEntry, LogLine, PlayerId, Role, RoomId } from "../types.ts";
@@ -366,9 +366,12 @@ export interface PlayerView {
   /**
    * The expedition under way, public to everyone (owner, 2026-11-07): who is out, by character, the planet's name, and
    * when they are back (server ms; if every member dies the crew is back at once and this is null). `report` is its report's id, only for a
-   * member still with the crew (alive and not lost), whose view holds it in `expeditions`.
+   * member still with the crew (alive and not lost), whose view holds it in `expeditions`. `next` is the next sector's
+   * tag, only to a member with U-turn or Traitor still with the crew (owner, 2026-11-17, `nextSectorFor`).
    */
-  expedition: { crew: CharacterId[]; planet: string; returnAt: number; report?: string; ship?: RoomId } | null;
+  expedition: { crew: CharacterId[]; planet: string; returnAt: number; report?: string; ship?: RoomId; next?: PlanetTag } | null;
+  /** How many the Icarus holds (`maxCrew`, expeditions.ts): public, since it follows a public project. The Icarus panel draws one pedestal each. */
+  icarusSeats: number;
   /**
    * Who is lost on a planet, and its name, public to everyone (owner, 2026-11-08, #357): a crew-wide alert while they
    * are alive and lost. Seat order. You are in it yourself while lost.
@@ -434,9 +437,9 @@ export interface ActionOption {
   tags: ActionTag[];
   /**
    * Empty when you can do it now; otherwise the points, the inventory space, or the cleanliness ("clean": you are dirty)
-   * you lack, or for Collect scrap, "debris" (none out there) or "pasiphae" (a patrol ship can't while the Pasiphae exists), or for Travel and turns, "reactor" (the reactor it needs is broken), or for Travel and Leave orbit, "arack" (an Arack is around). See `affordable`.
+   * you lack, or for Collect scrap, "debris" (none out there) or "pasiphae" (a patrol ship can't while the Pasiphae exists), or for Travel and turns, "reactor" (the reactor it needs is broken), or for Travel and Leave orbit, "arack" (an Arack is around), or for Hack, "preselection" (titles aren't assigned yet). See `affordable`.
    */
-  lacks: ("ap" | "mp" | "space" | "cooldown" | "capacity" | "clean" | "debris" | "pasiphae" | "reactor" | "arack")[];
+  lacks: ("ap" | "mp" | "space" | "cooldown" | "capacity" | "clean" | "debris" | "pasiphae" | "reactor" | "arack" | "preselection")[];
   /** Cycles until it is ready, when `lacks` has "cooldown". */
   cooldown?: number;
 }

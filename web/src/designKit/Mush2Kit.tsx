@@ -5,7 +5,7 @@
 import { bustIcon, ENDING_ART, SHIP_CARD_ICONS } from "../art/assets.ts";
 import { ShipCard, type ShipCardHighlight } from "../games/ShipCard.tsx";
 import { Tabs } from "@base-ui/react/tabs";
-import { SelfHud, SelfPoints } from "../hud/SelfHud.tsx";
+import { SelfHud } from "../hud/SelfHud.tsx";
 import { TerminalFrame } from "../hud/TerminalFrame.tsx";
 import { AccountSection, CharacterPickerSection } from "./LobbySections.tsx";
 import { EndingsSection, ITrackieSection, PatrolSection, SignalSection, SignalsTabSection, TerminalBodiesSection } from "./GameSections.tsx";
@@ -40,7 +40,6 @@ const NAV: [id: string, label: string][] = [
   ["signals-tab", "Signals"],
   ["top-bar", "Top bar"],
   ["self-hud", "Self HUD"],
-  ["self-points", "AP and MP"],
   ["ship-overlay", "Ship card (phone)"],
   ["inspect", "Inspect"],
   ["inventory", "Inventory"],
@@ -164,7 +163,8 @@ export default function Mush2Kit() {
           <h2>Self HUD</h2>
           <p>
             <code>hud/SelfHud.tsx</code>: the desktop ID card over the room view&apos;s top left (faction band,
-            portrait, name, held titles), with HP and morale at half size along its foot. It takes a real <code>PlayerView</code> from <code>designKit/sampleView.ts</code>; here it sits in
+            portrait, name, held titles), with half-size bars in sections split by dividers: AP and MP to the right of the
+            name with your other resources in a row under MP, and HP and morale in a row across the foot. Lethargy&apos;s 24 AP makes a long AP bar. It takes a real <code>PlayerView</code> from <code>designKit/sampleView.ts</code>; here it sits in
             a stand-in <code>.room-view</code>, since it is positioned over the room.
           </p>
           <div className="m2k-row">
@@ -176,35 +176,21 @@ export default function Mush2Kit() {
             </figure>
             <figure>
               <div className="room-view m2k-room">
+                <SelfHud view={freshView} onInspect={noop} />
+              </div>
+              <figcaption>Fresh, no title</figcaption>
+            </figure>
+            <figure>
+              <div className="room-view m2k-room">
+                <SelfHud view={lethargyView} onInspect={noop} />
+              </div>
+              <figcaption>Lethargy: 24 AP</figcaption>
+            </figure>
+            <figure>
+              <div className="room-view m2k-room">
                 <SelfHud view={mushView} onInspect={noop} />
               </div>
               <figcaption>Mush (spores in the resources)</figcaption>
-            </figure>
-          </div>
-        </section>
-        <section id="self-points">
-          <h2>AP and MP</h2>
-          <p>
-            <code>hud/SelfHud.tsx</code>&apos;s <code>SelfPoints</code>: AP and MP standing up, from the room view&apos;s
-            bottom left. Past 14 slots the AP gauge wraps into even columns (<code>hud/apGauge.ts</code>); Lethargy&apos;s
-            24 AP makes two of 12.
-          </p>
-          <div className="m2k-row m2k-bottom">
-            <figure>
-              <SelfPoints view={freshView} />
-              <figcaption>Full</figcaption>
-            </figure>
-            <figure>
-              <SelfPoints view={humanView} />
-              <figcaption>3 AP and 1 MP spent</figcaption>
-            </figure>
-            <figure>
-              <SelfPoints view={mushView} />
-              <figcaption>Out of AP</figcaption>
-            </figure>
-            <figure>
-              <SelfPoints view={lethargyView} />
-              <figcaption>Lethargy: two AP columns, partly spent</figcaption>
             </figure>
           </div>
         </section>

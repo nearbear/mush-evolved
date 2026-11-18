@@ -46,7 +46,8 @@ describe("weapon stats", () => {
     expect(row("machine_gun")).toEqual([[2, 3], 0.5, 2, 12, 0.12]);
     expect(row("missile_launcher")).toEqual([[1, 8], 0.5, 3, 1, 0.12]);
     expect(row("grenade")).toEqual([[0, 10], 1, 3, undefined, null]);
-    expect([W.missile_launcher!.area, W.grenade!.area, W.grenade!.consumed]).toEqual([{ selfDamage: [1, 4] }, { selfDamage: [0, 3] }, true]);
+    expect([W.missile_launcher!.area, W.missile_launcher!.selfDamage]).toEqual([undefined, [1, 4]]);
+    expect([W.grenade!.area, W.grenade!.selfDamage, W.grenade!.consumed]).toEqual([true, [0, 3], true]);
     expect([W.knife!.dirtyChance, W.blaster!.dirtyChance, base.weapons.cost.ap]).toEqual([0.25, 0, 1]);
     expect([W.bare_hands!.damage, W.bare_hands!.accuracy, W.bare_hands!.melee, W.bare_hands!.repairChance]).toEqual([[1, 2], 0.6, true, null]);
   });
@@ -191,31 +192,59 @@ describe("attack with a single-target weapon", () => {
 });
 
 describe("area weapons", () => {
-  it("the rocket launcher hits everyone in the room, the attacker less, and spends its charge", () => {
-    const rocketHitLogs = new Set(W.missile_launcher!.hitOutcomes.map((o) => o.log));
+  it("the rocket launcher is aimed at one roommate, hurts the attacker, and spends its charge", () => {
     const s = ship("missile_launcher", tuned("missile_launcher", {
       accuracy: 1,
       hitOutcomes: [{ weight: 1, log: "ROCKET_LAUNCHER_SUCCESSFUL_HIT_2_RANDOM_WOUNDS_4_ITEMS_6_SPLASH" }],
     }));
-    const r = must(applyAction(s, "p0", blast));
-    for (const id of ["p1", "p2"]) {
-      const lost = base.startHp - hp(r, id);
-      expect(lost).toBeGreaterThanOrEqual(W.missile_launcher!.damage[0]);
-      expect(lost).toBeLessThanOrEqual(W.missile_launcher!.damage[1]);
-    }
+    expect(offered(s, "p0").filter((a) => a.type === "attack")).toEqual([shoot("p1"), shoot("p2")]);
+    const r = must(applyAction(s, "p0", shoot("p1")));
+    const lost = base.startHp - hp(r, "p1");
+    expect(lost).toBeGreaterThanOrEqual(W.missile_launcher!.damage[0]);
+    expect(lost).toBeLessThanOrEqual(W.missile_launcher!.damage[1]);
+    expect(hp(r, "p2")).toBe(base.startHp);
     const self = base.startHp - hp(r, "p0");
-    expect(self).toBeGreaterThanOrEqual(W.missile_launcher!.area!.selfDamage[0]);
-    expect(self).toBeLessThanOrEqual(W.missile_launcher!.area!.selfDamage[1]);
+    expect(self).toBeGreaterThanOrEqual(W.missile_launcher!.selfDamage![0]);
+    expect(self).toBeLessThanOrEqual(W.missile_launcher!.selfDamage![1]);
     expect(hp(r, "p3")).toBe(base.startHp);
     expect(r.items.find((i) => i.id === "w")?.charges).toBe(0);
-    expect(viewFor(r, "p1").log.some((e) => rocketHitLogs.has(e.key))).toBe(true);
+    expect(viewFor(r, "p2").log.some((e) => e.key === "ROCKET_LAUNCHER_SUCCESSFUL_HIT_2_RANDOM_WOUNDS_4_ITEMS_6_SPLASH")).toBe(true);
+  });
+
+  it("ROCKETTED kills only the target", () => {
+    for (let seed = 1; seed <= 20; seed++) {
+      const r = must(applyAction(ship("missile_launcher", tuned("missile_launcher", {
+        accuracy: 1,
+        hitOutcomes: W.missile_launcher!.hitOutcomes.filter((o) => o.log === "ROCKET_LAUNCHER_ROCKETTED"),
+      }), seed), "p0", shoot("p1")));
+      expect(player(r, "p1").alive).toBe(false);
+      expect(player(r, "p2").alive).toBe(true);
+      expect(hp(r, "p2")).toBe(base.startHp);
+    }
+  });
+
+  it("wounds go to the target and splash to the whole room", () => {
+    const r = must(applyAction(ship("missile_launcher", tuned("missile_launcher", {
+      accuracy: 1,
+      damage: [0, 0],
+      selfDamage: [0, 0],
+      hitOutcomes: [{
+        weight: 1,
+        log: "ROCKET_LAUNCHER_SUCCESSFUL_HIT_2_RANDOM_WOUNDS_4_ITEMS_6_SPLASH",
+        effects: { injuries: [{ who: "target", injury: "damaged_ears_injury", chance: 1 }], splashDamage: { amount: 6 } },
+      }],
+    })), "p0", shoot("p1")));
+    expect(player(r, "p1").statuses).toContain("damaged_ears_injury");
+    expect(player(r, "p2").statuses).not.toContain("damaged_ears_injury");
+    for (const id of ["p1", "p2"]) expect(hp(r, id)).toBe(base.startHp - 6);
+    expect(hp(r, "p0")).toBe(base.startHp);
   });
 
   it("a missed rocket hurts no one on a plain miss", () => {
     const r = must(applyAction(ship("missile_launcher", tuned("missile_launcher", {
       accuracy: 0,
       missOutcomes: [{ weight: 1, log: "ROCKET_LAUNCHER_MISS_10_ITEMS" }],
-    })), "p0", blast));
+    })), "p0", shoot("p1")));
     for (const id of ["p0", "p1", "p2"]) expect(hp(r, id)).toBe(base.startHp);
     expect(viewFor(r, "p1").log.some((e) => e.key === "ROCKET_LAUNCHER_MISS_10_ITEMS")).toBe(true);
   });
@@ -375,7 +404,7 @@ describe("combat outcomes", () => {
         { weight: 1, fumble: true, log: "ROCKET_LAUNCHER_FUMBLE_6_ITEMS_BACKFIRE_ROCKETTED", effects: { instantKill: "attacker" } },
       ],
     });
-    const backfired = must(applyAction(ship("missile_launcher", backfireCfg), "p0", blast));
+    const backfired = must(applyAction(ship("missile_launcher", backfireCfg), "p0", shoot("p1")));
     expect(player(backfired, "p0").alive).toBe(false);
     expect(player(backfired, "p1").alive).toBe(true);
   });
