@@ -59,6 +59,8 @@ export interface PlayerState extends Seat {
   apprenticeUsed?: true;
   /** This body used Eureka moment (become_genius), once per game. Your own view only; stays with the body. */
   geniusUsed?: true;
+  /** This body used Ceasefire (ceasefire), once per game. Your own view only; stays with the body. */
+  ceasefireUsed?: true;
   /**
    * Set on a Transfer's victim, in their new body: the character who took their old body, for the pop-up they must
    * acknowledge (`acknowledgeTransfer`). Your own view only.

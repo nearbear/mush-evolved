@@ -146,6 +146,8 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   pacifist: { aggressiveApSurcharge: 2 },
   // Owner, 2026-11-14: Bodyguard's Protect costs 1 AP and adds 2 AP to aggressive actions targeting the VIP while both are together.
   bodyguard: { cost: { ap: 1 }, aggressiveApSurcharge: 2 },
+  // Owner, 2026-11-17: Diplomat's Ceasefire costs 1 AP, once per game, blocks aggressive actions in the room for 3 cycles.
+  ceasefire: { cost: { ap: 1 }, durationCycles: 3 },
   // Owner, 2026-11-08: while the Stellar antenna is broken, contacting Sol, decoding a rebel base, contacting Xyloph and updating NERON cost this much more AP.
   antenna: { brokenApSurcharge: 1 },
   // Owner, 2026-11-08: while any Gravity Simulator is broken, every crew member gains this much less MP at each cycle change and from each AP-to-MP conversion.

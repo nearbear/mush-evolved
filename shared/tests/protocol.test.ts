@@ -778,6 +778,7 @@ describe("actions from a client", () => {
     attack: [{ type: "attack", weapon: "i1", target: "p1" }, { type: "attack", weapon: "i1" }],
     pick_skill: [{ type: "pick_skill", skill: SKILLS[0] }, { type: "pick_skill", skill: MUSH_SKILLS[0] }],
     become_genius: [{ type: "become_genius" }],
+    ceasefire: [{ type: "ceasefire" }],
     apprenticeship: [{ type: "apprenticeship", target: "p1", skill: SKILLS[0] }],
     read_book: [{ type: "read_book", item: "i1" }],
     tear: [{ type: "tear", item: "i1" }],

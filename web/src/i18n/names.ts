@@ -121,6 +121,7 @@ const ACTION_NAME_KEYS = {
   pick_skill: "actions.pickSkill",
   apprenticeship: "actions.apprenticeship",
   become_genius: "actions.becomeGenius",
+  ceasefire: "actions.ceasefire",
   read_book: "actions.readBook",
   tear: "actions.tear",
   warp_to_planet: "actions.warpToPlanet",

@@ -392,6 +392,7 @@
     "deletePlanet": "Borrar un planeta",
     "apprenticeshipOf": "Aprender {{skill}}",
     "becomeGenius": "Momento eureka",
+    "ceasefire": "Alto el fuego",
     "apprenticeship": "Aprendizaje",
     "pickSkill": "Elegir una habilidad",
     "easyTravel": "Saltar a un planeta",
@@ -1020,6 +1021,7 @@
     "threwOut": "{{name}} echó a {{target}} hacia {{room}}.",
     "thrownIn": "{{target}} fue arrojado desde {{room}}.",
     "guarded": "{{name}} vigila la sala.",
+    "ceasefire": "{{name}} ha declarado un alto el fuego en la sala.",
     "stoppedGuarding": "{{name}} dejó de vigilar la sala.",
     "enteredNimble": "Entraste en modo ágil.",
     "exitedNimble": "Saliste del modo ágil.",
@@ -2059,6 +2061,9 @@
     "exits_count_many": "{{count}} salidas",
     "brokenEquipment": "{{equipment}} (averiado)",
     "onFire": "¡Esta sala está en llamas!",
+    "ceasefire_one": "Alto el fuego activo ({{count}} ciclo restante)",
+    "ceasefire_other": "Alto el fuego activo ({{count}} ciclos restantes)",
+    "ceasefire_many": "Alto el fuego activo ({{count}} ciclos restantes)",
     "broken": "Averiado"
   },
   "patrol": {

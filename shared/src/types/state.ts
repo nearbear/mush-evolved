@@ -214,6 +214,8 @@ export interface GameCore {
   doors: Record<DoorId, DoorState>;
   /** Burning rooms (fire.ts), in the order they caught fire. Only the living in a burning room see it (`PlayerView.roomOnFire`). */
   fires: RoomId[];
+  /** Active ceasefires by room id: cycles remaining (ceasefire.ts). Only the living in that room see it (`PlayerView.roomCeasefire`). */
+  ceasefires: Record<RoomId, number>;
   /**
    * Problems players reported (reports.ts, #444): a fire by its room, a breakdown by its equipment id, and who
    * reported it. Each lasts until the problem is fixed (`pruneReports`). Detector coverage is never stored. Sent only
