@@ -2051,6 +2051,8 @@
     "lootAboard": "Tout ce qui a été trouvé jusqu'ici est par terre dans l'Icarus.",
     "lootAboardShip": "Tout ce qui a été trouvé jusqu'ici est par terre dans le {{ship}}.",
     "icarusAway": "L'Icarus est parti en expédition.",
+    "seats": "Places dans l'Icarus",
+    "emptySeat": "Place libre",
     "lost": {
       "heading": "Disparition sur {{planet}}",
       "text": "Vous avez perdu l'équipe. Une expédition sur cette planète peut vous retrouver ; si le Daedalus la quitte, vous mourez ici."

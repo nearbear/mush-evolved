@@ -2051,6 +2051,8 @@
     "lootAboard": "Todo lo encontrado hasta ahora está en el suelo del Ícaro.",
     "lootAboardShip": "Todo lo encontrado hasta ahora está en el suelo de {{ship}}.",
     "icarusAway": "El Ícaro ha salido de expedición.",
+    "seats": "Plazas del Ícaro",
+    "emptySeat": "Plaza libre",
     "lost": {
       "heading": "Te has perdido en {{planet}}",
       "text": "Has perdido a la tripulación. Una expedición a este planeta puede encontrarte; si el Daedalus se va, mueres aquí."

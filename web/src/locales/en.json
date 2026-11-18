@@ -2117,6 +2117,8 @@
     "lootAboard": "Everything found so far is on the Icarus's floor.",
     "lootAboardShip": "Everything found so far is on the floor of {{ship}}.",
     "icarusAway": "The Icarus is away on an expedition.",
+    "seats": "Seats in the Icarus",
+    "emptySeat": "Empty seat",
     "lost": {
       "heading": "Lost on {{planet}}",
       "text": "You lost the crew. An expedition to this planet may find you; if the Daedalus leaves it, you die here."

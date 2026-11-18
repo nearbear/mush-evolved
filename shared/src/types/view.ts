@@ -370,6 +370,8 @@ export interface PlayerView {
    * tag, only to a member with U-turn or Traitor still with the crew (owner, 2026-11-17, `nextSectorFor`).
    */
   expedition: { crew: CharacterId[]; planet: string; returnAt: number; report?: string; ship?: RoomId; next?: PlanetTag } | null;
+  /** How many the Icarus holds (`maxCrew`, expeditions.ts): public, since it follows a public project. The Icarus panel draws one pedestal each. */
+  icarusSeats: number;
   /**
    * Who is lost on a planet, and its name, public to everyone (owner, 2026-11-08, #357): a crew-wide alert while they
    * are alive and lost. Seat order. You are in it yourself while lost.

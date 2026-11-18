@@ -60,7 +60,7 @@ import { burnOxygen, rollOxygenSaved, shipView, startShip } from "./ship.ts";
 import { merchantsCycle } from "./merchants.ts";
 import { newSignals } from "./signals.ts";
 import { allTurrets, huntersCycle, newHunters, startHunters, turretCharges, turretsHere } from "./hunters.ts";
-import { expeditionReturnAt, lostPlayers, nextSectorFor, onExpedition, withCrew } from "./expeditions.ts";
+import { expeditionReturnAt, lostPlayers, maxCrew, nextSectorFor, onExpedition, withCrew } from "./expeditions.ts";
 import { ICARUS_EQUIPMENT } from "./actions/icarus_takeoff.ts";
 import { canScavenge, interfaceId, isLostPlace, newPatrolShips, offShip, PATROL_INTERFACE, PATROL_SHIPS, shipAboard } from "./patrol.ts";
 import { preselectionCycle } from "./preselection.ts";
@@ -852,6 +852,7 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
           })
       : [],
     expedition: expeditionView(state, you),
+    icarusSeats: maxCrew(state),
     // Who is lost, and where: a public alert (owner, 2026-11-08, #357; phase 2 accepted it).
     lost: lostPlayers(state).map((p) => ({ name: p.character, planet: orbitName(state) ?? "" })),
     // Your own planets only, and only the tags an analysis revealed (owner, 2026-10-19).

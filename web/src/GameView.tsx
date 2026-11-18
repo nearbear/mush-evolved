@@ -16,6 +16,7 @@ import { Announcer } from "./hud/Announcer.tsx";
 import { ITrackie } from "./hud/ITrackie.tsx";
 import { PatrolCockpit } from "./hud/PatrolCockpit.tsx";
 import { IcarusPanel } from "./hud/IcarusPanel.tsx";
+import { ActionButton } from "./hud/ActionButton.tsx";
 import { LostPanel } from "./hud/LostPanel.tsx";
 import { PeekBar } from "./hud/PeekBar.tsx";
 import { TerminalDialog } from "./hud/TerminalDialog.tsx";
@@ -160,6 +161,7 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
   // Away with an expedition, or aboard the docked Icarus (owner, 2026-11-17): both show the Icarus panel.
   const inIcarus = view.expedition?.report !== undefined || you.room === ICARUS_CRAFT;
   /** The room view shows your room's scene (not death, the patrol cockpit, a lost place or Icarus), so it gets the name plate. */
+  const leaveIcarus = inIcarus ? view.actions.find((o) => o.action.type === "leave_icarus") : undefined;
   const inRoom = you.alive && !(view.patrolShip && view.expedition?.report === undefined) && !isLostPlace(you.room) && !inIcarus;
   const occupant = (p: { id: string; isBot: boolean; character: CharacterId; statuses: string[]; busy?: Bar; lying?: string; spot?: Spot; pushedBy?: string }): Occupant => {
     const busy = p.id === you.id && you.current ? { bar: you.current, label: names.action(you.current.action.type) } : p.busy && { bar: p.busy };
@@ -350,6 +352,12 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
                 burningRooms={view.burningRooms}
                 brokenDoors={view.brokenDoors}
               />
+              {/* Aboard the docked Icarus (owner, 2026-11-17): Leave the Icarus, small, under the map. */}
+              {leaveIcarus && (
+                <ActionButton view={view} option={leaveIcarus} onAction={act} className="room-corner-action">
+                  {names.action(leaveIcarus.action.type)}
+                </ActionButton>
+              )}
             </div>
           </div>
         </div>
