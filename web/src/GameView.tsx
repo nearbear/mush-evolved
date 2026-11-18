@@ -80,6 +80,7 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
   const view = useMemo(() => (readOnly ? { ...given, actions: [], chatChannels: [] } : given), [given, readOnly]);
   const post = (msg: GameClientMessage) => send?.(msg);
   const [zoom, setZoom] = useState(1);
+  const [inventoryOpen, setInventoryOpen] = useState(false);
   const names = useNames();
   const layout = useCheatRoom(useShipLayout(), view.you.room === CHEAT_ROOM);
   const roomTitleId = useId();
@@ -278,6 +279,8 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
                 onSelect={select}
                 onClear={() => select(null)}
                 onDoorTap={tapDoor}
+                onOpenInventory={() => setInventoryOpen(true)}
+                inventoryOpen={inventoryOpen}
                 bubbles={bubbles}
                 pilgredRepaired={view.pilgredRepaired}
                 humanTankFull={view.humanTankFull}
@@ -301,7 +304,18 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
               </div>
             )}
             {you.alive && !readOnly && <TipCard view={view} />}
-            {you.alive && <InventoryOverlay view={view} selected={target} onAction={act} onSelect={select} zoom={zoom} onZoom={setZoom} />}
+            {you.alive && (
+              <InventoryOverlay
+                view={view}
+                selected={target}
+                onAction={act}
+                onSelect={select}
+                zoom={zoom}
+                onZoom={setZoom}
+                open={inventoryOpen}
+                onOpenChange={setInventoryOpen}
+              />
+            )}
             {/* Top-right: one card (amber, red when your room is on fire) holding your room's name with the minimap under it. */}
             <div className={`room-corner${inRoom && view.roomOnFire ? " alert" : ""}`}>
               {inRoom && (

@@ -24,7 +24,7 @@ import { createPortal } from "react-dom";
 import { CAMERA_EQUIPMENT, CORPSE_ITEM, DYNARCADE_EQUIPMENT, EQUIPMENT_TYPES, PROJECT_COMPLETE, RESEARCH_COMPLETE, SUPPORT_DRONE_ITEM, SUPER_CALC_EQUIPMENT, doorOtherRoom, type EquipmentView, type RoomId, type RoomLayout, type ShipLayout, type Spot, type Target } from "@mush2/shared";
 import type { Bubble } from "../scene/useSpeechBubbles.ts";
 import { useNames } from "../i18n/names.ts";
-import { CAMERA_SLICES, equipmentByTileKey, roomAsBuilt } from "./equipmentTiles.ts";
+import { CAMERA_SLICES, LOCKER_HOVER_KEY, equipmentByTileKey, isLockerSlice, roomAsBuilt } from "./equipmentTiles.ts";
 import { opaqueAt, preloadImage } from "./hitMask.ts";
 import { useWalkers, type Goal } from "./useWalkers.ts";
 import type { ActingOn } from "./useActingOn.ts";
@@ -198,6 +198,8 @@ export function IsoRoom({
   onSelect,
   onClear,
   onDoorTap,
+  onOpenInventory,
+  inventoryOpen = false,
   bubbles,
   zoom,
   onZoomStep,
@@ -264,6 +266,10 @@ export function IsoRoom({
   onClear: () => void;
   /** A single click or tap on any door, reachable or not. */
   onDoorTap: (to: RoomId) => void;
+  /** The room's shelf/locker was clicked: open the inventory overlay. */
+  onOpenInventory?: () => void;
+  /** Whether the inventory overlay is currently open (highlights the room's shelf/locker). */
+  inventoryOpen?: boolean;
   /** Recent global chat per sender, oldest first, shown as speech bubbles over their heads. */
   bubbles: ReadonlyMap<string, Bubble[]>;
   /** PILGRED works (public): its core in the engine room is drawn as the animated globe. */
@@ -670,6 +676,7 @@ export function IsoRoom({
         brokenDoors,
         selected,
         selectedDoor,
+        inventoryOpen,
         hoverKey,
         ownCells,
         doors,
@@ -678,7 +685,7 @@ export function IsoRoom({
         turn,
         fireSlots,
       }),
-    [scene, box, walkersKey, walkersLook, doorsKey, seatsKey, occupants, nearby, corpses, drones, equipmentByKey, reachable, brokenDoors, selected, selectedDoor, hoverKey, ownCells, looks, pace, planet, turn, fireSlots],
+    [scene, box, walkersKey, walkersLook, doorsKey, seatsKey, occupants, nearby, corpses, drones, equipmentByKey, reachable, brokenDoors, selected, selectedDoor, inventoryOpen, hoverKey, ownCells, looks, pace, planet, turn, fireSlots],
   );
   // Badges and bubbles go over the people in this room.
   const anchors = drawn.sprites.flatMap((s): Anchor[] => {
@@ -702,7 +709,7 @@ export function IsoRoom({
         const cam = cameraNow();
         return sprites.flatMap((s): IsoTarget[] => {
           const action = interaction(s);
-          if (!action || action.kind === "chair") return [];
+          if (!action || action.kind === "chair" || action.kind === "locker") return [];
           const o = s.kind === "actor" ? offsetOf(s.key.slice(2)) : { x: 0, y: 0 };
           return [{
             key: s.key,
@@ -737,6 +744,9 @@ export function IsoRoom({
     if (!eq && s.kind === "entity" && layout.slices[s.slice]?.flags.includes("chair")) {
       return { kind: "chair" as const, cell: s.cell, dir: layout.slices[s.slice]?.dir, title: t("common.chair") };
     }
+    if (!eq && s.kind === "entity" && isLockerSlice(layout, s.slice)) {
+      return { kind: "locker" as const, title: t("inventory.title") };
+    }
     return eq ? { kind: "equipment" as const, equipment: eq, title: names.equipment(eq.type) } : null;
   };
 
@@ -766,7 +776,7 @@ export function IsoRoom({
     });
     const hit = hitTest(shifted, x, y, opaque);
     const action = hit && interaction(hit);
-    if (hit && action) return { sprite: hit, key: hit.key, ...action };
+    if (hit && action) return { sprite: hit, key: action.kind === "locker" ? LOCKER_HOVER_KEY : hit.key, ...action };
     const behind = hitTest(neighborSprites, x, y, opaque);
     // A neighbour's door on this room's front edges is drawn over this room's floor; plain floor yields to it (walls don't).
     if (hit && !(behind?.door && ringOf.get(behind.room) === 1)) return null;
@@ -805,7 +815,7 @@ export function IsoRoom({
       // Sit down (cosmetic, like walking): you stand on the chair's cell in the sitting pose.
       onClear();
       if (!rooted) walkTo(hit.cell, seatFor(hit.dir));
-    }
+    } else if (hit?.kind === "locker") onOpenInventory?.();
     else if (hit?.kind === "door") onDoorTap(hit.to);
     else {
       // Bare floor (or scenery): clear the selection and walk there; the camera follows, revealing doors off-panel.
@@ -831,7 +841,12 @@ export function IsoRoom({
   };
   const hovered = sprites.find((s) => s.key === hoverKey);
   const hoveredNeighbor = neighbors.find((n) => `n:${n.id}` === hoverKey);
-  const hoverTitle = hoveredNeighbor ? names.room(hoveredNeighbor.id) : hovered && interaction(hovered)?.title;
+  const hoverTitle =
+    hoverKey === LOCKER_HOVER_KEY
+      ? t("inventory.title")
+      : hoveredNeighbor
+        ? names.room(hoveredNeighbor.id)
+        : hovered && interaction(hovered)?.title;
 
   return (
     // data-leaving marks the walk out of a room you have already left (tools wait for it to end).

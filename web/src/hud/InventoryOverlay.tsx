@@ -23,6 +23,8 @@ export function InventoryOverlay({
   onSelect,
   zoom,
   onZoom,
+  open: controlledOpen,
+  onOpenChange,
 }: {
   view: PlayerView;
   selected: Target;
@@ -30,14 +32,26 @@ export function InventoryOverlay({
   onSelect: (target: Target) => void;
   zoom: number;
   onZoom: (zoom: number) => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }) {
   const { t } = useTranslation();
-  const [open, setOpen] = useState(false);
+  const [localOpen, setLocalOpen] = useState(false);
+  const open = controlledOpen ?? localOpen;
   const rootRef = useRef<HTMLDivElement>(null);
   const panelId = useId();
 
-  const close = useCallback(() => setOpen(false), []);
+  const close = useCallback(() => {
+    if (controlledOpen === undefined) setLocalOpen(false);
+    onOpenChange?.(false);
+  }, [controlledOpen, onOpenChange]);
   useOverlayDismiss(open, close, rootRef);
+
+  const toggle = () => {
+    const next = !open;
+    if (controlledOpen === undefined) setLocalOpen(next);
+    onOpenChange?.(next);
+  };
 
   const roomCount = view.roomItems.length;
   const label = roomCount > 0 ? t("inventory.buttonCount", { count: roomCount }) : t("inventory.button");
@@ -69,7 +83,7 @@ export function InventoryOverlay({
           aria-label={label}
           aria-expanded={open}
           aria-controls={open ? panelId : undefined}
-          onClick={() => setOpen((o) => !o)}
+          onClick={toggle}
         >
           <img src={TAB_ICONS.inventory} alt="" />
           {roomCount > 0 && (

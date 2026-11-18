@@ -387,4 +387,5 @@
 .iso-pixi canvas {
   display: block;
   pointer-events: none;
+  image-rendering: pixelated;
 }

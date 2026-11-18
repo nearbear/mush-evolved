@@ -12,7 +12,7 @@ import { sameTarget } from "../hud/targets.ts";
 import { lyingFrame, sittingFrame, spriteStrip } from "../art/assets.ts";
 import type { Bar } from "../scene/ActionBar.tsx";
 import { atlasUrl } from "./shipLayout.ts";
-import { CAMERA_SLICES } from "./equipmentTiles.ts";
+import { CAMERA_SLICES, LOCKER_HOVER_KEY, isLockerSlice } from "./equipmentTiles.ts";
 import { type CellSlot, frameRect, gridToPx, type PlacedSprite, WALL_RUNS, wallRuns } from "./placement.ts";
 import type { Walker } from "./useWalkers.ts";
 
@@ -387,6 +387,8 @@ export interface SceneInput {
   brokenDoors?: ReadonlySet<RoomId>;
   selected: Target | null;
   selectedDoor: RoomId | null;
+  /** The inventory overlay is open: the room's shelf/locker is highlighted as active. */
+  inventoryOpen?: boolean;
   /** The key of the hovered sprite, or `n:<room>` for a hovered room behind a door. */
   hoverKey: string | null;
   /** Cells next to this room's floor: a neighbour's wall drawn there is lit as this room's wall. */
@@ -539,7 +541,7 @@ function foregroundCutaways(layout: ShipLayout, placed: readonly PlacedSprite[],
 
 /** The scene to draw, from the placed sprites and what is selected, hovered, reachable and lit. */
 export function describeScene(input: SceneInput): Scene {
-  const { layout, room, placed, box, people, corpses, drones, equipment, reachable, brokenDoors, selected, selectedDoor, hoverKey, ownCells, doors, looks } = input;
+  const { layout, room, placed, box, people, corpses, drones, equipment, reachable, brokenDoors, selected, selectedDoor, inventoryOpen, hoverKey, ownCells, doors, looks } = input;
   const cutaways = foregroundCutaways(layout, placed, room, box);
   const isSelected = (kind: Target["kind"], id: string) => sameTarget(selected, { kind, id } as Target);
   const sprites: SceneSprite[] = [];
@@ -637,7 +639,9 @@ export function describeScene(input: SceneInput): Scene {
       if (eq.broken) addSmoke(s, drawnSlice);
       continue;
     }
-    sprites.push({ ...tile(), anim, role: "tile", kind: s.kind, slice: s.slice });
+    const locker = s.kind === "entity" && isLockerSlice(layout, s.slice);
+    const effect = locker ? (inventoryOpen ? "selected" : hover || hoverKey === LOCKER_HOVER_KEY ? "hover" : undefined) : undefined;
+    sprites.push({ ...tile(), anim, role: "tile", ...(effect && { effect }), kind: s.kind, slice: s.slice });
   }
   // `placed` is in paint order and keeps its orders when some are left out, so each slot goes before the first sprite at or past it.
   const fire = (input.fireSlots ?? []).map(({ cell, order }) => {
