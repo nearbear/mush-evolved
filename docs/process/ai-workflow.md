@@ -4230,3 +4230,14 @@ Owner specified Syphilis (20-32 cycles, STT/DTT spread, -3 max morale and HP, +2
 
 - Switched `.room-corner` in `web/src/styles/iso.css` back to dark text (`#fff`, `--muted: #c7d2f0`) over `--chrome-rim` (`#2f4fc0`, the outermost panel glow blue).
 - Updated `web/src/styles/minimap.css` so rooms use `--panel-fill` (`#17172c`), adjacent `.reachable` rooms use `#213578` (inactive tab blue), hovered `.pointed` rooms use `#4e73df`, and `.here` uses `--terminal-bg` (`#c2f3fc`, selected tab cyan).
+
+## 2026-11-17: Antigrav Scooter (`scooter`)
+
+- **Decision (owner):** Implement the `scooter` item like Sprinter's movement bonus (+2 MP per AP-to-MP conversion, carried in inventory and unbroken), without stacking with Sprinter or another scooter, and with no expedition sector bonus. Starts with 8 charges, spends 1 per conversion, and recharges 1 per cycle up to 8.
+- **Implementation:** Added `config.scooter` (`extraMpPerConversion: 2`, `charges: { start: 8, max: 8, perCycle: 1 }`), `startCharges`/`rechargeScooters`/`activeScooter` in `shared/src/items.ts`, removed `notImplemented: true` on `scooter`, applied the bonus in `movementRules` (`shared/src/modifiers.ts`), passed `cost` into `Action.apply` (`shared/src/actions/action.ts`, `shared/src/rules.ts`) so `MoveAction.apply` spends 1 charge only when an AP-to-MP conversion occurred (`cost.ap > 0`) and the player lacks `sprint`, and called `rechargeScooters(state)` each cycle in `advanceCycle`.
+- **What worked:** Passing optional `cost` to `Action.apply` cleanly avoided any false charge deduction when moving with existing MP (`mp >= mpPerMove`) without breaking existing `Action` subclasses.
+
+## 2026-11-17 — Minimap room edges and background swap
+
+- Moved `--chrome-rim` (`#2f4fc0`) to `.minimap-walls` (room edges) in `web/src/styles/minimap.css` and restored `.room-corner` background in `web/src/styles/iso.css` to `--panel-fill` (`#17172c`).
+- **2026-11-17 — Text-driven signal audio wave (`AudioWave.tsx`, `SignalConversation.tsx`, `settings.css`)**: Replaced the fixed CSS sine-bounce animation with a 32-band `spectrumForText` calculation driven by the active character in the incoming message (low-band vowels, high-band sibilants, broadband static on garble noise, dips on spaces/punctuation, and 3-character coarticulation blending).

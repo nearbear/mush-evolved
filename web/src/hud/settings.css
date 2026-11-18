@@ -745,7 +745,7 @@ li.signal-next {
   margin: 0;
 }
 
-/* The audio wave (AudioWave.tsx): flat at rest, each bar bouncing up to its own peak while the other side speaks. */
+/* The audio wave (AudioWave.tsx): flat at rest, each bar driven by --level from the message text while the other side speaks. */
 .audio-wave {
   display: flex;
   flex: none;
@@ -760,26 +760,17 @@ li.signal-next {
   height: 100%;
   border-radius: 1px;
   background: currentColor;
-  transform: scaleY(0.08);
-  transition: transform 0.3s;
+  transform: scaleY(var(--level, 0.08));
+  transition: transform 0.25s ease-out;
 }
 .audio-wave[data-speaking] > span {
-  animation: audio-wave var(--period) ease-in-out var(--delay) infinite alternate;
-}
-@keyframes audio-wave {
-  from {
-    transform: scaleY(0.12);
-  }
-  to {
-    transform: scaleY(var(--peak));
-  }
+  transition: transform 70ms ease-out;
 }
 @media (prefers-reduced-motion: reduce) {
   .audio-wave > span {
     transition: none;
   }
   .audio-wave[data-speaking] > span {
-    animation: none;
     transform: scaleY(var(--peak));
   }
 }

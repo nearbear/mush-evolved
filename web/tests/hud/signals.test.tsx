@@ -17,6 +17,7 @@ vi.hoisted(() => {
 
 import "../../src/i18n/index.ts";
 import i18n from "../../src/i18n/index.ts";
+import { AudioWave, spectrumForText } from "../../src/hud/AudioWave.tsx";
 import { CommsCenter } from "../../src/hud/CommsCenter.tsx";
 import { garble } from "../../src/hud/garble.ts";
 import { nextPlayback, REPLY_DELAY_MS, skipPlayback, TYPE_MS_PER_CHAR } from "../../src/hud/signalPlayback.ts";
@@ -192,5 +193,31 @@ describe("Signals tab", () => {
     expect(decoded.closest("button.signal-entry")?.querySelector(".signal-entry-caption")).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Open the conversation with Lost Children of Wolf" }));
     expect(screen.getByText(/broadcasting centre in Mumbai/)).toBeTruthy();
+  });
+});
+
+describe("AudioWave", () => {
+  const avg = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
+
+  it("shapes frequencies by character: low-band vowels, high-band sibilants, and quieter pauses", () => {
+    const vowel = spectrumForText("ooo", 2);
+    const sibilant = spectrumForText("sss", 2);
+    const pause = spectrumForText("   ", 2);
+
+    expect(vowel).toHaveLength(32);
+    expect(avg(vowel.slice(0, 12))).toBeGreaterThan(avg(vowel.slice(20)));
+    expect(avg(sibilant.slice(18))).toBeGreaterThan(avg(sibilant.slice(0, 10)));
+    expect(avg(pause)).toBeLessThan(avg(vowel));
+    expect(avg(pause)).toBeLessThan(avg(sibilant));
+  });
+
+  it("produces high-frequency static on garbled noise characters and rests flat when not speaking", () => {
+    const garbled = spectrumForText("—●…", 2);
+    expect(avg(garbled.slice(16))).toBeGreaterThan(avg(garbled.slice(0, 8)));
+
+    const { container } = render(<AudioWave speaking={false} text="Hello" cursor={2} />);
+    const bars = Array.from(container.querySelectorAll<HTMLElement>(".audio-wave > span"));
+    expect(bars).toHaveLength(32);
+    expect(bars.every((b) => b.style.getPropertyValue("--level") === "0.08")).toBe(true);
   });
 });
