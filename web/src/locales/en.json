@@ -1036,6 +1036,8 @@
     "historyRevealed": "{{name}} recently did: {{action}}.",
     "historyNothing": "You learned nothing about what {{name}} did recently.",
     "punchCrit": "{{name}} landed a magnificent punch on {{target}}.",
+    "punchArmor": "{{name}} tried to hit {{target}} but only found their protections.",
+    "attackArmor": "{{name}} attacked {{target}} with the {{item}} but only found their protections.",
     "anathema": "{{name}} cast the anathema on {{target}}.",
     "protected": "{{name}} is now protecting {{target}}.",
     "coup": "{{name}} staged a coup at the NERON core.",

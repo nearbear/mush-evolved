@@ -293,6 +293,28 @@ describe("expeditions, phase 1 (instant, as in single player)", () => {
     expect(next.expeditions[0]!.events[1]!.hurt).toContainEqual({ name: player(s, "p1").character, hp: 1 });
   });
 
+  it("Plastenite Armor takes 1 off each member's fight damage, stacking with Survival, but not off fatigue", () => {
+    const armor = (s: GameState, ids: PlayerId[]) => {
+      for (const id of ids) s.items.push({ id: `item-armor-${id}`, type: "plastenite_armor", at: { kind: "player", id } });
+      return s;
+    };
+    const plain = go(fightGame(20));
+    const armed = fightGame(20);
+    armor(armed, ["p0", "p1", "p2"]);
+    armed.items.find((i) => i.id === "item-armor-p2")!.broken = true;
+    player(armed, "p1").skills.push("survival");
+    const next = go(armed);
+    const lost = (s: GameState, id: PlayerId) => player(armed, id).hp - player(s, id).hp;
+    const off = { p0: DEFAULT_CONFIG.plasteniteArmor.absorb, p1: DEFAULT_CONFIG.plasteniteArmor.absorb + expedition.survivalReduction, p2: 0, p3: 0 };
+    for (const [id, reduction] of Object.entries(off)) expect(lost(next, id)).toBe(Math.max(0, lost(plain, id) - reduction));
+    expect(lost(plain, "p0")).toBeGreaterThan(off.p0); // the seed hurts p0 and p1 enough to show it
+    expect(lost(plain, "p1")).toBeGreaterThan(off.p1);
+    expect(next.expeditions[0]!.events.filter((e) => e.kind === "fight")).toHaveLength(1);
+
+    const tired = armor(game({ tags: ["HOT"], events: only({ kind: "fatigue", weight: 1 }) }), ["p0"]);
+    expect(player(go(tired), "p0").hp).toBe(player(tired, "p0").hp - expedition.fatigue);
+  });
+
   it("an accident hurts one member; a Pilot aboard avoids the landing's catastrophe", () => {
     const s = game({ tags: ["RUINS"], events: only({ kind: "accident", weight: 1 }) });
     const next = go(s);

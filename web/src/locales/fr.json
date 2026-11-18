@@ -1052,6 +1052,8 @@
     "historyRevealed": "{{name}} a récemment fait : {{action}}.",
     "historyNothing": "Vous n'avez rien appris sur ce que {{name}} a fait récemment.",
     "punchCrit": "{{name}} a placé un magistral uppercut à {{target}}.",
+    "punchArmor": "{{name}} a tenté de frapper {{target}} mais n'a trouvé que ses protections.",
+    "attackArmor": "{{name}} a attaqué {{target}} avec : {{item}}, mais n'a trouvé que ses protections.",
     "anathema": "{{name}} a jeté l'anathème sur {{target}}.",
     "protected": "{{name}} protège désormais {{target}}.",
     "coup": "{{name}} a fomenté un putsch au cœur de NERON.",

@@ -111,6 +111,18 @@ export function activeScooter(state: Readonly<GameState>, player: Readonly<Playe
   return itemsIn(state, { kind: "player", id: player.id }).find((i) => i.type === "scooter" && isWorking(i) && (i.charges ?? 0) > 0);
 }
 
+/**
+ * Combat damage after Plastenite Armor (owner, 2026-11-17): a working armor in the target's inventory takes
+ * `plasteniteArmor.absorb` off a non-critical punch or weapon hit, or an expedition fight, never below 0. Several
+ * armors absorb no more than one; a broken one does nothing. The callers leave out crits, instant kills, self-damage
+ * and every non-combat damage.
+ */
+export function afterArmor(state: Readonly<GameState>, target: Readonly<PlayerState>, amount: number): number {
+  if (amount <= 0) return amount;
+  const armored = itemsIn(state, { kind: "player", id: target.id }).some((i) => i.type === "plastenite_armor" && isWorking(i));
+  return armored ? Math.max(0, amount - state.config.plasteniteArmor.absorb) : amount;
+}
+
 export const ITEM_TYPES: Record<string, ItemType> = {
   ...Object.fromEntries(DRUG_ITEMS.map((id) => [id, { consume: { ap: 0, satiety: 0 }, drug: true, canBreak: true, isDestroyedWhenBroken: true }])),
   [ITRACKIE_ITEM]: {},
@@ -222,7 +234,7 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   white_flag: {},
   // The white flag's ingredient, with the soap (owner, 2026-11-08). No effect.
   old_shirt: {},
-  plastenite_armor: { dismantle: { metal: 0, plastic: 1, chance: 0.12 }, canBreak: true, canBeSabotaged: true, repairChance: 0.12, notImplemented: true },
+  plastenite_armor: { dismantle: { metal: 0, plastic: 1, chance: 0.12 }, canBreak: true, canBeSabotaged: true, repairChance: 0.12 },
   sniper_helmet: { dismantle: { metal: 1, plastic: 1, chance: 0.12 }, canBreak: true, canBeSabotaged: true, repairChance: 0.25, notImplemented: true },
   scooter: { dismantle: { metal: 2, plastic: 1, chance: 0.25 }, canBreak: true, canBeSabotaged: true, repairChance: 0.25 },
   space_suit: { dismantle: { metal: 1, plastic: 1, chance: 0.12 }, canBreak: true, canBeSabotaged: true, repairChance: 0.06 },

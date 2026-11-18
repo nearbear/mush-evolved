@@ -40,7 +40,7 @@ import { FAST_EXPEDITION_STEP_MS, fastExpeditions } from "./cheats.ts";
 import { soil } from "./dirt.ts";
 import { rebelContacted } from "./comms.ts";
 import { contaminate } from "./infection.ts";
-import { CORPSE_ITEM, isWorking, itemsIn, removeItem, sameContainer, spawnInRoom } from "./items.ts";
+import { CORPSE_ITEM, afterArmor, isWorking, itemsIn, removeItem, sameContainer, spawnInRoom } from "./items.ts";
 import { logPrivate, logPublic } from "./log.ts";
 import { isTraveling } from "./navigation.ts";
 import { retargetNow } from "./hunters.ts";
@@ -735,7 +735,8 @@ const usable = (state: Readonly<GameState>, item: Readonly<ItemState>): boolean 
   state.config.weapons.types[item.type]!.charges === undefined || (item.charges ?? 0) > 0;
 
 /**
- * Damage to members, each taking theirs as one hit, less `survivalReduction` with the Survival skill. Notes it on the
+ * Damage to members, each taking theirs as one hit, less `survivalReduction` with the Survival skill and, in a fight,
+ * less Plastenite Armor's absorb (both stack; owner, 2026-11-17). Notes it on the
  * event. A member who dies leaves a body in the Icarus, which comes back with it (death.ts); without `deadKeepItems`,
  * what they set out with is lost (the items `killPlayer` dropped on the floor are taken away).
  */
@@ -743,7 +744,8 @@ function hurt(ctx: Ctx, event: ExpeditionEvent, amounts: Map<PlayerState, number
   const { state } = ctx;
   const rules = state.config.expedition;
   for (const [p, amount] of amounts) {
-    const hp = Math.max(0, amount - (hasSkill(p, "survival") ? rules.survivalReduction : 0));
+    const survived = Math.max(0, amount - (hasSkill(p, "survival") ? rules.survivalReduction : 0));
+    const hp = cause === "exploration_combat" ? afterArmor(state, p, survived) : survived;
     (event.hurt ??= []).push({ name: p.character, hp });
     damage(state, p, hp, cause);
     if (!p.alive) died(ctx, event, p);

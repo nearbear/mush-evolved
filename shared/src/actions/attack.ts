@@ -3,7 +3,7 @@ import { changeAP } from "../adjustStats.ts";
 import { breakItem } from "../breakage.ts";
 import { damage } from "../death.ts";
 import { addDisease } from "../diseases.ts";
-import { ITEM_TYPES, dropWeapon, itemsIn, removeItem, removeItemIfPresent, isWorking } from "../items.ts";
+import { ITEM_TYPES, afterArmor, dropWeapon, itemsIn, removeItem, removeItemIfPresent, isWorking } from "../items.ts";
 import { logPublic } from "../log.ts";
 import { weaponOutcomeWeight } from "../modifiers.ts";
 import { roll, rollFloat, rollInt, rollShuffle, rollWeighted } from "../rng.ts";
@@ -80,21 +80,26 @@ export class AttackAction extends Action<AttackActionData> {
     );
     const outcome = stats.hitOutcomes[rollWeighted(state, weights)]!;
     const effects = outcome.effects;
+    const armored = armoredHit(!!outcome.critical);
 
     const splash = peopleHere(state, player);
     let victim: PlayerState | undefined;
     if (stats.area) {
       logPublic(state, player.room, outcome.log, { name: player.character, item: type });
       const range = adjustedDamageRange(stats.damage, effects);
-      for (const v of splash) damage(state, v, roll(state, range), "assassinated");
+      for (const v of splash) damage(state, v, armored(state, v, roll(state, range)), "assassinated");
     } else {
       victim = state.players.find((o) => o.id === (target as { target: string }).target)!; // checked, so it exists
-      logPublic(state, player.room, outcome.log, { name: player.character, target: victim.character, item: type });
+      const params = { name: player.character, target: victim.character, item: type };
       if (effects?.instantKill === "target") {
+        logPublic(state, player.room, outcome.log, params);
         damage(state, victim, victim.hp, "assassinated");
       } else {
         const baseRange = victim.role === "mush" && stats.mushDamage ? stats.mushDamage : stats.damage;
-        damage(state, victim, roll(state, adjustedDamageRange(baseRange, effects)), "assassinated");
+        const hit = roll(state, adjustedDamageRange(baseRange, effects));
+        const dealt = armored(state, victim, hit);
+        logPublic(state, player.room, hit > 0 && dealt === 0 ? "attackArmor" : outcome.log, params);
+        damage(state, victim, dealt, "assassinated");
       }
     }
     if (stats.selfDamage) damage(state, player, roll(state, stats.selfDamage), "assassinated");
@@ -143,6 +148,12 @@ function spend(state: GameState, target: AttackActionData): ItemState {
   if (stats.charges !== undefined) weapon.charges = weapon.charges! - 1;
   if (stats.consumed) removeItem(state, weapon.id);
   return weapon;
+}
+
+/** A weapon hit's damage after the target's Plastenite Armor, which a critical hit goes through (owner, 2026-11-17). */
+function armoredHit(critical: boolean) {
+  return (state: Readonly<GameState>, target: Readonly<PlayerState>, amount: number): number =>
+    critical ? amount : afterArmor(state, target, amount);
 }
 
 /** Shifts a `[min, max]` damage range by an outcome's `damageDelta` and `maxDamageDelta`, clamped at 0. */

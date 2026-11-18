@@ -522,6 +522,9 @@ export interface GameConfig {
     extraMpPerConversion: number; // Extra MP the Antigrav Scooter gives on each AP-to-MP conversion (owner, 2026-11-17). Does not stack with `sprint` or another scooter.
     charges: { start: number; max: number; perCycle: number }; // Starts with 8 charges, spends 1 per conversion, recharges 1 per cycle (owner, 2026-11-17).
   };
+  plasteniteArmor: {
+    absorb: number; // Damage a working Plastenite Armor in the target's inventory takes off each non-critical punch or weapon hit and each expedition fight (owner, 2026-11-17). Never below 0; several armors absorb no more than one.
+  };
   anathema: {
     cost: { ap: number }; // AP the `juge` (Persecutor) skill's Anathema costs (owner, 2026-10-24; eMushpedia).
     successFactor: number; // An Outcast's chance on every action that rolls one is multiplied by this (owner, 2026-10-24: x0.8).

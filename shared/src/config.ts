@@ -268,6 +268,8 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   sprinter: { extraMpPerConversion: 2 },
   // Owner, 2026-11-17: Antigrav Scooter adds 2 MP per AP-to-MP conversion (doesn't stack with Sprinter or itself); 8 charges, 1 spent per conversion, +1 per cycle.
   scooter: { extraMpPerConversion: 2, charges: { start: 8, max: 8, perCycle: 1 } },
+  // Owner, 2026-11-17 (eMush, eMushpedia): Plastenite Armor absorbs 1 combat damage; not crits, accidents or self-damage.
+  plasteniteArmor: { absorb: 1 },
   // Owner, 2026-10-24 (eMushpedia): Anathema costs 1 AP; the Outcast's actions that roll succeed at x0.8.
   anathema: { cost: { ap: 1 }, successFactor: 0.8 },
   // Owner, 2026-11-12: the Politician's Coup costs 3 AP and has a 50% chance to make the actor dirty.
