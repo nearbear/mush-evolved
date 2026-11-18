@@ -306,7 +306,6 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
             <div className={`room-corner${inRoom && view.roomOnFire ? " alert" : ""}`}>
               {inRoom && (
                 <div className="room-title">
-                  <h2 id={roomTitleId}>{names.room(you.room)}</h2>
                   <div className="room-icons" role="status">
                     {view.roomOnFire && (
                       <Hint label={t("roomList.onFire")}>
@@ -314,6 +313,7 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
                       </Hint>
                     )}
                   </div>
+                  <h2 id={roomTitleId}>{names.room(you.room)}</h2>
                 </div>
               )}
               <Minimap

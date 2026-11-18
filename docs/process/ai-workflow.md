@@ -4241,3 +4241,24 @@ Owner specified Syphilis (20-32 cycles, STT/DTT spread, -3 max morale and HP, +2
 
 - Moved `--chrome-rim` (`#2f4fc0`) to `.minimap-walls` (room edges) in `web/src/styles/minimap.css` and restored `.room-corner` background in `web/src/styles/iso.css` to `--panel-fill` (`#17172c`).
 - **2026-11-17 — Text-driven signal audio wave (`AudioWave.tsx`, `SignalConversation.tsx`, `settings.css`)**: Replaced the fixed CSS sine-bounce animation with a 32-band `spectrumForText` calculation driven by the active character in the incoming message (low-band vowels, high-band sibilants, broadband static on garble noise, dips on spaces/punctuation, and 3-character coarticulation blending).
+
+## 2026-11-17 — Deep space background #121212
+
+- Changed `SKY` in `web/src/iso/starfield.ts` from `0x09092d` to `0x121212` and the matching pre-tile fallback in `web/src/styles/space.css` to `#121212`.
+
+## 2026-11-17 — Minimap deep space background
+
+- Restored `SKY` in `web/src/iso/starfield.ts` (`0x09092d`) and `web/src/styles/space.css` (`#09092d`), and set `.room-corner` in `web/src/styles/iso.css` to `#09092d` (`--card-fill: #09092d`).
+
+## 2026-11-17 — Remove minimap adjacent-room highlight
+
+- Removed the `.minimap.expanded .minimap-room.reachable` rule from `web/src/styles/minimap.css`.
+
+## 2026-11-17 — Minimap cyan doors
+
+- Updated `.minimap-door` in `web/src/styles/minimap.css` to use `var(--accent)` (`#4fc3f7`) at `0.6` opacity for non-adjacent doors, `opacity: 1` for adjacent `.here` doors, and `#ffbf00` amber for `.broken` doors.
+
+## 2026-11-17 — Minimap amber current room & button cyan doors
+
+- Set `.minimap-room.here` in `web/src/styles/minimap.css` to `#ffbf00` (amber).
+- Sampled `butbg.png` (`#008ee5`) for non-adjacent `.minimap-door` and `butbgover.png` (`#00b3ed`) for adjacent `.minimap-door.here`.
