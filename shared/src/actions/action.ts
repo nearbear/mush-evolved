@@ -236,7 +236,7 @@ export class Action<T extends { type: string }> {
     return null;
   }
 
-  apply(state: GameState, player: PlayerState, target: T): void {
+  apply(state: GameState, player: PlayerState, target: T, cost?: ActionCost): void {
     return;
   }
 

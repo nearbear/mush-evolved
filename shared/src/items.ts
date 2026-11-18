@@ -89,13 +89,26 @@ export const DRUG_ITEMS: readonly string[] = Array.from({ length: 12 }, (_, i) =
 
 /** The charges an item of this type starts with, or undefined if it has none. Charged weapons start full. */
 export function startCharges(config: DeepReadonly<GameConfig>, type: string): number | undefined {
-  return type === MICROWAVE_ITEM ? config.expressCook.charges.start : config.weapons.types[type]?.charges;
+  if (type === MICROWAVE_ITEM) return config.expressCook.charges.start;
+  if (type === "scooter") return config.scooter.charges.start;
+  return config.weapons.types[type]?.charges;
 }
 
 /** Each microwave regains `expressCook.charges.perDay`, up to the max. Mutates a state the caller already cloned. */
 export function rechargeMicrowaves(state: GameState): void {
   const { max, perDay } = state.config.expressCook.charges;
   for (const item of state.items) if (item.type === MICROWAVE_ITEM) item.charges = Math.min(max, (item.charges ?? 0) + perDay);
+}
+
+/** Each Antigrav Scooter regains `scooter.charges.perCycle`, up to the max. Mutates a state the caller already cloned. */
+export function rechargeScooters(state: GameState): void {
+  const { max, perCycle } = state.config.scooter.charges;
+  for (const item of state.items) if (item.type === "scooter") item.charges = Math.min(max, (item.charges ?? 0) + perCycle);
+}
+
+/** The first working, charged Antigrav Scooter the player is carrying, if any. */
+export function activeScooter(state: Readonly<GameState>, player: Readonly<PlayerState>): ItemState | undefined {
+  return itemsIn(state, { kind: "player", id: player.id }).find((i) => i.type === "scooter" && isWorking(i) && (i.charges ?? 0) > 0);
 }
 
 export const ITEM_TYPES: Record<string, ItemType> = {
@@ -211,7 +224,7 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   old_shirt: {},
   plastenite_armor: { dismantle: { metal: 0, plastic: 1, chance: 0.12 }, canBreak: true, canBeSabotaged: true, repairChance: 0.12, notImplemented: true },
   sniper_helmet: { dismantle: { metal: 1, plastic: 1, chance: 0.12 }, canBreak: true, canBeSabotaged: true, repairChance: 0.25, notImplemented: true },
-  scooter: { dismantle: { metal: 2, plastic: 1, chance: 0.25 }, canBreak: true, canBeSabotaged: true, repairChance: 0.25, notImplemented: true },
+  scooter: { dismantle: { metal: 2, plastic: 1, chance: 0.25 }, canBreak: true, canBeSabotaged: true, repairChance: 0.25 },
   space_suit: { dismantle: { metal: 1, plastic: 1, chance: 0.12 }, canBreak: true, canBeSabotaged: true, repairChance: 0.06 },
   // Functionless eMush starting items (icon + "Not implemented" caption until their mechanics are built).
   mad_kube: { notImplemented: true },

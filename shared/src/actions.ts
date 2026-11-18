@@ -138,7 +138,7 @@ export interface ActionDef<A extends Action> {
   cost(state: Readonly<GameState>, player: Readonly<PlayerState>, action: A): ActionCost;
   /** How far modifiers move the price from the action's own (`Action.adjustment`). */
   adjustment(state: Readonly<GameState>, player: Readonly<PlayerState>, action: A): ActionCost;
-  apply(next: GameState, player: PlayerState, action: A): void;
+  apply(next: GameState, player: PlayerState, action: A, cost?: ActionCost): void;
   /** Chance of success, 0 to 1; applyAction rolls it once with the seeded RNG after the cost is paid (skipped at 1). */
   chance(state: Readonly<GameState>, player: Readonly<PlayerState>, action: A): number;
   /** Cycles until a `cooldown` refusal clears (0 when none applies). */

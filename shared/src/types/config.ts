@@ -511,6 +511,10 @@ export interface GameConfig {
   sprinter: {
     extraMpPerConversion: number; // Extra MP the `sprint` skill gets from each AP-to-MP conversion (owner, 2026-10-24; eMushpedia).
   };
+  scooter: {
+    extraMpPerConversion: number; // Extra MP the Antigrav Scooter gives on each AP-to-MP conversion (owner, 2026-11-17). Does not stack with `sprint` or another scooter.
+    charges: { start: number; max: number; perCycle: number }; // Starts with 8 charges, spends 1 per conversion, recharges 1 per cycle (owner, 2026-11-17).
+  };
   anathema: {
     cost: { ap: number }; // AP the `juge` (Persecutor) skill's Anathema costs (owner, 2026-10-24; eMushpedia).
     successFactor: number; // An Outcast's chance on every action that rolls one is multiplied by this (owner, 2026-10-24: x0.8).

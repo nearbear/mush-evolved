@@ -27,7 +27,7 @@ import { teleport, teleportBlocked } from "./kube.ts";
 import { newLostAnalysis, rollAtSelection } from "./lostAnalysis.ts";
 import { hopelessCycle } from "./morale.ts";
 import { relayView } from "./relayView.ts";
-import { itemsIn, rechargeMicrowaves, startCharges, visibleItemsIn } from "./items.ts";
+import { itemsIn, rechargeMicrowaves, rechargeScooters, startCharges, visibleItemsIn } from "./items.ts";
 import { actionFailed, apRefill, mpGain, carePointsGain, channelLimit, computerPointsCap, computerPointsGain, cookPointsGain, shootPointsGain, cycleChanged, designerPointsGain, engineerPointsGain, gardenPointsGain, dailyMoraleLoss, inventorySlots, movementRules, pilgredPointsGain, satietyLoss } from "./modifiers.ts";
 import { contaminationSeenBy, convert } from "./infection.ts";
 import { isHungry, publicStatusesOf, statusesOf } from "./statuses.ts";
@@ -392,14 +392,14 @@ export function performAction(next: GameState, actor: PlayerState, action: Actio
     if (chance < 1) {
       const succeeded = rollFloat(next) < chance;
       def.recordOutcome(next, actor, succeeded);
-      if (succeeded) def.apply(next, actor, action);
+      if (succeeded) def.apply(next, actor, action, cost);
       else {
         def.fail(next, actor, action);
         actionFailed(next, actor, cost.ap);
       }
     } else {
       def.recordOutcome(next, actor, true);
-      def.apply(next, actor, action);
+      def.apply(next, actor, action, cost);
     }
   };
   withNimbleActor(isNimble(actor) ? actor.id : null, run);
@@ -514,6 +514,7 @@ function advanceCycle(state: GameState, at?: number): void {
   burnOxygen(state, oxygenSaved);
   commsCycle(state);
   botanyCycle(state);
+  rechargeScooters(state);
   const { cyclesPerDay } = state.config;
   const newDay = (state.cycle - 1) % cyclesPerDay === 0;
   if (state.config.drugDispenser.resetCycles.includes(((state.cycle - 1) % cyclesPerDay) + 1) && hasDrugDispenser(state)) resetDrugDispenser(state);
