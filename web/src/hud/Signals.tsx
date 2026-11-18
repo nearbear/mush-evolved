@@ -75,24 +75,34 @@ function NextRebel({ next, cycle }: { next: NonNullable<CommsTerminalView["nextR
   return (
     <li className="signal-entry signal-next">
       <SignalIcon kind="rebel" />
-      <strong className="signal-entry-name">{names.rebelBase(next.base)}</strong>
-      <span className="signal-entry-caption">{t("signals.next", { count: Math.max(0, next.at - cycle) })}</span>
+      <span className="signal-entry-main">
+        <strong className="signal-entry-name">{names.rebelBase(next.base)}</strong>
+        <span className="signal-entry-caption">{t("signals.next", { count: Math.max(0, next.at - cycle) })}</span>
+      </span>
     </li>
   );
 }
 
-/** One row of the list: the kind's icon (its name in a tooltip), the name, then the time left or how it ended. One press opens it. */
+/** One row of the list: the kind's icon, the name with its progress/countdown caption underneath, and the overall status on the right. */
 function SignalEntry({ signal, cycle, onOpen }: { signal: SignalView; cycle: number; onOpen: (id: string) => void }) {
   const { t } = useTranslation();
   const name = useSignalName(signal);
-  const caption = useSignalCaption();
+  const activeCaption = useActiveSignalCaption();
   const active = isActiveSignal(signal);
+  const caption = active ? activeCaption(signal, cycle) : undefined;
+  const status = active
+    ? signal.feed.length === 0
+      ? t("signals.hailing")
+      : undefined
+    : t(`signals.status.${signal.status as Exclude<SignalView["status"], "active">}`);
   return (
     <button type="button" className="signal-entry" data-status={signal.status} aria-label={t("signals.open", { name })} onClick={() => onOpen(signal.id)}>
       <SignalIcon kind={signal.kind} />
-      <strong className="signal-entry-name">{name}</strong>
-      <span className="signal-entry-caption">{caption(signal, cycle)}</span>
-      {active && signal.feed.length === 0 && <span className="signal-hailing">{t("signals.hailing")}</span>}
+      <span className="signal-entry-main">
+        <strong className="signal-entry-name">{name}</strong>
+        {caption && <span className="signal-entry-caption">{caption}</span>}
+      </span>
+      {status && <span className={active ? "signal-entry-status signal-hailing" : "signal-entry-status"}>{status}</span>}
     </button>
   );
 }
@@ -108,17 +118,25 @@ export function SignalIcon({ kind }: { kind: SignalView["kind"] }) {
   );
 }
 
+function useActiveSignalCaption(): (signal: SignalView, cycle: number) => string {
+  const { t } = useTranslation();
+  return (signal, cycle) => {
+    const count = Math.max(0, signal.endsAt - cycle);
+    if (!signal.rebel) return t("signals.leaves", { count });
+    return `${t("signals.decoded", { percent: signal.rebel.progress })} ${t("signals.expires", { count })}`;
+  };
+}
+
 /**
  * A signal's caption: how it ended; or, while active, the time it has left, after the share decoded for a rebel base
  * ("40% decoded. Lost in 3 cycles.").
  */
 export function useSignalCaption(): (signal: SignalView, cycle: number) => string {
   const { t } = useTranslation();
+  const activeCaption = useActiveSignalCaption();
   return (signal, cycle) => {
     if (!isActiveSignal(signal)) return t(`signals.status.${signal.status as Exclude<SignalView["status"], "active">}`);
-    const count = Math.max(0, signal.endsAt - cycle);
-    if (!signal.rebel) return t("signals.leaves", { count });
-    return `${t("signals.decoded", { percent: signal.rebel.progress })} ${t("signals.expires", { count })}`;
+    return activeCaption(signal, cycle);
   };
 }
 

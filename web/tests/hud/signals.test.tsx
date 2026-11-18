@@ -114,7 +114,9 @@ describe("Signals tab", () => {
     const { s, signal, ui } = comms(true);
     const { rerender } = render(ui(s));
     fireEvent.click(screen.getByRole("tab", { name: "Signals (1)" }));
-    expect(screen.getByText("Hailing")).toBeTruthy();
+    const hailing = screen.getByText("Hailing");
+    expect(hailing.classList.contains("signal-entry-status")).toBe(true);
+    expect(screen.getByText("Leaves in 4 cycles.").closest(".signal-entry-main")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Open the conversation with Transport" }));
     expect(screen.getByRole("button", { name: /Contact/ })).toBeTruthy();
 
@@ -185,7 +187,9 @@ describe("Signals tab", () => {
     call.feed.push({ from: "signal", at: s.cycle, key: "signals.rebel.message.WOLF", params: { progress: 100 }, closes: true });
     render(ui(s));
     fireEvent.click(screen.getByRole("tab", { name: "Signals" }));
-    expect(screen.getByText("Decoded")).toBeTruthy();
+    const decoded = screen.getByText("Decoded");
+    expect(decoded.classList.contains("signal-entry-status")).toBe(true);
+    expect(decoded.closest("button.signal-entry")?.querySelector(".signal-entry-caption")).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Open the conversation with Lost Children of Wolf" }));
     expect(screen.getByText(/broadcasting centre in Mumbai/)).toBeTruthy();
   });

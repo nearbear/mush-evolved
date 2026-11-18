@@ -4212,3 +4212,21 @@ Owner specified Syphilis (20-32 cycles, STT/DTT spread, -3 max morale and HP, +2
 - **Burnt Hand** (owner, same day): the stubbed `burnt_hand_injury` got its own modifier: +1 AP on actions that already cost AP, -1 max HP. Claude checked eMushpedia's Injuries page first (it says injury penalties apply even to free actions, not to movement) and asked one scope question; the owner chose "only actions that already cost AP". Moves are excluded on the wiki's word. An earlier surgery test had used burnt hand as an arbitrary injury and broke once the injury had an effect; tests that need "any injury" should use one that is still a stub or say why.
 - **Injury stats** (owner, same day): `allInjuryStats` went from one shared `{type: "injury"}` to one entry per injury with a `label` and a new `overrides` string array (the lower-tier injuries it replaces, from `INJURY_UPGRADES`). The injuries' placeholder entries left `allDiseaseStats`, which nothing read for injuries. `INJURY_UPGRADES` still drives `addDisease`; a test keeps it equal to the `overrides` data rather than switching the code over unasked.
 - **Injury stats reverted** (owner, same day): the per-injury `allInjuryStats` with `overrides` was undone on request; the config is back to injuries listed in `allDiseaseStats` and a single `{type: "injury"}` in `allInjuryStats`.
+
+## 2026-11-17 — Minimap UI updates
+
+- Updated `.room-corner` in `web/src/styles/iso.css` to use the ID card's light stock (`--terminal-bg`) with dark ink tokens (`--text: #171b5c`, `--muted: #4a5a8f`).
+- Right-aligned the room name and moved status icons to the left in `web/src/GameView.tsx`, `web/src/styles/iso.css`, `web/src/scene/ShipPlanMap.tsx`, and `web/src/styles/minimap.css`.
+- Switched `RoomCaption` in `web/src/scene/ShipPlanMap.tsx` to `names.characterGiven` for hovered-room occupant captions.
+- Brightened `.minimap-room.pointed` / `:focus-visible` (`#ffffff` at `0.9` opacity) and desaturated intact `.minimap-door` fills (`#b8c4d4` / `#e2e8f0`) while keeping broken doors yellow in `web/src/styles/minimap.css`.
+
+## 2026-11-17 — Comms center signal list layout
+
+- Stacked each signal row's name and its `% decoded` / `cycles until/remaining` caption inside `.signal-entry-main` in `web/src/hud/Signals.tsx` and `web/src/hud/settings.css`.
+- Moved overall statuses (`Hailing` and inactive outcomes `Deal made`, `Refused`, `Signal lost`, `Decoded`) into a non-wrapping `.signal-entry-status` element pinned to the right (`flex: none; margin-inline-start: auto; white-space: nowrap`).
+- Kept `useSignalCaption` intact for `SignalConversation.tsx` by extracting `useActiveSignalCaption`.
+
+## 2026-11-17 — Minimap dark UI theme palette
+
+- Switched `.room-corner` in `web/src/styles/iso.css` back to dark text (`#fff`, `--muted: #c7d2f0`) over `--chrome-rim` (`#2f4fc0`, the outermost panel glow blue).
+- Updated `web/src/styles/minimap.css` so rooms use `--panel-fill` (`#17172c`), adjacent `.reachable` rooms use `#213578` (inactive tab blue), hovered `.pointed` rooms use `#4e73df`, and `.here` uses `--terminal-bg` (`#c2f3fc`, selected tab cyan).
