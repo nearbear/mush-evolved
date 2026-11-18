@@ -34,7 +34,11 @@
 .cycle-countdown {
   display: inline-flex;
   align-items: baseline;
+  /* Pixel Square's digits sit from 0 to 700 (asc=700, desc=-200), so 0.2em top padding balances the empty descender
+     space below, keeping the top from clipping and centering the digits with the Kanit day/cycle text. */
+  padding-top: 0.2em;
   font-family: var(--font-pixel);
+  line-height: 1;
 }
 .clock-digit {
   display: inline-flex;
