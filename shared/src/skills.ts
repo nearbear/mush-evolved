@@ -312,6 +312,8 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   infantryman: "full",
   // Mush skill (Demoralizer): 2 AP, covert + aggressive, lowers a living roommate's morale by 2 (owner, 2026-11-14, actions/demoralize.ts).
   disheartening_contact: "full",
+  // Mush skill (Doorman): sabotage any working door of your room, always succeeds; first use each day free, later ones cost 2 AP, covert (owner, 2026-11-14, actions/sabotage_door.ts).
+  doorman: "full",
 };
 
 export function skillStatus(skill: string): SkillStatus {
