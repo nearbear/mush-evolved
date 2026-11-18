@@ -526,3 +526,7 @@
 .alert-list li + li {
   margin-top: 2px;
 }
+/* A ship resource's popover: how it is gained, lost, and what happens at 0 (ShipResources `ResourceInfo`). */
+.resource-info li + li {
+  margin-top: var(--space-1);
+}

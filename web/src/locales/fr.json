@@ -45,7 +45,29 @@
     "alertsUnreported_one": "1 autre non signalé",
     "alertsUnreported_other": "{{count}} autres non signalés",
     "alertsUnreported_many": "{{count}} autres non signalés",
-    "alertsNone": "Aucun incendie ni panne signalé"
+    "alertsNone": "Aucun incendie ni panne signalé",
+    "info": {
+      "oxygen": {
+        "gain": "<b>Gagné :</b> chaque jour grâce aux plantes mûres, saines et arrosées, lors des expéditions, et en remettant des capsules d'oxygène dans un réservoir.",
+        "loss": "<b>Perdu :</b> une part brûle à chaque cycle, chaque réservoir d'oxygène cassé fuit, et des capsules sont prises dans un réservoir.",
+        "zero": "<b>À 0 :</b> un membre d'équipage au hasard suffoque à chaque changement de cycle."
+      },
+      "fuel": {
+        "gain": "<b>Gagné :</b> lors des expéditions, et en remettant des capsules de fuel dans un réservoir.",
+        "loss": "<b>Perdu :</b> chaque capsule prise dans un réservoir pour la chambre de combustion. Le vaisseau brûle le fuel de la chambre pour voyager.",
+        "zero": "<b>À 0 :</b> plus aucune capsule ne peut être prise, donc une fois la chambre vide, le vaisseau ne peut plus voyager."
+      },
+      "hull": {
+        "gain": "<b>Gagnée :</b> en la réparant avec des débris métalliques.",
+        "loss": "<b>Perdue :</b> tirs des hunters et astéroïdes (une fois que le bouclier plasma a pris sa part), incendies, et décollages et atterrissages ratés des patrouilleurs.",
+        "zero": "<b>À 0 :</b> le Daedalus est détruit, tout le monde meurt et les Mush gagnent."
+      },
+      "plasmaShield": {
+        "gain": "<b>Gagné :</b> il se régénère à chaque cycle tant qu'il est activé dans le BIOS.",
+        "loss": "<b>Perdu :</b> il encaisse une partie de chaque tir de hunter et de chaque astéroïde (une plus grande partie une fois le projet Bouclier plasma terminé).",
+        "zero": "<b>À 0 :</b> la coque encaisse chaque tir en entier, comme lorsque le bouclier est désactivé (il affiche alors 0)."
+      }
+    }
   },
   "peek": {
     "doorTo": "Porte vers {{room}}",

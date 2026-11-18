@@ -4339,3 +4339,10 @@ Follow-up: a muted player also can't create a private channel (`createChannel` r
 ### 2026-11-17: "Implement Old Faithful" turned out to be done already
 
 Asked to implement the machine gun (Old Faithful), Claude checked the code against the eMush spec (`npm run emush -- spec old_faithful`) before writing anything. Stats, hit and miss tables, heaviness, blueprint, starting draw, Trash Load, locales and tests were all in place, so no code was written. What worked: checking what existed before planning, which avoided duplicating a finished feature. The only change was one stale sentence in `implemented-rules.md` that still said nothing made Lizaro or Old Faithful.
+
+## 2026-11-17: Ship resource tooltips explain gain, loss and 0
+
+- **Asked:** tooltips on the four ship resources (oxygen, fuel, hull, plasma shield) saying how each is gained, lost, and what happens at 0.
+- **Done:** each resource's popover in `ShipResources.tsx` (`ResourceInfo`) now lists three lines under "Name: value/max", keys `shipResources.info.<id>.{gain,loss,zero}` in en/fr/es. Text written from the code, not the wiki: oxygen (plants daily, expeditions, capsules returned / per-cycle burn, broken tank leaks, capsules taken / a random crew member suffocates each cycle), fuel (expeditions, capsules returned / capsules taken for the combustion chamber / no capsules, so no travel once the chamber is empty), hull (metal-scrap repair / hunters and asteroids after the shield, fires, rough patrol ship manoeuvres / ship destroyed, Mush win), shield (BIOS-on regen / its share of hits, bigger with the Plasma shield project / hull takes full hits, also when switched off).
+- **Choices:** no numbers in the text (they come from `config`, which the client doesn't have, and would go stale); projects other than Plasma shield (Oxygenated ducts, Armoured corridors) left out to keep it short.
+- **Worked / needed correction:** grepping every write to `state.ship.*` gave the full list of sources and sinks; fr/es are drafts (no `agy` for a second review).

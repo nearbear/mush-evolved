@@ -44,7 +44,29 @@
     "alertDoorDetector": "Broken door: {{roomA}} – {{roomB}} ({{detector}})",
     "alertsUnreported_one": "1 more unreported",
     "alertsUnreported_other": "{{count}} more unreported",
-    "alertsNone": "No fires or breakdowns reported"
+    "alertsNone": "No fires or breakdowns reported",
+    "info": {
+      "oxygen": {
+        "gain": "<b>Gained:</b> ripe, healthy, watered plants each day, expeditions, and oxygen capsules put back in a tank.",
+        "loss": "<b>Lost:</b> burned every cycle, leaked by each broken oxygen tank, and taken out of a tank as capsules.",
+        "zero": "<b>At 0:</b> a random crew member suffocates at every cycle change."
+      },
+      "fuel": {
+        "gain": "<b>Gained:</b> expeditions, and fuel capsules put back in a tank.",
+        "loss": "<b>Lost:</b> taken out of a tank as capsules, to load into the combustion chamber. The ship burns the chamber's fuel to travel.",
+        "zero": "<b>At 0:</b> no more capsules can be taken, so once the chamber is empty the ship can't travel."
+      },
+      "hull": {
+        "gain": "<b>Gained:</b> repairs with metal scraps.",
+        "loss": "<b>Lost:</b> hunter fire and asteroids (after the plasma shield takes its share), fires, and rough patrol ship takeoffs and landings.",
+        "zero": "<b>At 0:</b> the Daedalus is destroyed, everyone dies and the Mush win."
+      },
+      "plasmaShield": {
+        "gain": "<b>Gained:</b> it regenerates every cycle while it is switched on in the BIOS.",
+        "loss": "<b>Lost:</b> it takes part of every hit from hunters and asteroids (a bigger part once the Plasma shield project is done).",
+        "zero": "<b>At 0:</b> the hull takes every hit in full, as it does while the shield is switched off (it then shows 0)."
+      }
+    }
   },
   "peek": {
     "doorTo": "Door to {{room}}",
