@@ -107,7 +107,7 @@ describe("alien fruit generation and launch state", () => {
   });
 
   it("keeps bananas unchanged and starts the ship with no alien fruits", () => {
-    expect(ITEM_TYPES.fruit_banana).toEqual({ fruit: true, consume: { ap: 1, satiety: 1, morale: 1, hp: 1 } });
+    expect(ITEM_TYPES.fruit_banana).toEqual({ fruit: true, perishable: true, consume: { ap: 1, satiety: 1, morale: 1, hp: 1 } });
     expect(DEFAULT_CONFIG.botany.growCycles.fruit_banana).toBe(36);
     const s = createGame(makeSeats(3), DEFAULT_CONFIG, 5);
     expect(Object.keys(s.fruits)).toEqual([...ALIEN_FRUIT_ITEMS]);

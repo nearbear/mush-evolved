@@ -65,6 +65,9 @@ export type LogParams = Record<string, string | number>;
 
 export type ItemId = string;
 
+/** How far a perishable food has spoiled (spoilage.ts), one stage per day change: unstable, then hazardous, then decomposing. */
+export type SpoilStage = "unstable" | "hazardous" | "decomposing";
+
 /** Where an item is: a player's inventory or a room's (unlimited) storage. */
 export type Container = { kind: "player"; id: PlayerId } | { kind: "room"; id: RoomId };
 
@@ -91,6 +94,8 @@ export interface ItemState {
   broken?: true;
   /** Green jelly (actions/green_jelly.ts): cycle changes left before it breaks. Mush-only in views. */
   jelly?: number;
+  /** For perishable food (spoilage.ts): how far it has spoiled; none while fresh. Chef-only in views. */
+  spoil?: SpoilStage;
   /** Shielding from an Engineer's Reinforce (actions/reinforce.ts), up to `config.reinforce.max`. Engineers and Mush see it in views. No effect yet. */
   shield?: number;
   /** For a support drone (drones.ts): its name, serial number, upgrades and failure counts. */

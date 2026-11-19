@@ -9,6 +9,7 @@ import { applyDrug } from "../drugs.ts";
 import { applyFruit, rollFruitDiseases } from "../fruits.ts";
 import { contaminate } from "../infection.ts";
 import { isFullBelly } from "../statuses.ts";
+import { eatSpoiled } from "../spoilage.ts";
 import type { GameState, PlayerState } from "../types.ts";
 import { changeAP, changeMP, gainMorale } from "../adjustStats.ts";
 
@@ -47,6 +48,8 @@ export class ConsumeAction extends Action<ConsumeActionData> {
       gainMorale(state, player, state.fruits[item.type]?.morale ?? 0);
       // A Mush still catches a fruit's diseases, as a carrier (owner, 2026-11-14).
       rollFruitDiseases(state, player, item.type);
+      // Spoiled food too: a Mush carries what it catches (owner, 2026-11-18).
+      eatSpoiled(state, player, item);
       logSecret(state, player.id, "consumed", { name: player.character, item: item.type });
       consumedByMush(state, player, item);
       return;
@@ -66,6 +69,7 @@ export class ConsumeAction extends Action<ConsumeActionData> {
     applyDrug(state, player, item.type);
     applyFruit(state, player, item.type);
     consumed(state, player, item);
+    eatSpoiled(state, player, item);
     logSecret(state, player.id, "consumed", { name: player.character, item: item.type });
     // Fungal cuisine: food effects apply first, then the human is contaminated by the item's spore level (even if it converts them).
     if (player.role === "human" && item.spores) {

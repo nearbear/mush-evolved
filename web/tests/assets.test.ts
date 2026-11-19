@@ -65,3 +65,27 @@ describe("itemViewIcon", () => {
     expect(itemViewIcon({ type: "customized_blaster" })).toBe(itemViewIcon({ type: "blaster" }));
   });
 });
+
+// Every icon constant is a lookup into an import.meta.glob map, asserted with `!`.
+// A name missing from the glob pattern (or misspelled) compiles fine and renders a
+// blank <img>, so walk every exported constant and require each leaf to be a URL.
+describe("exported asset constants", () => {
+  it("resolve every lookup to a non-empty URL", async () => {
+    const assets: Record<string, unknown> = await import("../src/art/assets.ts");
+    const missing: string[] = [];
+    const walk = (value: unknown, path: string): void => {
+      if (typeof value === "function" || typeof value === "number") return;
+      if (typeof value === "string") {
+        if (value === "") missing.push(path);
+      } else if (Array.isArray(value)) {
+        value.forEach((v, i) => walk(v, `${path}[${i}]`));
+      } else if (value !== null && typeof value === "object") {
+        for (const [k, v] of Object.entries(value)) walk(v, `${path}.${k}`);
+      } else {
+        missing.push(path);
+      }
+    };
+    for (const [name, value] of Object.entries(assets)) walk(value, name);
+    expect(missing).toEqual([]);
+  });
+});

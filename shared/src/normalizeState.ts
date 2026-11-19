@@ -383,6 +383,7 @@ function itemFields(raw: Partial<SpaceDebris>, t: string): AllKeys<SpaceDebris> 
     broken: raw.broken,
     jelly: raw.jelly,
     shield: raw.shield,
+    spoil: raw.spoil,
     drone: opt(raw.drone, normalizeDrone),
     document: opt(raw.document, normalizeDocument),
     owner: raw.owner,

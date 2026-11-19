@@ -174,6 +174,7 @@ export const ITEM_STATE_FIELDS: Record<string, FieldRule> = {
   hiddenBy: { reach: "never", test: "hide.test.ts", note: "The hidden item is in its hider's view only, flagged `hidden`; the field itself is never sent." },
   plant: { reach: "filtered", test: "botany.test.ts", note: "Species, age and thirst with the item; `sick` only to the Botanist role (Botanist or Skilful), never to anyone else, Mush included." },
   jelly: { reach: "filtered", test: "green_jelly.test.ts", note: "Mush only (living): cycles left before the jelly breaks the item." },
+  spoil: { reach: "filtered", test: "spoilage.test.ts", note: "Living Chefs only: how far perishable food has spoiled." },
   shield: { reach: "filtered", test: "reinforce.test.ts", note: "Living Engineers and Mush only: the shielding on the item." },
   broken: { reach: "filtered", test: "broken_items.test.ts", note: "Goes with the item to whoever can see it, like its type." },
   document: { reach: "filtered", test: "lostAnalysis.test.ts", note: "A printed document's rows (characters and marks), to whoever can see the item (#394)." },

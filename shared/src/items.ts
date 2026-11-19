@@ -20,6 +20,8 @@ export interface ItemType {
     /** Morale the eater gains (negative: loses), within 0 and `maxMorale`. */ morale?: number;
     /** HP the eater gains, up to `maxHp`. Never lowers HP: losses go through `damage`. */ hp?: number;
   };
+  /** Perishable food (spoilage.ts): it spoils one stage at each day change. Owner, 2026-11-18, eMush's list: coffee, cooked rations, bananas and alien fruits. */
+  perishable?: boolean;
   /** A fruit: sowing it in an empty hydropot grows a plant of this species (its own type), which produces more of it (botany.ts). */
   fruit?: boolean;
   /** A drug (drugs.ts): consuming it applies the effects drawn for this ship, and full belly does not stop it. */
@@ -147,12 +149,12 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   // Owner, 2026-11-07 (#397): heals 2 HP, single use (actions/use_bandage.ts).
   bandage: {},
   // Confirmed 2026-10-13: +2 AP. Satiety +1 is a placeholder (2026-10-14).
-  coffee: { consume: { ap: 2, satiety: 1 }, canBreak: true, isDestroyedWhenBroken: true },
+  coffee: { consume: { ap: 2, satiety: 1 }, perishable: true, canBreak: true, isDestroyedWhenBroken: true },
   // Owner, 2026-11-05 (eMushpedia "Ration standard"): +4 AP and +4 satiety, cooked or not; Sirius adds 1 AP (comms.ts).
   // Confirmed 2026-10-16: cook it in the refectory for 1 AP.
   // Owner, 2026-10-19: edible raw, like a cooked one but for 1 morale.
   uncooked_ration: { cook: { into: "cooked_ration" }, consume: { ap: 4, satiety: 4, morale: -1 }, canBreak: true, isDestroyedWhenBroken: true  },
-  cooked_ration: { consume: { ap: 4, satiety: 4 }, canBreak: true, isDestroyedWhenBroken: true  },
+  cooked_ration: { consume: { ap: 4, satiety: 4 }, perishable: true, canBreak: true, isDestroyedWhenBroken: true  },
   camera: { canDrop: false, dismantle: { metal: 1, plastic: 0, chance: 0.25 }, canBreak: true, canBeSabotaged: true, repairChance: 0.25 },
   // Showering with soap in your inventory costs 1 less AP (confirmed 2026-10-14). Reusable.
   soap: {canBreak: true, isDestroyedWhenBroken: true},
@@ -166,9 +168,9 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   // grow in it (botany.ts), anywhere, carried too.
   [TREE_POT_ITEM]: {},
   // Owner, 2026-10-22: the original's banana (genFruitList): +1 AP, +1 satiety, +1 morale, +1 HP. Named after its icon.
-  fruit_banana: { fruit: true, consume: { ap: 1, satiety: 1, morale: 1, hp: 1 } },
+  fruit_banana: { fruit: true, perishable: true, consume: { ap: 1, satiety: 1, morale: 1, hp: 1 } },
   // #437 (owner, 2026-11-14): 12 alien species whose rolled stats live on `state.fruits`.
-  ...Object.fromEntries(ALIEN_FRUIT_ITEMS.map((id) => [id, { fruit: true, consume: { ap: 1, satiety: 1 } }])),
+  ...Object.fromEntries(ALIEN_FRUIT_ITEMS.map((id) => [id, { fruit: true, perishable: true, consume: { ap: 1, satiety: 1 } }])),
   // Owner, 2026-10-23, the wiki: one unit of fuel, taken from a tank and loaded into the combustion chamber. One slot
   // each, never dropped (actions/take_fuel.ts). Named after its icon.
   [FUEL_CAPSULE_ITEM]: { canDrop: false },

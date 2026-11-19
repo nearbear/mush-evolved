@@ -231,6 +231,8 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   // Decided 2026-10-18 (owner, #36): uninstalling costs 1 AP, anyone can do it, no failure chance. Dismantling an installed camera uses `dismantle`.
   uninstall: { cost: { ap: 1 }, dirtyChance: 0.05, injuryChance: 0.05 },
   consume: { dirtyChance: 0.15 },
+  // Owner, 2026-11-18, from eMush: unstable food is harmless, hazardous makes you sick half the time, decomposing 90%; always Food Poisoning.
+  spoilage: { sickChance: { unstable: 0, hazardous: 0.5, decomposing: 0.9 }, disease: "food_poisoning_disease" },
   dispense: { dirtyChance: 0.05, coffeeCycles: [1] },
   // Owner, 2026-10-23, the wiki: fuel moves by hand, tank to chamber, 0 AP each. The 25% dirt chance is a placeholder (the wiki says only "dirty-prone").
   // Owner, 2026-10-24: oxygen capsules move by hand like fuel, with the same numbers.

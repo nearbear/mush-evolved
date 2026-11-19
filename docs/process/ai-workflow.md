@@ -4399,3 +4399,14 @@ The #114 backoff test in `server/tests/GameRoom.bots.test.ts` failed about 1 run
 - Found on the way: the Icarus panel reused the `patrol-cockpit` class, whose CSS hides the room corner, so the minimap was hidden aboard the Icarus. It now has its own `icarus-cabin` class and stylesheet (`styles/icarus.css`).
 - The view had no seat count, so `PlayerView.icarusSeats` (`maxCrew`, public since the project is) was added rather than hardcoding 4/6 in the client. The podium CSS moved from `lobby.css` to `styles/podium.css` with a `Podium` component shared by both screens.
 - Interpretation calls to confirm: whoever is aboard stands on a podium (a `pick-tile` that selects them, replacing the old name buttons); the away state uses the same layout, with the planet, countdown and Read the report in the bar; a patrol ship's landing shows one podium. No visual check was run (the play skill is user-triggered); the 9rem/7rem top padding that keeps podiums clear of the ID card and minimap is an estimate.
+
+## 2026-11-18: Food spoilage from eMush
+
+- **Decision (owner):** port eMush's spoilage. Perishable food (coffee, cooked rations, bananas, alien fruits) goes unstable, hazardous, then decomposing, one stage per day change; eating hazardous food gives Food Poisoning at 50%, decomposing at 90%. The owner chose three points where eMush and this project differ: Mush roll and carry the disease (consistent with the fruit-disease carrier rule, not eMush's immunity), the stage is shown to Chefs only (eMush's code, not the wiki's "Chef or Botanist"), and NERON's food-destruction BIOS option is deferred to #461.
+- **What worked:** `npm run emush -- spec` on `RationCycleHandler` and `DiseaseCauseService` gave the transition chain and the 50%/90% odds. eMushpedia supplied the perishable list and the fr/es terms (Instable/Avarié/Décomposition, Inestable/Averiado/Descomposición). The original's `food_*` icons were already in the UI icon folder.
+- **Needed correction:** free-text `spec` queries are not supported (it wants a file or topic), and grepping `MechanicsData.php` for the perishable flag only gave line numbers, so the wiki was the practical source. Playing four day changes in a test ended the game (starvation), so the later stages are tested by calling `spoilFood` directly.
+
+## 2026-11-18: Blank spoilage icons, and a test for missing art lookups
+
+- The new spoilage icons rendered as `<img>` with no `src`: `SPOIL_ICONS` looked up `food_*` names that weren't in the `uiIcons` glob pattern in `web/src/art/assets.ts`, and the `!` assertion hid the `undefined` from the typechecker. Fixed by adding the three names to the glob.
+- Added a test in `web/tests/assets.test.ts` that walks every exported constant in `assets.ts` (nested maps and arrays) and fails on any missing or empty URL. Checked that it catches the original bug by reverting the fix temporarily; it named all three `SPOIL_ICONS` entries.

@@ -17,6 +17,7 @@ import { isNimble } from "./actions/nimble.ts";
 import { researchNeedsView } from "./actions/research.ts";
 import { equipmentHere } from "./equipment.ts";
 import { jellyCycle, leakOxygen } from "./breakage.ts";
+import { seesSpoil, spoilFood } from "./spoilage.ts";
 import { newProjectDeck } from "./projects.ts";
 import { doorsOf } from "./doors.ts";
 import { fireCycle, ignitePending, isGardenProtected, isOnFire } from "./fire.ts";
@@ -552,6 +553,7 @@ function advanceCycle(state: GameState, at?: number): void {
     grantCarePoints(state);
     rechargeMicrowaves(state);
     botanyDay(state);
+    spoilFood(state);
     expirePlans(state);
   }
   for (const p of state.players) {
@@ -900,8 +902,8 @@ export const legalIn = (view: Pick<PlayerView, "actions">): Action[] => view.act
 const seesShield = (viewer: Readonly<PlayerState>): boolean => viewer.alive && (viewer.role === "mush" || hasSkill(viewer, "engineer"));
 
 /** An item as `viewer` sees it; a plant's sickness only for the Botanist role (`plantView`). */
-function itemView({ id, type, of, builds, charges, teaches, plant, spores, hiddenBy, broken, jelly, shield, drone, document }: ItemState, viewer: Readonly<PlayerState>): ItemView {
-  return { id, type, ...(broken && { broken }), ...(jelly !== undefined && viewer.role === "mush" && viewer.alive && { jelly }), ...(shield !== undefined && seesShield(viewer) && { shield }), ...(hiddenBy === viewer.id && { hidden: true as const }), ...(spores && viewer.role === "mush" && viewer.alive && { spores }), ...(of !== undefined && { of }), ...(builds !== undefined && { builds }), ...(charges !== undefined && { charges }), ...(teaches !== undefined && { teaches }), ...(plant && { plant: plantView(plant, viewer) }), ...(drone && { drone: droneView(drone) }), ...(document && { document: { kind: document.kind, rows: document.rows.map((r) => ({ ...r })) } }) };
+function itemView({ id, type, of, builds, charges, teaches, plant, spores, hiddenBy, broken, jelly, shield, drone, document, spoil }: ItemState, viewer: Readonly<PlayerState>): ItemView {
+  return { id, type, ...(broken && { broken }), ...(spoil !== undefined && seesSpoil(viewer) && { spoil }), ...(jelly !== undefined && viewer.role === "mush" && viewer.alive && { jelly }), ...(shield !== undefined && seesShield(viewer) && { shield }), ...(hiddenBy === viewer.id && { hidden: true as const }), ...(spores && viewer.role === "mush" && viewer.alive && { spores }), ...(of !== undefined && { of }), ...(builds !== undefined && { builds }), ...(charges !== undefined && { charges }), ...(teaches !== undefined && { teaches }), ...(plant && { plant: plantView(plant, viewer) }), ...(drone && { drone: droneView(drone) }), ...(document && { document: { kind: document.kind, rows: document.rows.map((r) => ({ ...r })) } }) };
 }
 
 /** A drone's public part (#411): name, serial and upgrades; its failure counts never leave the server. */

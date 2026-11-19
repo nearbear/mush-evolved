@@ -1,9 +1,9 @@
-// A row of item attribute icons (heavy, customized, charges, plant states, spores, jelly, shield) styled like the status effects on a player.
+// A row of item attribute icons (heavy, customized, charges, plant states, spoilage, spores, jelly, shield) styled like the status effects on a player.
 
 import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 import { CUSTOMIZED_BLASTER_ITEM, ITEM_TYPES, type ItemView } from "@mush2/shared";
-import { CHARGES_ICON, CONTAMINATED_ICON, ITEM_ATTR_ICONS, JELLY_ICON, PLANT_ICONS, SHIELD_ICON, skillIcon } from "../art/assets.ts";
+import { CHARGES_ICON, CONTAMINATED_ICON, ITEM_ATTR_ICONS, JELLY_ICON, PLANT_ICONS, SHIELD_ICON, SPOIL_ICONS, skillIcon } from "../art/assets.ts";
 import { plantStateIds } from "./PlantStates.tsx";
 import { StatusIcon } from "./StatusIcons.tsx";
 
@@ -51,7 +51,7 @@ export function thingMarkIcons(
   return marks;
 }
 
-export type ItemAttrSource = Pick<ItemView, "type" | "charges" | "plant" | "spores" | "jelly" | "shield">;
+export type ItemAttrSource = Pick<ItemView, "type" | "charges" | "plant" | "spores" | "jelly" | "shield" | "spoil">;
 
 export function ItemAttrIcons({ item, mpPenalty }: { item: ItemAttrSource; mpPenalty: number }) {
   const { t } = useTranslation();
@@ -60,7 +60,8 @@ export function ItemAttrIcons({ item, mpPenalty }: { item: ItemAttrSource; mpPen
   const hasCharges = item.charges !== undefined;
   const plantStates = item.plant ? plantStateIds(item.plant) : [];
   const marks = thingMarkIcons(item, t);
-  if (!heavy && !customized && !hasCharges && plantStates.length === 0 && marks.length === 0) return null;
+  const spoil = item.spoil;
+  if (!heavy && !customized && !hasCharges && plantStates.length === 0 && spoil === undefined && marks.length === 0) return null;
   return (
     <ul className="status-icons" aria-label={t("itemAttr.label")}>
       {heavy && (
@@ -85,6 +86,11 @@ export function ItemAttrIcons({ item, mpPenalty }: { item: ItemAttrSource; mpPen
           <StatusIcon icon={PLANT_ICONS[state]} name={t(`itemAttr.${state}`)} description={t(`itemAttr.${state}Desc`)} />
         </li>
       ))}
+      {spoil !== undefined && (
+        <li key="spoil">
+          <StatusIcon icon={SPOIL_ICONS[spoil]} name={t(`itemAttr.spoil_${spoil}`)} description={t(`itemAttr.spoil_${spoil}Desc`)} visibility="private" />
+        </li>
+      )}
       {marks.map((mark) => (
         <li key={mark.key} className="status-count">
           <StatusIcon icon={mark.icon} name={mark.name} description={mark.description} visibility="private">

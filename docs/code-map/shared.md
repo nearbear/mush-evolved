@@ -76,6 +76,7 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 - `death.ts`: `damage` (the one way HP goes down) and `killPlayer`, both taking a `DeathCause` (`DEATH_CAUSES`, #177).
 - `infection.ts`: `contaminate` (the one way contamination rises), conversion, `contaminationSeenBy`.
 - `items.ts`: item types, containers, capacity and reach helpers, `produceItem`, `removeItem`, `newItemId`.
+- `spoilage.ts`: food spoilage: `spoilFood` (day change, one stage per perishable item), `eatSpoiled` (Food Poisoning roll on eating), `seesSpoil` (living Chefs), `nextSpoilStage`.
 - `fruits.ts`: the 12 seeded alien fruit species (`ALIEN_FRUIT_ITEMS`, `FRUIT_BUFF_IDS`, `FRUIT_LORE_SKILLS`): `drawFruits` (budget-filtered draw on the `"fruits"` stream), `fruitEffectsSeenBy` (living Botanist, Skilful, Chef and Mush), and `applyFruit` (AP/morale/HP bonuses, non-stacking buff timers, delayed diseases).
 - `itemIds.ts`: dependency-light IDs used by item definitions and the default config.
 - `equipment.ts`: room equipment types, `SUPER_CALC_EQUIPMENT`, and `equipmentHere` (equipment of a type in the player's room).

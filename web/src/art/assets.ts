@@ -1,7 +1,7 @@
 // Maps game ids to Motion Twin art in Mush/ (CC BY-NC-SA 4.0, see
 // Mush/ATTRIBUTION.md). Vite bundles only the files matched here.
 
-import { DEFAULT_CONFIG, REBEL_BASES, type CharacterId, type RebelBaseId, type Ending, type ItemView, type ResourceId, type TitleId } from "@mush2/shared";
+import { DEFAULT_CONFIG, REBEL_BASES, type CharacterId, type RebelBaseId, type Ending, type ItemView, type ResourceId, type SpoilStage, type TitleId } from "@mush2/shared";
 
 type UrlMap = Record<string, string>;
 const urls = (map: UrlMap) =>
@@ -285,7 +285,7 @@ export const MORALE_ICON = statIcons["moral"]!;
 // Tab icons (16x16-ish pixel art). Keys are the names the user chose; see docs/assets/tab-icons.md.
 const uiIcons = urls(
   import.meta.glob<string>(
-    "../../../Mush/www/img/icons/ui/{mush,mush_progressive,starter,o2,fuel,plasma,alert,p_alive,survival,awake,comm,learned,stock,microsc,neron,info,infoalert,local,planet,conceptor,talkie,shield,basicplus,goldplus,notebook,pa_cook,pa_garden,plant_youngling,plant_thirsty,plant_dry,plant_diseased,sat,pa_pilgred,pam,pa_heal,pa_eng,pa_exp,pa_comp,pa_core,pa_shoot,hunter,private,search,spore,talk,wall,fav,triumph,heavy,charge,dead,check,uncheck,rebellion}.{png,gif}",
+    "../../../Mush/www/img/icons/ui/{mush,mush_progressive,starter,o2,fuel,plasma,alert,p_alive,survival,awake,comm,learned,stock,microsc,neron,info,infoalert,local,planet,conceptor,talkie,shield,basicplus,goldplus,notebook,pa_cook,pa_garden,plant_youngling,plant_thirsty,plant_dry,plant_diseased,sat,pa_pilgred,pam,pa_heal,pa_eng,pa_exp,pa_comp,pa_core,pa_shoot,hunter,private,search,spore,talk,wall,fav,triumph,heavy,charge,dead,check,uncheck,rebellion,food_unstable,food_hazardous,food_decaying}.{png,gif}",
     { eager: true, query: "?url", import: "default" },
   ),
 );
@@ -401,6 +401,12 @@ export const PLANT_ICONS: Readonly<Record<"young" | "thirsty" | "dried" | "sick"
 export const CONTAMINATED_ICON = uiIcons["spore"]!;
 /** Shielding on an item or equipment (Reinforce), as Engineers and Mush see it: the original shield icon. */
 export const SHIELD_ICON = uiIcons["shield"]!;
+/** How far perishable food has spoiled, as Chefs see it: the original's food_* status icons. */
+export const SPOIL_ICONS: Readonly<Record<SpoilStage, string>> = {
+  unstable: uiIcons["food_unstable"]!,
+  hazardous: uiIcons["food_hazardous"]!,
+  decomposing: uiIcons["food_decaying"]!,
+};
 
 // Skill icons (one per skill id, see shared/src/skills.ts).
 const skillIcons = urls(import.meta.glob<string>("../../../Mush/www/img/icons/skills/*.png", { eager: true, query: "?url", import: "default" }));

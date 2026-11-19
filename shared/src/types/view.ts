@@ -9,7 +9,7 @@ import type { TurnSide } from "../navigation.ts";
 import type { PlanetDirection, PlanetTag } from "../planets.ts";
 import type { TitleId } from "../titles.ts";
 import type { Alerts } from "../reports.ts";
-import type { Action, BotKind, DocumentState, ItemId, LogEntry, LogLine, PlayerId, Role, RoomId } from "../types.ts";
+import type { Action, BotKind, DocumentState, ItemId, LogEntry, LogLine, PlayerId, Role, RoomId, SpoilStage } from "../types.ts";
 import type { ChannelId, ChatLine, ChatMessage, ChatThread, PrivateChannel, SeqRange, SharedPlanet, SharedReport, SharedReportId } from "./chat.ts";
 import type { Plan } from "./plan.ts";
 import type { MovementRules } from "./config.ts";
@@ -60,6 +60,8 @@ export interface ItemView {
   hidden?: true;
   /** For a food item trapped with Fungal cuisine: its contamination level. Sent to living Mush only. */
   spores?: number;
+  /** For perishable food that has spoiled (spoilage.ts). Sent to living Chefs only. */
+  spoil?: SpoilStage;
   /** For a planted hydropot. `sick` is there only for the Botanist role; everyone else never gets the field. */
   plant?: { species: string; age: number | null; thirst: 0 | 1 | 2; sick?: boolean };
   /** For a support drone (#411): its name, serial and upgrades, public to whoever can see it. Never its failure counts. */
