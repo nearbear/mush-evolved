@@ -34,7 +34,7 @@ export const RESEARCH_IDS = [
 export const RESEARCH_COMPLETE = 100;
 
 /** Skills that speed up a research, each by `config.research.progress.skillBoost` (the original's research tags; owner, 2026-10-26). */
-export const RESEARCH_SKILLS = ["biologist", "medic"] as const;
+export const RESEARCH_SKILLS = ["biologist", "medic", "skilful"] as const;
 
 export type ResearchId = (typeof RESEARCH_IDS)[number];
 

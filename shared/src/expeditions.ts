@@ -564,7 +564,7 @@ function cancelled(ctx: Ctx, sector: string, rule: ExpeditionEventRule): boolean
     case "lost":
       return explorers.length > 0 && explorers.every((p) => carries(state, p, gear.compass));
     case "fight":
-      return sector === gear.whiteFlag.tag && (crewCarries(state, gear.whiteFlag.item) || explorers.some((p) => hasSkill(p, "diplomacy") || hasSkill(p, "polymath")));
+      return sector === gear.whiteFlag.tag && (crewCarries(state, gear.whiteFlag.item) || explorers.some((p) => hasSkill(p, "diplomacy") || hasSkill(p, "polymath") || hasSkill(p, "skilful")));
     default:
       return false;
   }

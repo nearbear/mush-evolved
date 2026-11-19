@@ -130,6 +130,8 @@ describe("research", () => {
     expect(gain(s, "p0")).toEqual({ min: 6, max: 9 });
     you.skills = ["biologist"];
     expect(gain(s, "p0")).toEqual({ min: 10, max: 15 });
+    you.skills = ["skilful"];
+    expect(gain(s, "p0")).toEqual({ min: 10, max: 15 });
     you.skills = ["biologist", "medic"];
     expect(gain(s, "p0").min).toBe(14);
     you.skills = [];

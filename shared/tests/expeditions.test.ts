@@ -1256,9 +1256,9 @@ describe("expeditions, phase 4, slice D: skills", () => {
     });
   });
 
-  it("a Diplomat or a Polymath cancels Fight in Intelligent life only", () => {
+  it("a Diplomat, Polymath or Polyvant cancels Fight in Intelligent life only", () => {
     const fight = rule("fight", { creature: "CORTIC" });
-    for (const skill of ["diplomacy", "polymath"] as const) {
+    for (const skill of ["diplomacy", "polymath", "skilful"] as const) {
       const s = game({ tags: ["INTELLIGENT", "PREDATOR"], events: { INTELLIGENT: [fight], PREDATOR: [fight] } });
       player(s, "p2").skills.push(skill);
       const events = go(s).expeditions[0]!.events;

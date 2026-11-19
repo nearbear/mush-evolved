@@ -234,7 +234,7 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   rebel: "full",
   // Garden points, seeing plant sickness, and +1 fruit on expedition Harvest events (botany.ts, expeditions.ts); no grafting or fruit properties.
   botanic: "partial",
-  // Sees plant sickness as the Botanist does (botany.ts) and reads drug properties / +2 Drug Dispenser options as Biologist (drugs.ts); no research bonus or expedition effects.
+  // Sees plant sickness as the Botanist does (botany.ts), reads drug properties / +2 Drug Dispenser options as Biologist (drugs.ts), +4 research bonus (research.ts), and cancels Fight in Intelligent life on expeditions as Diplomat (expeditions.ts); no skill points or other expedition effects.
   skilful: "partial",
   // Mush skill: the one-use reset of the Mush skills (owner, 2026-11-13, actions/reset_skills.ts).
   epigenetics: "full",
@@ -286,7 +286,7 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   space_tactics: "full",
   // Two more channels and Computer points (owner, 2026-10-25); the Diplomat's and Botanist's expedition effects (owner, 2026-11-08, #358).
   polymath: "full",
-  // Cancels Fight in Intelligent life on expeditions (owner, 2026-11-08, #358); no ceasefire or trade.
+  // Ceasefire (actions/ceasefire.ts) and cancels Fight in Intelligent life on expeditions (owner, 2026-11-08, #358); no trade yet.
   diplomacy: "partial",
   // End an expedition for 2 AP (owner, 2026-11-08, #358, actions/u_turn.ts); sees the next sector (owner, 2026-11-17).
   fast_backward: "full",
