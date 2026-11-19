@@ -28,6 +28,8 @@ export interface ItemType {
   drug?: boolean;
   /** Cooking it (in a cook room) turns it into this item type. */
   cook?: { into: string };
+  /** Hyperfreezing it (with a reachable working freezer) turns it into this item type. */
+  hyperfreeze?: { into: string };
   /** Carrying one makes every room-to-room move cost `heavyMpPenalty` more MP, once however many you carry (confirmed 2026-10-16). Skills may cancel it. */
   heavy?: boolean;
   canDrop?: boolean;
@@ -62,6 +64,9 @@ export const SUPPORT_DRONE_ITEM = "support_drone";
 
 /** Express cooks rations (actions/express_cook.ts) while it has charges. */
 export const MICROWAVE_ITEM = "microwave";
+
+/** Hyperfreezes cooked rations and alien steaks into uncooked rations (actions/hyperfreeze.ts). */
+export const FREEZER_ITEM = "freezer";
 
 /** The hydropot: an empty one takes a sown fruit, a planted one grows (`ItemState.plant`, botany.ts). */
 export const TREE_POT_ITEM = "tree_pot";
@@ -154,7 +159,9 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   // Confirmed 2026-10-16: cook it in the refectory for 1 AP.
   // Owner, 2026-10-19: edible raw, like a cooked one but for 1 morale.
   uncooked_ration: { cook: { into: "cooked_ration" }, consume: { ap: 4, satiety: 4, morale: -1 }, canBreak: true, isDestroyedWhenBroken: true  },
-  cooked_ration: { consume: { ap: 4, satiety: 4 }, perishable: true, canBreak: true, isDestroyedWhenBroken: true  },
+  cooked_ration: { consume: { ap: 4, satiety: 4 }, hyperfreeze: { into: "uncooked_ration" }, perishable: true, canBreak: true, isDestroyedWhenBroken: true  },
+  // Owner, 2026-11-18: expedition loot (formerly uncooked_ration placeholder). Perishable; cooks into cooked_ration, hyperfreezes into uncooked_ration.
+  alien_steak: { cook: { into: "cooked_ration" }, hyperfreeze: { into: "uncooked_ration" }, consume: { ap: 4, satiety: 4, morale: -1 }, perishable: true, canBreak: true, isDestroyedWhenBroken: true },
   camera: { canDrop: false, dismantle: { metal: 1, plastic: 0, chance: 0.25 }, canBreak: true, canBeSabotaged: true, repairChance: 0.25 },
   // Showering with soap in your inventory costs 1 less AP (confirmed 2026-10-14). Reusable.
   soap: {canBreak: true, isDestroyedWhenBroken: true},
@@ -185,8 +192,8 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   // Decided 2026-10-16: carries a recipe in `ItemState.builds`; consumed by building.
   blueprint: {},
   plastic_scraps: {},
-  // Confirmed 2026-10-16: spawns in the refectory at the start; heavy.
-  freezer: { heavy: true, dismantle: { metal: 2, plastic: 0, chance: 0.25 }, canBreak: true, canBeSabotaged: true, repairChance: 0.25 },
+  // Confirmed 2026-10-16: spawns in the refectory at the start; heavy. Used by Hyperfreeze (actions/hyperfreeze.ts).
+  [FREEZER_ITEM]: { heavy: true, dismantle: { metal: 2, plastic: 0, chance: 0.25 }, canBreak: true, canBeSabotaged: true, repairChance: 0.25 },
   // Owner, 2026-10-19: spawns in the refectory; heavy. Express cook spends its charges (`ItemState.charges`).
   [MICROWAVE_ITEM]: { heavy: true, dismantle: { metal: 2, plastic: 0, chance: 0.25 }, canBreak: true, canBeSabotaged: true, repairChance: 0.25 },
   // Decided 2026-10-16: a dead player's body (death.ts). Takes one slot like any item; heavy.

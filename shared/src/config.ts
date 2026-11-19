@@ -220,6 +220,8 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   // Owner, 2026-10-19: express cook is free, anywhere you can reach a microwave, and spends one of its 4 charges;
   // it regains one each day. Consequences for using it come later.
   expressCook: { cost: { ap: 0 }, charges: { start: 4, max: 4, perDay: 1 }, dirtyChance: 0.05 },
+  // Owner, 2026-11-18: hyperfreezing a cooked ration or alien steak costs 1 AP (or 0 AP + 1 Cook point), anywhere you can reach a working freezer.
+  hyperfreeze: { cost: { ap: 1 } },
   // Decided 2026-10-16: building from a blueprint costs 3 AP, anywhere, no failure chance.
   // Owner, 2026-10-21: reading a skill book costs 2 AP (the original's LEARN_BOOK cost).
   readBook: { cost: { ap: 2 } },
@@ -524,7 +526,7 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
     botanistBonus: 1,
     loot: {
       harvest: [...ALIEN_FRUIT_ITEMS],
-      provision: "uncooked_ration",
+      provision: "alien_steak",
       starmap: "super_map",
       // Phases 3 and 4 (owner, 2026-11-08, #357): one picked uniformly, the original's 9. Only their names and icons so far.
       artifacts: ["magellan_liquid_map", "rolling_boulder", "alien_oil", "water_stick", "computer_jelly", "alien_holographic_tv", "insectoid_shell", "alien_can_opener", "super_map"],

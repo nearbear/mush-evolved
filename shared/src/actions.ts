@@ -9,6 +9,7 @@ import { CheckSporesAction } from "./actions/check_spores.ts";
 import { DispenseDrugAction } from "./actions/dispense_drug.ts";
 import { CookAction } from "./actions/cook.ts";
 import { ExpressCookAction } from "./actions/express_cook.ts";
+import { HyperfreezeAction } from "./actions/hyperfreeze.ts";
 import { DismantleAction } from "./actions/dismantle.ts";
 import { AccessAction } from "./actions/access.ts";
 import { HackAction } from "./actions/hack.ts";
@@ -222,6 +223,7 @@ const REGISTRY = {
   dispense_drug: new DispenseDrugAction(),
   cook: new CookAction(),
   express_cook: new ExpressCookAction(),
+  hyperfreeze: new HyperfreezeAction(),
   water: new WaterAction(),
   treat: new TreatAction(),
   sow: new SowAction(),

@@ -144,7 +144,7 @@ Object.assign(
 export const ITEM_ICONS: Readonly<Record<string, string>> = itemIcons;
 
 /** Item types whose icon file has a different name. ration_0 is the plain unopened box; ration_1 is the cooked one; ration_7 is a cup of coffee. */
-const ICON_FILE: Readonly<Record<string, string>> = { input_tube: "thick_tube", output_tube: "thick_tube", uncooked_ration: "ration_0", coffee: "ration_7", oscilloscope: "wavoscope", steroids: "ration_6", anabolics: "ration_6", drill: "driller", thermosensor: "heat_seeker", support_drone: "help_drone", customized_blaster: "blaster", duct_tape: "duck_tape", block_of_post_it: "postit_bloc", scooter: "antigrav_scooter", sniper_helmet: "aiming_helmet" };
+const ICON_FILE: Readonly<Record<string, string>> = { input_tube: "thick_tube", output_tube: "thick_tube", uncooked_ration: "ration_0", alien_steak: "ration_5", coffee: "ration_7", oscilloscope: "wavoscope", steroids: "ration_6", anabolics: "ration_6", drill: "driller", thermosensor: "heat_seeker", support_drone: "help_drone", customized_blaster: "blaster", duct_tape: "duck_tape", block_of_post_it: "postit_bloc", scooter: "antigrav_scooter", sniper_helmet: "aiming_helmet" };
 
 /** Icon for an item type. Item type ids are named after their icon files unless ICON_FILE says otherwise; undefined if there's none. */
 export function itemIcon(type: string): string | undefined {

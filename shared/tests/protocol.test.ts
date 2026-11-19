@@ -729,6 +729,7 @@ describe("actions from a client", () => {
     dispense_drug: [{ type: "dispense_drug", equipment: "SICK_BAY:DRUG_DISP", drug: "drug_0" }],
     cook: [{ type: "cook", item: "i1" }],
     express_cook: [{ type: "express_cook", item: "i1" }],
+    hyperfreeze: [{ type: "hyperfreeze", item: "i1" }],
     water: [{ type: "water", item: "i1" }],
     treat: [{ type: "treat", item: "i1" }],
     sow: [{ type: "sow", item: "i1" }],

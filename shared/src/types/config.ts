@@ -421,6 +421,9 @@ export interface GameConfig {
     charges: { start: number; max: number; perDay: number }; // Microwave charges: one per express cook, regained at each day start (owner, 2026-10-19).
     dirtyChance: number; // Chance of getting the dirty status after express cooking.
   };
+  hyperfreeze: {
+    cost: { ap: number }; // AP spent to hyperfreeze a cooked ration or alien steak with a reachable freezer (owner, 2026-11-18: 1, or 0 + 1 Cook point).
+  };
   readBook: {
     cost: { ap: number }; // AP spent to read a skill book (owner, 2026-10-21: 2).
   };
@@ -830,7 +833,7 @@ export interface GameConfig {
     catastrophe: [min: number, max: number]; // HP every living member loses, rolled for each.
     survivalReduction: number; // Taken off each damage a member with the Survival skill takes.
     botanistBonus: number; // Extra fruit per harvest with a living Botanist in the crew.
-    // Item types found: alien fruits (picked uniformly by Harvest) and steaks (placeholders: uncooked rations), a starmap fragment, and the
+    // Item types found: alien fruits (picked uniformly by Harvest) and alien steaks (`alien_steak`), a starmap fragment, and the
     // artifacts an Artifact event or a fight's loot picks among, uniformly.
     loot: { harvest: string[]; provision: string; starmap: string; artifacts: string[] };
     survivalProvision: number; // Extra steaks per Provision for each living Survival holder in the crew.

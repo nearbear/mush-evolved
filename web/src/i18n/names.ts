@@ -74,6 +74,7 @@ const ACTION_NAME_KEYS = {
   dispense_drug: "actions.dispense_drug",
   cook: "actions.cook",
   express_cook: "actions.expressCook",
+  hyperfreeze: "actions.hyperfreeze",
   build: "actions.build",
   jettison: "actions.jettison",
   install: "actions.install",

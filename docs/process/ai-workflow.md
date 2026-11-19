@@ -4410,3 +4410,7 @@ The #114 backoff test in `server/tests/GameRoom.bots.test.ts` failed about 1 run
 
 - The new spoilage icons rendered as `<img>` with no `src`: `SPOIL_ICONS` looked up `food_*` names that weren't in the `uiIcons` glob pattern in `web/src/art/assets.ts`, and the `!` assertion hid the `undefined` from the typechecker. Fixed by adding the three names to the glob.
 - Added a test in `web/tests/assets.test.ts` that walks every exported constant in `assets.ts` (nested maps and arrays) and fails on any missing or empty URL. Checked that it catches the original bug by reverting the fix temporarily; it named all three `SPOIL_ICONS` entries.
+
+### 2026-11-18 — Alien steak & Hyperfreeze
+- **Decision (owner):** Added `alien_steak` (`perishable`, +4 AP / +4 satiety / -1 morale, cooks into `cooked_ration`, replaces `uncooked_ration` as `expedition.loot.provision`) and the `hyperfreeze` action (`actions/hyperfreeze.ts`): 1 AP (or 0 AP + 1 Cook point `resources.cook`), anywhere you can reach a working `freezer` (carried or on the floor), turns `cooked_ration` or `alien_steak` into `uncooked_ration` in place, clears Fungal Cuisine `spores`, keeps any existing `spoil` stage (stopping further spoilage), public `hyperfrozen` log.
+- **What worked:** `ask_question` resolved all 4 ambiguities (adding `alien_steak` now vs placeholder, target items, Cook point cost, spores vs spoilage stage) in one turn before coding.
