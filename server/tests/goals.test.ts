@@ -26,6 +26,7 @@ import { shower } from "../src/bots/goals/shower.ts";
 import { DORMS, shrinkDorm } from "../src/bots/goals/shrinkDorm.ts";
 import { snoop } from "../src/bots/goals/snoop.ts";
 import { BOT_EAT_AFTER_CYCLES, eat } from "../src/bots/goals/eat.ts";
+import { COFFEE_DRINKER, COFFEE_DROP_ROOM, coffeeReflex, coffeeRun, deliverCoffee } from "../src/bots/goals/coffee.ts";
 import { tendPlants } from "../src/bots/goals/tendPlants.ts";
 import { sowHere } from "../src/bots/goals/sow.ts";
 import { POT_STORAGES, setOutPots, storageCheckedKey } from "../src/bots/goals/setOutPots.ts";
@@ -215,8 +216,10 @@ describe("chooseSkill", () => {
   });
 
   it("keeps character-only skills to their characters", () => {
-    expect(pick("gioele")).toBe("paranoid");
-    expect(pick("gioele", ["paranoid"])).not.toBe("astrophysician");
+    // Astrophysicist: Frieda and Gioele (owner, 2026-11-18), not Kuan Ti.
+    expect(pick("gioele")).toBe("astrophysician");
+    expect(pick("gioele", ["astrophysician"])).toBe("caffeinomaniac");
+    expect(pick("gioele", ["astrophysician", "caffeinomaniac"])).toBe("paranoid");
     expect(pick("kuanti")).toBe("leadership");
     expect(pick("kuanti", ["leadership"])).toBe("engineer");
     expect(pick("kuanti", ["leadership", "engineer"])).toBe("designer");
@@ -733,6 +736,71 @@ describe("eat", () => {
     expect(await new GoalBot(1, 2, [eat, sowHere]).decideAction(viewFor(game, id))).toMatchObject({ type: "sow", item: "test-banana" });
     const hungry = edit(game, id, (p) => p.statuses.push("hungry" as never));
     expect(await new GoalBot(1, 2, [eat, sowHere]).decideAction(viewFor(hungry, id))).toEqual({ type: "consume", item: "test-banana" });
+  });
+});
+
+describe("the coffee relay (owner, 2026-11-18)", () => {
+  const coffeeGoals = [deliverCoffee, coffeeRun];
+  /** The ship with no coffee lying about, Gioele's id, and another crewmate's, both with AP to spare. */
+  function ship() {
+    const { game: start } = setup();
+    let game = start;
+    const gioele = game.players.find((p) => p.character === COFFEE_DRINKER)!.id;
+    const crew = game.players.find((p) => p.character !== COFFEE_DRINKER && p.alive)!.id;
+    for (const id of [gioele, crew]) game = edit(game, id, (p) => ((p.ap = 6), (p.satiety = 0)));
+    game.items = game.items.filter((i) => i.type !== "coffee");
+    return { game, gioele, crew };
+  }
+  const coffeeLine = (game: GameState, room: string): GameState => {
+    const next = structuredClone(game);
+    pushChat(next, "global", { from: null, isBot: true, text: formatItemLine({ type: "coffee", room, present: true }) });
+    return next;
+  };
+
+  it("a crewmate in the refectory pulls the coffee in passing and leaves it in the Center Corridor", async () => {
+    const { game: start, crew } = ship();
+    const game = edit(start, crew, (p) => (p.room = "REFECTORY"));
+    const { game: after, taken } = await play(game, crew, new GoalBot(1, 2, coffeeGoals), 30);
+    expect(taken[0]?.type).toBe("dispense");
+    expect(taken.map((a) => a.type)).toContain("drop");
+    expect(after.items.find((i) => i.type === "coffee")?.at).toEqual({ kind: "room", id: COFFEE_DROP_ROOM });
+    expect(after.chat.some((m) => m.text === formatItemLine({ type: "coffee", room: COFFEE_DROP_ROOM, present: true }))).toBe(true);
+  });
+
+  it("nobody pulls it for a dead Gioele, and other bots leave coffee alone while he lives", async () => {
+    const { game: start, gioele, crew } = ship();
+    const here = edit(start, crew, (p) => (p.room = "REFECTORY"));
+    expect(coffeeReflex(viewFor(edit(here, gioele, (p) => (p.alive = false)), crew), memory())).toBeNull();
+    // Hungry, in the Center Corridor with a coffee and nothing else to eat: it walks off instead of drinking it.
+    const hungry = edit(start, crew, (p) => ((p.room = COFFEE_DROP_ROOM), (p.satietyZeroSince = start.cycle - BOT_EAT_AFTER_CYCLES)));
+    hungry.items.push({ id: "test-coffee", type: "coffee", at: { kind: "room", id: COFFEE_DROP_ROOM } });
+    expect(await new GoalBot(1, 2, [eat]).decideAction(viewFor(hungry, crew))).not.toEqual({ type: "consume", item: "test-coffee" });
+  });
+
+  it("Gioele drinks a coffee reported today when he passes through, but not an unreported one", async () => {
+    const { game: start, gioele } = ship();
+    const game = edit(start, gioele, (p) => (p.room = COFFEE_DROP_ROOM));
+    game.items.push({ id: "test-coffee", type: "coffee", at: { kind: "room", id: COFFEE_DROP_ROOM } });
+    expect(coffeeReflex(viewFor(game, gioele), memory())).toBeNull();
+    const m = memory();
+    expect(coffeeReflex(viewFor(coffeeLine(game, COFFEE_DROP_ROOM), gioele), m)).toEqual({ type: "consume", item: "test-coffee" });
+    expect(m.today.has("coffee:drunk")).toBe(true);
+  });
+
+  it("in the last cycle of the day Gioele pulls the machine's coffee himself if nobody reported one, and drinks it", async () => {
+    const { game: start, gioele } = ship();
+    const early = viewFor(start, gioele);
+    expect(coffeeRun.options(early, memory())).toEqual([]);
+    const late = structuredClone(start);
+    late.cycle += late.config.cyclesPerDay - early.cycleOfDay;
+    const options = coffeeRun.options(viewFor(late, gioele), memory());
+    expect(options.map((g) => g.key)).toEqual(["coffeeRun:REFECTORY"]);
+    const { taken } = await play(late, gioele, new GoalBot(1, 2, coffeeGoals), 30);
+    const pull = taken.findIndex((a) => a.type === "dispense");
+    expect(pull).toBeGreaterThanOrEqual(0);
+    expect(taken[pull + 1]?.type).toBe("consume");
+    // A coffee reported today is where he goes instead.
+    expect(coffeeRun.options(viewFor(coffeeLine(late, COFFEE_DROP_ROOM), gioele), memory()).map((g) => g.key)).toEqual([`coffeeRun:${COFFEE_DROP_ROOM}`]);
   });
 });
 
@@ -1411,7 +1479,7 @@ describe("astro (#222, #417)", () => {
     expect(parsePlanetShare(text.replace("CAVE", "CANDY"))).toBeNull();
   });
 
-  it("judges planets: deadly, too far or useless ones go; ones with oxygen or fuel are kept once fully analyzed", () => {
+  it("judges planets: deadly, too far or useless ones go; one is ready once an oxygen or fuel sector shows", () => {
     const { game, id } = stargazer(["astrophysician"]);
     const view = (sectors: Sector[], distance = 3) => {
       game.planets[id] = [planet("pl-1", "Alpha", distance, sectors)];
@@ -1422,7 +1490,9 @@ describe("astro (#222, #417)", () => {
     expect(judgePlanet(...view([{ tag: "VOLCANIC_ACTIVITY", known: true }, { tag: "OXYGEN", known: false }]))).toBe("delete");
     expect(judgePlanet(...view(known("OXYGEN"), game.ship.fuel + 1))).toBe("delete");
     expect(judgePlanet(...view(known("FOREST", "DESERT")))).toBe("delete");
-    expect(judgePlanet(...view([{ tag: "OXYGEN", known: true }, { tag: "FOREST", known: false }]))).toBe("analyze");
+    // Ready on the first oxygen or fuel sector, without a full analysis (owner, 2026-11-18).
+    expect(judgePlanet(...view([{ tag: "OXYGEN", known: true }, { tag: "FOREST", known: false }]))).toBe("ready");
+    expect(judgePlanet(...view([{ tag: "FOREST", known: true }, { tag: "OXYGEN", known: false }]))).toBe("analyze");
     expect(judgePlanet(...view(known("OXYGEN", "FOREST")))).toBe("ready");
     expect(judgePlanet(...view(known("HYDROCARBON")))).toBe("ready");
   });

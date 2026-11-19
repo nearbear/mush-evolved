@@ -20,15 +20,17 @@ export function planetKinds(sectors: readonly (string | null)[]): ExpeditionKind
 
 /**
  * What the Astrophysicist makes of one of its planets (#417): delete it (a deadly sector, farther than the ship's fuel,
- * or fully analyzed with neither oxygen nor fuel), analyze it further, or it is ready to go to. The orbited planet is
+ * or fully analyzed with neither oxygen nor fuel), analyze it further, or it is ready to go to. A planet is ready as soon
+ * as an oxygen or fuel sector is revealed, without waiting for the rest (owner, 2026-11-18): a full analysis took until
+ * about cycle 12, and escape jumps erased the planet first. Its other sectors are left unknown. The orbited planet is
  * left alone (null): it can't be deleted, and it was already chosen.
  */
 export function judgePlanet(view: PlayerView, planet: PlanetView): "delete" | "analyze" | "ready" | null {
   if (planet.orbited) return null;
   if (planet.sectors.some((s) => s !== null && DEADLY_TAGS.includes(s))) return "delete";
   if (planet.distance > view.ship.fuel) return "delete";
-  if (planet.sectors.includes(null)) return "analyze";
-  return planetKinds(planet.sectors).length > 0 ? "ready" : "delete";
+  if (planetKinds(planet.sectors).length > 0) return "ready";
+  return planet.sectors.includes(null) ? "analyze" : "delete";
 }
 
 /**
@@ -81,7 +83,7 @@ export function nextAstroAp(view: PlayerView, last: ExpeditionKind | null = null
 
 /**
  * The Astrophysicist's duty (`BOT_DUTIES`; owner, 2026-11-12, #417): find an oxygen planet and a fuel planet, analyze
- * them fully, delete the ones not worth going to, and share the destination in the bots' format (`planetShare.ts`) so
+ * them until an oxygen or fuel sector shows (owner, 2026-11-18), delete the ones not worth going to, and share the destination in the bots' format (`planetShare.ts`) so
  * the Commander and the crew can read it. Each cycle while there is such work, down to the AP reserve.
  */
 export const astro: GoalDef = {

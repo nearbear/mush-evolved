@@ -5,6 +5,7 @@ import { characterName, legalIn, nextInt, type Action, type LobbyLanguage, type 
 import { hasBotSkill, holdsTrigger } from "./bots/duties.ts";
 import { canReachBridgeWithTravelAp } from "./bots/goals/blocks.ts";
 import { END_CYCLE, helpGoal, helpTasks, SOLO_GOALS, type BotMemory, type BotSocial, type Goal, type GoalDef } from "./bots/goals/index.ts";
+import { coffeeReflex, coffeeRun, deliverCoffee } from "./bots/goals/coffee.ts";
 import { extinguish } from "./bots/goals/extinguish.ts";
 import { repairOxygen } from "./bots/goals/repairOxygen.ts";
 import { newFireMemory, observeFires } from "./bots/fireShare.ts";
@@ -304,6 +305,10 @@ export class GoalBot implements Bot {
     // instant, so it's a reflex rather than a goal, and it doesn't drop the goal being followed.
     const reportNow = legal.find((a) => a.type === "report_fire" || a.type === "report_equipment" || a.type === "report_door");
     if (reportNow) return reportNow;
+    // The coffee relay (owner, 2026-11-18; goals/coffee.ts): pulling Gioele's coffee in the refectory, or his drinking
+    // it in passing, is likewise free and doesn't drop the goal.
+    const coffee = this.goals.includes(deliverCoffee) && this.goals.includes(coffeeRun) ? coffeeReflex(view, this.memory) : null;
+    if (coffee) return coffee;
     if (!this.listens) this.wokenByChat = false;
     // Woken by chat: the model is asked even mid-goal or with one option, since it may want to talk; it may carry on.
     if (this.wokenByChat) {

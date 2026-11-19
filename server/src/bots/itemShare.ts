@@ -8,8 +8,8 @@
 import { SHIP_ROOMS, TREE_POT_ITEM, type PlayerView, type RoomId } from "@mush2/shared";
 import type { BotMemory, BotSocial } from "./goals/types.ts";
 
-/** The item types bots report. A goal that needs another type shared adds it here. Extinguishers: #429; expedition gear: space_suit, rope, quad_compass, white_flag, drill. */
-export const SHARED_ITEMS = ["metal_scraps", "extinguisher", "space_suit", "rope", "quad_compass", "white_flag", "drill", TREE_POT_ITEM] as const;
+/** The item types bots report. A goal that needs another type shared adds it here. Extinguishers: #429; expedition gear: space_suit, rope, quad_compass, white_flag, drill; coffee for Gioele (goals/coffee.ts). */
+export const SHARED_ITEMS = ["metal_scraps", "extinguisher", "space_suit", "rope", "quad_compass", "white_flag", "drill", TREE_POT_ITEM, "coffee"] as const;
 export type SharedItem = (typeof SHARED_ITEMS)[number];
 
 const ROOM_IDS: ReadonlySet<string> = new Set(SHIP_ROOMS.map((r) => r.id));

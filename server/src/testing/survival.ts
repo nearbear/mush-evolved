@@ -4,7 +4,7 @@
 // start (owner, 2026-11-10): a setup can't ask for zero Mush, only this helper does. No model, no network, no clock: the
 // rules run here as GameRoom runs them, and timed actions finish on a simulated clock, so a seed always plays the same.
 
-import { applyInput, CHARACTERS, createGame, dailyMoraleLoss, legalActions, nextDue, resolveConfig, shuffle, viewFor, type DeathCause, type Ending, type GameState, type Input, type PlayerId, type Seat } from "@mush2/shared";
+import { applyInput, CHARACTERS, ITEM_TYPES, createGame, dailyMoraleLoss, legalActions, nextDue, resolveConfig, shuffle, viewFor, type DeathCause, type Ending, type GameState, type Input, type PlayerId, type Seat } from "@mush2/shared";
 import { GoalBot } from "../bots.ts";
 import { BOT_DUTIES } from "../bots/duties.ts";
 
@@ -89,6 +89,32 @@ export interface CycleReport {
    */
   moraleUp?: Record<string, number>;
   moraleDown?: Record<string, number>;
+  /**
+   * Oxygen that came in during the cycle and at the change that ended it, by source: `plants` (day start), `expedition`
+   * (an Oxygen sector), `capsule` (returned to a tank), `other`. Missing in older runs.
+   */
+  oxygenIn?: Record<string, number>;
+  /**
+   * The oxygen pipeline as the cycle ended: planets found by anyone, of them with an Oxygen sector not yet explored,
+   * and whether the ship orbits one of those (`orbitOxygen`) or any planet (`orbit`). `expeditions`: expeditions that
+   * landed in the cycle (the Icarus or a patrol ship). Missing in older runs.
+   */
+  planets?: number;
+  oxygenPlanets?: number;
+  orbit?: boolean;
+  orbitOxygen?: boolean;
+  expeditions?: number;
+  /** Planets shared in the bots' format (the Astrophysicist naming a destination), and jumps, in the cycle. Missing in older runs. */
+  shares?: number;
+  jumps?: number;
+  /**
+   * The coffee relay (bots/goals/coffee.ts), in the cycle: coffees pulled from the machine, drunk by a Caffeine Junkie
+   * and by anyone else, and meals other than coffee a Caffeine Junkie ate. Missing in older runs.
+   */
+  coffeePulled?: number;
+  coffeeJunkie?: number;
+  coffeeOthers?: number;
+  junkieMeals?: number;
 }
 
 export interface SurvivalResult {
@@ -218,13 +244,17 @@ export async function runSurvival(seed: number, opts: SurvivalOptions): Promise<
   let now = 0;
   let logSeen = game.nextLogId;
 
-  const newRow = (cycle: number): CycleReport => ({ cycle, hull: 0, oxygen: 0, alive: 0, hunters: 0, fires: 0, killed: 0, shed: 0, shots: 0, repairTries: 0, repairs: 0, apLeft: 0, atCap: 0, scraps: 0, scrapsCarried: 0, apShooters: {}, apOthers: {}, hullLost: 0, arrived: 0, firesStarted: 0, firesOut: 0, extinguishTries: 0, brokenTanks: 0, tankRepairTries: 0, tankRepairs: 0, moraleUp: {}, moraleDown: {} });
+  const newRow = (cycle: number): CycleReport => ({ cycle, hull: 0, oxygen: 0, alive: 0, hunters: 0, fires: 0, killed: 0, shed: 0, shots: 0, repairTries: 0, repairs: 0, apLeft: 0, atCap: 0, scraps: 0, scrapsCarried: 0, apShooters: {}, apOthers: {}, hullLost: 0, arrived: 0, firesStarted: 0, firesOut: 0, extinguishTries: 0, brokenTanks: 0, tankRepairTries: 0, tankRepairs: 0, moraleUp: {}, moraleDown: {}, oxygenIn: {}, expeditions: 0, shares: 0, jumps: 0, coffeePulled: 0, coffeeJunkie: 0, coffeeOthers: 0, junkieMeals: 0 });
   let row = newRow(game.cycle);
   /** Fills the row's end-of-cycle fields from `g`, the state just before the change (or where the game ended). */
   const closeRow = (g: GameState): void => {
     const living = g.players.filter((p) => p.alive);
     const scraps = g.items.filter((i) => i.type === "metal_scraps");
     Object.assign(row, { hull: g.ship.hull, oxygen: g.ship.oxygen, alive: living.length, hunters: g.hunters.list.length, fires: g.fires.length, apLeft: living.reduce((a, p) => a + p.ap, 0), atCap: living.filter((p) => p.ap >= p.maxAp).length, scraps: scraps.length, scrapsCarried: scraps.filter((i) => i.at.kind === "player").length, brokenTanks: Object.values(g.equipment).flat().filter((e) => e.type === "OXYGEN_TANK" && e.broken).length });
+    const planets = Object.values(g.planets).flat();
+    const hasOxygen = (pl: (typeof planets)[number]): boolean => pl.sectors.some((s) => s.tag === "OXYGEN" && !s.explored);
+    const orbiting = planets.find((pl) => pl.id === g.navigation.orbit);
+    Object.assign(row, { planets: planets.length, oxygenPlanets: planets.filter(hasOxygen).length, orbit: g.navigation.orbit !== null, orbitOxygen: orbiting !== undefined && hasOxygen(orbiting) });
     const humans = living.filter((p) => p.role === "human");
     Object.assign(row, { moraleMean: humans.length === 0 ? 0 : humans.reduce((a, p) => a + p.morale, 0) / humans.length, hopeless: humans.filter((p) => p.morale === 0).length, moraleLow: humans.filter((p) => p.morale <= 3).length });
     result.cycles!.push(row);
@@ -242,8 +272,12 @@ export async function runSurvival(seed: number, opts: SurvivalOptions): Promise<
     const ended = before.phase === "playing" && game.phase !== "playing";
     const changed = game.cycle !== before.cycle || ended;
     const morale = moraleDeltas(before, game, fresh, changed, input.type === "action" ? input.action.type : "tick");
+    const oxygenIn = (source: string, amount: number): void => {
+      if (amount > 0) row.oxygenIn![source] = (row.oxygenIn![source] ?? 0) + amount;
+    };
     if (changed) {
       closeRow(before);
+      oxygenIn("plants", fresh.filter((e) => e.key === "plantProduced").length * game.config.botany.oxygenPerPlant);
       addInto(row.moraleUp!, morale.up);
       addInto(row.moraleDown!, morale.down);
       row.hullLost = Math.max(0, before.ship.hull - game.ship.hull);
@@ -255,6 +289,12 @@ export async function runSurvival(seed: number, opts: SurvivalOptions): Promise<
     }
     addInto(row.moraleUp!, morale.up);
     addInto(row.moraleDown!, morale.down);
+    const action = input.type === "action" ? input.action.type : "tick";
+    // An expedition resolves as it lands or steps on (expeditions.ts), so its oxygen comes with one of these lines.
+    const landed = fresh.filter((e) => e.key === "icarusTakeoff" || e.key === "patrolPlanetLanding").length;
+    row.expeditions! += landed;
+    const expedition = landed > 0 || before.expedition !== null || game.expedition !== null || fresh.some((e) => e.key === "expeditionReturned");
+    oxygenIn(action === "return_oxygen" ? "capsule" : expedition ? "expedition" : `other:${action}`, game.ship.oxygen - before.ship.oxygen);
     const gone = before.hunters.list.length - game.hunters.list.length;
     if (gone > 0) row[fresh.some((e) => e.key === "shipTraveled") ? "shed" : "killed"] += gone;
     row.repairs += fresh.filter((e) => e.key === "hullRepaired").length;
@@ -267,6 +307,14 @@ export async function runSurvival(seed: number, opts: SurvivalOptions): Promise<
       if (type === "repair_hull") row.repairTries++;
       if (type === "extinguish" || type === "extinguish_manually") row.extinguishTries!++;
       const action = input.action;
+      if (action.type === "dispense") row.coffeePulled!++;
+      if (action.type === "consume") {
+        const eater = before.players.find((p) => p.id === input.by)!;
+        const food = before.items.find((i) => i.id === action.item)?.type;
+        const junkie = eater.skills.includes("caffeinomaniac");
+        if (food === "coffee") row[junkie ? "coffeeJunkie" : "coffeeOthers"]!++;
+        else if (junkie && (ITEM_TYPES[food ?? ""]?.consume?.satiety ?? 0) > 0) row.junkieMeals!++;
+      }
       if (action.type === "repair" && "equipment" in action && Object.values(before.equipment).flat().some((e) => e.id === action.equipment && e.type === "OXYGEN_TANK")) row.tankRepairTries!++;
       if (before.hunters.list.length > 0 && apCost > 0) {
         const by = before.players.find((p) => p.id === input.by)!;
@@ -286,6 +334,7 @@ export async function runSurvival(seed: number, opts: SurvivalOptions): Promise<
       if (e.id < logSeen) continue;
       if (e.key === "shipTraveled") {
         result.jumps!++;
+        row.jumps!++;
         trace("  the ship traveled");
       }
       if (e.key !== "died") continue;
@@ -326,6 +375,7 @@ export async function runSurvival(seed: number, opts: SurvivalOptions): Promise<
           if (apply({ ...social, by: id })) {
             acted = true;
             result.social![social.type] = (result.social![social.type] ?? 0) + 1;
+            if (social.type === "sharePlanet") row.shares!++;
           } else {
             result.refused++;
             bot.refused();

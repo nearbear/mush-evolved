@@ -1,6 +1,7 @@
 // The goal registry. Adding a goal means adding its file and listing it here; its rank is its own `priority`.
 
 import { astro } from "./astro.ts";
+import { coffeeRun, deliverCoffee } from "./coffee.ts";
 import { comfort } from "./comfort.ts";
 import { commsOfficer } from "./commsOfficer.ts";
 import { contactSol } from "./contactSol.ts";
@@ -65,6 +66,8 @@ export const SOLO_GOALS: readonly GoalDef[] = [
   setOutPots,
   tendPlants,
   travel,
+  deliverCoffee,
+  coffeeRun,
   astro,
   expeditionPlan,
   commsOfficer,

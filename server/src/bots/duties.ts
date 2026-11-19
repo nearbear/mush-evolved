@@ -4,7 +4,7 @@
 //
 // How to edit:
 // - `priority`: where a scripted bot (no key) puts this among its goals. For reference, today's goals are
-//   returnToSol 100, pickSkill 90, snoop 85, sowHere 81 (any bot, not Hungry), eat 80, selfCare 79 (any bot but a Shrink, #452), comfort 79 (Shrink, #452), extinguish 78 (any bot, #429), repairOxygen 77.5 (any bot, #443), travel 77 (Commander), astro 76 (Astrophysicist),
+//   returnToSol 100, pickSkill 90, snoop 85, sowHere 81 (any bot, not Hungry), eat 80, selfCare 79 (any bot but a Shrink, #452), comfort 79 (Shrink, #452), extinguish 78 (any bot, #429), repairOxygen 77.5 (any bot, #443), travel 77 (Commander), deliverCoffee and coffeeRun 76.5 (the coffee relay for Gioele), astro 76 (Astrophysicist),
 //   patrolShootHunters 75 (Pilot), shootHunters 74 (Shooter/Gunner), fierySpeech 71 (Leader), shower 70, repairDoor 56 (any bot), repairHull 55, contactSol 54 (Radio
 //   Expert), setOutPots 54 (Botanist role, Green Thumb), tendPlants 53 (Botanist role), commsOfficer 52 (Comms Officer), crewShootHunters 51 (anyone without a shooting skill), research and project 50, shrinkDorm 45
 //   (Shrink role), rest 40, explore 30.

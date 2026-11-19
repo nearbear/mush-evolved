@@ -21,7 +21,8 @@ export const BOT_SKILL_RULES: readonly SkillRule[] = [
   { skill: "logistics", tier: "always" }, // Logistics Expert
   { skill: "pilot", tier: "always", preferredFor: ["frieda", "terrence"] },
   { skill: "gunman", tier: "always", needs: "pilot" }, // Shooter
-  { skill: "astrophysician", tier: "always", only: ["frieda"] }, // Astrophysicist
+  { skill: "astrophysician", tier: "always", only: ["frieda", "gioele"] }, // Astrophysicist (Gioele too: owner, 2026-11-18)
+  { skill: "caffeinomaniac", tier: "always", only: ["gioele"] }, // Caffeine Junkie (owner, 2026-11-18): the coffee relay, goals/coffee.ts
   { skill: "botanic", tier: "always", only: ["ian"] }, // Botanist
   { skill: "green_thumb", tier: "always", only: ["ian"] },
   { skill: "designer", tier: "preferred" },
@@ -57,7 +58,7 @@ export function chooseSkill(character: CharacterId, offered: readonly string[], 
     const rule = rules.find((r) => human.includes(r.skill) && tierOf(r, character, have) === tier);
     if (rule) return rule.skill;
   }
-  // A skill a rule names but rules out for this character (Astrophysicist for Gioele, Shooter before Pilot) is left
+  // A skill a rule names but rules out for this character (Botanist for Hua, Shooter before Pilot) is left
   // for last, so a random pick doesn't take it.
   const unruled = human.filter((s) => !rules.some((r) => r.skill === s));
   const pool = unruled.length > 0 ? unruled : human;

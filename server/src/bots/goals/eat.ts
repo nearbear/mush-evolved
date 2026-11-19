@@ -1,5 +1,6 @@
 import { ITEM_TYPES, type ActionOption, type PlayerView, type RoomId } from "@mush2/shared";
 import { act, canAfford, failed, goTo, itemType, nearest, roomsWith, where } from "./blocks.ts";
+import { coffeeReserved } from "./coffee.ts";
 import { emptyGardenPots } from "./sow.ts";
 import type { BotMemory, Goal, GoalDef, GoalStep } from "./types.ts";
 
@@ -27,13 +28,15 @@ const keepFruit = (view: PlayerView): boolean => !view.statuses.includes("hungry
 
 /**
  * The best food the bot can eat now (carried or in its room): the most satiety first, so a ration before a banana or a
- * coffee, and a cooked ration before an uncooked one. Not fruit kept for sowing (`keepFruit`).
+ * coffee, and a cooked ration before an uncooked one. Not fruit kept for sowing (`keepFruit`), nor coffee kept for Gioele.
  */
 function bestFood(view: PlayerView): (ActionOption & { action: { type: "consume"; item: string } }) | undefined {
   const uncooked = (o: ActionOption) => (o.action.type === "consume" && ITEM_TYPES[itemType(view, o.action.item) ?? ""]?.cook ? 1 : 0);
   return view.actions
     .filter((o): o is ActionOption & { action: { type: "consume"; item: string } } => o.lacks.length === 0 && (consumeOf(view, o)?.satiety ?? 0) > 0)
     .filter((o) => !(keepFruit(view) && ITEM_TYPES[itemType(view, o.action.item) ?? ""]?.fruit))
+    // Coffee is kept for Gioele while he is alive (owner, 2026-11-18; coffee.ts).
+    .filter((o) => !(coffeeReserved(view) && itemType(view, o.action.item) === "coffee"))
     .sort((a, b) => consumeOf(view, b)!.satiety - consumeOf(view, a)!.satiety || uncooked(a) - uncooked(b))[0];
 }
 
@@ -87,7 +90,7 @@ function eatAt(room: RoomId, label: string): Goal {
       }
       const walk = goTo(view, room);
       if (walk) return walk;
-      const dispense = !dispensed && view.actions.find((o) => o.action.type === "dispense" && o.lacks.length === 0);
+      const dispense = !dispensed && !coffeeReserved(view) && view.actions.find((o) => o.action.type === "dispense" && o.lacks.length === 0);
       if (!dispense) return failed("no_food");
       dispensed = true;
       return act(dispense.action);

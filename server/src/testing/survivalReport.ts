@@ -68,6 +68,19 @@ export function lossReport(results: readonly SurvivalResult[], repairBelow: numb
   const waves = hit.flatMap((d) => [...new Set(d.map((x) => x.cycle))].map((c) => d.filter((x) => x.cycle === c).length));
   const chained = sum(hit.map((d) => d.filter((x) => d.some((y) => y.cycle < x.cycle && x.cycle - y.cycle <= 2)).length));
   lines.push(`depression: ${sum(sad.map((d) => d.length))} deaths in ${hit.length} runs, first on day ${firstDay[Math.floor(firstDay.length / 2)] ?? "-"} (median; earliest ${firstDay[0] ?? "-"}), ${waves.length} cycles with any (${per(sum(waves), waves.length, 1)} deaths each, most ${Math.max(0, ...waves)}), ${chained} within 2 cycles after an earlier one`);
+  // Oxygen: what came in against the burn, and how far each run got along the planet pipeline before it ran dry.
+  const withOxygen = rows.filter((r) => r.oxygen > 0);
+  const inBy: Record<string, number> = {};
+  for (const r of withOxygen) for (const [k, v] of Object.entries(r.oxygenIn ?? {})) inBy[k] = (inBy[k] ?? 0) + v;
+  const day = runs[0]!.cyclesPerDay;
+  lines.push(`oxygen in per day while any is left: ${per(sum(Object.values(inBy)) * day, withOxygen.length)} (${Object.entries(inBy).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${per(v * day, withOxygen.length)}`).join(", ") || "none"}), against ${day} burned and ${per(total((r) => r.brokenTanks ?? 0) * day, rows.length)} leaked`);
+  const firstCycle = (r: SurvivalResult, f: (row: CycleReport) => boolean): number | null => r.cycles!.find(f)?.cycle ?? null;
+  const median = (xs: readonly (number | null)[]): string => {
+    const got = xs.filter((x): x is number => x !== null).sort((a, b) => a - b);
+    return `${got.length} runs, median cycle ${got[Math.floor(got.length / 2)] ?? "-"}`; // i18n-ignore: dev-only harness report
+  };
+  lines.push(`coffee per run: ${per(total((r) => r.coffeePulled ?? 0), n, 1)} pulled, ${per(total((r) => r.coffeeJunkie ?? 0), n, 1)} drunk by a Caffeine Junkie, ${per(total((r) => r.coffeeOthers ?? 0), n, 1)} by others; ${per(total((r) => r.junkieMeals ?? 0), n, 1)} other meals for a Caffeine Junkie`);
+  lines.push(`oxygen pipeline, first cycle: a planet found ${median(runs.map((r) => firstCycle(r, (c) => (c.planets ?? 0) > 0)))}; one with an Oxygen sector ${median(runs.map((r) => firstCycle(r, (c) => (c.oxygenPlanets ?? 0) > 0)))}; a destination shared ${median(runs.map((r) => firstCycle(r, (c) => (c.shares ?? 0) > 0)))}; a jump ${median(runs.map((r) => firstCycle(r, (c) => (c.jumps ?? 0) > 0)))}; in orbit ${median(runs.map((r) => firstCycle(r, (c) => c.orbit === true)))}; in orbit of an Oxygen planet ${median(runs.map((r) => firstCycle(r, (c) => c.orbitOxygen === true)))}; an expedition ${median(runs.map((r) => firstCycle(r, (c) => (c.expeditions ?? 0) > 0)))} (${per(total((r) => r.expeditions ?? 0), n, 1)} a run); oxygen from an expedition ${median(runs.map((r) => firstCycle(r, (c) => (c.oxygenIn?.expedition ?? 0) > 0)))}; oxygen at 0 ${median(runs.map((r) => firstCycle(r, (c) => c.oxygen === 0)))}`);
   lines.push("by cycle (mean over the runs still going): cycle, runs, hull, hunters, fires, alive, oxygen, morale, at 0, at 3 or less");
   const last = Math.max(...rows.map((r) => r.cycle));
   for (let cycle = 4; cycle <= last; cycle += 4) {

@@ -63,11 +63,12 @@ Goal priorities and triggers were mostly set by the owner. A number in the table
 | `SELF_CARE_MORALE`, `SELF_CARE_PRIORITY` | 5, 79 | `goals/selfCare.ts` | Owner, 2026-11-18 (#452): at 5 or less a bot lies in a bed in the Shrink's room (ACTOPI) and posts `Morale: low`; in bed it gets up for fires and oxygen |
 | `COMFORTS_PER_REQUEST`, comfort priority | 2, 79 | `moraleShare.ts`, `goals/comfort.ts` | Owner, 2026-11-18 (#452): the Shrink comforts each `Morale: low` asker twice, keeping the AP reserve |
 | `LEAVE_SHRINK_BEDS_MORALE` | 12 | `goals/rest.ts` | Owner, 2026-11-18 (#452): at 12 or more a bot rests in a Shrink's room only if no other bed is in reach. A Shrink never lies down; it stands in the busiest bed room instead |
+| `COFFEE_DRINKER`, `COFFEE_DROP_ROOM`, `COFFEE_PRIORITY` | gioele, `CORRIDOR_B`, 76.5 | `goals/coffee.ts` | Owner, 2026-11-18: crew pull the coffee in passing and leave it in the Center Corridor; Gioele drinks one reported today in passing, or fetches it in the day's last cycle; other bots don't drink coffee while he lives. Priority 76.5 is Claude's pick (above astro), not yet confirmed |
 | `FIERY_SPEECH_AUDIENCE`, priority | 3, 71 | `goals/fierySpeech.ts` | Owner, 2026-11-18 (#452): once a day where the Leader stands; Leadership right after Shrink in `BOT_SKILL_RULES` |
 
 Keep this table current: when a constant is added or the owner changes one, update its row with the date.
 
-Bots don't pick the Firefighter skill (owner, 2026-11-14, #429; it isn't in `BOT_SKILL_RULES`).
+Astrophysicist is picked by Frieda and Gioele, then Caffeine Junkie by Gioele (owner, 2026-11-18). Bots don't pick the Firefighter skill (owner, 2026-11-14, #429; it isn't in `BOT_SKILL_RULES`).
 
 Standing direction (owner, 2026-11-13): bots with a job of their own (Botanist, Astrophysicist, Comms Officer, Commander) do it first; fix who does what by reordering priorities before adding special cases; a bot finds things through what it saw itself or what another bot said in a fixed chat line, never through a hard-coded location.
 
