@@ -54,8 +54,9 @@ describe("freshIn", () => {
 });
 
 describe("isUrgent", () => {
-  it("covers warnings and injury or death keys only", () => {
+  it("covers warnings, danger entries, and injury or death keys only", () => {
     expect(isUrgent({ key: "x", level: "warning" })).toBe(true);
+    expect(isUrgent({ key: "x", level: "danger" })).toBe(true);
     expect(isUrgent({ key: "died" })).toBe(true);
     expect(isUrgent({ key: "chitchatted" })).toBe(false);
   });

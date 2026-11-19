@@ -128,7 +128,7 @@ export interface Seen {
   cycle: number;
 }
 
-/** Log keys that interrupt: the ship or someone in the room is hurting. Entries with `level: "warning"` interrupt too. */
+/** Log keys that interrupt: the ship or someone in the room is hurting. Entries with `level` `"warning"` or `"danger"` interrupt too. */
 export const URGENT_LOG_KEYS: ReadonlySet<string> = new Set([
   "oxygenOut",
   "randomInjury",
@@ -148,7 +148,7 @@ export const URGENT_LOG_KEYS: ReadonlySet<string> = new Set([
 ]);
 
 export function isUrgent(e: Pick<LogLine, "key" | "level">): boolean {
-  return e.level === "warning" || URGENT_LOG_KEYS.has(e.key);
+  return e.level === "warning" || e.level === "danger" || URGENT_LOG_KEYS.has(e.key);
 }
 
 export interface Fresh {

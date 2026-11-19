@@ -62,6 +62,7 @@ function useUnread(view: Pick<PlayerView, "readChannels" | "chatCounts" | "chatU
  * line has no warning level and keeps the plain look (owner, 2026-11-08); its badge still shows.
  */
 function logRowClass(e: LogLine): string | undefined {
+  if (e.level === "danger") return "warning danger";
   if (e.level === "warning") return e.leaked && e.kind === "covert" ? "warning danger" : "warning";
   return e.visibleTo === "all" ? undefined : "private";
 }
@@ -76,7 +77,7 @@ const LogRow = memo(
     const names = useNames();
     const marker = e.kind ? (
       <VisibilityBadge kind={e.kind} leaked={e.leaked === true} />
-    ) : e.level === "warning" ? (
+    ) : e.level === "warning" || e.level === "danger" ? (
       <WarningMarker />
     ) : (
       <InfoMarker />

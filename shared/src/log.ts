@@ -17,7 +17,7 @@ import type { ActionVisibility } from "./actions/action.ts";
 import { CAMERA_EQUIPMENT } from "./equipment.ts";
 import { rollFloat } from "./rng.ts";
 import { hasSkill } from "./skills.ts";
-import type { GameState, LogEntry, LogParams, PlayerId, PlayerState, RoomId } from "./types.ts";
+import type { GameState, LogEntry, LogLevel, LogParams, PlayerId, PlayerState, RoomId } from "./types.ts";
 
 /** Appends `entry` with the next id and the current cycle. Every log line goes through here. Mutates a state the caller already cloned. */
 export function pushLog(state: GameState, entry: Omit<LogEntry, "id" | "cycle">): void {
@@ -92,7 +92,7 @@ function nimbleWitnessed(state: Readonly<GameState>, actor: PlayerId, room: Room
 }
 
 /** Mutates a state that the caller already cloned. */
-export function logPublic(state: GameState, room: RoomId | undefined, key: string, params?: LogParams, level?: "warning"): void {
+export function logPublic(state: GameState, room: RoomId | undefined, key: string, params?: LogParams, level?: LogLevel): void {
   if (room !== undefined && nimbleActorId !== null && !nimbleWitnessed(state, nimbleActorId, room, params)) {
     logSecretIn(state, nimbleActorId, room, key, params);
     return;

@@ -34,7 +34,7 @@ describe("myco alarm", () => {
     addAlarm(s, { kind: "room", id: "SICK_BAY" });
     const after = must(applyAction(s, "p0", spike("p1")));
     expect(rings(after, "SICK_BAY")).toHaveLength(1);
-    expect(rings(after, "SICK_BAY")[0]!.level).toBe("warning");
+    expect(rings(after, "SICK_BAY")[0]!.level).toBe("danger");
     expect(alarmsIn(after, "SICK_BAY")).toHaveLength(2);
   });
 
@@ -113,5 +113,14 @@ describe("myco alarm", () => {
     expect(alarmsIn(after, "SICK_BAY")).toHaveLength(0);
     expect(after.items.filter((i) => i.type === "metal_scraps")).toHaveLength(1);
     expect(after.players[1]!.ap).toBe(ap - config.dismantle.cost.ap);
+  });
+
+  it("tags all built eMush myco-alarm actions and Mass Mouldering with spore, and excludes extraction, phagocytosis, and punch", () => {
+    for (const type of ["spike", "body_transfer", "fungal_cuisine", "mass_mouldering"] as const) {
+      expect(ACTIONS[type].tags).toContain("spore");
+    }
+    for (const type of ["extract_spore", "consume_spore", "punch"] as const) {
+      expect(ACTIONS[type].tags).not.toContain("spore");
+    }
   });
 });
