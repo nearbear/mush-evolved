@@ -146,12 +146,17 @@ export function storageItems(state: Readonly<GameState>, type: string): ItemStat
   return state.items.filter((i) => i.type === type && i.at.kind === "room" && rooms.includes(i.at.id) && i.hiddenBy === undefined) as ItemState[];
 }
 
+const SKILFUL_ROLES: readonly SkillId[] = ["botanic", "diplomacy", "biologist"];
+
+const hasDealSkill = (player: Readonly<PlayerState>, skill: SkillId): boolean =>
+  hasSkill(player, skill) || (SKILFUL_ROLES.includes(skill) && hasSkill(player, "skilful"));
+
 /**
  * Why `officer` can't close `deal` now, or null if they can. The skill check is eMush's (someone alive in the officer's
  * room has it); the rest is what the ship holds.
  */
 export function dealBlock(state: Readonly<GameState>, officer: Readonly<PlayerState>, deal: DeepReadonly<MerchantDeal>): DealBlock | null {
-  if (deal.skill && !state.players.some((p) => p.alive && p.room === officer.room && hasSkill(p, deal.skill!))) return "skill";
+  if (deal.skill && !state.players.some((p) => p.alive && p.room === officer.room && hasDealSkill(p, deal.skill!))) return "skill";
   for (const asset of deal.give) {
     switch (asset.kind) {
       case "crew":

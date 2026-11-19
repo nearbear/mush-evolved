@@ -4457,3 +4457,8 @@ The resource chips on the ID card drew their 16x16 icons at 10px, because `.stat
 - Bound the engine room's `plasma_shield` tile as `PLASMA_SHIELD` equipment (examine only, no other flags) via `readMap`/`writeMap`, with en/fr/es names. Existing dev games kept their old equipment list, so the shield only shows on a new ship.
 - The sprite is a whole slab (console wall, pit, coils, floor trim), so hover lit up its straight cut edges. The original's binding `mask` slices exist but aren't used, and there's none for the shield. Added `web/src/iso/outlines.ts`: a hand-traced polygon per slice (traced by overlaying a pixel grid on the sprite and iterating). Hit-testing ignores pixels outside it, and the Pixi renderer draws the effect on a copy clipped by a mask, with the filter on a wrapper so a glow wraps the outline. The DOM renderer was left alone, as asked.
 - What needed correction: a long attempt to drive the browser to the engine room with Playwright (corridor openings have no door sprites, and the probe's hover lags a render). The owner's screenshot settled it in one step; ask for one before scripting a long walk.
+
+### 2026-11-18 — Polyvalent (`skilful`) merchant deals & expedition harvest
+- Added `skilful` (Polyvalent) support to merchant ship skill-gated deals (`shared/src/merchants.ts`, counting as Botanist, Diplomat, and Biologist) and expedition Harvest +1 fruit (`shared/src/expeditions.ts`). NERON project skill bonuses were intentionally left out per the owner.
+- Updated `SKILL_STATUS.skilful` and `SKILL_STATUS.diplomacy` to `"full"` in `shared/src/skills.ts` and updated `docs/rules/implemented-rules.md`.
+- Added unit tests in `shared/tests/merchants.test.ts` and `shared/tests/expeditions.test.ts`.

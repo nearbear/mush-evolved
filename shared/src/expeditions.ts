@@ -484,8 +484,8 @@ function resolve(ctx: Ctx, sector: PlanetTag | typeof LANDING, table: readonly E
       break;
     }
     case "harvest": {
-      // Polymath counts as a Botanist here (owner, 2026-11-08, #358).
-      const bonus = living().some((p) => hasSkill(p, "botanic") || hasSkill(p, "polymath")) ? rules.botanistBonus : 0;
+      // Polymath and Skilful count as a Botanist here (owner, 2026-11-08, #358; 2026-11-18).
+      const bonus = living().some((p) => hasSkill(p, "botanic") || hasSkill(p, "polymath") || hasSkill(p, "skilful")) ? rules.botanistBonus : 0;
       event.item = harvestFruit(state);
       event.amount = drop(state, event.item, amount + bonus);
       break;

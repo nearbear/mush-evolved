@@ -175,6 +175,17 @@ describe("merchant ships", () => {
       expect(offered(s, "p0")).toContainEqual(close(m.id, 0));
     });
 
+    it("skilful (Polyvalent) unlocks diplomacy and botanic merchant deals", () => {
+      for (const skill of ["diplomacy", "botanic"] as const) {
+        const s = ship();
+        const m = withMerchant(s, [{ give: [{ kind: "fuel", count: 1 }], receive: [{ kind: "item", item: "oxy_capsule", count: 1 }], skill }]);
+        for (const p of s.players) p.skills = [];
+        expect(blocked(s, 0)).toBe("skill");
+        player(s, "p2").skills = ["skilful"];
+        expect(offered(s, "p0")).toContainEqual(close(m.id, 0));
+      }
+    });
+
     it("an illegal deal leaves the state unchanged", () => {
       const s = ship();
       const m = withMerchant(s, [crewForFuel]);

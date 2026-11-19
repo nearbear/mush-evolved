@@ -1267,13 +1267,19 @@ describe("expeditions, phase 4, slice D: skills", () => {
     }
   });
 
-  it("a Polymath harvests as a Botanist: one more fruit, not stacking", () => {
-    const harvest = (skills: ("botanic" | "polymath")[]) => {
+  it("a Polymath or Polyvant (skilful) harvests as a Botanist: one more fruit, not stacking", () => {
+    const harvest = (skills: ("botanic" | "polymath" | "skilful")[]) => {
       const s = game({ tags: ["FRUIT_TREES"], events: { FRUIT_TREES: [rule("harvest", { amount: 2 })] } });
       skills.forEach((skill, i) => player(s, `p${i + 1}`).skills.push(skill));
       return event(go(s)).amount;
     };
-    expect([harvest([]), harvest(["polymath"]), harvest(["botanic", "polymath"])]).toEqual([2, 2 + expedition.botanistBonus, 2 + expedition.botanistBonus]);
+    expect([harvest([]), harvest(["polymath"]), harvest(["skilful"]), harvest(["botanic", "polymath"]), harvest(["botanic", "skilful"])]).toEqual([
+      2,
+      2 + expedition.botanistBonus,
+      2 + expedition.botanistBonus,
+      2 + expedition.botanistBonus,
+      2 + expedition.botanistBonus,
+    ]);
   });
 
   it("each Shooter carrying a working gun adds 1, once each; not with a knife, an empty gun or a gun someone else carries", () => {
