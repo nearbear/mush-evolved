@@ -13,6 +13,7 @@ import { lyingFrame, sittingFrame, spriteStrip } from "../art/assets.ts";
 import type { Bar } from "../scene/ActionBar.tsx";
 import { atlasUrl } from "./shipLayout.ts";
 import { CAMERA_SLICES, LOCKER_HOVER_KEY, isLockerSlice } from "./equipmentTiles.ts";
+import { SLICE_OUTLINES, type OutlinePoint } from "./outlines.ts";
 import { type CellSlot, frameRect, gridToPx, type PlacedSprite, WALL_RUNS, wallRuns } from "./placement.ts";
 import type { Walker } from "./useWalkers.ts";
 
@@ -263,6 +264,11 @@ export interface SceneSprite extends ScenePicture {
   shadow?: "standing" | "lying";
   /** Floats: bobs gently up and down on its own clock (a drone, not its shadow). A renderer may draw it still. */
   bob?: boolean;
+  /**
+   * The part of the sprite that is the equipment, in its own unmirrored pixels (outlines.ts): a renderer draws the
+   * effect only inside it. Absent: the whole sprite.
+   */
+  outline?: readonly OutlinePoint[];
   /** Only for labelling: you, and a door you can go through. */
   you?: boolean;
   reachable?: boolean;
@@ -635,7 +641,8 @@ export function describeScene(input: SceneInput): Scene {
     if (eq) {
       // Selected equipment keeps its glow while hovered.
       const effect = isSelected("equipment", eq.id) ? "selected" : hover ? "hover" : undefined;
-      sprites.push({ ...tile(), anim, role: "equipment", effect, kind: s.kind, slice: s.slice });
+      const outline = SLICE_OUTLINES[s.slice];
+      sprites.push({ ...tile(), anim, role: "equipment", effect, kind: s.kind, slice: s.slice, ...(outline && { outline }) });
       if (eq.broken) addSmoke(s, drawnSlice);
       continue;
     }

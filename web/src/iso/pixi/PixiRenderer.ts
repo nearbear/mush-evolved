@@ -20,7 +20,7 @@
 // and rebuilds its textures and programs when it comes back. This only stops drawing while it is lost
 // and draws once it is back, since nothing else would ask for a frame.
 
-import { Application, Container, type Filter, Rectangle, RendererType, Sprite, Texture, TextureStyle, TilingSprite, UniformGroup } from "pixi.js";
+import { Application, Container, type Filter, Graphics, Rectangle, RendererType, Sprite, Texture, TextureStyle, TilingSprite, UniformGroup } from "pixi.js";
 // Pixi's shader code without `new Function`, which the CSP forbids (web/public/_headers).
 import "pixi.js/unsafe-eval";
 import { FX_SHEET } from "../../art/assets.ts";
@@ -127,6 +127,18 @@ interface Drawn {
   textureKey: string;
   /** A floating sprite's current lift off where the scene placed it, in pixels. */
   bobY?: number;
+  /** An outlined sprite's effect (`SceneSprite.outline`): a copy of it clipped to the outline, drawn just after it. */
+  focus?: Focus;
+}
+
+/**
+ * The copy that carries an outlined sprite's effect. The mask clips the copy to the outline and the filter sits on
+ * the box around it, so a glow wraps the outlined part rather than being cut off at its edge.
+ */
+interface Focus {
+  box: Container;
+  sprite: Sprite;
+  mask: Graphics;
 }
 
 /**
@@ -141,6 +153,9 @@ interface SkyLayer {
   /** The tile's offset in its own turned frame (skyTurn.ts). */
   at: { x: number; y: number };
 }
+
+/** A sprite and, after it, its focus copy if it has one. */
+const withFocus = (d: Drawn): Container[] => (d.focus ? [d.sprite, d.focus.box] : [d.sprite]);
 
 /** Outlines are kept in the same map as sprites, under their own keys. */
 const OUTLINE = "esp|";
@@ -298,6 +313,7 @@ export class PixiRenderer {
     this.arrange(this.sprites, this.withParticles(scene, sprites));
     for (const [key, d] of this.drawn) {
       if (seen.has(key)) continue;
+      d.focus?.box.destroy({ children: true });
       d.sprite.destroy();
       this.drawn.delete(key);
     }
@@ -343,7 +359,7 @@ export class PixiRenderer {
    * paint order. Indices in `scene.fire` and `scene.smoke` count every scene sprite, floors included.
    */
   private withParticles(scene: Scene, sprites: readonly Drawn[]): Container[] {
-    if (!scene.fire.length && !scene.smoke.length) return sprites.map((d) => d.sprite);
+    if (!scene.fire.length && !scene.smoke.length) return sprites.flatMap(withFocus);
     // The index among the non-floor sprites of each scene sprite position.
     const upTo = new Int32Array(scene.sprites.length + 1);
     scene.sprites.forEach((s, i) => {
@@ -361,7 +377,7 @@ export class PixiRenderer {
     for (const s of scene.smoke) addLayer(s.at, this.smoke.layerFor(s.key));
     const out: Container[] = [];
     sprites.forEach((d, i) => {
-      out.push(...(before.get(i) ?? []), d.sprite);
+      out.push(...(before.get(i) ?? []), ...withFocus(d));
     });
     out.push(...(before.get(sprites.length) ?? []));
     return out;
@@ -529,12 +545,49 @@ export class PixiRenderer {
       filter = lookFilter(look, (token) => this.color(token), this.app.renderer.resolution);
       this.looks.set(key, filter);
     }
+    // An outlined sprite is drawn plain, with its effect on a copy clipped to the outline.
+    const focused = filter && s.outline;
+    this.setFocus(d, focused ? s.outline : undefined, filter);
     const next: Filter[] = [];
-    if (filter) next.push(filter);
+    if (filter && !focused) next.push(filter);
     if (s.cutaway && this.esp) next.push(this.getCutawayFilter(s.cutaway));
     const cur = d.sprite.filters ?? [];
     if (cur.length !== next.length || cur.some((f, i) => f !== next[i])) {
       d.sprite.filters = next;
+    }
+  }
+
+  /** Makes, redraws or drops the sprite's focus copy (`Drawn.focus`); `copyFocus` keeps it on the sprite. */
+  private setFocus(d: Drawn, outline: SceneSprite["outline"], filter: Filter | undefined) {
+    if (!outline || !filter) {
+      d.focus?.box.destroy({ children: true });
+      d.focus = undefined;
+      return;
+    }
+    if (!d.focus) {
+      const box = new Container();
+      const sprite = new Sprite(Texture.EMPTY);
+      const mask = new Graphics();
+      box.addChild(sprite, mask);
+      sprite.mask = mask;
+      d.focus = { box, sprite, mask };
+    }
+    const { box, mask } = d.focus;
+    mask.clear().poly(outline.flat()).fill(0xffffff);
+    if (box.filters?.[0] !== filter) box.filters = [filter];
+  }
+
+  /** The focus copy follows its sprite: frame, position, mirroring and fog. Run before each render. */
+  private copyFocus() {
+    for (const d of this.order) {
+      const f = d.focus;
+      if (!f) continue;
+      f.sprite.texture = d.sprite.texture;
+      f.sprite.tint = d.sprite.tint;
+      for (const part of [f.sprite, f.mask]) {
+        part.position.copyFrom(d.sprite.position);
+        part.scale.copyFrom(d.sprite.scale);
+      }
     }
   }
 
@@ -585,6 +638,7 @@ export class PixiRenderer {
   private renderNow() {
     this.dirty = false;
     if (!this.ready || this.lost || !this.host.clientWidth || !this.host.clientHeight) return;
+    this.copyFocus();
     this.app.renderer.render(this.app.stage);
     const art = this.loading ? "loading" : "ready";
     if (this.host.dataset.art !== art) this.host.dataset.art = art;

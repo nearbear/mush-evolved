@@ -1684,7 +1684,8 @@
         {"id":"ROTATIONAL_REACTOR","tile":"rotational_reactor","mask":"reactor_mask","dir":"down","module":true,"key":"reac_b"},
         {"id":"EMERGENCY_REACTOR","tile":"emergency_reactor","mask":"reactor_mask","dir":"down","module":true},
         {"id":"NERON_CORE","tile":"auxiliary_terminal_neron","dir":"down","module":true,"key":"neron_engine"},
-        {"id":"SOFA","tile":"sofaReverse"}
+        {"id":"SOFA","tile":"sofaReverse"},
+        {"id":"PLASMA_SHIELD","tile":"plasma_shield"}
       ],
       "tiles": [
         {"x":8,"y":3,"kind":"wall","layer":0,"slice":"COLUMN","frame":0},

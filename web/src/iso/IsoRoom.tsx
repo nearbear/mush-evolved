@@ -25,6 +25,7 @@ import { CAMERA_EQUIPMENT, CORPSE_ITEM, DYNARCADE_EQUIPMENT, EQUIPMENT_TYPES, PR
 import type { Bubble } from "../scene/useSpeechBubbles.ts";
 import { useNames } from "../i18n/names.ts";
 import { CAMERA_SLICES, LOCKER_HOVER_KEY, equipmentByTileKey, isLockerSlice, roomAsBuilt } from "./equipmentTiles.ts";
+import { SLICE_OUTLINES, insideOutline } from "./outlines.ts";
 import { opaqueAt, preloadImage } from "./hitMask.ts";
 import { useWalkers, type Goal } from "./useWalkers.ts";
 import type { ActingOn } from "./useActingOn.ts";
@@ -765,6 +766,9 @@ export function IsoRoom({
   const pick = (e: MouseEvent<HTMLElement>) => {
     const { x, y } = pointIn(e);
     const opaque = (s: PlacedSprite, px: number, py: number) => {
+      // A slab of room around its equipment (outlines.ts): only the equipment's part takes clicks.
+      const outline = SLICE_OUTLINES[s.slice];
+      if (outline && equipmentByKey.has(s.key) && !insideOutline(outline, px, py)) return false;
       const { url, frame, keyed } = imageOf(s, imageInput);
       return !url || opaqueAt(url, frame, px, py, keyed);
     };
