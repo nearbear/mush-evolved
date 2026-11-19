@@ -60,6 +60,10 @@ Goal priorities and triggers were mostly set by the owner. A number in the table
 | `HOLD_MAX_DAYS`, `HOLD_MIN_OXYGEN`, `JUMP_WAIT_CYCLES` | 4, 8, 2 | `goals/travel.ts` | #421 |
 | `BOT_EAT_AFTER_CYCLES` | 16 | `goals/eat.ts` | Owner |
 | `SHRINK_DESK_WORK_WITHIN` | 4 | `goals/work.ts` | Owner, 2026-11-01 |
+| `SELF_CARE_MORALE`, `SELF_CARE_PRIORITY` | 5, 79 | `goals/selfCare.ts` | Owner, 2026-11-18 (#452): at 5 or less a bot lies in a bed in the Shrink's room (ACTOPI) and posts `Morale: low`; in bed it gets up for fires and oxygen |
+| `COMFORTS_PER_REQUEST`, comfort priority | 2, 79 | `moraleShare.ts`, `goals/comfort.ts` | Owner, 2026-11-18 (#452): the Shrink comforts each `Morale: low` asker twice, keeping the AP reserve |
+| `LEAVE_SHRINK_BEDS_MORALE` | 12 | `goals/rest.ts` | Owner, 2026-11-18 (#452): at 12 or more a bot rests in a Shrink's room only if no other bed is in reach. A Shrink never lies down; it stands in the busiest bed room instead |
+| `FIERY_SPEECH_AUDIENCE`, priority | 3, 71 | `goals/fierySpeech.ts` | Owner, 2026-11-18 (#452): once a day where the Leader stands; Leadership right after Shrink in `BOT_SKILL_RULES` |
 
 Keep this table current: when a constant is added or the owner changes one, update its row with the date.
 

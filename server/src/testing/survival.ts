@@ -4,7 +4,7 @@
 // start (owner, 2026-11-10): a setup can't ask for zero Mush, only this helper does. No model, no network, no clock: the
 // rules run here as GameRoom runs them, and timed actions finish on a simulated clock, so a seed always plays the same.
 
-import { applyInput, CHARACTERS, createGame, legalActions, nextDue, resolveConfig, shuffle, viewFor, type DeathCause, type Ending, type GameState, type Input, type PlayerId, type Seat } from "@mush2/shared";
+import { applyInput, CHARACTERS, createGame, dailyMoraleLoss, legalActions, nextDue, resolveConfig, shuffle, viewFor, type DeathCause, type Ending, type GameState, type Input, type PlayerId, type Seat } from "@mush2/shared";
 import { GoalBot } from "../bots.ts";
 import { BOT_DUTIES } from "../bots/duties.ts";
 
@@ -77,6 +77,18 @@ export interface CycleReport {
   brokenTanks?: number;
   tankRepairTries?: number;
   tankRepairs?: number;
+  /** Living humans' mean morale as the cycle ended, how many stood at 0 (Hopeless) and at 3 or less (#452). Missing in older runs. */
+  moraleMean?: number;
+  hopeless?: number;
+  moraleLow?: number;
+  /**
+   * Morale the living crew gained and lost in the cycle and at the change that ended it, by source (#452): an action's
+   * type (the actor's and anyone else's change from it), `tick` (timed actions finishing), and at a cycle change
+   * `panicAttack`, `hopelessDeath`, `dayEnd` and `changeOther` (diseases and the rest), split in that order and each
+   * capped by what was actually lost (morale stops at 0). Missing in older runs.
+   */
+  moraleUp?: Record<string, number>;
+  moraleDown?: Record<string, number>;
 }
 
 export interface SurvivalResult {
@@ -150,6 +162,53 @@ function snapshot(game: GameState): DaySnapshot {
   };
 }
 
+const addInto = (into: Record<string, number>, from: Record<string, number>): void => {
+  for (const [k, v] of Object.entries(from)) into[k] = (into[k] ?? 0) + v;
+};
+
+/**
+ * Morale gained and lost by the players alive after one input, by source (#452). Within a cycle the source is the
+ * input (an action's type, or `tick:` and the timed action the player had going). At a cycle change each player's loss is split in the order the rules apply it:
+ * a panic attack (their private `panicAttack` line), the crew's charge for depression deaths, the day's end, and the
+ * rest (diseases and the like); a gain at the change is `changeGain`.
+ */
+function moraleDeltas(before: GameState, after: GameState, fresh: GameState["log"], changed: boolean, source: string): { up: Record<string, number>; down: Record<string, number> } {
+  const up: Record<string, number> = {};
+  const down: Record<string, number> = {};
+  const depression = fresh.filter((e) => e.key === "died" && e.params?.cause === "depression").length;
+  const dayEnded = changed && dayOfCycle(after, after.cycle) !== dayOfCycle(before, before.cycle);
+  const dayLoss = dayEnded ? dailyMoraleLoss(before) : 0;
+  for (const p of after.players) {
+    if (!p.alive) continue;
+    const was = before.players.find((q) => q.id === p.id)?.morale ?? p.morale;
+    const delta = p.morale - was;
+    if (delta === 0) continue;
+    if (!changed) {
+      // A tick finishes timed actions: name the one this player had going.
+      const from = source === "tick" ? `tick:${before.players.find((q) => q.id === p.id)?.current?.action.type ?? "-"}` : source;
+      (delta > 0 ? up : down)[from] = ((delta > 0 ? up : down)[from] ?? 0) + Math.abs(delta);
+      continue;
+    }
+    if (delta > 0) {
+      up.changeGain = (up.changeGain ?? 0) + delta;
+      continue;
+    }
+    let left = -delta;
+    const take = (key: string, amount: number): void => {
+      const t = Math.min(left, amount);
+      if (t <= 0) return;
+      down[key] = (down[key] ?? 0) + t;
+      left -= t;
+    };
+    const panics = fresh.filter((e) => e.key === "panicAttack" && Array.isArray(e.visibleTo) && e.visibleTo.includes(p.id)).length;
+    take("panicAttack", panics * after.config.incidents.panicAttack.morale);
+    take("hopelessDeath", depression * after.config.hopeless.deathMorale);
+    take("dayEnd", dayLoss);
+    take("changeOther", left);
+  }
+  return { up, down };
+}
+
 export async function runSurvival(seed: number, opts: SurvivalOptions): Promise<SurvivalResult> {
   let game = survivalGame(seed, opts);
   const trace = opts.trace ?? (() => {});
@@ -159,13 +218,15 @@ export async function runSurvival(seed: number, opts: SurvivalOptions): Promise<
   let now = 0;
   let logSeen = game.nextLogId;
 
-  const newRow = (cycle: number): CycleReport => ({ cycle, hull: 0, oxygen: 0, alive: 0, hunters: 0, fires: 0, killed: 0, shed: 0, shots: 0, repairTries: 0, repairs: 0, apLeft: 0, atCap: 0, scraps: 0, scrapsCarried: 0, apShooters: {}, apOthers: {}, hullLost: 0, arrived: 0, firesStarted: 0, firesOut: 0, extinguishTries: 0, brokenTanks: 0, tankRepairTries: 0, tankRepairs: 0 });
+  const newRow = (cycle: number): CycleReport => ({ cycle, hull: 0, oxygen: 0, alive: 0, hunters: 0, fires: 0, killed: 0, shed: 0, shots: 0, repairTries: 0, repairs: 0, apLeft: 0, atCap: 0, scraps: 0, scrapsCarried: 0, apShooters: {}, apOthers: {}, hullLost: 0, arrived: 0, firesStarted: 0, firesOut: 0, extinguishTries: 0, brokenTanks: 0, tankRepairTries: 0, tankRepairs: 0, moraleUp: {}, moraleDown: {} });
   let row = newRow(game.cycle);
   /** Fills the row's end-of-cycle fields from `g`, the state just before the change (or where the game ended). */
   const closeRow = (g: GameState): void => {
     const living = g.players.filter((p) => p.alive);
     const scraps = g.items.filter((i) => i.type === "metal_scraps");
     Object.assign(row, { hull: g.ship.hull, oxygen: g.ship.oxygen, alive: living.length, hunters: g.hunters.list.length, fires: g.fires.length, apLeft: living.reduce((a, p) => a + p.ap, 0), atCap: living.filter((p) => p.ap >= p.maxAp).length, scraps: scraps.length, scrapsCarried: scraps.filter((i) => i.at.kind === "player").length, brokenTanks: Object.values(g.equipment).flat().filter((e) => e.type === "OXYGEN_TANK" && e.broken).length });
+    const humans = living.filter((p) => p.role === "human");
+    Object.assign(row, { moraleMean: humans.length === 0 ? 0 : humans.reduce((a, p) => a + p.morale, 0) / humans.length, hopeless: humans.filter((p) => p.morale === 0).length, moraleLow: humans.filter((p) => p.morale <= 3).length });
     result.cycles!.push(row);
   };
   /** `apCost`: what the action's option said it costs, for the report (timed actions are paid for when they finish). */
@@ -179,8 +240,12 @@ export async function runSurvival(seed: number, opts: SurvivalOptions): Promise<
     const out = before.fires.filter((r) => !game.fires.includes(r)).length;
     // A change that ends the game (hull 0, the last death) ends it before the cycle counter moves.
     const ended = before.phase === "playing" && game.phase !== "playing";
-    if (game.cycle !== before.cycle || ended) {
+    const changed = game.cycle !== before.cycle || ended;
+    const morale = moraleDeltas(before, game, fresh, changed, input.type === "action" ? input.action.type : "tick");
+    if (changed) {
       closeRow(before);
+      addInto(row.moraleUp!, morale.up);
+      addInto(row.moraleDown!, morale.down);
       row.hullLost = Math.max(0, before.ship.hull - game.ship.hull);
       row.firesStarted! += lit;
       row.firesOut! += out;
@@ -188,6 +253,8 @@ export async function runSurvival(seed: number, opts: SurvivalOptions): Promise<
       if (!ended) row = newRow(game.cycle);
       return true;
     }
+    addInto(row.moraleUp!, morale.up);
+    addInto(row.moraleDown!, morale.down);
     const gone = before.hunters.list.length - game.hunters.list.length;
     if (gone > 0) row[fresh.some((e) => e.key === "shipTraveled") ? "shed" : "killed"] += gone;
     row.repairs += fresh.filter((e) => e.key === "hullRepaired").length;
@@ -291,7 +358,7 @@ export async function runSurvival(seed: number, opts: SurvivalOptions): Promise<
     const day = dayOfCycle(game, cycle);
     if (game.phase !== "playing" || dayOf(game) !== day) result.days.push({ ...snapshot(game), day });
     const s = snapshot(game);
-    trace(`cycle ${cycle}: hull ${s.hull}, oxygen ${s.oxygen}, fuel ${s.fuel}, alive ${s.alive}, broken ${s.broken}, fires ${s.fires}, hunters ${s.hunters}`);
+    trace(`cycle ${cycle}: hull ${s.hull}, oxygen ${s.oxygen}, fuel ${s.fuel}, alive ${s.alive}, broken ${s.broken}, fires ${s.fires}, hunters ${s.hunters}, morale ${game.players.filter((p) => p.alive).map((p) => `${p.character} ${p.morale}`).join(" ")}`);
   }
   if (game.phase === "ended") result.end = game.ending ?? "stalled";
   // The cycle the run stopped in (a game that ends at a cycle change ends inside `applyInput`, before the row closes).

@@ -14,7 +14,8 @@ import { SOLO_GOALS } from "../src/bots/goals/index.ts";
 import { leaveIcarus } from "../src/bots/goals/leaveIcarus.ts";
 import { repairDoor } from "../src/bots/goals/repairDoor.ts";
 import { repairHull } from "../src/bots/goals/repairHull.ts";
-import { rest } from "../src/bots/goals/rest.ts";
+import { LEAVE_SHRINK_BEDS_MORALE, rest } from "../src/bots/goals/rest.ts";
+import { SELF_CARE_MORALE, SELF_CARE_UNTIL, selfCare } from "../src/bots/goals/selfCare.ts";
 import { research } from "../src/bots/goals/research.ts";
 import { BOT_PROJECT_ORDER, pickProject, project } from "../src/bots/goals/project.ts";
 import { SHRINK_DESK_WORK_WITHIN } from "../src/bots/goals/work.ts";
@@ -33,6 +34,10 @@ import { helpGoal, helpTasks } from "../src/bots/goals/help.ts";
 import type { BotMemory, GoalDef } from "../src/bots/goals/types.ts";
 import { BOT_MEMORY_VERSION } from "../src/bots/memoryStore.ts";
 import { formatFireLine, newFireMemory, observeFires, parseFireLine } from "../src/bots/fireShare.ts";
+import { COMFORTS_PER_REQUEST, MORALE_LOW_LINE, newMoraleMemory, observeMorale } from "../src/bots/moraleShare.ts";
+import { comfort } from "../src/bots/goals/comfort.ts";
+import { FIERY_SPEECH_AUDIENCE, fierySpeech } from "../src/bots/goals/fierySpeech.ts";
+import { isMachineLine } from "../src/bots/machineLines.ts";
 import { formatTankLine, newTankMemory, observeTanks, parseTankLine } from "../src/bots/tankShare.ts";
 import { extinguish } from "../src/bots/goals/extinguish.ts";
 import { repairOxygen } from "../src/bots/goals/repairOxygen.ts";
@@ -134,6 +139,7 @@ const memory = (scripted = true) => ({
   items: newItemMemory(),
   fires: newFireMemory(),
   tanks: newTankMemory(),
+  morale: newMoraleMemory(),
   combustion: null as number | null,
   holdSince: null as number | null,
   jump: newJumpMemory(),
@@ -211,8 +217,9 @@ describe("chooseSkill", () => {
   it("keeps character-only skills to their characters", () => {
     expect(pick("gioele")).toBe("paranoid");
     expect(pick("gioele", ["paranoid"])).not.toBe("astrophysician");
-    expect(pick("kuanti")).toBe("engineer");
-    expect(pick("kuanti", ["engineer"])).toBe("designer");
+    expect(pick("kuanti")).toBe("leadership");
+    expect(pick("kuanti", ["leadership"])).toBe("engineer");
+    expect(pick("kuanti", ["leadership", "engineer"])).toBe("designer");
     expect(pick("ian")).toBe("botanic");
     expect(pick("ian", ["botanic"])).toBe("green_thumb");
   });
@@ -930,6 +937,194 @@ describe("sowHere and setOutPots", () => {
   });
 });
 
+describe("selfCare (#452)", () => {
+  /** A bot at `morale` in the refectory, and a Shrink (another seat) standing in Bedroom A. */
+  const crew = (morale: number, shrinkRoom = "BEDROOM_A") => {
+    const { game: start, id } = setup();
+    const shrink = start.players.find((p) => p.id !== id)!.id;
+    let game = edit(start, id, (p) => {
+      p.skills = [];
+      p.morale = morale;
+      p.room = "REFECTORY";
+      p.ap = 6;
+    });
+    game = edit(game, shrink, (p) => {
+      p.skills = ["shrink"];
+      p.room = shrinkRoom;
+    });
+    for (const p of game.players) if (p.id !== id && p.id !== shrink) p.skills = p.skills.filter((s) => s !== "shrink");
+    const m = memory();
+    m.shrinks.add(shrink);
+    return { game, id, shrink, m };
+  };
+
+  it("is offered at morale 5 or less, toward the room ACTOPI shows the known Shrink in", () => {
+    const low = crew(SELF_CARE_MORALE);
+    expect(selfCare.options(viewFor(low.game, low.id), low.m).map((g) => g.key)).toEqual(["selfCare:BEDROOM_A"]);
+    const fine = crew(SELF_CARE_MORALE + 1);
+    expect(selfCare.options(viewFor(fine.game, fine.id), fine.m)).toEqual([]);
+  });
+
+  it("needs a known Shrink in a room with a bed, and isn't for a Shrink", () => {
+    const unknown = crew(3);
+    expect(selfCare.options(viewFor(unknown.game, unknown.id), memory())).toEqual([]);
+    const noBed = crew(3, "BRIDGE");
+    expect(selfCare.options(viewFor(noBed.game, noBed.id), noBed.m)).toEqual([]);
+    const self = crew(3);
+    const game = edit(self.game, self.id, (p) => (p.skills = ["shrink"]));
+    expect(selfCare.options(viewFor(game, self.id), self.m)).toEqual([]);
+  });
+
+  it("walks to the Shrink's room, lies down, and stays across a cycle until its morale recovers", async () => {
+    const { game, id, m } = crew(3);
+    const [goal] = selfCare.options(viewFor(game, id), m);
+    let g = game;
+    let lay = false;
+    for (let t = 0; t < 20 && !lay; t++) {
+      const step = goal!.step(viewFor(g, id), m);
+      expect(step.kind).toBe("act");
+      if (step.kind !== "act") return;
+      const r = applyAction(g, id, step.action);
+      expect(r.ok).toBe(true);
+      if (r.ok) g = r.state;
+      lay = step.action.type === "lie_down";
+    }
+    expect(lay).toBe(true);
+    expect(goal!.step(viewFor(g, id), m).kind).toBe("wait");
+    expect(goal!.keepAcrossCycle!(viewFor(g, id), m, false, [rest])).toBe(true);
+    const better = edit(g, id, (p) => (p.morale = SELF_CARE_UNTIL));
+    expect(goal!.step(viewFor(better, id), m).kind).toBe("done");
+    expect(goal!.keepAcrossCycle!(viewFor(better, id), m, false, [rest])).toBe(false);
+  });
+
+  it("gets up for a fire or a broken tank, and when the Shrink leaves", () => {
+    const { game, id, shrink, m } = crew(3);
+    const inBed = edit(game, id, (p) => (p.room = "BEDROOM_A"));
+    const [goal] = selfCare.options(viewFor(inBed, id), m);
+    const fire: GoalDef = { id: "extinguish", priority: 78, options: () => [{ id: "extinguish", key: "x", label: "", step: () => ({ kind: "wait" }) }] };
+    expect(goal!.keepAcrossCycle!(viewFor(inBed, id), m, false, [fire])).toBe(false);
+    const gone = edit(inBed, shrink, (p) => (p.room = "BRIDGE"));
+    expect(goal!.keepAcrossCycle!(viewFor(gone, id), m, false, [])).toBe(false);
+    expect(goal!.step(viewFor(gone, id), m).kind).toBe("done");
+  });
+});
+
+describe("Morale: low and the Shrink's comfort (#452)", () => {
+  it("a bot posts the line once when its morale drops to 5 or less, and again only after recovering", () => {
+    const { game: start, id } = setup();
+    const m = memory();
+    expect(observeMorale(viewFor(edit(start, id, (p) => (p.morale = SELF_CARE_MORALE + 1)), id), m)).toBeNull();
+    const low = edit(start, id, (p) => (p.morale = SELF_CARE_MORALE));
+    expect(observeMorale(viewFor(low, id), m)).toEqual({ type: "chat", channel: "global", text: MORALE_LOW_LINE });
+    expect(observeMorale(viewFor(low, id), m)).toBeNull();
+    observeMorale(viewFor(edit(start, id, (p) => (p.morale = 9)), id), m);
+    expect(observeMorale(viewFor(low, id), m)?.text).toBe(MORALE_LOW_LINE);
+    expect(isMachineLine(MORALE_LOW_LINE)).toBe(true);
+  });
+
+  it("the Shrink walks to whoever asked, comforts them twice keeping its AP reserve, and stops", async () => {
+    const { game: start, id } = setup();
+    const asker = start.players.find((p) => p.id !== id)!.id;
+    let game = edit(start, id, (p) => {
+      p.skills = ["shrink"];
+      p.ap = 8;
+      p.room = "REFECTORY";
+    });
+    game = edit(game, asker, (p) => {
+      p.room = "BEDROOM_A";
+      p.morale = 4;
+    });
+    const said = applyInput(game, { type: "chat", channel: "global", text: MORALE_LOW_LINE, by: asker });
+    expect(said.ok).toBe(true);
+    if (!said.ok) return;
+    game = said.state;
+    const other = edit(game, id, (p) => (p.skills = []));
+    const m0 = memory();
+    observeMorale(viewFor(other, id), m0);
+    expect(comfort.options(viewFor(other, id), m0)).toEqual([]);
+
+    const bot = new GoalBot(1, 2, [comfort]);
+    const { game: after, taken } = await oneCycle(game, id, bot);
+    expect(taken.filter((a) => a.type === "comfort")).toEqual(Array(COMFORTS_PER_REQUEST).fill({ type: "comfort", target: asker }));
+    expect(after.players.find((p) => p.id === asker)!.morale).toBe(4 + 2 * COMFORTS_PER_REQUEST);
+    expect(after.players.find((p) => p.id === id)!.ap).toBeGreaterThanOrEqual(2);
+  });
+});
+
+describe("fierySpeech (#452)", () => {
+  /** A Leader in the refectory with `others` living crewmates beside it. */
+  const crew = (others: number, skills = ["leadership"]) => {
+    const { game: start, id } = setup();
+    let game = edit(start, id, (p) => {
+      p.skills = skills as typeof p.skills;
+      p.ap = 8;
+      p.room = "REFECTORY";
+    });
+    const rest = game.players.filter((p) => p.id !== id);
+    rest.forEach((p, i) => (game = edit(game, p.id, (q) => (q.room = i < others ? "REFECTORY" : "BRIDGE"))));
+    return { game, id };
+  };
+
+  it("speaks once a day where it stands, with at least 3 others in the room", async () => {
+    expect(fierySpeech.options(viewFor(crew(FIERY_SPEECH_AUDIENCE - 1).game, crew(0).id), memory())).toEqual([]);
+    expect(fierySpeech.options(viewFor(crew(5, []).game, crew(0).id), memory())).toEqual([]);
+    const { game, id } = crew(FIERY_SPEECH_AUDIENCE);
+    const bot = new GoalBot(1, 2, [fierySpeech]);
+    const { taken } = await oneCycle(game, id, bot);
+    expect(taken).toEqual([{ type: "fiery_speech" }]);
+    const m = memory();
+    m.today.add("fierySpeech");
+    expect(fierySpeech.options(viewFor(game, id), m)).toEqual([]);
+  });
+
+  it("bots pick Leadership right after Shrink", () => {
+    expect(chooseSkill("jinsu", ["leadership", "cold_blood"], [], () => 0)).toBe("leadership");
+    expect(chooseSkill("kuanti", ["leadership", "shrink"], [], () => 0)).toBe("shrink");
+  });
+});
+
+describe("rest around a Shrink (#452)", () => {
+  it("a Shrink never lies down: it stands in the bed room with the most people until its AP is full", async () => {
+    const { game: start, id } = setup();
+    const beds = roomsWith(viewFor(start, id), ["BED"]);
+    const busy = beds.at(-1)!;
+    let game = edit(start, id, (p) => {
+      p.skills = ["shrink"];
+      p.ap = 1;
+    });
+    for (const p of game.players.filter((q) => q.id !== id).slice(0, 2)) game = edit(game, p.id, (q) => (q.room = busy));
+    const [goal] = rest.options(viewFor(game, id), memory());
+    expect(goal!.key).toBe(`rest:${busy}`);
+    const { game: after, taken } = await oneCycle(game, id, new GoalBot(1, 2, [rest]));
+    expect(taken.every((a) => a.type === "move")).toBe(true);
+    expect(after.players.find((p) => p.id === id)!.room).toBe(busy);
+    expect(after.players.find((p) => p.id === id)!.lyingIn).toBeUndefined();
+  });
+
+  it(`at morale ${LEAVE_SHRINK_BEDS_MORALE} or more, leaves the Shrink's beds to others unless no other bed is in reach`, () => {
+    const { game: start, id } = setup();
+    const shrink = start.players.find((p) => p.id !== id)!.id;
+    const view0 = viewFor(start, id);
+    const first = roomsWith(view0, ["BED"])[0]!;
+    let game = edit(start, shrink, (p) => {
+      p.skills = ["shrink"];
+      p.room = first;
+    });
+    game = edit(game, id, (p) => {
+      p.skills = [];
+      p.ap = 3;
+      p.morale = LEAVE_SHRINK_BEDS_MORALE;
+    });
+    const m = memory();
+    m.shrinks.add(shrink);
+    expect(rest.options(viewFor(game, id), m)[0]!.key).not.toBe(`rest:${first}`);
+    const low = edit(game, id, (p) => (p.morale = LEAVE_SHRINK_BEDS_MORALE - 1));
+    expect(rest.options(viewFor(low, id), m)[0]!.key).toBe(`rest:${first}`);
+    for (const r of roomsWith(view0, ["BED"])) if (r !== first) m.ended.add(`rest:${r}`);
+    expect(rest.options(viewFor(game, id), m)[0]!.key).toBe(`rest:${first}`);
+  });
+});
+
 describe("shrinkDorm", () => {
   /** A bot with the given skills and AP, standing in the refectory on `day`. */
   const crew = (skills: string[], ap = 4, day = 1) => {
@@ -958,22 +1153,14 @@ describe("shrinkDorm", () => {
     expect(keys.map((k) => k?.split(":")[1]).every((r) => DORMS.includes(r!))).toBe(true);
   });
 
-  it("walks to today's dorm, lies down when its AP isn't full, and stays until the cycle ends", async () => {
+  it("walks to today's dorm and stays there standing until the cycle ends, never lying down (#452)", async () => {
     const { game, id } = crew(["shrink"]);
     const dorm = shrinkDorm.options(viewFor(game, id), memory())[0]!.key.split(":")[1];
-    const bot = new GoalBot(1, 2, [shrinkDorm]);
+    const bot = new GoalBot(1, 2, [shrinkDorm, rest]);
     const { game: after, taken } = await oneCycle(game, id, bot);
     expect(room(after, id)).toBe(dorm);
-    expect(taken.at(-1)?.type).toBe("lie_down");
-    expect(await bot.decideAction(viewFor(after, id))).toEqual({ type: "ready" });
-  });
-
-  it("with full AP, waits in the dorm without lying down", async () => {
-    const { game: start, id } = crew(["shrink"]);
-    const game = edit(start, id, (p) => (p.ap = viewFor(start, id).maxAp));
-    const { game: after, taken } = await oneCycle(game, id, new GoalBot(1, 2, [shrinkDorm]));
-    expect(DORMS).toContain(room(after, id));
     expect(taken.every((a) => a.type === "move")).toBe(true);
+    expect(await bot.decideAction(viewFor(after, id))).toEqual({ type: "ready" });
   });
 
   it("goes once a day, stays across cycles on the same day, and comes back if interrupted before the cycle ends", async () => {

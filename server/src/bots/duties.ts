@@ -4,8 +4,8 @@
 //
 // How to edit:
 // - `priority`: where a scripted bot (no key) puts this among its goals. For reference, today's goals are
-//   returnToSol 100, pickSkill 90, snoop 85, sowHere 81 (any bot, not Hungry), eat 80, extinguish 78 (any bot, #429), repairOxygen 77.5 (any bot, #443), travel 77 (Commander), astro 76 (Astrophysicist),
-//   patrolShootHunters 75 (Pilot), shootHunters 74 (Shooter/Gunner), shower 70, repairDoor 56 (any bot), repairHull 55, contactSol 54 (Radio
+//   returnToSol 100, pickSkill 90, snoop 85, sowHere 81 (any bot, not Hungry), eat 80, selfCare 79 (any bot but a Shrink, #452), comfort 79 (Shrink, #452), extinguish 78 (any bot, #429), repairOxygen 77.5 (any bot, #443), travel 77 (Commander), astro 76 (Astrophysicist),
+//   patrolShootHunters 75 (Pilot), shootHunters 74 (Shooter/Gunner), fierySpeech 71 (Leader), shower 70, repairDoor 56 (any bot), repairHull 55, contactSol 54 (Radio
 //   Expert), setOutPots 54 (Botanist role, Green Thumb), tendPlants 53 (Botanist role), commsOfficer 52 (Comms Officer), crewShootHunters 51 (anyone without a shooting skill), research and project 50, shrinkDorm 45
 //   (Shrink role), rest 40, explore 30.
 // - `when`: one of the triggers in `DutyTrigger`, each explained there. A new kind of trigger needs code first.
@@ -79,6 +79,9 @@ export const BOT_DUTIES: readonly Duty[] = [
   { skill: "shrink", when: "model", actions: ["comfort"], prompt: "You're a Shrink: early in the game, tell everyone in global chat that you are one. Comfort gives someone 2 morale for 1 AP, and people resting in your room gain morale. Keep your AP for comforting: research and NERON projects only when you are within 4 AP of your max. When someone tells you their morale is under 7, comfort them even if it uses your last 2 AP; otherwise comfort them up to full while keeping 2 AP." },
   // Owner, 2026-11-01: people lying in a bed with a Shrink in the room gain morale, so once a day it spends the night in a dorm.
   { skill: "shrink", when: "dorm", actions: ["lie_down"], priority: 45, prompt: "People resting in your room gain morale, so spend the night in a dormitory." },
+  // Owner, 2026-11-18 (#452): once a day, a Fiery speech where the Leader stands, when at least 3 others are there
+  // (`fierySpeech`). Picked right after Shrink.
+  { skill: "leadership", when: "daily", actions: ["fiery_speech"], priority: 71, prompt: "You're a Leader: a Fiery speech gives 2 morale to everyone else in your room, so give one when the room is crowded." },
   // Owner, 2026-11-01: equipment repair is its real job, not built yet. Doubled renovation odds are built (renovate,
   // patrol ships) but compete with the hull for scrap.
   { skill: "engineer", when: "waits", prompt: "" },
@@ -90,7 +93,6 @@ export const BOT_DUTIES: readonly Duty[] = [
 
   // --- Other built skills a bot can get from a random pick ---
   { skill: "gunner", when: "hunters", actions: ["turret_attack"], priority: 74, prompt: "You're a Gunner: your turret shots hit twice as often and twice as hard." },
-  { skill: "leadership", when: "model", actions: ["fiery_speech"], prompt: "You're a Leader: a Fiery speech gives 2 morale to everyone in your room." },
   { skill: "first_aid", when: "model", actions: ["heal"], prompt: "You know First Aid: you have free heal points. Offer when someone asks for healing." },
 
   // --- Titles ---

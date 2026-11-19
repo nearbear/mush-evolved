@@ -9,6 +9,7 @@ import { extinguish } from "./bots/goals/extinguish.ts";
 import { repairOxygen } from "./bots/goals/repairOxygen.ts";
 import { newFireMemory, observeFires } from "./bots/fireShare.ts";
 import { newTankMemory, observeTanks } from "./bots/tankShare.ts";
+import { newMoraleMemory, observeMorale } from "./bots/moraleShare.ts";
 import { newItemMemory, observeItems } from "./bots/itemShare.ts";
 import { holdStartCycle, isHoldingJump, newJumpMemory } from "./bots/planetShare.ts";
 import { newReportMemory, observeReports } from "./bots/reportShare.ts";
@@ -152,6 +153,7 @@ export class GoalBot implements Bot {
       items: newItemMemory(),
       fires: newFireMemory(),
       tanks: newTankMemory(),
+      morale: newMoraleMemory(),
       combustion: null,
       holdSince: null,
       jump: newJumpMemory(),
@@ -188,6 +190,7 @@ export class GoalBot implements Bot {
       items: { rooms: map(m.items.rooms), said: map(m.items.said), seq: m.items.seq },
       fires: { active: m.fires.active, burning: [...m.fires.burning], checked: [...m.fires.checked], seq: m.fires.seq },
       tanks: { broken: [...m.tanks.broken], suspect: [...m.tanks.suspect], claims: [...m.tanks.claims], seq: m.tanks.seq },
+      morale: { said: m.morale.said, requests: [...m.morale.requests], seq: m.morale.seq },
       combustion: m.combustion,
       holdSince: m.holdSince,
       jump: { ...m.jump },
@@ -224,6 +227,7 @@ export class GoalBot implements Bot {
     Object.assign(m.items, { rooms: map(s.items.rooms), said: map(s.items.said), seq: s.items.seq });
     Object.assign(m.fires, { active: s.fires.active, burning: new Set(s.fires.burning), checked: new Set(s.fires.checked), seq: s.fires.seq });
     Object.assign(m.tanks, { broken: new Set(s.tanks.broken), suspect: new Set(s.tanks.suspect), claims: new Map(s.tanks.claims), seq: s.tanks.seq });
+    Object.assign(m.morale, { said: s.morale.said, requests: new Map(s.morale.requests), seq: s.morale.seq });
     m.combustion = s.combustion;
     m.holdSince = s.holdSince;
     Object.assign(m.jump, s.jump);
@@ -289,7 +293,9 @@ export class GoalBot implements Bot {
     }
     // Expedition reports (reportShare.ts) and shared items (itemShare.ts): likewise, one message a turn.
     const sharedReport = observeReports(view, this.memory, !fires.post && !tanks.post);
-    const report = fires.post ?? tanks.post ?? sharedReport ?? observeItems(view, this.memory);
+    // A request for comfort (moraleShare.ts, #452), when the bot's own morale just dropped low.
+    const askComfort = observeMorale(view, this.memory);
+    const report = fires.post ?? tanks.post ?? askComfort ?? sharedReport ?? observeItems(view, this.memory);
     if (report) {
       this.social = report;
       return null;

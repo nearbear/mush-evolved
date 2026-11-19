@@ -4,6 +4,7 @@
 
 import type { FireMemory } from "../fireShare.ts";
 import type { TankMemory } from "../tankShare.ts";
+import type { MoraleMemory } from "../moraleShare.ts";
 import type { ItemMemory } from "../itemShare.ts";
 import type { JumpMemory } from "../planetShare.ts";
 import type { ReportMemory } from "../reportShare.ts";
@@ -82,6 +83,8 @@ export interface BotMemory {
   readonly fires: FireMemory;
   /** Which oxygen tanks are broken, suspected or claimed, from the alert bar, NERON and bots' lines (`tankShare.ts`, #443). */
   readonly tanks: TankMemory;
+  /** Whether this bot asked for comfort, and (for a Shrink) who asked and how often it comforted them (`moraleShare.ts`, #452). */
+  readonly morale: MoraleMemory;
   /** Last fuel reading the Commander saw in the combustion chamber (`null` if unknown or cleared by traveling, #421). */
   combustion: number | null;
   /** Cycle when the Commander started holding the jump (`null` when not holding, #421); `"Jump: off"` clears it. */

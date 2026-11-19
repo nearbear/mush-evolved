@@ -30,6 +30,7 @@ export const BOT_SKILL_RULES: readonly SkillRule[] = [
   { skill: "paranoid", tier: "always" },
   { skill: "physicist", tier: "always" },
   { skill: "shrink", tier: "always" },
+  { skill: "leadership", tier: "always" }, // Leader (owner, 2026-11-18, #452): right after Shrink
   { skill: "engineer", tier: "always" }, // Technician
   { skill: "hunt", tier: "always" }, // Tracker
   { skill: "lethargy", tier: "always" },

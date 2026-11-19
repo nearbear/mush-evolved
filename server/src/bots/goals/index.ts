@@ -1,6 +1,7 @@
 // The goal registry. Adding a goal means adding its file and listing it here; its rank is its own `priority`.
 
 import { astro } from "./astro.ts";
+import { comfort } from "./comfort.ts";
 import { commsOfficer } from "./commsOfficer.ts";
 import { contactSol } from "./contactSol.ts";
 import { eat } from "./eat.ts";
@@ -10,6 +11,7 @@ import { expeditionPrep } from "./expeditionPrep.ts";
 import { explore } from "./explore.ts";
 import { leaveIcarus } from "./leaveIcarus.ts";
 import { extinguish } from "./extinguish.ts";
+import { fierySpeech } from "./fierySpeech.ts";
 import { patrolShootHunters } from "./patrolShootHunters.ts";
 import { pickSkill } from "./pickSkill.ts";
 import { project } from "./project.ts";
@@ -18,6 +20,7 @@ import { repairHull } from "./repairHull.ts";
 import { repairOxygen } from "./repairOxygen.ts";
 import { research } from "./research.ts";
 import { rest } from "./rest.ts";
+import { selfCare } from "./selfCare.ts";
 import { setOutPots } from "./setOutPots.ts";
 import { returnToSol } from "./returnToSol.ts";
 import { crewShootHunters, shootHunters } from "./shootHunters.ts";
@@ -45,11 +48,14 @@ export const SOLO_GOALS: readonly GoalDef[] = [
   pickSkill,
   snoop,
   eat,
+  selfCare,
+  comfort,
   sowHere,
   extinguish,
   repairOxygen,
   patrolShootHunters,
   shootHunters,
+  fierySpeech,
   expeditionLaunch,
   expeditionPrep,
   shower,
