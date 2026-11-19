@@ -4424,3 +4424,7 @@ The #114 backoff test in `server/tests/GameRoom.bots.test.ts` failed about 1 run
 - Diagnosed depression with new harness morale fields: a cascade from a first death, not a slow drain; nearly all morale gained came from resting beside the Shrink. The owner chose the levers and numbers (self-care at 5, comfort twice on a `Morale: low` line, no Shrink in beds, 12+ bots leave Shrink beds, Leaders speak once a day with 3+ others).
 - What needed correction: I first assumed bots couldn't see where the Shrink is; the owner pointed out ACTOPI is on by default. Taking the Shrink out of beds entirely made depression worse in a smoke test (its presence in bedrooms was the gain); the owner picked "stand in a bedroom instead", which worked. A first baseline run was lost to an `--out` path resolved from another directory and overlapped code edits; reused the saved baseline from the same commit instead.
 - What worked: one change per run, 10-seed smoke before each 50-seed run. Depression deaths 261 → 123 → 31 → 25; asphyxia is now the killer.
+
+## 2026-11-18: ID card resource icons at 16x16
+
+The resource chips on the ID card drew their 16x16 icons at 10px, because `.stat-chip img` (sized for the 5px stat sprites) also matched `.resource-cell img`. Fixed in `top-bar.css`: resource icons get a 16x16 box with `object-fit: scale-down`, so smaller sprites sit centred at their own size and larger ones shrink to fit. Applies to the desktop ID card and the phone grid alike.
