@@ -4414,3 +4414,9 @@ The #114 backoff test in `server/tests/GameRoom.bots.test.ts` failed about 1 run
 ### 2026-11-18 — Alien steak & Hyperfreeze
 - **Decision (owner):** Added `alien_steak` (`perishable`, +4 AP / +4 satiety / -1 morale, cooks into `cooked_ration`, replaces `uncooked_ration` as `expedition.loot.provision`) and the `hyperfreeze` action (`actions/hyperfreeze.ts`): 1 AP (or 0 AP + 1 Cook point `resources.cook`), anywhere you can reach a working `freezer` (carried or on the floor), turns `cooked_ration` or `alien_steak` into `uncooked_ration` in place, clears Fungal Cuisine `spores`, keeps any existing `spoil` stage (stopping further spoilage), public `hyperfrozen` log.
 - **What worked:** `ask_question` resolved all 4 ambiguities (adding `alien_steak` now vs placeholder, target items, Cook point cost, spores vs spoilage stage) in one turn before coding.
+
+## 2026-11-18: Bot morale, self-care, comfort and Leaders (#452)
+
+- Diagnosed depression with new harness morale fields: a cascade from a first death, not a slow drain; nearly all morale gained came from resting beside the Shrink. The owner chose the levers and numbers (self-care at 5, comfort twice on a `Morale: low` line, no Shrink in beds, 12+ bots leave Shrink beds, Leaders speak once a day with 3+ others).
+- What needed correction: I first assumed bots couldn't see where the Shrink is; the owner pointed out ACTOPI is on by default. Taking the Shrink out of beds entirely made depression worse in a smoke test (its presence in bedrooms was the gain); the owner picked "stand in a bedroom instead", which worked. A first baseline run was lost to an `--out` path resolved from another directory and overlapped code edits; reused the saved baseline from the same commit instead.
+- What worked: one change per run, 10-seed smoke before each 50-seed run. Depression deaths 261 → 123 → 31 → 25; asphyxia is now the killer.
