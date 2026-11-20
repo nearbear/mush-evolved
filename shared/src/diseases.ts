@@ -63,10 +63,13 @@ export function addDisease(state: GameState, player: PlayerState, name: StatusId
     player.modifiers.push(name);
     skillPicked(state, player, name);
     addStatus(player, name);
-    // const index = state.config.diseases.allInjuries.indexOf(name);
-    // const stats = state.config.diseases.allInjuryStats.at(index);
-    
-
+    // An injury lasts until surgery, unless its stats give it a duration (Stiff Neck, owner 2026-11-20).
+    const stats = diseaseStats(state, name);
+    if (stats?.durationMin !== undefined) {
+      const duration = roll(state, [stats.durationMin, stats.durationMax ?? stats.durationMin]);
+      player.diseaseTrackers.push({ name, duration, resistance: 8, complete: false, forever: false });
+      return;
+    }
     player.diseaseTrackers.push({ name, duration: 99, resistance: 8, complete: false, forever: true });
     return;
     }
@@ -222,6 +225,38 @@ export function spreadByTouch(state: GameState, a: PlayerState, b: PlayerState):
   const fromB = spreading(b);
   for (const id of fromA) addDisease(state, b, id as StatusId);
   for (const id of fromB) addDisease(state, a, id as StatusId);
+}
+
+/** The diseases `p` carries that spread in the room, with their chance (`roomSpread` or `cycleSpread` in config.ts). */
+function spreadOdds(state: Readonly<GameState>, p: Readonly<PlayerState>, key: "roomSpread" | "cycleSpread"): [StatusId, number][] {
+  return p.modifiers.flatMap((id): [StatusId, number][] => {
+    const odds = diseaseStats(state, id)?.[key];
+    return odds != null ? [[id, odds]] : [];
+  });
+}
+
+/**
+ * A cycle change: each disease the carrier has with a `cycleSpread` chance rolls once for each other living player in
+ * their room (Cold, Flu, Rubella, Gastroenteritis, Skin inflammation). Called for each living player in seat order
+ * (`cycleChanged`), so someone who catches it earlier in the same cycle change spreads it on their turn. A Mush spreads too.
+ */
+export function spreadAtCycle(state: GameState, carrier: PlayerState): void {
+  for (const [id, odds] of spreadOdds(state, carrier, "cycleSpread")) {
+    for (const other of state.players) {
+      if (other.alive && other.id !== carrier.id && other.room === carrier.room && rollFloat(state) < odds) addDisease(state, other, id);
+    }
+  }
+}
+
+/**
+ * Two players meet as one walks into the other's room (`enterRoom`): each disease either carries with a `roomSpread`
+ * chance rolls once to reach the other, `a`'s first. Both lists are read first, as in `spreadByTouch`. A Mush spreads too.
+ */
+export function spreadOnEncounter(state: GameState, a: PlayerState, b: PlayerState): void {
+  const fromA = spreadOdds(state, a, "roomSpread");
+  const fromB = spreadOdds(state, b, "roomSpread");
+  for (const [id, odds] of fromA) if (rollFloat(state) < odds) addDisease(state, b, id);
+  for (const [id, odds] of fromB) if (rollFloat(state) < odds) addDisease(state, a, id);
 }
 
 /**

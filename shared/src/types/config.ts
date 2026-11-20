@@ -40,6 +40,8 @@ export interface DiseaseCatagories {
   incidentDiseases: string[],
   allDisorders: string [],
   allInjuries: StatusId[],
+  /** Injuries left out of the pool a "random injury" combat outcome draws from (attack.ts). */
+  notRandomInjuries: StatusId[],
   allDiseaseStats: DiseaseStats[],
   allDisorderStats: DiseaseStats[],
   allInjuryStats: DiseaseStats[],
@@ -52,8 +54,9 @@ export interface DiseaseStats {
   durationMin?: number,
   durationMax?: number,
   resistance?: number,
+  /** Chance to spread, each way, when someone walks into a room with another player (`spreadOnEncounter`). */
   roomSpread?: number,
-  /** Chance to spread to each other living player in the room at a cycle change. */
+  /** Chance to spread to each other living player in the room at a cycle change (`spreadAtCycle`). */
   cycleSpread?: number,
   /** Spreads to the other player whenever two players STT or DTT (share.ts). */
   spreadByDTT?: boolean,
@@ -355,6 +358,11 @@ export interface GameConfig {
   drugDispenser: { cost: { ap: number }; resetCycles: number[] };
   checkSpores: { cost: { ap: number } }; // The MycoScan's spore check (owner, 2026-11-01).
   snoop: { cost: { ap: number }; dirtyChance: number; injuryChance: number; rooms: string[]; items: Record<string, number> }; // The Scrapper's Snoop: cost, its dirt and injury odds, the storage rooms it works in, the items it makes by weight (owner, 2026-11-01).
+  sporeSucker: {
+    cost: { ap: number }; // AP using the Spore Sucker costs (owner, 2026-11-20).
+    effect: { damage: number }; // Damage it always deals its user (owner, 2026-11-20).
+    dirtyChance: number; // Chance it soils its user (owner, 2026-11-20).
+  };
   bandage: {
     cost: { ap: number }; // AP using a bandage costs, on anyone (owner, 2026-11-07, #397).
     effect: { hp: number }; // HP a bandage restores before `healAmount` modifiers (owner, 2026-11-07).
