@@ -8,6 +8,7 @@ import { END_CYCLE, helpGoal, helpTasks, SOLO_GOALS, type BotMemory, type BotSoc
 import { coffeeReflex, coffeeRun, deliverCoffee } from "./bots/goals/coffee.ts";
 import { extinguish } from "./bots/goals/extinguish.ts";
 import { repairOxygen } from "./bots/goals/repairOxygen.ts";
+import { observeBeds } from "./bots/goals/rest.ts";
 import { newFireMemory, observeFires } from "./bots/fireShare.ts";
 import { newTankMemory, observeTanks } from "./bots/tankShare.ts";
 import { newMoraleMemory, observeMorale } from "./bots/moraleShare.ts";
@@ -150,6 +151,7 @@ export class GoalBot implements Bot {
       once: new Set(),
       visited: new Set(),
       shrinks: new Set(),
+      fullBeds: new Map(),
       lastExpedition: null,
       asteroidsOnly: null,
       items: newItemMemory(),
@@ -188,6 +190,7 @@ export class GoalBot implements Bot {
       once: [...m.once],
       visited: [...m.visited],
       shrinks: [...m.shrinks],
+      fullBeds: [...m.fullBeds].map(([k, v]) => [k, [...v]]),
       lastExpedition: m.lastExpedition,
       asteroidsOnly: m.asteroidsOnly,
       items: { rooms: map(m.items.rooms), said: map(m.items.said), seq: m.items.seq },
@@ -226,6 +229,8 @@ export class GoalBot implements Bot {
     refill(m.once, s.once);
     refill(m.visited, s.visited);
     refill(m.shrinks, s.shrinks);
+    m.fullBeds.clear();
+    for (const [room, sleepers] of s.fullBeds) m.fullBeds.set(room, new Set(sleepers));
     m.lastExpedition = s.lastExpedition;
     m.asteroidsOnly = s.asteroidsOnly;
     Object.assign(m.items, { rooms: map(s.items.rooms), said: map(s.items.said), seq: s.items.seq });
@@ -404,6 +409,7 @@ export class GoalBot implements Bot {
     this.hp = view.you.hp;
     this.memory.visited.add(view.you.room);
     observeShrinks(view, this.memory.shrinks);
+    observeBeds(view, this.memory.fullBeds);
     if (view.navigation.traveling || view.navigation.orbiting) this.memory.combustion = null;
     if (view.navigation.heading !== null) this.memory.heading = view.navigation.heading;
     const chatHold = holdStartCycle(view, this.memory);

@@ -23,6 +23,7 @@ const makeMemory = (): BotMemory => ({
   once: new Set(),
   visited: new Set(),
   shrinks: new Set(),
+  fullBeds: new Map(),
   lastExpedition: null,
   asteroidsOnly: null,
   items: newItemMemory(),

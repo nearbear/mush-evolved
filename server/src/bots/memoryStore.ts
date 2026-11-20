@@ -34,6 +34,7 @@ export interface BotMemorySnapshot {
   once: string[];
   visited: RoomId[];
   shrinks: string[];
+  fullBeds: [RoomId, PlayerId[]][];
   lastExpedition: ExpeditionKind | null;
   asteroidsOnly: number | null;
   items: { rooms: [SharedItem, RoomId[]][]; said: [SharedItem, RoomId[]][]; seq: number };

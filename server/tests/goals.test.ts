@@ -15,7 +15,7 @@ import { ISOLATE_ROOM, isolate } from "../src/bots/goals/isolate.ts";
 import { leaveIcarus } from "../src/bots/goals/leaveIcarus.ts";
 import { repairDoor } from "../src/bots/goals/repairDoor.ts";
 import { repairHull } from "../src/bots/goals/repairHull.ts";
-import { LEAVE_SHRINK_BEDS_MORALE, rest } from "../src/bots/goals/rest.ts";
+import { LEAVE_SHRINK_BEDS_MORALE, observeBeds, rest } from "../src/bots/goals/rest.ts";
 import { SELF_CARE_MORALE, SELF_CARE_UNTIL, selfCare } from "../src/bots/goals/selfCare.ts";
 import { research } from "../src/bots/goals/research.ts";
 import { BOT_PROJECT_ORDER, pickProject, project } from "../src/bots/goals/project.ts";
@@ -137,6 +137,7 @@ const memory = (scripted = true) => ({
   once: new Set<string>(),
   visited: new Set<string>(),
   shrinks: new Set<string>(),
+  fullBeds: new Map(),
   lastExpedition: null as "oxygen" | "fuel" | null,
   asteroidsOnly: null as number | null,
   items: newItemMemory(),
@@ -1193,6 +1194,89 @@ describe("rest around a Shrink (#452)", () => {
     expect(rest.options(viewFor(low, id), m)[0]!.key).toBe(`rest:${first}`);
     for (const r of roomsWith(view0, ["BED"])) if (r !== first) m.ended.add(`rest:${r}`);
     expect(rest.options(viewFor(game, id), m)[0]!.key).toBe(`rest:${first}`);
+  });
+});
+
+describe("full bedrooms (oxygen plan Run A2)", () => {
+  /** Every bed in `room` taken by another player lying in it; returns the game and the sleepers' ids. */
+  function fillBeds(game: GameState, id: string, room: string, skip = 0): { game: GameState; sleepers: string[] } {
+    const beds = game.equipment[room]!.filter((e) => e.type === "BED");
+    const others = game.players.filter((p) => p.id !== id).slice(skip, skip + beds.length);
+    others.forEach((p, i) => {
+      game = edit(game, p.id, (q) => {
+        q.room = room;
+        q.lyingIn = beds[i]!.id;
+        q.modifiers.push("lying_down");
+      });
+    });
+    return { game, sleepers: others.map((p) => p.id) };
+  }
+  const getUp = (q: GameState["players"][number]): void => {
+    q.lyingIn = undefined;
+    q.modifiers = q.modifiers.filter((x) => x !== "lying_down");
+  };
+
+  it("remembers a full bedroom across cycles and doesn't offer it again", () => {
+    const { game: start, id } = setup();
+    const [first] = roomsWith(viewFor(start, id), ["BED"]);
+    let { game } = fillBeds(start, id, first!);
+    game = edit(game, id, (p) => {
+      p.room = first!;
+      p.ap = 3;
+    });
+    const m = memory();
+    // Standing in it, the full bedroom is the nearest: offered until the bot has looked.
+    expect(rest.options(viewFor(game, id), m)[0]!.key).toBe(`rest:${first}`);
+    observeBeds(viewFor(game, id), m.fullBeds);
+    expect(m.fullBeds.has(first!)).toBe(true);
+    // A new cycle clears `ended`, not the full bedroom.
+    m.ended.clear();
+    const [next] = rest.options(viewFor(game, id), m);
+    expect(next!.key).toMatch(/^rest:/);
+    expect(next!.key).not.toBe(`rest:${first}`);
+  });
+
+  it("forgets a full bedroom on seeing a free bed there, or a sleeper elsewhere", () => {
+    const { game: start, id } = setup();
+    const [first] = roomsWith(viewFor(start, id), ["BED"]);
+    const filled = fillBeds(start, id, first!);
+    const game = edit(filled.game, id, (p) => (p.room = first!));
+    const m = memory();
+    observeBeds(viewFor(game, id), m.fullBeds);
+    // One sleeper got up and left; the bot sees it in a corridor.
+    const away = edit(edit(game, id, (p) => (p.room = "CORRIDOR_A")), filled.sleepers[0]!, (q) => {
+      getUp(q);
+      q.room = "CORRIDOR_A";
+    });
+    observeBeds(viewFor(away, id), m.fullBeds);
+    expect(m.fullBeds.has(first!)).toBe(false);
+    // Seeing a free bed there forgets it too.
+    observeBeds(viewFor(game, id), m.fullBeds);
+    expect(m.fullBeds.has(first!)).toBe(true);
+    observeBeds(viewFor(edit(game, filled.sleepers[0]!, getUp), id), m.fullBeds);
+    expect(m.fullBeds.has(first!)).toBe(false);
+  });
+
+  it("offers no rest once every bed in reach is remembered as full, and keeps the memory in its snapshot", async () => {
+    const { game: start, id } = setup();
+    const rooms = roomsWith(viewFor(start, id), ["BED"]);
+    let game = edit(start, id, (p) => (p.ap = 3));
+    const m = memory();
+    const bot = new GoalBot(1, 2, [rest]);
+    let skip = 0;
+    for (const room of rooms) {
+      const filled = fillBeds(game, id, room, skip);
+      skip += filled.sleepers.length;
+      game = edit(filled.game, id, (p) => (p.room = room));
+      observeBeds(viewFor(game, id), m.fullBeds);
+      await bot.decideAction(viewFor(game, id));
+    }
+    expect(rest.options(viewFor(game, id), m)).toEqual([]);
+    expect(await bot.decideAction(viewFor(game, id))).toEqual({ type: "ready" });
+    expect(bot.snapshot().fullBeds.map(([r]) => r).sort()).toEqual([...rooms].sort());
+    const revived = new GoalBot(1, 2, [rest]);
+    expect(revived.restore(bot.snapshot())).toBe(true);
+    expect(revived.snapshot().fullBeds).toEqual(bot.snapshot().fullBeds);
   });
 });
 

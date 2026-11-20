@@ -3,6 +3,7 @@
 // own view and memory in, one step out, so they are tested without a server or a model.
 
 import type { FireMemory } from "../fireShare.ts";
+import type { FullBeds } from "./rest.ts";
 import type { TankMemory } from "../tankShare.ts";
 import type { ExpeditionEndMemory } from "../expeditionShare.ts";
 import type { MoraleMemory } from "../moraleShare.ts";
@@ -68,6 +69,8 @@ export interface BotMemory {
   readonly visited: Set<RoomId>;
   /** Players known to be a Shrink (seen in a room or announced in chat); `you.id` means this Shrink has spoken in global chat. */
   readonly shrinks: Set<string>;
+  /** Bedrooms found with every bed taken, and who lay there then (`observeBeds`, oxygen plan Run A2). */
+  readonly fullBeds: FullBeds;
   /**
    * What the ship last went to one of this Astrophysicist's planets for (seen when it orbits one), so the next choice
    * alternates (owner, 2026-11-12, #417). Null until then.

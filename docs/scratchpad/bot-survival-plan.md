@@ -52,6 +52,8 @@ Facts: 7 beds for 16 crew (`bed_a_a/b/c` in BEDROOM_A, `bed_b_a/b/c` in BEDROOM_
 - **Leave-orbit affordability** (same run or right after, owner's call at build time; one change per run favors right after): the leave-orbit option counts the whole chain (Motor Room check if no chamber reading, fuel if short, bridge, `leaveOrbitAp`), so `leavesBed` doesn't get the Commander up until he can finish in one go.
 - **Bar:** cycles in orbit after every sector was explored (6.6 a run after Run A) and stays of a day or more (11) down; AP spent on moves by resting bots down. **Watch:** that bots who can't rest don't idle at full AP.
 
+**Status (2026-11-19): memory built; leave-orbit affordability tried and dropped (owner).** Full-bedroom memory: AP walking to rest 495.5 → 353.2 a run, crew lying 6.56 → 6.29, bots at their AP cap 0.02 → 0.01 a cycle; orbit stays unchanged (6.6 → 6.6 a run; day-plus stays 11 → 18); endings within noise. Leave-orbit affordability (A2b): 6.6 → 7.2 a run; it stranded seed 3's Commander for 59 cycles because lower goals spend his AP below what the chain needs, so it would need that AP protected (like `keepsHeldJump`). Details and saved runs in `docs/plans/bot-goals.md` ("Reaching Eden").
+
 ### Run A3: bed tiers, with yielding (owner, 2026-11-19)
 
 Tiers (owner, 2026-11-19: all three tiers, the Commander in tier 1), from what a bot can see of itself and of people in its room (skills and titles):

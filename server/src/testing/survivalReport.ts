@@ -99,6 +99,7 @@ export function lossReport(results: readonly SurvivalResult[], repairBelow: numb
     const done = orbits.filter((o) => o.allExplored !== undefined);
     lines.push(`orbits explored out: ${done.length} of ${orbits.length}, staying ${per(sum(done.map((o) => o.to - o.allExplored!)), done.length, 1)} cycles after (${per(sum(done.map((o) => o.to - o.allExplored!)), n, 1)} a run, ${done.filter((o) => o.to - o.allExplored! >= 8).length} stays of a day or more)`);
   }
+  lines.push(`beds: ${per(total((r) => r.restWalkAp ?? 0), n, 1)} AP a run spent walking to rest; ${per(total((r) => r.lying ?? 0), rows.length, 1)} crew lying at a cycle's end`);
   lines.push("by cycle (mean over the runs still going): cycle, runs, hull, hunters, fires, alive, oxygen, morale, at 0, at 3 or less");
   const last = Math.max(...rows.map((r) => r.cycle));
   for (let cycle = 4; cycle <= last; cycle += 4) {
