@@ -260,26 +260,41 @@
   padding: 0 var(--space-2) 0 1.7rem;
   font-size: 0.8rem;
 }
+/* The confirmation step inside the picker (SkillSlots.tsx): the chosen card, the question and the warning, then Back
+   and Yes, centred both ways in the terminal body (a full-height flex column; auto margins drop to 0 if it overflows). */
 .skill-confirm {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--space-3);
+  margin-block: auto;
+  text-align: center;
 }
 .skill-confirm p {
   margin: 0;
 }
+.skill-confirm .skill-pick-card {
+  width: min(20rem, 100%);
+  text-align: start;
+}
+/* ConfirmPanel's button row. */
 .skill-confirm-buttons {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: var(--space-2);
 }
+/* In the picker, Back and Yes share one row as wide as the card, in two equal columns. */
+.skill-confirm .skill-confirm-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: min(20rem, 100%);
+}
 .settings-popup.skill-picker {
   width: min(56rem, calc(100vw - 2rem));
 }
 /* In the picker the cards sit on the terminal's light card (terminal.css), so they take its colours: the title bar's
-   deeper cyan for the header, the card's edge for the rim. The confirm panel's copy stays on the dark pop-up box. */
+   deeper cyan for the header, the card's edge for the rim. */
 .skill-picker .skill-pick-card {
   background: var(--terminal-bg);
   border-color: var(--edge);

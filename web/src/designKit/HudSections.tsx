@@ -116,7 +116,7 @@ export function InspectSection() {
         <>
           <code>hud/InspectPanel.tsx</code>: the left panel, whatever is selected, with the legal actions as{" "}
           <code>ActionButton</code>s (<code>ActionLabel</code> costs and odds). For a person it shows{" "}
-          <code>SkillSlots</code> (click a free slot for the picker and its <code>ConfirmPanel</code>) and{" "}
+          <code>SkillSlots</code> (click a free slot for the picker, which confirms the pick in the same window) and{" "}
           <code>StatusIcons</code>; for an item, <code>ItemFace</code> and <code>ItemAttrIcons</code>. Broken items and equipment offer a repair. Hacking isn&apos;t in the game, so there is no hacked sample.
         </>
       }
