@@ -2063,8 +2063,7 @@
       "MANKAROG": "Mankarog",
       "unknown": "una criatura"
     },
-    "aboard": "En el Ícaro, explorando {{planet}}",
-    "aboardShip": "En {{ship}}, explorando {{planet}}",
+    "exploring": "Explorando {{planet}}",
     "back": "De vuelta en {{time}}",
     "underWay": "La expedición sigue en curso.",
     "lootAboard": "Todo lo encontrado hasta ahora está en el suelo del Ícaro.",
@@ -2082,7 +2081,31 @@
     "shareAgainHint": "Este informe ya está compartido: este texto se añade a su hilo. Cámbialo como quieras.",
     "shareLabel": "Texto que compartir",
     "sharePost": "Compartir",
-    "shared": "Compartido en la sección Expediciones."
+    "shared": "Compartido en la sección Expediciones.",
+    "timeline": {
+      "label": "Desarrollo de la expedición",
+      "previous": "Paso anterior",
+      "next": "Paso siguiente",
+      "nextNew": "Paso siguiente (pasos nuevos)",
+      "new": "Nuevo",
+      "position": "Paso {{n}} de {{total}}",
+      "newStep": "Expedición: nuevo paso, {{sector}}.",
+      "badge": {
+        "again": "Otra vez",
+        "lost": "Perdido",
+        "uTurn": "Media vuelta",
+        "back": "Regreso"
+      },
+      "nextPrivate": "Solo tú ves el próximo sector.",
+      "nextStep": "Próximo paso",
+      "in": "En {{time}}",
+      "later": "Por explorar",
+      "return": "Regreso",
+      "hp": "{{hp}} PV",
+      "itemCount_one": "{{item}}",
+      "itemCount_many": "{{item}} ×{{count}}",
+      "itemCount_other": "{{item}} ×{{count}}"
+    }
   },
   "roomList": {
     "region": "Sala",

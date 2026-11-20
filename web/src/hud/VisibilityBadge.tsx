@@ -15,7 +15,8 @@ const MEANING = {
   covert: { kept: "itrackie.visibility.covert", leaked: "itrackie.visibility.covertLeaked" },
 } as const satisfies Record<LogKind, { kept: string; leaked: string }>;
 
-export function VisibilityBadge({ kind, leaked }: { kind: LogKind; leaked: boolean }) {
+/** `text` replaces the popover's line-log meaning, for a badge on something other than a log line. */
+export function VisibilityBadge({ kind, leaked, text }: { kind: LogKind; leaked: boolean; text?: string }) {
   const { t } = useTranslation();
   const label = t(`actions.visibility.${kind}`);
   return (
@@ -25,7 +26,7 @@ export function VisibilityBadge({ kind, leaked }: { kind: LogKind; leaked: boole
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Positioner sideOffset={6}>
-          <Popover.Popup className="tooltip">{t(MEANING[kind][leaked ? "leaked" : "kept"])}</Popover.Popup>
+          <Popover.Popup className="tooltip">{text ?? t(MEANING[kind][leaked ? "leaked" : "kept"])}</Popover.Popup>
         </Popover.Positioner>
       </Popover.Portal>
     </Popover.Root>

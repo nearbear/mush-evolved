@@ -1,0 +1,237 @@
+/* The expedition screen (hud/ExpeditionTimeline.tsx, docs/plans/expedition-ui.md): in the Icarus while away it sits
+   above the seats, clear of the ID card (top left) and the minimap (top right); the current column scrolls up and down; in the lost panel it sits
+   under the heading. The current column is full size in the middle, its neighbours clipped at each side, the arrows
+   outside them. Tag icons are 40x40 pixel art (the unknown one 36x36) at whole-number scales: 2x beside, 3x in the
+   middle. */
+.expedition-timeline {
+  flex: 1;
+  min-height: 0;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 9rem var(--space-2) var(--space-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  color: #fff;
+}
+.lost-panel .expedition-timeline {
+  padding-top: 0;
+}
+/* Its touch moves are ours sideways (a swipe moves a column) and the page's up and down. */
+.timeline-track {
+  touch-action: pan-y;
+}
+
+.timeline-track {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) minmax(0, 22rem) minmax(0, 1fr) auto;
+  align-items: stretch;
+  gap: var(--space-2);
+}
+/* The arrows: the plain 21px 3-slice button turned upright (owner, 2026-11-19, an experiment). The sprite is drawn by
+   ::before, laid out lengthwise and rotated a quarter turn, so its hover and pressed variants still follow the button's
+   --btn-* (buttons.css); the button itself is only the hit area, wider than the 21px it draws. */
+button.timeline-arrow {
+  --arrow-length: 5.5rem;
+  position: relative;
+  align-self: center;
+  width: 32px;
+  height: var(--arrow-length);
+  margin: 0;
+  padding: 0;
+  background: none;
+}
+button.timeline-arrow::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--arrow-length);
+  height: 21px;
+  translate: -50% -50%;
+  rotate: 90deg;
+  background:
+    var(--btn-left) left / 5px 100% no-repeat,
+    var(--btn-right) right / 5px 100% no-repeat,
+    var(--btn-mid) center / calc(100% - 10px) 100% no-repeat;
+  image-rendering: pixelated;
+}
+button.timeline-arrow > span {
+  position: relative;
+}
+.timeline-prev {
+  grid-column: 1;
+}
+.timeline-next {
+  grid-column: 5;
+}
+/* The "new" marker: steps resolved while you look back. */
+.timeline-new {
+  position: absolute;
+  bottom: calc(100% + 2px);
+  left: 50%;
+  translate: -50% 0;
+  padding: 0 var(--space-1);
+  border-radius: var(--panel-radius);
+  background: var(--highlight);
+  color: var(--ink);
+  font-size: 0.7rem;
+  font-weight: bold;
+}
+
+/* The neighbours: a column's width, clipped by their cell, dimmed. The previous shows its right side. */
+.timeline-side {
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+  opacity: 0.5;
+}
+.timeline-side-prev {
+  grid-column: 2;
+  justify-content: flex-end;
+}
+.timeline-side-next {
+  grid-column: 4;
+  justify-content: flex-start;
+}
+.timeline-side > .timeline-column {
+  flex: none;
+  width: 11rem;
+}
+
+.timeline-current {
+  grid-column: 3;
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  padding: var(--space-2);
+  border: 1px solid var(--chrome-rim);
+  border-radius: var(--panel-radius);
+  background: rgb(23 23 44 / 0.85); /* --chrome-1 over the sky */
+}
+
+.timeline-column {
+  --zoom: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  text-align: center;
+  font-size: 0.85rem;
+}
+.timeline-column[data-compact],
+.timeline-side .timeline-column {
+  --zoom: 2;
+}
+.timeline-column :is(h3, p, ul) {
+  margin: 0;
+}
+.timeline-column h3 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: 1rem;
+}
+.timeline-icon {
+  display: block;
+  flex: none;
+  width: calc(40px * var(--zoom));
+  height: calc(40px * var(--zoom));
+  image-rendering: pixelated;
+}
+/* 36x36: the same scale, centred in a 40px box so every column lines up. */
+.timeline-icon.timeline-icon-unknown {
+  width: calc(36px * var(--zoom));
+  height: calc(36px * var(--zoom));
+  margin: calc(2px * var(--zoom));
+}
+.timeline-headline {
+  font-weight: bold;
+}
+.timeline-when {
+  color: var(--highlight);
+  font-variant-numeric: tabular-nums;
+}
+.timeline-future h3 {
+  color: var(--muted);
+}
+
+.timeline-badge {
+  padding: 0 var(--space-2);
+  border-radius: var(--panel-radius);
+  background: var(--badge);
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+.timeline-badge-lost,
+.timeline-badge-uTurn,
+.timeline-badge-back {
+  background: var(--warning);
+  color: var(--ink);
+}
+
+.timeline-items,
+.timeline-lines {
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.timeline-items li {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+}
+.timeline-items img {
+  image-rendering: pixelated;
+}
+
+/* The lost panel: the heading, the timeline and the report button in one column. */
+.iso-room.patrol-cockpit.lost-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  text-align: center;
+}
+
+/* Phones: the current column fills the width with about 24px of each neighbour showing, and the arrows overlay the
+   edges. */
+@media (max-width: 1023px) {
+  .expedition-timeline {
+    padding-top: 7rem;
+  }
+  .timeline-track {
+    position: relative;
+    grid-template-columns: 24px minmax(0, 1fr) 24px;
+    gap: var(--space-1);
+  }
+  .timeline-side-prev {
+    grid-column: 1;
+  }
+  .timeline-current {
+    grid-column: 2;
+  }
+  .timeline-side-next {
+    grid-column: 3;
+  }
+  button.timeline-arrow {
+    --arrow-length: 4.5rem;
+    position: absolute;
+    top: 50%;
+    translate: 0 -50%;
+    z-index: 1;
+  }
+  .timeline-prev {
+    left: 0;
+  }
+  .timeline-next {
+    right: 0;
+  }
+}

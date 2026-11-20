@@ -6,7 +6,9 @@ import { BodyTakenDialog } from "../hud/BodyTakenDialog.tsx";
 import { CommsCenter } from "../hud/CommsCenter.tsx";
 import { DeathNotice } from "../hud/DeathNotice.tsx";
 import { EndScreen } from "../hud/EndScreen.tsx";
+import { IcarusPanel } from "../hud/IcarusPanel.tsx";
 import { ITrackie } from "../hud/ITrackie.tsx";
+import { LostPanel } from "../hud/LostPanel.tsx";
 import { PatrolCockpit } from "../hud/PatrolCockpit.tsx";
 import { signalStrength, solDb, Spectrogram } from "../hud/Spectrogram.tsx";
 import { TerminalBody } from "../hud/TerminalDialog.tsx";
@@ -16,7 +18,7 @@ import { useNames } from "../i18n/names.ts";
 import { useShipLayout } from "../iso/shipLayout.ts";
 import type { EquipmentView, PlayerView } from "@mush2/shared";
 import { Figure, noop, Section } from "./KitSection.tsx";
-import { bodyTakenView, chatView, deadMushView, deadView, edenView, mushChatView, mushWinView, patrolHuntersView, patrolView, signalsNoAccessSample, signalsSample, terminalSamples, turretHuntersSample } from "./samples.ts";
+import { bodyTakenView, chatView, expeditionSamples, deadMushView, deadView, edenView, mushChatView, mushWinView, patrolHuntersView, patrolView, signalsNoAccessSample, signalsSample, terminalSamples, turretHuntersSample } from "./samples.ts";
 
 function TerminalFigure({ view, terminal, note }: { view: PlayerView; terminal: EquipmentView; note?: string }) {
   const names = useNames();
@@ -164,6 +166,40 @@ export function PatrolSection() {
           </div>
         </Figure>
       )}
+    </Section>
+  );
+}
+
+export function ExpeditionSection() {
+  const { away, uTurn, lost } = expeditionSamples;
+  return (
+    <Section
+      id="expedition"
+      heading="Expedition screen"
+      about={
+        <>
+          <code>hud/ExpeditionTimeline.tsx</code>: what <code>IcarusPanel</code> shows while away and{" "}
+          <code>LostPanel</code> while lost (docs/plans/expedition-ui.md). Sectors in a row, oldest left, the current one in
+          the middle; the arrows (or Left and Right) move one step. Hand-built report; the steps left, the next step&apos;s
+          time and the crew&apos;s HP are stubbed (<code>hud/expeditionStub.ts</code>) until the view sends them.
+        </>
+      }
+    >
+      <Figure caption="Away, four steps in">
+        <div className="room-view m2k-room m2k-room-expedition">
+          <IcarusPanel view={away} expedition={away.expedition} selected={{ kind: "player", id: "p0" }} onSelect={noop} onAction={noop} />
+        </div>
+      </Figure>
+      <Figure caption="A U-turn holder sees the next sector">
+        <div className="room-view m2k-room m2k-room-expedition">
+          <IcarusPanel view={uTurn} expedition={uTurn.expedition} selected={{ kind: "player", id: "p0" }} onSelect={noop} onAction={noop} />
+        </div>
+      </Figure>
+      <Figure caption="Lost: the timeline stops where you got lost">
+        <div className="room-view m2k-room m2k-room-expedition">
+          <LostPanel view={lost} />
+        </div>
+      </Figure>
     </Section>
   );
 }

@@ -162,3 +162,48 @@ export const signalsNoAccessSample = (() => {
   const view = sampleView(moveToEquipment(sampleState(), "COM_CENTER"));
   return { view, terminal: view.roomEquipment.find((e) => e.type === "COM_CENTER")! };
 })();
+
+/**
+ * The expedition screen's samples (ExpeditionTimeline.tsx): Jin Su away on a planet with Chun and Kuan Ti, four steps in.
+ * Hand-built, not played through the rules, and with slice 1's fields (`steps`, `nextAt`, `hp`) stubbed in, since the
+ * view doesn't send them yet (expeditionStub.ts). The U-turn holder's sample also sees the next sector.
+ */
+export const expeditionSamples = (() => {
+  const now = Date.now();
+  const report: PlayerView["expeditions"][number] = {
+    id: "sample-expedition",
+    crew: ["jinsu", "chun", "kuanti"],
+    planet: "Sicyrus",
+    away: true,
+    events: [
+      { sector: "LANDING", kind: "nothing" },
+      { sector: "FOREST", kind: "harvest", item: "fruit_banana", amount: 2 },
+      { sector: "RUINS", kind: "again" },
+      {
+        sector: "RUINS",
+        kind: "fight",
+        creature: "ZOMBI",
+        amount: 15,
+        fight: { strength: 13, grenades: 1, won: true },
+        found: [{ item: "magellan_liquid_map", count: 1 }],
+        hurt: [
+          { name: "kuanti", hp: 3 },
+          { name: "chun", hp: 2 },
+        ],
+      },
+    ],
+  };
+  const hp = [
+    { name: "jinsu", hp: 11 },
+    { name: "chun", hp: 6 },
+    { name: "kuanti", hp: 9 },
+  ];
+  const expedition = { crew: report.crew, planet: report.planet, returnAt: now + 3 * 3600_000, report: report.id, steps: 3, nextAt: now + 372_000, hp };
+  // Chun and Kuan Ti stand in the Icarus with you, on its podiums.
+  const players = humanView.players.map((p) => (p.character === "chun" || p.character === "kuanti" ? { ...p, room: humanView.you.room } : p));
+  const away = { ...humanView, players, expeditions: [report], expedition } as PlayerView;
+  const uTurn = { ...away, expedition: { ...expedition, next: "OCEAN" } } as PlayerView;
+  const lostReport = { ...report, away: undefined, events: [...report.events.slice(0, 2), { sector: "MOUNTAIN", kind: "lost", who: "jinsu" }] } as PlayerView["expeditions"][number];
+  const lost = { ...humanView, expeditions: [lostReport], expedition: null, lost: [{ name: "jinsu", planet: report.planet }] } as PlayerView;
+  return { away, uTurn, lost };
+})();

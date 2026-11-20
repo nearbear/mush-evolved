@@ -8,7 +8,7 @@ import { Tabs } from "@base-ui/react/tabs";
 import { SelfHud } from "../hud/SelfHud.tsx";
 import { TerminalFrame } from "../hud/TerminalFrame.tsx";
 import { AccountSection, CharacterPickerSection } from "./LobbySections.tsx";
-import { EndingsSection, ITrackieSection, PatrolSection, SignalSection, SignalsTabSection, TerminalBodiesSection } from "./GameSections.tsx";
+import { EndingsSection, ExpeditionSection, ITrackieSection, PatrolSection, SignalSection, SignalsTabSection, TerminalBodiesSection } from "./GameSections.tsx";
 import { InspectSection, InventorySection, ItemAttrIconsSection, PeekBarSection, RoomCornerSection, ShipOverlaySection, StatusIconsSection, TopBarSection } from "./HudSections.tsx";
 import { noop } from "./KitSection.tsx";
 import { PrimitivesSection } from "./PrimitivesSection.tsx";
@@ -48,6 +48,7 @@ const NAV: [id: string, label: string][] = [
   ["status-icons", "Status icons"],
   ["item-attr-icons", "Item icons"],
   ["patrol", "Patrol"],
+  ["expedition", "Expedition"],
   ["itrackie", "iTrackie"],
   ["endings", "Death and end"],
   ["character-picker", "Character picker"],
@@ -202,6 +203,7 @@ export default function Mush2Kit() {
         <StatusIconsSection />
         <ItemAttrIconsSection />
         <PatrolSection />
+        <ExpeditionSection />
         <ITrackieSection />
         <EndingsSection />
         <CharacterPickerSection />

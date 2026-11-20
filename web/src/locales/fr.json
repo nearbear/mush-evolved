@@ -2063,8 +2063,7 @@
       "MANKAROG": "Mankarog",
       "unknown": "une créature"
     },
-    "aboard": "Dans l'Icarus, en exploration sur {{planet}}",
-    "aboardShip": "Dans le {{ship}}, en exploration sur {{planet}}",
+    "exploring": "Exploration de {{planet}}",
     "back": "Retour dans {{time}}",
     "underWay": "L'expédition est toujours en cours.",
     "lootAboard": "Tout ce qui a été trouvé jusqu'ici est par terre dans l'Icarus.",
@@ -2082,7 +2081,31 @@
     "shareAgainHint": "Ce rapport est déjà partagé : ce texte est ajouté à son fil. Modifiez-le comme vous voulez.",
     "shareLabel": "Texte à partager",
     "sharePost": "Partager",
-    "shared": "Partagé dans la rubrique Expéditions."
+    "shared": "Partagé dans la rubrique Expéditions.",
+    "timeline": {
+      "label": "Déroulement de l'expédition",
+      "previous": "Étape précédente",
+      "next": "Étape suivante",
+      "nextNew": "Étape suivante (nouvelles étapes)",
+      "new": "Nouveau",
+      "position": "Étape {{n}} sur {{total}}",
+      "newStep": "Expédition : nouvelle étape, {{sector}}.",
+      "badge": {
+        "again": "Encore",
+        "lost": "Disparu",
+        "uTurn": "Demi-tour",
+        "back": "Retour"
+      },
+      "nextPrivate": "Vous seul voyez le prochain secteur.",
+      "nextStep": "Prochaine étape",
+      "in": "Dans {{time}}",
+      "later": "Encore à explorer",
+      "return": "Retour",
+      "hp": "{{hp}} PV",
+      "itemCount_one": "{{item}}",
+      "itemCount_many": "{{item}} ×{{count}}",
+      "itemCount_other": "{{item}} ×{{count}}"
+    }
   },
   "roomList": {
     "region": "Salle",

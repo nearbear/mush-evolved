@@ -277,3 +277,12 @@
 .m2k-pick {
   width: 4.5rem;
 }
+
+/* The expedition screen's stand-in: wide and tall enough for the timeline, as in the room view. */
+.m2k .m2k-room-expedition {
+  width: min(56rem, calc(100vw - 32px));
+  height: 44rem;
+}
+.m2k .m2k-room-expedition .expedition-timeline {
+  padding-top: var(--space-2); /* no ID card or minimap over it here */
+}

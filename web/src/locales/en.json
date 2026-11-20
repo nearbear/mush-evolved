@@ -2129,8 +2129,7 @@
       "MANKAROG": "Mankarog",
       "unknown": "a creature"
     },
-    "aboard": "In the Icarus, exploring {{planet}}",
-    "aboardShip": "In {{ship}}, exploring {{planet}}",
+    "exploring": "Exploring {{planet}}",
     "back": "Back in {{time}}",
     "underWay": "The expedition is still under way.",
     "lootAboard": "Everything found so far is on the Icarus's floor.",
@@ -2148,7 +2147,30 @@
     "shareAgainHint": "This report is already shared: this text is added to its thread. Change it as you like.",
     "shareLabel": "Text to share",
     "sharePost": "Share",
-    "shared": "Shared in the Expeditions feature."
+    "shared": "Shared in the Expeditions feature.",
+    "timeline": {
+      "label": "Expedition timeline",
+      "previous": "Previous step",
+      "next": "Next step",
+      "nextNew": "Next step (new steps)",
+      "new": "New",
+      "position": "Step {{n}} of {{total}}",
+      "newStep": "Expedition: new step, {{sector}}.",
+      "badge": {
+        "again": "Again",
+        "lost": "Lost",
+        "uTurn": "U-turn",
+        "back": "Back"
+      },
+      "nextPrivate": "Only you see the next sector.",
+      "nextStep": "Next step",
+      "in": "In {{time}}",
+      "later": "Still to explore",
+      "return": "Return",
+      "hp": "{{hp}} HP",
+      "itemCount_one": "{{item}}",
+      "itemCount_other": "{{item}} ×{{count}}"
+    }
   },
   "roomList": {
     "region": "Room",

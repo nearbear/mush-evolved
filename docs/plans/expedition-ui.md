@@ -1,6 +1,6 @@
 # Expedition UI: the sector timeline, the compact report and shared sectors (plan)
 
-2026-11-19. Not built; no open questions. The concept and the decisions below are the owner's (2026-11-19); the layout details and
+2026-11-19. Slice 2 (the timeline) built on stubbed view data (`web/src/hud/expeditionStub.ts`); slices 1, 3 and 4 not built. No open questions. The concept and the decisions below are the owner's (2026-11-19); the layout details and
 build order are Claude's proposal. Builds on `docs/plans/expedition.md` (the rules, all built),
 `docs/plans/expedition-boarding.md` (boarding, the next sector) and `docs/plans/astro.md` (planets, sharing).
 
@@ -43,7 +43,8 @@ whether the planet has an Oxygen sector when boarding the Icarus.
 
 ## The expedition screen (while away)
 
-Replaces the podiums in `IcarusPanel` while the Icarus (or a patrol ship's solo landing) is away. Docked, the panel
+Sits above the podiums in `IcarusPanel` (owner, 2026-11-19: the podiums stay, one row that scrolls sideways, while the
+current column scrolls up and down; the bar says only "Exploring <planet>") while the Icarus (or a patrol ship's solo landing) is away. Docked, the panel
 stays as it is.
 
 ```text
@@ -53,7 +54,7 @@ stays as it is.
    │              │  crew 13 · won · artifact │          │
    │              │  Kuan Ti −3  Chun −2      │          │
  ──────────────────────────────────────────────────────────
-  Crew:  Kuan Ti 9/14   Chun 6/14   ...
+  Podiums:  Kuan Ti 9 HP   Chun 6 HP   ...
   ▸ Shared by the Astrophysicist: [ox][?][forest][?][ruins][?]
 ```
 
@@ -71,13 +72,15 @@ stays as it is.
   stops at their `lostAt`), U-turn and Back (the timeline ends there).
 - **New steps don't move the view:** when one resolves while you look back, the right arrow gets a "new" marker; a
   polite live region announces the new sector. On first open, the view starts at the latest step.
-- **Crew strip:** each member's character and exact HP (decision 1).
+- **HP on the podiums:** each member's exact HP under their name (decision 1); never a max HP, which the server does
+  not send (owner, 2026-11-19).
 - **Shared strip:** collapsible, under the timeline: the shared planet's slots as icons, with who shared it and when.
   Shown only when the planet has an entry and you can read the Astrophysics feature (the view already gates
   `sharedPlanets`).
 - **`LostPanel`** shows the same timeline up to the line where the member got lost.
 - **Mobile (below 1024px):** the current column fills the width with about 24px of each neighbour showing; the arrows
-  overlay the edges. Swiping, if wanted, with plain pointer events (no new dependency).
+  overlay the edges. A sideways swipe moves one column, with plain pointer events (no new dependency; owner, 2026-11-19). The arrows
+  are the plain rectangular button turned upright (an experiment, owner 2026-11-19).
 
 ### Art
 

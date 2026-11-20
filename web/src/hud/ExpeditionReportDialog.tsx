@@ -144,7 +144,7 @@ function Crew({ report, language }: { report: ExpeditionReportView; language: st
 }
 
 /** An event's sector name and its lines, as the report shows them. */
-function useEventLines(): (event: ExpeditionEvent) => { sector: string; lines: string[] } {
+export function useEventLines(): (event: ExpeditionEvent) => { sector: string; lines: string[] } {
   const { t } = useTranslation();
   const names = useNames();
   return (event) => {
