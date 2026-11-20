@@ -671,7 +671,7 @@ export function sharedReportsView(state: Readonly<Pick<GameState, "sharedReports
 
 /** Every shared planet, as a view carries it (for readers of the Astrophysics feature). Never `planet`: which planet an entry came from stays its finder's. */
 export function sharedPlanetsView(state: Readonly<Pick<GameState, "sharedPlanets">>): PlayerView["sharedPlanets"] {
-  return state.sharedPlanets.map(({ id, text, by, day, cycleOfDay, stale }) => ({ id, text, by, day, cycleOfDay, stale }));
+  return state.sharedPlanets.map(({ id, name, sectors, text, by, day, cycleOfDay, stale }) => ({ id, name, sectors: [...sectors], text, by, day, cycleOfDay, stale }));
 }
 
 /**
@@ -868,7 +868,7 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
             return { ...clone({ ...report, events }), ...(away && { away: true as const }), ...(shared && { shared }) };
           })
       : [],
-    expedition: expeditionView(state, you),
+    expedition: expeditionView(state, you, channels.includes("astrophysics")),
     icarusSeats: maxCrew(state),
     // Who is lost, and where: a public alert (owner, 2026-11-08, #357; phase 2 accepted it).
     lost: lostPlayers(state).map((p) => ({ name: p.character, planet: orbitName(state) ?? "" })),
@@ -937,10 +937,13 @@ function equipmentView(state: GameState, { id, type, broken, jelly, shield }: Eq
  * The expedition under way, to everyone (owner, 2026-11-07): who is out, the planet, when they are back; the report's
  * id only to a living member, who already has the report.
  */
-function expeditionView(state: GameState, you: PlayerState): PlayerView["expedition"] {
+function expeditionView(state: GameState, you: PlayerState, readsAstrophysics: boolean): PlayerView["expedition"] {
   const away = state.expedition;
   if (!away) return null;
   const report = state.expeditions.find((r) => r.id === away.report)!;
+  // The Astrophysics entry shared from the planet being explored, to whoever reads that feature (owner, 2026-11-19):
+  // the link stays on the server, so the entries never carry a planet id.
+  const shared = readsAstrophysics ? state.sharedPlanets.find((e) => e.planet === away.planet)?.id : undefined;
   // The next sector, to a U-turn or Traitor holder still with the crew (owner, 2026-11-17).
   const next = nextSectorFor(state, you);
   const member = withCrew(state, you) && report.members.includes(you.id);
@@ -964,6 +967,7 @@ function expeditionView(state: GameState, you: PlayerState): PlayerView["expedit
     ...(member && { report: report.id }),
     ...(next !== undefined && { next }),
     ...(hp && { hp }),
+    ...(shared !== undefined && { shared }),
   };
 }
 

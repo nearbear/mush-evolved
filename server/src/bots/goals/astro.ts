@@ -126,7 +126,7 @@ function astroStep(view: PlayerView, memory: BotMemory): GoalStep {
   if (work === null) return { kind: "done" };
   if (work.kind === "share") {
     if (!view.canSharePlanets) return failed("cant_share_planet");
-    return { kind: "social", message: { type: "sharePlanet", planet: work.planet.id, text: formatPlanetShare(work.planet) } };
+    return { kind: "social", message: { type: "sharePlanet", planet: work.planet.id, sectors: [...work.planet.sectors], text: formatPlanetShare(work.planet) } };
   }
   const option =
     work.kind === "delete"

@@ -526,6 +526,7 @@
     "share_forbidden": "Necesitas tu iTrackie en una terminal Astro para compartir un planeta.",
     "planet_not_found": "Ese planeta no es uno de los tuyos.",
     "share_text_invalid": "Un texto compartido debe tener como máximo 500 caracteres y 20 líneas, y no estar vacío.",
+    "share_sectors_invalid": "Los sectores que compartes deben coincidir con los del planeta, uno por cada uno.",
     "report_share_forbidden": "Necesitas tu iTrackie para compartir un informe.",
     "report_not_found": "No estabas en esa expedición.",
     "not_in_cheat_room": "Tienes que estar en la sala de trucos.",
@@ -1704,13 +1705,16 @@
     "orbited": "En órbita",
     "share": "Compartir",
     "shareTitle": "Compartir {{name}}",
-    "shareHint": "La tripulación leerá este texto en la función Astrofísica. Cambia lo que quieras antes de publicarlo.",
+    "shareHint": "La tripulación leerá esto en la función Astrofísica. Cambia los sectores y el texto como quieras antes de publicarlo.",
+    "shareSectorsLabel": "Sectores",
+    "shareSlot": "Sector {{n}}: {{sector}}",
+    "shareSlotPicker": "Elegir el sector {{n}}",
+    "shareDisclaimer": "El nombre del planeta y su número de sectores no se pueden cambiar, y la tripulación sabrá si tiene un sector de Oxígeno al embarcar en el Icarus.",
+    "sharedSectors": "Sectores compartidos",
     "shareLabel": "Texto que compartir",
     "sharePost": "Publicar",
     "shareName": "Planeta: {{name}}",
-    "sharePosition": "Posición: {{direction}}, {{distance}} de combustible",
-    "shareSectors": "Sectores: {{sectors}}",
-    "shareUnknownSector": "?"
+    "sharePosition": "Posición: {{direction}}, {{distance}} de combustible"
   },
   "projects": {
     "title": "Proyectos de NERON",
@@ -2097,6 +2101,7 @@
       "new": "Nuevo",
       "position": "Paso {{n}} de {{total}}",
       "newStep": "Expedición: nuevo paso, {{sector}}.",
+      "shared": "Compartido por {{name}} (día {{day}}, ciclo {{cycle}})",
       "badge": {
         "again": "Otra vez",
         "lost": "Perdido",

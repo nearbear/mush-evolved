@@ -1,3 +1,4 @@
+import type { PlanetTag } from "../planets.ts";
 import type { LogParams, PlayerId } from "../types.ts";
 
 /**
@@ -33,9 +34,14 @@ export type ChannelId = ChatChannel | typeof MUSH_CHANNEL | typeof GRAVEYARD_CHA
  * A planet a player shared from the Astro terminal (owner, 2026-10-31): their own free text about it, never parsed,
  * listed in the Astrophysics feature with its own discussion thread (the entry's id is the thread's channel). Sent to
  * whoever can read the Astrophysics feature, without the planet it came from (see `SharedPlanetState`).
+ * `name` is the planet's true name, never edited; `sectors` has one slot per sector of the planet when it was shared
+ * (its true size), each the tag the sharer chose or null for unknown, lies included (owner, 2026-11-19,
+ * docs/plans/expedition-ui.md).
  */
 export interface SharedPlanet {
   id: SharedPlanetId;
+  name: string;
+  sectors: (PlanetTag | null)[];
   text: string;
   by: PlayerId;
   /** Day and cycle of that day of the latest share: sharing the planet again replaces the text. */

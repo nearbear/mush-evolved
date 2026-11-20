@@ -4,10 +4,12 @@
 // parsed: it may say anything, lies and mistakes included. Each planet gets one entry, which is also a discussion
 // thread with the Astrophysics feature's access (chat.ts). Entries are never removed, only marked no longer applicable
 // when the planet is lost. Like chat, this is not an Action, and the server moderates the text first.
+// Structured shares (owner, 2026-11-19, docs/plans/expedition-ui.md): an entry also carries the planet's true name
+// and one sector slot per sector of the planet (its true size), each any tag or unknown as the sharer chose.
 
 import { chatChannels, pushChat } from "./chat.ts";
 import { cloneState, dayOf, fail, findPlayer, type ActionResult } from "./helpers.ts";
-import { astroTerminalsHere, planetsOf } from "./planets.ts";
+import { astroTerminalsHere, PLANET_TAGS, planetsOf, type PlanetTag } from "./planets.ts";
 import type { GameState, PlayerId, PlayerState, SharedPlanetId } from "./types.ts";
 
 /** Longest shared planet text (owner, 2026-10-31). */
@@ -24,13 +26,18 @@ export const canSharePlanets = (state: Readonly<GameState>, player: Readonly<Pla
   player.alive && astroTerminalsHere(state, player.room).length > 0 && chatChannels(state, player).includes("astrophysics");
 
 /**
- * Shares one of your own planets, or replaces the text of its entry when it was shared before (the entry and its
- * thread stay, and it becomes applicable again). Free. `text` comes moderated.
+ * Shares one of your own planets, or replaces the sectors and text of its entry when it was shared before (the entry
+ * and its thread stay, and it becomes applicable again). Free. `sectors` must have one slot per sector of the planet,
+ * each a planet tag or null (unknown); the name comes from the planet. `text` comes moderated.
  */
-export function sharePlanet(state: GameState, playerId: PlayerId, planetId: string, text: string): ActionResult {
+export function sharePlanet(state: GameState, playerId: PlayerId, planetId: string, sectors: readonly (PlanetTag | null)[], text: string): ActionResult {
   const p = findPlayer(state, playerId);
   if (!p || !canSharePlanets(state, p)) return fail("share_forbidden");
-  if (!planetsOf(state, playerId).some((planet) => planet.id === planetId)) return fail("planet_not_found");
+  const planet = planetsOf(state, playerId).find((pl) => pl.id === planetId);
+  if (!planet) return fail("planet_not_found");
+  if (!Array.isArray(sectors) || sectors.length !== planet.sectors.length || !sectors.every((tag) => tag === null || (typeof tag === "string" && Object.hasOwn(PLANET_TAGS, tag)))) {
+    return fail("share_sectors_invalid");
+  }
   const body = text.trim();
   if (!body || body.length > MAX_SHARED_PLANET_LENGTH) return fail("share_text_invalid");
 
@@ -38,10 +45,10 @@ export function sharePlanet(state: GameState, playerId: PlayerId, planetId: stri
   const when = dayOf(next);
   const entry = next.sharedPlanets.find((s) => s.planet === planetId);
   if (entry) {
-    Object.assign(entry, { text: body, by: playerId, ...when, stale: false });
+    Object.assign(entry, { name: planet.name, sectors: [...sectors], text: body, by: playerId, ...when, stale: false });
   } else {
     const id: SharedPlanetId = `sp-${next.nextSharedPlanetId++}`;
-    next.sharedPlanets.push({ id, planet: planetId, text: body, by: playerId, ...when, stale: false });
+    next.sharedPlanets.push({ id, planet: planetId, name: planet.name, sectors: [...sectors], text: body, by: playerId, ...when, stale: false });
   }
   pushChat(next, "astrophysics", { from: null, isBot: false, text: "", system: { key: entry ? "planetShareUpdated" : "planetShared", params: { name: p.character } } });
   return { ok: true, state: next };

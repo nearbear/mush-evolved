@@ -689,6 +689,10 @@ export function normalizeSharedPlanet(raw: Partial<SharedPlanetState>): SharedPl
   const t = "SharedPlanetState";
   return stripUndefined<SharedPlanetState>({
     id: need(raw, "id", t),
+    // Entries shared before structured shares (docs/plans/expedition-ui.md): the text's first line stands for the
+    // name, and no sector slots.
+    name: added(raw, "name", need(raw, "text", t).split("\n", 1)[0]!),
+    sectors: added(raw, "sectors", []),
     text: need(raw, "text", t),
     by: need(raw, "by", t),
     day: need(raw, "day", t),

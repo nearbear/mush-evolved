@@ -121,7 +121,7 @@ function applyInputOnly(state: GameState, input: Input): ActionResult {
     case "createThread":
       return createThread(state, input.by, input.name, input.from);
     case "sharePlanet":
-      return sharePlanet(state, input.by, input.planet, input.text);
+      return sharePlanet(state, input.by, input.planet, input.sectors, input.text);
     case "shareReport":
       return shareReport(state, input.by, input.report, input.text);
     case "invite":

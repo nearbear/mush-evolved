@@ -33,6 +33,7 @@ import {
   type Ending,
   type GameState,
   type Planet,
+  type PlanetTag,
   type PlayerId,
   type PlayerState,
   type PlayerView,
@@ -207,8 +208,8 @@ export function bodyTaken(state: GameState, taker: CharacterId, id: PlayerId = S
 }
 
 /** `id` shares one of their planets in the Astrophysics feature (they must stand at an Astro terminal). */
-export function share(state: GameState, planet: string, text: string, id: PlayerId = SAMPLE_SEAT): GameState {
-  return must(sharePlanet(state, id, planet, text), "planet share");
+export function share(state: GameState, planet: string, sectors: (PlanetTag | null)[], text: string, id: PlayerId = SAMPLE_SEAT): GameState {
+  return must(sharePlanet(state, id, planet, sectors, text), "planet share");
 }
 
 /** The game is over: `winner` won by `ending` (the rules' own `endGame`, on a copy). */

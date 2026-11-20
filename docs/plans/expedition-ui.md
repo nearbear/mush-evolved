@@ -1,6 +1,6 @@
 # Expedition UI: the sector timeline, the compact report and shared sectors (plan)
 
-2026-11-19. Slices 1 (the view data), 2 (the timeline) and 3 (the compact report) built; slice 4 not built. No open questions. The concept and the decisions below are the owner's (2026-11-19); the layout details and
+2026-11-19. All four slices built (1 the view data, 2 the timeline, 3 the compact report, 4 structured shares). No open questions. The concept and the decisions below are the owner's (2026-11-19); the layout details and
 build order are Claude's proposal. Builds on `docs/plans/expedition.md` (the rules, all built),
 `docs/plans/expedition-boarding.md` (boarding, the next sector) and `docs/plans/astro.md` (planets, sharing).
 
@@ -118,7 +118,7 @@ produces for sharing is unchanged.
   timer already reveals both (accepted in `expedition.md`, phase 2).
 - `view.expedition.hp`: each member's exact HP by character, only to members still with the crew while away. Leak tests:
   never to someone aboard the ship, never after the return.
-- `SharedPlanet.planet` and `sectors`, to whoever reads the Astrophysics feature, as for the text now.
+- `SharedPlanet.name` and `sectors`, to whoever reads the Astrophysics feature, as for the text now. Built without sending the planet id: `view.expedition.shared` names the explored planet's entry instead (Claude's choice, so entries keep never carrying a planet id).
 
 Run the `leak-check` skill on slices 1 and 4.
 

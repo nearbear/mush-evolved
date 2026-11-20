@@ -94,7 +94,7 @@ export const patrolHuntersView = sampleView(addHunters(inFlight, HUNTERS, true))
  */
 export const chatView = (() => {
   let s = moveToEquipment(givePlanet(pickSkills(sampleState({ character: "hua" }), ["pilot"]), FUGUNYS), "ASTRO_MODULE");
-  s = share(s, FUGUNYS.id, "Fugunys, north, 3 fuel. Oxygen in one sector; two still unknown.");
+  s = share(s, FUGUNYS.id, ["OXYGEN", null, "CRISTAL_FIELD"], "Fugunys, north, 3 fuel. Oxygen in one sector; two still unknown.");
   s = say(s, "global", "Morning crew. Who has the **blaster**?");
   s = say(s, "global", "Not me. I'm on the hydroponics.", "p1");
   s = say(s, "global", "Plan for today:\n- [ ] fix the hull\n- [x] water the plants\n- [ ] scan for planets", "p2");
@@ -165,7 +165,8 @@ export const signalsNoAccessSample = (() => {
 
 /**
  * The expedition screen's samples (ExpeditionTimeline.tsx): Jin Su away on a planet with Chun and Kuan Ti, four steps in.
- * Hand-built, not played through the rules. The U-turn holder's sample also sees the next sector.
+ * Hand-built, not played through the rules. The U-turn holder's sample also sees the next sector. Kuan Ti shared the
+ * planet in the Astrophysics feature, so the shared strip shows under the timeline.
  */
 export const expeditionSamples = (() => {
   const now = Date.now();
@@ -197,10 +198,14 @@ export const expeditionSamples = (() => {
     { name: "chun", hp: 6 },
     { name: "kuanti", hp: 9 },
   ];
-  const expedition = { crew: report.crew, planet: report.planet, returnAt: now + 3 * 3600_000, report: report.id, steps: 3, nextAt: now + 372_000, hp };
+  const kuanti = humanView.players.find((p) => p.character === "kuanti")!.id;
+  const sharedPlanets: PlayerView["sharedPlanets"] = [
+    { id: "sp-1", name: report.planet, sectors: ["OXYGEN", "FOREST", null, "RUINS", null, null, "MOUNTAIN"], text: "Sicyrus, east, 4 fuel. Ruins!", by: kuanti, day: 2, cycleOfDay: 3, stale: false },
+  ];
+  const expedition = { crew: report.crew, planet: report.planet, returnAt: now + 3 * 3600_000, report: report.id, steps: 3, nextAt: now + 372_000, hp, shared: "sp-1" as const };
   // Chun and Kuan Ti stand in the Icarus with you, on its podiums.
   const players = humanView.players.map((p) => (p.character === "chun" || p.character === "kuanti" ? { ...p, room: humanView.you.room } : p));
-  const away = { ...humanView, players, expeditions: [report], expedition } as PlayerView;
+  const away = { ...humanView, players, expeditions: [report], expedition, sharedPlanets } as PlayerView;
   const uTurn = { ...away, expedition: { ...expedition, next: "OCEAN" } } as PlayerView;
   const lostReport = { ...report, away: undefined, events: [...report.events.slice(0, 2), { sector: "MOUNTAIN", kind: "lost", who: "jinsu" }] } as PlayerView["expeditions"][number];
   const lost = { ...humanView, expeditions: [lostReport], expedition: null, lost: [{ name: "jinsu", planet: report.planet }] } as PlayerView;

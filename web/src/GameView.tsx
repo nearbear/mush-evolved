@@ -210,7 +210,7 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
     <main className="game">
       <Announcer />
       <WakeUpAnnouncement waking={waking} text={t("wake.ready", { day: view.day, cycle: view.cycleOfDay, room: names.room(you.room) })} />
-      <TerminalDialog terminal={terminal} view={view} onAction={act} onClose={() => setTerminalId(null)} onSharePlanet={(planet, text) => post({ type: "sharePlanet", planet, text })} />
+      <TerminalDialog terminal={terminal} view={view} onAction={act} onClose={() => setTerminalId(null)} onSharePlanet={(planet, sectors, text) => post({ type: "sharePlanet", planet, sectors, text })} />
       <EndScreen view={view} open={view.phase === "ended" && !endClosed} onOpenChange={(open) => setEndClosed(!open)} replayId={replayId} />
       {!readOnly && <BodyTakenDialog view={view} onAcknowledge={() => post({ type: "acknowledgeTransfer" })} />}
       <TopBar

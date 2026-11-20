@@ -4530,3 +4530,9 @@ Planned the expedition screen with the owner: a chronological timeline of sector
 - `ExpeditionReportDialog` moved from the old navy `settings-popup` into `FramedDialog` (the terminal frame, the owner's modal style) and became one compact row per step: the sector's 40x40 tag icon at 1x, its name and outcome in one line, and the HP each member lost under it as "Name −3 HP". The shared text is unchanged.
 - The tag icon (with the unknown tag keyed out) moved out of the timeline into `hud/SectorIcon.tsx`, with `--zoom` defaulting to 1, so both screens draw it the same way. `useEventLines` now also returns `outcome` (lines without the HP losses) so the rows don't repeat the HP list.
 - Added a DOM test (rows, icons, HP list, frame, share text keeps the HP lines) and a design-kit opener under Expedition. No visual check run.
+
+## 2026-11-19: Expedition UI slice 4, structured planet shares
+
+- Built from `docs/plans/expedition-ui.md` (the owner's decisions; no new questions). `sharePlanet` takes one sector slot per sector of the planet (checked against its true size, any tag or null), the entry stores the planet's true name; the Share form got a slot row with an icon picker and the disclaimer, the Astrophysics feature lists entries by name with an icon strip, and the expedition timeline has a collapsible shared strip.
+- Deviation from the plan, flagged to the owner: the plan said to send `SharedPlanet.planet` (the planet id) to readers. Claude kept entries free of planet ids (ids are a global counter, and the existing invariant said never sent) and added `view.expedition.shared`, the explored planet's entry id, computed on the server.
+- What needed correction: a `title` attribute on the icons (banned by `web/CLAUDE.md`; replaced by `Hint` and screen-reader text), and server bot tests built `SharedPlanetState` literals that the typecheck didn't cover, found only by the test run.

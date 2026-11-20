@@ -526,6 +526,7 @@
     "share_forbidden": "Il vous faut votre iTrackie devant un terminal Astro pour partager une planète.",
     "planet_not_found": "Cette planète n'est pas l'une des vôtres.",
     "share_text_invalid": "Un texte partagé doit faire au plus 500 caractères et 20 lignes, et ne pas être vide.",
+    "share_sectors_invalid": "Les secteurs partagés doivent correspondre à ceux de la planète, un pour chacun.",
     "report_share_forbidden": "Il vous faut votre iTrackie pour partager un rapport.",
     "report_not_found": "Vous n'étiez pas de cette expédition.",
     "not_in_cheat_room": "Vous devez être dans la salle de triche.",
@@ -1704,13 +1705,16 @@
     "orbited": "En orbite",
     "share": "Partager",
     "shareTitle": "Partager {{name}}",
-    "shareHint": "L'équipage lira ce texte dans la fonction Astrophysique. Modifiez ce que vous voulez avant de le publier.",
+    "shareHint": "L'équipage lira ceci dans la fonction Astrophysique. Modifiez les secteurs et le texte comme vous voulez avant de le publier.",
+    "shareSectorsLabel": "Secteurs",
+    "shareSlot": "Secteur {{n}} : {{sector}}",
+    "shareSlotPicker": "Choisir le secteur {{n}}",
+    "shareDisclaimer": "Le nom de la planète et son nombre de secteurs ne peuvent pas être modifiés, et l'équipage saura si elle a un secteur Oxygène en embarquant dans l'Icarus.",
+    "sharedSectors": "Secteurs partagés",
     "shareLabel": "Texte à partager",
     "sharePost": "Publier",
     "shareName": "Planète : {{name}}",
-    "sharePosition": "Position : {{direction}}, {{distance}} de carburant",
-    "shareSectors": "Secteurs : {{sectors}}",
-    "shareUnknownSector": "?"
+    "sharePosition": "Position : {{direction}}, {{distance}} de carburant"
   },
   "projects": {
     "title": "Projets NERON",
@@ -2097,6 +2101,7 @@
       "new": "Nouveau",
       "position": "Étape {{n}} sur {{total}}",
       "newStep": "Expédition : nouvelle étape, {{sector}}.",
+      "shared": "Partagé par {{name}} (jour {{day}}, cycle {{cycle}})",
       "badge": {
         "again": "Encore",
         "lost": "Disparu",

@@ -8,7 +8,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
 import { ExpeditionReportDialog } from "./ExpeditionReportDialog.tsx";
-import { ExpeditionTimeline } from "./ExpeditionTimeline.tsx";
+import { characterOf, ExpeditionTimeline } from "./ExpeditionTimeline.tsx";
 
 interface Props {
   view: PlayerView;
@@ -23,11 +23,13 @@ export function LostPanel({ view, onShareReport }: Props) {
   const planet = view.lost.find((l) => l.name === view.you.character)?.planet ?? "";
   // The latest report is the one you got lost on.
   const report = view.expeditions.at(-1);
+  // While the crew is still there, what the Astrophysics feature holds about the planet, if you read it.
+  const shared = view.sharedPlanets.find((e) => e.id === view.expedition?.shared);
   return (
     <section className="iso-room patrol-cockpit lost-panel" aria-label={names.room(view.you.room)}>
       <h2>{t("expedition.lost.heading", { planet })}</h2>
       <p>{t("expedition.lost.text")}</p>
-      {report && <ExpeditionTimeline expedition={null} report={report} />}
+      {report && <ExpeditionTimeline expedition={null} report={report} shared={shared} sharedBy={shared && names.character(characterOf(view, shared.by))} />}
       <button type="button" className="big" disabled={!report} onClick={() => setReading(true)}>
         {t("expedition.read")}
       </button>

@@ -421,9 +421,10 @@ describe("createThread wire parser (#107)", () => {
 
 describe("sharePlanet and shareReport wire parser (#107)", () => {
   it("parses valid sharePlanet and shareReport, dropping extra fields", () => {
-    expect(parse({ type: "sharePlanet", planet: "pl1", text: "info", extra: 1 })).toEqual({
+    expect(parse({ type: "sharePlanet", planet: "pl1", sectors: [null], text: "info", extra: 1 })).toEqual({
       type: "sharePlanet",
       planet: "pl1",
+      sectors: [null],
       text: "info",
     });
     expect(parse({ type: "shareReport", report: "rep1", text: "info", extra: 1 })).toEqual({
@@ -436,13 +437,15 @@ describe("sharePlanet and shareReport wire parser (#107)", () => {
   it("enforces identifier and text length bounds", () => {
     const maxId = "x".repeat(64);
     const maxText = "t".repeat(MAX_SHARED_PLANET_LENGTH * 4);
-    expect(parse({ type: "sharePlanet", planet: maxId, text: maxText })).toEqual({
+    expect(parse({ type: "sharePlanet", planet: maxId, sectors: [], text: maxText })).toEqual({
       type: "sharePlanet",
       planet: maxId,
+      sectors: [],
       text: maxText,
     });
-    expect(parse({ type: "sharePlanet", planet: maxId + "x", text: "t" })).toBeNull();
-    expect(parse({ type: "sharePlanet", planet: "pl1", text: maxText + "x" })).toBeNull();
+    expect(parse({ type: "sharePlanet", planet: maxId + "x", sectors: [], text: "t" })).toBeNull();
+    expect(parse({ type: "sharePlanet", planet: "pl1", sectors: [], text: maxText + "x" })).toBeNull();
+    expect(parse({ type: "sharePlanet", planet: "pl1", sectors: Array(33).fill(null), text: "t" })).toBeNull();
 
     expect(parse({ type: "shareReport", report: maxId, text: maxText })).toEqual({
       type: "shareReport",
@@ -454,10 +457,12 @@ describe("sharePlanet and shareReport wire parser (#107)", () => {
   });
 
   const BAD_SHARE_INPUTS: Array<[label: string, msg: unknown]> = [
-    ["sharePlanet missing planet", { type: "sharePlanet", text: "text" }],
-    ["sharePlanet missing text", { type: "sharePlanet", planet: "pl1" }],
-    ["sharePlanet numeric planet", { type: "sharePlanet", planet: 123, text: "text" }],
-    ["sharePlanet numeric text", { type: "sharePlanet", planet: "pl1", text: 123 }],
+    ["sharePlanet missing planet", { type: "sharePlanet", sectors: [], text: "text" }],
+    ["sharePlanet missing text", { type: "sharePlanet", planet: "pl1", sectors: [] }],
+    ["sharePlanet missing sectors", { type: "sharePlanet", planet: "pl1", text: "text" }],
+    ["sharePlanet numeric planet", { type: "sharePlanet", planet: 123, sectors: [], text: "text" }],
+    ["sharePlanet numeric text", { type: "sharePlanet", planet: "pl1", sectors: [], text: 123 }],
+    ["sharePlanet unknown tag", { type: "sharePlanet", planet: "pl1", sectors: ["NOPE"], text: "text" }],
     ["shareReport missing report", { type: "shareReport", text: "text" }],
     ["shareReport missing text", { type: "shareReport", report: "rep1" }],
     ["shareReport numeric report", { type: "shareReport", report: 123, text: "text" }],

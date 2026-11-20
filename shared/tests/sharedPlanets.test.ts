@@ -4,6 +4,7 @@ import { DEFAULT_CONFIG } from "../src/config.ts";
 import { dayOf } from "../src/helpers.ts";
 import { ITRACKIE_ITEM } from "../src/items.ts";
 import { moderateChat } from "../src/moderation.ts";
+import { normalizeSharedPlanet } from "../src/normalizeState.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyInput } from "../src/replay.ts";
 import { applyAction, createGame, viewFor, type ActionResult } from "../src/rules.ts";
@@ -41,8 +42,11 @@ function game(): GameState {
   return s;
 }
 
+/** One unknown slot: every test planet has one sector. */
+const SLOTS = [null];
+
 /** p1 shares planet-a, then p2 planet-b. */
-const shared = (): GameState => must(sharePlanet(must(sharePlanet(game(), "p1", "planet-a", "North, 3: forest")), "p2", "planet-b", "East, 5"));
+const shared = (): GameState => must(sharePlanet(must(sharePlanet(game(), "p1", "planet-a", ["FOREST"], "North, 3: forest")), "p2", "planet-b", [null], "East, 5"));
 
 describe("sharing planets", () => {
   it("pins the decided limit: 500 characters", () => {
@@ -53,16 +57,16 @@ describe("sharing planets", () => {
     const s = shared();
     const day = dayOf(s);
     expect(s.sharedPlanets).toEqual([
-      { id: "sp-1", planet: "planet-a", text: "North, 3: forest", by: "p1", ...day, stale: false },
-      { id: "sp-2", planet: "planet-b", text: "East, 5", by: "p2", ...day, stale: false },
+      { id: "sp-1", planet: "planet-a", name: "Name-planet-a", sectors: ["FOREST"], text: "North, 3: forest", by: "p1", ...day, stale: false },
+      { id: "sp-2", planet: "planet-b", name: "Name-planet-b", sectors: [null], text: "East, 5", by: "p2", ...day, stale: false },
     ]);
     const view = viewFor(s, "p3");
     expect(view.sharedPlanets).toEqual([
-      { id: "sp-1", text: "North, 3: forest", by: "p1", ...day, stale: false },
-      { id: "sp-2", text: "East, 5", by: "p2", ...day, stale: false },
+      { id: "sp-1", name: "Name-planet-a", sectors: ["FOREST"], text: "North, 3: forest", by: "p1", ...day, stale: false },
+      { id: "sp-2", name: "Name-planet-b", sectors: [null], text: "East, 5", by: "p2", ...day, stale: false },
     ]);
-    // Which planet an entry came from never goes out, not even to its finder.
-    for (const id of ["p0", "p1", "p2", "p3"]) expect(JSON.stringify(viewFor(s, id).sharedPlanets)).not.toContain("planet-");
+    // Which planet an entry came from never goes out, not even to its finder (the name is the planet's own, not its id).
+    for (const id of ["p0", "p1", "p2", "p3"]) expect(JSON.stringify(viewFor(s, id).sharedPlanets)).not.toMatch(/"planet-|:"planet-/);
     expect(s.chat.filter((m) => m.channel === "astrophysics").map((m) => m.system)).toEqual([
       { key: "planetShared", params: { name: player(s, "p1").character } },
       { key: "planetShared", params: { name: player(s, "p2").character } },
@@ -71,7 +75,7 @@ describe("sharing planets", () => {
 
   it("is free and takes the text as written, trimmed", () => {
     const before = game();
-    const s = must(sharePlanet(before, "p1", "planet-a", "  Lies, all lies \n line two  "));
+    const s = must(sharePlanet(before, "p1", "planet-a", SLOTS, "  Lies, all lies \n line two  "));
     expect(s.sharedPlanets[0]!.text).toBe("Lies, all lies \n line two");
     expect(player(s, "p1").ap).toBe(player(before, "p1").ap);
     expect(player(s, "p1").mp).toBe(player(before, "p1").mp);
@@ -98,31 +102,62 @@ describe("sharing planets", () => {
     let s = must(sendChat(shared(), "p3", "sp-1", "Nice"));
     s.sharedPlanets[0]!.stale = true;
     s = nextCycle(s);
-    s = must(sharePlanet(s, "p1", "planet-a", "Actually ruins"));
+    s = must(sharePlanet(s, "p1", "planet-a", ["RUINS"], "Actually ruins"));
     expect(s.sharedPlanets).toHaveLength(2);
-    expect(s.sharedPlanets[0]).toMatchObject({ id: "sp-1", text: "Actually ruins", stale: false, ...dayOf(s) });
+    expect(s.sharedPlanets[0]).toMatchObject({ id: "sp-1", sectors: ["RUINS"], text: "Actually ruins", stale: false, ...dayOf(s) });
     expect(s.chat.some((m) => m.channel === "sp-1" && m.text === "Nice")).toBe(true);
     expect(s.chat.at(-1)!.system).toEqual({ key: "planetShareUpdated", params: { name: player(s, "p1").character } });
   });
 
   it("needs a living player with an iTrackie at an Astro terminal, their own planet, and a text of up to 500 characters", () => {
     const s = game();
-    expect(error(sharePlanet(s, "p2", "planet-a", "mine now"))).toBe("planet_not_found");
-    expect(error(sharePlanet(s, "p1", "planet-zz", "x"))).toBe("planet_not_found");
-    expect(error(sharePlanet(s, "p1", "planet-a", "   "))).toBe("share_text_invalid");
-    expect(error(sharePlanet(s, "p1", "planet-a", "x".repeat(MAX_SHARED_PLANET_LENGTH + 1)))).toBe("share_text_invalid");
-    expect(sharePlanet(s, "p1", "planet-a", "x".repeat(MAX_SHARED_PLANET_LENGTH)).ok).toBe(true);
+    expect(error(sharePlanet(s, "p2", "planet-a", SLOTS, "mine now"))).toBe("planet_not_found");
+    expect(error(sharePlanet(s, "p1", "planet-zz", SLOTS, "x"))).toBe("planet_not_found");
+    expect(error(sharePlanet(s, "p1", "planet-a", SLOTS, "   "))).toBe("share_text_invalid");
+    expect(error(sharePlanet(s, "p1", "planet-a", SLOTS, "x".repeat(MAX_SHARED_PLANET_LENGTH + 1)))).toBe("share_text_invalid");
+    expect(sharePlanet(s, "p1", "planet-a", SLOTS, "x".repeat(MAX_SHARED_PLANET_LENGTH)).ok).toBe(true);
     const away = clone(s);
     player(away, "p1").room = "CORRIDOR_A";
-    expect(error(sharePlanet(away, "p1", "planet-a", "x"))).toBe("share_forbidden");
+    expect(error(sharePlanet(away, "p1", "planet-a", SLOTS, "x"))).toBe("share_forbidden");
     const dead = clone(s);
     player(dead, "p1").alive = false;
-    expect(error(sharePlanet(dead, "p1", "planet-a", "x"))).toBe("share_forbidden");
+    expect(error(sharePlanet(dead, "p1", "planet-a", SLOTS, "x"))).toBe("share_forbidden");
     const mine = viewFor(s, "p1").inventory.find((i) => i.type === ITRACKIE_ITEM)!.id;
     const bare = must(applyAction(s, "p1", { type: "drop", item: mine }));
-    expect(error(sharePlanet(bare, "p1", "planet-a", "x"))).toBe("share_forbidden");
+    expect(error(sharePlanet(bare, "p1", "planet-a", SLOTS, "x"))).toBe("share_forbidden");
     // The view says so, so the client offers Share only when it would work.
     expect([s, away, dead, bare].map((state) => viewFor(state, "p1").canSharePlanets)).toEqual([true, false, false, false]);
+  });
+
+  it("takes one slot per sector of the planet's true size, each any tag or unknown, lies included; the name is the planet's", () => {
+    const s = game();
+    s.planets.p1![0]!.sectors = [
+      { tag: "FOREST", known: true },
+      { tag: "OXYGEN", known: false },
+      { tag: "RUINS", known: false },
+    ];
+    expect(error(sharePlanet(s, "p1", "planet-a", [null, null], "x"))).toBe("share_sectors_invalid");
+    expect(error(sharePlanet(s, "p1", "planet-a", [null, null, null, null], "x"))).toBe("share_sectors_invalid");
+    expect(error(sharePlanet(s, "p1", "planet-a", ["FOREST", "NOPE" as never, null], "x"))).toBe("share_sectors_invalid");
+    const lied = must(sharePlanet(s, "p1", "planet-a", ["CRISTAL_FIELD", null, "OXYGEN"], "Paradise"));
+    expect(viewFor(lied, "p3").sharedPlanets[0]).toMatchObject({ name: "Name-planet-a", sectors: ["CRISTAL_FIELD", null, "OXYGEN"] });
+  });
+
+  it("an expedition's view links the entry shared from the planet being explored, only for readers of the feature", () => {
+    const s = shared();
+    s.expedition = { report: "r1", planet: "planet-b", sectors: [0], nextAt: 0, carried: {}, sabotaged: false, sabotageNext: false, hp: {}, ship: null };
+    s.expeditions.push({ id: "r1", members: ["p0"], crew: [player(s, "p0").character], planet: "Name-planet-b", events: [] });
+    expect(viewFor(s, "p3").expedition?.shared).toBe("sp-2");
+    const mine = viewFor(s, "p3").inventory.find((i) => i.type === ITRACKIE_ITEM)!.id;
+    const bare = must(applyAction(s, "p3", { type: "drop", item: mine }));
+    expect(viewFor(bare, "p3").expedition).not.toHaveProperty("shared");
+    s.expedition!.planet = "planet-c";
+    expect(viewFor(s, "p3").expedition).not.toHaveProperty("shared");
+  });
+
+  it("an entry stored before structured shares loads with its text's first line as the name and no slots", () => {
+    const { name: _n, sectors: _s, ...old } = shared().sharedPlanets[0]!;
+    expect(normalizeSharedPlanet(old)).toMatchObject({ name: "North, 3: forest", sectors: [] });
   });
 
   it("a travel marks every entry no longer applicable but its destination's, at departure", () => {
@@ -154,11 +189,14 @@ describe("sharing planets", () => {
   });
 
   it("are replayed from the sharePlanet input and parsed from the client", () => {
-    expect(must(applyInput(game(), { type: "sharePlanet", planet: "planet-a", text: "x", by: "p1" })).sharedPlanets).toHaveLength(1);
+    expect(must(applyInput(game(), { type: "sharePlanet", planet: "planet-a", sectors: [null], text: "x", by: "p1" })).sharedPlanets).toHaveLength(1);
     const parse = (msg: unknown) => parseGameMessage(JSON.stringify(msg));
-    expect(parse({ type: "sharePlanet", planet: "planet-a", text: "x" })).toEqual({ type: "sharePlanet", planet: "planet-a", text: "x" });
-    expect(parse({ type: "sharePlanet", planet: 3, text: "x" })).toBeNull();
-    expect(parse({ type: "sharePlanet", planet: "planet-a" })).toBeNull();
+    expect(parse({ type: "sharePlanet", planet: "planet-a", sectors: ["OXYGEN", null], text: "x" })).toEqual({ type: "sharePlanet", planet: "planet-a", sectors: ["OXYGEN", null], text: "x" });
+    expect(parse({ type: "sharePlanet", planet: 3, sectors: [], text: "x" })).toBeNull();
+    expect(parse({ type: "sharePlanet", planet: "planet-a", sectors: [] })).toBeNull();
+    expect(parse({ type: "sharePlanet", planet: "planet-a", text: "x" })).toBeNull();
+    expect(parse({ type: "sharePlanet", planet: "planet-a", sectors: ["NOPE"], text: "x" })).toBeNull();
+    expect(parse({ type: "sharePlanet", planet: "planet-a", sectors: [0], text: "x" })).toBeNull();
     expect(parse({ type: "chat", channel: "sp-4", text: "hi" })).toEqual({ type: "chat", channel: "sp-4", text: "hi" });
     expect(parse({ type: "chat", channel: "sp-x", text: "hi" })).toBeNull();
   });

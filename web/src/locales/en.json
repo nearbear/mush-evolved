@@ -519,6 +519,7 @@
     "share_forbidden": "You need your iTrackie at an Astro terminal to share a planet.",
     "planet_not_found": "That planet isn't one of yours.",
     "share_text_invalid": "Shared text needs to be up to 500 characters and 20 lines, and not empty.",
+    "share_sectors_invalid": "The sectors you share must match the planet's sectors, one for each.",
     "report_share_forbidden": "You need your iTrackie to share a report.",
     "report_not_found": "You weren't on that expedition.",
     "not_in_cheat_room": "You need to be in the cheat room.",
@@ -1777,13 +1778,16 @@
     "orbited": "In orbit",
     "share": "Share",
     "shareTitle": "Share {{name}}",
-    "shareHint": "The crew will read this text in the Astrophysics feature. Change anything you like before you post it.",
+    "shareHint": "The crew will read this in the Astrophysics feature. Change the sectors and the text as you like before you post it.",
+    "shareSectorsLabel": "Sectors",
+    "shareSlot": "Sector {{n}}: {{sector}}",
+    "shareSlotPicker": "Choose sector {{n}}",
+    "shareDisclaimer": "The planet's name and its number of sectors can't be changed, and the crew can tell whether it has an Oxygen sector when boarding the Icarus.",
+    "sharedSectors": "Sectors as shared",
     "shareLabel": "Text to share",
     "sharePost": "Post",
     "shareName": "Planet: {{name}}",
-    "sharePosition": "Position: {{direction}}, {{distance}} fuel",
-    "shareSectors": "Sectors: {{sectors}}",
-    "shareUnknownSector": "?"
+    "sharePosition": "Position: {{direction}}, {{distance}} fuel"
   },
   "projects": {
     "title": "NERON projects",
@@ -2163,6 +2167,7 @@
       "new": "New",
       "position": "Step {{n}} of {{total}}",
       "newStep": "Expedition: new step, {{sector}}.",
+      "shared": "Shared by {{name}} (day {{day}}, cycle {{cycle}})",
       "badge": {
         "again": "Again",
         "lost": "Lost",

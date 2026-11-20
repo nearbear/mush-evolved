@@ -15,7 +15,7 @@ import { useNames } from "../i18n/names.ts";
 import { ActionButton } from "./ActionButton.tsx";
 import { ActionLabel } from "./ActionLabel.tsx";
 import { ExpeditionReportDialog } from "./ExpeditionReportDialog.tsx";
-import { ExpeditionTimeline } from "./ExpeditionTimeline.tsx";
+import { characterOf, ExpeditionTimeline } from "./ExpeditionTimeline.tsx";
 import { Podium } from "./Podium.tsx";
 import { sameTarget } from "./targets.ts";
 import { TechnoBox } from "./TechnoBox.tsx";
@@ -43,10 +43,14 @@ export function IcarusPanel({ view, expedition, selected, onSelect, onAction, on
   const crewHp = expedition?.hp;
   const hp = (p: (typeof aboard)[number]): number | undefined =>
     !expedition ? undefined : p.id === view.you.id ? view.you.hp : crewHp?.find((m) => m.name === p.character)?.hp;
+  // What the Astrophysics feature holds about this planet, if you read it (`expedition.shared`).
+  const shared = view.sharedPlanets.find((e) => e.id === expedition?.shared);
   return (
     <section className="iso-room icarus-cabin" aria-label={names.room(view.you.room)}>
       {/* Away, the expedition screen sits above the seats (docs/plans/expedition-ui.md; owner, 2026-11-19). */}
-      {expedition && <ExpeditionTimeline expedition={expedition} report={view.expeditions.find((r) => r.id === expedition.report)} />}
+      {expedition && (
+        <ExpeditionTimeline expedition={expedition} report={view.expeditions.find((r) => r.id === expedition.report)} shared={shared} sharedBy={shared && names.character(characterOf(view, shared.by))} />
+      )}
       <ul className="icarus-seats" data-away={expedition ? true : undefined} aria-label={t("expedition.seats")} style={{ "--seats": seats, "--half": Math.ceil(seats / 2) } as CSSProperties}>
         {Array.from({ length: seats }, (_, i) => {
           const p = aboard[i];

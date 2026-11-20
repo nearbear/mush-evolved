@@ -1561,7 +1561,7 @@ describe("travel: the Commander (#417)", () => {
     const finder = game.players.find((p) => p.id !== id)!.id;
     game.titles.commander = id;
     game.planets[finder] = planets;
-    game.sharedPlanets = planets.map((p, i) => ({ id: `sp-${i}`, planet: p.id, text: text?.(p) ?? formatPlanetShare({ ...p, sectors: ["OXYGEN", "FOREST"] }), by: finder, day: 1, cycleOfDay: 1, stale: false }));
+    game.sharedPlanets = planets.map((p, i) => ({ id: `sp-${i}`, planet: p.id, name: p.name, sectors: [], text: text?.(p) ?? formatPlanetShare({ ...p, sectors: ["OXYGEN", "FOREST"] }), by: finder, day: 1, cycleOfDay: 1, stale: false }));
     return { game, id };
   }
 
@@ -1670,7 +1670,7 @@ describe("travel: the Commander leaves orbit (#417)", () => {
       { id: "pl-1", name: "Orbis", direction: "north", distance: 2, size: 2, picture: 1, revealed: 2, sectors: [{ tag: "OXYGEN", known: true, explored: true }, { tag: "FOREST", known: true, explored: true }] },
     ] as GameState["planets"][string];
     game.navigation = { ...game.navigation, arriving: null, orbit: "pl-1" };
-    game.sharedPlanets = [{ id: "sp-1", planet: "pl-1", text: formatPlanetShare({ name: "Orbis", direction: "north", distance: 2, sectors: ["OXYGEN", "FOREST"] }), by: finder, day: 1, cycleOfDay: 1, stale: false }];
+    game.sharedPlanets = [{ id: "sp-1", planet: "pl-1", name: "Orbis", sectors: [], text: formatPlanetShare({ name: "Orbis", direction: "north", distance: 2, sectors: ["OXYGEN", "FOREST"] }), by: finder, day: 1, cycleOfDay: 1, stale: false }];
     game.sharedReports = [{ id: "sr-1", report: "ex-1", text: "Planet: Orbis\nExplored: OXYGEN, FOREST", by: finder, day: 1, cycleOfDay: 1 }] as GameState["sharedReports"];
     return { game, id };
   }
@@ -1748,6 +1748,8 @@ describe("travel holds & escape jumps (#421)", () => {
     game.sharedPlanets = planets.map((p, i) => ({
       id: `sp-${i}`,
       planet: p.id,
+      name: p.name,
+      sectors: [],
       text: formatPlanetShare({ ...p, sectors: ["OXYGEN"] }),
       by: finder,
       day: 1,
@@ -1891,6 +1893,8 @@ describe("travel holds & escape jumps (#421)", () => {
     held.sharedPlanets.push({
       id: "sp-late",
       planet: pl.id,
+      name: pl.name,
+      sectors: [],
       text: formatPlanetShare({ ...pl, sectors: ["OXYGEN"] }),
       by: finder,
       day: held.day,
@@ -2658,6 +2662,8 @@ describe("expeditionPrep: priority claiming, gear rules, drop iTrackie, and ICAR
         {
           id: "share-1",
           planet: "planet-1",
+          name: "",
+          sectors: [],
           by: pilot,
           day: 1,
           cycleOfDay: 1,
@@ -2925,6 +2931,8 @@ describe("expeditionLaunch: Pilot walks to ICARUS, summons open plan, and launch
         {
           id: "sp-1",
           planet: "planet-orbit",
+          name: "",
+          sectors: [],
           by: pilot,
           day: 1,
           cycleOfDay: 1,

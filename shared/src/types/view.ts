@@ -10,7 +10,7 @@ import type { PlanetDirection, PlanetTag } from "../planets.ts";
 import type { TitleId } from "../titles.ts";
 import type { Alerts } from "../reports.ts";
 import type { Action, BotKind, DocumentState, ItemId, LogEntry, LogLine, PlayerId, Role, RoomId, SpoilStage } from "../types.ts";
-import type { ChannelId, ChatLine, ChatMessage, ChatThread, PrivateChannel, SeqRange, SharedPlanet, SharedReport, SharedReportId } from "./chat.ts";
+import type { ChannelId, ChatLine, ChatMessage, ChatThread, PrivateChannel, SeqRange, SharedPlanet, SharedPlanetId, SharedReport, SharedReportId } from "./chat.ts";
 import type { Plan } from "./plan.ts";
 import type { MovementRules } from "./config.ts";
 import type { ActionInProgress, PlayerState, Spot } from "./player.ts";
@@ -375,7 +375,8 @@ export interface PlayerView {
    * steps left, the next included) and `nextAt` (when the next resolves, server ms) are public, as the timer already
    * reveals them (docs/plans/expedition-ui.md). `hp` is each member's exact HP by character as of the latest step (not
    * live: losses between steps only humans take would show), only to a member still with the crew, and only for those
-   * still with it: never a lost member's, never a max HP (owner, 2026-11-19).
+   * still with it: never a lost member's, never a max HP (owner, 2026-11-19). `shared` is the Astrophysics entry shared
+   * from the planet being explored, to whoever reads that feature (its `sharedPlanets` holds the entry).
    */
   expedition: {
     crew: CharacterId[];
@@ -387,6 +388,7 @@ export interface PlayerView {
     ship?: RoomId;
     next?: PlanetTag;
     hp?: { name: CharacterId; hp: number }[];
+    shared?: SharedPlanetId;
   } | null;
   /** How many the Icarus holds (`maxCrew`, expeditions.ts): public, since it follows a public project. The Icarus panel draws one pedestal each. */
   icarusSeats: number;
@@ -469,7 +471,7 @@ export interface PlanetView {
   direction: PlanetDirection;
   /** In fuel. */
   distance: number;
-  sectors: (string | null)[];
+  sectors: (PlanetTag | null)[];
   /** True for the planet the ship orbits; absent otherwise. */
   orbited?: true;
 }
