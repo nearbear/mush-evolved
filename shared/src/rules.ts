@@ -940,14 +940,27 @@ function expeditionView(state: GameState, you: PlayerState): PlayerView["expedit
   const report = state.expeditions.find((r) => r.id === away.report)!;
   // The next sector, to a U-turn or Traitor holder still with the crew (owner, 2026-11-17).
   const next = nextSectorFor(state, you);
+  const member = withCrew(state, you) && report.members.includes(you.id);
+  // Each member's exact HP as of the latest step (`away.hp`), to a member still with the crew, for those still with it
+  // (owner, 2026-11-19): a lost member's screen shows them alone, and the crew no longer sees theirs.
+  const hp = member
+    ? report.members
+        .map((id) => state.players.find((p) => p.id === id)!)
+        .filter((p) => withCrew(state, p) && away.hp[p.id] !== undefined)
+        .map((p) => ({ name: p.character, hp: away.hp[p.id]! }))
+    : undefined;
   return {
     crew: [...report.crew],
     planet: report.planet,
     returnAt: expeditionReturnAt(state)!,
+    // Public, as the timer already reveals both (docs/plans/expedition-ui.md).
+    steps: away.sectors.length,
+    nextAt: away.nextAt,
     // The patrol ship that landed (owner, 2026-11-09, #359): public, as its bay shows it out and the crew is named.
     ...(report.ship !== undefined && { ship: report.ship }),
-    ...(withCrew(state, you) && report.members.includes(you.id) && { report: report.id }),
+    ...(member && { report: report.id }),
     ...(next !== undefined && { next }),
+    ...(hp && { hp }),
   };
 }
 

@@ -165,8 +165,7 @@ export const signalsNoAccessSample = (() => {
 
 /**
  * The expedition screen's samples (ExpeditionTimeline.tsx): Jin Su away on a planet with Chun and Kuan Ti, four steps in.
- * Hand-built, not played through the rules, and with slice 1's fields (`steps`, `nextAt`, `hp`) stubbed in, since the
- * view doesn't send them yet (expeditionStub.ts). The U-turn holder's sample also sees the next sector.
+ * Hand-built, not played through the rules. The U-turn holder's sample also sees the next sector.
  */
 export const expeditionSamples = (() => {
   const now = Date.now();

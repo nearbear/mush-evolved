@@ -1,6 +1,6 @@
 # Expedition UI: the sector timeline, the compact report and shared sectors (plan)
 
-2026-11-19. Slice 2 (the timeline) built on stubbed view data (`web/src/hud/expeditionStub.ts`); slices 1, 3 and 4 not built. No open questions. The concept and the decisions below are the owner's (2026-11-19); the layout details and
+2026-11-19. Slices 1 (the view data) and 2 (the timeline) built; slices 3 and 4 not built. No open questions. The concept and the decisions below are the owner's (2026-11-19); the layout details and
 build order are Claude's proposal. Builds on `docs/plans/expedition.md` (the rules, all built),
 `docs/plans/expedition-boarding.md` (boarding, the next sector) and `docs/plans/astro.md` (planets, sharing).
 
@@ -27,7 +27,10 @@ build order are Claude's proposal. Builds on `docs/plans/expedition.md` (the rul
 
 ## Decisions (owner, 2026-11-19)
 
-1. **Crewmates' HP:** exact HP, to members still with the crew, while away (a lost member sees only themselves; see "Answered").
+1. **Crewmates' HP:** exact HP, to members still with the crew, while away (a lost member sees only themselves; see "Answered"),
+   as of the latest step, not live (owner, 2026-11-19, after the leak check): live HP would show losses between steps
+   that only humans take (hunger, a disease at a cycle change). Still visible, and disliked but accepted for now: a
+   hidden disease's extra damage on an expedition hit.
 2. **Shared sectors are structured and editable:** the Share form gets one slot per sector, each starting as the
    sharer's knowledge (the tag, or unknown) and changeable to any tag or unknown, so lying stays possible. The **number
    of slots is fixed** to the planet's true size.

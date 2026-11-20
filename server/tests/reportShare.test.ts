@@ -122,7 +122,7 @@ describe("expedition report sharing (reportShare.ts)", () => {
 
     // Still away: nothing to share yet.
     const awayGame = structuredClone(game);
-    awayGame.expedition = { report: "ex-1", planet: "p-1", sectors: [1], nextAt: 999999, carried: {}, sabotaged: false, sabotageNext: false, ship: null };
+    awayGame.expedition = { report: "ex-1", planet: "p-1", sectors: [1], nextAt: 999999, carried: {}, sabotaged: false, sabotageNext: false, hp: {}, ship: null };
     const crewMem = makeMemory();
     expect(observeReports(viewFor(awayGame, crewId), crewMem)).toBeNull();
 

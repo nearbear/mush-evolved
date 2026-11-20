@@ -1057,6 +1057,8 @@ export function normalizeActiveExpedition(raw: Partial<ActiveExpedition>): Activ
     sabotaged: added(raw, "sabotaged", false),
     // 2026-11-17: before it, a Sabotage covered every sector after it; the one under way keeps covering the next.
     sabotageNext: added(raw, "sabotageNext", raw.sabotaged === true),
+    // Expedition UI slice 1 (2026-11-19): an expedition under way before it shows no HP until its next step.
+    hp: added(raw, "hp", {}),
     // Phase 5 (#359): only the Icarus went before it.
     ship: added(raw, "ship", null),
   });

@@ -201,6 +201,7 @@ export function runExpedition(state: GameState, launcher: PlayerState, ship?: Pa
     carried: Object.fromEntries(crew.map((p) => [p.id, itemsIn(state, { kind: "player", id: p.id }).map((i) => i.id)])),
     sabotaged: false,
     sabotageNext: false,
+    hp: {},
     ship: ship?.id ?? null,
   };
   // Drawn at takeoff, as the crew's gear changes the odds. Each Sprinter adds a sector (owner, 2026-11-08, #358).
@@ -209,6 +210,7 @@ export function runExpedition(state: GameState, launcher: PlayerState, ship?: Pa
   state.expedition.sectors = pickSectors(state, planet, ship ? Math.floor(sectors / rules.patrol.sectorDivisor) : sectors);
   // The landing happens at once (owner, 2026-11-17); the first sector a step later.
   land(state, report, crew);
+  snapshotHp(state, report);
   if (state.expedition.sectors.length === 0 || !crew.some((p) => withCrew(state, p))) returnExpedition(state);
   else if (state.config.instantExpeditions) while (state.expedition) expeditionStep(state);
   return report;
@@ -260,10 +262,19 @@ export function expeditionStep(state: GameState): void {
     // The planet is gone (only possible once the ship has left it): nothing left to explore.
     away.sectors = [];
   }
+  snapshotHp(state, report);
   // Back when the sectors are done, or nobody is left with the crew (all dead or lost).
   if (away.sectors.length === 0 || !members().some((p) => withCrew(state, p))) returnExpedition(state);
   // The fast cheat counts from now, so a step that was due long ago doesn't set off a burst of overdue ones.
   else away.nextAt = fastExpeditions(state) ? Math.max(away.nextAt, state.now) + FAST_EXPEDITION_STEP_MS : away.nextAt + rules.stepMs;
+}
+
+/**
+ * Each member's HP as the step leaves it, which is what the crew sees of each other until the next step (owner,
+ * 2026-11-19): live HP would show losses between steps that only humans take (hunger, a disease at a cycle change).
+ */
+function snapshotHp(state: GameState, report: Readonly<ExpeditionReport>): void {
+  state.expedition!.hp = Object.fromEntries(report.members.map((id) => [id, state.players.find((p) => p.id === id)!.hp]));
 }
 
 /**

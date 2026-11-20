@@ -4,8 +4,7 @@
 // it move one column. A step that resolves while you are on the latest one moves you to it (owner, 2026-11-19); while
 // you look back, the view stays and the right arrow says "new". Each new step is announced politely. The crew and
 // their HP are on the Icarus's podiums under it (IcarusPanel.tsx), not here.
-// Renders the view only: the rules wrote every event, and which steps are left comes from the view (expeditionStub.ts
-// until slice 1 lands).
+// Renders the view only: the rules wrote every event, and which steps are left comes from the view.
 
 import type { ExpeditionEvent, ExpeditionReportView, PlanetTag, PlayerView } from "@mush2/shared";
 import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
@@ -15,7 +14,6 @@ import { itemIcon, planetTagIcon } from "../art/assets.ts";
 import { useKeyedSprite } from "../art/keyedSprite.ts";
 import { useNames } from "../i18n/names.ts";
 import { useEventLines } from "./ExpeditionReportDialog.tsx";
-import { expeditionExtras } from "./expeditionStub.ts";
 import { latestColumn, timelineColumns, type StepBadge, type TimelineColumn } from "./expeditionTimeline.ts";
 import { useCountdown } from "./useCountdown.ts";
 import { VisibilityBadge } from "./VisibilityBadge.tsx";
@@ -32,9 +30,8 @@ const SWIPE_PX = 40;
 
 export function ExpeditionTimeline({ expedition, report }: Props) {
   const { t } = useTranslation();
-  const extras = expedition ? expeditionExtras(expedition) : {};
   const events = report?.events ?? [];
-  const columns = timelineColumns({ events, lost: expedition === null, returnAt: expedition?.returnAt ?? 0, next: expedition?.next, nextAt: extras.nextAt, steps: extras.steps });
+  const columns = timelineColumns({ events, lost: expedition === null, returnAt: expedition?.returnAt ?? 0, next: expedition?.next, nextAt: expedition?.nextAt, steps: expedition?.steps });
   const sectorName = useSectorName();
   const { pos, seen, moveTo } = usePosition(columns, events);
   // A step resolved since you looked: say which, without moving focus.

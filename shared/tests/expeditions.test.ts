@@ -696,7 +696,9 @@ describe("expeditions, phase 2: time away", () => {
     const s = timed({ tags: ["OXYGEN", "PREDATOR"] });
     const t = tickAt(go(s), T0 + step);
     const report = t.expeditions[0]!;
-    const status = { crew: report.crew, planet: "Fugunys", returnAt: T0 + 2 * step };
+    // The steps left and the next step's time are public: the timer reveals both (docs/plans/expedition-ui.md).
+    const status = { crew: report.crew, planet: "Fugunys", returnAt: T0 + 2 * step, steps: 1, nextAt: T0 + 2 * step };
+    const hp = report.members.map((id) => ({ name: player(t, id).character, hp: player(t, id).hp }));
     for (const id of ["p4", "p5"]) {
       const view = viewFor(t, id);
       expect(view.expedition).toEqual(status);
@@ -704,13 +706,14 @@ describe("expeditions, phase 2: time away", () => {
       const json = JSON.stringify(view);
       expect(json).not.toContain(report.id);
       expect(json).not.toContain("explored");
-      for (const field of ["sabotaged", "sabotageNext", "nextAt", "carried"]) expect(json).not.toContain(field);
+      for (const field of ["sabotaged", "sabotageNext", "carried"]) expect(json).not.toContain(field);
     }
     // The planet goes by name; its id stays its finder's (p5).
     expect(JSON.stringify(viewFor(t, "p4"))).not.toContain(t.expedition!.planet);
+    // Members still with the crew see each member's exact HP (owner, 2026-11-19).
     for (const id of report.members) {
       const view = viewFor(t, id);
-      expect(view.expedition).toEqual({ ...status, report: report.id });
+      expect(view.expedition).toEqual({ ...status, report: report.id, hp });
       expect(view.expeditions).toEqual([{ id: report.id, crew: report.crew, planet: report.planet, events: report.events, away: true }]);
     }
     // The dead get the public status, never the report.
@@ -718,6 +721,32 @@ describe("expeditions, phase 2: time away", () => {
     player(dead, "p1").alive = false;
     expect(viewFor(dead, "p1").expedition).toEqual(status);
     expect(viewFor(dead, "p1").expeditions).toEqual([]);
+    // ... and drop out of the crew's HP.
+    expect(viewFor(dead, "p0").expedition!.hp).toEqual(hp.filter((m) => m.name !== player(t, "p1").character));
+  });
+
+  it("the crew's HP follows the damage taken; nobody gets it once the crew is back", () => {
+    const s = timed({ tags: ["HOT", "HOT"], events: only({ kind: "fatigue", weight: 1 }) });
+    let t = tickAt(go(s), T0 + step);
+    const members = t.expeditions[0]!.members;
+    const hpOf = (id: PlayerId) => viewFor(t, id).expedition!.hp!;
+    for (const id of members) expect(hpOf(id)).toEqual(members.map((m) => ({ name: player(t, m).character, hp: player(s, m).hp - expedition.fatigue })));
+    expect(viewFor(t, "p0").expedition!.steps).toBe(1);
+    t = runOut(t);
+    for (const p of t.players) expect(viewFor(t, p.id).expedition).toBeNull();
+  });
+
+  it("the crew's HP is as of the latest step: a loss between steps (hunger, a human's disease) shows only at the next", () => {
+    const s = timed({ tags: ["HOT", "HOT", "HOT"], events: only({ kind: "nothing", weight: 1 }) });
+    let t = tickAt(go(s), T0 + step);
+    const before = player(t, "p1").hp;
+    const hpOfP1 = () => viewFor(t, "p0").expedition!.hp!.find((m) => m.name === player(t, "p1").character)!.hp;
+    // As a cycle change between steps would.
+    t = clone(t);
+    player(t, "p1").hp -= 2;
+    expect(hpOfP1()).toBe(before);
+    t = tickAt(t, T0 + 2 * step);
+    expect(hpOfP1()).toBe(before - 2);
   });
 
   it("the Icarus is missing from its bay and can't take off again while away", () => {
@@ -951,6 +980,13 @@ describe("expeditions, phase 3, slice B: getting lost", () => {
     expect(t.expedition).not.toBeNull();
     expect(viewFor(t, lost).expedition!.report).toBeUndefined();
     expect(viewFor(t, lost).expeditions[0]!.away).toBeUndefined();
+    // HP, neither way (owner, 2026-11-19): the lost member sees nobody's, and the crew no longer sees theirs.
+    expect(viewFor(t, lost).expedition!.hp).toBeUndefined();
+    const lostName = player(t, lost).character;
+    for (const id of crewIds.filter((id) => id !== lost)) {
+      expect(viewFor(t, id).expedition!.hp!.map((m) => m.name)).toEqual(t.expeditions[0]!.members.filter((m) => m !== lost).map((m) => player(t, m).character));
+      expect(viewFor(t, id).expedition!.hp!.map((m) => m.name)).not.toContain(lostName);
+    }
     t = tickAt(t, t.expedition!.nextAt);
     expect(t.expedition).toBeNull();
     expect(t.expeditions[0]!.events).toHaveLength(3);

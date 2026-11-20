@@ -30,7 +30,7 @@ export interface TimelineInput {
   returnAt: number;
   next?: PlanetTag | undefined;
   nextAt?: number | undefined;
-  /** Steps left, the next included; unknown until the view sends it (expeditionStub.ts), drawn as one. */
+  /** Steps left, the next included (`expedition.steps`); unknown (a lost member's timeline) is drawn as one. */
   steps?: number | undefined;
 }
 

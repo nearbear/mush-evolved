@@ -15,7 +15,6 @@ import { useNames } from "../i18n/names.ts";
 import { ActionButton } from "./ActionButton.tsx";
 import { ActionLabel } from "./ActionLabel.tsx";
 import { ExpeditionReportDialog } from "./ExpeditionReportDialog.tsx";
-import { expeditionExtras } from "./expeditionStub.ts";
 import { ExpeditionTimeline } from "./ExpeditionTimeline.tsx";
 import { Podium } from "./Podium.tsx";
 import { sameTarget } from "./targets.ts";
@@ -40,8 +39,8 @@ export function IcarusPanel({ view, expedition, selected, onSelect, onAction, on
   // A patrol ship's landing has room for its pilot only; the Icarus has its seats, never fewer than who is aboard.
   const launch = expedition ? undefined : view.actions.find((o) => o.action.type === "icarus_takeoff");
   const seats = expedition?.ship !== undefined ? aboard.length : Math.max(view.icarusSeats, aboard.length);
-  // Away, each member's HP under their name: everyone's once the view sends it (expeditionStub.ts), else your own.
-  const crewHp = expedition ? expeditionExtras(expedition).hp : undefined;
+  // Away, each member's HP under their name (`expedition.hp`, to members still with the crew), your own from `you`.
+  const crewHp = expedition?.hp;
   const hp = (p: (typeof aboard)[number]): number | undefined =>
     !expedition ? undefined : p.id === view.you.id ? view.you.hp : crewHp?.find((m) => m.name === p.character)?.hp;
   return (
