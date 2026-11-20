@@ -14,6 +14,7 @@ import { StatusIcons } from "../hud/StatusIcons.tsx";
 import { TipCard } from "../hud/TipCard.tsx";
 import { TopBar } from "../hud/TopBar.tsx";
 import { useShipLayout } from "../iso/shipLayout.ts";
+import { GameFrame } from "./GameFrame.tsx";
 import { Figure, noop, Section } from "./KitSection.tsx";
 import { brokenView, freshView, humanView, itemsView, mushView, preselectionView, queueView } from "./samples.ts";
 
@@ -94,10 +95,15 @@ export function ShipOverlaySection() {
 
 export function SampleInspect({ view, target }: { view: PlayerView; target: Target }) {
   const layout = useShipLayout();
+  return <InspectPanel view={view} {...(layout && { layout })} target={target} onAction={noop} onDeselect={target.id === view.you.id ? undefined : noop} />;
+}
+
+/** Inspect in the left column of a game-screen frame, the rest of the screen as a skeleton. */
+function InspectFigure({ caption, view, target }: { caption: string; view: PlayerView; target: Target }) {
   return (
-    <div className="m2k-inspect">
-      <InspectPanel view={view} {...(layout && { layout })} target={target} onAction={noop} onDeselect={target.id === view.you.id ? undefined : noop} />
-    </div>
+    <Figure caption={caption}>
+      <GameFrame panel="inspect" inspect={<SampleInspect view={view} target={target} />} />
+    </Figure>
   );
 }
 
@@ -117,45 +123,30 @@ export function InspectSection() {
           <code>hud/InspectPanel.tsx</code>: the left panel, whatever is selected, with the legal actions as{" "}
           <code>ActionButton</code>s (<code>ActionLabel</code> costs and odds). For a person it shows{" "}
           <code>SkillSlots</code> (click a free slot for the picker, which confirms the pick in the same window) and{" "}
-          <code>StatusIcons</code>; for an item, <code>ItemFace</code> and <code>ItemAttrIcons</code>. Broken items and equipment offer a repair. Hacking isn&apos;t in the game, so there is no hacked sample.
+          <code>StatusIcons</code>; for an item, <code>ItemFace</code> and <code>ItemAttrIcons</code>. Broken items and equipment offer a repair. Hacking isn&apos;t in the game, so there is no hacked sample. Each sits in the game screen&apos;s left column.
         </>
       }
+      row="m2k-stack"
     >
-      <Figure caption="Yourself: commander, Pilot, one free slot">
-        <SampleInspect view={humanView} target={self(humanView)} />
-      </Figure>
-      <Figure caption="Yourself as Mush (spores; the slots toggle to Mush skills)">
-        <SampleInspect view={mushView} target={self(mushView)} />
-      </Figure>
+      <InspectFigure caption="Yourself: commander, Pilot, one free slot" view={humanView} target={self(humanView)} />
+      <InspectFigure caption="Yourself as Mush (spores; the slots toggle to Mush skills)" view={mushView} target={self(mushView)} />
       {neighbour && (
-        <Figure caption="Someone else in the room">
-          <SampleInspect view={humanView} target={{ kind: "player", id: neighbour.id }} />
-        </Figure>
+        <InspectFigure caption="Someone else in the room" view={humanView} target={{ kind: "player", id: neighbour.id }} />
       )}
       {equipment && (
-        <Figure caption="Equipment (with its sprite once the ship layout loads)">
-          <SampleInspect view={humanView} target={{ kind: "equipment", id: equipment.id }} />
-        </Figure>
+        <InspectFigure caption="Equipment (with its sprite once the ship layout loads)" view={humanView} target={{ kind: "equipment", id: equipment.id }} />
       )}
       {item && (
-        <Figure caption="A blaster you carry">
-          <SampleInspect view={itemsView} target={{ kind: "item", id: item.id }} />
-        </Figure>
+        <InspectFigure caption="A blaster you carry" view={itemsView} target={{ kind: "item", id: item.id }} />
       )}
       {heavy && (
-        <Figure caption="A heavy item (ItemAttrIcons: hover the weight for its MP penalty)">
-          <SampleInspect view={itemsView} target={{ kind: "item", id: heavy.id }} />
-        </Figure>
+        <InspectFigure caption="A heavy item (ItemAttrIcons: hover the weight for its MP penalty)" view={itemsView} target={{ kind: "item", id: heavy.id }} />
       )}
       {brokenItem && (
-        <Figure caption="A broken blaster (repair instead of use)">
-          <SampleInspect view={brokenView} target={{ kind: "item", id: brokenItem.id }} />
-        </Figure>
+        <InspectFigure caption="A broken blaster (repair instead of use)" view={brokenView} target={{ kind: "item", id: brokenItem.id }} />
       )}
       {brokenEquipment && (
-        <Figure caption="Broken equipment: the coffee machine">
-          <SampleInspect view={brokenView} target={{ kind: "equipment", id: brokenEquipment.id }} />
-        </Figure>
+        <InspectFigure caption="Broken equipment: the coffee machine" view={brokenView} target={{ kind: "equipment", id: brokenEquipment.id }} />
       )}
     </Section>
   );

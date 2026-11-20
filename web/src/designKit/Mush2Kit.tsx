@@ -1,214 +1,206 @@
 // Dev-only design kit for mush2's own components (/design-kit-mush2), next to the Mush art kit (design-kit.html).
-// Each section renders a real component from web/src with sample props, so it can be checked in isolation.
+// One page per component (/design-kit-mush2/<id>), each rendering a real component from web/src with sample props, so
+// it can be checked in isolation. A side nav lists the pages; on phones it is a drawer behind the menu button.
 // Sample text is English only: this page never ships.
 
-import { bustIcon, ENDING_ART, SHIP_CARD_ICONS } from "../art/assets.ts";
-import { ShipCard, type ShipCardHighlight } from "../games/ShipCard.tsx";
-import { Tabs } from "@base-ui/react/tabs";
-import { SelfHud } from "../hud/SelfHud.tsx";
-import { TerminalFrame } from "../hud/TerminalFrame.tsx";
-import { AccountSection, CharacterPickerSection } from "./LobbySections.tsx";
+import { Dialog } from "@base-ui/react/dialog";
+import { useEffect, useState, type ComponentType } from "react";
+import { Link, NavLink, Route, Routes, useLocation, useParams } from "react-router";
+import { IconButton } from "../hud/IconButton.tsx";
+import { SelfHudSection, ShipCardSection, TerminalFrameSection } from "./CoreSections.tsx";
 import { EndingsSection, ExpeditionSection, ITrackieSection, PatrolSection, SignalSection, SignalsTabSection, TerminalBodiesSection } from "./GameSections.tsx";
+import { GameScreenSection } from "./GameScreenSection.tsx";
 import { InspectSection, InventorySection, ItemAttrIconsSection, PeekBarSection, RoomCornerSection, ShipOverlaySection, StatusIconsSection, TopBarSection } from "./HudSections.tsx";
-import { noop } from "./KitSection.tsx";
+import { AccountSection, CharacterPickerSection } from "./LobbySections.tsx";
 import { PrimitivesSection } from "./PrimitivesSection.tsx";
-import { SurfaceSection } from "./SurfaceSection.tsx";
-import { freshView, humanView, lethargyView, mushView } from "./samples.ts";
 import "./mush2Kit.css";
 
-const icon = (name: string) => SHIP_CARD_ICONS[name]!;
+const BASE = "/design-kit-mush2";
 
-// The design's highlights. Two of its eight icons aren't in Mush/, so they're left out; labels are placeholders
-// until the highlights themselves are decided.
-const highlights: ShipCardHighlight[] = [
-  { icon: icon("mush"), label: "Highlight 1", count: 2 },
-  { icon: icon("projects_done"), label: "Highlight 2", count: 17 },
-  { icon: icon("research_done"), label: "Highlight 3", count: 16 },
-  { icon: icon("survival"), label: "Highlight 4", count: 11 },
-  { icon: icon("plasma"), label: "Highlight 5" },
-  { icon: icon("pa_pilgred"), label: "Highlight 6" },
+/**
+ * A kit page. `game` pages render inside `main.game`, as the game screen does, so the game screen's card look
+ * (card.css) applies; the others (terminals, which the game opens in a portal, and lobby pieces) do not.
+ */
+type Page = { id: string; label: string; Section: ComponentType; game?: boolean };
+
+/** The side nav's groups, in nav order. */
+const GROUPS: [heading: string, pages: Page[]][] = [
+  [
+    "Foundations",
+    [
+      { id: "game-screen", label: "Game screen", Section: GameScreenSection, game: true },
+      { id: "primitives", label: "Primitives", Section: PrimitivesSection },
+    ],
+  ],
+  [
+    "Full panels",
+    [
+      { id: "inspect", label: "Inspect", Section: InspectSection, game: true },
+      { id: "patrol", label: "Patrol", Section: PatrolSection, game: true },
+      { id: "expedition", label: "Expedition", Section: ExpeditionSection, game: true },
+      { id: "itrackie", label: "iTrackie", Section: ITrackieSection, game: true },
+      { id: "endings", label: "Death and end", Section: EndingsSection, game: true },
+    ],
+  ],
+  [
+    "Game HUD",
+    [
+      { id: "top-bar", label: "Top bar", Section: TopBarSection, game: true },
+      { id: "self-hud", label: "Self HUD", Section: SelfHudSection, game: true },
+      { id: "ship-overlay", label: "Ship card (phone)", Section: ShipOverlaySection, game: true },
+      { id: "inventory", label: "Inventory", Section: InventorySection, game: true },
+      { id: "room-corners", label: "Queue and tips", Section: RoomCornerSection, game: true },
+      { id: "peek-bar", label: "Peek bar", Section: PeekBarSection, game: true },
+      { id: "status-icons", label: "Status icons", Section: StatusIconsSection, game: true },
+      { id: "item-attr-icons", label: "Item icons", Section: ItemAttrIconsSection, game: true },
+    ],
+  ],
+  [
+    "Terminals",
+    [
+      { id: "terminal", label: "Terminal frame", Section: TerminalFrameSection },
+      { id: "terminal-bodies", label: "Terminals", Section: TerminalBodiesSection },
+      { id: "sol-signal", label: "Sol signal", Section: SignalSection },
+      { id: "signals-tab", label: "Signals", Section: SignalsTabSection },
+    ],
+  ],
+  [
+    "Outside the game",
+    [
+      { id: "ship-card", label: "Ship card", Section: ShipCardSection },
+      { id: "character-picker", label: "Character picker", Section: CharacterPickerSection },
+      { id: "account", label: "Account", Section: AccountSection },
+    ],
+  ],
 ];
 
-/** The header nav, in page order. */
-const NAV: [id: string, label: string][] = [
-  ["surfaces", "Surface ramps"],
-  ["primitives", "Primitives"],
-  ["ship-card", "Ship card"],
-  ["terminal", "Terminal frame"],
-  ["terminal-bodies", "Terminals"],
-  ["sol-signal", "Sol signal"],
-  ["signals-tab", "Signals"],
-  ["top-bar", "Top bar"],
-  ["self-hud", "Self HUD"],
-  ["ship-overlay", "Ship card (phone)"],
-  ["inspect", "Inspect"],
-  ["inventory", "Inventory"],
-  ["room-corners", "Queue and tips"],
-  ["peek-bar", "Peek bar"],
-  ["status-icons", "Status icons"],
-  ["item-attr-icons", "Item icons"],
-  ["patrol", "Patrol"],
-  ["expedition", "Expedition"],
-  ["itrackie", "iTrackie"],
-  ["endings", "Death and end"],
-  ["character-picker", "Character picker"],
-  ["account", "Account"],
-];
+const PAGES = new Map(GROUPS.flatMap(([, pages]) => pages.map((page) => [page.id, page] as const)));
+
+function KitNav({ onNavigate }: { onNavigate?: () => void }) {
+  return (
+    <nav className="m2k-nav" aria-label="Kit pages">
+      {GROUPS.map(([heading, pages]) => (
+        <div key={heading} className="m2k-nav-group">
+          <h2>{heading}</h2>
+          <ul>
+            {pages.map(({ id, label }) => (
+              <li key={id}>
+                <NavLink to={`${BASE}/${id}`} onClick={onNavigate}>
+                  {label}
+                </NavLink>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+      <div className="m2k-nav-group">
+        <h2>Elsewhere</h2>
+        <ul>
+          <li>
+            <a href="/design-kit.html">Mush art kit</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+  );
+}
+
+/** The landing page: every page, by group. */
+function Overview() {
+  return (
+    <section>
+      <h2>Design kit</h2>
+      <p>
+        Our own components with sample props, one page each, so every look can be checked in isolation at desktop and at
+        the 360px phone width without playing to the state that shows it. Components that fill a whole panel sit in a
+        skeleton of the game screen. See <code>docs/plans/design-kit.md</code>.
+      </p>
+      <div className="m2k-overview">
+        {GROUPS.map(([heading, pages]) => (
+          <div key={heading}>
+            <h3>{heading}</h3>
+            <ul>
+              {pages.map(({ id, label }) => (
+                <li key={id}>
+                  <Link to={`${BASE}/${id}`}>{label}</Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function KitPage() {
+  const page = PAGES.get(useParams().page ?? "");
+  if (!page) {
+    return (
+      <main className="m2k-content">
+        <p>
+          No such page. <Link to={BASE}>All pages</Link>
+        </p>
+      </main>
+    );
+  }
+  const { Section, game } = page;
+  return (
+    <main className={game ? "game m2k-content" : "m2k-content"}>
+      <Section />
+    </main>
+  );
+}
 
 export default function Mush2Kit() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const { pathname, hash } = useLocation();
+  const current = PAGES.get(pathname.slice(BASE.length + 1));
+
+  // A new page starts at its top (a #hash link keeps the browser's jump). Runs on every path change.
+  useEffect(() => {
+    if (pathname.startsWith(BASE) && !hash) window.scrollTo(0, 0);
+  }, [pathname, hash]);
+
   return (
     <div className="m2k">
       <header className="m2k-header">
-        <h1>Design kit (mush2)</h1>
-        <nav aria-label="Sections">
-          {NAV.map(([id, label]) => (
-            <a key={id} href={`#${id}`}>
-              {label}
-            </a>
-          ))}
-          <a href="/design-kit.html">Mush art kit</a>
-        </nav>
+        <span className="m2k-menu">
+          <IconButton icon="☰" label="Kit pages" onClick={() => setMenuOpen(true)} />
+        </span>
+        <h1>
+          <Link to={BASE}>Design kit</Link>
+        </h1>
+        {current && <span className="m2k-current">{current.label}</span>}
       </header>
-      <main>
-        <SurfaceSection />
-        <PrimitivesSection />
-        <section id="ship-card">
-          <h2>Ship card</h2>
-          <p>
-            <code>games/ShipCard.tsx</code>: one character's finished ship. Every image and sentence is a prop. With{" "}
-            <code>to</code> the card is a link with hover and focus states; without it, a plain box.
-          </p>
-          <div className="m2k-row">
-            <figure>
-              <ShipCard
-                to="#ship-card"
-                name="Jin Su"
-                portrait={bustIcon("jinsu")}
-                score={289}
-                background={{ src: ENDING_ART.eden, x: 66, y: 45 }}
-                events={[
-                  { icon: icon("calendar"), caption: "Day 12 Cycle 1", text: "Survived to the end" },
-                  { icon: icon("eden1"), caption: "Day 12 Cycle 1", text: "The Daedalus has settled on Eden!" },
-                ]}
-                highlights={highlights}
-              />
-              <figcaption>The design, as a link</figcaption>
-            </figure>
-            <figure>
-              <ShipCard
-                name="Jin Su"
-                portrait={bustIcon("jinsu")}
-                score={112}
-                mush
-                background={{ src: ENDING_ART.eden, x: 20, y: 50 }}
-                events={[{ icon: icon("eden1"), caption: "Day 12 Cycle 1", text: "The Daedalus has settled on Eden!" }]}
-                highlights={highlights.slice(0, 3)}
-              />
-              <figcaption>
-                <code>mush</code>, no <code>to</code>, one event
-              </figcaption>
-            </figure>
-          </div>
-        </section>
-        <section id="terminal">
-          <h2>Terminal frame</h2>
-          <p>
-            <code>hud/TerminalFrame.tsx</code>: the frame every terminal shares (title bar, cosmetic login, close, icon,
-            gold outline). The game puts it in <code>TerminalDialog</code>&apos;s popup; here it sits in a stand-in{" "}
-            <code>.terminal-popup.kit-panel</code>. <code>type</code> picks the icon and corner art.
-          </p>
-          <div className="m2k-row">
-            <figure>
-              <div className="terminal-popup kit-panel m2k-terminal">
-                <TerminalFrame name="PILGRED" type="PILGRED" login={{ user: "jkim", access: "granted" }} onClose={noop}>
-                  <p>A terminal without tabs: a flat rim under the title bar, and the body scrolls.</p>
-                  <p>Body text uses the card&apos;s dark text tokens.</p>
-                </TerminalFrame>
-              </div>
-              <figcaption>No tabs, access granted</figcaption>
-            </figure>
-            <figure>
-              <div className="terminal-popup kit-panel m2k-terminal">
-                <TerminalFrame name="Com center" type="COM_CENTER" login={{ user: "cwang", access: "limited" }} onClose={noop}>
-                  <Tabs.Root className="settings-tabs" defaultValue="one">
-                    <Tabs.List className="settings-tab-list" aria-label="Sample tabs">
-                      <Tabs.Tab className="settings-tab" value="one">Overview</Tabs.Tab>
-                      <Tabs.Tab className="settings-tab" value="two">Second tab</Tabs.Tab>
-                    </Tabs.List>
-                    <Tabs.Panel value="one">
-                      <p>The selected tab rises out of the outline; only the open panel scrolls.</p>
-                    </Tabs.Panel>
-                    <Tabs.Panel value="two">
-                      <p>Second panel.</p>
-                    </Tabs.Panel>
-                  </Tabs.Root>
-                </TerminalFrame>
-              </div>
-              <figcaption>Tabbed, access limited (no title)</figcaption>
-            </figure>
-            <figure>
-              <div className="terminal-popup kit-panel m2k-terminal">
-                <TerminalFrame name="Command" type="PILOT_MODULE" login={{ user: "klai", access: "hacked" }} onClose={noop}>
-                  <p>Logged in as the title holder with the hacker kit.</p>
-                </TerminalFrame>
-              </div>
-              <figcaption>Hacked login</figcaption>
-            </figure>
-          </div>
-        </section>
-        <TerminalBodiesSection />
-        <SignalSection />
-        <SignalsTabSection />
-        <TopBarSection />
-        <section id="self-hud">
-          <h2>Self HUD</h2>
-          <p>
-            <code>hud/SelfHud.tsx</code>: the desktop ID card over the room view&apos;s top left (faction band,
-            portrait, name, held titles), with half-size bars in sections split by dividers: AP and MP to the right of the
-            name with your other resources in a row under MP, and HP and morale in a row across the foot. Lethargy&apos;s 24 AP makes a long AP bar. It takes a real <code>PlayerView</code> from <code>designKit/sampleView.ts</code>; here it sits in
-            a stand-in <code>.room-view</code>, since it is positioned over the room.
-          </p>
-          <div className="m2k-row">
-            <figure>
-              <div className="room-view m2k-room">
-                <SelfHud view={humanView} onInspect={noop} />
-              </div>
-              <figcaption>Human, commander with a skill</figcaption>
-            </figure>
-            <figure>
-              <div className="room-view m2k-room">
-                <SelfHud view={freshView} onInspect={noop} />
-              </div>
-              <figcaption>Fresh, no title</figcaption>
-            </figure>
-            <figure>
-              <div className="room-view m2k-room">
-                <SelfHud view={lethargyView} onInspect={noop} />
-              </div>
-              <figcaption>Lethargy: 24 AP</figcaption>
-            </figure>
-            <figure>
-              <div className="room-view m2k-room">
-                <SelfHud view={mushView} onInspect={noop} />
-              </div>
-              <figcaption>Mush (spores in the resources)</figcaption>
-            </figure>
-          </div>
-        </section>
-        <ShipOverlaySection />
-        <InspectSection />
-        <InventorySection />
-        <RoomCornerSection />
-        <PeekBarSection />
-        <StatusIconsSection />
-        <ItemAttrIconsSection />
-        <PatrolSection />
-        <ExpeditionSection />
-        <ITrackieSection />
-        <EndingsSection />
-        <CharacterPickerSection />
-        <AccountSection />
-      </main>
+      <div className="m2k-body">
+        <aside className="m2k-side">
+          <KitNav />
+        </aside>
+        <Routes>
+          <Route
+            index
+            element={
+              <main className="m2k-content">
+                <Overview />
+              </main>
+            }
+          />
+          <Route path=":page" element={<KitPage />} />
+        </Routes>
+      </div>
+      <Dialog.Root open={menuOpen} onOpenChange={setMenuOpen}>
+        <Dialog.Portal>
+          <Dialog.Backdrop className="m2k-drawer-backdrop" />
+          <Dialog.Popup className="m2k-drawer">
+            <div className="m2k-drawer-head">
+              <Dialog.Title className="m2k-drawer-title">Design kit</Dialog.Title>
+              <IconButton icon="✕" label="Close" onClick={() => setMenuOpen(false)} />
+            </div>
+            <KitNav onNavigate={() => setMenuOpen(false)} />
+          </Dialog.Popup>
+        </Dialog.Portal>
+      </Dialog.Root>
     </div>
   );
 }
