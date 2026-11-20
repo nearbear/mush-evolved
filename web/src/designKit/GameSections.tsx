@@ -6,6 +6,7 @@ import { BodyTakenDialog } from "../hud/BodyTakenDialog.tsx";
 import { CommsCenter } from "../hud/CommsCenter.tsx";
 import { DeathNotice } from "../hud/DeathNotice.tsx";
 import { EndScreen } from "../hud/EndScreen.tsx";
+import { ExpeditionReportDialog } from "../hud/ExpeditionReportDialog.tsx";
 import { IcarusPanel } from "../hud/IcarusPanel.tsx";
 import { ITrackie } from "../hud/ITrackie.tsx";
 import { LostPanel } from "../hud/LostPanel.tsx";
@@ -192,6 +193,11 @@ export function ExpeditionSection() {
       </Figure>
       <Figure caption="Lost: the timeline stops where you got lost">
         <GameFrame panel="room" room={<LostPanel view={lost} />} />
+      </Figure>
+      <Figure caption="The report: one compact row per step (ExpeditionReportDialog)">
+        <div className="m2k-buttons">
+          <Opener label="Read the report">{(close) => <ExpeditionReportDialog report={away.expeditions[0]} onClose={close} canShare onShare={noop} />}</Opener>
+        </div>
       </Figure>
     </Section>
   );

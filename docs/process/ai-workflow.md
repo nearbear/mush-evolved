@@ -4525,3 +4525,8 @@ Planned the expedition screen with the owner: a chronological timeline of sector
 - What needed correction: the change shifted the seeded 16-seat game in `replayView.test.ts`, so a Hopeless death at a cycle change landed on a chunk boundary. `stepMarks` without the previous chunk counts only lines stamped with the new cycle, and cycle-change deaths carry the old one. This was an existing blind spot that the rule exposed, not a bug in the rule; it was left to the owner rather than changing replay code or the seed.
 - Follow-up, same day (owner chose to fix the replay gap): `stepMarks` takes the chunk's `ChunkInfo.from`, and without the chunk before it counts a first step's lines by their server stamp (`at >= from`) instead of by cycle, so a death at a cycle change is marked as one. Older games without stamps keep the cycle guess. No stored-format change; the test's recorded game now stamps entries as the server does.
 
+## 2026-11-19: Expedition UI slice 3, the compact report
+
+- `ExpeditionReportDialog` moved from the old navy `settings-popup` into `FramedDialog` (the terminal frame, the owner's modal style) and became one compact row per step: the sector's 40x40 tag icon at 1x, its name and outcome in one line, and the HP each member lost under it as "Name −3 HP". The shared text is unchanged.
+- The tag icon (with the unknown tag keyed out) moved out of the timeline into `hud/SectorIcon.tsx`, with `--zoom` defaulting to 1, so both screens draw it the same way. `useEventLines` now also returns `outcome` (lines without the HP losses) so the rows don't repeat the HP list.
+- Added a DOM test (rows, icons, HP list, frame, share text keeps the HP lines) and a design-kit opener under Expedition. No visual check run.

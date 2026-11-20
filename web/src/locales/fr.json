@@ -2088,6 +2088,7 @@
     "shareLabel": "Texte à partager",
     "sharePost": "Partager",
     "shared": "Partagé dans la rubrique Expéditions.",
+    "hpLost": "−{{hp}} PV",
     "timeline": {
       "label": "Déroulement de l'expédition",
       "previous": "Étape précédente",

@@ -2088,6 +2088,7 @@
     "shareLabel": "Texto que compartir",
     "sharePost": "Compartir",
     "shared": "Compartido en la sección Expediciones.",
+    "hpLost": "−{{hp}} PV",
     "timeline": {
       "label": "Desarrollo de la expedición",
       "previous": "Paso anterior",

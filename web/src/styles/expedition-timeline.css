@@ -135,18 +135,19 @@ button.timeline-arrow > span {
   gap: var(--space-1);
   font-size: 1rem;
 }
-.timeline-icon {
+/* SectorIcon.tsx, here and in the report: --zoom is the whole-number scale, 1 unless a parent sets it. */
+.sector-icon {
   display: block;
   flex: none;
-  width: calc(40px * var(--zoom));
-  height: calc(40px * var(--zoom));
+  width: calc(40px * var(--zoom, 1));
+  height: calc(40px * var(--zoom, 1));
   image-rendering: pixelated;
 }
 /* 36x36: the same scale, centred in a 40px box so every column lines up. */
-.timeline-icon.timeline-icon-unknown {
-  width: calc(36px * var(--zoom));
-  height: calc(36px * var(--zoom));
-  margin: calc(2px * var(--zoom));
+.sector-icon.sector-icon-unknown {
+  width: calc(36px * var(--zoom, 1));
+  height: calc(36px * var(--zoom, 1));
+  margin: calc(2px * var(--zoom, 1));
 }
 .timeline-headline {
   font-weight: bold;

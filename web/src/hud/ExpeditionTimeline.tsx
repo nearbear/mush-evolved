@@ -10,10 +10,10 @@ import type { ExpeditionEvent, ExpeditionReportView, PlanetTag, PlayerView } fro
 import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { announce } from "../announce.ts";
-import { itemIcon, planetTagIcon } from "../art/assets.ts";
-import { useKeyedSprite } from "../art/keyedSprite.ts";
+import { itemIcon } from "../art/assets.ts";
 import { useNames } from "../i18n/names.ts";
 import { useEventLines } from "./ExpeditionReportDialog.tsx";
+import { SectorIcon } from "./SectorIcon.tsx";
 import { latestColumn, timelineColumns, type StepBadge, type TimelineColumn } from "./expeditionTimeline.ts";
 import { useCountdown } from "./useCountdown.ts";
 import { VisibilityBadge } from "./VisibilityBadge.tsx";
@@ -139,19 +139,6 @@ function useSectorName(): (sector: string | null) => string {
           : t(`astro.tags.${sector}` as never, { defaultValue: sector });
 }
 
-/** A sector's icon at whole-pixel scale. The unknown sector's art has no alpha, so its background is keyed out. */
-function TagIcon({ sector }: { sector: string | null }) {
-  // The U-turn leads back to the landing site.
-  const src = planetTagIcon(sector === "U_TURN" ? "LANDING" : sector);
-  const unknown = src === planetTagIcon(null);
-  return unknown ? <KeyedIcon src={src} /> : <img className="timeline-icon" src={src} alt="" draggable={false} />;
-}
-
-function KeyedIcon({ src }: { src: string }) {
-  const url = useKeyedSprite(src);
-  return url ? <img className="timeline-icon timeline-icon-unknown" src={url} alt="" draggable={false} /> : <span className="timeline-icon timeline-icon-unknown" />;
-}
-
 function Column({ column, compact = false }: { column: TimelineColumn; compact?: boolean }) {
   switch (column.kind) {
     case "step":
@@ -174,7 +161,7 @@ function StepColumn({ event, badge, compact }: { event: ExpeditionEvent; badge: 
   const [headline, ...rest] = lines;
   return (
     <div className="timeline-column" data-compact={compact || undefined}>
-      <TagIcon sector={event.sector} />
+      <SectorIcon sector={event.sector} />
       <h3>{sectorName(event.sector)}</h3>
       {badge && <span className={`timeline-badge timeline-badge-${badge}`}>{t(`expedition.timeline.badge.${badge}`)}</span>}
       {headline && <p className="timeline-headline">{headline}</p>}
@@ -209,7 +196,7 @@ function NextColumn({ tag, at }: { tag: PlanetTag | null; at: number | null }) {
   const sectorName = useSectorName();
   return (
     <div className="timeline-column timeline-future">
-      <TagIcon sector={tag} />
+      <SectorIcon sector={tag} />
       <h3>
         {sectorName(tag)}
         {tag !== null && <VisibilityBadge kind="private" leaked={false} text={t("expedition.timeline.nextPrivate")} />}
@@ -229,7 +216,7 @@ function LaterColumn() {
   const { t } = useTranslation();
   return (
     <div className="timeline-column timeline-future">
-      <TagIcon sector={null} />
+      <SectorIcon sector={null} />
       <h3>{t("astro.unknown")}</h3>
       <p className="timeline-headline">{t("expedition.timeline.later")}</p>
     </div>
@@ -240,7 +227,7 @@ function ReturnColumn({ at }: { at: number }) {
   const { t } = useTranslation();
   return (
     <div className="timeline-column timeline-future timeline-return">
-      <span className="timeline-icon" />
+      <span className="sector-icon" />
       <h3>{t("expedition.timeline.return")}</h3>
       <p className="timeline-when">{t("expedition.back", { time: useCountdown(at) })}</p>
     </div>

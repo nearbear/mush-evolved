@@ -887,16 +887,39 @@ li.signal-next {
   color: inherit;
 }
 
-/* Expedition report (ExpeditionReportDialog.tsx): one block per sector, lines under its name. */
-.expedition-events {
+/* Expedition report (ExpeditionReportDialog.tsx), in the terminal frame: one compact row per step, the sector's 40x40
+   icon at 1x, its name and outcome beside it, and the HP each member lost under them; a rule between rows. */
+.report-rows {
+  list-style: none;
   margin: 0;
   padding: 0;
-  list-style: none;
-  display: grid;
-  gap: 8px;
 }
-.expedition-events p {
+.report-row {
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  column-gap: var(--space-2);
+  align-items: start;
+  padding: var(--space-1) 0;
+}
+.report-row + .report-row {
+  border-top: 1px solid var(--edge);
+}
+.report-row-text p {
+  margin: 0;
+}
+.report-row-hp {
+  grid-column: 2;
+  list-style: none;
   margin: 2px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-3);
+  font-size: 0.85rem;
+}
+.report-row-hp span {
+  font-weight: bold;
+  color: var(--danger);
 }
 
 /* A printed document's Read window (DocumentDialog.tsx, #394), in the terminal frame (terminal.css): one row per
