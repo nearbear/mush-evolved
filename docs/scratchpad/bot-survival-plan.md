@@ -54,7 +54,7 @@ Facts: 7 beds for 16 crew (`bed_a_a/b/c` in BEDROOM_A, `bed_b_a/b/c` in BEDROOM_
 
 ### Run A3: bed tiers, with yielding (owner, 2026-11-19)
 
-Tiers, from what a bot can see of itself and of people in its room (skills and titles):
+Tiers (owner, 2026-11-19: all three tiers, the Commander in tier 1), from what a bot can see of itself and of people in its room (skills and titles):
 
 | Tier | Who |
 |---|---|
@@ -64,8 +64,8 @@ Tiers, from what a bot can see of itself and of people in its room (skills and t
 | last | The Shrink (Run A4) |
 
 - **Beds stay full; higher tiers preempt.** No bed is reserved. A bot that arrives at a full bedroom and sees someone of a lower tier lying there asks for a bed and waits in the room.
-- **The ask** (decide at build time, recommend the first): a fixed global line, e.g. `Bed: <name> waiting in <room>`, parsed like the expedition lines; or no line, with the lying bot reacting to a higher-tier bot standing bedless in its room. The line is the explicit ask the owner described and avoids a passing pilot evicting someone; it reveals only the asker's own location, which it chose to share. Run `leak-check` on it either way.
-- **Yield (owner: yes, even before its AP is full).** A lying bot that sees a higher-tier bot in its room asking gets up (`get_up`) and leaves; lowest tier, then the one with the most AP, yields first. The asker then lies down.
+- **The ask (owner, 2026-11-19: a global chat line).** The waiting bot posts a fixed global line, e.g. `Bed: <name> waiting in <room>`, parsed like the expedition lines. Only that line triggers a yield: a higher-tier bot merely standing in or walking through the room must not (owner). The line reveals only the asker's own location, which it chose to share. Run `leak-check` on it.
+- **Yield (owner: yes, even before its AP is full).** A lying bot that reads a bed line from a higher-tier bot it can see in its room gets up (`get_up`) and leaves; lowest tier, then the one with the most AP, yields first. The asker then lies down.
 - **Bar:** Pilots' and the Commander's cycles at low AP during orbits and hunter waves down; patrol sorties and Icarus launches up. **Watch:** morale (lost bed time for tier 3) and the #452 morale work.
 
 ### Run A4: the Shrink takes free beds and says where it is (owner, 2026-11-19; changes #452)
