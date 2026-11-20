@@ -36,6 +36,12 @@ export const REACTOR_BROKEN = "reactor_broken";
 /** The `validate` code for Travel or Leave orbit while an Arack is around (hunters.ts): shown disabled with the reason (`unaffordableActions`). */
 export const ARACK_AROUND = "arack_around";
 
+/** The `validate` code for Board the Icarus or Take off when the orbited planet has no unexplored sector (expeditions.ts): shown disabled with the reason (owner, 2026-11-19). */
+export const EXPLORED = "explored";
+
+/** The `validate` code for Board the Icarus or Take off once the Icarus is lost (expeditions.ts): shown disabled with the reason (owner, 2026-11-19). */
+export const ICARUS_LOST = "icarus_lost";
+
 /**
  * Who learns of an action, for the label on its button (the log entries themselves come from `log.ts`).
  * Declared per action and kept in step with the log call in its `apply`.

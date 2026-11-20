@@ -2,6 +2,7 @@ import { DEFAULT_CONFIG, viewPath, type Plan, type PlayerView } from "@mush2/sha
 import { hasBotSkill } from "../duties.ts";
 import { roomsHolding } from "../itemShare.ts";
 import { activeSharedPlanet } from "../planetShare.ts";
+import { EXPEDITIONS_OVER_LACKS, expeditionsOver } from "../expeditionShare.ts";
 import { orbitExplored } from "../reportShare.ts";
 import { act, canAfford, find, goTo, nearest, offered } from "./blocks.ts";
 import type { BotMemory, Goal, GoalDef, GoalStep } from "./types.ts";
@@ -14,8 +15,12 @@ const CRAFT = DEFAULT_CONFIG.expedition.craft;
 const openExpeditionPlan = (view: PlayerView) =>
   view.plans.find((p) => p.purpose === "expedition" && p.status === "open");
 
-/** Whether sectors may be left to explore: not known to be all explored (`orbitExplored`). */
-const hasKnownUnexplored = (view: PlayerView, memory: BotMemory): boolean => orbitExplored(view, memory) !== true;
+/** Whether sectors may be left to explore: not known to be all explored (`orbitExplored`, `expeditionsOver`). */
+const hasKnownUnexplored = (view: PlayerView, memory: BotMemory): boolean => orbitExplored(view, memory) !== true && !expeditionsOver(view, memory);
+
+/** Board or Take off as offered, leaving out the ones shown disabled because no expedition can launch (owner, 2026-11-19). */
+const launchOffers = (view: PlayerView, type: "board_icarus" | "icarus_takeoff") =>
+  offered(view, type).filter((o) => !o.lacks.some((l) => EXPEDITIONS_OVER_LACKS.includes(l)));
 
 const noTakeoffKey = (view: PlayerView): string => `noTakeoff:${view.navigation.orbitName ?? "orbit"}`;
 
@@ -77,9 +82,9 @@ export const expeditionLaunch: GoalDef = {
     }
 
     if (view.you.room === CRAFT) {
-      if (offered(view, "icarus_takeoff").length === 0) return [];
+      if (launchOffers(view, "icarus_takeoff").length === 0) return [];
     } else if (view.you.room === ICARUS) {
-      if (offered(view, "board_icarus").length === 0 && fetchSpacesuit(view, memory) === null) return [];
+      if (launchOffers(view, "board_icarus").length === 0 && fetchSpacesuit(view, memory) === null) return [];
     } else {
       if (viewPath(view, view.you.room, ICARUS) === null) return [];
       if (!canAfford(view, ICARUS, 0, memory.reserve, memory)) return [];
@@ -99,7 +104,7 @@ function launchGoal(key: string): Goal {
     step(v, m) {
       if (!v.navigation.orbiting || v.expedition !== null) return { kind: "done" };
       if (v.you.room === CRAFT) {
-        const offers = offered(v, "icarus_takeoff");
+        const offers = launchOffers(v, "icarus_takeoff");
         if (offers.length === 0) {
           m.once.add(noTakeoffKey(v));
           return { kind: "done" };

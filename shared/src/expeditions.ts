@@ -33,6 +33,7 @@
 // actions/land_on_planet.ts.
 
 import { endPushToLeave } from "./actions/accommodate.ts";
+import { EXPLORED, ICARUS_LOST } from "./actions/action.ts";
 import { dock } from "./actions/land.ts";
 import { board } from "./actions/takeoff.ts";
 import { damage, killPlayer, type DeathCause } from "./death.ts";
@@ -98,10 +99,10 @@ export const icarusDocked = (state: Readonly<GameState>): boolean => !state.icar
 export function boardRefusal(state: Readonly<GameState>, p: Readonly<PlayerState>): string | null {
   if (!p.alive) return "dead";
   if (p.room !== state.config.expedition.room) return "not_in_bay";
-  if (!icarusDocked(state)) return state.icarusLost ? "icarus_lost" : "icarus_away";
+  if (!icarusDocked(state)) return state.icarusLost ? ICARUS_LOST : "icarus_away";
   const planet = orbitedPlanet(state);
   if (!planet) return "not_in_orbit";
-  if (!hasUnexplored(planet)) return "explored";
+  if (!hasUnexplored(planet)) return EXPLORED;
   if (aboardIcarus(state).length >= maxCrew(state)) return "icarus_full";
   if (needsSpacesuit(planet) && !hasSpacesuit(state, p)) return "no_spacesuit";
   return null;

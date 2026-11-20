@@ -433,6 +433,8 @@
     "lacksPasiphae": "Un patrouilleur ne peut rapatrier des débris qu'une fois le Pasiphae détruit.",
     "lacksReactorTravel": "Le réacteur d'urgence est en panne : le Daedalus ne peut pas voyager tant qu'il n'est pas réparé.",
     "lacksArack": "Un Arack s'est accroché au Daedalus : le vaisseau ne peut pas se déplacer tant qu'il n'est pas abattu.",
+    "lacksExplored": "Tous les secteurs de cette planète ont été explorés : il ne reste rien pour une expédition.",
+    "lacksIcarusLost": "L'Icarus est perdu : plus aucune expédition n'est possible.",
     "lacksReactorTurn": "Le réacteur latéral de ce côté est en panne : le Daedalus ne peut pas tourner de ce côté tant qu'il n'est pas réparé.",
     "lacksPreselection": "Indisponible en pré-sélection : les titres ne sont attribués qu'une fois les Mush choisis.",
     "lacksMp": "Pas assez de PM : cela coûte {{need}}, vous en avez {{have}}.",

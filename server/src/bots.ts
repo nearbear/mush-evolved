@@ -11,6 +11,7 @@ import { repairOxygen } from "./bots/goals/repairOxygen.ts";
 import { newFireMemory, observeFires } from "./bots/fireShare.ts";
 import { newTankMemory, observeTanks } from "./bots/tankShare.ts";
 import { newMoraleMemory, observeMorale } from "./bots/moraleShare.ts";
+import { newExpeditionEndMemory, observeExpeditionEnd } from "./bots/expeditionShare.ts";
 import { newItemMemory, observeItems } from "./bots/itemShare.ts";
 import { holdStartCycle, isHoldingJump, newJumpMemory } from "./bots/planetShare.ts";
 import { newReportMemory, observeReports } from "./bots/reportShare.ts";
@@ -155,6 +156,7 @@ export class GoalBot implements Bot {
       fires: newFireMemory(),
       tanks: newTankMemory(),
       morale: newMoraleMemory(),
+      expeditionEnd: newExpeditionEndMemory(),
       combustion: null,
       holdSince: null,
       jump: newJumpMemory(),
@@ -192,6 +194,7 @@ export class GoalBot implements Bot {
       fires: { active: m.fires.active, burning: [...m.fires.burning], checked: [...m.fires.checked], seq: m.fires.seq },
       tanks: { broken: [...m.tanks.broken], suspect: [...m.tanks.suspect], claims: [...m.tanks.claims], seq: m.tanks.seq },
       morale: { said: m.morale.said, requests: [...m.morale.requests], seq: m.morale.seq },
+      expeditionEnd: { done: [...m.expeditionEnd.done], noIcarus: m.expeditionEnd.noIcarus, said: [...m.expeditionEnd.said], seq: m.expeditionEnd.seq },
       combustion: m.combustion,
       holdSince: m.holdSince,
       jump: { ...m.jump },
@@ -229,6 +232,7 @@ export class GoalBot implements Bot {
     Object.assign(m.fires, { active: s.fires.active, burning: new Set(s.fires.burning), checked: new Set(s.fires.checked), seq: s.fires.seq });
     Object.assign(m.tanks, { broken: new Set(s.tanks.broken), suspect: new Set(s.tanks.suspect), claims: new Map(s.tanks.claims), seq: s.tanks.seq });
     Object.assign(m.morale, { said: s.morale.said, requests: new Map(s.morale.requests), seq: s.morale.seq });
+    Object.assign(m.expeditionEnd, { done: new Set(s.expeditionEnd.done), noIcarus: s.expeditionEnd.noIcarus, said: new Set(s.expeditionEnd.said), seq: s.expeditionEnd.seq });
     m.combustion = s.combustion;
     m.holdSince = s.holdSince;
     Object.assign(m.jump, s.jump);
@@ -296,7 +300,9 @@ export class GoalBot implements Bot {
     const sharedReport = observeReports(view, this.memory, !fires.post && !tanks.post);
     // A request for comfort (moraleShare.ts, #452), when the bot's own morale just dropped low.
     const askComfort = observeMorale(view, this.memory);
-    const report = fires.post ?? tanks.post ?? askComfort ?? sharedReport ?? observeItems(view, this.memory);
+    // Expeditions over (expeditionShare.ts, owner 2026-11-19): a disabled Board or Take off seen in the bay, for the Commander.
+    const expeditionEnd = observeExpeditionEnd(view, this.memory, !fires.post && !tanks.post && !askComfort && !sharedReport);
+    const report = fires.post ?? tanks.post ?? askComfort ?? sharedReport ?? expeditionEnd ?? observeItems(view, this.memory);
     if (report) {
       this.social = report;
       return null;

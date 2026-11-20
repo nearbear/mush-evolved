@@ -35,6 +35,7 @@ import { helpGoal, helpTasks } from "../src/bots/goals/help.ts";
 import type { BotMemory, GoalDef } from "../src/bots/goals/types.ts";
 import { BOT_MEMORY_VERSION } from "../src/bots/memoryStore.ts";
 import { formatFireLine, newFireMemory, observeFires, parseFireLine } from "../src/bots/fireShare.ts";
+import { EXPEDITION_NO_ICARUS_LINE, formatExpeditionDone, newExpeditionEndMemory, observeExpeditionEnd } from "../src/bots/expeditionShare.ts";
 import { COMFORTS_PER_REQUEST, MORALE_LOW_LINE, newMoraleMemory, observeMorale } from "../src/bots/moraleShare.ts";
 import { comfort } from "../src/bots/goals/comfort.ts";
 import { FIERY_SPEECH_AUDIENCE, fierySpeech } from "../src/bots/goals/fierySpeech.ts";
@@ -141,6 +142,7 @@ const memory = (scripted = true) => ({
   fires: newFireMemory(),
   tanks: newTankMemory(),
   morale: newMoraleMemory(),
+  expeditionEnd: newExpeditionEndMemory(),
   combustion: null as number | null,
   holdSince: null as number | null,
   jump: newJumpMemory(),
@@ -1689,6 +1691,24 @@ describe("travel: the Commander leaves orbit (#417)", () => {
     expect(travel.options(viewFor({ ...game, titles: { ...game.titles, commander: null } }, id), explored())).toEqual([]);
   });
 
+  it("leaves once a bot in the bay said the planet is done or the Icarus lost, with no shared report (owner, 2026-11-19)", () => {
+    const { game, id } = inOrbit();
+    const noReports = { ...game, sharedReports: [] };
+    expect(travel.options(viewFor(noReports, id), memory())).toEqual([]);
+    const done = memory();
+    done.expeditionEnd.done.add("Orbis");
+    expect(travel.options(viewFor(noReports, id), done)).toHaveLength(1);
+    const elsewhere = memory();
+    elsewhere.expeditionEnd.done.add("Elsewhere");
+    expect(travel.options(viewFor(noReports, id), elsewhere)).toEqual([]);
+    const lost = memory();
+    lost.expeditionEnd.noIcarus = true;
+    expect(travel.options(viewFor(noReports, id), lost)).toHaveLength(1);
+    // The other conditions stay: nobody out in a ship.
+    const flying = edit(noReports, noReports.players.find((p) => p.id !== id && p.alive)!.id, (p) => (p.room = "ICARUS_CRAFT"));
+    expect(travel.options(viewFor(flying, id), done)).toEqual([]);
+  });
+
   it("checks the chamber, loads 1 fuel, and leaves orbit from the bridge", async () => {
     const { game, id } = inOrbit();
     const fuel = game.ship.fuel;
@@ -2961,6 +2981,45 @@ describe("expeditionLaunch: Pilot walks to ICARUS, summons open plan, and launch
     expect(expeditionLaunch.options(viewFor(otherPilot, crew), memory())).toEqual([]);
 
     expect(expeditionLaunch.options(viewFor(game, pilot), memory())).toHaveLength(1);
+  });
+
+  it("a bot in the bay of a fully explored planet posts `Expedition: done at` once, and nobody repeats it (owner, 2026-11-19)", () => {
+    const { game: start, pilot, crew } = orbitSetup({ sectors: [{ tag: "FOREST", explored: true }] });
+    // Out of the bay it sees nothing.
+    expect(observeExpeditionEnd(viewFor(start, pilot), memory())).toBeNull();
+    let game = edit(start, pilot, (p) => (p.room = ICARUS_BAY));
+    game = edit(game, crew, (p) => (p.room = ICARUS_BAY));
+    const m = memory();
+    // Held back while another message goes out this turn, posted on the next.
+    expect(observeExpeditionEnd(viewFor(game, pilot), m, false)).toBeNull();
+    expect(m.expeditionEnd.done.has("Orbis")).toBe(true);
+    const line = observeExpeditionEnd(viewFor(game, pilot), m);
+    expect(line).toEqual({ type: "chat", channel: "global", text: formatExpeditionDone("Orbis") });
+    expect(observeExpeditionEnd(viewFor(game, pilot), m)).toBeNull();
+    expect(isMachineLine(formatExpeditionDone("Orbis"))).toBe(true);
+    // The launch goal no longer goes for a disabled Board.
+    expect(expeditionLaunch.options(viewFor(suited(game, pilot), pilot), memory())).toEqual([]);
+
+    const said = applyInput(game, { type: "chat", channel: "global", text: formatExpeditionDone("Orbis"), by: pilot });
+    if (!said.ok) throw new Error("chat failed");
+    const other = memory();
+    expect(observeExpeditionEnd(viewFor(said.state, crew), other)).toBeNull();
+    expect(other.expeditionEnd.done.has("Orbis")).toBe(true);
+  });
+
+  it("a bot in the bay after the Icarus is lost posts `Expedition: no Icarus`; a Pilot aboard on a done planet stops waiting", () => {
+    const { game: start, pilot } = orbitSetup();
+    const lost = { ...edit(start, pilot, (p) => (p.room = ICARUS_BAY)), icarusLost: true };
+    const m = memory();
+    expect(observeExpeditionEnd(viewFor(lost, pilot), m)?.text).toBe(EXPEDITION_NO_ICARUS_LINE);
+    expect(m.expeditionEnd.noIcarus).toBe(true);
+    expect(isMachineLine(EXPEDITION_NO_ICARUS_LINE)).toBe(true);
+    expect(expeditionLaunch.options(viewFor(lost, pilot), m)).toEqual([]);
+
+    const done = orbitSetup({ sectors: [{ tag: "FOREST", explored: true }] });
+    const aboard = edit(done.game, done.pilot, (p) => (p.room = ICARUS_CRAFT));
+    expect(viewFor(aboard, done.pilot).actions.find((o) => o.action.type === "icarus_takeoff")?.lacks).toEqual(["explored"]);
+    expect(expeditionLaunch.options(viewFor(aboard, done.pilot), memory())).toEqual([]);
   });
 
   it("walks to ICARUS, summons, gives the crew the cycle to board, then boards and launches from inside", async () => {

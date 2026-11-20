@@ -11,7 +11,7 @@ import { bindPerformAction } from "./actions/summon.ts";
 import { cheatFuelPlanet } from "./actions/warp_to_planet.ts";
 import { applyCheats, makeHuman, shipInvincible, type Cheat, type RoleCheat } from "./cheats.ts";
 import { ACTIONS, actionVisibility, type ActionDef } from "./actions.ts";
-import { ARACK_AROUND, AT_CAPACITY, COOLDOWN, DIRTY, IN_PRESELECTION, NO_DEBRIS, NO_SPACE, PASIPHAE_INTACT, REACTOR_BROKEN } from "./actions/action.ts";
+import { ARACK_AROUND, AT_CAPACITY, COOLDOWN, DIRTY, EXPLORED, ICARUS_LOST, IN_PRESELECTION, NO_DEBRIS, NO_SPACE, PASIPHAE_INTACT, REACTOR_BROKEN } from "./actions/action.ts";
 import { getUp } from "./actions/lie_down.ts";
 import { isNimble } from "./actions/nimble.ts";
 import { researchNeedsView } from "./actions/research.ts";
@@ -304,8 +304,14 @@ const UNAFFORDABLE_REASONS = new Set<string>([
   ARACK_AROUND,
 ]);
 
+/** Board the Icarus and Take off show disabled on a fully explored planet or a lost Icarus (owner, 2026-11-19), not hidden. */
+const ICARUS_ACTIONS = new Set<Action["type"]>(["board_icarus", "icarus_takeoff"]);
+
 const isUnaffordableReason = (action: Action, refused: string | null): refused is string =>
-  refused !== null && (UNAFFORDABLE_REASONS.has(refused) || (action.type === "hack" && refused === IN_PRESELECTION));
+  refused !== null &&
+  (UNAFFORDABLE_REASONS.has(refused) ||
+    (action.type === "hack" && refused === IN_PRESELECTION) ||
+    (ICARUS_ACTIONS.has(action.type) && (refused === EXPLORED || refused === ICARUS_LOST)));
 
 function actionOption(state: GameState, p: PlayerState, def: ActionDef<Action>, a: Action, lacks: ActionOption["lacks"]): ActionOption {
   return {
@@ -328,6 +334,8 @@ function unaffordableOption(state: GameState, p: PlayerState, def: ActionDef<Act
     ...(refused === PASIPHAE_INTACT ? (["pasiphae"] as const) : []),
     ...(refused === REACTOR_BROKEN ? (["reactor"] as const) : []),
     ...(refused === ARACK_AROUND ? (["arack"] as const) : []),
+    ...(refused === EXPLORED ? (["explored"] as const) : []),
+    ...(refused === ICARUS_LOST ? (["icarusLost"] as const) : []),
     ...(refused === DIRTY ? (["clean"] as const) : []),
     ...(refused === NO_SPACE ? (["space"] as const) : []),
     ...(refused === COOLDOWN ? (["cooldown"] as const) : []),

@@ -6,6 +6,7 @@ import { newFireMemory } from "../src/bots/fireShare.ts";
 import { formatItemLine, newItemMemory, observeItems, parseItemLine, roomsHolding, SHARED_ITEMS } from "../src/bots/itemShare.ts";
 import { newJumpMemory } from "../src/bots/planetShare.ts";
 import { exploredOn, exploredSectors, formatReportShare, newReportMemory, observeReports, parseReportShare } from "../src/bots/reportShare.ts";
+import { newExpeditionEndMemory } from "../src/bots/expeditionShare.ts";
 import { newMoraleMemory } from "../src/bots/moraleShare.ts";
 import { newTankMemory } from "../src/bots/tankShare.ts";
 import { seats } from "../src/testing/fakes.ts";
@@ -28,6 +29,7 @@ const makeMemory = (): BotMemory => ({
   fires: newFireMemory(),
   tanks: newTankMemory(),
   morale: newMoraleMemory(),
+  expeditionEnd: newExpeditionEndMemory(),
   combustion: null,
   holdSince: null,
   jump: newJumpMemory(),

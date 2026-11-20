@@ -4,6 +4,7 @@
 
 import type { FireMemory } from "../fireShare.ts";
 import type { TankMemory } from "../tankShare.ts";
+import type { ExpeditionEndMemory } from "../expeditionShare.ts";
 import type { MoraleMemory } from "../moraleShare.ts";
 import type { ItemMemory } from "../itemShare.ts";
 import type { JumpMemory } from "../planetShare.ts";
@@ -85,6 +86,8 @@ export interface BotMemory {
   readonly tanks: TankMemory;
   /** Whether this bot asked for comfort, and (for a Shrink) who asked and how often it comforted them (`moraleShare.ts`, #452). */
   readonly morale: MoraleMemory;
+  /** Planets known to be fully explored and whether the Icarus is lost, from the bay or a fixed line (`expeditionShare.ts`). */
+  readonly expeditionEnd: ExpeditionEndMemory;
   /** Last fuel reading the Commander saw in the combustion chamber (`null` if unknown or cleared by traveling, #421). */
   combustion: number | null;
   /** Cycle when the Commander started holding the jump (`null` when not holding, #421); `"Jump: off"` clears it. */

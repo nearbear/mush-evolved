@@ -1,5 +1,6 @@
 import { DEFAULT_CONFIG, FUEL_CAPSULE_ITEM, PLANET_DIRECTIONS, type Action, type PlanetDirection, type PlayerView, type RoomId } from "@mush2/shared";
 import { dutyPriority, holdsTrigger } from "../duties.ts";
+import { expeditionsOver } from "../expeditionShare.ts";
 import { orbitExplored } from "../reportShare.ts";
 import { CANCEL_HOLD_LINE, HOLD_JUMP_LINE, JUMP_NOW_LINE, crewAboard, holdStartCycle, isHoldingJump, isJumpDue, jumpNowCycle, parsePlanetShare, type SharedPlanetInfo } from "../planetShare.ts";
 import { act, failed, find, goTo, nearest, offered, rawCanAfford, roomsWith, where } from "./blocks.ts";
@@ -334,9 +335,11 @@ function travelGoal(view: PlayerView, _memory: BotMemory, bridge: RoomId, initia
  * orbit, every sector of the planet explored by the shared reports it has read (`orbitExplored`), no expedition under
  * way and nobody out in a patrol ship or the Icarus (`crewAboard`): leaving strands an expedition and loses ships in flight.
  * Crew lost on the planet are left behind (owner, 2026-11-15): with every sector explored no expedition would find them.
+ * Also once a bot in the bay said no expedition can launch (`expeditionsOver`, owner 2026-11-19): every sector explored
+ * or the Icarus lost, which covers a report that never comes (its explorer died, or a sector was added mid-orbit).
  */
 export function readyToLeaveOrbit(view: PlayerView, memory: BotMemory): boolean {
-  return view.navigation.orbiting && view.expedition === null && orbitExplored(view, memory) === true && crewAboard(view);
+  return view.navigation.orbiting && view.expedition === null && (orbitExplored(view, memory) === true || expeditionsOver(view, memory)) && crewAboard(view);
 }
 
 /**

@@ -81,6 +81,24 @@ export function lossReport(results: readonly SurvivalResult[], repairBelow: numb
   };
   lines.push(`coffee per run: ${per(total((r) => r.coffeePulled ?? 0), n, 1)} pulled, ${per(total((r) => r.coffeeJunkie ?? 0), n, 1)} drunk by a Caffeine Junkie, ${per(total((r) => r.coffeeOthers ?? 0), n, 1)} by others; ${per(total((r) => r.junkieMeals ?? 0), n, 1)} other meals for a Caffeine Junkie`);
   lines.push(`oxygen pipeline, first cycle: a planet found ${median(runs.map((r) => firstCycle(r, (c) => (c.planets ?? 0) > 0)))}; one with an Oxygen sector ${median(runs.map((r) => firstCycle(r, (c) => (c.oxygenPlanets ?? 0) > 0)))}; a destination shared ${median(runs.map((r) => firstCycle(r, (c) => (c.shares ?? 0) > 0)))}; a jump ${median(runs.map((r) => firstCycle(r, (c) => (c.jumps ?? 0) > 0)))}; in orbit ${median(runs.map((r) => firstCycle(r, (c) => c.orbit === true)))}; in orbit of an Oxygen planet ${median(runs.map((r) => firstCycle(r, (c) => c.orbitOxygen === true)))}; an expedition ${median(runs.map((r) => firstCycle(r, (c) => (c.expeditions ?? 0) > 0)))} (${per(total((r) => r.expeditions ?? 0), n, 1)} a run); oxygen from an expedition ${median(runs.map((r) => firstCycle(r, (c) => (c.oxygenIn?.expedition ?? 0) > 0)))}; oxygen at 0 ${median(runs.map((r) => firstCycle(r, (c) => c.oxygen === 0)))}`);
+  // Jumps and orbits: why the ship moved when it did, and what each stay at a planet brought.
+  const jumps = runs.flatMap((r) => r.jumpLog ?? []);
+  if (jumps.length > 0) {
+    const mid = (xs: readonly number[]): string => (xs.length === 0 ? "-" : String([...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)]));
+    const kind = (j: (typeof jumps)[number]): string => (j.hunters >= 5 ? "hunters" : j.oxygen <= 8 ? "oxygen" : j.heldFor === null ? "no hold" : j.heldFor >= 4 * day ? "4 days" : "other");
+    for (const [name, js] of [["to a planet", jumps.filter((j) => j.toPlanet)], ["escape", jumps.filter((j) => !j.toPlanet)]] as const) {
+      const why: Record<string, number> = {};
+      for (const j of js) why[kind(j)] = (why[kind(j)] ?? 0) + 1;
+      lines.push(`jumps ${name}: ${per(js.length, n, 1)} a run; trigger ${Object.entries(why).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${v}`).join(", ") || "none"}; held median ${mid(js.flatMap((j) => (j.heldFor === null ? [] : [j.heldFor])))} cycles; oxygen before median ${mid(js.map((j) => j.oxygen))}; planets held ${per(sum(js.map((j) => j.planets)), js.length, 1)} each, ${per(sum(js.map((j) => j.astroFree)), js.length, 1)} free astro slots${name === "to a planet" ? `; ${js.filter((j) => j.oxygenSectors > 0).length} to a planet with an Oxygen sector` : ""}`);
+    }
+  }
+  const orbits = runs.flatMap((r) => (r.orbitLog ?? []).map((o) => ({ ...o, to: o.to ?? r.cycle })));
+  if (orbits.length > 0) {
+    const ox = orbits.filter((o) => o.oxygenSectors > 0);
+    lines.push(`orbits: ${per(orbits.length, n, 1)} a run, ${per(sum(orbits.map((o) => o.to - o.from)), orbits.length, 1)} cycles each; with an Oxygen sector ${ox.length} (${per(sum(ox.map((o) => o.oxygenSectors)), ox.length, 1)} sectors each, ${per(sum(ox.map((o) => o.expeditions)), ox.length, 1)} expeditions, ${per(sum(ox.map((o) => o.oxygen)), ox.length, 1)} oxygen each); without ${orbits.length - ox.length}; cycles in orbit ${per(sum(orbits.map((o) => o.to - o.from)), rows.length)} of all`);
+    const done = orbits.filter((o) => o.allExplored !== undefined);
+    lines.push(`orbits explored out: ${done.length} of ${orbits.length}, staying ${per(sum(done.map((o) => o.to - o.allExplored!)), done.length, 1)} cycles after (${per(sum(done.map((o) => o.to - o.allExplored!)), n, 1)} a run, ${done.filter((o) => o.to - o.allExplored! >= 8).length} stays of a day or more)`);
+  }
   lines.push("by cycle (mean over the runs still going): cycle, runs, hull, hunters, fires, alive, oxygen, morale, at 0, at 3 or less");
   const last = Math.max(...rows.map((r) => r.cycle));
   for (let cycle = 4; cycle <= last; cycle += 4) {

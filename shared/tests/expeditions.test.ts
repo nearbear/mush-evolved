@@ -106,11 +106,14 @@ describe("expeditions, phase 1 (instant, as in single player)", () => {
   });
 
   it("boarding is refused out of the bay, with the Icarus away or lost, out of orbit, all explored, full, or suitless on an airless planet", () => {
+    // All explored and Icarus lost show disabled with the reason (owner, 2026-11-19); the others are hidden.
+    const shown: Record<string, string> = { explored: "explored", icarus_lost: "icarusLost" };
     const s = game({ tags: ["FOREST", "DESERT"] });
     const refused = (t: GameState, id: PlayerId, error: string) => {
       expect(offered(t, id)).not.toContainEqual(boardIcarus);
       expect(applyAction(t, id, boardIcarus).ok).toBe(false);
       expect(why(t, id, boardIcarus)).toBe(error);
+      expect(option(t, id, boardIcarus)?.lacks).toEqual(shown[error] ? [shown[error]] : undefined);
     };
     refused(s, "p4", "no_icarus");
 
@@ -191,6 +194,12 @@ describe("expeditions, phase 1 (instant, as in single player)", () => {
     for (const sector of done.planets.p5![0]!.sectors) sector.explored = true;
     expect(offered(done, "p0")).not.toContainEqual(takeoff);
     expect(applyAction(done, "p0", takeoff).ok).toBe(false);
+    // Shown disabled with the reason (owner, 2026-11-19), to a pilot only: the grounded still see nothing.
+    expect(option(done, "p0", takeoff)?.lacks).toEqual(["explored"]);
+    const doneP1 = player(done, "p1");
+    if (doneP1.role === "mush") doneP1.role = "human";
+    addDisease(done, doneP1, "gastroenteritis_disease");
+    expect(option(done, "p1", takeoff)).toBeUndefined();
   });
 
   it("an illegal takeoff leaves the state unchanged", () => {

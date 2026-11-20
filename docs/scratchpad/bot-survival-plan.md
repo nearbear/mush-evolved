@@ -1,6 +1,6 @@
 # Bot survival: oxygen, orbits and beds
 
-Owner decisions of 2026-11-19. Run A is built (uncommitted at the time of writing, see below); everything after it is not. Method: the `bot-strategy` skill (one change per run, same seeds, measured against the run before).
+Owner decisions of 2026-11-19. Run A is built and committed; everything after it is not. Method: the `bot-strategy` skill (one change per run, same seeds, measured against the run before).
 
 Order of work: Run A (done) → **Run A2 (bedroom loop)** → **Run A3 (bed tiers)** → **Run A4 (Shrink beds and announcement)** → Run B onward as before. The bed runs came out of tracing Run A's remaining orbit stays (below).
 
@@ -32,14 +32,14 @@ Run in this order, one change per run, on seeds 1–50 with `--report`, each sav
 - **Commander:** leaves orbit on that line, as well as on the shared reports it reads today. The other conditions stay: no expedition out, everyone aboard.
 - **Bar:** cycles in orbit after every sector was explored, 11.0 a run, near 0; stays of a day or more, 18, near 0.
 
-**Status: built, short of the bar.** Cycles in orbit after every sector was explored 11.0 → 6.6 a run; stays of a day or more 18 → 11; seed 1's worst stay 49 → 17 cycles; endings, days and oxygen in unchanged. Saved as `survival-runA-2026-11-19.json` (10-seed smoke: `survival-runA-smoke-2026-11-19.json`). The Run A work (rules, `expeditionShare.ts`, harness trace, docs) sits uncommitted in the main checkout next to an unrelated UI session's changes; commit it on its own before Run A2.
+**Status: built, short of the bar.** Cycles in orbit after every sector was explored 11.0 → 6.6 a run; stays of a day or more 18 → 11; seed 1's worst stay 49 → 17 cycles; endings, days and oxygen in unchanged. Saved as `survival-runA-2026-11-19.json` (10-seed smoke: `survival-runA-smoke-2026-11-19.json`).
 
 **Correction to Run A's reading.** The Run A session wrote (in `docs/plans/bot-goals.md`'s Run A bullet) that Jinsu, the Commander and a Pilot, stays at 1 AP because he spends it on patrol ships and turrets. A per-action trace of seed 1 (cycles 22–31 at Natodon) disproves that for seed 1: hunters were 0 most of the stay, patrol already needs 9 AP (`SCRIPTED_PATROL_AP`) and ranks below `travel` (75 vs 77). What actually happened:
 
 1. **Bedroom loop.** Both bedrooms (3 beds each) were full. `rest` learns a bed is free only on arrival, and `memory.ended` clears every cycle, so each cycle he walked Bedroom A → Bedroom B → wander (`explore`), spending the 1 AP he'd just gained. He stayed at 0–1 AP.
 2. **Leave-orbit chain underestimated.** `travel`'s leave-orbit option checks only "bridge reachable with 1 AP" (`rawCanAfford`), but the goal first walks to the Motor Room to check the combustion chamber (and loads fuel if short). `leavesBed` gets a resting bot up as soon as the option is offered. At cycle 29 he had 3 AP, got up, walked toward the Motor Room, ran short, the goal failed, and he went back to the bedroom loop.
 
-Fix the Run A bullet in `bot-goals.md` when Run A is committed: replace the "patrol ships and turrets" reading with the two points above. Seeds 13, 31 and 41 were not retraced; trace them (temporarily log each Commander action in `survival.ts`'s bot loop under `--verbose`, or add it to the trace for good) before assuming they share this cause.
+The Run A bullet in `bot-goals.md` now carries this corrected reading. Seeds 13, 31 and 41 were not retraced; trace them (temporarily log each Commander action in `survival.ts`'s bot loop under `--verbose`, or add it to the trace for good) before assuming they share this cause.
 
 Still open from Run A: once every Pilot is dead, sectors can be left with nobody able to launch; Board stays legal for non-pilots, so nothing turns disabled and no line goes out (seed 1's last orbit). And the leak-check's question: during a patrol-ship landing, someone in the bay can see Board turn to "explored" before the pilot's report arrives (the hidden button gave the same away before). Neither is decided; ask the owner.
 

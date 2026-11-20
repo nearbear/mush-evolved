@@ -433,6 +433,8 @@
     "lacksPasiphae": "Una nave patrulla solo puede recoger restos cuando el Pasiphae ha sido destruido.",
     "lacksReactorTravel": "El reactor de emergencia está averiado: el Daedalus no puede viajar hasta que lo reparen.",
     "lacksArack": "Un Arack se ha aferrado al Daedalus: la nave no puede moverse hasta que lo derriben.",
+    "lacksExplored": "Todos los sectores de este planeta han sido explorados: no queda nada para una expedición.",
+    "lacksIcarusLost": "El Ícaro se ha perdido: ya no hay más expediciones.",
     "lacksReactorTurn": "El reactor lateral de este lado está averiado: el Daedalus no puede girar hacia este lado hasta que lo reparen.",
     "lacksPreselection": "No disponible durante la preselección: los títulos no se asignan hasta que se elijan los Mush.",
     "lacksMp": "No tienes suficientes PM: cuesta {{need}} y tienes {{have}}.",

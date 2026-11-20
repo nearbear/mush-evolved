@@ -40,6 +40,7 @@ export interface BotMemorySnapshot {
   fires: { active: number; burning: RoomId[]; checked: RoomId[]; seq: number };
   tanks: { broken: RoomId[]; suspect: RoomId[]; claims: [RoomId, { by: PlayerId; cycle: number }][]; seq: number };
   morale: { said: boolean; requests: [PlayerId, number][]; seq: number };
+  expeditionEnd: { done: string[]; noIcarus: boolean; said: string[]; seq: number };
   combustion: number | null;
   holdSince: number | null;
   jump: JumpMemory;
