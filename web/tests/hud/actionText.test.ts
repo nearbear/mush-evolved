@@ -67,6 +67,12 @@ describe("describeAction", () => {
     expect(describeAction(view, fakeNames, "AP", { type: "punch", target: "p1" })).toBe("punch frieda");
   });
 
+  it("describes issue_mission with its subordinate's name", () => {
+    const other = { id: "p1", character: "frieda" } as OtherPlayerView;
+    const view = mockView({ players: [other] });
+    expect(describeAction(view, fakeNames, "AP", { type: "issue_mission", subordinate: "p1" })).toBe("issue_mission frieda");
+  });
+
   it("describes an action targeting yourself", () => {
     const view = mockView();
     expect(describeAction(view, fakeNames, "AP", { type: "heal", target: "p0" } as unknown as Action)).toBe("heal jinsu");

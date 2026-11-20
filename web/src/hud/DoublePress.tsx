@@ -11,7 +11,7 @@ import type { Action } from "@mush2/shared";
  * Action types too inconsequential to need the second press (owner, 2026-11-14): free, and undone by closing a window.
  * `access` only opens a terminal's window (and sits you at it).
  */
-export const SINGLE_PRESS_ACTIONS: ReadonlySet<Action["type"]> = new Set<Action["type"]>(["access", "throw_out"]);
+export const SINGLE_PRESS_ACTIONS: ReadonlySet<Action["type"]> = new Set<Action["type"]>(["access", "throw_out", "issue_mission"]);
 
 /** A mouse or touch double press must land within this, like the usual OS double-click speed. */
 export const DOUBLE_PRESS_MS = 500;

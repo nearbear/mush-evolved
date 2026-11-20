@@ -118,6 +118,7 @@ const ACTION_NAME_KEYS = {
   anathema: "actions.anathema",
   protect: "actions.protect",
   coup: "actions.coup",
+  issue_mission: "actions.issueMission",
   fiery_speech: "actions.fierySpeech",
   boring_speech: "actions.boringSpeech",
   attack: "actions.attack",

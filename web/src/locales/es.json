@@ -393,6 +393,7 @@
     "anathema": "Lanzar el anatema",
     "protect": "Proteger",
     "coup": "Dar un golpe",
+    "issueMission": "Dar una misión",
     "fierySpeech": "Discurso enardecido",
     "boringSpeech": "Discurso aburrido",
     "attack": "Atacar",
@@ -422,6 +423,7 @@
     "chance": "({{percent}} %)",
     "paidBy": ", cuesta uno de tus {{resource}}",
     "atCapacity": "Capacidad máxima: los Mush ya han extraído todas las esporas posibles hoy. El límite se reinicia al día siguiente.",
+    "missionIssuedToday": "Ya se ha dado una misión hoy. El límite se reinicia al día siguiente.",
     "lacksAp": "No tienes suficientes PA: cuesta {{need}} y tienes {{have}}.",
     "onCooldown_one": "Lista de nuevo en {{count}} ciclo.",
     "onCooldown_other": "Lista de nuevo en {{count}} ciclos.",
@@ -1331,11 +1333,19 @@
     "fireExtinguished": "¡{{name}} ha apagado el incendio!",
     "extinguishFailed": "No has conseguido apagar el incendio.",
     "reportShared": "{{name}} ha compartido el informe de la expedición a {{planet}}.",
-    "reportShareAppended": "{{name}} ha completado el informe compartido de la expedición a {{planet}}."
+    "reportShareAppended": "{{name}} ha completado el informe compartido de la expedición a {{planet}}.",
+    "missionIssued": "Has dado una misión a {{target}}.",
+    "missionReceived": "El Comandante te ha dado una misión: +{{amount}} PA."
   },
   "throwOut": {
     "confirm": "¿A qué sala echar a {{name}}?",
     "back": "Volver"
+  },
+  "issueMission": {
+    "title": "Dar una misión",
+    "close": "Cerrar",
+    "pick": "Elige un tripulante (+{{amount}} PA):",
+    "confirm": "Dar una misión"
   },
   "skills": {
     "title": "Elegir una habilidad",

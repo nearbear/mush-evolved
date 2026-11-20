@@ -776,6 +776,7 @@ describe("actions from a client", () => {
     anathema: [{ type: "anathema", target: "p1" }],
     protect: [{ type: "protect", target: "p1" }],
     coup: [{ type: "coup", equipment: "NEXUS_ROOM:NERON_CORE" }],
+    issue_mission: [{ type: "issue_mission", subordinate: "p1" }],
     fiery_speech: [{ type: "fiery_speech" }],
     boring_speech: [{ type: "boring_speech" }],
     attack: [{ type: "attack", weapon: "i1", target: "p1" }, { type: "attack", weapon: "i1" }],

@@ -117,6 +117,8 @@ export interface GameCore {
   ship: ShipResources;
   /** Spores the Mush faction has extracted today; reset at each day boundary. Hidden from everyone. */
   sporesToday: number;
+  /** Whether the Commander has issued a mission today (issue_mission.ts, #462); reset at each day boundary. Never sent. */
+  missionIssuedToday: boolean;
   /** The cycle each Mush last spiked, for the per-Mush spike cooldown. Hidden from everyone. */
   spikedOn: Record<PlayerId, number>;
   /** Percent done of each research that has been started (absent = 0), by research id (research.ts): the best arrangement of its verified samples (assay.ts). Only the living in the lab see it until it is complete. */

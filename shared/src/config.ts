@@ -278,6 +278,8 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   anathema: { cost: { ap: 1 }, successFactor: 0.8 },
   // Owner, 2026-11-12: the Politician's Coup costs 3 AP and has a 50% chance to make the actor dirty.
   coup: { cost: { ap: 3 }, dirtyChance: 0.5 },
+  // Owner, 2026-11-18 (#462): the Commander's Issue mission costs 1 AP and grants a crewmate 3 AP (capped at max), once per ship per day.
+  commanderMission: { cost: { ap: 1 }, apGranted: 3 },
   // Owner, 2026-10-24 (eMushpedia): the Leader's Fiery speech (2 AP, +2 morale each) and the Motivator's Boring speech (2 AP, +3 MP each, once a day).
   speech: { fiery: { ap: 2, morale: 2 }, boring: { ap: 2, mp: 3 } },
   // Owner, 2026-10-24 (eMushpedia Confident, Bourreau; actions.json TORTURE): Chitchat costs 1 AP once a day and gives

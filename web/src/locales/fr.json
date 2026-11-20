@@ -393,6 +393,7 @@
     "anathema": "Jeter l'anathème",
     "protect": "Protéger",
     "coup": "Fomenter un putsch",
+    "issueMission": "Donner une mission",
     "fierySpeech": "Discours enflammé",
     "boringSpeech": "Discours barbant",
     "attack": "Attaquer",
@@ -422,6 +423,7 @@
     "chance": "({{percent}} %)",
     "paidBy": ", coûte un de vos {{resource}}",
     "atCapacity": "Capacité atteinte : les Mush ont déjà extrait toutes les spores possibles aujourd'hui. La limite se réinitialise au jour suivant.",
+    "missionIssuedToday": "Une mission a déjà été donnée aujourd'hui. La limite se réinitialise au jour suivant.",
     "lacksAp": "Pas assez de PA : cela coûte {{need}}, vous en avez {{have}}.",
     "onCooldown_one": "De nouveau prête dans {{count}} cycle.",
     "onCooldown_other": "De nouveau prête dans {{count}} cycles.",
@@ -1331,11 +1333,19 @@
     "fireExtinguished": "{{name}} a éteint l'incendie !",
     "extinguishFailed": "Vous n'avez pas réussi à éteindre l'incendie.",
     "reportShared": "{{name}} a partagé le rapport de l'expédition sur {{planet}}.",
-    "reportShareAppended": "{{name}} a complété le rapport partagé de l'expédition sur {{planet}}."
+    "reportShareAppended": "{{name}} a complété le rapport partagé de l'expédition sur {{planet}}.",
+    "missionIssued": "Vous avez donné une mission à {{target}}.",
+    "missionReceived": "Le Commandant vous a donné une mission : +{{amount}} PA."
   },
   "throwOut": {
     "confirm": "Dans quelle salle jeter {{name}} ?",
     "back": "Retour"
+  },
+  "issueMission": {
+    "title": "Donner une mission",
+    "close": "Fermer",
+    "pick": "Choisissez un membre d'équipage (+{{amount}} PA) :",
+    "confirm": "Donner une mission"
   },
   "skills": {
     "title": "Choisir une compétence",

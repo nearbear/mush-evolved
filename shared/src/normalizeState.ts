@@ -1142,6 +1142,8 @@ export function normalizeCore(raw: Partial<GameCore>, _ctx: NormalizeContext, mo
     contamination: dict(need(raw, "contamination", t)),
     ship: normalizeShip(need(raw, "ship", t)),
     sporesToday: need(raw, "sporesToday", t),
+    // Commander's Issue mission (#462): not yet used today in a game stored before it.
+    missionIssuedToday: added(raw, "missionIssuedToday", false),
     spikedOn: dict(need(raw, "spikedOn", t)),
     research: dict(need(raw, "research", t)),
     projects,

@@ -387,6 +387,7 @@
     "anathema": "Curse (Anathema)",
     "protect": "Protect",
     "coup": "Stage a coup",
+    "issueMission": "Issue mission",
     "fierySpeech": "Fiery speech",
     "boringSpeech": "Boring speech",
     "attack": "Attack",
@@ -416,6 +417,7 @@
     "chance": "({{percent}}%)",
     "paidBy": ", costs one of your {{resource}}",
     "atCapacity": "At capacity: the Mush have already extracted all the spores they can today. The limit resets with the next day.",
+    "missionIssuedToday": "A mission has already been issued today. The limit resets with the next day.",
     "lacksAp": "Not enough AP: it costs {{need}}, you have {{have}}.",
     "onCooldown_one": "Ready again in {{count}} cycle.",
     "onCooldown_other": "Ready again in {{count}} cycles.",
@@ -1310,11 +1312,19 @@
     "fireExtinguished": "{{name}} put out the fire!",
     "extinguishFailed": "You failed to put out the fire.",
     "reportShared": "{{name}} shared the report of the expedition to {{planet}}.",
-    "reportShareAppended": "{{name}} added to the shared report of the expedition to {{planet}}."
+    "reportShareAppended": "{{name}} added to the shared report of the expedition to {{planet}}.",
+    "missionIssued": "You gave a mission to {{target}}.",
+    "missionReceived": "The Commander gave you a mission: +{{amount}} AP."
   },
   "throwOut": {
     "confirm": "Throw {{name}} out into which room?",
     "back": "Back"
+  },
+  "issueMission": {
+    "title": "Issue mission",
+    "close": "Close",
+    "pick": "Choose a crewmate (+{{amount}} AP):",
+    "confirm": "Issue mission"
   },
   "skills": {
     "title": "Choose a skill",

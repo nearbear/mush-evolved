@@ -57,6 +57,7 @@ export const GAME_STATE_FIELDS: Record<string, FieldRule> = {
   contamination: { reach: "never", test: "leaks.test.ts", note: "Except to a living Mush in the human's room (infection.test.ts)." },
   ship: { reach: "public", test: "ship.test.ts" },
   sporesToday: { reach: "never", test: "leaks.test.ts" },
+  missionIssuedToday: { reach: "never", test: "issue_mission.test.ts", note: "Whether a mission was issued today (#462). Only the current Commander's actions reflect it (the button disabled once used), so a same-day new Commander learns one was issued, not by whom or to whom (accepted, rules-design.md)." },
   spikedOn: { reach: "never", test: "leaks.test.ts" },
   research: { reach: "room", test: "research.test.ts", note: "To the living in the lab; elsewhere only completed researches (owner, 2026-10-31)." },
   relay: { reach: "room", test: "leaks.test.ts", note: "Research sample pools (`research`, verified and pending) and project contributor streaks (`projects`): research contributor and value to the living in the lab (your own token counts anywhere; rolls and contamination never); project gain range (no tokens) to the living at NERON's core, streaks never." },

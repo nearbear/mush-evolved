@@ -61,6 +61,8 @@ describe("action registry", () => {
       // Everyone starts in the Laboratory, so p0 can bond with the other three (DTT and STT need a bond first).
       ...seats.filter((s) => s.id !== "p0").map((s): Action => ({ type: "bond", target: s.id })),
       ...seats.filter((s) => s.id !== "p0").map((s): Action => ({ type: "punch", target: s.id })),
+      // p0 plays Chao and starts as Commander, so p0 can issue a mission to any of the other three.
+      ...seats.filter((s) => s.id !== "p0").map((s): Action => ({ type: "issue_mission", subordinate: s.id })),
       ...CHARACTER_SKILLS.chao.map((skill): Action => ({ type: "pick_skill", skill })), // p0 plays Chao
       ...DEFAULT_CONFIG.equipment.LABORATORY!.map((e): Action => ({ type: "examine", target: { kind: "equipment", id: e.id } })),
       // The Laboratory has one terminal, the research lab.

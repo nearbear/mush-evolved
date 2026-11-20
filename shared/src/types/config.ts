@@ -538,6 +538,10 @@ export interface GameConfig {
     cost: { ap: number }; // AP the `politician` skill's Coup costs (owner, 2026-11-12).
     dirtyChance: number; // Chance the actor gets dirty (owner, 2026-11-12: 50%).
   };
+  commanderMission: {
+    cost: { ap: number }; // AP the Commander spends to issue a mission (owner, 2026-11-18, #462).
+    apGranted: number; // AP the target crewmate gains, capped at their max AP (owner, 2026-11-18, #462).
+  };
   speech: {
     fiery: { ap: number; morale: number }; // The `leadership` skill's Fiery speech: AP cost, morale given to each other living person in the room (owner, 2026-10-24; eMushpedia). No daily limit.
     boring: { ap: number; mp: number }; // The `motivator` skill's Boring speech: AP cost, MP given to each other living person in the room, once a day (owner, 2026-10-24; eMushpedia).

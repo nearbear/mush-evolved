@@ -114,6 +114,7 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 - `actions/chitchat.ts`: Chitchat with a Confident (+2 morale, the Confident learns your last actions, one per point of their morale; `chitchatToday`).
 - `actions/comfort.ts`: Comfort, the Shrink's action (+2 morale to a roommate, 1 AP, no daily limit). The Shrink's lying-down morale is `onCycle` in `modifiers/lying_down.ts`.
 - `actions/coup.ts` and `coup.ts`: the Politician's Coup (`PlayerState.coupPending`) and its cycle-change resolution into the Commander title.
+- `actions/issue_mission.ts`: the Commander's Issue mission (`GameState.missionIssuedToday`, #462; 1 AP to grant any living active crewmate 3 AP once per ship per day).
 - `actions/anathema.ts`: the Persecutor's Anathema (the Outcast status, `PlayerState.outcastBy`).
 - `actions/protect.ts`: the Bodyguard's Protect (`PlayerState.protectedBy`, `protecting`/`protected` statuses).
 - `actions/nimble.ts`: Nimble Fingers (`enter_nimble` / `exit_nimble` toggling the private `nimble` status; `withNimbleActor` in `log.ts` converts room-level `logPublic` calls into `logSecretIn`).

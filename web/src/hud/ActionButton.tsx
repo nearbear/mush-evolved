@@ -112,7 +112,7 @@ export function DisabledActionButton({ view, blocked, children, className, hint 
       : lacks[0] === "clean"
       ? t("actions.lacksClean")
       : lacks[0] === "capacity"
-      ? t("actions.atCapacity")
+      ? t(blocked.action.type === "issue_mission" ? "actions.missionIssuedToday" : "actions.atCapacity")
       : lacks[0] === "cooldown"
       ? t("actions.onCooldown", { count: blocked.cooldown ?? 1 })
       : lacks[0] === "space"

@@ -183,6 +183,17 @@ describe("optionsOn", () => {
     expect(optionsOn(view, { kind: "item", id: "item-1" })).toEqual([]);
   });
 
+  it("aims issue_mission at yourself (view.you) only, not at the subordinate", () => {
+    const issue = option({ type: "issue_mission", subordinate: "p1" });
+    const view = mockView({
+      actions: [issue],
+      players: [{ id: "p1", character: "frieda" } as OtherPlayerView],
+    });
+
+    expect(optionsOn(view, { kind: "player", id: "p0" })).toEqual([issue]);
+    expect(optionsOn(view, { kind: "player", id: "p1" })).toEqual([]);
+  });
+
   it("aims player-targeted actions at the named person", () => {
     const punchP1 = option({ type: "punch", target: "p1" });
     const healP2 = option({ type: "heal", target: "p2" });

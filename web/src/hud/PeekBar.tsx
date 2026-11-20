@@ -8,6 +8,7 @@ import { useNames } from "../i18n/names.ts";
 import { actionVisibility, ITEM_TYPES, SUPERKUBE, type Action, type ActionOption, type PlayerView, type RoomId, type Target } from "@mush2/shared";
 import { ActionLabel } from "./ActionLabel.tsx";
 import { ActionButton } from "./ActionButton.tsx";
+import { collapseIssueMission, IssueMissionDialog } from "./IssueMissionDialog.tsx";
 import { collapseThrowOut, ThrowOutDialog } from "./ThrowOutDialog.tsx";
 import { DoublePressButton } from "./DoublePress.tsx";
 import { SuperkubeOpener, type SendKube } from "./Superkube.tsx";
@@ -47,6 +48,7 @@ export function PeekBar({
     return <ActionLabel text={text} cost={cost} chance={chance} visibility={actionVisibility(action.type, view)} />;
   };
   const [throwingOut, setThrowingOut] = useState(false);
+  const [issuingMission, setIssuingMission] = useState(false);
   const resolved = resolveTarget(view, target);
   if (!resolved) return null;
   if (resolved.kind === "door") {
@@ -76,9 +78,10 @@ export function PeekBar({
   const name =
     resolved.kind === "player" ? names.characterGiven(resolved.person.character) : resolved.kind === "equipment" ? names.equipment(resolved.equipment.type) : names.itemOf(resolved.item);
   const isBot = resolved.kind === "player" && resolved.person.isBot;
-  const { options: peekOptions, throwOut } = collapseThrowOut(
+  const { options: afterThrowOut, throwOut } = collapseThrowOut(
     optionsOn(view, target).filter((o) => o.action.type !== "examine"),
   );
+  const { options: peekOptions, issueMission } = collapseIssueMission(afterThrowOut);
   return (
     <>
       <Bar
@@ -97,7 +100,13 @@ export function PeekBar({
             key={JSON.stringify(o.action)}
             view={view}
             option={o}
-            onAction={o.action.type === "throw_out" ? () => setThrowingOut(true) : onAction}
+            onAction={
+              o.action.type === "throw_out"
+                ? () => setThrowingOut(true)
+                : o.action.type === "issue_mission"
+                  ? () => setIssuingMission(true)
+                  : onAction
+            }
           >
             {labelFor(o)}
           </ActionButton>
@@ -108,6 +117,13 @@ export function PeekBar({
         targetName={name}
         options={throwOut}
         onClose={() => setThrowingOut(false)}
+        onAction={onAction}
+      />
+      <IssueMissionDialog
+        open={issuingMission}
+        view={view}
+        options={issueMission}
+        onClose={() => setIssuingMission(false)}
         onAction={onAction}
       />
     </>
