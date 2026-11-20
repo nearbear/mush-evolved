@@ -289,6 +289,7 @@ describe("research", () => {
   });
 
   it("completing SPORE_EXTRACTOR leaves one Spore Sucker on the laboratory floor (owner, 2026-11-20)", () => {
+    expect(RESEARCH_STATUS.SPORE_EXTRACTOR).toBe("full");
     const s = game();
     stockLab(s, "LABORATORY", "SPORE_EXTRACTOR");
     setProgress(s, { research: "SPORE_EXTRACTOR" }, RESEARCH_COMPLETE - 1);
