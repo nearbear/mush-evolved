@@ -335,7 +335,7 @@ export const ENDING_ART: Readonly<Record<Ending, string>> = {
 
 // Status effect icons (16x16 pixel art), keyed by status id (shared/src/statuses.ts).
 const statusIconFiles = urls(
-  import.meta.glob<string>("../../../Mush/www/img/icons/ui/status/{dirty,belly_full,hungry,immune,pacifist,hyperactive,guardian,disabled,paria,disease,hurt,sleepy,genius_idea,moduling,demoralized}.png", { eager: true, query: "?url", import: "default" }),
+  import.meta.glob<string>("../../../Mush/www/img/icons/ui/status/{dirty,belly_full,hungry,immune,pacifist,hyperactive,unsociable,guardian,disabled,paria,disease,hurt,sleepy,genius_idea,moduling,demoralized}.png", { eager: true, query: "?url", import: "default" }),
 );
 const diseaseStatusIcons = Object.fromEntries(DEFAULT_CONFIG.diseases.allDiseases.map((id) => [id, statusIconFiles["disease"]!]));
 const injuryStatusIcons = Object.fromEntries(DEFAULT_CONFIG.diseases.allInjuries.map((id) => [id, statusIconFiles["hurt"]!]));
@@ -354,6 +354,7 @@ export const STATUS_ICONS: Readonly<Record<string, string>> = {
   immunity: statusIconFiles["immune"]!,
   pacifist: statusIconFiles["pacifist"]!,
   hyperactive: statusIconFiles["hyperactive"]!,
+  antisocial: statusIconFiles["unsociable"]!,
   mankind_only_hope: traitSkillIcons["mankind_only_hope"]!,
   // The original's wheelchair icon (its `disabled` status), for the trait and for being pushed.
   wheelchair: statusIconFiles["disabled"]!,

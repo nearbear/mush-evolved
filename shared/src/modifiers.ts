@@ -48,6 +48,7 @@ import { space_tactics } from "./modifiers/space_tactics.ts";
 import { sprint } from "./modifiers/sprint.ts";
 import { sturdy } from "./modifiers/sturdy.ts";
 import { hyperactive } from "./modifiers/hyperactive.ts";
+import { antisocial } from "./modifiers/antisocial.ts";
 import { immunity } from "./modifiers/immunity.ts";
 import { mankind_only_hope } from "./modifiers/mankind_only_hope.ts";
 import { pacifist } from "./modifiers/pacifist.ts";
@@ -293,6 +294,7 @@ export const MODIFIERS: Record<string, Modifier> = {
   bodyguard,
   // Character traits
   hyperactive,
+  antisocial,
   immunity,
   mankind_only_hope,
   pacifist,

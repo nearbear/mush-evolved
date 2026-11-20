@@ -4516,3 +4516,12 @@ Planned the expedition screen with the owner: a chronological timeline of sector
 - What needed correction: an old test asserted `nextAt` never appears in any view; the plan's decision made it public, so that assertion was dropped rather than worked around.
 - The leak check raised one indirect leak the plan didn't weigh: exact HP shows damage only humans take (disease extras on expedition hits, starvation or disease at a cycle tick while away), so it can clear a human and expose a private disease. Taken to the owner as a rules question.
 - Owner's answer: HP as of the latest step, not live (`ActiveExpedition.hp`, a snapshot taken at the landing and after each sector). Hides losses between steps; a hidden disease's extra damage on a hit still shows, which the owner dislikes but accepts for now. Approximate HP was rejected: any band has edges a character's HP can be seen crossing.
+
+## 2026-11-19: Raluca's Antisocial trait (#470)
+
+- Implemented the owner's fully specified issue: `modifiers/antisocial.ts` (`onCycle`, −1 morale via `gainMorale` with a new optional loss log key, so the private line says why), the public trait status with the original `unsociable.png` icon, Bond shown disabled with a new `lacks: "antisocial"`, en/fr/es text, and bot goals (`rest` skips her; new `isolate`).
+- Judgment call: the issue put `isolate` "just above END_CYCLE", but `explore` (30) would then walk her out of her quiet room every cycle, so it sits at 35, between `rest` and `explore`. Flagged for the owner.
+- English uses the owner's "Antisocial"; fr/es use eMush's "Asociale"/"Asocial". eMush exempts a Mush from the loss; the owner chose not to, recorded in rules-design.md.
+- What needed correction: the change shifted the seeded 16-seat game in `replayView.test.ts`, so a Hopeless death at a cycle change landed on a chunk boundary. `stepMarks` without the previous chunk counts only lines stamped with the new cycle, and cycle-change deaths carry the old one. This was an existing blind spot that the rule exposed, not a bug in the rule; it was left to the owner rather than changing replay code or the seed.
+- Follow-up, same day (owner chose to fix the replay gap): `stepMarks` takes the chunk's `ChunkInfo.from`, and without the chunk before it counts a first step's lines by their server stamp (`at >= from`) instead of by cycle, so a death at a cycle change is marked as one. Older games without stamps keep the cycle guess. No stored-format change; the test's recorded game now stamps entries as the server does.
+

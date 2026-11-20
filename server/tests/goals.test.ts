@@ -11,6 +11,7 @@ import { EXPEDITION_CHANNEL_NAME, expeditionPlan } from "../src/bots/goals/exped
 import { ICARUS_BOARD_WAIT_CYCLES, expeditionPrep, isFitForExpedition, isPriorityExpeditionClaimant, requiredExpeditionGear } from "../src/bots/goals/expeditionPrep.ts";
 import { activeSharedPlanet } from "../src/bots/planetShare.ts";
 import { SOLO_GOALS } from "../src/bots/goals/index.ts";
+import { ISOLATE_ROOM, isolate } from "../src/bots/goals/isolate.ts";
 import { leaveIcarus } from "../src/bots/goals/leaveIcarus.ts";
 import { repairDoor } from "../src/bots/goals/repairDoor.ts";
 import { repairHull } from "../src/bots/goals/repairHull.ts";
@@ -3278,5 +3279,47 @@ describe("repairDoor goal", () => {
     const mem = memory();
     mem.ended.add(`repairDoor:here:${first}`);
     expect(repairDoor.options(viewFor(broken, id), mem).map((g) => g.key)).toEqual([`repairDoor:here:${second}`]);
+  });
+});
+
+describe("Antisocial bots (#470)", () => {
+  /** The human bot made Antisocial, short on AP, everyone else moved into `crowd`. */
+  const antisocial = (crowd: string, ap = 1) => {
+    const { game: start, id } = setup();
+    let game = edit(start, id, (p) => {
+      p.modifiers.push("antisocial");
+      p.ap = ap;
+      p.room = "REFECTORY";
+    });
+    for (const p of game.players.filter((q) => q.id !== id)) game = edit(game, p.id, (q) => (q.room = crowd));
+    return { game, id };
+  };
+
+  it("never gets a rest option", () => {
+    const { game, id } = antisocial("LABORATORY");
+    expect(rest.options(viewFor(game, id), memory())).toEqual([]);
+  });
+
+  it("isolates in the Rear Corridor, walks there and stays", async () => {
+    const { game, id } = antisocial("LABORATORY");
+    expect(isolate.options(viewFor(game, id), memory()).map((g) => g.key)).toEqual([`isolate:${ISOLATE_ROOM}`]);
+    const { game: after, taken } = await oneCycle(game, id, new GoalBot(1, 2, [isolate]));
+    expect(taken.every((a) => a.type === "move")).toBe(true);
+    expect(after.players.find((p) => p.id === id)!.room).toBe(ISOLATE_ROOM);
+  });
+
+  it("picks the nearest empty room when someone is in the Rear Corridor", () => {
+    const { game: crowded, id } = antisocial("LABORATORY");
+    const other = crowded.players.find((p) => p.id !== id)!.id;
+    const game = edit(crowded, other, (p) => (p.room = ISOLATE_ROOM));
+    const [goal] = isolate.options(viewFor(game, id), memory());
+    // Alone in the refectory already (everyone else is in the lab or the corridor): it stays put.
+    expect(goal!.key).toBe("isolate:REFECTORY");
+  });
+
+  it("is never offered to a bot without the trait", () => {
+    const { game, id } = setup();
+    expect(isolate.options(viewFor(game, id), memory())).toEqual([]);
+    expect(SOLO_GOALS).toContain(isolate);
   });
 });

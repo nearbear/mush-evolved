@@ -13,6 +13,7 @@ import { applyCheats, makeHuman, shipInvincible, type Cheat, type RoleCheat } fr
 import { ACTIONS, actionVisibility, type ActionDef } from "./actions.ts";
 import { ARACK_AROUND, AT_CAPACITY, COOLDOWN, DIRTY, EXPLORED, ICARUS_LOST, IN_PRESELECTION, NO_DEBRIS, NO_SPACE, PASIPHAE_INTACT, REACTOR_BROKEN } from "./actions/action.ts";
 import { getUp } from "./actions/lie_down.ts";
+import { ANTISOCIAL } from "./actions/bond.ts";
 import { isNimble } from "./actions/nimble.ts";
 import { researchNeedsView } from "./actions/research.ts";
 import { equipmentHere } from "./equipment.ts";
@@ -311,6 +312,7 @@ const isUnaffordableReason = (action: Action, refused: string | null): refused i
   refused !== null &&
   (UNAFFORDABLE_REASONS.has(refused) ||
     (action.type === "hack" && refused === IN_PRESELECTION) ||
+    (action.type === "bond" && refused === ANTISOCIAL) ||
     (ICARUS_ACTIONS.has(action.type) && (refused === EXPLORED || refused === ICARUS_LOST)));
 
 function actionOption(state: GameState, p: PlayerState, def: ActionDef<Action>, a: Action, lacks: ActionOption["lacks"]): ActionOption {
@@ -336,6 +338,7 @@ function unaffordableOption(state: GameState, p: PlayerState, def: ActionDef<Act
     ...(refused === ARACK_AROUND ? (["arack"] as const) : []),
     ...(refused === EXPLORED ? (["explored"] as const) : []),
     ...(refused === ICARUS_LOST ? (["icarusLost"] as const) : []),
+    ...(refused === ANTISOCIAL ? (["antisocial"] as const) : []),
     ...(refused === DIRTY ? (["clean"] as const) : []),
     ...(refused === NO_SPACE ? (["space"] as const) : []),
     ...(refused === COOLDOWN ? (["cooldown"] as const) : []),

@@ -24,7 +24,7 @@ const markCache = new WeakMap<LoadedChunk, { before: Readonly<FullView> | undefi
 
 /**
  * The marks of every loaded chunk. A chunk's first step is compared with the last frame of the chunk before when
- * that one is loaded; without it, the first step is a cycle's full copy and counts as a cycle mark either way.
+ * that one is loaded; without it, the lines its first input added are the ones the server stamped at `info.from` or later.
  */
 export function marksOf(chunks: Readonly<Record<number, LoadedChunk>>, index: Pick<ReplayIndex, "chunks">): ChunkMarks {
   const out: Record<number, readonly Mark[]> = {};
@@ -38,7 +38,7 @@ export function marksOf(chunks: Readonly<Record<number, LoadedChunk>>, index: Pi
       out[n] = cached.marks;
       continue;
     }
-    const marks = stepMarks(chunk.frames, info.firstInput, before);
+    const marks = stepMarks(chunk.frames, info.firstInput, before, info.from);
     markCache.set(chunk, { before, marks });
     out[n] = marks;
   }

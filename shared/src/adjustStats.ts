@@ -5,7 +5,8 @@ import { killPlayer } from "./death.ts";
 import { shipInvincible } from "./cheats.ts";
 
 
-export function gainMorale(state: GameState, player: PlayerState, amount: number): void {
+/** `lossKey` names the private log line for a loss, when a more specific one than `loseMorale` says why. */
+export function gainMorale(state: GameState, player: PlayerState, amount: number, lossKey = "loseMorale"): void {
   if (!player.alive || (amount < 0 && shipInvincible(state))) return;
   player.morale = Math.min(player.maxMorale, player.morale + amount); 
   player.morale = Math.max(0, player.morale);
@@ -13,7 +14,7 @@ export function gainMorale(state: GameState, player: PlayerState, amount: number
     logPrivate(state, player.id, "gainMorale", {amount: amount});
   }
   else if(amount < 0){
-    logPrivate(state, player.id, "loseMorale", {amount: -amount});
+    logPrivate(state, player.id, lossKey, {amount: -amount});
   }
 }
 

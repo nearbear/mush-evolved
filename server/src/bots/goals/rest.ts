@@ -32,6 +32,8 @@ export const rest: GoalDef = {
   priority: 40,
   options(view, memory) {
     if (view.you.ap >= view.maxAp) return [];
+    // Antisocial (#470): a bed's room is almost never empty, so she never lies down; `isolate` takes her somewhere quiet.
+    if (view.statuses.includes("antisocial")) return [];
     if (hasBotSkill(view, "shrink")) return shrinkRest(view, memory);
     if (view.you.lyingIn !== undefined) return [restIn(view.you.room, "Stay in bed until your AP is full")];
     const open = roomsWith(view, ["BED"]).filter((r) => !memory.ended.has(`rest:${r}`) && canAfford(view, r, view.config.lieDownAp, 0, memory));

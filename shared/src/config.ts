@@ -82,6 +82,7 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
 
   // Confirmed 2026-10-14: bonding, DTT, and STT cost 1 AP each; DTT and STT give each of the two 2 morale.
   bond: { cost: { ap: 1 } },
+  antisocial: { moraleLoss: 1 },
   share: { cost: { ap: 1 }, effect: { morale: 2 } },
   // Confirmed 2026-10-14: a human converts on reaching 3 contamination (items and skills will raise it).
   infection: { capacity: 3, mushophageBonus: 1 },
@@ -621,7 +622,7 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   // Confirmed 2026-10-15: nobody starts with a skill; players pick up to three
   // (SKILL_SLOTS) with the free, permanent pick_skill action.
   startSkills: [],
-  characterModifiers: { ian: ["pacifist"], chun: ["immunity", "mankind_only_hope"], terrence: ["wheelchair"], chao: ["hyperactive"] },
+  characterModifiers: { ian: ["pacifist"], chun: ["immunity", "mankind_only_hope"], terrence: ["wheelchair"], chao: ["hyperactive"], raluca: ["antisocial"] },
   mankindOnlyHope: { moraleLossCut: 1 },
   // Owner, 2026-11-11: a human still at 0 morale (Hopeless) when a cycle ends dies, and each such death costs every
   // living player, Mush included, 1 morale.
