@@ -4516,3 +4516,9 @@ Planned the expedition screen with the owner: a chronological timeline of sector
 - What needed correction: an old test asserted `nextAt` never appears in any view; the plan's decision made it public, so that assertion was dropped rather than worked around.
 - The leak check raised one indirect leak the plan didn't weigh: exact HP shows damage only humans take (disease extras on expedition hits, starvation or disease at a cycle tick while away), so it can clear a human and expose a private disease. Taken to the owner as a rules question.
 - Owner's answer: HP as of the latest step, not live (`ActiveExpedition.hp`, a snapshot taken at the landing and after each sector). Hides losses between steps; a hidden disease's extra damage on a hit still shows, which the owner dislikes but accepts for now. Approximate HP was rejected: any band has edges a character's HP can be seen crossing.
+
+## 2026-11-20: Oxygen plan Run A2, full-bedroom memory
+
+- **Kept (`observeBeds`):** bots remember bedrooms where every bed is taken (`BotMemory.fullBeds`) across cycles until they see a free bed there or see a sleeper elsewhere, up, or dead. On 50 seeds against a rerun of Run A, AP walking to rest dropped 495.5 → 353.2 a run and `rest` starts dropped 795 → 493, while cycles in orbit after full exploration stayed 6.6 → 6.6.
+- **Dropped (owner):** A2b (leave orbit only when the whole Motor Room chain is affordable). Cycles in orbit after full exploration went 6.6 → 7.2 and seed 3's Commander was stranded for 59 cycles because lower-ranked goals spent his AP down to the reserve; reverted rather than protecting that AP.
+- **Process lessons:** rerun the baseline with new metrics back to back with the runs; harness workers load code lazily, so don't edit source during a run; the A2b smoke test looked fine on average, but a per-seed stay listing caught seed 3's stranding.

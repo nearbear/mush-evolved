@@ -66,6 +66,7 @@ Goal priorities and triggers were mostly set by the owner. A number in the table
 | `COFFEE_DRINKER`, `COFFEE_DROP_ROOM`, `COFFEE_PRIORITY` | gioele, `CORRIDOR_B`, 76.5 | `goals/coffee.ts` | Owner, 2026-11-18: crew pull the coffee in passing and leave it in the Center Corridor; Gioele drinks one reported today in passing, or fetches it in the day's last cycle; other bots don't drink coffee while he lives. Priority 76.5 is Claude's pick (above astro), not yet confirmed |
 | `FIERY_SPEECH_AUDIENCE`, priority | 3, 71 | `goals/fierySpeech.ts` | Owner, 2026-11-18 (#452): once a day where the Leader stands; Leadership right after Shrink in `BOT_SKILL_RULES` |
 | Expedition lines | `Expedition: done at <planet>`, `Expedition: no Icarus` | `expeditionShare.ts` | Owner, 2026-11-19 (oxygen plan Run A): a bot in the bay that sees Board or Take off disabled posts the line once; the Commander leaves orbit on it as well as on shared reports |
+| Full bedrooms | `BotMemory.fullBeds` | `goals/rest.ts` (`observeBeds`) | Oxygen plan Run A2, 2026-11-19: a bedroom seen with every bed taken stays skipped by `rest` across cycles until a free bed or one of its sleepers is seen up; with all remembered full, `rest` offers nothing. Gating leave-orbit on the whole Motor Room chain (Run A2b) was tried and dropped by the owner |
 
 Keep this table current: when a constant is added or the owner changes one, update its row with the date.
 

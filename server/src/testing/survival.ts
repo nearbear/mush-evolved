@@ -119,6 +119,12 @@ export interface CycleReport {
   coffeeJunkie?: number;
   coffeeOthers?: number;
   junkieMeals?: number;
+  /**
+   * Beds (oxygen plan Run A2): AP bots spent on moves while following `rest` (walking to a bed, or from a full bedroom to
+   * the next) in the cycle, and how many of the living crew lay in a bed as the cycle ended. Missing in older runs.
+   */
+  restWalkAp?: number;
+  lying?: number;
 }
 
 export interface SurvivalResult {
@@ -258,13 +264,13 @@ export async function runSurvival(seed: number, opts: SurvivalOptions): Promise<
   let now = 0;
   let logSeen = game.nextLogId;
 
-  const newRow = (cycle: number): CycleReport => ({ cycle, hull: 0, oxygen: 0, alive: 0, hunters: 0, fires: 0, killed: 0, shed: 0, shots: 0, repairTries: 0, repairs: 0, apLeft: 0, atCap: 0, scraps: 0, scrapsCarried: 0, apShooters: {}, apOthers: {}, hullLost: 0, arrived: 0, firesStarted: 0, firesOut: 0, extinguishTries: 0, brokenTanks: 0, tankRepairTries: 0, tankRepairs: 0, moraleUp: {}, moraleDown: {}, oxygenIn: {}, expeditions: 0, shares: 0, jumps: 0, coffeePulled: 0, coffeeJunkie: 0, coffeeOthers: 0, junkieMeals: 0 });
+  const newRow = (cycle: number): CycleReport => ({ cycle, hull: 0, oxygen: 0, alive: 0, hunters: 0, fires: 0, killed: 0, shed: 0, shots: 0, repairTries: 0, repairs: 0, apLeft: 0, atCap: 0, scraps: 0, scrapsCarried: 0, apShooters: {}, apOthers: {}, hullLost: 0, arrived: 0, firesStarted: 0, firesOut: 0, extinguishTries: 0, brokenTanks: 0, tankRepairTries: 0, tankRepairs: 0, moraleUp: {}, moraleDown: {}, oxygenIn: {}, expeditions: 0, shares: 0, jumps: 0, coffeePulled: 0, coffeeJunkie: 0, coffeeOthers: 0, junkieMeals: 0, restWalkAp: 0, lying: 0 });
   let row = newRow(game.cycle);
   /** Fills the row's end-of-cycle fields from `g`, the state just before the change (or where the game ended). */
   const closeRow = (g: GameState): void => {
     const living = g.players.filter((p) => p.alive);
     const scraps = g.items.filter((i) => i.type === "metal_scraps");
-    Object.assign(row, { hull: g.ship.hull, oxygen: g.ship.oxygen, alive: living.length, hunters: g.hunters.list.length, fires: g.fires.length, apLeft: living.reduce((a, p) => a + p.ap, 0), atCap: living.filter((p) => p.ap >= p.maxAp).length, scraps: scraps.length, scrapsCarried: scraps.filter((i) => i.at.kind === "player").length, brokenTanks: Object.values(g.equipment).flat().filter((e) => e.type === "OXYGEN_TANK" && e.broken).length });
+    Object.assign(row, { hull: g.ship.hull, oxygen: g.ship.oxygen, alive: living.length, hunters: g.hunters.list.length, fires: g.fires.length, apLeft: living.reduce((a, p) => a + p.ap, 0), atCap: living.filter((p) => p.ap >= p.maxAp).length, scraps: scraps.length, scrapsCarried: scraps.filter((i) => i.at.kind === "player").length, brokenTanks: Object.values(g.equipment).flat().filter((e) => e.type === "OXYGEN_TANK" && e.broken).length, lying: living.filter((p) => p.lyingIn !== undefined).length });
     const planets = Object.values(g.planets).flat();
     const hasOxygen = (pl: (typeof planets)[number]): boolean => pl.sectors.some((s) => s.tag === "OXYGEN" && !s.explored);
     const orbiting = planets.find((pl) => pl.id === g.navigation.orbit);
@@ -426,7 +432,10 @@ export async function runSurvival(seed: number, opts: SurvivalOptions): Promise<
         if (!action) continue;
         if (game.players.find((p) => p.id === id)!.ready && action.type === "ready") continue;
         const cost = view.actions.find((o) => JSON.stringify(o.action) === JSON.stringify(action))?.cost.ap ?? 0;
-        if (apply({ type: "action", action, by: id, at: now }, cost)) acted = true;
+        if (apply({ type: "action", action, by: id, at: now }, cost)) {
+          acted = true;
+          if (action.type === "move" && goal?.startsWith("rest:")) row.restWalkAp! += cost;
+        }
         else {
           result.refused++;
           bot.refused();
