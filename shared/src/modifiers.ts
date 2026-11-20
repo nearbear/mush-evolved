@@ -8,6 +8,7 @@
 // `skills` instead. A new numeric hook is one line in `FoldHooks` plus a one-line
 // accessor below; `fold` does the looping.
 
+import { spreadAtCycle, spreadOnEncounter } from "./diseases.ts";
 import { isBrokenIn } from "./equipment.ts";
 import { activeScooter, carriesHeavy, isWorking } from "./items.ts";
 import { projectDone } from "./projects.ts";
@@ -84,6 +85,7 @@ import { critical_haemorrhage_injury, haemorrhage_injury } from "./modifiers/hae
 import { busted_arm_joint_injury } from "./modifiers/busted_arm_joint_injury.ts";
 import { punctured_lung_injury } from "./modifiers/punctured_lung_injury.ts";
 import { burnt_hand_injury } from "./modifiers/burnt_hand_injury.ts";
+import { stiff_neck_injury } from "./modifiers/stiff_neck_injury.ts";
 import { damaged_ears_injury } from "./modifiers/damaged_ears_injury.ts";
 import { destroyed_ears_injury } from "./modifiers/destroyed_ears_injury.ts";
 import type { ActionCost } from "./actions.ts";
@@ -336,6 +338,7 @@ export const MODIFIERS: Record<string, Modifier> = {
   mashed_foot_injury,
   broken_shoulder_injury,
   burnt_hand_injury,
+  stiff_neck_injury,
 };
 
 /**
@@ -819,10 +822,11 @@ export function isDeaf(player: Readonly<PlayerState>, registry: ModifierRegistry
   return modifierIds(player).some((id) => registry[id]?.deaf === true);
 }
 
-/** Runs every onCycle hook of each living player, in seat order. Mutates a state the caller already cloned. */
+/** Spreads each living player's diseases in their room, then runs their onCycle hooks, in seat order. Mutates a state the caller already cloned. */
 export function cycleChanged(next: GameState, registry: ModifierRegistry = MODIFIERS): void {
   for (const player of next.players) {
     if (!player.alive) continue;
+    spreadAtCycle(next, player);
     for (const id of eventIds(player)) registry[id]?.onCycle?.(next, player);
   }
 }
@@ -844,12 +848,14 @@ export function enteredRoom(next: GameState, player: PlayerState, tools: EnterRo
 }
 
 /**
- * A player has just moved into a room: each modifier of theirs and of everyone already there gets its onEncounter
- * hook, carrier first, with the other as the one it may reach (a cold spreads both ways). A Mush's diseases still spread.
+ * A player has just moved into a room: diseases spread both ways with each living player already there
+ * (`spreadOnEncounter`), then each modifier of theirs and of the other's gets its onEncounter hook, carrier first,
+ * with the other as the one it may reach. A Mush's diseases still spread.
  */
 export function enterRoom(state: GameState, player: PlayerState, registry: ModifierRegistry = MODIFIERS): void {
   for (const other of roomHolders(state, player.room)) {
     if (other.id === player.id) continue;
+    spreadOnEncounter(state, other, player);
     for (const id of eventIds(other)) registry[id]?.onEncounter?.(state, other, player);
     for (const id of eventIds(player)) registry[id]?.onEncounter?.(state, player, other);
   }

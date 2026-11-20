@@ -288,6 +288,15 @@ describe("research", () => {
     expect(floorSteroids).toHaveLength(STEROIDS_YIELD);
   });
 
+  it("completing SPORE_EXTRACTOR leaves one Spore Sucker on the laboratory floor (owner, 2026-11-20)", () => {
+    const s = game();
+    stockLab(s, "LABORATORY", "SPORE_EXTRACTOR");
+    setProgress(s, { research: "SPORE_EXTRACTOR" }, RESEARCH_COMPLETE - 1);
+    s.rng = CLEAN;
+    const done = mustApply(s, "p0", work("SPORE_EXTRACTOR"));
+    expect(done.items.filter((i) => i.type === "spore_extractor" && i.at.kind === "room" && i.at.id === "LABORATORY")).toHaveLength(1);
+  });
+
   it("completing DRUG_DISPENSER adds the DRUG_DISP equipment to the medlab, once (owner, 2026-11-10)", () => {
     expect(RESEARCH_STATUS.DRUG_DISPENSER).toBe("full");
     const s = game();

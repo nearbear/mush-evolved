@@ -81,6 +81,8 @@ export const OXYGEN_CAPSULE_ITEM = "oxy_capsule";
 export const SPACE_CAPSULE_ITEM = "space_capsule";
 
 /** Produced by completing the STEROIDS research (owner, 2026-11-01); consuming gives 8 MP and resets starvation. */
+/** The Spore Sucker (eMush's spore extractor, named after its icon): the completed SPORE_EXTRACTOR research leaves one in the lab. */
+export const SPORE_SUCKER_ITEM = "spore_extractor";
 export const STEROIDS_ITEM = "steroids";
 export const STEROIDS_YIELD = 4;
 export const STEROIDS_MP = 8;
@@ -167,6 +169,8 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   soap: {canBreak: true, isDestroyedWhenBroken: true},
   // Owner, 2026-10-25: the completed ANTI_MUSH_SERUM research yields one; single use (actions/vaccinate.ts). Named after its icon.
   anti_mush_serum: {},
+  // Owner, 2026-11-20: the Spore Sucker; the completed SPORE_EXTRACTOR research yields one. Reusable (actions/remove_spore.ts). Named after its icon.
+  [SPORE_SUCKER_ITEM]: {},
   // Owner, 2026-11-01: the completed STEROIDS research yields 4; single use, +8 MP, resets starvation.
   [STEROIDS_ITEM]: { consume: { ap: 0, mp: STEROIDS_MP, satiety: 0 }, canBreak: true, isDestroyedWhenBroken: true },
   // Decided 2026-10-17: rings in its room when a Mush acts there (mycoalarm.ts). Dismantles for one scrap metal.

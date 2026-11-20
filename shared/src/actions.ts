@@ -79,6 +79,7 @@ import { HealAction } from "./actions/heal.ts";
 import { SurgeryAction } from "./actions/surgery.ts";
 import { VaccinateAction } from "./actions/vaccinate.ts";
 import { UseBandageAction } from "./actions/use_bandage.ts";
+import { RemoveSporeAction } from "./actions/remove_spore.ts";
 import { InstallAction } from "./actions/install.ts";
 import { UninstallAction } from "./actions/uninstall.ts";
 import { JettisonAction } from "./actions/jettison.ts";
@@ -263,6 +264,7 @@ const REGISTRY = {
   surgery: new SurgeryAction(),
   vaccinate: new VaccinateAction(),
   use_bandage: new UseBandageAction(),
+  remove_spore: new RemoveSporeAction(),
   punch: new PunchAction(),
   throw_out: new ThrowOutAction(),
   interrogate: new InterrogateAction(),

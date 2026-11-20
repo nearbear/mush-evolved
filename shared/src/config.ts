@@ -137,6 +137,8 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   vaccine: { cost: { ap: 1 } },
   // Owner, 2026-11-07 (#397): a bandage heals yourself or a living person in your room 2 HP for 1 AP, and is used up.
   bandage: { cost: { ap: 1 }, effect: { hp: 2 } },
+  // Owner, 2026-11-20: the Spore Sucker (actions/remove_spore.ts): 1 AP, 3 damage, 25% dirty.
+  sporeSucker: { cost: { ap: 1 }, effect: { damage: 3 }, dirtyChance: 0.25 },
   // Confirmed 2026-10-15: punch costs 1 AP, misses 40% of the time. Owner, 2026-10-24: damage is a uniform 1 to 2 (the wiki).
   // Confirmed 2026-10-16: the sturdy (Solid) skill adds 1 to punch damage.
   punch: { cost: { ap: 1 }, effect: { damage: [1, 2], sturdyBonusDamage: 1 }, crit: { chance: 0.2, damage: [2, 3] }, successChance: 0.6, inactiveTargetSuccessChance: 0.9, dirtyChance: 0.25 },
@@ -752,7 +754,10 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
       "mashed_foot_injury",
       "broken_shoulder_injury",
       "burnt_hand_injury",
+      "stiff_neck_injury",
     ],
+    // Owner, 2026-11-20: injuries a "random injury" combat outcome never gives.
+    notRandomInjuries: ["stiff_neck_injury"],
     allDiseaseStats: [
       {label: "cold_disease", type: "disease", durationMin: 8, durationMax: 12, roomSpread: 0.02, cycleSpread: 0.04}, 
       {label: "extreme_tinnitus_disease", type: "disease", durationMin: 12, durationMax: 20}, 
@@ -782,7 +787,9 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
       {label: "syphilis_disease", type: "disease", durationMin: 20, durationMax: 32, spreadByDTT: true},
       // Owner, 2026-11-17: from a failed surgery.
       {label: "sepsis_disease", type: "disease", durationMin: 1, durationMax: 3},
-      ...["broken_nose_injury", "damaged_ears_injury", "destroyed_ears_injury", "torn_tongue_injury", "open_air_brain_injury", "head_trauma_injury", "haemorrhage_injury", "critical_haemorrhage_injury", "busted_arm_joint_injury", "punctured_lung_injury", "bruised_shoulder_injury", "mashed_foot_injury", "broken_shoulder_injury", "burnt_hand_injury"].map((label) => ({ label, type: "injury" }))],
+      ...["broken_nose_injury", "damaged_ears_injury", "destroyed_ears_injury", "torn_tongue_injury", "open_air_brain_injury", "head_trauma_injury", "haemorrhage_injury", "critical_haemorrhage_injury", "busted_arm_joint_injury", "punctured_lung_injury", "bruised_shoulder_injury", "mashed_foot_injury", "broken_shoulder_injury", "burnt_hand_injury"].map((label) => ({ label, type: "injury" })),
+      // Owner, 2026-11-20: unlike the other injuries, Stiff Neck wears off after 4 cycles.
+      {label: "stiff_neck_injury", type: "injury", durationMin: 4, durationMax: 4}],
     allDisorderStats: [{type: "disorder", resistance: 8}],
     allInjuryStats: [{type: "injury"}],
     },
