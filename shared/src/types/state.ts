@@ -350,6 +350,12 @@ export interface ActiveExpedition {
   /** The next sector is sabotaged (owner, 2026-11-17): it draws only negative events. Never sent. */
   sabotageNext: boolean;
   /**
+   * Each member's HP as of the latest step (the landing, then each sector), by seat: what the crew sees of each other
+   * (`PlayerView.expedition.hp`). Taken only as a step resolves (owner, 2026-11-19), so a loss between steps (hunger or a
+   * disease at a cycle change, which only humans take) doesn't show until the next step.
+   */
+  hp: Record<PlayerId, number>;
+  /**
    * The patrol ship that landed, by its room id, for a pilot's solo landing (owner, 2026-11-09, #359); null for the
    * Icarus. Its room is the craft the crew is in while away (`expeditionCraft`).
    */

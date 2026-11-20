@@ -8,9 +8,11 @@ import { END_CYCLE, helpGoal, helpTasks, SOLO_GOALS, type BotMemory, type BotSoc
 import { coffeeReflex, coffeeRun, deliverCoffee } from "./bots/goals/coffee.ts";
 import { extinguish } from "./bots/goals/extinguish.ts";
 import { repairOxygen } from "./bots/goals/repairOxygen.ts";
+import { observeBeds } from "./bots/goals/rest.ts";
 import { newFireMemory, observeFires } from "./bots/fireShare.ts";
 import { newTankMemory, observeTanks } from "./bots/tankShare.ts";
 import { newMoraleMemory, observeMorale } from "./bots/moraleShare.ts";
+import { newExpeditionEndMemory, observeExpeditionEnd } from "./bots/expeditionShare.ts";
 import { newItemMemory, observeItems } from "./bots/itemShare.ts";
 import { holdStartCycle, isHoldingJump, newJumpMemory } from "./bots/planetShare.ts";
 import { newReportMemory, observeReports } from "./bots/reportShare.ts";
@@ -149,12 +151,14 @@ export class GoalBot implements Bot {
       once: new Set(),
       visited: new Set(),
       shrinks: new Set(),
+      fullBeds: new Map(),
       lastExpedition: null,
       asteroidsOnly: null,
       items: newItemMemory(),
       fires: newFireMemory(),
       tanks: newTankMemory(),
       morale: newMoraleMemory(),
+      expeditionEnd: newExpeditionEndMemory(),
       combustion: null,
       holdSince: null,
       jump: newJumpMemory(),
@@ -186,12 +190,14 @@ export class GoalBot implements Bot {
       once: [...m.once],
       visited: [...m.visited],
       shrinks: [...m.shrinks],
+      fullBeds: [...m.fullBeds].map(([k, v]) => [k, [...v]]),
       lastExpedition: m.lastExpedition,
       asteroidsOnly: m.asteroidsOnly,
       items: { rooms: map(m.items.rooms), said: map(m.items.said), seq: m.items.seq },
       fires: { active: m.fires.active, burning: [...m.fires.burning], checked: [...m.fires.checked], seq: m.fires.seq },
       tanks: { broken: [...m.tanks.broken], suspect: [...m.tanks.suspect], claims: [...m.tanks.claims], seq: m.tanks.seq },
       morale: { said: m.morale.said, requests: [...m.morale.requests], seq: m.morale.seq },
+      expeditionEnd: { done: [...m.expeditionEnd.done], noIcarus: m.expeditionEnd.noIcarus, said: [...m.expeditionEnd.said], seq: m.expeditionEnd.seq },
       combustion: m.combustion,
       holdSince: m.holdSince,
       jump: { ...m.jump },
@@ -223,12 +229,15 @@ export class GoalBot implements Bot {
     refill(m.once, s.once);
     refill(m.visited, s.visited);
     refill(m.shrinks, s.shrinks);
+    m.fullBeds.clear();
+    for (const [room, sleepers] of s.fullBeds) m.fullBeds.set(room, new Set(sleepers));
     m.lastExpedition = s.lastExpedition;
     m.asteroidsOnly = s.asteroidsOnly;
     Object.assign(m.items, { rooms: map(s.items.rooms), said: map(s.items.said), seq: s.items.seq });
     Object.assign(m.fires, { active: s.fires.active, burning: new Set(s.fires.burning), checked: new Set(s.fires.checked), seq: s.fires.seq });
     Object.assign(m.tanks, { broken: new Set(s.tanks.broken), suspect: new Set(s.tanks.suspect), claims: new Map(s.tanks.claims), seq: s.tanks.seq });
     Object.assign(m.morale, { said: s.morale.said, requests: new Map(s.morale.requests), seq: s.morale.seq });
+    Object.assign(m.expeditionEnd, { done: new Set(s.expeditionEnd.done), noIcarus: s.expeditionEnd.noIcarus, said: new Set(s.expeditionEnd.said), seq: s.expeditionEnd.seq });
     m.combustion = s.combustion;
     m.holdSince = s.holdSince;
     Object.assign(m.jump, s.jump);
@@ -296,7 +305,9 @@ export class GoalBot implements Bot {
     const sharedReport = observeReports(view, this.memory, !fires.post && !tanks.post);
     // A request for comfort (moraleShare.ts, #452), when the bot's own morale just dropped low.
     const askComfort = observeMorale(view, this.memory);
-    const report = fires.post ?? tanks.post ?? askComfort ?? sharedReport ?? observeItems(view, this.memory);
+    // Expeditions over (expeditionShare.ts, owner 2026-11-19): a disabled Board or Take off seen in the bay, for the Commander.
+    const expeditionEnd = observeExpeditionEnd(view, this.memory, !fires.post && !tanks.post && !askComfort && !sharedReport);
+    const report = fires.post ?? tanks.post ?? askComfort ?? sharedReport ?? expeditionEnd ?? observeItems(view, this.memory);
     if (report) {
       this.social = report;
       return null;
@@ -398,6 +409,7 @@ export class GoalBot implements Bot {
     this.hp = view.you.hp;
     this.memory.visited.add(view.you.room);
     observeShrinks(view, this.memory.shrinks);
+    observeBeds(view, this.memory.fullBeds);
     if (view.navigation.traveling || view.navigation.orbiting) this.memory.combustion = null;
     if (view.navigation.heading !== null) this.memory.heading = view.navigation.heading;
     const chatHold = holdStartCycle(view, this.memory);

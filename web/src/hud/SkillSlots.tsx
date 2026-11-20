@@ -4,10 +4,10 @@
 // Which skills can be picked comes from view.actions, never computed here.
 // A Mush looking at their own portrait gets a toggle at the top that swaps the stack for their four Mush skill slots.
 // It only changes what is drawn (to save space); both sets stay picked. Mush skills are only ever in your own view.
-// The picker is a FramedDialog, like the settings window.
+// The picker is a FramedDialog, like the settings window. Choosing a skill swaps the list for a confirmation of that
+// one skill in the same window; Back, Escape or a click outside returns to the list.
 
 import { Dialog } from "@base-ui/react/dialog";
-import { ConfirmPanel } from "./ConfirmPanel.tsx";
 import { FramedDialog } from "./FramedDialog.tsx";
 import { Hint } from "./IconButton.tsx";
 import { Popover } from "@base-ui/react/popover";
@@ -98,35 +98,51 @@ export function SkillSlots({
       </ul>
       <Dialog.Root
         open={open}
-        onOpenChange={(o) => {
+        onOpenChange={(o, details) => {
+          // While confirming, Escape or a click outside steps back to the list instead of closing the picker.
+          if (!o && pending && details.reason !== "close-press") {
+            details.cancel();
+            setPending(null);
+            return;
+          }
           setOpen(o);
           if (!o) setPending(null);
         }}
       >
         <FramedDialog className="skill-picker" heading={t(mush ? "skills.mushTitle" : "skills.title")} closeLabel={t("skills.close")}>
-          <p className="skill-warning">{t("skills.warning")}</p>
-          <ul className="skill-list">
-            {offered.map((skill) => (
-              <li key={skill}>
-                <SkillCard skill={skill} onSelect={() => setPending(skill)} />
-              </li>
-            ))}
-          </ul>
-          <ConfirmPanel
-            open={pending !== null}
-            onOpenChange={(o) => !o && setPending(null)}
-            message={t("skills.confirm", { skill: pending ? names.skill(pending) : "" })}
-            yesLabel={t("skills.confirmYes")}
-            backLabel={t("skills.back")}
-            onYes={() => {
-              if (!pending) return;
-              onAction({ type: "pick_skill", skill: pending });
-              setOpen(false);
-              setPending(null);
-            }}
-          >
-            {pending && <SkillCard skill={pending} />}
-          </ConfirmPanel>
+          {pending ? (
+            <div className="skill-confirm">
+              <SkillCard skill={pending} />
+              <p className="confirm-message">{t("skills.confirm", { skill: names.skill(pending) })}</p>
+              <p className="skill-warning">{t("skills.warning")}</p>
+              <div className="skill-confirm-buttons">
+                <button type="button" onClick={() => setPending(null)}>
+                  {t("skills.back")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onAction({ type: "pick_skill", skill: pending });
+                    setOpen(false);
+                    setPending(null);
+                  }}
+                >
+                  {t("skills.confirmYes")}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <p className="skill-warning">{t("skills.warning")}</p>
+              <ul className="skill-list">
+                {offered.map((skill) => (
+                  <li key={skill}>
+                    <SkillCard skill={skill} onSelect={() => setPending(skill)} />
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
         </FramedDialog>
       </Dialog.Root>
     </div>

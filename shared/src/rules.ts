@@ -11,8 +11,9 @@ import { bindPerformAction } from "./actions/summon.ts";
 import { cheatFuelPlanet } from "./actions/warp_to_planet.ts";
 import { applyCheats, makeHuman, shipInvincible, type Cheat, type RoleCheat } from "./cheats.ts";
 import { ACTIONS, actionVisibility, type ActionDef } from "./actions.ts";
-import { ARACK_AROUND, AT_CAPACITY, COOLDOWN, DIRTY, IN_PRESELECTION, NO_DEBRIS, NO_SPACE, PASIPHAE_INTACT, REACTOR_BROKEN } from "./actions/action.ts";
+import { ARACK_AROUND, AT_CAPACITY, COOLDOWN, DIRTY, EXPLORED, ICARUS_LOST, IN_PRESELECTION, NO_DEBRIS, NO_SPACE, PASIPHAE_INTACT, REACTOR_BROKEN } from "./actions/action.ts";
 import { getUp } from "./actions/lie_down.ts";
+import { ANTISOCIAL } from "./actions/bond.ts";
 import { isNimble } from "./actions/nimble.ts";
 import { researchNeedsView } from "./actions/research.ts";
 import { equipmentHere } from "./equipment.ts";
@@ -304,8 +305,15 @@ const UNAFFORDABLE_REASONS = new Set<string>([
   ARACK_AROUND,
 ]);
 
+/** Board the Icarus and Take off show disabled on a fully explored planet or a lost Icarus (owner, 2026-11-19), not hidden. */
+const ICARUS_ACTIONS = new Set<Action["type"]>(["board_icarus", "icarus_takeoff"]);
+
 const isUnaffordableReason = (action: Action, refused: string | null): refused is string =>
-  refused !== null && (UNAFFORDABLE_REASONS.has(refused) || (action.type === "hack" && refused === IN_PRESELECTION));
+  refused !== null &&
+  (UNAFFORDABLE_REASONS.has(refused) ||
+    (action.type === "hack" && refused === IN_PRESELECTION) ||
+    (action.type === "bond" && refused === ANTISOCIAL) ||
+    (ICARUS_ACTIONS.has(action.type) && (refused === EXPLORED || refused === ICARUS_LOST)));
 
 function actionOption(state: GameState, p: PlayerState, def: ActionDef<Action>, a: Action, lacks: ActionOption["lacks"]): ActionOption {
   return {
@@ -328,6 +336,9 @@ function unaffordableOption(state: GameState, p: PlayerState, def: ActionDef<Act
     ...(refused === PASIPHAE_INTACT ? (["pasiphae"] as const) : []),
     ...(refused === REACTOR_BROKEN ? (["reactor"] as const) : []),
     ...(refused === ARACK_AROUND ? (["arack"] as const) : []),
+    ...(refused === EXPLORED ? (["explored"] as const) : []),
+    ...(refused === ICARUS_LOST ? (["icarusLost"] as const) : []),
+    ...(refused === ANTISOCIAL ? (["antisocial"] as const) : []),
     ...(refused === DIRTY ? (["clean"] as const) : []),
     ...(refused === NO_SPACE ? (["space"] as const) : []),
     ...(refused === COOLDOWN ? (["cooldown"] as const) : []),
@@ -660,7 +671,7 @@ export function sharedReportsView(state: Readonly<Pick<GameState, "sharedReports
 
 /** Every shared planet, as a view carries it (for readers of the Astrophysics feature). Never `planet`: which planet an entry came from stays its finder's. */
 export function sharedPlanetsView(state: Readonly<Pick<GameState, "sharedPlanets">>): PlayerView["sharedPlanets"] {
-  return state.sharedPlanets.map(({ id, text, by, day, cycleOfDay, stale }) => ({ id, text, by, day, cycleOfDay, stale }));
+  return state.sharedPlanets.map(({ id, name, sectors, text, by, day, cycleOfDay, stale }) => ({ id, name, sectors: [...sectors], text, by, day, cycleOfDay, stale }));
 }
 
 /**
@@ -857,7 +868,7 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
             return { ...clone({ ...report, events }), ...(away && { away: true as const }), ...(shared && { shared }) };
           })
       : [],
-    expedition: expeditionView(state, you),
+    expedition: expeditionView(state, you, channels.includes("astrophysics")),
     icarusSeats: maxCrew(state),
     // Who is lost, and where: a public alert (owner, 2026-11-08, #357; phase 2 accepted it).
     lost: lostPlayers(state).map((p) => ({ name: p.character, planet: orbitName(state) ?? "" })),
@@ -926,20 +937,37 @@ function equipmentView(state: GameState, { id, type, broken, jelly, shield }: Eq
  * The expedition under way, to everyone (owner, 2026-11-07): who is out, the planet, when they are back; the report's
  * id only to a living member, who already has the report.
  */
-function expeditionView(state: GameState, you: PlayerState): PlayerView["expedition"] {
+function expeditionView(state: GameState, you: PlayerState, readsAstrophysics: boolean): PlayerView["expedition"] {
   const away = state.expedition;
   if (!away) return null;
   const report = state.expeditions.find((r) => r.id === away.report)!;
+  // The Astrophysics entry shared from the planet being explored, to whoever reads that feature (owner, 2026-11-19):
+  // the link stays on the server, so the entries never carry a planet id.
+  const shared = readsAstrophysics ? state.sharedPlanets.find((e) => e.planet === away.planet)?.id : undefined;
   // The next sector, to a U-turn or Traitor holder still with the crew (owner, 2026-11-17).
   const next = nextSectorFor(state, you);
+  const member = withCrew(state, you) && report.members.includes(you.id);
+  // Each member's exact HP as of the latest step (`away.hp`), to a member still with the crew, for those still with it
+  // (owner, 2026-11-19): a lost member's screen shows them alone, and the crew no longer sees theirs.
+  const hp = member
+    ? report.members
+        .map((id) => state.players.find((p) => p.id === id)!)
+        .filter((p) => withCrew(state, p) && away.hp[p.id] !== undefined)
+        .map((p) => ({ name: p.character, hp: away.hp[p.id]! }))
+    : undefined;
   return {
     crew: [...report.crew],
     planet: report.planet,
     returnAt: expeditionReturnAt(state)!,
+    // Public, as the timer already reveals both (docs/plans/expedition-ui.md).
+    steps: away.sectors.length,
+    nextAt: away.nextAt,
     // The patrol ship that landed (owner, 2026-11-09, #359): public, as its bay shows it out and the crew is named.
     ...(report.ship !== undefined && { ship: report.ship }),
-    ...(withCrew(state, you) && report.members.includes(you.id) && { report: report.id }),
+    ...(member && { report: report.id }),
     ...(next !== undefined && { next }),
+    ...(hp && { hp }),
+    ...(shared !== undefined && { shared }),
   };
 }
 

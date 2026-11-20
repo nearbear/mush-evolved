@@ -3,7 +3,7 @@ import { CHARACTERS } from "../src/characters.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { fullViewFor, perspective, seatStarts, type FullView, type SeatStarts } from "../src/fullView.ts";
 import { swapMinds } from "../src/mind.ts";
-import { applyInput, startGame, type GameSetup } from "../src/replay.ts";
+import { applyInput, stampEntries, startGame, type GameSetup } from "../src/replay.ts";
 import { chunkHistory, type ReplayIndex } from "../src/replayChunks.ts";
 import { lineStep, mergeStreams, revealFor, seatsAt, stepMarks, streamsOf, type Mark } from "../src/replayView.ts";
 import { historyStep, rebuildHistory, type BuildStamp, type HistoryFrame, type HistoryStep } from "../src/viewHistory.ts";
@@ -36,7 +36,8 @@ function recordedGame(steps: number, seed: number, from: GameSetup = big) {
   const history = record.map(({ at, input }, i) => {
     const result = applyInput(state, input);
     if (!result.ok) throw new Error(result.error);
-    state = result.state;
+    // Stamped as the server stamps them, so a chunk's first step can tell its own lines without the chunk before.
+    state = stampEntries(result.state, at);
     starts ??= seatStarts(state);
     const next = fullViewFor(state, starts);
     // A room restart now and then, as a deploy would cause.
@@ -84,7 +85,7 @@ describe("stepMarks", () => {
 
   it("marks a chunk's first step as its cycle, with or without the chunk before", () => {
     for (const { chunk, frames, before } of loaded.slice(1)) {
-      const [withBefore, without] = [stepMarks(frames, chunk.info.firstInput, before), stepMarks(frames, chunk.info.firstInput)];
+      const [withBefore, without] = [stepMarks(frames, chunk.info.firstInput, before), stepMarks(frames, chunk.info.firstInput, undefined, chunk.info.from)];
       expect(without).toEqual(withBefore);
       expect(without[0]?.step).toBe(chunk.info.firstInput);
     }
@@ -102,6 +103,15 @@ describe("stepMarks", () => {
     expect(stepMarks([{ view: a }, { view: trimmedOnly }], 10).some((m) => m.step === 11)).toBe(false);
     // Same length as before, one line more: still a mark.
     expect(stepMarks([{ view: a }, { view: withLog([entry(2, "b"), entry(3, "c"), entry(4, "fireExtinguished")]) }], 0)).toContainEqual({ step: 1, kind: "fire" });
+  });
+
+  it("without the chunk before, tells a first step's lines by their server stamp: a death at the cycle change carries the old cycle", () => {
+    const old = { ...entry(1, "a"), at: 100 };
+    const died = { ...entry(2, "died"), cycle: base.cycle - 1, at: 200 };
+    const frames = [{ view: withLog([old, died]) }];
+    expect(stepMarks(frames, 5, undefined, 200)).toEqual([{ step: 5, kind: "death" }]);
+    // No stamp to go by (an older game): only lines of its own cycle count.
+    expect(stepMarks(frames, 5)).toEqual([{ step: 5, kind: "cycle" }]);
   });
 
   it("marks a fire starting or going out, not each cycle it burns", () => {

@@ -48,7 +48,7 @@
   --glow-rim: #78aaff;
   /* Chrome ramp ("Dusk", UI coherence step 2): the original's indigo, greyed, so the fills stay quiet and
      Mush's saturated blue lives in the edges (--chrome-line, the tooltip art's line blue). The design kit's
-     #surfaces section compares it with the old colours. */
+     Game screen page shows it on the whole screen. */
   --chrome-0: #0b0b17; /* deepest: the scene backdrop */
   --chrome-1: #17172c; /* panels: inspect, top bar */
   --chrome-2: #21213d; /* raised: cards on the scene (nameplate, AP/MP, room plaque) */

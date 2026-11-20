@@ -10,6 +10,7 @@ import { expeditionLaunch } from "./expeditionLaunch.ts";
 import { expeditionPlan } from "./expeditionPlan.ts";
 import { expeditionPrep } from "./expeditionPrep.ts";
 import { explore } from "./explore.ts";
+import { isolate } from "./isolate.ts";
 import { leaveIcarus } from "./leaveIcarus.ts";
 import { extinguish } from "./extinguish.ts";
 import { fierySpeech } from "./fierySpeech.ts";
@@ -76,6 +77,7 @@ export const SOLO_GOALS: readonly GoalDef[] = [
   project,
   shrinkDorm,
   rest,
+  isolate,
   explore,
 ];
 

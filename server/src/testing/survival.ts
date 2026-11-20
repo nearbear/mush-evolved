@@ -7,6 +7,10 @@
 import { applyInput, CHARACTERS, ITEM_TYPES, createGame, dailyMoraleLoss, legalActions, nextDue, resolveConfig, shuffle, viewFor, type DeathCause, type Ending, type GameState, type Input, type PlayerId, type Seat } from "@mush2/shared";
 import { GoalBot } from "../bots.ts";
 import { BOT_DUTIES } from "../bots/duties.ts";
+import { expeditionsOver, parseExpeditionLine } from "../bots/expeditionShare.ts";
+import { readyToLeaveOrbit } from "../bots/goals/travel.ts";
+import type { BotMemory } from "../bots/goals/types.ts";
+import { HOLD_JUMP_LINE } from "../bots/planetShare.ts";
 
 export interface SurvivalOptions {
   /** Stop counting after this many days (owner, 2026-11-11: 30 by default). */
@@ -115,6 +119,12 @@ export interface CycleReport {
   coffeeJunkie?: number;
   coffeeOthers?: number;
   junkieMeals?: number;
+  /**
+   * Beds (oxygen plan Run A2): AP bots spent on moves while following `rest` (walking to a bed, or from a full bedroom to
+   * the next) in the cycle, and how many of the living crew lay in a bed as the cycle ended. Missing in older runs.
+   */
+  restWalkAp?: number;
+  lying?: number;
 }
 
 export interface SurvivalResult {
@@ -137,6 +147,14 @@ export interface SurvivalResult {
   social?: Record<string, number>;
   /** Times the ship traveled to a new place (the Commander, #417), from the public log line. Absent in runs saved before. */
   jumps?: number;
+  /**
+   * Every jump: the cycle; whether it heads for a planet (else an escape jump into empty space); hunters attacking and
+   * oxygen just before it; cycles since `"Jump: hold"` first went up (null if none did); planets anyone held; free
+   * planet slots of the living Astrophysicists; and the destination's unexplored Oxygen sectors. Absent in runs saved before.
+   */
+  jumpLog?: { cycle: number; toPlanet: boolean; hunters: number; oxygen: number; heldFor: number | null; planets: number; astroFree: number; oxygenSectors: number }[];
+  /** Every orbit: the cycle it began and ended (null: the run ended in orbit), the planet's Oxygen sectors, expeditions launched and oxygen they brought, and the cycle every sector was first explored (`allExplored`, from the state, not the bots' reports). Absent in runs saved before. */
+  orbitLog?: { from: number; to: number | null; oxygenSectors: number; expeditions: number; oxygen: number; allExplored?: number }[];
   /** Steps a bot returned that the rules refused (should be 0: goals step only from `legalIn`). */
   refused: number;
   /** Cycle by cycle, for the loss report. Absent in runs saved before. */
@@ -239,24 +257,28 @@ export async function runSurvival(seed: number, opts: SurvivalOptions): Promise<
   let game = survivalGame(seed, opts);
   const trace = opts.trace ?? (() => {});
   const bots = new Map<PlayerId, GoalBot>(game.players.map((p, i) => [p.id, new GoalBot(seed * 1_000 + i)]));
-  const result: SurvivalResult = { seed, crew: game.players.map((p) => p.character), end: "survived", cyclesPerDay: game.config.cyclesPerDay, day: 1, cycle: 1, deaths: [], days: [], goals: {}, social: {}, jumps: 0, decisions: 0, refused: 0, cycles: [] };
+  const result: SurvivalResult = { seed, crew: game.players.map((p) => p.character), end: "survived", cyclesPerDay: game.config.cyclesPerDay, day: 1, cycle: 1, deaths: [], days: [], goals: {}, social: {}, jumps: 0, decisions: 0, refused: 0, cycles: [], jumpLog: [], orbitLog: [] };
+  /** The cycle `"Jump: hold"` first went up since the last jump. */
+  let holdPosted: number | null = null;
   const lastGoal = new Map<PlayerId, string | null>();
   let now = 0;
   let logSeen = game.nextLogId;
 
-  const newRow = (cycle: number): CycleReport => ({ cycle, hull: 0, oxygen: 0, alive: 0, hunters: 0, fires: 0, killed: 0, shed: 0, shots: 0, repairTries: 0, repairs: 0, apLeft: 0, atCap: 0, scraps: 0, scrapsCarried: 0, apShooters: {}, apOthers: {}, hullLost: 0, arrived: 0, firesStarted: 0, firesOut: 0, extinguishTries: 0, brokenTanks: 0, tankRepairTries: 0, tankRepairs: 0, moraleUp: {}, moraleDown: {}, oxygenIn: {}, expeditions: 0, shares: 0, jumps: 0, coffeePulled: 0, coffeeJunkie: 0, coffeeOthers: 0, junkieMeals: 0 });
+  const newRow = (cycle: number): CycleReport => ({ cycle, hull: 0, oxygen: 0, alive: 0, hunters: 0, fires: 0, killed: 0, shed: 0, shots: 0, repairTries: 0, repairs: 0, apLeft: 0, atCap: 0, scraps: 0, scrapsCarried: 0, apShooters: {}, apOthers: {}, hullLost: 0, arrived: 0, firesStarted: 0, firesOut: 0, extinguishTries: 0, brokenTanks: 0, tankRepairTries: 0, tankRepairs: 0, moraleUp: {}, moraleDown: {}, oxygenIn: {}, expeditions: 0, shares: 0, jumps: 0, coffeePulled: 0, coffeeJunkie: 0, coffeeOthers: 0, junkieMeals: 0, restWalkAp: 0, lying: 0 });
   let row = newRow(game.cycle);
   /** Fills the row's end-of-cycle fields from `g`, the state just before the change (or where the game ended). */
   const closeRow = (g: GameState): void => {
     const living = g.players.filter((p) => p.alive);
     const scraps = g.items.filter((i) => i.type === "metal_scraps");
-    Object.assign(row, { hull: g.ship.hull, oxygen: g.ship.oxygen, alive: living.length, hunters: g.hunters.list.length, fires: g.fires.length, apLeft: living.reduce((a, p) => a + p.ap, 0), atCap: living.filter((p) => p.ap >= p.maxAp).length, scraps: scraps.length, scrapsCarried: scraps.filter((i) => i.at.kind === "player").length, brokenTanks: Object.values(g.equipment).flat().filter((e) => e.type === "OXYGEN_TANK" && e.broken).length });
+    Object.assign(row, { hull: g.ship.hull, oxygen: g.ship.oxygen, alive: living.length, hunters: g.hunters.list.length, fires: g.fires.length, apLeft: living.reduce((a, p) => a + p.ap, 0), atCap: living.filter((p) => p.ap >= p.maxAp).length, scraps: scraps.length, scrapsCarried: scraps.filter((i) => i.at.kind === "player").length, brokenTanks: Object.values(g.equipment).flat().filter((e) => e.type === "OXYGEN_TANK" && e.broken).length, lying: living.filter((p) => p.lyingIn !== undefined).length });
     const planets = Object.values(g.planets).flat();
     const hasOxygen = (pl: (typeof planets)[number]): boolean => pl.sectors.some((s) => s.tag === "OXYGEN" && !s.explored);
     const orbiting = planets.find((pl) => pl.id === g.navigation.orbit);
     Object.assign(row, { planets: planets.length, oxygenPlanets: planets.filter(hasOxygen).length, orbit: g.navigation.orbit !== null, orbitOxygen: orbiting !== undefined && hasOxygen(orbiting) });
     const humans = living.filter((p) => p.role === "human");
     Object.assign(row, { moraleMean: humans.length === 0 ? 0 : humans.reduce((a, p) => a + p.morale, 0) / humans.length, hopeless: humans.filter((p) => p.morale === 0).length, moraleLow: humans.filter((p) => p.morale <= 3).length });
+    const orbit = result.orbitLog!.at(-1);
+    if (orbiting && orbit?.to === null && orbit.allExplored === undefined && orbiting.sectors.every((x) => x.explored)) orbit.allExplored = row.cycle;
     result.cycles!.push(row);
   };
   /** `apCost`: what the action's option said it costs, for the report (timed actions are paid for when they finish). */
@@ -270,6 +292,11 @@ export async function runSurvival(seed: number, opts: SurvivalOptions): Promise<
     const out = before.fires.filter((r) => !game.fires.includes(r)).length;
     // A change that ends the game (hull 0, the last death) ends it before the cycle counter moves.
     const ended = before.phase === "playing" && game.phase !== "playing";
+    if (before.navigation.orbit === null && game.navigation.orbit !== null) {
+      const pl = Object.values(game.planets).flat().find((x) => x.id === game.navigation.orbit);
+      result.orbitLog!.push({ from: game.cycle, to: null, oxygenSectors: pl?.sectors.filter((x) => x.tag === "OXYGEN").length ?? 0, expeditions: 0, oxygen: 0 });
+    }
+    if (before.navigation.orbit !== null && game.navigation.orbit === null && result.orbitLog!.at(-1)?.to === null) result.orbitLog!.at(-1)!.to = game.cycle;
     const changed = game.cycle !== before.cycle || ended;
     const morale = moraleDeltas(before, game, fresh, changed, input.type === "action" ? input.action.type : "tick");
     const oxygenIn = (source: string, amount: number): void => {
@@ -295,6 +322,25 @@ export async function runSurvival(seed: number, opts: SurvivalOptions): Promise<
     row.expeditions! += landed;
     const expedition = landed > 0 || before.expedition !== null || game.expedition !== null || fresh.some((e) => e.key === "expeditionReturned");
     oxygenIn(action === "return_oxygen" ? "capsule" : expedition ? "expedition" : `other:${action}`, game.ship.oxygen - before.ship.oxygen);
+    if (fresh.some((e) => e.key === "shipTraveled")) {
+      const dest = game.navigation.arriving?.planet ?? null;
+      const planet = dest === null ? undefined : Object.values(game.planets).flat().find((pl) => pl.id === dest);
+      const astros = before.players.filter((p) => p.alive && p.skills.includes("astrophysician"));
+      result.jumpLog!.push({
+        cycle: before.cycle,
+        toPlanet: dest !== null,
+        hunters: before.hunters.list.length,
+        oxygen: before.ship.oxygen,
+        heldFor: holdPosted === null ? null : before.cycle - holdPosted,
+        planets: Object.values(before.planets).flat().length,
+        astroFree: astros.reduce((a, p) => a + Math.max(0, before.config.astro.maxPlanets - (before.planets[p.id]?.length ?? 0)), 0),
+        oxygenSectors: planet?.sectors.filter((x) => x.tag === "OXYGEN").length ?? 0,
+      });
+      holdPosted = null;
+    }
+    const orbits = result.orbitLog!;
+    if (landed > 0 && orbits.at(-1)?.to === null) orbits.at(-1)!.expeditions += landed;
+    if (expedition && orbits.at(-1)?.to === null) orbits.at(-1)!.oxygen += Math.max(0, game.ship.oxygen - before.ship.oxygen);
     const gone = before.hunters.list.length - game.hunters.list.length;
     if (gone > 0) row[fresh.some((e) => e.key === "shipTraveled") ? "shed" : "killed"] += gone;
     row.repairs += fresh.filter((e) => e.key === "hullRepaired").length;
@@ -376,6 +422,8 @@ export async function runSurvival(seed: number, opts: SurvivalOptions): Promise<
             acted = true;
             result.social![social.type] = (result.social![social.type] ?? 0) + 1;
             if (social.type === "sharePlanet") row.shares!++;
+            if (social.type === "chat" && social.text === HOLD_JUMP_LINE) holdPosted ??= game.cycle;
+            if (social.type === "chat" && parseExpeditionLine(social.text)) trace(`  ${game.players.find((p) => p.id === id)!.character} says "${social.text}"`);
           } else {
             result.refused++;
             bot.refused();
@@ -384,7 +432,10 @@ export async function runSurvival(seed: number, opts: SurvivalOptions): Promise<
         if (!action) continue;
         if (game.players.find((p) => p.id === id)!.ready && action.type === "ready") continue;
         const cost = view.actions.find((o) => JSON.stringify(o.action) === JSON.stringify(action))?.cost.ap ?? 0;
-        if (apply({ type: "action", action, by: id, at: now }, cost)) acted = true;
+        if (apply({ type: "action", action, by: id, at: now }, cost)) {
+          acted = true;
+          if (action.type === "move" && goal?.startsWith("rest:")) row.restWalkAp! += cost;
+        }
         else {
           result.refused++;
           bot.refused();
@@ -408,6 +459,20 @@ export async function runSurvival(seed: number, opts: SurvivalOptions): Promise<
     const day = dayOfCycle(game, cycle);
     if (game.phase !== "playing" || dayOf(game) !== day) result.days.push({ ...snapshot(game), day });
     const s = snapshot(game);
+    if (game.navigation.orbit !== null) {
+      const pl = Object.values(game.planets).flat().find((x) => x.id === game.navigation.orbit);
+      const pilots = game.players.filter((p) => p.alive && p.skills.includes("pilot"));
+      // Dev-only: the trace reads the bot's protected memory to show which Pilots gave up launching for this orbit.
+      const gaveUp = pilots.filter((p) => [...(bots.get(p.id) as unknown as { memory: { once: Set<string> } }).memory.once].some((k) => k.startsWith("noTakeoff:")));
+      trace(`  orbit ${pl?.name}: sectors ${pl?.sectors.map((x) => `${x.tag}${x.explored ? "*" : ""}`).join(" ")}; expedition ${game.expedition ? "out" : "none"}; pilots alive ${pilots.map((p) => p.character).join(",") || "none"}; gave up ${gaveUp.map((p) => p.character).join(",") || "none"}`);
+      // The Commander's reasons to stay (`readyToLeaveOrbit`), with the same dev-only read of its memory.
+      const cmd = game.players.find((p) => p.id === game.titles.commander && p.alive);
+      const cmdBot = cmd && (bots.get(cmd.id) as unknown as { memory: BotMemory; current: string | null } | undefined);
+      if (cmd && cmdBot) {
+        const v = viewFor(game, cmd.id);
+        trace(`  commander ${cmd.character} in ${cmd.room}, ${cmd.ap} AP, goal ${cmdBot.current ?? "none"}: expeditions over ${expeditionsOver(v, cmdBot.memory)}, ready to leave ${readyToLeaveOrbit(v, cmdBot.memory)}`);
+      }
+    }
     trace(`cycle ${cycle}: hull ${s.hull}, oxygen ${s.oxygen}, fuel ${s.fuel}, alive ${s.alive}, broken ${s.broken}, fires ${s.fires}, hunters ${s.hunters}, morale ${game.players.filter((p) => p.alive).map((p) => `${p.character} ${p.morale}`).join(" ")}`);
   }
   if (game.phase === "ended") result.end = game.ending ?? "stalled";

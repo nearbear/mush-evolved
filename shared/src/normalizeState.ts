@@ -689,6 +689,10 @@ export function normalizeSharedPlanet(raw: Partial<SharedPlanetState>): SharedPl
   const t = "SharedPlanetState";
   return stripUndefined<SharedPlanetState>({
     id: need(raw, "id", t),
+    // Entries shared before structured shares (docs/plans/expedition-ui.md): the text's first line stands for the
+    // name, and no sector slots.
+    name: added(raw, "name", need(raw, "text", t).split("\n", 1)[0]!),
+    sectors: added(raw, "sectors", []),
     text: need(raw, "text", t),
     by: need(raw, "by", t),
     day: need(raw, "day", t),
@@ -1057,6 +1061,8 @@ export function normalizeActiveExpedition(raw: Partial<ActiveExpedition>): Activ
     sabotaged: added(raw, "sabotaged", false),
     // 2026-11-17: before it, a Sabotage covered every sector after it; the one under way keeps covering the next.
     sabotageNext: added(raw, "sabotageNext", raw.sabotaged === true),
+    // Expedition UI slice 1 (2026-11-19): an expedition under way before it shows no HP until its next step.
+    hp: added(raw, "hp", {}),
     // Phase 5 (#359): only the Icarus went before it.
     ship: added(raw, "ship", null),
   });

@@ -2,16 +2,18 @@
 // member's own view (`view.expeditions`). Opened from the member's private "back from the expedition" line in the
 // Icarus Bay's room log, from the Icarus while away (IcarusPanel.tsx), where it grows as each step happens (phase 2),
 // or from the Expeditions feature's list of your reports (SharedReports.tsx).
-// Renders the report only; the rules wrote everything in it. A living member with an iTrackie may share it from here
-// to the Expeditions feature (owner, 2026-11-07, #356) as editable text; sharing again appends to its entry's thread.
+// A compact summary to read afterwards (docs/plans/expedition-ui.md, "The report"): one row per step, its sector's
+// icon and name, the outcome in a line, and the HP each member lost; the screen to watch while away is the timeline.
+// In the terminal frame (FramedDialog), the owner's modal style. Renders the report only; the rules wrote everything
+// in it. A living member with an iTrackie may share it from here to the Expeditions feature (owner, 2026-11-07, #356) as editable text; sharing again appends to its entry's thread.
 
 import { Dialog } from "@base-ui/react/dialog";
 import { MAX_SHARED_PLANET_LENGTH, patrolShip, type ExpeditionEvent, type ExpeditionReportView } from "@mush2/shared";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
-import { DialogHeader } from "./DialogHeader.tsx";
-import "./settings.css";
+import { FramedDialog } from "./FramedDialog.tsx";
+import { SectorIcon } from "./SectorIcon.tsx";
 
 export function ExpeditionReportDialog({
   report,
@@ -28,18 +30,13 @@ export function ExpeditionReportDialog({
 }) {
   return (
     <Dialog.Root open={report !== undefined} onOpenChange={(open) => !open && onClose()}>
-      <Dialog.Portal>
-        <Dialog.Backdrop className="settings-backdrop" />
-        <Dialog.Popup className="settings-popup expedition-report">
-          {/* The popup unmounts when closed, so each opening starts on the report, not the share form. */}
-          {report && <ReportBody report={report} share={canShare && onShare ? (text) => onShare(report.id, text) : undefined} />}
-        </Dialog.Popup>
-      </Dialog.Portal>
+      {report && <ReportFrame report={report} share={canShare && onShare ? (text) => onShare(report.id, text) : undefined} />}
     </Dialog.Root>
   );
 }
 
-function ReportBody({ report, share }: { report: ExpeditionReportView; share: ((text: string) => void) | undefined }) {
+/** The frame and its body. The popup unmounts when closed, so each opening starts on the report, not the share form. */
+function ReportFrame({ report, share }: { report: ExpeditionReportView; share: ((text: string) => void) | undefined }) {
   const { t, i18n } = useTranslation();
   const [sharing, setSharing] = useState(false);
   const [posted, setPosted] = useState(false);
@@ -54,8 +51,7 @@ function ReportBody({ report, share }: { report: ExpeditionReportView; share: ((
         : t("expedition.lootOnFloorShip", { bay: names.room(ship.bay) })
       : t(report.away ? "expedition.lootAboard" : "expedition.lootOnFloor");
   return (
-    <>
-      <DialogHeader heading={t("expedition.title", { planet: report.planet })} closeLabel={t("expedition.close")} />
+    <FramedDialog className="expedition-report" heading={t("expedition.title", { planet: report.planet })} closeLabel={t("expedition.close")}>
       {sharing && share ? (
         <ShareForm
           initial={toText(report)}
@@ -69,9 +65,9 @@ function ReportBody({ report, share }: { report: ExpeditionReportView; share: ((
       ) : (
         <>
           <Crew report={report} language={i18n.language} />
-          <ol className="expedition-events">
+          <ol className="report-rows">
             {report.events.map((event, i) => (
-              <Event key={i} event={event} />
+              <ReportRow key={i} event={event} />
             ))}
           </ol>
           {report.events.some((e) => (e.item !== undefined && e.kind !== "lostItem" && (e.amount ?? 0) > 0) || (e.found?.length ?? 0) > 0) && <p className="sub">{lootLine()}</p>}
@@ -84,7 +80,7 @@ function ReportBody({ report, share }: { report: ExpeditionReportView; share: ((
           )}
         </>
       )}
-    </>
+    </FramedDialog>
   );
 }
 
@@ -143,8 +139,11 @@ function Crew({ report, language }: { report: ExpeditionReportView; language: st
   return <p className="sub">{t("expedition.crew", { names: list })}</p>;
 }
 
-/** An event's sector name and its lines, as the report shows them. */
-function useEventLines(): (event: ExpeditionEvent) => { sector: string; lines: string[] } {
+/**
+ * An event's sector name and its lines, as the shared text and the timeline show them. `outcome` is the same lines
+ * without each member's HP lost, which the report's rows show on their own (`event.hurt`).
+ */
+export function useEventLines(): (event: ExpeditionEvent) => { sector: string; lines: string[]; outcome: string[] } {
   const { t } = useTranslation();
   const names = useNames();
   return (event) => {
@@ -191,20 +190,34 @@ function useEventLines(): (event: ExpeditionEvent) => { sector: string; lines: s
         lines.push(t(`expedition.events.${event.kind}`));
     }
     if (event.avoided) lines.push(t("expedition.events.avoided", { name: names.characterGiven(event.avoided.name), item: names.item(event.avoided.item) }));
-    for (const h of event.hurt ?? []) if (h.hp > 0) lines.push(t("expedition.events.hurt", { name: names.characterGiven(h.name), count: h.hp }));
-    for (const name of event.died ?? []) lines.push(t("expedition.events.died", { name: names.characterGiven(name) }));
-    return { sector, lines };
+    const hurt = (event.hurt ?? []).filter((h) => h.hp > 0).map((h) => t("expedition.events.hurt", { name: names.characterGiven(h.name), count: h.hp }));
+    const died = (event.died ?? []).map((name) => t("expedition.events.died", { name: names.characterGiven(name) }));
+    return { sector, lines: [...lines, ...hurt, ...died], outcome: [...lines, ...died] };
   };
 }
 
-function Event({ event }: { event: ExpeditionEvent }) {
-  const { sector, lines } = useEventLines()(event);
+/** One step as a compact row: the sector's icon, its name and outcome, then the HP each member lost. */
+function ReportRow({ event }: { event: ExpeditionEvent }) {
+  const { t } = useTranslation();
+  const names = useNames();
+  const { sector, outcome } = useEventLines()(event);
+  const hurt = (event.hurt ?? []).filter((h) => h.hp > 0);
   return (
-    <li>
-      <strong>{sector}</strong>
-      {lines.map((line, i) => (
-        <p key={i}>{line}</p>
-      ))}
+    <li className="report-row">
+      <SectorIcon sector={event.sector} />
+      <div className="report-row-text">
+        <strong>{sector}</strong>
+        <p>{outcome.join(" ")}</p>
+      </div>
+      {hurt.length > 0 && (
+        <ul className="report-row-hp">
+          {hurt.map((h) => (
+            <li key={h.name}>
+              {names.characterGiven(h.name)} <span>{t("expedition.hpLost", { hp: h.hp })}</span>
+            </li>
+          ))}
+        </ul>
+      )}
     </li>
   );
 }

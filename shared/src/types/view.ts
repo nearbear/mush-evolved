@@ -10,7 +10,7 @@ import type { PlanetDirection, PlanetTag } from "../planets.ts";
 import type { TitleId } from "../titles.ts";
 import type { Alerts } from "../reports.ts";
 import type { Action, BotKind, DocumentState, ItemId, LogEntry, LogLine, PlayerId, Role, RoomId, SpoilStage } from "../types.ts";
-import type { ChannelId, ChatLine, ChatMessage, ChatThread, PrivateChannel, SeqRange, SharedPlanet, SharedReport, SharedReportId } from "./chat.ts";
+import type { ChannelId, ChatLine, ChatMessage, ChatThread, PrivateChannel, SeqRange, SharedPlanet, SharedPlanetId, SharedReport, SharedReportId } from "./chat.ts";
 import type { Plan } from "./plan.ts";
 import type { MovementRules } from "./config.ts";
 import type { ActionInProgress, PlayerState, Spot } from "./player.ts";
@@ -371,9 +371,25 @@ export interface PlayerView {
    * The expedition under way, public to everyone (owner, 2026-11-07): who is out, by character, the planet's name, and
    * when they are back (server ms; if every member dies the crew is back at once and this is null). `report` is its report's id, only for a
    * member still with the crew (alive and not lost), whose view holds it in `expeditions`. `next` is the next sector's
-   * tag, only to a member with U-turn or Traitor still with the crew (owner, 2026-11-17, `nextSectorFor`).
+   * tag, only to a member with U-turn or Traitor still with the crew (owner, 2026-11-17, `nextSectorFor`). `steps` (the
+   * steps left, the next included) and `nextAt` (when the next resolves, server ms) are public, as the timer already
+   * reveals them (docs/plans/expedition-ui.md). `hp` is each member's exact HP by character as of the latest step (not
+   * live: losses between steps only humans take would show), only to a member still with the crew, and only for those
+   * still with it: never a lost member's, never a max HP (owner, 2026-11-19). `shared` is the Astrophysics entry shared
+   * from the planet being explored, to whoever reads that feature (its `sharedPlanets` holds the entry).
    */
-  expedition: { crew: CharacterId[]; planet: string; returnAt: number; report?: string; ship?: RoomId; next?: PlanetTag } | null;
+  expedition: {
+    crew: CharacterId[];
+    planet: string;
+    returnAt: number;
+    steps: number;
+    nextAt: number;
+    report?: string;
+    ship?: RoomId;
+    next?: PlanetTag;
+    hp?: { name: CharacterId; hp: number }[];
+    shared?: SharedPlanetId;
+  } | null;
   /** How many the Icarus holds (`maxCrew`, expeditions.ts): public, since it follows a public project. The Icarus panel draws one pedestal each. */
   icarusSeats: number;
   /**
@@ -441,9 +457,9 @@ export interface ActionOption {
   tags: ActionTag[];
   /**
    * Empty when you can do it now; otherwise the points, the inventory space, or the cleanliness ("clean": you are dirty)
-   * you lack, or for Collect scrap, "debris" (none out there) or "pasiphae" (a patrol ship can't while the Pasiphae exists), or for Travel and turns, "reactor" (the reactor it needs is broken), or for Travel and Leave orbit, "arack" (an Arack is around), or for Hack, "preselection" (titles aren't assigned yet). See `affordable`.
+   * you lack, or for Collect scrap, "debris" (none out there) or "pasiphae" (a patrol ship can't while the Pasiphae exists), or for Travel and turns, "reactor" (the reactor it needs is broken), or for Travel and Leave orbit, "arack" (an Arack is around), or for Hack, "preselection" (titles aren't assigned yet), or for Board the Icarus and Take off, "explored" (every sector of the planet is explored) or "icarusLost". See `affordable`.
    */
-  lacks: ("ap" | "mp" | "space" | "cooldown" | "capacity" | "clean" | "debris" | "pasiphae" | "reactor" | "arack" | "preselection")[];
+  lacks: ("ap" | "mp" | "space" | "cooldown" | "capacity" | "clean" | "debris" | "pasiphae" | "reactor" | "arack" | "preselection" | "explored" | "icarusLost" | "antisocial")[];
   /** Cycles until it is ready, when `lacks` has "cooldown". */
   cooldown?: number;
 }
@@ -455,7 +471,7 @@ export interface PlanetView {
   direction: PlanetDirection;
   /** In fuel. */
   distance: number;
-  sectors: (string | null)[];
+  sectors: (PlanetTag | null)[];
   /** True for the planet the ship orbits; absent otherwise. */
   orbited?: true;
 }

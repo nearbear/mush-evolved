@@ -1,4 +1,4 @@
-import { Action, isString } from "./action.ts";
+import { Action, EXPLORED, ICARUS_LOST, isString } from "./action.ts";
 import { endPushToLeave } from "./accommodate.ts";
 import { ICARUS_EQUIPMENT } from "./icarus_takeoff.ts";
 import { board } from "./takeoff.ts";
@@ -12,7 +12,8 @@ export type BoardIcarusActionData = { type: "board_icarus"; equipment: string };
  * Board the docked Icarus from its bay (owner, 2026-11-17, docs/plans/expedition-boarding.md): free, at the Icarus,
  * while the ship orbits a planet with an unexplored sector and there is room aboard, with a working spacesuit unless the
  * planet has an Oxygen sector (`boardRefusal`). Whoever is aboard at takeoff is the crew (actions/icarus_takeoff.ts).
- * The line is public in the bay, written before the player leaves it. A push the player is part of ends.
+ * The line is public in the bay, written before the player leaves it. A push the player is part of ends. On a fully
+ * explored planet or once the Icarus is lost it shows disabled with the reason (owner, 2026-11-19), not hidden.
  */
 export class BoardIcarusAction extends Action<BoardIcarusActionData> {
   constructor() {
@@ -20,7 +21,8 @@ export class BoardIcarusAction extends Action<BoardIcarusActionData> {
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): BoardIcarusActionData[] {
-    if (boardRefusal(state, player) !== null) return [];
+    const refused = boardRefusal(state, player);
+    if (refused !== null && refused !== EXPLORED && refused !== ICARUS_LOST) return [];
     return icarusHere(state, player).map((equipment): BoardIcarusActionData => ({ type: "board_icarus", equipment }));
   }
 

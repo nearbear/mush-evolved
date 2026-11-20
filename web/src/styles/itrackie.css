@@ -638,6 +638,62 @@
   align-self: flex-end;
   font-size: 0.75rem;
 }
+/* The sector slots (SharePlanetForm.tsx): one button per sector, its tag icon at 1x; pressing one opens the row of
+   choices under them. Both wrap, so any size of planet fits 360px. */
+.share-planet-slots {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+.share-planet-slots legend {
+  padding: 0;
+  margin-bottom: var(--space-1);
+  font-weight: bold;
+}
+.share-planet-slots ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.share-planet-slot,
+.share-planet-choice {
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: 2px;
+  min-width: 48px;
+  min-height: 48px;
+}
+.share-planet-slot[aria-expanded="true"] {
+  outline: 2px solid currentColor;
+  outline-offset: 1px;
+}
+.share-planet-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-top: var(--space-2);
+}
+.share-planet-choice[aria-pressed="true"] {
+  outline: 2px solid currentColor;
+  outline-offset: 1px;
+}
+/* A shared planet's sector slots as icons (SharedSectors.tsx), in the Astrophysics feature and on the expedition screen. */
+.shared-sectors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  margin: 0 0 var(--space-1);
+  padding: 0;
+  list-style: none;
+}
+.shared-planet-text .shared-planet-title {
+  font-weight: bold;
+}
 /* Mark all read (#400), at the right of the title row while the tab has unread. */
 .mark-read {
   flex: none;

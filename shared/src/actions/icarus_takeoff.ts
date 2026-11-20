@@ -1,4 +1,4 @@
-import { Action } from "./action.ts";
+import { Action, EXPLORED, ICARUS_LOST } from "./action.ts";
 import { canLaunchExpedition, hasSpacesuit, hasUnexplored, icarusDocked, needsSpacesuit, orbitedPlanet, runExpedition } from "../expeditions.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
@@ -13,7 +13,8 @@ export const ICARUS_EQUIPMENT = "ICARUS_COMMAND";
  * while the ship orbits a planet with an unexplored sector. Anyone who can fly may launch (`canLaunchExpedition`, owner
  * 2026-11-15; pilot lock comes later), with a working spacesuit on a planet with no Oxygen sector. Not while another
  * expedition is away. The crew is whoever is aboard (expeditions.ts): the takeoff line is public in the bay, the report
- * goes to the crew only. Never again once the Icarus is lost (`strandExpedition`).
+ * goes to the crew only. Never again once the Icarus is lost (`strandExpedition`). On a fully explored planet or once
+ * the Icarus is lost it shows disabled with the reason (owner, 2026-11-19), not hidden.
  */
 export class IcarusTakeoffAction extends Action<IcarusTakeoffActionData> {
   constructor() {
@@ -25,18 +26,19 @@ export class IcarusTakeoffAction extends Action<IcarusTakeoffActionData> {
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): IcarusTakeoffActionData[] {
-    return this.validate(state, player) === null ? [{ type: "icarus_takeoff" }] : [];
+    const refused = this.validate(state, player);
+    return refused === null || refused === EXPLORED || refused === ICARUS_LOST ? [{ type: "icarus_takeoff" }] : [];
   }
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>): string | null {
     if (player.room !== state.config.expedition.craft) return "not_in_icarus";
     if (!canLaunchExpedition(state, player)) return "cant_fly";
-    if (state.icarusLost) return "icarus_lost";
+    if (state.icarusLost) return ICARUS_LOST;
     if (state.expedition) return state.expedition.ship === null ? "icarus_away" : "expedition_away";
     if (!icarusDocked(state)) return "icarus_away";
     const planet = orbitedPlanet(state);
     if (!planet) return "not_in_orbit";
-    if (!hasUnexplored(planet)) return "explored";
+    if (!hasUnexplored(planet)) return EXPLORED;
     if (needsSpacesuit(planet) && !hasSpacesuit(state, player)) return "no_spacesuit";
     return null;
   }

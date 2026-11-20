@@ -159,18 +159,21 @@ const maxId = (list: readonly { id: number }[]): number => list.reduce((m, e) =>
  * compared with the view before its input: its `base` when it carries one (a room restart's copy is never an event
  * itself, owner, 2026-11-05), else the frame before it, else `before` (the last frame of the chunk before). It
  * compares the highest id, never lengths, since a trim can drop entries in the step that adds one. A chunk's first
- * step without `base` or `before` is a cycle's full copy: everything of its new cycle counts as added.
+ * step without `base` or `before` is a cycle's full copy: what its input added is told by the server stamp, every line
+ * stamped at `from` (its `ChunkInfo.from`) or later. That catches a death at the cycle change, which carries the old
+ * cycle. Without `from` or stamps (older games), everything of its new cycle counts as added.
  * Reads frames as recorded, not through `readFrame`: only log and chat ids and keys, so a whole chunk costs no
  * normalizing.
  */
-export function stepMarks(frames: readonly Pick<HistoryFrame, "base" | "view">[], firstStep: number, before?: Readonly<FullView>): Mark[] {
+export function stepMarks(frames: readonly Pick<HistoryFrame, "base" | "view">[], firstStep: number, before?: Readonly<FullView>, from?: number): Mark[] {
   const marks: Mark[] = [];
   frames.forEach((frame, i) => {
     const prev = frame.base ?? frames[i - 1]?.view ?? before;
     const { view } = frame;
     const cycle = prev === undefined || view.cycle > prev.cycle;
     const [logFrom, chatFrom] = prev === undefined ? [-1, -1] : [maxId(prev.log), maxId(prev.chat)];
-    const added = (e: { id: number; cycle: number }, from: number) => (from < 0 ? e.cycle >= view.cycle : e.id > from);
+    const added = (e: { id: number; cycle: number; at?: number }, after: number) =>
+      after >= 0 ? e.id > after : from !== undefined && e.at !== undefined ? e.at >= from : e.cycle >= view.cycle;
     const lines = view.log.filter((e) => added(e, logFrom));
     const messages = view.chat.filter((m) => added(m, chatFrom));
     if (!cycle && lines.length === 0 && messages.length === 0) return;

@@ -34,12 +34,14 @@ export interface BotMemorySnapshot {
   once: string[];
   visited: RoomId[];
   shrinks: string[];
+  fullBeds: [RoomId, PlayerId[]][];
   lastExpedition: ExpeditionKind | null;
   asteroidsOnly: number | null;
   items: { rooms: [SharedItem, RoomId[]][]; said: [SharedItem, RoomId[]][]; seq: number };
   fires: { active: number; burning: RoomId[]; checked: RoomId[]; seq: number };
   tanks: { broken: RoomId[]; suspect: RoomId[]; claims: [RoomId, { by: PlayerId; cycle: number }][]; seq: number };
   morale: { said: boolean; requests: [PlayerId, number][]; seq: number };
+  expeditionEnd: { done: string[]; noIcarus: boolean; said: string[]; seq: number };
   combustion: number | null;
   holdSince: number | null;
   jump: JumpMemory;

@@ -2,21 +2,29 @@
 
 Status: done, 2026-11-07 (every component in the plan is in the kit). Not a rules plan; nothing here changes the game.
 
-The dev-only page `/design-kit-mush2` (`web/src/designKit/Mush2Kit.tsx`, `mush2Kit.css`) shows our own components with
+The dev-only kit at `/design-kit-mush2` (`web/src/designKit/Mush2Kit.tsx`, `mush2Kit.css`) shows our own components with
 sample props, so each one can be checked in isolation (desktop and the 360px phone width) without playing to the state
-that shows it. Every section renders the **real** component from `web/src`, never a copy. Sample text is English only;
+that shows it. Each component has its own page, `/design-kit-mush2/<id>` (the section's id), listed in a side nav by
+group; below 1024px the nav is a drawer opened by the menu button in the header (2026-11-19).
+
+Pages for game-screen pieces (`game: true` in `Mush2Kit.tsx`'s `GROUPS`) render inside `main.game`, so `card.css`'s
+game-screen card look applies as in play; terminal and lobby pages don't, since the game shows those outside it.
+Components that fill a whole panel (Inspect, the patrol cockpit, the expedition screen, the iTrackie, the death notice)
+sit in `GameFrame.tsx`: the game's own layout (top bar, Inspect | room | iTrackie, the real bottom nav on phones) with
+skeleton blocks for every part the page doesn't show, so each is seen against the rest of the screen. Every section renders the **real** component from `web/src`, never a copy. Sample text is English only;
 the page never ships and the i18n hardcoded-text test skips it.
 
 ## In the kit now
 
 Every component the plan listed is in the kit, either with its own section or inside a bigger one (2026-11-07). A piece
 that already shows inside a composite gets no section of its own (the pip bar is in AP and MP and the Self HUD), so each
-look is checked once, in the context it has in the game. Sections live in `Mush2Kit.tsx` (the first four),
-`HudSections.tsx`, `GameSections.tsx` and `LobbySections.tsx`; `KitSection.tsx` has the frames, `samples.ts` the views.
+look is checked once, in the context it has in the game. Sections live in `CoreSections.tsx`, `GameScreenSection.tsx`,
+`PrimitivesSection.tsx`, `HudSections.tsx`, `GameSections.tsx` and `LobbySections.tsx`; `KitSection.tsx` has the frames,
+`GameFrame.tsx` the skeleton screen, `samples.ts` the views.
 
 | Section | Component | Also shows |
 |---|---|---|
-| Surface ramps | `designKit/SurfaceSection.tsx`: today's chrome beside ramps D and E (UI coherence step 2; E chosen for now, not yet applied to `tokens.css`) | `TopBar`, `InspectPanel`, `SelfHud`, `ITrackie` together on the page background |
+| Game screen | `designKit/GameScreenSection.tsx`: the whole screen in `GameFrame`, every panel real except the room scene; the chrome is `tokens.css`'s Dusk ramp and `card.css` | `TopBar`, `InspectPanel`, `SelfHud` (`ShipOverlay` on phones), `ITrackie`, `BottomNav` |
 | Ship card | `games/ShipCard.tsx` | |
 | Terminal frame | `hud/TerminalFrame.tsx` | `TabOutline` (`"cut"`) |
 | Terminals | `TerminalBody` (exported from `hud/TerminalDialog.tsx` for this), one per terminal, and the turret again with hunters | research/project lists, PILGRED, `PlanetList` → `SharePlanetForm`, `CommandTerminal` (`ShipNavigation`, `UnavailableButton`, `ConfirmPanel`), `CommsCenter`, `BiosTerminal`, `TurretPanel` (`HunterList`), `RelayDetails`, `ActionButton`, `ActionLabel` |
@@ -63,8 +71,10 @@ fixture for the small ones; it also helps re-render cost. Do it only where it re
 
 ## Conventions for new sections
 
-- One `<section id>` per component, linked from the header nav; a short paragraph naming the file and what each prop
-  variant shows; `<figure>`s in `.m2k-row` with a `<figcaption>`.
+- One `<section id>` per component, a page of its own: add it to `GROUPS` in `Mush2Kit.tsx` (its id is the URL), with
+  `game: true` if the game shows it on the game screen. A short paragraph naming the file and what each prop variant
+  shows; `<figure>`s in `.m2k-row` with a `<figcaption>`.
+- A component that fills a panel goes in `GameFrame` (its slot, and the `panel` a phone shows first), not a bare box.
 - Real components only, imported from `web/src`. If a component cannot render outside the game, make it pure first
   (as with `TerminalFrame`), not a kit-only copy.
 - Check every section at desktop and 360px (no horizontal scroll); the kit's terminal shots used a small Playwright

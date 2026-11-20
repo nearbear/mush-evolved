@@ -4481,3 +4481,75 @@ Follow-up (same day): the Stiff Neck modifier imported `getUp` from `actions/lie
 ## 2026-11-20: Room disease spread refactor
 
 Owner asked to move cycle-change and room-entry disease spreading into single functions like `spreadByTouch`. Claude replaced the copied loops in Cold, Flu and Rubella's `onCycle`/`onEncounter` hooks with `spreadAtCycle` and `spreadOnEncounter` in `diseases.ts`, driven by each disease's `cycleSpread`/`roomSpread` config, and called from `cycleChanged` and `enterRoom`. Claude noticed that Gastroenteritis and Skin inflammation already had spread chances in config that no code read, so the refactor would switch them on, and asked; the owner chose to let them spread. RNG draw order shifts slightly (spreading now runs before a player's other cycle hooks), which seeded tests tolerated.
+## 2026-11-19: Skill pick confirmation inside the picker
+
+- The skill picker's confirmation no longer opens a second `ConfirmPanel` modal; choosing a skill swaps the picker's body for that one skill's card, the question, and Back / Yes (`web/src/hud/SkillSlots.tsx`). While confirming, Escape or a click outside is cancelled via Base UI's `onOpenChange` details (`reason !== "close-press"` → `cancel()`) and steps back to the list, matching the old nested modal; the × still closes the picker.
+- Worked: one-file change plus a small `.skill-confirm` layout rule; `ConfirmPanel` stays for its other users.
+- Follow-up: the confirm step also shows the picker's "can't be changed" warning; Back and Yes are a two-column grid as wide as the card; the step is centred both ways in the terminal body with `margin-block: auto` (the body is a full-height flex column). Found and merged a stale, unused `.skill-confirm` rule left in `inspect.css` from an earlier version instead of adding a duplicate.
+
+## 2026-11-19: Diagnosing why bots run out of oxygen (no strategy change)
+
+- Asked to continue the oxygen analysis with the new Commander's Issue mission in mind, diagnosis only. Added a jump log and an orbit log to the survival harness (`jumps`, `orbits` and `orbits explored out` report lines, an orbit line in `--verbose`); three 50-seed runs gave identical endings, so the fields observe without changing play.
+- What worked: measuring instead of reasoning from end-of-cycle snapshots. A first pass that guessed jump triggers from the cycle rows put half the jumps in "other"; logging the hunters and oxygen just before each jump showed every jump to a planet waited for a #421 trigger. Tracing one stalled seed showed every sector explored while the Commander stayed, because `readyToLeaveOrbit` counts only shared reports.
+- Needed correction: I first read the destination hold as a bug; issue #421 shows it was the owner's decision ("works with or without a destination"), so it is reported as a decision to revisit, not a fix.
+- Findings in `docs/plans/bot-goals.md` ("Why oxygen still runs out").
+
+## 2026-11-19: Expedition UI plan (docs/plans/expedition-ui.md)
+
+Planned the expedition screen with the owner: a chronological timeline of sector columns (current in the middle, clipped neighbours, big arrows, the next sector a mystery unless U-turn or Traitor), a compact row report for afterwards, and structured, editable sector slots in shared planets shown separately from what was explored. Worked: reading the view types first exposed the real gaps (no HP in `OtherPlayerView`, shared planets as unparsed text, `tag_unknown` without alpha) before proposing UI. The owner decided crew HP (exact, members only, while away), editable slots with a fixed count, a link to the source planet (name and size accepted as leaks, with a disclaimer in the Share form), and no ticking off.
+
+## 2026-11-19: Expedition timeline (expedition-ui.md, slice 2), web only on stubbed data
+
+- Built `ExpeditionTimeline.tsx` (columns from the pure `expeditionTimeline.ts`) in `IcarusPanel` while away and in `LostPanel`, a design-kit section, en/fr/es strings, and unit and DOM tests. The owner asked for no server or shared changes while another session reworks bots, so slice 1's `steps`, `nextAt` and member HP are read through `web/src/hud/expeditionStub.ts` when present and otherwise fall back (one mystery column, no countdown, your own HP only); the kit samples stub them in.
+- Choices put to the owner: a new step moves the view only if you were on the latest one (the plan's "new" marker applies while looking back); the U-turn step uses the landing icon; HP with a max; mobile swiping left out.
+- Owner's follow-up (same day): keep "follow the latest step". The podiums stay while away, one sideways-scrolling row under the timeline (1x on phones) with each member's HP and no max (the server won't send one); the crew strip went. The bar says only "Exploring <planet>". Swipe added with pointer events. The arrows became the plain 21px button drawn rotated by a `::before` (the hexagon `big` style was wrong here). The "U-turn icon" question was mine to explain: it concerned the resolved U-turn step, which has no sector of its own.
+
+## 2026-11-19: Oxygen plan Run A, leave orbit once no expedition can launch
+
+- **Decision (owner, `docs/scratchpad/oxygen-plan.md`):** Board the Icarus and Take off show disabled with the reason "explored" or "Icarus lost" instead of hiding; a bot in the bay that sees either posts a fixed global line, and the Commander leaves orbit on it. Built by Claude in shared (`lacks` `explored`/`icarusLost`, scoped to those two actions), web (reason text, en/fr/es) and server (`bots/expeditionShare.ts`, `readyToLeaveOrbit`, the launch goal).
+- **What worked:** following the existing disabled-reason path (`ARACK_AROUND`) made the rules change small. The smoke test plus a new `--verbose` line for the Commander's state found the real remaining cause in one trace instead of guessing.
+- **What needed correction:** a disabled button is still "offered", so the Pilot's launch goal (which bailed on `offered(...).length === 0`) would have waited aboard forever; caught by reading the goal before running, and fixed by filtering those reasons out. The 50-seed result fell short of the bar (11.0 → 6.6 cycles a run after every sector was explored, 18 → 11 long stays): in every long stay traced, the line was posted and the Commander was ready, but the Commander (also a Pilot) had spent his AP on patrol ships and turrets. Reported as the next lever rather than fixed in the same run.
+
+## 2026-11-19: Design kit split into pages, phone drawer, skeleton game screen
+
+- **Asked:** one page per kit section, a pop-out side nav on phones, a skeleton of the rest of the UI around components that fill a whole panel, and drop the surface-ramp comparison (Today, D, E) now that the Dusk/E look is permanent.
+- **Done:** `/design-kit-mush2/<id>` routes (nested React Router `Routes`; `main.tsx` route became `/design-kit-mush2/*`), a grouped side nav on desktop and a Base UI Dialog drawer behind a ☰ `IconButton` below 1024px, an overview page at the root. `GameFrame.tsx` lays out the game's own classes (`.top-bar`, `.three-panel` with `data-panel`, `.room-view`, the real `BottomNav`) at a fixed height with skeleton blocks for empty slots; Inspect, Patrol, Expedition, iTrackie and the death notices sit in it. `SurfaceSection.tsx` and its ramp CSS were replaced by a "Game screen" page with the real panels.
+- **Worth knowing:** the game screen's card look (`card.css`) is scoped to `main.game`, so the old kit showed HUD panels in the tooltip-art look off the game screen. Game-screen pages now render in `main.game` with the full-viewport layout undone by one kit rule; terminal and lobby pages stay outside it, as the game shows them.
+- **Found, not fixed:** at 360px the Top bar page scrolls sideways (the pre-selection tag in `.cycle`), with or without `main.game`.
+
+## 2026-11-19: Run A follow-up, why the Commander stayed in orbit (bed plan)
+
+- **Correction to the Run A entry above:** the Commander wasn't spending his AP on patrol ships and turrets. A per-action trace of seed 1 (a temporary log line in the survival loop) showed a bedroom loop (`rest` forgets a full bedroom each cycle, so he walked between two full bedrooms every cycle) and a leave-orbit option that counts only the bridge's 1 AP while the goal first walks to the Motor Room. What worked: logging each action instead of trusting an end-of-cycle snapshot and a plausible story.
+- **Decisions (owner):** fix the bedroom loop first; bed tiers (Pilots and the Commander, then other skill and title jobs, then everyone else, the Shrink last); a higher tier asks with a fixed global chat line, and only that line makes a lower tier get up (walking past must not); a Shrink may lie in an empty bed and yields to anyone, changing #452. Antisocial (Raluca) is a separate rule. Plan renamed to `docs/scratchpad/bot-survival-plan.md` (Runs A2–A4); nothing built.
+
+## 2026-11-19: Expedition UI slice 1, the view data
+
+- `PlayerView.expedition` gains `steps` and `nextAt` (public; the timer already reveals both) and `hp` (each member's exact HP, only to and for members still with the crew; lost and dead members excluded both ways). The client's stub (`web/src/hud/expeditionStub.ts`) is gone; the timeline and podiums read the fields directly. Tests: who gets `hp`, that it tracks damage, the lost member both ways, gone after the return.
+- What needed correction: an old test asserted `nextAt` never appears in any view; the plan's decision made it public, so that assertion was dropped rather than worked around.
+- The leak check raised one indirect leak the plan didn't weigh: exact HP shows damage only humans take (disease extras on expedition hits, starvation or disease at a cycle tick while away), so it can clear a human and expose a private disease. Taken to the owner as a rules question.
+- Owner's answer: HP as of the latest step, not live (`ActiveExpedition.hp`, a snapshot taken at the landing and after each sector). Hides losses between steps; a hidden disease's extra damage on a hit still shows, which the owner dislikes but accepts for now. Approximate HP was rejected: any band has edges a character's HP can be seen crossing.
+
+## 2026-11-19: Raluca's Antisocial trait (#470)
+
+- Implemented the owner's fully specified issue: `modifiers/antisocial.ts` (`onCycle`, −1 morale via `gainMorale` with a new optional loss log key, so the private line says why), the public trait status with the original `unsociable.png` icon, Bond shown disabled with a new `lacks: "antisocial"`, en/fr/es text, and bot goals (`rest` skips her; new `isolate`).
+- Judgment call: the issue put `isolate` "just above END_CYCLE", but `explore` (30) would then walk her out of her quiet room every cycle, so it sits at 35, between `rest` and `explore`. Flagged for the owner.
+- English uses the owner's "Antisocial"; fr/es use eMush's "Asociale"/"Asocial". eMush exempts a Mush from the loss; the owner chose not to, recorded in rules-design.md.
+- What needed correction: the change shifted the seeded 16-seat game in `replayView.test.ts`, so a Hopeless death at a cycle change landed on a chunk boundary. `stepMarks` without the previous chunk counts only lines stamped with the new cycle, and cycle-change deaths carry the old one. This was an existing blind spot that the rule exposed, not a bug in the rule; it was left to the owner rather than changing replay code or the seed.
+- Follow-up, same day (owner chose to fix the replay gap): `stepMarks` takes the chunk's `ChunkInfo.from`, and without the chunk before it counts a first step's lines by their server stamp (`at >= from`) instead of by cycle, so a death at a cycle change is marked as one. Older games without stamps keep the cycle guess. No stored-format change; the test's recorded game now stamps entries as the server does.
+
+## 2026-11-19: Expedition UI slice 3, the compact report
+
+- `ExpeditionReportDialog` moved from the old navy `settings-popup` into `FramedDialog` (the terminal frame, the owner's modal style) and became one compact row per step: the sector's 40x40 tag icon at 1x, its name and outcome in one line, and the HP each member lost under it as "Name −3 HP". The shared text is unchanged.
+- The tag icon (with the unknown tag keyed out) moved out of the timeline into `hud/SectorIcon.tsx`, with `--zoom` defaulting to 1, so both screens draw it the same way. `useEventLines` now also returns `outcome` (lines without the HP losses) so the rows don't repeat the HP list.
+- Added a DOM test (rows, icons, HP list, frame, share text keeps the HP lines) and a design-kit opener under Expedition. No visual check run.
+
+## 2026-11-19: Expedition UI slice 4, structured planet shares
+
+- Built from `docs/plans/expedition-ui.md` (the owner's decisions; no new questions). `sharePlanet` takes one sector slot per sector of the planet (checked against its true size, any tag or null), the entry stores the planet's true name; the Share form got a slot row with an icon picker and the disclaimer, the Astrophysics feature lists entries by name with an icon strip, and the expedition timeline has a collapsible shared strip.
+- Deviation from the plan, flagged to the owner: the plan said to send `SharedPlanet.planet` (the planet id) to readers. Claude kept entries free of planet ids (ids are a global counter, and the existing invariant said never sent) and added `view.expedition.shared`, the explored planet's entry id, computed on the server.
+- What needed correction: a `title` attribute on the icons (banned by `web/CLAUDE.md`; replaced by `Hint` and screen-reader text), and server bot tests built `SharedPlanetState` literals that the typecheck didn't cover, found only by the test run.
+## 2026-11-20: Oxygen plan Run A2, full-bedroom memory
+
+- **Kept (`observeBeds`):** bots remember bedrooms where every bed is taken (`BotMemory.fullBeds`) across cycles until they see a free bed there or see a sleeper elsewhere, up, or dead. On 50 seeds against a rerun of Run A, AP walking to rest dropped 495.5 → 353.2 a run and `rest` starts dropped 795 → 493, while cycles in orbit after full exploration stayed 6.6 → 6.6.
+- **Dropped (owner):** A2b (leave orbit only when the whole Motor Room chain is affordable). Cycles in orbit after full exploration went 6.6 → 7.2 and seed 3's Commander was stranded for 59 cycles because lower-ranked goals spent his AP down to the reserve; reverted rather than protecting that AP.
+- **Process lessons:** rerun the baseline with new metrics back to back with the runs; harness workers load code lazily, so don't edit source during a run; the A2b smoke test looked fine on average, but a per-seed stay listing caught seed 3's stranding.

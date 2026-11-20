@@ -1,6 +1,7 @@
 /* Dev-only mush2 design kit page (Mush2Kit.tsx). Page chrome only; components bring their own CSS. */
 
 .m2k {
+  --m2k-header: 48px;
   min-height: 100vh;
   background: #080824;
   color: #dfe6f5;
@@ -11,44 +12,180 @@
   position: sticky;
   top: 0;
   z-index: 10;
+  box-sizing: border-box;
+  height: var(--m2k-header);
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px 16px;
+  gap: 12px;
   align-items: center;
-  padding: 10px 16px;
+  padding: 0 16px;
   background: #0a0f1ccc;
   border-bottom: 1px solid #2c3e66;
 }
-
 .m2k-header h1 {
   margin: 0;
   font-size: 16px;
 }
-
-.m2k-header nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 12px;
+.m2k-header h1 a {
+  color: inherit;
+  text-decoration: none;
+}
+.m2k-current {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #8796b8;
+}
+.m2k-current::before {
+  content: "/ ";
 }
 
 .m2k a {
   color: #4fc3f7;
 }
 
-/* Clear the sticky header when a nav link jumps to a section. */
-.m2k section {
-  scroll-margin-top: 56px;
+/* The side nav beside the page on desktop; on phones the menu button opens it as a drawer (.m2k-drawer). */
+.m2k-body {
+  display: grid;
+  grid-template-columns: 13rem minmax(0, 1fr);
+}
+.m2k-side {
+  position: sticky;
+  top: var(--m2k-header);
+  box-sizing: border-box;
+  height: calc(100dvh - var(--m2k-header));
+  overflow-y: auto;
+  padding: 12px 8px;
+  border-right: 1px solid #2c3e66;
+}
+.m2k-menu {
+  display: none;
+}
+@media (max-width: 1023.98px) {
+  .m2k-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .m2k-side {
+    display: none;
+  }
+  .m2k-menu {
+    display: inline-flex;
+  }
 }
 
-.m2k main {
-  max-width: 960px;
+.m2k-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.m2k-nav-group h2 {
+  margin: 0 8px 4px;
+  color: #8796b8;
+  font-size: 11px;
+  font-weight: normal;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.m2k-nav ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.m2k-nav a {
+  display: block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  color: #c9d4ee;
+  text-decoration: none;
+}
+.m2k-nav a:hover {
+  background: #141c3a;
+}
+.m2k-nav a[aria-current="page"] {
+  background: #1d2a5a;
+  color: #fff;
+  box-shadow: inset 2px 0 0 #3965fb;
+}
+
+/* The phone drawer (a Base UI dialog, portalled outside .m2k, so it sets its own type and colours). */
+.m2k-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgb(0 0 0 / 0.55);
+  transition: opacity 0.2s;
+}
+.m2k-drawer {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 101;
+  box-sizing: border-box;
+  width: min(18rem, 85vw);
+  overflow-y: auto;
+  padding: 8px 8px calc(16px + env(safe-area-inset-bottom));
+  background: #0a0f1c;
+  border-right: 1px solid #2c3e66;
+  color: #dfe6f5;
+  font: 14px/1.45 "Kanit", system-ui, sans-serif;
+  transition: transform 0.2s;
+}
+.m2k-drawer-backdrop:is([data-starting-style], [data-ending-style]) {
+  opacity: 0;
+}
+.m2k-drawer:is([data-starting-style], [data-ending-style]) {
+  transform: translateX(-100%);
+}
+.m2k-drawer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0 8px 8px;
+}
+.m2k-drawer-title {
+  margin: 0;
+  font-size: 16px;
+}
+
+/* The page itself; base.css's main rule and, on in-game pages (main.game), responsive.css's full-viewport game
+   layout are undone here. */
+.m2k .m2k-content,
+.m2k main.game.m2k-content {
+  display: block;
+  box-sizing: border-box;
+  height: auto;
+  max-width: none;
+  min-width: 0;
+  margin: 0;
   padding: 16px;
+}
+
+/* Clear the sticky header when a link jumps to a section. */
+.m2k section {
+  scroll-margin-top: calc(var(--m2k-header) + 8px);
 }
 
 /* Section headings only: a bare `.m2k h2` would restyle components' own headings (the terminal title). */
 .m2k section > h2 {
   font-size: 15px;
   margin: 8px 0;
+}
+.m2k-content > section > p {
+  max-width: 60rem;
+}
+
+.m2k-overview {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+  gap: 8px 24px;
+}
+.m2k-overview h3 {
+  margin: 8px 0 4px;
+  font-size: 13px;
+  color: #8796b8;
+}
+.m2k-overview ul {
+  margin: 0;
+  padding-left: 1.2em;
 }
 
 .m2k-row {
@@ -91,22 +228,9 @@
   border: 1px solid #2c3e66;
 }
 
-/* Gauges of different heights share a baseline, as they would on the room's bottom edge. */
-.m2k-bottom {
-  align-items: flex-end;
-}
-.m2k-bottom figure {
-  align-items: flex-start;
-}
-
 /* A taller room stand-in, for overlays that open inside the room (inventory, ship card, tips). */
 .m2k .m2k-room-tall {
   height: 22rem;
-}
-/* A room stand-in that grows with what replaces the room (death notice, patrol cockpit). */
-.m2k .m2k-room-auto {
-  height: auto;
-  min-height: 5rem;
 }
 
 /* Full-width figures, one under another (bars and the picker). */
@@ -120,14 +244,6 @@
 /* Terminal bodies need more height than the frame-only samples. */
 .m2k .m2k-terminal-tall {
   height: 30rem;
-}
-
-/* The game's column widths: Inspect is the 15rem left column, the iTrackie the 20rem right one (layout.css). */
-.m2k-inspect {
-  width: 15rem;
-}
-.m2k-itrackie {
-  width: min(20rem, calc(100vw - 32px));
 }
 
 .m2k-buttons {
@@ -147,108 +263,6 @@
   flex-direction: column;
   gap: 0.25rem;
   width: min(22rem, 100%);
-}
-
-/*
- * Surface ramps (SurfaceSection.tsx, UI coherence plan step 2). Each figure scopes a ramp (E chosen for now, D the alternative): --chrome-0 deepest
- * (scene backdrop), --chrome-1 panel, --chrome-2 raised (cards on the scene), --chrome-rim. The existing tokens are
- * remapped onto it, so the real components pick it up unchanged.
- */
-.m2k-ramp:is([data-ramp="dusk-line"], [data-ramp="dusk-glow"]) {
-  /* Dusk: today's indigo, greyed. */
-  --chrome-0: #0b0b17;
-  --chrome-1: #17172c;
-  --chrome-2: #21213d;
-  --chrome-rim: #2f4fc0; /* round 1's plain Dusk rim was #38385f */
-  --chrome-line: #3965fb;
-}
-/* Today: the colours before the game took E (tokens.css now holds the Dusk ramp), kept as the reference. */
-.m2k-ramp[data-ramp="today"] {
-  --panel-fill: #1a1b4a;
-  --panel-rim: #26378c;
-  --room-bg: #0a0f1c;
-}
-.m2k-ramp:not([data-ramp="today"]) {
-  --panel-fill: var(--chrome-1);
-  --panel-rim: var(--chrome-rim);
-  --room-bg: var(--chrome-0);
-}
-/* Cards on the scene are one step up from the panels. */
-.m2k-ramp:not([data-ramp="today"]) .room-view {
-  --panel-fill: var(--chrome-2);
-}
-/* Opaque panels. The tooltip art has the blue baked in, so a flat fill and rim stand in for it here. */
-.m2k-ramp:not([data-ramp="today"]) :is(.panel, .top-bar) {
-  background: var(--chrome-1);
-  border: 1px solid var(--chrome-rim);
-  border-image: none;
-  border-radius: var(--panel-radius);
-}
-.m2k-ramp:not([data-ramp="today"]) :is(.panel, .top-bar)::before,
-.m2k-ramp:not([data-ramp="today"]) :is(.panel, .top-bar)::after {
-  display: none;
-}
-
-/* D: the tooltip art's top cap, as a 3px line with a little light above it. */
-.m2k-ramp[data-ramp="dusk-line"] :is(.panel, .top-bar) {
-  border-top: 3px solid var(--chrome-line);
-  box-shadow: 0 -1px 6px rgb(57 101 251 / 0.5), 0 0 6px var(--panel-shadow);
-}
-/* E: the tooltip art's bright edge fading inward. */
-.m2k-ramp[data-ramp="dusk-glow"] :is(.panel, .top-bar) {
-  border-color: var(--chrome-line);
-  box-shadow: inset 0 0 0 1px rgb(57 101 251 / 0.6), inset 0 0 16px 3px rgb(57 101 251 / 0.7), 0 0 6px var(--panel-shadow);
-}
-
-/* A miniature game screen on the in-game page background, so the gaps between panels read as they do in the game. */
-.m2k-ramp-screen {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  padding: 1rem;
-  background: #0d1424 url("../../../Mush/www/img/design/bg.jpg") center top / cover no-repeat;
-}
-.m2k-ramp-cols {
-  display: grid;
-  grid-template-columns: 15rem minmax(0, 1fr) 20rem;
-  gap: 1rem;
-  align-items: start;
-}
-/* The iTrackie is a fixed 560px in the game; here it fills the row so it ends with the room. */
-.m2k-ramp-cols .m2k-itrackie {
-  width: auto;
-  align-self: stretch;
-  display: flex;
-}
-.m2k-ramp-cols .m2k-itrackie > .itrackie {
-  flex: 1;
-  height: auto;
-}
-/* A stand-in for the room: the scene backdrop with its glowing rim (iso.css's .iso-room), and the HUD over it. */
-.m2k .m2k-ramp-room {
-  position: relative;
-  align-self: stretch;
-  min-height: 24rem;
-  background: var(--room-bg);
-  border: 1px solid var(--glow-rim);
-  border-radius: 6px;
-  box-shadow: 0 0 6px var(--glow), inset 0 0 6px rgb(60 110 255 / 0.5);
-}
-/* The kit's main column is 960px; the comparison needs the game's width. */
-.m2k main:has(#surfaces) {
-  max-width: 1400px;
-}
-/* Narrow screens: the three columns stack, so the page never scrolls sideways. */
-@media (max-width: 1023.98px) {
-  .m2k-ramp-cols {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .m2k-ramp-cols > .m2k-inspect {
-    width: auto;
-  }
-  .m2k-ramp-cols .m2k-itrackie > .itrackie {
-    height: 560px;
-  }
 }
 
 /* The primitives section: a stand-in dark panel (the inspect column's fill and rim), and the sample content's spacing. */
@@ -276,4 +290,76 @@
 }
 .m2k-pick {
   width: 4.5rem;
+}
+
+/*
+ * The game-screen frame (GameFrame.tsx): the game's own layout classes (.top-bar, .three-panel, .room-view, .bottom-nav)
+ * in a fixed-height stand-in for the viewport, on the in-game page background. Below 1024px the game's phone layout
+ * applies, so the frame is phone-sized and runs to the page edges.
+ */
+.m2k-screen {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  height: 46rem;
+  padding: var(--space-2) var(--space-4) var(--space-1);
+  background: #0d1424 url("../../../Mush/www/img/design/bg.jpg") center top / cover no-repeat;
+  border: 1px solid #2c3e66;
+}
+@media (max-width: 1023.98px) {
+  .m2k-screen {
+    height: 680px;
+    margin-inline: -16px;
+    padding: 0;
+    border-inline: 0;
+  }
+}
+
+/* Skeleton blocks for the parts of the screen a page doesn't show. */
+.m2k-skel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+.m2k-skel-label {
+  color: #8796b8;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.m2k-bone {
+  display: block;
+  height: 12px;
+  border-radius: 3px;
+  background: rgb(255 255 255 / 0.08);
+}
+.m2k-bone:nth-child(3n) {
+  width: 60%;
+}
+.m2k-bone:nth-child(3n + 1) {
+  width: 85%;
+}
+.m2k-skel-bar {
+  min-height: 2.5rem;
+}
+/* On phones the top bar has no panel of its own and sits on the background art's bright top band, so the placeholder
+   takes the panel fill to stay readable. */
+@media (max-width: 1023.98px) {
+  .m2k-skel-bar {
+    background: var(--panel-fill);
+  }
+}
+.m2k-skel-bar > .m2k-skel {
+  flex-direction: row;
+  align-items: center;
+}
+.m2k-skel-itrackie {
+  padding: var(--space-3);
+}
+/* The room's label sits in the middle of the scene. */
+.iso-room > .m2k-skel {
+  margin: auto;
+  width: auto;
+  align-items: center;
 }

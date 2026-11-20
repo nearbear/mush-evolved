@@ -11,10 +11,11 @@ import { EXPEDITION_CHANNEL_NAME, expeditionPlan } from "../src/bots/goals/exped
 import { ICARUS_BOARD_WAIT_CYCLES, expeditionPrep, isFitForExpedition, isPriorityExpeditionClaimant, requiredExpeditionGear } from "../src/bots/goals/expeditionPrep.ts";
 import { activeSharedPlanet } from "../src/bots/planetShare.ts";
 import { SOLO_GOALS } from "../src/bots/goals/index.ts";
+import { ISOLATE_ROOM, isolate } from "../src/bots/goals/isolate.ts";
 import { leaveIcarus } from "../src/bots/goals/leaveIcarus.ts";
 import { repairDoor } from "../src/bots/goals/repairDoor.ts";
 import { repairHull } from "../src/bots/goals/repairHull.ts";
-import { LEAVE_SHRINK_BEDS_MORALE, rest } from "../src/bots/goals/rest.ts";
+import { LEAVE_SHRINK_BEDS_MORALE, observeBeds, rest } from "../src/bots/goals/rest.ts";
 import { SELF_CARE_MORALE, SELF_CARE_UNTIL, selfCare } from "../src/bots/goals/selfCare.ts";
 import { research } from "../src/bots/goals/research.ts";
 import { BOT_PROJECT_ORDER, pickProject, project } from "../src/bots/goals/project.ts";
@@ -35,6 +36,7 @@ import { helpGoal, helpTasks } from "../src/bots/goals/help.ts";
 import type { BotMemory, GoalDef } from "../src/bots/goals/types.ts";
 import { BOT_MEMORY_VERSION } from "../src/bots/memoryStore.ts";
 import { formatFireLine, newFireMemory, observeFires, parseFireLine } from "../src/bots/fireShare.ts";
+import { EXPEDITION_NO_ICARUS_LINE, formatExpeditionDone, newExpeditionEndMemory, observeExpeditionEnd } from "../src/bots/expeditionShare.ts";
 import { COMFORTS_PER_REQUEST, MORALE_LOW_LINE, newMoraleMemory, observeMorale } from "../src/bots/moraleShare.ts";
 import { comfort } from "../src/bots/goals/comfort.ts";
 import { FIERY_SPEECH_AUDIENCE, fierySpeech } from "../src/bots/goals/fierySpeech.ts";
@@ -135,12 +137,14 @@ const memory = (scripted = true) => ({
   once: new Set<string>(),
   visited: new Set<string>(),
   shrinks: new Set<string>(),
+  fullBeds: new Map(),
   lastExpedition: null as "oxygen" | "fuel" | null,
   asteroidsOnly: null as number | null,
   items: newItemMemory(),
   fires: newFireMemory(),
   tanks: newTankMemory(),
   morale: newMoraleMemory(),
+  expeditionEnd: newExpeditionEndMemory(),
   combustion: null as number | null,
   holdSince: null as number | null,
   jump: newJumpMemory(),
@@ -1193,6 +1197,89 @@ describe("rest around a Shrink (#452)", () => {
   });
 });
 
+describe("full bedrooms (oxygen plan Run A2)", () => {
+  /** Every bed in `room` taken by another player lying in it; returns the game and the sleepers' ids. */
+  function fillBeds(game: GameState, id: string, room: string, skip = 0): { game: GameState; sleepers: string[] } {
+    const beds = game.equipment[room]!.filter((e) => e.type === "BED");
+    const others = game.players.filter((p) => p.id !== id).slice(skip, skip + beds.length);
+    others.forEach((p, i) => {
+      game = edit(game, p.id, (q) => {
+        q.room = room;
+        q.lyingIn = beds[i]!.id;
+        q.modifiers.push("lying_down");
+      });
+    });
+    return { game, sleepers: others.map((p) => p.id) };
+  }
+  const getUp = (q: GameState["players"][number]): void => {
+    q.lyingIn = undefined;
+    q.modifiers = q.modifiers.filter((x) => x !== "lying_down");
+  };
+
+  it("remembers a full bedroom across cycles and doesn't offer it again", () => {
+    const { game: start, id } = setup();
+    const [first] = roomsWith(viewFor(start, id), ["BED"]);
+    let { game } = fillBeds(start, id, first!);
+    game = edit(game, id, (p) => {
+      p.room = first!;
+      p.ap = 3;
+    });
+    const m = memory();
+    // Standing in it, the full bedroom is the nearest: offered until the bot has looked.
+    expect(rest.options(viewFor(game, id), m)[0]!.key).toBe(`rest:${first}`);
+    observeBeds(viewFor(game, id), m.fullBeds);
+    expect(m.fullBeds.has(first!)).toBe(true);
+    // A new cycle clears `ended`, not the full bedroom.
+    m.ended.clear();
+    const [next] = rest.options(viewFor(game, id), m);
+    expect(next!.key).toMatch(/^rest:/);
+    expect(next!.key).not.toBe(`rest:${first}`);
+  });
+
+  it("forgets a full bedroom on seeing a free bed there, or a sleeper elsewhere", () => {
+    const { game: start, id } = setup();
+    const [first] = roomsWith(viewFor(start, id), ["BED"]);
+    const filled = fillBeds(start, id, first!);
+    const game = edit(filled.game, id, (p) => (p.room = first!));
+    const m = memory();
+    observeBeds(viewFor(game, id), m.fullBeds);
+    // One sleeper got up and left; the bot sees it in a corridor.
+    const away = edit(edit(game, id, (p) => (p.room = "CORRIDOR_A")), filled.sleepers[0]!, (q) => {
+      getUp(q);
+      q.room = "CORRIDOR_A";
+    });
+    observeBeds(viewFor(away, id), m.fullBeds);
+    expect(m.fullBeds.has(first!)).toBe(false);
+    // Seeing a free bed there forgets it too.
+    observeBeds(viewFor(game, id), m.fullBeds);
+    expect(m.fullBeds.has(first!)).toBe(true);
+    observeBeds(viewFor(edit(game, filled.sleepers[0]!, getUp), id), m.fullBeds);
+    expect(m.fullBeds.has(first!)).toBe(false);
+  });
+
+  it("offers no rest once every bed in reach is remembered as full, and keeps the memory in its snapshot", async () => {
+    const { game: start, id } = setup();
+    const rooms = roomsWith(viewFor(start, id), ["BED"]);
+    let game = edit(start, id, (p) => (p.ap = 3));
+    const m = memory();
+    const bot = new GoalBot(1, 2, [rest]);
+    let skip = 0;
+    for (const room of rooms) {
+      const filled = fillBeds(game, id, room, skip);
+      skip += filled.sleepers.length;
+      game = edit(filled.game, id, (p) => (p.room = room));
+      observeBeds(viewFor(game, id), m.fullBeds);
+      await bot.decideAction(viewFor(game, id));
+    }
+    expect(rest.options(viewFor(game, id), m)).toEqual([]);
+    expect(await bot.decideAction(viewFor(game, id))).toEqual({ type: "ready" });
+    expect(bot.snapshot().fullBeds.map(([r]) => r).sort()).toEqual([...rooms].sort());
+    const revived = new GoalBot(1, 2, [rest]);
+    expect(revived.restore(bot.snapshot())).toBe(true);
+    expect(revived.snapshot().fullBeds).toEqual(bot.snapshot().fullBeds);
+  });
+});
+
 describe("shrinkDorm", () => {
   /** A bot with the given skills and AP, standing in the refectory on `day`. */
   const crew = (skills: string[], ap = 4, day = 1) => {
@@ -1558,7 +1645,7 @@ describe("travel: the Commander (#417)", () => {
     const finder = game.players.find((p) => p.id !== id)!.id;
     game.titles.commander = id;
     game.planets[finder] = planets;
-    game.sharedPlanets = planets.map((p, i) => ({ id: `sp-${i}`, planet: p.id, text: text?.(p) ?? formatPlanetShare({ ...p, sectors: ["OXYGEN", "FOREST"] }), by: finder, day: 1, cycleOfDay: 1, stale: false }));
+    game.sharedPlanets = planets.map((p, i) => ({ id: `sp-${i}`, planet: p.id, name: p.name, sectors: [], text: text?.(p) ?? formatPlanetShare({ ...p, sectors: ["OXYGEN", "FOREST"] }), by: finder, day: 1, cycleOfDay: 1, stale: false }));
     return { game, id };
   }
 
@@ -1667,7 +1754,7 @@ describe("travel: the Commander leaves orbit (#417)", () => {
       { id: "pl-1", name: "Orbis", direction: "north", distance: 2, size: 2, picture: 1, revealed: 2, sectors: [{ tag: "OXYGEN", known: true, explored: true }, { tag: "FOREST", known: true, explored: true }] },
     ] as GameState["planets"][string];
     game.navigation = { ...game.navigation, arriving: null, orbit: "pl-1" };
-    game.sharedPlanets = [{ id: "sp-1", planet: "pl-1", text: formatPlanetShare({ name: "Orbis", direction: "north", distance: 2, sectors: ["OXYGEN", "FOREST"] }), by: finder, day: 1, cycleOfDay: 1, stale: false }];
+    game.sharedPlanets = [{ id: "sp-1", planet: "pl-1", name: "Orbis", sectors: [], text: formatPlanetShare({ name: "Orbis", direction: "north", distance: 2, sectors: ["OXYGEN", "FOREST"] }), by: finder, day: 1, cycleOfDay: 1, stale: false }];
     game.sharedReports = [{ id: "sr-1", report: "ex-1", text: "Planet: Orbis\nExplored: OXYGEN, FOREST", by: finder, day: 1, cycleOfDay: 1 }] as GameState["sharedReports"];
     return { game, id };
   }
@@ -1687,6 +1774,24 @@ describe("travel: the Commander leaves orbit (#417)", () => {
     const flying = edit(game, game.players.find((p) => p.id !== id && p.alive)!.id, (p) => (p.room = "ICARUS_CRAFT"));
     expect(travel.options(viewFor(flying, id), explored())).toEqual([]);
     expect(travel.options(viewFor({ ...game, titles: { ...game.titles, commander: null } }, id), explored())).toEqual([]);
+  });
+
+  it("leaves once a bot in the bay said the planet is done or the Icarus lost, with no shared report (owner, 2026-11-19)", () => {
+    const { game, id } = inOrbit();
+    const noReports = { ...game, sharedReports: [] };
+    expect(travel.options(viewFor(noReports, id), memory())).toEqual([]);
+    const done = memory();
+    done.expeditionEnd.done.add("Orbis");
+    expect(travel.options(viewFor(noReports, id), done)).toHaveLength(1);
+    const elsewhere = memory();
+    elsewhere.expeditionEnd.done.add("Elsewhere");
+    expect(travel.options(viewFor(noReports, id), elsewhere)).toEqual([]);
+    const lost = memory();
+    lost.expeditionEnd.noIcarus = true;
+    expect(travel.options(viewFor(noReports, id), lost)).toHaveLength(1);
+    // The other conditions stay: nobody out in a ship.
+    const flying = edit(noReports, noReports.players.find((p) => p.id !== id && p.alive)!.id, (p) => (p.room = "ICARUS_CRAFT"));
+    expect(travel.options(viewFor(flying, id), done)).toEqual([]);
   });
 
   it("checks the chamber, loads 1 fuel, and leaves orbit from the bridge", async () => {
@@ -1727,6 +1832,8 @@ describe("travel holds & escape jumps (#421)", () => {
     game.sharedPlanets = planets.map((p, i) => ({
       id: `sp-${i}`,
       planet: p.id,
+      name: p.name,
+      sectors: [],
       text: formatPlanetShare({ ...p, sectors: ["OXYGEN"] }),
       by: finder,
       day: 1,
@@ -1870,6 +1977,8 @@ describe("travel holds & escape jumps (#421)", () => {
     held.sharedPlanets.push({
       id: "sp-late",
       planet: pl.id,
+      name: pl.name,
+      sectors: [],
       text: formatPlanetShare({ ...pl, sectors: ["OXYGEN"] }),
       by: finder,
       day: held.day,
@@ -2637,6 +2746,8 @@ describe("expeditionPrep: priority claiming, gear rules, drop iTrackie, and ICAR
         {
           id: "share-1",
           planet: "planet-1",
+          name: "",
+          sectors: [],
           by: pilot,
           day: 1,
           cycleOfDay: 1,
@@ -2904,6 +3015,8 @@ describe("expeditionLaunch: Pilot walks to ICARUS, summons open plan, and launch
         {
           id: "sp-1",
           planet: "planet-orbit",
+          name: "",
+          sectors: [],
           by: pilot,
           day: 1,
           cycleOfDay: 1,
@@ -2961,6 +3074,45 @@ describe("expeditionLaunch: Pilot walks to ICARUS, summons open plan, and launch
     expect(expeditionLaunch.options(viewFor(otherPilot, crew), memory())).toEqual([]);
 
     expect(expeditionLaunch.options(viewFor(game, pilot), memory())).toHaveLength(1);
+  });
+
+  it("a bot in the bay of a fully explored planet posts `Expedition: done at` once, and nobody repeats it (owner, 2026-11-19)", () => {
+    const { game: start, pilot, crew } = orbitSetup({ sectors: [{ tag: "FOREST", explored: true }] });
+    // Out of the bay it sees nothing.
+    expect(observeExpeditionEnd(viewFor(start, pilot), memory())).toBeNull();
+    let game = edit(start, pilot, (p) => (p.room = ICARUS_BAY));
+    game = edit(game, crew, (p) => (p.room = ICARUS_BAY));
+    const m = memory();
+    // Held back while another message goes out this turn, posted on the next.
+    expect(observeExpeditionEnd(viewFor(game, pilot), m, false)).toBeNull();
+    expect(m.expeditionEnd.done.has("Orbis")).toBe(true);
+    const line = observeExpeditionEnd(viewFor(game, pilot), m);
+    expect(line).toEqual({ type: "chat", channel: "global", text: formatExpeditionDone("Orbis") });
+    expect(observeExpeditionEnd(viewFor(game, pilot), m)).toBeNull();
+    expect(isMachineLine(formatExpeditionDone("Orbis"))).toBe(true);
+    // The launch goal no longer goes for a disabled Board.
+    expect(expeditionLaunch.options(viewFor(suited(game, pilot), pilot), memory())).toEqual([]);
+
+    const said = applyInput(game, { type: "chat", channel: "global", text: formatExpeditionDone("Orbis"), by: pilot });
+    if (!said.ok) throw new Error("chat failed");
+    const other = memory();
+    expect(observeExpeditionEnd(viewFor(said.state, crew), other)).toBeNull();
+    expect(other.expeditionEnd.done.has("Orbis")).toBe(true);
+  });
+
+  it("a bot in the bay after the Icarus is lost posts `Expedition: no Icarus`; a Pilot aboard on a done planet stops waiting", () => {
+    const { game: start, pilot } = orbitSetup();
+    const lost = { ...edit(start, pilot, (p) => (p.room = ICARUS_BAY)), icarusLost: true };
+    const m = memory();
+    expect(observeExpeditionEnd(viewFor(lost, pilot), m)?.text).toBe(EXPEDITION_NO_ICARUS_LINE);
+    expect(m.expeditionEnd.noIcarus).toBe(true);
+    expect(isMachineLine(EXPEDITION_NO_ICARUS_LINE)).toBe(true);
+    expect(expeditionLaunch.options(viewFor(lost, pilot), m)).toEqual([]);
+
+    const done = orbitSetup({ sectors: [{ tag: "FOREST", explored: true }] });
+    const aboard = edit(done.game, done.pilot, (p) => (p.room = ICARUS_CRAFT));
+    expect(viewFor(aboard, done.pilot).actions.find((o) => o.action.type === "icarus_takeoff")?.lacks).toEqual(["explored"]);
+    expect(expeditionLaunch.options(viewFor(aboard, done.pilot), memory())).toEqual([]);
   });
 
   it("walks to ICARUS, summons, gives the crew the cycle to board, then boards and launches from inside", async () => {
@@ -3219,5 +3371,47 @@ describe("repairDoor goal", () => {
     const mem = memory();
     mem.ended.add(`repairDoor:here:${first}`);
     expect(repairDoor.options(viewFor(broken, id), mem).map((g) => g.key)).toEqual([`repairDoor:here:${second}`]);
+  });
+});
+
+describe("Antisocial bots (#470)", () => {
+  /** The human bot made Antisocial, short on AP, everyone else moved into `crowd`. */
+  const antisocial = (crowd: string, ap = 1) => {
+    const { game: start, id } = setup();
+    let game = edit(start, id, (p) => {
+      p.modifiers.push("antisocial");
+      p.ap = ap;
+      p.room = "REFECTORY";
+    });
+    for (const p of game.players.filter((q) => q.id !== id)) game = edit(game, p.id, (q) => (q.room = crowd));
+    return { game, id };
+  };
+
+  it("never gets a rest option", () => {
+    const { game, id } = antisocial("LABORATORY");
+    expect(rest.options(viewFor(game, id), memory())).toEqual([]);
+  });
+
+  it("isolates in the Rear Corridor, walks there and stays", async () => {
+    const { game, id } = antisocial("LABORATORY");
+    expect(isolate.options(viewFor(game, id), memory()).map((g) => g.key)).toEqual([`isolate:${ISOLATE_ROOM}`]);
+    const { game: after, taken } = await oneCycle(game, id, new GoalBot(1, 2, [isolate]));
+    expect(taken.every((a) => a.type === "move")).toBe(true);
+    expect(after.players.find((p) => p.id === id)!.room).toBe(ISOLATE_ROOM);
+  });
+
+  it("picks the nearest empty room when someone is in the Rear Corridor", () => {
+    const { game: crowded, id } = antisocial("LABORATORY");
+    const other = crowded.players.find((p) => p.id !== id)!.id;
+    const game = edit(crowded, other, (p) => (p.room = ISOLATE_ROOM));
+    const [goal] = isolate.options(viewFor(game, id), memory());
+    // Alone in the refectory already (everyone else is in the lab or the corridor): it stays put.
+    expect(goal!.key).toBe("isolate:REFECTORY");
+  });
+
+  it("is never offered to a bot without the trait", () => {
+    const { game, id } = setup();
+    expect(isolate.options(viewFor(game, id), memory())).toEqual([]);
+    expect(SOLO_GOALS).toContain(isolate);
   });
 });

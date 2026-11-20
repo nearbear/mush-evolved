@@ -3,7 +3,7 @@
 // "New planet" tab holds only the scan button. Every button comes from view.actions.
 
 import { Tabs } from "@base-ui/react/tabs";
-import { planetPicture, type Action, type EquipmentView, type PlanetView, type PlayerView } from "@mush2/shared";
+import { planetPicture, type Action, type EquipmentView, type PlanetTag, type PlanetView, type PlayerView } from "@mush2/shared";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { BIN_ICON, PLANET_IMAGES, planetTagIcon, SHIP_RESOURCE_ICONS } from "../art/assets.ts";
@@ -20,7 +20,7 @@ interface Props {
   /** The Astro terminal, when shown in its window: adds the tabs, scan and analyse buttons. */
   terminal?: EquipmentView;
   /** Shares a planet in the Astrophysics feature (not an action: free, with free text). Offered in the terminal window only. */
-  onShare?: (planet: string, text: string) => void;
+  onShare?: (planet: string, sectors: (PlanetTag | null)[], text: string) => void;
 }
 
 const NEW_TAB = "new";
@@ -169,8 +169,8 @@ export function PlanetList({ view, onAction, terminal, onShare }: Props) {
           {sharing === planet.id && onShare ? (
             <SharePlanetForm
               planet={planet}
-              onPost={(text) => {
-                onShare(planet.id, text);
+              onPost={(sectors, text) => {
+                onShare(planet.id, sectors, text);
                 setSharing(null);
               }}
               onBack={() => {

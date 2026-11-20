@@ -16,6 +16,7 @@ const ALLOWED = new Set([
   "actions/heal.ts", // healing only raises HP
   "actions/consume.ts", // eating only raises HP (a negative consume.hp counts as 0)
   "hunters.ts", // a hunter's hp, not a player's; at 0 the hunter is removed
+  "expeditions.ts", // expedition.hp is a read-only HP snapshot for the crew view, not a player's HP
 ]);
 
 function sources(dir: string): string[] {

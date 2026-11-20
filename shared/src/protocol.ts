@@ -9,6 +9,7 @@ import { MAX_CHAT_LENGTH, privateChannelId } from "./chat.ts";
 import { MAX_CHAT_READ_ENTRIES, type ChatRead } from "./chatRead.ts";
 import { isRecord } from "./helpers.ts";
 import { parsePlanDraft } from "./plans.ts";
+import { PLANET_TAGS, type PlanetTag } from "./planets.ts";
 import { MAX_SHARED_PLANET_LENGTH } from "./sharedPlanets.ts";
 import { isSpotCell } from "./spot.ts";
 import {
@@ -104,8 +105,8 @@ export type GameClientMessage =
   | { type: "createChannel"; name?: string; members?: PlayerId[] }
   // A thread under global chat, started from the global message whose `seq` is `from`, or on its own.
   | { type: "createThread"; name: string; from?: number }
-  // Shares one of your planets in the Astrophysics feature, as free text (sharedPlanets.ts).
-  | { type: "sharePlanet"; planet: string; text: string }
+  // Shares one of your planets in the Astrophysics feature: its sector slots and free text (sharedPlanets.ts).
+  | { type: "sharePlanet"; planet: string; sectors: (PlanetTag | null)[]; text: string }
   // Shares the report of an expedition you went on in the Expeditions feature, as free text (sharedReports.ts).
   | { type: "shareReport"; report: string; text: string }
   | { type: "invite"; channel: PrivateChannelId; player: PlayerId }
@@ -204,7 +205,10 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
   if (msg?.type === "sharePlanet") {
     // Generous bound here, as for chat; moderation and the rules enforce the real limit.
     if (typeof msg.planet !== "string" || msg.planet.length > 64 || typeof msg.text !== "string" || msg.text.length > MAX_SHARED_PLANET_LENGTH * 4) return null;
-    return { type: "sharePlanet", planet: msg.planet, text: msg.text };
+    // One slot per sector, each a tag or null (unknown); the rules check the count against the planet.
+    const sectors = msg.sectors;
+    if (!Array.isArray(sectors) || sectors.length > 32 || !sectors.every((tag) => tag === null || (typeof tag === "string" && Object.hasOwn(PLANET_TAGS, tag)))) return null;
+    return { type: "sharePlanet", planet: msg.planet, sectors: sectors as (PlanetTag | null)[], text: msg.text };
   }
   if (msg?.type === "shareReport") {
     // Generous bound here, as for chat; moderation and the rules enforce the real limit.

@@ -6,7 +6,10 @@ import { BodyTakenDialog } from "../hud/BodyTakenDialog.tsx";
 import { CommsCenter } from "../hud/CommsCenter.tsx";
 import { DeathNotice } from "../hud/DeathNotice.tsx";
 import { EndScreen } from "../hud/EndScreen.tsx";
+import { ExpeditionReportDialog } from "../hud/ExpeditionReportDialog.tsx";
+import { IcarusPanel } from "../hud/IcarusPanel.tsx";
 import { ITrackie } from "../hud/ITrackie.tsx";
+import { LostPanel } from "../hud/LostPanel.tsx";
 import { PatrolCockpit } from "../hud/PatrolCockpit.tsx";
 import { signalStrength, solDb, Spectrogram } from "../hud/Spectrogram.tsx";
 import { TerminalBody } from "../hud/TerminalDialog.tsx";
@@ -15,8 +18,9 @@ import { terminalLogin } from "../hud/terminalUsername.ts";
 import { useNames } from "../i18n/names.ts";
 import { useShipLayout } from "../iso/shipLayout.ts";
 import type { EquipmentView, PlayerView } from "@mush2/shared";
+import { GameFrame } from "./GameFrame.tsx";
 import { Figure, noop, Section } from "./KitSection.tsx";
-import { bodyTakenView, chatView, deadMushView, deadView, edenView, mushChatView, mushWinView, patrolHuntersView, patrolView, signalsNoAccessSample, signalsSample, terminalSamples, turretHuntersSample } from "./samples.ts";
+import { bodyTakenView, chatView, expeditionSamples, deadMushView, deadView, edenView, mushChatView, mushWinView, patrolHuntersView, patrolView, signalsNoAccessSample, signalsSample, terminalSamples, turretHuntersSample } from "./samples.ts";
 
 function TerminalFigure({ view, terminal, note }: { view: PlayerView; terminal: EquipmentView; note?: string }) {
   const names = useNames();
@@ -146,24 +150,55 @@ export function PatrolSection() {
       about={
         <>
           <code>hud/PatrolCockpit.tsx</code>: what the room view shows while you fly a patrol ship (the space scene: the ship,
-          the hunters to aim at, one Shoot button, and the ship&apos;s other actions).
+          the hunters to aim at, one Shoot button, and the ship&apos;s other actions), in the game screen&apos;s room view.
         </>
       }
+      row="m2k-stack"
     >
       {ship && (
         <Figure caption="Just took off from bay A, no hunters">
-          <div className="room-view m2k-room m2k-room-auto">
-            <PatrolCockpit view={patrolView} ship={ship} layout={layout} onAction={noop} />
-          </div>
+          <GameFrame panel="room" room={<PatrolCockpit view={patrolView} ship={ship} layout={layout} onAction={noop} />} />
         </Figure>
       )}
       {huntedShip && (
         <Figure caption="Hunters in sight (aim at one, one Shoot button)">
-          <div className="room-view m2k-room m2k-room-auto">
-            <PatrolCockpit view={patrolHuntersView} ship={huntedShip} layout={layout} onAction={noop} />
-          </div>
+          <GameFrame panel="room" room={<PatrolCockpit view={patrolHuntersView} ship={huntedShip} layout={layout} onAction={noop} />} />
         </Figure>
       )}
+    </Section>
+  );
+}
+
+export function ExpeditionSection() {
+  const { away, uTurn, lost } = expeditionSamples;
+  return (
+    <Section
+      id="expedition"
+      heading="Expedition screen"
+      about={
+        <>
+          <code>hud/ExpeditionTimeline.tsx</code>: what <code>IcarusPanel</code> shows while away and{" "}
+          <code>LostPanel</code> while lost (docs/plans/expedition-ui.md). Sectors in a row, oldest left, the current one in
+          the middle; the arrows (or Left and Right) move one step. Hand-built report and view. Each fills the
+          game screen&apos;s room view.
+        </>
+      }
+      row="m2k-stack"
+    >
+      <Figure caption="Away, four steps in">
+        <GameFrame panel="room" room={<IcarusPanel view={away} expedition={away.expedition} selected={{ kind: "player", id: "p0" }} onSelect={noop} onAction={noop} />} />
+      </Figure>
+      <Figure caption="A U-turn holder sees the next sector">
+        <GameFrame panel="room" room={<IcarusPanel view={uTurn} expedition={uTurn.expedition} selected={{ kind: "player", id: "p0" }} onSelect={noop} onAction={noop} />} />
+      </Figure>
+      <Figure caption="Lost: the timeline stops where you got lost">
+        <GameFrame panel="room" room={<LostPanel view={lost} />} />
+      </Figure>
+      <Figure caption="The report: one compact row per step (ExpeditionReportDialog)">
+        <div className="m2k-buttons">
+          <Opener label="Read the report">{(close) => <ExpeditionReportDialog report={away.expeditions[0]} onClose={close} canShare onShare={noop} />}</Opener>
+        </div>
+      </Figure>
     </Section>
   );
 }
@@ -182,19 +217,17 @@ export function ITrackieSection() {
           <code>Markdown</code> checklists, <code>ChatInput</code>), <code>Threads</code>, the features (
           <code>SharedPlanets</code> under Astrophysics, <code>ResearchTracker</code>) and <code>PrivateChannels</code>. Hua
           shared a planet, flew the Icarus to it, and the crew talked a little. Kuan Ti, Mush, has the Mush tab with the
-          other Mush and a private channel with two crewmates. Posting does nothing here.
+          other Mush and a private channel with two crewmates. Posting does nothing here. Each is the game screen&apos;s right
+          column.
         </>
       }
+      row="m2k-stack"
     >
       <Figure caption="After an expedition">
-        <div className="m2k-itrackie">
-          <ITrackie view={chatView} roomLogRequest={0} onChat={noop} onCreateThread={noop} onToggle={noop} channels={CHANNELS} />
-        </div>
+        <GameFrame panel="itrackie" itrackie={<ITrackie view={chatView} roomLogRequest={0} onChat={noop} onCreateThread={noop} onToggle={noop} channels={CHANNELS} />} />
       </Figure>
       <Figure caption="Mush: the Mush channel and a private channel">
-        <div className="m2k-itrackie">
-          <ITrackie view={mushChatView} roomLogRequest={0} onChat={noop} onCreateThread={noop} onToggle={noop} channels={CHANNELS} />
-        </div>
+        <GameFrame panel="itrackie" itrackie={<ITrackie view={mushChatView} roomLogRequest={0} onChat={noop} onCreateThread={noop} onToggle={noop} channels={CHANNELS} />} />
       </Figure>
     </Section>
   );
@@ -229,16 +262,13 @@ export function EndingsSection() {
           shows the ending and every seat&apos;s role. The dialogs open from the buttons.
         </>
       }
+      row="m2k-stack"
     >
       <Figure caption="Dead (human)">
-        <div className="room-view m2k-room m2k-room-auto">
-          <DeathNotice view={deadView} />
-        </div>
+        <GameFrame panel="room" room={<DeathNotice view={deadView} />} />
       </Figure>
       <Figure caption="Dead (Mush)">
-        <div className="room-view m2k-room m2k-room-auto">
-          <DeathNotice view={deadMushView} />
-        </div>
+        <GameFrame panel="room" room={<DeathNotice view={deadMushView} />} />
       </Figure>
       <Figure caption="Dialogs">
         <div className="m2k-buttons">

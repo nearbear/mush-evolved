@@ -26,6 +26,7 @@ import {
   type Action,
   type ActionOption,
   type EquipmentView,
+  type PlanetTag,
   type PlayerView,
   type RelayTargetView,
 } from "@mush2/shared";
@@ -52,7 +53,7 @@ interface Props {
   onAction: (action: Action) => void;
   onClose: () => void;
   /** Shares a planet in the Astrophysics feature, from the Astro terminal. */
-  onSharePlanet?: (planet: string, text: string) => void;
+  onSharePlanet?: (planet: string, sectors: (PlanetTag | null)[], text: string) => void;
 }
 
 export function TerminalDialog({ terminal, view, onAction, onClose, onSharePlanet }: Props) {
