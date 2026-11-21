@@ -1,4 +1,5 @@
 import { Action, type ActionCost, type ActionVisibility, DIRTY, isString } from "./action.ts";
+import { cpuPriorityBonus } from "../bios.ts";
 import { ANY_CONSUMABLE, RESEARCH_COMPLETE, RESEARCH_IDS, RESEARCH_REQUIRES, RESEARCH_SKILLS, type ResearchId, researchNeedOrder } from "../research.ts";
 import { logPrivate, logPublic } from "../log.ts";
 import { resetDrugDispenser } from "../drugs.ts";
@@ -78,7 +79,7 @@ function countsParam(state: Readonly<GameState>, counts: SampleCounts): string {
 export function addSample(state: GameState, player: Readonly<PlayerState>, research: ResearchId, spoiled: boolean): void {
   const config = state.config.research;
   const pool = researchPool(state, research);
-  pool.pending.push({ ...makeToken(state, config.progress, player, RESEARCH_SKILLS), ...(spoiled && { contaminatedBy: player.id }) });
+  pool.pending.push({ ...makeToken(state, config.progress, player, RESEARCH_SKILLS, cpuPriorityBonus(state, "research")), ...(spoiled && { contaminatedBy: player.id }) });
   const before = researchProgress(pool, config.progress, RESEARCH_COMPLETE);
   // Owner, 2026-10-30: research is private; the sample list and the assay lines are the record of who worked.
   logPrivate(state, player.id, "researched", { name: player.character, research, percent: before.verified + before.pending });

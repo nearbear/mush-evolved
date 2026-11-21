@@ -48,3 +48,7 @@ export function biosTerminalsHere(state: Readonly<GameState>, player: Readonly<P
 }
 
 export const canChangeBios = (state: Readonly<GameState>, player: Readonly<PlayerState>) => hasTitleAccess(state, player, "neron_admin");
+
+/** Bonus added to `tokenBase` when BIOS CPU priority matches `"projects"` or `"research"` (owner, 2026-11-21). */
+export const cpuPriorityBonus = (state: Readonly<GameState>, target: "projects" | "research"): number =>
+  state.bios.cpu_priority === target ? state.config.bios.cpuPriorityBonus : 0;

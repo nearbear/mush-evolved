@@ -2,7 +2,12 @@ import { describe, expect, it } from "vitest";
 import { actionVisibility } from "../src/actions.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { killPlayer } from "../src/death.ts";
+import { analysisSectors } from "../src/modifiers.ts";
+import { offeredProjects } from "../src/projectEffects.ts";
+import { PROJECT_COMPLETE } from "../src/projects.ts";
 import { parseGameMessage } from "../src/protocol.ts";
+import { tokenBase } from "../src/relay.ts";
+import { RESEARCH_IDS, RESEARCH_REQUIRES, RESEARCH_SKILLS } from "../src/research.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { BiosOption, CpuPriority, CrewLock } from "../src/bios.ts";
 import type { Action, GameState } from "../src/types.ts";
@@ -220,5 +225,149 @@ describe("NERON's BIOS", () => {
     const p1Json = JSON.stringify(viewFor(s, "p1"));
     expect(p1Json.match(/"cpuPriorityChangedToday"/g)).toHaveLength(1);
     expect(viewFor(s, "p1").you.cpuPriorityChangedToday).toBe(false);
+  });
+
+  describe("CPU priority effects (phase 4)", () => {
+    it("pins the confirmed BIOS CPU priority config numbers", () => {
+      expect([DEFAULT_CONFIG.bios.astroExtraSectors, DEFAULT_CONFIG.bios.cpuPriorityBonus]).toEqual([1, 1]);
+    });
+
+    it("astronavigation reveals +1 sector on analyze_planet and stacks with Astrophysicist, Quantum Sensors, and deep analysis", () => {
+      const mkPlanet = (id: string) =>
+        ({
+          id,
+          name: "Astra",
+          position: { direction: "north", distance: 2 },
+          sectors: ["FOREST", "MOUNTAIN", "SWAMP", "DESERT", "OCEAN", "HYDROCARBON"].map((tag) => ({ tag, known: false })),
+        }) as never;
+
+      const s = ship();
+      for (const p of s.players) p.room = "COMMAND_CENTER";
+      const astro = "COMMAND_CENTER:ASTRO_MODULE";
+      s.planets.p0 = [mkPlanet("pl-0")];
+
+      // Non-astronavigation priorities add nothing.
+      for (const priority of ["none", "projects", "research"] as const) {
+        s.bios.cpu_priority = priority;
+        expect(analysisSectors(s, player(s, "p0"))).toBe(1);
+      }
+
+      // Astronavigation adds +1 sector (2 total for an unskilled player).
+      s.bios.cpu_priority = "astronavigation";
+      expect(analysisSectors(s, player(s, "p0"))).toBe(1 + s.config.bios.astroExtraSectors);
+      const afterBasic = must(applyAction(s, "p0", { type: "analyze_planet", equipment: astro, planet: "pl-0" }));
+      expect(afterBasic.planets.p0![0]!.sectors.filter((x) => x.known)).toHaveLength(1 + s.config.bios.astroExtraSectors);
+
+      // Stacks with Astrophysicist, Quantum Sensors, and deep analysis in orbit (1 + 1 + 1 + 1 + 1 = 5).
+      s.planets.p1 = [mkPlanet("pl-1")];
+      player(s, "p1").skills.push("astrophysician");
+      s.projects.QUANTUM_SENSORS = PROJECT_COMPLETE;
+      s.navigation.orbit = "pl-1";
+      const expectedTotal =
+        1 +
+        s.config.astrophysicist.extraSectors +
+        s.config.project.quantumSensors.extraSectors +
+        s.config.bios.astroExtraSectors +
+        s.config.astro.analyze.orbitExtraSectors;
+      const afterStacked = must(applyAction(s, "p1", { type: "analyze_planet", equipment: astro, planet: "pl-1" }));
+      expect(afterStacked.planets.p1![0]!.sectors.filter((x) => x.known)).toHaveLength(expectedTotal);
+    });
+
+    it("projects priority adds +1 to project tokenBase in relayView and when working on a project", () => {
+      const s = ship();
+      s.bios.crew_lock = "piloting";
+      const core = "NEXUS_ROOM:NERON_CORE";
+      const proj = offeredProjects(s)[0]!;
+      const p0 = player(s, "p0");
+      p0.skills = [];
+
+      const unboostedBase = tokenBase(s.config.project.progress, p0, []);
+      const boostedBase = unboostedBase + s.config.bios.cpuPriorityBonus;
+
+      // Baseline (none) and non-matching priorities do not boost projects.
+      for (const priority of ["none", "astronavigation", "research"] as const) {
+        s.bios.cpu_priority = priority;
+        expect(viewFor(s, "p0").relay.projects[proj]?.gain).toEqual({
+          min: unboostedBase,
+          max: unboostedBase + (unboostedBase >> 1),
+        });
+      }
+
+      // Projects priority boosts both relayView gain range and actual rolled progress.
+      s.bios.cpu_priority = "projects";
+      expect(viewFor(s, "p0").relay.projects[proj]?.gain).toEqual({
+        min: boostedBase,
+        max: boostedBase + (boostedBase >> 1),
+      });
+
+      const gains = new Set<number>();
+      for (let seed = 1; seed <= 40; seed++) {
+        const trial = createGame(makeSeats(3), noIncidents(noHunters(DEFAULT_CONFIG)), seed);
+        player(trial, "p0").room = "NEXUS_ROOM";
+        player(trial, "p0").skills = [];
+        trial.bios.cpu_priority = "projects";
+        const target = offeredProjects(trial)[0]!;
+        const after = must(applyAction(trial, "p0", { type: "project", equipment: core, project: target }));
+        const gain = after.projects[target] ?? 0;
+        expect(gain).toBeGreaterThanOrEqual(boostedBase);
+        expect(gain).toBeLessThanOrEqual(boostedBase + (boostedBase >> 1));
+        gains.add(gain);
+      }
+      // Confirms the boosted top of the range (10%) is actually reachable.
+      expect(gains.has(boostedBase + (boostedBase >> 1))).toBe(true);
+    });
+
+    it("research priority adds +1 to research tokenBase in relayView and on new research samples", () => {
+      const s = ship();
+      for (const p of s.players) p.room = "LABORATORY";
+      const lab = "LABORATORY:RESEARCH_LAB";
+      const research = RESEARCH_IDS.find((id) => !RESEARCH_REQUIRES[id])!;
+      const p0 = player(s, "p0");
+      const p1 = player(s, "p1");
+      p0.skills = [];
+      p1.skills = ["biologist"];
+
+      const unskilledBase = tokenBase(s.config.research.progress, p0, RESEARCH_SKILLS);
+      const skilledBase = tokenBase(s.config.research.progress, p1, RESEARCH_SKILLS);
+      const bonus = s.config.bios.cpuPriorityBonus;
+
+      // Non-matching priorities give no boost.
+      for (const priority of ["none", "astronavigation", "projects"] as const) {
+        s.bios.cpu_priority = priority;
+        expect(viewFor(s, "p0").relay.research[research]?.gain).toEqual({
+          min: unskilledBase,
+          max: unskilledBase + (unskilledBase >> 1),
+        });
+      }
+
+      // Research priority boosts relayView for unskilled and skilled contributors, and stamps the sample's base.
+      s.bios.cpu_priority = "research";
+      expect(viewFor(s, "p0").relay.research[research]?.gain).toEqual({
+        min: unskilledBase + bonus,
+        max: unskilledBase + bonus + ((unskilledBase + bonus) >> 1),
+      });
+      expect(viewFor(s, "p1").relay.research[research]?.gain).toEqual({
+        min: skilledBase + bonus,
+        max: skilledBase + bonus + ((skilledBase + bonus) >> 1),
+      });
+
+      const after = must(applyAction(s, "p0", { type: "research", equipment: lab, research }));
+      expect(after.relay.research[research]?.pending[0]?.base).toBe(unskilledBase + bonus);
+    });
+
+    it("PILGRED is never boosted by any CPU priority", () => {
+      const s = ship();
+      player(s, "p0").room = "MOTOR_ROOM";
+      player(s, "p0").skills = [];
+      const pilgredBase = tokenBase(s.config.pilgred.progress, player(s, "p0"), []);
+      const expectedGain = { min: pilgredBase, max: pilgredBase + (pilgredBase >> 1) };
+
+      for (const priority of ["none", "astronavigation", "projects", "research"] as const) {
+        s.bios.cpu_priority = priority;
+        expect(viewFor(s, "p0").relay.pilgred?.gain).toEqual(expectedGain);
+        const after = must(applyAction(s, "p0", { type: "repair_pilgred", equipment: "MOTOR_ROOM:PILGRED" }));
+        expect(after.pilgred.pool.tokens.at(-1)?.base).toBe(pilgredBase);
+      }
+    });
   });
 });

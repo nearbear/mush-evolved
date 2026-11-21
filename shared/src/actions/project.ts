@@ -1,4 +1,5 @@
 import { Action, type ActionCost, isString } from "./action.ts";
+import { cpuPriorityBonus } from "../bios.ts";
 import { equipmentHere } from "../equipment.ts";
 import { PROJECT_COMPLETE, PROJECT_IDS, projectDone, projectSkills, type ProjectId } from "../projects.ts";
 import { relayGainRange, rollRelayGain, touchRelay } from "../relay.ts";
@@ -63,7 +64,7 @@ export class ProjectAction extends Action<ProjectActionData> {
     // Genius (owner, 2026-11-05): the next project finishes at once, and the status is used up.
     const genius = player.statuses.includes("genius");
     if (genius) removeStatus(player, "genius");
-    const gain = genius ? PROJECT_COMPLETE : rollRelayGain(state, relayGainRange(state.config.project.progress, player, projectSkills(project), state.relay.projects[project]));
+    const gain = genius ? PROJECT_COMPLETE : rollRelayGain(state, relayGainRange(state.config.project.progress, player, projectSkills(project), state.relay.projects[project], cpuPriorityBonus(state, "projects")));
     if (!genius) touchRelay(state.relay.projects, project, player.id);
     const progress = Math.min(PROJECT_COMPLETE, (state.projects[project] ?? 0) + gain);
     logPublic(state, player.room, progress >= PROJECT_COMPLETE ? "projectCompleted" : "projectWorked", { name: player.character, project, percent: progress });

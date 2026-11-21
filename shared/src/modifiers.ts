@@ -714,10 +714,11 @@ export const computerPointsCap = (state: Readonly<GameState>, player: Readonly<P
 export const failureStreakMultiplier = (state: Readonly<GameState>, player: Readonly<PlayerState>, base: number, registry: ModifierRegistry = MODIFIERS) =>
   fold("failureStreakMultiplier", base, state, player, registry);
 
-/** Sectors one remote planet analysis reveals: one, plus what the astrophysician skill brings and Quantum Sensors. */
+/** Sectors one remote planet analysis reveals: one, plus what the astrophysician skill brings, Quantum Sensors, and BIOS Astronavigation CPU priority. */
 export const analysisSectors = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
   fold("analysisSectors", 1, state, player, registry) +
-  (projectDone(state, "QUANTUM_SENSORS") ? state.config.project.quantumSensors.extraSectors : 0);
+  (projectDone(state, "QUANTUM_SENSORS") ? state.config.project.quantumSensors.extraSectors : 0) +
+  (state.bios.cpu_priority === "astronavigation" ? state.config.bios.astroExtraSectors : 0);
 
 /** NERON update progress one update action adds: `base` (`config.comms.neron.progressPercent`) folded (Migraine halves it). */
 export const neronProgress = (state: Readonly<GameState>, player: Readonly<PlayerState>, base: number, registry: ModifierRegistry = MODIFIERS) =>

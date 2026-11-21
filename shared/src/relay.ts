@@ -38,11 +38,11 @@ export type ResearchPool = { tokens: Sample[]; pending: Sample[] };
 export const MIGRAINE_RELAY_MALUS = 2;
 
 /**
- * A contribution's worth before the penalty: `rate * mod / 10` (rounded down), plus `skillBoost` for each matching skill,
- * minus `MIGRAINE_RELAY_MALUS` for a human with Migraine, never below 0.
+ * A contribution's worth before the penalty: `rate * mod / 10` (rounded down), plus `bonus` (e.g. BIOS CPU priority),
+ * plus `skillBoost` for each matching skill, minus `MIGRAINE_RELAY_MALUS` for a human with Migraine, never below 0.
  */
-export function tokenBase(config: Readonly<RelayProgressConfig>, player: Readonly<PlayerState>, skills: readonly SkillId[]): number {
-  let base = Math.floor((config.rate * config.mod) / 10);
+export function tokenBase(config: Readonly<RelayProgressConfig>, player: Readonly<PlayerState>, skills: readonly SkillId[], bonus = 0): number {
+  let base = Math.floor((config.rate * config.mod) / 10) + bonus;
   for (const skill of skills) if (hasSkill(player, skill)) base += config.skillBoost;
   if (player.role === "human" && player.modifiers.includes("migraine_disease")) base -= MIGRAINE_RELAY_MALUS;
   return Math.max(0, base);
@@ -50,8 +50,8 @@ export function tokenBase(config: Readonly<RelayProgressConfig>, player: Readonl
 
 
 /** Makes this player's token, drawing its roll from the seeded RNG. */
-export function makeToken(state: GameState, config: Readonly<RelayProgressConfig>, player: Readonly<PlayerState>, skills: readonly SkillId[]): RelayToken {
-  const token: RelayToken = { by: player.id, base: tokenBase(config, player, skills), roll: rollFloat(state) };
+export function makeToken(state: GameState, config: Readonly<RelayProgressConfig>, player: Readonly<PlayerState>, skills: readonly SkillId[], bonus = 0): RelayToken {
+  const token: RelayToken = { by: player.id, base: tokenBase(config, player, skills, bonus), roll: rollFloat(state) };
   if (player.cheats.includes("noRelayPenalty")) token.unpenalized = true;
   return token;
 }
@@ -139,16 +139,16 @@ const TOP_ROLL = 1 - Number.EPSILON;
  * How much the target goes up if this player contributes now, as a range over their token's roll: it can be more than
  * their token is worth alone when it breaks up someone else's streak (owner, 2026-10-31). Pure: no roll is drawn.
  */
-export function contributionGain(pool: Readonly<RelayPool>, config: Readonly<RelayProgressConfig>, player: Readonly<PlayerState>, skills: readonly SkillId[], complete = 100): { min: number; max: number } {
+export function contributionGain(pool: Readonly<RelayPool>, config: Readonly<RelayProgressConfig>, player: Readonly<PlayerState>, skills: readonly SkillId[], complete = 100, bonus = 0): { min: number; max: number } {
   const now = poolProgress(pool, config, complete).progress;
-  const token = (roll: number): RelayToken => ({ by: player.id, base: tokenBase(config, player, skills), roll, ...(player.cheats.includes("noRelayPenalty") ? { unpenalized: true as const } : {}) });
+  const token = (roll: number): RelayToken => ({ by: player.id, base: tokenBase(config, player, skills, bonus), roll, ...(player.cheats.includes("noRelayPenalty") ? { unpenalized: true as const } : {}) });
   const after = (roll: number) => poolProgress({ tokens: [...pool.tokens, token(roll)] }, config, complete).progress - now;
   return { min: after(0), max: after(TOP_ROLL) };
 }
 
 /** Adds this player's token to `pool` and returns the target's new progress. */
-export function contribute(state: GameState, pool: RelayPool, config: Readonly<RelayProgressConfig>, player: Readonly<PlayerState>, skills: readonly SkillId[], complete = 100): number {
-  pool.tokens.push(makeToken(state, config, player, skills));
+export function contribute(state: GameState, pool: RelayPool, config: Readonly<RelayProgressConfig>, player: Readonly<PlayerState>, skills: readonly SkillId[], complete = 100, bonus = 0): number {
+  pool.tokens.push(makeToken(state, config, player, skills, bonus));
   return poolProgress(pool, config, complete).progress;
 }
 
@@ -172,10 +172,11 @@ export function relayGainRange(
   player: Readonly<PlayerState>,
   skills: readonly SkillId[],
   last: Readonly<RelayStreak> | null | undefined,
+  bonus = 0,
 ): { min: number; max: number } {
   const relaying = last?.lastBy === player.id && !player.cheats.includes("noRelayPenalty");
   const streak = relaying ? last.streak : 0;
-  const base = tokenBase(config, player, skills);
+  const base = tokenBase(config, player, skills, bonus);
   const min = Math.max(0, Math.min(100, base - streak * config.relayPenalty));
   return { min, max: Math.min(100, min + (min >> 1)) };
 }

@@ -274,6 +274,10 @@ export interface GameConfig {
    * so a cost in morale or MP can sit next to an effect without being confused with it. Conditions (rooms, odds,
    * cooldowns) stay beside them.
    */
+  bios: {
+    astroExtraSectors: number; // Extra sectors revealed by analyze_planet when BIOS CPU priority is astronavigation (owner, 2026-11-21).
+    cpuPriorityBonus: number; // Bonus added to tokenBase for NERON projects / lab research when BIOS CPU priority matches (owner, 2026-11-21).
+  };
   bond: {
     cost: { ap: number }; // Confirmed 2026-10-14.
   };

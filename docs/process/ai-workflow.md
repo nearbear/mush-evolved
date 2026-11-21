@@ -4738,3 +4738,16 @@ Follow-up: the "Inspect" panel heading is now visually hidden on desktop too (ke
 - Implemented phase 3 of `docs/plans/bios-priority-lock.md`: gated `project` on `crew_lock !== "projects" || designer || freeHacking` (`canWorkProject` in `shared/src/actions/project.ts`), gated `research` and `spoil_research` on `crew_lock !== "research" || biologist || medic || skilful || freeHacking` (`canWorkResearch` in `shared/src/actions/research.ts`), leaving `coup`, `become_genius`, and `contaminate` unaffected.
 - Updated bot goals (`server/src/bots/goals/project.ts`, `research.ts`; `patrolShootHunters.ts` and `expeditionLaunch.ts` already guard on `pilot`) to respect `view.bios?.crew_lock` when visible and `view.actions` in the current room without reading beyond `PlayerView`.
 - Added unit tests in `shared/tests/projects.test.ts`, `shared/tests/research.test.ts`, and `server/tests/goals.test.ts`.
+
+### 2026-11-21 — Expedition UI refinements (owner)
+- Removed the redundant return timer from the Icarus action bar while away (`IcarusPanel.tsx`).
+- Placed each crew member's heart HP icon (`HP_ICON`) and HP value on the same row as their given name on the Icarus podiums.
+- Hid empty Icarus podiums during an expedition except for lost crew members, whose podium stays empty with their name and no HP.
+- Moved the shared planet report out of `ExpeditionTimeline.tsx` into the top bar planet status popover (`ShipStatus.tsx` / `TopBar.tsx`), covering both orbit (`PlayerView.navigation.orbitShared` in `shared/src/rules.ts`) and active expeditions (`expedition.shared`).
+- Removed the mobile peek bar on the Icarus and lost screens, and hid the player's ID card (desktop and mobile) while lost on a planet (`GameView.tsx`).
+
+### 2026-11-21 — BIOS CPU priority effects (phase 4 of `docs/plans/bios-priority-lock.md`)
+
+- **Decision (owner, 2026-11-21):** Implemented phase 4 of `docs/plans/bios-priority-lock.md`: added `config.bios` (`astroExtraSectors: 1`, `cpuPriorityBonus: 1`), wired `astronavigation` CPU priority into `analysisSectors` in `shared/src/modifiers.ts` (stacking with Astrophysicist, Quantum Sensors, and deep analysis in orbit), and threaded `cpuPriorityBonus` into `tokenBase` / `makeToken` / `contributionGain` / `contribute` / `relayGainRange` in `shared/src/relay.ts`, `shared/src/relayView.ts`, `shared/src/actions/project.ts`, and `shared/src/actions/research.ts` (while PILGRED explicitly passes `0`). Updated `docs/rules/rules-design.md`, `docs/rules/implemented-rules.md`, `docs/README.md`, and `docs/plans/bios-priority-lock.md`.
+- **What worked:** Adding an optional `bonus = 0` parameter to `tokenBase` and its callers kept every existing relay test and PILGRED path intact while keeping the bonus purely config-driven and visible in `relayView`.
+- **What needed correction:** None.

@@ -80,6 +80,8 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
 
   //Actions
 
+  // Owner, 2026-11-21 (docs/plans/bios-priority-lock.md): BIOS CPU priority effects (+1 sector for astronavigation, +1 tokenBase for projects/research).
+  bios: { astroExtraSectors: 1, cpuPriorityBonus: 1 },
   // Confirmed 2026-10-14: bonding, DTT, and STT cost 1 AP each; DTT and STT give each of the two 2 morale.
   bond: { cost: { ap: 1 } },
   antisocial: { moraleLoss: 1 },
