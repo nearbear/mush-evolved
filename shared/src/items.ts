@@ -61,6 +61,8 @@ export const CORPSE_ITEM = "corpse";
 
 /** A support drone (#411): an NPC item that repairs and wanders the ship each cycle change (drones.ts). */
 export const SUPPORT_DRONE_ITEM = "support_drone";
+/** Schrödinger, Raluca's cat (schrodinger.ts). */
+export const CAT_ITEM = "body_cat";
 
 /** Express cooks rations (actions/express_cook.ts) while it has charges. */
 export const MICROWAVE_ITEM = "microwave";
@@ -222,8 +224,8 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   // Read on the client; Tear destroys it (actions/tear.ts). Named after its icon.
   document: {},
   // Owner, 2026-10-25: items researches need in the lab (research.ts, RESEARCH_REQUIRES). No effect yet. Named after their icons.
-  // Schrödinger, the cat.
-  body_cat: {},
+  // Schrödinger, the cat: an NPC (schrodinger.ts) arriving with Raluca (owner, 2026-11-21).
+  [CAT_ITEM]: {},
   // Alien artifacts, found on expeditions (owner, 2026-11-08, #357). Inert for now: their effects are later stories. Named after their icons.
   water_stick: {},
   magellan_liquid_map: {},

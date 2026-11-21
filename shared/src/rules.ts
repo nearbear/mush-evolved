@@ -24,6 +24,7 @@ import { fireCycle, ignitePending, isGardenProtected, isOnFire } from "./fire.ts
 import { alertsFor, brokenDoors, doorsDetected, fireReported } from "./reports.ts";
 import { incidentsCycle } from "./incidents.ts";
 import { initNpc, newNpcState, npcCycle } from "./npcs.ts";
+import { catArrival } from "./schrodinger.ts";
 import { CHEAT_ROOM } from "./cheatRoom.ts";
 import { teleport, teleportBlocked } from "./kube.ts";
 import { newLostAnalysis, rollAtSelection } from "./lostAnalysis.ts";
@@ -150,7 +151,7 @@ export function createGame(
         ...chargesFor(config, it.type),
       };
     }),
-    ...players.flatMap((p) => startInventory(config, p.id)),
+    ...players.flatMap((p) => [...startInventory(config, p.id), ...catArrival(config, p.character)]),
   ];
   const items: ItemState[] = starts.map((it, i) => ({ id: `item-${i + 1}`, ...it }));
 

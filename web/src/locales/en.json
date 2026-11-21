@@ -1324,6 +1324,8 @@
     "droneLeft": "{{drone}} left for: {{room}}.",
     "droneEntered": "{{drone}} arrived from: {{room}}.",
     "droneExtinguished": "{{drone}} put out the fire!",
+    "catLeft": "Schrödinger left for: {{room}}.",
+    "catEntered": "Schrödinger arrived from: {{room}}.",
     "droneExtinguishFailed": "{{drone}} tried to put out the fire, but failed.",
     "droneUpgraded": "{{name}} fitted {{drone}} with the {{upgrade}} upgrade.",
     "itemRepairFailed": "You failed to repair the {{item}}.",

@@ -1345,6 +1345,8 @@
     "droneLeft": "{{drone}} se ha ido a: {{room}}.",
     "droneEntered": "{{drone}} ha llegado desde: {{room}}.",
     "droneExtinguished": "¡{{drone}} ha apagado el incendio!",
+    "catLeft": "Schrödinger se ha ido a: {{room}}.",
+    "catEntered": "Schrödinger ha llegado desde: {{room}}.",
     "droneExtinguishFailed": "{{drone}} ha intentado apagar el incendio, pero ha fallado.",
     "droneUpgraded": "{{name}} ha instalado la mejora {{upgrade}} en {{drone}}.",
     "itemRepairFailed": "No has conseguido reparar el objeto: {{item}}.",

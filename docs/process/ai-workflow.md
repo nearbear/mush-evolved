@@ -4676,3 +4676,10 @@ Follow-up: the "Inspect" panel heading is now visually hidden on desktop too (ke
 - **What needed correction:** the first HP-by-source labels gave cycle changes to whichever bot's `ready` closed the cycle, and asphyxia (which takes all remaining HP) swamped everything. Labeling cycle changes first and keeping deaths by other causes apart (`killed:<cause>`) fixed both. A GameRoom chat test counted the new Shrink line as a model reply; it now filters every machine line, not just item lines.
 - **Owner decisions:** a planet showing "explored" early isn't a leak; bots don't explore with patrol ships; when Eden is out of reach (first case: every Pilot dead) the Commander should switch to returning to Sol (Run G, not designed yet); injury deaths need their source recorded (the harness now reports HP lost by source and each death's last hit).
 - Verification was skipped at the owner's request this session.
+
+## 2026-11-21: Schrödinger, base (arrival and movement)
+
+- **Decision (owner):** Schrödinger spawns silently on the lab floor when Raluca spawns (launch or pre-selection join), not when she dies; moves at each cycle change like eMush's cat AI; any living player counts as people; carried, he wriggles free when he moves. No actions.
+- **What worked:** the clean-room `npm run emush -- spec` on each `NPCTasks/Schrodinger` file gave the exact AI (70% favoured move, owner-alive vs owner-dead branches, no fallback chaining, working doors only); the drone NPC registry (`npcs.ts`) took the cat as a new `Npc` with no new state, so no normalizer or leak fields.
+- **Needed correction:** Claude misread "spawn when Raluca dies" from the request's typo and asked where he'd appear on her death; the owner corrected it (he arrives with her, in the lab). Claude's own test briefly revived Raluca by mistake (`players[0]`), switching the AI branch.
+- **Side effect:** the cat's rolls on `state.rng` shift every later roll in games with Raluca, which made some server tests reach a merchant arrival that crashed in another session's in-progress `merchants.ts` work.

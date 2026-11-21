@@ -494,6 +494,9 @@ export interface GameConfig {
     upgrade: { cost: { ap: number }; scraps: number; dirtyChance: number; injuryChance: number };
     turboChance: number; // A Turbo drone's chance of a second action each cycle change, never a third (eMushpedia: 80%).
   };
+  // Schrödinger the cat (owner, 2026-11-21; schrodinger.ts): he appears in `room` when `owner` (a character id) boards,
+  // and each cycle change takes his favoured move (toward his owner; away from people once she's dead) with `favoredChance`.
+  schrodinger: { owner: string; room: RoomId; favoredChance: number };
   greenThumb: {
     pots: number; // Empty hydropots the `green_thumb` skill gives when picked (owner, 2026-11-01; the original's 2).
   };
