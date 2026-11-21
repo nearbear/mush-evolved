@@ -110,6 +110,8 @@ Raluca should never be in a dorm; today she often just stands in the rear corrid
 - `HOLD_MIN_OXYGEN` no longer triggers escape jumps; they fire on 7+ hunters or after `HOLD_MAX_DAYS` (4) only.
 - **Bar:** escape jumps on the oxygen trigger, 52, down to 0. **Watch:** oxygen and fuel.
 
+**Status (2026-11-20): built and measured** on top of the fuel relay. Escape jumps on oxygen 126 → 2 over 50 runs, runs reaching an Oxygen planet's orbit 31 → 36, mean days +0.29 (22 longer, 9 shorter). Details in `docs/plans/bot-goals.md` ("Reaching Eden").
+
 ### Run E: Astrophysicists save AP for a full analysis
 
 - **Scan at once** when the Astrophysicist holds no planets.

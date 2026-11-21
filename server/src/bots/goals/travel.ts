@@ -21,7 +21,10 @@ export const FUEL_WAIT_CYCLES = 2;
 export const HOLD_HUNTER_TRIGGER = 5;
 /** Maximum days to hold a prepared jump before jumping anyway (#421). */
 export const HOLD_MAX_DAYS = 4;
-/** Jump anyway if ship oxygen drops to or below this level (#421). */
+/**
+ * Jump anyway if ship oxygen drops to or below this level (#421), but only to a shared planet: an escape jump lands
+ * in empty space, which brings no oxygen (oxygen plan Run D, 2026-11-20).
+ */
 export const HOLD_MIN_OXYGEN = 8;
 
 /**
@@ -82,10 +85,10 @@ export function targetJump(view: PlayerView, chamber: number | null): JumpTarget
   return { direction: null, distance: 1 };
 }
 
-/** Whether a prepared jump should execute now instead of holding (#421). */
-export function shouldJumpNow(view: PlayerView, holdStart: number | null): boolean {
+/** Whether a prepared jump should execute now instead of holding (#421). Low oxygen counts only for a jump `toPlanet` (Run D). */
+export function shouldJumpNow(view: PlayerView, holdStart: number | null, toPlanet: boolean): boolean {
   if (view.hunters.count >= HOLD_HUNTER_TRIGGER) return true;
-  if (view.ship.oxygen <= HOLD_MIN_OXYGEN) return true;
+  if (toPlanet && view.ship.oxygen <= HOLD_MIN_OXYGEN) return true;
   if (holdStart !== null && view.cycle - holdStart >= HOLD_MAX_DAYS * DEFAULT_CONFIG.cyclesPerDay) return true;
   return false;
 }
@@ -98,7 +101,7 @@ export function shouldJumpNow(view: PlayerView, holdStart: number | null): boole
 export function jumpDueByChat(view: PlayerView, memory: BotMemory): boolean {
   if (isJumpDue(view, memory)) return true;
   const since = holdStartCycle(view, memory);
-  return since !== null && shouldJumpNow(view, since);
+  return since !== null && shouldJumpNow(view, since, sharedDestination(view) !== null);
 }
 
 /**
@@ -164,7 +167,7 @@ function isPrepared(view: PlayerView, memory: BotMemory, chamber: number | null,
  * The Commander's travel (`BOT_DUTIES`; owner, 2026-11-12, #417 & #421): prepares a jump in advance (checks the
  * combustion chamber, loads the fuel, turns the ship, and walks to the bridge), then announces `"Jump: hold"` in global
  * chat and holds `travel` until at least `HOLD_HUNTER_TRIGGER` (8) hunters attack, `HOLD_MAX_DAYS` (4) days elapse, or
- * oxygen reaches `HOLD_MIN_OXYGEN` (8). Then it flees: it jumps at once if the minimap shows the whole living crew
+ * oxygen reaches `HOLD_MIN_OXYGEN` (8) with a shared planet to jump to (an escape jump ignores oxygen: Run D). Then it flees: it jumps at once if the minimap shows the whole living crew
  * aboard, else it posts `"Jump: now"` (pilots land and stay docked) and jumps once they are, or after `JUMP_WAIT_CYCLES` (2) anyway. Uses `sharedDestination` if available, else a 1-fuel escape jump on the current
  * heading, and cancels the hold (`"Jump: off"`) after jumping or giving up. A human Commander means no travel or escape jumps.
  */
@@ -213,7 +216,7 @@ export const travel: GoalDef = {
     const prepared = isPrepared(view, memory, chamber, target);
     const holdStart = effectiveHoldStart(view, memory);
     // Holding: nothing to do until the trigger.
-    const due = isJumpDue(view, memory) || shouldJumpNow(view, holdStart);
+    const due = isJumpDue(view, memory) || shouldJumpNow(view, holdStart, target.direction !== null);
     if (prepared && holdStart !== null && !due) {
       return [];
     }
@@ -300,7 +303,7 @@ function travelGoal(view: PlayerView, _memory: BotMemory, bridge: RoomId, initia
         if (asked === null && v.chatChannels.includes("global")) {
           return { kind: "social", message: { type: "chat", channel: "global", text: formatFuelNeed(target.distance) } };
         }
-        const due = isJumpDue(v, memory) || shouldJumpNow(v, effectiveHoldStart(v, memory));
+        const due = isJumpDue(v, memory) || shouldJumpNow(v, effectiveHoldStart(v, memory), target.direction !== null);
         const waiting = asked !== null && asked < FUEL_WAIT_CYCLES && !due;
         if (!waiting) {
           if (level === null) {
@@ -338,7 +341,7 @@ function travelGoal(view: PlayerView, _memory: BotMemory, bridge: RoomId, initia
       if (!fueled) return { kind: "done" };
 
       const holdStart = effectiveHoldStart(v, memory);
-      if (!isJumpDue(v, memory) && !shouldJumpNow(v, holdStart)) {
+      if (!isJumpDue(v, memory) && !shouldJumpNow(v, holdStart, target.direction !== null)) {
         memory.holdSince ??= v.cycle;
         if (!isHoldingJump(v, memory) && v.chatChannels.includes("global")) {
           return { kind: "social", message: { type: "chat", channel: "global", text: HOLD_JUMP_LINE } };

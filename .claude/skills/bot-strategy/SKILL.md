@@ -57,7 +57,7 @@ Goal priorities and triggers were mostly set by the owner. A number in the table
 | `EXTINGUISHER_HOMES` | front and rear corridors | `goals/extinguish.ts` | Owner, 2026-11-14 (#429): central, so anyone can reach one |
 | `HULL_REPAIR_BELOW` | 50 | `goals/repairHull.ts` | Owner, 2026-11-01, kept 2026-11-13: above it scrap is worth more elsewhere |
 | `HOLD_HUNTER_TRIGGER` | 5 | `goals/travel.ts` | Owner, 2026-11-13 (#421); left open as a tuning knob |
-| `HOLD_MAX_DAYS`, `HOLD_MIN_OXYGEN`, `JUMP_WAIT_CYCLES` | 4, 8, 2 | `goals/travel.ts` | #421 |
+| `HOLD_MAX_DAYS`, `HOLD_MIN_OXYGEN`, `JUMP_WAIT_CYCLES` | 4, 8, 2 | `goals/travel.ts` | #421; owner's plan Run D, 2026-11-20: `HOLD_MIN_OXYGEN` fires only a jump to a shared planet, never an escape jump |
 | `BOT_EAT_AFTER_CYCLES` | 16 | `goals/eat.ts` | Owner |
 | `SHRINK_DESK_WORK_WITHIN` | 4 | `goals/work.ts` | Owner, 2026-11-01 |
 | `SELF_CARE_MORALE`, `SELF_CARE_PRIORITY` | 5, 79 | `goals/selfCare.ts` | Owner, 2026-11-18 (#452): at 5 or less a bot lies in a bed in the Shrink's room (ACTOPI) and posts `Morale: low`; in bed it gets up for fires and oxygen |

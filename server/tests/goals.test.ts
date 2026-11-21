@@ -2021,6 +2021,22 @@ describe("travel holds & escape jumps (#421)", () => {
     expect(isHoldingJump(viewFor(jumped, id), memory())).toBe(false);
   });
 
+  it("keeps holding an escape jump when oxygen drops to 8 or below (Run D: empty space brings no oxygen)", async () => {
+    const { game, id } = commander([]);
+    const bot = new GoalBot(1, 2, [travel]);
+    const { game: held } = await prepare(game, id, bot);
+    expect(isHoldingJump(viewFor(held, id), memory())).toBe(true);
+    held.ship.oxygen = HOLD_MIN_OXYGEN;
+    const next = newCycle(held);
+    expect(next.ok).toBe(true);
+    if (!next.ok) return;
+    next.state.hunters.list = [];
+    next.state.hunters.points = 0;
+    const { game: still, taken } = await untilReady(next.state, id, bot);
+    expect(taken.map((a) => a.type)).not.toContain("travel");
+    expect(still.navigation.arriving).toBeNull();
+    expect(isHoldingJump(viewFor(still, id), memory())).toBe(true);
+  });
 
   it("upgrades a held 1-fuel escape jump when an Astrophysicist shares a planet mid-hold", async () => {
     const { game, id } = commander([]);

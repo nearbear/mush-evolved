@@ -97,7 +97,8 @@ export const BOT_DUTIES: readonly Duty[] = [
 
   // --- Titles ---
   // Owner, 2026-11-12 (#417, #421): prepares jumps in advance and holds `travel` until hunters >= 8, 4 days of holding,
-  // or oxygen <= 8 (jumping to the shared planet when one is in reach, else 1-fuel escape jump on the current heading).
+  // or oxygen <= 8 with a shared planet in reach (Run D: oxygen never triggers an escape jump; else 1-fuel escape jump
+  // on the current heading).
   // Above astro (owner, 2026-11-12): it costs a few AP and is what the search is for. Leaves orbit once every sector
   // is explored, by the shared expedition reports (#417).
   { title: "commander", when: "destination", actions: ["check_combustion", "take_fuel", "load_fuel", "unload_fuel", "turn_ship", "travel", "leave_orbit"], priority: 77, prompt: "You're the Commander: only you can steer the ship and, once PILGRED is repaired, take it home." },
