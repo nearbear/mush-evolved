@@ -603,7 +603,9 @@ describe("debris", () => {
 
   it("a destroyed hunter drops 1 or 2 pieces, by the weights in config", () => {
     for (const [count, type] of [[1, "metal_scraps"], [2, "space_capsule"]] as const) {
-      const s = ship({ hunters: { ...DEFAULT_CONFIG.hunters, waveChance: 0, debris: { count: count === 1 ? [0, 1] : [0, 0, 1], types: { [type]: 1 } } } });
+      const hunters = DEFAULT_CONFIG.hunters;
+      const debris = { count: count === 1 ? [0, 1] : [0, 0, 1], types: { [type]: 1 } };
+      const s = ship({ hunters: { ...hunters, waveChance: 0, types: { ...hunters.types, hunter: { ...hunters.types.hunter, debris } } } });
       s.hunters.list.push({ id: "h1", hp: 1, hitChance: 0.8, target: null, type: "hunter", countdown: null });
       player(s, "p1").room = "LASER_TURRET_A_0";
       const next = mustApply({ ...s, config: { ...s.config, turrets: { ...s.config.turrets, chance: 1 } } }, "p1", { type: "turret_attack", equipment: "LASER_TURRET_A_0:TURRET_COMMAND", hunter: "h1" });

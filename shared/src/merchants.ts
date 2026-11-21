@@ -193,7 +193,7 @@ export function hitMerchant(state: GameState, id: string, amount: number): boole
     say(state, signal, { from: "system", key: "signals.destroyed" });
     signal.status = "destroyed";
   }
-  dropDebris(state);
+  dropDebris(state, state.config.hunters.types.hunter.debris); // Wreckage like a plain hunter's (owner, 2026-11-21).
   return true;
 }
 
