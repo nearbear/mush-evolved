@@ -4541,3 +4541,12 @@ Planned the expedition screen with the owner: a chronological timeline of sector
 - **Kept (`observeBeds`):** bots remember bedrooms where every bed is taken (`BotMemory.fullBeds`) across cycles until they see a free bed there or see a sleeper elsewhere, up, or dead. On 50 seeds against a rerun of Run A, AP walking to rest dropped 495.5 → 353.2 a run and `rest` starts dropped 795 → 493, while cycles in orbit after full exploration stayed 6.6 → 6.6.
 - **Dropped (owner):** A2b (leave orbit only when the whole Motor Room chain is affordable). Cycles in orbit after full exploration went 6.6 → 7.2 and seed 3's Commander was stranded for 59 cycles because lower-ranked goals spent his AP down to the reserve; reverted rather than protecting that AP.
 - **Process lessons:** rerun the baseline with new metrics back to back with the runs; harness workers load code lazily, so don't edit source during a run; the A2b smoke test looked fine on average, but a per-seed stay listing caught seed 3's stranding.
+
+### 2026-11-20: Icarus panel gets the whole room view
+
+- Owner asked to hide the ID card and minimap in the Icarus, then to move Leave the Icarus under Launch expedition in the bar and let the expedition screen take the freed top space. `GameView` skips `SelfHud` and the room-corner card when `inIcarus` and passes the leave option to `IcarusPanel`; the 9rem/7rem top padding on the seats and timeline is gone.
+- Needed correction: running `prettier` on `GameView.tsx` reformatted the whole file (the repo isn't prettier-formatted); the file had to be reset with the owner's OK and the edit redone by hand. Don't run prettier on files here.
+- Follow-up: the expedition timeline's current sector lost its card (border and dark fill), so it floats on the Icarus sky like its neighbours; the Astrophysics box keeps its card.
+- Follow-up: the Icarus seats rest on the bar (bottom-aligned), and the panel draws the iso view's star field (static, from spaceSky.ts) and the orbited planet at 1x in the bottom-right instead of flat navy.
+- Follow-up: the planet draws at 2x while the expedition is away (CSS `zoom: 2` on its natural size).
+- Follow-up: the unknown sector is named "Unknown" (fr "Inconnu", es "Desconocido") everywhere `astro.unknown` shows.

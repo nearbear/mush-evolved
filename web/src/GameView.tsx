@@ -16,7 +16,6 @@ import { Announcer } from "./hud/Announcer.tsx";
 import { ITrackie } from "./hud/ITrackie.tsx";
 import { PatrolCockpit } from "./hud/PatrolCockpit.tsx";
 import { IcarusPanel } from "./hud/IcarusPanel.tsx";
-import { ActionButton } from "./hud/ActionButton.tsx";
 import { LostPanel } from "./hud/LostPanel.tsx";
 import { PeekBar } from "./hud/PeekBar.tsx";
 import { TerminalDialog } from "./hud/TerminalDialog.tsx";
@@ -254,6 +253,8 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
                 selected={target}
                 onSelect={select}
                 onAction={act}
+                planet={orbitImage(view.navigation.orbitPicture)}
+                leave={leaveIcarus}
                 onShareReport={readOnly ? undefined : (report, text) => post({ type: "shareReport", report, text })}
               />
             ) : layout ? (
@@ -304,7 +305,8 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
             )}
             {you.alive && <RoomList view={view} layout={layout} reachable={reachable} onSelect={(target) => { select(target); setFocusActions((n) => n + 1); }} onMove={move} quiet={readOnly} />}
             {mobile && <ShipOverlay view={view} />}
-            {!mobile && you.alive && <SelfHud view={view} onInspect={() => select({ kind: "player", id: you.id })} />}
+            {/* Not in the Icarus (owner, 2026-11-20): its panel takes the whole room view. */}
+            {!mobile && you.alive && !inIcarus && <SelfHud view={view} onInspect={() => select({ kind: "player", id: you.id })} />}
             {/* Bottom-left: the action queue. */}
             {you.alive && (
               <div className="room-bottom-left">
@@ -324,41 +326,38 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
                 onOpenChange={setInventoryOpen}
               />
             )}
-            {/* Top-right: one card (amber, red when your room is on fire) holding your room's name with the minimap under it. */}
-            <div className={`room-corner${inRoom && view.roomOnFire ? " alert" : ""}`}>
-              {inRoom && (
-                <div className="room-title">
-                  <div className="room-icons" role="status">
-                    {view.roomOnFire && (
-                      <Hint label={t("roomList.onFire")}>
-                        <img src={FIRE_ICON} alt={t("roomList.onFire")} />
-                      </Hint>
-                    )}
-                    {view.roomCeasefire !== null && (
-                      <Hint label={t("roomList.ceasefire", { count: view.roomCeasefire })}>
-                        <img src={skillIcon("diplomacy")} alt={t("roomList.ceasefire", { count: view.roomCeasefire })} />
-                      </Hint>
-                    )}
+            {/* Top-right: one card (amber, red when your room is on fire) holding your room's name with the minimap under it.
+                Not in the Icarus (owner, 2026-11-20): its panel takes the whole room view. */}
+            {!inIcarus && (
+              <div className={`room-corner${inRoom && view.roomOnFire ? " alert" : ""}`}>
+                {inRoom && (
+                  <div className="room-title">
+                    <div className="room-icons" role="status">
+                      {view.roomOnFire && (
+                        <Hint label={t("roomList.onFire")}>
+                          <img src={FIRE_ICON} alt={t("roomList.onFire")} />
+                        </Hint>
+                      )}
+                      {view.roomCeasefire !== null && (
+                        <Hint label={t("roomList.ceasefire", { count: view.roomCeasefire })}>
+                          <img src={skillIcon("diplomacy")} alt={t("roomList.ceasefire", { count: view.roomCeasefire })} />
+                        </Hint>
+                      )}
+                    </div>
+                    <h2 id={roomTitleId}>{names.room(you.room)}</h2>
                   </div>
-                  <h2 id={roomTitleId}>{names.room(you.room)}</h2>
-                </div>
-              )}
-              <Minimap
-                here={you.room}
-                youId={you.id}
-                people={[you, ...view.players]}
-                unidentified={view.unidentified}
-                reachable={reachable}
-                burningRooms={view.burningRooms}
-                brokenDoors={view.brokenDoors}
-              />
-              {/* Aboard the docked Icarus (owner, 2026-11-17): Leave the Icarus, small, under the map. */}
-              {leaveIcarus && (
-                <ActionButton view={view} option={leaveIcarus} onAction={act} className="room-corner-action">
-                  {names.action(leaveIcarus.action.type)}
-                </ActionButton>
-              )}
-            </div>
+                )}
+                <Minimap
+                  here={you.room}
+                  youId={you.id}
+                  people={[you, ...view.players]}
+                  unidentified={view.unidentified}
+                  reachable={reachable}
+                  burningRooms={view.burningRooms}
+                  brokenDoors={view.brokenDoors}
+                />
+              </div>
+            )}
           </div>
         </div>
 

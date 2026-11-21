@@ -186,10 +186,10 @@ export function ExpeditionSection() {
       row="m2k-stack"
     >
       <Figure caption="Away, four steps in">
-        <GameFrame panel="room" room={<IcarusPanel view={away} expedition={away.expedition} selected={{ kind: "player", id: "p0" }} onSelect={noop} onAction={noop} />} />
+        <GameFrame panel="room" room={<IcarusPanel view={away} expedition={away.expedition} selected={{ kind: "player", id: "p0" }} onSelect={noop} onAction={noop} planet={null} />} />
       </Figure>
       <Figure caption="A U-turn holder sees the next sector">
-        <GameFrame panel="room" room={<IcarusPanel view={uTurn} expedition={uTurn.expedition} selected={{ kind: "player", id: "p0" }} onSelect={noop} onAction={noop} />} />
+        <GameFrame panel="room" room={<IcarusPanel view={uTurn} expedition={uTurn.expedition} selected={{ kind: "player", id: "p0" }} onSelect={noop} onAction={noop} planet={null} />} />
       </Figure>
       <Figure caption="Lost: the timeline stops where you got lost">
         <GameFrame panel="room" room={<LostPanel view={lost} />} />

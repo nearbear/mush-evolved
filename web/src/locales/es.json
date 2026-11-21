@@ -1661,7 +1661,7 @@
   "astro": {
     "title": "Tus planetas",
     "sectorProgress": "{{known}} de {{total}} sectores analizados",
-    "unknown": "Sector desconocido",
+    "unknown": "Desconocido",
     "scan": "Escanear",
     "newPlanetTab": "Nuevo planeta",
     "analyze": "Analizar",

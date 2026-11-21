@@ -1,6 +1,6 @@
-/* The Icarus (hud/IcarusPanel.tsx): its seats as podiums in the middle, clear of the ID card (top left) and the minimap
-   (top right), with the patrol cockpit's bar (space.css's .space-bar) under them. Leave the Icarus sits under the
-   minimap (.room-corner-action). Podiums at 2x (whole pixels only). */
+/* The Icarus (hud/IcarusPanel.tsx): its seats as podiums in the middle, with the patrol cockpit's bar (space.css's
+   .space-bar) under them holding Launch expedition and Leave the Icarus. No ID card or minimap over it (owner,
+   2026-11-20). Podiums at 2x (whole pixels only). */
 .iso-room.icarus-cabin {
   display: flex;
   flex-direction: column;
@@ -14,6 +14,28 @@
 .icarus-cabin h2 {
   font-size: 0.95rem;
 }
+/* The iso view's backdrop, still (static, unlike the streaming patrol sky): the sky tiles with the stars over them
+   (spaceSky.ts), and the orbited planet at 1x in the bottom-right corner, as PixiRenderer places it. Everything else
+   sits above them. */
+.icarus-sky {
+  position: absolute;
+  inset: 0;
+  background: var(--stars) repeat, var(--sky) repeat;
+  image-rendering: pixelated;
+}
+.icarus-planet {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  image-rendering: pixelated;
+}
+/* Away (owner, 2026-11-20): at 2x, a whole-number scale of its natural size. */
+.icarus-planet[data-away] {
+  zoom: 2;
+}
+.icarus-cabin > :not(.icarus-sky, .icarus-planet) {
+  position: relative;
+}
 /* Nothing here zooms. */
 .room-view:has(> .icarus-cabin) .zoom-controls {
   display: none;
@@ -26,14 +48,14 @@
   flex: 1;
   min-height: 0;
   margin: 0;
-  /* The top cards' height, so the podiums are centred in the space under them. */
-  padding: 9rem var(--space-2) var(--space-2);
+  padding: var(--space-2);
   list-style: none;
   display: grid;
   grid-template-columns: repeat(var(--seats), var(--seat));
   justify-content: center;
-  align-content: center;
-  align-items: start;
+  /* Resting on the bar (owner, 2026-11-20). */
+  align-content: end;
+  align-items: end;
   gap: var(--space-2);
 }
 .icarus-seat > .pick-tile {
@@ -70,26 +92,16 @@
   padding: 0 var(--space-4);
 }
 
-/* Under the minimap, in its card: small, as wide as the map. */
-.room-corner > button.room-corner-action {
-  height: 1.75rem;
-  margin: 0;
-  padding: 0 var(--space-2);
-  font-size: 0.8rem;
-}
-
-/* Phones: no ID card, but a narrower panel, so the seats go in two rows (2+2, or 3+3) under the minimap, and the ship
-   button stands on the sack (where the zoom buttons were), as in the patrol cockpit. */
+/* Phones: a narrower panel, so the seats go in two rows (2+2, or 3+3), and the ship button stands on the sack (where
+   the zoom buttons were), as in the patrol cockpit. */
 @media (max-width: 1023px) {
   .icarus-seats {
-    padding-top: 7rem;
     grid-template-columns: repeat(var(--half), var(--seat));
   }
   /* Away, the podiums at 1x leave the timeline the height. */
   .icarus-seats[data-away] {
     --figure-zoom: 1;
     --seat: 4.5rem;
-    padding-top: 0;
   }
   .room-view:has(> .icarus-cabin) .ship-overlay {
     right: 0.5rem;

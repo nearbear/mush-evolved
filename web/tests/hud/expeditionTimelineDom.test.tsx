@@ -40,7 +40,7 @@ describe("ExpeditionTimeline", () => {
     expect(current().textContent).toContain("Alien zombies");
     fireEvent.click(screen.getByRole("button", { name: "Next step" }));
     expect(current().getAttribute("aria-label")).toBe("Step 5 of 8");
-    expect(current().textContent).toContain("Unknown sector");
+    expect(current().textContent).toContain("Unknown");
     fireEvent.keyDown(current(), { key: "ArrowLeft" });
     fireEvent.keyDown(current(), { key: "ArrowLeft" });
     expect(current().textContent).toContain("Again");

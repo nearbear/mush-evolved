@@ -1,5 +1,5 @@
 /* The expedition screen (hud/ExpeditionTimeline.tsx, docs/plans/expedition-ui.md): in the Icarus while away it sits
-   above the seats, clear of the ID card (top left) and the minimap (top right); the current column scrolls up and down; in the lost panel it sits
+   above the seats, with the top of the room view to itself (no ID card or minimap there; owner, 2026-11-20); the current column scrolls up and down; in the lost panel it sits
    under the heading. The current column is full size in the middle, its neighbours clipped at each side, the arrows
    outside them. Tag icons are 40x40 pixel art (the unknown one 36x36) at whole-number scales: 2x beside, 3x in the
    middle. */
@@ -8,7 +8,7 @@
   min-height: 0;
   box-sizing: border-box;
   width: 100%;
-  padding: 9rem var(--space-2) var(--space-2);
+  padding: var(--space-2);
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
@@ -107,10 +107,8 @@ button.timeline-arrow > span {
   min-height: 0;
   overflow-y: auto;
   scrollbar-width: thin;
+  /* No card: the sector floats on the sky (owner, 2026-11-20). */
   padding: var(--space-2);
-  border: 1px solid var(--chrome-rim);
-  border-radius: var(--panel-radius);
-  background: rgb(23 23 44 / 0.85); /* --chrome-1 over the sky */
 }
 
 .timeline-column {
@@ -205,9 +203,6 @@ button.timeline-arrow > span {
 /* Phones: the current column fills the width with about 24px of each neighbour showing, and the arrows overlay the
    edges. */
 @media (max-width: 1023px) {
-  .expedition-timeline {
-    padding-top: 7rem;
-  }
   .timeline-track {
     position: relative;
     grid-template-columns: 24px minmax(0, 1fr) 24px;

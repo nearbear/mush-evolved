@@ -4,8 +4,9 @@
 // standing on theirs; pressing one selects them (a bandage, say). Away (owner, 2026-11-19), the expedition screen
 // (ExpeditionTimeline.tsx) sits above them, the seats are one row that scrolls sideways, and each shows its HP. Under them, a TechnoBox bar like the patrol cockpit's
 // (PatrolCockpit.tsx): docked, the Launch expedition button where Shoot would be; away, the planet, the countdown to the
-// return and the report (members see each event as it happens). Leave the Icarus is a small button under the minimap
-// (GameView). A patrol ship's landing shows its own crew only, one podium. The floor's items are in the inventory
+// return and the report (members see each event as it happens). Leave the Icarus is under Launch expedition in the bar
+// (owner, 2026-11-20), and the panel has the room view to itself: no ID card or minimap over it, the iso view's star
+// field and orbited planet behind, and the seats resting on the bar. A patrol ship's landing shows its own crew only, one podium. The floor's items are in the inventory
 // panel as in any room.
 
 import { actionVisibility, type Action, type PlayerView, type Target } from "@mush2/shared";
@@ -17,6 +18,7 @@ import { ActionLabel } from "./ActionLabel.tsx";
 import { ExpeditionReportDialog } from "./ExpeditionReportDialog.tsx";
 import { characterOf, ExpeditionTimeline } from "./ExpeditionTimeline.tsx";
 import { Podium } from "./Podium.tsx";
+import { spaceSky } from "./spaceSky.ts";
 import { sameTarget } from "./targets.ts";
 import { TechnoBox } from "./TechnoBox.tsx";
 import { useCountdown } from "./useCountdown.ts";
@@ -28,11 +30,15 @@ interface Props {
   selected: Target;
   onSelect: (target: Target) => void;
   onAction: (action: Action) => void;
+  /** The planet the ship orbits, as an image URL, or null: drawn at the bottom right as the iso view does. */
+  planet: string | null;
+  /** Leave the Icarus, while docked, as `view.actions` offers it. */
+  leave?: PlayerView["actions"][number] | undefined;
   /** Absent in a read-only view (a replay). */
   onShareReport?: ((report: string, text: string) => void) | undefined;
 }
 
-export function IcarusPanel({ view, expedition, selected, onSelect, onAction, onShareReport }: Props) {
+export function IcarusPanel({ view, expedition, selected, onSelect, onAction, planet, leave, onShareReport }: Props) {
   const { t } = useTranslation();
   const names = useNames();
   const aboard = [view.you, ...view.players].filter((p) => p.alive && p.room === view.you.room).sort((a, b) => a.id.localeCompare(b.id));
@@ -45,8 +51,16 @@ export function IcarusPanel({ view, expedition, selected, onSelect, onAction, on
     !expedition ? undefined : p.id === view.you.id ? view.you.hp : crewHp?.find((m) => m.name === p.character)?.hp;
   // What the Astrophysics feature holds about this planet, if you read it (`expedition.shared`).
   const shared = view.sharedPlanets.find((e) => e.id === expedition?.shared);
+  const [sky] = useState(spaceSky);
   return (
-    <section className="iso-room icarus-cabin" aria-label={names.room(view.you.room)}>
+    <section
+      className="iso-room icarus-cabin"
+      aria-label={names.room(view.you.room)}
+      style={sky ? ({ "--sky": `url(${sky.sky})`, "--stars": `url(${sky.stars})` } as CSSProperties) : undefined}
+    >
+      {/* The iso view's backdrop (owner, 2026-11-20): the star field, and the orbited planet at the bottom right. */}
+      <div className="icarus-sky" aria-hidden="true" />
+      {planet && <img className="icarus-planet" src={planet} alt="" data-away={expedition ? true : undefined} />}
       {/* Away, the expedition screen sits above the seats (docs/plans/expedition-ui.md; owner, 2026-11-19). */}
       {expedition && (
         <ExpeditionTimeline expedition={expedition} report={view.expeditions.find((r) => r.id === expedition.report)} shared={shared} sharedBy={shared && names.character(characterOf(view, shared.by))} />
@@ -74,10 +88,22 @@ export function IcarusPanel({ view, expedition, selected, onSelect, onAction, on
           );
         })}
       </ul>
-      {/* Docked, the bar is there only when you are offered the launch (someone who can't fly isn't). */}
-      {(expedition || launch) && (
+      {/* Docked, the bar holds Launch expedition when you are offered it (someone who can't fly isn't), with Leave the
+          Icarus under it. */}
+      {(expedition || launch || leave) && (
         <TechnoBox className="space-bar icarus-bar">
-          {expedition ? <Away view={view} expedition={expedition} onShareReport={onShareReport} /> : launch && <Launch view={view} option={launch} onAction={onAction} />}
+          {expedition ? (
+            <Away view={view} expedition={expedition} onShareReport={onShareReport} />
+          ) : (
+            <>
+              {launch && <Launch view={view} option={launch} onAction={onAction} />}
+              {leave && (
+                <ActionButton view={view} option={leave} onAction={onAction} className="icarus-leave">
+                  {names.action(leave.action.type)}
+                </ActionButton>
+              )}
+            </>
+          )}
         </TechnoBox>
       )}
     </section>
