@@ -38,6 +38,10 @@ export interface DiseaseCatagories {
   allDiseases: string [],
   /** The diseases the disease incident (incidents.ts) picks from. */
   incidentDiseases: string[],
+  /** The diseases an expedition's Disease event (expeditions.ts) picks from. */
+  expeditionDiseases: string[],
+  /** Diseases an expedition fight can give (not built yet). */
+  expeditionCombatDiseases: string[],
   allDisorders: string [],
   allInjuries: StatusId[],
   /** Injuries left out of the pool a "random injury" combat outcome draws from (attack.ts). */

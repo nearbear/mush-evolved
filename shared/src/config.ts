@@ -740,6 +740,9 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
       "sepsis_disease"],
     // Owner, 2026-11-14: what the disease incident can give.
     incidentDiseases: ["cold_disease", "skin_inflammation_disease", "migraine_disease", "sinus_storm_disease"],
+    // Owner, 2026-11-21: what an expedition's Disease event can give (expeditions.ts); the fight list isn't used yet.
+    expeditionDiseases: ["migraine_disease", "skin_inflammation_disease", "fungal_infection_disease", "gastroenteritis_disease", "flu_disease", "rubella_disease", "syphilis_disease", "rejuvenation_disease", "mush_allergy_disease", "pink_eye_disease", "slight_nausea_disease"],
+    expeditionCombatDiseases: ["space_rabies_disease", "flu_disease", "syphilis_disease", "rejuvenation_disease"],
     allDisorders: ["depression_disorder"],
     allInjuries: [
       "broken_nose_injury",

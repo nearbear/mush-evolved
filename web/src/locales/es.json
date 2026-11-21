@@ -2067,6 +2067,7 @@
       "kill": "Un peligro mortal golpea a la tripulación.",
       "killAll": "Nadie sobrevive.",
       "mushTrap": "La tripulación cae en una trampa Mush: una nube de esporas la envuelve.",
+      "disease": "Alguien de la tripulación cae enfermo.",
       "lost": "{{name}} se separa de la tripulación y se pierde.",
       "found": "La tripulación encuentra a {{name}}, que se une a ella.",
       "foundDead": "La tripulación encuentra el cuerpo de {{name}}.",

@@ -175,10 +175,6 @@ export function useEventLines(): (event: ExpeditionEvent) => { sector: string; l
       case "lostItem":
         lines.push(t("expedition.events.lostItem", { item: names.item(event.item ?? "") }));
         break;
-      // Not built yet: the rules record it as Nothing (#214).
-      case "disease":
-        lines.push(t("expedition.events.nothing"));
-        break;
       case "lost":
       case "found":
       case "foundDead":

@@ -2067,6 +2067,7 @@
       "kill": "Un danger mortel frappe l'équipe.",
       "killAll": "Personne ne survit.",
       "mushTrap": "L'équipe tombe dans un piège Mush : un nuage de spores l'enveloppe.",
+      "disease": "Un membre de l'équipe tombe malade.",
       "lost": "{{name}} se sépare de l'équipe et se perd.",
       "found": "L'équipe retrouve {{name}}, qui la rejoint.",
       "foundDead": "L'équipe retrouve le corps de {{name}}.",

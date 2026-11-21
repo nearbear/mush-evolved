@@ -2133,6 +2133,7 @@
       "kill": "A deadly danger strikes the crew.",
       "killAll": "Nobody survives.",
       "mushTrap": "The crew walks into a Mush trap: a cloud of spores rises around them.",
+      "disease": "Someone in the crew falls ill.",
       "lost": "{{name}} gets separated from the crew and is lost.",
       "found": "The crew finds {{name}}, who joins them.",
       "foundDead": "The crew finds {{name}}'s body.",

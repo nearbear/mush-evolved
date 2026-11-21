@@ -4658,3 +4658,10 @@ Owner asked whether the star field could be the background for the whole desktop
 
 Owner asked to drop Deselect on desktop (clicking the room's floor already clears the selection) and, on phones, move it from under the portrait into the action list, shorter (22px, smaller type) than the actions so it doesn't read as one. Also zeroed the phone action column's top margin, which pushed it below the portrait's top edge. Small CSS/JSX change; `verify:web` passed first time.
 Follow-up: the "Inspect" panel heading is now visually hidden on desktop too (kept for screen readers), one rule in `inspect.css` replacing the phone-only one in `responsive.css`.
+
+## 2026-11-21: Expedition Disease event
+
+- **Decision (owner):** the Disease event (Forest, Swamp, Insects) gives one random member still with the crew, Mush included as carriers, a disease they lack from `config.diseases.expeditionDiseases` (owner's list, added to `config.ts` by hand). If nobody can catch one, the event is Nothing. The report line is anonymous. Fight diseases (`expeditionCombatDiseases`) are deferred. Claude drafted four questions from eMushpedia's `Évènements` ("un équipier tombe malade"); the owner picked an anonymous report line over Claude's recommendation to name the victim.
+- **What worked:** the disease incident's pattern (`catchable`, `addDisease` for the Hygienist's silent resist) carried over directly as `sicken` in `expeditions.ts`.
+- **Needed correction:** the first test gave the pilot (p0) every disease, and gastroenteritis grounds a pilot, so takeoff failed. A "report never names the victim" check also failed because the report lists its whole crew; it now checks the event's own fields instead.
+- **Verify:** shared passed; server bot/GameRoom tests failed mostly by timeout under load, untouched by this change.
