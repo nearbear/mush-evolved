@@ -1127,7 +1127,8 @@ describe("expeditions, phase 3, slice C: gear and spacesuits", () => {
     });
     const count = (type: string, pool: "storage" | "daedalus") =>
       DEFAULT_CONFIG.startItems.filter((i) => i.type === type && "pool" in i && i.pool === pool).length;
-    expect(count("space_suit", "daedalus")).toBe(6);
+    expect(DEFAULT_CONFIG.startItems.filter((i) => i.type === "space_suit" && "room" in i && i.room === "ICARUS")).toHaveLength(6);
+    expect(count("space_suit", "daedalus")).toBe(0);
     expect([count("quad_compass", "storage"), count("rope", "storage"), count("drill", "storage")]).toEqual([1, 2, 1]);
     expect(count("old_shirt", "daedalus")).toBe(1);
     const randomBp = DEFAULT_CONFIG.startItems.find((i) => i.type === "blueprint" && i.buildsWeights);

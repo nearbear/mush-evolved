@@ -642,7 +642,7 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   // Decided 2026-10-17 (owner): every action but ready and access takes a fixed time (2 s, cut to 1.5 s on 2026-10-24) and happens when its bar runs out;
   // up to 3 more can wait behind it.
   action: { durationMs: 1500, queueCap: 3, resolveAt: "end" },
-  // Starting items (matching eMush, 2026-11-17): 4 fixed rooms plus storage_default (5 storages), daedalus_default (27 rooms),
+  // Starting items (matching eMush, 2026-11-17; spacesuits moved to `ICARUS`, 2026-11-20): 5 fixed rooms plus storage_default (5 storages), daedalus_default (27 rooms),
   // and 4 weighted randomBlueprints (27 rooms). Medlab's 12 drugs (1 of each) are added by `stockMedlab` in `createGame`.
   startItems: [
     // Medlab (`SICK_BAY`): 2 bandages (1 of each of the 12 drugs is added by `stockMedlab`).
@@ -659,6 +659,8 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
     { type: "tree_pot", room: "HYDROPONIC_CENTER", plant: { species: "fruit_banana", age: null, thirst: 0, sick: false } },
     // Front Corridor (`CORRIDOR_A`): 1 support drone.
     { type: "support_drone", room: "CORRIDOR_A" },
+    // Icarus Bay (`ICARUS`): 6 spacesuits (moved from `daedalus_default`, 2026-11-20).
+    ...Array.from({ length: 6 }, () => ({ type: "space_suit", room: "ICARUS" as RoomId })),
     // `storage_default` (24 items across the 5 storages):
     ...Array.from({ length: 3 }, () => ({ type: "camera", pool: "storage" as const })),
     ...Array.from({ length: 2 }, () => ({ type: "extinguisher", pool: "storage" as const })),
@@ -678,8 +680,7 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
     { type: "grenade", pool: "storage" },
     { type: "drill", pool: "storage" },
     { type: "quad_compass", pool: "storage" },
-    // `daedalus_default` (11 items across all 27 rooms):
-    ...Array.from({ length: 6 }, () => ({ type: "space_suit", pool: "daedalus" as const })),
+    // `daedalus_default` (5 items across all 27 rooms):
     { type: "medikit", pool: "daedalus" },
     { type: "scooter", pool: "daedalus" },
     { type: "blueprint", builds: "SOFA", pool: "daedalus" },
