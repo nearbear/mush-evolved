@@ -83,7 +83,7 @@ describe("ship resources", () => {
     expect(s.ship.hull).toBe(0);
   });
 
-  it("places fixed eMush starting items, 6 spacesuits in ICARUS, 24 storage items, 1 apprentron, 5 daedalus items, and 4 random blueprints", () => {
+  it("places fixed eMush starting items, 6 spacesuits in ICARUS, 24 storage items, 1 apprentron, 5 daedalus items, 4 random blueprints, and 1 Mush sample", () => {
     const s = createGame(makeSeats(4, "others"), { ...DEFAULT_CONFIG, startInventory: [] }, 7);
     const inRoom = (id: string) => s.items.filter((i) => i.at.kind === "room" && i.at.id === id);
     expect(inRoom("SICK_BAY").filter((i) => i.type === "bandage")).toHaveLength(2);
@@ -94,11 +94,34 @@ describe("ship resources", () => {
     expect(inRoom("HYDROPONIC_CENTER").filter((i) => i.type === "tree_pot")).toHaveLength(3);
     expect(inRoom("CORRIDOR_A").some((i) => i.type === "support_drone")).toBe(true);
     expect(inRoom("ICARUS").filter((i) => i.type === "space_suit")).toHaveLength(6);
-    // 2 + 12 (drugs) + 35 + 3 + 1 + 6 + 24 + 1 (apprentron) + 5 + 4 = 93 items total
-    expect(s.items).toHaveLength(93);
+    // 2 + 12 (drugs) + 35 + 3 + 1 + 6 + 24 + 1 (apprentron) + 5 + 4 + 1 (mush_sample) = 94 items total
+    expect(s.items).toHaveLength(94);
+    expect(s.items.filter((i) => i.type === "mush_sample")).toHaveLength(1);
     // Same seed is deterministic; different seeds distribute pooled items differently.
     expect(createGame(makeSeats(4, "others"), { ...DEFAULT_CONFIG, startInventory: [] }, 7).items).toEqual(s.items);
     expect(createGame(makeSeats(4, "others"), { ...DEFAULT_CONFIG, startInventory: [] }, 8).items).not.toEqual(s.items);
+  });
+
+  it("spawns 1 Mush sample in a random room across all 27 Daedalus rooms when pre-selection is off", () => {
+    const sampleEntry = DEFAULT_CONFIG.startItems.find((i) => i.type === "mush_sample");
+    expect(sampleEntry).toEqual({ type: "mush_sample", pool: "daedalus", atSelection: true });
+    const allRooms = new Set(Object.keys(DEFAULT_CONFIG.rooms).filter((r) => !r.startsWith("PATROL_") && r !== "ICARUS_CRAFT"));
+    expect(allRooms.size).toBe(27);
+    const seenRooms = new Set<string>();
+    const seats = makeSeats(4, "others");
+    const config = { ...DEFAULT_CONFIG, startInventory: [] };
+    for (let seed = 1; seed <= 60; seed++) {
+      const s = createGame(seats, config, seed);
+      const samples = s.items.filter((i) => i.type === "mush_sample");
+      expect(samples).toHaveLength(1);
+      const sample = samples[0]!;
+      expect(sample.at.kind).toBe("room");
+      if (sample.at.kind === "room") {
+        expect(allRooms.has(sample.at.id)).toBe(true);
+        seenRooms.add(sample.at.id);
+      }
+    }
+    expect(seenRooms.size).toBeGreaterThan(10);
   });
 
   it("spawns 1 apprentron (skill book) in a random storage room drawn from the weighted skill pool", () => {

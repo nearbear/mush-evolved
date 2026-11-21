@@ -31,7 +31,7 @@ import { teleport, teleportBlocked } from "./kube.ts";
 import { newLostAnalysis, rollAtSelection } from "./lostAnalysis.ts";
 import { hopelessCycle } from "./morale.ts";
 import { relayView } from "./relayView.ts";
-import { itemsIn, rechargeMicrowaves, rechargeScooters, startCharges, visibleItemsIn } from "./items.ts";
+import { itemsIn, newItemId, rechargeMicrowaves, rechargeScooters, startCharges, visibleItemsIn } from "./items.ts";
 import { actionDone, actionFailed, apRefill, mpGain, carePointsGain, channelLimit, computerPointsCap, computerPointsGain, cookPointsGain, shootPointsGain, cycleChanged, designerPointsGain, engineerPointsGain, gardenPointsGain, dailyMoraleLoss, inventorySlots, movementRules, pilgredPointsGain, satietyLoss } from "./modifiers.ts";
 import { contaminationSeenBy, convert } from "./infection.ts";
 import { isHungry, publicStatusesOf, statusesOf } from "./statuses.ts";
@@ -40,7 +40,7 @@ import { inactivityCycle } from "./inactivity.ts";
 import { emptyResources } from "./resources.ts";
 import { hasSkill } from "./skills.ts";
 import { soil } from "./dirt.ts";
-import { rollFloat, rollInt, rollWeighted, shuffle, streamFor } from "./rng.ts";
+import { type HasRng, rollFloat, rollInt, rollWeighted, shuffle, streamFor } from "./rng.ts";
 import { SHIP_ROOMS } from "./config.ts";
 import { chatChannels, chatMarkKey, chatPageOf, heardBy, markedText, readChannels } from "./chat.ts";
 import { moderateName } from "./moderation.ts";
@@ -126,38 +126,8 @@ export function createGame(
   const players: PlayerState[] = seats.map((s) => newPlayer(s, config, startCycle, mushIds.has(s.id) ? "mush" : "human"));
 
   const startRng = { rng: streamFor(seed, "start-items") };
-  const daedalusPool = SHIP_ROOMS.map((r) => r.id);
-  const storagePool = config.snoop.rooms;
-  const drawnBlueprints = new Set<string>();
   const starts: Omit<ItemState, "id">[] = [
-    ...config.startItems.map((it): Omit<ItemState, "id"> => {
-      const room = "room" in it
-        ? it.room
-        : (it.pool === "storage" ? storagePool : daedalusPool)[rollInt(startRng, (it.pool === "storage" ? storagePool : daedalusPool).length)]!;
-      const builds = it.buildsWeights
-        ? (() => {
-            const entries = Object.entries(it.buildsWeights);
-            const remaining = entries.filter(([k]) => !drawnBlueprints.has(k));
-            const choices = remaining.length > 0 ? remaining : entries;
-            return choices[rollWeighted(startRng, choices.map(([, w]) => w))]![0];
-          })()
-        : it.builds;
-      if (it.type === "blueprint" && builds !== undefined) drawnBlueprints.add(builds);
-      const teaches = it.teachesWeights
-        ? (() => {
-            const entries = Object.entries(it.teachesWeights);
-            return entries[rollWeighted(startRng, entries.map(([, w]) => w))]![0];
-          })()
-        : it.teaches;
-      return {
-        type: it.type,
-        at: { kind: "room", id: room },
-        ...(builds !== undefined && { builds }),
-        ...(teaches !== undefined && { teaches }),
-        ...(it.plant && { plant: { ...it.plant } }),
-        ...chargesFor(config, it.type),
-      };
-    }),
+    ...resolveStartItems(config.startItems.filter((it) => !it.atSelection), config, startRng),
     ...players.flatMap((p) => [...startInventory(config, p.id), ...catArrival(config, p.character)]),
   ];
   const items: ItemState[] = starts.map((it, i) => ({ id: `item-${i + 1}`, ...it }));
@@ -241,6 +211,7 @@ export function createGame(
     callNextRebel(state);
     rollAtSelection(state);
     startHunters(state);
+    spawnSelectionItems(state);
   }
   // Setup draws on streams of their own, so changing them doesn't move any roll on `state.rng`.
   state.drugs = drawDrugs({ rng: streamFor(seed, "drugs"), config });
@@ -291,6 +262,56 @@ export function newPlayer(s: Seat, config: DeepReadonly<GameConfig>, cycle: numb
 /** What a player carries when they wake up, not yet given ids. */
 export function startInventory(config: DeepReadonly<GameConfig>, id: PlayerId): Omit<ItemState, "id">[] {
   return config.startInventory.map((type) => ({ type, at: { kind: "player", id } }));
+}
+
+function resolveStartItems(
+  entries: readonly GameConfig["startItems"][number][],
+  config: DeepReadonly<GameConfig>,
+  rng: HasRng,
+): Omit<ItemState, "id">[] {
+  const daedalusPool = SHIP_ROOMS.map((r) => r.id);
+  const storagePool = config.snoop.rooms;
+  const drawnBlueprints = new Set<string>();
+  return entries.map((it): Omit<ItemState, "id"> => {
+    const pool = "room" in it ? null : it.pool === "storage" ? storagePool : daedalusPool;
+    const room = pool ? pool[rollInt(rng, pool.length)]! : (it as { room: RoomId }).room;
+    const builds = it.buildsWeights
+      ? (() => {
+          const all = Object.entries(it.buildsWeights);
+          const remaining = all.filter(([k]) => !drawnBlueprints.has(k));
+          const choices = remaining.length > 0 ? remaining : all;
+          return choices[rollWeighted(rng, choices.map(([, w]) => w))]![0];
+        })()
+      : it.builds;
+    if (it.type === "blueprint" && builds !== undefined) drawnBlueprints.add(builds);
+    const teaches = it.teachesWeights
+      ? (() => {
+          const choices = Object.entries(it.teachesWeights);
+          return choices[rollWeighted(rng, choices.map(([, w]) => w))]![0];
+        })()
+      : it.teaches;
+    return {
+      type: it.type,
+      at: { kind: "room", id: room },
+      ...(builds !== undefined && { builds }),
+      ...(teaches !== undefined && { teaches }),
+      ...(it.plant && { plant: { ...it.plant } }),
+      ...chargesFor(config, it.type),
+    };
+  });
+}
+
+/** Spawns `startItems` marked `atSelection` upon Mush selection (`selectMush`, or `createGame` without pre-selection). Mutates a state the caller already cloned. */
+export function spawnSelectionItems(state: GameState): void {
+  const entries = state.config.startItems.filter((it) => it.atSelection);
+  if (entries.length === 0) return;
+  // Named stream from `state.rng` so this once-per-game draw doesn't shift later `state.rng` rolls.
+  const selectionRng = { rng: streamFor(state.rng, "selection-items") };
+  for (const item of resolveStartItems(entries, state.config, selectionRng)) {
+    const placed: ItemState = { id: newItemId(state), ...item };
+    state.items.push(placed);
+    initNpc(state, placed);
+  }
 }
 
 export function legalActions(state: GameState, playerId: PlayerId): Action[] {

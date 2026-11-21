@@ -18,7 +18,7 @@ import { rollAtSelection } from "./lostAnalysis.ts";
 import { startHunters } from "./hunters.ts";
 import { rollShuffle } from "./rng.ts";
 import { catArrival } from "./schrodinger.ts";
-import { newPlayer, startInventory } from "./rules.ts";
+import { newPlayer, spawnSelectionItems, startInventory } from "./rules.ts";
 import { MUSH_SEAT_MARGIN } from "./setups.ts";
 import { assignTitles } from "./titles.ts";
 import { endGame, mushWinOnDeath } from "./victory.ts";
@@ -86,6 +86,7 @@ export function selectMush(state: GameState): void {
   callNextRebel(state);
   rollAtSelection(state);
   startHunters(state);
+  spawnSelectionItems(state);
 
   if (aboard.length < rules.minPlayers) {
     for (const p of aboard) if (p.role === "human") killPlayer(state, p, "daedalus_destroyed");

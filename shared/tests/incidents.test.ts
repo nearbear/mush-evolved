@@ -42,13 +42,25 @@ describe("incident points: the budget", () => {
     for (let d = 3; d < 40; d++) expect(incidentPointsForDay(DEFAULT_CONFIG, d + 1)).toBeGreaterThanOrEqual(incidentPointsForDay(DEFAULT_CONFIG, d));
   });
 
-  it("fills the pool at each cycle change, pre-selection included, and carries it over while nothing happens", () => {
+  it("fills the pool at each cycle change after Mush selection and carries it over while nothing happens", () => {
     let s = ship();
     expect(s.incidentPoints).toBe(0);
     s = nextCycle(s);
     expect(s.incidentPoints).toBe(incidentPointsForDay(s.config, 1));
     s = nextCycle(s);
     expect(s.incidentPoints).toBe(2 * incidentPointsForDay(s.config, 1));
+  });
+
+  it("accumulates no incident points during pre-selection and starts after Mush selection", () => {
+    const pre = { ...DEFAULT_CONFIG.preselection, seats: 4, endsOn: { day: 3, cycle: 8 }, minPlayers: 3, twoMushAbove: 8, mushCount: "auto" as const };
+    let s = createGame([], { ...DEFAULT_CONFIG, startItems: [], startSkills: [], preselection: pre, incidents: { ...DEFAULT_CONFIG.incidents, rollPoints: Number.MAX_SAFE_INTEGER } }, 7);
+    s = nextCycle(s);
+    s = nextCycle(s);
+    expect(s.preselection).toBe(true);
+    expect(s.incidentPoints).toBe(0);
+    s = { ...s, preselection: false };
+    s = nextCycle(s);
+    expect(s.incidentPoints).toBe(incidentPointsForDay(s.config, 1));
   });
 });
 
