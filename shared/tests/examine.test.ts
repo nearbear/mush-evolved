@@ -36,7 +36,7 @@ describe("room equipment", () => {
 });
 
 describe("examine", () => {
-  it("is offered for people, equipment, and items you can see, including yourself", () => {
+  it("is offered for equipment and items you can see, not characters", () => {
     const start = newGame();
     start.items.find((i) => i.type === "tree_pot")!.at = { kind: "room", id: "LABORATORY" };
     const state = mustApply(start, "p0", { type: "take", item: "item-1" });
@@ -44,9 +44,6 @@ describe("examine", () => {
     expect(ids).toHaveLength(1);
     const targets = offered(state, "p0").flatMap((a) => (a.type === "examine" ? [a.target] : []));
     expect(targets).toEqual([
-      { kind: "player", id: "p0" },
-      { kind: "player", id: "p1" },
-      { kind: "player", id: "p2" },
       { kind: "equipment", id: "LABORATORY:RESEARCH_LAB" },
       { kind: "equipment", id: "LABORATORY:CRYO_MODULE" },
       { kind: "equipment", id: "LABORATORY:GRAVITY_SIMULATOR" },
@@ -61,18 +58,15 @@ describe("examine", () => {
     expect(viewFor(state, "p1").log.map((e) => e.key)).not.toContain("examineEquipment");
     expect(state.players[0]!.ap).toBe(DEFAULT_CONFIG.startAp);
 
-    state = mustApply(state, "p0", examine("player", "p1"), examine("player", "p0"), examine("item", "item-1"));
-    const lines = viewFor(state, "p0").log.slice(-3).map(({ key, params }) => ({ key, params }));
-    expect(lines).toEqual([
-      { key: "examinePlayer", params: { name: "chun" } },
-      { key: "examineSelf", params: {} },
-      { key: "examineItem", params: { item: "wrench" } },
-    ]);
+    state = mustApply(state, "p0", examine("item", "item-1"));
+    expect(lastLine(state, "p0")).toEqual({ key: "examineItem", params: { item: "wrench" } });
   });
 
-  it("rejects things out of sight without changing state", () => {
+  it("rejects characters and things out of sight without changing state", () => {
     const state = mustApply(newGame(), "p1", { type: "take", item: "item-1" }, { type: "move", to: "CORRIDOR_A" });
     for (const action of [
+      examine("player", "p0"), // yourself
+      examine("player", "p2"), // in the same room
       examine("player", "p1"), // left the room
       examine("equipment", "REFECTORY:KITCHEN"), // another room
       examine("item", "item-1"), // in p1's inventory
@@ -83,12 +77,13 @@ describe("examine", () => {
     }
   });
 
-  it("parses from the wire, rejecting unknown target kinds", () => {
+  it("parses from the wire, rejecting characters and unknown target kinds", () => {
     const msg = (action: unknown) => JSON.stringify({ type: "action", action });
     expect(parseGameMessage(msg({ type: "examine", target: { kind: "item", id: "item-1", x: 1 } }))).toEqual({
       type: "action",
       action: { type: "examine", target: { kind: "item", id: "item-1" } },
     });
+    expect(parseGameMessage(msg({ type: "examine", target: { kind: "player", id: "p1" } }))).toBeNull();
     expect(parseGameMessage(msg({ type: "examine", target: { kind: "role", id: "p1" } }))).toBeNull();
     expect(parseGameMessage(msg({ type: "examine", target: "p1" }))).toBeNull();
   });

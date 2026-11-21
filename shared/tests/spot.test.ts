@@ -104,7 +104,7 @@ describe("where you stand", () => {
 
   it("a private, secret or covert action leaves you seated as your roommates see it", () => {
     const s = must(walk(ship(), "p1", 3, 4, true));
-    const examined = must(queueAction(s, "p1", { type: "examine", target: { kind: "player", id: "p0" } }, 1000));
+    const examined = must(queueAction(s, "p1", { type: "examine", target: { kind: "equipment", id: s.equipment.LABORATORY![0]!.id } }, 1000));
     expect(player(examined, "p1").spot).toEqual({ kind: "cell", x: 3, y: 4, sitting: true });
     expect(viewFor(examined, "p0").players.find((o) => o.id === "p1")?.spot).toEqual({ kind: "cell", x: 3, y: 4, sitting: true });
   });

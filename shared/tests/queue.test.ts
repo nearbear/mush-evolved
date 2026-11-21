@@ -99,7 +99,7 @@ describe("timed actions", () => {
     player(poor, "p0").ap = 1;
     let s = must(queueAction(poor, "p0", punch("p1"), 0));
     s = must(queueAction(s, "p0", punch("p1"), 0)); // affordable now, not once the first is paid
-    s = must(queueAction(s, "p0", { type: "examine", target: { kind: "player", id: "p1" } }, 0));
+    s = must(queueAction(s, "p0", { type: "examine", target: { kind: "equipment", id: poor.equipment.SICK_BAY![0]!.id } }, 0));
     s = must(tick(s, D));
     expect(player(s, "p0").current?.action.type).toBe("examine");
     expect(s.log.filter((e) => e.key === "actionDropped")).toHaveLength(1);

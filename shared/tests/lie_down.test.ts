@@ -58,19 +58,19 @@ describe("lie down", () => {
     const s = ship();
     const lying = must(applyAction(s, "p1", { type: "lie_down", equipment: bed(s) }));
     expect(must(applyAction(lying, "p1", { type: "ready" })).players[1]!.modifiers).toContain("lying_down");
-    expect(must(applyAction(lying, "p1", { type: "examine", target: { kind: "player", id: "p0" } })).players[1]!.modifiers).not.toContain("lying_down");
+    expect(must(applyAction(lying, "p1", { type: "examine", target: { kind: "equipment", id: bed(s) } })).players[1]!.modifiers).not.toContain("lying_down");
   });
 
   it("queuing an action gets you up at once, even behind one already under way", () => {
     const s = ship();
     const lying = must(applyAction(s, "p1", { type: "lie_down", equipment: bed(s) }));
-    const examine = (id: string): Action => ({ type: "examine", target: { kind: "player", id } });
-    const busy = must(queueAction(lying, "p1", examine("p0"), 1000));
+    const examine = (): Action => ({ type: "examine", target: { kind: "equipment", id: bed(s) } });
+    const busy = must(queueAction(lying, "p1", examine(), 1000));
     expect(busy.players[1]!.modifiers).not.toContain("lying_down");
     expect(busy.players[1]!.lyingIn).toBeUndefined();
     // Lying down again, then queueing behind the action under way: up before it even starts.
     const again = must(applyAction(busy, "p1", { type: "lie_down", equipment: bed(s) }));
-    const waiting = must(queueAction(again, "p1", examine("p2"), 1100));
+    const waiting = must(queueAction(again, "p1", examine(), 1100));
     expect(waiting.players[1]!.queue).toHaveLength(1);
     expect(waiting.players[1]!.modifiers).not.toContain("lying_down");
   });

@@ -8,7 +8,7 @@ export type ExamineActionData = { type: "examine"; target: Target };
 const isTarget = (value: unknown): value is Target => {
   if (typeof value !== "object" || value === null) return false;
   const { kind, id } = value as Record<string, unknown>;
-  return (kind === "player" || kind === "equipment" || kind === "item") && typeof id === "string";
+  return (kind === "equipment" || kind === "item") && typeof id === "string";
 };
 
 export class ExamineAction extends Action<ExamineActionData> {
@@ -37,14 +37,6 @@ export class ExamineAction extends Action<ExamineActionData> {
 
   override apply(state: GameState, player: PlayerState, target: ExamineActionData): void {
     switch (target.target.kind) {
-      case "player":
-        logPrivate(
-          state,
-          player.id,
-          target.target.id === player.id ? "examineSelf" : "examinePlayer",
-          target.target.id === player.id ? {} : { name: state.players.find((p) => p.id === target.target.id)?.character ?? target.target.id },
-        );
-        return;
       case "equipment": {
         const equipment = state.equipment[player.room]?.find((eq) => eq.id === target.target.id);
         logPrivate(state, player.id, "examineEquipment", { equipment: equipment?.type ?? target.target.id });
@@ -55,6 +47,7 @@ export class ExamineAction extends Action<ExamineActionData> {
         logPrivate(state, player.id, "examineItem", { item: item?.type ?? target.target.id });
         return;
       }
+      case "player":
       case "door":
         return;
     }
@@ -63,7 +56,6 @@ export class ExamineAction extends Action<ExamineActionData> {
 
 function visibleTargets(state: Readonly<GameState>, player: Readonly<PlayerState>): Target[] {
   return [
-    ...state.players.filter((o) => o.room === player.room).map((o): Target => ({ kind: "player", id: o.id })),
     ...(state.equipment[player.room] ?? []).map((e): Target => ({ kind: "equipment", id: e.id })),
     ...itemsIn(state, { kind: "player", id: player.id }).map((i): Target => ({ kind: "item", id: i.id })),
     ...visibleItemsIn(state, { kind: "room", id: player.room }, player).map((i): Target => ({ kind: "item", id: i.id })),

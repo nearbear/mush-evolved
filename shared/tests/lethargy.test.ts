@@ -83,7 +83,8 @@ describe("lethargy", () => {
     });
 
     it("through another action", () => {
-      restarted(mustApply(rested(), "p1", { type: "examine", target: { kind: "player", id: "p0" } }));
+      const r = rested();
+      restarted(mustApply(r, "p1", { type: "examine", target: { kind: "equipment", id: bed(r) } }));
     });
 
     it("through the bed going away (a dismantled sofa)", () => {

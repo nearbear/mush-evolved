@@ -742,7 +742,7 @@ describe("actions from a client", () => {
     jettison: [{ type: "jettison", item: "i1" }],
     install: [{ type: "install", item: "i1" }],
     uninstall: [{ type: "uninstall", equipment: "e1" }],
-    examine: [{ type: "examine", target: { kind: "player", id: "p1" } }, { type: "examine", target: { kind: "equipment", id: "e1" } }, { type: "examine", target: { kind: "item", id: "i1" } }],
+    examine: [{ type: "examine", target: { kind: "equipment", id: "e1" } }, { type: "examine", target: { kind: "item", id: "i1" } }],
     bond: [{ type: "bond", target: "p1" }],
     dtt: [{ type: "dtt", target: "p1" }],
     stt: [{ type: "stt", target: "p1" }],
@@ -830,6 +830,7 @@ describe("actions from a client", () => {
     expect(asAction({ type: "set_bios", equipment: "e1", option: BIOS_OPTIONS[0], value: "true" })).toBeNull();
     expect(asAction({ type: "pick_skill", skill: "nope" })).toBeNull();
     for (const slot of [-1, 1.5, Number.NaN, Number.POSITIVE_INFINITY]) expect(asAction({ type: "claim_slot", plan: "plan-1", slot })).toBeNull();
+    expect(asAction({ type: "examine", target: { kind: "player", id: "p1" } })).toBeNull();
     expect(asAction({ type: "examine", target: { kind: "room", id: "bridge" } })).toBeNull();
     expect(asAction({ type: "examine", target: "p1" })).toBeNull();
   });
