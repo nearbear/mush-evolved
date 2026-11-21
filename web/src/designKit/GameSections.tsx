@@ -215,7 +215,7 @@ export function ITrackieSection() {
           <code>hud/ITrackie.tsx</code>: the right panel. Room log (<code>FeedEntry</code> rows; the expedition line opens{" "}
           <code>ExpeditionReportDialog</code>), global chat (<code>Thread</code>: <code>MessageEntry</code>,{" "}
           <code>Markdown</code> checklists, <code>ChatInput</code>), <code>Threads</code>, the features (
-          <code>SharedPlanets</code> under Astrophysics, <code>ResearchTracker</code>) and <code>PrivateChannels</code>. Hua
+          <code>SharedPlanets</code> under Astrophysics, <code>ResearchTracker</code>, <code>ProjectTracker</code>) and <code>PrivateChannels</code>. Hua
           shared a planet, flew the Icarus to it, and the crew talked a little. Kuan Ti, Mush, has the Mush tab with the
           other Mush and a private channel with two crewmates. Posting does nothing here. Each is the game screen&apos;s right
           column.

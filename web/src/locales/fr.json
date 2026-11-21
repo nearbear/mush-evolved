@@ -705,6 +705,7 @@
     "nothingTracked": "Rien de suivi pour l'instant.",
     "removeNote": "Supprimer « {{note}} »",
     "researchTracker": "Suivi des recherches",
+    "projectTracker": "Suivi des projets NERON",
     "trackPlaceholder": "Suivre quelque chose…",
     "newTrackerLine": "Nouvelle ligne de suivi",
     "add": "Ajouter",

@@ -271,7 +271,7 @@ interface ProgressListProps {
 }
 
 /** Wraps an entry's name or card: hovering (or tapping) the trigger shows what the entry does. */
-function EntryTip({ name, desc, trigger, children }: { name: string; desc?: string; trigger: React.ReactElement; children?: React.ReactNode }) {
+export function EntryTip({ name, desc, trigger, children }: { name: string; desc?: string; trigger: React.ReactElement; children?: React.ReactNode }) {
   if (!desc) return React.cloneElement(trigger, undefined, children);
   return (
     <Popover.Root>

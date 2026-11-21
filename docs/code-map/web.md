@@ -87,7 +87,7 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 - `SharePlanetForm.tsx`: the Astro window's Share form, shown in place of the planet's card (Back returns), the planet's name, one sector slot per sector (an icon picker of every tag or unknown), a disclaimer and editable text, posted as `sharePlanet`.
 - `FeedEntry.tsx`, `CycleDivider.tsx`, `RecencyStamp.tsx` + `recency.ts` (pure), `VisibilityBadge.tsx`: an iTrackie feed row, the "Cycle N" rule between cycles, the "47min ago" caption with the exact time in a popover, and a log line's kind badge (private, secret, covert; leaked or not) in a popover (#366, reused by the replay's story 5).
 - `Scroller.tsx`: a scroll area that sticks to the bottom as items arrive.
-- `ResearchTracker.tsx`, `Tracker.tsx`: the Research feature's strip of research cards, and a notes list the player types in.
+- `ResearchTracker.tsx`, `ProjectTracker.tsx`, `Tracker.tsx`: the Research and NERON projects features' strips of cards, and a notes list the player types in.
 - `ResourceChips.tsx`: your other resources as chips (the first two, or as many as fit on a phone, then "…" for the rest); satiety leads the list on both layouts.
 - `ShipResources.tsx`: the ship card (resources, hunters, titles and the crew lost on planets, `view.lost`); in the desktop top bar, and opened by `ShipOverlay.tsx` on phones. `TitleChip.tsx`: one title and its line of succession.
 - `BotsPausedTag.tsx`: the top-bar tag shown while model bots are paused (`botsPaused`, #114), with why.

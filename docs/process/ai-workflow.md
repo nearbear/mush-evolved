@@ -4764,6 +4764,11 @@ Follow-up: the "Inspect" panel heading is now visually hidden on desktop too (ke
 
 - **2026-11-21 — Quantum Sensors (`QUANTUM_SENSORS`) updated to match eMush**: Owner requested updating `QUANTUM_SENSORS` to upgrade the Motor Room `PLANET_SCANNER` (+30% scan chance and +1 analysis sector while unbroken). Added `config.project.quantumSensors.scanChanceBonus` (0.3) in `shared/src/actions/scan_planet.ts`, gated both the scan chance bonus and `extraSectors` in `analysisSectors` (`shared/src/modifiers.ts`) on `!isBrokenIn(state, "MOTOR_ROOM", "MOTOR_ROOM:PLANET_SCANNER")`, updated `en`/`fr`/`es` project descriptions, updated `shared/tests/astroProjects.test.ts` and rule docs, and removed the deviation entry from `docs/rules/changes-from-emush.md`.
 
+### 2026-11-21 — NERON projects feature tracker
+
+- Added `web/src/hud/ProjectTracker.tsx`, mirroring `ResearchTracker`: a sideways-scrolling strip of all 40 NERON project cards (`PROJECT_IDS` + `PROJECT_CARDS`) in the iTrackie's NERON projects feature (`f === "neron"`), with completed projects first in colour and the rest greyed out.
+- Progress is shown in each card's accessible label only when `view.relay.projects[id]` is present (currently offered projects while at NERON's core); elsewhere incomplete projects read "Not complete", preserving hidden information. Memoized on `view.projects` and `view.relay.projects` references.
+
 ## 2026-11-21: Character picker description no longer scrolls; sticker slogan removed
 
 The desktop picker's skills column beside the portrait was a stack of every crew member's skills (so the pane never changed height), which sized it to the longest list (189px, taller than the 150px portrait) and squeezed the description into a scroll for everyone. Now only the selected crew member's skills render (the pane's height is fixed by the panel anyway), and the skill rows use a tighter line height and gap so six skills with two wrapping names still fit beside the portrait. Measured with a throwaway Playwright probe over all 16 crew in en/fr/es: no description overflows. Also dropped the "Placeholder slogan goes here" line from the pod's sticker (`podArt.ts`). What worked: measuring scrollHeight per character instead of guessing from the CSS.
