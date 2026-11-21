@@ -231,21 +231,3 @@ button.timeline-arrow > span {
     right: 0;
   }
 }
-
-/* What the Astrophysics feature holds about the planet (ExpeditionTimeline.tsx): collapsible, under the track, never
-   compared with the explored sectors. Icons at 1x. */
-.timeline-shared {
-  flex: none;
-  padding: var(--space-1) var(--space-2);
-  border: 1px solid var(--chrome-rim);
-  border-radius: var(--panel-radius);
-  background: rgb(23 23 44 / 0.85); /* --chrome-1 over the sky */
-  font-size: 0.85rem;
-}
-.timeline-shared summary {
-  padding: var(--space-1) 0;
-  cursor: pointer;
-}
-.timeline-shared .shared-sectors {
-  margin: var(--space-1) 0 0;
-}

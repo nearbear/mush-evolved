@@ -421,10 +421,11 @@ export interface PlayerView {
   /**
    * Whether the ship is in orbit, public to everyone (the planet fills the portholes), with the planet's name
    * (`orbitName`, owner 2026-10-31); its sectors are only in its finder's `planets`; `orbitPicture` is only which picture it is drawn with (`planetPicture`, cosmetic, owner 2026-10-28),
-   * so everyone sees the same planet out of the window. `heading` only while you are alive at a Command terminal (owner, 2026-10-22); otherwise null.
+   * so everyone sees the same planet out of the window. `orbitShared` is the Astrophysics entry shared from the orbited
+   * planet, to whoever reads that feature (`sharedPlanets` holds the entry). `heading` only while you are alive at a Command terminal (owner, 2026-10-22); otherwise null.
    * `lastTurn` is the ship's latest quarter turn (`n` counts them, so a new one shows), public to everyone aboard (owner, 2026-10-29).
    */
-  navigation: { orbiting: boolean; traveling: boolean; orbitPicture: number | null; orbitName: string | null; heading: PlanetDirection | null; lastTurn: { n: number; side: TurnSide } | null };
+  navigation: { orbiting: boolean; traveling: boolean; orbitPicture: number | null; orbitName: string | null; orbitShared?: SharedPlanetId; heading: PlanetDirection | null; lastTurn: { n: number; side: TurnSide } | null };
   /**
    * The patrol ship you are flying (its room id) with its armor and charges (null for the Pasiphae, which can't shoot),
    * while you are alive aboard (patrol.ts); otherwise null. `debris` is how many pieces float around the Daedalus, not

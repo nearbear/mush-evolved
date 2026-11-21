@@ -74,18 +74,39 @@
 }
 .icarus-seats[data-away] > .icarus-seat {
   flex: none;
-  width: var(--seat);
+  min-width: var(--seat);
+}
+.icarus-seat-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  white-space: nowrap;
 }
 .icarus-hp {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
   color: var(--danger);
   font-size: 0.8rem;
   font-variant-numeric: tabular-nums;
 }
-/* An empty seat: the bare podium, lined up with the tiles' podiums (their padding and border). */
+.icarus-hp img {
+  display: block;
+  width: 11px;
+  height: 13px;
+  image-rendering: pixelated;
+}
+/* An empty seat (docked, or a lost crew member away): lined up with the tiles' podiums (their padding and border). */
 .icarus-seat:not(:has(> button)) {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
   padding: calc(var(--space-1) + 2px);
+  color: var(--muted);
+  font-size: 0.75rem;
+  text-align: center;
 }
 
 .icarus-bar .icarus-main {

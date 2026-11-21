@@ -68,7 +68,7 @@ export const GAME_STATE_FIELDS: Record<string, FieldRule> = {
   planets: { reach: "own", test: "leaks.test.ts", note: "Without the unknown sectors' tags." },
   failureStreaks: { reach: "never", test: "leaks.test.ts" },
   nextPlanetId: { reach: "never", test: "leaks.test.ts", note: "Not secret (planet ids show it), just not sent." },
-  sharedPlanets: { reach: "filtered", test: "sharedPlanets.test.ts", note: "To whoever can read the Astrophysics feature, without `planet` (leaks.test.ts: never sent). `name` and the number of `sectors` are the planet's true ones (accepted, docs/plans/expedition-ui.md); `PlayerView.expedition.shared` links the explored planet's entry on the server." },
+  sharedPlanets: { reach: "filtered", test: "sharedPlanets.test.ts", note: "To whoever can read the Astrophysics feature, without `planet` (leaks.test.ts: never sent). `name` and the number of `sectors` are the planet's true ones (accepted, docs/plans/expedition-ui.md); `PlayerView.navigation.orbitShared` and `PlayerView.expedition.shared` link the orbited/explored planet's entry on the server." },
   nextSharedPlanetId: { reach: "never", test: "leaks.test.ts", note: "Not secret (entry ids show it), just not sent." },
   sharedReports: { reach: "filtered", test: "sharedReports.test.ts", note: "To whoever can read the Expeditions feature, without `report` (leaks.test.ts: never sent); a member's own report carries its entry's id as `shared`." },
   nextSharedReportId: { reach: "never", test: "leaks.test.ts", note: "Not secret (entry ids show it), just not sent." },

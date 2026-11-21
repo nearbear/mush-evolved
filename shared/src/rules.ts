@@ -761,6 +761,7 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     unheard: _unheard,
     ...yours
   } = you;
+  const orbitShared = channels.includes("astrophysics") && state.navigation.orbit !== null ? state.sharedPlanets.find((e) => e.planet === state.navigation.orbit)?.id : undefined;
   return {
     you: {
       ...yours,
@@ -930,6 +931,7 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
       traveling: state.navigation.arriving !== null,
       orbitPicture: orbitPicture(state),
       orbitName: orbitName(state),
+      ...(orbitShared !== undefined && { orbitShared }),
       heading: you.alive && commandTerminalsHere(state, you).length > 0 ? state.navigation.heading : null,
       lastTurn: state.navigation.lastTurn,
     },

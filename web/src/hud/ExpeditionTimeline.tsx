@@ -6,7 +6,7 @@
 // their HP are on the Icarus's podiums under it (IcarusPanel.tsx), not here.
 // Renders the view only: the rules wrote every event, and which steps are left comes from the view.
 
-import type { ExpeditionEvent, ExpeditionReportView, PlanetTag, PlayerView, SharedPlanet } from "@mush2/shared";
+import type { ExpeditionEvent, ExpeditionReportView, PlanetTag, PlayerView } from "@mush2/shared";
 import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { announce } from "../announce.ts";
@@ -14,7 +14,6 @@ import { itemIcon } from "../art/assets.ts";
 import { useNames } from "../i18n/names.ts";
 import { useEventLines } from "./ExpeditionReportDialog.tsx";
 import { SectorIcon, useSectorName } from "./SectorIcon.tsx";
-import { SharedSectors } from "./SharedSectors.tsx";
 import { latestColumn, timelineColumns, type StepBadge, type TimelineColumn } from "./expeditionTimeline.ts";
 import { useCountdown } from "./useCountdown.ts";
 import { VisibilityBadge } from "./VisibilityBadge.tsx";
@@ -24,19 +23,12 @@ interface Props {
   expedition: NonNullable<PlayerView["expedition"]> | null;
   /** Your report of it (`view.expeditions`), if you have one. */
   report: ExpeditionReportView | undefined;
-  /** What was shared in the Astrophysics feature about this planet (`expedition.shared`), kept apart from what was explored. */
-  shared?: SharedPlanet | undefined;
-  /** Who shared it, by name. */
-  sharedBy?: string | undefined;
 }
-
-/** A seat's character, by seat id (yours included); the id itself if nobody has it. */
-export const characterOf = (view: PlayerView, id: string): string => (id === view.you.id ? view.you : view.players.find((p) => p.id === id))?.character ?? id;
 
 /** How far a pointer must travel sideways, more than up or down, to count as a swipe (CSS px). */
 const SWIPE_PX = 40;
 
-export function ExpeditionTimeline({ expedition, report, shared, sharedBy }: Props) {
+export function ExpeditionTimeline({ expedition, report }: Props) {
   const { t } = useTranslation();
   const events = report?.events ?? [];
   const columns = timelineColumns({ events, lost: expedition === null, returnAt: expedition?.returnAt ?? 0, next: expedition?.next, nextAt: expedition?.nextAt, steps: expedition?.steps });
@@ -103,13 +95,6 @@ export function ExpeditionTimeline({ expedition, report, shared, sharedBy }: Pro
           )}
         </button>
       </div>
-      {/* Never ticked off against the explored sectors (owner, 2026-11-19): a share may lie. */}
-      {shared && sharedBy !== undefined && (
-        <details className="timeline-shared">
-          <summary>{t("expedition.timeline.shared", { name: sharedBy, day: shared.day, cycle: shared.cycleOfDay })}</summary>
-          <SharedSectors sectors={shared.sectors} />
-        </details>
-      )}
     </section>
   );
 }
