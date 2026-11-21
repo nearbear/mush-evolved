@@ -8,8 +8,8 @@ import { availableProjects, PROJECT_IDS, type ProjectId } from "../src/projects.
 import { PILGRED_COMPLETE } from "../src/pilgred.ts";
 import { addSignal, findSignal, type Signal } from "../src/signals.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
-import type { Action, GameConfig, GameState } from "../src/types.ts";
-import { clone, costOf, makeSeats, must, nextCycle, noHunters, noIncidents, offered, player } from "./support.ts";
+import type { Action, GameState } from "../src/types.ts";
+import { clone, costOf, makeSeats, must, nextCycle, offered, player, testConfig } from "./support.ts";
 
 const TERMINAL = "COMMAND_CENTER:COM_CENTER";
 const cfg = DEFAULT_CONFIG.merchants;
@@ -17,7 +17,7 @@ const close = (signal: string, deal: number, projects?: string[]): Action => ({ 
 
 /** Four players on the bridge; p0 is the Comms Officer. No merchant arrives on its own unless `arrival` says so. */
 function ship(arrival = 0): GameState {
-  const config: GameConfig = { ...noIncidents(noHunters(DEFAULT_CONFIG)), merchants: { ...cfg, arrivalChance: arrival } };
+  const config = testConfig({ merchants: { arrivalChance: arrival } });
   const s = createGame(makeSeats(4), config, 7);
   for (const p of s.players) p.room = "COMMAND_CENTER";
   s.titles.comms_officer = "p0";
@@ -66,11 +66,10 @@ describe("merchant ships", () => {
     });
 
     it("doesn't arrive before Mush are chosen", () => {
-      const config: GameConfig = {
-        ...noIncidents(noHunters(DEFAULT_CONFIG)),
-        merchants: { ...cfg, arrivalChance: 1 },
+      const config = testConfig({
+        merchants: { arrivalChance: 1 },
         preselection: { seats: 4, endsOn: { day: 3, cycle: 8 }, mushCount: "auto", twoMushAbove: 8, minPlayers: 1 },
-      };
+      });
       const s = createGame([], config, 7);
       expect(s.preselection).toBe(true);
       merchantsCycle(s);

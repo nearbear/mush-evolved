@@ -7,16 +7,10 @@ import { HACKER_KIT_ITEM, ITEM_TYPES } from "../src/items.ts";
 import { swapMinds } from "../src/mind.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { hasTitleAccess } from "../src/titles.ts";
-import type { Action, GameConfig, GameState } from "../src/types.ts";
-import { clone, costOf, makeSeats, mustApply, offered, option, pickSkill, player } from "./support.ts";
+import type { Action, GameState } from "../src/types.ts";
+import { clone, costOf, makeSeats, mustApply, offered, option, pickSkill, player, testConfig } from "./support.ts";
 
-const config: GameConfig = {
-  ...DEFAULT_CONFIG,
-  mushCount: 1,
-  startInventory: [],
-  startItems: [],
-  startSkills: [],
-};
+const config = testConfig();
 
 const PILOT_ID = "COMMAND_CENTER:PILOT_MODULE";
 const COMMS_ID = "COMMAND_CENTER:COM_CENTER";
@@ -143,14 +137,14 @@ describe("Hack action", () => {
   it("logs privately on failure and success, and grants access until leaving the room", () => {
     const hackPilot: Action = { type: "hack", equipment: PILOT_ID };
     // Force a failure first.
-    const failState = ship({ ...config, hack: { ...config.hack, successChance: 0 } });
+    const failState = ship(testConfig({ hack: { successChance: 0 } }));
     const afterFail = mustApply(failState, "p1", hackPilot);
     expect(hasTitleAccess(afterFail, player(afterFail, "p1"), "commander")).toBe(false);
     expect(viewFor(afterFail, "p1").log.map((e) => e.key)).toContain("hackFailed");
     expect(viewFor(afterFail, "p0").log.map((e) => e.key)).not.toContain("hackFailed");
 
     // Now force a success.
-    const winState = ship({ ...config, hack: { ...config.hack, successChance: 1 } });
+    const winState = ship(testConfig({ hack: { successChance: 1 } }));
     const afterWin = mustApply(winState, "p1", hackPilot);
     expect(hasTitleAccess(afterWin, player(afterWin, "p1"), "commander")).toBe(true);
     expect(player(afterWin, "p1").hackedEquipment).toEqual([PILOT_ID]);
@@ -181,7 +175,7 @@ describe("Hack action", () => {
   });
 
   it("clears hackedEquipment on terminal break, death, and mind transfer", () => {
-    const s = ship({ ...config, hack: { ...config.hack, successChance: 1 } });
+    const s = ship(testConfig({ hack: { successChance: 1 } }));
     const hackedBoth = mustApply(mustApply(s, "p1", { type: "hack", equipment: PILOT_ID }), "p1", { type: "hack", equipment: COMMS_ID });
     expect(player(hackedBoth, "p1").hackedEquipment).toEqual([PILOT_ID, COMMS_ID]);
 
@@ -209,7 +203,7 @@ describe("Hack action", () => {
   });
 
   it("never leaks hackedEquipment to other players' views", () => {
-    const s = ship({ ...config, hack: { ...config.hack, successChance: 1 } });
+    const s = ship(testConfig({ hack: { successChance: 1 } }));
     const after = mustApply(s, "p1", { type: "hack", equipment: PILOT_ID });
     expect(viewFor(after, "p1").you.hackedEquipment).toEqual([PILOT_ID]);
     expect(JSON.stringify(viewFor(after, "p0"))).not.toContain("hackedEquipment");

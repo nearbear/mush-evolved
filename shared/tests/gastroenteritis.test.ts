@@ -1,19 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { canLaunchExpedition } from "../src/expeditions.ts";
 import { canFly } from "../src/patrol.ts";
 import { addDisease, removeDisease, spreadByTouch } from "../src/diseases.ts";
 import { consumed, cycleChanged, enteredRoom } from "../src/modifiers.ts";
 import { createGame } from "../src/rules.ts";
-import type { GameConfig } from "../src/types.ts";
-import { makeSeats, noHunters, player } from "./support.ts";
+import { makeSeats, player, testConfig } from "./support.ts";
 
-const config: GameConfig = { ...DEFAULT_CONFIG, mushCount: 1, preselection: null, startSkills: [], startInventory: [], startItems: [] };
+const config = testConfig();
 
 describe("Gastroenteris on a Mush", () => {
   it("costs a Mush nothing, but with bacterial_contact they can still vomit", () => {
     for (const bacterial of [false, true]) {
-      const state = createGame(makeSeats(4), noHunters(config), 3);
+      const state = createGame(makeSeats(4), config, 3);
       const mush = state.players.find((p) => p.role === "mush")!;
       if (bacterial) mush.mushSkills.push("bacterial_contact");
       addDisease(state, mush, "gastroenteritis_disease");
@@ -29,7 +27,7 @@ describe("Gastroenteris on a Mush", () => {
   });
 
   it("spreads by STT or DTT only for a disease with spreadByDTT (the fungal infection, not the tinnitus)", () => {
-    const state = createGame(makeSeats(4), noHunters(config), 3);
+    const state = createGame(makeSeats(4), config, 3);
     const [a, b] = [player(state, "p0"), player(state, "p1")];
     addDisease(state, a, "fungal_infection_disease");
     addDisease(state, a, "extreme_tinnitus_disease");
@@ -39,7 +37,7 @@ describe("Gastroenteris on a Mush", () => {
   });
 
   it("grounds a Pilot: no takeoff and no Icarus takeoff, until it is cured", () => {
-    const state = createGame(makeSeats(4), noHunters(config), 3);
+    const state = createGame(makeSeats(4), config, 3);
     const pilot = state.players.find((p) => p.role === "human")!;
     pilot.skills.push("pilot");
     expect(canFly(pilot) && canLaunchExpedition(state, pilot)).toBe(true);
@@ -51,7 +49,7 @@ describe("Gastroenteris on a Mush", () => {
   });
 
   it("costs a human 1 AP whenever they consume something, and a Mush nothing", () => {
-    const state = createGame(makeSeats(4), noHunters(config), 3);
+    const state = createGame(makeSeats(4), config, 3);
     const human = state.players.find((p) => p.role === "human")!;
     const mush = state.players.find((p) => p.role === "mush")!;
     for (const p of [human, mush]) addDisease(state, p, "gastroenteritis_disease");

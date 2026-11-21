@@ -1,11 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
-import type { Action, GameConfig, GameState, PlayerId } from "../src/types.ts";
-import { makeSeats, mustApply, nextCycle, offered, pickSkill, player } from "./support.ts";
+import type { Action, GameState, PlayerId } from "../src/types.ts";
+import { makeSeats, mustApply, nextCycle, offered, pickSkill, player, testConfig } from "./support.ts";
 
 // No daily morale loss, so a cycle change moves morale only through the Shrink.
-const base: GameConfig = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [], moralePerDay: 0 };
+const base = testConfig({ moralePerDay: 0 });
 const comfort = (target: PlayerId): Action => ({ type: "comfort", target });
 
 /** p0 is the Shrink; p0, p1 and p3 share the sick bay, p2 is in the refectory. */

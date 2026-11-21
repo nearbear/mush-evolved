@@ -1,12 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { applyAction, createGame, setCheat, viewFor } from "../src/rules.ts";
 import type { GameState, PlayerId } from "../src/types.ts";
-import { clone, makeSeats, mustApply, nextCycle, noHunters, noIncidents, option, player } from "./support.ts";
+import { clone, makeSeats, mustApply, nextCycle, option, player, testConfig } from "./support.ts";
 
 // Raluca's Antisocial trait (owner, 2026-11-19, #470). Seats: p0 is the Antisocial one (human), p1 human, p2 Mush,
 // p3 human; p0 alone in the laboratory, everyone else in the refectory. No incidents: a panic attack would move morale.
-const config = noIncidents(noHunters({ ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [] }));
+const config = testConfig();
 function ship(): GameState {
   const s = createGame(makeSeats(4), config, 5);
   for (const p of s.players) {

@@ -1,19 +1,18 @@
 import { describe, expect, it } from "vitest";
 import { ACTIONS } from "../src/actions.ts";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { addDisease, diseaseStats } from "../src/diseases.ts";
 import { analysisSectors, neronProgress, rebelGain } from "../src/modifiers.ts";
 import { MIGRAINE_RELAY_MALUS, relayGainRange, tokenBase } from "../src/relay.ts";
 import { createGame } from "../src/rules.ts";
-import type { Action, GameConfig, GameState } from "../src/types.ts";
-import { makeSeats, noHunters, player } from "./support.ts";
+import type { Action, GameState } from "../src/types.ts";
+import { makeSeats, player, testConfig } from "./support.ts";
 
 // Only what no other disease already does: the four diseases' other effects reuse hooks tested with Smallpox,
 // Gastroenteritis, Tapeworm, Pink Eye, Space Rabies, Fungal Infection and Rejuvenation.
 
-const config: GameConfig = { ...DEFAULT_CONFIG, mushCount: 1, preselection: null, startSkills: [], startInventory: [], startItems: [] };
+const config = testConfig();
 
-const game = (): GameState => createGame(makeSeats(4), noHunters(config), 3);
+const game = (): GameState => createGame(makeSeats(4), config, 3);
 const human = (s: GameState) => s.players.find((p) => p.role === "human")!;
 const mush = (s: GameState) => s.players.find((p) => p.role === "mush")!;
 

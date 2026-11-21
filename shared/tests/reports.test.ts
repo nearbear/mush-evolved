@@ -8,7 +8,7 @@ import { applyInput } from "../src/replay.ts";
 import { pruneReports } from "../src/reports.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { GameState } from "../src/types.ts";
-import { clone, makeSeats, must, mustApply, noHunters, noIncidents, offered, option, player } from "./support.ts";
+import { clone, makeSeats, must, mustApply, offered, option, player, testConfig } from "./support.ts";
 
 // Reports and the alert bar (owner, 2026-11-14, #444).
 
@@ -22,7 +22,7 @@ const COFFEE = "REFECTORY:COFFEE_DISPENSER";
 
 /** A quiet ship of 3: p0 and p1 in the refectory, p2 in the laboratory. */
 function ship(): GameState {
-  const s = createGame(makeSeats(3), { ...noIncidents(noHunters(DEFAULT_CONFIG)), mushCount: 1, startItems: [], startSkills: [] }, 3);
+  const s = createGame(makeSeats(3), testConfig(), 3);
   for (const p of s.players) p.room = p.id === "p2" ? ELSEWHERE : HERE;
   return s;
 }

@@ -1,11 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { MUSH_CHANNEL, type Action, type GameState, type PlayerId } from "../src/types.ts";
-import { makeSeats, mustApply, player, withoutDrugs } from "./support.ts";
+import { makeSeats, mustApply, player, withoutDrugs, testConfig } from "./support.ts";
 
 const seats = makeSeats(3);
-const config = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [] };
+const config = testConfig();
 const heal = (target: PlayerId): Action => ({ type: "heal", target });
 const bandage = (target: PlayerId): Action => ({ type: "use_bandage", target });
 const { mycologistSpores } = config.heal.effect;

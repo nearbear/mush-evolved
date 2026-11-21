@@ -4,11 +4,11 @@ import { resourceAvailable } from "../src/resources.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { skillStatus } from "../src/skills.ts";
 import type { GameState } from "../src/types.ts";
-import { makeSeats, must, nextDay, option, player } from "./support.ts";
+import { makeSeats, must, nextDay, option, player, testConfig } from "./support.ts";
 
 const seats = makeSeats(3);
 // p1 is Stephen, who has cook (Chef) in CHARACTER_SKILLS.
-const base = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [] };
+const base = testConfig();
 
 function ship(): GameState {
   const s = createGame(seats, base, 1);

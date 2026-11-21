@@ -1,11 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { killPlayer } from "../src/death.ts";
 import type { GameState } from "../src/types.ts";
-import { makeSeats, mustApply, option, player } from "./support.ts";
+import { makeSeats, mustApply, option, player, testConfig } from "./support.ts";
 
-const base = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [] };
+const base = testConfig();
 const ROOM = Object.keys(base.rooms).find((r) => base.rooms[r]!.length >= 3)!;
 const [DOOR_A, DOOR_B] = base.rooms[ROOM]!;
 

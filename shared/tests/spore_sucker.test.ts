@@ -4,10 +4,10 @@ import { SPORE_SUCKER_ITEM } from "../src/items.ts";
 import { addDisease } from "../src/diseases.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { GameConfig, GameState } from "../src/types.ts";
-import { makeSeats, mustApply, nextCycle, noHunters, noIncidents, offered, option, player, withoutDrugs } from "./support.ts";
+import { makeSeats, mustApply, nextCycle, noCharacterModifiers, offered, option, player, testConfig, withoutDrugs } from "./support.ts";
 
-const base = noIncidents(noHunters({ ...DEFAULT_CONFIG, characterModifiers: {}, mushCount: 1, startInventory: [], startItems: [] }));
-const clean: GameConfig = { ...base, sporeSucker: { ...base.sporeSucker, dirtyChance: 0 } };
+const base = noCharacterModifiers(testConfig());
+const clean = noCharacterModifiers(testConfig({ sporeSucker: { dirtyChance: 0 } }));
 const use = { type: "remove_spore" as const, item: "sucker" };
 const STIFF_NECK = "stiff_neck_injury";
 
@@ -96,7 +96,7 @@ describe("spore sucker", () => {
   });
 
   it("can make you dirty", () => {
-    const s = ship({ ...base, sporeSucker: { ...base.sporeSucker, dirtyChance: 1 } });
+    const s = ship(noCharacterModifiers(testConfig({ sporeSucker: { dirtyChance: 1 } })));
     expect(player(mustApply(s, "p0", use), "p0").statuses).toContain("dirty");
   });
 });

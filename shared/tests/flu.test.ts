@@ -1,22 +1,21 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { addDisease, diseaseStats, spreadByTouch } from "../src/diseases.ts";
 import { ITEM_TYPES } from "../src/items.ts";
 import { consumed, cycleChanged, enterRoom, enteredRoom } from "../src/modifiers.ts";
 import { createGame } from "../src/rules.ts";
-import type { DiseaseStats, GameConfig, GameState, ItemState } from "../src/types.ts";
-import { makeSeats, noHunters, player } from "./support.ts";
+import type { DiseaseStats, GameState, ItemState } from "../src/types.ts";
+import { makeSeats, player, testConfig } from "./support.ts";
 
-const config: GameConfig = { ...DEFAULT_CONFIG, mushCount: 1, preselection: null, startSkills: [], startInventory: [], startItems: [] };
+const config = testConfig();
 
-const game = (): GameState => createGame(makeSeats(4), noHunters(config), 3);
+const game = (): GameState => createGame(makeSeats(4), config, 3);
 const human = (s: GameState) => s.players.find((p) => p.role === "human")!;
 const mush = (s: GameState) => s.players.find((p) => p.role === "mush")!;
 
 /** A game whose Flu stats are patched. */
 function fluGame(patch: Partial<DiseaseStats>): GameState {
   const allDiseaseStats = config.diseases.allDiseaseStats.map((d) => (d.label === "flu_disease" ? { ...d, ...patch } : d));
-  return createGame(makeSeats(4), noHunters({ ...config, diseases: { ...config.diseases, allDiseaseStats } }), 3);
+  return createGame(makeSeats(4), testConfig({ diseases: { allDiseaseStats } }), 3);
 }
 
 const item = (type: string, owner: string): ItemState => ({ id: "x", type, at: { kind: "player", id: owner } }) as ItemState;

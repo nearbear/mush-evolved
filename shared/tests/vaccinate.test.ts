@@ -1,13 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { ANTI_MUSH_SERUM_ITEM } from "../src/actions/vaccinate.ts";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { RESEARCH_COMPLETE } from "../src/research.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameState, PlayerId } from "../src/types.ts";
-import { makeSeats, must, mustApply, offered as legal, player, stockLab, setProgress } from "./support.ts";
+import { makeSeats, must, mustApply, noCharacterModifiers, offered as legal, player, stockLab, setProgress, testConfig } from "./support.ts";
 
 const seats = makeSeats(4);
-const config = { ...DEFAULT_CONFIG, characterModifiers: {}, mushCount: 1, startInventory: [], startItems: [], maxAp: 99, startAp: 50 };
+const config = noCharacterModifiers(testConfig({ maxAp: 99, startAp: 50 }));
 const vaccinate = (target: PlayerId): Action => ({ type: "vaccinate", target });
 const serums = (s: GameState) => s.items.filter((i) => i.type === ANTI_MUSH_SERUM_ITEM);
 const offered = (s: GameState, id: PlayerId) => legal(s, id).filter((a) => a.type === "vaccinate");

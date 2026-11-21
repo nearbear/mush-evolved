@@ -1,14 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, legalActions, viewFor } from "../src/rules.ts";
 import { CHARACTER_SKILLS, MUSH_SKILLS, MUSH_SKILL_SLOTS, SKILLS, SKILL_SLOTS, skillStatus } from "../src/skills.ts";
 import type { GameState } from "../src/types.ts";
-import { makeSeats, must } from "./support.ts";
+import { makeSeats, must, testConfig } from "./support.ts";
 
 /** p0 and p1 Mush, p2 and p3 human, everyone in the same room. */
 function ship(): GameState {
-  return createGame(makeSeats(4), { ...DEFAULT_CONFIG, mushCount: 2, startInventory: [], startItems: [], startSkills: [] }, 42, { p0: "mush", p1: "mush" });
+  return createGame(makeSeats(4), testConfig({ mushCount: 2 }), 42, { p0: "mush", p1: "mush" });
 }
 
 const pick = (state: GameState, id: string, skill: string) => applyAction(state, id, { type: "pick_skill", skill });

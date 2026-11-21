@@ -4,11 +4,11 @@ import { dailyMoraleLoss } from "../src/modifiers.ts";
 import { applyInput, startGame } from "../src/replay.ts";
 import { applyAction, createGame, legalActions, newCycle, viewFor } from "../src/rules.ts";
 import type { GameState } from "../src/types.ts";
-import { clone, makeSeats, must, nextCycle, nextDay, noIncidents, player } from "./support.ts";
+import { clone, makeSeats, must, nextCycle, nextDay, noIncidents, player, testConfig } from "./support.ts";
 
 // Cycles change on the server's UTC clock (#24, owner 2026-10-19); End cycle is kept for testing only.
 const seats = makeSeats(4);
-const config = noIncidents({ ...DEFAULT_CONFIG, mushCount: 1, startItems: [], startSkills: [] });
+const config = testConfig();
 const ship = (startCycle?: number): GameState => createGame(seats, config, 3, {}, startCycle);
 
 describe("cycles on the clock", () => {

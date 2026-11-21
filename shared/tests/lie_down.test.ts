@@ -1,13 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { queueAction } from "../src/queue.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameState } from "../src/types.ts";
-import { makeSeats, must } from "./support.ts";
+import { makeSeats, must, testConfig } from "./support.ts";
 
 const seats = makeSeats(4);
-const config = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], maxAp: 99, startAp: 10, manualCycles: true };
+const config = testConfig({ maxAp: 99, startAp: 10, manualCycles: true });
 
 function ship(): GameState {
   const s = createGame(seats, config, 3);

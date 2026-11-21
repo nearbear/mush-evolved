@@ -4,8 +4,8 @@ import { DEFAULT_CONFIG } from "../src/config.ts";
 import type { RelayProgressConfig, ResearchPool, Sample } from "../src/relay.ts";
 import { RESEARCH_COMPLETE } from "../src/research.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
-import type { Action, GameConfig, GameState, PlayerId } from "../src/types.ts";
-import { clone, makeSeats, mustApply, offered, setProgress, stockLab } from "./support.ts";
+import type { Action, GameState, PlayerId } from "../src/types.ts";
+import { clone, makeSeats, mustApply, offered, setProgress, stockLab, testConfig } from "./support.ts";
 
 const LAB = "LABORATORY:RESEARCH_LAB";
 const research = (id = "STEROIDS"): Action => ({ type: "research", equipment: LAB, research: id });
@@ -16,7 +16,7 @@ const MARKS = R.assayMarks;
 
 /** Four players in the lab; `spoilChance` overrides the noise so a test can rule it in or out. */
 function game(spoilChance = R.spoilChance, seed = 7, assayMarks = MARKS): GameState {
-  const config: GameConfig = { ...DEFAULT_CONFIG, research: { ...R, spoilChance, assayMarks } };
+  const config = testConfig({ research: { spoilChance, assayMarks } });
   const s = createGame(makeSeats(4, "others"), config, seed);
   for (const p of s.players) {
     p.room = "LABORATORY";

@@ -1,12 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { addDisease, removeDisease } from "../src/diseases.ts";
 import { createGame } from "../src/rules.ts";
 import type { GameState } from "../src/types.ts";
-import { costOf, makeSeats, noHunters, noIncidents, player, withoutDrugs } from "./support.ts";
+import { costOf, makeSeats, noCharacterModifiers, player, testConfig, withoutDrugs } from "./support.ts";
 
 const BURNT_HAND = "burnt_hand_injury";
-const config = noIncidents(noHunters({ ...DEFAULT_CONFIG, characterModifiers: {}, mushCount: 1, startInventory: [], startItems: [] }));
+const config = noCharacterModifiers(testConfig());
 
 /** p0 and p1 in the lab; p0 holds a medikit. */
 function ship(): GameState {

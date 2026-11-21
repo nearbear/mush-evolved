@@ -1,15 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { applyAction, createGame } from "../src/rules.ts";
 import type { GameConfig, GameState } from "../src/types.ts";
-import { makeSeats, mustApply, noHunters, noIncidents, offered, option, pickSkill, player } from "./support.ts";
+import { makeSeats, mustApply, offered, option, pickSkill, player, testConfig } from "./support.ts";
 
 const HERE = "REFECTORY";
 const MANUAL = { type: "extinguish_manually" } as const;
 
 /** p0 (a Firefighter) and p1 in a burning refectory, no extinguisher anywhere. */
-function burning(config: GameConfig = noIncidents(noHunters(DEFAULT_CONFIG))): GameState {
-  const s = createGame(makeSeats(2), { ...config, mushCount: 1, startItems: [], startSkills: [] }, 3);
+function burning(): GameState {
+  const s = createGame(makeSeats(2), testConfig(), 3);
   for (const p of s.players) p.room = HERE;
   s.fires = [HERE];
   return pickSkill(s, "p0", "fireman");

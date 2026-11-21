@@ -7,7 +7,7 @@ import { DEFAULT_CONFIG } from "../src/config.ts";
 import { damageHunter, huntersCycle, newHunter } from "../src/hunters.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { type Action, type GameConfig, type GameState, HUNTER_TYPES, type HunterType } from "../src/types.ts";
-import { makeSeats, must, noHunters, option, player } from "./support.ts";
+import { type DeepPartial, makeSeats, must, option, player, testConfig } from "./support.ts";
 
 const TURRET_ROOM = "LASER_TURRET_A_0";
 const TERMINAL = "COMMAND_CENTER:PILOT_MODULE";
@@ -16,8 +16,8 @@ const leave: Action = { type: "leave_orbit", equipment: TERMINAL };
 const refusal = (s: GameState, id: string, action: Action) => ACTIONS[action.type]!.check(s, player(s, id), action);
 
 /** p0 the Commander at the Command terminal with fuel loaded, p1 at a turret, p2 in the lab; no waves; the given hunters. */
-function ship(types: HunterType[] = [], config: Partial<GameConfig> = {}): GameState {
-  const s = createGame(makeSeats(3), noHunters({ ...DEFAULT_CONFIG, mushCount: 1, startItems: [], ...config }), 3);
+function ship(types: HunterType[] = [], config: DeepPartial<GameConfig> = {}): GameState {
+  const s = createGame(makeSeats(3), testConfig(config), 3);
   player(s, "p0").room = "COMMAND_CENTER";
   s.titles.commander = "p0";
   s.ship.combustion = 2;
@@ -29,7 +29,7 @@ function ship(types: HunterType[] = [], config: Partial<GameConfig> = {}): GameS
 
 /** A state ready for a wave at the next `huntersCycle`: certain to roll, past the safe cycles, with `points` in the pool. */
 function waveReady(seed: number, points: number): GameState {
-  const s = createGame(makeSeats(3), { ...DEFAULT_CONFIG, hunters: { ...DEFAULT_CONFIG.hunters, waveChance: 1 } }, seed);
+  const s = createGame(makeSeats(3), testConfig({ hunters: { waveChance: 1 } }), seed);
   s.hunters.since = s.cycle - 100;
   s.hunters.points = points;
   return s;
@@ -162,8 +162,7 @@ describe("the asteroid", () => {
 
 describe("the D1000", () => {
   it("acts three times a cycle: a hit makes it aim again, so with a sure aim it hits twice", () => {
-    const { types } = DEFAULT_CONFIG.hunters;
-    const s = ship(["dice"], { hunters: { ...DEFAULT_CONFIG.hunters, types: { ...types, dice: { ...types.dice, hitChance: 1 } } } });
+    const s = ship(["dice"], { hunters: { types: { dice: { hitChance: 1 } } } });
     s.hunters.list[0]!.target = { kind: "ship" };
     s.ship.plasmaShield = 0;
     s.bios.plasma_shield = false;

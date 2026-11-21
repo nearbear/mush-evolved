@@ -10,7 +10,7 @@ import { historyStep, rebuildHistory, type BuildStamp, type HistoryFrame, type H
 import { STATE_VERSION } from "../src/normalizeState.ts";
 import type { GameState, LogEntry, PlayerView } from "../src/types.ts";
 import { play, seat } from "./randomGame.ts";
-import { noHunters, noIncidents } from "./support.ts";
+import { testConfig } from "./support.ts";
 
 /** The build the tests record history as. */
 const BUILD: BuildStamp = { stateVersion: STATE_VERSION, rulesVersion: "test" };
@@ -135,7 +135,7 @@ describe("stepMarks", () => {
 const quiet: GameSetup = {
   ...big,
   seats: big.seats.slice(0, 4),
-  config: { ...noIncidents(noHunters({ ...DEFAULT_CONFIG, manualCycles: true })), logWindow: { cycles: 1, tracker: 2 } },
+  config: testConfig({ manualCycles: true, logWindow: { cycles: 1, tracker: 2 } }),
 };
 
 describe("pruned log lines (#365)", () => {

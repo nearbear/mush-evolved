@@ -1,14 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { killPlayer } from "../src/death.ts";
 import { moderateName } from "../src/moderation.ts";
 import { createGame, viewFor } from "../src/rules.ts";
 import { endGame, winnerOnArrival } from "../src/victory.ts";
 import type { GameState } from "../src/types.ts";
-import { makeSeats, player } from "./support.ts";
+import { makeSeats, player, testConfig } from "./support.ts";
 
 const seats = makeSeats(4, "others");
-const config = { ...DEFAULT_CONFIG, mushCount: 1, startItems: [], startSkills: [] };
+const config = testConfig();
 
 /** p0 is Mush, the rest human (and bots). Names are unique so a test can look for them in a serialized view. */
 function ship(): GameState {

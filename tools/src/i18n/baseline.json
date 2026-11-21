@@ -6,6 +6,7 @@
     "server/src/bots/goals/index.ts": 1,
     "server/src/bots/goals/pickSkill.ts": 1,
     "server/src/bots/goals/returnToSol.ts": 1,
-    "server/src/bots/goals/shower.ts": 1
+    "server/src/bots/goals/shower.ts": 1,
+    "server/src/testing/survival.ts": 1
   }
 }

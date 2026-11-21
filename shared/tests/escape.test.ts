@@ -1,11 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { startCharges } from "../src/items.ts";
 import { createGame } from "../src/rules.ts";
 import type { GameState } from "../src/types.ts";
-import { makeSeats, option, player } from "./support.ts";
+import { makeSeats, option, player, testConfig } from "./support.ts";
 
-const base = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [] };
+const base = testConfig();
 
 /** p0 (carrying a knife and a blaster) shares the sick bay with p1; p1 has the given skills. */
 function ship(skills: string[]): GameState {

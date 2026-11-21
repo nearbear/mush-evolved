@@ -8,12 +8,12 @@ import { shortestPath } from "../src/paths.ts";
 import { joinShip } from "../src/preselection.ts";
 import { createGame } from "../src/rules.ts";
 import type { GameConfig, GameState, ItemState, RoomId, Seat } from "../src/types.ts";
-import { makeSeats, must, nextCycle, noHunters, noIncidents, player } from "./support.ts";
+import { makeSeats, must, nextCycle, player, testConfig } from "./support.ts";
 
 const LAB = "LABORATORY";
 
 const quiet = (favoredChance = DEFAULT_CONFIG.schrodinger.favoredChance): GameConfig =>
-  noIncidents(noHunters({ ...DEFAULT_CONFIG, mushCount: 1, startItems: [], startSkills: [], schrodinger: { ...DEFAULT_CONFIG.schrodinger, favoredChance } }));
+  testConfig({ schrodinger: { favoredChance } });
 
 /** p0 is Raluca, p1 and p2 someone else. */
 const seats = (): Seat[] => makeSeats(3).map((s, i) => (i === 0 ? { ...s, character: "raluca" } : { ...s, character: i === 1 ? "chun" : "kuanti" }));

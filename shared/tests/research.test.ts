@@ -7,7 +7,7 @@ import { ANY_CONSUMABLE, RESEARCH_COMPLETE, RESEARCH_IDS, RESEARCH_REQUIRES, RES
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { addStatus } from "../src/statuses.ts";
 import type { Action } from "../src/types.ts";
-import { makeSeats, mustApply, nextDay, offered, pickSkill, setProgress, stockLab } from "./support.ts";
+import { makeSeats, mustApply, nextDay, offered, pickSkill, setProgress, stockLab, testConfig } from "./support.ts";
 
 const seats = makeSeats(3, "others");
 const work = (research: string): Action => ({ type: "research", equipment: "LABORATORY:RESEARCH_LAB", research });
@@ -15,7 +15,7 @@ const AP = DEFAULT_CONFIG.research.cost.ap;
 const researches = (s: Parameters<typeof offered>[0], id: string) => offered(s, id).flatMap((a) => (a.type === "research" ? [a.research] : []));
 
 function game(room = "LABORATORY") {
-  const state = createGame(seats, DEFAULT_CONFIG, 7);
+  const state = createGame(seats, testConfig(), 7);
   for (const p of state.players) p.room = room;
   return state;
 }
@@ -351,7 +351,7 @@ describe("computer scientist skill (computer)", () => {
     const s = pick(game());
     expect(s.players[0]!.resources.comp).toBe(cfg.pointsPerDay);
     expect(s.players[1]!.resources.comp).toBe(0);
-    const start = createGame(seats, { ...DEFAULT_CONFIG, startSkills: ["computer"] }, 7);
+    const start = createGame(seats, testConfig({ startSkills: ["computer"] }), 7);
     expect(start.players[0]!.resources.comp).toBe(cfg.pointsPerDay);
   });
 

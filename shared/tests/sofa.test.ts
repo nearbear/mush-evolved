@@ -3,11 +3,11 @@ import { DEFAULT_CONFIG } from "../src/config.ts";
 import { EQUIPMENT_TYPES } from "../src/equipment.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameState } from "../src/types.ts";
-import { forceDismantleOdds, makeSeats, must, mustApply, nextCycle, offered, player } from "./support.ts";
+import { forceDismantleOdds, makeSeats, must, mustApply, nextCycle, offered, player, testConfig } from "./support.ts";
 
 const seats = makeSeats(3);
 forceDismantleOdds(1); // items and equipment have their own odds; these tests need the dismantle to succeed
-const config = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [], maxAp: 99, startAp: 10, dismantle: { ...DEFAULT_CONFIG.dismantle, successChance: 1 } };
+const config = testConfig({ maxAp: 99, startAp: 10, dismantle: { successChance: 1 } });
 const room = (id: string) => ({ kind: "room" as const, id });
 const sofas = (s: GameState, r = "CORRIDOR_A") => (s.equipment[r] ?? []).filter((e) => e.type === "SOFA");
 const dismantle = (equipment: string): Action => ({ type: "dismantle", equipment });

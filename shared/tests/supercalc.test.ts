@@ -1,16 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { SUPER_CALC_EQUIPMENT } from "../src/equipment.ts";
 import { RESEARCH_COMPLETE, RESEARCH_STATUS } from "../src/research.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
-import type { Action, GameConfig, GameState, PlayerId } from "../src/types.ts";
-import { makeSeats, mustApply, offered, player, setProgress, stockLab } from "./support.ts";
+import type { Action, GameState, PlayerId } from "../src/types.ts";
+import { makeSeats, mustApply, offered, player, setProgress, stockLab, testConfig } from "./support.ts";
 
 const LAB = "LABORATORY";
 const NEXUS = "NEXUS_ROOM";
 const SUPER_CALC_ID = `${NEXUS}:${SUPER_CALC_EQUIPMENT}`;
 const accessSuperCalc: Action = { type: "access", equipment: SUPER_CALC_ID };
-const base: GameConfig = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [], research: { ...DEFAULT_CONFIG.research, spoilChance: 0 } };
+const base = testConfig({ research: { spoilChance: 0 } });
 
 function ship(built = false): GameState {
   const s = createGame(makeSeats(3), base, 7);

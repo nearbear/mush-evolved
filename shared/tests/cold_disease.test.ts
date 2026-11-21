@@ -5,22 +5,14 @@ import { cycleChanged, enterRoom } from "../src/modifiers.ts";
 import { createGame, newCycle } from "../src/rules.ts";
 import { nextInt } from "../src/rng.ts";
 import type { GameConfig } from "../src/types.ts";
-import { makeSeats, must, noHunters, player } from "./support.ts";
+import { makeSeats, must, player, testConfig } from "./support.ts";
 
-const config: GameConfig = {
-  ...DEFAULT_CONFIG,
-  mushCount: 1,
-  preselection: null,
-  startSkills: [],
-  startInventory: [],
-  startItems: [],
-  // No cycle spread here: its rolls would move the RNG the seeded tests below follow.
-  diseases: { ...DEFAULT_CONFIG.diseases, allDiseaseStats: DEFAULT_CONFIG.diseases.allDiseaseStats.map(({ cycleSpread: _c, ...rest }) => rest) },
-};
+// No cycle spread here: its rolls would move the RNG the seeded tests below follow.
+const config: GameConfig = testConfig({ diseases: { allDiseaseStats: DEFAULT_CONFIG.diseases.allDiseaseStats.map(({ cycleSpread: _c, ...rest }) => rest) } });
 
 describe("Cold disease", () => {
   it("decrements the randomized disease duration when the cycle advances", () => {
-    const state = createGame(makeSeats(4), noHunters(config), 0);
+    const state = createGame(makeSeats(4), config, 0);
     const sick = player(state, "p0");
     addDisease(state, sick, "cold_disease");
     const tracker = sick.diseaseTrackers[0];

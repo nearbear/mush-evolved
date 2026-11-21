@@ -5,10 +5,10 @@ import { parseGameMessage } from "../src/protocol.ts";
 import { RESEARCH_COMPLETE, RESEARCH_STATUS } from "../src/research.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameState } from "../src/types.ts";
-import { costOf, makeSeats, player, mustApply, nextCycle, offered } from "./support.ts";
+import { costOf, makeSeats, player, mustApply, nextCycle, offered, testConfig } from "./support.ts";
 
 const seats = makeSeats(6);
-const config = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], maxAp: 99, startAp: 50 };
+const config = testConfig({ maxAp: 99, startAp: 50 });
 const extract: Action = { type: "extract_spore" };
 
 /** p0 and p1 are Mush, the rest human. */

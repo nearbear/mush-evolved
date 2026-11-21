@@ -4,7 +4,7 @@ import { PROJECT_COMPLETE, PROJECT_STATUS } from "../src/projects.ts";
 import { applyInput } from "../src/replay.ts";
 import { createGame, viewFor } from "../src/rules.ts";
 import type { GameConfig, GameState } from "../src/types.ts";
-import { makeSeats, must, player, setProgress } from "./support.ts";
+import { makeSeats, must, player, setProgress, testConfig } from "./support.ts";
 
 const HERE = "REFECTORY";
 const ELSEWHERE = "MEDLAB";
@@ -12,12 +12,7 @@ const ELSEWHERE = "MEDLAB";
 const globalSystem = (s: Readonly<GameState>) => s.chat.filter((m) => m.channel === "global" && m.system !== undefined).map((m) => m.system);
 
 function ship(autoWatering?: Partial<GameConfig["project"]["autoWatering"]>, fire?: Partial<GameConfig["fire"]>): GameState {
-  const config: GameConfig = {
-    ...DEFAULT_CONFIG,
-    incidents: { ...DEFAULT_CONFIG.incidents, pointsByDay: [], laterAdditionFromDay: 999, majorAdditionFromDay: 999 },
-    project: { ...DEFAULT_CONFIG.project, autoWatering: { ...DEFAULT_CONFIG.project.autoWatering, ...autoWatering } },
-    fire: { ...DEFAULT_CONFIG.fire, spreadChance: 0, breakChance: 0, hullChance: 0, ...fire },
-  };
+  const config = testConfig({ project: { autoWatering }, fire: { spreadChance: 0, breakChance: 0, hullChance: 0, ...fire } });
   const s = createGame(makeSeats(3, "others"), config, 7);
   player(s, "p0").room = HERE;
   player(s, "p2").room = ELSEWHERE;

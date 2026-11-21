@@ -11,7 +11,7 @@ import { PROJECT_COMPLETE, projectStatus } from "../src/projects.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameConfig, GameState } from "../src/types.ts";
-import { costOf, makeSeats, mustApply, nextCycle, noHunters, offered, option, player, rebelCallAt } from "./support.ts";
+import { costOf, makeSeats, mustApply, nextCycle, offered, option, player, rebelCallAt, testConfig } from "./support.ts";
 
 const BAY = "SPACESHIP_BAY_A";
 const LONGANE = patrolShip("PATROL_SHIP_A_0")!;
@@ -24,7 +24,7 @@ const lines = (s: GameState, id: string, key: string) => viewFor(s, id).log.filt
 
 /** p0 (a Pilot) and p1 in Bay Alpha, p2 in the laboratory. */
 function ship(config: Partial<GameConfig> = {}): GameState {
-  const s = createGame(makeSeats(3), noHunters({ ...DEFAULT_CONFIG, mushCount: 1, startItems: [], ...config }), 3);
+  const s = createGame(makeSeats(3), { ...testConfig(), ...config }, 3);
   player(s, "p0").room = player(s, "p1").room = BAY;
   player(s, "p0").skills = ["pilot"];
   player(s, "p2").room = "LABORATORY";
@@ -752,7 +752,7 @@ describe("the space capsule", () => {
   it("draws each content in turn across seeds", () => {
     const seen = new Set<string>();
     for (let seed = 1; seed <= 40; seed++) {
-      const s = createGame(makeSeats(1), noHunters({ ...DEFAULT_CONFIG, mushCount: 0, startItems: [] }), seed);
+      const s = createGame(makeSeats(1), testConfig({ mushCount: 0 }), seed);
       s.items.push({ id: "cap", type: "space_capsule", at: { kind: "player", id: "p0" } });
       seen.add(mustApply(s, "p0", open("cap")).items.find((i) => i.id === "cap")!.type);
     }

@@ -1,12 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { addDisease, removeDisease } from "../src/diseases.ts";
 import { applyAction, createGame } from "../src/rules.ts";
 import type { GameState } from "../src/types.ts";
-import { makeSeats, must, nextCycle, noHunters, noIncidents, player } from "./support.ts";
+import { makeSeats, must, nextCycle, noCharacterModifiers, player, testConfig } from "./support.ts";
 
 const TRAUMA = "head_trauma_injury";
-const config = noIncidents(noHunters({ ...DEFAULT_CONFIG, characterModifiers: {}, startSkills: [], startItems: [] }));
+const config = noCharacterModifiers(testConfig());
 // Fixed rng states, so the rates are the same every run; the bounds only have to fit them.
 const RUNS = 200;
 const SLOW = 20_000;

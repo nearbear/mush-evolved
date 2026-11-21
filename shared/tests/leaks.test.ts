@@ -4,12 +4,12 @@
 // each, is in leakFields.ts; a new field fails here until it is listed there.
 
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import type { CharacterId } from "../src/characters.ts";
+import { ITRACKIE_ITEM } from "../src/items.ts";
 import { createGame, viewFor } from "../src/rules.ts";
 import { type GameState, MUSH_CHANNEL, type PlayerId } from "../src/types.ts";
 import { GAME_STATE_FIELDS, ITEM_STATE_FIELDS, PLAYER_STATE_FIELDS } from "./leakFields.ts";
-import { makeSeats, player } from "./support.ts";
+import { makeSeats, player, testConfig } from "./support.ts";
 
 const HERE = "LABORATORY";
 const ELSEWHERE = "REFECTORY";
@@ -27,7 +27,7 @@ interface Sentinel {
  * a number or string that appears nowhere else in the game.
  */
 function ship(): { state: GameState; sentinels: Sentinel[] } {
-  const s = createGame(makeSeats(4), { ...DEFAULT_CONFIG, mushCount: 1, startItems: [], startSkills: [] }, 1, { p0: "mush" });
+  const s = createGame(makeSeats(4), testConfig({ startInventory: [ITRACKIE_ITEM] }), 1, { p0: "mush" });
   const sentinels: Sentinel[] = [];
   let next = 734_101;
   const num = (what: string, seenBy: PlayerId[]): number => {

@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG, SHIP_ROOMS } from "../src/config.ts";
+import { SHIP_ROOMS } from "../src/config.ts";
 import { createGame, viewFor } from "../src/rules.ts";
 import { doorCount, roomsWith } from "../src/situation.ts";
 import { TIP_EAT_AFTER_CYCLES, TIP_HURT_HP, TIP_REST_AP, tipsFor, type TipId } from "../src/tips.ts";
 import type { GameState } from "../src/types.ts";
-import { makeSeats, player } from "./support.ts";
+import { makeSeats, player, testConfig } from "./support.ts";
 
-const config = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [] };
+const config = testConfig();
 
 /** p0 in the Laboratory with full points and nothing wrong, so only the welcome tip applies. */
 function ship(change: (s: GameState) => void = () => {}): GameState {

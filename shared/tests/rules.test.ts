@@ -11,13 +11,13 @@ import { applyInput } from "../src/replay.ts";
 import { applyAction, createGame, newCycle, viewFor } from "../src/rules.ts";
 import { installCameraIn } from "./cameras.ts";
 import { CHAT_CHANNELS, type Action, type ChatChannel, type GameState, type MovementRules, type PlayerId } from "../src/types.ts";
-import { makeSeats, player, mustApply, noIncidents, offered } from "./support.ts";
+import { makeSeats, player, mustApply, noCharacterModifiers, offered, testConfig } from "./support.ts";
 
 const seats = makeSeats(8, "others");
 // End cycle (`ready`) on, so these tests can also pass a cycle the testing way.
 // MP starts empty here, so these tests see a move convert AP (the start MP is checked in "createGame").
 const newGame = (seed = 42) =>
-  createGame(seats, noIncidents({ ...DEFAULT_CONFIG, characterModifiers: {}, manualCycles: true, startMp: 0 }), seed);
+  createGame(seats, noCharacterModifiers(testConfig({ mushCount: 2, startInventory: [ITRACKIE_ITEM], manualCycles: true, startMp: 0 })), seed);
 
 const move = (to: string): Action => ({ type: "move", to });
 

@@ -1,16 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { addDisease, diseaseStats } from "../src/diseases.ts";
 import { consumed, consumedByMush, mealApGain, satietyLoss } from "../src/modifiers.ts";
 import { createGame } from "../src/rules.ts";
 import { isHungry } from "../src/statuses.ts";
-import type { GameConfig } from "../src/types.ts";
-import { makeSeats, noHunters } from "./support.ts";
+import { makeSeats, testConfig } from "./support.ts";
 
-const config: GameConfig = { ...DEFAULT_CONFIG, mushCount: 1, preselection: null, startSkills: [], startInventory: [], startItems: [] };
+const config = testConfig();
 
 const setup = () => {
-  const state = createGame(makeSeats(4), noHunters(config), 3);
+  const state = createGame(makeSeats(4), config, 3);
   const human = state.players.find((p) => p.role === "human")!;
   const mush = state.players.find((p) => p.role === "mush")!;
   return { state, human, mush };

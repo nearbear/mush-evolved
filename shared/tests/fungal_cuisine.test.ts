@@ -3,11 +3,11 @@ import { DEFAULT_CONFIG } from "../src/config.ts";
 import { ITEM_TYPES } from "../src/items.ts";
 import { applyAction, createGame, legalActions, viewFor } from "../src/rules.ts";
 import type { GameState } from "../src/types.ts";
-import { makeSeats, must, mustApply, player } from "./support.ts";
+import { makeSeats, must, mustApply, player, testConfig } from "./support.ts";
 
 /** p0 Mush with Fungal cuisine and spores, p1 Mush, p2 and p3 human; a banana on the floor of everyone's room. */
 function ship(): GameState {
-  const state = createGame(makeSeats(4), { ...DEFAULT_CONFIG, mushCount: 2, startInventory: [], startItems: [], startSkills: [] }, 42, { p0: "mush", p1: "mush" });
+  const state = createGame(makeSeats(4), testConfig({ mushCount: 2 }), 42, { p0: "mush", p1: "mush" });
   const p0 = player(state, "p0");
   p0.mushSkills = ["fungus_cook"];
   p0.spores = 3;

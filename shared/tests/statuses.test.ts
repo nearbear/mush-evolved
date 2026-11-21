@@ -5,26 +5,23 @@ import { MODIFIERS } from "../src/modifiers.ts";
 import { contaminate } from "../src/infection.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { GameState, PlayerId } from "../src/types.ts";
-import { makeSeats, player, mustApply, nextCycle, offered, noHunters, noIncidents } from "./support.ts";
+import { makeSeats, player, mustApply, nextCycle, offered, noCharacterModifiers, testConfig } from "./support.ts";
 
 const seats = makeSeats(4);
 // No character traits by default: seat p1 is Chun, whose public Immunity would show in every view.
-const config = {
-  ...DEFAULT_CONFIG,
-  characterModifiers: {},
-  consume: { ...DEFAULT_CONFIG.consume, dirtyChance: 0 },
-  mushCount: 1,
-  startInventory: [],
-  startItems: [],
-  maxAp: 99,
-  startAp: 50,
-  // These tests run many days; with the daily loss the crew would reach 0 morale and die Hopeless.
-  moralePerDay: 0,
-};
+const config = noCharacterModifiers(
+  testConfig({
+    consume: { dirtyChance: 0 },
+    maxAp: 99,
+    startAp: 50,
+    // These tests run many days; with the daily loss the crew would reach 0 morale and die Hopeless.
+    moralePerDay: 0,
+  }),
+);
 
 /** p0 is Mush, the rest human. All in one room. */
 function ship(): GameState {
-  const s = createGame(seats, noIncidents(noHunters(config)), 3);
+  const s = createGame(seats, config, 3);
   s.ship.oxygen = 99; // these tests run many cycles; keep the crew breathing
   s.players.forEach((p, i) => {
     p.role = i === 0 ? "mush" : "human";

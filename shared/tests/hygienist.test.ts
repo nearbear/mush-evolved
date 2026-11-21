@@ -4,10 +4,10 @@ import { addDisease } from "../src/diseases.ts";
 import { contaminate } from "../src/infection.ts";
 import { createGame } from "../src/rules.ts";
 import { MUSH_CHANNEL, type GameState } from "../src/types.ts";
-import { makeSeats, mustApply, player } from "./support.ts";
+import { makeSeats, mustApply, player, testConfig } from "./support.ts";
 
 function ship(seed = 1): GameState {
-  const state = createGame(makeSeats(4), { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [] }, seed, { p0: "mush" });
+  const state = createGame(makeSeats(4), testConfig(), seed, { p0: "mush" });
   const p0 = player(state, "p0");
   for (const p of state.players) p.room = p0.room;
   return state;

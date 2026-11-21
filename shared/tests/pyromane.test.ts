@@ -2,14 +2,14 @@ import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { GameState } from "../src/types.ts";
-import { makeSeats, mustApply, nextCycle, noHunters, noIncidents, offered, option, pickSkill } from "./support.ts";
+import { makeSeats, mustApply, nextCycle, offered, option, pickSkill, testConfig } from "./support.ts";
 
 const HERE = "REFECTORY";
 const IGNITE = { type: "ignite" } as const;
 
 /** p0 (a Pyromaniac), p1 and p2 in the refectory; nothing burns and no incident can start a fire. */
 function ship(): GameState {
-  const s = createGame(makeSeats(3), { ...noIncidents(noHunters(DEFAULT_CONFIG)), mushCount: 1, startItems: [], startSkills: [] }, 3);
+  const s = createGame(makeSeats(3), testConfig(), 3);
   for (const p of s.players) p.room = HERE;
   for (const p of s.players) p.role = p.id === "p0" ? "mush" : "human";
   return pickSkill(s, "p0", "pyromane");

@@ -1,14 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { EQUIPMENT_TYPES } from "../src/equipment.ts";
 import { ITEM_TYPES } from "../src/items.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameState } from "../src/types.ts";
 import { installCameraIn } from "./cameras.ts";
-import { makeSeats, must, nextCycle, offered, player } from "./support.ts";
+import { makeSeats, must, nextCycle, offered, player, testConfig } from "./support.ts";
 
 // Green Jelly (owner, 2026-11-07): the Electro-slime skill's secret action; the target breaks in 1-4 cycles.
-const config = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [] };
+const config = testConfig();
 const snapshot = { equipment: { ...EQUIPMENT_TYPES }, items: { ...ITEM_TYPES } };
 const SHOWER = "SICK_BAY:SHOWER";
 

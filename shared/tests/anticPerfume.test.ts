@@ -1,14 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { contaminate } from "../src/infection.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { addStatus } from "../src/statuses.ts";
 import type { Action, GameState } from "../src/types.ts";
-import { makeSeats, player } from "./support.ts";
+import { makeSeats, noCharacterModifiers, player, testConfig } from "./support.ts";
 
 const seats = makeSeats(4);
 // No character traits: seat p1 is Chun, who is immune.
-const config = { ...DEFAULT_CONFIG, characterModifiers: {}, mushCount: 1, startInventory: [], startItems: [], maxAp: 99, startAp: 10 };
+const config = noCharacterModifiers(testConfig({ maxAp: 99, startAp: 10 }));
 const shower: Action = { type: "shower", equipment: "BEDROOM_A:SHOWER" };
 
 /** p0 is Mush, the rest human; everyone in Bedroom Alpha; p1 has the skill and is dirty. */

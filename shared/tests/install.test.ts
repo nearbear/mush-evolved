@@ -7,11 +7,11 @@ import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameState } from "../src/types.ts";
 import { installCameraIn } from "./cameras.ts";
-import { forceDismantleOdds, makeSeats, player, must, offered } from "./support.ts";
+import { forceDismantleOdds, makeSeats, player, must, offered, testConfig } from "./support.ts";
 
 const seats = makeSeats(3);
 forceDismantleOdds(1);
-const config = { ...DEFAULT_CONFIG, mushCount: 1, startItems: [], startSkills: [], dismantle: { ...DEFAULT_CONFIG.dismantle, successChance: 1 } };
+const config = testConfig({ dismantle: { successChance: 1 } });
 const equipmentIn = (s: GameState, room: string) => s.equipment[room]?.filter((e) => e.type === CAMERA_EQUIPMENT) ?? [];
 const dismantleEquipment = (room: string): Action => ({ type: "dismantle", equipment: cameraEquipmentId(room) });
 

@@ -1,15 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { MYCOSCAN_EQUIPMENT } from "../src/actions/check_spores.ts";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { RESEARCH_COMPLETE } from "../src/research.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameConfig, GameState, PlayerId } from "../src/types.ts";
-import { clone, costOf, makeSeats, mustApply, nextCycle, nextDay, offered, player, setProgress, stockLab } from "./support.ts";
+import { clone, costOf, makeSeats, mustApply, nextCycle, nextDay, offered, player, setProgress, stockLab, testConfig } from "./support.ts";
 
 const LAB = "LABORATORY";
 const SCANNER = `${LAB}:${MYCOSCAN_EQUIPMENT}`;
 const check: Action = { type: "check_spores", equipment: SCANNER };
-const base: GameConfig = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [], research: { ...DEFAULT_CONFIG.research, spoilChance: 0 } };
+const base: GameConfig = testConfig({ research: { spoilChance: 0 } });
 
 /** p0 human, p1 Mush, both in the lab; p2 human elsewhere. `scanner`: the MycoScan is already built. */
 function ship(scanner = true): GameState {

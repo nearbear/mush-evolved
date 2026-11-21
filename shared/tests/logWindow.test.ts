@@ -5,11 +5,11 @@ import { swapMinds } from "../src/mind.ts";
 import { joinShip } from "../src/preselection.ts";
 import { createGame, seatViewFor, viewFor } from "../src/rules.ts";
 import type { GameState } from "../src/types.ts";
-import { makeSeats, must, mustApply, nextCycle, noHunters, noIncidents, pickSkill, player } from "./support.ts";
+import { makeSeats, must, mustApply, nextCycle, pickSkill, player, testConfig } from "./support.ts";
 
 // Room log window (owner, 2026-11-05, #365; rules-design.md "Room log window, Tracker"): 8 cycles, 16 for a Tracker
 // (`hunt`). Ship-wide lines and chat have no window; room lines older than 16 cycles leave the state.
-const config = noHunters(noIncidents({ ...DEFAULT_CONFIG, mushCount: 1, startItems: [], startSkills: [] }));
+const config = testConfig();
 const ship = (): GameState => createGame(makeSeats(3), config, 3);
 
 /** `s` at `cycle`, as if the log had been written then: lines pushed now carry this cycle. */

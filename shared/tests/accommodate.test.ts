@@ -1,18 +1,17 @@
 import { describe, expect, it } from "vitest";
 import { endsAccommodation } from "../src/actionTarget.ts";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { killPlayer } from "../src/death.ts";
 import { nextDue, queueAction, tick } from "../src/queue.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { overheadStatuses } from "../src/statuses.ts";
 import type { Action, GameState } from "../src/types.ts";
-import { clone, makeSeats, must, mustApply, offered, player } from "./support.ts";
+import { clone, makeSeats, must, mustApply, offered, player, testConfig } from "./support.ts";
 
 // p0 is Terrence; p1 and p2 are not. Everyone starts in the laboratory.
 const HERE = "LABORATORY";
 const seats = makeSeats(3).map((s, i) => (i === 0 ? { ...s, character: "terrence" as const } : s));
 // MP starts empty, so the pusher's move converts AP.
-const config = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startMp: 0 };
+const config = testConfig({ startMp: 0 });
 const NEXT = config.rooms[HERE]![0]!;
 
 function ship(): GameState {

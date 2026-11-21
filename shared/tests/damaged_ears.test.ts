@@ -1,17 +1,17 @@
 import { describe, expect, it } from "vitest";
 import { pushChat, sendChat } from "../src/chat.ts";
 import { unreadCount } from "../src/chatRead.ts";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { fullViewFor, perspective } from "../src/fullView.ts";
+import { ITRACKIE_ITEM } from "../src/items.ts";
 import { mergeStreams, revealFor, streamsOf } from "../src/replayView.ts";
 import { addDisease, removeDisease } from "../src/diseases.ts";
 import { chatPageView, createGame, viewFor } from "../src/rules.ts";
 import type { GameState } from "../src/types.ts";
-import { makeSeats, noHunters, noIncidents, player, withoutDrugs } from "./support.ts";
+import { makeSeats, noCharacterModifiers, player, testConfig, withoutDrugs } from "./support.ts";
 
 const EARS = "damaged_ears_injury";
 const DESTROYED = "destroyed_ears_injury";
-const config = noIncidents(noHunters({ ...DEFAULT_CONFIG, characterModifiers: {}, mushCount: 1, startItems: [] }));
+const config = noCharacterModifiers(testConfig({ startInventory: [ITRACKIE_ITEM] }));
 
 function ship(): GameState {
   return withoutDrugs(createGame(makeSeats(3), config, 1));

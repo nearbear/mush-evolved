@@ -1,16 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { addDisease, diseaseStats } from "../src/diseases.ts";
 import { contaminate } from "../src/infection.ts";
 import { contaminationCapacity } from "../src/modifiers.ts";
 import { createGame } from "../src/rules.ts";
-import type { GameConfig } from "../src/types.ts";
-import { makeSeats, noHunters } from "./support.ts";
+import { makeSeats, testConfig } from "./support.ts";
 
-const config: GameConfig = { ...DEFAULT_CONFIG, mushCount: 1, preselection: null, startSkills: [], startInventory: [], startItems: [] };
+const config = testConfig();
 
 const setup = () => {
-  const state = createGame(makeSeats(4), noHunters(config), 3);
+  const state = createGame(makeSeats(4), config, 3);
   const human = state.players.find((p) => p.role === "human" && !p.modifiers.includes("immunity"))!;
   addDisease(state, human, "mush_allergy_disease");
   return { state, human };
@@ -40,7 +38,7 @@ describe("Mush Allergy", () => {
   });
 
   it("does nothing to a Mush carrier", () => {
-    const state = createGame(makeSeats(4), noHunters(config), 3);
+    const state = createGame(makeSeats(4), config, 3);
     const mush = state.players.find((p) => p.role === "mush")!;
     addDisease(state, mush, "mush_allergy_disease");
     contaminate(state, mush, 1);

@@ -1,16 +1,15 @@
 import { describe, expect, it } from "vitest";
 import { gainMorale } from "../src/adjustStats.ts";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { newItemId } from "../src/items.ts";
 import { createGame, viewFor } from "../src/rules.ts";
 import { isHopeless } from "../src/statuses.ts";
 import type { GameState } from "../src/types.ts";
-import { makeSeats, mustApply, nextCycle, noHunters, noIncidents, player } from "./support.ts";
+import { makeSeats, mustApply, nextCycle, player, testConfig } from "./support.ts";
 
 // Morale at 0 (owner, 2026-11-11): Hopeless, private, ended by any morale gain; a human still Hopeless when a cycle
 // ends dies, a Mush never does, and each such death costs every living player `hopeless.deathMorale`.
 // Seats: p0 human, p1 (Chun) human, p2 Mush. No incidents: a panic attack would move morale under the tests.
-const config = noIncidents(noHunters({ ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [] }));
+const config = testConfig();
 function ship(): GameState {
   const s = createGame(makeSeats(3), config, 5);
   for (const p of s.players) {

@@ -5,14 +5,14 @@ import { channelLimit, computerPointsCap, weaponOutcomeWeight } from "../src/mod
 import { SKILL_SLOTS, skillStatus } from "../src/skills.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameConfig, GameState } from "../src/types.ts";
-import { makeSeats, must, nextCycle, nextDay, noHunters, option, player, pickSkill } from "./support.ts";
+import { type DeepPartial, makeSeats, must, nextCycle, nextDay, option, player, pickSkill, testConfig } from "./support.ts";
 
 const TURRET_ROOM = "LASER_TURRET_A_0";
 const TURRET = "LASER_TURRET_A_0:TURRET_COMMAND";
 const shoot: Action = { type: "turret_attack", equipment: TURRET, hunter: "h1" };
 
-function ship(config: Partial<GameConfig> = {}): GameState {
-  const s = createGame(makeSeats(3), noHunters({ ...DEFAULT_CONFIG, mushCount: 1, startItems: [], ...config }), 3);
+function ship(config: DeepPartial<GameConfig> = {}): GameState {
+  const s = createGame(makeSeats(3), testConfig(config), 3);
   player(s, "p0").room = TURRET_ROOM;
   s.hunters.list.push({ id: "h1", hp: 100, hitChance: s.config.hunters.types.hunter.hitChance, target: null, type: "hunter", countdown: null });
   return s;
@@ -27,7 +27,7 @@ describe("Gunner", () => {
     const base = shotChance(s);
     give(s, "p0", "gunner");
     expect(shotChance(s)).toBeCloseTo(base * 2);
-    const hit = ship({ turrets: { ...DEFAULT_CONFIG.turrets, chance: 1 } });
+    const hit = ship({ turrets: { chance: 1 } });
     give(hit, "p0", "gunner");
     const [lo, hi] = DEFAULT_CONFIG.turrets.damage;
     const damage = 100 - must(applyAction(hit, "p0", shoot)).hunters.list[0]!.hp;
@@ -58,7 +58,7 @@ describe("Gunman", () => {
 
   it("makes a shot free and spends a point, on a hit and on a miss, and costs 1 AP without one", () => {
     for (const chance of [1, 0]) {
-      const s = ship({ turrets: { ...DEFAULT_CONFIG.turrets, chance } });
+      const s = ship({ turrets: { chance } });
       give(s, "p0", "gunman");
       player(s, "p0").resources.shoot = 1;
       const ap = player(s, "p0").ap;
@@ -98,16 +98,10 @@ describe("Gunman", () => {
   });
 
   it("doubles critical-hit odds and halves relative fumble odds on guns only, not knife or grenade", () => {
-    const gunCfg: GameConfig = {
-      ...DEFAULT_CONFIG,
-      mushCount: 1,
-      startItems: [],
+    const gunCfg = testConfig({
       weapons: {
-        ...DEFAULT_CONFIG.weapons,
         types: {
-          ...DEFAULT_CONFIG.weapons.types,
           blaster: {
-            ...DEFAULT_CONFIG.weapons.types.blaster!,
             accuracy: 0,
             missOutcomes: [
               { weight: 10, log: "BLASTER_FAILED_SHOT" },
@@ -115,7 +109,6 @@ describe("Gunman", () => {
             ],
           },
           knife: {
-            ...DEFAULT_CONFIG.weapons.types.knife!,
             accuracy: 1,
             hitOutcomes: [
               { weight: 10, log: "KNIFE_SUCCESSFUL_HIT_10_HAEMORRHAGE" },
@@ -123,7 +116,6 @@ describe("Gunman", () => {
             ],
           },
           grenade: {
-            ...DEFAULT_CONFIG.weapons.types.grenade!,
             accuracy: 1,
             hitOutcomes: [
               { weight: 10, log: "GRENADE_SUCCESSFUL_THROW_SPLASH_DAMAGE_ALL", effects: { weaponEffect: "destroy" } },
@@ -132,12 +124,12 @@ describe("Gunman", () => {
           },
         },
       },
-    };
+    });
 
     const countOutcomes = (weaponType: string, withGunman: boolean, targetId?: string): number => {
       let special = 0;
       for (let seed = 1; seed <= 120; seed++) {
-        const s = createGame(makeSeats(3), noHunters(gunCfg), seed);
+        const s = createGame(makeSeats(3), gunCfg, seed);
         for (const p of s.players) p.room = "SICK_BAY";
         if (withGunman) give(s, "p0", "gunman");
         s.items.push({ id: "w", type: weaponType, at: { kind: "player", id: "p0" }, charges: 3 });
@@ -189,7 +181,7 @@ describe("Persistent", () => {
 
 describe("Space Tactics", () => {
   const waves = (holder: boolean, chance: number, alive = true): GameState => {
-    let s = createGame(makeSeats(3), { ...DEFAULT_CONFIG, hunters: { ...DEFAULT_CONFIG.hunters, waveChance: 1 }, spaceTactics: { chance, shrink: 0.33 } }, 3);
+    let s = createGame(makeSeats(3), testConfig({ hunters: { waveChance: 1 }, spaceTactics: { chance, shrink: 0.33 } }), 3);
     if (holder) give(s, "p2", "space_tactics");
     if (!alive) player(s, "p2").alive = false;
     s = nextCycle(nextCycle(s));

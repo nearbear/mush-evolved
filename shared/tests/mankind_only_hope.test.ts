@@ -1,17 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { killPlayer } from "../src/death.ts";
 import { dailyMoraleLoss } from "../src/modifiers.ts";
 import { createGame, viewFor } from "../src/rules.ts";
 import { SKILLS } from "../src/skills.ts";
 import { overheadStatuses } from "../src/statuses.ts";
 import type { GameState } from "../src/types.ts";
-import { makeSeats, nextDay, noHunters, noIncidents, player } from "./support.ts";
+import { makeSeats, nextDay, player, testConfig } from "./support.ts";
 
 // Seat p1 is Chun.
 const seats = makeSeats(3);
 // No incidents: a panic attack would cost someone morale on top of the daily loss these tests measure.
-const config = noIncidents(noHunters({ ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [] }));
+const config = testConfig();
 const ship = (): GameState => createGame(seats, config, 1);
 const cut = config.mankindOnlyHope.moraleLossCut;
 

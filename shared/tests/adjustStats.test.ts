@@ -1,12 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { gainMorale } from "../src/adjustStats.ts";
 import { createGame } from "../src/rules.ts";
-import { makeSeats, player } from "./support.ts";
+import { makeSeats, player, testConfig } from "./support.ts";
 
 describe("gainMorale", () => {
   it("logs a gain or a loss privately, with the amount as a positive number", () => {
-    const state = createGame(makeSeats(4), { ...DEFAULT_CONFIG, mushCount: 1, preselection: null }, 0);
+    const state = createGame(makeSeats(4), testConfig(), 0);
     const p = player(state, "p0");
     p.morale = 7;
     const before = state.log.length;

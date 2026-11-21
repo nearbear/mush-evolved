@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import { actionVisibility, ACTIONS } from "../src/actions.ts";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { killPlayer } from "../src/death.ts";
 import { cure } from "../src/infection.ts";
 import { CAMERA_EQUIPMENT } from "../src/equipment.ts";
@@ -10,9 +9,9 @@ import { queueAction } from "../src/queue.ts";
 import { createChannel } from "../src/chat.ts";
 import { postPlan } from "../src/plans.ts";
 import type { GameState } from "../src/types.ts";
-import { makeSeats, must, mustApply, nextCycle, option, player } from "./support.ts";
+import { makeSeats, must, mustApply, nextCycle, option, player, testConfig } from "./support.ts";
 
-const base = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [] };
+const base = testConfig();
 const ROOM_A = Object.keys(base.rooms).find((r) => base.rooms[r]!.length >= 2)!;
 const ROOM_B = base.rooms[ROOM_A]![0]!;
 const ROOM_C = base.rooms[ROOM_A]![1]!;

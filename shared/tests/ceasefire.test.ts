@@ -3,12 +3,12 @@ import { DEFAULT_CONFIG } from "../src/config.ts";
 import { killPlayer } from "../src/death.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameState } from "../src/types.ts";
-import { makeSeats, must, nextCycle, offered, player } from "./support.ts";
+import { makeSeats, must, nextCycle, offered, player, testConfig } from "./support.ts";
 
 const ceasefire: Action = { type: "ceasefire" };
 
 function ship(room = "LABORATORY"): GameState {
-  const s = createGame(makeSeats(4, "others"), { ...DEFAULT_CONFIG, startSkills: [] }, 7);
+  const s = createGame(makeSeats(4, "others"), testConfig(), 7);
   for (const p of s.players) p.room = room;
   player(s, "p0").skills = ["diplomacy"];
   return s;
@@ -20,7 +20,7 @@ describe("Diplomat's Ceasefire", () => {
   });
 
   it("is offered only to a Diplomat (not Polymath, not in preselection) and works once per game", () => {
-    const pre = createGame(makeSeats(3, "others"), { ...DEFAULT_CONFIG, startSkills: [], preselection: true }, 7);
+    const pre = createGame(makeSeats(3, "others"), testConfig({ preselection: true }), 7);
     player(pre, "p0").skills = ["diplomacy"];
     expect(offered(pre, "p0")).not.toContainEqual(ceasefire);
     expect(applyAction(pre, "p0", ceasefire).ok).toBe(false);

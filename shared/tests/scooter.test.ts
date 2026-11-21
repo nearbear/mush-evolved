@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { ITEM_TYPES, produceItem, spawnInRoom } from "../src/items.ts";
 import { createGame, viewFor } from "../src/rules.ts";
-import { makeSeats, mustApply, nextCycle, noHunters, noIncidents, player } from "./support.ts";
+import { makeSeats, mustApply, nextCycle, player, testConfig } from "./support.ts";
 
-const base = noIncidents(noHunters(DEFAULT_CONFIG));
+const base = testConfig();
 
 function ship() {
   const s = createGame(makeSeats(3), base, 7);

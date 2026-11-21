@@ -1,14 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { MODIFIERS, healAmount } from "../src/modifiers.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { RESEARCH_COMPLETE, researchStatus } from "../src/research.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameState, PlayerId } from "../src/types.ts";
-import { makeSeats, player, offered, withoutDrugs } from "./support.ts";
+import { makeSeats, player, offered, testConfig, withoutDrugs } from "./support.ts";
 
 const seats = makeSeats(3);
-const config = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [] };
+const config = testConfig();
 const heal = (target: PlayerId): Action => ({ type: "heal", target });
 const { cost, effect } = config.heal;
 

@@ -1,14 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { sendChat } from "../src/chat.ts";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { MODIFIERS } from "../src/modifiers.ts";
 import { createGame, legalIn, viewFor } from "../src/rules.ts";
 import type { Action, GameState, PlayerId, PlayerView } from "../src/types.ts";
-import { makeSeats, player, mustApply } from "./support.ts";
+import { makeSeats, player, mustApply, noCharacterModifiers, testConfig } from "./support.ts";
 
 const seats = makeSeats(4);
 // No character traits: seat p1 is Chun, who is immune.
-const config = { ...DEFAULT_CONFIG, characterModifiers: {}, mushCount: 1, startInventory: [], startItems: [], maxAp: 99, startAp: 50 };
+const config = noCharacterModifiers(testConfig({ maxAp: 99, startAp: 50 }));
 const spike = (target: PlayerId): Action => ({ type: "spike", target });
 
 /** p0 alpha Mush with 9 spores, p1 human beside them in SICK_BAY; p2 human bystander there too; p3 human in the lab. */

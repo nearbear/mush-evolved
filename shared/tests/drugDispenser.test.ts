@@ -3,12 +3,12 @@ import { DEFAULT_CONFIG } from "../src/config.ts";
 import { DRUG_ITEMS } from "../src/items.ts";
 import { RESEARCH_COMPLETE } from "../src/research.ts";
 import { applyAction, createGame } from "../src/rules.ts";
-import type { Action, GameConfig, GameState, PlayerId } from "../src/types.ts";
-import { makeSeats, mustApply, nextCycle, offered, player, setProgress, stockLab } from "./support.ts";
+import type { Action, GameState, PlayerId } from "../src/types.ts";
+import { makeSeats, mustApply, nextCycle, offered, player, setProgress, stockLab, testConfig } from "./support.ts";
 
 const MEDLAB = "SICK_BAY";
 const DISP = `${MEDLAB}:DRUG_DISP`;
-const base: GameConfig = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [], hunters: { ...DEFAULT_CONFIG.hunters, waveChance: 0 } };
+const base = testConfig();
 const take = (drug: string): Action => ({ type: "dispense_drug", equipment: DISP, drug });
 const drugsOffered = (s: GameState, id: PlayerId) => offered(s, id).flatMap((a) => (a.type === "dispense_drug" ? [a.drug] : []));
 

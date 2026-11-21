@@ -1,20 +1,16 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
+import { ITRACKIE_ITEM } from "../src/items.ts";
 import { PROJECT_COMPLETE, PROJECT_STATUS } from "../src/projects.ts";
 import { applyInput } from "../src/replay.ts";
 import { createGame, viewFor } from "../src/rules.ts";
 import type { GameConfig, GameState } from "../src/types.ts";
-import { makeSeats, must, setProgress } from "./support.ts";
+import { makeSeats, must, setProgress, testConfig } from "./support.ts";
 
 const globalSystem = (s: Readonly<GameState>) => s.chat.filter((m) => m.channel === "global" && m.system !== undefined).map((m) => m.system);
 
 function ship(oxyMore?: Partial<GameConfig["project"]["oxyMore"]>): GameState {
-  const config: GameConfig = {
-    ...DEFAULT_CONFIG,
-    incidents: { ...DEFAULT_CONFIG.incidents, pointsByDay: [], laterAdditionFromDay: 999, majorAdditionFromDay: 999 },
-    project: { ...DEFAULT_CONFIG.project, oxyMore: { ...DEFAULT_CONFIG.project.oxyMore, ...oxyMore } },
-    fire: { ...DEFAULT_CONFIG.fire, spreadChance: 0, breakChance: 0, hullChance: 0 },
-  };
+  const config = testConfig({ startInventory: [ITRACKIE_ITEM], project: { oxyMore }, fire: { spreadChance: 0, breakChance: 0, hullChance: 0 } });
   return createGame(makeSeats(3, "others"), config, 7);
 }
 

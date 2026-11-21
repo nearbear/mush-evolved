@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG, resolveConfig } from "../src/config.ts";
+import { resolveConfig } from "../src/config.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { queueAction } from "../src/queue.ts";
 import { applyInput } from "../src/replay.ts";
@@ -9,9 +9,9 @@ import { normalizeSpot } from "../src/normalizeState.ts";
 import { publicStatusesOf } from "../src/statuses.ts";
 import { MAX_SPOT_CELL, terminalChairs, walk } from "../src/spot.ts";
 import type { GameState } from "../src/types.ts";
-import { makeSeats, must, offered, player } from "./support.ts";
+import { makeSeats, must, offered, player, testConfig } from "./support.ts";
 
-const config = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], maxAp: 99, startAp: 10, manualCycles: true };
+const config = testConfig({ maxAp: 99, startAp: 10, manualCycles: true });
 
 /** p0, p1 and p2 in the laboratory, p3 in the refectory. */
 function ship(): GameState {

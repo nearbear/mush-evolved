@@ -1,11 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { addDisease, removeDisease } from "../src/diseases.ts";
 import { createGame } from "../src/rules.ts";
 import type { GameState } from "../src/types.ts";
-import { makeSeats, nextCycle, noHunters, noIncidents, player } from "./support.ts";
+import { makeSeats, nextCycle, noCharacterModifiers, player, testConfig } from "./support.ts";
 
-const config = noIncidents(noHunters({ ...DEFAULT_CONFIG, characterModifiers: {}, startSkills: [], startItems: [] }));
+const config = noCharacterModifiers(testConfig());
 
 function ship(): GameState {
   return createGame(makeSeats(3, "others"), config, 7);

@@ -1,13 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { modifierIds } from "../src/modifiers.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameState } from "../src/types.ts";
-import { makeSeats, must, mustApply, option, player } from "./support.ts";
+import { makeSeats, must, mustApply, option, player, testConfig } from "./support.ts";
 
 const seats = makeSeats(3);
-const base = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [], equipment: {} };
+const base = { ...testConfig(), equipment: {} };
 const read = (item: string): Action => ({ type: "read_book", item });
 const room = (id: string) => ({ kind: "room" as const, id });
 

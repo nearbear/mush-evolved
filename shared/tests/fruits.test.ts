@@ -10,7 +10,7 @@ import { NAME_CATALOGS } from "../src/names.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { addStatus } from "../src/statuses.ts";
 import type { GameState } from "../src/types.ts";
-import { clone, makeSeats, mustApply, nextCycle, noHunters, noIncidents, option, player } from "./support.ts";
+import { clone, makeSeats, mustApply, nextCycle, noCharacterModifiers, option, player, testConfig } from "./support.ts";
 
 const FRUIT_CFG = DEFAULT_CONFIG.botany.fruits;
 const TEST_FRUIT = ALIEN_FRUIT_ITEMS[0];
@@ -30,17 +30,7 @@ function fruitValue(f: FruitEffect): number {
 function ship(seatsCount = 4): GameState {
   const s = createGame(
     makeSeats(seatsCount),
-    noIncidents(
-      noHunters({
-        ...DEFAULT_CONFIG,
-        characterModifiers: {},
-        startInventory: [],
-        mushCount: 1,
-        maxAp: 99,
-        startAp: 20,
-        botany: { ...DEFAULT_CONFIG.botany, sickChancePerCycle: 0 },
-      }),
-    ),
+    noCharacterModifiers(testConfig({ startItems: DEFAULT_CONFIG.startItems, maxAp: 99, startAp: 20, botany: { sickChancePerCycle: 0 } })),
     7,
     { p3: "mush" },
   );

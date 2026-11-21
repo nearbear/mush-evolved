@@ -5,14 +5,13 @@ import { addDisease } from "../src/diseases.ts";
 import { attackWithHeldWeapon } from "../src/actions/attack.ts";
 import { cycleChanged, enteredRoom } from "../src/modifiers.ts";
 import { createGame } from "../src/rules.ts";
-import type { GameConfig } from "../src/types.ts";
-import { makeSeats, noHunters } from "./support.ts";
+import { makeSeats, testConfig } from "./support.ts";
 
-const config: GameConfig = { ...DEFAULT_CONFIG, mushCount: 1, preselection: null, startSkills: [], startInventory: [], startItems: [] };
+const config = testConfig();
 
 describe("Space rabies", () => {
   it("adds 1 to all damage a human takes, but not a Mush's", () => {
-    const state = createGame(makeSeats(4), noHunters(config), 4);
+    const state = createGame(makeSeats(4), config, 4);
     const human = state.players.find((p) => p.role === "human")!;
     const mush = state.players.find((p) => p.role === "mush")!;
     for (const p of [human, mush]) addDisease(state, p, "space_rabies_disease");
@@ -24,7 +23,7 @@ describe("Space rabies", () => {
   });
 
   it("costs 2 (3 with the rise) at a cycle change and bites someone in the room for 2 (3 if they have it too)", () => {
-    const state = createGame(makeSeats(4), noHunters(config), 4);
+    const state = createGame(makeSeats(4), config, 4);
     const [sick, victim] = state.players.filter((p) => p.role === "human");
     sick!.room = victim!.room = "BRIDGE";
     for (const p of state.players) if (p !== sick && p !== victim) p.room = "REFECTORY";
@@ -37,7 +36,7 @@ describe("Space rabies", () => {
   });
 
   it("swings a carried weapon at someone in the room", () => {
-    const state = createGame(makeSeats(4), noHunters(config), 4);
+    const state = createGame(makeSeats(4), config, 4);
     const [sick, victim] = state.players.filter((p) => p.role === "human");
     sick!.room = victim!.room = "BRIDGE";
     state.items.push({ id: "w", type: "knife", at: { kind: "player", id: sick!.id } });
@@ -48,7 +47,7 @@ describe("Space rabies", () => {
   });
 
   it("on entering a room, now and then foams, and strikes someone with a carried weapon", () => {
-    const state = createGame(makeSeats(4), noHunters(config), 4);
+    const state = createGame(makeSeats(4), config, 4);
     const [sick, victim] = state.players.filter((p) => p.role === "human");
     sick!.room = victim!.room = "BRIDGE";
     state.items.push({ id: "w", type: "knife", at: { kind: "player", id: sick!.id } });

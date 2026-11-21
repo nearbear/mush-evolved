@@ -4,16 +4,16 @@ import { ITEM_TYPES } from "../src/items.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, legalActions, viewFor } from "../src/rules.ts";
 import type { Action, GameState } from "../src/types.ts";
-import { makeSeats, mustApply, nextDay, noHunters, option, player } from "./support.ts";
+import { makeSeats, mustApply, nextDay, option, player, testConfig } from "./support.ts";
 
 const seats = makeSeats(3);
-const base = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [] };
+const base = testConfig();
 const hyperfreeze = (item: string): Action => ({ type: "hyperfreeze", item });
 const freezer = (s: GameState) => s.items.find((i) => i.type === "freezer")!;
 
 /** p0 and p1 in the refectory with a working freezer on the floor, p2 in the sick bay; c1 cooked ration on floor, a1 alien steak carried by p0. */
 function ship(): GameState {
-  const s = createGame(seats, noHunters({ ...base, startItems: [{ type: "freezer", room: "REFECTORY" }] }), 3);
+  const s = createGame(seats, testConfig({ startItems: [{ type: "freezer", room: "REFECTORY" }] }), 3);
   player(s, "p0").room = player(s, "p1").room = "REFECTORY";
   player(s, "p2").room = "SICK_BAY";
   s.items.push({ id: "c1", type: "cooked_ration", at: { kind: "room", id: "REFECTORY" } });

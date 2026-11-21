@@ -4,10 +4,10 @@ import { MODIFIERS } from "../src/modifiers.ts";
 import { RESEARCH_COMPLETE } from "../src/research.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameState, PlayerId } from "../src/types.ts";
-import { makeSeats, player, offered, mustApply, withoutDrugs } from "./support.ts";
+import { makeSeats, player, offered, mustApply, testConfig, withoutDrugs } from "./support.ts";
 
 const seats = makeSeats(3);
-const config = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [] };
+const config = testConfig();
 const bandage = (target: PlayerId): Action => ({ type: "use_bandage", target });
 const { cost, effect } = config.bandage;
 

@@ -1,12 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { ITEM_TYPES, startCharges } from "../src/items.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { WeaponHitOutcome as WeaponOutcome } from "../src/types/config.ts";
 import type { GameConfig, GameState, PlayerId } from "../src/types.ts";
-import { makeSeats, must, player, withoutDrugs } from "./support.ts";
+import { makeSeats, must, player, testConfig, withoutDrugs } from "./support.ts";
 
-const base = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [] };
+const base = testConfig();
 const W = base.weapons.types;
 const { absorb } = base.plasteniteArmor;
 
@@ -25,11 +24,8 @@ function ship(config: GameConfig, seed: number, weapon?: string, armored = true)
 
 const hp = (s: GameState, id: PlayerId) => player(s, id).hp;
 const keys = (s: GameState) => viewFor(s, "p2").log.map((e) => e.key);
-const punchCfg = (crit: number): GameConfig => ({ ...base, punch: { ...base.punch, successChance: 1, crit: { ...base.punch.crit, chance: crit } } });
-const weaponCfg = (type: string, outcome: WeaponOutcome): GameConfig => ({
-  ...base,
-  weapons: { ...base.weapons, types: { ...W, [type]: { ...W[type]!, accuracy: 1, hitOutcomes: [{ ...outcome, weight: 1 }] } } },
-});
+const punchCfg = (crit: number): GameConfig => testConfig({ punch: { successChance: 1, crit: { chance: crit } } });
+const weaponCfg = (type: string, outcome: WeaponOutcome): GameConfig => testConfig({ weapons: { types: { [type]: { accuracy: 1, hitOutcomes: [{ ...outcome, weight: 1 }] } } } });
 
 /** HP p1 loses, with and without the armor, on the same seed. */
 function compare(config: GameConfig, seed: number, act: Parameters<typeof applyAction>[2], weapon?: string) {

@@ -16,18 +16,12 @@ import { MODIFIERS } from "../src/modifiers.ts";
 import { createGame, viewFor } from "../src/rules.ts";
 import { STATUS_IDS, STATUS_PUBLIC, statusIdsFor } from "../src/statuses.ts";
 import type { GameState } from "../src/types.ts";
-import { makeSeats, noHunters, noIncidents, player } from "./support.ts";
+import { makeSeats, noCharacterModifiers, player, testConfig } from "./support.ts";
 
-const config = {
-  ...DEFAULT_CONFIG,
-  characterModifiers: {},
-  mushCount: 1,
-  startInventory: [],
-  startItems: [],
-};
+const config = noCharacterModifiers(testConfig());
 
 function ship(): GameState {
-  const s = createGame(makeSeats(3), noIncidents(noHunters(config)), 1);
+  const s = createGame(makeSeats(3), config, 1);
   for (const id of ["p0", "p1"]) player(s, id).room = "LABORATORY";
   return s;
 }

@@ -1,13 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { addDisease, removeDisease } from "../src/diseases.ts";
 import { soil } from "../src/dirt.ts";
 import { applyAction, createGame } from "../src/rules.ts";
 import type { GameState } from "../src/types.ts";
-import { makeSeats, must, nextCycle, noHunters, noIncidents, player } from "./support.ts";
+import { makeSeats, must, nextCycle, noCharacterModifiers, player, testConfig } from "./support.ts";
 
 const BRAIN = "open_air_brain_injury";
-const config = noIncidents(noHunters({ ...DEFAULT_CONFIG, characterModifiers: {}, startSkills: [], startItems: [] }));
+const config = noCharacterModifiers(testConfig());
 
 function ship(): GameState {
   const s = createGame(makeSeats(3, "others"), config, 7);

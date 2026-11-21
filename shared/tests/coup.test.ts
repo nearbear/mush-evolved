@@ -1,11 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { killPlayer } from "../src/death.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameConfig, GameState } from "../src/types.ts";
-import { makeSeats, nextCycle, offered, pickSkill, player } from "./support.ts";
+import { makeSeats, nextCycle, offered, pickSkill, player, testConfig } from "./support.ts";
 
-const base: GameConfig = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [], startMp: 0 };
+const base: GameConfig = testConfig({ startMp: 0 });
 const coup: Action = { type: "coup", equipment: "NEXUS_ROOM:NERON_CORE" };
 
 /** p0 is a Politician at the NERON core with p1; p2 elsewhere. */

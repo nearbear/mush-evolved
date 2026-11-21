@@ -1,15 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { CHARACTERS } from "../src/characters.ts";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { inactivityOf } from "../src/inactivity.ts";
 import { dailyMoraleLoss } from "../src/modifiers.ts";
 import { applyInput } from "../src/replay.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { overheadStatuses, STATUS_PUBLIC } from "../src/statuses.ts";
 import type { GameState, PlayerId, Seat } from "../src/types.ts";
-import { makeSeats, must, mustApply, noHunters, noIncidents, offered, option, pickSkill, player } from "./support.ts";
+import { makeSeats, must, mustApply, offered, option, pickSkill, player, testConfig } from "./support.ts";
 
-const config = noIncidents(noHunters({ ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [], ship: { ...DEFAULT_CONFIG.ship, oxygen: { ...DEFAULT_CONFIG.ship.oxygen, perCycle: 0 } } }));
+const config = testConfig({ ship: { oxygen: { perCycle: 0 } } });
 const { inactiveAfterHours, superAfterHours } = config.inactivity;
 const HOUR = 3_600_000;
 /** The server time everyone in a fresh ship() was last seen. */

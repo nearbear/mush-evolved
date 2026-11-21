@@ -1,18 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { addDisease, removeDisease } from "../src/diseases.ts";
 import { MICROWAVE_ITEM } from "../src/items.ts";
 import { actionSuccessRate, movementRules } from "../src/modifiers.ts";
 import { applyAction, createGame } from "../src/rules.ts";
 import type { Action, GameState, ItemState } from "../src/types.ts";
 import type { ActionTag } from "../src/actions/action.ts";
-import { makeSeats, noHunters, noIncidents, option, player } from "./support.ts";
+import { makeSeats, noCharacterModifiers, option, player, testConfig } from "./support.ts";
 
 const BRUISED = "bruised_shoulder_injury";
 const BROKEN = "broken_shoulder_injury";
 const FOOT = "mashed_foot_injury";
 const ROOM = "LABORATORY";
-const config = noIncidents(noHunters({ ...DEFAULT_CONFIG, characterModifiers: {}, startSkills: [], startItems: [], startInventory: [] }));
+const config = noCharacterModifiers(testConfig());
 
 function ship(): GameState {
   const s = createGame(makeSeats(3, "others"), config, 7);

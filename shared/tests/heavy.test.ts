@@ -2,10 +2,10 @@ import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { GameState } from "../src/types.ts";
-import { makeSeats, player, offered, withoutDrugs } from "./support.ts";
+import { makeSeats, player, offered, testConfig, withoutDrugs } from "./support.ts";
 
 const seats = makeSeats(3);
-const base = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [] };
+const base = testConfig();
 
 /** p0 in the refectory with 10 MP; `carry` heavy freezers in their inventory. */
 function ship(carry: number, skills: string[] = []): GameState {
@@ -66,7 +66,7 @@ describe("heavy items", () => {
 
 describe("sturdy punch", () => {
   const hp = (skills: string[]) => {
-    const s = createGame(seats, { ...base, punch: { ...base.punch, successChance: 1, effect: { ...base.punch.effect, damage: [2, 2] }, crit: { ...base.punch.crit, chance: 0 } } }, 3);
+    const s = createGame(seats, testConfig({ punch: { successChance: 1, effect: { damage: [2, 2] }, crit: { chance: 0 } } }), 3);
     player(s, "p0").room = player(s, "p1").room = "SICK_BAY";
     player(s, "p0").skills = skills;
     const r = applyAction(s, "p0", { type: "punch", target: "p1" });

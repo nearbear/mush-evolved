@@ -11,16 +11,14 @@ import { startFire } from "../src/fire.ts";
 import { normalizeGame, normalizeItem } from "../src/normalizeState.ts";
 import { createGame, viewFor } from "../src/rules.ts";
 import type { GameConfig, GameState, ItemState } from "../src/types.ts";
-import { makeSeats, mustApply, nextCycle, noHunters, noIncidents, offered, pickSkill, player } from "./support.ts";
+import { makeSeats, mustApply, nextCycle, noHunters, noIncidents, offered, pickSkill, player, testConfig } from "./support.ts";
 
 const HERE = "REFECTORY";
 const ELSEWHERE = "LABORATORY";
 
-const quiet = (config: GameConfig = DEFAULT_CONFIG): GameConfig => noIncidents(noHunters(config));
-
 /** A ship of 3 with nothing in it: p0 and p1 in the refectory, p2 in the laboratory. */
-function ship(config: GameConfig = quiet(), seed = 3): GameState {
-  const s = createGame(makeSeats(3), { ...config, mushCount: 1, startItems: [], startSkills: [] }, seed);
+function ship(config: GameConfig = testConfig(), seed = 3): GameState {
+  const s = createGame(makeSeats(3), config, seed);
   for (const p of s.players) p.room = p.id === "p2" ? ELSEWHERE : HERE;
   return s;
 }
@@ -119,7 +117,7 @@ describe("support drones: state", () => {
 
 describe("support drones: repairs", () => {
   it("repairs broken equipment in its room with a public line, and stays put", () => {
-    const s = ship(sure(quiet(), true));
+    const s = ship(sure(testConfig(), true));
     const drone = addDrone(s, HERE);
     const target = repairable(s);
     target.broken = true;
@@ -130,7 +128,7 @@ describe("support drones: repairs", () => {
   });
 
   it("a failure counts up, leaves the equipment broken and logs it; a success resets the count", () => {
-    const s = ship(sure(quiet(), false));
+    const s = ship(sure(testConfig(), false));
     const drone = addDrone(s, HERE);
     repairable(s).broken = true;
     let after = nextCycle(s);
@@ -145,7 +143,7 @@ describe("support drones: repairs", () => {
   });
 
   it("repairs a broken item on the floor, but never a hidden one or one someone carries", () => {
-    const s = ship(sure(quiet(), true));
+    const s = ship(sure(testConfig(), true));
     // Enough failures in a row that the item's own 25% reaches the cap of 1.
     addDrone(s, HERE).drone!.failures.repair = 20;
     const hidden: ItemState = { id: "mw-hidden", type: MICROWAVE_ITEM, at: { kind: "room", id: HERE }, broken: true, hiddenBy: "p0" };
@@ -164,7 +162,7 @@ describe("support drones: repairs", () => {
   });
 
   it("a carried drone repairs in its carrier's room, then with nothing to repair leaves the inventory for a neighbouring room", () => {
-    const s = ship(sure(quiet(), true));
+    const s = ship(sure(testConfig(), true));
     const drone = addDrone(s, HERE, "p0");
     repairable(s).broken = true;
     let after = nextCycle(s);
@@ -178,7 +176,7 @@ describe("support drones: repairs", () => {
   });
 
   it("a broken drone does nothing", () => {
-    const s = ship(sure(quiet(), true));
+    const s = ship(sure(testConfig(), true));
     const drone = addDrone(s, HERE);
     drone.broken = true;
     repairable(s).broken = true;
@@ -192,7 +190,7 @@ describe("support drones: repairs", () => {
     const other = DEFAULT_CONFIG.rooms[HERE]![0]!;
     const id = doorId(HERE, other);
 
-    const sFail = ship(sure(quiet(), false));
+    const sFail = ship(sure(testConfig(), false));
     const failing = addDrone(sFail, HERE);
     breakDoor(sFail, id);
     const afterFail = nextCycle(sFail);
@@ -203,7 +201,7 @@ describe("support drones: repairs", () => {
       expect.objectContaining({ room: HERE, visibleTo: "all", params: { drone: "Robbie", serial: 42, room: other } }),
     ]);
 
-    const sOk = ship(sure(quiet(), true));
+    const sOk = ship(sure(testConfig(), true));
     const working = addDrone(sOk, HERE);
     breakDoor(sOk, id);
     const afterOk = nextCycle(sOk);
@@ -230,7 +228,7 @@ describe("support drones: moving", () => {
   it("goes to random rooms: from the front corridor, different seeds take it to more than one neighbour", () => {
     const rooms = new Set<string>();
     for (let seed = 1; seed <= 20; seed++) {
-      const s = ship(quiet(), seed);
+      const s = ship(testConfig(), seed);
       const drone = addDrone(s, "CORRIDOR_A");
       rooms.add((find(nextCycle(s), drone.id).at as { id: string }).id);
     }
@@ -239,7 +237,7 @@ describe("support drones: moving", () => {
 
   it("replays the same: the same seed and moves give the same drones", () => {
     const run = () => {
-      let s = createGame(makeSeats(3), quiet(), 11);
+      let s = createGame(makeSeats(3), noIncidents(noHunters(DEFAULT_CONFIG)), 11);
       for (let i = 0; i < 12; i++) s = nextCycle(s);
       return s.items.filter((i) => i.type === SUPPORT_DRONE_ITEM);
     };
@@ -256,14 +254,7 @@ describe("support drones: moving", () => {
 
     // Disconnected component with a broken door: unreachable from CORRIDOR_A, so it wanders randomly.
     const rooms = new Set<string>();
-    const isolatedConfig: GameConfig = {
-      ...quiet(),
-      rooms: {
-        ...quiet().rooms,
-        ISOLATED_A: ["ISOLATED_B"],
-        ISOLATED_B: ["ISOLATED_A"],
-      },
-    };
+    const isolatedConfig = testConfig({ rooms: { ISOLATED_A: ["ISOLATED_B"], ISOLATED_B: ["ISOLATED_A"] } });
     for (let seed = 1; seed <= 20; seed++) {
       const s2 = ship(isolatedConfig, seed);
       const d2 = addDrone(s2, "CORRIDOR_A");
@@ -277,7 +268,7 @@ describe("support drones: moving", () => {
 
 describe("support drones: breaking", () => {
   it("fire breaks a drone on the floor", () => {
-    const s = ship(quiet({ ...DEFAULT_CONFIG, fire: { ...DEFAULT_CONFIG.fire, spreadChance: 0, breakChance: 1, hullChance: 0 } }));
+    const s = ship(testConfig({ fire: { spreadChance: 0, breakChance: 1, hullChance: 0 } }));
     const drone = addDrone(s, HERE);
     startFire(s, HERE);
     const after = nextCycle(s);
@@ -286,15 +277,8 @@ describe("support drones: breaking", () => {
   });
 
   it("an electrical overload breaks drones on the floor of the room, not carried ones", () => {
-    const base = noHunters(DEFAULT_CONFIG);
-    const config: GameConfig = {
-      ...base,
-      incidents: {
-        ...base.incidents,
-        rollPoints: 1,
-        catalog: Object.fromEntries(INCIDENT_IDS.map((i) => [i, { ...base.incidents.catalog[i], weight: i === "electrical_overload" ? 1 : 0 }])) as GameConfig["incidents"]["catalog"],
-      },
-    };
+    const catalog = Object.fromEntries(INCIDENT_IDS.map((i) => [i, { ...DEFAULT_CONFIG.incidents.catalog[i], weight: i === "electrical_overload" ? 1 : 0 }])) as GameConfig["incidents"]["catalog"];
+    const config = testConfig({ incidents: { rollPoints: 1, catalog } });
     const s = ship(config);
     // Only the refectory has anything left to break.
     for (const [room, list] of Object.entries(s.equipment)) if (room !== HERE) for (const e of list) e.broken = true;

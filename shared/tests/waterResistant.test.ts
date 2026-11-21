@@ -1,11 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { applyAction, createGame } from "../src/rules.ts";
 import { addStatus } from "../src/statuses.ts";
 import type { Action, GameState } from "../src/types.ts";
-import { makeSeats, player } from "./support.ts";
+import { makeSeats, noCharacterModifiers, player, testConfig } from "./support.ts";
 
-const config = { ...DEFAULT_CONFIG, characterModifiers: {}, mushCount: 1, startInventory: [], startItems: [], maxAp: 99, startAp: 10 };
+const config = noCharacterModifiers(testConfig({ maxAp: 99, startAp: 10 }));
 const shower: Action = { type: "shower", equipment: "BEDROOM_A:SHOWER" };
 
 function ship(role: "mush" | "human", skills: string[]): GameState {
