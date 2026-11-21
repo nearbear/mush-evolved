@@ -57,6 +57,8 @@
   --room-bg: var(--chrome-0);
   /* Panel surface: flat fill, 1px rim, soft black shadow (was sampled from the original quote box, design/quote.png). */
   --panel-fill: var(--chrome-1);
+  /* The panel fill, translucent over the scene or the stars: the desktop panels (backdrop.css), the phone peek bar. */
+  --panel-glass: color-mix(in srgb, var(--panel-fill) 75%, transparent);
   --panel-rim: var(--chrome-rim);
   --panel-shadow: rgb(0 0 0 / 0.55);
   --panel-radius: 4px;

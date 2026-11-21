@@ -149,7 +149,6 @@
   .iso-room {
     flex: 1 1 0;
     min-height: 0;
-    padding: var(--space-2);
   }
   .itrackie {
     flex: 1;
@@ -174,17 +173,18 @@
     background: var(--panel-fill);
   }
   /*
-   * In the game it is the bottom of the room view's panel (GameView): inside the scene's frame (iso.css's 1px rim), over
-   * the scene's bottom edge, ruled off from it by the frame's own line and inner glow. The overlays in the room's bottom
-   * corners (the location plate, the sack, the ship button, the tip card) stand on it: --peek-clear is its height, one
-   * 32px row of buttons, its padding, the divider and the frame's rim under it.
+   * In the game it is the bottom of the room view's panel (GameView), over the scene's bottom edge (the scene has no
+   * frame), ruled off from it by its own line and inner glow, and translucent so the room shows through. The overlays in
+   * the room's bottom corners (the location plate, the sack, the ship button, the tip card) stand on it: --peek-clear is
+   * its height, one 32px row of buttons, its padding and the divider.
    */
   .room-view > .peek-bar {
     position: absolute;
-    left: 1px;
-    right: 1px;
-    bottom: 1px;
+    left: 0;
+    right: 0;
+    bottom: 0;
     z-index: 5; /* over the inventory popup (3) and the ship card (4), which stand on it anyway */
+    background: var(--panel-glass);
     border-top: 1px solid var(--chrome-line);
     box-shadow:
       inset 0 1px 0 rgb(57 101 251 / 0.6),
@@ -192,7 +192,7 @@
       0 -2px 6px rgb(60 110 255 / 0.35);
   }
   .room-view:has(> .peek-bar) {
-    --peek-clear: calc(32px + 2 * var(--space-2) + 2px);
+    --peek-clear: calc(32px + 2 * var(--space-2) + 1px);
   }
   /* No name (the selection pulses in the room): only the AI tag, or why a door can't be used. */
   .peek-note {
