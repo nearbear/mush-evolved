@@ -1,7 +1,7 @@
 // Maps game ids to Motion Twin art in Mush/ (CC BY-NC-SA 4.0, see
 // Mush/ATTRIBUTION.md). Vite bundles only the files matched here.
 
-import { DEFAULT_CONFIG, REBEL_BASES, type CharacterId, type RebelBaseId, type Ending, type ItemView, type ResourceId, type SpoilStage, type TitleId } from "@mush2/shared";
+import { DEFAULT_CONFIG, REBEL_BASES, type CharacterId, type RebelBaseId, type Ending, type ItemView, type MerchantTargetView, type ResourceId, type SpoilStage, type TitleId } from "@mush2/shared";
 
 type UrlMap = Record<string, string>;
 const urls = (map: UrlMap) =>
@@ -335,7 +335,7 @@ export const ENDING_ART: Readonly<Record<Ending, string>> = {
 
 // Status effect icons (16x16 pixel art), keyed by status id (shared/src/statuses.ts).
 const statusIconFiles = urls(
-  import.meta.glob<string>("../../../Mush/www/img/icons/ui/status/{dirty,belly_full,hungry,immune,pacifist,hyperactive,unsociable,guardian,disabled,paria,disease,hurt,sleepy,genius_idea,moduling,demoralized}.png", { eager: true, query: "?url", import: "default" }),
+  import.meta.glob<string>("../../../Mush/www/img/icons/ui/status/{dirty,belly_full,hungry,immune,pacifist,hyperactive,unsociable,germaphobic,guardian,disabled,paria,disease,hurt,sleepy,genius_idea,moduling,demoralized}.png", { eager: true, query: "?url", import: "default" }),
 );
 const diseaseStatusIcons = Object.fromEntries(DEFAULT_CONFIG.diseases.allDiseases.map((id) => [id, statusIconFiles["disease"]!]));
 const injuryStatusIcons = Object.fromEntries(DEFAULT_CONFIG.diseases.allInjuries.map((id) => [id, statusIconFiles["hurt"]!]));
@@ -355,6 +355,7 @@ export const STATUS_ICONS: Readonly<Record<string, string>> = {
   pacifist: statusIconFiles["pacifist"]!,
   hyperactive: statusIconFiles["hyperactive"]!,
   antisocial: statusIconFiles["unsociable"]!,
+  germaphobe: statusIconFiles["germaphobic"]!,
   mankind_only_hope: traitSkillIcons["mankind_only_hope"]!,
   // The original's wheelchair icon (its `disabled` status), for the trait and for being pushed.
   wheelchair: statusIconFiles["disabled"]!,
@@ -515,6 +516,12 @@ export const HUNTER_SPRITES_SMALL = {
   asteroid: [396, 345, 36, 26],
   dice: [489, 321, 36, 26],
 } as const satisfies Record<string, readonly [number, number, number, number]>;
+/**
+ * Each merchant kind's battle-view slices in `FX_SHEET` (owner, 2026-11-21): the original's trading ships
+ * (`FX_TRANSPORT_0`, first frame of its 4, and `FX_TRANSPORT_SMALL_0`, 36x26 like the hunters' small slices).
+ */
+export const MERCHANT_SPRITES = { transport: [0, 441, 104, 70] } as const satisfies Record<MerchantTargetView["kind"], readonly [number, number, number, number]>;
+export const MERCHANT_SPRITES_SMALL = { transport: [0, 461, 36, 26] } as const satisfies Record<MerchantTargetView["kind"], readonly [number, number, number, number]>;
 /** The battle view's hp and charge icons in `FX_SHEET` (`FX_SPC_SHIELD`, `FX_SPC_CHARGE`). */
 export const FX_SHIELD = [432, 80, 13, 13] as const;
 export const FX_CHARGE = [433, 96, 10, 13] as const;

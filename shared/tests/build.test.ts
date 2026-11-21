@@ -3,10 +3,10 @@ import { DEFAULT_CONFIG } from "../src/config.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, legalActions, viewFor } from "../src/rules.ts";
 import type { Action, GameState } from "../src/types.ts";
-import { makeSeats, player } from "./support.ts";
+import { makeSeats, player, testConfig } from "./support.ts";
 
 const seats = makeSeats(3);
-const base = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [], equipment: {} };
+const base = { ...testConfig(), equipment: {} };
 const build = (item: string): Action => ({ type: "build", item });
 const room = (id: string) => ({ kind: "room" as const, id });
 

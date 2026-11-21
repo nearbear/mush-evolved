@@ -115,6 +115,8 @@ export function DisabledActionButton({ view, blocked, children, className, hint 
       ? t("actions.lacksIcarusLost")
       : lacks[0] === "antisocial"
       ? t("actions.lacksAntisocial")
+      : lacks[0] === "germaphobe"
+      ? t("actions.lacksGermaphobe")
       : lacks[0] === "clean"
       ? t("actions.lacksClean")
       : lacks[0] === "capacity"

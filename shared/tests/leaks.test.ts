@@ -4,12 +4,12 @@
 // each, is in leakFields.ts; a new field fails here until it is listed there.
 
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import type { CharacterId } from "../src/characters.ts";
+import { ITRACKIE_ITEM } from "../src/items.ts";
 import { createGame, viewFor } from "../src/rules.ts";
 import { type GameState, MUSH_CHANNEL, type PlayerId } from "../src/types.ts";
 import { GAME_STATE_FIELDS, ITEM_STATE_FIELDS, PLAYER_STATE_FIELDS } from "./leakFields.ts";
-import { makeSeats, player } from "./support.ts";
+import { makeSeats, player, testConfig } from "./support.ts";
 
 const HERE = "LABORATORY";
 const ELSEWHERE = "REFECTORY";
@@ -27,7 +27,7 @@ interface Sentinel {
  * a number or string that appears nowhere else in the game.
  */
 function ship(): { state: GameState; sentinels: Sentinel[] } {
-  const s = createGame(makeSeats(4), { ...DEFAULT_CONFIG, mushCount: 1, startItems: [], startSkills: [] }, 1, { p0: "mush" });
+  const s = createGame(makeSeats(4), testConfig({ startInventory: [ITRACKIE_ITEM] }), 1, { p0: "mush" });
   const sentinels: Sentinel[] = [];
   let next = 734_101;
   const num = (what: string, seenBy: PlayerId[]): number => {
@@ -83,7 +83,8 @@ function ship(): { state: GameState; sentinels: Sentinel[] } {
     p.mushSkills.push(str(`mushSkill-${p.id}`, own));
     p.lyingIn = str(`lyingIn-${p.id}`, room);
     p.lyingSince = num(`lyingSince-${p.id}`, []);
-    p.spot = { kind: "door", door: str(`spot-${p.id}`, room) };
+    // A door spot says where they came from: only a Tracker roommate sees it (logWindow.test.ts), and nobody here is one.
+    p.spot = { kind: "door", door: str(`spot-${p.id}`, own) };
     p.pushedBy = str(`pushedBy-${p.id}`, room);
     p.protectedBy = str(`protectedBy-${p.id}`, room);
     p.accommodationOffers = [{ by: str(`accommodationOffers-${p.id}`, own), until: num(`accommodationOfferUntil-${p.id}`, own) }];
@@ -167,6 +168,7 @@ function ship(): { state: GameState; sentinels: Sentinel[] } {
   s.research.STEROIDS = scaled("researchProgress", 1e4, ["p0", "p1", "p2"]);
   s.projects.PLASMA_SHIELD = scaled("projectProgress", 1e4, []);
   s.projectDeck = ["PLASMA_SHIELD", ...s.projectDeck.filter((id) => id !== "PLASMA_SHIELD"), str("projectDeck", []) as never];
+  s.lostProjects = [str("lostProjects", []) as never];
   s.pilgred.progress = scaled("pilgredProgress", 1e4, []);
   const roll = (what: string) => scaled(what, 1e7, []);
   // Pending samples' rolls and who contaminated one go to nobody (assay.ts); project streaks go to nobody.

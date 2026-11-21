@@ -8,12 +8,12 @@
 
 import { expirePlans, plansView, strikeSlots } from "./plans.ts";
 import { bindPerformAction } from "./actions/summon.ts";
-import { cheatFuelPlanet } from "./actions/warp_to_planet.ts";
 import { applyCheats, makeHuman, shipInvincible, type Cheat, type RoleCheat } from "./cheats.ts";
 import { ACTIONS, actionVisibility, type ActionDef } from "./actions.ts";
 import { ARACK_AROUND, AT_CAPACITY, COOLDOWN, DIRTY, EXPLORED, ICARUS_LOST, IN_PRESELECTION, NO_DEBRIS, NO_SPACE, PASIPHAE_INTACT, REACTOR_BROKEN } from "./actions/action.ts";
 import { getUp } from "./actions/lie_down.ts";
 import { ANTISOCIAL } from "./actions/bond.ts";
+import { GERMAPHOBE } from "./actions/caress.ts";
 import { isNimble } from "./actions/nimble.ts";
 import { researchNeedsView } from "./actions/research.ts";
 import { equipmentHere } from "./equipment.ts";
@@ -25,12 +25,13 @@ import { fireCycle, ignitePending, isGardenProtected, isOnFire } from "./fire.ts
 import { alertsFor, brokenDoors, doorsDetected, fireReported } from "./reports.ts";
 import { incidentsCycle } from "./incidents.ts";
 import { initNpc, newNpcState, npcCycle } from "./npcs.ts";
+import { catArrival } from "./schrodinger.ts";
 import { CHEAT_ROOM } from "./cheatRoom.ts";
 import { teleport, teleportBlocked } from "./kube.ts";
 import { newLostAnalysis, rollAtSelection } from "./lostAnalysis.ts";
 import { hopelessCycle } from "./morale.ts";
 import { relayView } from "./relayView.ts";
-import { itemsIn, rechargeMicrowaves, rechargeScooters, startCharges, visibleItemsIn } from "./items.ts";
+import { itemsIn, newItemId, rechargeMicrowaves, rechargeScooters, startCharges, visibleItemsIn } from "./items.ts";
 import { actionDone, actionFailed, apRefill, mpGain, carePointsGain, channelLimit, computerPointsCap, computerPointsGain, cookPointsGain, shootPointsGain, cycleChanged, designerPointsGain, engineerPointsGain, gardenPointsGain, dailyMoraleLoss, inventorySlots, movementRules, pilgredPointsGain, satietyLoss } from "./modifiers.ts";
 import { contaminationSeenBy, convert } from "./infection.ts";
 import { isHungry, publicStatusesOf, statusesOf } from "./statuses.ts";
@@ -39,7 +40,7 @@ import { inactivityCycle } from "./inactivity.ts";
 import { emptyResources } from "./resources.ts";
 import { hasSkill } from "./skills.ts";
 import { soil } from "./dirt.ts";
-import { rollFloat, rollInt, rollWeighted, shuffle, streamFor } from "./rng.ts";
+import { type HasRng, rollFloat, rollInt, rollWeighted, shuffle, streamFor } from "./rng.ts";
 import { SHIP_ROOMS } from "./config.ts";
 import { chatChannels, chatMarkKey, chatPageOf, heardBy, markedText, readChannels } from "./chat.ts";
 import { moderateName } from "./moderation.ts";
@@ -47,7 +48,7 @@ import { clone, cloneState, dayOf, fail, findPlayer, type ActionResult } from ".
 
 export { dayOf };
 import { damage, healDaily, hasMushDied } from "./death.ts";
-import { activitySeen, inLogWindow, logPrivate, logWindowOf, pruneLog, seesLine, startLogSeen, withNimbleActor } from "./log.ts";
+import { activitySeen, inLogWindow, logPrivate, logWindowOf, moveLineFor, pruneLog, seesLine, startLogSeen, withNimbleActor } from "./log.ts";
 import { recordAction } from "./history.ts";
 import { ringMycoAlarms } from "./mycoalarm.ts";
 import { planetsOf } from "./planets.ts";
@@ -59,8 +60,8 @@ import { biosTerminalsHere, newBios } from "./bios.ts";
 import { callNextRebel, commsCycle, commsTerminalView, comTerminalsHere, newComms } from "./comms.ts";
 import { botanyCycle, botanyDay, plantView } from "./botany.ts";
 import { burnOxygen, rollOxygenSaved, shipView, startShip } from "./ship.ts";
-import { merchantsCycle } from "./merchants.ts";
-import { newSignals } from "./signals.ts";
+import { merchantsCycle, merchantsInSpace } from "./merchants.ts";
+import { newSignals, signalName } from "./signals.ts";
 import { allTurrets, huntersCycle, newHunters, startHunters, turretCharges, turretsHere } from "./hunters.ts";
 import { expeditionReturnAt, lostPlayers, maxCrew, nextSectorFor, onExpedition, withCrew } from "./expeditions.ts";
 import { ICARUS_EQUIPMENT } from "./actions/icarus_takeoff.ts";
@@ -125,33 +126,9 @@ export function createGame(
   const players: PlayerState[] = seats.map((s) => newPlayer(s, config, startCycle, mushIds.has(s.id) ? "mush" : "human"));
 
   const startRng = { rng: streamFor(seed, "start-items") };
-  const daedalusPool = SHIP_ROOMS.map((r) => r.id);
-  const storagePool = config.snoop.rooms;
-  const drawnBlueprints = new Set<string>();
   const starts: Omit<ItemState, "id">[] = [
-    ...config.startItems.map((it): Omit<ItemState, "id"> => {
-      const room = "room" in it
-        ? it.room
-        : (it.pool === "storage" ? storagePool : daedalusPool)[rollInt(startRng, (it.pool === "storage" ? storagePool : daedalusPool).length)]!;
-      const builds = it.buildsWeights
-        ? (() => {
-            const entries = Object.entries(it.buildsWeights);
-            const remaining = entries.filter(([k]) => !drawnBlueprints.has(k));
-            const choices = remaining.length > 0 ? remaining : entries;
-            return choices[rollWeighted(startRng, choices.map(([, w]) => w))]![0];
-          })()
-        : it.builds;
-      if (it.type === "blueprint" && builds !== undefined) drawnBlueprints.add(builds);
-      return {
-        type: it.type,
-        at: { kind: "room", id: room },
-        ...(builds !== undefined && { builds }),
-        ...(it.teaches !== undefined && { teaches: it.teaches }),
-        ...(it.plant && { plant: { ...it.plant } }),
-        ...chargesFor(config, it.type),
-      };
-    }),
-    ...players.flatMap((p) => startInventory(config, p.id)),
+    ...resolveStartItems(config.startItems.filter((it) => !it.atSelection), config, startRng),
+    ...players.flatMap((p) => [...startInventory(config, p.id), ...catArrival(config, p.character)]),
   ];
   const items: ItemState[] = starts.map((it, i) => ({ id: `item-${i + 1}`, ...it }));
 
@@ -198,6 +175,7 @@ export function createGame(
     research: {},
     projects: {},
     projectDeck: newProjectDeck(seed),
+    lostProjects: [],
     relay: { research: {}, projects: {} },
     pilgred: { progress: 0, pool: { tokens: [] } },
     planets: {},
@@ -233,6 +211,7 @@ export function createGame(
     callNextRebel(state);
     rollAtSelection(state);
     startHunters(state);
+    spawnSelectionItems(state);
   }
   // Setup draws on streams of their own, so changing them doesn't move any roll on `state.rng`.
   state.drugs = drawDrugs({ rng: streamFor(seed, "drugs"), config });
@@ -285,6 +264,56 @@ export function startInventory(config: DeepReadonly<GameConfig>, id: PlayerId): 
   return config.startInventory.map((type) => ({ type, at: { kind: "player", id } }));
 }
 
+function resolveStartItems(
+  entries: readonly GameConfig["startItems"][number][],
+  config: DeepReadonly<GameConfig>,
+  rng: HasRng,
+): Omit<ItemState, "id">[] {
+  const daedalusPool = SHIP_ROOMS.map((r) => r.id);
+  const storagePool = config.snoop.rooms;
+  const drawnBlueprints = new Set<string>();
+  return entries.map((it): Omit<ItemState, "id"> => {
+    const pool = "room" in it ? null : it.pool === "storage" ? storagePool : daedalusPool;
+    const room = pool ? pool[rollInt(rng, pool.length)]! : (it as { room: RoomId }).room;
+    const builds = it.buildsWeights
+      ? (() => {
+          const all = Object.entries(it.buildsWeights);
+          const remaining = all.filter(([k]) => !drawnBlueprints.has(k));
+          const choices = remaining.length > 0 ? remaining : all;
+          return choices[rollWeighted(rng, choices.map(([, w]) => w))]![0];
+        })()
+      : it.builds;
+    if (it.type === "blueprint" && builds !== undefined) drawnBlueprints.add(builds);
+    const teaches = it.teachesWeights
+      ? (() => {
+          const choices = Object.entries(it.teachesWeights);
+          return choices[rollWeighted(rng, choices.map(([, w]) => w))]![0];
+        })()
+      : it.teaches;
+    return {
+      type: it.type,
+      at: { kind: "room", id: room },
+      ...(builds !== undefined && { builds }),
+      ...(teaches !== undefined && { teaches }),
+      ...(it.plant && { plant: { ...it.plant } }),
+      ...chargesFor(config, it.type),
+    };
+  });
+}
+
+/** Spawns `startItems` marked `atSelection` upon Mush selection (`selectMush`, or `createGame` without pre-selection). Mutates a state the caller already cloned. */
+export function spawnSelectionItems(state: GameState): void {
+  const entries = state.config.startItems.filter((it) => it.atSelection);
+  if (entries.length === 0) return;
+  // Named stream from `state.rng` so this once-per-game draw doesn't shift later `state.rng` rolls.
+  const selectionRng = { rng: streamFor(state.rng, "selection-items") };
+  for (const item of resolveStartItems(entries, state.config, selectionRng)) {
+    const placed: ItemState = { id: newItemId(state), ...item };
+    state.items.push(placed);
+    initNpc(state, placed);
+  }
+}
+
 export function legalActions(state: GameState, playerId: PlayerId): Action[] {
   const p = findPlayer(state, playerId);
   if (!p || !canAct(state, p)) return [];
@@ -313,6 +342,7 @@ const isUnaffordableReason = (action: Action, refused: string | null): refused i
   (UNAFFORDABLE_REASONS.has(refused) ||
     (action.type === "hack" && refused === IN_PRESELECTION) ||
     (action.type === "bond" && refused === ANTISOCIAL) ||
+    (action.type === "caress" && refused === GERMAPHOBE) ||
     (ICARUS_ACTIONS.has(action.type) && (refused === EXPLORED || refused === ICARUS_LOST)));
 
 function actionOption(state: GameState, p: PlayerState, def: ActionDef<Action>, a: Action, lacks: ActionOption["lacks"]): ActionOption {
@@ -339,6 +369,7 @@ function unaffordableOption(state: GameState, p: PlayerState, def: ActionDef<Act
     ...(refused === EXPLORED ? (["explored"] as const) : []),
     ...(refused === ICARUS_LOST ? (["icarusLost"] as const) : []),
     ...(refused === ANTISOCIAL ? (["antisocial"] as const) : []),
+    ...(refused === GERMAPHOBE ? (["germaphobe"] as const) : []),
     ...(refused === DIRTY ? (["clean"] as const) : []),
     ...(refused === NO_SPACE ? (["space"] as const) : []),
     ...(refused === COOLDOWN ? (["cooldown"] as const) : []),
@@ -466,7 +497,6 @@ export function setCheat(state: GameState, playerId: PlayerId, cheat: Cheat, on:
   const p = findPlayer(next, playerId)!;
   p.cheats = p.cheats.filter((c) => c !== cheat);
   if (on) p.cheats.push(cheat);
-  if (on && cheat === "fuelPlanet") cheatFuelPlanet(next, p);
   applyCheats(next, p);
   return { ok: true, state: next };
 }
@@ -702,6 +732,9 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
   // A dead body is a corpse item, not a person in a room: nobody gets a dead player's room.
   const living = others.filter((o) => o.alive);
   const logWindow = logWindowOf(state, you);
+  // At a turret or flying a ship: sees what is in space to shoot at.
+  const gunner = you.alive && (turretsHere(state, you).length > 0 || shipAboard(you) !== undefined);
+  const tracker = hasSkill(you, "hunt");
   const protectingOf = (id: PlayerId) => state.players.find((p) => p.alive && p.protectedBy === id)?.id;
   const yourProtecting = protectingOf(you.id);
   // Nobody's account name goes out while the game runs, not even your own: people are known by character.
@@ -758,8 +791,9 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
         ...(here && o.bookSkill !== undefined ? { bookSkill: o.bookSkill } : {}),
         // Who is in bed, and which bed, is visible to the room (owner, 2026-10-18).
         ...(here && o.lyingIn ? { lying: o.lyingIn } : {}),
-        // Where they stand, and whether they sit, is visible to the room (owner, 2026-10-20).
-        ...(here && o.spot && state.config.sharedSpots ? { spot: { ...o.spot } } : {}),
+        // Where they stand, and whether they sit, is visible to the room (owner, 2026-10-20). Standing at the door they
+        // came in by would say where they came from: only a Tracker sees that spot (owner, 2026-11-21, `moveLineFor`).
+        ...(here && o.spot && state.config.sharedSpots && (o.spot.kind !== "door" || tracker) ? { spot: { ...o.spot } } : {}),
         // Who pushes whose wheelchair is public to the room (owner, 2026-10-19).
         ...(here && o.pushedBy !== undefined ? { pushedBy: o.pushedBy } : {}),
         // Who protects whom (Bodyguard) is public to the room (owner, 2026-11-14).
@@ -805,10 +839,10 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     alerts: you.alive ? alertsFor(state) : { fires: 0, broken: 0, reports: [] },
     // `seesLine` (log.ts) says which lines are yours; room lines, private ones included, only within your window (#365).
     // A private line names only you in the view: no one learns who else saw it (`leaked` marks a secret line others saw).
-    // `kind` and `leaked` go with every line you see (#366).
+    // `kind` and `leaked` go with every line you see (#366). A crew move's direction only with Tracker (`moveLineFor`).
     log: state.log
       .filter((e) => seesLine(e, you) && inLogWindow(state, e, logWindow))
-      .map((e) => (e.visibleTo === "all" ? e : { ...e, visibleTo: [you.id] })),
+      .map((e) => moveLineFor(e.visibleTo === "all" ? e : { ...e, visibleTo: [you.id] }, you)),
     logSeen: you.logSeen,
     chat: state.chat.filter((m) => channels.includes(m.channel) && heardBy(you, m)).map((m) => messageView(m, state.chatMarks)),
     chatCounts: Object.fromEntries(channels.flatMap((c) => (state.chatSeq[c] ? [[c, state.chatSeq[c]]] : []))),
@@ -846,7 +880,10 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     hunters: {
       count: state.hunters.list.length,
       // Each hunter's kind and an asteroid's countdown along with its hp (owner, 2026-11-12, #388).
-      list: you.alive && (turretsHere(state, you).length > 0 || shipAboard(you)) ? state.hunters.list.map(({ id, type, hp, countdown }) => ({ id, type, hp, countdown })) : null,
+      list: gunner ? state.hunters.list.map(({ id, type, hp, countdown }) => ({ id, type, hp, countdown })) : null,
+      // The merchants in space, as targets, to the same viewers (owner, 2026-11-21): kind, name and hp. Their kind is
+      // public already (NERON announces each arrival); nothing of their hail or deals.
+      merchants: gunner ? merchantsInSpace(state).map((m) => ({ id: m.id, kind: m.merchant!.kind, name: signalName(m), hp: m.merchant!.hp })) : null,
       turrets: you.alive && turretsHere(state, you).length > 0 ? Object.fromEntries(allTurrets(state).map((t) => [t.id, turretCharges(state, t.id)])) : null,
     },
     ...relayView(state, you),
@@ -915,8 +952,8 @@ export const legalIn = (view: Pick<PlayerView, "actions">): Action[] => view.act
 const seesShield = (viewer: Readonly<PlayerState>): boolean => viewer.alive && (viewer.role === "mush" || hasSkill(viewer, "engineer"));
 
 /** An item as `viewer` sees it; a plant's sickness only for the Botanist role (`plantView`). */
-function itemView({ id, type, of, builds, charges, teaches, plant, spores, hiddenBy, broken, jelly, shield, drone, document, spoil }: ItemState, viewer: Readonly<PlayerState>): ItemView {
-  return { id, type, ...(broken && { broken }), ...(spoil !== undefined && seesSpoil(viewer) && { spoil }), ...(jelly !== undefined && viewer.role === "mush" && viewer.alive && { jelly }), ...(shield !== undefined && seesShield(viewer) && { shield }), ...(hiddenBy === viewer.id && { hidden: true as const }), ...(spores && viewer.role === "mush" && viewer.alive && { spores }), ...(of !== undefined && { of }), ...(builds !== undefined && { builds }), ...(charges !== undefined && { charges }), ...(teaches !== undefined && { teaches }), ...(plant && { plant: plantView(plant, viewer) }), ...(drone && { drone: droneView(drone) }), ...(document && { document: { kind: document.kind, rows: document.rows.map((r) => ({ ...r })) } }) };
+function itemView({ id, type, of, builds, charges, teaches, plant, spores, hiddenBy, broken, jelly, shield, drone, document, spoil, mush }: ItemState, viewer: Readonly<PlayerState>): ItemView {
+  return { id, type, ...(broken && { broken }), ...(spoil !== undefined && seesSpoil(viewer) && { spoil }), ...(jelly !== undefined && viewer.role === "mush" && viewer.alive && { jelly }), ...(shield !== undefined && seesShield(viewer) && { shield }), ...(hiddenBy === viewer.id && { hidden: true as const }), ...(spores && viewer.role === "mush" && viewer.alive && { spores }), ...(mush && viewer.role === "mush" && viewer.alive && { mush }), ...(of !== undefined && { of }), ...(builds !== undefined && { builds }), ...(charges !== undefined && { charges }), ...(teaches !== undefined && { teaches }), ...(plant && { plant: plantView(plant, viewer) }), ...(drone && { drone: droneView(drone) }), ...(document && { document: { kind: document.kind, rows: document.rows.map((r) => ({ ...r })) } }) };
 }
 
 /** A drone's public part (#411): name, serial and upgrades; its failure counts never leave the server. */

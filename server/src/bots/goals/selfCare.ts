@@ -1,7 +1,8 @@
 import type { PlayerView, RoomId } from "@mush2/shared";
 import { hasBotSkill } from "../duties.ts";
-import { act, canAfford, failed, find, goTo, roomsWith, where } from "./blocks.ts";
-import { leavesBed } from "./rest.ts";
+import { knownShrinkRooms } from "../bedShare.ts";
+import { act, canAfford, find, goTo, roomsWith, where } from "./blocks.ts";
+import { askForBed, leavesBed } from "./rest.ts";
 import type { BotMemory, GoalDef } from "./types.ts";
 
 /**
@@ -17,21 +18,23 @@ export const SELF_CARE_PRIORITY = 79;
 /** Goals a bot in bed for its morale gets up for (owner, 2026-11-18): fires and broken oxygen tanks. */
 const URGENT_GOALS = new Set(["extinguish", "repairOxygen"]);
 
-/** Rooms with a bed where ACTOPI (or sharing the room) shows a living Shrink the bot knows of, nearest first by the list order. */
+/**
+ * Rooms with a bed where a living Shrink the bot knows of is: seen there (sharing the room, or ACTOPI) or said so in
+ * its `Shrink: in` line (Run A4), nearest first by the list order.
+ */
 export function shrinkBedRooms(view: PlayerView, memory: BotMemory): RoomId[] {
-  const beds = new Set(roomsWith(view, ["BED"]));
-  const rooms = view.players.filter((p) => p.alive && memory.shrinks.has(p.id) && p.room !== undefined && beds.has(p.room)).map((p) => p.room!);
-  return [...new Set(rooms)];
+  const rooms = knownShrinkRooms(view, memory);
+  return roomsWith(view, ["BED"]).filter((r) => rooms.has(r));
 }
 
-const shrinkIn = (view: PlayerView, memory: BotMemory, room: RoomId): boolean =>
-  view.players.some((p) => p.alive && p.room === room && memory.shrinks.has(p.id));
+const shrinkIn = (view: PlayerView, memory: BotMemory, room: RoomId): boolean => knownShrinkRooms(view, memory).has(room);
 
 /**
  * Lie in a bed in the Shrink's room while morale is low (owner, 2026-11-18, #452): anyone lying in a bed with a Shrink
  * in the room gains `shrink.lyingMorale` a cycle. Offered at `SELF_CARE_MORALE` or less, when the bot knows a Shrink
- * (seen in a room or announced, `memory.shrinks`) and ACTOPI shows it in a room with a bed: in practice its dorm at
- * night (`shrinkDorm`). Stays in bed until `SELF_CARE_UNTIL` or the Shrink leaves; a new cycle doesn't end it, but fires
+ * (seen in a room or announced, `memory.shrinks`) and ACTOPI or its `Shrink: in` line puts it in a room with a bed: in
+ * practice its dorm at night (`shrinkDorm`). With every bed there taken, it asks for one as `rest` does (Run A3's
+ * line); the Shrink, lying there, is the last tier and gets up. Stays in bed until `SELF_CARE_UNTIL` or the Shrink leaves; a new cycle doesn't end it, but fires
  * and oxygen do (and whatever `rest` gets up for). Not for a Shrink: its bonus works only on others. May spend the AP
  * reserve to get there, as resting does.
  */
@@ -54,7 +57,7 @@ export const selfCare: GoalDef = {
           const walk = goTo(v, room);
           if (walk) return walk;
           const bed = find(v, "lie_down");
-          return bed ? act(bed) : failed("bed_taken");
+          return bed ? act(bed) : askForBed(v, m, room);
         },
         keepAcrossCycle(v, m, _newDay, goals) {
           if (v.you.morale >= SELF_CARE_UNTIL || !shrinkIn(v, m, room)) return false;

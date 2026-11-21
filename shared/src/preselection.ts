@@ -17,7 +17,8 @@ import { callNextRebel } from "./comms.ts";
 import { rollAtSelection } from "./lostAnalysis.ts";
 import { startHunters } from "./hunters.ts";
 import { rollShuffle } from "./rng.ts";
-import { newPlayer, startInventory } from "./rules.ts";
+import { catArrival } from "./schrodinger.ts";
+import { newPlayer, spawnSelectionItems, startInventory } from "./rules.ts";
 import { MUSH_SEAT_MARGIN } from "./setups.ts";
 import { assignTitles } from "./titles.ts";
 import { endGame, mushWinOnDeath } from "./victory.ts";
@@ -33,7 +34,7 @@ export function joinShip(state: GameState, seat: Seat): ActionResult {
   const player = newPlayer(seat, next.config, next.cycle, "human");
   next.players.push(player);
   startLogSeen(next, player);
-  for (const item of startInventory(next.config, seat.id)) next.items.push({ id: newItemId(next), ...item });
+  for (const item of [...startInventory(next.config, seat.id), ...catArrival(next.config, seat.character)]) next.items.push({ id: newItemId(next), ...item });
   if (next.players.length >= rules.seats) selectMush(next);
   return { ok: true, state: next };
 }
@@ -85,6 +86,7 @@ export function selectMush(state: GameState): void {
   callNextRebel(state);
   rollAtSelection(state);
   startHunters(state);
+  spawnSelectionItems(state);
 
   if (aboard.length < rules.minPlayers) {
     for (const p of aboard) if (p.role === "human") killPlayer(state, p, "daedalus_destroyed");

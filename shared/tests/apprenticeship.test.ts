@@ -1,11 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { applyAction, createGame } from "../src/rules.ts";
-import type { Action, GameConfig, GameState } from "../src/types.ts";
-import { clone, costOf, must, offered, player } from "./support.ts";
+import type { Action, GameState } from "../src/types.ts";
+import { clone, costOf, must, offered, player, testConfig } from "./support.ts";
 import { makeSeats } from "./support.ts";
 
-const base: GameConfig = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [] };
+const base = testConfig();
 const learn = (target: string, skill: string): Action => ({ type: "apprenticeship", target, skill });
 
 /** p0 (Apprentice) with p1 (Cook, Sturdy) in the laboratory; p2 (Pilot) in the refectory. */

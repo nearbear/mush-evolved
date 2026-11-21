@@ -1,24 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { ITEM_TYPES } from "../src/items.ts";
 import { createGame } from "../src/rules.ts";
 import type { GameState, PlayerId } from "../src/types.ts";
-import { makeSeats, player, mustApply, noHunters, noIncidents } from "./support.ts";
+import { makeSeats, player, mustApply, noCharacterModifiers, testConfig } from "./support.ts";
 
 // Owner, 2026-11-05 (docs/plans/balance.md): rations give humans 4 AP; Mush gain no AP from any consumable.
-const config = {
-  ...DEFAULT_CONFIG,
-  characterModifiers: {},
-  consume: { ...DEFAULT_CONFIG.consume, dirtyChance: 0 },
-  mushCount: 1,
-  startInventory: [],
-  startItems: [],
-  startAp: 2,
-};
+const config = noCharacterModifiers(testConfig({ consume: { dirtyChance: 0 }, startAp: 2 }));
 
 /** p0 is Mush, p1 human, both in one room. */
 function ship(): GameState {
-  const s = createGame(makeSeats(2), noIncidents(noHunters(config)), 3);
+  const s = createGame(makeSeats(2), config, 3);
   s.players.forEach((p, i) => (p.role = i === 0 ? "mush" : "human"));
   return s;
 }

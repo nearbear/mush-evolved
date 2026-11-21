@@ -81,7 +81,7 @@ export function damageHunter(state: GameState, id: string, amount: number): bool
 }
 
 /** eMush's wreckage (owner, 2026-10-28): 1 piece (2/3) or 2 (1/3), each metal scraps, a space capsule or plastic scraps (2 : 1 : 1). */
-function dropDebris(state: GameState): void {
+export function dropDebris(state: GameState): void {
   const { count, types } = state.config.hunters.debris;
   const kinds = Object.keys(types);
   const weights = kinds.map((kind) => types[kind]!);

@@ -1,13 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { breakItem } from "../src/breakage.ts";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { ITEM_TYPES } from "../src/items.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameState } from "../src/types.ts";
-import { forceDismantleOdds, makeSeats, must, offered, option, player } from "./support.ts";
+import { forceDismantleOdds, makeSeats, must, offered, option, player, testConfig } from "./support.ts";
 
 // Broken items (owner, 2026-11-07): they can't be used, and a destroyed-when-broken type vanishes instead.
-const config = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [] };
+const config = testConfig();
 const real = { knife: ITEM_TYPES.knife, wrench: ITEM_TYPES.wrench, cooked: ITEM_TYPES.cooked_ration };
 
 beforeEach(() => {

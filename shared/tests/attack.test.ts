@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ACTIONS } from "../src/actions.ts";
 import { attackWithHeldWeapon } from "../src/actions/attack.ts";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { carriesHeavy, ITEM_TYPES, startCharges } from "../src/items.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { nextDue } from "../src/queue.ts";
@@ -9,10 +8,10 @@ import { applyInput, replayGame, startGame, type GameSetup, type Input } from ".
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { WeaponStats } from "../src/types/config.ts";
 import type { Action, GameConfig, GameState, PlayerId } from "../src/types.ts";
-import { forceDismantleOdds, makeSeats, must, offered, option, player, withoutDrugs } from "./support.ts";
+import { forceDismantleOdds, makeSeats, must, noCharacterModifiers, offered, option, player, testConfig, withoutDrugs } from "./support.ts";
 
 const seats = makeSeats(4);
-const base = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [] };
+const base = testConfig();
 const W = base.weapons.types;
 
 /** The config with one weapon's stats changed (to force a hit or a miss). */
@@ -468,7 +467,7 @@ describe("combat outcomes", () => {
 
   it("replays combat outcomes deterministically from stored inputs", () => {
     const replaySeats = makeSeats(16);
-    const replayConfig: GameConfig = { ...base, characterModifiers: {}, startInventory: ["knife"] };
+    const replayConfig = noCharacterModifiers(testConfig({ startInventory: ["knife"] }));
     const setup: GameSetup = { seats: replaySeats, config: replayConfig, seed: 42, rulesVersion: "test" };
     let s = startGame(setup);
     const attackAction = offered(s, "p0").find((a) => a.type === "attack")!;

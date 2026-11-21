@@ -1,17 +1,16 @@
 import { describe, expect, it } from "vitest";
 import { createChannel, inviteToChannel, sendChat, toggleCheckbox } from "../src/chat.ts";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { damage, hasMushDied, killPlayer } from "../src/death.ts";
 import { hopelessCycle } from "../src/morale.ts";
 import { burnOxygen } from "../src/ship.ts";
 import { CORPSE_ITEM, ITEM_TYPES, ITRACKIE_ITEM, itemsIn } from "../src/items.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { CHAT_CHANNELS, GRAVEYARD_CHANNEL, MUSH_CHANNEL, type Action, type GameState, type PlayerId } from "../src/types.ts";
-import { makeSeats, player, must, nextCycle, offered, withoutDrugs } from "./support.ts";
+import { makeSeats, player, must, nextCycle, offered, testConfig, withoutDrugs } from "./support.ts";
 
 const seats = makeSeats(4);
 // Punches always land, so the deaths here don't hang on a lucky seed.
-const config = { ...DEFAULT_CONFIG, mushCount: 1, startItems: [], startSkills: [], manualCycles: true, punch: { ...DEFAULT_CONFIG.punch, successChance: 1 } };
+const config = testConfig({ startInventory: [ITRACKIE_ITEM], manualCycles: true, punch: { successChance: 1 } });
 const punch = (target: PlayerId): Action => ({ type: "punch", target });
 
 /** p0 (Mush) and p1 (human) share the sick bay; p2 and p3 (humans) are in the refectory. Everyone has an iTrackie. */

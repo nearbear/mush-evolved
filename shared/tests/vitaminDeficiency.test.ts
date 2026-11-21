@@ -1,14 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { addDisease, diseaseStats } from "../src/diseases.ts";
 import { actionFailed, actionSuccessRate } from "../src/modifiers.ts";
 import { createGame } from "../src/rules.ts";
-import type { Action, GameConfig, GameState, PlayerState } from "../src/types.ts";
-import { makeSeats, noHunters } from "./support.ts";
+import type { Action, GameState, PlayerState } from "../src/types.ts";
+import { makeSeats, testConfig } from "./support.ts";
 
-const config: GameConfig = { ...DEFAULT_CONFIG, mushCount: 1, preselection: null, startSkills: [], startInventory: [], startItems: [] };
+const config = testConfig();
 
-const game = (): GameState => createGame(makeSeats(4), noHunters(config), 3);
+const game = (): GameState => createGame(makeSeats(4), config, 3);
 const human = (s: GameState) => s.players.find((p) => p.role === "human")!;
 const mush = (s: GameState) => s.players.find((p) => p.role === "mush")!;
 const rate = (state: GameState, actor: PlayerState) =>

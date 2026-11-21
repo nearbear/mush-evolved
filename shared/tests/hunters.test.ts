@@ -9,7 +9,7 @@ import { PROJECT_STATUS } from "../src/projects.ts";
 import { RESEARCH_COMPLETE, researchStatus } from "../src/research.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameConfig, GameState } from "../src/types.ts";
-import { clone, costOf, makeSeats, must, nextCycle, noHunters, noIncidents, offered, player } from "./support.ts";
+import { clone, costOf, type DeepPartial, makeSeats, must, nextCycle, noHunters, offered, player, testConfig } from "./support.ts";
 
 const TURRET_ROOM = "LASER_TURRET_A_0";
 const TURRET = "LASER_TURRET_A_0:TURRET_COMMAND";
@@ -20,16 +20,16 @@ const refusal = (s: GameState, id: string, action: Action) => ACTIONS[action.typ
 const wire = (action: unknown) => parseGameMessage(JSON.stringify({ type: "action", action }));
 
 /** p0 and p1 at a turret, p2 in the laboratory, with one hunter on the field. `config` tunes the rules (no waves by default). */
-function ship(config: Partial<GameConfig> = {}): GameState {
-  const s = createGame(makeSeats(3), noHunters({ ...DEFAULT_CONFIG, mushCount: 1, startItems: [], ...config }), 3);
+function ship(config: DeepPartial<GameConfig> = {}): GameState {
+  const s = createGame(makeSeats(3), testConfig(config), 3);
   player(s, "p0").room = player(s, "p1").room = TURRET_ROOM;
   player(s, "p2").room = "LABORATORY";
   s.hunters.list.push({ id: "h1", hp: s.config.hunters.types.hunter.hp, hitChance: s.config.hunters.types.hunter.hitChance, target: null, type: "hunter", countdown: null });
   return s;
 }
 
-const turrets = (overrides: Partial<GameConfig["turrets"]>) => ({ turrets: { ...DEFAULT_CONFIG.turrets, ...overrides } });
-const hullRepair = (overrides: Partial<GameConfig["hullRepair"]>) => ({ hullRepair: { ...DEFAULT_CONFIG.hullRepair, ...overrides } });
+const turrets = (overrides: Partial<GameConfig["turrets"]>) => ({ turrets: overrides });
+const hullRepair = (overrides: Partial<GameConfig["hullRepair"]>) => ({ hullRepair: overrides });
 
 describe("hunter numbers", () => {
   it("the pool gains day + 6 a cycle, +1 from day 5 and +2 instead from day 10", () => {
@@ -52,7 +52,7 @@ describe("hunter waves", () => {
   });
 
   it("no wave in the first 2 cycle changes; then the roll spends the pool, one hunter per 10, the rest kept, and NERON tells everyone", () => {
-    let s = createGame(makeSeats(3), { ...DEFAULT_CONFIG, hunters: { ...DEFAULT_CONFIG.hunters, waveChance: 1 } }, 3);
+    let s = createGame(makeSeats(3), testConfig({ hunters: { waveChance: 1 } }), 3);
     s = nextCycle(nextCycle(s));
     expect(s.hunters.list).toEqual([]);
     const before = s.hunters.points + huntersPerCyclePoints(s, 1);
@@ -192,12 +192,13 @@ describe("shooting from a turret", () => {
     expect(viewFor(s, "p0").hunters).toEqual({
       count: 1,
       list: [{ id: "h1", type: "hunter", hp: 6, countdown: null }],
+      merchants: [],
       turrets: expect.objectContaining({ [TURRET]: 2, "LASER_TURRET_B_2:TURRET_COMMAND": 4 }),
     });
     expect(Object.keys(viewFor(s, "p0").hunters.turrets!)).toHaveLength(6);
-    expect(viewFor(s, "p2").hunters).toEqual({ count: 1, list: null, turrets: null });
+    expect(viewFor(s, "p2").hunters).toEqual({ count: 1, list: null, merchants: null, turrets: null });
     player(s, "p1").alive = false;
-    expect(viewFor(s, "p1").hunters).toEqual({ count: 1, list: null, turrets: null });
+    expect(viewFor(s, "p1").hunters).toEqual({ count: 1, list: null, merchants: null, turrets: null });
   });
 
   it("parses from the wire", () => {
@@ -208,7 +209,7 @@ describe("shooting from a turret", () => {
 
 describe("repairing the hull", () => {
   /** p2 in the laboratory with a scrap on the floor and one in hand, the hull at 90. */
-  function damaged(config: Partial<GameConfig> = {}): GameState {
+  function damaged(config: DeepPartial<GameConfig> = {}): GameState {
     const s = ship(config);
     s.ship.hull = 90;
     s.items.push({ id: "floor", type: "metal_scraps", at: { kind: "room", id: "LABORATORY" } });
@@ -261,7 +262,7 @@ describe("hunters following a jump", () => {
   const leave: Action = { type: "leave_orbit", equipment: TERMINAL };
 
   /** p0, the Commander, at the Command terminal with fuel loaded, and `n` hunters with distinct hp, all aiming. */
-  function jumpReady(n: number, config: Partial<GameConfig> = {}): GameState {
+  function jumpReady(n: number, config: DeepPartial<GameConfig> = {}): GameState {
     const s = ship(config);
     player(s, "p0").room = "COMMAND_CENTER";
     s.titles.commander = "p0";
@@ -313,7 +314,7 @@ describe("hunters following a jump", () => {
   });
 
   it("the share is tunable, and living holders' crewFollowingHunters hooks fold it (Space Tactics' seam), kept within 0-1", () => {
-    expect(must(applyAction(jumpReady(4, { hunters: { ...DEFAULT_CONFIG.hunters, followShare: 0 } }), "p0", travel)).hunters.list).toEqual([]);
+    expect(must(applyAction(jumpReady(4, { hunters: { followShare: 0 } }), "p0", travel)).hunters.list).toEqual([]);
     const s = jumpReady(1);
     player(s, "p1").modifiers = ["tactics"];
     const registry = { tactics: { crewFollowingHunters: (share: number) => share * 0.66 } };
@@ -384,8 +385,7 @@ describe("hunters following a jump", () => {
 describe("an ignored battle", () => {
   it("waves arrive and shoot unopposed through the shield until the hull gives out and the Daedalus explodes", () => {
     // Nobody acts. Oxygen and incidents are switched off so the crew lives long enough for the hunters to finish the job.
-    const base = noIncidents(DEFAULT_CONFIG);
-    let s = createGame(makeSeats(3), { ...base, ship: { ...base.ship, oxygen: { ...base.ship.oxygen, perCycle: 0 } } }, 3);
+    let s = createGame(makeSeats(3), testConfig({ hunters: { waveChance: DEFAULT_CONFIG.hunters.waveChance }, ship: { oxygen: { perCycle: 0 } } }), 3);
     const { plasmaShield, hull } = s.config.ship;
     expect([s.ship.plasmaShield, s.ship.hull]).toEqual([plasmaShield.start, hull.start]);
     let sawHunters = false;
@@ -414,7 +414,7 @@ describe("an ignored battle", () => {
 });
 
 describe("Meridon scrambler (FUNGUS_SCRAMBLER)", () => {
-  const scrambler = (chance: number): Partial<GameConfig> => ({ hunters: { ...DEFAULT_CONFIG.hunters, meridonScramblerChance: chance } });
+  const scrambler = (chance: number): DeepPartial<GameConfig> => ({ hunters: { meridonScramblerChance: chance } });
 
   it("pins the 20% chance and marks FUNGUS_SCRAMBLER full", () => {
     expect(DEFAULT_CONFIG.hunters.meridonScramblerChance).toBe(0.2);

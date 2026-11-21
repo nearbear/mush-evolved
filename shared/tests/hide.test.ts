@@ -1,12 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
-import type { GameConfig, GameState } from "../src/types.ts";
-import { costOf, makeSeats, mustApply, offered, player } from "./support.ts";
+import type { GameState } from "../src/types.ts";
+import { costOf, makeSeats, mustApply, offered, player, testConfig } from "./support.ts";
 
-const config: GameConfig = {
-  ...DEFAULT_CONFIG,
-  startInventory: [],
+const config = testConfig({
   startItems: [
     { type: "wrench", room: "LABORATORY" },
     { type: "medikit", room: "LABORATORY" },
@@ -15,7 +12,7 @@ const config: GameConfig = {
     { type: "wrench", room: "LABORATORY" },
     { type: "camera", room: "LABORATORY" },
   ],
-};
+});
 const newGame = () => createGame(makeSeats(4), config, 7);
 
 /** p0 and p1 in the lab; p0 carries item-1 and has hidden it. */

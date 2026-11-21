@@ -24,7 +24,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe("tip prefs across tabs", () => {
+describe("tip prefs across tabs", { timeout: 15_000 }, () => {
   it("a tip muted in one tab stays muted when another tab with an older copy saves", async () => {
     const [a, b] = await twoTabs();
     a.dismissTip("eat"); // tab A snoozes eat

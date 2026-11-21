@@ -3,14 +3,14 @@ import { DEFAULT_CONFIG } from "../src/config.ts";
 import { addDisease } from "../src/diseases.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameConfig, GameState, PlayerId } from "../src/types.ts";
-import { costOf, makeSeats, must, nextCycle, noHunters, noIncidents, offered, option, pickSkill, player, withoutDrugs } from "./support.ts";
+import { costOf, makeSeats, must, nextCycle, offered, option, pickSkill, player, testConfig, withoutDrugs } from "./support.ts";
 
-const base = noIncidents(noHunters({ ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [] }));
+const base = testConfig();
 const surgery = (target: PlayerId): Action => ({ type: "surgery", target });
 const SEPSIS = "sepsis_disease";
 
 /** The config with surgery's base odds set: 1 always succeeds, 0 always fails (skills multiply 0 to 0). */
-const odds = (successChance: number): GameConfig => ({ ...base, surgery: { ...base.surgery, successChance, dirtyChance: 0 } });
+const odds = (successChance: number): GameConfig => testConfig({ surgery: { successChance, dirtyChance: 0 } });
 
 /** Three humans in the Sick Bay (working Surgery Pod); p1 has a torn tongue. */
 function ship(config: GameConfig = base): GameState {

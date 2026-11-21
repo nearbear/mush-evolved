@@ -17,14 +17,14 @@ import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { doorCount, viewPath } from "../src/situation.ts";
 import type { GameState, ItemState } from "../src/types.ts";
 import { CAMERA_EQUIPMENT } from "../src/equipment.ts";
-import { clone, costOf, makeSeats, mustApply, nextCycle, nextDay, noHunters, noIncidents, offered, option, player } from "./support.ts";
+import { clone, costOf, makeSeats, mustApply, nextCycle, nextDay, offered, option, player, testConfig } from "./support.ts";
 
 const LAB_DOOR = doorId("CORRIDOR_A", "LABORATORY");
-const quiet = noIncidents(noHunters(DEFAULT_CONFIG));
+const quiet = testConfig();
 
 /** p0 and p1 in the laboratory, p2 in the sick bay (the lab's other door), p3 in the refectory. */
 function ship(): GameState {
-  const s = createGame(makeSeats(4), { ...quiet, mushCount: 1, startItems: [], startSkills: [] }, 3);
+  const s = createGame(makeSeats(4), quiet, 3);
   for (const [id, room] of [["p0", "LABORATORY"], ["p1", "LABORATORY"], ["p2", "SICK_BAY"], ["p3", "REFECTORY"]] as const) player(s, id).room = room;
   for (const p of s.players) Object.assign(p, { ap: 10, mp: 10 });
   return s;
@@ -275,7 +275,7 @@ describe("repairing a door", () => {
   it("repairs the door publicly on success and logs privately on failure", () => {
     const sure = createGame(
       makeSeats(4),
-      { ...quiet, mushCount: 1, startItems: [], startSkills: [], repair: { ...quiet.repair, chance: { ...quiet.repair.chance, DOOR: 1 } } },
+      testConfig({ repair: { chance: { DOOR: 1 } } }),
       3,
     );
     player(sure, "p0").room = "LABORATORY";
@@ -299,7 +299,7 @@ describe("repairing a door", () => {
 
     const never = createGame(
       makeSeats(4),
-      { ...quiet, mushCount: 1, startItems: [], startSkills: [], repair: { ...quiet.repair, chance: { ...quiet.repair.chance, DOOR: 0.0001 } } },
+      testConfig({ repair: { chance: { DOOR: 0.0001 } } }),
       3,
     );
     player(never, "p0").room = "LABORATORY";

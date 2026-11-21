@@ -4,10 +4,10 @@ import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { addStatus } from "../src/statuses.ts";
 import type { Action, GameState } from "../src/types.ts";
-import { makeSeats, player, offered } from "./support.ts";
+import { makeSeats, player, offered, testConfig } from "./support.ts";
 
 const seats = makeSeats(4);
-const config = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], maxAp: 99, startAp: 10 };
+const config = testConfig({ maxAp: 99, startAp: 10 });
 const shower: Action = { type: "shower", equipment: "BEDROOM_A:SHOWER" };
 
 /** p0 is Mush, the rest human; everyone in Bedroom Alpha. */

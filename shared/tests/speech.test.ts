@@ -1,11 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { killPlayer } from "../src/death.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
-import type { Action, GameConfig, GameState } from "../src/types.ts";
-import { makeSeats, mustApply, nextDay, offered, player, pickSkill } from "./support.ts";
+import type { Action, GameState } from "../src/types.ts";
+import { makeSeats, mustApply, nextDay, offered, player, pickSkill, testConfig } from "./support.ts";
 
-const base: GameConfig = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [] };
+const base = testConfig();
 const fiery: Action = { type: "fiery_speech" };
 const boring: Action = { type: "boring_speech" };
 

@@ -1,16 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { addDisease, diseaseStats } from "../src/diseases.ts";
 import { cycleChanged } from "../src/modifiers.ts";
 import { createGame } from "../src/rules.ts";
-import type { GameConfig } from "../src/types.ts";
-import { makeSeats, noHunters } from "./support.ts";
+import { makeSeats, testConfig } from "./support.ts";
 
-const config: GameConfig = { ...DEFAULT_CONFIG, mushCount: 1, preselection: null, startSkills: [], startInventory: [], startItems: [] };
+const config = testConfig();
 
 describe("Smallpox", () => {
   it("lasts 12 to 20 cycles", () => {
-    const state = createGame(makeSeats(4), noHunters(config), 3);
+    const state = createGame(makeSeats(4), config, 3);
     const stats = diseaseStats(state, "smallpox_disease")!;
     expect([stats.durationMin, stats.durationMax]).toEqual([12, 20]);
     const human = state.players.find((p) => p.role === "human")!;
@@ -21,7 +19,7 @@ describe("Smallpox", () => {
   });
 
   it("takes 2 from max health and max morale", () => {
-    const state = createGame(makeSeats(4), noHunters(config), 3);
+    const state = createGame(makeSeats(4), config, 3);
     const human = state.players.find((p) => p.role === "human")!;
     const [hp, morale] = [human.maxHp, human.maxMorale];
     addDisease(state, human, "smallpox_disease");
@@ -33,7 +31,7 @@ describe("Smallpox", () => {
     let hpLosses = 0;
     const runs = 200;
     for (let seed = 0; seed < runs; seed++) {
-      const state = createGame(makeSeats(4), noHunters(config), seed);
+      const state = createGame(makeSeats(4), config, seed);
       const human = state.players.find((p) => p.role === "human")!;
       addDisease(state, human, "smallpox_disease");
       const [mp, hp] = [human.mp, human.hp];
@@ -52,7 +50,7 @@ describe("Smallpox", () => {
   });
 
   it("costs a Mush nothing at a cycle change", () => {
-    const state = createGame(makeSeats(4), noHunters(config), 3);
+    const state = createGame(makeSeats(4), config, 3);
     const mush = state.players.find((p) => p.role === "mush")!;
     addDisease(state, mush, "smallpox_disease");
     const [mp, hp] = [mush.mp, mush.hp];

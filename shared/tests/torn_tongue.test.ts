@@ -1,15 +1,15 @@
 import { describe, expect, it } from "vitest";
 import { createChannel, sendChat } from "../src/chat.ts";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { addDisease, removeDisease } from "../src/diseases.ts";
+import { ITRACKIE_ITEM } from "../src/items.ts";
 import { applyAction, createGame } from "../src/rules.ts";
 import type { Action, GameState } from "../src/types.ts";
-import { makeSeats, must, offered, player } from "./support.ts";
+import { makeSeats, must, offered, player, testConfig } from "./support.ts";
 
 const TONGUE = "torn_tongue_injury";
 
 function ship(): GameState {
-  const s = createGame(makeSeats(3, "others"), { ...DEFAULT_CONFIG, startSkills: [] }, 7);
+  const s = createGame(makeSeats(3, "others"), testConfig({ startInventory: [ITRACKIE_ITEM] }), 7);
   for (const p of s.players) p.room = "LABORATORY";
   player(s, "p0").skills = ["leadership", "motivator", "shrink"];
   player(s, "p1").skills = ["confident"];

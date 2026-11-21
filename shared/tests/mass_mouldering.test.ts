@@ -2,10 +2,10 @@ import { describe, expect, it } from "vitest";
 import { ACTIONS } from "../src/actions.ts";
 import { applyAction, createGame, legalActions, viewFor } from "../src/rules.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
-import { makeSeats, mustApply, player } from "./support.ts";
+import { makeSeats, mustApply, player, testConfig } from "./support.ts";
 
 const ship = () => {
-  const s = createGame(makeSeats(4), { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [] }, 5, { p0: "mush" });
+  const s = createGame(makeSeats(4), testConfig(), 5, { p0: "mush" });
   const p = player(s, "p0");
   p.mushSkills.push("massggedon");
   p.ap = 5;

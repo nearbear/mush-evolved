@@ -9,7 +9,7 @@ import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { chatChannels } from "../src/chat.ts";
 import { addStatus } from "../src/statuses.ts";
 import type { Action, GameState } from "../src/types.ts";
-import { clone, costOf, makeSeats, must, nextCycle, offered, option, player, noHunters, noIncidents, rebelCallAt } from "./support.ts";
+import { clone, costOf, makeSeats, must, nextCycle, offered, option, player, rebelCallAt, testConfig } from "./support.ts";
 
 const TERMINAL = "COMMAND_CENTER:COM_CENTER";
 const cfg = DEFAULT_CONFIG.comms;
@@ -20,7 +20,7 @@ const decode = (base: string): Action => ({ type: "decode_rebel", equipment: TER
 
 /** Three players on the bridge; p0 is the Comms Officer. `linked` puts the link with Sol up. */
 function ship(linked = false): GameState {
-  const s = createGame(makeSeats(3), noIncidents(noHunters(DEFAULT_CONFIG)), 11);
+  const s = createGame(makeSeats(3), testConfig(), 11);
   for (const p of s.players) p.room = "COMMAND_CENTER";
   s.titles.comms_officer = "p0";
   s.comms.linked = linked;

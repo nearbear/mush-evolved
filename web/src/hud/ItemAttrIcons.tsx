@@ -51,7 +51,7 @@ export function thingMarkIcons(
   return marks;
 }
 
-export type ItemAttrSource = Pick<ItemView, "type" | "charges" | "plant" | "spores" | "jelly" | "shield" | "spoil">;
+export type ItemAttrSource = Pick<ItemView, "type" | "charges" | "plant" | "spores" | "jelly" | "shield" | "spoil" | "mush">;
 
 export function ItemAttrIcons({ item, mpPenalty }: { item: ItemAttrSource; mpPenalty: number }) {
   const { t } = useTranslation();
@@ -61,7 +61,8 @@ export function ItemAttrIcons({ item, mpPenalty }: { item: ItemAttrSource; mpPen
   const plantStates = item.plant ? plantStateIds(item.plant) : [];
   const marks = thingMarkIcons(item, t);
   const spoil = item.spoil;
-  if (!heavy && !customized && !hasCharges && plantStates.length === 0 && spoil === undefined && marks.length === 0) return null;
+  const mush = item.mush === true;
+  if (!heavy && !customized && !hasCharges && plantStates.length === 0 && spoil === undefined && !mush && marks.length === 0) return null;
   return (
     <ul className="status-icons" aria-label={t("itemAttr.label")}>
       {heavy && (
@@ -89,6 +90,11 @@ export function ItemAttrIcons({ item, mpPenalty }: { item: ItemAttrSource; mpPen
       {spoil !== undefined && (
         <li key="spoil">
           <StatusIcon icon={SPOIL_ICONS[spoil]} name={t(`itemAttr.spoil_${spoil}`)} description={t(`itemAttr.spoil_${spoil}Desc`)} visibility="private" />
+        </li>
+      )}
+      {mush && (
+        <li key="mush">
+          <StatusIcon icon={CONTAMINATED_ICON} name={t("itemAttr.mushCat")} description={t("itemAttr.mushCatDesc")} visibility="private" />
         </li>
       )}
       {marks.map((mark) => (

@@ -1,15 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { killPlayer } from "../src/death.ts";
 import { CORPSE_ITEM } from "../src/items.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { installCameraIn } from "./cameras.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameState } from "../src/types.ts";
-import { makeSeats, player, must, offered } from "./support.ts";
+import { makeSeats, player, must, offered, testConfig } from "./support.ts";
 
 const seats = makeSeats(3);
-const config = { ...DEFAULT_CONFIG, mushCount: 1, startItems: [], startSkills: [] };
+const config = testConfig();
 const BAYS = ["SPACESHIP_BAY_A", "SPACESHIP_BAY_AA", "SPACESHIP_BAY_B", "ICARUS"];
 
 /** p2 is dead; p0 carries their corpse in `room`; p1 is in the refectory. */

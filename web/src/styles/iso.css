@@ -158,6 +158,23 @@
   /* The viewport hit-tests drawn pixels (IsoRoom.tsx); sprite boxes overlap too much to take clicks. */
   pointer-events: none;
 }
+/* Someone coming in or going out with no door to show (no Tracker): `SceneSprite.fade`, over FADE_MS (scene.ts). */
+.iso-actor.fade-in {
+  animation: actor-fade-in 400ms linear both;
+}
+.iso-actor.fade-out {
+  animation: actor-fade-out 400ms linear both;
+}
+@keyframes actor-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes actor-fade-out {
+  to {
+    opacity: 0;
+  }
+}
 .iso-viewport {
   /* Selection has its own glow; the browser's tap rectangle would cover the whole room. */
   -webkit-tap-highlight-color: transparent;

@@ -1,6 +1,8 @@
 import { AcceptAccommodationAction, AccommodateAction, StopAccommodationAction } from "./actions/accommodate.ts";
 import { BondAction } from "./actions/bond.ts";
 import { BuildAction } from "./actions/build.ts";
+import { CaressAction } from "./actions/caress.ts";
+import { MushCaressAction } from "./actions/mush_caress.ts";
 import { ConsumeAction } from "./actions/consume.ts";
 import { HideAction } from "./actions/hide.ts";
 import { SearchAction } from "./actions/search.ts";
@@ -62,6 +64,7 @@ import { LandAction } from "./actions/land.ts";
 import { CollectScrapAction } from "./actions/collect_scrap.ts";
 import { RenovateAction } from "./actions/renovate.ts";
 import { OpenCapsuleAction } from "./actions/open_capsule.ts";
+import { OpenLunchboxAction } from "./actions/open_lunchbox.ts";
 import { AnalyzePlanetAction } from "./actions/analyze_planet.ts";
 import { DeletePlanetAction } from "./actions/delete_planet.ts";
 import { LeaveOrbitAction } from "./actions/leave_orbit.ts";
@@ -215,6 +218,7 @@ const REGISTRY = {
   collect_scrap: new CollectScrapAction(),
   renovate: new RenovateAction(),
   open_capsule: new OpenCapsuleAction(),
+  open_lunchbox: new OpenLunchboxAction(),
   dispense: new DispenseAction(),
   play_arcade: new PlayArcadeAction(),
   consume: new ConsumeAction(),
@@ -234,6 +238,8 @@ const REGISTRY = {
   install: new InstallAction(),
   uninstall: new UninstallAction(),
   examine: new ExamineAction(),
+  caress: new CaressAction(),
+  mush_caress: new MushCaressAction(),
   bond: new BondAction(),
   dtt: new ShareAction("dtt"),
   stt: new ShareAction("stt"),

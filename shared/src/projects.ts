@@ -72,6 +72,16 @@ export function projectDone(state: Readonly<Pick<GameState, "projects">>, projec
   return (state.projects[project] ?? 0) >= PROJECT_COMPLETE;
 }
 
+/** Whether a merchant took `project` (TECHNO_REWRITE; owner, 2026-11-21): it can never be proposed or finished again. */
+export function projectLost(state: Readonly<Pick<GameState, "lostProjects">>, project: ProjectId): boolean {
+  return state.lostProjects.includes(project);
+}
+
+/** The projects that can still be finished: neither finished nor taken by a merchant. */
+export function availableProjects(state: Readonly<Pick<GameState, "projects" | "lostProjects">>): ProjectId[] {
+  return PROJECT_IDS.filter((id) => !projectDone(state, id) && !projectLost(state, id));
+}
+
 /** The game's shuffled project draw order, from its own stream so other rolls never shift it. */
 export function newProjectDeck(seed: number): ProjectId[] {
   const stream = { rng: streamFor(seed, "projects") };

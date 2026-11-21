@@ -61,6 +61,8 @@ export const CORPSE_ITEM = "corpse";
 
 /** A support drone (#411): an NPC item that repairs and wanders the ship each cycle change (drones.ts). */
 export const SUPPORT_DRONE_ITEM = "support_drone";
+/** Schrödinger, Raluca's cat (schrodinger.ts). */
+export const CAT_ITEM = "body_cat";
 
 /** Express cooks rations (actions/express_cook.ts) while it has charges. */
 export const MICROWAVE_ITEM = "microwave";
@@ -70,6 +72,9 @@ export const FREEZER_ITEM = "freezer";
 
 /** The hydropot: an empty one takes a sown fruit, a planted one grows (`ItemState.plant`, botany.ts). */
 export const TREE_POT_ITEM = "tree_pot";
+
+/** A lunchbox (owner, 2026-11-21; actions/open_lunchbox.ts): each opening gives a standard ration until its charges run out. */
+export const LUNCHBOX_ITEM = "lunchbox";
 
 /** A unit of fuel in transit between a tank and the combustion chamber; each takes a slot like any item (owner, 2026-10-23). */
 export const FUEL_CAPSULE_ITEM = "fuel_capsule";
@@ -99,6 +104,7 @@ export const DRUG_ITEMS: readonly string[] = Array.from({ length: 12 }, (_, i) =
 /** The charges an item of this type starts with, or undefined if it has none. Charged weapons start full. */
 export function startCharges(config: DeepReadonly<GameConfig>, type: string): number | undefined {
   if (type === MICROWAVE_ITEM) return config.expressCook.charges.start;
+  if (type === LUNCHBOX_ITEM) return config.lunchbox.charges;
   if (type === "scooter") return config.scooter.charges.start;
   return config.weapons.types[type]?.charges;
 }
@@ -153,6 +159,8 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   grenade: {},
   // Healing (confirmed 2026-10-15): hold one to heal. Reusable.
   medikit: {},
+  // Owner, 2026-11-21 (#143, FOREST_DEAL): 3 standard rations, one per Open (actions/open_lunchbox.ts); gone when empty.
+  lunchbox: {},
   // Owner, 2026-11-07 (#397): heals 2 HP, single use (actions/use_bandage.ts).
   bandage: {},
   // Confirmed 2026-10-13: +2 AP. Satiety +1 is a placeholder (2026-10-14).
@@ -222,8 +230,8 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   // Read on the client; Tear destroys it (actions/tear.ts). Named after its icon.
   document: {},
   // Owner, 2026-10-25: items researches need in the lab (research.ts, RESEARCH_REQUIRES). No effect yet. Named after their icons.
-  // Schrödinger, the cat.
-  body_cat: {},
+  // Schrödinger, the cat: an NPC (schrodinger.ts) arriving with Raluca (owner, 2026-11-21).
+  [CAT_ITEM]: {},
   // Alien artifacts, found on expeditions (owner, 2026-11-08, #357). Inert for now: their effects are later stories. Named after their icons.
   water_stick: {},
   magellan_liquid_map: {},

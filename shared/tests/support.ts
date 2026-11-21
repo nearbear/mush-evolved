@@ -2,6 +2,7 @@
 // shape (a renamed view field, a new Seat field) is fixed here once instead of in every test file. Setting up a
 // scenario (who is where, holding what) stays in each test file, next to the tests that depend on it.
 import { CHARACTERS } from "../src/characters.ts";
+import { DEFAULT_CONFIG } from "../src/config.ts";
 import type { RebelBaseId } from "../src/comms.ts";
 import { addSignal, type Signal } from "../src/signals.ts";
 import { EQUIPMENT_TYPES } from "../src/equipment.ts";
@@ -23,6 +24,40 @@ export const noHunters = <C extends GameConfig>(config: C): C => ({ ...config, h
 
 /** `config` where incidents never happen (the pool still fills), for tests that run many cycles and count HP or morale. */
 export const noIncidents = <C extends GameConfig>(config: C): C => ({ ...config, incidents: { ...config.incidents, rollPoints: Number.MAX_SAFE_INTEGER } });
+
+/** `config` with no character's built-in skills (Chun's immunity, Ian's pacifism, …), for tests of a skill or status. */
+export const noCharacterModifiers = <C extends GameConfig>(config: C): C => ({ ...config, characterModifiers: {} });
+
+/** A partial `T` at every depth; arrays are whole values, never partial. */
+export type DeepPartial<T> = T extends readonly unknown[] ? T : T extends object ? { [K in keyof T]?: DeepPartial<T[K]> } : T;
+
+const isPlainObject = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null && !Array.isArray(v);
+
+/**
+ * `base` with `overrides` on top: plain objects merge key by key, anything else (arrays, numbers, null) replaces.
+ * So `{}` adds nothing; to empty a record, use a named helper such as `noCharacterModifiers`.
+ */
+export function deepMerge<T>(base: T, overrides: DeepPartial<T>): T {
+  if (!isPlainObject(base) || !isPlainObject(overrides)) return overrides as T;
+  const out: Record<string, unknown> = { ...base };
+  for (const [key, value] of Object.entries(overrides)) if (value !== undefined) out[key] = deepMerge(out[key], value as never);
+  return out as T;
+}
+
+/**
+ * The quiet baseline for a rules test: one Mush, nobody starts with anything, and no item lies on the floor
+ * (`startItems`, so no Medlab drugs and no medikit in the lab); no hunter waves and no incidents. A new default that
+ * acts on its own (a random event, a spawn) belongs here too, so tests that don't care about it stay unaffected.
+ * Character modifiers stay on: turn them off with `noCharacterModifiers`.
+ */
+export const QUIET_CONFIG: GameConfig = noIncidents(noHunters({ ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [] }));
+
+/**
+ * `QUIET_CONFIG` with `overrides` deep-merged on top, e.g. `testConfig({ repair: { chance: { COFFEE_DISPENSER: 0 } } })`.
+ * Wrap it in `noCharacterModifiers(…)` or other helpers for what a merge can't say. Tests that should see the
+ * whole default game (setup, determinism, the survival harness) use `DEFAULT_CONFIG` on purpose instead.
+ */
+export const testConfig = (overrides: DeepPartial<GameConfig> = {}): GameConfig => deepMerge(QUIET_CONFIG, overrides);
 
 /**
  * Sets every dismantlable type's own `chance` (they override `config.dismantle.successChance`), to force a success

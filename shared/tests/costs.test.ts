@@ -1,12 +1,11 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { MODIFIERS } from "../src/modifiers.ts";
 import { convert } from "../src/infection.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { GameState } from "../src/types.ts";
-import { costOf, makeSeats, option, player } from "./support.ts";
+import { costOf, makeSeats, option, player, testConfig } from "./support.ts";
 
-const base = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [], punch: { ...DEFAULT_CONFIG.punch, successChance: 1 } };
+const base = testConfig({ punch: { successChance: 1 } });
 const PUNCH = base.punch.cost.ap;
 
 /** p0 and p1 in the sick bay, p2 in the refectory. */

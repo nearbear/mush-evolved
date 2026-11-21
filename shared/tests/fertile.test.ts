@@ -1,12 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { RESEARCH_COMPLETE } from "../src/research.ts";
 import { applyAction, createGame } from "../src/rules.ts";
 import type { GameState } from "../src/types.ts";
-import { costOf, makeSeats, must, nextDay, player } from "./support.ts";
+import { costOf, makeSeats, must, nextDay, player, testConfig } from "./support.ts";
 
 // Fertile (Mush skill): one free spore extraction a day, ignoring the cooldown (owner, 2026-10-27).
-const config = { ...DEFAULT_CONFIG, manualCycles: true, mushCount: 1, startInventory: [], startItems: [], startSkills: [] };
+const config = testConfig({ manualCycles: true });
 const extract = { type: "extract_spore" } as const;
 
 function ship(fertile = true): GameState {

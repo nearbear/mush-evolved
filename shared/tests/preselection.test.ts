@@ -193,4 +193,22 @@ describe("Mush selection", () => {
     expect(player(after, "p0").alive).toBe(false);
     expect(JSON.stringify(after.titles)).toBe(quiet);
   });
+
+  it("spawns the Mush sample only upon Mush selection (full ship or deadline), in any of the 27 rooms", () => {
+    const allRooms = new Set(Object.keys(DEFAULT_CONFIG.rooms).filter((r) => !r.startsWith("PATROL_") && r !== "ICARUS_CRAFT"));
+    const sEmpty = createGame([], config, 7);
+    expect(sEmpty.items.filter((i) => i.type === "mush_sample")).toHaveLength(0);
+    const s3 = ship(3);
+    expect(s3.items.filter((i) => i.type === "mush_sample")).toHaveLength(0);
+    // Full ship triggers selection and spawns 1 Mush sample.
+    const sFull = must(joinShip(s3, makeSeats(4)[3]!));
+    const fullSamples = sFull.items.filter((i) => i.type === "mush_sample");
+    expect(fullSamples).toHaveLength(1);
+    expect(fullSamples[0]!.at.kind === "room" && allRooms.has(fullSamples[0]!.at.id)).toBe(true);
+    // Deadline triggers selection and spawns 1 Mush sample.
+    const sDeadline = toDeadline(ship(3, SMALL, 11));
+    const deadlineSamples = sDeadline.items.filter((i) => i.type === "mush_sample");
+    expect(deadlineSamples).toHaveLength(1);
+    expect(deadlineSamples[0]!.at.kind === "room" && allRooms.has(deadlineSamples[0]!.at.id)).toBe(true);
+  });
 });

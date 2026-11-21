@@ -219,6 +219,13 @@ describe("describeScene", () => {
     expect(only(scene([actor("me")], { people, selected: { kind: "player", id: "me" } }))).toMatchObject({ you: true, effect: "selected" });
   });
 
+  it("fades in or out a person whose move shows no door, and nobody else", () => {
+    const people = new Map([["a", person("a")], ["b", person("b")], ["c", person("c")]]);
+    const fading = new Map([["a", "in" as const], ["b", "out" as const]]);
+    const fades = scene([actor("a"), actor("b"), actor("c")], { people, fading }).sprites.map((s) => s.fade);
+    expect(fades).toEqual(["in", "out", undefined]);
+  });
+
   it("draws someone in bed lying, mirrored along the bed", () => {
     const people = new Map([["p1", person("p1", { lying: "bed1" })]]);
     expect(only(scene([actor("p1", { width: 50 })], { people, beds: new Map([["p1", { flip: true }]]) }))).toMatchObject({ shadow: "lying", flipX: true, image: { keyed: false } });

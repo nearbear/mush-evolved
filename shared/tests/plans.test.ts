@@ -3,16 +3,16 @@
 
 import { describe, expect, it } from "vitest";
 import { createChannel, inviteToChannel, leaveChannel } from "../src/chat.ts";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { ITRACKIE_ITEM } from "../src/items.ts";
 import { killPlayer } from "../src/death.ts";
 import { postPlan } from "../src/plans.ts";
 import { clearQueue, queueAction } from "../src/queue.ts";
 import { applyAction, createGame, viewFor, type ActionResult } from "../src/rules.ts";
 import type { DraftSlot, GameState, PlanDraft, PlayerId, PrivateChannelId } from "../src/types.ts";
-import { clone, makeSeats, must, mustApply, nextCycle, nextDay, noHunters, offered, player } from "./support.ts";
+import { clone, makeSeats, must, mustApply, nextCycle, nextDay, offered, player, testConfig } from "./support.ts";
 
-const config = noHunters({ ...DEFAULT_CONFIG, mushCount: 1 });
+/** Everyone carries an iTrackie, as on a real ship: the summons go through it. */
+const config = testConfig({ startInventory: [ITRACKIE_ITEM] });
 /** Three doors from the lab: CORRIDOR_A, CORRIDOR_B, REFECTORY. */
 const LAB = "LABORATORY";
 const MESS = "REFECTORY";

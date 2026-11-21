@@ -8,18 +8,22 @@
 // by the two target-cycling arrow buttons (a patrol ship only; the Pasiphae can't shoot), and the ship's other actions
 // (Land, Collect scrap: whatever the view offers on its command, less Examine). Collect scrap's tooltip says how much
 // debris floats nearby (the view leaves the count out while a patrol ship can't collect); when the rules refuse it (no debris, or a patrol ship while the Pasiphae exists) it shows disabled with why.
+// The merchants in space are targets too, after the hunters (`view.hunters.merchants`; owner, 2026-11-21), drawn with the
+// original's trading ship sprites and named as in the Signals tab; firing at one asks for confirmation first.
 
-import { HUNTER_TYPES, PROJECT_COMPLETE, actionVisibility, patrolShip, type Action, type HunterView, type PlayerView, type ShipLayout } from "@mush2/shared";
+import { HUNTER_TYPES, PROJECT_COMPLETE, actionVisibility, patrolShip, type Action, type HunterView, type MerchantTargetView, type PlayerView, type ShipLayout } from "@mush2/shared";
 import { useState, type CSSProperties, type KeyboardEvent } from "react";
 import { useTranslation } from "react-i18next";
-import { FX_CHARGE, FX_SHIELD, HUNTER_SPRITES, HUNTER_SPRITES_SMALL } from "../art/assets.ts";
+import { FX_CHARGE, FX_SHIELD, HUNTER_SPRITES, HUNTER_SPRITES_SMALL, MERCHANT_SPRITES, MERCHANT_SPRITES_SMALL } from "../art/assets.ts";
 import { useNames } from "../i18n/names.ts";
 import { atlasUrl } from "../iso/shipLayout.ts";
 import { ActionButton } from "./ActionButton.tsx";
 import { ActionLabel } from "./ActionLabel.tsx";
 import { FxSprite } from "./FxSprite.tsx";
+import { MerchantShotConfirm } from "./HunterList.tsx";
 import { NO_FORMATION, aimedSlot, hunterIn, nextOfKind, stepAim, track } from "./hunterSlots.ts";
 import { spaceSky } from "./spaceSky.ts";
+import { useSignalName } from "./Signals.tsx";
 import { optionsOn } from "./targets.ts";
 import { TechnoBox } from "./TechnoBox.tsx";
 
@@ -31,19 +35,31 @@ interface Props {
   onAction: (action: Action) => void;
 }
 
-const NO_HUNTERS: NonNullable<PlayerView["hunters"]["list"]> = [];
+/** Something in space to aim at: a hunter, or a merchant (its `type` is then its kind, and `merchant` says who it is). */
+type SpaceTarget = { id: string; type: HunterView["type"] | MerchantTargetView["kind"]; hp: number; countdown: number | null; merchant?: MerchantTargetView };
+const SPRITES = { ...HUNTER_SPRITES, ...MERCHANT_SPRITES };
+const SPRITES_SMALL = { ...HUNTER_SPRITES_SMALL, ...MERCHANT_SPRITES_SMALL };
+const KINDS = [...HUNTER_TYPES, ...(Object.keys(MERCHANT_SPRITES) as MerchantTargetView["kind"][])];
+/** The hunters, then the merchants. */
+const spaceTargets = (view: PlayerView): SpaceTarget[] => [
+  ...(view.hunters.list ?? []),
+  ...(view.hunters.merchants ?? []).map((m) => ({ id: m.id, type: m.kind, hp: m.hp, countdown: null, merchant: m })),
+];
 /** The aimed plain hunter is drawn at twice its size (whole pixels, so it stays crisp); the other kinds' sprites are
-    already 66-84px, so they stay at 1x. */
-const aimScale = (type: HunterView["type"]): number => (type === "hunter" ? 2 : 1);
-const aimSize = (type: HunterView["type"]): CSSProperties => {
-  const [, , w, h] = HUNTER_SPRITES[type];
+    already 66-104px, so they stay at 1x. */
+const aimScale = (type: SpaceTarget["type"]): number => (type === "hunter" ? 2 : 1);
+const aimSize = (type: SpaceTarget["type"]): CSSProperties => {
+  const [, , w, h] = SPRITES[type];
   return { width: w * aimScale(type), height: h * aimScale(type) };
 };
 
 export function PatrolCockpit({ view, ship, layout, onAction }: Props) {
   const { t } = useTranslation();
   const names = useNames();
-  const list = view.hunters.list ?? NO_HUNTERS;
+  const kindName = (type: SpaceTarget["type"]): string =>
+    (HUNTER_TYPES as readonly string[]).includes(type) ? t(`turret.kinds.${type as HunterView["type"]}`) : t(`comms.merchants.kinds.${type as MerchantTargetView["kind"]}`);
+  const list = spaceTargets(view);
+  const [confirming, setConfirming] = useState(false);
 
   // Derived state, adjusted while rendering: `track` hands back the same object unless the hunters changed.
   const [kept, setKept] = useState(NO_FORMATION);
@@ -78,7 +94,7 @@ export function PatrolCockpit({ view, ship, layout, onAction }: Props) {
   const extraAmmo = (view.projects.PATROLSHIP_EXTRA_AMMO ?? 0) >= PROJECT_COMPLETE;
   const blasterGun = (view.projects.PATROLSHIP_BLASTER_GUN ?? 0) >= PROJECT_COMPLETE;
   // The pack: how many of each kind are not the target, in `HUNTER_TYPES` order.
-  const pack = HUNTER_TYPES.map((type) => ({ type, count: list.filter((h) => h.type === type && h !== target).length })).filter((k) => k.count > 0);
+  const pack = KINDS.map((type) => ({ type, count: list.filter((h) => h.type === type && h !== target).length })).filter((k) => k.count > 0);
 
   return (
     <section
@@ -102,13 +118,17 @@ export function PatrolCockpit({ view, ship, layout, onAction }: Props) {
                 <div style={aimSize(target.type)}>
                   <FxSprite
                     key={`${target.id}:${hits}`}
-                    slice={HUNTER_SPRITES[target.type]}
+                    slice={SPRITES[target.type]}
                     className={[aimScale(target.type) === 2 && "x2", flash && "hit"].filter(Boolean).join(" ") || undefined}
                   />
                 </div>
               </div>
             </div>
-            <CraftReadout name={t("turret.hunter", { kind: t(`turret.kinds.${target.type}`), index: formation.numbers[target.id] ?? 1 })} hp={target.hp} />
+            {target.merchant ? (
+              <MerchantReadout merchant={target.merchant} />
+            ) : (
+              <CraftReadout name={t("turret.hunter", { kind: t(`turret.kinds.${target.type as HunterView["type"]}`), index: formation.numbers[target.id] ?? 1 })} hp={target.hp} />
+            )}
             {target.countdown !== null && <span>{t("turret.countdown", { count: target.countdown })}</span>}
           </div>
         )}
@@ -119,10 +139,10 @@ export function PatrolCockpit({ view, ship, layout, onAction }: Props) {
                 key={type}
                 type="button"
                 className="space-hunter"
-                aria-label={t("patrol.others", { count, kind: t(`turret.kinds.${type}`) })}
+                aria-label={t("patrol.others", { count, kind: kindName(type) })}
                 onClick={() => setAim(nextOfKind(formation, aim, type))}
               >
-                <FxSprite slice={HUNTER_SPRITES_SMALL[type]} />
+                <FxSprite slice={SPRITES_SMALL[type]} />
                 <span aria-hidden="true">×{count}</span>
               </button>
             ))}
@@ -145,9 +165,12 @@ export function PatrolCockpit({ view, ship, layout, onAction }: Props) {
               <span aria-hidden="true">◀</span>
             </button>
             {shoot && (
-              <ActionButton view={view} option={shoot} onAction={onAction} className="big space-shoot">
+              <ActionButton view={view} option={shoot} onAction={target.merchant ? () => setConfirming(true) : onAction} className="big space-shoot">
                 <ActionLabel text={t("actions.turretAttack")} cost={shoot.cost} chance={shoot.chance} visibility={actionVisibility(shoot.action.type, view)} />
               </ActionButton>
+            )}
+            {shoot && target.merchant && (
+              <MerchantConfirm merchant={target.merchant} open={confirming} onOpenChange={setConfirming} onYes={() => onAction(shoot.action)} />
             )}
             <button type="button" aria-label={t("patrol.nextTarget")} disabled={list.length < 2} onClick={() => step(1)}>
               <span aria-hidden="true">▶</span>
@@ -174,6 +197,15 @@ export function PatrolCockpit({ view, ship, layout, onAction }: Props) {
       </TechnoBox>
     </section>
   );
+}
+
+/** A merchant's name as in the Signals tab ("Transport 2") and its hp. */
+function MerchantReadout({ merchant }: { merchant: MerchantTargetView }) {
+  return <CraftReadout name={useSignalName(merchant)} hp={merchant.hp} />;
+}
+
+function MerchantConfirm({ merchant, ...props }: { merchant: MerchantTargetView; open: boolean; onOpenChange: (open: boolean) => void; onYes: () => void }) {
+  return <MerchantShotConfirm name={useSignalName(merchant)} {...props} />;
 }
 
 /** A craft's name and hp (overlapping shield icons beside the figure), shown underneath both your ship and the aimed hunter. */

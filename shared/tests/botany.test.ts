@@ -4,7 +4,7 @@ import { PROJECT_COMPLETE, projectStatus } from "../src/projects.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { GameConfig, GameState, ItemState, PlantState } from "../src/types.ts";
-import { costOf, makeSeats, must, mustApply, nextCycle, nextDay, offered, option, player, noHunters, noIncidents } from "./support.ts";
+import { costOf, makeSeats, must, mustApply, nextCycle, nextDay, offered, option, player, noIncidents, testConfig } from "./support.ts";
 
 const GARDEN = "HYDROPONIC_CENTER";
 const BANANA = "fruit_banana";
@@ -13,7 +13,7 @@ const adult = (over: Partial<PlantState> = {}): PlantState => ({ species: BANANA
 
 /** Three humans in the garden (p2 Mush when `mush`), the default start items, and no random sickness unless asked. */
 function ship(config: Partial<GameConfig["botany"]> = {}, mush = false): GameState {
-  const s = createGame(makeSeats(3), noIncidents(noHunters({ ...DEFAULT_CONFIG, mushCount: mush ? 1 : 0, botany: { ...cfg, sickChancePerCycle: 0, ...config } })), 3, mush ? { p2: "mush" } : {});
+  const s = createGame(makeSeats(3), testConfig({ mushCount: mush ? 1 : 0, startItems: DEFAULT_CONFIG.startItems, botany: { sickChancePerCycle: 0, ...config } }), 3, mush ? { p2: "mush" } : {});
   for (const p of s.players) p.room = GARDEN;
   return s;
 }
@@ -337,12 +337,7 @@ describe("botany: heat lamps", () => {
   function heatShip(extraFruitChance = DEFAULT_CONFIG.project.heatLamp.extraFruitChance, progress = PROJECT_COMPLETE): GameState {
     const s = createGame(
       makeSeats(3),
-      noIncidents(noHunters({
-        ...DEFAULT_CONFIG,
-        mushCount: 0,
-        botany: { ...cfg, sickChancePerCycle: 0 },
-        project: { ...DEFAULT_CONFIG.project, heatLamp: { extraFruitChance } },
-      })),
+      testConfig({ mushCount: 0, startItems: DEFAULT_CONFIG.startItems, botany: { sickChancePerCycle: 0 }, project: { heatLamp: { extraFruitChance } } }),
       3,
     );
     s.projects.HEAT_LAMP = progress;
@@ -408,7 +403,7 @@ describe("botany: heat lamps", () => {
     for (let seed = 1; seed <= 12; seed++) {
       const s = createGame(
         makeSeats(3),
-        noIncidents(noHunters({ ...DEFAULT_CONFIG, mushCount: 0, botany: { ...cfg, sickChancePerCycle: 0 } })),
+        testConfig({ mushCount: 0, startItems: DEFAULT_CONFIG.startItems, botany: { sickChancePerCycle: 0 } }),
         seed,
       );
       s.projects.HEAT_LAMP = PROJECT_COMPLETE;
@@ -491,7 +486,7 @@ describe("Nano ladybugs", () => {
   function ladybugsShip(progress = PROJECT_COMPLETE, broken = false): GameState {
     const s = createGame(
       makeSeats(3),
-      noIncidents(noHunters({ ...DEFAULT_CONFIG, mushCount: 0, botany: { ...cfg, sickChancePerCycle: 1 } })),
+      testConfig({ mushCount: 0, startItems: DEFAULT_CONFIG.startItems, botany: { sickChancePerCycle: 1 } }),
       3,
     );
     s.projects.PARASITE_ELIM = progress;

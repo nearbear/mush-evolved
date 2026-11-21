@@ -7,15 +7,14 @@ import { startFire } from "../src/fire.ts";
 import { MICROWAVE_ITEM, SUPPORT_DRONE_ITEM } from "../src/items.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { GameConfig, GameState, ItemState } from "../src/types.ts";
-import { clone, costOf, makeSeats, mustApply, nextCycle, noHunters, noIncidents, offered, pickSkill, player } from "./support.ts";
+import { clone, costOf, makeSeats, mustApply, nextCycle, offered, pickSkill, player, testConfig } from "./support.ts";
 
 const HERE = "REFECTORY";
 const ELSEWHERE = "LABORATORY";
 
 /** No hunters or incidents; fire neither spreads, breaks nor hurts the hull unless a test says so. */
 function quiet(fire: Partial<GameConfig["fire"]> = {}): GameConfig {
-  const base = noIncidents(noHunters(DEFAULT_CONFIG));
-  return { ...base, fire: { ...base.fire, spreadChance: 0, breakChance: 0, hullChance: 0, ...fire } };
+  return testConfig({ fire: { spreadChance: 0, breakChance: 0, hullChance: 0, ...fire } });
 }
 
 /** A ship of 3 with nothing in it: p0 and p1 in the refectory, p2 in the laboratory. */

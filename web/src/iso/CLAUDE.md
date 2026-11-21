@@ -74,7 +74,10 @@ Loaded when working on the isometric view. The UI rules in `web/CLAUDE.md` still
   (`from`, when they first appear) or go out along one (`then`). Others' ways in and out come from
   the room log's public `entered`/`left` entries (`doorMoves.ts`, only the last 15 seconds);
   someone who left stays drawn walking out until they're through, and isn't drawn in the room they
-  went to (with ACTOPI on) until then. Without a log entry they still appear and vanish in place.
+  went to (with ACTOPI on) until then. Without Tracker the view's lines are `enteredRoom`/`leftRoom`,
+  with no room, and others' door spots are left out (owner, 2026-11-21): they fade in and out where
+  they stand (`SceneSprite.fade`, `FADE_MS`; Pixi steps the alpha, the DOM renderer a CSS animation),
+  so no door gives their direction away. Without a log entry they still appear and vanish in place.
 - Doors open and shut (`stepWalkers`, pure, one frame): a door starts opening when someone is about
   to walk through it, timed so it is open as they reach it; nobody steps into a doorway before it is
   open (someone standing at it waits), and it shuts once nobody is in the doorway or about to be.

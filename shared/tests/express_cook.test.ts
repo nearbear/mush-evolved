@@ -3,16 +3,16 @@ import { DEFAULT_CONFIG } from "../src/config.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, legalActions, viewFor } from "../src/rules.ts";
 import type { Action, GameState } from "../src/types.ts";
-import { makeSeats, mustApply, nextDay, player, noHunters } from "./support.ts";
+import { makeSeats, mustApply, nextDay, player, testConfig } from "./support.ts";
 
 const seats = makeSeats(3);
-const base = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [] };
+const base = testConfig();
 const express = (item: string): Action => ({ type: "express_cook", item });
 const microwave = (s: GameState) => s.items.find((i) => i.type === "microwave")!;
 
 /** p0 and p1 in the refectory with a full microwave on the floor, p2 in the sick bay; r1 on the floor, r2 carried by p0. */
 function ship(): GameState {
-  const s = createGame(seats, noHunters({ ...base, startItems: [{ type: "microwave", room: "REFECTORY" }] }), 3);
+  const s = createGame(seats, testConfig({ startItems: [{ type: "microwave", room: "REFECTORY" }] }), 3);
   player(s, "p0").room = player(s, "p1").room = "REFECTORY";
   player(s, "p2").room = "SICK_BAY";
   s.items.push({ id: "r1", type: "uncooked_ration", at: { kind: "room", id: "REFECTORY" } });

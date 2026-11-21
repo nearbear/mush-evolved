@@ -4,21 +4,19 @@ import { capacity } from "../src/items.ts";
 import { MODIFIERS } from "../src/modifiers.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
-import type { Action, GameConfig } from "../src/types.ts";
-import { forceDismantleOdds, makeSeats, mustApply, offered, withoutDrugs } from "./support.ts";
+import type { Action } from "../src/types.ts";
+import { forceDismantleOdds, makeSeats, mustApply, offered, withoutDrugs, testConfig } from "./support.ts";
 
 const seats = makeSeats(4, "others");
 
 /** Five wrenches in the lab (more than fit in an inventory), one medikit next door, empty hands. */
-const config: GameConfig = {
-  ...DEFAULT_CONFIG,
-  startInventory: [],
+const config = testConfig({
   startItems: [
     ...Array.from({ length: 5 }, () => ({ type: "wrench", room: "LABORATORY" })),
     { type: "medikit", room: "CORRIDOR_A" },
   ],
   startMp: 0, // the move below converts AP
-};
+});
 const newGame = () => withoutDrugs(createGame(seats, config, 42));
 
 const take = (item: string): Action => ({ type: "take", item });

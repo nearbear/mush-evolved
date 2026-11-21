@@ -60,6 +60,7 @@ function classOf(s: SceneSprite): string {
   if (s.you) names.push("you");
   if (s.effect === "fogged" || s.effect === "foggedLifted") names.push("neighbor");
   if (s.effect) names.push(EFFECT_CLASS[s.effect]);
+  if (s.fade) names.push(`fade-${s.fade}`);
   return names.join(" ");
 }
 

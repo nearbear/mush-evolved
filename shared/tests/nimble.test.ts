@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import { actionVisibility, ACTIONS } from "../src/actions.ts";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { killPlayer } from "../src/death.ts";
 import { cure } from "../src/infection.ts";
 import { CAMERA_EQUIPMENT } from "../src/equipment.ts";
@@ -10,9 +9,9 @@ import { queueAction } from "../src/queue.ts";
 import { createChannel } from "../src/chat.ts";
 import { postPlan } from "../src/plans.ts";
 import type { GameState } from "../src/types.ts";
-import { makeSeats, must, mustApply, nextCycle, option, player } from "./support.ts";
+import { makeSeats, must, mustApply, nextCycle, option, player, testConfig } from "./support.ts";
 
-const base = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [] };
+const base = testConfig();
 const ROOM_A = Object.keys(base.rooms).find((r) => base.rooms[r]!.length >= 2)!;
 const ROOM_B = base.rooms[ROOM_A]![0]!;
 const ROOM_C = base.rooms[ROOM_A]![1]!;
@@ -102,31 +101,31 @@ describe("nimble fingers", () => {
     const quiet = mustApply(baseNimble, "p0", { type: "move", to: ROOM_B });
     expect(quiet.log.filter((l) => l.key === "left" || l.key === "entered").every((l) => l.kind === "secret" && !l.leaked)).toBe(true);
     player(quiet, "p1").room = ROOM_A;
-    expect(viewFor(quiet, "p1").log.some((l) => l.key === "left")).toBe(false);
+    expect(viewFor(quiet, "p1").log.some((l) => l.key === "leftRoom")).toBe(false);
     player(quiet, "p1").room = ROOM_B;
-    expect(viewFor(quiet, "p1").log.some((l) => l.key === "entered")).toBe(false);
+    expect(viewFor(quiet, "p1").log.some((l) => l.key === "enteredRoom")).toBe(false);
 
     // Camera in ROOM_A -> empty ROOM_B: left looks public in ROOM_A, entered is hidden in ROOM_B.
     const camLeave = mustApply(ship(), "p0", { type: "enter_nimble" });
     camLeave.equipment[ROOM_A] = [{ id: "cam-a", type: CAMERA_EQUIPMENT }];
     const leftCam = mustApply(camLeave, "p0", { type: "move", to: ROOM_B });
     player(leftCam, "p1").room = ROOM_A;
-    const leftEntry = viewFor(leftCam, "p1").log.find((l) => l.key === "left");
+    const leftEntry = viewFor(leftCam, "p1").log.find((l) => l.key === "leftRoom");
     expect(leftEntry).toBeDefined();
     expect(leftEntry?.kind).toBeUndefined();
     expect(leftEntry?.leaked).toBeUndefined();
     player(leftCam, "p1").room = ROOM_B;
-    expect(viewFor(leftCam, "p1").log.some((l) => l.key === "entered")).toBe(false);
+    expect(viewFor(leftCam, "p1").log.some((l) => l.key === "enteredRoom")).toBe(false);
 
     // Empty ROOM_A -> ROOM_C with p1: left is hidden in ROOM_A, entered looks public in ROOM_C.
     const intoWitness = mustApply(ship(), "p0", { type: "enter_nimble" });
     const enteredWitness = mustApply(intoWitness, "p0", { type: "move", to: ROOM_C });
-    const enteredEntry = viewFor(enteredWitness, "p1").log.find((l) => l.key === "entered");
+    const enteredEntry = viewFor(enteredWitness, "p1").log.find((l) => l.key === "enteredRoom");
     expect(enteredEntry).toBeDefined();
     expect(enteredEntry?.kind).toBeUndefined();
     expect(enteredEntry?.leaked).toBeUndefined();
     player(enteredWitness, "p1").room = ROOM_A;
-    expect(viewFor(enteredWitness, "p1").log.some((l) => l.key === "left")).toBe(false);
+    expect(viewFor(enteredWitness, "p1").log.some((l) => l.key === "leftRoom")).toBe(false);
   });
 
   it("keeps ship-wide announcements public and updates actionVisibility in Nimble mode", () => {

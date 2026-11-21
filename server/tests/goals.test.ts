@@ -47,7 +47,7 @@ import { repairOxygen } from "../src/bots/goals/repairOxygen.ts";
 import { formatItemLine, newItemMemory, observeItems, parseItemLine, roomsHolding } from "../src/bots/itemShare.ts";
 import { newReportMemory } from "../src/bots/reportShare.ts";
 import { FUEL_LOADING_LINE, formatFuelNeed, formatFuelReport, newFuelMemory, observeFuel, parseFuelLine } from "../src/bots/fuelShare.ts";
-import { askableRoom, bedTier, formatBedAsk, newBedMemory, observeBedAsks, parseBedLine, shouldYieldBed } from "../src/bots/bedShare.ts";
+import { askableRoom, bedTier, formatBedAsk, formatShrinkLine, knownShrinkRooms, newBedMemory, observeBedAsks, parseBedLine, parseShrinkLine, shouldYieldBed } from "../src/bots/bedShare.ts";
 import { loadFuel } from "../src/bots/goals/loadFuel.ts";
 import { chooseSkill } from "../src/bots/skillChoice.ts";
 import { seats } from "../src/testing/fakes.ts";
@@ -973,7 +973,7 @@ describe("sowHere and setOutPots", () => {
         p.ap = 12;
         p.mp = 12;
       });
-      if (onFloor(game, garden).filter((i) => i.type === "tree_pot").length === 7) break;
+      if (onFloor(game, garden).filter((i) => i.type === "tree_pot").length === 7 && allTaken.some((a) => a.type === "water")) break;
     }
     const kinds = allTaken.map((a) => a.type).filter((t) => t !== "move");
     // The banana first (sown straight from the floor), then the Green Thumb pots, storage pots, and watering.
@@ -1175,21 +1175,112 @@ describe("fierySpeech (#452)", () => {
 });
 
 describe("rest around a Shrink (#452)", () => {
-  it("a Shrink never lies down: it stands in the bed room with the most people until its AP is full", async () => {
+  it("a Shrink rests in the bed room with the most people, says so, and lies in a free bed there (Run A4)", async () => {
     const { game: start, id } = setup();
     const beds = roomsWith(viewFor(start, id), ["BED"]);
     const busy = beds.at(-1)!;
     let game = edit(start, id, (p) => {
       p.skills = ["shrink"];
-      p.ap = 1;
+      p.ap = 3;
     });
     for (const p of game.players.filter((q) => q.id !== id).slice(0, 2)) game = edit(game, p.id, (q) => (q.room = busy));
     const [goal] = rest.options(viewFor(game, id), memory());
     expect(goal!.key).toBe(`rest:${busy}`);
     const { game: after, taken } = await oneCycle(game, id, new GoalBot(1, 2, [rest]));
-    expect(taken.every((a) => a.type === "move")).toBe(true);
+    expect(taken.at(-1)!.type).toBe("lie_down");
     expect(after.players.find((p) => p.id === id)!.room).toBe(busy);
-    expect(after.players.find((p) => p.id === id)!.lyingIn).toBeUndefined();
+    expect(after.players.find((p) => p.id === id)!.lyingIn).toBeDefined();
+    expect(after.chat.filter((l) => l.from === id).map((l) => l.text)).toEqual([formatShrinkLine(busy)]);
+  });
+
+  it("a Shrink leaves a free bed to someone standing there who asked for one, and stands instead (Run A4)", async () => {
+    const { game: start, id } = setup();
+    const room = "BEDROOM_A";
+    const asker = start.players.find((p) => p.id !== id)!.id;
+    let game = edit(start, id, (p) => {
+      p.skills = ["shrink"];
+      p.room = room;
+      p.ap = 3;
+    });
+    game = edit(game, asker, (p) => (p.room = room));
+    const said = applyInput(game, { type: "chat", channel: "global", text: formatBedAsk(room), by: asker });
+    if (!said.ok) throw new Error(said.error);
+    const { game: after, taken } = await oneCycle(said.state, id, new GoalBot(1, 2, [rest]));
+    expect(taken.some((a) => a.type === "lie_down")).toBe(false);
+    expect(after.players.find((p) => p.id === id)!.room).toBe(room);
+  });
+
+  it("a Shrink lying in a bed is the last tier: it gets up for anyone who asks (Run A4)", async () => {
+    const { game: start, id } = setup();
+    const room = "BEDROOM_A";
+    const beds = start.equipment[room]!.filter((e) => e.type === "BED");
+    const others = start.players.filter((p) => p.id !== id);
+    let game = start;
+    // The Shrink (`id`) and two others in the three beds, all without a tier-1 or tier-2 skill.
+    [id, others[0]!.id, others[1]!.id].forEach((pid, i) => {
+      game = edit(game, pid, (q) => {
+        q.skills = pid === id ? ["shrink"] : [];
+        q.room = room;
+        q.lyingIn = beds[i]!.id;
+        q.modifiers.push("lying_down");
+        q.ap = 3;
+      });
+    });
+    const asker = others[2]!.id;
+    game = edit(game, asker, (p) => {
+      p.skills = [];
+      p.room = room;
+    });
+    game.titles.commander = null;
+    expect(bedTier(["shrink", "pilot"], ["commander"])).toBe(4);
+    const said = applyInput(game, { type: "chat", channel: "global", text: formatBedAsk(room), by: asker });
+    if (!said.ok) throw new Error(said.error);
+    const m = memory();
+    observeBedAsks(viewFor(said.state, id), m);
+    expect(shouldYieldBed(viewFor(said.state, id), m)).toBe(true);
+    // A tier-3 sleeper doesn't: the Shrink lies there, lower.
+    const m2 = memory();
+    observeBedAsks(viewFor(said.state, others[0]!.id), m2);
+    expect(shouldYieldBed(viewFor(said.state, others[0]!.id), m2)).toBe(false);
+    // It says where it is first (that turn has no action), then gets up.
+    const bot = new GoalBot(1, 2, [rest]);
+    let action = await bot.decideAction(viewFor(said.state, id));
+    if (bot.takeSocial()) action = await bot.decideAction(viewFor(said.state, id));
+    expect(action).toEqual({ type: "get_up" });
+  });
+
+  it("other bots learn the Shrink's room from its line, without seeing it, and forget it on seeing it elsewhere (Run A4)", () => {
+    expect(parseShrinkLine(formatShrinkLine("BEDROOM_B"))).toBe("BEDROOM_B");
+    expect(parseShrinkLine("Shrink: in NOWHERE")).toBeNull();
+    expect(isMachineLine(formatShrinkLine("BEDROOM_B"))).toBe(true);
+    const { game: start, id } = setup();
+    const shrink = start.players.find((p) => p.id !== id)!.id;
+    let game = edit(start, shrink, (p) => {
+      p.skills = ["shrink"];
+      p.room = "BEDROOM_B";
+    });
+    game = edit(game, id, (p) => (p.room = "REFECTORY"));
+    const said = applyInput(game, { type: "chat", channel: "global", text: formatShrinkLine("BEDROOM_B"), by: shrink });
+    if (!said.ok) throw new Error(said.error);
+    // Without ACTOPI, the Shrink's room isn't in the view: only the line says it.
+    const blind = (g: GameState): PlayerView => {
+      const v = viewFor(g, id);
+      return { ...v, players: v.players.map((p) => (p.id === shrink ? { ...p, room: undefined } : p)) };
+    };
+    const m = memory();
+    observeBedAsks(blind(said.state), m);
+    expect(m.shrinks.has(shrink)).toBe(true);
+    expect([...knownShrinkRooms(blind(said.state), m)]).toEqual(["BEDROOM_B"]);
+    // Below the morale threshold, resting goes to the Shrink's room first.
+    const low = edit(said.state, id, (p) => {
+      p.ap = 3;
+      p.morale = LEAVE_SHRINK_BEDS_MORALE - 1;
+    });
+    expect(rest.options(blind(low), m)[0]!.key).toBe("rest:BEDROOM_B");
+    // Seen elsewhere: forgotten.
+    const moved = edit(said.state, shrink, (p) => (p.room = "BRIDGE"));
+    observeBedAsks(viewFor(moved, id), m);
+    expect(m.beds.shrinkRooms.size).toBe(0);
   });
 
   it(`at morale ${LEAVE_SHRINK_BEDS_MORALE} or more, leaves the Shrink's beds to others unless no other bed is in reach`, () => {
@@ -1427,13 +1518,14 @@ describe("shrinkDorm", () => {
     expect(keys.map((k) => k?.split(":")[1]).every((r) => DORMS.includes(r!))).toBe(true);
   });
 
-  it("walks to today's dorm and stays there standing until the cycle ends, never lying down (#452)", async () => {
+  it("walks to today's dorm, says so, takes a free bed and stays until the cycle ends (#452, changed by Run A4)", async () => {
     const { game, id } = crew(["shrink"]);
-    const dorm = shrinkDorm.options(viewFor(game, id), memory())[0]!.key.split(":")[1];
+    const dorm = shrinkDorm.options(viewFor(game, id), memory())[0]!.key.split(":")[1]!;
     const bot = new GoalBot(1, 2, [shrinkDorm, rest]);
     const { game: after, taken } = await oneCycle(game, id, bot);
     expect(room(after, id)).toBe(dorm);
-    expect(taken.every((a) => a.type === "move")).toBe(true);
+    expect(taken.map((a) => a.type).filter((t) => t !== "move")).toEqual(["lie_down"]);
+    expect(after.chat.filter((l) => l.from === id).map((l) => l.text)).toEqual([formatShrinkLine(dorm)]);
     expect(await bot.decideAction(viewFor(after, id))).toEqual({ type: "ready" });
   });
 

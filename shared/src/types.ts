@@ -107,6 +107,8 @@ export interface ItemState {
   document?: DocumentState;
   /** For a customized blaster (modifiers/infantryman.ts): the player who created it and is the only one who can fire it. */
   owner?: PlayerId;
+  /** For Schrödinger (`CAT_ITEM`, actions/mush_caress.ts): infected by a Mush. Mush-only in views. */
+  mush?: true;
 }
 
 /** One line of a printed document: a character (a body) and whether it is marked "negative" (not Mush). */

@@ -1,18 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { MODIFIERS, contaminationCapacity } from "../src/modifiers.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameState, PlayerId } from "../src/types.ts";
-import { clone, costOf, makeSeats, mustApply, nextDay, offered, player, noHunters } from "./support.ts";
+import { clone, costOf, makeSeats, mustApply, nextDay, offered, player, testConfig } from "./support.ts";
 
 const seats = makeSeats(4);
 // MP starts empty, so a move converts AP.
-const config = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startMp: 0 };
+const config = testConfig({ startMp: 0 });
 
 /** p0 is human, p1 is human, p2 is Mush, p3 is human; everyone in one room. */
 function ship(): GameState {
-  const s = createGame(seats, noHunters(config), 3);
+  const s = createGame(seats, config, 3);
   s.players.forEach((p, i) => {
     p.role = i === 2 ? "mush" : "human";
     p.alpha = i === 2;

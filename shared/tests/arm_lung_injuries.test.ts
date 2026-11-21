@@ -1,17 +1,17 @@
 import { describe, expect, it } from "vitest";
 import { createChannel, sendChat } from "../src/chat.ts";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { addDisease, removeDisease } from "../src/diseases.ts";
+import { ITRACKIE_ITEM } from "../src/items.ts";
 import { actionSuccessRate } from "../src/modifiers.ts";
 import { createGame } from "../src/rules.ts";
 import type { Action, GameState } from "../src/types.ts";
 import type { ActionTag } from "../src/actions/action.ts";
-import { makeSeats, nextCycle, noHunters, noIncidents, option, player } from "./support.ts";
+import { makeSeats, nextCycle, noCharacterModifiers, option, player, testConfig } from "./support.ts";
 
 const ARM = "busted_arm_joint_injury";
 const LUNG = "punctured_lung_injury";
 const TURRET_ROOM = "LASER_TURRET_A_0";
-const config = noIncidents(noHunters({ ...DEFAULT_CONFIG, characterModifiers: {}, startSkills: [], startItems: [] }));
+const config = noCharacterModifiers(testConfig({ startInventory: [ITRACKIE_ITEM] }));
 
 function ship(): GameState {
   const s = createGame(makeSeats(3, "others"), config, 7);

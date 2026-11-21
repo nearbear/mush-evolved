@@ -1,22 +1,21 @@
 import { describe, expect, it } from "vitest";
 import { ACTIONS } from "../src/actions.ts";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { addDisease, diseaseStats } from "../src/diseases.ts";
 import { apGain, apRefill, cycleChanged, enterRoom, enteredRoom } from "../src/modifiers.ts";
 import { createGame } from "../src/rules.ts";
-import type { Action, DiseaseStats, GameConfig, GameState, PlayerState } from "../src/types.ts";
-import { makeSeats, noHunters, option, player } from "./support.ts";
+import type { Action, DiseaseStats, GameState, PlayerState } from "../src/types.ts";
+import { makeSeats, option, player, testConfig } from "./support.ts";
 
-const config: GameConfig = { ...DEFAULT_CONFIG, mushCount: 1, preselection: null, startSkills: [], startInventory: [], startItems: [] };
+const config = testConfig();
 
-const game = (seed = 3): GameState => createGame(makeSeats(4), noHunters(config), seed);
+const game = (seed = 3): GameState => createGame(makeSeats(4), config, seed);
 const human = (s: GameState) => s.players.find((p) => p.role === "human")!;
 const mush = (s: GameState) => s.players.find((p) => p.role === "mush")!;
 
 /** A game whose Rubella stats are patched (the config is frozen, so it is built from a patched copy). */
 function rubellaGame(patch: Partial<DiseaseStats>): GameState {
   const allDiseaseStats = config.diseases.allDiseaseStats.map((d) => (d.label === "rubella_disease" ? { ...d, ...patch } : d));
-  return createGame(makeSeats(4), noHunters({ ...config, diseases: { ...config.diseases, allDiseaseStats } }), 3);
+  return createGame(makeSeats(4), { ...config, diseases: { ...config.diseases, allDiseaseStats } }, 3);
 }
 
 /** One sample of each blocked action and the refusal Rubella gives it; the targets don't matter, Rubella is checked first. */

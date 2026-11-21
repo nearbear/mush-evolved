@@ -5,19 +5,14 @@ import { addDisease } from "../src/diseases.ts";
 import { PROJECT_COMPLETE, PROJECT_IDS, projectStatus } from "../src/projects.ts";
 import { createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameState } from "../src/types.ts";
-import { makeSeats, mustApply, noIncidents, player, setProgress } from "./support.ts";
+import { makeSeats, mustApply, player, setProgress, testConfig } from "./support.ts";
 
-const config = {
-  ...DEFAULT_CONFIG,
-  maxAp: 99,
-  startAp: 10,
-  shower: { ...DEFAULT_CONFIG.shower, injuryChance: 0 },
-};
+const config = testConfig({ maxAp: 99, startAp: 10, shower: { injuryChance: 0 } });
 const shower: Action = { type: "shower", equipment: "BEDROOM_A:SHOWER" };
 const workCore = (project: string): Action => ({ type: "project", equipment: "NEXUS_ROOM:NERON_CORE", project });
 
 function game(seed = 1): GameState {
-  const s = noIncidents(createGame(makeSeats(4, "others"), structuredClone(config), seed));
+  const s = createGame(makeSeats(4, "others"), structuredClone(config), seed);
   for (const p of s.players) {
     p.role = p.id === "p0" ? "mush" : "human";
     p.room = "BEDROOM_A";

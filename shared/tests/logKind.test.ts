@@ -1,16 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { CAMERA_EQUIPMENT } from "../src/equipment.ts";
 import { logCovert, logPrivate, logPublic, logSecret } from "../src/log.ts";
 import { normalizeLogEntry } from "../src/normalizeState.ts";
 import { createGame, seatViewFor, viewFor } from "../src/rules.ts";
 import type { GameState, LogLine } from "../src/types.ts";
 import { installCameraIn } from "./cameras.ts";
-import { makeSeats, noHunters, noIncidents, player } from "./support.ts";
+import { makeSeats, player, testConfig } from "./support.ts";
 
 // Log line kind (owner, 2026-11-05, #366; rules-design.md "Log line kind"): each line records its kind, from the
 // writer, and whether a secret or covert one leaked. Every seat that sees a line sees both.
-const config = noHunters(noIncidents({ ...DEFAULT_CONFIG, mushCount: 1, startItems: [], startSkills: [] }));
+const config = testConfig();
 
 /** p0 and p1 in the refectory, p2 in the laboratory, p3 dead in the refectory. */
 function ship(): GameState {

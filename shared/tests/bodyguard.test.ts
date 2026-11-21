@@ -3,10 +3,10 @@ import { DEFAULT_CONFIG } from "../src/config.ts";
 import { killPlayer } from "../src/death.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { queueAction, tick } from "../src/queue.ts";
-import type { Action, GameConfig, GameState } from "../src/types.ts";
-import { costOf, makeSeats, must, mustApply, offered, player, pickSkill } from "./support.ts";
+import type { Action, GameState } from "../src/types.ts";
+import { costOf, makeSeats, must, mustApply, offered, player, pickSkill, testConfig } from "./support.ts";
 
-const base: GameConfig = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [], startMp: 10 };
+const base = testConfig({ startMp: 10 });
 const protect = (target: string): Action => ({ type: "protect", target });
 
 /** p0 is a Bodyguard; p0, p1 and p3 share the sick bay, p2 is in the refectory. */

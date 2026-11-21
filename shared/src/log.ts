@@ -44,6 +44,25 @@ export function logWindowOf(state: Readonly<GameState>, you: Readonly<PlayerStat
   return hasSkill(you, "hunt") ? state.config.logWindow.tracker : state.config.logWindow.cycles;
 }
 
+/**
+ * A crew move line's direction-free key, by its directional one (owner, 2026-11-21; eMushpedia Traqueur): someone
+ * without Tracker sees "X left the room" and "X entered the room", never the room. Drones and Schrödinger write their
+ * own keys and always show it.
+ */
+const UNDIRECTED_MOVE_KEYS: Readonly<Record<string, string>> = { left: "leftRoom", entered: "enteredRoom" };
+
+/**
+ * `e` as `you` see it: a crew move line keeps where they came from or went to only with the Tracker skill (`hunt`).
+ * Decided when the view is built, so a Tracker learned from a book shows it on the older lines still in the window. No
+ * exception for your own moves, and a camera shows no direction (owner, 2026-11-21). The state keeps the room.
+ */
+export function moveLineFor(e: LogEntry, you: Readonly<PlayerState>): LogEntry {
+  const key = UNDIRECTED_MOVE_KEYS[e.key];
+  if (key === undefined || hasSkill(you, "hunt")) return e;
+  const { room: _room, ...params } = e.params ?? {};
+  return { ...e, key, params };
+}
+
 /** Whether `e` is inside a window of `cycles`: the current cycle and the `cycles - 1` before it. Ship-wide lines always are. */
 export function inLogWindow(state: Readonly<GameState>, e: Readonly<LogEntry>, cycles: number): boolean {
   return e.room === undefined || e.cycle > state.cycle - cycles;

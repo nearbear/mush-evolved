@@ -82,7 +82,9 @@ function KubeRow({ op, view, source, onKube }: { op: KubeOpId; view: PlayerView;
         ? names.item(value)
         : kind === "door"
           ? doorRooms(value).map(names.room).join(" ↔ ")
-          : names.room(value);
+          : kind === "sector"
+            ? t(`astro.tags.${value}` as never, { defaultValue: value })
+            : names.room(value);
   const parsed = Number(number);
   const valid = kind !== "number" || (number !== "" && Number.isInteger(parsed) && parsed >= 0);
   return (
@@ -100,7 +102,7 @@ function KubeRow({ op, view, source, onKube }: { op: KubeOpId; view: PlayerView;
         </select>
       )}
       <button type="button" disabled={!valid} onClick={() => onKube(op, kind === "number" ? parsed : choice)}>
-        {t("kube.apply")}
+        {op === "warpToPlanet" ? t("kube.warp") : t("kube.apply")}
       </button>
     </div>
   );

@@ -122,8 +122,7 @@
       "cheats": "Trampas"
     },
     "cheatHints": {
-      "fastExpeditions": "2 segundos por sector",
-      "fuelPlanet": "Lleva la nave a un planeta de 20 sectores de Hidrocarburos que nunca se agotan"
+      "fastExpeditions": "2 segundos por sector"
     },
     "cheats": {
       "title": "Trucos (desarrollo)",
@@ -143,7 +142,6 @@
       "easyTravel": "Viaje fácil",
       "invincible": "Nave invencible",
       "fastExpeditions": "Expediciones rápidas",
-      "fuelPlanet": "Órbita de un planeta de combustible",
       "goToCheatRoom": "Ir a la sala de trucos",
       "leaveShip": "Abandonar la nave",
       "role": {
@@ -350,6 +348,8 @@
     "summon": "Convocar",
     "access": "Acceder",
     "examine": "Examinar",
+    "caress": "Acariciar",
+    "mushCaress": "Caricia infecciosa",
     "dispense": "Sacar un café",
     "playArcade": "Jugar en la recreativa",
     "consume": "Consumir",
@@ -446,6 +446,7 @@
     "lacksExplored": "Todos los sectores de este planeta han sido explorados: no queda nada para una expedición.",
     "lacksIcarusLost": "El Ícaro se ha perdido: ya no hay más expediciones.",
     "lacksAntisocial": "Asocial: no puedes vincularte con nadie.",
+    "lacksGermaphobe": "Germáfoba: no puedes acariciar a Schrödinger.",
     "lacksReactorTurn": "El reactor lateral de este lado está averiado: el Daedalus no puede girar hacia este lado hasta que lo reparen.",
     "lacksPreselection": "No disponible durante la preselección: los títulos no se asignan hasta que se elijan los Mush.",
     "lacksMp": "No tienes suficientes PM: cuesta {{need}} y tienes {{have}}.",
@@ -500,7 +501,8 @@
     "greenJelly": "Gelatina verde",
     "reinforce": "Reforzar",
     "upgradeDrone": "Mejorar",
-    "upgradeDroneWith": "Mejorar ({{upgrade}})"
+    "upgradeDroneWith": "Mejorar ({{upgrade}})",
+    "openLunchbox": "Abrir"
   },
   "queue": {
     "label": "Tus acciones",
@@ -828,6 +830,7 @@
     "pacifist": "Pacifista",
     "hyperactive": "Hiperactivo",
     "antisocial": "Asocial",
+    "germaphobe": "Germáfoba",
     "guardian": "Guardián",
     "mankind_only_hope": "Única esperanza de la humanidad",
     "wheelchair": "Silla de ruedas",
@@ -888,6 +891,7 @@
       "pacifist": "Toda acción agresiva en la sala de esta persona cuesta 2 PA más, incluidas las suyas. Se acumula con otros pacifistas. No se puede quitar.",
       "hyperactive": "Un rasgo: esta persona gana 1 PM más en cada cambio de ciclo y no gana PA extra por tumbarse. No se puede quitar.",
       "antisocial": "Un rasgo: esta persona pierde 1 punto de moral en cada cambio de ciclo que pasa en una sala con alguien más, y no puede vincularse. No se puede quitar.",
+      "germaphobe": "Un rasgo: esta persona pierde 1 punto de moral en cada cambio de ciclo mientras esté sucia, y no puede acariciar a Schrödinger. No se puede quitar.",
       "guardian": "Mientras esta persona vigila la sala, todos los demás solo pueden salir por la puerta por la que entraron, o por ninguna si llegaron de otra forma. Termina cuando el guardián se va, lo mueven o muere.",
       "mankind_only_hope": "Un rasgo: mientras esta persona siga con vida, toda la tripulación pierde 1 punto de moral menos cada día. No se puede quitar.",
       "wheelchair": "Un rasgo: cualquiera en la sala de esta persona puede ofrecerse a empujar su silla de ruedas. Mientras la empujan, se mueve con quien la empuja sin coste de PM. No se puede quitar.",
@@ -945,6 +949,8 @@
   "itemAttr": {
     "contaminated": "Contagio: {{level}}",
     "contaminatedDesc": "Comida fúngica: un humano que la coma se contagia de este número de niveles. Solo los Mush lo ven.",
+    "mushCat": "Gato Mush",
+    "mushCatDesc": "Infectado por el Mush: cualquier humano que coja a Schrödinger se contagia de 1 nivel. Solo los Mush lo ven.",
     "jelly_one": "Gelatina verde: avería en {{count}} ciclo",
     "jelly_many": "Gelatina verde: avería en {{count}} ciclos",
     "jelly_other": "Gelatina verde: avería en {{count}} ciclos",
@@ -991,6 +997,7 @@
     "summonStoppedNoPath": "Te han convocado a: {{room}}, pero no hay camino hasta allí desde donde estás.",
     "loseMorale": "Has perdido {{amount}} punto de moral.",
     "antisocialMoraleLoss": "La presencia de otras personas te ha costado {{amount}} punto de moral.",
+    "germaphobeMoraleLoss": "La suciedad te ha costado {{amount}} punto de moral.",
     "gainMorale": "Has ganado {{amount}} punto de moral.",
     "actionCostChanged": "Tu acción en cola ({{action}}) se ha cancelado porque su coste ha cambiado: ahora cuesta {{ap}} PA y {{mp}} PM.",
     "actionDropped": "Tu acción en cola ({{action}}) ya no era posible y se ha descartado.",
@@ -1006,6 +1013,8 @@
     "coldDiseaseMpLost": "La enfermedad te hizo perder 1 PM.",
     "left": "{{name}} se fue a: {{room}}.",
     "entered": "{{name}} entró desde: {{room}}.",
+    "leftRoom": "{{name}} salió de la sala.",
+    "enteredRoom": "{{name}} entró en la sala.",
     "accommodationOffered": "{{name}} se ofreció a empujar la silla de ruedas de {{target}}.",
     "accommodated": "{{name}} empuja ahora la silla de ruedas de {{target}}.",
     "accommodationEnded": "{{name}} dejó de empujar la silla de ruedas de {{target}}.",
@@ -1261,6 +1270,9 @@
     "shipDestroyed": "El casco del Daedalus cede. La nave explota, y toda la tripulación con ella.",
     "turretHit": "Alcanzas al hunter: {{damage}} de daño.",
     "turretMiss": "Fallas el disparo al hunter.",
+    "merchantHit": "Alcanzas la {{merchant}}: {{damage}} de daño.",
+    "merchantMiss": "Fallas el disparo a la {{merchant}}.",
+    "merchantDestroyed": "Destruyes la {{merchant}}.",
     "hunterDestroyed": "{{name}} ha derribado un hunter.",
     "hullRepaired": "{{name}} ha reforzado el casco.",
     "hullRepairFailed": "No has conseguido reforzar el casco.",
@@ -1347,6 +1359,11 @@
     "droneLeft": "{{drone}} se ha ido a: {{room}}.",
     "droneEntered": "{{drone}} ha llegado desde: {{room}}.",
     "droneExtinguished": "¡{{drone}} ha apagado el incendio!",
+    "catLeft": "Schrödinger se ha ido a: {{room}}.",
+    "catEntered": "Schrödinger ha llegado desde: {{room}}.",
+    "caressedCat": "{{name}} ha acariciado a Schrödinger.",
+    "mushCaressedCat": "{{name}} le ha dado una caricia infecciosa a Schrödinger.",
+    "mushConvertedCat": "{{name}} ha convertido a Schrödinger en Mush.",
     "droneExtinguishFailed": "{{drone}} ha intentado apagar el incendio, pero ha fallado.",
     "droneUpgraded": "{{name}} ha instalado la mejora {{upgrade}} en {{drone}}.",
     "itemRepairFailed": "No has conseguido reparar el objeto: {{item}}.",
@@ -1355,7 +1372,8 @@
     "reportShared": "{{name}} ha compartido el informe de la expedición a {{planet}}.",
     "reportShareAppended": "{{name}} ha completado el informe compartido de la expedición a {{planet}}.",
     "missionIssued": "Has dado una misión a {{target}}.",
-    "missionReceived": "El Comandante te ha dado una misión: +{{amount}} PA."
+    "missionReceived": "El Comandante te ha dado una misión: +{{amount}} PA.",
+    "lunchboxOpened": "Sacaste una Ración estándar de la canasta de comida."
   },
   "throwOut": {
     "confirm": "¿A qué sala echar a {{name}}?",
@@ -1897,11 +1915,23 @@
         "crew": "No hay suficientes tripulantes inactivos a bordo.",
         "item": "No hay suficiente {{item}} en el suelo de los almacenes.",
         "oxygen": "No hay suficiente oxígeno en los tanques.",
-        "fuel": "No hay suficiente combustible en los tanques."
+        "fuel": "No hay suficiente combustible en los tanques.",
+        "character": "Este miembro de la tripulación ({{name}}) debe estar a bordo e inactivo.",
+        "project": "No hay suficientes proyectos terminados que un mercader pueda llevarse.",
+        "pilgred": "PILGRED ya está reparado."
       },
       "kinds": {
         "transport": "Nave de transporte"
-      }
+      },
+      "character": "{{name}}, en caso de inactividad",
+      "giveProject_one": "{{count}} proyecto terminado a elegir",
+      "giveProject_many": "{{count}} proyectos terminados a elegir",
+      "giveProject_other": "{{count}} proyectos terminados a elegir",
+      "receiveProject_one": "{{count}} proyecto de NERON al azar, terminado al instante",
+      "receiveProject_many": "{{count}} proyectos de NERON al azar, terminados al instante",
+      "receiveProject_other": "{{count}} proyectos de NERON al azar, terminados al instante",
+      "pilgred": "PILGRED reparado",
+      "pickProject": "Proyecto a entregar ({{n}})"
     },
     "rebels": {
       "WOLF": {
@@ -1984,7 +2014,10 @@
     "countdown_one": "Impacto en {{count}} ciclo",
     "countdown_many": "Impacto en {{count}} ciclos",
     "countdown_other": "Impacto en {{count}} ciclos",
-    "charges": "Cargas restantes: {{charges}}"
+    "charges": "Cargas restantes: {{charges}}",
+    "merchantConfirm": "¿Disparar a {{name}}? Un impacto pone fin a cualquier trato y la hace huir.",
+    "merchantConfirmYes": "Disparar",
+    "merchantConfirmBack": "Alto el fuego"
   },
   "document": {
     "read": "Leer",
@@ -1995,6 +2028,7 @@
   },
   "kube": {
     "open": "Abrir",
+    "warp": "Saltar",
     "title": "Superkube",
     "close": "Cerrar",
     "apply": "Aplicar",
@@ -2020,6 +2054,7 @@
       "spawn": "Hacer aparecer un objeto",
       "teleport": "Teletransportarse a una sala",
       "breakDoor": "Romper una puerta",
+      "warpToPlanet": "Planeta de 20 sectores",
       "returnToSol": "Volver a Sol",
       "returnToEden": "Viajar a Edén"
     }
@@ -2283,7 +2318,9 @@
       "deal": "Trato cerrado",
       "refused": "Rechazada",
       "lost": "Señal perdida",
-      "reached": "Decodificada"
+      "reached": "Decodificada",
+      "shot": "Atacada",
+      "destroyed": "Destruida"
     },
     "kinds": {
       "merchant": "Mercader",
@@ -2296,6 +2333,7 @@
     "incoming": "Transmisión entrante…",
     "over": "Esta conversación ha terminado.",
     "lost": "Señal perdida.",
+    "destroyed": "Señal perdida: la nave fue destruida.",
     "names": {
       "merchant": {
         "transport": "Transporte",
@@ -2311,9 +2349,15 @@
       "transport": {
         "accept": "Trato hecho.",
         "farewell": "Entendido.",
+        "shot": "¡Nos habéis disparado! Nos vamos.",
         "hail": {
           "HUMAN_VS_FUEL": "Tenemos un excedente de anticongelante y nos falta comida para esta noche. ¿Os interesa?",
-          "HUMAN_VS_OXY": "Aloha, vuestros organismos son realmente apasionantes, sobre todo la metanización de vuestros residuos orgánicos, increíble... ¡Os cambiamos a uno de vuestros amigos por unas reservas de oxígeno considerables!"
+          "HUMAN_VS_OXY": "Aloha, vuestros organismos son realmente apasionantes, sobre todo la metanización de vuestros residuos orgánicos, increíble... ¡Os cambiamos a uno de vuestros amigos por unas reservas de oxígeno considerables!",
+          "FOREST_DEAL": "OOOOOOOOoooooo...... *argh, mis sensores* Somos ...*chhhhh*\nJardineros espaciales, os cambiaremos con gusto vuestro material por bienes valiosos.",
+          "PILGREDISSIM": "[NAc Nac NAc NAc] *mejorando el haz* [Nac]\nMotor podrido, nunca avanzar por el universo así. Civilización de cartón... [Naaaaac]\n¡Reparamos vuestro PILGRED a cambio de miembros de vuestra tripulación!",
+          "GOOD_PROJECTIONS": "Saludos, humilde criatura mamífera, buscamos nuevos juguetes para complacer a nuestra reina.\nDisponemos de tecnologías que podrían seros útiles.",
+          "TECHNO_REWRITE": "Las grandes casas de Serres os saludan. Llevamos eones observando vuestro mundo primitivo y la loca carrera de vuestra nave nos intriga. Aun así, algunas de vuestras tecnologías nos interesan; un pequeño intercambio podría beneficiar a todos.",
+          "HUMAN_VS_TREE": "Buraroum, nosotros, los Devorahojas, necesitamos jardineros celestes. Os cambiamos macetas nuevas por mano de obra."
         }
       }
     },

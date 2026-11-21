@@ -1,15 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { clearQueue, nextDue, queueAction, tick } from "../src/queue.ts";
 import { applyInput } from "../src/replay.ts";
 import { installCameraIn } from "./cameras.ts";
 import { createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameConfig, GameState, PlayerId } from "../src/types.ts";
-import { makeSeats, player, must } from "./support.ts";
+import { makeSeats, player, must, testConfig } from "./support.ts";
 
 const seats = makeSeats(3);
-const base: GameConfig = { ...DEFAULT_CONFIG, manualCycles: true, mushCount: 1, startInventory: [], startItems: [], startSkills: [], punch: { ...DEFAULT_CONFIG.punch, successChance: 1, effect: { ...DEFAULT_CONFIG.punch.effect, damage: [2, 2] }, crit: { ...DEFAULT_CONFIG.punch.crit, chance: 0 } } };
+const base = testConfig({ manualCycles: true, punch: { successChance: 1, effect: { damage: [2, 2] }, crit: { chance: 0 } } });
 const D = base.action.durationMs;
 const punch = (target: PlayerId): Action => ({ type: "punch", target });
 const bond = (target: PlayerId): Action => ({ type: "bond", target });

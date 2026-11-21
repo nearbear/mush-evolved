@@ -5,11 +5,12 @@ import type { DrugEffect } from "../drugs.ts";
 import type { FruitEffect } from "../fruits.ts";
 import type { RebelBaseId, XylophEntryId } from "../comms.ts";
 import type { SignalView } from "../signals.ts";
+import type { MerchantKind } from "../merchants.ts";
 import type { TurnSide } from "../navigation.ts";
 import type { PlanetDirection, PlanetTag } from "../planets.ts";
 import type { TitleId } from "../titles.ts";
 import type { Alerts } from "../reports.ts";
-import type { Action, BotKind, DocumentState, ItemId, LogEntry, LogLine, PlayerId, Role, RoomId, SpoilStage } from "../types.ts";
+import type { Action, BotKind, DocumentState, ItemId, LogEntry, LogLine, LogParams, PlayerId, Role, RoomId, SpoilStage } from "../types.ts";
 import type { ChannelId, ChatLine, ChatMessage, ChatThread, PrivateChannel, SeqRange, SharedPlanet, SharedPlanetId, SharedReport, SharedReportId } from "./chat.ts";
 import type { Plan } from "./plan.ts";
 import type { MovementRules } from "./config.ts";
@@ -68,6 +69,8 @@ export interface ItemView {
   drone?: { name: string; serial: number; upgrades: string[] };
   /** For a document (#394): its kind and rows (characters and marks), public to whoever can see it. */
   document?: DocumentState;
+  /** For Schrödinger: infected by a Mush (actions/mush_caress.ts). Sent to living Mush only. */
+  mush?: true;
 }
 
 /** One seat as the end screen shows it, once the game has ended (#191). Everyone, you included, in seat order. */
@@ -200,6 +203,14 @@ export interface HunterView {
   type: HunterType;
   hp: number;
   countdown: number | null;
+}
+
+/** A merchant in space as a gunner sees it (owner, 2026-11-21): its signal id, kind, name ("Transport 2") and hp. */
+export interface MerchantTargetView {
+  id: string;
+  kind: MerchantKind;
+  name: { key: string; params?: LogParams };
+  hp: number;
 }
 
 export interface PlayerView {
@@ -361,7 +372,7 @@ export interface PlayerView {
    * alive in a turret room or flying a ship (owner, 2026-10-28), with its kind and an asteroid's countdown (#388); `turrets` (charges by turret equipment id) only while
    * you are alive in a turret room. Otherwise null.
    */
-  hunters: { count: number; list: HunterView[] | null; turrets: Record<string, number> | null };
+  hunters: { count: number; list: HunterView[] | null; merchants: MerchantTargetView[] | null; turrets: Record<string, number> | null };
   /**
    * Reports of the expeditions you went on, oldest first, while you are alive (owner, 2026-10-31): nobody else's, and
    * without the members' seat ids (the crew is by character).
@@ -459,7 +470,7 @@ export interface ActionOption {
    * Empty when you can do it now; otherwise the points, the inventory space, or the cleanliness ("clean": you are dirty)
    * you lack, or for Collect scrap, "debris" (none out there) or "pasiphae" (a patrol ship can't while the Pasiphae exists), or for Travel and turns, "reactor" (the reactor it needs is broken), or for Travel and Leave orbit, "arack" (an Arack is around), or for Hack, "preselection" (titles aren't assigned yet), or for Board the Icarus and Take off, "explored" (every sector of the planet is explored) or "icarusLost". See `affordable`.
    */
-  lacks: ("ap" | "mp" | "space" | "cooldown" | "capacity" | "clean" | "debris" | "pasiphae" | "reactor" | "arack" | "preselection" | "explored" | "icarusLost" | "antisocial")[];
+  lacks: ("ap" | "mp" | "space" | "cooldown" | "capacity" | "clean" | "debris" | "pasiphae" | "reactor" | "arack" | "preselection" | "explored" | "icarusLost" | "antisocial" | "germaphobe")[];
   /** Cycles until it is ready, when `lacks` has "cooldown". */
   cooldown?: number;
 }

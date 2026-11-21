@@ -122,8 +122,7 @@
       "cheats": "Triche"
     },
     "cheatHints": {
-      "fastExpeditions": "2 secondes par secteur",
-      "fuelPlanet": "Envoie le vaisseau vers une planète de 20 secteurs Hydrocarbure inépuisables"
+      "fastExpeditions": "2 secondes par secteur"
     },
     "cheats": {
       "title": "Triche (développement)",
@@ -143,7 +142,6 @@
       "easyTravel": "Voyage facile",
       "invincible": "Vaisseau invincible",
       "fastExpeditions": "Expéditions rapides",
-      "fuelPlanet": "Orbite d'une planète à carburant",
       "goToCheatRoom": "Aller dans la salle de triche",
       "leaveShip": "Quitter le vaisseau",
       "role": {
@@ -350,6 +348,8 @@
     "summon": "Convoquer",
     "access": "Accéder",
     "examine": "Examiner",
+    "caress": "Caresser",
+    "mushCaress": "Caresse infectieuse",
     "dispense": "Tirer un café",
     "playArcade": "Jouer sur la borne",
     "consume": "Consommer",
@@ -446,6 +446,7 @@
     "lacksExplored": "Tous les secteurs de cette planète ont été explorés : il ne reste rien pour une expédition.",
     "lacksIcarusLost": "L'Icarus est perdu : plus aucune expédition n'est possible.",
     "lacksAntisocial": "Asociale : vous ne pouvez vous lier avec personne.",
+    "lacksGermaphobe": "Germaphobe : vous ne pouvez pas caresser Schrödinger.",
     "lacksReactorTurn": "Le réacteur latéral de ce côté est en panne : le Daedalus ne peut pas tourner de ce côté tant qu'il n'est pas réparé.",
     "lacksPreselection": "Indisponible en pré-sélection : les titres ne sont attribués qu'une fois les Mush choisis.",
     "lacksMp": "Pas assez de PM : cela coûte {{need}}, vous en avez {{have}}.",
@@ -500,7 +501,8 @@
     "greenJelly": "Gelée verte",
     "reinforce": "Renforcer",
     "upgradeDrone": "Améliorer",
-    "upgradeDroneWith": "Améliorer ({{upgrade}})"
+    "upgradeDroneWith": "Améliorer ({{upgrade}})",
+    "openLunchbox": "Ouvrir"
   },
   "queue": {
     "label": "Vos actions",
@@ -828,6 +830,7 @@
     "pacifist": "Pacifiste",
     "hyperactive": "Hyperactif",
     "antisocial": "Asociale",
+    "germaphobe": "Germaphobe",
     "guardian": "Gardien",
     "mankind_only_hope": "Seul espoir de l'Humanité",
     "wheelchair": "Fauteuil roulant",
@@ -888,6 +891,7 @@
       "pacifist": "Toute action agressive dans la salle de cette personne coûte 2 PA de plus, les siennes comprises. Se cumule avec d'autres pacifistes. Ne peut pas être retiré.",
       "hyperactive": "Un trait : cette personne gagne 1 PM de plus à chaque changement de cycle, et ne gagne pas de PA supplémentaire en s'allongeant. Ne peut pas être retiré.",
       "antisocial": "Un trait : cette personne perd 1 point de moral à chaque changement de cycle passé dans une pièce avec quelqu'un d'autre, et ne peut pas se lier. Ne peut pas être retiré.",
+      "germaphobe": "Un trait : cette personne perd 1 point de moral à chaque changement de cycle tant qu'elle est sale, et ne peut pas caresser Schrödinger. Ne peut pas être retiré.",
       "guardian": "Tant que cette personne garde la salle, tous les autres ne peuvent sortir que par la porte par laquelle ils sont entrés, ou pas du tout s'ils sont arrivés autrement. Cela prend fin quand le gardien part, est déplacé ou meurt.",
       "mankind_only_hope": "Un trait : tant que cette personne est en vie, tout l'équipage perd 1 point de moral de moins chaque jour. Ne peut pas être retiré.",
       "wheelchair": "Un trait : n'importe qui dans la salle de cette personne peut proposer de pousser son fauteuil. Une fois poussée, elle se déplace avec son accompagnateur sans coût en PM. Ne peut pas être retiré.",
@@ -945,6 +949,8 @@
   "itemAttr": {
     "contaminated": "Contamination : {{level}}",
     "contaminatedDesc": "Nourriture fongique : un humain qui la mange est contaminé de ce nombre de niveaux. Seuls les Mush le voient.",
+    "mushCat": "Chat Mush",
+    "mushCatDesc": "Infecté par le Mush : tout humain qui prend Schrödinger est contaminé d'un niveau. Seuls les Mush le voient.",
     "jelly_one": "Gélée verte : panne dans {{count}} cycle",
     "jelly_many": "Gélée verte : panne dans {{count}} cycles",
     "jelly_other": "Gélée verte : panne dans {{count}} cycles",
@@ -991,6 +997,7 @@
     "summonStoppedNoPath": "Vous avez été convoqué(e) : {{room}}, mais aucun chemin n'y mène depuis là où vous êtes.",
     "loseMorale": "Vous avez perdu {{amount}} point de moral.",
     "antisocialMoraleLoss": "La présence des autres vous a coûté {{amount}} point de moral.",
+    "germaphobeMoraleLoss": "Être sale vous a coûté {{amount}} point de moral.",
     "gainMorale": "Vous avez gagné {{amount}} point de moral.",
     "actionCostChanged": "Votre action en attente ({{action}}) a été annulée car son coût a changé : elle coûte maintenant {{ap}} PA et {{mp}} PM.",
     "actionDropped": "Votre action en attente ({{action}}) n'était plus possible et a été annulée.",
@@ -1006,6 +1013,8 @@
     "coldDiseaseMpLost": "La maladie vous a fait perdre 1 PM.",
     "left": "{{name}} est parti vers : {{room}}.",
     "entered": "{{name}} est entré depuis : {{room}}.",
+    "leftRoom": "{{name}} est sorti de la pièce.",
+    "enteredRoom": "{{name}} est entré dans la pièce.",
     "accommodationOffered": "{{name}} a proposé de pousser le fauteuil de {{target}}.",
     "accommodated": "{{name}} pousse désormais le fauteuil de {{target}}.",
     "accommodationEnded": "{{name}} a cessé de pousser le fauteuil de {{target}}.",
@@ -1261,6 +1270,9 @@
     "shipDestroyed": "La coque du Daedalus cède. Le vaisseau explose, et tout l'équipage avec lui.",
     "turretHit": "Vous touchez le hunter : {{damage}} dégâts.",
     "turretMiss": "Vous ratez le hunter.",
+    "merchantHit": "Vous touchez le {{merchant}} : {{damage}} dégâts.",
+    "merchantMiss": "Vous ratez le {{merchant}}.",
+    "merchantDestroyed": "Vous détruisez le {{merchant}}.",
     "hunterDestroyed": "{{name}} a abattu un hunter.",
     "hullRepaired": "{{name}} a renforcé la coque.",
     "hullRepairFailed": "Vous n'avez pas réussi à renforcer la coque.",
@@ -1347,6 +1359,11 @@
     "droneLeft": "{{drone}} est parti vers : {{room}}.",
     "droneEntered": "{{drone}} est arrivé de : {{room}}.",
     "droneExtinguished": "{{drone}} a éteint l'incendie !",
+    "catLeft": "Schrödinger est sorti vers : {{room}}.",
+    "catEntered": "Schrödinger est entré depuis : {{room}}.",
+    "caressedCat": "{{name}} a caressé Schrödinger.",
+    "mushCaressedCat": "{{name}} a fait une caresse infectieuse à Schrödinger.",
+    "mushConvertedCat": "{{name}} a fait voyager Schrödinger vers le Mush.",
     "droneExtinguishFailed": "{{drone}} a tenté d'éteindre l'incendie, sans succès.",
     "droneUpgraded": "{{name}} a installé l'amélioration {{upgrade}} sur {{drone}}.",
     "itemRepairFailed": "Vous n'avez pas réussi à réparer l'objet : {{item}}.",
@@ -1355,7 +1372,8 @@
     "reportShared": "{{name}} a partagé le rapport de l'expédition sur {{planet}}.",
     "reportShareAppended": "{{name}} a complété le rapport partagé de l'expédition sur {{planet}}.",
     "missionIssued": "Vous avez donné une mission à {{target}}.",
-    "missionReceived": "Le Commandant vous a donné une mission : +{{amount}} PA."
+    "missionReceived": "Le Commandant vous a donné une mission : +{{amount}} PA.",
+    "lunchboxOpened": "Vous avez sorti une Ration standard du panier repas."
   },
   "throwOut": {
     "confirm": "Dans quelle salle jeter {{name}} ?",
@@ -1897,11 +1915,23 @@
         "crew": "Il n'y a pas assez de membres d'équipage inactifs à bord.",
         "item": "Il n'y a pas assez de {{item}} au sol des entrepôts.",
         "oxygen": "Il n'y a pas assez d'oxygène dans les réservoirs.",
-        "fuel": "Il n'y a pas assez de fuel dans les réservoirs."
+        "fuel": "Il n'y a pas assez de fuel dans les réservoirs.",
+        "character": "Ce membre d'équipage ({{name}}) doit être à bord et inactif.",
+        "project": "Il n'y a pas assez de projets terminés qu'un marchand peut prendre.",
+        "pilgred": "PILGRED est déjà réparé."
       },
       "kinds": {
         "transport": "Vaisseau de transport"
-      }
+      },
+      "character": "{{name}}, en cas d'inactivité",
+      "giveProject_one": "{{count}} projet terminé de votre choix",
+      "giveProject_many": "{{count}} projets terminés de votre choix",
+      "giveProject_other": "{{count}} projets terminés de votre choix",
+      "receiveProject_one": "{{count}} projet NERON au hasard, terminé aussitôt",
+      "receiveProject_many": "{{count}} projets NERON au hasard, terminés aussitôt",
+      "receiveProject_other": "{{count}} projets NERON au hasard, terminés aussitôt",
+      "pilgred": "PILGRED réparé",
+      "pickProject": "Projet à donner ({{n}})"
     },
     "rebels": {
       "WOLF": {
@@ -1984,7 +2014,10 @@
     "countdown_one": "Impact dans {{count}} cycle",
     "countdown_many": "Impact dans {{count}} cycles",
     "countdown_other": "Impact dans {{count}} cycles",
-    "charges": "Charges restantes : {{charges}}"
+    "charges": "Charges restantes : {{charges}}",
+    "merchantConfirm": "Tirer sur {{name}} ? Un tir réussi met fin à tout échange et le fait fuir.",
+    "merchantConfirmYes": "Tirer",
+    "merchantConfirmBack": "Cessez le feu"
   },
   "document": {
     "read": "Lire",
@@ -1995,6 +2028,7 @@
   },
   "kube": {
     "open": "Ouvrir",
+    "warp": "Sauter",
     "title": "Superkube",
     "close": "Fermer",
     "apply": "Appliquer",
@@ -2020,6 +2054,7 @@
       "spawn": "Faire apparaître un objet",
       "teleport": "Se téléporter dans une pièce",
       "breakDoor": "Casser une porte",
+      "warpToPlanet": "Planète de 20 secteurs",
       "returnToSol": "Rentrer sur Sol",
       "returnToEden": "Aller sur Éden"
     }
@@ -2283,7 +2318,9 @@
       "deal": "Marché conclu",
       "refused": "Refusé",
       "lost": "Signal perdu",
-      "reached": "Décodé"
+      "reached": "Décodé",
+      "shot": "Pris pour cible",
+      "destroyed": "Détruit"
     },
     "kinds": {
       "merchant": "Marchand",
@@ -2296,6 +2333,7 @@
     "incoming": "Transmission entrante…",
     "over": "Cette conversation est terminée.",
     "lost": "Signal perdu.",
+    "destroyed": "Signal perdu : le vaisseau a été détruit.",
     "names": {
       "merchant": {
         "transport": "Transport",
@@ -2311,9 +2349,15 @@
       "transport": {
         "accept": "Affaire conclue.",
         "farewell": "Compris.",
+        "shot": "Vous nous tirez dessus ! Nous partons.",
         "hail": {
           "HUMAN_VS_FUEL": "Nous avons un surplus d'antigel et il nous manque à manger pour ce soir, ça vous dit ?",
-          "HUMAN_VS_OXY": "Aloha, vos organismes sont vraiment passionnants, surtout la méthanisation de vos déchets organiques, incroyable... Nous vous échangeons un de vos amis contre des réserves d'oxygène conséquentes !"
+          "HUMAN_VS_OXY": "Aloha, vos organismes sont vraiment passionnants, surtout la méthanisation de vos déchets organiques, incroyable... Nous vous échangeons un de vos amis contre des réserves d'oxygène conséquentes !",
+          "FOREST_DEAL": "OOOOOOOOoooooo...... *rahh mes senseurs* Nous sommes des ...*chhhhh*\nJardiniers spatiaux, nous échangerons volontiers votre matériel contre des biens précieux.",
+          "PILGREDISSIM": "[NAc Nac NAc NAc] *amélioration du faisceau* [Nac]\nMoteur pourri, jamais avancer dans l'univers comme ça. Civilisation en carton... [Naaaaac]\nRéparons votre PILGRED contre de vos membres d'équipage !",
+          "GOOD_PROJECTIONS": "Salutations, humble créature mammalienne, nous recherchons de nouveaux jouets pour satisfaire notre reine.\nNous disposons de technologies qui pourraient vous être utiles.",
+          "TECHNO_REWRITE": "Les grandes maisons de Serres vous saluent, nous regardons votre monde primitif depuis des éons et la folle course de votre vaisseau est intrigante. Nous avons quand même quelques intérêts pour certaines de vos technologies, un petit échange pourrait profiter à tous.",
+          "HUMAN_VS_TREE": "Buraroum, nous, les Dévorfeuilles, avons besoin de jardiniers célestes, nous vous échangeons de la main-d'œuvre contre des pots neufs."
         }
       }
     },

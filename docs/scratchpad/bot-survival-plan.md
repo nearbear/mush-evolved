@@ -2,7 +2,7 @@
 
 Owner decisions of 2026-11-19. Run A is built and committed; everything after it is not. Method: the `bot-strategy` skill (one change per run, same seeds, measured against the run before).
 
-Order of work: Run A (done) → Run A2 (bedroom loop, done) → **Run A2c (fuel relay)** → **Run A3 (bed tiers)** → **Run A4 (Shrink beds and announcement)** → Run B onward as before. The bed runs came out of tracing Run A's remaining orbit stays (below).
+Order of work: Run A (done) → Run A2 (bedroom loop, done) → Run A2c (fuel relay, done) → Run A3 (bed tiers, done) → Run A4 (Shrink beds and announcement, done, no gain) → Run B onward (Run D done). Run G (give up on Eden) added 2026-11-21. The bed runs came out of tracing Run A's remaining orbit stays (below).
 
 ## Diagnosis (2026-11-19)
 
@@ -41,7 +41,11 @@ Run in this order, one change per run, on seeds 1–50 with `--report`, each sav
 
 The Run A bullet in `bot-goals.md` now carries this corrected reading. Seeds 13, 31 and 41 were not retraced; trace them (temporarily log each Commander action in `survival.ts`'s bot loop under `--verbose`, or add it to the trace for good) before assuming they share this cause.
 
-Still open from Run A: once every Pilot is dead, sectors can be left with nobody able to launch; Board stays legal for non-pilots, so nothing turns disabled and no line goes out (seed 1's last orbit). And the leak-check's question: during a patrol-ship landing, someone in the bay can see Board turn to "explored" before the pilot's report arrives (the hidden button gave the same away before). Neither is decided; ask the owner.
+Answered from Run A (owner, 2026-11-21):
+
+- **Every Pilot dead** (sectors left, nobody able to launch, seed 1's last orbit): a losing position for Eden. Bots should recognize a couple of such scenarios and go for return to Sol instead, the Commander making the call. Which scenarios, and what the crew does then (PILGRED), is Run G below; not decided.
+- **Board turning to "explored" before a patrol-ship landing's report:** not a leak; a planet being explored isn't secret. Bots don't use patrol ships for exploration.
+- **Injury deaths (62 → 95 in Run A3):** the harness should record what dealt the injury, so they can be diagnosed. `injury` is the catch-all `DeathCause` for HP loss (diseases, tremors, showers, bites, the spore remover and more all call `damage(..., "injury")`).
 
 ### Run A2: stop the bedroom loop
 
@@ -92,9 +96,16 @@ Tiers (owner, 2026-11-19: all three tiers, the Commander in tier 1), from what a
 - Update `rest.ts`'s Shrink doc and `shrinkRest`, the Shrink's model prompt in `BOT_DUTIES`, and record the #452 change where #452's decision is recorded.
 - **Watch:** morale deaths (#452) and the number of free beds left empty.
 
+**Status (2026-11-21): built and measured, no gain.** Shrinks lying 0% → 15%, beds empty 0.61 → 0.53, crew lying beside a Shrink unchanged at 2.14 (its room's three beds were already full of them), depression 58 → 57, mean days −0.03 (noise). Details in `docs/plans/bot-goals.md` ("Reaching Eden"). Keep or revert: owner's call.
+
 ### Not in this plan: Antisocial (a rule, not a bot change)
 
 Raluca should never be in a dorm; today she often just stands in the rear corridor. In eMush she starts with the `antisocial` status: −1 morale each new cycle when she isn't alone in her room (`antisocial_modifier_for_player_-1moralPoint_on_new_cycle_if_player_in_room_not_alone`; it also blocks flirting and bonding). mush2 doesn't implement it. Implementing it is a rule change (`rule` skill, with the owner) and then a bot change (an Antisocial bot rests and works where it's alone, and never takes a dorm bed). Open a GitHub issue for it rather than folding it into the bed runs.
+
+### Run G: give up on Eden and return to Sol (owner, 2026-11-21; not designed yet)
+
+- The Commander recognizes that Eden is out of reach and switches the crew to returning to Sol (`returnToSol` needs PILGRED repaired, `repairPilgred`).
+- First scenario: every Pilot dead. Others to pick with the owner (Icarus lost? too few crew?), and how the switch is announced (a fixed global line?) and what it changes for the other bots.
 
 ### Run B: destination jumps go at once (cause 1)
 

@@ -1,6 +1,7 @@
 import { Action, isString } from "./action.ts";
 import { onExpedition } from "../expeditions.ts";
-import { ITEM_TYPES, canTransfer } from "../items.ts";
+import { contaminate } from "../infection.ts";
+import { CAT_ITEM, ITEM_TYPES, canTransfer } from "../items.ts";
 import { isLostPlace } from "../patrol.ts";
 import { logPublic } from "../log.ts";
 import { cantCarryHeavy } from "../modifiers.ts";
@@ -38,7 +39,10 @@ export class TransferAction<T extends "take" | "drop" = "take" | "drop"> extends
     return canTransfer(state, player, item, destination) ? null : "cant_transfer";
   }
 
-  override injuryChance(state: Readonly<GameState>): number {
+  override injuryChance(state: Readonly<GameState>, _player: Readonly<PlayerState>, target: { type: T; item: string }): number {
+    if (this.type === "take" && state.items.find((i) => i.id === target.item)?.type === CAT_ITEM) {
+      return state.config.schrodinger.take.injuryChance;
+    }
     return state.config.transfer.injuryChance;
   }
 
@@ -49,5 +53,8 @@ export class TransferAction<T extends "take" | "drop" = "take" | "drop"> extends
     item.at = this.type === "take" ? { kind: "player", id: player.id } : { kind: "room", id: player.room };
     state.items.push(item);
     logPublic(state, player.room, this.type === "take" ? "pickedUp" : "dropped", { name: player.character, item: item.type });
+    if (this.type === "take" && item.type === CAT_ITEM && item.mush) {
+      contaminate(state, player);
+    }
   }
 }

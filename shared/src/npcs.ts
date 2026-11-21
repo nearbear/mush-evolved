@@ -1,6 +1,6 @@
 // NPCs (#411): items that act by themselves at each cycle change. eMush gives each kind its own handler (drones, the
 // cat, ...); here an item type with an entry in `NPCS` is an NPC, and its `Npc` says what it does. A new kind
-// (Schrödinger, say) is a file exporting an `Npc` and an entry below; any state of its own goes in a field of
+// (Schrödinger, schrodinger.ts) is a file exporting an `Npc` and an entry below; any state of its own goes in a field of
 // `ItemState` with its normalizer and leak rule, like `ItemState.drone`. Everything here is pure and draws only from
 // seeded streams, so replays hold.
 //
@@ -9,7 +9,8 @@
 // nothing about the seed that picked the Mush (owner, 2026-11-11). Its turns at a cycle change still roll on `rng`.
 
 import { supportDrone } from "./drones.ts";
-import { SUPPORT_DRONE_ITEM } from "./items.ts";
+import { CAT_ITEM, SUPPORT_DRONE_ITEM } from "./items.ts";
+import { schrodinger } from "./schrodinger.ts";
 import { type RngState, streamFor } from "./rng.ts";
 import type { GameState, ItemState, RoomId } from "./types.ts";
 
@@ -31,7 +32,7 @@ export interface Npc {
 }
 
 /** Each NPC item type's behaviour. */
-export const NPCS: Readonly<Record<string, Npc>> = { [SUPPORT_DRONE_ITEM]: supportDrone };
+export const NPCS: Readonly<Record<string, Npc>> = { [SUPPORT_DRONE_ITEM]: supportDrone, [CAT_ITEM]: schrodinger };
 
 export const isNpc = (item: Readonly<ItemState>): boolean => Object.hasOwn(NPCS, item.type);
 

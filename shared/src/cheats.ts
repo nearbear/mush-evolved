@@ -3,11 +3,10 @@
 // unless ALLOW_CHEATS is set, and the flags only ever appear in your own view.
 
 import { startCharges } from "./items.ts";
-import { planetsOf } from "./planets.ts";
 import { removeStatus } from "./statuses.ts";
 import type { GameState, PlayerState } from "./types.ts";
 
-export const CHEATS = ["infiniteAp", "infiniteMp", "infiniteMorale", "infiniteHp", "infiniteSpores", "infiniteCharges", "instantActions", "noRelayPenalty", "freeHacking", "anySkill", "alwaysClean", "easyTravel", "invincible", "fastExpeditions", "fuelPlanet"] as const;
+export const CHEATS = ["infiniteAp", "infiniteMp", "infiniteMorale", "infiniteHp", "infiniteSpores", "infiniteCharges", "instantActions", "noRelayPenalty", "freeHacking", "anySkill", "alwaysClean", "easyTravel", "invincible", "fastExpeditions"] as const;
 export type Cheat = (typeof CHEATS)[number];
 
 /** Instant role switches (one-shot buttons, not toggles). */
@@ -49,22 +48,7 @@ const REFILL: Record<Cheat, (p: PlayerState, state: GameState) => void> = {
   fastExpeditions: (_p, state) => {
     if (state.expedition) state.expedition.nextAt = Math.min(state.expedition.nextAt, state.now + FAST_EXPEDITION_STEP_MS);
   },
-  // Switching it on warps the ship (cheatFuelPlanet, warp_to_planet.ts); while on, the planet's explored sectors are unexplored again.
-  fuelPlanet: (p, state) => {
-    const planet = fuelPlanetOf(state, p);
-    if (planet) for (const sector of planet.sectors) delete sector.explored;
-  },
 };
-
-/** How many sectors the fuelPlanet cheat's planet has, all of them Hydrocarbon. They never run out while the cheat is on. */
-export const FUEL_PLANET_SECTORS = 20;
-
-/** The orbited planet if it is this player's fuelPlanet planet (theirs, every sector Hydrocarbon). */
-export function fuelPlanetOf(state: GameState, p: PlayerState) {
-  const planet = planetsOf(state, p.id).find((planet) => planet.id === state.navigation.orbit);
-  return planet && planet.sectors.every((s) => s.tag === "HYDROCARBON") ? planet : undefined;
-}
-
 
 /** The time between expedition steps while anyone has fastExpeditions on. */
 export const FAST_EXPEDITION_STEP_MS = 2000;

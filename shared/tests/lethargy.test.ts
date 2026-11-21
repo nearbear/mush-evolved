@@ -1,14 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { getUp } from "../src/actions/lie_down.ts";
 import { walk } from "../src/actions/summon.ts";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { applyInput } from "../src/replay.ts";
 import { createGame } from "../src/rules.ts";
 import type { GameState, PlayerId } from "../src/types.ts";
-import { forceDismantleOdds, clone, makeSeats, must, mustApply, nextCycle, noHunters, noIncidents, pickSkill, player } from "./support.ts";
+import { forceDismantleOdds, clone, makeSeats, must, mustApply, nextCycle, pickSkill, player, testConfig, noCharacterModifiers } from "./support.ts";
 
 forceDismantleOdds(1); // items and equipment have their own odds; these tests need the dismantle to succeed
-const config = noIncidents(noHunters({ ...DEFAULT_CONFIG, characterModifiers: {}, mushCount: 1, startInventory: [], startItems: [], startSkills: [], dismantle: { ...DEFAULT_CONFIG.dismantle, successChance: 1, injuryChance: 0, dirtyChance: 0 } }));
+const config = noCharacterModifiers(testConfig({ dismantle: { successChance: 1, injuryChance: 0, dirtyChance: 0 } }));
 const { cyclesLying, bonusAp, maxApMultiplier } = config.lethargy;
 
 /** p0 to p3 in Bedroom A; p1 has Lethargy. */

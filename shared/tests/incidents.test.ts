@@ -9,21 +9,21 @@ import { MODIFIERS } from "../src/modifiers.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { turretCharges } from "../src/hunters.ts";
 import type { GameConfig, GameState } from "../src/types.ts";
-import { clone, makeSeats, mustApply, nextCycle, nextDay, noHunters, noIncidents, offered, option, pickSkill, player } from "./support.ts";
+import { clone, makeSeats, mustApply, nextCycle, nextDay, noHunters, offered, option, pickSkill, player, testConfig } from "./support.ts";
 
 const HERE = "REFECTORY";
 const ELSEWHERE = "LABORATORY";
 const COFFEE = "REFECTORY:COFFEE_DISPENSER";
 
 /** A quiet ship (no hunters, no incidents) of 3: p0 and p1 in the refectory, p2 in the laboratory. */
-function ship(config: GameConfig = noIncidents(noHunters(DEFAULT_CONFIG)), seed = 3): GameState {
+function ship(config: GameConfig = testConfig(), seed = 3): GameState {
   const s = createGame(makeSeats(3), { ...config, mushCount: 1, startItems: [], startSkills: [] }, seed);
   for (const p of s.players) p.room = p.id === "p2" ? ELSEWHERE : HERE;
   return s;
 }
 
 /** Only `id` is on the menu, and incidents always happen once the pool has points. */
-const only = (id: IncidentId, config: GameConfig = noHunters(DEFAULT_CONFIG)): GameConfig => ({
+const only = (id: IncidentId, config: GameConfig = testConfig()): GameConfig => ({
   ...config,
   incidents: {
     ...config.incidents,
@@ -42,13 +42,25 @@ describe("incident points: the budget", () => {
     for (let d = 3; d < 40; d++) expect(incidentPointsForDay(DEFAULT_CONFIG, d + 1)).toBeGreaterThanOrEqual(incidentPointsForDay(DEFAULT_CONFIG, d));
   });
 
-  it("fills the pool at each cycle change, pre-selection included, and carries it over while nothing happens", () => {
+  it("fills the pool at each cycle change after Mush selection and carries it over while nothing happens", () => {
     let s = ship();
     expect(s.incidentPoints).toBe(0);
     s = nextCycle(s);
     expect(s.incidentPoints).toBe(incidentPointsForDay(s.config, 1));
     s = nextCycle(s);
     expect(s.incidentPoints).toBe(2 * incidentPointsForDay(s.config, 1));
+  });
+
+  it("accumulates no incident points during pre-selection and starts after Mush selection", () => {
+    const pre = { ...DEFAULT_CONFIG.preselection, seats: 4, endsOn: { day: 3, cycle: 8 }, minPlayers: 3, twoMushAbove: 8, mushCount: "auto" as const };
+    let s = createGame([], { ...DEFAULT_CONFIG, startItems: [], startSkills: [], preselection: pre, incidents: { ...DEFAULT_CONFIG.incidents, rollPoints: Number.MAX_SAFE_INTEGER } }, 7);
+    s = nextCycle(s);
+    s = nextCycle(s);
+    expect(s.preselection).toBe(true);
+    expect(s.incidentPoints).toBe(0);
+    s = { ...s, preselection: false };
+    s = nextCycle(s);
+    expect(s.incidentPoints).toBe(incidentPointsForDay(s.config, 1));
   });
 });
 
@@ -365,12 +377,12 @@ describe("broken equipment", () => {
     const tech = pickSkill(s, "p1", "engineer");
     expect(option(tech, "p1", { type: "repair" })!.chance).toBeCloseTo(base * s.config.repair.engineerFactor);
 
-    const sure = ship({ ...noIncidents(noHunters(DEFAULT_CONFIG)), repair: { ...DEFAULT_CONFIG.repair, chance: { ...DEFAULT_CONFIG.repair.chance, COFFEE_DISPENSER: 1 } } });
+    const sure = ship(testConfig({ repair: { chance: { COFFEE_DISPENSER: 1 } } }));
     const fixed = mustApply(broke(sure, COFFEE), "p0", { type: "repair", equipment: COFFEE });
     expect(equipment(fixed, COFFEE).broken).toBeUndefined();
     expect(fixed.log.at(-1)).toMatchObject({ key: "repaired", room: HERE, visibleTo: "all" });
 
-    const never = ship({ ...noIncidents(noHunters(DEFAULT_CONFIG)), repair: { ...DEFAULT_CONFIG.repair, chance: { ...DEFAULT_CONFIG.repair.chance, COFFEE_DISPENSER: 0.0001 } } });
+    const never = ship(testConfig({ repair: { chance: { COFFEE_DISPENSER: 0.0001 } } }));
     const failed = mustApply(broke(never, COFFEE), "p0", { type: "repair", equipment: COFFEE });
     expect(equipment(failed, COFFEE).broken).toBe(true);
     expect(failed.log.find((e) => e.key === "repairFailed")).toMatchObject({ visibleTo: ["p0"] });
@@ -425,7 +437,7 @@ describe("broken equipment", () => {
 
 describe("fire", () => {
   const burning = (fire: Partial<GameConfig["fire"]>): GameState => {
-    const config = noIncidents(noHunters(DEFAULT_CONFIG));
+    const config = testConfig();
     const s = ship({ ...config, fire: { ...config.fire, ...fire } });
     s.fires = [HERE];
     return s;

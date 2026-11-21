@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import { createChannel, sendChat } from "../src/chat.ts";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { logPrivate, logSecret } from "../src/log.ts";
 import { acknowledgeTransfer, bodyOf } from "../src/mind.ts";
 import { ITRACKIE_ITEM } from "../src/items.ts";
@@ -8,11 +7,11 @@ import { dropMycoAlarms } from "../src/mycoalarm.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyInput } from "../src/replay.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
-import type { Action, GameConfig, GameState } from "../src/types.ts";
-import { clone, must, offered, player } from "./support.ts";
+import type { Action, GameState } from "../src/types.ts";
+import { clone, must, offered, player, testConfig } from "./support.ts";
 import { makeSeats } from "./support.ts";
 
-const base: GameConfig = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [] };
+const base = testConfig();
 const transfer = (target: string): Action => ({ type: "body_transfer", target });
 
 /**

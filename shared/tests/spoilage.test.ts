@@ -4,23 +4,16 @@ import { ITEM_TYPES, ALIEN_FRUIT_ITEMS } from "../src/items.ts";
 import { createGame, viewFor } from "../src/rules.ts";
 import { nextSpoilStage, spoilFood } from "../src/spoilage.ts";
 import type { GameState, PlayerId, SpoilStage } from "../src/types.ts";
-import { makeSeats, mustApply, nextCycle, nextDay, noHunters, noIncidents, player } from "./support.ts";
+import { makeSeats, mustApply, nextCycle, nextDay, noCharacterModifiers, player, testConfig } from "./support.ts";
 
 // Owner, 2026-11-18, from eMush: perishable food spoils one stage per day change; eating hazardous food gives Food
 // Poisoning at 50%, decomposing at 90%; a Mush catches it as a carrier; only living Chefs see the stage.
-const config = {
-  ...DEFAULT_CONFIG,
-  characterModifiers: {},
-  consume: { ...DEFAULT_CONFIG.consume, dirtyChance: 0 },
-  mushCount: 1,
-  startInventory: [],
-  startItems: [],
-};
+const config = noCharacterModifiers(testConfig({ consume: { dirtyChance: 0 } }));
 
 /** p0 is Mush, p1 and p2 human, all in one room. */
 function ship(sickChance?: Partial<Record<SpoilStage, number>>): GameState {
   const spoilage = { ...config.spoilage, sickChance: { ...config.spoilage.sickChance, ...sickChance } };
-  const s = createGame(makeSeats(3), noIncidents(noHunters({ ...config, spoilage })), 3);
+  const s = createGame(makeSeats(3), { ...config, spoilage }, 3);
   s.players.forEach((p, i) => (p.role = i === 0 ? "mush" : "human"));
   return s;
 }

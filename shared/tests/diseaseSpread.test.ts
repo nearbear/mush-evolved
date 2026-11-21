@@ -3,9 +3,9 @@ import { DEFAULT_CONFIG } from "../src/config.ts";
 import { addDisease, diseaseStats, spreadAtCycle, spreadOnEncounter } from "../src/diseases.ts";
 import { createGame } from "../src/rules.ts";
 import type { DiseaseStats, GameConfig, GameState } from "../src/types.ts";
-import { makeSeats, noHunters, noIncidents, player } from "./support.ts";
+import { makeSeats, player, testConfig } from "./support.ts";
 
-const base = noIncidents(noHunters({ ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [] }));
+const base = testConfig();
 
 /** Every disease that spreads in rooms, from config.ts: each one goes through the same two functions. */
 const ROOM_SPREADERS = DEFAULT_CONFIG.diseases.allDiseaseStats.filter((d) => d.roomSpread != null || d.cycleSpread != null).map((d) => d.label!);

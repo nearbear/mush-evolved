@@ -3,10 +3,10 @@ import { ACTIONS } from "../src/actions.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { CAMERA_EQUIPMENT } from "../src/equipment.ts";
 import { applyAction, createGame, legalActions, viewFor } from "../src/rules.ts";
-import { makeSeats, mustApply, player } from "./support.ts";
+import { makeSeats, mustApply, player, testConfig } from "./support.ts";
 
 const ship = () => {
-  const s = createGame(makeSeats(4), { ...DEFAULT_CONFIG, mushCount: 2, startInventory: [], startItems: [], startSkills: [] }, 5, {
+  const s = createGame(makeSeats(4), testConfig({ mushCount: 2 }), 5, {
     p0: "mush",
     p1: "mush",
   });

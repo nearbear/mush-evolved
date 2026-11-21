@@ -12,7 +12,9 @@
 
 import type { CharacterId } from "./characters.ts";
 import type { RebelBaseId } from "./comms.ts";
-import { type DealBlock, dealBlock, type MerchantDeal, type MerchantKind } from "./merchants.ts";
+import { type DealBlock, dealBlock, dealProjectCount, type MerchantDeal, type MerchantKind } from "./merchants.ts";
+import { tradableProjects } from "./projectEffects.ts";
+import type { ProjectId } from "./projects.ts";
 import { hasTitleAccess } from "./titles.ts";
 import type { GameState, LogParams, PlayerState } from "./types.ts";
 
@@ -22,9 +24,10 @@ export type SignalKind = (typeof SIGNAL_KINDS)[number];
 
 /**
  * `active`: can still be talked to. The rest are history: `deal` (a deal was made), `refused` (No thank you), `reached`
- * (a rebel base decoded to 100%) and `lost` (it left, expired or the ship moved on, contacted or not).
+ * (a rebel base decoded to 100%), `lost` (it left, expired or the ship moved on, contacted or not), `shot` (the crew hit
+ * the merchant: it stops answering and flees at the cycle change) and `destroyed` (shot down).
  */
-export const SIGNAL_STATUSES = ["active", "deal", "refused", "reached", "lost"] as const;
+export const SIGNAL_STATUSES = ["active", "deal", "refused", "reached", "lost", "shot", "destroyed"] as const;
 export type SignalStatus = (typeof SIGNAL_STATUSES)[number];
 
 /** One message. Stored as an i18n key and parameters, never as text, so every viewer reads it in their own language. */
@@ -50,6 +53,10 @@ export interface MerchantData {
   /** The original's `trade_events` id: which hail and which deals. */
   event: string;
   deals: MerchantDeal[];
+  /** Its hull points (`config.merchants.kinds[kind].hp` on arrival); at 0 it is destroyed. */
+  hp: number;
+  /** It was hit and is still in space until the cycle change, when it flees (owner, 2026-11-21). */
+  fleeing?: true;
 }
 
 /** What a rebel signal carries (comms.ts): which base calls, and how much of its message is decoded (0 to 100). */
@@ -204,9 +211,10 @@ export interface SignalView {
   feed: FeedEntry[];
   /**
    * A merchant's ship kind, hail and deals, in order. `blocked` is why the viewer can't close that deal now, null if
-   * they can (always null once the signal is inactive). The buttons themselves come from `view.actions`.
+   * they can (always null once the signal is inactive). The buttons themselves come from `view.actions`. `projects`:
+   * the finished projects the officer may pick for a deal that takes some (TECHNO_REWRITE), while it is active.
    */
-  merchant?: { kind: MerchantKind; event: string; deals: (MerchantDeal & { blocked: DealBlock | null })[] };
+  merchant?: { kind: MerchantKind; event: string; deals: (MerchantDeal & { blocked: DealBlock | null })[]; projects?: ProjectId[] };
   /** A rebel base's call: which base and how much is decoded. Each of its feed's messages carries the progress it was said at. */
   rebel?: RebelData;
 }
@@ -235,6 +243,8 @@ export function signalsView(state: Readonly<GameState>, viewer: Readonly<PlayerS
           ...(deal.skill && { skill: deal.skill }),
           blocked: s.status === "active" ? dealBlock(state, viewer, deal) : null,
         })),
+        // Finished projects are public (the completed list), so this tells the officer nothing new.
+        ...(s.status === "active" && s.merchant.deals.some((d) => dealProjectCount(d) > 0) && { projects: tradableProjects(state) }),
       },
     }),
     ...(s.rebel && { rebel: { ...s.rebel } }),

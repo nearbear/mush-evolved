@@ -120,8 +120,7 @@
       "cheats": "Cheats"
     },
     "cheatHints": {
-      "fastExpeditions": "2 seconds per sector",
-      "fuelPlanet": "Warps the ship to a planet with 20 Hydrocarbons sectors that never run out"
+      "fastExpeditions": "2 seconds per sector"
     },
     "cheats": {
       "title": "Cheats (development)",
@@ -141,7 +140,6 @@
       "easyTravel": "Easy travel",
       "invincible": "Invincible ship",
       "fastExpeditions": "Fast expeditions",
-      "fuelPlanet": "Orbit a fuel planet",
       "goToCheatRoom": "Go to cheat room",
       "leaveShip": "Leave ship",
       "role": {
@@ -344,6 +342,8 @@
     "summon": "Summon",
     "access": "Access",
     "examine": "Examine",
+    "caress": "Caress",
+    "mushCaress": "Infectious caress",
     "dispense": "Pull coffee",
     "playArcade": "Play arcade",
     "consume": "Consume",
@@ -439,6 +439,7 @@
     "lacksExplored": "Every sector of this planet has been explored: there is nothing left for an expedition.",
     "lacksIcarusLost": "The Icarus is lost: there are no more expeditions.",
     "lacksAntisocial": "Antisocial: you can't bond with anyone.",
+    "lacksGermaphobe": "Germaphobe: you can't caress Schrödinger.",
     "lacksReactorTurn": "The lateral reactor on this side is broken: the ship can't turn this way until it is repaired.",
     "lacksPreselection": "Unavailable during pre-selection: titles aren't assigned until the Mush are chosen.",
     "lacksMp": "Not enough MP: it costs {{need}}, you have {{have}}.",
@@ -493,7 +494,8 @@
     "greenJelly": "Green Jelly",
     "reinforce": "Reinforce",
     "upgradeDrone": "Upgrade",
-    "upgradeDroneWith": "Upgrade ({{upgrade}})"
+    "upgradeDroneWith": "Upgrade ({{upgrade}})",
+    "openLunchbox": "Open"
   },
   "queue": {
     "label": "Your actions",
@@ -814,6 +816,7 @@
     "pacifist": "Pacifist",
     "hyperactive": "Hyperactive",
     "antisocial": "Antisocial",
+    "germaphobe": "Germaphobe",
     "guardian": "Guardian",
     "mankind_only_hope": "Mankind's Only Hope",
     "wheelchair": "Wheelchair",
@@ -874,6 +877,7 @@
       "pacifist": "Every aggressive action in this person's room costs 2 more AP, theirs included. Stacks with other pacifists. It can't be removed.",
       "hyperactive": "A trait: this person gains 1 more MP at each cycle change, and gets no extra AP from lying down. It can't be removed.",
       "antisocial": "A trait: this person loses 1 morale at each cycle change spent in a room with anyone else, and can't bond. It can't be removed.",
+      "germaphobe": "A trait: this person loses 1 morale at each cycle change while dirty, and can't caress Schrödinger. It can't be removed.",
       "guardian": "While this person guards the room, everyone else can only leave by the door they came in through, or not at all if they arrived another way. It ends when the guardian leaves, is moved or dies.",
       "mankind_only_hope": "A trait: while this person is alive, the whole crew loses 1 less morale each day. It can't be removed.",
       "wheelchair": "A trait: anyone in this person's room can offer to push their wheelchair. While pushed, they move with the pusher at no MP cost. It can't be removed.",
@@ -931,6 +935,8 @@
   "itemAttr": {
     "contaminated": "Contamination: {{level}}",
     "contaminatedDesc": "Mush food: a human who eats it is contaminated by this many levels. Only Mush can see this.",
+    "mushCat": "Mush cat",
+    "mushCatDesc": "Infected by the Mush: any human who picks Schrödinger up is contaminated by 1 level. Only Mush can see this.",
     "jelly_one": "Green jelly: breaks in {{count}} cycle",
     "jelly_other": "Green jelly: breaks in {{count}} cycles",
     "jellyDesc": "It breaks when the cycles run out.",
@@ -975,6 +981,7 @@
     "summonStoppedNoPath": "You were summoned to: {{room}}, but there is no way there from where you are.",
     "loseMorale": "You have lost {{amount}} morale.",
     "antisocialMoraleLoss": "Being around other people has cost you {{amount}} morale.",
+    "germaphobeMoraleLoss": "Being dirty has cost you {{amount}} morale.",
     "gainMorale": "You gain {{amount}} morale.",
     "actionCostChanged": "Your queued action ({{action}}) was cancelled because its cost changed: it now costs {{ap}} AP and {{mp}} MP.",
     "actionDropped": "Your queued action ({{action}}) was no longer possible and was dropped.",
@@ -990,6 +997,8 @@
     "coldDiseaseMpLost": "Your illness made you lose 1 MP.",
     "left": "{{name}} left for {{room}}.",
     "entered": "{{name}} entered from {{room}}.",
+    "leftRoom": "{{name}} left the room.",
+    "enteredRoom": "{{name}} entered the room.",
     "accommodationOffered": "{{name}} offered to push {{target}}'s wheelchair.",
     "accommodated": "{{name}} is now pushing {{target}}'s wheelchair.",
     "accommodationEnded": "{{name}} stopped pushing {{target}}'s wheelchair.",
@@ -1244,6 +1253,9 @@
     "shipDestroyed": "The Daedalus's hull gives way. The ship explodes, and the whole crew with it.",
     "turretHit": "You hit the hunter for {{damage}} damage.",
     "turretMiss": "You missed the hunter.",
+    "merchantHit": "You hit the {{merchant}} for {{damage}} damage.",
+    "merchantMiss": "You missed the {{merchant}}.",
+    "merchantDestroyed": "You destroyed the {{merchant}}.",
     "hunterDestroyed": "{{name}} shot down a hunter.",
     "hullRepaired": "{{name}} reinforced the hull.",
     "hullRepairFailed": "You failed to reinforce the hull.",
@@ -1326,6 +1338,11 @@
     "droneLeft": "{{drone}} left for: {{room}}.",
     "droneEntered": "{{drone}} arrived from: {{room}}.",
     "droneExtinguished": "{{drone}} put out the fire!",
+    "catLeft": "Schrödinger left for: {{room}}.",
+    "catEntered": "Schrödinger arrived from: {{room}}.",
+    "caressedCat": "{{name}} caressed Schrödinger.",
+    "mushCaressedCat": "{{name}} gave Schrödinger an infectious caress.",
+    "mushConvertedCat": "{{name}} has turned Schrödinger to the Mush.",
     "droneExtinguishFailed": "{{drone}} tried to put out the fire, but failed.",
     "droneUpgraded": "{{name}} fitted {{drone}} with the {{upgrade}} upgrade.",
     "itemRepairFailed": "You failed to repair the {{item}}.",
@@ -1334,7 +1351,8 @@
     "reportShared": "{{name}} shared the report of the expedition to {{planet}}.",
     "reportShareAppended": "{{name}} added to the shared report of the expedition to {{planet}}.",
     "missionIssued": "You gave a mission to {{target}}.",
-    "missionReceived": "The Commander gave you a mission: +{{amount}} AP."
+    "missionReceived": "The Commander gave you a mission: +{{amount}} AP.",
+    "lunchboxOpened": "You took a Standard Ration out of the lunchbox."
   },
   "throwOut": {
     "confirm": "Throw {{name}} out into which room?",
@@ -1969,11 +1987,21 @@
         "crew": "There aren't enough inactive crew members aboard.",
         "item": "There isn't enough {{item}} on the storage room floors.",
         "oxygen": "There isn't enough oxygen in the tanks.",
-        "fuel": "There isn't enough fuel in the tanks."
+        "fuel": "There isn't enough fuel in the tanks.",
+        "character": "{{name}} must be aboard and inactive.",
+        "project": "There aren't enough finished projects a merchant can take.",
+        "pilgred": "PILGRED is already repaired."
       },
       "kinds": {
         "transport": "Transport ship"
-      }
+      },
+      "character": "{{name}}, if inactive",
+      "giveProject_one": "{{count}} finished project of your choice",
+      "giveProject_other": "{{count}} finished projects of your choice",
+      "receiveProject_one": "{{count}} random NERON project, finished at once",
+      "receiveProject_other": "{{count}} random NERON projects, finished at once",
+      "pilgred": "PILGRED repaired",
+      "pickProject": "Project to give ({{n}})"
     },
     "rebels": {
       "WOLF": {
@@ -2055,7 +2083,10 @@
     "hp": "{{hp}} HP",
     "countdown_one": "Impact in {{count}} cycle",
     "countdown_other": "Impact in {{count}} cycles",
-    "charges": "Charges left: {{charges}}"
+    "charges": "Charges left: {{charges}}",
+    "merchantConfirm": "Fire on {{name}}? A hit ends any deal with it and makes it flee.",
+    "merchantConfirmYes": "Fire",
+    "merchantConfirmBack": "Hold fire"
   },
   "document": {
     "read": "Read",
@@ -2066,6 +2097,7 @@
   },
   "kube": {
     "open": "Open",
+    "warp": "Warp",
     "title": "Superkube",
     "close": "Close",
     "apply": "Apply",
@@ -2091,6 +2123,7 @@
       "spawn": "Spawn an item",
       "teleport": "Teleport to a room",
       "breakDoor": "Break a door",
+      "warpToPlanet": "Planet of 20 sectors",
       "returnToSol": "Return to Sol",
       "returnToEden": "Return to Eden"
     }
@@ -2340,7 +2373,9 @@
       "deal": "Deal made",
       "refused": "Refused",
       "lost": "Signal lost",
-      "reached": "Decoded"
+      "reached": "Decoded",
+      "shot": "Fired upon",
+      "destroyed": "Destroyed"
     },
     "kinds": {
       "merchant": "Merchant",
@@ -2353,6 +2388,7 @@
     "incoming": "Incoming transmission…",
     "over": "This conversation is over.",
     "lost": "Signal lost.",
+    "destroyed": "Signal lost: the ship was destroyed.",
     "names": {
       "merchant": {
         "transport": "Transport",
@@ -2368,9 +2404,15 @@
       "transport": {
         "accept": "Deal accepted.",
         "farewell": "Understood.",
+        "shot": "You opened fire on us! We are leaving.",
         "hail": {
           "HUMAN_VS_FUEL": "We have a surplus of antifreeze and nothing to eat tonight. Interested?",
-          "HUMAN_VS_OXY": "Aloha! Your bodies are truly fascinating, especially the way you turn your organic waste into methane. Incredible... We'll give you plenty of oxygen for one of your friends!"
+          "HUMAN_VS_OXY": "Aloha! Your bodies are truly fascinating, especially the way you turn your organic waste into methane. Incredible... We'll give you plenty of oxygen for one of your friends!",
+          "FOREST_DEAL": "OOOOOOOOoooooo...... *argh, my sensors* We are ...*chhhhh*\nSpace gardeners. We'll gladly trade your equipment for precious goods.",
+          "PILGREDISSIM": "[NAc Nac NAc NAc] *beam improving* [Nac]\nRotten engine, never go anywhere in universe like that. Cardboard civilization... [Naaaaac]\nWe repair your PILGRED for some of your crew members!",
+          "GOOD_PROJECTIONS": "Greetings, humble mammalian creature. We are looking for new toys to please our queen.\nWe have technologies that could be of use to you.",
+          "TECHNO_REWRITE": "The great houses of Serres greet you. We have watched your primitive world for eons, and your ship's mad flight intrigues us. Still, some of your technologies interest us; a little exchange could benefit everyone.",
+          "HUMAN_VS_TREE": "Buraroum, we, the Leafdevourers, need celestial gardeners. We'll trade you brand-new pots for some labour."
         }
       }
     },

@@ -1,18 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { addDisease, blurredVision, diseaseStats } from "../src/diseases.ts";
 import { actionSuccessRate } from "../src/modifiers.ts";
 import { createGame, viewFor } from "../src/rules.ts";
-import type { Action, GameConfig, GameState, PlayerState } from "../src/types.ts";
+import type { Action, GameState, PlayerState } from "../src/types.ts";
 import type { ActionTag } from "../src/actions/action.ts";
-import { makeSeats, noHunters, option, player } from "./support.ts";
+import { makeSeats, option, player, testConfig } from "./support.ts";
 
-const config: GameConfig = { ...DEFAULT_CONFIG, mushCount: 1, preselection: null, startSkills: [], startInventory: [], startItems: [] };
+const config = testConfig();
 
 const TURRET_ROOM = "LASER_TURRET_A_0";
 
 function ship(): GameState {
-  const s = createGame(makeSeats(3), noHunters({ ...DEFAULT_CONFIG, mushCount: 1, startItems: [] }), 3);
+  const s = createGame(makeSeats(3), config, 3);
   player(s, "p0").room = TURRET_ROOM;
   s.hunters.list.push({ id: "h1", hp: 100, hitChance: s.config.hunters.types.hunter.hitChance, target: null, type: "hunter", countdown: null });
   return s;
@@ -22,7 +21,7 @@ const rate = (state: GameState, actor: PlayerState, action: Action, tags: Action
 
 describe("Pink Eye", () => {
   it("lasts 8 to 12 cycles", () => {
-    const state = createGame(makeSeats(4), noHunters(config), 3);
+    const state = createGame(makeSeats(4), config, 3);
     expect(diseaseStats(state, "pink_eye_disease")).toMatchObject({ durationMin: 8, durationMax: 12 });
   });
 
@@ -34,7 +33,7 @@ describe("Pink Eye", () => {
   });
 
   it("takes a quarter off a patrol shot and a gun, not a melee blow or anything else", () => {
-    const state = createGame(makeSeats(4), noHunters(config), 3);
+    const state = createGame(makeSeats(4), config, 3);
     const human = state.players.find((p) => p.role === "human")!;
     addDisease(state, human, "pink_eye_disease");
     expect(rate(state, human, { type: "patrol_attack", equipment: "x", hunter: "h" } as Action)).toBeCloseTo(0.45);
@@ -44,7 +43,7 @@ describe("Pink Eye", () => {
   });
 
   it("costs a Mush nothing, shots or sight", () => {
-    const state = createGame(makeSeats(4), noHunters(config), 3);
+    const state = createGame(makeSeats(4), config, 3);
     const mush = state.players.find((p) => p.role === "mush")!;
     addDisease(state, mush, "pink_eye_disease");
     expect(rate(state, mush, { type: "patrol_attack", equipment: "x", hunter: "h" } as Action)).toBeCloseTo(0.6);
@@ -52,7 +51,7 @@ describe("Pink Eye", () => {
   });
 
   it("blurs only its holder's view", () => {
-    const state = createGame(makeSeats(4), noHunters(config), 3);
+    const state = createGame(makeSeats(4), config, 3);
     const [sick, well] = state.players.filter((p) => p.role === "human");
     expect(blurredVision(viewFor(state, sick!.id))).toBe(false);
     addDisease(state, sick!, "pink_eye_disease");

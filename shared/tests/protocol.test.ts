@@ -699,7 +699,10 @@ describe("actions from a client", () => {
     contact_xyloph: [{ type: "contact_xyloph", equipment: "e1" }],
     update_neron: [{ type: "update_neron", equipment: "e1" }],
     contact_signal: [{ type: "contact_signal", equipment: "e1", signal: "s1" }],
-    close_deal: [{ type: "close_deal", equipment: "e1", signal: "s1", deal: 0 }],
+    close_deal: [
+      { type: "close_deal", equipment: "e1", signal: "s1", deal: 0 },
+      { type: "close_deal", equipment: "e1", signal: "s1", deal: 1, projects: ["PLASMA_SHIELD", "FIRE_SENSOR"] },
+    ],
     refuse_signal: [{ type: "refuse_signal", equipment: "e1", signal: "s1" }],
     set_bios: [{ type: "set_bios", equipment: "e1", option: BIOS_OPTIONS[0]!, value: true }],
     scan_planet: [{ type: "scan_planet", equipment: "e1" }],
@@ -724,6 +727,7 @@ describe("actions from a client", () => {
     collect_scrap: [{ type: "collect_scrap", equipment: "e1" }],
     renovate: [{ type: "renovate", equipment: "e1" }],
     open_capsule: [{ type: "open_capsule", item: "i1" }],
+    open_lunchbox: [{ type: "open_lunchbox", item: "i1" }],
     dispense: [{ type: "dispense", equipment: "e1" }],
     play_arcade: [{ type: "play_arcade", equipment: "SPACESHIP_BAY_AA:DYNARCADE" }],
     consume: [{ type: "consume", item: "i1" }],
@@ -792,6 +796,8 @@ describe("actions from a client", () => {
     apprenticeship: [{ type: "apprenticeship", target: "p1", skill: SKILLS[0] }],
     read_book: [{ type: "read_book", item: "i1" }],
     tear: [{ type: "tear", item: "i1" }],
+    caress: [{ type: "caress", item: "i1" }],
+    mush_caress: [{ type: "mush_caress", item: "i1" }],
   };
   const all = Object.values(SAMPLES).flat();
   const asAction = (action: unknown) => parse({ type: "action", action });
@@ -817,7 +823,9 @@ describe("actions from a client", () => {
         // Dismantle and reinforce take either field, so it still parses with one of them gone.
         if (action.type === "dismantle" || action.type === "reinforce") continue;
         const { [key]: _dropped, ...missing } = action as Record<string, unknown>;
-        if (!(action.type === "attack" && key === "target")) expect(asAction(missing), `${action.type} without ${key}`).toBeNull();
+        // A deal's project pick is only there for a deal that takes projects (TECHNO_REWRITE).
+        const optional = (action.type === "attack" && key === "target") || (action.type === "close_deal" && key === "projects");
+        if (!optional) expect(asAction(missing), `${action.type} without ${key}`).toBeNull();
         // A plan's slot and a merchant deal are indexes: a number is their right type, so they get a wrong one.
         const wrong = key === "slot" || key === "deal" ? "7" : 7;
         expect(asAction({ ...action, [key]: wrong }), `${action.type} with a wrongly typed ${key}`).toBeNull();
@@ -833,6 +841,8 @@ describe("actions from a client", () => {
     expect(asAction({ type: "examine", target: { kind: "player", id: "p1" } })).toBeNull();
     expect(asAction({ type: "examine", target: { kind: "room", id: "bridge" } })).toBeNull();
     expect(asAction({ type: "examine", target: "p1" })).toBeNull();
+    expect(asAction({ type: "close_deal", equipment: "e1", signal: "s1", deal: 0, projects: ["A", 3] })).toBeNull();
+    expect(asAction({ type: "close_deal", equipment: "e1", signal: "s1", deal: 0, projects: Array.from({ length: 9 }, () => "A") })).toBeNull();
   });
 });
 

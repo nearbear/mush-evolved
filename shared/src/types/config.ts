@@ -284,6 +284,9 @@ export interface GameConfig {
   antisocial: {
     moraleLoss: number; // Raluca's Antisocial trait: lost at each cycle change spent with another living player in her room (owner, 2026-11-19, #470).
   };
+  germaphobe: {
+    moraleLoss: number; // Finola's Germaphobe trait: lost at each cycle change while dirty (owner, 2026-11-21).
+  };
   share: {
     cost: { ap: number }; // Paid by the one who starts a DTT or STT (confirmed 2026-10-14).
     effect: { morale: number }; // What each of the two gets from a DTT or STT (confirmed 2026-10-14).
@@ -498,6 +501,17 @@ export interface GameConfig {
     upgrade: { cost: { ap: number }; scraps: number; dirtyChance: number; injuryChance: number };
     turboChance: number; // A Turbo drone's chance of a second action each cycle change, never a third (eMushpedia: 80%).
   };
+  // Schrödinger the cat (owner, 2026-11-21; schrodinger.ts): he appears in `room` when `owner` (a character id) boards,
+  // each cycle change takes his favoured move (toward his owner; away from people once she's dead) with `favoredChance`,
+  // and supports Caress, Infectious Caress, and taking with a scratch/injury chance.
+  schrodinger: {
+    owner: string;
+    room: RoomId;
+    favoredChance: number;
+    caress: { cost: { ap: number }; morale: number; injuryChance: number };
+    mushCaress: { cost: { ap: number } };
+    take: { injuryChance: number };
+  };
   greenThumb: {
     pots: number; // Empty hydropots the `green_thumb` skill gives when picked (owner, 2026-11-01; the original's 2).
   };
@@ -652,8 +666,9 @@ export interface GameConfig {
     deal: { cost: { ap: number } }; // AP the comms officer spends to close a deal (owner, 2).
     storageRooms: RoomId[]; // Rooms whose floors pay for item deals (owner: any storage).
     deliveryRoom: RoomId; // Where bought items appear (owner: Front Storage).
-    // Each kind's arrival weight and hails: event id -> its deals (the original's trade_events), in order.
-    kinds: Record<MerchantKind, { weight: number; events: Record<string, DealTemplate[]> }>;
+    // Each kind's arrival weight, hull points (owner, 2026-11-21: the transport's 16 from the original, no armor) and
+    // hails: event id -> its deals (the original's trade_events), in order.
+    kinds: Record<MerchantKind, { weight: number; hp: number; events: Record<string, DealTemplate[]> }>;
   };
   comms: {
     sol: {
@@ -783,6 +798,7 @@ export interface GameConfig {
     renovate: { cost: { ap: number }; chance: number; dirtyChance: number; injuryChance: number; engineerFactor: number };
   };
   // The space capsule: opening it turns it into one of `contents`, each equally likely.
+  lunchbox: { cost: { ap: number }; charges: number }; // Open lunchbox's AP (owner, 2026-11-21: 0, as in eMush) and the rations a lunchbox holds (3).
   spaceCapsule: { cost: { ap: number }; dirtyChance: number; injuryChance: number; contents: string[] };
   // Hull repair (owner, 2026-10-24, the wiki's Armure et Bouclier): 1 AP, 25%, +5 hull, a metal scrap used up on a success.
   hullRepair: { cost: { ap: number }; chance: number; injuryChance: number; amount: number };
@@ -917,11 +933,11 @@ export interface GameConfig {
     mpPenalty: number; // MP added to each move while carrying a heavy item, however many (confirmed 2026-10-16).
   };
   startSkills: string[]; // Skills every player starts with (none since 2026-10-15; players pick their own).
-  characterModifiers: Record<string, string[]>; // Modifiers a character starts with, by character id (traits: Ian pacifist, owner 2026-10-18; Chun immunity and mankind_only_hope, owner 2026-10-18; Terrence wheelchair, owner 2026-10-19; Chao hyperactive, owner 2026-11-08; Raluca antisocial, owner 2026-11-19).
+  characterModifiers: Record<string, string[]>; // Modifiers a character starts with, by character id (traits: Ian pacifist, owner 2026-10-18; Chun immunity and mankind_only_hope, owner 2026-10-18; Terrence wheelchair, owner 2026-10-19; Chao hyperactive, owner 2026-11-08; Raluca antisocial, owner 2026-11-19; Finola germaphobe, owner 2026-11-21).
   mankindOnlyHope: { moraleLossCut: number }; // How much less morale the crew loses each day while a holder (Chun) is alive (owner, 2026-10-18).
   hopeless: { deathMorale: number }; // Morale every living player loses for each human who dies Hopeless at a cycle's end (owner, 2026-11-11).
-  /** Items placed in rooms at the start of the game (fixed room, or random from `storage` / `daedalus` pool, optionally with weighted blueprint draws). */
-  startItems: ({ type: string; builds?: string; buildsWeights?: Record<string, number>; teaches?: string; plant?: PlantState } & ({ room: RoomId } | { pool: "storage" | "daedalus" }))[];
+  /** Items placed in rooms at the start of the game (fixed room, or random from `storage` / `daedalus` pool, optionally with weighted blueprint/book draws; `atSelection` waits until Mush selection). */
+  startItems: ({ type: string; builds?: string; buildsWeights?: Record<string, number>; teaches?: string; teachesWeights?: Record<string, number>; plant?: PlantState; atSelection?: boolean } & ({ room: RoomId } | { pool: "storage" | "daedalus" }))[];
   startInventory: string[]; // Item types every player starts carrying (one of each).
   rooms: Record<RoomId, RoomId[]>; // Adjacency list. Movement is only allowed along these edges.
   equipment: Record<RoomId, Equipment[]>; // Equipment in each room at launch, copied into `GameState.equipment`. Types come from EQUIPMENT_TYPES in equipment.ts.

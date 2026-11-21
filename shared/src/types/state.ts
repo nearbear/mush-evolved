@@ -127,6 +127,8 @@ export interface GameCore {
   projects: Record<string, number>;
   /** Remaining NERON projects in draw order; the first `config.project.offerCount` unfinished ones are offered at NERON's core. Never sent. */
   projectDeck: ProjectId[];
+  /** NERON projects a merchant took (TECHNO_REWRITE, merchants.ts): back to 0% and never proposed, finished or traded again (owner, 2026-11-21). Never sent. */
+  lostProjects: ProjectId[];
   /**
    * Research sample pools (`research`, assay.ts) and per-project contributor streaks (`projects`, relay.ts).
    * Research contributor and value go only to the living in the lab (rolls and contamination never); project streaks never leave the server (only the computed gain range does).
@@ -375,6 +377,8 @@ export interface Planet {
    * (expeditions.ts): each sector is explored once. Never sent, not even to the finder (owner, 2026-10-31).
    */
   sectors: { tag: PlanetTag; known: boolean; explored?: true }[];
+  /** Development only: the Superkube's Warp made it (kube.ts), and an expedition never marks its sectors explored. */
+  inexhaustible?: true;
 }
 
 /** A door between two rooms (doors.ts, #330): the two room ids, sorted and joined with `|` (`doorId`). */

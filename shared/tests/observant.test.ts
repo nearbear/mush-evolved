@@ -5,10 +5,10 @@ import { nextFloat } from "../src/rng.ts";
 import { createGame, viewFor } from "../src/rules.ts";
 import { skillStatus } from "../src/skills.ts";
 import type { GameConfig, GameState } from "../src/types.ts";
-import { costOf, makeSeats, mustApply, player } from "./support.ts";
+import { costOf, makeSeats, mustApply, player, testConfig } from "./support.ts";
 
-const base: GameConfig = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [] };
-const withChance = (revealChance: number): GameConfig => ({ ...base, observant: { ...base.observant, revealChance } });
+const base = testConfig();
+const withChance = (revealChance: number): GameConfig => testConfig({ observant: { revealChance } });
 const spike = { type: "spike", target: "p3" } as const;
 
 /** p0 is an Observant; p1 is a Mush with a spore. p0, p1, p2 and p3 share the sick bay, p4 is in the refectory. */

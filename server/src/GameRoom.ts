@@ -1454,7 +1454,7 @@ export class GameRoom extends Server<Env> {
           this.pruneWakes();
           // What it did (or anything else accepted meanwhile) rescheduled the others but skipped it, being pending.
           // So did a new key, if the old one's call left it waiting, or the last chat wake finishing so ready bots can close the cycle.
-          if (this.inputs !== inputs || this.keyChanges !== keyChanges || (hadWake && this.wakes.size === 0)) this.scheduleBots();
+          if (this.inputs !== inputs || this.keyChanges !== keyChanges || this.wakes.has(playerId) || (hadWake && this.wakes.size === 0)) this.scheduleBots();
           this.afterBotTurn();
         }
       }, BOT_DELAY_MS);

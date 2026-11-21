@@ -6,13 +6,13 @@ import { applyAction, applyInput, createGame, viewFor } from "../src/rules.ts";
 import { CHARACTER_SKILLS, skillStatus } from "../src/skills.ts";
 import type { Action, GameConfig, GameState } from "../src/types.ts";
 import { clone } from "../src/helpers.ts";
-import { makeSeats, must, mustApply, nextDay, noHunters, offered, option, pickSkill, player, rebelCallAt } from "./support.ts";
+import { type DeepPartial, makeSeats, must, mustApply, nextDay, offered, option, pickSkill, player, rebelCallAt, testConfig } from "./support.ts";
 
 const TURRET_ROOM = "LASER_TURRET_A_0";
 const TURRET = "LASER_TURRET_A_0:TURRET_COMMAND";
 
-function ship(config: Partial<GameConfig> = {}): GameState {
-  const s = createGame(makeSeats(6), noHunters({ ...DEFAULT_CONFIG, mushCount: 1, startItems: [], ...config }), 42);
+function ship(config: DeepPartial<GameConfig> = {}): GameState {
+  const s = createGame(makeSeats(6), testConfig(config), 42);
   // Make p0 Chao so he has infantryman on his skill list.
   player(s, "p0").character = "chao";
   player(s, "p0").room = TURRET_ROOM;
@@ -62,7 +62,7 @@ describe("Infantryman", () => {
     expect(option(inf, "p0", { type: "turret_attack" })!.chance).toBeCloseTo(baseChance * DEFAULT_CONFIG.infantryman.accuracyFactor);
 
     // Damage is not doubled by Infantryman alone.
-    const hit = pickSkill(ship({ turrets: { ...DEFAULT_CONFIG.turrets, chance: 1 } }), "p0", "infantryman");
+    const hit = pickSkill(ship({ turrets: { chance: 1 } }), "p0", "infantryman");
     const [lo, hi] = DEFAULT_CONFIG.turrets.damage;
     const damage = 100 - must(applyAction(hit, "p0", { type: "turret_attack", equipment: TURRET, hunter: "h1" })).hunters.list[0]!.hp;
     expect(damage).toBeGreaterThanOrEqual(lo);
@@ -120,7 +120,7 @@ describe("Infantryman", () => {
     const icarusShip = (events: GameConfig["expedition"]["events"]): GameState => {
       const s = createGame(
         makeSeats(6),
-        noHunters({ ...DEFAULT_CONFIG, mushCount: 1, startItems: [], instantExpeditions: true, expedition: { ...DEFAULT_CONFIG.expedition, events } }),
+        testConfig({ instantExpeditions: true, expedition: { events } }),
         7,
       );
       s.planets.p0 = [{ id: "planet-1", name: "Testia", direction: "east", distance: 1, sectors: [{ tag: "HOT", known: true }] }];

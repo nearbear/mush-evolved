@@ -1,11 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { GameState, ItemState } from "../src/types.ts";
-import { costOf, makeSeats, must, offered, player } from "./support.ts";
+import { costOf, makeSeats, must, offered, player, testConfig } from "./support.ts";
 
 // The pneumatic tube (owner, 2026-11-04): an item in a room with an input tube is sent to the floor of an output tube's room.
-const config = { ...DEFAULT_CONFIG, manualCycles: true, startInventory: [], startItems: [] };
+const config = testConfig({ manualCycles: true });
 const send = (item: string) => ({ type: "tube_transfer", item }) as const;
 
 const room = (id: string) => ({ kind: "room", id }) as const;

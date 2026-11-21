@@ -13,7 +13,7 @@ import { BLUEPRINT_ITEM, BLUEPRINTS } from "./blueprints.ts";
 import { pushChat } from "./chat.ts";
 import { BOOK_ITEM, spawnInRoom } from "./items.ts";
 import { DOCUMENT_ITEM } from "./lostAnalysis.ts";
-import { PROJECT_IDS, projectDone } from "./projects.ts";
+import { availableProjects, projectDone } from "./projects.ts";
 import { completeProject } from "./projectEffects.ts";
 import { roll, rollInt } from "./rng.ts";
 import { addSignal, loseSignal, officerSays, type Signal, signalsView, say } from "./signals.ts";
@@ -299,7 +299,7 @@ export function advanceNeron(state: GameState, percent: number): string | undefi
   if (neron.progress < NERON_UPDATE_COMPLETE) return undefined;
   neron.version += 1;
   neron.progress = 0;
-  const unfinished = PROJECT_IDS.filter((id) => !projectDone(state, id));
+  const unfinished = availableProjects(state);
   if (unfinished.length === 0) return undefined;
   const project = randomOf(state, unfinished);
   completeProject(state, project);

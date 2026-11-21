@@ -1,6 +1,6 @@
 import shipRooms from "@mush2/assets/derived/ship-rooms.json";
 import { ALIEN_FRUIT_ITEMS, ITRACKIE_ITEM } from "./itemIds.ts";
-import { HACKER_KIT_ITEM, TREE_POT_ITEM } from "./items.ts";
+import { BOOK_ITEM, HACKER_KIT_ITEM, LUNCHBOX_ITEM, MICROWAVE_ITEM, TREE_POT_ITEM } from "./items.ts";
 import { CHEAT_ROOM, cheatRoomEquipment } from "./cheatRoom.ts";
 import { EQUIPMENT_TYPES } from "./equipment.ts";
 import { ICARUS_CRAFT, patrolEquipment, patrolRooms } from "./patrol.ts";
@@ -83,6 +83,7 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   // Confirmed 2026-10-14: bonding, DTT, and STT cost 1 AP each; DTT and STT give each of the two 2 morale.
   bond: { cost: { ap: 1 } },
   antisocial: { moraleLoss: 1 },
+  germaphobe: { moraleLoss: 1 },
   share: { cost: { ap: 1 }, effect: { morale: 2 } },
   // Confirmed 2026-10-14: a human converts on reaching 3 contamination (items and skills will raise it).
   infection: { capacity: 3, mushophageBonus: 1 },
@@ -263,6 +264,15 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   // #411, owner, 2026-11-11 (eMushpedia "Drone de soutien"): x1.25 a failure in a row, capped at 99%; reset by a success.
   // Owner, 2026-11-12 (#412): Upgrade is 2 AP and 2 metal scraps, 25% dirt and 5% injury (the original's actions.json); Turbo's 80% is eMushpedia's.
   drones: { failureMultiplier: 1.25, maxChance: 0.99, upgrade: { cost: { ap: 2 }, scraps: 2, dirtyChance: 0.25, injuryChance: 0.05 }, turboChance: 0.8 },
+  // Owner, 2026-11-21: eMush's cat AI (70% favoured move), spawn room (schrodinger_in_laboratory), and actions (Caress 1 AP/+3 morale once/10% injury, Infectious Caress 1 AP + 1 spore, Take 20% injury).
+  schrodinger: {
+    owner: "raluca",
+    room: "LABORATORY",
+    favoredChance: 0.7,
+    caress: { cost: { ap: 1 }, morale: 3, injuryChance: 0.1 },
+    mushCaress: { cost: { ap: 1 } },
+    take: { injuryChance: 0.2 },
+  },
   // Owner, 2026-10-27: Astrophysicist scans for 1 AP less and each remote analysis reveals 1 extra sector (the original skills.json).
   astrophysicist: { scanApDiscount: 1, extraSectors: 1 },
   gunner: { accuracyFactor: 2, damageFactor: 2 },
@@ -360,8 +370,9 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   // Rebels: avg of two 1..40 draws, +100% each for Rebel and Kivanç, a window of 8..16 cycles. NERON update: 25% per action.
   // Cygni: +1 damage on every patrol ship hit once reached (owner, 2026-11-07; eMush stacks it with the blaster gun).
   // Merchant ships (owner, 2026-11-15, #143): about 2 a day, 4 cycles in orbit, 2 AP a deal, paid from storage,
-  // delivered to Front Storage. The transport's deals are the original's HUMAN_VS_FUEL and HUMAN_VS_OXY (owner: crew,
-  // fuel and oxygen only in the first slice); capsules received are items, fuel and oxygen paid come from the tanks.
+  // delivered to Front Storage. The transport has all 7 of the original's hails (owner, 2026-11-16), PILGREDISSIM with
+  // only its crew deal; capsules received are items, fuel and oxygen paid come from the tanks. FOREST_DEAL's lunchbox
+  // is a real item (owner, 2026-11-21).
   merchants: {
     arrivalChance: 0.25,
     stayCycles: 4,
@@ -371,6 +382,7 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
     kinds: {
       transport: {
         weight: 1,
+        hp: 16,
         events: {
           HUMAN_VS_FUEL: [
             { give: [{ kind: "crew", count: [1, 1] }], receive: [{ kind: "item", item: "fuel_capsule", count: [8, 12] }] },
@@ -381,6 +393,41 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
             { give: [{ kind: "crew", count: [1, 1] }], receive: [{ kind: "item", item: "oxy_capsule", count: [5, 10] }] },
             { give: [{ kind: "fuel", count: [5, 10] }], receive: [{ kind: "item", item: "oxy_capsule", count: [10, 20] }], skill: "diplomacy" },
             { give: [{ kind: "crew", count: [2, 2] }], receive: [{ kind: "item", item: "oxy_capsule", count: [10, 20] }], skill: "diplomacy" },
+          ],
+          FOREST_DEAL: [
+            { give: [{ kind: "item", item: TREE_POT_ITEM, count: [1, 1] }], receive: [{ kind: "item", item: "oxy_capsule", count: [8, 12] }, { kind: "item", item: "fuel_capsule", count: [1, 4] }] },
+            { give: [{ kind: "item", item: TREE_POT_ITEM, count: [2, 2] }], receive: [{ kind: "item", item: "oxy_capsule", count: [12, 20] }, { kind: "item", item: "fuel_capsule", count: [3, 4] }], skill: "diplomacy" },
+            {
+              give: [{ kind: "item", item: TREE_POT_ITEM, count: [1, 1] }, { kind: "item", item: MICROWAVE_ITEM, count: [0, 1] }, { kind: "item", item: "blaster", count: [0, 1] }],
+              receive: [{ kind: "item", item: "oxy_capsule", count: [12, 12] }, { kind: "item", item: LUNCHBOX_ITEM, count: [0, 1] }],
+              skill: "diplomacy",
+            },
+          ],
+          HUMAN_VS_TREE: [
+            { give: [{ kind: "crew", count: [1, 1] }], receive: [{ kind: "item", item: TREE_POT_ITEM, count: [1, 1] }] },
+            { give: [{ kind: "character", character: "ian" }], receive: [{ kind: "item", item: TREE_POT_ITEM, count: [4, 4] }, { kind: "item", item: "oxy_capsule", count: [4, 4] }], skill: "diplomacy" },
+            { give: [{ kind: "crew", count: [2, 2] }], receive: [{ kind: "item", item: TREE_POT_ITEM, count: [3, 3] }], skill: "diplomacy" },
+          ],
+          GOOD_PROJECTIONS: [
+            { give: [{ kind: "crew", count: [1, 1] }], receive: [{ kind: "project", count: [1, 1] }] },
+            { give: [{ kind: "crew", count: [2, 2] }], receive: [{ kind: "project", count: [2, 2] }], skill: "diplomacy" },
+            {
+              give: [
+                { kind: "item", item: "uncooked_ration", count: [4, 10] },
+                { kind: "item", item: "metal_scraps", count: [4, 10] },
+                { kind: "item", item: "plastic_scraps", count: [0, 2] },
+                { kind: "oxygen", count: [4, 10] },
+              ],
+              receive: [{ kind: "project", count: [1, 1] }],
+              skill: "diplomacy",
+            },
+          ],
+          // Only the crew deal (owner, 2026-11-16), and only once 3 inactive players exist (merchants.ts `EVENT_OPEN`).
+          PILGREDISSIM: [{ give: [{ kind: "crew", count: [3, 3] }], receive: [{ kind: "pilgred" }] }],
+          // The officer picks the finished projects to give (owner, 2026-11-16); they get random unfinished ones.
+          TECHNO_REWRITE: [
+            { give: [{ kind: "project", count: [2, 2] }], receive: [{ kind: "project", count: [1, 1] }] },
+            { give: [{ kind: "project", count: [3, 3] }], receive: [{ kind: "project", count: [2, 2] }], skill: "diplomacy" },
           ],
         },
       },
@@ -453,6 +500,8 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
     renovate: { cost: { ap: 2 }, chance: 0.12, dirtyChance: 0.25, injuryChance: 0.05, engineerFactor: 2 },
   },
   // Owner, 2026-10-24 (patrol plan, answer 6): 1 AP to open, 25% each.
+  // Lunchbox (owner, 2026-11-21; eMush): opening it is free and gives 1 standard ration, 3 charges, gone when empty.
+  lunchbox: { cost: { ap: 0 }, charges: 3 },
   spaceCapsule: { cost: { ap: 1 }, dirtyChance: 0.25, injuryChance: 0.01, contents: ["metal_scraps", "plastic_scraps", "oxy_capsule", "fuel_capsule"] },
   hullRepair: { cost: { ap: 1 }, chance: 0.25, injuryChance: 0.05, amount: 5 },
   oscilloscope: { repairFactor: 2 },
@@ -624,7 +673,7 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   // Confirmed 2026-10-15: nobody starts with a skill; players pick up to three
   // (SKILL_SLOTS) with the free, permanent pick_skill action.
   startSkills: [],
-  characterModifiers: { ian: ["pacifist"], chun: ["immunity", "mankind_only_hope"], terrence: ["wheelchair"], chao: ["hyperactive"], raluca: ["antisocial"] },
+  characterModifiers: { ian: ["pacifist"], chun: ["immunity", "mankind_only_hope"], terrence: ["wheelchair"], chao: ["hyperactive"], raluca: ["antisocial"], finola: ["germaphobe"] },
   mankindOnlyHope: { moraleLossCut: 1 },
   // Owner, 2026-11-11: a human still at 0 morale (Hopeless) when a cycle ends dies, and each such death costs every
   // living player, Mush included, 1 morale.
@@ -642,8 +691,8 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   // Decided 2026-10-17 (owner): every action but ready and access takes a fixed time (2 s, cut to 1.5 s on 2026-10-24) and happens when its bar runs out;
   // up to 3 more can wait behind it.
   action: { durationMs: 1500, queueCap: 3, resolveAt: "end" },
-  // Starting items (matching eMush, 2026-11-17; spacesuits moved to `ICARUS`, 2026-11-20): 5 fixed rooms plus storage_default (5 storages), daedalus_default (27 rooms),
-  // and 4 weighted randomBlueprints (27 rooms). Medlab's 12 drugs (1 of each) are added by `stockMedlab` in `createGame`.
+  // Starting items (matching eMush, 2026-11-17; spacesuits moved to `ICARUS`, 2026-11-20; apprentron and selection-time Mush sample added 2026-11-21): 5 fixed rooms plus storage_default (24 items + 1 weighted apprentron across 5 storages), daedalus_default (27 rooms),
+  // 4 weighted randomBlueprints (27 rooms), and 1 Mush sample (27 rooms, spawned on Mush selection). Medlab's 12 drugs (1 of each) are added by `stockMedlab` in `createGame`.
   startItems: [
     // Medlab (`SICK_BAY`): 2 bandages (1 of each of the 12 drugs is added by `stockMedlab`).
     { type: "bandage", room: "SICK_BAY" },
@@ -680,6 +729,28 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
     { type: "grenade", pool: "storage" },
     { type: "drill", pool: "storage" },
     { type: "quad_compass", pool: "storage" },
+    // 1 apprentron (skill book) in a random storage room (owner, 2026-11-21):
+    {
+      type: BOOK_ITEM,
+      pool: "storage",
+      teachesWeights: {
+        engineer: 14,
+        pilot: 12,
+        astrophysician: 10,
+        biologist: 10,
+        botanic: 10,
+        gunman: 10,
+        radio_expert: 9,
+        medic: 8,
+        sprint: 8,
+        shrink: 6,
+        robotics: 4,
+        fireman: 2,
+        computer: 2,
+        diplomacy: 2,
+        logistics: 2,
+      },
+    },
     // `daedalus_default` (5 items across all 27 rooms):
     { type: "medikit", pool: "daedalus" },
     { type: "scooter", pool: "daedalus" },
@@ -706,6 +777,8 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
         SUPPORT_DRONE: 1,
       },
     })),
+    // 1 Mush sample in any of the 27 rooms, spawned upon Mush selection (owner, 2026-11-21):
+    { type: "mush_sample", pool: "daedalus", atSelection: true },
   ],
   // Confirmed 2026-10-13: every player starts with an iTrackie.
   startInventory: [ITRACKIE_ITEM],

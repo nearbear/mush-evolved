@@ -1,13 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { ACTIONS } from "../src/actions.ts";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { affordable, applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameConfig, GameState, PlayerId } from "../src/types.ts";
-import { makeSeats, offered, option, player } from "./support.ts";
+import { makeSeats, offered, option, player, testConfig } from "./support.ts";
 
 const seats = makeSeats(3);
-const base = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [] };
+const base = testConfig();
 const punch = (target: PlayerId): Action => ({ type: "punch", target });
 
 /** p0 and p1 share a room; p2 is elsewhere. */

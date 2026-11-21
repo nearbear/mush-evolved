@@ -1,13 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { EQUIPMENT_TYPES } from "../src/equipment.ts";
 import { ITEM_TYPES } from "../src/items.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameState } from "../src/types.ts";
-import { makeSeats, must, offered, option, player } from "./support.ts";
+import { makeSeats, must, offered, option, player, testConfig } from "./support.ts";
 
 // Reinforce (owner, 2026-11-07): an Engineer's action; 1 AP, 35%, one scrap for 10 (metal) or 5 (plastic) shielding, at most 50.
-const config = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [] };
+const config = testConfig();
 const snapshot = { equipment: { ...EQUIPMENT_TYPES }, items: { ...ITEM_TYPES } };
 const SHOWER = "SICK_BAY:SHOWER";
 

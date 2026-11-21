@@ -1,14 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { EQUIPMENT_TYPES } from "../src/equipment.ts";
 import { ITEM_TYPES } from "../src/items.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameState } from "../src/types.ts";
-import { makeSeats, must, offered, option, player } from "./support.ts";
+import { makeSeats, must, offered, option, player, testConfig } from "./support.ts";
 
 // Sabotage (owner, 2026-11-07): a Mush breaks flagged equipment or items, secretly and silently, at the repair chance.
-const config = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [] };
+const config = testConfig();
 const real = { shower: EQUIPMENT_TYPES.SHOWER, knife: ITEM_TYPES.knife, wrench: ITEM_TYPES.wrench, soap: ITEM_TYPES.soap };
 const SHOWER = "SICK_BAY:SHOWER";
 

@@ -1,15 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { addDisease } from "../src/diseases.ts";
 import { apGain, apRefill, bedBonus } from "../src/modifiers.ts";
 import { createGame } from "../src/rules.ts";
-import type { GameConfig, GameState } from "../src/types.ts";
-import { makeSeats, noHunters } from "./support.ts";
+import type { GameState } from "../src/types.ts";
+import { makeSeats, testConfig } from "./support.ts";
 
-const config: GameConfig = { ...DEFAULT_CONFIG, mushCount: 1, preselection: null, startSkills: [], startInventory: [], startItems: [] };
+const config = testConfig();
 const SPOILERS = ["rejuvenation_disease", "migraine_disease", "rubella_disease"];
 
-const game = (seed: number): GameState => createGame(makeSeats(4), noHunters(config), seed);
+const game = (seed: number): GameState => createGame(makeSeats(4), config, seed);
 
 describe("a spoiled rest (Rejuvenation, Migraine, Rubella)", () => {
   it("loses the bed's bonus once, however many of them spoil it", () => {

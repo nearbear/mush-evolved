@@ -195,7 +195,7 @@ export class GoalBot implements Bot {
       visited: [...m.visited],
       shrinks: [...m.shrinks],
       fullBeds: [...m.fullBeds].map(([k, v]) => [k, [...v]]),
-      beds: { asks: [...m.beds.asks], skills: [...m.beds.skills], asked: m.beds.asked, unanswered: [...m.beds.unanswered], seq: m.beds.seq },
+      beds: { asks: [...m.beds.asks], skills: [...m.beds.skills], asked: m.beds.asked, unanswered: [...m.beds.unanswered], shrinkRooms: [...m.beds.shrinkRooms], shrinkSaid: m.beds.shrinkSaid, seq: m.beds.seq },
       lastExpedition: m.lastExpedition,
       asteroidsOnly: m.asteroidsOnly,
       items: { rooms: map(m.items.rooms), said: map(m.items.said), seq: m.items.seq },
@@ -237,7 +237,7 @@ export class GoalBot implements Bot {
     refill(m.shrinks, s.shrinks);
     m.fullBeds.clear();
     for (const [room, sleepers] of s.fullBeds) m.fullBeds.set(room, new Set(sleepers));
-    Object.assign(m.beds, { asks: new Map(s.beds.asks), skills: new Map(s.beds.skills), asked: s.beds.asked, unanswered: new Set(s.beds.unanswered), seq: s.beds.seq });
+    Object.assign(m.beds, { asks: new Map(s.beds.asks), skills: new Map(s.beds.skills), asked: s.beds.asked, unanswered: new Set(s.beds.unanswered), shrinkRooms: new Map(s.beds.shrinkRooms ?? []), shrinkSaid: s.beds.shrinkSaid ?? null, seq: s.beds.seq });
     m.lastExpedition = s.lastExpedition;
     m.asteroidsOnly = s.asteroidsOnly;
     Object.assign(m.items, { rooms: map(s.items.rooms), said: map(s.items.said), seq: s.items.seq });

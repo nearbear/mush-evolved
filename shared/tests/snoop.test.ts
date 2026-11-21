@@ -2,17 +2,10 @@ import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameConfig, GameState, PlayerId } from "../src/types.ts";
-import { clone, costOf, makeSeats, mustApply, nextCycle, nextDay, offered, pickSkill, player } from "./support.ts";
+import { clone, costOf, makeSeats, mustApply, nextCycle, nextDay, offered, pickSkill, player, testConfig } from "./support.ts";
 
 /** Metal scraps only and no dirt or injury, so the tests below know what a snoop does; the defaults have their own tests. */
-const base: GameConfig = {
-  ...DEFAULT_CONFIG,
-  mushCount: 1,
-  startInventory: [],
-  startItems: [],
-  startSkills: [],
-  snoop: { ...DEFAULT_CONFIG.snoop, items: { metal_scraps: 1 }, dirtyChance: 0, injuryChance: 0 },
-};
+const base: GameConfig = { ...testConfig(), snoop: { ...DEFAULT_CONFIG.snoop, items: { metal_scraps: 1 }, dirtyChance: 0, injuryChance: 0 } };
 const snoop: Action = { type: "snoop" };
 const STORAGE = "STORAGE_FRONT";
 

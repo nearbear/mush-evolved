@@ -1,15 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { bite, foaming, weakness } from "../src/diseases.ts";
 import { createGame } from "../src/rules.ts";
 import type { GameConfig } from "../src/types.ts";
-import { makeSeats, noHunters } from "./support.ts";
+import { makeSeats, testConfig } from "./support.ts";
 
-const config: GameConfig = { ...DEFAULT_CONFIG, mushCount: 1, preselection: null, startSkills: [], startInventory: [], startItems: [] };
+const config: GameConfig = testConfig();
 
 describe("foaming and bite", () => {
   it("foams in public, for a human but not for a Mush without bacterial_contact", () => {
-    const state = createGame(makeSeats(4), noHunters(config), 7);
+    const state = createGame(makeSeats(4), config, 7);
     foaming(state, state.players.find((p) => p.role === "mush")!);
     expect(state.log.some((e) => e.key === "foams")).toBe(false);
     foaming(state, state.players.find((p) => p.role === "human")!);
@@ -17,7 +16,7 @@ describe("foaming and bite", () => {
   });
 
   it("bites another player in the room for 2 health, and does nothing alone", () => {
-    const state = createGame(makeSeats(4), noHunters(config), 7);
+    const state = createGame(makeSeats(4), config, 7);
     const [a, b, c, d] = state.players;
     a!.room = b!.room = "BRIDGE";
     c!.room = "MEDLAB";
@@ -32,7 +31,7 @@ describe("foaming and bite", () => {
   });
 
   it("logs weakness in public, for a human but not for a Mush without bacterial_contact", () => {
-    const state = createGame(makeSeats(4), noHunters(config), 7);
+    const state = createGame(makeSeats(4), config, 7);
     weakness(state, state.players.find((p) => p.role === "mush")!);
     expect(state.log.some((e) => e.key === "weakness")).toBe(false);
     weakness(state, state.players.find((p) => p.role === "human")!);

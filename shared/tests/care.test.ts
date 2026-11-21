@@ -1,11 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameState, PlayerId } from "../src/types.ts";
-import { makeSeats, player, mustApply, nextDay, offered, pickSkill, withoutDrugs } from "./support.ts";
+import { makeSeats, player, mustApply, nextDay, offered, pickSkill, testConfig, withoutDrugs } from "./support.ts";
 
 const seats = makeSeats(3);
-const config = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [] };
+const config = testConfig();
 const heal = (target: PlayerId): Action => ({ type: "heal", target });
 
 /** Everyone is hurt in one room that is not the sick bay; p0 holds a medikit. */

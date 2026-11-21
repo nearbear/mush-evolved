@@ -1,11 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { GameState } from "../src/types.ts";
-import { costOf, makeSeats, must, player } from "./support.ts";
+import { costOf, makeSeats, must, player, testConfig } from "./support.ts";
 
 // Phagocytosis (Mush skill): consume_spore costs 1 spore and no AP, heals 4 HP and gives 4 AP (owner, 2026-11-04).
-const config = { ...DEFAULT_CONFIG, manualCycles: true, mushCount: 1, startInventory: [], startItems: [], startSkills: [] };
+const config = testConfig({ manualCycles: true });
 const eat = { type: "consume_spore" } as const;
 
 function ship(skill = true): GameState {

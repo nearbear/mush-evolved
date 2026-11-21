@@ -1,13 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { CHARACTERS, type CharacterId } from "../src/characters.ts";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { killPlayer } from "../src/death.ts";
 import { createGame, viewFor } from "../src/rules.ts";
 import { SUCCESSION, TITLE_IDS, successor } from "../src/titles.ts";
 import type { GameState, Seat } from "../src/types.ts";
-import { player } from "./support.ts";
+import { player, testConfig } from "./support.ts";
 
-const config = { ...DEFAULT_CONFIG, mushCount: 1, startItems: [], startSkills: [], manualCycles: true };
+const config = testConfig({ manualCycles: true });
 
 /** One seat per character, `p-<character>`. */
 function crew(...characters: CharacterId[]): Seat[] {

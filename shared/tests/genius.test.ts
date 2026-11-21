@@ -5,7 +5,7 @@ import { PROJECT_COMPLETE } from "../src/projects.ts";
 import { RESEARCH_COMPLETE, RESEARCH_IDS, RESEARCH_REQUIRES } from "../src/research.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameState } from "../src/types.ts";
-import { makeSeats, must, offered, player } from "./support.ts";
+import { makeSeats, must, offered, player, testConfig } from "./support.ts";
 
 const eureka: Action = { type: "become_genius" };
 const FREE_RESEARCH = RESEARCH_IDS.find((id) => !RESEARCH_REQUIRES[id])!;
@@ -13,7 +13,7 @@ const lab = (research: string): Action => ({ type: "research", equipment: "LABOR
 const core = (project: string): Action => ({ type: "project", equipment: "NEXUS_ROOM:NERON_CORE", project });
 
 function ship(room: string): GameState {
-  const s = createGame(makeSeats(3, "others"), { ...DEFAULT_CONFIG, startSkills: [] }, 7);
+  const s = createGame(makeSeats(3, "others"), testConfig(), 7);
   for (const p of s.players) p.room = room;
   player(s, "p0").skills = ["genius"];
   return s;
@@ -54,7 +54,7 @@ describe("Genius skill", () => {
   });
 
   it("makes the next repair certain, and is used up by it", () => {
-    const never = { ...DEFAULT_CONFIG, startSkills: [], repair: { ...DEFAULT_CONFIG.repair, chance: { ...DEFAULT_CONFIG.repair.chance, COFFEE_DISPENSER: 0.0001 } } };
+    const never = testConfig({ repair: { chance: { COFFEE_DISPENSER: 0.0001 } } });
     const s = createGame(makeSeats(3, "others"), never, 7);
     for (const p of s.players) p.room = "REFECTORY";
     player(s, "p0").skills = ["genius"];
@@ -69,7 +69,7 @@ describe("Genius skill", () => {
   });
 
   it("makes the next hull patch certain", () => {
-    const s = createGame(makeSeats(3, "others"), { ...DEFAULT_CONFIG, startSkills: [], hullRepair: { ...DEFAULT_CONFIG.hullRepair, chance: 0.0001 } }, 7);
+    const s = createGame(makeSeats(3, "others"), testConfig({ hullRepair: { chance: 0.0001 } }), 7);
     player(s, "p0").skills = ["genius"];
     s.ship.hull = 1;
     s.items.push({ id: "scrap", type: "metal_scraps", at: { kind: "player", id: "p0" } });

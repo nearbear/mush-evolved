@@ -6,17 +6,10 @@ import { historyLength } from "../src/history.ts";
 import { swapMinds } from "../src/mind.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameConfig, GameState, LogEntry, PlayerId } from "../src/types.ts";
-import { makeSeats, mustApply, nextDay, offered, player, pickSkill } from "./support.ts";
+import { makeSeats, mustApply, nextDay, offered, player, pickSkill, testConfig } from "./support.ts";
 
 // No dirt or injury rolls by default, so HP and log lines are exact; one test turns the real odds back on.
-const base: GameConfig = {
-  ...DEFAULT_CONFIG,
-  mushCount: 1,
-  startInventory: [],
-  startItems: [],
-  startSkills: [],
-  interrogate: { ...DEFAULT_CONFIG.interrogate, dirtyChance: 0, injuryChance: 0 },
-};
+const base = testConfig({ interrogate: { dirtyChance: 0, injuryChance: 0 } });
 const interrogate = (target: PlayerId): Action => ({ type: "interrogate", target });
 const chitchat = (target: PlayerId): Action => ({ type: "chitchat", target });
 

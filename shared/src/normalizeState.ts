@@ -86,7 +86,7 @@ import type {
  * override key. A step lands in a deploy of its own (docs/ops/deploy.md: roll back only to the same version). Something
  * that never reached a deploy (test or production) is in no stored snapshot, so changing or removing it needs no step.
  */
-export const STATE_VERSION = 121;
+export const STATE_VERSION = 122;
 
 /**
  * The oldest stored version this build reads: 114, the shape the normalizers were written against. A snapshot below it
@@ -278,7 +278,20 @@ const upgradeTo121: UpgradeStep = {
   },
 };
 
-export const UPGRADE_STEPS: readonly UpgradeStep[] = [upgradeTo115, upgradeTo116, upgradeTo117, upgradeTo118, upgradeTo119, upgradeTo120, upgradeTo121];
+/** Before 122, a player could hold the `fuelPlanet` cheat; the Superkube's Warp (kube.ts) replaced it. */
+const upgradeTo122: UpgradeStep = {
+  to: 122,
+  paths: ["game.players[].cheats"],
+  run: (game) => {
+    const players = game.players as Array<Record<string, unknown>> | undefined;
+    if (!players) return;
+    for (const p of players) {
+      if (Array.isArray(p.cheats)) p.cheats = p.cheats.filter((c) => c !== "fuelPlanet");
+    }
+  },
+};
+
+export const UPGRADE_STEPS: readonly UpgradeStep[] = [upgradeTo115, upgradeTo116, upgradeTo117, upgradeTo118, upgradeTo119, upgradeTo120, upgradeTo121, upgradeTo122];
 
 /**
  * Brings a stored snapshot from version `from` to `STATE_VERSION`, before it is normalized: runs every step with
@@ -387,6 +400,7 @@ function itemFields(raw: Partial<SpaceDebris>, t: string): AllKeys<SpaceDebris> 
     drone: opt(raw.drone, normalizeDrone),
     document: opt(raw.document, normalizeDocument),
     owner: raw.owner,
+    mush: raw.mush,
   };
 }
 
@@ -542,6 +556,7 @@ export function normalizePlayer(raw: Partial<PlayerState>, mode: QueueMode): Pla
     apprenticeUsed: raw.apprenticeUsed,
     geniusUsed: raw.geniusUsed,
     ceasefireUsed: raw.ceasefireUsed,
+    caressedCat: raw.caressedCat,
     bodyTakenBy: raw.bodyTakenBy,
     role: need(raw, "role", t),
     alpha: need(raw, "alpha", t),
@@ -876,6 +891,10 @@ export function normalizeGiveAsset(raw: Partial<GiveAsset>): GiveAsset {
   switch (raw.kind) {
     case "crew":
       return stripUndefined<GiveAsset>({ kind: "crew", count: need(raw, "count", t) });
+    case "character":
+      return stripUndefined<GiveAsset>({ kind: "character", character: need(raw, "character", t), count: need(raw, "count", t) });
+    case "project":
+      return stripUndefined<GiveAsset>({ kind: "project", count: need(raw, "count", t) });
     case "item":
       return stripUndefined<GiveAsset>({ kind: "item", item: need(raw, "item", t), count: need(raw, "count", t) });
     case "oxygen":
@@ -891,6 +910,9 @@ export function normalizeReceiveAsset(raw: Partial<ReceiveAsset>): ReceiveAsset 
   switch (raw.kind) {
     case "item":
       return stripUndefined<ReceiveAsset>({ kind: "item", item: need(raw, "item", t), count: need(raw, "count", t) });
+    case "project":
+    case "pilgred":
+      return stripUndefined<ReceiveAsset>({ kind: raw.kind, count: need(raw, "count", t) } as ReceiveAsset);
     default:
       throw unknownVariant(t, "kind", raw.kind satisfies undefined);
   }
@@ -901,9 +923,17 @@ export function normalizeMerchantDeal(raw: Partial<MerchantDeal>): MerchantDeal 
   return stripUndefined<MerchantDeal>({ give: need(raw, "give", t).map(normalizeGiveAsset), receive: need(raw, "receive", t).map(normalizeReceiveAsset), skill: raw.skill });
 }
 
-export function normalizeMerchantData(raw: Partial<MerchantData>): MerchantData {
+export function normalizeMerchantData(raw: Partial<MerchantData>, ctx: NormalizeContext): MerchantData {
   const t = "MerchantData";
-  return stripUndefined<MerchantData>({ kind: need(raw, "kind", t), event: need(raw, "event", t), deals: need(raw, "deals", t).map(normalizeMerchantDeal) });
+  const kind = need(raw, "kind", t);
+  return stripUndefined<MerchantData>({
+    kind,
+    event: need(raw, "event", t),
+    deals: need(raw, "deals", t).map(normalizeMerchantDeal),
+    // Shooting a merchant (2026-11-21): one stored before it is unhurt.
+    hp: added(raw, "hp", ctx.config.merchants.kinds[kind].hp),
+    fleeing: raw.fleeing,
+  });
 }
 
 export function normalizeFeedEntry(raw: Partial<FeedEntry>): FeedEntry {
@@ -918,7 +948,7 @@ export function normalizeFeedEntry(raw: Partial<FeedEntry>): FeedEntry {
   });
 }
 
-export function normalizeSignal(raw: Partial<Signal>): Signal {
+export function normalizeSignal(raw: Partial<Signal>, ctx: NormalizeContext): Signal {
   const t = "Signal";
   return stripUndefined<Signal>({
     id: need(raw, "id", t),
@@ -929,7 +959,7 @@ export function normalizeSignal(raw: Partial<Signal>): Signal {
     step: need(raw, "step", t),
     number: need(raw, "number", t),
     feed: need(raw, "feed", t).map(normalizeFeedEntry),
-    merchant: opt(raw.merchant, normalizeMerchantData),
+    merchant: opt(raw.merchant, (m) => normalizeMerchantData(m, ctx)),
     rebel: opt(raw.rebel, normalizeRebelData),
   });
 }
@@ -939,9 +969,9 @@ export function normalizeRebelData(raw: Partial<RebelData>): RebelData {
   return stripUndefined<RebelData>({ base: need(raw, "base", t), progress: need(raw, "progress", t) });
 }
 
-export function normalizeSignals(raw: Partial<SignalsState>): SignalsState {
+export function normalizeSignals(raw: Partial<SignalsState>, ctx: NormalizeContext): SignalsState {
   const t = "SignalsState";
-  return stripUndefined<SignalsState>({ list: need(raw, "list", t).map(normalizeSignal), nextId: need(raw, "nextId", t) });
+  return stripUndefined<SignalsState>({ list: need(raw, "list", t).map((s) => normalizeSignal(s, ctx)), nextId: need(raw, "nextId", t) });
 }
 
 type PatrolShip = GameCore["patrolShips"][string];
@@ -1008,6 +1038,7 @@ export function normalizePlanet(raw: Partial<Planet>): Planet {
     direction: need(raw, "direction", t),
     distance: need(raw, "distance", t),
     sectors: need(raw, "sectors", t).map(normalizeSector),
+    inexhaustible: raw.inexhaustible,
   });
 }
 
@@ -1106,7 +1137,7 @@ export function normalizeSeatStarts(raw: Partial<SeatStarts>): SeatStarts {
 // The game.
 
 /** The game's own data, shared by the live game and a replay frame. */
-export function normalizeCore(raw: Partial<GameCore>, _ctx: NormalizeContext, mode: QueueMode): GameCore {
+export function normalizeCore(raw: Partial<GameCore>, ctx: NormalizeContext, mode: QueueMode): GameCore {
   const t = "GameCore";
   const bios = need(raw, "bios", t);
   const titles = need(raw, "titles", t);
@@ -1154,6 +1185,8 @@ export function normalizeCore(raw: Partial<GameCore>, _ctx: NormalizeContext, mo
     research: dict(need(raw, "research", t)),
     projects,
     projectDeck: copy(added(raw, "projectDeck", PROJECT_IDS.filter((id) => !(projects[id] !== undefined && projects[id] >= 100)))),
+    // A game saved before TECHNO_REWRITE (#143) has traded no project away.
+    lostProjects: copy(added(raw, "lostProjects", [])),
     relay: normalizeRelay(need(raw, "relay", t)),
     pilgred: normalizePilgred(need(raw, "pilgred", t)),
     comms: normalizeComms(need(raw, "comms", t)),
@@ -1173,7 +1206,7 @@ export function normalizeCore(raw: Partial<GameCore>, _ctx: NormalizeContext, mo
     navigation: normalizeNavigation(need(raw, "navigation", t)),
     hunters: normalizeHunters(need(raw, "hunters", t)),
     // Signals (docs/plans/signals.md): none in a game stored before merchants (#143); upgradeTo119 moved those.
-    signals: normalizeSignals(added(raw, "signals", { list: [], nextId: 1 })),
+    signals: normalizeSignals(added(raw, "signals", { list: [], nextId: 1 }), ctx),
     turrets: dict(need(raw, "turrets", t)),
     patrolShips: mapValues(need(raw, "patrolShips", t), normalizePatrolShip),
     space: need(raw, "space", t).map(normalizeDebris),

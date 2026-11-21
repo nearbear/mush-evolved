@@ -252,8 +252,9 @@ export function expeditionStep(state: GameState): void {
     // A Traitor's Sabotage covers this one sector (owner, 2026-11-17).
     away.sabotageNext = false;
     report.events.push(event);
-    // Again: the step is used but the sector isn't explored, so a later expedition can draw it.
-    if (event.kind !== "again") sector.explored = true;
+    // Again: the step is used but the sector isn't explored, so a later expedition can draw it. The Superkube's planets
+    // (kube.ts) never run out.
+    if (event.kind !== "again" && !planet.inexhaustible) sector.explored = true;
     // Back: the crew heads home at once with what it found.
     if (event.kind === "back") away.sectors = [];
     // Someone got lost: the planet has a new Lost sector, so the steps left are drawn again with it in the running

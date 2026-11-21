@@ -68,6 +68,14 @@ export function lossReport(results: readonly SurvivalResult[], repairBelow: numb
   const waves = hit.flatMap((d) => [...new Set(d.map((x) => x.cycle))].map((c) => d.filter((x) => x.cycle === c).length));
   const chained = sum(hit.map((d) => d.filter((x) => d.some((y) => y.cycle < x.cycle && x.cycle - y.cycle <= 2)).length));
   lines.push(`depression: ${sum(sad.map((d) => d.length))} deaths in ${hit.length} runs, first on day ${firstDay[Math.floor(firstDay.length / 2)] ?? "-"} (median; earliest ${firstDay[0] ?? "-"}), ${waves.length} cycles with any (${per(sum(waves), waves.length, 1)} deaths each, most ${Math.max(0, ...waves)}), ${chained} within 2 cycles after an earlier one`);
+  // HP (injury deaths, owner 2026-11-21): what took the crew's HP, and what dealt the last hit of each injury death.
+  const hpBy: Record<string, number> = {};
+  for (const r of rows) for (const [k, v] of Object.entries(r.hpLost ?? {})) hpBy[k] = (hpBy[k] ?? 0) + v;
+  const hpTop = Object.entries(hpBy).sort((a, b) => b[1] - a[1]).slice(0, 12);
+  lines.push(`HP lost a run: ${per(sum(Object.values(hpBy)), n, 1)} (${hpTop.map(([k, v]) => `${k} ${per(v, n, 1)}`).join(", ") || "none"})`);
+  const hits: Record<string, number> = {};
+  for (const d of runs.flatMap((r) => r.deaths.filter((x) => x.cause === "injury"))) hits[d.hit ?? "unknown"] = (hits[d.hit ?? "unknown"] ?? 0) + 1;
+  lines.push(`injury deaths by last hit: ${Object.entries(hits).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${v}`).join(", ") || "none"}`);
   // Oxygen: what came in against the burn, and how far each run got along the planet pipeline before it ran dry.
   const withOxygen = rows.filter((r) => r.oxygen > 0);
   const inBy: Record<string, number> = {};
@@ -106,6 +114,9 @@ export function lossReport(results: readonly SurvivalResult[], repairBelow: numb
   const tierLying = [0, 1, 2].map((i) => total((r) => r.tierLying?.[i] ?? 0));
   const busy = rows.filter((r) => r.orbit === true || r.hunters > 0);
   lines.push(`bed tiers: lying at a cycle's end ${[0, 1, 2].map((i) => `tier ${i + 1} ${per(tierLying[i]! * 100, tierAlive[i]!, 0)}%`).join(", ")}; tier 1 at 2 AP or less ${per(total((r) => r.tier1Low ?? 0) * 100, tierAlive[0]!, 0)}% of their cycles, ${per(sum(busy.map((r) => r.tier1Low ?? 0)) * 100, sum(busy.map((r) => r.tierAlive?.[0] ?? 0)), 0)}% in orbit or under attack; ${per(total((r) => r.bedAsks ?? 0), n, 1)} bed requests and ${per(total((r) => r.bedYields ?? 0), n, 1)} beds given up a run; ${per(total((r) => r.patrolTakeoffs ?? 0), n, 1)} patrol takeoffs and ${per(total((r) => r.icarusLaunches ?? 0), n, 1)} Icarus launches a run`);
+  // The Shrink's beds (Run A4): whether it lies down, how many beds stay empty, and who rests beside it.
+  const shrinkAlive = total((r) => r.shrinks ?? 0);
+  lines.push(`shrink beds: Shrinks lying at a cycle's end ${per(total((r) => r.shrinkLying ?? 0) * 100, shrinkAlive, 0)}%; ${per(total((r) => r.freeBeds ?? 0), rows.length, 2)} beds empty and ${per(total((r) => r.besideShrink ?? 0), rows.length, 2)} crew lying beside a Shrink at a cycle's end; ${per(total((r) => r.shrinkLines ?? 0), n, 1)} \`Shrink: in\` lines a run`);
   lines.push("by cycle (mean over the runs still going): cycle, runs, hull, hunters, fires, alive, oxygen, morale, at 0, at 3 or less");
   const last = Math.max(...rows.map((r) => r.cycle));
   for (let cycle = 4; cycle <= last; cycle += 4) {

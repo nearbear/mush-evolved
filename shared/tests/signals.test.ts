@@ -5,8 +5,8 @@ import { DEFAULT_CONFIG } from "../src/config.ts";
 import { arriveMerchant, merchantsInOrbit } from "../src/merchants.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { findSignal, type Signal } from "../src/signals.ts";
-import type { Action, GameConfig, GameState } from "../src/types.ts";
-import { costOf, makeSeats, must, nextCycle, noHunters, noIncidents, offered, player } from "./support.ts";
+import type { Action, GameState } from "../src/types.ts";
+import { costOf, makeSeats, must, nextCycle, offered, player, testConfig } from "./support.ts";
 
 const TERMINAL = "COMMAND_CENTER:COM_CENTER";
 const cfg = DEFAULT_CONFIG.merchants;
@@ -16,8 +16,7 @@ const close = (signal: string, deal: number): Action => ({ type: "close_deal", e
 
 /** Four players on the bridge; p0 is the Comms Officer. Merchants arrive only when a test calls `arriveMerchant`. */
 function ship(): GameState {
-  const config: GameConfig = { ...noIncidents(noHunters(DEFAULT_CONFIG)), merchants: { ...cfg, arrivalChance: 0 } };
-  const s = createGame(makeSeats(4), config, 7);
+  const s = createGame(makeSeats(4), testConfig({ merchants: { arrivalChance: 0 } }), 7);
   for (const p of s.players) p.room = "COMMAND_CENTER";
   s.titles.comms_officer = "p0";
   return s;

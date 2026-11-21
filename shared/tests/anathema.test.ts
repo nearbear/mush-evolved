@@ -1,13 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
 import { killPlayer } from "../src/death.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
-import type { Action, GameConfig, GameState } from "../src/types.ts";
-import { makeSeats, nextDay, noHunters, noIncidents, offered, player, pickSkill, setProgress } from "./support.ts";
+import type { Action, GameState } from "../src/types.ts";
+import { makeSeats, nextDay, offered, player, pickSkill, setProgress, testConfig } from "./support.ts";
 
 // MP starts empty, so each move converts AP.
-const base: GameConfig = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [], startMp: 0 };
+const base = testConfig({ startMp: 0 });
 const curse = (target: string): Action => ({ type: "anathema", target });
 const work = (project: string): Action => ({ type: "project", equipment: "NEXUS_ROOM:NERON_CORE", project });
 const pick = pickSkill;
@@ -128,7 +127,7 @@ describe("Designer", () => {
 
   it("grants 2 Designer points when picked and 2 each day, up to 4", () => {
     // No incidents or hunters: over two days they can kill the only human and end the game.
-    let s = pick(createGame(makeSeats(2), noIncidents(noHunters(base)), 1), "p0", "designer");
+    let s = pick(createGame(makeSeats(2), base, 1), "p0", "designer");
     expect(player(s, "p0").resources.core).toBe(2);
     s = nextDay(s);
     expect(player(s, "p0").resources.core).toBe(4);

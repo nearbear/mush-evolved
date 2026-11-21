@@ -2,13 +2,13 @@ import { describe, expect, it } from "vitest";
 import { ACTIONS } from "../src/actions.ts";
 import { AT_CAPACITY } from "../src/actions/action.ts";
 import { actionTarget } from "../src/actionTarget.ts";
-import { DEFAULT_CONFIG, PRESELECTION } from "../src/config.ts";
+import { PRESELECTION } from "../src/config.ts";
 import { killPlayer } from "../src/death.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameConfig, GameState } from "../src/types.ts";
-import { makeSeats, must, nextCycle, nextDay, offered, pickSkill, player } from "./support.ts";
+import { makeSeats, must, nextCycle, nextDay, offered, pickSkill, player, testConfig } from "./support.ts";
 
-const base: GameConfig = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [], startMp: 0 };
+const base: GameConfig = testConfig({ startMp: 0 });
 
 /** Four crewmates: p0 is Commander in COMMAND_CENTER, p1 in COMMAND_CENTER (roommate), p2 in LABORATORY, p3 in REFECTORY. */
 function ship(config = base): GameState {

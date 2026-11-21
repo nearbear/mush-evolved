@@ -377,9 +377,13 @@ describe("union normalizers", () => {
     item: { kind: "item", item: "uncooked_ration", count: 4 },
     oxygen: { kind: "oxygen", count: 3 },
     fuel: { kind: "fuel", count: 7 },
+    character: { kind: "character", character: "ian", count: 1 },
+    project: { kind: "project", count: 2 },
   };
   const receives: { [K in ReceiveAsset["kind"]]: Extract<ReceiveAsset, { kind: K }> } = {
     item: { kind: "item", item: "fuel_capsule", count: 9 },
+    project: { kind: "project", count: 1 },
+    pilgred: { kind: "pilgred", count: 1 },
   };
   const tasks: { [K in PlanTask["type"]]: Extract<PlanTask, { type: K }> } = {
     research: { type: "research", research: "r" },
@@ -543,7 +547,7 @@ describe("upgrade", () => {
       step: "hail",
       number: 1,
       feed: [],
-      merchant: { kind: "transport", event: "HUMAN_VS_OXY", deals },
+      merchant: { kind: "transport", event: "HUMAN_VS_OXY", deals, hp: DEFAULT_CONFIG.merchants.kinds.transport.hp },
     });
     expect(normalized.signals.list[1]).toMatchObject({ id: "signal-2", number: 2, merchant: { event: "HUMAN_VS_FUEL", deals: [] } });
   });

@@ -3,10 +3,10 @@ import { DEFAULT_CONFIG } from "../src/config.ts";
 import { addDisease, diseaseStats } from "../src/diseases.ts";
 import { applyAction, createGame } from "../src/rules.ts";
 import type { GameState } from "../src/types.ts";
-import { makeSeats, mustApply, nextCycle, noHunters, noIncidents, offered, player, withoutDrugs } from "./support.ts";
+import { makeSeats, mustApply, nextCycle, noCharacterModifiers, offered, player, testConfig, withoutDrugs } from "./support.ts";
 
 const STIFF_NECK = "stiff_neck_injury";
-const config = noIncidents(noHunters({ ...DEFAULT_CONFIG, characterModifiers: {}, mushCount: 1, startInventory: [], startItems: [] }));
+const config = noCharacterModifiers(testConfig());
 
 /** Everyone in Bedroom A, next to a bed. */
 function ship(): GameState {

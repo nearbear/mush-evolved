@@ -272,7 +272,15 @@ export interface SceneSprite extends ScenePicture {
   /** Only for labelling: you, and a door you can go through. */
   you?: boolean;
   reachable?: boolean;
+  /**
+   * Someone coming in or going out with no door to show (`FADE_MS`): `in` fades a person in when they're first drawn,
+   * and the fade runs its course even if it's gone from the next scene; `out` fades them away and keeps them unseen.
+   */
+  fade?: "in" | "out";
 }
+
+/** How long a fade in or out takes (`SceneSprite.fade`), in ms. */
+export const FADE_MS = 400;
 
 /**
  * A person's see-through outline, drawn over the whole scene. Every person has one, so it keeps in step
@@ -383,6 +391,8 @@ export interface SceneInput {
   beds: ReadonlyMap<string, { flip: boolean }>;
   /** People sitting on a chair in this room (you as soon as you reach it, others by their view spot), by person id. */
   seats: ReadonlyMap<string, Seat>;
+  /** People in this room fading in or out (`SceneSprite.fade`), by person id: their moves have no door to show. */
+  fading?: ReadonlyMap<string, "in" | "out">;
   corpses: readonly Corpse[];
   /** Support drones on this room's floor; none when not given. */
   drones?: readonly Drone[];
@@ -615,7 +625,17 @@ export function describeScene(input: SceneInput): Scene {
     }
     if (s.kind === "actor") {
       const o = people.get(s.key.slice(2));
-      sprites.push({ ...personPicture(s, input, base), role: "person", shadow: shadowOf(s, input), you: o?.you, effect: o && isSelected("player", o.id) ? "selected" : undefined, kind: s.kind, slice: s.slice });
+      const fade = input.fading?.get(s.key.slice(2));
+      sprites.push({
+        ...personPicture(s, input, base),
+        role: "person",
+        shadow: shadowOf(s, input),
+        you: o?.you,
+        effect: o && isSelected("player", o.id) ? "selected" : undefined,
+        ...(fade && { fade }),
+        kind: s.kind,
+        slice: s.slice,
+      });
       continue;
     }
     const swivel = CAMERA_SLICES.has(s.slice) ? layout.slices[s.slice]?.anims[0]?.frames : undefined;

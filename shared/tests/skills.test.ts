@@ -6,12 +6,12 @@ import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, legalActions, viewFor } from "../src/rules.ts";
 import { CHARACTER_SKILLS, isSkill, SKILLS, SKILL_SLOTS, skillStatus } from "../src/skills.ts";
 import { CHARACTERS } from "../src/characters.ts";
-import type { GameConfig, GameState } from "../src/types.ts";
-import { forceDismantleOdds, makeSeats, nextCycle } from "./support.ts";
+import type { GameState } from "../src/types.ts";
+import { forceDismantleOdds, makeSeats, nextCycle, testConfig } from "./support.ts";
 
 const seats = makeSeats(4, "others");
 
-const config: GameConfig = { ...DEFAULT_CONFIG, startInventory: [], startItems: [], startSkills: ["creative"] };
+const config = testConfig({ startSkills: ["creative"] });
 
 /** Everyone starts in the same room; p0 carries a camera to dismantle (3 AP). */
 function withCamera(dismantleOdds: number, creativeRefundOdds: number): GameState {
@@ -92,7 +92,7 @@ function pick(state: GameState, id: string, skill: string) {
 }
 
 describe("picking skills", () => {
-  const fresh = () => createGame(seats, { ...DEFAULT_CONFIG, startInventory: [], startItems: [] }, 42);
+  const fresh = () => createGame(seats, testConfig(), 42);
 
   it("starts everyone with no skills", () => {
     for (const p of fresh().players) expect(p.skills).toEqual([]);
@@ -262,7 +262,7 @@ describe("frugivore", () => {
 });
 
 describe("character skill lists", () => {
-  const fresh = () => createGame(makeSeats(CHARACTERS.length), { ...DEFAULT_CONFIG, startInventory: [], startItems: [] }, 42);
+  const fresh = () => createGame(makeSeats(CHARACTERS.length), testConfig(), 42);
 
   it("pins two lists from eMushpedia (owner, 2026-10-25): Paola's, and Chao's eMush version", () => {
     expect(CHARACTER_SKILLS.paola).toEqual(["radio_expert", "logistics", "gunman", "biologist", "rebel", "gunner"]);

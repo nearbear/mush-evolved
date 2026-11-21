@@ -36,7 +36,7 @@ export interface BotMemorySnapshot {
   visited: RoomId[];
   shrinks: string[];
   fullBeds: [RoomId, PlayerId[]][];
-  beds: { asks: [PlayerId, { room: RoomId; cycle: number }][]; skills: [PlayerId, string[]][]; asked: { room: RoomId; cycle: number } | null; unanswered: RoomId[]; seq: number };
+  beds: { asks: [PlayerId, { room: RoomId; cycle: number }][]; skills: [PlayerId, string[]][]; asked: { room: RoomId; cycle: number } | null; unanswered: RoomId[]; shrinkRooms?: [PlayerId, RoomId][]; shrinkSaid?: RoomId | null; seq: number };
   lastExpedition: ExpeditionKind | null;
   asteroidsOnly: number | null;
   items: { rooms: [SharedItem, RoomId[]][]; said: [SharedItem, RoomId[]][]; seq: number };
