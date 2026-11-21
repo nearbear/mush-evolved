@@ -534,3 +534,15 @@ export const SHIP_CARD_ICONS: Readonly<Record<string, string>> = urls(
     { eager: true, query: "?url", import: "default" },
   ),
 );
+
+const crewIcons = urls(
+  import.meta.glob<string>("../../../Mush/www/img/icons/ui/p_{alive,mush,cryo,dead,deadmush}.png", { eager: true, query: "?url", import: "default" }),
+);
+/** The original's 7x15 crew figures, one per seat in the crew bar (CrewBar.tsx). */
+export const CREW_ICONS = {
+  alive: crewIcons["p_alive"]!,
+  mush: crewIcons["p_mush"]!,
+  cryo: crewIcons["p_cryo"]!,
+  dead: crewIcons["p_dead"]!,
+  deadMush: crewIcons["p_deadmush"]!,
+} as const;

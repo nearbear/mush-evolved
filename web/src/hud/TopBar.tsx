@@ -7,6 +7,7 @@ import { useNames } from "../i18n/names.ts";
 import { useMobile } from "../useMobile.ts";
 import { BotsPausedTag } from "./BotsPausedTag.tsx";
 import { CycleCountdown } from "./CycleCountdown.tsx";
+import { crewProps } from "./CrewBar.tsx";
 import { AlertBar, AlertButton, ShipResources } from "./ShipResources.tsx";
 import { ShipStatus } from "./ShipStatus.tsx";
 import { SettingsDialog } from "./SettingsDialog.tsx";
@@ -137,7 +138,7 @@ export function TopBar({
           {botsPaused && <BotsPausedTag pause={botsPaused} />}
         </div>
       )}
-      {!mobile && <ShipResources ship={view.ship} hunters={view.hunters.count} titles={view.titles} preselection={view.preselection} compactTitles alertsApart lost={view.lost} alerts={view.alerts} />}
+      {!mobile && <ShipResources ship={view.ship} hunters={view.hunters.count} titles={view.titles} preselection={view.preselection} compactTitles alertsApart lost={view.lost} alerts={view.alerts} crew={crewProps(view)} />}
       <div className="top-bar-actions">
         {!mobile && (
           <>

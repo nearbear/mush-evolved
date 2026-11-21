@@ -90,6 +90,7 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 - `ResearchTracker.tsx`, `ProjectTracker.tsx`, `Tracker.tsx`: the Research and NERON projects features' strips of cards, and a notes list the player types in.
 - `ResourceChips.tsx`: your other resources as chips (the first two, or as many as fit on a phone, then "…" for the rest); satiety leads the list on both layouts.
 - `ShipResources.tsx`: the ship card (resources, hunters, titles and the crew lost on planets, `view.lost`); in the desktop top bar, and opened by `ShipOverlay.tsx` on phones. `TitleChip.tsx`: one title and its line of succession.
+- `CrewBar.tsx`: the crew bar, one 7x15 figure per seat (alive, Mush, cryo, dead, dead Mush; Mush from `OtherPlayerView.mush`, sent to Mush only), with a popover of who is in each group; in `ShipResources` after the titles. On phones the ship card puts the titles side by side on one row and the crew bar on its own row (`inventory.css`).
 - `BotsPausedTag.tsx`: the top-bar tag shown while model bots are paused (`botsPaused`, #114), with why.
 - `ShipStatus.tsx`: where the ship is (pre-selection, deep space, orbiting, exploring with the return countdown and crew), each with an explanatory popover; joined to the clock's amber plate on desktop, its own plate under the name on phones.
 - `RelayDetails.tsx`: relay tokens in the research, project and PILGRED terminals: `RelayHelp` (the rule sentence), `RelayDetails` (waiting line and token faces; research samples, pending ones underlined), `withGain` (a work button's text with the gain).

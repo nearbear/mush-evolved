@@ -113,6 +113,8 @@ export interface OtherPlayerView {
   bookSkill?: string;
   /** Their contamination, shown as a status. Only when you are Mush, they are a contaminated human, and they are in your room. */
   contamination?: number;
+  /** This player is Mush (alive or dead). Only when you are Mush yourself (owner, 2026-11-21: Mush know each other, and which dead were Mush). */
+  mush?: true;
   /**
    * The bar of the timed action they are busy with (server ms), never which action. Only for people in your room, and
    * only when the action's log entry could reach you (`activitySeen` in log.ts).
@@ -172,6 +174,8 @@ export interface PublicConfig {
   gardenRoom: RoomId;
   /** Cycles in one day (24 / `cycleHours`), so the client can turn a log or chat entry's global `cycle` into day and cycle-of-day. */
   cyclesPerDay: number;
+  /** Seats on this ship (pre-selection's `seats`, else the crew size); the crew bar draws unfilled ones as cryo sleepers. */
+  seats: number;
 }
 
 /**

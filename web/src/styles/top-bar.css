@@ -704,3 +704,21 @@
 .resource-info li + li {
   margin-top: var(--space-1);
 }
+/* The crew bar (CrewBar.tsx): one 7x15 figure per seat, packed 1px apart, at 1x. */
+.crew-bar {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1px;
+  cursor: help;
+}
+.crew-bar img {
+  display: block;
+  image-rendering: pixelated;
+}
+.crew-card .crew-group {
+  margin-top: var(--space-1);
+}
+.crew-card .crew-group p {
+  margin: 0;
+}

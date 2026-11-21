@@ -260,6 +260,22 @@
     "buttonCount_one": "Inventory ({{count}} item in this room)",
     "buttonCount_other": "Inventory ({{count}} items in this room)"
   },
+  "crew": {
+    "title": "Crew",
+    "label": "Crew: {{summary}}",
+    "count": {
+      "alive_one": "{{count}} alive",
+      "alive_other": "{{count}} alive",
+      "mush_one": "{{count}} Mush",
+      "mush_other": "{{count}} Mush",
+      "cryo_one": "{{count}} empty seat in cryosleep",
+      "cryo_other": "{{count}} empty seats in cryosleep",
+      "dead_one": "{{count}} dead",
+      "dead_other": "{{count}} dead",
+      "deadMush_one": "{{count}} dead Mush",
+      "deadMush_other": "{{count}} dead Mush"
+    }
+  },
   "titles": {
     "label": "Titles",
     "holder": "{{title}}: {{name}}",

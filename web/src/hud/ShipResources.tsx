@@ -3,6 +3,7 @@ import { Trans, useTranslation } from "react-i18next";
 import { doorRooms, type PlayerView } from "@mush2/shared";
 import { SHIP_RESOURCE_ICONS } from "../art/assets.ts";
 import { useNames } from "../i18n/names.ts";
+import { CrewBar, type CrewProps } from "./CrewBar.tsx";
 import { TitleChip, TitlesChip } from "./TitleChip.tsx";
 
 const SHIP_COUNTERS = ["oxygen", "fuel", "hull", "plasmaShield"] as const;
@@ -26,6 +27,7 @@ export function ShipResources({
   alertsApart = false,
   lost,
   alerts,
+  crew,
 }: {
   ship: PlayerView["ship"];
   hunters: number;
@@ -36,6 +38,8 @@ export function ShipResources({
   alertsApart?: boolean;
   lost: PlayerView["lost"];
   alerts: PlayerView["alerts"];
+  /** Who is aboard, as the crew bar (CrewBar.tsx) draws it, after the titles. */
+  crew?: CrewProps | undefined;
 }) {
   const { t } = useTranslation();
   const ids: readonly CounterId[] = alertsApart ? SHIP_COUNTERS : [...SHIP_COUNTERS, ...ALERT_COUNTERS];
@@ -58,6 +62,11 @@ export function ShipResources({
               <TitleChip entry={title} preselection={preselection} />
             </li>
           ))}
+      {crew && (
+        <li className="crew-item">
+          <CrewBar {...crew} />
+        </li>
+      )}
     </ul>
   );
 }

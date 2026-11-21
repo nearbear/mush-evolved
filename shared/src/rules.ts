@@ -775,7 +775,6 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     statuses: statusesOf(state, you),
     drugEffects: drugEffectsSeenBy(state, you),
     fruitEffects: fruitEffectsSeenBy(state, you),
-    // TODO(rules): should Mush see each other's roles? Hidden for now.
     players: others.map((o) => {
       const { id, isBot, botKind, character, room, alive, ready } = o;
       const here = o.alive && present(room);
@@ -805,6 +804,8 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
         ...(here && protectingOf(o.id) !== undefined ? { protecting: protectingOf(o.id) } : {}),
         // Mush see a contaminated human's level, like a status, on people in their room.
         ...(contamination !== undefined ? { contamination } : {}),
+        // Mush know who the other Mush are, living or dead (owner, 2026-11-21); humans never learn it from the view.
+        ...(you.role === "mush" && o.role === "mush" ? { mush: true as const } : {}),
         // A busy bar, never the action: only when its log entry could reach you.
         ...(here && o.current && activitySeen(state, room, actionVisibility(o.current.action.type, o), o)
           ? { busy: { since: o.current.since, until: o.current.until } }
@@ -872,7 +873,8 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
       scanAp: state.config.astro.scan.cost.ap, astrophysicistScanDiscount: state.config.astrophysicist.scanApDiscount,
       analyzeAp: state.config.astro.analyze.cost.ap, orbitAnalyzeAp: state.config.astro.analyze.orbitCost.ap,
       contactSolAp: state.config.comms.sol.cost.ap, rebelAp: state.config.comms.rebel.cost.ap, neronAp: state.config.comms.neron.cost.ap,
-      gardenRoom: state.config.botany.gardenRoom, cyclesPerDay: state.config.cyclesPerDay },
+      gardenRoom: state.config.botany.gardenRoom, cyclesPerDay: state.config.cyclesPerDay,
+      seats: state.config.preselection?.seats ?? state.players.length },
     maxAp: you.maxAp,
     maxMp: you.maxMp,
     maxHp: you.maxHp,

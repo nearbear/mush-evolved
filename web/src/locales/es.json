@@ -266,6 +266,27 @@
     "buttonCount_many": "Inventario ({{count}} objetos en esta sala)",
     "buttonCount_other": "Inventario ({{count}} objetos en esta sala)"
   },
+  "crew": {
+    "title": "Tripulación",
+    "label": "Tripulación: {{summary}}",
+    "count": {
+      "alive_one": "{{count}} con vida",
+      "alive_many": "{{count}} con vida",
+      "alive_other": "{{count}} con vida",
+      "mush_one": "{{count}} Mush",
+      "mush_many": "{{count}} Mush",
+      "mush_other": "{{count}} Mush",
+      "cryo_one": "{{count}} plaza libre en criosueño",
+      "cryo_many": "{{count}} plazas libres en criosueño",
+      "cryo_other": "{{count}} plazas libres en criosueño",
+      "dead_one": "{{count}} muerto",
+      "dead_many": "{{count}} muertos",
+      "dead_other": "{{count}} muertos",
+      "deadMush_one": "{{count}} Mush muerto",
+      "deadMush_many": "{{count}} Mush muertos",
+      "deadMush_other": "{{count}} Mush muertos"
+    }
+  },
   "titles": {
     "label": "Títulos",
     "holder": "{{title}}: {{name}}",

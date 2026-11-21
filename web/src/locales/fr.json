@@ -266,6 +266,27 @@
     "buttonCount_many": "Inventaire ({{count}} objets dans cette salle)",
     "buttonCount_other": "Inventaire ({{count}} objets dans cette salle)"
   },
+  "crew": {
+    "title": "Équipage",
+    "label": "Équipage : {{summary}}",
+    "count": {
+      "alive_one": "{{count}} en vie",
+      "alive_many": "{{count}} en vie",
+      "alive_other": "{{count}} en vie",
+      "mush_one": "{{count}} Mush",
+      "mush_many": "{{count}} Mush",
+      "mush_other": "{{count}} Mush",
+      "cryo_one": "{{count}} place libre en cryosommeil",
+      "cryo_many": "{{count}} places libres en cryosommeil",
+      "cryo_other": "{{count}} places libres en cryosommeil",
+      "dead_one": "{{count}} mort",
+      "dead_many": "{{count}} morts",
+      "dead_other": "{{count}} morts",
+      "deadMush_one": "{{count}} Mush mort",
+      "deadMush_many": "{{count}} Mush morts",
+      "deadMush_other": "{{count}} Mush morts"
+    }
+  },
   "titles": {
     "label": "Titres",
     "holder": "{{title}} : {{name}}",
