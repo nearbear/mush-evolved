@@ -78,7 +78,9 @@ export const BOT_DUTIES: readonly Duty[] = [
   { skill: "physicist", when: "waits", prompt: "" },
   { skill: "shrink", when: "model", actions: ["comfort"], prompt: "You're a Shrink: early in the game, tell everyone in global chat that you are one. Comfort gives someone 2 morale for 1 AP, and people resting in your room gain morale. Keep your AP for comforting: research and NERON projects only when you are within 4 AP of your max. When someone tells you their morale is under 7, comfort them even if it uses your last 2 AP; otherwise comfort them up to full while keeping 2 AP." },
   // Owner, 2026-11-01: people lying in a bed with a Shrink in the room gain morale, so once a day it spends the night in a dorm.
-  { skill: "shrink", when: "dorm", actions: ["lie_down"], priority: 45, prompt: "People resting in your room gain morale, so spend the night in a dormitory." },
+  // Owner, 2026-11-19 (bot survival plan Run A4, changing #452): it may take a free bed nobody there is asking for, gets
+  // up for anyone who asks, and says where it rests (`Shrink: in <ROOM>`, posted by the scripted goal).
+  { skill: "shrink", when: "dorm", actions: ["lie_down"], priority: 45, prompt: "People resting in your room gain morale, so spend the night in a dormitory. Take a bed there only if one is free and nobody in the room is asking for it, and get up for anyone who asks." },
   // Owner, 2026-11-18 (#452): once a day, a Fiery speech where the Leader stands, when at least 3 others are there
   // (`fierySpeech`). Picked right after Shrink.
   { skill: "leadership", when: "daily", actions: ["fiery_speech"], priority: 71, prompt: "You're a Leader: a Fiery speech gives 2 morale to everyone else in your room, so give one when the room is crowded." },

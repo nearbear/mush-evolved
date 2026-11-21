@@ -4,7 +4,7 @@
 // start (owner, 2026-11-10): a setup can't ask for zero Mush, only this helper does. No model, no network, no clock: the
 // rules run here as GameRoom runs them, and timed actions finish on a simulated clock, so a seed always plays the same.
 
-import { applyInput, CHARACTERS, ITEM_TYPES, createGame, dailyMoraleLoss, legalActions, nextDue, resolveConfig, shuffle, viewFor, type DeathCause, type Ending, type GameState, type Input, type PlayerId, type Seat } from "@mush2/shared";
+import { applyInput, CHARACTERS, EQUIPMENT_TYPES, ITEM_TYPES, createGame, dailyMoraleLoss, legalActions, nextDue, resolveConfig, shuffle, viewFor, type DeathCause, type Ending, type GameState, type Input, type PlayerId, type Seat } from "@mush2/shared";
 import { BOT_AP_RESERVE, GoalBot } from "../bots.ts";
 import { bedTier, parseBedLine } from "../bots/bedShare.ts";
 import { BOT_DUTIES } from "../bots/duties.ts";
@@ -146,6 +146,44 @@ export interface CycleReport {
   bedYields?: number;
   patrolTakeoffs?: number;
   icarusLaunches?: number;
+  /**
+   * The Shrink's beds (Run A4), as the cycle ended: living Shrinks, how many lay in a bed, beds left empty, and crew
+   * other than a Shrink lying in a bed in a room with a living Shrink (who gain its morale). In the cycle: `Shrink: in`
+   * lines. Missing in older runs.
+   */
+  shrinks?: number;
+  shrinkLying?: number;
+  freeBeds?: number;
+  besideShrink?: number;
+  shrinkLines?: number;
+  /**
+   * HP the crew lost in the cycle, by source (`hpSource`): `action:<type>` for the actor's own action (`random injury`
+   * when the action's injury roll hit), `others:<type>` for someone else's, `cycle:<...>` at a cycle change (the
+   * damaging diseases and injuries the person had, a fire or a tremor in their room), and `killed:<cause>` for a loss
+   * that killed by another cause than injury (asphyxia takes all the HP left). Missing in older runs.
+   */
+  hpLost?: Record<string, number>;
+}
+
+/** Diseases and injuries that cost HP as a cycle changes (`shared/src/modifiers/`). */
+const CYCLE_DAMAGE_MODIFIERS = ["flu_disease", "gastroenteritis_disease", "smallpox_disease", "sinus_storm_disease", "space_rabies_disease", "extreme_tinnitus_disease", "acid_reflux_disease", "mush_allergy_disease", "sepsis_disease", "punctured_lung_injury", "haemorrhage_injury", "critical_haemorrhage_injury"];
+
+/** What took `p`'s HP in the change from `before` to `after` (`CycleReport.hpLost`); best effort, for diagnosis. */
+function hpSource(input: Input, before: GameState, after: GameState, fresh: GameState["log"], p: GameState["players"][number], changed: boolean): string {
+  // Killed outright by something other than an injury (asphyxia takes all the HP left): kept apart.
+  const died = fresh.find((e) => e.key === "died" && e.params?.name === p.character);
+  if (died && died.params?.cause !== "injury") return `killed:${String(died.params?.cause)}`;
+  if (fresh.some((e) => e.key === "randomInjury" && e.params?.name === p.character)) return "random injury";
+  if (!changed) {
+    // A tick between cycles (a timed action, an expedition stepping on): named by its first log line.
+    if (input.type !== "action") return `${input.type}:${fresh[0]?.key ?? "-"}`;
+    return input.by === p.id ? `action:${input.action.type}` : `others:${input.action.type}`;
+  }
+  // A cycle change (a tick, or the last bot's `ready`).
+  const parts = p.modifiers.filter((m) => CYCLE_DAMAGE_MODIFIERS.includes(m)).map((m) => m.replace(/_(disease|injury)$/, ""));
+  if (before.fires.includes(p.room) || after.fires.includes(p.room)) parts.push("fire");
+  if (fresh.some((e) => e.key === "tremor" && e.room === p.room)) parts.push("tremor");
+  return `cycle:${parts.length > 0 ? parts.sort().join("+") : "other"}`;
 }
 
 export interface SurvivalResult {
@@ -157,7 +195,8 @@ export interface SurvivalResult {
   /** The last day and cycle played (at the cap: the cap). */
   day: number;
   cycle: number;
-  deaths: { day: number; cycle: number; character: string; cause: DeathCause | "unknown" }[];
+  /** `hit`: the source of the HP loss that killed (`hpSource`), when HP went to 0. */
+  deaths: { day: number; cycle: number; character: string; cause: DeathCause | "unknown"; hit?: string }[];
   /** The ship at the end of each day (and where the run ended). */
   days: DaySnapshot[];
   /** How often each goal (by id) was started. */
@@ -285,7 +324,7 @@ export async function runSurvival(seed: number, opts: SurvivalOptions): Promise<
   let now = 0;
   let logSeen = game.nextLogId;
 
-  const newRow = (cycle: number): CycleReport => ({ cycle, hull: 0, oxygen: 0, alive: 0, hunters: 0, fires: 0, killed: 0, shed: 0, shots: 0, repairTries: 0, repairs: 0, apLeft: 0, atCap: 0, scraps: 0, scrapsCarried: 0, apShooters: {}, apOthers: {}, hullLost: 0, arrived: 0, firesStarted: 0, firesOut: 0, extinguishTries: 0, brokenTanks: 0, tankRepairTries: 0, tankRepairs: 0, moraleUp: {}, moraleDown: {}, oxygenIn: {}, expeditions: 0, shares: 0, jumps: 0, coffeePulled: 0, coffeeJunkie: 0, coffeeOthers: 0, junkieMeals: 0, restWalkAp: 0, lying: 0, fuelAsked: 0, fuelReports: 0, commanderLoads: 0, loadFuelWalkAp: 0, tierAlive: [0, 0, 0], tierLying: [0, 0, 0], tier1Low: 0, bedAsks: 0, bedYields: 0, patrolTakeoffs: 0, icarusLaunches: 0 });
+  const newRow = (cycle: number): CycleReport => ({ cycle, hull: 0, oxygen: 0, alive: 0, hunters: 0, fires: 0, killed: 0, shed: 0, shots: 0, repairTries: 0, repairs: 0, apLeft: 0, atCap: 0, scraps: 0, scrapsCarried: 0, apShooters: {}, apOthers: {}, hullLost: 0, arrived: 0, firesStarted: 0, firesOut: 0, extinguishTries: 0, brokenTanks: 0, tankRepairTries: 0, tankRepairs: 0, moraleUp: {}, moraleDown: {}, oxygenIn: {}, expeditions: 0, shares: 0, jumps: 0, coffeePulled: 0, coffeeJunkie: 0, coffeeOthers: 0, junkieMeals: 0, restWalkAp: 0, lying: 0, fuelAsked: 0, fuelReports: 0, commanderLoads: 0, loadFuelWalkAp: 0, tierAlive: [0, 0, 0], tierLying: [0, 0, 0], tier1Low: 0, bedAsks: 0, bedYields: 0, patrolTakeoffs: 0, icarusLaunches: 0, shrinks: 0, shrinkLying: 0, freeBeds: 0, besideShrink: 0, shrinkLines: 0, hpLost: {} });
   let row = newRow(game.cycle);
   /** Fills the row's end-of-cycle fields from `g`, the state just before the change (or where the game ended). */
   const closeRow = (g: GameState): void => {
@@ -298,16 +337,27 @@ export async function runSurvival(seed: number, opts: SurvivalOptions): Promise<
     Object.assign(row, { planets: planets.length, oxygenPlanets: planets.filter(hasOxygen).length, orbit: g.navigation.orbit !== null, orbitOxygen: orbiting !== undefined && hasOxygen(orbiting) });
     for (const p of living) {
       const tier = bedTier(p.bookSkill ? [...p.skills, p.bookSkill] : p.skills, Object.entries(g.titles).flatMap(([t, holder]) => (holder === p.id ? [t] : [])));
-      row.tierAlive![tier - 1]!++;
-      if (p.lyingIn !== undefined) row.tierLying![tier - 1]!++;
+      row.tierAlive![Math.min(tier, 3) - 1]!++;
+      if (p.lyingIn !== undefined) row.tierLying![Math.min(tier, 3) - 1]!++;
       if (tier === 1 && p.ap <= BOT_AP_RESERVE) row.tier1Low!++;
     }
+    const isShrink = (p: (typeof living)[number]): boolean => p.skills.includes("shrink") || p.bookSkill === "shrink";
+    const shrinkRooms = new Set(living.filter(isShrink).map((p) => p.room));
+    const beds = Object.values(g.equipment).flat().filter((e) => EQUIPMENT_TYPES[e.type]?.bed).length;
+    Object.assign(row, {
+      shrinks: living.filter(isShrink).length,
+      shrinkLying: living.filter((p) => isShrink(p) && p.lyingIn !== undefined).length,
+      freeBeds: beds - living.filter((p) => p.lyingIn !== undefined).length,
+      besideShrink: living.filter((p) => !isShrink(p) && p.lyingIn !== undefined && shrinkRooms.has(p.room)).length,
+    });
     const humans = living.filter((p) => p.role === "human");
     Object.assign(row, { moraleMean: humans.length === 0 ? 0 : humans.reduce((a, p) => a + p.morale, 0) / humans.length, hopeless: humans.filter((p) => p.morale === 0).length, moraleLow: humans.filter((p) => p.morale <= 3).length });
     const orbit = result.orbitLog!.at(-1);
     if (orbiting && orbit?.to === null && orbit.allExplored === undefined && orbiting.sectors.every((x) => x.explored)) orbit.allExplored = row.cycle;
     result.cycles!.push(row);
   };
+  /** The source of each person's latest HP loss (`hpSource`), for the death it may have caused. */
+  const lastHit = new Map<string, string>();
   /** `apCost`: what the action's option said it costs, for the report (timed actions are paid for when they finish). */
   const apply = (input: Input, apCost = 0): boolean => {
     const before = game;
@@ -326,6 +376,14 @@ export async function runSurvival(seed: number, opts: SurvivalOptions): Promise<
     if (before.navigation.orbit !== null && game.navigation.orbit === null && result.orbitLog!.at(-1)?.to === null) result.orbitLog!.at(-1)!.to = game.cycle;
     const changed = game.cycle !== before.cycle || ended;
     const morale = moraleDeltas(before, game, fresh, changed, input.type === "action" ? input.action.type : "tick");
+    const hpLost: Record<string, number> = {};
+    for (const p of before.players) {
+      const now = game.players.find((q) => q.id === p.id)!;
+      if (!p.alive || now.hp >= p.hp) continue;
+      const source = hpSource(input, before, game, fresh, p, changed);
+      hpLost[source] = (hpLost[source] ?? 0) + p.hp - now.hp;
+      lastHit.set(p.character, source);
+    }
     const oxygenIn = (source: string, amount: number): void => {
       if (amount > 0) row.oxygenIn![source] = (row.oxygenIn![source] ?? 0) + amount;
     };
@@ -334,6 +392,7 @@ export async function runSurvival(seed: number, opts: SurvivalOptions): Promise<
       oxygenIn("plants", fresh.filter((e) => e.key === "plantProduced").length * game.config.botany.oxygenPerPlant);
       addInto(row.moraleUp!, morale.up);
       addInto(row.moraleDown!, morale.down);
+      addInto(row.hpLost!, hpLost);
       row.hullLost = Math.max(0, before.ship.hull - game.ship.hull);
       row.firesStarted! += lit;
       row.firesOut! += out;
@@ -343,6 +402,7 @@ export async function runSurvival(seed: number, opts: SurvivalOptions): Promise<
     }
     addInto(row.moraleUp!, morale.up);
     addInto(row.moraleDown!, morale.down);
+    addInto(row.hpLost!, hpLost);
     const action = input.type === "action" ? input.action.type : "tick";
     // An expedition resolves as it lands or steps on (expeditions.ts), so its oxygen comes with one of these lines.
     const landed = fresh.filter((e) => e.key === "icarusTakeoff" || e.key === "patrolPlanetLanding").length;
@@ -415,7 +475,8 @@ export async function runSurvival(seed: number, opts: SurvivalOptions): Promise<
       if (e.key !== "died") continue;
       const p = game.players.find((q) => q.character === e.params?.name);
       const cause = (e.params?.cause as DeathCause | undefined) ?? "unknown";
-      result.deaths.push({ day: dayOf(game), cycle: game.cycle, character: String(e.params?.name), cause });
+      const hit = lastHit.get(String(e.params?.name));
+      result.deaths.push({ day: dayOf(game), cycle: game.cycle, character: String(e.params?.name), cause, ...(p !== undefined && p.hp === 0 && hit !== undefined && { hit }) });
       trace(`  died: ${p?.id ?? "?"} (${String(e.params?.name)}), ${cause}`);
     }
     logSeen = game.nextLogId;
@@ -454,6 +515,7 @@ export async function runSurvival(seed: number, opts: SurvivalOptions): Promise<
             if (social.type === "chat" && social.text === HOLD_JUMP_LINE) holdPosted ??= game.cycle;
             if (social.type === "chat" && social.text.startsWith("Fuel: need ")) row.fuelAsked!++;
             if (social.type === "chat" && parseBedLine(social.text)) row.bedAsks!++;
+            if (social.type === "chat" && social.text.startsWith("Shrink: in ")) row.shrinkLines!++;
             if (social.type === "chat" && social.text.startsWith("Fuel: chamber at ")) row.fuelReports!++;
             if (social.type === "chat" && social.text.startsWith("Fuel: ")) trace(`  ${game.players.find((p) => p.id === id)!.character} says "${social.text}"`);
             if (social.type === "chat" && parseExpeditionLine(social.text)) trace(`  ${game.players.find((p) => p.id === id)!.character} says "${social.text}"`);

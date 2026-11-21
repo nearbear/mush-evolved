@@ -9,12 +9,21 @@
 // the others then see a free bed and stay. A bot learns others' tiers from what it sees: titles are public, skills
 // only for people in its room (`OtherPlayerView.skills`), so it remembers the skills it saw (`BedMemory.skills`).
 // Only bots parse the line; a player can post it to make bots get up (accepted, as with the other lines).
+// The Shrink (Run A4, owner, 2026-11-19, changing #452) is the last tier: it lies only in a bed that is free in its room
+// with nobody there asking, and gets up for anyone who asks. Settling in a room with beds, it says where it is:
+//   `Shrink: in <ROOM>`  the Shrink is resting in that room (it says only where it chose to be)
+// so other bots can pick that bedroom without ACTOPI: the Shrink takes no bed from them (it yields), and lying beside
+// it gives morale (`shrink.lyingMorale`). The room stands until the bot sees the Shrink elsewhere or dead, or stands in
+// that room without it.
 
 import { EQUIPMENT_TYPES, SHIP_ROOMS, type PlayerId, type PlayerView, type RoomId } from "@mush2/shared";
 import type { BotMemory } from "./goals/types.ts";
 
-/** 1 goes first. Pilots and the Commander; then the Astrophysicist, Gunner and Comms Officer (owner, 2026-11-20); then everyone else. */
-export type BedTier = 1 | 2 | 3;
+/**
+ * 1 goes first. Pilots and the Commander; then the Astrophysicist, Gunner and Comms Officer (owner, 2026-11-20); then
+ * everyone else; the Shrink last, whatever else it holds (Run A4).
+ */
+export type BedTier = 1 | 2 | 3 | 4;
 
 const TIER_1_SKILLS: ReadonlySet<string> = new Set(["pilot"]);
 const TIER_1_TITLES: ReadonlySet<string> = new Set(["commander"]);
@@ -23,6 +32,7 @@ const TIER_2_TITLES: ReadonlySet<string> = new Set(["comms_officer"]);
 
 /** The tier of someone holding `skills` (picked and book) and `titles`. */
 export function bedTier(skills: readonly string[], titles: readonly string[]): BedTier {
+  if (skills.includes("shrink")) return 4;
   if (skills.some((s) => TIER_1_SKILLS.has(s)) || titles.some((t) => TIER_1_TITLES.has(t))) return 1;
   if (skills.some((s) => TIER_2_SKILLS.has(s)) || titles.some((t) => TIER_2_TITLES.has(t))) return 2;
   return 3;
@@ -32,6 +42,14 @@ export function bedTier(skills: readonly string[], titles: readonly string[]): B
 const ROOMS: ReadonlySet<string> = new Set(SHIP_ROOMS.map((r) => r.id));
 
 export const formatBedAsk = (room: RoomId): string => `Bed: waiting in ${room}`;
+
+export const formatShrinkLine = (room: RoomId): string => `Shrink: in ${room}`;
+
+/** The room a Shrink's line names, if the line is one and names a room of the ship. */
+export function parseShrinkLine(text: string): RoomId | null {
+  const m = /^Shrink: in (\w+)$/.exec(text.trim());
+  return m && ROOMS.has(m[1]!) ? m[1]! : null;
+}
 
 /** The room a bed request names, if the line is one and names a room of the ship. */
 export function parseBedLine(text: string): RoomId | null {
@@ -52,11 +70,15 @@ export interface BedMemory {
   asked: { room: RoomId; cycle: number } | null;
   /** Rooms where this bot's request went unanswered: it doesn't ask there again until it sees a bed free there. */
   unanswered: Set<RoomId>;
+  /** Where each Shrink last said it rests (`Shrink: in`), until seen otherwise (Run A4). */
+  shrinkRooms: Map<PlayerId, RoomId>;
+  /** The room this bot, a Shrink, last said it rests in; cleared when it stands in a room without beds. */
+  shrinkSaid: RoomId | null;
   /** The global-chat position read up to (`ChatLine.seq`). */
   seq: number;
 }
 
-export const newBedMemory = (): BedMemory => ({ asks: new Map(), skills: new Map(), asked: null, unanswered: new Set(), seq: -1 });
+export const newBedMemory = (): BedMemory => ({ asks: new Map(), skills: new Map(), asked: null, unanswered: new Set(), shrinkRooms: new Map(), shrinkSaid: null, seq: -1 });
 
 /** Folds new bed lines and the skills of the people in the bot's room into memory; drops requests older than last cycle. */
 export function observeBedAsks(view: PlayerView, memory: BotMemory): void {
@@ -67,11 +89,37 @@ export function observeBedAsks(view: PlayerView, memory: BotMemory): void {
     if (line.system || line.from === null || line.from === view.you.id) continue;
     const room = parseBedLine(line.text);
     if (room) beds.asks.set(line.from, { room, cycle: line.cycle });
+    const shrinkRoom = parseShrinkLine(line.text);
+    if (shrinkRoom) {
+      beds.shrinkRooms.set(line.from, shrinkRoom);
+      memory.shrinks.add(line.from);
+    }
   }
+  for (const [id, room] of beds.shrinkRooms) {
+    const p = view.players.find((q) => q.id === id);
+    if (!p || !p.alive || (p.room !== undefined && p.room !== room) || (view.you.room === room && p.room !== room)) beds.shrinkRooms.delete(id);
+  }
+  if (!view.roomEquipment.some((e) => EQUIPMENT_TYPES[e.type]?.bed)) beds.shrinkSaid = null;
   for (const [id, ask] of beds.asks) if (ask.cycle < view.cycle - 1) beds.asks.delete(id);
   for (const p of view.players) if (p.alive && p.room === view.you.room) beds.skills.set(p.id, p.bookSkill ? [...p.skills, p.bookSkill] : [...p.skills]);
   // A bed seen free: the next request there may be answered.
   if (!memory.fullBeds.has(view.you.room)) beds.unanswered.delete(view.you.room);
+}
+
+/** Rooms a living Shrink the bot knows of is in: seen there (its room, or ACTOPI) or said so (`Shrink: in`). */
+export function knownShrinkRooms(view: PlayerView, memory: BotMemory): Set<RoomId> {
+  const rooms = new Set(memory.beds.shrinkRooms.values());
+  for (const p of view.players) if (p.alive && p.room !== undefined && memory.shrinks.has(p.id)) rooms.add(p.room);
+  return rooms;
+}
+
+/** Whether someone standing in the bot's room asked for a bed there this cycle or the last (Run A3's line). */
+export function bedAskedHere(view: PlayerView, memory: BotMemory): boolean {
+  const room = view.you.room;
+  return view.players.some((p) => {
+    const ask = memory.beds.asks.get(p.id);
+    return ask !== undefined && ask.room === room && ask.cycle >= view.cycle - 1 && p.alive && p.room === room && p.lying === undefined;
+  });
 }
 
 const titlesOf = (view: PlayerView, character: string): string[] => view.titles.filter((t) => t.holder === character).map((t) => t.id);
