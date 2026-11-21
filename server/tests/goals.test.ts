@@ -18,7 +18,7 @@ import { repairHull } from "../src/bots/goals/repairHull.ts";
 import { LEAVE_SHRINK_BEDS_MORALE, observeBeds, rest } from "../src/bots/goals/rest.ts";
 import { SELF_CARE_MORALE, SELF_CARE_UNTIL, selfCare } from "../src/bots/goals/selfCare.ts";
 import { research } from "../src/bots/goals/research.ts";
-import { BOT_PROJECT_ORDER, pickProject, project } from "../src/bots/goals/project.ts";
+import { BOT_PROJECT_ORDER, pickProject, project, projectOptions } from "../src/bots/goals/project.ts";
 import { SHRINK_DESK_WORK_WITHIN } from "../src/bots/goals/work.ts";
 import { onlyAsteroids, shotOrder } from "../src/bots/goals/hunterTargets.ts";
 import { patrolShootHunters } from "../src/bots/goals/patrolShootHunters.ts";
@@ -3786,5 +3786,66 @@ describe("the fuel relay (owner, 2026-11-20, Run A2c)", () => {
     observeFuel(viewFor(asCommander, id), cm);
     expect(loadFuel.options(viewFor(asCommander, id), cm)).toEqual([]);
     expect(SOLO_GOALS).toContain(loadFuel);
+  });
+});
+
+describe("BIOS crew locks in bot goals", () => {
+  it("does not offer project to non-Designers in the Nexus under projects lock, and offers it to Designers", () => {
+    const { game: start, id } = setup();
+    const base = edit(start, id, (p) => {
+      p.room = "NEXUS_ROOM";
+      p.skills = [];
+      p.ap = 12;
+    });
+    base.bios.crew_lock = "projects";
+    expect(project.options(viewFor(base, id), memory())).toEqual([]);
+    // Dirty non-Designer is not told to work on locked projects (so shower won't fire for projects).
+    const dirty = edit(base, id, (p) => {
+      p.statuses = ["dirty"];
+    });
+    expect(projectOptions(viewFor(dirty, id), memory(), true)).toEqual([]);
+    // Designer IS offered project.
+    const designer = edit(base, id, (p) => {
+      p.skills = ["designer"];
+    });
+    expect(project.options(viewFor(designer, id), memory())).toHaveLength(1);
+  });
+
+  it("does not offer research to unqualified bots in the lab or Nexus under research lock, and offers it to Biologist/Medic/Polyvalent", () => {
+    const { game: start, id } = setup();
+    for (const room of ["LABORATORY", "NEXUS_ROOM"] as const) {
+      const base = edit(start, id, (p) => {
+        p.room = room;
+        p.skills = [];
+        p.ap = 12;
+      });
+      base.bios.crew_lock = "research";
+      expect(research.options(viewFor(base, id), memory())).toEqual([]);
+    }
+    for (const skill of ["biologist", "medic", "skilful"] as const) {
+      const qualified = edit(start, id, (p) => {
+        p.room = "LABORATORY";
+        p.skills = [skill];
+        p.ap = 12;
+      });
+      qualified.bios.crew_lock = "research";
+      expect(research.options(viewFor(qualified, id), memory())).toHaveLength(1);
+    }
+  });
+
+  it("bots act legally without looping under all three crew locks", async () => {
+    for (const lock of ["piloting", "projects", "research"] as const) {
+      const { game: start, id } = setup(11);
+      const game = edit(start, id, (p) => {
+        p.room = "REFECTORY";
+        p.skills = [];
+        p.ap = 12;
+      });
+      game.bios.crew_lock = lock;
+      const { taken } = await play(game, id, new GoalBot(1, 2, SOLO_GOALS), 15);
+      expect(taken.every((a) => (lock === "projects" ? a.type !== "project" : true))).toBe(true);
+      expect(taken.every((a) => (lock === "research" ? a.type !== "research" : true))).toBe(true);
+      expect(taken.every((a) => (lock === "piloting" ? a.type !== "takeoff" && a.type !== "icarus_takeoff" : true))).toBe(true);
+    }
   });
 });

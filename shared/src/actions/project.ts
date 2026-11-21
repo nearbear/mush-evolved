@@ -3,11 +3,19 @@ import { equipmentHere } from "../equipment.ts";
 import { PROJECT_COMPLETE, PROJECT_IDS, projectDone, projectSkills, type ProjectId } from "../projects.ts";
 import { relayGainRange, rollRelayGain, touchRelay } from "../relay.ts";
 import { logPublic } from "../log.ts";
+import { hasSkill } from "../skills.ts";
 import { removeStatus } from "../statuses.ts";
 import { completeProject, offeredProjects } from "../projectEffects.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
 export type ProjectActionData = { type: "project"; equipment: string; project: string };
+
+/**
+ * Whether `player` may work on NERON projects under the current BIOS crew lock (owner, 2026-11-21): anyone unless the
+ * lock is on projects, in which case only Designers (or `freeHacking`).
+ */
+export const canWorkProject = (state: Readonly<GameState>, player: Readonly<PlayerState>): boolean =>
+  state.bios.crew_lock !== "projects" || hasSkill(player, "designer") || player.cheats.includes("freeHacking");
 
 /**
  * Work on a NERON project at NERON's core (2 AP; free with a Designer or Computer point, which is spent; the Designer
@@ -32,6 +40,7 @@ export class ProjectAction extends Action<ProjectActionData> {
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): ProjectActionData[] {
+    if (!canWorkProject(state, player)) return [];
     const offered = offeredProjects(state, player);
     return equipmentHere(state, player, "NERON_CORE").flatMap((core) =>
       offered.map((project): ProjectActionData => ({ type: "project", equipment: core.id, project })),
@@ -40,6 +49,7 @@ export class ProjectAction extends Action<ProjectActionData> {
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: ProjectActionData): string | null {
     if (!equipmentHere(state, player, "NERON_CORE").some((core) => core.id === target.equipment)) return "cant_project";
+    if (!canWorkProject(state, player)) return "crew_lock";
     if (!(PROJECT_IDS as readonly string[]).includes(target.project)) return "no_such_project";
     if (projectDone(state, target.project as ProjectId)) return "project_done";
     if (!offeredProjects(state, player).includes(target.project as ProjectId)) return "invalid_project";

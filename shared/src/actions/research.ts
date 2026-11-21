@@ -7,6 +7,7 @@ import { ITEM_TYPES, removeItem, spawnInRoom, SPORE_SUCKER_ITEM, STEROIDS_ITEM, 
 import { xylophFound } from "../comms.ts";
 import { makeToken, type ResearchPool } from "../relay.ts";
 import { assayDue, researchProgress, runAssay, type SampleCounts } from "../assay.ts";
+import { hasSkill } from "../skills.ts";
 import { removeStatus } from "../statuses.ts";
 import { dropMycoAlarms } from "../mycoalarm.ts";
 import { ANTI_MUSH_SERUM_ITEM } from "./vaccinate.ts";
@@ -46,6 +47,17 @@ export function researchAllowed(state: Readonly<GameState>, room: RoomId, resear
   if (player?.cheats.includes("freeHacking")) return true;
   return researchNeedsMet(state, room, research).every(Boolean);
 }
+
+/**
+ * Whether `player` may work on lab research (or Mush own-spoil) under the current BIOS crew lock (owner, 2026-11-21):
+ * anyone unless the lock is on research, in which case only Biologists, Medics, Polyvalent (`skilful`), or `freeHacking`.
+ */
+export const canWorkResearch = (state: Readonly<GameState>, player: Readonly<PlayerState>): boolean =>
+  state.bios.crew_lock !== "research" ||
+  hasSkill(player, "biologist") ||
+  hasSkill(player, "medic") ||
+  hasSkill(player, "skilful") ||
+  player.cheats.includes("freeHacking");
 
 export type ResearchActionData = { type: "research"; equipment: string; research: string };
 
@@ -159,6 +171,7 @@ export class ResearchAction extends Action<ResearchActionData> {
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): ResearchActionData[] {
+    if (!canWorkResearch(state, player)) return [];
     return equipmentHere(state, player, "RESEARCH_LAB").flatMap((lab) =>
       RESEARCH_IDS.filter((id) => (state.research[id] ?? 0) < RESEARCH_COMPLETE && researchAllowed(state, player.room, id, player)).map((research): ResearchActionData => ({ type: "research", equipment: lab.id, research })),
     );
@@ -166,6 +179,7 @@ export class ResearchAction extends Action<ResearchActionData> {
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: ResearchActionData): string | null {
     if (!equipmentHere(state, player, "RESEARCH_LAB").some((lab) => lab.id === target.equipment)) return "cant_research";
+    if (!canWorkResearch(state, player)) return "crew_lock";
     if (!(RESEARCH_IDS as readonly string[]).includes(target.research)) return "no_such_research";
     if ((state.research[target.research] ?? 0) >= RESEARCH_COMPLETE) return "research_done";
     if (!researchAllowed(state, player.room, target.research as ResearchId, player)) return "research_needs";

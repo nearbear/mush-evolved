@@ -1,4 +1,5 @@
 import { PROJECT_COMPLETE, PROJECT_IDS, type ActionOption, type PlayerView, type ProjectId } from "@mush2/shared";
+import { hasBotSkill } from "../duties.ts";
 import { canAfford, roomsWith, where } from "./blocks.ts";
 import type { BotMemory, Goal, GoalDef } from "./types.ts";
 import { deskWorkReserve, mostAdvanced, workAt } from "./work.ts";
@@ -25,12 +26,18 @@ export function pickProject(view: PlayerView): ActionOption | undefined {
 export function projectOptions(view: PlayerView, memory: BotMemory, assumeClean = false): Goal[] {
   if (!assumeClean && view.statuses.includes("dirty")) return [];
   if (PROJECT_IDS.every((id) => (view.projects[id] ?? 0) >= PROJECT_COMPLETE)) return [];
+  if (view.bios?.crew_lock === "projects" && !hasBotSkill(view, "designer")) return [];
   const free = view.you.resources.core > 0 || view.you.resources.comp > 0;
   const cost = free ? 0 : view.config.projectAp;
   const auxOnline = (view.projects.AUXILIARY_TERMINAL ?? 0) >= PROJECT_COMPLETE;
   const core = roomsWith(view, ["NERON_CORE"])
     .filter((room) => auxOnline || room === "NEXUS_ROOM")
-    .find((room) => !memory.ended.has(`project:${room}`) && canAfford(view, room, cost, deskWorkReserve(view, memory), memory));
+    .find(
+      (room) =>
+        !memory.ended.has(`project:${room}`) &&
+        (room !== view.you.room || pickProject(view) !== undefined) &&
+        canAfford(view, room, cost, deskWorkReserve(view, memory), memory),
+    );
   return core ? [workAt("project", core, `Work on NERON projects at a terminal ${where(view, core)}, Fire Detector first, then the most advanced`, pickProject, deskWorkReserve)] : [];
 }
 

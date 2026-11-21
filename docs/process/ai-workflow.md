@@ -4732,3 +4732,9 @@ Follow-up: the "Inspect" panel heading is now visually hidden on desktop too (ke
 ### 2026-11-21 — BIOS piloting crew lock (phase 2 of `docs/plans/bios-priority-lock.md`)
 - **Decision (owner, 2026-11-21):** Added `canTakeoff` in `shared/src/patrol.ts` and wired `takeoff` and `icarus_takeoff` (via `canLaunchExpedition`) to require `pilot` or `freeHacking` while `state.bios.crew_lock === "piloting"`, while keeping `land` and `land_on_planet` ungated so airborne non-pilots are never stranded.
 - **What worked:** `canLaunchExpedition` already accepted `state` for this lock, and returning `"crew_lock"` vs `"cant_fly"` cleanly separates BIOS lock refusals from disease grounding. `npm run verify` passed (4,220 tests in 295 files).
+
+### 2026-11-21 — BIOS projects and research crew locks & bot goals (phase 3)
+
+- Implemented phase 3 of `docs/plans/bios-priority-lock.md`: gated `project` on `crew_lock !== "projects" || designer || freeHacking` (`canWorkProject` in `shared/src/actions/project.ts`), gated `research` and `spoil_research` on `crew_lock !== "research" || biologist || medic || skilful || freeHacking` (`canWorkResearch` in `shared/src/actions/research.ts`), leaving `coup`, `become_genius`, and `contaminate` unaffected.
+- Updated bot goals (`server/src/bots/goals/project.ts`, `research.ts`; `patrolShootHunters.ts` and `expeditionLaunch.ts` already guard on `pilot`) to respect `view.bios?.crew_lock` when visible and `view.actions` in the current room without reading beyond `PlayerView`.
+- Added unit tests in `shared/tests/projects.test.ts`, `shared/tests/research.test.ts`, and `server/tests/goals.test.ts`.
