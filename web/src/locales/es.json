@@ -1,6 +1,7 @@
 {
   "topBar": {
     "dayCycle": "Día {{day}} · Ciclo {{cycle}}",
+    "dayCycleShort": "D{{day}} · C{{cycle}}",
     "endCycle": "Terminar el ciclo",
     "waiting": "Esperando…",
     "waitingForOthers": "Esperando a los demás…",
@@ -36,6 +37,7 @@
     "hull": "Casco",
     "plasmaShield": "Escudo de plasma",
     "fires": "Incendios",
+    "alertBar": "Alertas en curso",
     "alerts": "Alertas",
     "hunters": "Hunters",
     "orbit": "En órbita alrededor de {{name}}",

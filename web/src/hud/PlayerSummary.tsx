@@ -1,9 +1,10 @@
-// Who you are and your stats on phones, in the top bar, styled after the desktop ID card (SelfHud): a band in your faction's
-// colour across the top, then your portrait (tap to inspect yourself), your name and the clock, and
+// Who you are and your stats on phones, in the top bar: a full-width strip with the clock, the alerts and the menu, then
+// flush under it the ID card, styled after the desktop one (SelfHud): your portrait (tap to inspect yourself), your name, titles and faction (in its colour), and
 // your stats two rows deep: AP over MP, HP over morale (values only; each one's tooltip has its capacity and a pip bar),
 // then your other resources, in a column the card's full height, in as many columns as fit. The desktop equivalent is SelfHud, over the room view.
 
 import { characterGivenName, type PlayerView } from "@mush2/shared";
+import { useNames } from "../i18n/names.ts";
 import { useRef, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { AP_PIP, HP_ICON, HP_PIP, MORALE_ICON, MORALE_PIP, MP_PIP, bustIcon } from "../art/assets.ts";
@@ -68,22 +69,47 @@ function StatChip({ stat, view, value, max, icon, big = false }: { stat: Stat; v
 }
 
 /**
- * `clock` is the top bar's amber day/cycle/countdown plate, set over the faction band's right end (left of the resources); `tags` (pre-selection,
- * AI paused) go under your name; `menu` is the hamburger, on the card's right, after your stats. `onInspect` opens the Inspect panel on you.
+ * `clock` is the top bar's amber day/cycle/countdown/ship plate, on the strip's left; `alerts` (AlertButton) and `menu`
+ * (the hamburger) are on its right. `tags` (pre-selection, AI paused) go under your name, titles and faction. `onInspect` opens the Inspect panel on you.
  */
-export function PlayerSummary({ view, clock, tags, menu, onInspect }: { view: PlayerView; clock: ReactNode; tags: ReactNode; menu: ReactNode; onInspect: () => void }) {
-  const { t } = useTranslation();
+export function PlayerSummary({
+  view,
+  clock,
+  alerts,
+  tags,
+  menu,
+  onInspect,
+}: {
+  view: PlayerView;
+  clock: ReactNode;
+  alerts: ReactNode;
+  tags: ReactNode;
+  menu: ReactNode;
+  onInspect: () => void;
+}) {
+  const { t, i18n } = useTranslation();
+  const names = useNames();
   const { you } = view;
+  // Titles are public (the top bar lists their holders); a seat can hold more than one in a small game (as SelfHud).
+  const held = view.titles.filter((title) => title.holder === you.character).map((title) => names.title(title.id));
+  const titles = held.length === 0 ? null : new Intl.ListFormat(i18n.language, { type: "conjunction" }).format(held);
   const statsRef = useRef<HTMLDivElement>(null);
   return (
     <div className="player-summary">
-      <div className={`nameplate ${you.role}`}>
-        <span className="id-band">{t(`idCard.band.${you.role}`)}</span>
-        {/* Over the band's right end (top-bar.css); in landscape it follows the name instead. */}
+      {/* The strip over the card: the clock on the left, the alerts and menu on the right (top-bar.css); in landscape, left of the card. */}
+      <div className="summary-strip">
         {clock}
+        <span className="summary-strip-end">
+          {alerts}
+          {menu}
+        </span>
+      </div>
+      <div className={`nameplate ${you.role}`}>
         <SelfPortrait view={view} onInspect={onInspect} />
         <div className="who">
           <strong className="id-value id-name">{characterGivenName(you.character)}</strong>
+          {titles && <span className="nameplate-titles">{titles}</span>}
+          <span className="nameplate-faction">{t(`faction.${factionOf(view)}.name`)}</span>
           {tags && <span className="nameplate-tags">{tags}</span>}
         </div>
         {/* Two rows, filled a column at a time: AP over MP, HP over morale, then the resources. */}
@@ -94,7 +120,6 @@ export function PlayerSummary({ view, clock, tags, menu, onInspect }: { view: Pl
           <StatChip stat="morale" view={view} value={you.morale} max={view.maxMorale} icon={MORALE_ICON} big />
           <ResourceGrid view={view} gridRef={statsRef} />
         </div>
-        {menu}
       </div>
     </div>
   );

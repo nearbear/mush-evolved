@@ -7,7 +7,7 @@ import { useMobile } from "../useMobile.ts";
 import { BotsPausedTag } from "./BotsPausedTag.tsx";
 import { CycleCountdown } from "./CycleCountdown.tsx";
 import { PlayerSummary } from "./PlayerSummary.tsx";
-import { ShipResources } from "./ShipResources.tsx";
+import { AlertBar, AlertButton, ShipResources } from "./ShipResources.tsx";
 import { ShipStatus } from "./ShipStatus.tsx";
 import { SettingsDialog } from "./SettingsDialog.tsx";
 
@@ -63,28 +63,29 @@ export function TopBar({
   // Ready can't be offered while you already are, so the button stays (disabled, "Waiting…") until the cycle ends.
   const showReady = canReady || you.ready;
   const ended = view.phase === "ended";
-  // Where the ship is (ShipStatus.tsx): part of the game state, so on desktop it joins the clock's plate.
-  const shipStatus = (joined: boolean) => <ShipStatus preselection={view.preselection} orbit={view.navigation.orbitName} expedition={view.expedition} joined={joined} />;
-  // The day and cycle with the time left, then where the ship is, in one amber plate split by amber dividers.
+  // The day and cycle with the time left, then where the ship is (ShipStatus.tsx, part of the game state), in one amber
+  // plate split by amber dividers. Phones abbreviate the day and cycle ("D2 · C3"), with the full words for screen readers.
+  const dayCycle = { day: view.day, cycle: view.cycleOfDay };
   const clock = (
     <span className="cycle-label hud-card amber">
-      {t("topBar.dayCycle", { day: view.day, cycle: view.cycleOfDay })}
+      {mobile ? (
+        <>
+          <span aria-hidden="true">{t("topBar.dayCycleShort", dayCycle)}</span>
+          <span className="sr-only">{t("topBar.dayCycle", dayCycle)}</span>
+        </>
+      ) : (
+        t("topBar.dayCycle", dayCycle)
+      )}
       {nextCycleAt !== null && (
         <>
           <span className="clock-divider" aria-hidden="true" />
           <CycleCountdown nextCycleAt={nextCycleAt} />
         </>
       )}
-      {!showSummary && shipStatus(true)}
+      <ShipStatus preselection={view.preselection} orbit={view.navigation.orbitName} expedition={view.expedition} />
     </span>
   );
-  // Phones: where the ship is goes under your name, as the clock alone fills the nameplate's band.
-  const tags = (
-    <>
-      {showSummary && shipStatus(false)}
-      {botsPaused && <BotsPausedTag pause={botsPaused} />}
-    </>
-  );
+  const tags = botsPaused && <BotsPausedTag pause={botsPaused} />;
   // Phones: the actions live in a hamburger menu, on the right of the nameplate, to save top bar space.
   const menu = mobile && (
     <Menu.Root>
@@ -117,19 +118,20 @@ export function TopBar({
   );
   return (
     <header className="top-bar">
-      {/* Desktop zones (UI coherence step 5): time on the left, the ship in the middle, the actions on the right. Phones put the clock, the tags and the menu on the nameplate. */}
+      {/* Desktop zones (UI coherence step 5): time on the left, the ship in the middle, the actions on the right. Phones put the clock and the alerts on top of the nameplate, and the tags and the menu in it. */}
       {showSummary ? (
-        <PlayerSummary view={view} clock={clock} tags={tags} menu={menu} onInspect={onInspectSelf} />
+        <PlayerSummary view={view} clock={clock} alerts={<AlertButton hunters={view.hunters.count} alerts={view.alerts} />} tags={tags} menu={menu} onInspect={onInspectSelf} />
       ) : (
         <div className="cycle">
           {clock}
           {tags}
         </div>
       )}
-      {!mobile && <ShipResources ship={view.ship} hunters={view.hunters.count} titles={view.titles} preselection={view.preselection} compactTitles lost={view.lost} alerts={view.alerts} />}
+      {!mobile && <ShipResources ship={view.ship} hunters={view.hunters.count} titles={view.titles} preselection={view.preselection} compactTitles alertsApart lost={view.lost} alerts={view.alerts} />}
       <div className="top-bar-actions">
         {!mobile && (
           <>
+            <AlertBar ship={view.ship} hunters={view.hunters.count} alerts={view.alerts} />
             {ended && (
               <button type="button" onClick={onResults}>
                 {t("gameOver.results")}

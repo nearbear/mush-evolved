@@ -3,7 +3,7 @@
 // deep space (most of the game). Each has a popover saying what it means and what to do next. Orbiting and exploring
 // lead with the planet icon; exploring ends with the countdown to the return in the clock's fixed-width digits, and its
 // popover shows the crew. All public: the orbited planet's name (owner, 2026-10-31) and the expedition (2026-11-07).
-// Phones show it as its own plate under your name on the nameplate, as the clock alone fills the band there.
+// Phones join it to the clock the same way, on the plate over the ID card.
 
 import { Popover } from "@base-ui/react/popover";
 import type { PlayerView } from "@mush2/shared";
@@ -19,20 +19,16 @@ interface Props {
   /** The orbited planet's name (`navigation.orbitName`), or null out of orbit. */
   orbit: string | null;
   expedition: PlayerView["expedition"];
-  /** Inside the clock's plate, past a divider (desktop), rather than a plate of its own (phones). */
-  joined?: boolean;
 }
 
-export function ShipStatus({ preselection, orbit, expedition, joined = false }: Props) {
+export function ShipStatus({ preselection, orbit, expedition }: Props) {
   const planet = orbit ?? expedition?.planet ?? null;
   const content = preselection ? <Preselection /> : planet !== null ? <AtPlanet planet={planet} expedition={expedition} /> : <DeepSpace />;
-  return joined ? (
+  return (
     <>
       <span className="clock-divider" aria-hidden="true" />
       <span className="ship-status">{content}</span>
     </>
-  ) : (
-    <span className="ship-status hud-card amber">{content}</span>
   );
 }
 

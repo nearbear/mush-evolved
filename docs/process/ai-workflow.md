@@ -4590,3 +4590,27 @@ Follow-up (same day): the owner picked the assistant's suggested deep-space word
 - Owner asked to put the titles button in the ship resources' row (no divider) with tighter spacing. Removed the divider, cut the gap from 1rem to 0.75rem, and made each counter's `li` a flex box so the counters and the titles button share one centre line (a block `li` set its inline-flex child on a text baseline).
 - The plasma shield showed a gap after "55/100": each value had a fixed slot sized for its widest reading. Dropped the slot; tabular figures keep widths steady until a digit count changes.
 - Balance: the clock and the actions now each take `flex: 1 0 0`, so the ship zone sits at the bar's true centre however wide either end is. Kept settings top right rather than swapping it with the clock (the owner's idea, but an unusual place for settings).
+
+## 2026-11-20: Desktop alert bar in the top bar
+
+- Hunters, fires and alerts left the desktop top bar's ship zone for an `AlertBar` (`web/src/hud/ShipResources.tsx`) left of the action buttons, drawn with the original's alarm 3-slice art (`www/img/design/alarm_*`, already catalogued in the design kit as `.alarm`). It switches to the animated "on" set while there are hunters or fires; broken equipment alone leaves it calm. Phones keep all counters in the ship card.
+- Worked: the design kit already had the exact sprite wiring, so the CSS was a port. `ShipResources` was split into a shared `Counter` so both places keep the same popovers.
+- Left as-is: crewmates lost on a planet (also a "public alert") stay in the ship zone, since the request named only the three counters.
+
+## 2026-11-20: Phone nameplate drops the faction band for clock + alerts
+
+- The phone ID card's faction band is gone; its top row is now the clock (left) and an `AlertButton` (right): one alert icon in the original's alarm frame, flashing on hunters or fires, whose popover lists hunters, fires and broken equipment in separate sections. The ship card on phones drops those three counters (`alertsApart`), so they live in one place.
+- Your titles (if any) and faction now sit under your name; the faction text is its colour mixed 45% toward the card's ink, because the raw `--human` blue is unreadable on the pale stock.
+- The top row is held at 26px so the taller flashing art doesn't make the card jump. Landscape phones put clock and alerts after the name on the one row.
+
+## 2026-11-20: Phone clock moved above the ID card
+
+- Correction after the owner's screenshot: putting the clock inside the phone nameplate's top row looked wrong, and the ship status was still a separate plate under the name. Now the clock plate (day/cycle, countdown, ship status joined past a divider, as on desktop) and the alert button stand on the card's top edge outside it, touching its gold ring. `ShipStatus` lost its unjoined variant.
+- Phones abbreviate day/cycle (`topBar.dayCycleShort`: D2 · C3, fr J2 · C3, es D2 · C3) with the full words in an `sr-only` span. Clocks are no longer bold anywhere (owner: bold looks bad).
+- Landscape phones put the clock plate and alerts left of the nameplate on the one row.
+- `verify:web`'s web tests failed once with a timeout and passed on two reruns (the known slow `tips.test.ts`).
+
+## 2026-11-20: Phone top bar as a full-width strip over the ID card
+
+- Second correction: the clock strip was centred, not full width, because the base `.player-summary` rule (self-hud.css) has `align-items: center`; the phone override changed the direction but not the alignment. Lesson: check the base rule a media query overrides.
+- Owner's new design: clock, alerts and the menu in one full-width strip (`.summary-strip`, `--chrome-1`) flush over the ID card, all 22px tall and centred; the top bar has no padding or gap on phones, so no background shows. The card's gold ring moved inside its box (inset shadows) since it now runs to the screen edges. The strip pads for the notch (`env(safe-area-inset-*)`). Landscape: the strip sits left of the card.

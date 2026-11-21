@@ -74,24 +74,25 @@
     padding: 0;
   }
 
+  /* No padding: the strip and the ID card fill it edge to edge, so the top bar shows no background of its own. */
   .top-bar {
     flex: none;
     flex-wrap: wrap;
-    gap: var(--space-2);
-    padding: var(--space-2) var(--space-1);
+    gap: 0;
+    padding: 0;
   }
-  /* The summary's pieces become top-bar flex items. */
+  /* The strip (clock, alerts, menu) over the nameplate, both the full width (a long name gets cut off). */
   .top-bar .player-summary {
-    display: contents;
+    flex: 1 1 0;
+    min-width: 0;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: 0;
   }
   .top-bar .avatar {
     width: 32px;
     height: 32px;
-  }
-  /* Nameplate and both buttons share the first row; a long name gets cut off. */
-  .top-bar .nameplate {
-    flex: 1 1 0;
-    min-width: 0;
   }
   .wide-only {
     display: none;
@@ -244,24 +245,18 @@
 @media (max-width: 1023px) and (orientation: landscape) and (max-height: 500px) {
   .top-bar {
     flex-wrap: nowrap;
-    padding: var(--space-1) var(--space-2);
   }
   .top-bar .avatar {
     width: 24px;
     height: 24px;
   }
-  /* The nameplate fits one row too: the band becomes a bare stripe of the faction's colour, and the clock follows the name. */
-  .nameplate {
-    --band: 4px;
-    grid-template-columns: auto minmax(0, max-content) auto minmax(3.25rem, 1fr) auto;
-    grid-template-areas:
-      "band band band band band"
-      "pic who clock stats menu";
-    row-gap: 2px; /* the stripe's divider (.id-band::after) reaches 2px under it */
+  /* One row too: the strip goes left of the nameplate instead of on top of it, both the row's full height. */
+  .top-bar .player-summary {
+    flex-direction: row;
   }
-  /* Its colour stays as the stripe; only the words go. */
-  .nameplate .id-band {
-    color: transparent;
+  .top-bar .nameplate {
+    flex: 1 1 0;
+    min-width: 0;
   }
   .nameplate .id-portrait {
     width: 26px;
@@ -271,15 +266,6 @@
     flex-direction: row;
     align-items: center;
     gap: var(--space-3);
-  }
-  /* No band to sit on: the clock follows the name. */
-  .nameplate .cycle-label {
-    grid-area: clock;
-    justify-self: start;
-    margin-block: 0;
-  }
-  .nameplate .menu-button {
-    height: 26px;
   }
   .bottom-nav-button {
     height: 32px;

@@ -149,7 +149,7 @@
 /*
  * The band's lower edge: a divider like the others, from rim to rim, its gold meeting the card's amber ring. It is
  * placed on the card (the band itself clips its overflow), its top dark line over the band's last row. The upright
- * divider runs up into it. The phone card (.nameplate, top-bar.css) has one too, under its overlaid clock.
+ * divider runs up into it.
  */
 .id-band::after {
   content: "";
@@ -165,10 +165,6 @@
 }
 .id-card .id-band::after {
   top: var(--band); /* the card's fill starts 1px down, inside its rim */
-}
-.nameplate .id-band::after {
-  left: -1px; /* over the border, so the gold meets the ring outside it */
-  right: -1px;
 }
 .id-portrait {
   position: relative;

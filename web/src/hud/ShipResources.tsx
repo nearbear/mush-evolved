@@ -5,12 +5,15 @@ import { SHIP_RESOURCE_ICONS } from "../art/assets.ts";
 import { useNames } from "../i18n/names.ts";
 import { TitleChip, TitlesChip } from "./TitleChip.tsx";
 
-const RESOURCES = ["oxygen", "fuel", "hull", "plasmaShield", "hunters", "fires", "alerts"] as const;
+const SHIP_COUNTERS = ["oxygen", "fuel", "hull", "plasmaShield"] as const;
+const ALERT_COUNTERS = ["hunters", "fires", "alerts"] as const;
+type CounterId = (typeof SHIP_COUNTERS)[number] | (typeof ALERT_COUNTERS)[number];
 
 /**
  * The ship card (in the desktop top bar, and ShipOverlay on phones) with the ship's resource counters, how many hunters
  * are attacking, active fires, broken equipment alerts, crewmates lost on a planet, and the ship titles, all public.
- * Where the ship is (orbit, expedition) is in ShipStatus.tsx, right of the clock.
+ * Where the ship is (orbit, expedition) is in ShipStatus.tsx, right of the clock. The desktop top bar moves hunters, fires
+ * and alerts out to the AlertBar (`alertsApart`).
  * Fires count every fire aboard and alerts count every broken piece of equipment; each popover locates only the
  * reported ones (owner, 2026-11-14, #444).
  */
@@ -20,6 +23,7 @@ export function ShipResources({
   titles,
   preselection = false,
   compactTitles = false,
+  alertsApart = false,
   lost,
   alerts,
 }: {
@@ -28,64 +32,18 @@ export function ShipResources({
   titles: PlayerView["titles"];
   preselection?: boolean;
   compactTitles?: boolean;
+  /** Leave hunters, fires and alerts out: they are in the AlertBar. */
+  alertsApart?: boolean;
   lost: PlayerView["lost"];
   alerts: PlayerView["alerts"];
 }) {
   const { t } = useTranslation();
+  const ids: readonly CounterId[] = alertsApart ? SHIP_COUNTERS : [...SHIP_COUNTERS, ...ALERT_COUNTERS];
   return (
     <ul className="ship-resources" aria-label={t("shipResources.title")}>
-      {RESOURCES.map((id) => {
-        const name = t(`shipResources.${id}`);
-        const value =
-          id === "fires"
-            ? String(alerts.fires)
-            : id === "alerts"
-              ? String(alerts.broken)
-              : id === "hunters"
-                ? String(hunters)
-                : `${ship[id]}/${ship.max[id]}`;
-        // No fixed-width slot: one sized for the widest reading left a gap after a short value (55/100). Tabular figures keep
-        // a value's width steady until its digit count changes, which is rare.
-        // Nothing to report (no hunters, no fires, no alerts) is muted. Values get no warning colour: no thresholds are decided (owner, 2026-11-12).
-        const empty = (id === "hunters" && hunters === 0) || (id === "fires" && alerts.fires === 0) || (id === "alerts" && alerts.broken === 0);
-        return (
-          <li key={id} className={empty ? "empty" : undefined}>
-            {/* A popover, not a tooltip, so a tap opens it on phones (touch has no hover). */}
-            <Popover.Root>
-              <Popover.Trigger
-                openOnHover
-                delay={300}
-                nativeButton={false}
-                render={<span role="button" tabIndex={0} />}
-                className="ship-resource"
-                aria-label={`${name}: ${value}`}
-              >
-                <img src={SHIP_RESOURCE_ICONS[id]} alt="" />
-                <span className="ship-resource-value">
-                  {id === "fires" || id === "alerts" || id === "hunters" ? (
-                    value
-                  ) : (
-                    <>
-                      {ship[id]}
-                      <span className="ship-resource-max">/{ship.max[id]}</span>
-                    </>
-                  )}
-                </span>
-              </Popover.Trigger>
-              <Popover.Portal>
-                <Popover.Positioner sideOffset={6}>
-                  <Popover.Popup className="tooltip">
-                    {`${name}: ${value}`}
-                    {id === "fires" && <AlertList kind="fire" total={alerts.fires} reports={alerts.reports} />}
-                    {id === "alerts" && <AlertList kind="equipment" total={alerts.broken} reports={alerts.reports} />}
-                    {(id === "oxygen" || id === "fuel" || id === "hull" || id === "plasmaShield") && <ResourceInfo id={id} />}
-                  </Popover.Popup>
-                </Popover.Positioner>
-              </Popover.Portal>
-            </Popover.Root>
-          </li>
-        );
-      })}
+      {ids.map((id) => (
+        <Counter key={id} id={id} ship={ship} hunters={hunters} alerts={alerts} />
+      ))}
       {lost.map((l) => (
         <LostAlert key={l.name} entry={l} />
       ))}
@@ -101,6 +59,119 @@ export function ShipResources({
             </li>
           ))}
     </ul>
+  );
+}
+
+/**
+ * Desktop top bar: hunters, fires and alerts in the original game's alarm bar, left of the actions. It flashes red (the
+ * original's animated "on" art) while there are hunters or fires; broken equipment alone leaves it calm.
+ */
+export function AlertBar({ ship, hunters, alerts }: { ship: PlayerView["ship"]; hunters: number; alerts: PlayerView["alerts"] }) {
+  const { t } = useTranslation();
+  const on = hunters > 0 || alerts.fires > 0;
+  return (
+    <ul className={on ? "alert-bar on" : "alert-bar"} aria-label={t("shipResources.alertBar")}>
+      {ALERT_COUNTERS.map((id) => (
+        <Counter key={id} id={id} ship={ship} hunters={hunters} alerts={alerts} />
+      ))}
+    </ul>
+  );
+}
+
+/**
+ * Phones: the AlertBar folded to one alert icon in the same alarm frame (flashing red while there are hunters or fires).
+ * Its popover holds hunters, fires and broken equipment, each in its own section.
+ */
+export function AlertButton({ hunters, alerts }: { hunters: number; alerts: PlayerView["alerts"] }) {
+  const { t } = useTranslation();
+  const on = hunters > 0 || alerts.fires > 0;
+  const empty = !on && alerts.broken === 0;
+  const counts = { hunters, fires: alerts.fires, alerts: alerts.broken };
+  const lines = ALERT_COUNTERS.map((id) => `${t(`shipResources.${id}`)}: ${counts[id]}`);
+  return (
+    <Popover.Root>
+      <Popover.Trigger
+        openOnHover
+        delay={300}
+        nativeButton={false}
+        render={<span role="button" tabIndex={0} />}
+        className={["alert-bar", "alert-button", on && "on", empty && "empty"].filter(Boolean).join(" ")}
+        aria-label={`${t("shipResources.alertBar")}: ${lines.join(", ")}`}
+      >
+        <img src={SHIP_RESOURCE_ICONS.alerts} alt="" />
+      </Popover.Trigger>
+      <Popover.Portal>
+        <Popover.Positioner sideOffset={6} align="end">
+          <Popover.Popup className="tooltip alert-popup">
+            {ALERT_COUNTERS.map((id, i) => (
+              <section key={id} className={counts[id] === 0 ? "empty" : undefined}>
+                <strong className="alert-popup-head">
+                  <img src={SHIP_RESOURCE_ICONS[id]} alt="" />
+                  {lines[i]}
+                </strong>
+                {id === "fires" && <AlertList kind="fire" total={alerts.fires} reports={alerts.reports} />}
+                {id === "alerts" && <AlertList kind="equipment" total={alerts.broken} reports={alerts.reports} />}
+              </section>
+            ))}
+          </Popover.Popup>
+        </Popover.Positioner>
+      </Popover.Portal>
+    </Popover.Root>
+  );
+}
+
+/** One counter with its popover. */
+function Counter({ id, ship, hunters, alerts }: { id: CounterId; ship: PlayerView["ship"]; hunters: number; alerts: PlayerView["alerts"] }) {
+  const { t } = useTranslation();
+  const name = t(`shipResources.${id}`);
+  const value =
+    id === "fires"
+      ? String(alerts.fires)
+      : id === "alerts"
+        ? String(alerts.broken)
+        : id === "hunters"
+          ? String(hunters)
+          : `${ship[id]}/${ship.max[id]}`;
+  // No fixed-width slot: one sized for the widest reading left a gap after a short value (55/100). Tabular figures keep
+  // a value's width steady until its digit count changes, which is rare.
+  // Nothing to report (no hunters, no fires, no alerts) is muted. Values get no warning colour: no thresholds are decided (owner, 2026-11-12).
+  const empty = (id === "hunters" && hunters === 0) || (id === "fires" && alerts.fires === 0) || (id === "alerts" && alerts.broken === 0);
+  return (
+    <li className={empty ? "empty" : undefined}>
+      {/* A popover, not a tooltip, so a tap opens it on phones (touch has no hover). */}
+      <Popover.Root>
+        <Popover.Trigger
+          openOnHover
+          delay={300}
+          nativeButton={false}
+          render={<span role="button" tabIndex={0} />}
+          className="ship-resource"
+          aria-label={`${name}: ${value}`}
+        >
+          <img src={SHIP_RESOURCE_ICONS[id]} alt="" />
+          <span className="ship-resource-value">
+            {id === "fires" || id === "alerts" || id === "hunters" ? (
+              value
+            ) : (
+              <>
+                {ship[id]}
+                <span className="ship-resource-max">/{ship.max[id]}</span>
+              </>
+            )}
+          </span>
+        </Popover.Trigger>
+        <Popover.Portal>
+          <Popover.Positioner sideOffset={6}>
+            <Popover.Popup className="tooltip">
+              {`${name}: ${value}`}
+              {id === "fires" && <AlertList kind="fire" total={alerts.fires} reports={alerts.reports} />}
+              {id === "alerts" && <AlertList kind="equipment" total={alerts.broken} reports={alerts.reports} />}
+              {(id === "oxygen" || id === "fuel" || id === "hull" || id === "plasmaShield") && <ResourceInfo id={id} />}
+            </Popover.Popup>
+          </Popover.Positioner>
+        </Popover.Portal>
+      </Popover.Root>
+    </li>
   );
 }
 

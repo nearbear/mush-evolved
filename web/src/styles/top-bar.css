@@ -30,7 +30,6 @@
   --card-fill: var(--chrome-2);
   padding: 2px var(--space-2) 2px var(--space-3);
   font-size: 0.85rem;
-  font-weight: bold;
   white-space: nowrap;
 }
 .cycle-countdown {
@@ -65,6 +64,77 @@
   display: flex;
   justify-content: flex-end;
   align-items: center;
+  gap: var(--space-2);
+}
+/*
+ * Desktop: hunters, fires and alerts (ShipResources `AlertBar`) in the original game's alarm bar, a 3-slice of 4px caps
+ * and a 1px middle (the design kit's .alarm). While there are hunters or fires it takes the original's animated "on" set,
+ * which flashes red and stands 4px taller.
+ */
+.alert-bar {
+  --cap: 4px;
+  --l: url("../../../Mush/www/img/design/alarm_left.png");
+  --m: url("../../../Mush/www/img/design/alarm_bg.png");
+  --r: url("../../../Mush/www/img/design/alarm_right.png");
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  height: 22px;
+  margin: 0;
+  padding: 0 var(--space-3);
+  list-style: none;
+  background:
+    var(--l) left / var(--cap) 100% no-repeat,
+    var(--r) right / var(--cap) 100% no-repeat,
+    var(--m) center / calc(100% - 2 * var(--cap)) 100% no-repeat;
+  image-rendering: pixelated;
+}
+/* Phones (AlertButton): the alerts folded into one icon in the same frame; muted when there is nothing to report. */
+.alert-button {
+  padding: 0 6px;
+  cursor: pointer;
+}
+.alert-button img {
+  display: block;
+  image-rendering: pixelated;
+}
+.alert-button.empty img {
+  opacity: 0.5;
+}
+/* Its popover: hunters, fires and broken equipment, each a section of its own. */
+.alert-popup section + section {
+  margin-top: var(--space-2);
+}
+.alert-popup-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+.alert-popup-head img {
+  image-rendering: pixelated;
+}
+.alert-popup section.empty .alert-popup-head {
+  opacity: 0.6;
+}
+.alert-bar.on {
+  --l: url("../../../Mush/www/img/design/alarm_on_left.gif");
+  --m: url("../../../Mush/www/img/design/alarm_on_bg.gif");
+  --r: url("../../../Mush/www/img/design/alarm_on_right.gif");
+  height: 26px;
+}
+.alert-bar > li {
+  display: flex;
+  align-items: center;
+}
+.alert-bar .ship-resource {
+  text-shadow: 0 1px 1px rgb(0 0 30 / 0.6);
+}
+/* Muted on the bar's dark navy, as in the ship zone. */
+.alert-bar li.empty .ship-resource {
+  color: var(--muted);
+}
+.alert-bar li.empty img {
+  opacity: 0.5;
 }
 /*
  * Status chips (pre-selection, AI paused): popover triggers that read as a status, not a button. A light outline in
@@ -102,37 +172,31 @@
   box-shadow: 0 0 6px var(--panel-shadow);
 }
 /*
- * Phones: who you are, as the desktop ID card (self-hud.css, whose .id-band, .id-portrait and .id-name it
- * reuses) on the same pale stock with the same dark outline, but square: a band in your faction's colour across the top,
- * then your portrait (tap for your goal), your name and the clock, your stats (below), your other resources in a dark
- * column the card's full height (the band stops at it), and the menu. The name gets its full width first (grid tracks
+ * Phones: who you are, as the desktop ID card (self-hud.css, whose .id-portrait and .id-name it reuses) on the same
+ * pale stock with the same dark outline, but square, with the clock and the alerts sitting on its top edge: your portrait (tap to
+ * inspect yourself), your name, titles and faction, your stats (below), and the menu. The name gets its full width first (grid tracks
  * grow to their max-content before a 1fr track gets anything) and is cut off with a "…" only once the stats' first three
  * columns can't fit; the resources' 1fr track takes what is left.
  */
 .nameplate {
-  --band: 15px;
   --id-faction: var(--human);
   --text: #171b5c;
   --muted: #4a5a8f;
   display: grid;
-  grid-template-columns: auto minmax(0, max-content) minmax(3.25rem, 1fr) auto;
-  grid-template-rows: calc(var(--band) + 1px) auto;
-  grid-template-areas:
-    "band band band band"
-    "pic who stats menu";
+  grid-template-columns: auto minmax(0, max-content) minmax(3.25rem, 1fr);
+  grid-template-areas: "pic who stats";
   column-gap: var(--space-2);
   row-gap: var(--space-1);
   align-items: center;
-  position: relative; /* the band's divider (.id-band::after, self-hud.css) spans it */
-  padding: 0 var(--space-2) var(--space-1);
+  padding: var(--space-1) var(--space-2);
   background: var(--terminal-bg);
-  /* The desktop ID card's amber edge: the dark border is the inner line, then a gold line and a dark one outside it. The
-     card is square here, so box-shadows draw them; they sit under the clock, which overlays the card without joining it. */
+  /* The desktop ID card's amber edge, drawn inside the box (it runs to the screen's edges): the border is the outer dark
+     line, then inset shadows draw the gold line and the inner dark one. */
   border: 1px solid var(--gold-edge);
   box-shadow:
-    0 0 0 1px var(--gold-mid),
-    0 0 0 2px var(--gold-edge),
-    0 0 6px 2px var(--panel-shadow);
+    inset 0 0 0 1px var(--gold-mid),
+    inset 0 0 0 2px var(--gold-edge);
+  padding: calc(var(--space-1) + 2px) calc(var(--space-2) + 2px);
   color: var(--text);
 }
 .nameplate.mush {
@@ -160,7 +224,7 @@
   flex-direction: column;
   align-self: stretch;
   align-items: start;
-  gap: var(--space-1);
+  gap: 1px;
   min-width: 0;
 }
 .nameplate .id-name {
@@ -171,39 +235,53 @@
   text-overflow: ellipsis;
 }
 /*
- * The clock sits on the band's right end, against the resources, centred on the band and standing a little proud of the
- * card's top (the negative margins let it overflow its short row evenly). Its light text is tokens.css's --text: the
- * card's dark ink is wrong on the plate's dark fill.
+ * Phones: the strip over the ID card, the full width of the screen, flush against the card (no gap, so no background shows
+ * between them): the clock plate on the left, the alerts and the menu on the right, all 22px tall and centred on one
+ * line. It is as tall as the flashing alarm (26px) plus its padding, so it doesn't move when the alarm goes off.
  */
-.nameplate .cycle-label {
-  grid-area: band;
-  z-index: 1;
-  justify-self: end;
-  margin-block: -1rem;
-  font-size: 0.8rem;
-  color: #dfe6f5;
+.summary-strip {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: calc(26px + 2 * var(--space-1));
+  /* Clear of the notch (the page is viewport-fit=cover). */
+  padding: max(var(--space-1), env(safe-area-inset-top)) max(var(--space-2), env(safe-area-inset-right)) var(--space-1)
+    max(var(--space-2), env(safe-area-inset-left));
+  background: var(--chrome-1);
 }
-/* The faction band, from the card's left edge to the resources' column. */
-.nameplate .id-band {
-  grid-area: band;
-  align-self: start;
-  height: var(--band);
-  margin: 0 calc(-1 * var(--space-2));
-  padding: 0 12rem 0 var(--space-2); /* clear of the clock */
-  background: var(--id-faction);
-  line-height: var(--band);
+.summary-strip-end {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.summary-strip .cycle-label {
+  box-sizing: border-box;
+  height: 22px;
+  font-size: 0.8rem;
+}
+.summary-strip .menu-button {
+  height: 22px;
+  margin: 0;
+  padding: 0 var(--space-2);
+}
+.nameplate-titles,
+.nameplate-faction {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 0.75rem;
+  line-height: 1.1;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.nameplate-faction {
+  font-weight: bold;
+  color: color-mix(in srgb, var(--id-faction) 45%, #171b5c);
 }
 .nameplate-tags {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-1);
-}
-/* The hamburger, on the card's right: the Mush button look, sized to sit beside the name. */
-.nameplate .menu-button {
-  grid-area: menu;
-  height: 32px;
-  margin: 0;
-  padding: 0 var(--space-2);
 }
 /* Desktop: the portrait alone in the nameplate; name, faction, and goal are in its popover. */
 .portrait-card {
@@ -525,11 +603,10 @@
   color: #fff;
 }
 
-/* Where the ship is (ShipStatus.tsx). On desktop it is the last part of the clock's plate, past a divider, and the plate
-   is chamfered on the right as well. On phones it is a plate of its own under your name (nameplate-tags), cut on the
-   right only. The planet icon (16px) leads while orbiting or exploring; exploring ends with the return countdown past
+/* Where the ship is (ShipStatus.tsx): the last part of the clock's plate, past a divider, so the plate is chamfered on the
+   right as well. The planet icon (16px) leads while orbiting or exploring; exploring ends with the return countdown past
    another divider. */
-.top-bar .cycle .cycle-label {
+.top-bar .cycle-label {
   --cut-tr: 6px;
   --cut-br: 6px;
   padding-right: var(--space-3);
@@ -540,19 +617,6 @@
 .ship-status {
   display: inline-flex;
   align-items: center;
-}
-.ship-status.hud-card {
-  position: relative;
-  --card-fill: var(--chrome-2);
-  --cut-tl: 0px;
-  --cut-bl: 0px;
-  --cut-tr: 6px;
-  --cut-br: 6px;
-  padding: 2px var(--space-3) 2px var(--space-2);
-  font-size: 0.8rem;
-  font-weight: bold;
-  white-space: nowrap;
-  color: #dfe6f5;
 }
 .ship-status-trigger {
   display: inline-flex;
