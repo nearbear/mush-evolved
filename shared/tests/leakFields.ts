@@ -134,6 +134,7 @@ export const PLAYER_STATE_FIELDS: Record<string, FieldRule> = {
   coupPending: { reach: "own", test: "coup.test.ts", note: "Only your own pending coup; roommates never see the flag (the secret log line is what they may see)." },
   geniusUsed: { reach: "own", test: "genius.test.ts", note: "Only stops Eureka moment being used again; roommates never see it." },
   ceasefireUsed: { reach: "own", test: "ceasefire.test.ts", note: "Only stops Ceasefire being used again; stays on the body on Transfer; roommates never see it." },
+  caressedCat: { reach: "own", test: "schrodinger.test.ts", note: "Only gates the one-time morale bonus from caressing Schrödinger; stays on the body on Transfer; roommates never see it." },
   apprenticeUsed: { reach: "own", test: "apprenticeship.test.ts", note: "Only stops Apprentice being picked again; roommates never see it." },
   fertileToday: { reach: "own", test: "fertile.test.ts", note: "Only gates the free extraction; roommates never see it." },
   doormanToday: { reach: "own", test: "doors.test.ts", note: "Only gates Doorman's free daily door sabotage; roommates never see it." },
@@ -182,4 +183,5 @@ export const ITEM_STATE_FIELDS: Record<string, FieldRule> = {
   document: { reach: "filtered", test: "lostAnalysis.test.ts", note: "A printed document's rows (characters and marks), to whoever can see the item (#394)." },
   drone: { reach: "filtered", test: "drones.test.ts", note: "Name, serial and upgrades go with the item to whoever can see it; the failure counts never leave the server (#411)." },
   owner: { reach: "never", test: "infantryman.test.ts", note: "The player who created this customized blaster; only gates who can fire it, never sent." },
+  mush: { reach: "filtered", test: "schrodinger.test.ts", note: "Mush only (living): whether Schrödinger has been infected." },
 };

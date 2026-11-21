@@ -13,6 +13,7 @@ import { ACTIONS, actionVisibility, type ActionDef } from "./actions.ts";
 import { ARACK_AROUND, AT_CAPACITY, COOLDOWN, DIRTY, EXPLORED, ICARUS_LOST, IN_PRESELECTION, NO_DEBRIS, NO_SPACE, PASIPHAE_INTACT, REACTOR_BROKEN } from "./actions/action.ts";
 import { getUp } from "./actions/lie_down.ts";
 import { ANTISOCIAL } from "./actions/bond.ts";
+import { GERMAPHOBE } from "./actions/caress.ts";
 import { isNimble } from "./actions/nimble.ts";
 import { researchNeedsView } from "./actions/research.ts";
 import { equipmentHere } from "./equipment.ts";
@@ -320,6 +321,7 @@ const isUnaffordableReason = (action: Action, refused: string | null): refused i
   (UNAFFORDABLE_REASONS.has(refused) ||
     (action.type === "hack" && refused === IN_PRESELECTION) ||
     (action.type === "bond" && refused === ANTISOCIAL) ||
+    (action.type === "caress" && refused === GERMAPHOBE) ||
     (ICARUS_ACTIONS.has(action.type) && (refused === EXPLORED || refused === ICARUS_LOST)));
 
 function actionOption(state: GameState, p: PlayerState, def: ActionDef<Action>, a: Action, lacks: ActionOption["lacks"]): ActionOption {
@@ -346,6 +348,7 @@ function unaffordableOption(state: GameState, p: PlayerState, def: ActionDef<Act
     ...(refused === EXPLORED ? (["explored"] as const) : []),
     ...(refused === ICARUS_LOST ? (["icarusLost"] as const) : []),
     ...(refused === ANTISOCIAL ? (["antisocial"] as const) : []),
+    ...(refused === GERMAPHOBE ? (["germaphobe"] as const) : []),
     ...(refused === DIRTY ? (["clean"] as const) : []),
     ...(refused === NO_SPACE ? (["space"] as const) : []),
     ...(refused === COOLDOWN ? (["cooldown"] as const) : []),
@@ -928,8 +931,8 @@ export const legalIn = (view: Pick<PlayerView, "actions">): Action[] => view.act
 const seesShield = (viewer: Readonly<PlayerState>): boolean => viewer.alive && (viewer.role === "mush" || hasSkill(viewer, "engineer"));
 
 /** An item as `viewer` sees it; a plant's sickness only for the Botanist role (`plantView`). */
-function itemView({ id, type, of, builds, charges, teaches, plant, spores, hiddenBy, broken, jelly, shield, drone, document, spoil }: ItemState, viewer: Readonly<PlayerState>): ItemView {
-  return { id, type, ...(broken && { broken }), ...(spoil !== undefined && seesSpoil(viewer) && { spoil }), ...(jelly !== undefined && viewer.role === "mush" && viewer.alive && { jelly }), ...(shield !== undefined && seesShield(viewer) && { shield }), ...(hiddenBy === viewer.id && { hidden: true as const }), ...(spores && viewer.role === "mush" && viewer.alive && { spores }), ...(of !== undefined && { of }), ...(builds !== undefined && { builds }), ...(charges !== undefined && { charges }), ...(teaches !== undefined && { teaches }), ...(plant && { plant: plantView(plant, viewer) }), ...(drone && { drone: droneView(drone) }), ...(document && { document: { kind: document.kind, rows: document.rows.map((r) => ({ ...r })) } }) };
+function itemView({ id, type, of, builds, charges, teaches, plant, spores, hiddenBy, broken, jelly, shield, drone, document, spoil, mush }: ItemState, viewer: Readonly<PlayerState>): ItemView {
+  return { id, type, ...(broken && { broken }), ...(spoil !== undefined && seesSpoil(viewer) && { spoil }), ...(jelly !== undefined && viewer.role === "mush" && viewer.alive && { jelly }), ...(shield !== undefined && seesShield(viewer) && { shield }), ...(hiddenBy === viewer.id && { hidden: true as const }), ...(spores && viewer.role === "mush" && viewer.alive && { spores }), ...(mush && viewer.role === "mush" && viewer.alive && { mush }), ...(of !== undefined && { of }), ...(builds !== undefined && { builds }), ...(charges !== undefined && { charges }), ...(teaches !== undefined && { teaches }), ...(plant && { plant: plantView(plant, viewer) }), ...(drone && { drone: droneView(drone) }), ...(document && { document: { kind: document.kind, rows: document.rows.map((r) => ({ ...r })) } }) };
 }
 
 /** A drone's public part (#411): name, serial and upgrades; its failure counts never leave the server. */

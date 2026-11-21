@@ -400,6 +400,7 @@ function itemFields(raw: Partial<SpaceDebris>, t: string): AllKeys<SpaceDebris> 
     drone: opt(raw.drone, normalizeDrone),
     document: opt(raw.document, normalizeDocument),
     owner: raw.owner,
+    mush: raw.mush,
   };
 }
 
@@ -555,6 +556,7 @@ export function normalizePlayer(raw: Partial<PlayerState>, mode: QueueMode): Pla
     apprenticeUsed: raw.apprenticeUsed,
     geniusUsed: raw.geniusUsed,
     ceasefireUsed: raw.ceasefireUsed,
+    caressedCat: raw.caressedCat,
     bodyTakenBy: raw.bodyTakenBy,
     role: need(raw, "role", t),
     alpha: need(raw, "alpha", t),

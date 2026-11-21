@@ -264,8 +264,15 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   // #411, owner, 2026-11-11 (eMushpedia "Drone de soutien"): x1.25 a failure in a row, capped at 99%; reset by a success.
   // Owner, 2026-11-12 (#412): Upgrade is 2 AP and 2 metal scraps, 25% dirt and 5% injury (the original's actions.json); Turbo's 80% is eMushpedia's.
   drones: { failureMultiplier: 1.25, maxChance: 0.99, upgrade: { cost: { ap: 2 }, scraps: 2, dirtyChance: 0.25, injuryChance: 0.05 }, turboChance: 0.8 },
-  // Owner, 2026-11-21: eMush's cat AI (70% favoured move) and spawn room (schrodinger_in_laboratory).
-  schrodinger: { owner: "raluca", room: "LABORATORY", favoredChance: 0.7 },
+  // Owner, 2026-11-21: eMush's cat AI (70% favoured move), spawn room (schrodinger_in_laboratory), and actions (Caress 1 AP/+3 morale once/10% injury, Infectious Caress 1 AP + 1 spore, Take 20% injury).
+  schrodinger: {
+    owner: "raluca",
+    room: "LABORATORY",
+    favoredChance: 0.7,
+    caress: { cost: { ap: 1 }, morale: 3, injuryChance: 0.1 },
+    mushCaress: { cost: { ap: 1 } },
+    take: { injuryChance: 0.2 },
+  },
   // Owner, 2026-10-27: Astrophysicist scans for 1 AP less and each remote analysis reveals 1 extra sector (the original skills.json).
   astrophysicist: { scanApDiscount: 1, extraSectors: 1 },
   gunner: { accuracyFactor: 2, damageFactor: 2 },

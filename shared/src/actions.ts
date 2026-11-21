@@ -1,6 +1,8 @@
 import { AcceptAccommodationAction, AccommodateAction, StopAccommodationAction } from "./actions/accommodate.ts";
 import { BondAction } from "./actions/bond.ts";
 import { BuildAction } from "./actions/build.ts";
+import { CaressAction } from "./actions/caress.ts";
+import { MushCaressAction } from "./actions/mush_caress.ts";
 import { ConsumeAction } from "./actions/consume.ts";
 import { HideAction } from "./actions/hide.ts";
 import { SearchAction } from "./actions/search.ts";
@@ -236,6 +238,8 @@ const REGISTRY = {
   install: new InstallAction(),
   uninstall: new UninstallAction(),
   examine: new ExamineAction(),
+  caress: new CaressAction(),
+  mush_caress: new MushCaressAction(),
   bond: new BondAction(),
   dtt: new ShareAction("dtt"),
   stt: new ShareAction("stt"),

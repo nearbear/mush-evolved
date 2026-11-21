@@ -81,6 +81,8 @@ const ACTION_NAME_KEYS = {
   install: "actions.install",
   uninstall: "actions.uninstall",
   examine: "actions.examine",
+  caress: "actions.caress",
+  mush_caress: "actions.mushCaress",
   bond: "actions.bond",
   dtt: "actions.dtt",
   stt: "actions.stt",
