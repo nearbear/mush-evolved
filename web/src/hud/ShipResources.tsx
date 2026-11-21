@@ -44,8 +44,8 @@ export function ShipResources({
               : id === "hunters"
                 ? String(hunters)
                 : `${ship[id]}/${ship.max[id]}`;
-        // A fixed-width slot (the widest reading, in tabular figures), so a changing value never shifts its neighbours.
-        const width = id === "fires" || id === "alerts" || id === "hunters" ? 2 : 2 * String(ship.max[id]).length + 1;
+        // No fixed-width slot: one sized for the widest reading left a gap after a short value (55/100). Tabular figures keep
+        // a value's width steady until its digit count changes, which is rare.
         // Nothing to report (no hunters, no fires, no alerts) is muted. Values get no warning colour: no thresholds are decided (owner, 2026-11-12).
         const empty = (id === "hunters" && hunters === 0) || (id === "fires" && alerts.fires === 0) || (id === "alerts" && alerts.broken === 0);
         return (
@@ -61,7 +61,7 @@ export function ShipResources({
                 aria-label={`${name}: ${value}`}
               >
                 <img src={SHIP_RESOURCE_ICONS[id]} alt="" />
-                <span className="ship-resource-value" style={{ minWidth: `${width}ch` }}>
+                <span className="ship-resource-value">
                   {id === "fires" || id === "alerts" || id === "hunters" ? (
                     value
                   ) : (

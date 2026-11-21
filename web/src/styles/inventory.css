@@ -80,7 +80,7 @@ button.zoom-button {
   flex-wrap: wrap;
   gap: var(--space-2) var(--space-4);
 }
-/* One title per line under the counters, without the top bar's divider. */
+/* One title per line under the counters. */
 .ship-popup .ship-title {
   flex-basis: 100%;
   margin: 0;

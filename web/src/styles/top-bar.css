@@ -14,7 +14,9 @@
  * and show a different composition (responsive.css).
  */
 .top-bar .cycle {
-  flex: none;
+  /* The two ends share what the middle leaves equally, so the ship zone sits at the bar's centre however wide the
+     clock or the actions are. */
+  flex: 1 0 0;
   display: flex;
   align-items: center;
   gap: var(--space-2);
@@ -59,8 +61,9 @@
     linear-gradient(var(--gold-edge), var(--gold-edge)) center / 3px calc(100% - 2px) no-repeat;
 }
 .top-bar-actions {
-  flex: none;
+  flex: 1 0 0;
   display: flex;
+  justify-content: flex-end;
   align-items: center;
 }
 /*
@@ -441,9 +444,8 @@
   padding: var(--space-2) var(--space-3);
   list-style: none;
 }
-/* In the desktop top bar: no capsule of its own, just the zone between two thin dividers, its items centred. */
+/* In the desktop top bar: no capsule of its own, just the zone between two thin dividers, as wide as its items. */
 .top-bar .ship-resources {
-  flex: 1;
   align-self: stretch;
   align-items: center;
   justify-content: center;
@@ -453,18 +455,21 @@
   border-inline: 1px solid var(--panel-rim);
   border-radius: 0;
   box-shadow: none;
+  gap: var(--space-3);
 }
-/* The titles follow the counters as a group, set off by one divider. A vacant title is its icon alone, muted. */
-:where(li:not(.ship-title)) + .ship-title {
-  padding-left: var(--space-4);
-  border-left: 1px solid var(--panel-rim);
+/* Each counter centred on the row (a block li would sit its inline-flex child on a text baseline, a few px off the
+   titles button). */
+.top-bar .ship-resources > li {
+  display: flex;
+  align-items: center;
 }
+/* The titles button sits in the counters' row as one more of them, with no divider. A vacant title is its icon alone, muted. */
 .ship-title .resource.vacant img,
 .ship-titles-button.vacant img {
   opacity: 0.4;
   filter: grayscale(1);
 }
-/* Desktop top bar's single titles button: strips the global button look so only the commander icon sits after the divider. */
+/* Desktop top bar's single titles button: strips the global button look so only the commander icon sits among the counters. */
 .ship-titles-button {
   display: inline-flex;
   align-items: center;

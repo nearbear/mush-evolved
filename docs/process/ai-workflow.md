@@ -4584,3 +4584,9 @@ Owner moved pre-selection, deep space (new: after pre-selection, out of orbit), 
 
 Owner wanted the ship status (pre-selection, deep space, orbiting, exploring) joined to the day/cycle clock as one game-state plate, and popovers explaining deep space, orbiting and exploring. `ShipStatus` takes `joined`: on desktop it renders a divider plus its content inside the clock's `cycle-label` (now chamfered on both sides); on phones it stays its own plate under the name, since the clock alone fills the nameplate band at 360px. Each status is one popover trigger (`StatusPopover`); the terminal and bay names in the texts come from `names.equipment`/`names.room` so they match the game's own names in en/fr/es. Owner supplied the deep-space text; orbiting/exploring texts were drafted by AI from the action rules (`travel.ts`, Icarus boarding).
 Follow-up (same day): the owner picked the assistant's suggested deep-space wording (Commander travels, fuel loaded in the combustion chamber). They had written "astro" for brevity and considered "Astrophysics terminal", then kept the game's existing "Astro terminal" name.
+
+## 2026-11-20: Desktop top bar balance
+
+- Owner asked to put the titles button in the ship resources' row (no divider) with tighter spacing. Removed the divider, cut the gap from 1rem to 0.75rem, and made each counter's `li` a flex box so the counters and the titles button share one centre line (a block `li` set its inline-flex child on a text baseline).
+- The plasma shield showed a gap after "55/100": each value had a fixed slot sized for its widest reading. Dropped the slot; tabular figures keep widths steady until a digit count changes.
+- Balance: the clock and the actions now each take `flex: 1 0 0`, so the ship zone sits at the bar's true centre however wide either end is. Kept settings top right rather than swapping it with the clock (the owner's idea, but an unusual place for settings).
