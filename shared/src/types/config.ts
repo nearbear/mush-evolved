@@ -290,6 +290,11 @@ export interface GameConfig {
   share: {
     cost: { ap: number }; // Paid by the one who starts a DTT or STT (confirmed 2026-10-14).
     effect: { morale: number }; // What each of the two gets from a DTT or STT (confirmed 2026-10-14).
+    pregnancy: {
+      chance: number; // Per non-pregnant partner on DTT; everyone (all characters, human or Mush) is eligible (owner, 2026-11-21).
+      deathMoraleLoss: number; // Morale lost by every living crewmember when a pregnant crewmember dies (owner, 2026-11-21).
+      mushExtraSpore: number; // Extra contamination when a human becomes pregnant from a Mush (owner, 2026-11-21).
+    };
   };
   infection: {
     capacity: number; // Contamination a human reaches before converting to Mush, before modifiers (confirmed 2026-10-14).

@@ -83,10 +83,12 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   // Owner, 2026-11-21 (docs/plans/bios-priority-lock.md): BIOS CPU priority effects (+1 sector for astronavigation, +1 tokenBase for projects/research).
   bios: { astroExtraSectors: 1, cpuPriorityBonus: 1 },
   // Confirmed 2026-10-14: bonding, DTT, and STT cost 1 AP each; DTT and STT give each of the two 2 morale.
+  // Owner, 2026-11-21: DTT has an independent 8% pregnancy chance per non-pregnant partner (all characters, human or Mush),
+  // +1 extra spore if a Mush causes pregnancy in a human, and -2 morale to all living crew if a pregnant crewmember dies.
   bond: { cost: { ap: 1 } },
   antisocial: { moraleLoss: 1 },
   germaphobe: { moraleLoss: 1 },
-  share: { cost: { ap: 1 }, effect: { morale: 2 } },
+  share: { cost: { ap: 1 }, effect: { morale: 2 }, pregnancy: { chance: 0.08, deathMoraleLoss: 2, mushExtraSpore: 1 } },
   // Confirmed 2026-10-14: a human converts on reaching 3 contamination (items and skills will raise it).
   infection: { capacity: 3, mushophageBonus: 1 },
   // Confirmed 2026-10-15: spiking costs 1 AP and 1 spore, and raises a human's contamination by 1.

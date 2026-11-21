@@ -5,6 +5,7 @@
 // leave someone alive at 0 HP (a test enforces it).
 
 import { endAccommodationOnDeath } from "./accommodation.ts";
+import { gainMorale } from "./adjustStats.ts";
 import { shipInvincible } from "./cheats.ts";
 import type { CharacterId } from "./characters.ts";
 import { removeFromChannel, pushChat } from "./chat.ts";
@@ -121,6 +122,12 @@ export function killPlayer(state: GameState, player: PlayerState, cause: DeathCa
   if (!traded) withNimbleActor(null, () => logPublic(state, player.room, "died", { name: player.character, cause }));
   if (!traded && state.bios.death_announcements) {
     systemMessage(state, "global", player.role === "mush" ? "diedMush" : "diedHuman", { name: player.character, cause });
+  }
+  // Owner, 2026-11-21: if a pregnant crewmember dies, every living crewmember (human or Mush) loses morale.
+  if (!traded && player.statuses.includes("pregnant") && state.config.share.pregnancy.deathMoraleLoss > 0) {
+    for (const other of state.players) {
+      if (other.alive) gainMorale(state, other, -state.config.share.pregnancy.deathMoraleLoss, "pregnantDeathMoraleLoss");
+    }
   }
   refreshTitles(state);
   if (mushWinOnDeath(state)) endGame(state, "mush", "humans_dead");
