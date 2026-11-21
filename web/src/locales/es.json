@@ -1628,6 +1628,7 @@
     "done": "Completada",
     "work": "Progresar",
     "empty": "Nada que investigar.",
+    "needDeadMush": "Mush muerto",
     "status": {
       "full": "Totalmente implementada",
       "partial": "Parcialmente implementada",

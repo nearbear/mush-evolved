@@ -2,6 +2,7 @@ import { Action, type ActionCost, type ActionVisibility, DIRTY, isString } from 
 import { cpuPriorityBonus } from "../bios.ts";
 import { ANY_CONSUMABLE, RESEARCH_COMPLETE, RESEARCH_IDS, RESEARCH_REQUIRES, RESEARCH_SKILLS, type ResearchId, researchNeedOrder } from "../research.ts";
 import { logPrivate, logPublic } from "../log.ts";
+import { hasMushDied } from "../death.ts";
 import { resetDrugDispenser } from "../drugs.ts";
 import { DRUG_DISPENSER_EQUIPMENT, equipmentHere, SUPER_CALC_EQUIPMENT } from "../equipment.ts";
 import { ITEM_TYPES, removeItem, spawnInRoom, SPORE_SUCKER_ITEM, STEROIDS_ITEM, STEROIDS_YIELD } from "../items.ts";
@@ -25,7 +26,7 @@ const matches = (item: Readonly<ItemState>, need: string) => (need === ANY_CONSU
 
 /**
  * Which of a research's requirements (RESEARCH_REQUIRES) the lab meets, in `researchNeedOrder`'s order: each item, then
- * Chun, then post-selection. Empty when it has none.
+ * Chun, then post-selection, then dead Mush. Empty when it has none.
  */
 export function researchNeedsMet(state: Readonly<GameState>, room: RoomId, research: ResearchId): boolean[] {
   const needs = RESEARCH_REQUIRES[research];
@@ -34,6 +35,7 @@ export function researchNeedsMet(state: Readonly<GameState>, room: RoomId, resea
   return researchNeedOrder(needs).map((need) => {
     if (need === "chun") return xylophFound(state, "ZONG_CHUN_SAMPLE") || state.players.some((p) => p.alive && p.room === room && p.character === "chun");
     if (need === "postSelection") return !state.preselection;
+    if (need === "deadMush") return hasMushDied(state);
     return items.some((item) => matches(item, need.item));
   });
 }

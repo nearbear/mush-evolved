@@ -1701,6 +1701,7 @@
     "done": "Complete",
     "work": "Progress",
     "empty": "Nothing to research.",
+    "needDeadMush": "Dead Mush",
     "status": {
       "full": "Fully implemented",
       "partial": "Partially implemented",

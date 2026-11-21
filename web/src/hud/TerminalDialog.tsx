@@ -120,7 +120,15 @@ function ResearchList({ terminal, view, onAction }: ListProps) {
         if (!req) return null;
         const met = view.researchNeeds?.[id] ?? [];
         const label = (need: ResearchNeed) =>
-          need === "chun" ? t("research.needChun") : need === "postSelection" ? t("research.needPostSelection") : need.item === ANY_CONSUMABLE ? t("research.anyConsumable") : names.item(need.item);
+          need === "chun"
+            ? t("research.needChun")
+            : need === "postSelection"
+              ? t("research.needPostSelection")
+              : need === "deadMush"
+                ? t("research.needDeadMush")
+                : need.item === ANY_CONSUMABLE
+                  ? t("research.anyConsumable")
+                  : names.item(need.item);
         return { items: researchNeedOrder(req).map((need, i) => ({ label: label(need), met: met[i] ?? false })) };
       }}
       option={(id) => view.actions.find(({ action: a }) => a.type === "research" && a.equipment === terminal.id && a.research === id)}

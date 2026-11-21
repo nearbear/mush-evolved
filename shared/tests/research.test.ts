@@ -64,8 +64,8 @@ describe("research", () => {
     const s = game();
     expect(s.research).toEqual({});
     expect(RESEARCH_IDS).toHaveLength(24);
-    // p1 is Chun and pre-selection is off; the lab has none of the needed items at the start.
-    const free = RESEARCH_IDS.filter((id) => !RESEARCH_REQUIRES[id]?.items);
+    // p1 is Chun and pre-selection is off; the lab has none of the needed items and no Mush is dead at the start.
+    const free = RESEARCH_IDS.filter((id) => !RESEARCH_REQUIRES[id]?.items && !RESEARCH_REQUIRES[id]?.deadMush);
     expect(researches(s, "p0").sort()).toEqual([...free].sort());
     for (const id of RESEARCH_IDS) stockLab(s, "LABORATORY", id);
     expect(researches(s, "p0").sort()).toEqual([...RESEARCH_IDS].sort());
@@ -186,6 +186,12 @@ describe("research", () => {
 
   it("pins the needs taken from the original's research data", () => {
     expect(RESEARCH_REQUIRES.ANTI_MUSH_SERUM).toEqual({ items: ["mush_sample", "mush_floppy_disk"], chun: true, postSelection: true });
+    expect(RESEARCH_REQUIRES.PHEROMODEM).toEqual({ items: ["mush_floppy_disk"], postSelection: true });
+    expect(RESEARCH_REQUIRES.PATULINE_SCRAMBLER).toEqual({ deadMush: true });
+    expect(RESEARCH_REQUIRES.FUNGUS_SCRAMBLER).toEqual({ deadMush: true });
+    expect(RESEARCH_REQUIRES.MUSH_BREEDS).toEqual({ deadMush: true });
+    expect(RESEARCH_REQUIRES.MUSH_BREEDING_SYSTEM).toEqual({ items: ["mush_floppy_disk"], deadMush: true });
+    expect(RESEARCH_REQUIRES.MUSHOPHAGE_BACTERIA).toEqual({ chun: true, deadMush: true });
     expect(RESEARCH_REQUIRES.NATAMY_GUN).toEqual({ items: ["mush_sample", "blaster"], consumes: ["blaster"] });
     expect(RESEARCH_REQUIRES.MUSHICIDE_SOAP).toEqual({ items: ["soap"], consumes: ["soap"], chun: true });
     expect(RESEARCH_REQUIRES.CONSTIPASPORE_SERUM).toEqual({ items: [ANY_CONSUMABLE, "mush_sample"] });
@@ -237,11 +243,53 @@ describe("research", () => {
 
   it("waits for the Mush to be chosen when it needs post-selection", () => {
     const s = game();
+    s.items.push({ id: "disk", type: "mush_floppy_disk", at: { kind: "room", id: "LABORATORY" } });
     s.preselection = true;
-    expect(researches(s, "p0")).not.toContain("MUSH_BREEDS");
+    expect(researches(s, "p0")).not.toContain("PHEROMODEM");
     expect(researches(s, "p0")).toContain("STEROIDS");
     s.preselection = false;
-    expect(researches(s, "p0")).toContain("MUSH_BREEDS");
+    expect(researches(s, "p0")).toContain("PHEROMODEM");
+  });
+
+  it("requires a dead Mush (hasMushDied) for the five dead-Mush researches", () => {
+    const deadMushResearches = [
+      "MUSHOPHAGE_BACTERIA",
+      "FUNGUS_SCRAMBLER",
+      "PATULINE_SCRAMBLER",
+      "MUSH_BREEDS",
+      "MUSH_BREEDING_SYSTEM",
+    ] as const;
+    const s = game();
+    s.items.push({ id: "disk", type: "mush_floppy_disk", at: { kind: "room", id: "LABORATORY" } });
+    const mush = s.players.find((p) => p.role === "mush")!;
+    const human = s.players.find((p) => p.role === "human" && p.id !== "p0" && p.character !== "chun") ?? s.players.find((p) => p.role === "human" && p.id !== "p0")!;
+    const actor = s.players.find((p) => p.id !== mush.id && p.id !== human.id)!;
+
+    // None offered while all Mush are alive, and direct attempts are refused.
+    for (const id of deadMushResearches) {
+      expect(researches(s, actor.id)).not.toContain(id);
+      expect(applyAction(s, actor.id, work(id))).toMatchObject({ ok: false });
+    }
+    expect(viewFor(s, actor.id).researchNeeds?.MUSHOPHAGE_BACTERIA).toEqual([true, false]);
+    expect(viewFor(s, actor.id).researchNeeds?.MUSH_BREEDING_SYSTEM).toEqual([true, false]);
+    expect(viewFor(s, actor.id).researchNeeds?.PATULINE_SCRAMBLER).toEqual([false]);
+
+    // A dead human does not satisfy the requirement.
+    human.alive = false;
+    for (const id of deadMushResearches) expect(researches(s, actor.id)).not.toContain(id);
+    human.alive = true;
+
+    // Unrestricted terminals (freeHacking) bypasses deadMush.
+    actor.cheats.push("freeHacking");
+    for (const id of deadMushResearches) expect(researches(s, actor.id)).toContain(id);
+    actor.cheats = [];
+
+    // Once a Mush dies (even with no corpse aboard, matching hasMushDied), all five unlock.
+    mush.alive = false;
+    for (const id of deadMushResearches) expect(researches(s, actor.id)).toContain(id);
+    expect(viewFor(s, actor.id).researchNeeds?.MUSHOPHAGE_BACTERIA).toEqual([true, true]);
+    expect(viewFor(s, actor.id).researchNeeds?.MUSH_BREEDING_SYSTEM).toEqual([true, true]);
+    expect(viewFor(s, actor.id).researchNeeds?.PATULINE_SCRAMBLER).toEqual([true]);
   });
 
   it("tells people at the terminal which of each research's needs the lab meets, in order, and nobody else", () => {
