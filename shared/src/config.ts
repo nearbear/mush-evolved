@@ -1,6 +1,6 @@
 import shipRooms from "@mush2/assets/derived/ship-rooms.json";
 import { ALIEN_FRUIT_ITEMS, ITRACKIE_ITEM } from "./itemIds.ts";
-import { HACKER_KIT_ITEM, TREE_POT_ITEM } from "./items.ts";
+import { HACKER_KIT_ITEM, LUNCHBOX_ITEM, MICROWAVE_ITEM, TREE_POT_ITEM } from "./items.ts";
 import { CHEAT_ROOM, cheatRoomEquipment } from "./cheatRoom.ts";
 import { EQUIPMENT_TYPES } from "./equipment.ts";
 import { ICARUS_CRAFT, patrolEquipment, patrolRooms } from "./patrol.ts";
@@ -362,8 +362,9 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   // Rebels: avg of two 1..40 draws, +100% each for Rebel and Kivanç, a window of 8..16 cycles. NERON update: 25% per action.
   // Cygni: +1 damage on every patrol ship hit once reached (owner, 2026-11-07; eMush stacks it with the blaster gun).
   // Merchant ships (owner, 2026-11-15, #143): about 2 a day, 4 cycles in orbit, 2 AP a deal, paid from storage,
-  // delivered to Front Storage. The transport's deals are the original's HUMAN_VS_FUEL and HUMAN_VS_OXY (owner: crew,
-  // fuel and oxygen only in the first slice); capsules received are items, fuel and oxygen paid come from the tanks.
+  // delivered to Front Storage. The transport has all 7 of the original's hails (owner, 2026-11-16), PILGREDISSIM with
+  // only its crew deal; capsules received are items, fuel and oxygen paid come from the tanks. FOREST_DEAL's lunchbox
+  // is a real item (owner, 2026-11-21).
   merchants: {
     arrivalChance: 0.25,
     stayCycles: 4,
@@ -383,6 +384,41 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
             { give: [{ kind: "crew", count: [1, 1] }], receive: [{ kind: "item", item: "oxy_capsule", count: [5, 10] }] },
             { give: [{ kind: "fuel", count: [5, 10] }], receive: [{ kind: "item", item: "oxy_capsule", count: [10, 20] }], skill: "diplomacy" },
             { give: [{ kind: "crew", count: [2, 2] }], receive: [{ kind: "item", item: "oxy_capsule", count: [10, 20] }], skill: "diplomacy" },
+          ],
+          FOREST_DEAL: [
+            { give: [{ kind: "item", item: TREE_POT_ITEM, count: [1, 1] }], receive: [{ kind: "item", item: "oxy_capsule", count: [8, 12] }, { kind: "item", item: "fuel_capsule", count: [1, 4] }] },
+            { give: [{ kind: "item", item: TREE_POT_ITEM, count: [2, 2] }], receive: [{ kind: "item", item: "oxy_capsule", count: [12, 20] }, { kind: "item", item: "fuel_capsule", count: [3, 4] }], skill: "diplomacy" },
+            {
+              give: [{ kind: "item", item: TREE_POT_ITEM, count: [1, 1] }, { kind: "item", item: MICROWAVE_ITEM, count: [0, 1] }, { kind: "item", item: "blaster", count: [0, 1] }],
+              receive: [{ kind: "item", item: "oxy_capsule", count: [12, 12] }, { kind: "item", item: LUNCHBOX_ITEM, count: [0, 1] }],
+              skill: "diplomacy",
+            },
+          ],
+          HUMAN_VS_TREE: [
+            { give: [{ kind: "crew", count: [1, 1] }], receive: [{ kind: "item", item: TREE_POT_ITEM, count: [1, 1] }] },
+            { give: [{ kind: "character", character: "ian" }], receive: [{ kind: "item", item: TREE_POT_ITEM, count: [4, 4] }, { kind: "item", item: "oxy_capsule", count: [4, 4] }], skill: "diplomacy" },
+            { give: [{ kind: "crew", count: [2, 2] }], receive: [{ kind: "item", item: TREE_POT_ITEM, count: [3, 3] }], skill: "diplomacy" },
+          ],
+          GOOD_PROJECTIONS: [
+            { give: [{ kind: "crew", count: [1, 1] }], receive: [{ kind: "project", count: [1, 1] }] },
+            { give: [{ kind: "crew", count: [2, 2] }], receive: [{ kind: "project", count: [2, 2] }], skill: "diplomacy" },
+            {
+              give: [
+                { kind: "item", item: "uncooked_ration", count: [4, 10] },
+                { kind: "item", item: "metal_scraps", count: [4, 10] },
+                { kind: "item", item: "plastic_scraps", count: [0, 2] },
+                { kind: "oxygen", count: [4, 10] },
+              ],
+              receive: [{ kind: "project", count: [1, 1] }],
+              skill: "diplomacy",
+            },
+          ],
+          // Only the crew deal (owner, 2026-11-16), and only once 3 inactive players exist (merchants.ts `EVENT_OPEN`).
+          PILGREDISSIM: [{ give: [{ kind: "crew", count: [3, 3] }], receive: [{ kind: "pilgred" }] }],
+          // The officer picks the finished projects to give (owner, 2026-11-16); they get random unfinished ones.
+          TECHNO_REWRITE: [
+            { give: [{ kind: "project", count: [2, 2] }], receive: [{ kind: "project", count: [1, 1] }] },
+            { give: [{ kind: "project", count: [3, 3] }], receive: [{ kind: "project", count: [2, 2] }], skill: "diplomacy" },
           ],
         },
       },
@@ -455,6 +491,8 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
     renovate: { cost: { ap: 2 }, chance: 0.12, dirtyChance: 0.25, injuryChance: 0.05, engineerFactor: 2 },
   },
   // Owner, 2026-10-24 (patrol plan, answer 6): 1 AP to open, 25% each.
+  // Lunchbox (owner, 2026-11-21; eMush): opening it is free and gives 1 standard ration, 3 charges, gone when empty.
+  lunchbox: { cost: { ap: 0 }, charges: 3 },
   spaceCapsule: { cost: { ap: 1 }, dirtyChance: 0.25, injuryChance: 0.01, contents: ["metal_scraps", "plastic_scraps", "oxy_capsule", "fuel_capsule"] },
   hullRepair: { cost: { ap: 1 }, chance: 0.25, injuryChance: 0.05, amount: 5 },
   oscilloscope: { repairFactor: 2 },

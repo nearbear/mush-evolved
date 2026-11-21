@@ -491,7 +491,8 @@
     "greenJelly": "Green Jelly",
     "reinforce": "Reinforce",
     "upgradeDrone": "Upgrade",
-    "upgradeDroneWith": "Upgrade ({{upgrade}})"
+    "upgradeDroneWith": "Upgrade ({{upgrade}})",
+    "openLunchbox": "Open"
   },
   "queue": {
     "label": "Your actions",
@@ -1334,7 +1335,8 @@
     "reportShared": "{{name}} shared the report of the expedition to {{planet}}.",
     "reportShareAppended": "{{name}} added to the shared report of the expedition to {{planet}}.",
     "missionIssued": "You gave a mission to {{target}}.",
-    "missionReceived": "The Commander gave you a mission: +{{amount}} AP."
+    "missionReceived": "The Commander gave you a mission: +{{amount}} AP.",
+    "lunchboxOpened": "You took a Standard Ration out of the lunchbox."
   },
   "throwOut": {
     "confirm": "Throw {{name}} out into which room?",
@@ -1969,11 +1971,21 @@
         "crew": "There aren't enough inactive crew members aboard.",
         "item": "There isn't enough {{item}} on the storage room floors.",
         "oxygen": "There isn't enough oxygen in the tanks.",
-        "fuel": "There isn't enough fuel in the tanks."
+        "fuel": "There isn't enough fuel in the tanks.",
+        "character": "{{name}} must be aboard and inactive.",
+        "project": "There aren't enough finished projects a merchant can take.",
+        "pilgred": "PILGRED is already repaired."
       },
       "kinds": {
         "transport": "Transport ship"
-      }
+      },
+      "character": "{{name}}, if inactive",
+      "giveProject_one": "{{count}} finished project of your choice",
+      "giveProject_other": "{{count}} finished projects of your choice",
+      "receiveProject_one": "{{count}} random NERON project, finished at once",
+      "receiveProject_other": "{{count}} random NERON projects, finished at once",
+      "pilgred": "PILGRED repaired",
+      "pickProject": "Project to give ({{n}})"
     },
     "rebels": {
       "WOLF": {
@@ -2371,7 +2383,12 @@
         "farewell": "Understood.",
         "hail": {
           "HUMAN_VS_FUEL": "We have a surplus of antifreeze and nothing to eat tonight. Interested?",
-          "HUMAN_VS_OXY": "Aloha! Your bodies are truly fascinating, especially the way you turn your organic waste into methane. Incredible... We'll give you plenty of oxygen for one of your friends!"
+          "HUMAN_VS_OXY": "Aloha! Your bodies are truly fascinating, especially the way you turn your organic waste into methane. Incredible... We'll give you plenty of oxygen for one of your friends!",
+          "FOREST_DEAL": "OOOOOOOOoooooo...... *argh, my sensors* We are ...*chhhhh*\nSpace gardeners. We'll gladly trade your equipment for precious goods.",
+          "PILGREDISSIM": "[NAc Nac NAc NAc] *beam improving* [Nac]\nRotten engine, never go anywhere in universe like that. Cardboard civilization... [Naaaaac]\nWe repair your PILGRED for some of your crew members!",
+          "GOOD_PROJECTIONS": "Greetings, humble mammalian creature. We are looking for new toys to please our queen.\nWe have technologies that could be of use to you.",
+          "TECHNO_REWRITE": "The great houses of Serres greet you. We have watched your primitive world for eons, and your ship's mad flight intrigues us. Still, some of your technologies interest us; a little exchange could benefit everyone.",
+          "HUMAN_VS_TREE": "Buraroum, we, the Leafdevourers, need celestial gardeners. We'll trade you brand-new pots for some labour."
         }
       }
     },

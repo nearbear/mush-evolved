@@ -7,7 +7,7 @@ import { BLUEPRINT_ITEM } from "./blueprints.ts";
 import { DYNARCADE_EQUIPMENT } from "./equipment.ts";
 import { logPublic } from "./log.ts";
 import { PATROL_SHIPS, patrolMaxCharges } from "./patrol.ts";
-import { PROJECT_COMPLETE, PROJECT_IDS, projectDone, type ProjectId } from "./projects.ts";
+import { availableProjects, PROJECT_COMPLETE, PROJECT_IDS, projectDone, type ProjectId } from "./projects.ts";
 import { BOOK_ITEM, spawnInRoom, SUPPORT_DRONE_ITEM, TREE_POT_ITEM } from "./items.ts";
 import { newDrone } from "./droneIdentity.ts";
 import { rollInt, rollShuffle } from "./rng.ts";
@@ -19,11 +19,11 @@ import type { DeepReadonly, GameConfig, GameCore, GameState, ItemState, PlayerSt
  * of `state.projectDeck`, or every unfinished project for a player with the `freeHacking` ("Unrestricted terminals") cheat.
  */
 export function offeredProjects(
-  state: Readonly<Pick<GameCore, "projects" | "projectDeck"> & { config: DeepReadonly<Pick<GameConfig, "project">> }>,
+  state: Readonly<Pick<GameCore, "projects" | "projectDeck" | "lostProjects"> & { config: DeepReadonly<Pick<GameConfig, "project">> }>,
   player?: Readonly<Pick<PlayerState, "cheats">>,
 ): ProjectId[] {
   if (player?.cheats.includes("freeHacking")) {
-    return PROJECT_IDS.filter((id) => !projectDone(state, id));
+    return availableProjects(state);
   }
   return state.projectDeck.filter((id) => !projectDone(state, id)).slice(0, state.config.project.offerCount);
 }
@@ -88,6 +88,38 @@ function onProjectCompleted(state: GameState, project: ProjectId): void {
       spawnInRoom(state, order[i % order.length]!, item.type, 1, item.extra);
     }
   }
+}
+
+/**
+ * Projects whose completion has a one-time effect that can't be undone (spawned items or equipment, extra patrol ship
+ * charges), so a merchant can't take them back (TECHNO_REWRITE; owner, 2026-11-21). Every other finished project's
+ * effects are read from `projectDone` as they apply, so they stop once it is lost. Keep it in step with
+ * `onProjectCompleted`.
+ */
+export const ONE_TIME_PROJECTS: readonly ProjectId[] = [
+  "FOOD_RETAILER",
+  "CALL_OF_DIRTY",
+  "PATROLSHIP_EXTRA_AMMO",
+  "EXTRA_HYDROPONPOTS",
+  "EXTRA_DRONE",
+  "DISMANTLING",
+  "TRASH_LOAD",
+];
+
+/** The finished projects a merchant can take: every finished one but `ONE_TIME_PROJECTS`, in project order. */
+export function tradableProjects(state: Readonly<Pick<GameState, "projects">>): ProjectId[] {
+  return PROJECT_IDS.filter((id) => projectDone(state, id) && !ONE_TIME_PROJECTS.includes(id));
+}
+
+/**
+ * A merchant takes a finished `project` (owner, 2026-11-21): it is back to 0% and lost for good, never proposed or
+ * finished again (`lostProjects`). Its effects stop with it; Noise reducer's AP cap is recomputed (current AP capped).
+ */
+export function loseProject(state: GameState, project: ProjectId): void {
+  delete state.projects[project];
+  if (!state.lostProjects.includes(project)) state.lostProjects.push(project);
+  state.projectDeck = state.projectDeck.filter((id) => id !== project);
+  if (project === "NOISE_REDUCER") for (const p of state.players) if (p.alive) updateMaxValues(state, p);
 }
 
 /** Marks `project` complete, retires `retire` from the proposal deck, and runs its one-time completion effects. */

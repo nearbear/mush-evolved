@@ -11,10 +11,10 @@
 // one is drawn disabled with the reason the rules give (`blocked`). A rebel base's message is garbled (garble.ts) by the
 // progress it was said at, so each decode reads clearer, and the whole message comes through at 100%.
 
-import { type Action, type ActionOption, characterUsername, type FeedEntry as SignalFeedEntry, isActiveSignal, type PlayerView, type SignalView } from "@mush2/shared";
+import { type Action, type ActionOption, characterName, characterUsername, type FeedEntry as SignalFeedEntry, isActiveSignal, type PlayerView, type SignalView } from "@mush2/shared";
 import { Fragment, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { FACTION_ICONS, itemIcon, REBEL_BASE_ICONS, SHIP_RESOURCE_ICONS, skillIcon } from "../art/assets.ts";
+import { bustIcon, FACTION_ICONS, itemIcon, REBEL_BASE_ICONS, SHIP_RESOURCE_ICONS, skillIcon, TAB_ICONS } from "../art/assets.ts";
 import { useNames } from "../i18n/names.ts";
 import { ActionButton } from "./ActionButton.tsx";
 import { ActionLabel } from "./ActionLabel.tsx";
@@ -31,6 +31,7 @@ import { nextPlayback, type Playback, skipPlayback } from "./signalPlayback.ts";
 
 type Deal = NonNullable<SignalView["merchant"]>["deals"][number];
 type Asset = Deal["give"][number] | Deal["receive"][number];
+type Side = "give" | "receive";
 
 interface Props {
   signal: SignalView;
@@ -191,18 +192,28 @@ function useFeedText(signal: SignalView): (e: SignalFeedEntry) => string {
   };
 }
 
-/** One side's asset in the viewer's language ("2 inactive crew members", "3 × Fuel capsule"). */
-function useAssetText(): (a: Asset) => string {
+/** One side's asset in the viewer's language ("2 inactive crew members", "3 × Fuel capsule"). A project paid is one the officer picks; one received is random. */
+function useAssetText(): (a: Asset, side: Side) => string {
   const { t } = useTranslation();
   const names = useNames();
-  return (a) =>
-    a.kind === "item"
-      ? t("comms.merchants.item", { count: a.count, item: names.item(a.item) })
-      : a.kind === "crew"
-        ? t("comms.merchants.crew", { count: a.count })
-        : a.kind === "oxygen"
-          ? t("comms.merchants.oxygen", { count: a.count })
-          : t("comms.merchants.fuel", { count: a.count });
+  return (a, side) => {
+    switch (a.kind) {
+      case "item":
+        return t("comms.merchants.item", { count: a.count, item: names.item(a.item) });
+      case "crew":
+        return t("comms.merchants.crew", { count: a.count });
+      case "character":
+        return t("comms.merchants.character", { name: characterName(a.character) });
+      case "project":
+        return side === "give" ? t("comms.merchants.giveProject", { count: a.count }) : t("comms.merchants.receiveProject", { count: a.count });
+      case "pilgred":
+        return t("comms.merchants.pilgred");
+      case "oxygen":
+        return t("comms.merchants.oxygen", { count: a.count });
+      case "fuel":
+        return t("comms.merchants.fuel", { count: a.count });
+    }
+  };
 }
 
 /** A deal's two sides as lists in the viewer's language, for the officer's deal line. */
@@ -210,7 +221,7 @@ function useDealTerms(): (deal: Pick<Deal, "give" | "receive">) => { give: strin
   const { i18n } = useTranslation();
   const asset = useAssetText();
   const list = (parts: string[]) => new Intl.ListFormat(i18n.language, { type: "unit" }).format(parts);
-  return (deal) => ({ give: list(deal.give.map(asset)), receive: list(deal.receive.map(asset)) });
+  return (deal) => ({ give: list(deal.give.map((a) => asset(a, "give"))), receive: list(deal.receive.map((a) => asset(a, "receive"))) });
 }
 
 /**
@@ -257,6 +268,9 @@ function MerchantOptions({ signal, terminalId, view, onAction }: Omit<Props, "on
     view.actions.find(({ action: a }) => a.type === type && a.equipment === terminalId && a.signal === signal.id);
   const dealOption = (deal: number): ActionOption | undefined =>
     view.actions.find(({ action: a }) => a.type === "close_deal" && a.equipment === terminalId && a.signal === signal.id && a.deal === deal);
+  // The finished projects the officer picks for a deal that takes some (TECHNO_REWRITE), by deal; the rules' offer
+  // (the first ones a merchant can take) until changed.
+  const [picks, setPicks] = useState<Record<number, string[]>>({});
   const contact = find("contact_signal");
   const refuse = find("refuse_signal");
   const contacted = signal.feed.length > 0;
@@ -268,9 +282,15 @@ function MerchantOptions({ signal, terminalId, view, onAction }: Omit<Props, "on
         const item = deal.give.find((a) => a.kind === "item");
         return t("comms.merchants.blocked.item", { item: item?.kind === "item" ? names.item(item.item) : "" });
       }
+      case "character": {
+        const who = deal.give.find((a) => a.kind === "character");
+        return t("comms.merchants.blocked.character", { name: who?.kind === "character" ? characterName(who.character) : "" });
+      }
       case "crew":
       case "oxygen":
       case "fuel":
+      case "project":
+      case "pilgred":
         return t(`comms.merchants.blocked.${deal.blocked}`);
       default:
         return t("comms.merchants.unavailable");
@@ -293,16 +313,19 @@ function MerchantOptions({ signal, terminalId, view, onAction }: Omit<Props, "on
           </div>
           <ol aria-label={t("comms.merchants.dealsLabel")}>
             {signal.merchant.deals.map((deal, i) => {
-              const close = dealOption(i);
+              const offer = dealOption(i);
+              const offered = offer?.action.type === "close_deal" ? offer.action.projects : undefined;
+              const picked = offered && (picks[i] ?? offered);
+              const close = offer && picked && offer.action.type === "close_deal" ? { ...offer, action: { ...offer.action, projects: picked } } : offer;
               // The skill's icon is dimmed when nobody in the officer's room has it: the rules' `blocked` says so.
               const met = deal.blocked !== "skill";
               return (
                 <li key={i} className="signal-deal">
-                  <DealSide label={t("comms.merchants.give")} assets={deal.give} text={asset} />
+                  <DealSide label={t("comms.merchants.give")} side="give" assets={deal.give} text={asset} />
                   <span className="signal-deal-arrow" aria-hidden="true">
                     ⇄
                   </span>
-                  <DealSide label={t("comms.merchants.receive")} assets={deal.receive} text={asset} />
+                  <DealSide label={t("comms.merchants.receive")} side="receive" assets={deal.receive} text={asset} />
                   {deal.skill ? (
                     <Hint label={names.skill(deal.skill)}>
                       <img
@@ -324,6 +347,13 @@ function MerchantOptions({ signal, terminalId, view, onAction }: Omit<Props, "on
                       {t("signals.deal")}
                     </UnavailableButton>
                   )}
+                  {picked && (
+                    <ProjectPicks
+                      picked={picked}
+                      choices={signal.merchant!.projects ?? []}
+                      onChange={(next) => setPicks((all) => ({ ...all, [i]: next }))}
+                    />
+                  )}
                 </li>
               );
             })}
@@ -340,22 +370,49 @@ function MerchantOptions({ signal, terminalId, view, onAction }: Omit<Props, "on
 }
 
 /**
+ * The finished projects to give for a deal that takes some (TECHNO_REWRITE; owner, 2026-11-16): one drop-down per
+ * project, each listing the projects a merchant can take that no other drop-down holds. The rules check the pick.
+ */
+function ProjectPicks({ picked, choices, onChange }: { picked: string[]; choices: string[]; onChange: (next: string[]) => void }) {
+  const { t } = useTranslation();
+  const names = useNames();
+  return (
+    <div className="signal-deal-picks">
+      {picked.map((current, n) => (
+        <label key={n} className="field">
+          <span className="field-label">{t("comms.merchants.pickProject", { n: n + 1 })}</span>
+          <select value={current} onChange={(e) => onChange(picked.map((p, m) => (m === n ? e.target.value : p)))}>
+            {choices
+              .filter((id) => id === current || !picked.includes(id))
+              .map((id) => (
+                <option key={id} value={id}>
+                  {names.project(id)}
+                </option>
+              ))}
+          </select>
+        </label>
+      ))}
+    </div>
+  );
+}
+
+/**
  * One side of a deal: each asset as an item tile with its count in the corner and its words ("9 × Oxygen capsule") in
  * a tooltip and for a screen reader. Oxygen, fuel and crew show their small UI icons in the tile.
  */
-function DealSide({ label, assets, text }: { label: string; assets: Asset[]; text: (a: Asset) => string }) {
+function DealSide({ label, side, assets, text }: { label: string; side: Side; assets: Asset[]; text: (a: Asset, side: Side) => string }) {
   return (
     <ul className="signal-deal-side" aria-label={label}>
       {assets.map((a, i) => (
         <li key={i}>
-          <Hint label={text(a)}>
-            <span className="signal-deal-asset" role="img" aria-label={text(a)}>
+          <Hint label={text(a, side)}>
+            <span className="signal-deal-asset" role="img" aria-label={text(a, side)}>
               <ItemFace count={a.count}>
                 {a.kind === "item" ? (
                   <img className="item-icon" src={itemIcon(a.item)} alt="" draggable={false} />
                 ) : (
                   <span className="item-face-ui">
-                    <img src={a.kind === "crew" ? FACTION_ICONS.human : SHIP_RESOURCE_ICONS[a.kind]} alt="" draggable={false} />
+                    <img src={assetIcon(a)} alt="" draggable={false} />
                   </span>
                 )}
               </ItemFace>
@@ -365,4 +422,21 @@ function DealSide({ label, assets, text }: { label: string; assets: Asset[]; tex
       ))}
     </ul>
   );
+}
+
+/** The small UI icon in a tile for anything but an item: a crew member's bust, NERON for a project, PILGRED's tab icon. */
+function assetIcon(a: Exclude<Asset, { kind: "item" }>): string {
+  switch (a.kind) {
+    case "crew":
+      return FACTION_ICONS.human;
+    case "character":
+      return bustIcon(a.character);
+    case "project":
+      return TAB_ICONS.neronBios;
+    case "pilgred":
+      return TAB_ICONS.pilgred;
+    case "oxygen":
+    case "fuel":
+      return SHIP_RESOURCE_ICONS[a.kind];
+  }
 }

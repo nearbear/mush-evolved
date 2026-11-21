@@ -498,7 +498,8 @@
     "greenJelly": "Gelatina verde",
     "reinforce": "Reforzar",
     "upgradeDrone": "Mejorar",
-    "upgradeDroneWith": "Mejorar ({{upgrade}})"
+    "upgradeDroneWith": "Mejorar ({{upgrade}})",
+    "openLunchbox": "Abrir"
   },
   "queue": {
     "label": "Tus acciones",
@@ -1355,7 +1356,8 @@
     "reportShared": "{{name}} ha compartido el informe de la expedición a {{planet}}.",
     "reportShareAppended": "{{name}} ha completado el informe compartido de la expedición a {{planet}}.",
     "missionIssued": "Has dado una misión a {{target}}.",
-    "missionReceived": "El Comandante te ha dado una misión: +{{amount}} PA."
+    "missionReceived": "El Comandante te ha dado una misión: +{{amount}} PA.",
+    "lunchboxOpened": "Sacaste una Ración estándar de la canasta de comida."
   },
   "throwOut": {
     "confirm": "¿A qué sala echar a {{name}}?",
@@ -1897,11 +1899,23 @@
         "crew": "No hay suficientes tripulantes inactivos a bordo.",
         "item": "No hay suficiente {{item}} en el suelo de los almacenes.",
         "oxygen": "No hay suficiente oxígeno en los tanques.",
-        "fuel": "No hay suficiente combustible en los tanques."
+        "fuel": "No hay suficiente combustible en los tanques.",
+        "character": "Este miembro de la tripulación ({{name}}) debe estar a bordo e inactivo.",
+        "project": "No hay suficientes proyectos terminados que un mercader pueda llevarse.",
+        "pilgred": "PILGRED ya está reparado."
       },
       "kinds": {
         "transport": "Nave de transporte"
-      }
+      },
+      "character": "{{name}}, en caso de inactividad",
+      "giveProject_one": "{{count}} proyecto terminado a elegir",
+      "giveProject_many": "{{count}} proyectos terminados a elegir",
+      "giveProject_other": "{{count}} proyectos terminados a elegir",
+      "receiveProject_one": "{{count}} proyecto de NERON al azar, terminado al instante",
+      "receiveProject_many": "{{count}} proyectos de NERON al azar, terminados al instante",
+      "receiveProject_other": "{{count}} proyectos de NERON al azar, terminados al instante",
+      "pilgred": "PILGRED reparado",
+      "pickProject": "Proyecto a entregar ({{n}})"
     },
     "rebels": {
       "WOLF": {
@@ -2314,7 +2328,12 @@
         "farewell": "Entendido.",
         "hail": {
           "HUMAN_VS_FUEL": "Tenemos un excedente de anticongelante y nos falta comida para esta noche. ¿Os interesa?",
-          "HUMAN_VS_OXY": "Aloha, vuestros organismos son realmente apasionantes, sobre todo la metanización de vuestros residuos orgánicos, increíble... ¡Os cambiamos a uno de vuestros amigos por unas reservas de oxígeno considerables!"
+          "HUMAN_VS_OXY": "Aloha, vuestros organismos son realmente apasionantes, sobre todo la metanización de vuestros residuos orgánicos, increíble... ¡Os cambiamos a uno de vuestros amigos por unas reservas de oxígeno considerables!",
+          "FOREST_DEAL": "OOOOOOOOoooooo...... *argh, mis sensores* Somos ...*chhhhh*\nJardineros espaciales, os cambiaremos con gusto vuestro material por bienes valiosos.",
+          "PILGREDISSIM": "[NAc Nac NAc NAc] *mejorando el haz* [Nac]\nMotor podrido, nunca avanzar por el universo así. Civilización de cartón... [Naaaaac]\n¡Reparamos vuestro PILGRED a cambio de miembros de vuestra tripulación!",
+          "GOOD_PROJECTIONS": "Saludos, humilde criatura mamífera, buscamos nuevos juguetes para complacer a nuestra reina.\nDisponemos de tecnologías que podrían seros útiles.",
+          "TECHNO_REWRITE": "Las grandes casas de Serres os saludan. Llevamos eones observando vuestro mundo primitivo y la loca carrera de vuestra nave nos intriga. Aun así, algunas de vuestras tecnologías nos interesan; un pequeño intercambio podría beneficiar a todos.",
+          "HUMAN_VS_TREE": "Buraroum, nosotros, los Devorahojas, necesitamos jardineros celestes. Os cambiamos macetas nuevas por mano de obra."
         }
       }
     },

@@ -744,6 +744,21 @@ li.signal-next {
 .signal-deal > button {
   margin: 0;
 }
+/* TECHNO_REWRITE's project drop-downs, on their own line under the deal's row, wrapping on a phone. */
+.signal-deal-picks {
+  display: flex;
+  flex-wrap: wrap;
+  grid-column: 1 / -1;
+  gap: 0.25rem 0.75rem;
+  padding-top: 0.25rem;
+}
+.signal-deal-picks > .field {
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+.signal-deal-picks select {
+  width: 100%;
+}
 
 /* The audio wave (AudioWave.tsx): flat at rest, each bar driven by --level from the message text while the other side speaks. */
 .audio-wave {

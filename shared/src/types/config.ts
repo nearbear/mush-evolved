@@ -782,6 +782,7 @@ export interface GameConfig {
     renovate: { cost: { ap: number }; chance: number; dirtyChance: number; injuryChance: number; engineerFactor: number };
   };
   // The space capsule: opening it turns it into one of `contents`, each equally likely.
+  lunchbox: { cost: { ap: number }; charges: number }; // Open lunchbox's AP (owner, 2026-11-21: 0, as in eMush) and the rations a lunchbox holds (3).
   spaceCapsule: { cost: { ap: number }; dirtyChance: number; injuryChance: number; contents: string[] };
   // Hull repair (owner, 2026-10-24, the wiki's Armure et Bouclier): 1 AP, 25%, +5 hull, a metal scrap used up on a success.
   hullRepair: { cost: { ap: number }; chance: number; injuryChance: number; amount: number };

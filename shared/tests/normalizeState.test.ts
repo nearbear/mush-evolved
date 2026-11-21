@@ -377,9 +377,13 @@ describe("union normalizers", () => {
     item: { kind: "item", item: "uncooked_ration", count: 4 },
     oxygen: { kind: "oxygen", count: 3 },
     fuel: { kind: "fuel", count: 7 },
+    character: { kind: "character", character: "ian", count: 1 },
+    project: { kind: "project", count: 2 },
   };
   const receives: { [K in ReceiveAsset["kind"]]: Extract<ReceiveAsset, { kind: K }> } = {
     item: { kind: "item", item: "fuel_capsule", count: 9 },
+    project: { kind: "project", count: 1 },
+    pilgred: { kind: "pilgred", count: 1 },
   };
   const tasks: { [K in PlanTask["type"]]: Extract<PlanTask, { type: K }> } = {
     research: { type: "research", research: "r" },

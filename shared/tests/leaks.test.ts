@@ -167,6 +167,7 @@ function ship(): { state: GameState; sentinels: Sentinel[] } {
   s.research.STEROIDS = scaled("researchProgress", 1e4, ["p0", "p1", "p2"]);
   s.projects.PLASMA_SHIELD = scaled("projectProgress", 1e4, []);
   s.projectDeck = ["PLASMA_SHIELD", ...s.projectDeck.filter((id) => id !== "PLASMA_SHIELD"), str("projectDeck", []) as never];
+  s.lostProjects = [str("lostProjects", []) as never];
   s.pilgred.progress = scaled("pilgredProgress", 1e4, []);
   const roll = (what: string) => scaled(what, 1e7, []);
   // Pending samples' rolls and who contaminated one go to nobody (assay.ts); project streaks go to nobody.

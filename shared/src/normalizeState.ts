@@ -889,6 +889,10 @@ export function normalizeGiveAsset(raw: Partial<GiveAsset>): GiveAsset {
   switch (raw.kind) {
     case "crew":
       return stripUndefined<GiveAsset>({ kind: "crew", count: need(raw, "count", t) });
+    case "character":
+      return stripUndefined<GiveAsset>({ kind: "character", character: need(raw, "character", t), count: need(raw, "count", t) });
+    case "project":
+      return stripUndefined<GiveAsset>({ kind: "project", count: need(raw, "count", t) });
     case "item":
       return stripUndefined<GiveAsset>({ kind: "item", item: need(raw, "item", t), count: need(raw, "count", t) });
     case "oxygen":
@@ -904,6 +908,9 @@ export function normalizeReceiveAsset(raw: Partial<ReceiveAsset>): ReceiveAsset 
   switch (raw.kind) {
     case "item":
       return stripUndefined<ReceiveAsset>({ kind: "item", item: need(raw, "item", t), count: need(raw, "count", t) });
+    case "project":
+    case "pilgred":
+      return stripUndefined<ReceiveAsset>({ kind: raw.kind, count: need(raw, "count", t) } as ReceiveAsset);
     default:
       throw unknownVariant(t, "kind", raw.kind satisfies undefined);
   }
@@ -1168,6 +1175,8 @@ export function normalizeCore(raw: Partial<GameCore>, _ctx: NormalizeContext, mo
     research: dict(need(raw, "research", t)),
     projects,
     projectDeck: copy(added(raw, "projectDeck", PROJECT_IDS.filter((id) => !(projects[id] !== undefined && projects[id] >= 100)))),
+    // A game saved before TECHNO_REWRITE (#143) has traded no project away.
+    lostProjects: copy(added(raw, "lostProjects", [])),
     relay: normalizeRelay(need(raw, "relay", t)),
     pilgred: normalizePilgred(need(raw, "pilgred", t)),
     comms: normalizeComms(need(raw, "comms", t)),

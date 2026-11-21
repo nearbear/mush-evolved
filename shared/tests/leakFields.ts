@@ -63,6 +63,7 @@ export const GAME_STATE_FIELDS: Record<string, FieldRule> = {
   relay: { reach: "room", test: "leaks.test.ts", note: "Research sample pools (`research`, verified and pending) and project contributor streaks (`projects`): research contributor and value to the living in the lab (your own token counts anywhere; rolls and contamination never); project gain range (no tokens) to the living at NERON's core, streaks never." },
   projects: { reach: "room", test: "projects.test.ts", note: "Currently offered ones to the living at NERON's core (all unfinished with unrestricted terminals), plus completed projects everywhere." },
   projectDeck: { reach: "never", test: "leaks.test.ts", note: "Shuffled draw order; only the first offerCount unfinished ones are offered at NERON's core." },
+  lostProjects: { reach: "never", test: "leaks.test.ts", note: "Projects a merchant took (#143); they are simply no longer complete, which the completed list already shows." },
   pilgred: { reach: "room", test: "pilgred.test.ts", note: "`progress` and the pool's contributors and values, to the living in a room with the PILGRED terminal; rolls never; each viewer's own token count anywhere. Whether it is repaired is public (`pilgredRepaired`), as the crew-wide message announces it." },
   planets: { reach: "own", test: "leaks.test.ts", note: "Without the unknown sectors' tags." },
   failureStreaks: { reach: "never", test: "leaks.test.ts" },

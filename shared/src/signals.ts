@@ -12,7 +12,9 @@
 
 import type { CharacterId } from "./characters.ts";
 import type { RebelBaseId } from "./comms.ts";
-import { type DealBlock, dealBlock, type MerchantDeal, type MerchantKind } from "./merchants.ts";
+import { type DealBlock, dealBlock, dealProjectCount, type MerchantDeal, type MerchantKind } from "./merchants.ts";
+import { tradableProjects } from "./projectEffects.ts";
+import type { ProjectId } from "./projects.ts";
 import { hasTitleAccess } from "./titles.ts";
 import type { GameState, LogParams, PlayerState } from "./types.ts";
 
@@ -204,9 +206,10 @@ export interface SignalView {
   feed: FeedEntry[];
   /**
    * A merchant's ship kind, hail and deals, in order. `blocked` is why the viewer can't close that deal now, null if
-   * they can (always null once the signal is inactive). The buttons themselves come from `view.actions`.
+   * they can (always null once the signal is inactive). The buttons themselves come from `view.actions`. `projects`:
+   * the finished projects the officer may pick for a deal that takes some (TECHNO_REWRITE), while it is active.
    */
-  merchant?: { kind: MerchantKind; event: string; deals: (MerchantDeal & { blocked: DealBlock | null })[] };
+  merchant?: { kind: MerchantKind; event: string; deals: (MerchantDeal & { blocked: DealBlock | null })[]; projects?: ProjectId[] };
   /** A rebel base's call: which base and how much is decoded. Each of its feed's messages carries the progress it was said at. */
   rebel?: RebelData;
 }
@@ -235,6 +238,8 @@ export function signalsView(state: Readonly<GameState>, viewer: Readonly<PlayerS
           ...(deal.skill && { skill: deal.skill }),
           blocked: s.status === "active" ? dealBlock(state, viewer, deal) : null,
         })),
+        // Finished projects are public (the completed list), so this tells the officer nothing new.
+        ...(s.status === "active" && s.merchant.deals.some((d) => dealProjectCount(d) > 0) && { projects: tradableProjects(state) }),
       },
     }),
     ...(s.rebel && { rebel: { ...s.rebel } }),

@@ -198,6 +198,7 @@ export function createGame(
     research: {},
     projects: {},
     projectDeck: newProjectDeck(seed),
+    lostProjects: [],
     relay: { research: {}, projects: {} },
     pilgred: { progress: 0, pool: { tokens: [] } },
     planets: {},
