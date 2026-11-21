@@ -930,14 +930,15 @@
       "focused": "At a terminal, looking at its screen. Ends when they close it, walk off or leave the room.",
       "contaminated": "A human you have contaminated. At their capacity they turn Mush.",
       "hopeless": "At 0 morale. Any morale gain ends it. A human still Hopeless when the cycle ends dies.",
-      "nimble": "All of your room-level public actions (including movement) become secret. Only you can see this status."
+      "nimble": "All of your room-level public actions (including movement) become secret. Only you can see this status.",
+      "pregnant": "Expecting a child. If this crewmate dies, every living crewmate loses 2 morale."
     }
   },
   "itemAttr": {
     "contaminated": "Contamination: {{level}}",
     "contaminatedDesc": "Mush food: a human who eats it is contaminated by this many levels. Only Mush can see this.",
     "mushCat": "Mush cat",
-    "mushCatDesc": "Infected by the Mush: any human who picks Schrödinger up is contaminated by 1 level. Only Mush can see this.",
+    "mushCatDesc": "Infected by the Mush: any human scratched by Schrödinger (on Take or Caress) is contaminated by 1 level. Only Mush can see this.",
     "jelly_one": "Green jelly: breaks in {{count}} cycle",
     "jelly_other": "Green jelly: breaks in {{count}} cycles",
     "jellyDesc": "It breaks when the cycles run out.",

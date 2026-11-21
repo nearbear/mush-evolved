@@ -53,8 +53,11 @@ export class TransferAction<T extends "take" | "drop" = "take" | "drop"> extends
     item.at = this.type === "take" ? { kind: "player", id: player.id } : { kind: "room", id: player.room };
     state.items.push(item);
     logPublic(state, player.room, this.type === "take" ? "pickedUp" : "dropped", { name: player.character, item: item.type });
-    if (this.type === "take" && item.type === CAT_ITEM && item.mush) {
-      contaminate(state, player);
-    }
+  }
+
+  override onInjury(state: GameState, player: PlayerState, target: { type: T; item: string }): void {
+    if (this.type !== "take") return;
+    const item = state.items.find((i) => i.id === target.item);
+    if (item?.type === CAT_ITEM && item.mush) contaminate(state, player);
   }
 }

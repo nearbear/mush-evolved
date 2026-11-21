@@ -944,14 +944,15 @@
       "focused": "Accède à un terminal avec un air concentré. Prend fin quand il le ferme, s'éloigne ou quitte la salle.",
       "contaminated": "Un humain que vous avez contaminé. À sa capacité maximale, il devient Mush.",
       "hopeless": "À 0 de moral. Tout gain de moral y met fin. Un humain encore Sans espoir à la fin du cycle meurt.",
-      "nimble": "Toutes vos actions publiques dans une salle (déplacements compris) deviennent secrètes. Vous seul voyez cet état."
+      "nimble": "Toutes vos actions publiques dans une salle (déplacements compris) deviennent secrètes. Vous seul voyez cet état.",
+      "pregnant": "Attend un enfant. Si ce coéquipier meurt, chaque membre vivant de l'équipage perd 2 points de moral."
     }
   },
   "itemAttr": {
     "contaminated": "Contamination : {{level}}",
     "contaminatedDesc": "Nourriture fongique : un humain qui la mange est contaminé de ce nombre de niveaux. Seuls les Mush le voient.",
     "mushCat": "Chat Mush",
-    "mushCatDesc": "Infecté par le Mush : tout humain qui prend Schrödinger est contaminé d'un niveau. Seuls les Mush le voient.",
+    "mushCatDesc": "Infecté par le Mush : tout humain griffé par Schrödinger (en le prenant ou en le caressant) est contaminé d'un niveau. Seuls les Mush le voient.",
     "jelly_one": "Gélée verte : panne dans {{count}} cycle",
     "jelly_many": "Gélée verte : panne dans {{count}} cycles",
     "jelly_other": "Gélée verte : panne dans {{count}} cycles",

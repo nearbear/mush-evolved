@@ -944,14 +944,15 @@
       "focused": "Está en un terminal, mirando su pantalla. Termina cuando lo cierra, se aleja o sale de la sala.",
       "contaminated": "Un humano que has contaminado. Al llegar a su capacidad se vuelve Mush.",
       "hopeless": "Con 0 de moral. Cualquier ganancia de moral lo termina. Un humano que siga Sin esperanza al acabar el ciclo muere.",
-      "nimble": "Todas tus acciones públicas en una sala (incluido el movimiento) se vuelven secretas. Solo tú puedes ver este estado."
+      "nimble": "Todas tus acciones públicas en una sala (incluido el movimiento) se vuelven secretas. Solo tú puedes ver este estado.",
+      "pregnant": "Espera un bebé. Si este tripulante muere, cada miembro vivo de la tripulación pierde 2 puntos de moral."
     }
   },
   "itemAttr": {
     "contaminated": "Contagio: {{level}}",
     "contaminatedDesc": "Comida fúngica: un humano que la coma se contagia de este número de niveles. Solo los Mush lo ven.",
     "mushCat": "Gato Mush",
-    "mushCatDesc": "Infectado por el Mush: cualquier humano que coja a Schrödinger se contagia de 1 nivel. Solo los Mush lo ven.",
+    "mushCatDesc": "Infectado por el Mush: cualquier humano al que arañe Schrödinger (al cogerlo o acariciarlo) se contagia de 1 nivel. Solo los Mush lo ven.",
     "jelly_one": "Gelatina verde: avería en {{count}} ciclo",
     "jelly_many": "Gelatina verde: avería en {{count}} ciclos",
     "jelly_other": "Gelatina verde: avería en {{count}} ciclos",

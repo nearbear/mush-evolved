@@ -471,6 +471,7 @@ export function performAction(next: GameState, actor: PlayerState, action: Actio
       else{
       logPrivate(next, actor.id, "randomInjury", { name: actor.character });
       damage(next, actor, 2, "injury");
+      def.onInjury(next, actor, action);
       }
     }
   }
