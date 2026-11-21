@@ -360,6 +360,10 @@ body:has(.pod) {
   height: 150px;
   border-radius: 0.15rem;
 }
+.pod-detail-skills-column {
+  flex: 1;
+  min-width: 0;
+}
 .pod-detail-stack {
   flex: 1;
   min-width: 0;
@@ -407,8 +411,10 @@ body:has(.pod) {
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 0.1rem;
   font-size: 0.75rem;
+  /* Tight enough that six skills, two of them wrapping, still fit beside the 150px portrait. */
+  line-height: 1.15;
 }
 /* A skill: icon and name. On desktop it is a popover trigger (SkillSlots' SkillPopover), so it strips the Mush button look. */
 .pod-skill {
