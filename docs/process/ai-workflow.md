@@ -4658,3 +4658,7 @@ Owner asked whether the star field could be the background for the whole desktop
 
 Owner asked to drop Deselect on desktop (clicking the room's floor already clears the selection) and, on phones, move it from under the portrait into the action list, shorter (22px, smaller type) than the actions so it doesn't read as one. Also zeroed the phone action column's top margin, which pushed it below the portrait's top edge. Small CSS/JSX change; `verify:web` passed first time.
 Follow-up: the "Inspect" panel heading is now visually hidden on desktop too (kept for screen readers), one rule in `inspect.css` replacing the phone-only one in `responsive.css`.
+
+### 2026-11-21: Star drift outruns walking
+
+- Owner noticed the stars stopping when you walk up-left against the stream: the camera's parallax (0.6 and 0.25 of a 96 px/s walk) cancelled the 40 and 12 px/s drift. Each layer's cruising drift is now derived as 1.5 x its parallax x the walk speed (`CELLS_PER_SECOND` x a cell's screen width), so it stays ahead if either constant changes: stars 86 px/s, dust 36 px/s. The 150% figure was the owner's.

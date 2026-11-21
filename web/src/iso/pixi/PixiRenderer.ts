@@ -31,7 +31,9 @@ import { FX_SHEET } from "../../art/assets.ts";
 import { keyedUrl } from "../../art/keyedSprite.ts";
 import { animId, animStep, type Cutaway, frameAt, PACE_SPEED, type FrameUpdate, type Scene, type SceneImage, type SceneOutline, type ScenePicture, type SceneSprite, type ShipTurn } from "../scene.ts";
 import { shiftTile, stepTurn, tilePosition, type TurnLimits } from "../skyTurn.ts";
+import { gridToPx } from "../placement.ts";
 import { starfield, starLayer } from "../starfield.ts";
+import { CELLS_PER_SECOND } from "../useWalkers.ts";
 import { ESP, espPulse, filterKey, lookOf, selectionPulse } from "./effects.ts";
 import { cutawayFilter, EspFilters, lookFilter } from "./filters.ts";
 import { RoomFire } from "./fire.ts";
@@ -85,9 +87,13 @@ const STARS_SIZE = 512;
 /** The dust moves at this fraction of the camera, the stars over it at this one: nearer moves more. */
 const SKY_PARALLAX = 0.25;
 const STARS_PARALLAX = 0.6;
-/** How fast each layer streams past at cruising pace (pixels a second, along x; they run down-right, upper left to bottom right, at the iso grid's 2:1 slope), and how long a change of speed takes to ease in and out (seconds). */
-const SKY_DRIFT = 12;
-const STARS_DRIFT = 40;
+/**
+ * How fast each layer streams past at cruising pace (pixels a second, along x; they run down-right, upper left to bottom right, at the iso grid's 2:1 slope), and how long a change of speed takes to ease in and out (seconds).
+ * Each is 1.5 times what the camera's parallax moves that layer while you walk up-left (against the stream), so walking against it slows the stars but never stops or reverses them.
+ */
+const WALK_PX = CELLS_PER_SECOND * gridToPx(1, 0).x;
+const SKY_DRIFT = 1.5 * SKY_PARALLAX * WALK_PX;
+const STARS_DRIFT = 1.5 * STARS_PARALLAX * WALK_PX;
 const EASE_SECONDS = 3;
 /**
  * When the ship turns a quarter, the stars turn a quarter the other way: speeding up to at most `speed` (radians a
