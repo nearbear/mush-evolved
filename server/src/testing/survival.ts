@@ -125,6 +125,14 @@ export interface CycleReport {
    */
   restWalkAp?: number;
   lying?: number;
+  /**
+   * The fuel relay (Run A2c): `Fuel: need` lines posted, `Fuel: chamber at` reports, capsules the Commander loaded
+   * himself (the fallback), and AP helpers spent on moves while following `loadFuel`. Missing in older runs.
+   */
+  fuelAsked?: number;
+  fuelReports?: number;
+  commanderLoads?: number;
+  loadFuelWalkAp?: number;
 }
 
 export interface SurvivalResult {
@@ -264,7 +272,7 @@ export async function runSurvival(seed: number, opts: SurvivalOptions): Promise<
   let now = 0;
   let logSeen = game.nextLogId;
 
-  const newRow = (cycle: number): CycleReport => ({ cycle, hull: 0, oxygen: 0, alive: 0, hunters: 0, fires: 0, killed: 0, shed: 0, shots: 0, repairTries: 0, repairs: 0, apLeft: 0, atCap: 0, scraps: 0, scrapsCarried: 0, apShooters: {}, apOthers: {}, hullLost: 0, arrived: 0, firesStarted: 0, firesOut: 0, extinguishTries: 0, brokenTanks: 0, tankRepairTries: 0, tankRepairs: 0, moraleUp: {}, moraleDown: {}, oxygenIn: {}, expeditions: 0, shares: 0, jumps: 0, coffeePulled: 0, coffeeJunkie: 0, coffeeOthers: 0, junkieMeals: 0, restWalkAp: 0, lying: 0 });
+  const newRow = (cycle: number): CycleReport => ({ cycle, hull: 0, oxygen: 0, alive: 0, hunters: 0, fires: 0, killed: 0, shed: 0, shots: 0, repairTries: 0, repairs: 0, apLeft: 0, atCap: 0, scraps: 0, scrapsCarried: 0, apShooters: {}, apOthers: {}, hullLost: 0, arrived: 0, firesStarted: 0, firesOut: 0, extinguishTries: 0, brokenTanks: 0, tankRepairTries: 0, tankRepairs: 0, moraleUp: {}, moraleDown: {}, oxygenIn: {}, expeditions: 0, shares: 0, jumps: 0, coffeePulled: 0, coffeeJunkie: 0, coffeeOthers: 0, junkieMeals: 0, restWalkAp: 0, lying: 0, fuelAsked: 0, fuelReports: 0, commanderLoads: 0, loadFuelWalkAp: 0 });
   let row = newRow(game.cycle);
   /** Fills the row's end-of-cycle fields from `g`, the state just before the change (or where the game ended). */
   const closeRow = (g: GameState): void => {
@@ -423,6 +431,9 @@ export async function runSurvival(seed: number, opts: SurvivalOptions): Promise<
             result.social![social.type] = (result.social![social.type] ?? 0) + 1;
             if (social.type === "sharePlanet") row.shares!++;
             if (social.type === "chat" && social.text === HOLD_JUMP_LINE) holdPosted ??= game.cycle;
+            if (social.type === "chat" && social.text.startsWith("Fuel: need ")) row.fuelAsked!++;
+            if (social.type === "chat" && social.text.startsWith("Fuel: chamber at ")) row.fuelReports!++;
+            if (social.type === "chat" && social.text.startsWith("Fuel: ")) trace(`  ${game.players.find((p) => p.id === id)!.character} says "${social.text}"`);
             if (social.type === "chat" && parseExpeditionLine(social.text)) trace(`  ${game.players.find((p) => p.id === id)!.character} says "${social.text}"`);
           } else {
             result.refused++;
@@ -435,6 +446,8 @@ export async function runSurvival(seed: number, opts: SurvivalOptions): Promise<
         if (apply({ type: "action", action, by: id, at: now }, cost)) {
           acted = true;
           if (action.type === "move" && goal?.startsWith("rest:")) row.restWalkAp! += cost;
+          if (action.type === "move" && goal?.startsWith("loadFuel:")) row.loadFuelWalkAp! += cost;
+          if (action.type === "load_fuel" && game.titles.commander === id) row.commanderLoads!++;
         }
         else {
           result.refused++;

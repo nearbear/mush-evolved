@@ -2,7 +2,7 @@
 
 Owner decisions of 2026-11-19. Run A is built and committed; everything after it is not. Method: the `bot-strategy` skill (one change per run, same seeds, measured against the run before).
 
-Order of work: Run A (done) → **Run A2 (bedroom loop)** → **Run A3 (bed tiers)** → **Run A4 (Shrink beds and announcement)** → Run B onward as before. The bed runs came out of tracing Run A's remaining orbit stays (below).
+Order of work: Run A (done) → Run A2 (bedroom loop, done) → **Run A2c (fuel relay)** → **Run A3 (bed tiers)** → **Run A4 (Shrink beds and announcement)** → Run B onward as before. The bed runs came out of tracing Run A's remaining orbit stays (below).
 
 ## Diagnosis (2026-11-19)
 
@@ -53,6 +53,19 @@ Facts: 7 beds for 16 crew (`bed_a_a/b/c` in BEDROOM_A, `bed_b_a/b/c` in BEDROOM_
 - **Bar:** cycles in orbit after every sector was explored (6.6 a run after Run A) and stays of a day or more (11) down; AP spent on moves by resting bots down. **Watch:** that bots who can't rest don't idle at full AP.
 
 **Status (2026-11-19): memory built; leave-orbit affordability tried and dropped (owner).** Full-bedroom memory: AP walking to rest 495.5 → 353.2 a run, crew lying 6.56 → 6.29, bots at their AP cap 0.02 → 0.01 a cycle; orbit stays unchanged (6.6 → 6.6 a run; day-plus stays 11 → 18); endings within noise. Leave-orbit affordability (A2b): 6.6 → 7.2 a run; it stranded seed 3's Commander for 59 cycles because lower goals spend his AP below what the chain needs, so it would need that AP protected (like `keepsHeldJump`). Details and saved runs in `docs/plans/bot-goals.md` ("Reaching Eden").
+
+### Run A2c: the fuel relay (owner, 2026-11-20; before A3)
+
+Fuel loading leaves the Commander's chain. Taking and loading capsules is free (0 AP); the cost is the walk to a tank and the Motor Room, which is what A2b found the Commander can't afford once lower goals have spent his AP. Anyone may load; Technicians (`engineer`) and Raluca are the natural loaders (they get dirty anyway and work near the engines).
+
+- **The request (Commander).** One fixed global line, `Fuel: need <N>`: the chamber level the next move needs. In open space, the prepared jump's distance (the shared destination, else 1 for an escape jump), posted when preparing starts; on arriving in orbit, `Fuel: need 1` for leaving, so the chamber is filled while the planet is explored. A newer request replaces the older; a jump or leaving orbit voids it.
+- **The claim (helper).** The first bot to set out posts `Fuel: loading` (owner, 2026-11-20: a claim line like `Tank: going to`), and the others stand down. A claim lapses after its cycle, like the tank claims.
+- **The work.** The helper takes capsules, checks the chamber (free), loads or unloads it to exactly N (travel burns everything in the chamber, so overfilling changes the jump), and posts one line when done: `Fuel: chamber at <N>` (owner, 2026-11-20: one line a request, not one a capsule).
+- **The Commander trusts the report** (owner, 2026-11-20: trust isn't a concern yet) and only walks to the bridge, turns and jumps or leaves.
+- **Who and when (Claude's picks, confirm):** Technicians and Raluca take the request at once; any other bot (not the Commander) after it is a cycle old; the Commander loads it himself, as today, after 2 cycles without a report (owner: acceptable fallback), or at once when the jump is due. The helpers' goal ranks 76.6, between the coffee relay (76.5) and `travel` (77), and keeps the AP reserve.
+- **Hypothesis:** in A2/A2b the Commander stayed in orbit 6.6 cycles a run after every sector was explored, waiting for AP to walk tank → Motor Room → bridge. With the chamber filled during the orbit, leaving costs him only the walk to the bridge and 1 AP. **Bar:** cycles in orbit after all explored down from 6.6 a run, and stays of a day or more down. **Watch:** helpers' own jobs (Technician repairs, research), duplicate trips despite the claim, and capsules left in hands.
+
+**Status (2026-11-20): built and measured.** Orbit stays after every sector was explored 6.4 → 3.3 cycles a run (day-plus stays 13 → 4); 6.7 of 8.6 requests a run answered by a helper. Mean change −0.25 days, at the edge of noise: escape jumps on oxygen more than doubled (55 → 126 over 50 runs), which points at Run D. Details in `docs/plans/bot-goals.md` ("Reaching Eden").
 
 ### Run A3: bed tiers, with yielding (owner, 2026-11-19)
 

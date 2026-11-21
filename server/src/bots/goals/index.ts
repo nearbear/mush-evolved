@@ -12,6 +12,7 @@ import { expeditionPrep } from "./expeditionPrep.ts";
 import { explore } from "./explore.ts";
 import { isolate } from "./isolate.ts";
 import { leaveIcarus } from "./leaveIcarus.ts";
+import { loadFuel } from "./loadFuel.ts";
 import { extinguish } from "./extinguish.ts";
 import { fierySpeech } from "./fierySpeech.ts";
 import { patrolShootHunters } from "./patrolShootHunters.ts";
@@ -67,6 +68,7 @@ export const SOLO_GOALS: readonly GoalDef[] = [
   setOutPots,
   tendPlants,
   travel,
+  loadFuel,
   deliverCoffee,
   coffeeRun,
   astro,

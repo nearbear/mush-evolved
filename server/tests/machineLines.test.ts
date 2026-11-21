@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { formatFireLine } from "../src/bots/fireShare.ts";
+import { FUEL_LOADING_LINE, formatFuelNeed, formatFuelReport } from "../src/bots/fuelShare.ts";
 import { formatItemLine } from "../src/bots/itemShare.ts";
 import { isMachineLine } from "../src/bots/machineLines.ts";
 import { CANCEL_HOLD_LINE, HOLD_JUMP_LINE, JUMP_NOW_LINE } from "../src/bots/planetShare.ts";
@@ -13,6 +14,9 @@ describe("isMachineLine", () => {
       formatFireLine({ room: "LABORATORY" }),
       formatTankLine({ kind: "claim", room: TANK_ROOMS[0]! }),
       formatTankLine({ kind: "fine", room: TANK_ROOMS[0]! }),
+      formatFuelNeed(3),
+      FUEL_LOADING_LINE,
+      formatFuelReport(3),
       HOLD_JUMP_LINE,
       JUMP_NOW_LINE,
       CANCEL_HOLD_LINE,

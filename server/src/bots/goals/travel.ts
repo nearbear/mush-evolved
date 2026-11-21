@@ -1,14 +1,21 @@
 import { DEFAULT_CONFIG, FUEL_CAPSULE_ITEM, PLANET_DIRECTIONS, type Action, type PlanetDirection, type PlayerView, type RoomId } from "@mush2/shared";
 import { dutyPriority, holdsTrigger } from "../duties.ts";
 import { expeditionsOver } from "../expeditionShare.ts";
+import { formatFuelNeed, type FuelMemory } from "../fuelShare.ts";
 import { orbitExplored } from "../reportShare.ts";
 import { CANCEL_HOLD_LINE, HOLD_JUMP_LINE, JUMP_NOW_LINE, crewAboard, holdStartCycle, isHoldingJump, isJumpDue, jumpNowCycle, parsePlanetShare, type SharedPlanetInfo } from "../planetShare.ts";
 import { act, failed, find, goTo, nearest, offered, rawCanAfford, roomsWith, where } from "./blocks.ts";
 import type { BotMemory, Goal, GoalDef, GoalStep } from "./types.ts";
 
 const COMMAND = "PILOT_MODULE";
-const CHAMBER = "COMBUSTION_CHAMBER_ACCESS";
-const TANK = "FUEL_TANK";
+export const CHAMBER = "COMBUSTION_CHAMBER_ACCESS";
+export const TANK = "FUEL_TANK";
+
+/**
+ * Cycles the Commander waits for someone to answer `Fuel: need <N>` before loading the chamber himself (fuel relay,
+ * owner 2026-11-20: an acceptable fallback; 2 is Claude's pick). A jump that is due doesn't wait.
+ */
+export const FUEL_WAIT_CYCLES = 2;
 
 /** Hold `travel` until at least this many hunters are attacking (#421). */
 export const HOLD_HUNTER_TRIGGER = 5;
@@ -114,6 +121,22 @@ export function combustionReading(view: PlayerView, memory?: BotMemory): number 
   return memory?.combustion ?? null;
 }
 
+/**
+ * The chamber's level as the Commander knows it: a helper's report since the standing request (`Fuel: chamber at`,
+ * trusted: owner, 2026-11-20), else his own reading (`combustionReading`).
+ */
+export function chamberLevel(view: PlayerView, memory: BotMemory): number | null {
+  const { request, report } = memory.fuel;
+  if (request && report && report.seq > request.seq) return report.level;
+  return combustionReading(view, memory);
+}
+
+/** Whether a request for `level` is up for where the ship is now (`orbit`), and how long ago it went up. */
+function askedFor(view: PlayerView, fuel: FuelMemory, level: number): number | null {
+  const r = fuel.request;
+  return r && r.level === level && r.orbit === view.navigation.orbiting ? view.cycle - r.cycle : null;
+}
+
 /** Quarter turns to face `to` from `from`, each way (`PLANET_DIRECTIONS` runs anticlockwise, so left is the next one). */
 export function turnsTo(from: PlanetDirection, to: PlanetDirection): { left: number; right: number } {
   const n = PLANET_DIRECTIONS.length;
@@ -163,8 +186,13 @@ export const travel: GoalDef = {
         return [travelGoal(view, memory, firstBridge, { direction: null, distance: 1 })];
       }
       memory.holdSince = null;
+      // On arriving in orbit, ask for the fuel to leave, so the chamber is filled while the planet is explored.
+      const leaveFuel = DEFAULT_CONFIG.navigation.leaveOrbit.fuel;
+      if (view.navigation.orbiting && view.chatChannels.includes("global") && memory.fuel.request?.orbit !== true && (chamberLevel(view, memory) ?? 0) < leaveFuel && view.ship.fuel >= leaveFuel) {
+        return [fuelRequestGoal(leaveFuel)];
+      }
       if (!readyToLeaveOrbit(view, memory)) return [];
-      const chamber = combustionReading(view, memory) ?? 0;
+      const chamber = chamberLevel(view, memory) ?? 0;
       const carried = view.inventory.filter((i) => i.type === FUEL_CAPSULE_ITEM).length;
       if (view.ship.fuel + carried + chamber < DEFAULT_CONFIG.navigation.leaveOrbit.fuel) return [];
       const ap = DEFAULT_CONFIG.navigation.leaveOrbit.cost.ap;
@@ -172,7 +200,7 @@ export const travel: GoalDef = {
       return bridge ? [leaveOrbitGoal(view, bridge)] : [];
     }
 
-    const chamber = combustionReading(view, memory);
+    const chamber = chamberLevel(view, memory);
     const target = targetJump(view, chamber);
     if (!target) {
       if (isHoldingJump(view, memory) && view.chatChannels.includes("global")) {
@@ -253,7 +281,7 @@ function travelGoal(view: PlayerView, _memory: BotMemory, bridge: RoomId, initia
         return finishWithCancel();
       }
 
-      const level = combustionReading(v, memory);
+      const level = chamberLevel(v, memory);
       const target = targetJump(v, level);
       if (!target) return finishWithCancel();
 
@@ -264,17 +292,27 @@ function travelGoal(view: PlayerView, _memory: BotMemory, bridge: RoomId, initia
         return { kind: "social", message: { type: "chat", channel: "global", text: HOLD_JUMP_LINE } };
       }
 
-      if (level === null) {
-        return pauseIfOutOfPoints(v, atChamber(v, () => find(v, "check_combustion")), failWithCancel);
-      }
-
-      const carried = v.inventory.filter((i) => i.type === FUEL_CAPSULE_ITEM).length;
-      const need = target.distance - level;
-      if (need > 0) {
-        return pauseIfOutOfPoints(v, fuel(v, need, carried, dryTanks), failWithCancel);
-      }
-      if (need < 0) {
-        return pauseIfOutOfPoints(v, atChamber(v, () => find(v, "unload_fuel")), failWithCancel);
+      // The fuel relay (owner, 2026-11-20): ask for the chamber in global chat and let a helper fill it; load it
+      // himself only after `FUEL_WAIT_CYCLES` without a report, when the jump is due, or without global chat.
+      const fueled = level === target.distance;
+      if (!fueled) {
+        const asked = askedFor(v, memory.fuel, target.distance);
+        if (asked === null && v.chatChannels.includes("global")) {
+          return { kind: "social", message: { type: "chat", channel: "global", text: formatFuelNeed(target.distance) } };
+        }
+        const due = isJumpDue(v, memory) || shouldJumpNow(v, effectiveHoldStart(v, memory));
+        const waiting = asked !== null && asked < FUEL_WAIT_CYCLES && !due;
+        if (!waiting) {
+          if (level === null) {
+            return pauseIfOutOfPoints(v, atChamber(v, () => find(v, "check_combustion")), failWithCancel);
+          }
+          const carried = v.inventory.filter((i) => i.type === FUEL_CAPSULE_ITEM).length;
+          const need = target.distance - level;
+          if (need > 0) {
+            return pauseIfOutOfPoints(v, fuel(v, need, carried, dryTanks), failWithCancel);
+          }
+          return pauseIfOutOfPoints(v, atChamber(v, () => find(v, "unload_fuel")), failWithCancel);
+        }
       }
 
       const walk = goTo(v, bridge);
@@ -296,6 +334,8 @@ function travelGoal(view: PlayerView, _memory: BotMemory, bridge: RoomId, initia
         }
         return act(turn.action);
       }
+      // On the bridge and facing the way, waiting for a helper's fuel report.
+      if (!fueled) return { kind: "done" };
 
       const holdStart = effectiveHoldStart(v, memory);
       if (!isJumpDue(v, memory) && !shouldJumpNow(v, holdStart)) {
@@ -355,15 +395,25 @@ function leaveOrbitGoal(view: PlayerView, bridge: RoomId): Goal {
     label: `Leave orbit from the Command terminal ${where(view, bridge)}: every sector of the planet is explored`, // i18n-ignore: model prompt text, not player-visible
     step(v, memory) {
       if (!readyToLeaveOrbit(v, memory)) return { kind: "done" };
-      const level = combustionReading(v, memory);
-      if (level === null) return pauseIfOutOfPoints(v, atChamber(v, () => find(v, "check_combustion")), failed);
-      const need = DEFAULT_CONFIG.navigation.leaveOrbit.fuel - level;
-      if (need > 0) {
-        const carried = v.inventory.filter((i) => i.type === FUEL_CAPSULE_ITEM).length;
-        return pauseIfOutOfPoints(v, fuel(v, need, carried, dryTanks), failed);
+      const leaveFuel = DEFAULT_CONFIG.navigation.leaveOrbit.fuel;
+      const level = chamberLevel(v, memory);
+      // The fuel relay (owner, 2026-11-20): the request went up on arrival (`fuelRequestGoal`); load it himself only
+      // after `FUEL_WAIT_CYCLES` without a report, or without global chat.
+      const fueled = level !== null && level >= leaveFuel;
+      if (!fueled) {
+        const asked = askedFor(v, memory.fuel, leaveFuel);
+        if (asked === null && v.chatChannels.includes("global")) {
+          return { kind: "social", message: { type: "chat", channel: "global", text: formatFuelNeed(leaveFuel) } };
+        }
+        if (asked === null || asked >= FUEL_WAIT_CYCLES) {
+          if (level === null) return pauseIfOutOfPoints(v, atChamber(v, () => find(v, "check_combustion")), failed);
+          const carried = v.inventory.filter((i) => i.type === FUEL_CAPSULE_ITEM).length;
+          return pauseIfOutOfPoints(v, fuel(v, leaveFuel - level, carried, dryTanks), failed);
+        }
       }
       const walk = goTo(v, bridge);
       if (walk) return pauseIfOutOfPoints(v, walk, failed);
+      if (!fueled) return { kind: "done" }; // on the bridge, waiting for a helper's report
       const leave = find(v, "leave_orbit");
       if (!leave) {
         if (lacksOnlyPoints(v, "leave_orbit")) return { kind: "done" };
@@ -375,17 +425,31 @@ function leaveOrbitGoal(view: PlayerView, bridge: RoomId): Goal {
   };
 }
 
+/** Posts `Fuel: need <level>` once (fuel relay, owner 2026-11-20): the Commander's request on arriving in orbit. */
+function fuelRequestGoal(level: number): Goal {
+  return {
+    id: "travel",
+    key: `fuelRequest:${level}`,
+    label: `Ask in global chat for ${level} fuel in the combustion chamber`, // i18n-ignore: model prompt text, not player-visible
+    step(v, memory) {
+      if (memory.fuel.request?.orbit === v.navigation.orbiting && memory.fuel.request.level === level) return { kind: "done" };
+      if (!v.chatChannels.includes("global")) return { kind: "done" };
+      return { kind: "social", message: { type: "chat", channel: "global", text: formatFuelNeed(level) } };
+    },
+  };
+}
+
 const lacksOnlyPoints = (view: PlayerView, type: Action["type"]): boolean =>
   offered(view, type).some((o) => o.lacks.length > 0 && o.lacks.every((l) => l === "ap" || l === "mp"));
 
-function pauseIfOutOfPoints(view: PlayerView, step: GoalStep, onFail: (reason: string) => GoalStep): GoalStep {
+export function pauseIfOutOfPoints(view: PlayerView, step: GoalStep, onFail: (reason: string) => GoalStep): GoalStep {
   if (step.kind !== "failed") return step;
   if (step.reason === "cant_move" && lacksOnlyPoints(view, "move")) return { kind: "done" };
   return onFail(step.reason);
 }
 
 /** Walks to the combustion chamber, then takes the action `pick` finds there. */
-function atChamber(view: PlayerView, pick: () => ReturnType<typeof find>): GoalStep {
+export function atChamber(view: PlayerView, pick: () => ReturnType<typeof find>): GoalStep {
   const room = nearest(view, roomsWith(view, [CHAMBER]))[0];
   if (!room) return failed("no_chamber");
   const walk = goTo(view, room);
@@ -399,7 +463,7 @@ function atChamber(view: PlayerView, pick: () => ReturnType<typeof find>): GoalS
  * what is carried. Capsules already carried are loaded first. A tank offering none (broken) is noted in `dry` and the
  * next one tried.
  */
-function fuel(view: PlayerView, need: number, carried: number, dry: Set<RoomId>): GoalStep {
+export function fuel(view: PlayerView, need: number, carried: number, dry: Set<RoomId>): GoalStep {
   if (carried < need) {
     const here = view.you.room;
     if (roomsWith(view, [TANK]).includes(here)) {

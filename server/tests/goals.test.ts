@@ -31,7 +31,7 @@ import { COFFEE_DRINKER, COFFEE_DROP_ROOM, coffeeReflex, coffeeRun, deliverCoffe
 import { tendPlants } from "../src/bots/goals/tendPlants.ts";
 import { sowHere } from "../src/bots/goals/sow.ts";
 import { POT_STORAGES, setOutPots, storageCheckedKey } from "../src/bots/goals/setOutPots.ts";
-import { HOLD_HUNTER_TRIGGER, HOLD_MAX_DAYS, HOLD_MIN_OXYGEN, JUMP_WAIT_CYCLES, sharedDestination, targetJump, travel, turnsTo } from "../src/bots/goals/travel.ts";
+import { FUEL_WAIT_CYCLES, HOLD_HUNTER_TRIGGER, HOLD_MAX_DAYS, HOLD_MIN_OXYGEN, JUMP_WAIT_CYCLES, sharedDestination, targetJump, travel, turnsTo } from "../src/bots/goals/travel.ts";
 import { helpGoal, helpTasks } from "../src/bots/goals/help.ts";
 import type { BotMemory, GoalDef } from "../src/bots/goals/types.ts";
 import { BOT_MEMORY_VERSION } from "../src/bots/memoryStore.ts";
@@ -46,6 +46,8 @@ import { extinguish } from "../src/bots/goals/extinguish.ts";
 import { repairOxygen } from "../src/bots/goals/repairOxygen.ts";
 import { formatItemLine, newItemMemory, observeItems, parseItemLine, roomsHolding } from "../src/bots/itemShare.ts";
 import { newReportMemory } from "../src/bots/reportShare.ts";
+import { FUEL_LOADING_LINE, formatFuelNeed, formatFuelReport, newFuelMemory, observeFuel, parseFuelLine } from "../src/bots/fuelShare.ts";
+import { loadFuel } from "../src/bots/goals/loadFuel.ts";
 import { chooseSkill } from "../src/bots/skillChoice.ts";
 import { seats } from "../src/testing/fakes.ts";
 
@@ -127,6 +129,20 @@ async function play(game: GameState, id: string, bot: GoalBot, turns: number): P
   return { game, taken };
 }
 
+/**
+ * Stands in for a helper answering the Commander's latest `Fuel: need <N>` (the fuel relay, Run A2c): fills the
+ * chamber to N and posts the report from another living seat, as a Technician's `loadFuel` would.
+ */
+function answerFuel(game: GameState, commander: string): GameState {
+  const need = [...game.chat].reverse().find((m) => m.channel === "global" && m.from === commander && m.text.startsWith("Fuel: need "));
+  if (!need) throw new Error("no fuel request");
+  const level = Number(need.text.slice("Fuel: need ".length));
+  const helper = game.players.find((p) => p.id !== commander && p.alive)!.id;
+  const r = applyInput({ ...game, ship: { ...game.ship, combustion: level } }, { type: "chat", channel: "global", text: formatFuelReport(level), by: helper });
+  if (!r.ok) throw new Error("report refused");
+  return r.state;
+}
+
 const roll0 = () => 0;
 const memory = (scripted = true) => ({
   reserve: 2,
@@ -145,6 +161,7 @@ const memory = (scripted = true) => ({
   tanks: newTankMemory(),
   morale: newMoraleMemory(),
   expeditionEnd: newExpeditionEndMemory(),
+  fuel: newFuelMemory(),
   combustion: null as number | null,
   holdSince: null as number | null,
   jump: newJumpMemory(),
@@ -1671,16 +1688,29 @@ describe("travel: the Commander (#417)", () => {
     const { game, id } = commander([planet("pl-1", "Kaxor", "east", 3)]);
     expect(travel.options(viewFor(game, id), memory())).toHaveLength(1);
     expect(travel.options(viewFor({ ...game, titles: { ...game.titles, commander: null } }, id), memory())).toEqual([]);
-    expect(travel.options(viewFor({ ...game, navigation: { ...game.navigation, orbit: "pl-9" } }, id), memory())).toEqual([]);
+    // In orbit only the request for the fuel to leave (fuel relay), once.
+    expect(travel.options(viewFor({ ...game, navigation: { ...game.navigation, orbit: "pl-9" } }, id), memory()).map((g) => g.key)).toEqual(["fuelRequest:1"]);
+    const askedInOrbit = memory();
+    askedInOrbit.fuel.request = { level: 1, orbit: true, by: id, cycle: game.cycle, seq: 0 };
+    expect(travel.options(viewFor({ ...game, navigation: { ...game.navigation, orbit: "pl-9" } }, id), askedInOrbit)).toEqual([]);
     expect(travel.options(viewFor({ ...game, navigation: { ...game.navigation, arriving: { planet: null } } }, id), memory())).toEqual([]);
   });
 
-  it("checks the chamber, loads exactly the distance from the tanks, turns, travels, and arrives in orbit", async () => {
+  it("asks for the fuel, turns, and after FUEL_WAIT_CYCLES without a report loads exactly the distance itself and travels", async () => {
     const { game, id } = commander([planet("pl-1", "Kaxor", "east", 3)]);
     const fuel = game.ship.fuel;
-    const { game: after, taken } = await play(game, id, new GoalBot(1, 2, [travel]), 60);
+    const { game: after, taken } = await play(game, id, new GoalBot(1, 2, [travel]), 80);
+    expect(after.chat.filter((m) => m.from === id && m.text.startsWith("Fuel:")).map((m) => m.text)[0]).toBe(formatFuelNeed(3)); // then "Fuel: need 1" in orbit
+    // Nothing from the tanks in the cycles it waits.
+    let waiting = game;
+    const waitBot = new GoalBot(1, 2, [travel]);
+    for (let c = 0; c < FUEL_WAIT_CYCLES; c++) {
+      const r = await untilReady(waiting, id, waitBot);
+      expect(r.taken.map((a) => a.type).filter((t) => t.includes("fuel") || t === "check_combustion")).toEqual([]);
+      waiting = newCycleOk(r.game);
+    }
     const work = taken.map((a) => a.type).filter((t) => t !== "move" && !t.startsWith("report_"));
-    expect(work[0]).toBe("check_combustion");
+    expect(work.slice(0, 2)).toEqual(["turn_ship", "check_combustion"]);
     expect(work.filter((t) => t === "take_fuel")).toHaveLength(3);
     expect(work.filter((t) => t === "load_fuel")).toHaveLength(3);
     // North to east: one right turn.
@@ -1715,6 +1745,20 @@ describe("travel: the Commander (#417)", () => {
     const { taken } = await play(game, id, new GoalBot(1, 2, [travel]), 60);
     expect(taken.filter((a) => a.type === "turn_ship").map((a) => (a as { side: string }).side)).toEqual(["left", "left", "left"]);
     expect(taken.at(-1)?.type).toBe("travel");
+  });
+
+  it("with a helper's report, only turns and travels: no tank, no Motor Room", async () => {
+    const { game, id } = commander([planet("pl-1", "Kaxor", "east", 2)]);
+    const bot = new GoalBot(1, 2, [travel]);
+    const first = await untilReady(game, id, bot);
+    expect(first.game.ship.combustion).toBe(0);
+    let state = answerFuel(first.game, id);
+    state.hunters.list = Array.from({ length: HOLD_HUNTER_TRIGGER }, (_, i) => ({ id: `h-${i}`, hp: 4, hitChance: 0, target: null, type: "hunter" as const, countdown: null }));
+    state = newCycleOk(state);
+    const { game: after, taken } = await untilReady(state, id, bot);
+    const work = [...first.taken, ...taken].map((a) => a.type).filter((t) => t !== "move" && !t.startsWith("report_"));
+    expect(work).toEqual(["turn_ship", "travel"]);
+    expect(after.navigation.arriving?.planet).toBe("pl-1");
   });
 
   it("may spend the AP reserve: at 2 AP on the bridge, fuel loaded, it still turns and travels when a jump triggers", async () => {
@@ -1758,8 +1802,14 @@ describe("travel: the Commander leaves orbit (#417)", () => {
     game.sharedReports = [{ id: "sr-1", report: "ex-1", text: "Planet: Orbis\nExplored: OXYGEN, FOREST", by: finder, day: 1, cycleOfDay: 1 }] as GameState["sharedReports"];
     return { game, id };
   }
-  const explored = () => {
+  /** A memory that has read the Commander's request for the fuel to leave (fuel relay), so only leaving is offered. */
+  const asked = () => {
     const m = memory();
+    m.fuel.request = { level: 1, orbit: true, by: "x", cycle: 1, seq: 0 };
+    return m;
+  };
+  const explored = () => {
+    const m = asked();
     m.reports.explored.set("Orbis", ["OXYGEN", "FOREST"]);
     return m;
   };
@@ -1767,10 +1817,10 @@ describe("travel: the Commander leaves orbit (#417)", () => {
   it("waits while a sector is unexplored by the shared reports, an expedition is out, or a ship is in flight", () => {
     const { game, id } = inOrbit();
     expect(travel.options(viewFor(game, id), explored())).toHaveLength(1);
-    const half = memory();
+    const half = asked();
     half.reports.explored.set("Orbis", ["OXYGEN"]);
     expect(travel.options(viewFor(game, id), half)).toEqual([]);
-    expect(travel.options(viewFor(game, id), memory())).toEqual([]);
+    expect(travel.options(viewFor(game, id), asked())).toEqual([]);
     const flying = edit(game, game.players.find((p) => p.id !== id && p.alive)!.id, (p) => (p.room = "ICARUS_CRAFT"));
     expect(travel.options(viewFor(flying, id), explored())).toEqual([]);
     expect(travel.options(viewFor({ ...game, titles: { ...game.titles, commander: null } }, id), explored())).toEqual([]);
@@ -1779,14 +1829,14 @@ describe("travel: the Commander leaves orbit (#417)", () => {
   it("leaves once a bot in the bay said the planet is done or the Icarus lost, with no shared report (owner, 2026-11-19)", () => {
     const { game, id } = inOrbit();
     const noReports = { ...game, sharedReports: [] };
-    expect(travel.options(viewFor(noReports, id), memory())).toEqual([]);
-    const done = memory();
+    expect(travel.options(viewFor(noReports, id), asked())).toEqual([]);
+    const done = asked();
     done.expeditionEnd.done.add("Orbis");
     expect(travel.options(viewFor(noReports, id), done)).toHaveLength(1);
-    const elsewhere = memory();
+    const elsewhere = asked();
     elsewhere.expeditionEnd.done.add("Elsewhere");
     expect(travel.options(viewFor(noReports, id), elsewhere)).toEqual([]);
-    const lost = memory();
+    const lost = asked();
     lost.expeditionEnd.noIcarus = true;
     expect(travel.options(viewFor(noReports, id), lost)).toHaveLength(1);
     // The other conditions stay: nobody out in a ship.
@@ -1819,6 +1869,13 @@ describe("travel holds & escape jumps (#421)", () => {
     Array.from({ length: n }, (_, i) => ({ id: `h-${i}`, hp: 4, hitChance: 0, target: null, type: "hunter", countdown: null }));
   const planet = (id: string, name: string, direction: Planet["direction"], distance: number): Planet =>
     ({ id, name, direction, distance, size: 2, sectors: [{ tag: "OXYGEN", known: true }] }) as Planet;
+
+  /** The Commander's first cycle of preparing (ask, walk, turn), then a helper's fuel report (the fuel relay). */
+  const prepare = async (game: GameState, id: string, bot: GoalBot) => {
+    const r = await untilReady(game, id, bot);
+    const after = await untilReady(answerFuel(r.game, id), id, bot); // reads the report; holding, so nothing to do
+    return { game: after.game, taken: [...r.taken, ...after.taken] };
+  };
 
   function commander(planets: Planet[] = []) {
     const { game: start, id } = setup();
@@ -1864,7 +1921,7 @@ describe("travel holds & escape jumps (#421)", () => {
   it("prepares and holds a jump with 'Jump: hold' until 8 hunters attack, then jumps and posts 'Jump: off'", async () => {
     const { game, id } = commander([planet("pl-1", "Kaxor", "east", 2)]);
     const bot = new GoalBot(1, 2, [travel]);
-    const { game: prepared, taken } = await untilReady(game, id, bot);
+    const { game: prepared, taken } = await prepare(game, id, bot);
     expect(taken.filter((a) => a.type === "travel")).toEqual([]);
     expect(prepared.ship.combustion).toBe(2);
     expect(prepared.navigation.heading).toBe("east");
@@ -1894,7 +1951,7 @@ describe("travel holds & escape jumps (#421)", () => {
   it("with someone out in a patrol ship at the trigger, posts 'Jump: now' and jumps only once the minimap shows them aboard", async () => {
     const { game, id } = commander([]);
     const bot = new GoalBot(1, 2, [travel]);
-    const { game: held } = await untilReady(game, id, bot);
+    const { game: held } = await prepare(game, id, bot);
     expect(held.ship.combustion).toBe(1);
 
     const pilotId = held.players.find((p) => p.id !== id && p.alive)!.id;
@@ -1925,7 +1982,7 @@ describe("travel holds & escape jumps (#421)", () => {
   it("jumps anyway 2 cycles after 'Jump: now' if someone is still out", async () => {
     const { game, id } = commander([]);
     const bot = new GoalBot(1, 2, [travel]);
-    const { game: held } = await untilReady(game, id, bot);
+    const { game: held } = await prepare(game, id, bot);
     const pilotId = held.players.find((p) => p.id !== id && p.alive)!.id;
     let state = edit(held, pilotId, (p) => (p.room = "PATROL_SHIP_A_0"));
     state.patrolShips["PATROL_SHIP_A_0"]!.out = true;
@@ -1950,7 +2007,7 @@ describe("travel holds & escape jumps (#421)", () => {
     expect(travel.options(viewFor({ ...game, titles: { ...game.titles, commander: null } }, id), memory())).toEqual([]);
 
     const bot = new GoalBot(1, 2, [travel]);
-    const { game: held } = await untilReady(game, id, bot);
+    const { game: held } = await prepare(game, id, bot);
     expect(held.ship.combustion).toBe(1);
     expect(isHoldingJump(viewFor(held, id), memory())).toBe(true);
 
@@ -1964,10 +2021,11 @@ describe("travel holds & escape jumps (#421)", () => {
     expect(isHoldingJump(viewFor(jumped, id), memory())).toBe(false);
   });
 
+
   it("upgrades a held 1-fuel escape jump when an Astrophysicist shares a planet mid-hold", async () => {
     const { game, id } = commander([]);
     const bot = new GoalBot(1, 2, [travel]);
-    const { game: held } = await untilReady(game, id, bot);
+    const { game: held } = await prepare(game, id, bot);
     expect(held.ship.combustion).toBe(1);
     expect(isHoldingJump(viewFor(held, id), memory())).toBe(true);
 
@@ -1988,9 +2046,11 @@ describe("travel holds & escape jumps (#421)", () => {
     const next = newCycle(edit(held, id, (p) => (p.ap = 8)));
     expect(next.ok).toBe(true);
     if (!next.ok) return;
-    const { game: upgraded } = await untilReady(next.state, id, bot);
+    const { game: asked } = await untilReady(next.state, id, bot);
+    expect(asked.chat.at(-1)?.text).toBe(formatFuelNeed(3)); // the relay: asks for the new distance, turns, waits
+    expect(asked.navigation.heading).toBe("west");
+    const upgraded = answerFuel(asked, id);
     expect(upgraded.ship.combustion).toBe(3);
-    expect(upgraded.navigation.heading).toBe("west");
     expect(upgraded.navigation.arriving).toBeNull();
   });
 
@@ -2092,7 +2152,7 @@ describe("travel holds & escape jumps (#421)", () => {
     const { game: start, id } = commander([planet("pl-1", "Kaxor", "north", 1)]);
     start.ship.combustion = 1;
     const bot = new GoalBot(1, 2, [travel]);
-    const { game: held } = await untilReady(start, id, bot);
+    const { game: held } = await prepare(start, id, bot);
     const since = holdStartCycle(viewFor(held, id), memory())!;
     scrollGlobal(held, held.players.find((p) => p.id !== id)!.id);
     expect(viewFor(held, id).chat.some((m) => m.text === HOLD_JUMP_LINE)).toBe(false);
@@ -3413,5 +3473,108 @@ describe("Antisocial bots (#470)", () => {
     const { game, id } = setup();
     expect(isolate.options(viewFor(game, id), memory())).toEqual([]);
     expect(SOLO_GOALS).toContain(isolate);
+  });
+});
+
+describe("the fuel relay (owner, 2026-11-20, Run A2c)", () => {
+  const say = (game: GameState, by: string, text: string): GameState => {
+    const r = applyInput(game, { type: "chat", channel: "global", text, by });
+    if (!r.ok) throw new Error(`chat refused: ${text}`);
+    return r.state;
+  };
+  /** A helper seat with AP to spare (a Technician unless `technician` is false), and another seat as the Commander. */
+  function relay(technician = true) {
+    const { game: start, id } = setup();
+    const game = edit(start, id, (p) => {
+      p.ap = 8;
+      p.mp = 12;
+      p.skills = technician ? ["engineer"] : [];
+      if (!technician && p.character === "raluca") p.character = "chun";
+    });
+    const commander = game.players.find((p) => p.id !== id && p.alive)!.id;
+    game.titles.commander = commander;
+    game.ship.combustion = 0;
+    return { game, id, commander };
+  }
+  /** Plays `bot` until `done` holds (or `turns` run out). */
+  async function until(game: GameState, id: string, bot: GoalBot, done: (g: GameState) => boolean, turns = 80) {
+    const taken: Action[] = [];
+    for (let t = 0; t < turns && !done(game); t++) {
+      const r = await play(game, id, bot, 1);
+      game = r.game;
+      taken.push(...r.taken);
+    }
+    return { game, taken };
+  }
+  const posted = (game: GameState, by: string): string[] => game.chat.filter((m) => m.channel === "global" && m.from === by && m.text.startsWith("Fuel:")).map((m) => m.text);
+
+  it("parses only its three lines, with levels the chamber can hold", () => {
+    expect(parseFuelLine(formatFuelNeed(3))).toEqual({ kind: "need", level: 3 });
+    expect(parseFuelLine(FUEL_LOADING_LINE)).toEqual({ kind: "loading" });
+    expect(parseFuelLine(formatFuelReport(0))).toEqual({ kind: "report", level: 0 });
+    expect(parseFuelLine("Fuel: need 0")).toBeNull();
+    expect(parseFuelLine("Fuel: need 10")).toBeNull();
+    expect(parseFuelLine("Fuel: need lots")).toBeNull();
+  });
+
+  it("keeps the latest request, the cycle's first claim and the report, and drops them once the ship moves", () => {
+    const { game: start, id, commander } = relay();
+    const other = start.players.find((p) => p.id !== id && p.id !== commander && p.alive)!.id;
+    let game = say(start, commander, formatFuelNeed(2));
+    game = say(game, other, FUEL_LOADING_LINE);
+    game = say(game, id, FUEL_LOADING_LINE);
+    const m = memory();
+    observeFuel(viewFor(game, id), m);
+    expect(m.fuel.request?.level).toBe(2);
+    expect(m.fuel.claim?.by).toBe(other);
+    game = say(game, other, formatFuelReport(2));
+    observeFuel(viewFor(game, id), m);
+    expect(m.fuel.report?.level).toBe(2);
+    expect(loadFuel.options(viewFor(game, id), m)).toEqual([]); // answered
+    observeFuel(viewFor({ ...game, navigation: { ...game.navigation, arriving: { planet: null } } }, id), m);
+    expect(m.fuel.request).toBeNull();
+  });
+
+  it("a Technician claims a request at once, fills the chamber to exactly the level, and reports once", async () => {
+    const { game: start, id, commander } = relay();
+    const fuel = start.ship.fuel;
+    const game = say(start, commander, formatFuelNeed(3));
+    const { game: after, taken } = await until(game, id, new GoalBot(1, 2, [loadFuel]), (g) => posted(g, id).includes(formatFuelReport(3)));
+    expect(posted(after, id)).toEqual([FUEL_LOADING_LINE, formatFuelReport(3)]);
+    const work = taken.map((a) => a.type).filter((t) => t !== "move" && !t.startsWith("report_"));
+    // Fetched before reading the chamber (empty after a jump); a second trip if the hands hold fewer than 3.
+    expect(work[0]).toBe("take_fuel");
+    expect(work.filter((t) => t === "check_combustion")).toHaveLength(1);
+    expect(work.filter((t) => t === "take_fuel")).toHaveLength(3);
+    expect(work.filter((t) => t === "load_fuel")).toHaveLength(3);
+    expect(after.ship.combustion).toBe(3);
+    expect(after.ship.fuel).toBe(fuel - 3);
+  });
+
+  it("unloads a chamber holding more than asked", async () => {
+    const { game: start, id, commander } = relay();
+    start.ship.combustion = 4;
+    const game = say(start, commander, formatFuelNeed(1));
+    const { game: after, taken } = await until(game, id, new GoalBot(1, 2, [loadFuel]), (g) => posted(g, id).includes(formatFuelReport(1)));
+    expect(after.ship.combustion).toBe(1);
+  });
+
+  it("others wait a cycle, nobody takes a request claimed this cycle, and the Commander never takes it", () => {
+    const { game: start, id, commander } = relay(false);
+    const game = say(start, commander, formatFuelNeed(2));
+    const m = memory();
+    observeFuel(viewFor(game, id), m);
+    expect(loadFuel.options(viewFor(game, id), m)).toEqual([]);
+    const later = newCycleOk(game);
+    observeFuel(viewFor(later, id), m);
+    expect(loadFuel.options(viewFor(later, id), m)).toHaveLength(1);
+    const claimed = say(later, commander, FUEL_LOADING_LINE);
+    observeFuel(viewFor(claimed, id), m);
+    expect(loadFuel.options(viewFor(claimed, id), m)).toEqual([]);
+    const cm = memory();
+    const asCommander = { ...later, titles: { ...later.titles, commander: id } };
+    observeFuel(viewFor(asCommander, id), cm);
+    expect(loadFuel.options(viewFor(asCommander, id), cm)).toEqual([]);
+    expect(SOLO_GOALS).toContain(loadFuel);
   });
 });

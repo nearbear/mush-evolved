@@ -6,6 +6,7 @@ import type { FireMemory } from "../fireShare.ts";
 import type { FullBeds } from "./rest.ts";
 import type { TankMemory } from "../tankShare.ts";
 import type { ExpeditionEndMemory } from "../expeditionShare.ts";
+import type { FuelMemory } from "../fuelShare.ts";
 import type { MoraleMemory } from "../moraleShare.ts";
 import type { ItemMemory } from "../itemShare.ts";
 import type { JumpMemory } from "../planetShare.ts";
@@ -91,6 +92,8 @@ export interface BotMemory {
   readonly morale: MoraleMemory;
   /** Planets known to be fully explored and whether the Icarus is lost, from the bay or a fixed line (`expeditionShare.ts`). */
   readonly expeditionEnd: ExpeditionEndMemory;
+  /** The fuel relay: the Commander's request, a helper's claim and report (`fuelShare.ts`, owner 2026-11-20). */
+  readonly fuel: FuelMemory;
   /** Last fuel reading the Commander saw in the combustion chamber (`null` if unknown or cleared by traveling, #421). */
   combustion: number | null;
   /** Cycle when the Commander started holding the jump (`null` when not holding, #421); `"Jump: off"` clears it. */

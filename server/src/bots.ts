@@ -13,6 +13,7 @@ import { newFireMemory, observeFires } from "./bots/fireShare.ts";
 import { newTankMemory, observeTanks } from "./bots/tankShare.ts";
 import { newMoraleMemory, observeMorale } from "./bots/moraleShare.ts";
 import { newExpeditionEndMemory, observeExpeditionEnd } from "./bots/expeditionShare.ts";
+import { newFuelMemory, observeFuel } from "./bots/fuelShare.ts";
 import { newItemMemory, observeItems } from "./bots/itemShare.ts";
 import { holdStartCycle, isHoldingJump, newJumpMemory } from "./bots/planetShare.ts";
 import { newReportMemory, observeReports } from "./bots/reportShare.ts";
@@ -159,6 +160,7 @@ export class GoalBot implements Bot {
       tanks: newTankMemory(),
       morale: newMoraleMemory(),
       expeditionEnd: newExpeditionEndMemory(),
+      fuel: newFuelMemory(),
       combustion: null,
       holdSince: null,
       jump: newJumpMemory(),
@@ -198,6 +200,7 @@ export class GoalBot implements Bot {
       tanks: { broken: [...m.tanks.broken], suspect: [...m.tanks.suspect], claims: [...m.tanks.claims], seq: m.tanks.seq },
       morale: { said: m.morale.said, requests: [...m.morale.requests], seq: m.morale.seq },
       expeditionEnd: { done: [...m.expeditionEnd.done], noIcarus: m.expeditionEnd.noIcarus, said: [...m.expeditionEnd.said], seq: m.expeditionEnd.seq },
+      fuel: { ...m.fuel },
       combustion: m.combustion,
       holdSince: m.holdSince,
       jump: { ...m.jump },
@@ -238,6 +241,7 @@ export class GoalBot implements Bot {
     Object.assign(m.tanks, { broken: new Set(s.tanks.broken), suspect: new Set(s.tanks.suspect), claims: new Map(s.tanks.claims), seq: s.tanks.seq });
     Object.assign(m.morale, { said: s.morale.said, requests: new Map(s.morale.requests), seq: s.morale.seq });
     Object.assign(m.expeditionEnd, { done: new Set(s.expeditionEnd.done), noIcarus: s.expeditionEnd.noIcarus, said: new Set(s.expeditionEnd.said), seq: s.expeditionEnd.seq });
+    Object.assign(m.fuel, s.fuel);
     m.combustion = s.combustion;
     m.holdSince = s.holdSince;
     Object.assign(m.jump, s.jump);
@@ -410,6 +414,7 @@ export class GoalBot implements Bot {
     this.memory.visited.add(view.you.room);
     observeShrinks(view, this.memory.shrinks);
     observeBeds(view, this.memory.fullBeds);
+    observeFuel(view, this.memory);
     if (view.navigation.traveling || view.navigation.orbiting) this.memory.combustion = null;
     if (view.navigation.heading !== null) this.memory.heading = view.navigation.heading;
     const chatHold = holdStartCycle(view, this.memory);
