@@ -84,6 +84,24 @@ describe("Quantum Sensors and CPU Overclocking projects", () => {
   });
 
   describe("Quantum Sensors (QUANTUM_SENSORS)", () => {
+    it("pins config values to +30% scan chance and +1 analysis sector", () => {
+      expect([config.project.quantumSensors.scanChanceBonus, config.project.quantumSensors.extraSectors]).toEqual([0.3, 1]);
+    });
+
+    it("adds +30% scan chance (capped at 100%) while the Motor Room planet scanner is unbroken", () => {
+      const s = game();
+      expect(option(s, "p0", scan)!.chance).toBeCloseTo(config.astro.scan.chance);
+
+      s.projects.QUANTUM_SENSORS = PROJECT_COMPLETE;
+      expect(option(s, "p0", scan)!.chance).toBeCloseTo(Math.min(1, config.astro.scan.chance + config.project.quantumSensors.scanChanceBonus));
+
+      // Also verify non-capped addition with a lower base scan chance.
+      const low = createGame(makeSeats(3, "others"), { ...structuredClone(config), astro: { ...structuredClone(config.astro), scan: { ...config.astro.scan, chance: 0.5 } } }, 7);
+      for (const p of low.players) p.room = "COMMAND_CENTER";
+      low.projects.QUANTUM_SENSORS = PROJECT_COMPLETE;
+      expect(option(low, "p0", scan)!.chance).toBeCloseTo(0.5 + config.project.quantumSensors.scanChanceBonus);
+    });
+
     it("reveals 1 extra sector per analysis (2 sectors total), stacking with Astrophysicist (3 sectors)", () => {
       const s = game();
       player(s, "p1").skills.push("astrophysician");
@@ -122,17 +140,24 @@ describe("Quantum Sensors and CPU Overclocking projects", () => {
       expect(deep1.planets.p1![0]!.sectors.filter((x) => x.known)).toHaveLength(4);
     });
 
-    it("applies unconditionally once completed, even if the Motor Room planet scanner is broken", () => {
+    it("does not apply scan or analysis bonuses while the Motor Room planet scanner is broken, and restores them when repaired", () => {
       const s = game();
       s.projects.QUANTUM_SENSORS = PROJECT_COMPLETE;
       s.planets.p0 = [mkPlanet("pl-broken")];
 
-      // Break the planet scanner in the motor room
-      const scanner = (s.equipment.MOTOR_ROOM ?? []).find((e) => e.type === "PLANET_SCANNER");
-      if (scanner) scanner.broken = true;
+      const scanner = (s.equipment.MOTOR_ROOM ?? []).find((e) => e.type === "PLANET_SCANNER")!;
+      expect(scanner).toBeDefined();
+      scanner.broken = true;
 
+      expect(option(s, "p0", scan)!.chance).toBeCloseTo(config.astro.scan.brokenScannerChance);
       const res = must(applyAction(s, "p0", { type: "analyze_planet", equipment: terminal, planet: "pl-broken" }));
-      expect(res.planets.p0![0]!.sectors.filter((x) => x.known)).toHaveLength(2);
+      expect(res.planets.p0![0]!.sectors.filter((x) => x.known)).toHaveLength(1);
+
+      // Repairing the scanner restores both bonuses.
+      scanner.broken = false;
+      expect(option(s, "p0", scan)!.chance).toBeCloseTo(Math.min(1, config.astro.scan.chance + config.project.quantumSensors.scanChanceBonus));
+      const repaired = must(applyAction(s, "p0", { type: "analyze_planet", equipment: terminal, planet: "pl-broken" }));
+      expect(repaired.planets.p0![0]!.sectors.filter((x) => x.known)).toHaveLength(2);
     });
   });
 });

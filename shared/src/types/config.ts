@@ -605,8 +605,8 @@ export interface GameConfig {
     bricBroc: { preventChance: number };
     // Owner, 2026-11-04: completing it puts these item types on the floor of `room` (one item per list entry).
     foodRetailer: { room: RoomId; items: readonly string[] };
-    // Quantum Sensors (owner, 2026-11-01; eMushpedia *Détecteur à ondes de probabilité*): each planet analysis reveals +extraSectors sectors.
-    quantumSensors: { extraSectors: number };
+    // Quantum Sensors (owner, 2026-11-01, updated 2026-11-21; eMushpedia *Détecteur à ondes de probabilité*): while the Motor Room planet scanner is unbroken, +scanChanceBonus (30%) scan chance and +extraSectors (1) analysis sector.
+    quantumSensors: { scanChanceBonus: number; extraSectors: number };
     // CPU Overclocking (owner, 2026-11-01; eMushpedia *Accélération du processeur*): Scan for planets costs -scanApDiscount AP.
     chipsetAcceleration: { scanApDiscount: number };
     radarTransVoid: { apDiscount: number };

@@ -339,7 +339,7 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
     // Owner, 2026-11-08: the chance that a cycle change's incidents are all prevented (the points are still spent).
     bricBroc: { preventChance: 0.15 },
     foodRetailer: { room: "NEXUS_ROOM", items: ["output_tube", "input_tube", "input_tube"] },
-    quantumSensors: { extraSectors: 1 },
+    quantumSensors: { scanChanceBonus: 0.3, extraSectors: 1 },
     chipsetAcceleration: { scanApDiscount: 1 },
     radarTransVoid: { apDiscount: 1 },
     patrolShipLauncher: { takeoffApDiscount: 1 },
