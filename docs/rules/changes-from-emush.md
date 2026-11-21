@@ -8,9 +8,8 @@ This document summarizes the **implemented** gameplay, mechanical, and UI differ
 
 | Feature | eMush | Mush: Evolved |
 | :--- | :--- | :--- |
-| **Custom Setups & Next-Ship Voting** | Fixed ruleset (16 seats, 3-day pre-selection, Auto Mush scaling, 3h cycles); Chun is excluded from Alpha Mush selection. | Default pre-selection, joining flow, and Auto Mush scaling ($\le 8$ players = 1 Mush; $> 8$ = 2 Mush) match eMush, except **Chun can be chosen as Alpha Mush**. Signed-in players can also create immutable setups and vote on the next ship's ruleset per language queue: **4–16 seats**, **1–5 day** pre-selection, **Auto/1/2/3 Mush** (clamped to $\text{players} - 2$), **1/2/3/4/6h cycles** (days are always 24h starting 00:00 GMT), and **shared room positions** on/off. |
 | **Action Resolution & Queue** | Instant turn-based actions on click. | Almost all actions (including movement) take **1.5 seconds** of real time and resolve at the end of a cast bar, with a **queue of up to 3 actions**. If a modifier changes a queued action's AP cost before it resolves, it is cancelled at no cost. Roommates see a generic progress bar over the actor's head for actions that leave a visible room log. |
-| **Room Positions & Focused** | Abstract room presence only (accessing a terminal grants `Focused`). | Adds **tile walking** and **sitting on chairs** (visible to roommates; toggleable per setup). Opening a terminal physically seats/stands you at it while `Focused`. |
+| **Room Positions & Focused** | Abstract room presence only (accessing a terminal grants `Focused`). | Adds **tile walking** and **sitting on chairs** (visible to roommates). Opening a terminal physically seats/stands you at it while `Focused`. |
 | **Inactivity Thresholds** | Real-time **24h** (`INACTIVE`) / **48h** (`HIGHLY_INACTIVE`) checked at cycle change regardless of AP. | Same 24h/48h real-time thresholds, but **only triggers at cycle change if the player's AP is also full (`maxAp`)**. |
 | **Single-Player Mode** | None. | **9-seat solo mode** where you are always the sole Mush against 8 AI bots (scripted or BYOK LLM), with manual cycle advancement and instant expeditions. |
 
@@ -29,7 +28,6 @@ Shared baseline: both games use the same four visibility tiers (`Public`, `Secre
 ### Chat, Channels, and Signals
 
 - **Markdown, Checklists, Threads, and Pagination:** Chat supports Markdown formatting, **author-editable `- [ ]` task checklists** (tickable on any page without rewriting message text), Discord-style threads under global chat, and 9 crew-wide feature channels (*Botany, Research, Inventory, Space Battle, Comms, PILGRED, NERON, Astrophysics, Expeditions*). History uses **50-message pages** with **no 200-message truncation**.
-- **On-Call Channel Plans & Summons:** A private channel's creator can post an open room plan with task and **on-call** slots. Pressing **Summon** in that room automatically walks all on-call claimers along the shortest path to the room (dropping queues and getting out of bed).
 - **Structured Planet & Expedition Report Sharing:** At the Astro terminal, players can share a planet into the Astrophysics channel with editable text plus **structured sector-slot icons** (true planet name and sector count are fixed; sector tags can be edited or faked). Shares automatically mark as *"no longer applicable"* when the ship jumps or leaves orbit (except the destination planet). Expedition members can likewise share editable reports into the Expeditions channel.
 - **Unified Signals Tab (Comms Officer Only):** Rebel base calls and merchant ships are combined into one **Signals** conversation UI at the Comms Center (with Active/Inactive lists, live garbled-to-clear rebel transcriptions, and a 3s cosmetic reply delay). **Only players with Comms Officer access** (holder, hacker, or cheat) can view the Signals tab; bystanders at the terminal cannot see rebel decode progress or merchant deals.
 - **Graveyard Channel:** Dead players can read global and feature chat (and dead Mush read the Mush channel) and talk with other dead players in a dedicated **Graveyard** channel.
@@ -43,6 +41,7 @@ Shared baseline: both games use the same four visibility tiers (`Public`, `Secre
 | Mechanic | eMush | Mush: Evolved |
 | :--- | :--- | :--- |
 | **`Hopeless` (0 Morale) & Death Morale** | 0-morale status is named `Suicidal` (humans at 0 morale at cycle change die of `depression`); almost any crew death costs living humans −1 morale (−3 if Chun dies). | `Suicidal` is renamed to **Hopeless** at **0 morale** (using the `demoralized` icon; living humans still at 0 morale when any cycle ends die of `depression`). Only a **Hopeless (`depression`) death** (−1 morale) or a **Pregnant crewmate's death** when not traded (−2 morale) deducts crew morale; other deaths do not deduct crew morale. |
+| **Pregnancy (`dtt`)** | Only opposite-gender pairs (when neither partner is already pregnant) roll 8% for the female partner to become `Pregnant` (no extra spore or death morale penalty in eMush). | **All characters (human or Mush)** are eligible on `dtt`: each living non-pregnant partner rolls **8% independently** to gain the permanent public **Pregnant** status. Becoming pregnant from a Mush partner inflicts **+1 extra contamination** (+2 total), and a pregnant crewmate's death (when not traded) costs every living player **−2 morale**. |
 | **Title Succession** | Titles pass along fixed succession lines on death or inactivity, and **revert** to a higher-priority character at cycle change when they return from inactivity. | Same succession lines on death or inactivity, but titles **do not revert** when an inactive holder returns. |
 
 ### Innate Character Traits
@@ -79,13 +78,12 @@ Both games start characters with 0 skills (3 pickable + 1 book slot) and permane
 > - Mush keep their current morale on conversion and gain or lose morale from **every source**: consumables (food, alien fruits, and drugs apply their morale delta to Mush even though Mush still gain 0 AP/HP/MP/buffs from them, while still adding satiety), daily morale loss, innate character traits (Raluca's **Antisocial**, Finola's **Germaphobe**), `Hopeless` (−1) and `Pregnant` (−2) crew deaths, incidents, speeches, Comfort, and Demoralizer.
 > - At **0 morale**, Mush receive the private **Hopeless** status just like humans, but **never die from it**.
 
-*(Spore extraction, personal/daily spore caps, covert spiking with 4-cycle cooldown, same-room spore badges for Mush, and `Epigenetics` work the same as in eMush.)*
+*(Spore extraction, personal/daily spore caps, covert spiking with 4-cycle cooldown, same-room spore badges for Mush, `Epigenetics`, and Schrödinger infection work the same as in eMush.)*
 
 | Mechanic | eMush | Mush: Evolved |
 | :--- | :--- | :--- |
 | **Mush Skill Privacy** | Mush see other Mush's Mush skills in the same room. | Mush skills are **strictly private** (`you.mushSkills` only; never shown to other Mush). |
 | **Mush as Disease Carriers** | Mush are immune to diseases and silently cure existing ones at cycle change. | Mush **catch, carry, and spread diseases** (from alien fruits, spoiled food, incidents, room spread, and STT/DTT) with the same odds and delays as humans, and perform symptom log actions (vomiting, sneezing), but **suffer no stat penalties**. |
-| **Schrödinger Infection** | Must **carry** Schrödinger in inventory to Caress or Infect him; an infected cat only contaminates a human when its clumsiness/scratch roll triggers (on Take or Caress). | **Caress** and **Infectious Caress** work on the **floor or in inventory**; **Caress never contaminates**; and **Taking** an infected Schrödinger **always contaminates** a human (+1 spore, 100%). |
 | **Body Transfer (`transfert`)** | Deletes the victim's human skills; can target inactive players. | **Preserves the victim's human skills** (no reset trace) and **cannot target inactive players**. (In both games, private logs and private channels stay with the body.) |
 
 ### Reworked Mush Skills
@@ -103,18 +101,18 @@ Both games start characters with 0 skills (3 pickable + 1 book slot) and permane
 
 ## 5. Research, NERON Projects, and PILGRED
 
-### Relaying, Assays, Proposals, and Prerequisites
+### Relaying, Assays, Proposals, and BIOS
 
 | System | eMush | Mush: Evolved |
 | :--- | :--- | :--- |
 | **Research & PILGRED Relaying** | Strict turn-order relay penalty (−2% per consecutive action by the same player). | **Pooled Relay Tokens:** Contributions enter a pool as tokens and are **automatically arranged in $O(n \log n)$** for the lowest possible repeat penalty. A player is only penalized if they hold more tokens than everyone else combined $+ 1$, and highest rolls are assigned to the highest bases so progress never drops. |
 | **Research Samples & Assays** | Instant progress per action; no sample spoilage or sabotage. | Research tokens enter as **pending samples**. When verified + pending progress hits **25%, 50%, 75%, or 100%**, an **assay** tests all pending samples (**5% natural spoil chance**; spoiled samples are removed; verified progress never falls). A public lab log names everyone tested and whose samples spoiled, never why. **Own Spoil (`spoil_research`):** Mush can submit a pre-contaminated sample that always fails assay (recorded in action history). **Contaminate (`contaminate`):** Saboteurs (`sapper`) can spend **1 AP** (private) to contaminate a pending sample from the **smallest contributor** on that research. |
 | **NERON Projects** | 3 project proposals; unchosen proposals return to the pool when one completes; per-project difficulty (1–18). | **Keeps streak-based relay** (no relay tokens), uses **flat difficulty 10** (6–9% base) across all 41 projects, and offers **3 shuffled proposals** at a time. Completing one via work **permanently retires all 3 proposals** in that batch from the deck and draws 3 new ones (NERON updates complete 1 random unfinished project and only replace that single slot if offered). |
-| **Dead-Mush Research Prerequisite** | Several researches (`MUSHOVORE_BACTERIA`, `MERIDON_SCRAMBLER`, `PATULINE_SCRAMBLER`, `MUSH_RACES`, `MUSH_REPRODUCTIVE_SYSTEM`) require a dead Mush aboard. | **Dead-Mush prerequisite removed:** those researches require only **post-selection** (plus any item or Chun requirements). |
+| **BIOS CPU Priority & Crew Lock** | CPU priority and Crew Lock are only visible at the BIOS terminal; `projects` and `research` crew locks block non-holders from accessing the terminal. | Same CPU priority bonuses (`+1` analysis sector for `astronavigation`; `+1` base efficiency on `projects` and `research`; once/day per player) and Crew Lock roles (`piloting`: Pilot; `projects`: Designer; `research`: Biologist/Medic/Polyvalent), except **CPU priority is visible ship-wide to all living players**, and **Crew Lock gates only the work/launch actions** (`takeoff`, `icarus_takeoff`, `project`, `research`, `spoil_research`) so anyone can still open terminals to inspect progress and airborne non-pilots can still land. |
 
 ### Reworked and Rebalanced Projects & Research
 
-*(**Floor Heating**, **Noise Reducer**, and **Heuristic Targeting** match eMush.)*
+*(**Floor Heating**, **Noise Reducer**, **Heuristic Targeting**, and **Quantum Sensors** match eMush.)*
 
 | Project / Research | eMush | Mush: Evolved |
 | :--- | :--- | :--- |
