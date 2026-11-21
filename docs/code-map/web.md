@@ -56,7 +56,7 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 - `LostPanel.tsx`: the room view while lost on a planet (slice B of expedition phase 3): names the planet and opens the report you got lost on.
 - `ShipNavigation.tsx`: the Command terminal window's steering: heading, in-orbit flag, combustion chamber fuel, and the Commander's turn, travel (no distance: it burns the chamber) and leave orbit buttons; the last two ask to confirm (`ConfirmPanel`) while an expedition is out.
 - `PlanetList.tsx`: your planets with their sector tags (unknown ones as `tag_unknown`) and a bin button to delete; in the Astro terminal window it adds the scan and analyse buttons.
-- `InventoryOverlay.tsx` + `styles/inventory.css`: the sack button in the room view's lower right (badge = items in the room) that opens `InventoryPanel` over the room; closes on the button, Escape, or a press elsewhere in the room view. Both layouts; hidden when dead.
+- `InventoryOverlay.tsx` + `styles/inventory.css`: the sack button in the room view's lower right (badge = items in the room) that opens `InventoryPanel` over the room, across its full width in the band between your ID card and the minimap's card (`useBand` measures it, with a `ResizeObserver`, and sets the popup's top and bottom); closes on the button, Escape, or a press elsewhere in the room view. Both layouts; hidden when dead.
 - `InventoryPanel.tsx`: item zones; drag to take/drop, tap fallback.
 - `InspectPanel.tsx`: the selected person, equipment, or item, with its legal actions.
 - `ThrowOutDialog.tsx`: collapses per-room `throw_out` options into one button and opens `ConfirmPanel` to pick an adjacent room with an unbroken door.

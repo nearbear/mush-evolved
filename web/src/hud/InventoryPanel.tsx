@@ -23,20 +23,25 @@ type Zone = "room" | "inventory";
 const TILE = 76;
 const GAP = 6;
 
-/** True when the items wouldn't fit one row of full-size tiles in the grid's width (the grid then shrinks its tiles). */
-function useOverflowsRow(count: number) {
+/**
+ * True when the items wouldn't fit the grid's space at full size (the grid then shrinks its tiles). The grid fills its
+ * zone's height (inventory.css), so items take further rows of full-size tiles before shrinking.
+ */
+function useOverflowsSpace(count: number) {
   const hasGrid = count > 0; // the grid unmounts when empty, so re-attach the observer when it returns
   const ref = useRef<HTMLUListElement>(null);
-  const [width, setWidth] = useState(Infinity);
+  const [size, setSize] = useState({ width: Infinity, height: Infinity });
   useEffect(() => {
     const el = ref.current;
     if (!hasGrid || !el) return;
-    const ro = new ResizeObserver(() => setWidth(el.clientWidth));
+    const measure = () => setSize((old) => (old.width === el.clientWidth && old.height === el.clientHeight ? old : { width: el.clientWidth, height: el.clientHeight }));
+    const ro = new ResizeObserver(measure);
     ro.observe(el);
-    setWidth(el.clientWidth);
+    measure();
     return () => ro.disconnect();
   }, [hasGrid]);
-  return { ref, compact: count > Math.max(1, Math.floor((width + GAP) / (TILE + GAP))) };
+  const fit = (px: number) => Math.max(1, Math.floor((px + GAP) / (TILE + GAP)));
+  return { ref, compact: count > fit(size.width) * fit(size.height) };
 }
 
 export function InventoryPanel({
@@ -57,7 +62,7 @@ export function InventoryPanel({
 
   const root = useRef<HTMLDivElement>(null);
   useKeepFocus(root);
-  const roomGrid = useOverflowsRow(view.roomItems.length);
+  const roomGrid = useOverflowsSpace(view.roomItems.length);
 
   const legal = (type: "take" | "drop", item: ItemView) =>
     legalIn(view).some((a) => a.type === type && a.item === item.id);

@@ -1,26 +1,35 @@
 /* Inventory overlay: the sack button in the room view's lower-right corner and the item zones it opens. */
 
+/* Covers the room view; only the popup and the buttons take clicks, the scene stays usable. */
 .inventory-overlay {
   --outline: color-mix(in srgb, var(--muted) 60%, transparent);
   position: absolute;
-  left: 0.5rem;
-  right: 0.5rem;
-  bottom: calc(0.5rem + var(--peek-clear, 0px));
+  inset: 0;
   z-index: 3;
-  max-height: calc(100% - 1rem - var(--peek-clear, 0px));
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: var(--space-2);
-  /* The wrapper spans the room's width; only the popup and the button take clicks, the scene stays usable. */
   pointer-events: none;
 }
 .inventory-overlay > * {
   pointer-events: auto;
 }
+/* The zoom buttons over the sack, in the lower-right corner. */
+.inventory-controls {
+  position: absolute;
+  right: 0.5rem;
+  bottom: calc(0.5rem + var(--peek-clear, 0px));
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-2);
+}
+/* Across the room view, between your ID card and the minimap's card (InventoryOverlay's useBand sets top and bottom
+   inline; these are the fallback until it has measured). */
 .inventory-popup {
+  position: absolute;
+  top: 0.5rem;
+  bottom: calc(0.5rem + var(--peek-clear, 0px));
+  left: 0.5rem;
+  right: 0.5rem;
   box-sizing: border-box;
-  width: min(100%, 52rem);
   min-height: 0;
   /* The panel art is see-through; over the scene it needs a solid backing to stay readable. */
   background-color: var(--panel-fill);
@@ -144,40 +153,49 @@ button.zoom-button {
   border: 1px solid var(--outline);
   border-radius: var(--panel-radius);
 }
-/* Inventory is one row, sized to its slots; the room zone takes whatever is left. */
+/* Inventory is a column three slots tall (a fourth slot starts a second column), sized to its slots; the room zone
+   takes whatever is left. Both layouts. */
 .self-cards > .item-zone[data-zone="inventory"] {
   flex: none;
 }
 .self-cards > .item-zone[data-zone="room"] {
   flex: 1 1 0;
 }
+/* A zone is its heading over its grid; the room's grid fills the height the panel has (rows before smaller tiles,
+   InventoryPanel's useOverflowsSpace) and scrolls past it. */
+.self-cards > .item-zone {
+  display: flex;
+  flex-direction: column;
+}
+.self-cards > .item-zone > h2 {
+  flex: none;
+}
+.self-cards > .item-zone[data-zone="room"] > .item-grid {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  align-content: start;
+  grid-auto-rows: var(--tile, 76px);
+}
 .self-cards .item-zone[data-zone="inventory"] .item-grid {
   grid-auto-flow: column;
   grid-template-columns: none;
+  grid-template-rows: repeat(3, var(--tile, 76px));
   grid-auto-columns: var(--tile, 76px);
 }
 
-/* Phone: the two zones sit side by side, each three slots tall; the room zone scrolls past three rows. */
+/* Phone: the two zones sit side by side; tiles stay at a finger's size (no smaller tiles), and the room zone scrolls
+   past the rows that fit. */
 @media (max-width: 1023px) {
   .inventory-overlay {
     --tile: 56px;
   }
   .self-cards {
     flex-direction: row;
-    align-items: flex-start;
   }
   .self-cards .item-grid,
   .self-cards .item-grid[data-compact] {
     --tile: 56px;
-    height: calc(var(--tile) * 3 + 12px);
-    max-height: none;
-    overflow-y: auto;
-    align-content: start;
-    grid-auto-rows: var(--tile);
-  }
-  .self-cards .item-zone[data-zone="inventory"] .item-grid {
-    grid-template-rows: repeat(3, var(--tile));
-    overflow: visible;
   }
 }
 
