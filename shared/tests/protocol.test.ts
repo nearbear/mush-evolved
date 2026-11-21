@@ -771,6 +771,7 @@ describe("actions from a client", () => {
     heal: [{ type: "heal", target: "p1" }],
     surgery: [{ type: "surgery", target: "p1" }],
     use_bandage: [{ type: "use_bandage", target: "p1" }],
+    remove_spore: [{ type: "remove_spore", item: "sucker" }],
     vaccinate: [{ type: "vaccinate", target: "p1" }],
     punch: [{ type: "punch", target: "p1" }],
     throw_out: [{ type: "throw_out", target: "p1", to: "CORRIDOR_1" }],

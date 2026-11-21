@@ -108,6 +108,7 @@ const ACTION_NAME_KEYS = {
   heal: "actions.heal",
   surgery: "actions.surgery",
   use_bandage: "actions.useBandage",
+  remove_spore: "actions.removeSpore",
   vaccinate: "actions.vaccinate",
   punch: "actions.punch",
   throw_out: "actions.throwOut",

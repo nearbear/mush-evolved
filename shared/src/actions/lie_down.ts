@@ -16,12 +16,18 @@ function occupied(state: Readonly<GameState>, bed: string): boolean {
   return state.players.some((p) => p.alive && p.lyingIn === bed);
 }
 
+/** Stiff Neck keeps you out of bed (owner, 2026-11-20; modifiers/stiff_neck_injury.ts). */
+function stiffNeck(player: Readonly<PlayerState>): boolean {
+  return player.modifiers.includes("stiff_neck_injury");
+}
+
 export class LieDownAction extends Action<LieDownActionData> {
   constructor() {
     super("lie_down", { equipment: isString });
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): LieDownActionData[] {
+    if (stiffNeck(player)) return [];
     return (state.equipment[player.room] ?? []).filter((eq) => EQUIPMENT_TYPES[eq.type]?.bed && !occupied(state, eq.id)).map((eq) => ({ type: "lie_down", equipment: eq.id }));
   }
 
@@ -29,6 +35,7 @@ export class LieDownAction extends Action<LieDownActionData> {
     const equip = state.equipment[player.room]?.find((eq) => eq.id === target.equipment);
     if (!equip || !EQUIPMENT_TYPES[equip.type]?.bed) return "cant_lie_down";
     if (player.modifiers.includes("lying_down")) return "already_lying_down";
+    if (stiffNeck(player)) return "stiff_neck";
     if (occupied(state, equip.id)) return "bed_occupied";
     return null;
   }
@@ -45,15 +52,8 @@ export class LieDownAction extends Action<LieDownActionData> {
   }
 }
 
-/**
- * Gets you out of bed. Any other character action does it (owner, 2026-10-17), from the moment it is queued
- * (owner, 2026-10-18); ending your cycle is not one. So does the bed going away (a dismantled sofa).
- */
-export function getUp(actor: PlayerState): void {
-  actor.modifiers = actor.modifiers.filter((m) => m !== "lying_down");
-  delete actor.lyingIn;
-  delete actor.lyingSince;
-}
+// getUp lives in bed.ts, free of imports, so modifiers (Stiff Neck) can call it without an import cycle.
+export { getUp } from "../bed.ts";
 
 export class GetUpAction extends Action<GetUpActionData> {
   constructor() {
