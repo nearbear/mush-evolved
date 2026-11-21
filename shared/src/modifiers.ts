@@ -50,6 +50,7 @@ import { sprint } from "./modifiers/sprint.ts";
 import { sturdy } from "./modifiers/sturdy.ts";
 import { hyperactive } from "./modifiers/hyperactive.ts";
 import { antisocial } from "./modifiers/antisocial.ts";
+import { germaphobe } from "./modifiers/germaphobe.ts";
 import { immunity } from "./modifiers/immunity.ts";
 import { mankind_only_hope } from "./modifiers/mankind_only_hope.ts";
 import { pacifist } from "./modifiers/pacifist.ts";
@@ -297,6 +298,7 @@ export const MODIFIERS: Record<string, Modifier> = {
   // Character traits
   hyperactive,
   antisocial,
+  germaphobe,
   immunity,
   mankind_only_hope,
   pacifist,
