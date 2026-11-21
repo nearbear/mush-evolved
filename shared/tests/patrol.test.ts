@@ -3,6 +3,8 @@ import { ACTIONS } from "../src/actions.ts";
 import { manoeuvre } from "../src/actions/takeoff.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { addDisease } from "../src/diseases.ts";
+import { arriveMerchant } from "../src/merchants.ts";
+import { findSignal } from "../src/signals.ts";
 import { cameraEquipmentId } from "../src/equipment.ts";
 import { commandId, interfaceId, PATROL_SHIPS, patrolShip } from "../src/patrol.ts";
 import { PROJECT_COMPLETE, projectStatus } from "../src/projects.ts";
@@ -195,6 +197,16 @@ describe("shooting from a patrol ship", () => {
     return s;
   }
 
+  it("a merchant in space is a target too, after the hunters, and a hit makes it flee (owner, 2026-11-21)", () => {
+    let s = flying(shot({ chance: 1 }));
+    const m = arriveMerchant(s, "transport");
+    expect(offered(s, "p0").filter((a) => a.type === "patrol_attack")).toEqual([shoot("h1"), shoot("h2"), shoot(m.id)]);
+    expect(viewFor(s, "p0").hunters.merchants?.map((x) => x.id)).toEqual([m.id]);
+    s = mustApply(s, "p0", shoot(m.id));
+    expect(findSignal(s, m.id)).toMatchObject({ status: "shot", merchant: { fleeing: true } });
+    expect(s.log.at(-1)).toMatchObject({ key: "merchantHit", visibleTo: ["p0"] });
+  });
+
   it("is offered at the command for each hunter, for 1 AP at 40%, doubled for a Pilot", () => {
     const s = flying();
     expect(offered(s, "p0").filter((a) => a.type === "patrol_attack")).toEqual([shoot("h1"), shoot("h2")]);
@@ -325,8 +337,8 @@ describe("shooting from a patrol ship", () => {
 
   it("the pilot sees each hunter's hp but no turret's charges; nobody on the ground does", () => {
     const s = flying();
-    expect(viewFor(s, "p0").hunters).toEqual({ count: 2, list: [{ id: "h1", type: "hunter", hp: 6, countdown: null }, { id: "h2", type: "hunter", hp: 6, countdown: null }], turrets: null });
-    expect(viewFor(s, "p1").hunters).toEqual({ count: 2, list: null, turrets: null });
+    expect(viewFor(s, "p0").hunters).toEqual({ count: 2, list: [{ id: "h1", type: "hunter", hp: 6, countdown: null }, { id: "h2", type: "hunter", hp: 6, countdown: null }], merchants: [], turrets: null });
+    expect(viewFor(s, "p1").hunters).toEqual({ count: 2, list: null, merchants: null, turrets: null });
   });
 
   it("parses from the wire", () => {

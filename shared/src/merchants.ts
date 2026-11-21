@@ -9,11 +9,14 @@
 // (from anywhere), and the goods appear on the Front Storage floor. A traded player dies with no corpse (death.ts,
 // cause `traded`).
 //
-// NERON announces each arrival ship-wide in crew chat (kind only; owner, 2026-11-16). Not built yet
-// (docs/plans/merchants.md): the other kinds, shooting a merchant, deal announcements, and the space view.
+// NERON announces each arrival ship-wide in crew chat (kind only; owner, 2026-11-16). Shooting (owner, 2026-11-21): a
+// merchant in space is a target at the turrets and for patrol ships, after the hunters. A hit closes its conversation
+// at once and it flees at the next cycle change; at 0 hp it is destroyed and drops wreckage like a hunter. Neither is
+// announced. Not built yet (docs/plans/merchants.md): the other kinds.
 
 import { pushChat } from "./chat.ts";
 import { killPlayer } from "./death.ts";
+import { dropDebris } from "./hunters.ts";
 import { isInactive } from "./inactivity.ts";
 import { spawnInRoom } from "./items.ts";
 import { type HasRng, roll, rollFloat, rollInt, rollShuffle, rollWeighted } from "./rng.ts";
@@ -129,7 +132,8 @@ export function arriveMerchant(state: GameState, kind: MerchantKind): Signal {
   const ids = openEvents(state, kind);
   const event = withDice(state, (dice) => ids[rollInt(dice, ids.length)]!);
   const deals = withDice(state, (dice) => events[event]!.map((t) => rollDeal(dice, t)));
-  const signal = addSignal(state, "merchant", state.cycle + state.config.merchants.stayCycles, { merchant: { kind, event, deals } });
+  const hp = state.config.merchants.kinds[kind].hp;
+  const signal = addSignal(state, "merchant", state.cycle + state.config.merchants.stayCycles, { merchant: { kind, event, deals, hp } });
   // NERON tells the whole crew in crew chat (owner, 2026-11-16): the ship's kind, nothing of its hail or deals.
   pushChat(state, "global", { from: null, isBot: false, text: "", system: { key: "merchantHailing", params: { merchant: kind } } });
   return signal;
@@ -140,6 +144,7 @@ export function arriveMerchant(state: GameState, kind: MerchantKind): Signal {
  * the game proper has started (hunters' `since`, set with Mush selection). Mutates a state the caller already cloned.
  */
 export function merchantsCycle(state: GameState): void {
+  for (const m of merchantsInSpace(state)) delete m.merchant!.fleeing;
   for (const m of merchantsInOrbit(state)) if (state.cycle >= m.endsAt) loseSignal(state, m);
   if (state.preselection || state.hunters.since === null) return;
   const { arrivalChance, kinds } = state.config.merchants;
@@ -151,7 +156,45 @@ export function merchantsCycle(state: GameState): void {
 
 /** The Daedalus travels or leaves orbit: every merchant is left behind and lost, contacted or not (owner, 2026-11-15 and 2026-11-16). */
 export function merchantsLeave(state: GameState): void {
+  for (const m of merchantsInSpace(state)) delete m.merchant!.fleeing;
   for (const m of merchantsInOrbit(state)) loseSignal(state, m);
+}
+
+/**
+ * The merchants a gunner can shoot, oldest first: those in orbit, and those hit this cycle that haven't fled yet. One
+ * that closed a deal or was refused has gone (eMush removes the transport once a deal is accepted).
+ */
+export const merchantsInSpace = (state: Readonly<GameState>): Signal[] =>
+  state.signals.list.filter((s) => s.merchant && (s.status === "active" || s.merchant.fleeing)) as Signal[];
+
+/** A merchant in space by its signal id. */
+export const merchantInSpace = (state: Readonly<GameState>, id: string): Signal | undefined => merchantsInSpace(state).find((s) => s.id === id);
+
+/**
+ * A crew shot hits merchant `id` for `amount` (no armor; owner, 2026-11-21). The first hit ends its conversation (status
+ * `shot`, with its parting line) and it flees at the cycle change; at 0 hp it is destroyed (status `destroyed`, a
+ * "destroyed" line) and drops wreckage like a hunter. A miss does nothing, so callers only call this on a hit. Neither
+ * is announced (owner, 2026-11-21). Returns whether it was destroyed. Mutates a state the caller already cloned.
+ */
+export function hitMerchant(state: GameState, id: string, amount: number): boolean {
+  const signal = merchantInSpace(state, id);
+  if (!signal) return false;
+  const merchant = signal.merchant!;
+  merchant.hp = Math.max(0, merchant.hp - Math.max(0, amount));
+  if (merchant.hp > 0) {
+    if (signal.status === "active") closeSignal(state, signal, "shot", { from: "signal", key: merchantLine(merchant.kind, "shot") });
+    merchant.fleeing = true;
+    return false;
+  }
+  delete merchant.fleeing;
+  if (signal.status === "active") closeSignal(state, signal, "destroyed", { from: "system", key: "signals.destroyed" });
+  else {
+    // Hit before, so its conversation is already closed: the status still says how it ended.
+    say(state, signal, { from: "system", key: "signals.destroyed" });
+    signal.status = "destroyed";
+  }
+  dropDebris(state);
+  return true;
 }
 
 /** The feed's key for a line of a merchant ship of `kind` (`hail.<event>`, `accept`, `farewell`). */

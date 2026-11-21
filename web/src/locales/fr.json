@@ -1262,6 +1262,9 @@
     "shipDestroyed": "La coque du Daedalus cède. Le vaisseau explose, et tout l'équipage avec lui.",
     "turretHit": "Vous touchez le hunter : {{damage}} dégâts.",
     "turretMiss": "Vous ratez le hunter.",
+    "merchantHit": "Vous touchez le {{merchant}} : {{damage}} dégâts.",
+    "merchantMiss": "Vous ratez le {{merchant}}.",
+    "merchantDestroyed": "Vous détruisez le {{merchant}}.",
     "hunterDestroyed": "{{name}} a abattu un hunter.",
     "hullRepaired": "{{name}} a renforcé la coque.",
     "hullRepairFailed": "Vous n'avez pas réussi à renforcer la coque.",
@@ -2000,7 +2003,10 @@
     "countdown_one": "Impact dans {{count}} cycle",
     "countdown_many": "Impact dans {{count}} cycles",
     "countdown_other": "Impact dans {{count}} cycles",
-    "charges": "Charges restantes : {{charges}}"
+    "charges": "Charges restantes : {{charges}}",
+    "merchantConfirm": "Tirer sur {{name}} ? Un tir réussi met fin à tout échange et le fait fuir.",
+    "merchantConfirmYes": "Tirer",
+    "merchantConfirmBack": "Cessez le feu"
   },
   "document": {
     "read": "Lire",
@@ -2300,7 +2306,9 @@
       "deal": "Marché conclu",
       "refused": "Refusé",
       "lost": "Signal perdu",
-      "reached": "Décodé"
+      "reached": "Décodé",
+      "shot": "Pris pour cible",
+      "destroyed": "Détruit"
     },
     "kinds": {
       "merchant": "Marchand",
@@ -2313,6 +2321,7 @@
     "incoming": "Transmission entrante…",
     "over": "Cette conversation est terminée.",
     "lost": "Signal perdu.",
+    "destroyed": "Signal perdu : le vaisseau a été détruit.",
     "names": {
       "merchant": {
         "transport": "Transport",
@@ -2328,6 +2337,7 @@
       "transport": {
         "accept": "Affaire conclue.",
         "farewell": "Compris.",
+        "shot": "Vous nous tirez dessus ! Nous partons.",
         "hail": {
           "HUMAN_VS_FUEL": "Nous avons un surplus d'antigel et il nous manque à manger pour ce soir, ça vous dit ?",
           "HUMAN_VS_OXY": "Aloha, vos organismes sont vraiment passionnants, surtout la méthanisation de vos déchets organiques, incroyable... Nous vous échangeons un de vos amis contre des réserves d'oxygène conséquentes !",

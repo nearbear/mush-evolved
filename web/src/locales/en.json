@@ -1245,6 +1245,9 @@
     "shipDestroyed": "The Daedalus's hull gives way. The ship explodes, and the whole crew with it.",
     "turretHit": "You hit the hunter for {{damage}} damage.",
     "turretMiss": "You missed the hunter.",
+    "merchantHit": "You hit the {{merchant}} for {{damage}} damage.",
+    "merchantMiss": "You missed the {{merchant}}.",
+    "merchantDestroyed": "You destroyed the {{merchant}}.",
     "hunterDestroyed": "{{name}} shot down a hunter.",
     "hullRepaired": "{{name}} reinforced the hull.",
     "hullRepairFailed": "You failed to reinforce the hull.",
@@ -2069,7 +2072,10 @@
     "hp": "{{hp}} HP",
     "countdown_one": "Impact in {{count}} cycle",
     "countdown_other": "Impact in {{count}} cycles",
-    "charges": "Charges left: {{charges}}"
+    "charges": "Charges left: {{charges}}",
+    "merchantConfirm": "Fire on {{name}}? A hit ends any deal with it and makes it flee.",
+    "merchantConfirmYes": "Fire",
+    "merchantConfirmBack": "Hold fire"
   },
   "document": {
     "read": "Read",
@@ -2355,7 +2361,9 @@
       "deal": "Deal made",
       "refused": "Refused",
       "lost": "Signal lost",
-      "reached": "Decoded"
+      "reached": "Decoded",
+      "shot": "Fired upon",
+      "destroyed": "Destroyed"
     },
     "kinds": {
       "merchant": "Merchant",
@@ -2368,6 +2376,7 @@
     "incoming": "Incoming transmission…",
     "over": "This conversation is over.",
     "lost": "Signal lost.",
+    "destroyed": "Signal lost: the ship was destroyed.",
     "names": {
       "merchant": {
         "transport": "Transport",
@@ -2383,6 +2392,7 @@
       "transport": {
         "accept": "Deal accepted.",
         "farewell": "Understood.",
+        "shot": "You opened fire on us! We are leaving.",
         "hail": {
           "HUMAN_VS_FUEL": "We have a surplus of antifreeze and nothing to eat tonight. Interested?",
           "HUMAN_VS_OXY": "Aloha! Your bodies are truly fascinating, especially the way you turn your organic waste into methane. Incredible... We'll give you plenty of oxygen for one of your friends!",

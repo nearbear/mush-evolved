@@ -24,9 +24,10 @@ export type SignalKind = (typeof SIGNAL_KINDS)[number];
 
 /**
  * `active`: can still be talked to. The rest are history: `deal` (a deal was made), `refused` (No thank you), `reached`
- * (a rebel base decoded to 100%) and `lost` (it left, expired or the ship moved on, contacted or not).
+ * (a rebel base decoded to 100%), `lost` (it left, expired or the ship moved on, contacted or not), `shot` (the crew hit
+ * the merchant: it stops answering and flees at the cycle change) and `destroyed` (shot down).
  */
-export const SIGNAL_STATUSES = ["active", "deal", "refused", "reached", "lost"] as const;
+export const SIGNAL_STATUSES = ["active", "deal", "refused", "reached", "lost", "shot", "destroyed"] as const;
 export type SignalStatus = (typeof SIGNAL_STATUSES)[number];
 
 /** One message. Stored as an i18n key and parameters, never as text, so every viewer reads it in their own language. */
@@ -52,6 +53,10 @@ export interface MerchantData {
   /** The original's `trade_events` id: which hail and which deals. */
   event: string;
   deals: MerchantDeal[];
+  /** Its hull points (`config.merchants.kinds[kind].hp` on arrival); at 0 it is destroyed. */
+  hp: number;
+  /** It was hit and is still in space until the cycle change, when it flees (owner, 2026-11-21). */
+  fleeing?: true;
 }
 
 /** What a rebel signal carries (comms.ts): which base calls, and how much of its message is decoded (0 to 100). */

@@ -59,8 +59,8 @@ import { biosTerminalsHere, newBios } from "./bios.ts";
 import { callNextRebel, commsCycle, commsTerminalView, comTerminalsHere, newComms } from "./comms.ts";
 import { botanyCycle, botanyDay, plantView } from "./botany.ts";
 import { burnOxygen, rollOxygenSaved, shipView, startShip } from "./ship.ts";
-import { merchantsCycle } from "./merchants.ts";
-import { newSignals } from "./signals.ts";
+import { merchantsCycle, merchantsInSpace } from "./merchants.ts";
+import { newSignals, signalName } from "./signals.ts";
 import { allTurrets, huntersCycle, newHunters, startHunters, turretCharges, turretsHere } from "./hunters.ts";
 import { expeditionReturnAt, lostPlayers, maxCrew, nextSectorFor, onExpedition, withCrew } from "./expeditions.ts";
 import { ICARUS_EQUIPMENT } from "./actions/icarus_takeoff.ts";
@@ -702,6 +702,8 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
   // A dead body is a corpse item, not a person in a room: nobody gets a dead player's room.
   const living = others.filter((o) => o.alive);
   const logWindow = logWindowOf(state, you);
+  // At a turret or flying a ship: sees what is in space to shoot at.
+  const gunner = you.alive && (turretsHere(state, you).length > 0 || shipAboard(you) !== undefined);
   const tracker = hasSkill(you, "hunt");
   const protectingOf = (id: PlayerId) => state.players.find((p) => p.alive && p.protectedBy === id)?.id;
   const yourProtecting = protectingOf(you.id);
@@ -848,7 +850,10 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     hunters: {
       count: state.hunters.list.length,
       // Each hunter's kind and an asteroid's countdown along with its hp (owner, 2026-11-12, #388).
-      list: you.alive && (turretsHere(state, you).length > 0 || shipAboard(you)) ? state.hunters.list.map(({ id, type, hp, countdown }) => ({ id, type, hp, countdown })) : null,
+      list: gunner ? state.hunters.list.map(({ id, type, hp, countdown }) => ({ id, type, hp, countdown })) : null,
+      // The merchants in space, as targets, to the same viewers (owner, 2026-11-21): kind, name and hp. Their kind is
+      // public already (NERON announces each arrival); nothing of their hail or deals.
+      merchants: gunner ? merchantsInSpace(state).map((m) => ({ id: m.id, kind: m.merchant!.kind, name: signalName(m), hp: m.merchant!.hp })) : null,
       turrets: you.alive && turretsHere(state, you).length > 0 ? Object.fromEntries(allTurrets(state).map((t) => [t.id, turretCharges(state, t.id)])) : null,
     },
     ...relayView(state, you),

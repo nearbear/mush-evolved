@@ -374,6 +374,7 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
     kinds: {
       transport: {
         weight: 1,
+        hp: 16,
         events: {
           HUMAN_VS_FUEL: [
             { give: [{ kind: "crew", count: [1, 1] }], receive: [{ kind: "item", item: "fuel_capsule", count: [8, 12] }] },

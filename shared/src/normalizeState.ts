@@ -921,9 +921,17 @@ export function normalizeMerchantDeal(raw: Partial<MerchantDeal>): MerchantDeal 
   return stripUndefined<MerchantDeal>({ give: need(raw, "give", t).map(normalizeGiveAsset), receive: need(raw, "receive", t).map(normalizeReceiveAsset), skill: raw.skill });
 }
 
-export function normalizeMerchantData(raw: Partial<MerchantData>): MerchantData {
+export function normalizeMerchantData(raw: Partial<MerchantData>, ctx: NormalizeContext): MerchantData {
   const t = "MerchantData";
-  return stripUndefined<MerchantData>({ kind: need(raw, "kind", t), event: need(raw, "event", t), deals: need(raw, "deals", t).map(normalizeMerchantDeal) });
+  const kind = need(raw, "kind", t);
+  return stripUndefined<MerchantData>({
+    kind,
+    event: need(raw, "event", t),
+    deals: need(raw, "deals", t).map(normalizeMerchantDeal),
+    // Shooting a merchant (2026-11-21): one stored before it is unhurt.
+    hp: added(raw, "hp", ctx.config.merchants.kinds[kind].hp),
+    fleeing: raw.fleeing,
+  });
 }
 
 export function normalizeFeedEntry(raw: Partial<FeedEntry>): FeedEntry {
@@ -938,7 +946,7 @@ export function normalizeFeedEntry(raw: Partial<FeedEntry>): FeedEntry {
   });
 }
 
-export function normalizeSignal(raw: Partial<Signal>): Signal {
+export function normalizeSignal(raw: Partial<Signal>, ctx: NormalizeContext): Signal {
   const t = "Signal";
   return stripUndefined<Signal>({
     id: need(raw, "id", t),
@@ -949,7 +957,7 @@ export function normalizeSignal(raw: Partial<Signal>): Signal {
     step: need(raw, "step", t),
     number: need(raw, "number", t),
     feed: need(raw, "feed", t).map(normalizeFeedEntry),
-    merchant: opt(raw.merchant, normalizeMerchantData),
+    merchant: opt(raw.merchant, (m) => normalizeMerchantData(m, ctx)),
     rebel: opt(raw.rebel, normalizeRebelData),
   });
 }
@@ -959,9 +967,9 @@ export function normalizeRebelData(raw: Partial<RebelData>): RebelData {
   return stripUndefined<RebelData>({ base: need(raw, "base", t), progress: need(raw, "progress", t) });
 }
 
-export function normalizeSignals(raw: Partial<SignalsState>): SignalsState {
+export function normalizeSignals(raw: Partial<SignalsState>, ctx: NormalizeContext): SignalsState {
   const t = "SignalsState";
-  return stripUndefined<SignalsState>({ list: need(raw, "list", t).map(normalizeSignal), nextId: need(raw, "nextId", t) });
+  return stripUndefined<SignalsState>({ list: need(raw, "list", t).map((s) => normalizeSignal(s, ctx)), nextId: need(raw, "nextId", t) });
 }
 
 type PatrolShip = GameCore["patrolShips"][string];
@@ -1127,7 +1135,7 @@ export function normalizeSeatStarts(raw: Partial<SeatStarts>): SeatStarts {
 // The game.
 
 /** The game's own data, shared by the live game and a replay frame. */
-export function normalizeCore(raw: Partial<GameCore>, _ctx: NormalizeContext, mode: QueueMode): GameCore {
+export function normalizeCore(raw: Partial<GameCore>, ctx: NormalizeContext, mode: QueueMode): GameCore {
   const t = "GameCore";
   const bios = need(raw, "bios", t);
   const titles = need(raw, "titles", t);
@@ -1196,7 +1204,7 @@ export function normalizeCore(raw: Partial<GameCore>, _ctx: NormalizeContext, mo
     navigation: normalizeNavigation(need(raw, "navigation", t)),
     hunters: normalizeHunters(need(raw, "hunters", t)),
     // Signals (docs/plans/signals.md): none in a game stored before merchants (#143); upgradeTo119 moved those.
-    signals: normalizeSignals(added(raw, "signals", { list: [], nextId: 1 })),
+    signals: normalizeSignals(added(raw, "signals", { list: [], nextId: 1 }), ctx),
     turrets: dict(need(raw, "turrets", t)),
     patrolShips: mapValues(need(raw, "patrolShips", t), normalizePatrolShip),
     space: need(raw, "space", t).map(normalizeDebris),

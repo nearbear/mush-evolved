@@ -5,11 +5,12 @@ import type { DrugEffect } from "../drugs.ts";
 import type { FruitEffect } from "../fruits.ts";
 import type { RebelBaseId, XylophEntryId } from "../comms.ts";
 import type { SignalView } from "../signals.ts";
+import type { MerchantKind } from "../merchants.ts";
 import type { TurnSide } from "../navigation.ts";
 import type { PlanetDirection, PlanetTag } from "../planets.ts";
 import type { TitleId } from "../titles.ts";
 import type { Alerts } from "../reports.ts";
-import type { Action, BotKind, DocumentState, ItemId, LogEntry, LogLine, PlayerId, Role, RoomId, SpoilStage } from "../types.ts";
+import type { Action, BotKind, DocumentState, ItemId, LogEntry, LogLine, LogParams, PlayerId, Role, RoomId, SpoilStage } from "../types.ts";
 import type { ChannelId, ChatLine, ChatMessage, ChatThread, PrivateChannel, SeqRange, SharedPlanet, SharedPlanetId, SharedReport, SharedReportId } from "./chat.ts";
 import type { Plan } from "./plan.ts";
 import type { MovementRules } from "./config.ts";
@@ -202,6 +203,14 @@ export interface HunterView {
   countdown: number | null;
 }
 
+/** A merchant in space as a gunner sees it (owner, 2026-11-21): its signal id, kind, name ("Transport 2") and hp. */
+export interface MerchantTargetView {
+  id: string;
+  kind: MerchantKind;
+  name: { key: string; params?: LogParams };
+  hp: number;
+}
+
 export interface PlayerView {
   you: YouView;
   /** Every status you have, public and private, stored and derived (statuses.ts). */
@@ -361,7 +370,7 @@ export interface PlayerView {
    * alive in a turret room or flying a ship (owner, 2026-10-28), with its kind and an asteroid's countdown (#388); `turrets` (charges by turret equipment id) only while
    * you are alive in a turret room. Otherwise null.
    */
-  hunters: { count: number; list: HunterView[] | null; turrets: Record<string, number> | null };
+  hunters: { count: number; list: HunterView[] | null; merchants: MerchantTargetView[] | null; turrets: Record<string, number> | null };
   /**
    * Reports of the expeditions you went on, oldest first, while you are alive (owner, 2026-10-31): nobody else's, and
    * without the members' seat ids (the crew is by character).

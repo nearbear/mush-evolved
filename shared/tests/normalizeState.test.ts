@@ -547,7 +547,7 @@ describe("upgrade", () => {
       step: "hail",
       number: 1,
       feed: [],
-      merchant: { kind: "transport", event: "HUMAN_VS_OXY", deals },
+      merchant: { kind: "transport", event: "HUMAN_VS_OXY", deals, hp: DEFAULT_CONFIG.merchants.kinds.transport.hp },
     });
     expect(normalized.signals.list[1]).toMatchObject({ id: "signal-2", number: 2, merchant: { event: "HUMAN_VS_FUEL", deals: [] } });
   });

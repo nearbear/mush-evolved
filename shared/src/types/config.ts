@@ -651,8 +651,9 @@ export interface GameConfig {
     deal: { cost: { ap: number } }; // AP the comms officer spends to close a deal (owner, 2).
     storageRooms: RoomId[]; // Rooms whose floors pay for item deals (owner: any storage).
     deliveryRoom: RoomId; // Where bought items appear (owner: Front Storage).
-    // Each kind's arrival weight and hails: event id -> its deals (the original's trade_events), in order.
-    kinds: Record<MerchantKind, { weight: number; events: Record<string, DealTemplate[]> }>;
+    // Each kind's arrival weight, hull points (owner, 2026-11-21: the transport's 16 from the original, no armor) and
+    // hails: event id -> its deals (the original's trade_events), in order.
+    kinds: Record<MerchantKind, { weight: number; hp: number; events: Record<string, DealTemplate[]> }>;
   };
   comms: {
     sol: {

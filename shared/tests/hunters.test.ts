@@ -192,12 +192,13 @@ describe("shooting from a turret", () => {
     expect(viewFor(s, "p0").hunters).toEqual({
       count: 1,
       list: [{ id: "h1", type: "hunter", hp: 6, countdown: null }],
+      merchants: [],
       turrets: expect.objectContaining({ [TURRET]: 2, "LASER_TURRET_B_2:TURRET_COMMAND": 4 }),
     });
     expect(Object.keys(viewFor(s, "p0").hunters.turrets!)).toHaveLength(6);
-    expect(viewFor(s, "p2").hunters).toEqual({ count: 1, list: null, turrets: null });
+    expect(viewFor(s, "p2").hunters).toEqual({ count: 1, list: null, merchants: null, turrets: null });
     player(s, "p1").alive = false;
-    expect(viewFor(s, "p1").hunters).toEqual({ count: 1, list: null, turrets: null });
+    expect(viewFor(s, "p1").hunters).toEqual({ count: 1, list: null, merchants: null, turrets: null });
   });
 
   it("parses from the wire", () => {

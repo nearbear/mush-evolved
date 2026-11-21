@@ -1262,6 +1262,9 @@
     "shipDestroyed": "El casco del Daedalus cede. La nave explota, y toda la tripulación con ella.",
     "turretHit": "Alcanzas al hunter: {{damage}} de daño.",
     "turretMiss": "Fallas el disparo al hunter.",
+    "merchantHit": "Alcanzas la {{merchant}}: {{damage}} de daño.",
+    "merchantMiss": "Fallas el disparo a la {{merchant}}.",
+    "merchantDestroyed": "Destruyes la {{merchant}}.",
     "hunterDestroyed": "{{name}} ha derribado un hunter.",
     "hullRepaired": "{{name}} ha reforzado el casco.",
     "hullRepairFailed": "No has conseguido reforzar el casco.",
@@ -2000,7 +2003,10 @@
     "countdown_one": "Impacto en {{count}} ciclo",
     "countdown_many": "Impacto en {{count}} ciclos",
     "countdown_other": "Impacto en {{count}} ciclos",
-    "charges": "Cargas restantes: {{charges}}"
+    "charges": "Cargas restantes: {{charges}}",
+    "merchantConfirm": "¿Disparar a {{name}}? Un impacto pone fin a cualquier trato y la hace huir.",
+    "merchantConfirmYes": "Disparar",
+    "merchantConfirmBack": "Alto el fuego"
   },
   "document": {
     "read": "Leer",
@@ -2300,7 +2306,9 @@
       "deal": "Trato cerrado",
       "refused": "Rechazada",
       "lost": "Señal perdida",
-      "reached": "Decodificada"
+      "reached": "Decodificada",
+      "shot": "Atacada",
+      "destroyed": "Destruida"
     },
     "kinds": {
       "merchant": "Mercader",
@@ -2313,6 +2321,7 @@
     "incoming": "Transmisión entrante…",
     "over": "Esta conversación ha terminado.",
     "lost": "Señal perdida.",
+    "destroyed": "Señal perdida: la nave fue destruida.",
     "names": {
       "merchant": {
         "transport": "Transporte",
@@ -2328,6 +2337,7 @@
       "transport": {
         "accept": "Trato hecho.",
         "farewell": "Entendido.",
+        "shot": "¡Nos habéis disparado! Nos vamos.",
         "hail": {
           "HUMAN_VS_FUEL": "Tenemos un excedente de anticongelante y nos falta comida para esta noche. ¿Os interesa?",
           "HUMAN_VS_OXY": "Aloha, vuestros organismos son realmente apasionantes, sobre todo la metanización de vuestros residuos orgánicos, increíble... ¡Os cambiamos a uno de vuestros amigos por unas reservas de oxígeno considerables!",

@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { jump } from "../src/actions/travel.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
-import { arriveMerchant, type MerchantDeal, merchantsCycle, merchantsInOrbit, openEvents } from "../src/merchants.ts";
+import { arriveMerchant, type MerchantDeal, merchantsCycle, merchantsInOrbit, merchantsInSpace, openEvents } from "../src/merchants.ts";
 import { advanceNeron } from "../src/comms.ts";
 import { offeredProjects, tradableProjects } from "../src/projectEffects.ts";
 import { availableProjects, PROJECT_IDS, type ProjectId } from "../src/projects.ts";
 import { PILGRED_COMPLETE } from "../src/pilgred.ts";
-import { addSignal, type Signal } from "../src/signals.ts";
+import { addSignal, findSignal, type Signal } from "../src/signals.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameConfig, GameState } from "../src/types.ts";
 import { clone, costOf, makeSeats, must, nextCycle, noHunters, noIncidents, offered, player } from "./support.ts";
@@ -26,7 +26,7 @@ function ship(arrival = 0): GameState {
 
 /** A transport with the given deals, in orbit now and already contacted (its deals on offer). */
 function withMerchant(s: GameState, deals: MerchantDeal[]): Signal {
-  const m = addSignal(s, "merchant", s.cycle + cfg.stayCycles, { merchant: { kind: "transport", event: "HUMAN_VS_FUEL", deals } });
+  const m = addSignal(s, "merchant", s.cycle + cfg.stayCycles, { merchant: { kind: "transport", event: "HUMAN_VS_FUEL", deals, hp: cfg.kinds.transport.hp } });
   m.step = "offers";
   return m;
 }
@@ -371,6 +371,93 @@ describe("merchant ships", () => {
       s = must(applyAction(s, "p2", open("box")));
       expect(s.items.some((i) => i.id === "box")).toBe(false);
       expect(applyAction(s, "p1", open("box")).ok).toBe(false);
+    });
+  });
+
+  describe("shooting a merchant (owner, 2026-11-21)", () => {
+    const TURRET_ROOM = "LASER_TURRET_A_0";
+    const TURRET = "LASER_TURRET_A_0:TURRET_COMMAND";
+    const shoot = (target: string): Action => ({ type: "turret_attack", equipment: TURRET, hunter: target });
+    /** p1 at a turret with a sure (or never) shot; a transport in orbit, already contacted. */
+    function range(chance: number, damage: [number, number] = [2, 2]): { s: GameState; m: Signal } {
+      const s = ship();
+      s.config = { ...s.config, turrets: { ...s.config.turrets, chance, damage } };
+      player(s, "p1").room = TURRET_ROOM;
+      return { s, m: withMerchant(s, [crewForFuel]) };
+    }
+
+    it("the transport has the original's 16 hp, no armor", () => {
+      expect(cfg.kinds.transport.hp).toBe(16);
+      expect(arriveMerchant(ship(), "transport").merchant!.hp).toBe(16);
+    });
+
+    it("is a target at a turret after the hunters, and gunners see its kind, name and hp; nobody else does", () => {
+      const { s, m } = range(1);
+      expect(offered(s, "p1").filter((a) => a.type === "turret_attack")).toEqual([shoot(m.id)]);
+      expect(viewFor(s, "p1").hunters.merchants).toEqual([{ id: m.id, kind: "transport", name: { key: "signals.names.merchant.transport" }, hp: 16 }]);
+      expect(viewFor(s, "p0").hunters.merchants).toBeNull();
+    });
+
+    it("a hit ends the conversation at once; it flees at the cycle change, with no announcement", () => {
+      const { s, m } = range(1);
+      const chat = s.chat.length;
+      let next = must(applyAction(s, "p1", shoot(m.id)));
+      const hit = findSignal(next, m.id)!;
+      expect([hit.status, hit.merchant!.hp, hit.merchant!.fleeing]).toEqual(["shot", 14, true]);
+      expect(hit.feed.at(-1)).toMatchObject({ from: "signal", key: "signals.merchant.transport.shot", closes: true });
+      expect(next.log.at(-1)).toMatchObject({ key: "merchantHit", visibleTo: ["p1"], params: { merchant: "transport", damage: 2 } });
+      // Still in space to shoot at until the cycle change, but no longer dealing.
+      expect(merchantsInOrbit(next)).toEqual([]);
+      expect(merchantsInSpace(next).map((x) => x.id)).toEqual([m.id]);
+      expect(offered(next, "p0").some((a) => a.type === "close_deal")).toBe(false);
+      next = must(applyAction(next, "p1", shoot(m.id)));
+      expect(findSignal(next, m.id)!.feed.filter((e) => e.closes)).toHaveLength(1);
+      next = nextCycle(next);
+      expect(merchantsInSpace(next)).toEqual([]);
+      expect(findSignal(next, m.id)!.status).toBe("shot");
+      expect(next.chat.slice(chat).some((c) => c.system?.key.includes("erchant"))).toBe(false);
+    });
+
+    it("a miss changes nothing for the merchant", () => {
+      const { s, m } = range(0);
+      const next = must(applyAction(s, "p1", shoot(m.id)));
+      expect(findSignal(next, m.id)!).toMatchObject({ status: "active", merchant: { hp: 16 } });
+      expect(findSignal(next, m.id)!.merchant!.fleeing).toBeUndefined();
+      expect(next.log.at(-1)).toMatchObject({ key: "merchantMiss", visibleTo: ["p1"] });
+    });
+
+    it("at 0 hp it is destroyed, drops wreckage like a hunter, and the shooter alone is told", () => {
+      const { s, m } = range(1, [16, 16]);
+      const next = must(applyAction(s, "p1", shoot(m.id)));
+      const gone = findSignal(next, m.id)!;
+      expect([gone.status, gone.merchant!.hp]).toEqual(["destroyed", 0]);
+      expect(gone.feed.at(-1)).toMatchObject({ from: "system", key: "signals.destroyed", closes: true });
+      expect(merchantsInSpace(next)).toEqual([]);
+      expect(next.space.length).toBeGreaterThan(s.space.length);
+      expect(next.log.at(-1)).toMatchObject({ key: "merchantDestroyed", visibleTo: ["p1"] });
+    });
+
+    it("destroyed after a first hit, it says so", () => {
+      const { s, m } = range(1, [8, 8]);
+      const next = must(applyAction(must(applyAction(s, "p1", shoot(m.id))), "p1", shoot(m.id)));
+      const gone = findSignal(next, m.id)!;
+      expect(gone.status).toBe("destroyed");
+      expect(gone.feed.map((e) => e.key).slice(-2)).toEqual(["signals.merchant.transport.shot", "signals.destroyed"]);
+    });
+
+    it("one that made a deal or was refused has left, so can't be shot", () => {
+      const { s, m } = range(1);
+      const refused = must(applyAction(s, "p0", { type: "refuse_signal", equipment: TERMINAL, signal: m.id }));
+      expect(offered(refused, "p1").some((a) => a.type === "turret_attack")).toBe(false);
+      expect(applyAction(refused, "p1", shoot(m.id)).ok).toBe(false);
+    });
+
+    it("a hit one is gone when the Daedalus travels", () => {
+      const { s, m } = range(1);
+      const next = must(applyAction(s, "p1", shoot(m.id)));
+      jump(next, player(next, "p0"), 1);
+      expect(merchantsInSpace(next)).toEqual([]);
+      expect(findSignal(next, m.id)!.status).toBe("shot");
     });
   });
 });
