@@ -31,7 +31,7 @@ import { ServerClockContext, serverTime, type ServerClock } from "./hud/serverCl
 import { shipPace, type Corpse, type Drone, type Occupant } from "./iso/scene.ts";
 import { FIRE_ICON, orbitImage, skillIcon } from "./art/assets.ts";
 import { LeavingIsoRoom } from "./iso/LeavingRoom.tsx";
-import { recentDoorMoves } from "./iso/doorMoves.ts";
+import { type DoorMove, recentDoorMoves } from "./iso/doorMoves.ts";
 import { useCheatRoom, useShipLayout } from "./iso/shipLayout.ts";
 import { useActingOn } from "./iso/useActingOn.ts";
 import { useFogDepth } from "./fogDepth.ts";
@@ -70,7 +70,7 @@ export interface GameViewProps {
 }
 
 const LIVE: ServerClock = { offset: 0 };
-const NO_DOOR_MOVES: ReadonlyMap<string, { from?: RoomId; to?: RoomId }> = new Map();
+const NO_DOOR_MOVES: ReadonlyMap<string, DoorMove> = new Map();
 
 /**
  * The game screen without a socket: renders a `PlayerView` and turns clicks into intents through `send`. GameScreen

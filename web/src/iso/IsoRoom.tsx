@@ -42,6 +42,7 @@ import {
   droneOf,
   describeScene,
   doorOpenMs,
+  FADE_MS,
   imageOf,
   type Corpse,
   type Drone,
@@ -52,6 +53,7 @@ import {
   type ShipPace,
   type ShipTurn,
 } from "./scene.ts";
+import type { DoorMove } from "./doorMoves.ts";
 import {
   bounds,
   cellAtPoint,
@@ -172,6 +174,9 @@ export function roomLooks(
 /** The index of the last step in a doorway. */
 const lastInDoorway = (steps: readonly DoorStep[]) => steps.reduce((last, s, i) => (s.door ? i : last), -1);
 
+/** Someone who just went out of your room: by the door to `to`, or with no door to show, fading out at `cell`. */
+type Leaver = { visit: number; person: Occupant; to?: RoomId; cell?: { x: number; y: number } };
+
 export function IsoRoom({
   layout,
   room,
@@ -256,8 +261,8 @@ export function IsoRoom({
   /** You've already moved there: walk to the door to it, then `onLeft` (LeavingIsoRoom shows the next room). */
   leavingTo: RoomId | null;
   onLeft: () => void;
-  /** Where people last came in from or went out to, if just now (by player id): they walk through that door. */
-  doorMoves: ReadonlyMap<string, { from?: RoomId; to?: RoomId }>;
+  /** Where people last came in from or went out to, if just now (by player id): they walk through that door, or fade in or out where they stand. */
+  doorMoves: ReadonlyMap<string, DoorMove>;
   onMove: (to: RoomId) => void;
   /** You walked to a cell (sitting if it's a chair): the server tells your roommates (spot.ts in shared). Pushing a wheelchair, the cell is where it goes and `behind` where you end up. */
   /** Absent in a read-only view (a replay): clicking the floor then walks nowhere. */
@@ -368,8 +373,13 @@ export function IsoRoom({
     return way && (you ? way.slice(lastInDoorway(way)) : way);
   };
 
-  // Others who just went out through a door: drawn walking out until they're through it.
-  const [leavers, setLeavers] = useState<{ visit: number; person: Occupant; to: RoomId }[]>([]);
+  // Others who just went out: through a door, drawn walking out until they're through it; or with no door to show
+  // (the view gives no direction without Tracker), drawn fading out where they stood (`cell`) for `FADE_MS`.
+  const [leavers, setLeavers] = useState<Leaver[]>([]);
+  // Others who just came in with no door to show, fading in for `FADE_MS`.
+  const [fadingIn, setFadingIn] = useState<{ visit: number; ids: readonly string[] }>({ visit: -1, ids: [] });
+  // Where each walker stands, for the effect below, which runs after `useWalkers` has given them.
+  const walkerCells = useRef<ReadonlyMap<string, { cell: { x: number; y: number } }>>(new Map());
   const walkingOut = leavers.filter((l) => l.visit === visit.current.n && !occupants.some((o) => o.id === l.person.id));
   // Who was here last time, to tell who just came in or went out.
   const lastSeen = useRef({ visit: visit.current.n, ids: new Set(occupants.map((o) => o.id)), occupants });
@@ -380,13 +390,43 @@ export function IsoRoom({
     const before = lastSeen.current;
     lastSeen.current = { visit: visit.current.n, ids: new Set(occupants.map((o) => o.id)), occupants };
     if (before.visit !== visit.current.n) return;
-    const gone = before.occupants.flatMap((person) => {
-      const to = person.you || lastSeen.current.ids.has(person.id) ? undefined : doorMoves.get(person.id)?.to;
-      return to && wayOut(to, false) ? [{ visit: visit.current.n, person, to }] : [];
+    const gone = before.occupants.flatMap((person): Leaver[] => {
+      if (person.you || lastSeen.current.ids.has(person.id)) return [];
+      const move = doorMoves.get(person.id);
+      if (move?.to && wayOut(move.to, false)) return [{ visit: visit.current.n, person, to: move.to }];
+      const cell = walkerCells.current.get(person.id)?.cell;
+      return move?.fadeOut && cell ? [{ visit: visit.current.n, person, cell }] : [];
     });
     if (gone.length) setLeavers((ls) => [...ls.filter((l) => l.visit === visit.current.n && !gone.some((g) => g.person.id === l.person.id)), ...gone]);
+    const came = occupants.filter((o) => !o.you && !before.ids.has(o.id) && doorMoves.get(o.id)?.fadeIn).map((o) => o.id);
+    if (came.length) setFadingIn((f) => ({ visit: visit.current.n, ids: [...(f.visit === visit.current.n ? f.ids : []), ...came] }));
   }, [occupantKey, visitN]);
   const drawnPeople = [...occupants, ...walkingOut.map((l) => l.person)];
+  // Fades end on their own clock: a fading leaver is gone, a newcomer fully drawn.
+  const fadingOutKey = walkingOut
+    .filter((l) => !l.to)
+    .map((l) => l.person.id)
+    .join(",");
+  useEffect(() => {
+    if (!fadingOutKey) return;
+    const ids = fadingOutKey.split(",");
+    const t = setTimeout(() => setLeavers((ls) => ls.filter((l) => l.to || !ids.includes(l.person.id))), FADE_MS);
+    return () => clearTimeout(t);
+  }, [fadingOutKey]);
+  const fadingInKey = fadingIn.ids.join(",");
+  useEffect(() => {
+    if (!fadingInKey) return;
+    const t = setTimeout(() => setFadingIn({ visit: -1, ids: [] }), FADE_MS);
+    return () => clearTimeout(t);
+  }, [fadingInKey]);
+  // Who fades, by person id. A newcomer counts from the render they first appear in, before the effect above records them.
+  const fading = new Map<string, "in" | "out">();
+  for (const o of occupants) {
+    const fresh = !!seen && !seen.ids.has(o.id) && !o.you && !!doorMoves.get(o.id)?.fadeIn;
+    if (fresh || (fadingIn.visit === visit.current.n && fadingIn.ids.includes(o.id))) fading.set(o.id, "in");
+  }
+  for (const l of walkingOut) if (!l.to) fading.set(l.person.id, "out");
+  const fadingKey = [...fading].map(([id, f]) => `${id}:${f}`).join(";");
   // Someone in bed lies where the original put them (`lyingPose`), mirrored to run along the bed.
   const beds = new Map<string, NonNullable<ReturnType<typeof lyingPose>>>();
   const equipmentByKey = useMemo(() => equipmentByTileKey(roomLayout, equipment), [roomLayout, equipment]);
@@ -439,6 +479,10 @@ export function IsoRoom({
     }),
   );
   for (const l of walkingOut) {
+    if (!l.to) {
+      if (l.cell) targets.set(l.person.id, { cell: l.cell });
+      continue;
+    }
     const out = wayOut(l.to, false);
     const cell = doorSpot(layout, roomLayout!, l.to, cells);
     if (out && cell) targets.set(l.person.id, { cell, then: out });
@@ -446,6 +490,7 @@ export function IsoRoom({
   // Each animation frame while anyone walks: the camera and the walkers' pixel shifts, to the renderer and the overlay.
   const paint = useRef<((offsetOf: (id: string) => { x: number; y: number }) => void) | null>(null);
   const { at: walkers, doors, apply: applyWalkers, offsetOf } = useWalkers(room, cells, targets, openMs, paint, teleport && !myPushee && me?.pushedBy === undefined ? me?.id : undefined, snap);
+  walkerCells.current = walkers;
   const myWalker = me && walkers.get(me.id);
   const standsAt = (w: { cell: { x: number; y: number }; moving: boolean } | undefined, c: { x: number; y: number }) => !!w && !w.moving && w.cell.x === c.x && w.cell.y === c.y;
   // Walking out: done once you stand in the doorway (straight away if there's no door to go through).
@@ -454,6 +499,7 @@ export function IsoRoom({
   // Others walking out are gone once through.
   const throughKey = walkingOut
     .filter((l) => {
+      if (!l.to) return false;
       const end = targets.get(l.person.id)?.then?.at(-1);
       return !end || standsAt(walkers.get(l.person.id), end);
     })
@@ -649,7 +695,7 @@ export function IsoRoom({
     () => roomLooks(pilgredRepaired, humanTankFull, superCalcBuilt, neronThread, bayDoorXxl, plasmaShield, takeoffThruster, extraAmmo, blasterGun, fissionCoffee, guaranaCoffee, auxiliaryTerminal, heatLamp, hydroponicIncubator, icarusAntigrav, icarusLargerBay),
     [pilgredRepaired, humanTankFull, superCalcBuilt, neronThread, bayDoorXxl, plasmaShield, takeoffThruster, extraAmmo, blasterGun, fissionCoffee, guaranaCoffee, auxiliaryTerminal, heatLamp, hydroponicIncubator, icarusAntigrav, icarusLargerBay],
   );
-  const imageInput = { layout, room, people: byId, walkers, seats, corpses, drones, looks };
+  const imageInput = { layout, room, people: byId, walkers, seats, fading, corpses, drones, looks };
 
   // Load every image this room hit-tests against, so masks are ready by the first click.
   // biome-ignore lint/correctness/useExhaustiveDependencies: re-preload only when the sprite set changes; the image input is rebuilt every render.
@@ -686,7 +732,7 @@ export function IsoRoom({
         turn,
         fireSlots,
       }),
-    [scene, box, walkersKey, walkersLook, doorsKey, seatsKey, occupants, nearby, corpses, drones, equipmentByKey, reachable, brokenDoors, selected, selectedDoor, inventoryOpen, hoverKey, ownCells, looks, pace, planet, turn, fireSlots],
+    [scene, box, walkersKey, walkersLook, doorsKey, seatsKey, fadingKey, occupants, nearby, corpses, drones, equipmentByKey, reachable, brokenDoors, selected, selectedDoor, inventoryOpen, hoverKey, ownCells, looks, pace, planet, turn, fireSlots],
   );
   // Badges and bubbles go over the people in this room.
   const anchors = drawn.sprites.flatMap((s): Anchor[] => {

@@ -17,4 +17,14 @@ describe("recentDoorMoves", () => {
     const log = [entry("entered", "kuanti", "BRIDGE", 0), entry("left", "chun", "BRIDGE"), entry("said", "chun", "BRIDGE", 99_000), entry("left", "nobody", "BRIDGE", 99_000)];
     expect(recentDoorMoves(log, players, 100_000).size).toBe(0);
   });
+
+  it("fades a move with no direction (no Tracker) in or out instead of walking a door", () => {
+    const undirected = (key: string, name: string, at: number): LogLine => ({ cycle: 1, key, params: { name }, visibleTo: "all", at });
+    const log = [entry("entered", "kuanti", "BRIDGE", 1000), undirected("leftRoom", "kuanti", 2000), undirected("enteredRoom", "chun", 3000)];
+    const moves = recentDoorMoves(log, players, 5000);
+    expect(moves.get("p1")).toEqual({ from: "BRIDGE", fadeOut: true });
+    expect(moves.get("p2")).toEqual({ fadeIn: true });
+    // A later move by a door replaces the fade on its side.
+    expect(recentDoorMoves([...log, entry("entered", "chun", "LABORATORY", 4000)], players, 5000).get("p2")).toEqual({ from: "LABORATORY" });
+  });
 });

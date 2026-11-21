@@ -245,10 +245,11 @@ describe("room log", () => {
 
   it("shows a room's public history only to players in that room, including what happened before they came", () => {
     let state = mustApply(newGame(), "p1", move("CORRIDOR_A")); // p1: lab -> corridor
-    expect(texts(state, "p0")).toContain('left {"name":"chun","room":"CORRIDOR_A"}');
-    expect(texts(state, "p0")).not.toContain('entered {"name":"chun","room":"LABORATORY"}');
+    // Without Tracker, no direction (logWindow.test.ts).
+    expect(texts(state, "p0")).toContain('leftRoom {"name":"chun"}');
+    expect(texts(state, "p0")).not.toContain('enteredRoom {"name":"chun"}');
     state = mustApply(state, "p0", move("CORRIDOR_A"));
-    expect(texts(state, "p0")).toContain('entered {"name":"chun","room":"LABORATORY"}');
+    expect(texts(state, "p0")).toContain('enteredRoom {"name":"chun"}');
     expect(texts(state, "p0")).not.toContain("Player 1 left for Corridor front.");
   });
 

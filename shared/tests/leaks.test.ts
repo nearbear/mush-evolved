@@ -83,7 +83,8 @@ function ship(): { state: GameState; sentinels: Sentinel[] } {
     p.mushSkills.push(str(`mushSkill-${p.id}`, own));
     p.lyingIn = str(`lyingIn-${p.id}`, room);
     p.lyingSince = num(`lyingSince-${p.id}`, []);
-    p.spot = { kind: "door", door: str(`spot-${p.id}`, room) };
+    // A door spot says where they came from: only a Tracker roommate sees it (logWindow.test.ts), and nobody here is one.
+    p.spot = { kind: "door", door: str(`spot-${p.id}`, own) };
     p.pushedBy = str(`pushedBy-${p.id}`, room);
     p.protectedBy = str(`protectedBy-${p.id}`, room);
     p.accommodationOffers = [{ by: str(`accommodationOffers-${p.id}`, own), until: num(`accommodationOfferUntil-${p.id}`, own) }];

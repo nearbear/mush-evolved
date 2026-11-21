@@ -47,7 +47,7 @@ import { clone, cloneState, dayOf, fail, findPlayer, type ActionResult } from ".
 
 export { dayOf };
 import { damage, healDaily, hasMushDied } from "./death.ts";
-import { activitySeen, inLogWindow, logPrivate, logWindowOf, pruneLog, seesLine, startLogSeen, withNimbleActor } from "./log.ts";
+import { activitySeen, inLogWindow, logPrivate, logWindowOf, moveLineFor, pruneLog, seesLine, startLogSeen, withNimbleActor } from "./log.ts";
 import { recordAction } from "./history.ts";
 import { ringMycoAlarms } from "./mycoalarm.ts";
 import { planetsOf } from "./planets.ts";
@@ -702,6 +702,7 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
   // A dead body is a corpse item, not a person in a room: nobody gets a dead player's room.
   const living = others.filter((o) => o.alive);
   const logWindow = logWindowOf(state, you);
+  const tracker = hasSkill(you, "hunt");
   const protectingOf = (id: PlayerId) => state.players.find((p) => p.alive && p.protectedBy === id)?.id;
   const yourProtecting = protectingOf(you.id);
   // Nobody's account name goes out while the game runs, not even your own: people are known by character.
@@ -758,8 +759,9 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
         ...(here && o.bookSkill !== undefined ? { bookSkill: o.bookSkill } : {}),
         // Who is in bed, and which bed, is visible to the room (owner, 2026-10-18).
         ...(here && o.lyingIn ? { lying: o.lyingIn } : {}),
-        // Where they stand, and whether they sit, is visible to the room (owner, 2026-10-20).
-        ...(here && o.spot && state.config.sharedSpots ? { spot: { ...o.spot } } : {}),
+        // Where they stand, and whether they sit, is visible to the room (owner, 2026-10-20). Standing at the door they
+        // came in by would say where they came from: only a Tracker sees that spot (owner, 2026-11-21, `moveLineFor`).
+        ...(here && o.spot && state.config.sharedSpots && (o.spot.kind !== "door" || tracker) ? { spot: { ...o.spot } } : {}),
         // Who pushes whose wheelchair is public to the room (owner, 2026-10-19).
         ...(here && o.pushedBy !== undefined ? { pushedBy: o.pushedBy } : {}),
         // Who protects whom (Bodyguard) is public to the room (owner, 2026-11-14).
@@ -805,10 +807,10 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     alerts: you.alive ? alertsFor(state) : { fires: 0, broken: 0, reports: [] },
     // `seesLine` (log.ts) says which lines are yours; room lines, private ones included, only within your window (#365).
     // A private line names only you in the view: no one learns who else saw it (`leaked` marks a secret line others saw).
-    // `kind` and `leaked` go with every line you see (#366).
+    // `kind` and `leaked` go with every line you see (#366). A crew move's direction only with Tracker (`moveLineFor`).
     log: state.log
       .filter((e) => seesLine(e, you) && inLogWindow(state, e, logWindow))
-      .map((e) => (e.visibleTo === "all" ? e : { ...e, visibleTo: [you.id] })),
+      .map((e) => moveLineFor(e.visibleTo === "all" ? e : { ...e, visibleTo: [you.id] }, you)),
     logSeen: you.logSeen,
     chat: state.chat.filter((m) => channels.includes(m.channel) && heardBy(you, m)).map((m) => messageView(m, state.chatMarks)),
     chatCounts: Object.fromEntries(channels.flatMap((c) => (state.chatSeq[c] ? [[c, state.chatSeq[c]]] : []))),

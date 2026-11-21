@@ -29,7 +29,7 @@ import { Application, Container, type Filter, Graphics, Rectangle, RendererType,
 import "pixi.js/unsafe-eval";
 import { FX_SHEET } from "../../art/assets.ts";
 import { keyedUrl } from "../../art/keyedSprite.ts";
-import { animId, animStep, type Cutaway, frameAt, PACE_SPEED, type FrameUpdate, type Scene, type SceneImage, type SceneOutline, type ScenePicture, type SceneSprite, type ShipTurn } from "../scene.ts";
+import { animId, animStep, type Cutaway, FADE_MS, frameAt, PACE_SPEED, type FrameUpdate, type Scene, type SceneImage, type SceneOutline, type ScenePicture, type SceneSprite, type ShipTurn } from "../scene.ts";
 import { shiftTile, stepTurn, tilePosition, type TurnLimits } from "../skyTurn.ts";
 import { gridToPx } from "../placement.ts";
 import { starfield, starLayer } from "../starfield.ts";
@@ -139,6 +139,15 @@ interface Drawn {
   bobY?: number;
   /** An outlined sprite's effect (`SceneSprite.outline`): a copy of it clipped to the outline, drawn just after it. */
   focus?: Focus;
+  /** A fade under way (`SceneSprite.fade`): which way, and when it started. A fade in is dropped once done. */
+  fade?: { dir: "in" | "out"; start: number };
+}
+
+/** How opaque a fading sprite is at `now`: 0 to 1 over `FADE_MS` coming in, 1 to 0 going out. */
+function fadeAlpha(fade: { dir: "in" | "out"; start: number } | undefined, now: number): number {
+  if (!fade) return 1;
+  const t = Math.min(1, Math.max(0, (now - fade.start) / FADE_MS));
+  return fade.dir === "in" ? t : 1 - t;
 }
 
 /**
@@ -213,6 +222,7 @@ export class PixiRenderer {
   private walkers: Drawn[] = [];
   private animated: Drawn[] = [];
   private bobbing: Drawn[] = [];
+  private fading: Drawn[] = [];
   private scene: Scene | null = null;
   private lastFrame: FrameUpdate | null = null;
   private ready = false;
@@ -385,6 +395,7 @@ export class PixiRenderer {
     this.walkers = all.filter((d) => d.pic.walker);
     this.animated = all.filter((d) => d.pic.anim);
     this.bobbing = sprites.filter((d) => (d.pic as SceneSprite).bob);
+    this.fading = sprites.filter((d) => d.fade);
     this.pulsing = scene.outlines.some((o) => o.occluded && !o.faint);
     this.selecting = scene.sprites.some((s) => s.effect === "selected");
     this.requestRender();
@@ -398,15 +409,20 @@ export class PixiRenderer {
       const key = prefix + pic.key;
       seen.add(key);
       let d = this.drawn.get(key);
+      const fade = (pic as ScenePicture & Pick<SceneSprite, "fade">).fade;
       if (!d) {
-        d = { sprite: new Sprite(Texture.EMPTY), pic, frame: -1, animStart: now, textureKey: "" };
+        d = { sprite: new Sprite(Texture.EMPTY), pic, frame: -1, animStart: now, textureKey: "", ...(fade === "in" && { fade: { dir: "in" as const, start: now } }) };
         this.drawn.set(key, d);
       } else if (animId(d.pic.anim) !== animId(pic.anim)) {
         d.animStart = now;
       }
       d.pic = pic;
+      // A fade in only starts with the sprite and then runs its course; a fade out starts when asked and holds.
+      if (fade === "out" && d.fade?.dir !== "out") d.fade = { dir: "out", start: now };
+      else if (fade !== "out" && d.fade?.dir === "out") delete d.fade;
       d.frame = pic.anim ? animStep(pic.anim, now - d.animStart).frame : 0;
       paint(d, pic);
+      this.setAlpha(d, fadeAlpha(d.fade, now));
       this.setTexture(d, pic.image, d.frame);
       this.place(d, { x: 0, y: 0 });
       d.bobY = 0;
@@ -595,6 +611,12 @@ export class PixiRenderer {
   }
 
   /** Fog as a tint; anything else as the filter for that look, shared with every sprite that has it. */
+  /** A sprite's opacity, its effect's copy included. */
+  private setAlpha(d: Drawn, alpha: number) {
+    d.sprite.alpha = alpha;
+    if (d.focus) d.focus.box.alpha = alpha;
+  }
+
   private paintSprite(d: Drawn, s: SceneSprite) {
     const look = lookOf(s);
     d.sprite.tint = look.tint;
@@ -735,6 +757,18 @@ export class PixiRenderer {
       this.place(d, { x: 0, y });
       this.dirty = true;
     }
+    // Fades step every frame until done; a fade out then holds at nothing until the scene drops the sprite.
+    let fades = false;
+    for (const d of this.fading) {
+      if (!d.fade) continue;
+      const alpha = fadeAlpha(d.fade, now);
+      if (now - d.fade.start < FADE_MS) fades = true;
+      else if (d.fade.dir === "in") delete d.fade;
+      if (alpha === d.sprite.alpha) continue;
+      this.setAlpha(d, alpha);
+      this.dirty = true;
+    }
+    if (!fades) this.fading = this.fading.filter((d) => d.fade);
     const dt = this.lastTick ? Math.min(0.1, (now - this.lastTick) / 1000) : 0;
     this.lastTick = now;
     const turning = this.turning();
@@ -775,6 +809,6 @@ export class PixiRenderer {
       this.dirty = true;
     }
     if (this.dirty) this.renderNow();
-    if (playing || pulse || selecting || streams || bobs || particles) this.raf = requestAnimationFrame(this.tick);
+    if (playing || pulse || selecting || streams || bobs || particles || fades) this.raf = requestAnimationFrame(this.tick);
   };
 }

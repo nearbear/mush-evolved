@@ -1005,6 +1005,8 @@
     "coldDiseaseMpLost": "La enfermedad te hizo perder 1 PM.",
     "left": "{{name}} se fue a: {{room}}.",
     "entered": "{{name}} entró desde: {{room}}.",
+    "leftRoom": "{{name}} salió de la sala.",
+    "enteredRoom": "{{name}} entró en la sala.",
     "accommodationOffered": "{{name}} se ofreció a empujar la silla de ruedas de {{target}}.",
     "accommodated": "{{name}} empuja ahora la silla de ruedas de {{target}}.",
     "accommodationEnded": "{{name}} dejó de empujar la silla de ruedas de {{target}}.",

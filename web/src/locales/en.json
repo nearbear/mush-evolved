@@ -989,6 +989,8 @@
     "coldDiseaseMpLost": "Your illness made you lose 1 MP.",
     "left": "{{name}} left for {{room}}.",
     "entered": "{{name}} entered from {{room}}.",
+    "leftRoom": "{{name}} left the room.",
+    "enteredRoom": "{{name}} entered the room.",
     "accommodationOffered": "{{name}} offered to push {{target}}'s wheelchair.",
     "accommodated": "{{name}} is now pushing {{target}}'s wheelchair.",
     "accommodationEnded": "{{name}} stopped pushing {{target}}'s wheelchair.",
