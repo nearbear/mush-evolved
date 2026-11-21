@@ -10,6 +10,7 @@ import { newExpeditionEndMemory } from "../src/bots/expeditionShare.ts";
 import { newMoraleMemory } from "../src/bots/moraleShare.ts";
 import { newTankMemory } from "../src/bots/tankShare.ts";
 import { newFuelMemory } from "../src/bots/fuelShare.ts";
+import { newBedMemory } from "../src/bots/bedShare.ts";
 import { seats } from "../src/testing/fakes.ts";
 
 const config = { ...DEFAULT_CONFIG, manualCycles: true };
@@ -25,6 +26,7 @@ const makeMemory = (): BotMemory => ({
   visited: new Set(),
   shrinks: new Set(),
   fullBeds: new Map(),
+  beds: newBedMemory(),
   lastExpedition: null,
   asteroidsOnly: null,
   items: newItemMemory(),

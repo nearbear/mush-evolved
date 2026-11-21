@@ -1,7 +1,8 @@
 import { EQUIPMENT_TYPES, type PlayerId, type PlayerView, type RoomId } from "@mush2/shared";
+import { askableRoom, formatBedAsk, lowerTierSleeperHere, shouldYieldBed } from "../bedShare.ts";
 import { hasBotSkill } from "../duties.ts";
 import { act, canAfford, failed, find, goTo, roomsWith, where } from "./blocks.ts";
-import type { BotMemory, Goal, GoalDef } from "./types.ts";
+import type { BotMemory, Goal, GoalDef, GoalStep } from "./types.ts";
 
 /**
  * Morale from which a bot leaves the beds in a Shrink's room to others (owner, 2026-11-18, #452): it rests there only
@@ -50,6 +51,12 @@ const HUNTER_GOALS = new Set(["shootHunters", "crewShootHunters", "patrolShootHu
  * on work. Whether a bed is free is learned only on arrival; a taken one fails, and the next nearest bedroom not
  * remembered as full (`observeBeds`) is offered. With every bed in reach remembered as full, it offers nothing and the
  * bot keeps its AP.
+ * Bed tiers (oxygen plan Run A3, `bedShare.ts`): finding every bed taken with someone of a lower tier lying there, the
+ * bot posts `Bed: waiting in <ROOM>` once and waits there (ready); as the next cycle starts it holds, without ending
+ * its cycle, until every lower-tier sleeper there has had its turn; unanswered then, it gives that room up until it sees
+ * a bed free there. A full bedroom remembered with a lower-tier sleeper is offered after the free ones.
+ * Lying, the bot gets up for a higher-tier asker standing in its room when it is of the lowest tier lying there and no
+ * bed is free (`shouldYieldBed`), and rests elsewhere.
  * May spend the AP reserve to get there. A bot at `LEAVE_SHRINK_BEDS_MORALE` or more takes a bed in a Shrink's room
  * only when no other is in reach. A Shrink never lies down (owner, 2026-11-18, #452): the beds are for the people its
  * presence cheers. When it would rest, it stands in the room with a bed where ACTOPI shows the most people instead
@@ -64,7 +71,9 @@ export const rest: GoalDef = {
     if (view.statuses.includes("antisocial")) return [];
     if (hasBotSkill(view, "shrink")) return shrinkRest(view, memory);
     if (view.you.lyingIn !== undefined) return [restIn(view.you.room, "Stay in bed until your AP is full")];
-    const open = roomsWith(view, ["BED"]).filter((r) => !memory.ended.has(`rest:${r}`) && !memory.fullBeds.has(r) && canAfford(view, r, view.config.lieDownAp, 0, memory));
+    const reach = roomsWith(view, ["BED"]).filter((r) => !memory.ended.has(`rest:${r}`) && canAfford(view, r, view.config.lieDownAp, 0, memory));
+    // A bedroom with a free bed first; then a full one where someone of a lower tier lies, to ask there (Run A3).
+    const open = [...reach.filter((r) => !memory.fullBeds.has(r)), ...reach.filter((r) => memory.fullBeds.has(r) && askableRoom(view, memory, r))];
     const shrinkHere = (r: string) => view.players.some((p) => p.alive && p.room === r && memory.shrinks.has(p.id));
     const room = view.you.morale >= LEAVE_SHRINK_BEDS_MORALE ? (open.find((r) => !shrinkHere(r)) ?? open[0]) : open[0];
     return room ? [restIn(room, `Rest: lie down in a bed ${where(view, room)} until your AP is full`)] : [];
@@ -93,19 +102,47 @@ function shrinkRest(view: PlayerView, memory: BotMemory): Goal[] {
   ];
 }
 
+/** Every bed here is taken: ask for one if someone of a lower tier lies here (once a cycle), else give up the room. */
+function askForBed(view: PlayerView, memory: BotMemory, room: RoomId): GoalStep {
+  const beds = memory.beds;
+  if (!lowerTierSleeperHere(view, memory) || beds.unanswered.has(room) || !view.chatChannels.includes("global")) return failed("bed_taken");
+  if (beds.asked?.room === room && beds.asked.cycle === view.cycle) return { kind: "wait" };
+  if (beds.asked?.room === room && beds.asked.cycle === view.cycle - 1) {
+    // Asked last cycle: the sleepers answer as this one starts. While one of a lower tier hasn't ended this cycle yet
+    // (`ready` is public), it still will: wait for it without ending the cycle.
+    if (lowerTierSleeperHere(view, memory, true)) return { kind: "hold" };
+    // Every one of them has had its turn: nobody who reads the line lies here.
+    beds.asked = null;
+    beds.unanswered.add(room);
+    return failed("bed_unanswered");
+  }
+  beds.asked = { room, cycle: view.cycle };
+  return { kind: "social", message: { type: "chat", channel: "global", text: formatBedAsk(room) } };
+}
+
 function restIn(room: string, label: string): Goal {
+  let yielded = false;
   return {
     id: "rest",
     key: `rest:${room}`,
     label,
-    step(view) {
+    step(view, memory) {
       // Rested: it may rest here again later this cycle.
       if (view.you.ap >= view.maxAp) return { kind: "done", again: true };
-      if (view.you.lyingIn !== undefined) return { kind: "wait" };
+      if (view.you.lyingIn !== undefined) {
+        memory.beds.asked = null;
+        const up = shouldYieldBed(view, memory) ? find(view, "get_up") : undefined;
+        if (!up) return { kind: "wait" };
+        yielded = true;
+        return act(up);
+      }
+      // Gave the bed up: rest somewhere else rather than lie down again before the asker does.
+      if (yielded) return failed("bed_yielded");
       const walk = goTo(view, room);
       if (walk) return walk;
       const bed = find(view, "lie_down");
-      return bed ? act(bed) : failed("bed_taken");
+      if (bed) return act(bed);
+      return askForBed(view, memory, room);
     },
     keepAcrossCycle(view, memory, _newDay, goals) {
       return !leavesBed(view, memory, goals);

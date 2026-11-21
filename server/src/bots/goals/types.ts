@@ -7,6 +7,7 @@ import type { FullBeds } from "./rest.ts";
 import type { TankMemory } from "../tankShare.ts";
 import type { ExpeditionEndMemory } from "../expeditionShare.ts";
 import type { FuelMemory } from "../fuelShare.ts";
+import type { BedMemory } from "../bedShare.ts";
 import type { MoraleMemory } from "../moraleShare.ts";
 import type { ItemMemory } from "../itemShare.ts";
 import type { JumpMemory } from "../planetShare.ts";
@@ -42,6 +43,11 @@ export type GoalStep =
   | { kind: "social"; message: BotSocial }
   /** Nothing to do until the next change: the bot ends its cycle when End cycle is on, otherwise waits. */
   | { kind: "wait" }
+  /**
+   * Nothing this turn, without ending the cycle: asked again after the next change. Only for a short wait on other
+   * bots' turns (a bed request, Run A3); every bot holding at once would stall the cycle in the harness.
+   */
+  | { kind: "hold" }
   /** Finished. `again`: it may be chosen again this cycle (a work goal stopped only because the bot got dirty). */
   | { kind: "done"; again?: true }
   | { kind: "failed"; reason: string };
@@ -72,6 +78,8 @@ export interface BotMemory {
   readonly shrinks: Set<string>;
   /** Bedrooms found with every bed taken, and who lay there then (`observeBeds`, oxygen plan Run A2). */
   readonly fullBeds: FullBeds;
+  /** Bed requests read this cycle, the skills seen on people, and this bot's own requests (`bedShare.ts`, oxygen plan Run A3). */
+  readonly beds: BedMemory;
   /**
    * What the ship last went to one of this Astrophysicist's planets for (seen when it orbits one), so the next choice
    * alternates (owner, 2026-11-12, #417). Null until then.

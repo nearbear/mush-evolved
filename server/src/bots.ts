@@ -14,6 +14,7 @@ import { newTankMemory, observeTanks } from "./bots/tankShare.ts";
 import { newMoraleMemory, observeMorale } from "./bots/moraleShare.ts";
 import { newExpeditionEndMemory, observeExpeditionEnd } from "./bots/expeditionShare.ts";
 import { newFuelMemory, observeFuel } from "./bots/fuelShare.ts";
+import { newBedMemory, observeBedAsks } from "./bots/bedShare.ts";
 import { newItemMemory, observeItems } from "./bots/itemShare.ts";
 import { holdStartCycle, isHoldingJump, newJumpMemory } from "./bots/planetShare.ts";
 import { newReportMemory, observeReports } from "./bots/reportShare.ts";
@@ -153,6 +154,7 @@ export class GoalBot implements Bot {
       visited: new Set(),
       shrinks: new Set(),
       fullBeds: new Map(),
+      beds: newBedMemory(),
       lastExpedition: null,
       asteroidsOnly: null,
       items: newItemMemory(),
@@ -193,6 +195,7 @@ export class GoalBot implements Bot {
       visited: [...m.visited],
       shrinks: [...m.shrinks],
       fullBeds: [...m.fullBeds].map(([k, v]) => [k, [...v]]),
+      beds: { asks: [...m.beds.asks], skills: [...m.beds.skills], asked: m.beds.asked, unanswered: [...m.beds.unanswered], seq: m.beds.seq },
       lastExpedition: m.lastExpedition,
       asteroidsOnly: m.asteroidsOnly,
       items: { rooms: map(m.items.rooms), said: map(m.items.said), seq: m.items.seq },
@@ -234,6 +237,7 @@ export class GoalBot implements Bot {
     refill(m.shrinks, s.shrinks);
     m.fullBeds.clear();
     for (const [room, sleepers] of s.fullBeds) m.fullBeds.set(room, new Set(sleepers));
+    Object.assign(m.beds, { asks: new Map(s.beds.asks), skills: new Map(s.beds.skills), asked: s.beds.asked, unanswered: new Set(s.beds.unanswered), seq: s.beds.seq });
     m.lastExpedition = s.lastExpedition;
     m.asteroidsOnly = s.asteroidsOnly;
     Object.assign(m.items, { rooms: map(s.items.rooms), said: map(s.items.said), seq: s.items.seq });
@@ -361,6 +365,7 @@ export class GoalBot implements Bot {
         this.end(true);
         continue;
       }
+      if (step.kind === "hold") return null;
       if (step.kind === "wait") {
         // Ending the cycle isn't a goal to keep: while it waits for the clock, something may open up (hunger, AP).
         if (this.goal === END_CYCLE) this.goal = null;
@@ -414,6 +419,7 @@ export class GoalBot implements Bot {
     this.memory.visited.add(view.you.room);
     observeShrinks(view, this.memory.shrinks);
     observeBeds(view, this.memory.fullBeds);
+    observeBedAsks(view, this.memory);
     observeFuel(view, this.memory);
     if (view.navigation.traveling || view.navigation.orbiting) this.memory.combustion = null;
     if (view.navigation.heading !== null) this.memory.heading = view.navigation.heading;

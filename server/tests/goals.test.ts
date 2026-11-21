@@ -47,6 +47,7 @@ import { repairOxygen } from "../src/bots/goals/repairOxygen.ts";
 import { formatItemLine, newItemMemory, observeItems, parseItemLine, roomsHolding } from "../src/bots/itemShare.ts";
 import { newReportMemory } from "../src/bots/reportShare.ts";
 import { FUEL_LOADING_LINE, formatFuelNeed, formatFuelReport, newFuelMemory, observeFuel, parseFuelLine } from "../src/bots/fuelShare.ts";
+import { askableRoom, bedTier, formatBedAsk, newBedMemory, observeBedAsks, parseBedLine, shouldYieldBed } from "../src/bots/bedShare.ts";
 import { loadFuel } from "../src/bots/goals/loadFuel.ts";
 import { chooseSkill } from "../src/bots/skillChoice.ts";
 import { seats } from "../src/testing/fakes.ts";
@@ -154,6 +155,7 @@ const memory = (scripted = true) => ({
   visited: new Set<string>(),
   shrinks: new Set<string>(),
   fullBeds: new Map(),
+  beds: newBedMemory(),
   lastExpedition: null as "oxygen" | "fuel" | null,
   asteroidsOnly: null as number | null,
   items: newItemMemory(),
@@ -1277,7 +1279,12 @@ describe("full bedrooms (oxygen plan Run A2)", () => {
   it("offers no rest once every bed in reach is remembered as full, and keeps the memory in its snapshot", async () => {
     const { game: start, id } = setup();
     const rooms = roomsWith(viewFor(start, id), ["BED"]);
-    let game = edit(start, id, (p) => (p.ap = 3));
+    let game = edit(start, id, (p) => {
+      p.ap = 3;
+      p.skills = [];
+    });
+    // Of the lowest bed tier, so no full bedroom is worth asking in (Run A3).
+    for (const t of Object.keys(game.titles) as (keyof GameState["titles"])[]) game.titles[t] = null;
     const m = memory();
     const bot = new GoalBot(1, 2, [rest]);
     let skip = 0;
@@ -1294,6 +1301,101 @@ describe("full bedrooms (oxygen plan Run A2)", () => {
     const revived = new GoalBot(1, 2, [rest]);
     expect(revived.restore(bot.snapshot())).toBe(true);
     expect(revived.snapshot().fullBeds).toEqual(bot.snapshot().fullBeds);
+  });
+
+  describe("bed tiers (oxygen plan Run A3)", () => {
+    it("ranks Pilots and the Commander first, then the Astrophysicist, Gunner and Comms Officer, then everyone else", () => {
+      expect(bedTier(["pilot"], [])).toBe(1);
+      expect(bedTier([], ["commander"])).toBe(1);
+      expect(bedTier(["astrophysician"], [])).toBe(2);
+      expect(bedTier(["gunner"], [])).toBe(2);
+      expect(bedTier([], ["comms_officer"])).toBe(2);
+      expect(bedTier(["gunman", "botanic"], ["neron_admin"])).toBe(3);
+      expect(parseBedLine(formatBedAsk("BEDROOM_A"))).toBe("BEDROOM_A");
+      expect(parseBedLine("Bed: waiting in NOWHERE")).toBeNull();
+      expect(isMachineLine(formatBedAsk("BEDROOM_B"))).toBe(true);
+    });
+
+    /** A Pilot (`id`) standing in a full `room` whose sleepers have the given skills. */
+    function fullRoom(sleeperSkills: string[]) {
+      const { game: start, id } = setup();
+      const room = "BEDROOM_A"; // three beds
+      const filled = fillBeds(start, id, room);
+      let game = filled.game;
+      for (const s of filled.sleepers) game = edit(game, s, (q) => (q.skills = sleeperSkills as typeof q.skills));
+      game = edit(game, id, (p) => {
+        p.skills = ["pilot"];
+        p.room = room;
+        p.ap = 3;
+      });
+      game.titles.commander = null;
+      return { game, id, room, sleepers: filled.sleepers };
+    }
+
+    it("asks once for a bed where someone of a lower tier lies, waits, and gives the room up if nobody answers by the next cycle", () => {
+      const { game, id, room } = fullRoom([]);
+      const m = memory();
+      observeBeds(viewFor(game, id), m.fullBeds);
+      observeBedAsks(viewFor(game, id), m);
+      expect(askableRoom(viewFor(game, id), m, room)).toBe(true);
+      // Standing in it before looking, the full bedroom is the nearest.
+      const goal = rest.options(viewFor(game, id), memory()).find((g) => g.key === `rest:${room}`)!;
+      expect(goal.step(viewFor(game, id), m)).toEqual({ kind: "social", message: { type: "chat", channel: "global", text: formatBedAsk(room) } });
+      expect(goal.step(viewFor(game, id), m)).toEqual({ kind: "wait" });
+      // Next cycle: it holds (without ending its cycle) while a sleeper still has its turn, then gives the room up.
+      const next = { ...game, cycle: game.cycle + 1 };
+      expect(goal.step(viewFor(next, id), m)).toEqual({ kind: "hold" });
+      const done = structuredClone(next);
+      for (const p of done.players) if (p.id !== id) p.ready = true;
+      expect(goal.step(viewFor(done, id), m)).toEqual({ kind: "failed", reason: "bed_unanswered" });
+      expect(askableRoom(viewFor(next, id), m, room)).toBe(false);
+    });
+
+    it("doesn't ask when everyone lying there is of its tier or higher", () => {
+      const { game, id, room } = fullRoom(["pilot"]);
+      const m = memory();
+      observeBeds(viewFor(game, id), m.fullBeds);
+      observeBedAsks(viewFor(game, id), m);
+      expect(askableRoom(viewFor(game, id), m, room)).toBe(false);
+      const goal = rest.options(viewFor(game, id), memory()).find((g) => g.key === `rest:${room}`)!;
+      expect(goal.step(viewFor(game, id), m)).toEqual({ kind: "failed", reason: "bed_taken" });
+    });
+
+    it("gets up for a higher-tier asker in its room when it is of the lowest tier lying there", async () => {
+      const { game: full, id: asker, room, sleepers } = fullRoom([]);
+      const said = applyInput(full, { type: "chat", channel: "global", text: formatBedAsk(room), by: asker });
+      if (!said.ok) throw new Error(said.error);
+      const sleeper = sleepers[0]!;
+      const m = memory();
+      observeBedAsks(viewFor(said.state, sleeper), m);
+      expect(shouldYieldBed(viewFor(said.state, sleeper), m)).toBe(true);
+      // Another sleeper of a lower tier lies here: it goes first.
+      const notLowest = edit(said.state, sleeper, (q) => (q.skills = ["gunner"]));
+      const m2 = memory();
+      observeBedAsks(viewFor(notLowest, sleeper), m2);
+      expect(shouldYieldBed(viewFor(notLowest, sleeper), m2)).toBe(false);
+      // A bed already free: nobody else gets up.
+      const freed = edit(said.state, sleepers[1]!, getUp);
+      const m3 = memory();
+      observeBedAsks(viewFor(freed, sleeper), m3);
+      expect(shouldYieldBed(viewFor(freed, sleeper), m3)).toBe(false);
+      // The asker gone from the room: no yield.
+      const left = edit(said.state, asker, (p) => (p.room = "CORRIDOR_A"));
+      const m4 = memory();
+      observeBedAsks(viewFor(left, sleeper), m4);
+      expect(shouldYieldBed(viewFor(left, sleeper), m4)).toBe(false);
+      // The request stands into the next cycle, when a sleeper that had ended its cycle can act; not the one after.
+      const later = (n: number): GameState => ({ ...said.state, cycle: said.state.cycle + n });
+      const m5 = memory();
+      observeBedAsks(viewFor(later(1), sleeper), m5);
+      expect(shouldYieldBed(viewFor(later(1), sleeper), m5)).toBe(true);
+      observeBedAsks(viewFor(later(2), sleeper), m5);
+      expect(shouldYieldBed(viewFor(later(2), sleeper), m5)).toBe(false);
+      // A resting bot does it: get up, then rest elsewhere.
+      const resting = edit(said.state, sleeper, (q) => (q.ap = 3));
+      const bot = new GoalBot(1, 2, [rest]);
+      expect(await bot.decideAction(viewFor(resting, sleeper))).toEqual({ type: "get_up" });
+    });
   });
 });
 

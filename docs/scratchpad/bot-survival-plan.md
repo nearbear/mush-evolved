@@ -83,6 +83,8 @@ Tiers (owner, 2026-11-19: all three tiers, the Commander in tier 1), from what a
 - **Yield (owner: yes, even before its AP is full).** A lying bot that reads a bed line from a higher-tier bot it can see in its room gets up (`get_up`) and leaves; lowest tier, then the one with the most AP, yields first. The asker then lies down.
 - **Bar:** Pilots' and the Commander's cycles at low AP during orbits and hunter waves down; patrol sorties and Icarus launches up. **Watch:** morale (lost bed time for tier 3) and the #452 morale work.
 
+**Status (2026-11-20): built and measured.** Tier 2 is the Astrophysicist, Gunner and Comms Officer only; equal tiers: the first sleeper to read the line yields (owner). Requests stand into the next cycle, since bots in bed have ended theirs. Tier 1 at 2 AP or less in orbit or under attack 60% → 49%, patrol takeoffs 5.9 → 8.1 a run, Icarus launches 4.1 → 4.7, mean days +0.27 (edge of noise); injury deaths 62 → 95. Details in `docs/plans/bot-goals.md` ("Reaching Eden").
+
 ### Run A4: the Shrink takes free beds and says where it is (owner, 2026-11-19; changes #452)
 
 - **Change to #452:** a Shrink may now lie down, but only in a bed nobody else is asking for: an empty bed in its room. It is the lowest tier and gets up for anyone who asks (Run A3's yield, any tier).

@@ -5,7 +5,8 @@
 // rules run here as GameRoom runs them, and timed actions finish on a simulated clock, so a seed always plays the same.
 
 import { applyInput, CHARACTERS, ITEM_TYPES, createGame, dailyMoraleLoss, legalActions, nextDue, resolveConfig, shuffle, viewFor, type DeathCause, type Ending, type GameState, type Input, type PlayerId, type Seat } from "@mush2/shared";
-import { GoalBot } from "../bots.ts";
+import { BOT_AP_RESERVE, GoalBot } from "../bots.ts";
+import { bedTier, parseBedLine } from "../bots/bedShare.ts";
 import { BOT_DUTIES } from "../bots/duties.ts";
 import { expeditionsOver, parseExpeditionLine } from "../bots/expeditionShare.ts";
 import { readyToLeaveOrbit } from "../bots/goals/travel.ts";
@@ -133,6 +134,18 @@ export interface CycleReport {
   fuelReports?: number;
   commanderLoads?: number;
   loadFuelWalkAp?: number;
+  /**
+   * Bed tiers (Run A3, `bedShare.ts`), as the cycle ended: the living crew by tier (1, 2, 3), how many of each lay in a
+   * bed, and tier-1 bots (Pilots, the Commander) at the AP reserve or less. In the cycle: `Bed: waiting in` lines, beds
+   * given up for one (`get_up` while resting), patrol ship takeoffs and Icarus launches. Missing in older runs.
+   */
+  tierAlive?: number[];
+  tierLying?: number[];
+  tier1Low?: number;
+  bedAsks?: number;
+  bedYields?: number;
+  patrolTakeoffs?: number;
+  icarusLaunches?: number;
 }
 
 export interface SurvivalResult {
@@ -272,7 +285,7 @@ export async function runSurvival(seed: number, opts: SurvivalOptions): Promise<
   let now = 0;
   let logSeen = game.nextLogId;
 
-  const newRow = (cycle: number): CycleReport => ({ cycle, hull: 0, oxygen: 0, alive: 0, hunters: 0, fires: 0, killed: 0, shed: 0, shots: 0, repairTries: 0, repairs: 0, apLeft: 0, atCap: 0, scraps: 0, scrapsCarried: 0, apShooters: {}, apOthers: {}, hullLost: 0, arrived: 0, firesStarted: 0, firesOut: 0, extinguishTries: 0, brokenTanks: 0, tankRepairTries: 0, tankRepairs: 0, moraleUp: {}, moraleDown: {}, oxygenIn: {}, expeditions: 0, shares: 0, jumps: 0, coffeePulled: 0, coffeeJunkie: 0, coffeeOthers: 0, junkieMeals: 0, restWalkAp: 0, lying: 0, fuelAsked: 0, fuelReports: 0, commanderLoads: 0, loadFuelWalkAp: 0 });
+  const newRow = (cycle: number): CycleReport => ({ cycle, hull: 0, oxygen: 0, alive: 0, hunters: 0, fires: 0, killed: 0, shed: 0, shots: 0, repairTries: 0, repairs: 0, apLeft: 0, atCap: 0, scraps: 0, scrapsCarried: 0, apShooters: {}, apOthers: {}, hullLost: 0, arrived: 0, firesStarted: 0, firesOut: 0, extinguishTries: 0, brokenTanks: 0, tankRepairTries: 0, tankRepairs: 0, moraleUp: {}, moraleDown: {}, oxygenIn: {}, expeditions: 0, shares: 0, jumps: 0, coffeePulled: 0, coffeeJunkie: 0, coffeeOthers: 0, junkieMeals: 0, restWalkAp: 0, lying: 0, fuelAsked: 0, fuelReports: 0, commanderLoads: 0, loadFuelWalkAp: 0, tierAlive: [0, 0, 0], tierLying: [0, 0, 0], tier1Low: 0, bedAsks: 0, bedYields: 0, patrolTakeoffs: 0, icarusLaunches: 0 });
   let row = newRow(game.cycle);
   /** Fills the row's end-of-cycle fields from `g`, the state just before the change (or where the game ended). */
   const closeRow = (g: GameState): void => {
@@ -283,6 +296,12 @@ export async function runSurvival(seed: number, opts: SurvivalOptions): Promise<
     const hasOxygen = (pl: (typeof planets)[number]): boolean => pl.sectors.some((s) => s.tag === "OXYGEN" && !s.explored);
     const orbiting = planets.find((pl) => pl.id === g.navigation.orbit);
     Object.assign(row, { planets: planets.length, oxygenPlanets: planets.filter(hasOxygen).length, orbit: g.navigation.orbit !== null, orbitOxygen: orbiting !== undefined && hasOxygen(orbiting) });
+    for (const p of living) {
+      const tier = bedTier(p.bookSkill ? [...p.skills, p.bookSkill] : p.skills, Object.entries(g.titles).flatMap(([t, holder]) => (holder === p.id ? [t] : [])));
+      row.tierAlive![tier - 1]!++;
+      if (p.lyingIn !== undefined) row.tierLying![tier - 1]!++;
+      if (tier === 1 && p.ap <= BOT_AP_RESERVE) row.tier1Low!++;
+    }
     const humans = living.filter((p) => p.role === "human");
     Object.assign(row, { moraleMean: humans.length === 0 ? 0 : humans.reduce((a, p) => a + p.morale, 0) / humans.length, hopeless: humans.filter((p) => p.morale === 0).length, moraleLow: humans.filter((p) => p.morale <= 3).length });
     const orbit = result.orbitLog!.at(-1);
@@ -359,6 +378,8 @@ export async function runSurvival(seed: number, opts: SurvivalOptions): Promise<
       const type = input.action.type;
       if (type === "turret_attack" || type === "patrol_attack") row.shots++;
       if (type === "repair_hull") row.repairTries++;
+      if (type === "takeoff") row.patrolTakeoffs!++;
+      if (type === "icarus_takeoff") row.icarusLaunches!++;
       if (type === "extinguish" || type === "extinguish_manually") row.extinguishTries!++;
       const action = input.action;
       if (action.type === "dispense") row.coffeePulled!++;
@@ -432,6 +453,7 @@ export async function runSurvival(seed: number, opts: SurvivalOptions): Promise<
             if (social.type === "sharePlanet") row.shares!++;
             if (social.type === "chat" && social.text === HOLD_JUMP_LINE) holdPosted ??= game.cycle;
             if (social.type === "chat" && social.text.startsWith("Fuel: need ")) row.fuelAsked!++;
+            if (social.type === "chat" && parseBedLine(social.text)) row.bedAsks!++;
             if (social.type === "chat" && social.text.startsWith("Fuel: chamber at ")) row.fuelReports!++;
             if (social.type === "chat" && social.text.startsWith("Fuel: ")) trace(`  ${game.players.find((p) => p.id === id)!.character} says "${social.text}"`);
             if (social.type === "chat" && parseExpeditionLine(social.text)) trace(`  ${game.players.find((p) => p.id === id)!.character} says "${social.text}"`);
@@ -446,6 +468,7 @@ export async function runSurvival(seed: number, opts: SurvivalOptions): Promise<
         if (apply({ type: "action", action, by: id, at: now }, cost)) {
           acted = true;
           if (action.type === "move" && goal?.startsWith("rest:")) row.restWalkAp! += cost;
+          if (action.type === "get_up" && goal?.startsWith("rest:")) row.bedYields!++;
           if (action.type === "move" && goal?.startsWith("loadFuel:")) row.loadFuelWalkAp! += cost;
           if (action.type === "load_fuel" && game.titles.commander === id) row.commanderLoads!++;
         }

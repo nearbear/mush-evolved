@@ -101,6 +101,11 @@ export function lossReport(results: readonly SurvivalResult[], repairBelow: numb
   }
   lines.push(`fuel relay: ${per(total((r) => r.fuelAsked ?? 0), n, 1)} requests a run, ${per(total((r) => r.fuelReports ?? 0), n, 1)} answered by a helper, ${per(total((r) => r.commanderLoads ?? 0), n, 1)} capsules the Commander loaded himself, ${per(total((r) => r.loadFuelWalkAp ?? 0), n, 1)} AP helpers walked`);
   lines.push(`beds: ${per(total((r) => r.restWalkAp ?? 0), n, 1)} AP a run spent walking to rest; ${per(total((r) => r.lying ?? 0), rows.length, 1)} crew lying at a cycle's end`);
+  // Bed tiers (Run A3): whether Pilots and the Commander get the beds, and whether they keep AP when it matters.
+  const tierAlive = [0, 1, 2].map((i) => total((r) => r.tierAlive?.[i] ?? 0));
+  const tierLying = [0, 1, 2].map((i) => total((r) => r.tierLying?.[i] ?? 0));
+  const busy = rows.filter((r) => r.orbit === true || r.hunters > 0);
+  lines.push(`bed tiers: lying at a cycle's end ${[0, 1, 2].map((i) => `tier ${i + 1} ${per(tierLying[i]! * 100, tierAlive[i]!, 0)}%`).join(", ")}; tier 1 at 2 AP or less ${per(total((r) => r.tier1Low ?? 0) * 100, tierAlive[0]!, 0)}% of their cycles, ${per(sum(busy.map((r) => r.tier1Low ?? 0)) * 100, sum(busy.map((r) => r.tierAlive?.[0] ?? 0)), 0)}% in orbit or under attack; ${per(total((r) => r.bedAsks ?? 0), n, 1)} bed requests and ${per(total((r) => r.bedYields ?? 0), n, 1)} beds given up a run; ${per(total((r) => r.patrolTakeoffs ?? 0), n, 1)} patrol takeoffs and ${per(total((r) => r.icarusLaunches ?? 0), n, 1)} Icarus launches a run`);
   lines.push("by cycle (mean over the runs still going): cycle, runs, hull, hunters, fires, alive, oxygen, morale, at 0, at 3 or less");
   const last = Math.max(...rows.map((r) => r.cycle));
   for (let cycle = 4; cycle <= last; cycle += 4) {

@@ -4648,6 +4648,12 @@ Owner asked whether the star field could be the background for the whole desktop
 - Follow-up, same day: the frame went on phones too (removed from the base `.iso-room` rule, and the phone padding from `responsive.css`). The phone peek bar now sits flush on the panel's edges (no 1px rim inset; `--peek-clear` drops the rim's pixel) with a 75% `--panel-fill` background so the room shows through.
 - Follow-up: the desktop panels over the star field (Inspect, top bar, iTrackie) went from 80% to 75% fill to match the peek bar; both now read one `--panel-glass` token in `tokens.css` instead of separate values.
 
+## 2026-11-20: Bot survival Run A3, bed tiers with yielding
+
+- Built the owner's Run A3 (`server/src/bots/bedShare.ts`, `goals/rest.ts`): Pilots and the Commander first, then the Astrophysicist, Gunner and Comms Officer, then the rest; a bot finding a full bedroom with a lower-tier sleeper posts `Bed: waiting in <ROOM>`, and the lowest-tier sleeper gets up. Asked the owner two things the plan left open: the "most AP yields first" tie-break can't work (others' AP is hidden), so the first sleeper to read it yields; and tier 2's list (owner narrowed it to three roles).
+- Needed correction: the first smoke test showed 70 requests a run and 0 yields. A resting bot has ended its cycle (ready) and has no legal actions until the next one, which the plan's design didn't account for. A one-turn "hold" for the asker then stalled a harness seed; holding only while a lower-tier sleeper isn't yet ready (`ready` is public) fixed it. Added a `hold` goal step for this.
+- Result on 50 seeds: tier-1 bots at 2 AP or less in orbit or under attack 60% → 49%, patrol takeoffs +37%, mean days +0.27 (edge of noise), injury deaths up. A baseline with the new report fields ran in a throwaway worktree so it couldn't pick up the edits mid-run.
+
 ## 2026-11-21: Inspect panel's Deselect button
 
 Owner asked to drop Deselect on desktop (clicking the room's floor already clears the selection) and, on phones, move it from under the portrait into the action list, shorter (22px, smaller type) than the actions so it doesn't read as one. Also zeroed the phone action column's top margin, which pushed it below the portrait's top edge. Small CSS/JSX change; `verify:web` passed first time.
