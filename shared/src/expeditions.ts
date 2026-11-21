@@ -45,7 +45,7 @@ import { CORPSE_ITEM, afterArmor, isWorking, itemsIn, removeItem, sameContainer,
 import { logPrivate, logPublic } from "./log.ts";
 import { isTraveling } from "./navigation.ts";
 import { retargetNow } from "./hunters.ts";
-import { canFly, isLostPlace, lostPlace, PATROL_SHIPS, patrolShip, type PatrolShip } from "./patrol.ts";
+import { canFly, canTakeoff, isLostPlace, lostPlace, PATROL_SHIPS, patrolShip, type PatrolShip } from "./patrol.ts";
 import { PLANET_TAGS, type PlanetTag } from "./planets.ts";
 import { projectDone } from "./projects.ts";
 import { roll, rollFloat, rollInt, rollWeighted } from "./rng.ts";
@@ -57,10 +57,10 @@ import type { CreatureLoot, ExpeditionEvent, ExpeditionEventRule, ExpeditionRepo
 export const LANDING = "LANDING";
 
 /**
- * Who may launch: anyone who can fly (owner, 2026-11-15). Kept as one helper so the NERON piloting lock can gate it
- * later.
+ * Who may launch the Icarus (owner, 2026-11-15, 2026-11-21): anyone who can take off (not grounded, and either a Pilot,
+ * `freeHacking`, or the BIOS crew lock is off piloting).
  */
-export const canLaunchExpedition = (_state: Readonly<GameState>, player: Readonly<PlayerState>): boolean => canFly(player);
+export const canLaunchExpedition = (state: Readonly<GameState>, player: Readonly<PlayerState>): boolean => canTakeoff(state, player);
 
 /** The planet the ship orbits, if any, while not leaving it. */
 export function orbitedPlanet(state: Readonly<GameState>): Planet | undefined {

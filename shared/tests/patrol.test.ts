@@ -46,15 +46,30 @@ describe("patrol ship numbers", () => {
 });
 
 describe("taking off", () => {
-  it("anyone in a bay (unless grounded) is offered each docked ship there, for 2 AP", () => {
+  it("under the default piloting lock, only Pilots (or freeHacking) in a bay are offered each docked ship, for 2 AP", () => {
     const s = ship();
-    for (const id of ["p0", "p1"]) {
-      expect(offered(s, id).filter((a) => a.type === "takeoff")).toEqual([takeoff(LONGANE), takeoff(JUJUBE), takeoff(patrolShip("PATROL_SHIP_A_2")!)]);
-      expect(costOf(s, id, takeoff())).toEqual({ ap: s.config.patrol.takeoff.cost.ap, mp: 0 });
+    expect(s.bios.crew_lock).toBe("piloting");
+    expect(offered(s, "p0").filter((a) => a.type === "takeoff")).toEqual([takeoff(LONGANE), takeoff(JUJUBE), takeoff(patrolShip("PATROL_SHIP_A_2")!)]);
+    expect(costOf(s, "p0", takeoff())).toEqual({ ap: s.config.patrol.takeoff.cost.ap, mp: 0 });
+    // Non-pilots are blocked by the piloting lock unless they have freeHacking.
+    expect(offered(s, "p1").some((a) => a.type === "takeoff")).toBe(false);
+    expect(refusal(s, "p1", takeoff())).toBe("crew_lock");
+    expect(applyAction(s, "p1", takeoff())).toEqual({ ok: false, error: "illegal_action" });
+    const hacked = structuredClone(s);
+    player(hacked, "p1").cheats.push("freeHacking");
+    expect(offered(hacked, "p1").filter((a) => a.type === "takeoff")).toEqual([takeoff(LONGANE), takeoff(JUJUBE), takeoff(patrolShip("PATROL_SHIP_A_2")!)]);
+
+    // With the lock off piloting, non-pilots are offered each docked ship too.
+    for (const lock of ["projects", "research"] as const) {
+      const unlocked = ship();
+      unlocked.bios.crew_lock = lock;
+      expect(offered(unlocked, "p1").filter((a) => a.type === "takeoff")).toEqual([takeoff(LONGANE), takeoff(JUJUBE), takeoff(patrolShip("PATROL_SHIP_A_2")!)]);
+      expect(costOf(unlocked, "p1", takeoff())).toEqual({ ap: unlocked.config.patrol.takeoff.cost.ap, mp: 0 });
     }
-    // A human grounded by Gastroenteritis or Slight Nausea can't fly.
+    // A human grounded by Gastroenteritis or Slight Nausea can't fly, even as a Pilot or with the lock off.
     for (const disease of ["gastroenteritis_disease", "slight_nausea_disease"] as const) {
       const grounded = ship();
+      grounded.bios.crew_lock = "projects";
       const target = player(grounded, "p1");
       if (target.role === "mush") target.role = "human";
       addDisease(grounded, target, disease);
@@ -65,17 +80,22 @@ describe("taking off", () => {
     expect(refusal(s, "p0", takeoff(patrolShip("PATROL_SHIP_B_0")!))).toBe("no_ship");
   });
 
-  it("lets a non-pilot fly a patrol ship or the Pasiphae", () => {
+  it("under projects or research lock, lets a non-pilot fly a patrol ship or the Pasiphae and land even if the lock flips back", () => {
     const pasiphae = patrolShip("PATROL_SHIP_AA_1")!;
     const s = ship({ patrol: { ...DEFAULT_CONFIG.patrol, cleanChance: 1 } });
+    s.bios.crew_lock = "projects";
     const out = mustApply(s, "p1", takeoff());
     expect(player(out, "p1").room).toBe(LONGANE.id);
+    // Switching the lock back to piloting while airborne never strands a non-pilot.
+    out.bios.crew_lock = "piloting";
     const back = mustApply(out, "p1", land());
     expect(player(back, "p1").room).toBe(BAY);
 
+    s.bios.crew_lock = "research";
     player(s, "p1").room = pasiphae.bay;
     const outP = mustApply(s, "p1", takeoff(pasiphae));
     expect(player(outP, "p1").room).toBe(pasiphae.id);
+    outP.bios.crew_lock = "piloting";
     const backP = mustApply(outP, "p1", land(pasiphae));
     expect(player(backP, "p1").room).toBe(pasiphae.bay);
   });
@@ -386,6 +406,7 @@ describe("rough manoeuvres", () => {
   it("never happen once XXL bay doors (BAY_DOOR_XXL) is complete", () => {
     expect(projectStatus("BAY_DOOR_XXL")).toBe("full");
     const s = ship({ patrol: { ...DEFAULT_CONFIG.patrol, cleanChance: 0 } });
+    s.bios.crew_lock = "projects";
     s.projects.BAY_DOOR_XXL = PROJECT_COMPLETE;
     const out = mustApply(s, "p1", takeoff());
     expect(out.ship).toEqual(s.ship);
@@ -401,6 +422,7 @@ describe("rough manoeuvres", () => {
 
   it("destroy the ship and kill the pilot if a rough takeoff drops armor to 0", () => {
     const s = ship({ patrol: { ...DEFAULT_CONFIG.patrol, cleanChance: 0 } });
+    s.bios.crew_lock = "projects";
     s.patrolShips[LONGANE.id]!.armor = 1;
     const next = mustApply(s, "p1", takeoff());
     expect(next.patrolShips[LONGANE.id]).toMatchObject({ armor: 0, destroyed: true });
@@ -410,7 +432,9 @@ describe("rough manoeuvres", () => {
   });
 
   it("destroy the ship (but spare the pilot in the bay) if a rough landing drops armor to 0", () => {
-    const s = mustApply(ship({ patrol: { ...DEFAULT_CONFIG.patrol, cleanChance: 1 } }), "p1", takeoff());
+    const base = ship({ patrol: { ...DEFAULT_CONFIG.patrol, cleanChance: 1 } });
+    base.bios.crew_lock = "projects";
+    const s = mustApply(base, "p1", takeoff());
     const roughLanding = { ...s, config: { ...s.config, patrol: { ...s.config.patrol, cleanChance: 0 } } };
     roughLanding.patrolShips[LONGANE.id]!.armor = 1;
     const next = mustApply(roughLanding, "p1", land());

@@ -176,17 +176,33 @@ describe("expeditions, phase 1 (instant, as in single player)", () => {
     expect(t.items.find((i) => i.id === body.id)!.at).toEqual({ kind: "room", id: ICARUS });
   });
 
-  it("takeoff is offered aboard to anyone who can fly (not grounded), in orbit of a planet with an unexplored sector", () => {
+  it("takeoff is offered aboard to Pilots (or freeHacking) under the piloting lock, or anyone ungrounded once unlocked", () => {
     const s = aboard(game());
-    for (const id of ["p0", "p1"]) {
-      expect(offered(s, id)).toContainEqual(takeoff);
-      expect(option(s, id, takeoff)?.cost.ap).toBe(expedition.cost.ap);
+    expect(s.bios.crew_lock).toBe("piloting");
+    expect(offered(s, "p0")).toContainEqual(takeoff);
+    expect(option(s, "p0", takeoff)?.cost.ap).toBe(expedition.cost.ap);
+    expect(offered(s, "p1")).not.toContainEqual(takeoff);
+    expect(why(s, "p1", takeoff)).toBe("crew_lock");
+    expect(applyAction(s, "p1", takeoff).ok).toBe(false);
+
+    const hacked = structuredClone(s);
+    player(hacked, "p1").cheats.push("freeHacking");
+    expect(offered(hacked, "p1")).toContainEqual(takeoff);
+
+    for (const lock of ["projects", "research"] as const) {
+      const unlocked = structuredClone(s);
+      unlocked.bios.crew_lock = lock;
+      expect(offered(unlocked, "p1")).toContainEqual(takeoff);
+      expect(option(unlocked, "p1", takeoff)?.cost.ap).toBe(expedition.cost.ap);
     }
+
     const grounded = structuredClone(s);
+    grounded.bios.crew_lock = "projects";
     const p1 = player(grounded, "p1");
     if (p1.role === "mush") p1.role = "human";
     addDisease(grounded, p1, "gastroenteritis_disease");
     expect(offered(grounded, "p1")).not.toContainEqual(takeoff);
+    expect(why(grounded, "p1", takeoff)).toBe("cant_fly");
     expect(applyAction(grounded, "p1", takeoff).ok).toBe(false);
 
     const noOrbit = structuredClone(s);
@@ -202,8 +218,10 @@ describe("expeditions, phase 1 (instant, as in single player)", () => {
     for (const sector of done.planets.p5![0]!.sectors) sector.explored = true;
     expect(offered(done, "p0")).not.toContainEqual(takeoff);
     expect(applyAction(done, "p0", takeoff).ok).toBe(false);
-    // Shown disabled with the reason (owner, 2026-11-19), to a pilot only: the grounded still see nothing.
+    // Shown disabled with the reason (owner, 2026-11-19), to a pilot only: the locked or grounded still see nothing.
     expect(option(done, "p0", takeoff)?.lacks).toEqual(["explored"]);
+    expect(option(done, "p1", takeoff)).toBeUndefined();
+    done.bios.crew_lock = "projects";
     const doneP1 = player(done, "p1");
     if (doneP1.role === "mush") doneP1.role = "human";
     addDisease(done, doneP1, "gastroenteritis_disease");
@@ -220,7 +238,8 @@ describe("expeditions, phase 1 (instant, as in single player)", () => {
 
   it("takes everyone aboard, the launcher first and paying alone; a public takeoff line, then each member's private line", () => {
     const s = aboard(game({ events: only({ kind: "nothing", weight: 1 }) }), "p2");
-    // p1 can launch too, and leads the crew though p2 boarded first.
+    // With the piloting lock off, non-pilot p1 can launch too, and leads the crew though p2 boarded first.
+    s.bios.crew_lock = "projects";
     const next = must(applyAction(s, "p1", takeoff));
     expect(player(next, "p1").ap).toBe(player(s, "p1").ap - expedition.cost.ap);
     for (const id of ["p0", "p2", "p3"]) expect(player(next, id).ap).toBe(player(s, id).ap);
@@ -807,6 +826,7 @@ describe("expeditions, phase 2: time away", () => {
 
   it("a landing that kills the whole crew brings it back at once, the bodies in the bay", () => {
     const s = timed({ tags: ["FOREST", "DESERT"], events: only({ kind: "nothing", weight: 1 }, { kind: "killAll", weight: 1 }) });
+    s.bios.crew_lock = "projects";
     player(s, "p0").skills = []; // no Pilot, so the landing isn't safe
     const t = go(s);
     expect(t.expedition).toBeNull();
@@ -1175,6 +1195,7 @@ describe("expeditions, phase 3, slice C: gear and spacesuits", () => {
   it("with no Oxygen sector, a launcher without a working spacesuit is refused; someone else aboard can launch", () => {
     const s = aboard(game({ tags: ["HOT", "FOREST"] }));
     s.items.find((i) => i.id === "item-suit-p0")!.broken = true;
+    player(s, "p1").skills = ["pilot"];
     expect(offered(s, "p0")).not.toContainEqual(takeoff);
     expect(why(s, "p0", takeoff)).toBe("no_spacesuit");
     const next = must(applyAction(s, "p1", takeoff));
@@ -1625,10 +1646,11 @@ describe("expeditions, phase 5: hold extension, patrol-ship landings, no droppin
     expect(viewFor(t, "p0").log.some((e) => e.key === "expeditionReturned")).toBe(true);
   });
 
-  it("a non-pilot landing a patrol ship still rolls LANDING even with Antigrav propeller", () => {
+  it("a non-pilot landing a patrol ship still rolls LANDING even with Antigrav propeller (and stays ungated by the piloting lock)", () => {
     const crash = only({ kind: "nothing", weight: 1 }, { kind: "catastrophe", weight: 1 });
     const s = flying({ tags: ["FOREST"], events: crash });
     player(s, "p0").skills = [];
+    expect(s.bios.crew_lock).toBe("piloting");
     s.projects.ICARUS_ANTIGRAV_PROPELLER = 100;
     const next = runOut(must(applyAction(s, "p0", landOn)));
     expect(next.expeditions[0]!.events[0]!.kind).toBe("catastrophe");

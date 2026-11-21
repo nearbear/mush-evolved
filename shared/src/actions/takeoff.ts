@@ -5,7 +5,7 @@ import { destroyPatrolShip, destroyShip } from "../hunters.ts";
 import { logPrivate, logSecret } from "../log.ts";
 import { isTraveling } from "../navigation.ts";
 import { cleanManoeuvreChance } from "../modifiers.ts";
-import { canFly, dockedHere, interfaceId, PATROL_SHIPS, type PatrolShip } from "../patrol.ts";
+import { canFly, canTakeoff, dockedHere, interfaceId, PATROL_SHIPS, type PatrolShip } from "../patrol.ts";
 import { roll, rollFloat } from "../rng.ts";
 import { removeStatus } from "../statuses.ts";
 import type { GameState, PlayerState, RoomId } from "../types.ts";
@@ -14,9 +14,9 @@ export type TakeoffActionData = { type: "takeoff"; equipment: string };
 
 /**
  * Take off in a docked patrol ship or the Pasiphae from its interface in the bay (owner, 2026-10-24, docs/plans/patrol.md):
- * 2 AP, always works, and moves the pilot alone into the ship's room. Non-pilots can fly (owner, 2026-11-15; pilot lock
- * comes later). Secret: the line goes in the bay before the pilot leaves, so whoever is there (or a camera) sees it. A
- * push the pilot is part of ends.
+ * 2 AP, always works, and moves the pilot alone into the ship's room. Gated by NERON's piloting crew lock unless the
+ * actor is a Pilot or has `freeHacking` (owner, 2026-11-21). Secret: the line goes in the bay before the pilot leaves,
+ * so whoever is there (or a camera) sees it. A push the pilot is part of ends.
  */
 export class TakeoffAction extends Action<TakeoffActionData> {
   override visibility: ActionVisibility = "secret";
@@ -30,12 +30,12 @@ export class TakeoffAction extends Action<TakeoffActionData> {
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): TakeoffActionData[] {
-    if (!canFly(player) || isTraveling(state)) return [];
+    if (!canTakeoff(state, player) || isTraveling(state)) return [];
     return dockedHere(state, player).map((ship): TakeoffActionData => ({ type: "takeoff", equipment: interfaceId(ship) }));
   }
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: TakeoffActionData): string | null {
-    if (!canFly(player)) return "cant_fly";
+    if (!canTakeoff(state, player)) return canFly(player) ? "crew_lock" : "cant_fly";
     if (isTraveling(state)) return "traveling";
     if (!dockedHere(state, player).some((ship) => interfaceId(ship) === target.equipment)) return "no_ship";
     return null;

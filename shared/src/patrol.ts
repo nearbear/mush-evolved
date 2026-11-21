@@ -7,6 +7,7 @@
 // Data and lookups only, so config.ts can import it; the manoeuvre itself is in actions/takeoff.ts.
 
 import { projectDone } from "./projects.ts";
+import { hasSkill } from "./skills.ts";
 import type { Equipment, GameConfig, GameState, PlayerId, PlayerState, RoomId } from "./types.ts";
 
 export type PatrolKind = "patrol" | "pasiphae";
@@ -110,10 +111,17 @@ export function rechargePatrolShips(state: GameState): void {
   }
 }
 
-/** Who may fly: anyone, except humans with Gastroenteritis or Slight Nausea (pilot lock comes later). */
+/** Who may fly: anyone, except humans with Gastroenteritis or Slight Nausea. */
 // Gastroenteris / Slight Nausea grounds a human (owner, 2026-11-14, 2026-11-15); a Mush's diseases have no effect (diseases.ts).
 export const canFly = (player: Readonly<PlayerState>): boolean =>
   player.role === "mush" || !GROUNDING_DISEASES.some((id) => player.modifiers.includes(id));
+
+/**
+ * Who may take off in a patrol ship, the Pasiphae, or the Icarus (owner, 2026-11-21): anyone who can fly, unless
+ * NERON's crew lock is set to piloting, in which case only Pilots (or `freeHacking`) may launch.
+ */
+export const canTakeoff = (state: Readonly<GameState>, player: Readonly<PlayerState>): boolean =>
+  canFly(player) && (state.bios.crew_lock !== "piloting" || hasSkill(player, "pilot") || player.cheats.includes("freeHacking"));
 
 /** Diseases that keep a human from flying (owner: Gastroenteritis 2026-11-14, Slight Nausea 2026-11-15). */
 const GROUNDING_DISEASES: readonly string[] = ["gastroenteritis_disease", "slight_nausea_disease"];
