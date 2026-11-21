@@ -1,6 +1,5 @@
 import { Action, isString } from "./action.ts";
-import { astroTerminalsHere, freePositions, generatePlanet, planetsOf, type PlanetPosition } from "../planets.ts";
-import { FUEL_PLANET_SECTORS, fuelPlanetOf } from "../cheats.ts";
+import { astroTerminalsHere, freePositions, generatePlanet, planetsOf, type PlanetPosition, type PlanetTag } from "../planets.ts";
 import type { GameState, PlayerState } from "../types.ts";
 import { arriveShip } from "../navigation.ts";
 import { jump } from "./travel.ts";
@@ -47,13 +46,16 @@ function canWarp(state: Readonly<GameState>, player: Readonly<PlayerState>): boo
   return player.cheats.includes("easyTravel") && !player.isBot && state.navigation.orbit === null && state.navigation.arriving === null;
 }
 
+/** How many sectors the Superkube's warped-to planet has (kube.ts, `warpToPlanet`), all of the picked tag. */
+export const CHEAT_PLANET_SECTORS = 20;
+
 /**
- * The fuelPlanet cheat switched on: a new planet of FUEL_PLANET_SECTORS known Hydrocarbon sectors, the player's, and the
- * ship warped into its orbit at once, as the easyTravel warp above does: from orbit or mid-travel too, the
- * other planets are lost and half the hunters follow. Nothing when already orbiting one. Mutates a cloned state.
+ * The Superkube's Warp (kube.ts, development cheat): a new planet of CHEAT_PLANET_SECTORS known sectors, all tagged
+ * `tag`, the player's, and the ship warped into its orbit at once, as the easyTravel warp above does: from orbit or
+ * mid-travel too, the other planets are lost and half the hunters follow. The planet is `inexhaustible`: an expedition
+ * never marks its sectors explored (expeditions.ts). Mutates a cloned state.
  */
-export function cheatFuelPlanet(state: GameState, p: PlayerState): void {
-  if (state.phase !== "playing" || !p.alive || fuelPlanetOf(state, p)) return;
+export function warpToNewPlanet(state: GameState, p: PlayerState, tag: PlanetTag): void {
   let position: PlanetPosition | undefined = freePositions(state)[0];
   if (!position) {
     // Every spot is taken: free the nearest one ahead.
@@ -65,7 +67,8 @@ export function cheatFuelPlanet(state: GameState, p: PlayerState): void {
   }
   const [planet, rng] = generatePlanet(state.rng, `planet-${state.nextPlanetId++}`, position, { min: 2, max: 2 });
   state.rng = rng;
-  planet.sectors = Array.from({ length: FUEL_PLANET_SECTORS }, () => ({ tag: "HYDROCARBON" as const, known: true }));
+  planet.sectors = Array.from({ length: CHEAT_PLANET_SECTORS }, () => ({ tag, known: true }));
+  planet.inexhaustible = true;
   state.planets[p.id] = [...planetsOf(state, p.id), planet];
   state.navigation.heading = planet.direction;
   jump(state, p, planet.distance);

@@ -10,6 +10,8 @@ import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { applyInput, replayGame } from "../src/replay.ts";
 import { ICARUS_CRAFT } from "../src/patrol.ts";
 import { KUBE_OPS, kubeChoices, type KubeOpId } from "../src/kube.ts";
+import { CHEAT_PLANET_SECTORS } from "../src/actions/warp_to_planet.ts";
+import { PLANET_TAG_IDS } from "../src/planets.ts";
 import { makeSeats } from "./support.ts";
 
 const devShip = () => createGame(makeSeats(3), { ...resolveConfig({ cheatRoom: true }), mushCount: 1 }, 7);
@@ -229,6 +231,26 @@ describe("cheat room", () => {
       const next = ok(kube(s, p, "teleport", "REFECTORY"));
       expect(me(next, p).room).toBe("REFECTORY");
       expect(next.log).toEqual(s.log);
+    });
+
+    it("warps the ship into orbit of a new planet of known sectors, all of the picked tag, that never run out", () => {
+      const { s, p } = inRoom();
+      expect(kubeChoices(s.config, "sector")).toEqual(PLANET_TAG_IDS);
+      expect(kube(s, p, "warpToPlanet", "NOT_A_TAG")).toMatchObject({ ok: false, error: "bad_argument" });
+      const next = ok(kube(s, p, "warpToPlanet", "OXYGEN"));
+      const planet = next.planets[p]!.find((pl) => pl.id === next.navigation.orbit)!;
+      expect(next.navigation.arriving).toBeNull();
+      expect(planet).toMatchObject({ inexhaustible: true });
+      expect(planet.sectors).toHaveLength(CHEAT_PLANET_SECTORS);
+      expect(planet.sectors.every((sector) => sector.tag === "OXYGEN" && sector.known)).toBe(true);
+      // From orbit too: a fresh planet of another tag, and the first one is lost.
+      const again = ok(kube(next, p, "warpToPlanet", "HYDROCARBON"));
+      expect(again.navigation.orbit).not.toBe(next.navigation.orbit);
+      expect(again.planets[p]!.map((pl) => pl.sectors[0]!.tag)).toEqual(["HYDROCARBON"]);
+      // Only the warper sees the planet, and never the flag.
+      const other = s.players.find((pl) => pl.id !== p)!.id;
+      expect(viewFor(again, other).planets).toEqual([]);
+      expect(viewFor(again, p).planets[0]).not.toHaveProperty("inexhaustible");
     });
 
     it.each([

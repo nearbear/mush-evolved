@@ -122,8 +122,7 @@
       "cheats": "Trampas"
     },
     "cheatHints": {
-      "fastExpeditions": "2 segundos por sector",
-      "fuelPlanet": "Lleva la nave a un planeta de 20 sectores de Hidrocarburos que nunca se agotan"
+      "fastExpeditions": "2 segundos por sector"
     },
     "cheats": {
       "title": "Trucos (desarrollo)",
@@ -143,7 +142,6 @@
       "easyTravel": "Viaje fácil",
       "invincible": "Nave invencible",
       "fastExpeditions": "Expediciones rápidas",
-      "fuelPlanet": "Órbita de un planeta de combustible",
       "goToCheatRoom": "Ir a la sala de trucos",
       "leaveShip": "Abandonar la nave",
       "role": {
@@ -1995,6 +1993,7 @@
   },
   "kube": {
     "open": "Abrir",
+    "warp": "Saltar",
     "title": "Superkube",
     "close": "Cerrar",
     "apply": "Aplicar",
@@ -2020,6 +2019,7 @@
       "spawn": "Hacer aparecer un objeto",
       "teleport": "Teletransportarse a una sala",
       "breakDoor": "Romper una puerta",
+      "warpToPlanet": "Planeta de 20 sectores",
       "returnToSol": "Volver a Sol",
       "returnToEden": "Viajar a Edén"
     }

@@ -4662,3 +4662,10 @@ Follow-up: the "Inspect" panel heading is now visually hidden on desktop too (ke
 ### 2026-11-21: Star drift outruns walking
 
 - Owner noticed the stars stopping when you walk up-left against the stream: the camera's parallax (0.6 and 0.25 of a 96 px/s walk) cancelled the 40 and 12 px/s drift. Each layer's cruising drift is now derived as 1.5 x its parallax x the walk speed (`CELLS_PER_SECOND` x a cell's screen width), so it stays ahead if either constant changes: stars 86 px/s, dust 36 px/s. The 150% figure was the owner's.
+
+## 2026-11-21: Fuel-planet cheat moved to the Superkube's Destinations tab
+
+- The owner asked to move "the cheat for warping to a planet" into the Superkube with a sector dropdown and a Warp button. Two cheats warp (the `fuelPlanet` toggle and `easyTravel`'s per-planet Warp), so I asked first. The answers: replace `fuelPlanet` only; 20 known sectors all of the picked tag; keep "never runs out".
+- Keeping "never runs out" without a toggle needed state, so a warped-to planet carries `Planet.inexhaustible`, and `expeditionStep` skips marking its sectors explored. This replaced the old approach of un-exploring the sectors in `applyCheats` after each of the cheater's actions, which only fired on the cheater's own turns. The flag is not in `PlanetView` (viewFor lists fields explicitly). `STATE_VERSION` 122 drops a stored `fuelPlanet` cheat.
+- New `KubeArgKind` "sector" (choices `PLANET_TAG_IDS`), so the existing generic `KubeRow` renders the dropdown; only the button label changes to Warp.
+- Checks: the touched tests pass. A full verify under load showed failures in the other session's uncommitted bot work (`server/src/testing/survival.ts` i18n, server goals/survival tests) plus timeouts that pass when rerun alone.

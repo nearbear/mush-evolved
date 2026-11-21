@@ -90,6 +90,14 @@ const floor = (s: GameState, type: string) => s.items.filter((i) => i.type === t
 const harvested = (s: GameState, room = ICARUS) => s.items.filter((i) => expedition.loot.harvest.includes(i.type) && i.at.kind === "room" && i.at.id === room).length;
 
 describe("expeditions, phase 1 (instant, as in single player)", () => {
+  it("never marks an inexhaustible planet's sectors explored (the Superkube's Warp, kube.ts)", () => {
+    const s = game({ tags: ["OXYGEN", "OXYGEN"], events: only({ kind: "nothing", weight: 1 }) });
+    s.planets.p5![0]!.inexhaustible = true;
+    const next = go(s);
+    expect(next.expeditions[0]!.events.length).toBeGreaterThan(1);
+    expect(next.planets.p5![0]!.sectors.some((sector) => sector.explored)).toBe(false);
+  });
+
   it("boarding: free, offered in the bay in orbit of a planet with an unexplored sector; a public line in the bay", () => {
     const s = game();
     for (const id of ["p0", "p1"]) {

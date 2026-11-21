@@ -86,7 +86,7 @@ import type {
  * override key. A step lands in a deploy of its own (docs/ops/deploy.md: roll back only to the same version). Something
  * that never reached a deploy (test or production) is in no stored snapshot, so changing or removing it needs no step.
  */
-export const STATE_VERSION = 121;
+export const STATE_VERSION = 122;
 
 /**
  * The oldest stored version this build reads: 114, the shape the normalizers were written against. A snapshot below it
@@ -278,7 +278,20 @@ const upgradeTo121: UpgradeStep = {
   },
 };
 
-export const UPGRADE_STEPS: readonly UpgradeStep[] = [upgradeTo115, upgradeTo116, upgradeTo117, upgradeTo118, upgradeTo119, upgradeTo120, upgradeTo121];
+/** Before 122, a player could hold the `fuelPlanet` cheat; the Superkube's Warp (kube.ts) replaced it. */
+const upgradeTo122: UpgradeStep = {
+  to: 122,
+  paths: ["game.players[].cheats"],
+  run: (game) => {
+    const players = game.players as Array<Record<string, unknown>> | undefined;
+    if (!players) return;
+    for (const p of players) {
+      if (Array.isArray(p.cheats)) p.cheats = p.cheats.filter((c) => c !== "fuelPlanet");
+    }
+  },
+};
+
+export const UPGRADE_STEPS: readonly UpgradeStep[] = [upgradeTo115, upgradeTo116, upgradeTo117, upgradeTo118, upgradeTo119, upgradeTo120, upgradeTo121, upgradeTo122];
 
 /**
  * Brings a stored snapshot from version `from` to `STATE_VERSION`, before it is normalized: runs every step with
@@ -1008,6 +1021,7 @@ export function normalizePlanet(raw: Partial<Planet>): Planet {
     direction: need(raw, "direction", t),
     distance: need(raw, "distance", t),
     sectors: need(raw, "sectors", t).map(normalizeSector),
+    inexhaustible: raw.inexhaustible,
   });
 }
 

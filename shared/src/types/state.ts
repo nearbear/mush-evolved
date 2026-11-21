@@ -375,6 +375,8 @@ export interface Planet {
    * (expeditions.ts): each sector is explored once. Never sent, not even to the finder (owner, 2026-10-31).
    */
   sectors: { tag: PlanetTag; known: boolean; explored?: true }[];
+  /** Development only: the Superkube's Warp made it (kube.ts), and an expedition never marks its sectors explored. */
+  inexhaustible?: true;
 }
 
 /** A door between two rooms (doors.ts, #330): the two room ids, sorted and joined with `|` (`doorId`). */

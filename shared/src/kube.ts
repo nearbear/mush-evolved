@@ -5,6 +5,7 @@
 
 import { leaveAccommodation, pushing } from "./accommodation.ts";
 import { getUp } from "./actions/lie_down.ts";
+import { warpToNewPlanet } from "./actions/warp_to_planet.ts";
 import { board } from "./actions/takeoff.ts";
 import { updateMaxValues } from "./adjustStats.ts";
 import { cheatItem } from "./cheatStock.ts";
@@ -16,13 +17,14 @@ import { contaminate } from "./infection.ts";
 import { ITEM_TYPES, newItemId, startCharges } from "./items.ts";
 import { becameDirty, enterRoom, enteredRoom } from "./modifiers.ts";
 import { logPublic } from "./log.ts";
+import { PLANET_TAG_IDS, type PlanetTag } from "./planets.ts";
 import { inCraft } from "./patrol.ts";
 import { addStatus, isImmune, type StatusId } from "./statuses.ts";
 import { endGame, winnerOnArrival } from "./victory.ts";
 import type { DeepReadonly, DoorId, GameConfig, GameState, PlayerId, PlayerState, RoomId } from "./types.ts";
 
-/** What an option's argument is: nothing, a whole number, one of the ship's ailments, an item type, a room, or a door. */
-export type KubeArgKind = "none" | "number" | "ailment" | "item" | "room" | "door";
+/** What an option's argument is: nothing, a whole number, one of the ship's ailments, an item type, a room, a door, or a planet sector's tag. */
+export type KubeArgKind = "none" | "number" | "ailment" | "item" | "room" | "door" | "sector";
 
 /** The window's tabs. */
 export type KubeGroup = "health" | "items" | "travel" | "destinations";
@@ -138,6 +140,16 @@ export const KUBE_OPS = {
     arg: "door",
     apply: (state, _me, arg) => (breakDoor(state, arg as DoorId) ? null : "door_broken"),
   },
+  // A new planet of 20 known sectors of the picked tag that never run out, and the ship in its orbit at once
+  // (warpToNewPlanet). Replaced the fuelPlanet cheat.
+  warpToPlanet: {
+    group: "destinations",
+    arg: "sector",
+    apply: (state, me, arg) => {
+      warpToNewPlanet(state, me, arg as PlanetTag);
+      return null;
+    },
+  },
   // End the game immediately by arriving at Sol or Eden (development route to a finished game and its replay).
   returnToSol: arriveAt("sol", "returnedToSol"),
   returnToEden: arriveAt("eden", "returnedToEden"),
@@ -162,12 +174,13 @@ const ailments = (config: KubeChoiceSource): StatusId[] => [...config.diseases.a
 /**
  * What an argument of `kind` may be on a ship with this config, in the order the window lists them: the ship's
  * ailments, every item type, the Daedalus's rooms with the Laboratory first (the cheat room and the crafts left out),
- * or the Daedalus's doors.
+ * the Daedalus's doors, or every planet sector tag.
  */
 export function kubeChoices(config: KubeChoiceSource, kind: Exclude<KubeArgKind, "none" | "number">): string[] {
   if (kind === "ailment") return ailments(config);
   if (kind === "item") return Object.keys(ITEM_TYPES);
   if (kind === "door") return allDoors(config.rooms);
+  if (kind === "sector") return [...PLANET_TAG_IDS];
   const rooms = Object.keys(config.rooms).filter((room) => room !== CHEAT_ROOM && !inCraft(room));
   return [...rooms.filter((r) => r === "LABORATORY"), ...rooms.filter((r) => r !== "LABORATORY")];
 }
