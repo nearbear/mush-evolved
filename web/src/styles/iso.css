@@ -25,15 +25,15 @@
   overflow: hidden;
 }
 /*
- * The room view's top-right corner (GameView): the location plate, one card in the iTrackie's gold outline (card.css on
+ * The room view's bottom-left corner (GameView): the location plate, one card in the iTrackie's gold outline (card.css on
  * the game screen) holding your room's name, which never moves, with the minimap directly under it. With the map the
- * card is as wide as the map (and follows it when it expands); without it the card shrinks to the name, still
- * right-aligned.
+ * card is as wide as the map (and follows it when it expands, growing upward); without it the card shrinks to the name,
+ * still left-aligned.
  */
 .room-corner {
   position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
+  bottom: calc(0.5rem + var(--peek-clear, 0px));
+  left: 0.5rem;
   z-index: 2; /* under the inventory popup (3), which may cover it */
   box-sizing: border-box;
   display: flex;
@@ -53,7 +53,7 @@
 .room-corner:not(:has(> .minimap)) {
   padding-bottom: var(--space-1);
 }
-/* The name row; taps go through it to the room. Context icons on the left; name right-aligned. */
+/* The name row; taps go through it to the room. Name left-aligned; context icons on the right. */
 .room-title {
   display: flex;
   align-items: center;
@@ -65,13 +65,14 @@
   min-width: 0;
   margin: 0;
   font-size: 0.85rem;
-  text-align: right;
+  text-align: left;
   overflow-wrap: anywhere;
 }
 .room-icons {
   display: flex;
+  order: 1; /* after the name, though first in the markup */
   gap: 2px;
-  margin-right: auto;
+  margin-left: auto;
   pointer-events: auto;
 }
 .room-icons:empty {
@@ -125,8 +126,27 @@
 .fx-door-hover {
   filter: brightness(1.35) drop-shadow(0 0 3px var(--accent));
 }
+/* Thick and pulsing (the Pixi renderer's selectionPulse): on phones it is the only sign of what the peek bar acts on. */
 .fx-selected {
-  filter: drop-shadow(0 0 2px var(--highlight));
+  --sel: var(--highlight);
+  filter: drop-shadow(0 0 1px var(--sel)) drop-shadow(0 0 1px var(--sel)) drop-shadow(0 0 2px var(--sel));
+  animation: sel-pulse 0.6s ease-in-out infinite alternate;
+}
+/* Registered so the pulse fades the colour instead of flipping it. */
+@property --sel {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: transparent;
+}
+@keyframes sel-pulse {
+  from {
+    --sel: color-mix(in srgb, var(--highlight) 50%, transparent);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fx-selected {
+    animation: none;
+  }
 }
 .fx-broken {
   filter: drop-shadow(0 0 2px var(--danger));

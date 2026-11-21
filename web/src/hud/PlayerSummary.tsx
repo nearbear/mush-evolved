@@ -1,7 +1,7 @@
-// Who you are and your stats on phones, in the top bar: a full-width strip with the clock, the alerts and the menu, then
-// flush under it the ID card, styled after the desktop one (SelfHud): your portrait (tap to inspect yourself), your name, titles and faction (in its colour), and
+// Who you are and your stats on phones: the ID card over the room view's top-left corner, as the desktop's (SelfHud) is.
+// It is styled after the desktop one: your portrait (tap to inspect yourself), your name, titles and faction (in its colour), and
 // your stats two rows deep: AP over MP, HP over morale (values only; each one's tooltip has its capacity and a pip bar),
-// then your other resources, in a column the card's full height, in as many columns as fit. The desktop equivalent is SelfHud, over the room view.
+// then your other resources, in a column the card's full height, in as many columns as fit.
 
 import { characterGivenName, type PlayerView } from "@mush2/shared";
 import { useNames } from "../i18n/names.ts";
@@ -68,25 +68,8 @@ function StatChip({ stat, view, value, max, icon, big = false }: { stat: Stat; v
   );
 }
 
-/**
- * `clock` is the top bar's amber day/cycle/countdown/ship plate, on the strip's left; `alerts` (AlertButton) and `menu`
- * (the hamburger) are on its right. `tags` (pre-selection, AI paused) go under your name, titles and faction. `onInspect` opens the Inspect panel on you.
- */
-export function PlayerSummary({
-  view,
-  clock,
-  alerts,
-  tags,
-  menu,
-  onInspect,
-}: {
-  view: PlayerView;
-  clock: ReactNode;
-  alerts: ReactNode;
-  tags: ReactNode;
-  menu: ReactNode;
-  onInspect: () => void;
-}) {
+/** `tags` (AI paused) go under your name, titles and faction. `onInspect` opens the Inspect panel on you. */
+export function PlayerSummary({ view, tags, onInspect }: { view: PlayerView; tags: ReactNode; onInspect: () => void }) {
   const { t, i18n } = useTranslation();
   const names = useNames();
   const { you } = view;
@@ -95,31 +78,21 @@ export function PlayerSummary({
   const titles = held.length === 0 ? null : new Intl.ListFormat(i18n.language, { type: "conjunction" }).format(held);
   const statsRef = useRef<HTMLDivElement>(null);
   return (
-    <div className="player-summary">
-      {/* The strip over the card: the clock on the left, the alerts and menu on the right (top-bar.css); in landscape, left of the card. */}
-      <div className="summary-strip">
-        {clock}
-        <span className="summary-strip-end">
-          {alerts}
-          {menu}
-        </span>
+    <div className={`nameplate ${you.role}`}>
+      <SelfPortrait view={view} onInspect={onInspect} />
+      <div className="who">
+        <strong className="id-value id-name">{characterGivenName(you.character)}</strong>
+        {titles && <span className="nameplate-titles">{titles}</span>}
+        <span className="nameplate-faction">{t(`faction.${factionOf(view)}.name`)}</span>
+        {tags && <span className="nameplate-tags">{tags}</span>}
       </div>
-      <div className={`nameplate ${you.role}`}>
-        <SelfPortrait view={view} onInspect={onInspect} />
-        <div className="who">
-          <strong className="id-value id-name">{characterGivenName(you.character)}</strong>
-          {titles && <span className="nameplate-titles">{titles}</span>}
-          <span className="nameplate-faction">{t(`faction.${factionOf(view)}.name`)}</span>
-          {tags && <span className="nameplate-tags">{tags}</span>}
-        </div>
-        {/* Two rows, filled a column at a time: AP over MP, HP over morale, then the resources. */}
-        <div className="stat-chips" ref={statsRef}>
-          <StatChip stat="ap" view={view} value={you.ap} max={view.maxAp} icon={AP_PIP} />
-          <StatChip stat="mp" view={view} value={you.mp} max={view.maxMp} icon={MP_PIP} />
-          <StatChip stat="hp" view={view} value={you.hp} max={view.maxHp} icon={HP_ICON} big />
-          <StatChip stat="morale" view={view} value={you.morale} max={view.maxMorale} icon={MORALE_ICON} big />
-          <ResourceGrid view={view} gridRef={statsRef} />
-        </div>
+      {/* Two rows, filled a column at a time: AP over MP, HP over morale, then the resources. */}
+      <div className="stat-chips" ref={statsRef}>
+        <StatChip stat="ap" view={view} value={you.ap} max={view.maxAp} icon={AP_PIP} />
+        <StatChip stat="mp" view={view} value={you.mp} max={view.maxMp} icon={MP_PIP} />
+        <StatChip stat="hp" view={view} value={you.hp} max={view.maxHp} icon={HP_ICON} big />
+        <StatChip stat="morale" view={view} value={you.morale} max={view.maxMorale} icon={MORALE_ICON} big />
+        <ResourceGrid view={view} gridRef={statsRef} />
       </div>
     </div>
   );

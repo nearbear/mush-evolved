@@ -95,6 +95,16 @@ main.game .room-corner,
   --card-rim: var(--gold-mid);
   --cut-tl: 6px;
   --cut-bl: 6px;
+}
+/* The location plate sits in the room view's bottom-left corner, so its bevels face the room: the right-hand corners. */
+main.game .room-corner {
+  --cut-tl: 0px;
+  --cut-bl: 0px;
+  --cut-tr: 6px;
+  --cut-br: 6px;
+}
+main.game .room-corner,
+.hud-card.amber {
   filter: drop-shadow(1px 0 0 var(--gold-edge)) drop-shadow(-1px 0 0 var(--gold-edge)) drop-shadow(0 1px 0 var(--gold-edge))
     drop-shadow(0 -1px 0 var(--gold-edge)) drop-shadow(0 1px 3px var(--panel-shadow));
 }

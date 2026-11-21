@@ -6,14 +6,13 @@ import { SETTINGS_ICON } from "../art/assets.ts";
 import { useMobile } from "../useMobile.ts";
 import { BotsPausedTag } from "./BotsPausedTag.tsx";
 import { CycleCountdown } from "./CycleCountdown.tsx";
-import { PlayerSummary } from "./PlayerSummary.tsx";
 import { AlertBar, AlertButton, ShipResources } from "./ShipResources.tsx";
 import { ShipStatus } from "./ShipStatus.tsx";
 import { SettingsDialog } from "./SettingsDialog.tsx";
 
 export function TopBar({
   view,
-  showSummary,
+  strip,
   canReady,
   onReady,
   nextCycleAt,
@@ -25,11 +24,10 @@ export function TopBar({
   onRoleCheat,
   onCheatRoom,
   onLeaveShip,
-  onInspectSelf,
 }: {
   view: PlayerView;
-  /** Phones only: on desktop the summary is the HUD over the room (SelfHud). */
-  showSummary: boolean;
+  /** Phones: one strip of the clock, the alerts and the menu in place of the desktop's zones (your ID card is over the room view, as on desktop). */
+  strip: boolean;
   /** Offered only where End cycle is on (testing); cycles otherwise change on the server's clock. */
   canReady: boolean;
   onReady: () => void;
@@ -46,8 +44,6 @@ export function TopBar({
   /** Absent on a ship without the cheat room, and while you're in it (#170). */
   onCheatRoom?: (() => void) | undefined;
   onLeaveShip: () => void;
-  /** Phones: your portrait in the summary opens the Inspect panel on you. */
-  onInspectSelf: () => void;
 }) {
   const { you } = view;
   const { t } = useTranslation();
@@ -85,8 +81,7 @@ export function TopBar({
       <ShipStatus preselection={view.preselection} orbit={view.navigation.orbitName} expedition={view.expedition} />
     </span>
   );
-  const tags = botsPaused && <BotsPausedTag pause={botsPaused} />;
-  // Phones: the actions live in a hamburger menu, on the right of the nameplate, to save top bar space.
+  // Phones: the actions live in a hamburger menu, at the strip's right end, to save top bar space.
   const menu = mobile && (
     <Menu.Root>
       <Menu.Trigger className="menu-button" aria-label={t("menu.open")}>
@@ -118,13 +113,21 @@ export function TopBar({
   );
   return (
     <header className="top-bar">
-      {/* Desktop zones (UI coherence step 5): time on the left, the ship in the middle, the actions on the right. Phones put the clock and the alerts on top of the nameplate, and the tags and the menu in it. */}
-      {showSummary ? (
-        <PlayerSummary view={view} clock={clock} alerts={<AlertButton hunters={view.hunters.count} alerts={view.alerts} />} tags={tags} menu={menu} onInspect={onInspectSelf} />
+      {/* Desktop zones (UI coherence step 5): time on the left, the ship in the middle, the actions on the right. Phones
+          have one strip: the clock on the left, the alerts and the menu on the right (top-bar.css); the AI-paused tag is
+          on the ID card in the room view (GameView). */}
+      {strip ? (
+        <div className="summary-strip">
+          {clock}
+          <span className="summary-strip-end">
+            <AlertButton hunters={view.hunters.count} alerts={view.alerts} />
+            {menu}
+          </span>
+        </div>
       ) : (
         <div className="cycle">
           {clock}
-          {tags}
+          {botsPaused && <BotsPausedTag pause={botsPaused} />}
         </div>
       )}
       {!mobile && <ShipResources ship={view.ship} hunters={view.hunters.count} titles={view.titles} preselection={view.preselection} compactTitles alertsApart lost={view.lost} alerts={view.alerts} />}

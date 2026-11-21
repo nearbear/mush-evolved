@@ -80,6 +80,7 @@
     "doorTo": "Door to {{room}}",
     "noAccess": "No access",
     "selection": "Selection",
+    "selectionOf": "Selection: {{name}}",
     "more": "More"
   },
   "stat": {

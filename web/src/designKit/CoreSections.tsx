@@ -3,6 +3,7 @@
 import { Tabs } from "@base-ui/react/tabs";
 import { bustIcon, ENDING_ART, SHIP_CARD_ICONS } from "../art/assets.ts";
 import { ShipCard, type ShipCardHighlight } from "../games/ShipCard.tsx";
+import { PlayerSummary } from "../hud/PlayerSummary.tsx";
 import { SelfHud } from "../hud/SelfHud.tsx";
 import { TerminalFrame } from "../hud/TerminalFrame.tsx";
 import { noop } from "./KitSection.tsx";
@@ -149,6 +150,14 @@ export function SelfHudSection() {
             <SelfHud view={mushView} onInspect={noop} />
           </div>
           <figcaption>Mush (spores in the resources)</figcaption>
+        </figure>
+        <figure>
+          <div className="room-view m2k-room">
+            <div className="room-top-left">
+              <PlayerSummary view={mushView} tags={null} onInspect={noop} />
+            </div>
+          </div>
+          <figcaption>Phone ID card (PlayerSummary), Mush: meant for phone widths</figcaption>
         </figure>
       </div>
     </section>

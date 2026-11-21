@@ -25,6 +25,8 @@ import { SelfHud } from "./hud/SelfHud.tsx";
 import { TipCard } from "./hud/TipCard.tsx";
 import { resolveTarget } from "./hud/targets.ts";
 import { TopBar } from "./hud/TopBar.tsx";
+import { PlayerSummary } from "./hud/PlayerSummary.tsx";
+import { BotsPausedTag } from "./hud/BotsPausedTag.tsx";
 import { ServerClockContext, serverTime, type ServerClock } from "./hud/serverClock.ts";
 import { shipPace, type Corpse, type Drone, type Occupant } from "./iso/scene.ts";
 import { FIRE_ICON, orbitImage, skillIcon } from "./art/assets.ts";
@@ -214,7 +216,7 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
       {!readOnly && <BodyTakenDialog view={view} onAcknowledge={() => post({ type: "acknowledgeTransfer" })} />}
       <TopBar
         view={view}
-        showSummary={mobile}
+        strip={mobile}
         canReady={legalIn(view).some((a) => a.type === "ready")}
         nextCycleAt={nextCycleAt}
         botsPaused={botsPaused}
@@ -226,10 +228,6 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
         onRoleCheat={(role: RoleCheat) => post({ type: "roleCheat", role })}
         onCheatRoom={Object.hasOwn(view.rooms, CHEAT_ROOM) && view.you.room !== CHEAT_ROOM ? () => post({ type: "cheatRoom" }) : undefined}
         onLeaveShip={() => post({ type: "leaveShip" })}
-        onInspectSelf={() => {
-          select({ kind: "player", id: you.id });
-          setPanel("inspect");
-        }}
       />
       {!mobile && transport && <div className="game-transport">{transport}</div>}
 
@@ -307,12 +305,28 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
             {mobile && <ShipOverlay view={view} />}
             {/* Not in the Icarus (owner, 2026-11-20): its panel takes the whole room view. */}
             {!mobile && you.alive && !inIcarus && <SelfHud view={view} onInspect={() => select({ kind: "player", id: you.id })} />}
-            {/* Bottom-left: the action queue. */}
-            {you.alive && (
-              <div className="room-bottom-left">
-                <ActionQueue view={view} onClear={readOnly ? undefined : () => post({ type: "clearQueue" })} />
-              </div>
-            )}
+            {/* The action queue: top-right on desktop; on phones under your ID card in the top-left, as the desktop
+                card is (not in the Icarus, whose panel takes the whole room view). */}
+            {you.alive &&
+              (mobile ? (
+                <div className="room-top-left">
+                  {!inIcarus && (
+                    <PlayerSummary
+                      view={view}
+                      tags={botsPaused && <BotsPausedTag pause={botsPaused} />}
+                      onInspect={() => {
+                        select({ kind: "player", id: you.id });
+                        setPanel("inspect");
+                      }}
+                    />
+                  )}
+                  <ActionQueue view={view} onClear={readOnly ? undefined : () => post({ type: "clearQueue" })} />
+                </div>
+              ) : (
+                <div className="room-top-right">
+                  <ActionQueue view={view} onClear={readOnly ? undefined : () => post({ type: "clearQueue" })} />
+                </div>
+              ))}
             {you.alive && !readOnly && <TipCard view={view} />}
             {you.alive && (
               <InventoryOverlay
@@ -326,7 +340,7 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
                 onOpenChange={setInventoryOpen}
               />
             )}
-            {/* Top-right: one card (amber, red when your room is on fire) holding your room's name with the minimap under it.
+            {/* Bottom-left: one card (amber, red when your room is on fire) holding your room's name with the minimap under it.
                 Not in the Icarus (owner, 2026-11-20): its panel takes the whole room view. */}
             {!inIcarus && (
               <div className={`room-corner${inRoom && view.roomOnFire ? " alert" : ""}`}>
@@ -358,6 +372,18 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
                 />
               </div>
             )}
+            {/* Phones: over the bottom of the room view; the corners' overlays sit above it (--peek-clear, responsive.css). */}
+            {mobile && panel === "room" && you.alive && (
+              <PeekBar
+                view={view}
+                target={target}
+                reachable={reachable}
+                onAction={act}
+                onMove={move}
+                onMore={() => setPanel("inspect")}
+                onKube={kube}
+              />
+            )}
           </div>
         </div>
 
@@ -381,17 +407,6 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
         />
       </div>
 
-      {mobile && panel === "room" && you.alive && (
-        <PeekBar
-          view={view}
-          target={target}
-          reachable={reachable}
-          onAction={act}
-          onMove={move}
-          onMore={() => setPanel("inspect")}
-          onKube={kube}
-        />
-      )}
       {mobile && transport && <div className="game-transport">{transport}</div>}
       {mobile && <BottomNav panel={panel} onChange={setPanel} view={view} />}
     </main>

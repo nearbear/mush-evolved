@@ -81,6 +81,7 @@
     "doorTo": "Porte vers {{room}}",
     "noAccess": "Accès refusé",
     "selection": "Sélection",
+    "selectionOf": "Sélection : {{name}}",
     "more": "Plus"
   },
   "stat": {

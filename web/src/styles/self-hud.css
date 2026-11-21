@@ -61,7 +61,7 @@
  * .id-card). The card is light card stock, like the iTrackie: light surfaces are your own things, dark ones the ship. The scene around it stays usable.
  */
 .room-view {
-  --hud-card: 56px; /* the bottom row's height (the action queue), which the tip card clears (tips.css) */
+  --hud-card: 56px; /* the bottom row's height (the inventory button, the minimap's location plate), which the tip card clears (tips.css) */
 }
 .self-hud-top {
   position: absolute;
@@ -323,24 +323,32 @@
   outline: 2px solid var(--id-faction);
   outline-offset: 2px;
 }
-/* The action queue. Only the cards take clicks. */
-.room-bottom-left {
+/* The action queue, in the room view's top-right corner. Only the cards take clicks. */
+.room-top-right {
   position: absolute;
-  left: 0.5rem;
-  bottom: 0.5rem;
+  top: 0.5rem;
+  right: 0.5rem;
   z-index: 2; /* under the inventory popup (3), which may cover it */
   display: flex;
-  align-items: flex-end;
+  align-items: flex-start;
   gap: var(--space-2);
   max-width: calc(100% - 1rem);
   pointer-events: none;
 }
-.room-bottom-left > * {
-  pointer-events: auto;
-}
-.player-summary {
+/* Phones: your ID card (PlayerSummary) in the room view's top-left corner, as the desktop's, with the action queue under it. */
+.room-top-left {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  z-index: 2; /* under the inventory popup (3), which may cover it */
   display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: var(--space-3);
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  max-width: calc(100% - 1rem);
+  pointer-events: none;
+}
+.room-top-right > *,
+.room-top-left > * {
+  pointer-events: auto;
 }

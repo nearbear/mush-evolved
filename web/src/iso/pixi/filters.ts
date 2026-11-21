@@ -72,6 +72,8 @@ uniform vec4 uShadow;
 uniform vec3 uShadowAt;
 uniform vec4 uGlow;
 uniform float uGlowSigma;
+uniform float uGlowGain;
+uniform float uGlowAlpha;
 
 void main(void) {
   vec4 c = texture(uTexture, vTextureCoord);
@@ -81,7 +83,7 @@ void main(void) {
   }
   c.rgb = min(c.rgb * uBrightness, vec3(c.a));
   if (uGlow.a > 0.0) {
-    float a = uGlow.a * blurred(vTextureCoord, uGlowSigma, 3);
+    float a = uGlow.a * uGlowAlpha * min(1.0, uGlowGain * blurred(vTextureCoord, uGlowSigma, 3));
     c += vec4(uGlow.rgb * a, a) * (1.0 - c.a);
   }
   finalColor = c;
@@ -130,8 +132,11 @@ const program = (name: string, fragment: string) => GlProgram.from({ vertex, fra
 
 const rgba = (css: string, alpha: number): number[] => [...new Color(css).toArray().slice(0, 3), alpha];
 
-/** The filter that draws a look. Shared by every sprite with that look, so it is built once per renderer. */
-export function lookFilter(look: Look, color: (token: string) => string, resolution: number): Filter {
+/**
+ * The filter that draws a look. Shared by every sprite with that look, so it is built once per renderer. A pulsing glow
+ * takes `pulse`, the uniform group the renderer fades every frame, instead of a fixed opacity.
+ */
+export function lookFilter(look: Look, color: (token: string) => string, resolution: number, pulse: UniformGroup): Filter {
   const glow = look.glow;
   const shadow = look.shadow;
   return new Filter({
@@ -143,7 +148,9 @@ export function lookFilter(look: Look, color: (token: string) => string, resolut
         uShadowAt: { value: new Float32Array(shadow ? [shadow.x, shadow.y, shadow.sigma] : [0, 0, 0]), type: "vec3<f32>" },
         uGlow: { value: new Float32Array(glow ? rgba(color(glow.token), 1) : [0, 0, 0, 0]), type: "vec4<f32>" },
         uGlowSigma: { value: glow?.sigma ?? 0, type: "f32" },
+        uGlowGain: { value: glow?.gain ?? 1, type: "f32" },
       }),
+      glowAlpha: glow?.pulse ? pulse : new UniformGroup({ uGlowAlpha: { value: 1, type: "f32" } }),
     },
     padding: paddingOf(look),
     resolution,

@@ -27,7 +27,7 @@ export function SampleTopBar({ view, ...rest }: { view: PlayerView } & Partial<P
   return (
     <TopBar
       view={view}
-      showSummary={false}
+      strip={false}
       canReady={false}
       onReady={noop}
       nextCycleAt={NEXT_CYCLE}
@@ -38,7 +38,6 @@ export function SampleTopBar({ view, ...rest }: { view: PlayerView } & Partial<P
       onCheat={noop}
       onRoleCheat={noop}
       onLeaveShip={noop}
-      onInspectSelf={noop}
       {...rest}
     />
   );
@@ -53,8 +52,8 @@ export function TopBarSection() {
         <>
           <code>hud/TopBar.tsx</code>: day and cycle with <code>CycleCountdown</code>, the ship&apos;s resources and titles (
           <code>ShipResources</code>, <code>TitleChip</code>; desktop only), and the settings gear, which opens the real{" "}
-          <code>SettingsDialog</code>. On a phone it also carries <code>PlayerSummary</code> (<code>showSummary</code>) and
-          folds the buttons into a menu.
+          <code>SettingsDialog</code>. On a phone (<code>strip</code>) it is one strip of the clock, the alerts and a menu holding the
+          buttons; the phone&apos;s ID card (<code>PlayerSummary</code>) is over the room view.
         </>
       }
       row="m2k-stack"
@@ -65,8 +64,8 @@ export function TopBarSection() {
       <Figure caption="Pre-selection, AI crew paused (budget), End cycle offered, cheats allowed (gear → Cheats tab)">
         <SampleTopBar view={preselectionView} botsPaused="budget" canReady cheatsAllowed />
       </Figure>
-      <Figure caption="Phone summary (showSummary), Mush: meant for phone widths, cramped on desktop">
-        <SampleTopBar view={mushView} showSummary />
+      <Figure caption="Phone strip (strip)">
+        <SampleTopBar view={mushView} strip />
       </Figure>
     </Section>
   );
@@ -192,7 +191,7 @@ export function RoomCornerSection() {
       heading="Action queue and tips"
       about={
         <>
-          <code>hud/ActionQueue.tsx</code> sits in the room&apos;s bottom left (beside AP and MP on desktop) while you have
+          <code>hud/ActionQueue.tsx</code> sits in the room&apos;s top right while you have
           actions under way; <code>hud/TipCard.tsx</code> floats over the room&apos;s bottom middle. Dismissed and muted tips
           are remembered in this browser, as in the game.
         </>
@@ -200,7 +199,7 @@ export function RoomCornerSection() {
     >
       <Figure caption="One search under way, two waiting">
         <div className="room-view m2k-room m2k-room-tall">
-          <div className="room-bottom-left">
+          <div className="room-top-right">
             <ActionQueue view={queueView} onClear={noop} />
           </div>
         </div>
@@ -224,7 +223,7 @@ export function PeekBarSection() {
       heading="Peek bar (phone)"
       about={
         <>
-          <code>hud/PeekBar.tsx</code>: the phone&apos;s bar above the bottom nav for whatever was tapped. Its CSS shows it only
+          <code>hud/PeekBar.tsx</code>: the phone&apos;s bar over the bottom of the room view for whatever was tapped (no name: the selection pulses in the room). Its CSS shows it only
           below 1024px, so narrow the window to see these.
         </>
       }

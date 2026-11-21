@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { espPulse, filterKey, lookOf } from "../../src/iso/pixi/effects.ts";
+import { espPulse, filterKey, lookOf, selectionPulse } from "../../src/iso/pixi/effects.ts";
 import type { SceneSprite } from "../../src/iso/scene.ts";
 
 // What a look costs, not how it looks: tints, glows and timings are tuned by eye (`npm run screenshot`), so they aren't
@@ -37,5 +37,22 @@ describe("espPulse", () => {
   it("holds still with reduced motion", () => {
     expect(espPulse(400, true)).toBe(1);
     expect(espPulse(1600, true)).toBe(1);
+  });
+});
+
+describe("selectionPulse", () => {
+  it("holds still with reduced motion and stays visible while it pulses", () => {
+    expect(selectionPulse(300, true)).toBe(1);
+    for (let t = 0; t < 1200; t += 50) {
+      expect(selectionPulse(t, false)).toBeGreaterThanOrEqual(0.5);
+      expect(selectionPulse(t, false)).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it("is one shared filter for every selected sprite", () => {
+    const a = filterKey(lookOf(sprite({ role: "person", shadow: "standing", effect: "selected" })));
+    const b = filterKey(lookOf(sprite({ role: "person", shadow: "standing", effect: "selected" })));
+    expect(a).toBe(b);
+    expect(a).not.toBe(filterKey(lookOf(sprite({ role: "person", shadow: "standing", effect: "broken" }))));
   });
 });

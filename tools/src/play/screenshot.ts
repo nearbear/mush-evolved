@@ -248,7 +248,8 @@ async function mobileSteps(page: Page, step: Step): Promise<void> {
   await step("m03-peek-examine", async () => {
     const at = await firstHit(page, isEquipment);
     await page.touchscreen.tap(at.x, at.y);
-    const name = (await peek.locator(".peek-name strong").innerText()).trim();
+    // The bar shows no name; its label is "Selection: <name>".
+    const name = ((await peek.getAttribute("aria-label")) ?? "").replace(/^Selection: /, "").trim();
     // Examine lives in the Inspect panel, behind the peek bar's More.
     await peek.getByRole("button", { name: "More" }).tap();
     await page.locator(".inspect").getByRole("button", { name: "Examine" }).tap();
@@ -334,8 +335,8 @@ async function mobileSteps(page: Page, step: Step): Promise<void> {
     await page.setViewportSize({ width: portrait.height, height: portrait.width });
     await page.waitForTimeout(200); // let the room re-measure
     const bar = await page.locator(".top-bar").boundingBox();
-    // The nameplate plus the stat chips hanging off its bottom edge is about 65px; a wrapped bar is 100px or more.
-    if (bar!.height > 70) throw new Error(`top bar is ${bar!.height}px tall in landscape; expected one row`);
+    // One strip (clock, alerts, menu) is 34px; a wrapped one is 60px or more.
+    if (bar!.height > 40) throw new Error(`top bar is ${bar!.height}px tall in landscape; expected one row`);
   });
 }
 

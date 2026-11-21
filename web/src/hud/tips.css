@@ -3,7 +3,7 @@
 .tip-card {
   position: absolute;
   left: 50%;
-  bottom: calc(1rem + var(--hud-card));
+  bottom: calc(1rem + var(--hud-card) + var(--peek-clear, 0px));
   transform: translateX(-50%);
   z-index: 2;
   box-sizing: border-box;

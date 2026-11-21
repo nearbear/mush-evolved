@@ -80,6 +80,8 @@ export function InventoryOverlay({
         <button
           type="button"
           className="inventory-toggle"
+          // An item has no sprite in the room to glow, so while one is selected and the sack is shut, the sack glows.
+          data-selection={!open && selected.kind === "item" ? "" : undefined}
           aria-label={label}
           aria-expanded={open}
           aria-controls={open ? panelId : undefined}

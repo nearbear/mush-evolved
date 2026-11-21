@@ -28,7 +28,7 @@ import { keyedUrl } from "../../art/keyedSprite.ts";
 import { animId, animStep, type Cutaway, frameAt, PACE_SPEED, type FrameUpdate, type Scene, type SceneImage, type SceneOutline, type ScenePicture, type SceneSprite, type ShipTurn } from "../scene.ts";
 import { shiftTile, stepTurn, tilePosition, type TurnLimits } from "../skyTurn.ts";
 import { starfield, starLayer } from "../starfield.ts";
-import { ESP, espPulse, filterKey, lookOf } from "./effects.ts";
+import { ESP, espPulse, filterKey, lookOf, selectionPulse } from "./effects.ts";
 import { cutawayFilter, EspFilters, lookFilter } from "./filters.ts";
 import { RoomFire } from "./fire.ts";
 import { RoomSmoke } from "./smoke.ts";
@@ -215,6 +215,10 @@ export class PixiRenderer {
   private esp: { pulsing: EspFilters; faint: EspFilters } | null = null;
   /** Whether any outline that pulses is showing, which keeps frames coming. */
   private pulsing = false;
+  /** The selection glow's opacity, shared by every pulsing look filter (lookFilter). */
+  private readonly selectionUniforms = new UniformGroup({ uGlowAlpha: { value: 1, type: "f32" } });
+  /** Whether a selected sprite is showing, which keeps frames coming for its pulse. */
+  private selecting = false;
   private readonly reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
   constructor(private readonly host: HTMLElement) {
@@ -325,6 +329,7 @@ export class PixiRenderer {
     this.animated = all.filter((d) => d.pic.anim);
     this.bobbing = sprites.filter((d) => (d.pic as SceneSprite).bob);
     this.pulsing = scene.outlines.some((o) => o.occluded && !o.faint);
+    this.selecting = scene.sprites.some((s) => s.effect === "selected");
     this.requestRender();
   }
 
@@ -542,7 +547,7 @@ export class PixiRenderer {
     const key = this.esp ? filterKey(look) : "";
     let filter = key ? this.looks.get(key) : undefined;
     if (key && !filter) {
-      filter = lookFilter(look, (token) => this.color(token), this.app.renderer.resolution);
+      filter = lookFilter(look, (token) => this.color(token), this.app.renderer.resolution, this.selectionUniforms);
       this.looks.set(key, filter);
     }
     // An outlined sprite is drawn plain, with its effect on a copy clipped to the outline.
@@ -708,7 +713,14 @@ export class PixiRenderer {
       this.esp.pulsing.alpha = espPulse(now, this.reducedMotion.matches);
       if (pulse) this.dirty = true;
     }
+    // The selection's pulse, in 1/20 steps: frames keep coming, but the scene redraws about 17 times a second, not 60.
+    const selecting = this.selecting && !this.reducedMotion.matches;
+    const glow = selecting ? Math.round(selectionPulse(now, false) * 20) / 20 : 1;
+    if (this.selectionUniforms.uniforms.uGlowAlpha !== glow) {
+      this.selectionUniforms.uniforms.uGlowAlpha = glow;
+      this.dirty = true;
+    }
     if (this.dirty) this.renderNow();
-    if (playing || pulse || streams || bobs || particles) this.raf = requestAnimationFrame(this.tick);
+    if (playing || pulse || selecting || streams || bobs || particles) this.raf = requestAnimationFrame(this.tick);
   };
 }

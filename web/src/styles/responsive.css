@@ -74,25 +74,11 @@
     padding: 0;
   }
 
-  /* No padding: the strip and the ID card fill it edge to edge, so the top bar shows no background of its own. */
+  /* No padding: the strip (clock, alerts, menu) fills it edge to edge, so the top bar shows no background of its own. */
   .top-bar {
     flex: none;
-    flex-wrap: wrap;
     gap: 0;
     padding: 0;
-  }
-  /* The strip (clock, alerts, menu) over the nameplate, both the full width (a long name gets cut off). */
-  .top-bar .player-summary {
-    flex: 1 1 0;
-    min-width: 0;
-    flex-direction: column;
-    flex-wrap: nowrap;
-    align-items: stretch;
-    gap: 0;
-  }
-  .top-bar .avatar {
-    width: 32px;
-    height: 32px;
   }
   .wide-only {
     display: none;
@@ -104,8 +90,8 @@
   .top-bar-actions {
     display: contents;
   }
-  /* The action queue keeps clear of the ship button and the sack in the lower-right corner (40px each). */
-  .room-bottom-left {
+  /* The location plate (room name and minimap) keeps clear of the ship button and the sack in the lower-right corner (40px each). */
+  .room-corner {
     max-width: calc(100% - 1rem - 2 * (40px + 0.5rem));
   }
 
@@ -185,18 +171,42 @@
     align-items: center;
     gap: var(--space-2);
     padding: var(--space-2);
-    /* The panel fill with the glowing rim of the panels around it. */
     background: var(--panel-fill);
-    border-top: 1px solid var(--glow-rim);
-    box-shadow: 0 -2px 6px rgb(60 110 255 / 0.35);
   }
-  /* Keeps room for a given name (cut off past that) when the actions take the rest. */
-  .peek-name {
-    flex: 1;
-    min-width: 7rem;
+  /*
+   * In the game it is the bottom of the room view's panel (GameView): inside the scene's frame (iso.css's 1px rim), over
+   * the scene's bottom edge, ruled off from it by the frame's own line and inner glow. The overlays in the room's bottom
+   * corners (the location plate, the sack, the ship button, the tip card) stand on it: --peek-clear is its height, one
+   * 32px row of buttons, its padding, the divider and the frame's rim under it.
+   */
+  .room-view > .peek-bar {
+    position: absolute;
+    left: 1px;
+    right: 1px;
+    bottom: 1px;
+    z-index: 5; /* over the inventory popup (3) and the ship card (4), which stand on it anyway */
+    border-top: 1px solid var(--chrome-line);
+    box-shadow:
+      inset 0 1px 0 rgb(57 101 251 / 0.6),
+      inset 0 0 12px 2px rgb(57 101 251 / 0.45),
+      0 -2px 6px rgb(60 110 255 / 0.35);
+  }
+  .room-view:has(> .peek-bar) {
+    --peek-clear: calc(32px + 2 * var(--space-2) + 2px);
+  }
+  /* No name (the selection pulses in the room): only the AI tag, or why a door can't be used. */
+  .peek-note {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    max-width: 8rem;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  .peek-note .sub {
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
   }
   /*
    * One row of actions: the ones that don't fit wrap onto a second row that is clipped away
@@ -204,10 +214,10 @@
    * row clear of the clip margin, which is only there so focus rings aren't cut off.
    */
   .peek-actions {
-    flex: 0 1 auto;
+    flex: 1 1 0;
     display: flex;
     flex-wrap: wrap;
-    justify-content: flex-end;
+    justify-content: flex-start;
     gap: var(--space-2);
     min-width: 0;
     height: 32px;
@@ -220,19 +230,21 @@
     margin: 0;
   }
 
+  /* As tall as the top bar's strip (top-bar.css): a 26px row with 4px above and below, the rim counted in the top. */
   .bottom-nav {
     flex: none;
     display: flex;
     gap: var(--space-1);
-    padding: var(--space-1) var(--space-1) calc(4px + env(safe-area-inset-bottom));
+    padding: calc(var(--space-1) - 1px) var(--space-1) max(var(--space-1), env(safe-area-inset-bottom));
     background: var(--panel-fill);
     border-top: 1px solid var(--panel-rim);
   }
   /* The iTrackie tabs' rounded top corners, rounded on all four since nothing abuts it (colours in itrackie.css). */
   .bottom-nav-button {
-    height: 44px;
+    height: 26px;
+    padding-block: 0;
     font-size: 0.85rem;
-    border-radius: 8px;
+    border-radius: 6px;
   }
 
   /* Typing: give the feed and the input everything above the keyboard. */
@@ -241,23 +253,8 @@
   }
 }
 
-/* Phone on its side: about 390px tall, so the top bar gets one compact row. */
+/* Phone on its side: about 390px tall, so the ID card gets one compact row. */
 @media (max-width: 1023px) and (orientation: landscape) and (max-height: 500px) {
-  .top-bar {
-    flex-wrap: nowrap;
-  }
-  .top-bar .avatar {
-    width: 24px;
-    height: 24px;
-  }
-  /* One row too: the strip goes left of the nameplate instead of on top of it, both the row's full height. */
-  .top-bar .player-summary {
-    flex-direction: row;
-  }
-  .top-bar .nameplate {
-    flex: 1 1 0;
-    min-width: 0;
-  }
   .nameplate .id-portrait {
     width: 26px;
     height: 26px;
@@ -266,9 +263,6 @@
     flex-direction: row;
     align-items: center;
     gap: var(--space-3);
-  }
-  .bottom-nav-button {
-    height: 32px;
   }
   /* The inspect panel doesn't scroll, so the portrait shrinks to fit the short panel (top bar, nav and the name chip's overhang). */
   .inspect-target .inspect-art {

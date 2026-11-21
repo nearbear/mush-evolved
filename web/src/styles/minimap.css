@@ -1,5 +1,5 @@
 /*
- * Minimap: the deck plan in the room view's top-right corner. Your room is
+ * Minimap: the deck plan in the room view's bottom-left corner. Your room is
  * amber; the rest is dark indigo. Intact doors use the button cyan (brighter
  * when adjacent to your room); broken doors are amber.
  */
@@ -101,7 +101,7 @@
   white-space: nowrap;
 }
 .room-corner .minimap-name {
-  text-align: right;
+  text-align: left;
 }
 .minimap-name .sub {
   overflow: hidden;
@@ -122,7 +122,7 @@
   margin: 0;
 }
 
-/* Your action under way and the ones waiting (ActionQueue), stacked top to bottom with Clear queue last, in the room view's bottom-left corner (.room-bottom-left places it). */
+/* Your action under way and the ones waiting (ActionQueue), stacked top to bottom with Clear queue last, in the room view's top-right corner (.room-top-right places it). */
 .action-queue {
   display: flex;
   flex-direction: column;

@@ -21,6 +21,10 @@ export interface Shadow {
 export interface Glow {
   token: Token;
   sigma: number;
+  /** Multiplies the blurred alpha (capped at 1), so the glow's inner part is a solid band. 1 when absent. */
+  gain?: number;
+  /** Fades in and out with selectionPulse; one shared uniform drives every pulsing glow. */
+  pulse?: boolean;
 }
 
 /** One sprite's look beyond its image: fog stays a tint (cheap, batched); the rest needs a filter. */
@@ -56,7 +60,8 @@ export function lookOf(s: SceneSprite): Look {
       look.glow = { token: "--accent", sigma: 1.5 };
       break;
     case "selected":
-      look.glow = { token: "--highlight", sigma: 1 };
+      // Thick and pulsing: on phones it is the only sign of what the peek bar acts on (the bar shows no name).
+      look.glow = { token: "--highlight", sigma: 1.5, gain: 3, pulse: true };
       break;
     case "broken":
       look.glow = { token: "--danger", sigma: 1 };
@@ -69,7 +74,7 @@ export function lookOf(s: SceneSprite): Look {
 export function filterKey(look: Look): string {
   const { brightness, shadow, glow } = look;
   if (brightness === 1 && !shadow && !glow) return "";
-  return [brightness, shadow ? `${shadow.x},${shadow.y},${shadow.sigma},${shadow.alpha}` : "", glow ? `${glow.token},${glow.sigma}` : ""].join("|");
+  return [brightness, shadow ? `${shadow.x},${shadow.y},${shadow.sigma},${shadow.alpha}` : "", glow ? `${glow.token},${glow.sigma},${glow.gain ?? 1},${glow.pulse ? "p" : ""}` : ""].join("|");
 }
 
 /** How far a filter draws outside the sprite, in CSS pixels: three sigmas of blur past any offset. */
@@ -77,6 +82,17 @@ export function paddingOf(look: Look): number {
   const shadow = look.shadow ? Math.max(Math.abs(look.shadow.x), Math.abs(look.shadow.y)) + 3 * look.shadow.sigma : 0;
   const glow = look.glow ? 3 * look.glow.sigma : 0;
   return Math.ceil(Math.max(shadow, glow));
+}
+
+/**
+ * The selection glow's opacity: from 0.5 to 1 and back every 1.2s (sel-pulse in iso.css, ease-in-out, alternate), held
+ * at 1 with reduced motion. Quicker than the see-through outline's, so the selection is what draws the eye.
+ */
+export function selectionPulse(now: number, reducedMotion: boolean): number {
+  if (reducedMotion) return 1;
+  const t = (now % 1200) / 600;
+  const p = t <= 1 ? t : 2 - t;
+  return 0.5 + 0.5 * (0.5 - 0.5 * Math.cos(Math.PI * p));
 }
 
 /** The see-through outline: a 1px rim, its glow (sigma in CSS pixels) and a faint fill, in --glow-rim. */

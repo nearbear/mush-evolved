@@ -18,7 +18,7 @@
    width. */
 .room-view:has(> .patrol-cockpit) .ship-overlay {
   right: 0.5rem;
-  bottom: calc(0.5rem + 36px + 0.5rem);
+  bottom: calc(0.5rem + 36px + 0.5rem + var(--peek-clear, 0px));
   max-width: calc(100% - 1rem);
 }
 .fx-sprite {
@@ -183,7 +183,7 @@
 .space-pack {
   position: absolute;
   left: 0.5rem;
-  bottom: 0.5rem;
+  bottom: calc(0.5rem + var(--peek-clear, 0px));
   display: flex;
   gap: var(--space-2);
 }

@@ -5,9 +5,9 @@
   position: absolute;
   left: 0.5rem;
   right: 0.5rem;
-  bottom: 0.5rem;
+  bottom: calc(0.5rem + var(--peek-clear, 0px));
   z-index: 3;
-  max-height: calc(100% - 1rem);
+  max-height: calc(100% - 1rem - var(--peek-clear, 0px));
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -48,6 +48,17 @@ button.inventory-toggle {
 .inventory-toggle img {
   image-rendering: pixelated;
 }
+/* A selected item (InventoryOverlay): the scene's pulsing selection glow (iso.css's .fx-selected) on the sack. */
+.inventory-toggle[data-selection] img {
+  --sel: var(--highlight);
+  filter: drop-shadow(0 0 1px var(--sel)) drop-shadow(0 0 1px var(--sel)) drop-shadow(0 0 2px var(--sel));
+  animation: sel-pulse 0.6s ease-in-out infinite alternate;
+}
+@media (prefers-reduced-motion: reduce) {
+  .inventory-toggle[data-selection] img {
+    animation: none;
+  }
+}
 /* Zoom buttons stacked above the sack, half its size, flush with its right edge. */
 .zoom-controls {
   display: flex;
@@ -67,7 +78,7 @@ button.zoom-button {
 .ship-overlay {
   position: absolute;
   right: calc(0.5rem + 40px + 0.5rem);
-  bottom: 0.5rem;
+  bottom: calc(0.5rem + var(--peek-clear, 0px));
   /* Above the inventory overlay, so the open card covers the zoom buttons. */
   z-index: 4;
   max-width: calc(100% - 1rem - 40px - 0.5rem);

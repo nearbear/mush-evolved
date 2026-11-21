@@ -1,4 +1,4 @@
-// Phone layout only: a slim bar above the bottom nav, always shown, for whatever
+// Phone layout only: a slim bar over the bottom of the room view, always shown, for whatever
 // was tapped in the room (a person, equipment, or a door), or yourself by default, so you can act without
 // leaving the room view. Examine is never shown here (it lives in the Inspect panel behind More). Legality comes from the view, like the Inspect panel.
 
@@ -148,13 +148,16 @@ function Bar({
   const actions = useOneRow();
   const root = useRef<HTMLDivElement>(null);
   useKeepFocus(root);
+  // The name isn't shown (the selection pulses in the room instead, to leave the actions the room); screen readers get it
+  // from the bar's label. The AI tag and a short note (a broken door, no access) still show, as they change what you can do.
   return (
-    <div className="peek-bar" ref={root} tabIndex={-1} role="region" aria-label={t("peek.selection")}>
-      <div className="peek-name">
-        <strong>{heading}</strong>
-        {isBot && <span className="tag">{t("common.ai")}</span>}
-        {sub && <div className="sub">{sub}</div>}
-      </div>
+    <div className="peek-bar" ref={root} tabIndex={-1} role="region" aria-label={t("peek.selectionOf", { name: heading })}>
+      {(isBot || sub) && (
+        <div className="peek-note">
+          {isBot && <span className="tag">{t("common.ai")}</span>}
+          {sub && <span className="sub">{sub}</span>}
+        </div>
+      )}
       <div className="peek-actions" ref={actions}>
         {children}
       </div>
