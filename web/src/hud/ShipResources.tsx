@@ -4,14 +4,13 @@ import { doorRooms, type PlayerView } from "@mush2/shared";
 import { SHIP_RESOURCE_ICONS } from "../art/assets.ts";
 import { useNames } from "../i18n/names.ts";
 import { TitleChip, TitlesChip } from "./TitleChip.tsx";
-import { useCountdown } from "./useCountdown.ts";
 
 const RESOURCES = ["oxygen", "fuel", "hull", "plasmaShield", "hunters", "fires", "alerts"] as const;
 
 /**
  * The ship card (in the desktop top bar, and ShipOverlay on phones) with the ship's resource counters, how many hunters
- * are attacking, active fires, broken equipment alerts, the ship titles, the orbited planet's name while in orbit
- * (owner, 2026-10-31), and the expedition away: who, where and when they are back (owner, 2026-11-07), all public.
+ * are attacking, active fires, broken equipment alerts, crewmates lost on a planet, and the ship titles, all public.
+ * Where the ship is (orbit, expedition) is in ShipStatus.tsx, right of the clock.
  * Fires count every fire aboard and alerts count every broken piece of equipment; each popover locates only the
  * reported ones (owner, 2026-11-14, #444).
  */
@@ -21,8 +20,6 @@ export function ShipResources({
   titles,
   preselection = false,
   compactTitles = false,
-  orbit,
-  expedition,
   lost,
   alerts,
 }: {
@@ -31,8 +28,6 @@ export function ShipResources({
   titles: PlayerView["titles"];
   preselection?: boolean;
   compactTitles?: boolean;
-  orbit: string | null;
-  expedition: PlayerView["expedition"];
   lost: PlayerView["lost"];
   alerts: PlayerView["alerts"];
 }) {
@@ -91,8 +86,6 @@ export function ShipResources({
           </li>
         );
       })}
-      {orbit !== null && <li className="ship-orbit">{t("shipResources.orbit", { name: orbit })}</li>}
-      {expedition && <ExpeditionAway expedition={expedition} />}
       {lost.map((l) => (
         <LostAlert key={l.name} entry={l} />
       ))}
@@ -184,17 +177,4 @@ function LostAlert({ entry }: { entry: PlayerView["lost"][number] }) {
   const { t } = useTranslation();
   const names = useNames();
   return <li className="ship-orbit">{t("shipResources.lost", { name: names.characterGiven(entry.name), planet: entry.planet })}</li>;
-}
-
-/** Who is out on the expedition, on which planet, and the time left. */
-function ExpeditionAway({ expedition }: { expedition: NonNullable<PlayerView["expedition"]> }) {
-  const { t, i18n } = useTranslation();
-  const names = useNames();
-  const time = useCountdown(expedition.returnAt);
-  const crew = new Intl.ListFormat(i18n.language, { type: "conjunction" }).format(expedition.crew.map((c) => names.characterGiven(c)));
-  const text =
-    expedition.ship !== undefined
-      ? t("shipResources.expeditionShip", { planet: expedition.planet, ship: names.room(expedition.ship), names: crew, time })
-      : t("shipResources.expedition", { planet: expedition.planet, names: crew, time });
-  return <li className="ship-orbit">{text}</li>;
 }

@@ -6,6 +6,12 @@
     "waitingForOthers": "Esperando a los demás…",
     "mainMenu": "Menú principal",
     "preselection": "Preselección",
+    "orbiting": "En órbita",
+    "exploring": "Explorando",
+    "deepSpace": "Espacio profundo",
+    "deepSpaceAbout": "Estás en medio de la nada. Busca planetas en la {{astro}} y luego el Comandante viaja a uno desde la {{command}}, con el combustible cargado en la cámara de combustión.",
+    "orbitingAbout": "El Daedalus está en órbita alrededor de este planeta. Sube al Ícaro en la {{bay}} para lanzar una expedición y explorarlo.",
+    "exploringAbout": "Una expedición está explorando este planeta. Su tripulación vuelve cuando acaba la cuenta atrás.",
     "preselectionAbout": "Todavía nadie es Mush. Los Mush se elegirán cuando la nave esté llena, o el día 3, ciclo 8. Hasta entonces no hay combate.",
     "botsPaused": "IA en pausa",
     "botsPausedAbout": {

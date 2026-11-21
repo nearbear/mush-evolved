@@ -7,6 +7,15 @@ export function CycleCountdown({ nextCycleAt }: { nextCycleAt: number }) {
   const time = useCountdown(nextCycleAt);
   return (
     <span className="cycle-countdown" role="img" aria-label={t("stat.nextCycle", { time })}>
+      <ClockDigits time={time} />
+    </span>
+  );
+}
+
+/** An h:mm:ss reading in fixed-width digit cells (the top bar's clocks), hidden from screen readers: the caller names it. */
+export function ClockDigits({ time }: { time: string }) {
+  return (
+    <>
       {Array.from(time, (ch, i) =>
         ch === ":" ? (
           <span key={i} aria-hidden="true">
@@ -18,6 +27,6 @@ export function CycleCountdown({ nextCycleAt }: { nextCycleAt: number }) {
           </span>
         ),
       )}
-    </span>
+    </>
   );
 }

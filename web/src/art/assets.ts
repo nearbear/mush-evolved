@@ -459,6 +459,9 @@ export const FACTION_ICONS = {
   betaMush: uiIcons["mush_progressive"]!,
 };
 
+/** The planet icon (ui/planet.png, 16px) on the top bar's ship status while orbiting or exploring (ShipStatus.tsx). */
+export const SHIP_STATUS_PLANET_ICON = uiIcons["planet"]!;
+
 export const TAB_ICONS = {
   research: uiIcons["microsc"]!,
   neronBios: uiIcons["neron"]!,

@@ -520,6 +520,71 @@
   color: #fff;
 }
 
+/* Where the ship is (ShipStatus.tsx). On desktop it is the last part of the clock's plate, past a divider, and the plate
+   is chamfered on the right as well. On phones it is a plate of its own under your name (nameplate-tags), cut on the
+   right only. The planet icon (16px) leads while orbiting or exploring; exploring ends with the return countdown past
+   another divider. */
+.top-bar .cycle .cycle-label {
+  --cut-tr: 6px;
+  --cut-br: 6px;
+  padding-right: var(--space-3);
+}
+.ship-status .clock-divider {
+  margin-inline: calc(var(--space-2) - var(--space-1) - 1px);
+}
+.ship-status {
+  display: inline-flex;
+  align-items: center;
+}
+.ship-status.hud-card {
+  position: relative;
+  --card-fill: var(--chrome-2);
+  --cut-tl: 0px;
+  --cut-bl: 0px;
+  --cut-tr: 6px;
+  --cut-br: 6px;
+  padding: 2px var(--space-3) 2px var(--space-2);
+  font-size: 0.8rem;
+  font-weight: bold;
+  white-space: nowrap;
+  color: #dfe6f5;
+}
+.ship-status-trigger {
+  display: inline-flex;
+  align-items: center;
+  align-self: stretch;
+  gap: var(--space-1);
+  cursor: help;
+}
+.ship-status-trigger img {
+  display: block;
+  image-rendering: pixelated;
+}
+.ship-status-popup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  max-width: min(320px, calc(100vw - 32px));
+}
+.ship-status-popup p {
+  margin: 0;
+  text-align: center;
+}
+.expedition-crew {
+  display: flex;
+  gap: var(--space-2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.expedition-crew li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 0.75rem;
+}
+
 /* The alerts popover's located problems (ShipResources `AlertList`, #444). */
 .alert-list {
   list-style: none;

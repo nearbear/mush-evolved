@@ -7,8 +7,8 @@ import { useMobile } from "../useMobile.ts";
 import { BotsPausedTag } from "./BotsPausedTag.tsx";
 import { CycleCountdown } from "./CycleCountdown.tsx";
 import { PlayerSummary } from "./PlayerSummary.tsx";
-import { PreselectionTag } from "./PreselectionTag.tsx";
 import { ShipResources } from "./ShipResources.tsx";
+import { ShipStatus } from "./ShipStatus.tsx";
 import { SettingsDialog } from "./SettingsDialog.tsx";
 
 export function TopBar({
@@ -63,7 +63,9 @@ export function TopBar({
   // Ready can't be offered while you already are, so the button stays (disabled, "Waiting…") until the cycle ends.
   const showReady = canReady || you.ready;
   const ended = view.phase === "ended";
-  // The day and cycle with the time left, in one amber plate, the two split by an amber divider.
+  // Where the ship is (ShipStatus.tsx): part of the game state, so on desktop it joins the clock's plate.
+  const shipStatus = (joined: boolean) => <ShipStatus preselection={view.preselection} orbit={view.navigation.orbitName} expedition={view.expedition} joined={joined} />;
+  // The day and cycle with the time left, then where the ship is, in one amber plate split by amber dividers.
   const clock = (
     <span className="cycle-label hud-card amber">
       {t("topBar.dayCycle", { day: view.day, cycle: view.cycleOfDay })}
@@ -73,15 +75,16 @@ export function TopBar({
           <CycleCountdown nextCycleAt={nextCycleAt} />
         </>
       )}
+      {!showSummary && shipStatus(true)}
     </span>
   );
-  const tags =
-    view.preselection || botsPaused ? (
-      <>
-        {view.preselection && <PreselectionTag />}
-        {botsPaused && <BotsPausedTag pause={botsPaused} />}
-      </>
-    ) : null;
+  // Phones: where the ship is goes under your name, as the clock alone fills the nameplate's band.
+  const tags = (
+    <>
+      {showSummary && shipStatus(false)}
+      {botsPaused && <BotsPausedTag pause={botsPaused} />}
+    </>
+  );
   // Phones: the actions live in a hamburger menu, on the right of the nameplate, to save top bar space.
   const menu = mobile && (
     <Menu.Root>
@@ -123,7 +126,7 @@ export function TopBar({
           {tags}
         </div>
       )}
-      {!mobile && <ShipResources ship={view.ship} hunters={view.hunters.count} titles={view.titles} preselection={view.preselection} compactTitles orbit={view.navigation.orbitName} expedition={view.expedition} lost={view.lost} alerts={view.alerts} />}
+      {!mobile && <ShipResources ship={view.ship} hunters={view.hunters.count} titles={view.titles} preselection={view.preselection} compactTitles lost={view.lost} alerts={view.alerts} />}
       <div className="top-bar-actions">
         {!mobile && (
           <>

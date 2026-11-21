@@ -6,6 +6,12 @@
     "waitingForOthers": "En attente des autres…",
     "mainMenu": "Menu principal",
     "preselection": "Pré-sélection",
+    "orbiting": "En orbite",
+    "exploring": "En exploration",
+    "deepSpace": "Espace profond",
+    "deepSpaceAbout": "Vous êtes au milieu de nulle part. Cherchez des planètes au {{astro}}, puis le Commandant en rejoint une depuis le {{command}}, avec le carburant chargé dans la chambre de combustion.",
+    "orbitingAbout": "Le Daedalus est en orbite autour de cette planète. Montez dans l'Icarus, dans la {{bay}}, pour lancer une expédition et l'explorer.",
+    "exploringAbout": "Une expédition explore cette planète. Son équipage revient à la fin du compte à rebours.",
     "preselectionAbout": "Personne n'est encore Mush. Les Mush seront choisis quand le vaisseau sera plein, ou au jour 3, cycle 8. D'ici là, aucun combat n'est possible.",
     "botsPaused": "IA en pause",
     "botsPausedAbout": {

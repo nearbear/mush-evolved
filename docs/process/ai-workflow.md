@@ -4562,3 +4562,25 @@ Planned the expedition screen with the owner: a chronological timeline of sector
 - Follow-up: the Icarus seats rest on the bar (bottom-aligned), and the panel draws the iso view's star field (static, from spaceSky.ts) and the orbited planet at 1x in the bottom-right instead of flat navy.
 - Follow-up: the planet draws at 2x while the expedition is away (CSS `zoom: 2` on its natural size).
 - Follow-up: the unknown sector is named "Unknown" (fr "Inconnu", es "Desconocido") everywhere `astro.unknown` shows.
+
+## 2026-11-20: Top bar expedition shrunk to planet icon + timer
+
+Owner asked for the top bar's expedition item to show only the orbited planet's icon and the return countdown, with the crew's sprites in the icon's popover. `ExpeditionAway` (`web/src/hud/ShipResources.tsx`) now takes `navigation.orbitPicture` (the small planet picture, 106px, drawn at 24px) and uses the old full sentence (planet, ship, crew, time) as the trigger's `aria-label`, so screen readers lose nothing and no strings changed. Popover reuses `standingSprite` at 1x. Worked first time; no correction needed.
+
+## 2026-11-20: Orbit and expedition merged into one amber planet plate
+
+Follow-up: the "Orbiting X" text and the expedition item became one `PlanetPlate` (`web/src/hud/ShipResources.tsx`) in the clock's amber `hud-card` plate: planet icon, status word (Orbiting / Exploring, new en/fr/es keys), and while exploring the return countdown past the clock's divider. `CycleCountdown` now exports `ClockDigits` so both clocks share the fixed-width digit cells. The icon's popover shows the planet name centred, then crew sprites over given names. First attempt passed a component as `aria-label`; fixed with a `useExpeditionLabel` hook before verify.
+
+## 2026-11-20: Ship status plate right of the clock
+
+Owner moved pre-selection, deep space (new: after pre-selection, out of orbit), orbiting and exploring into one new `ShipStatus` (`web/src/hud/ShipStatus.tsx`): the clock's amber `hud-card` plate, chamfered on the right instead of the left, right of the clock on desktop and under the name on phones (the clock owns the nameplate's band there). `PreselectionTag.tsx` was folded in and deleted; `ShipResources` lost its orbit/expedition props. Correction: I had read "the planet's icon" as the orbited planet's 106px picture; the owner meant `ui/planet.png` (16px), now `SHIP_STATUS_PLANET_ICON`. I asked nothing about whether deep space and pre-selection show the icon; chose no icon for them (a planet icon in deep space reads wrong) and flagged it.
+
+## 2026-11-20: Move starting spacesuits to Icarus Bay
+
+- **Decision (owner):** Moved all 6 `space_suit` items in `DEFAULT_CONFIG.startItems` (`shared/src/config.ts`) from `pool: "daedalus"` (`daedalus_default`) to `room: "ICARUS"` (Icarus Bay).
+- **Updated:** `shared/tests/expeditions.test.ts`, `shared/tests/ship.test.ts`, and `docs/rules/rules-design.md`.
+
+## 2026-11-20: Ship status joined to the clock, with explanations
+
+Owner wanted the ship status (pre-selection, deep space, orbiting, exploring) joined to the day/cycle clock as one game-state plate, and popovers explaining deep space, orbiting and exploring. `ShipStatus` takes `joined`: on desktop it renders a divider plus its content inside the clock's `cycle-label` (now chamfered on both sides); on phones it stays its own plate under the name, since the clock alone fills the nameplate band at 360px. Each status is one popover trigger (`StatusPopover`); the terminal and bay names in the texts come from `names.equipment`/`names.room` so they match the game's own names in en/fr/es. Owner supplied the deep-space text; orbiting/exploring texts were drafted by AI from the action rules (`travel.ts`, Icarus boarding).
+Follow-up (same day): the owner picked the assistant's suggested deep-space wording (Commander travels, fuel loaded in the combustion chamber). They had written "astro" for brevity and considered "Astrophysics terminal", then kept the game's existing "Astro terminal" name.

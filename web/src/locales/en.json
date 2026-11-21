@@ -6,6 +6,12 @@
     "waitingForOthers": "Waiting for others…",
     "mainMenu": "Main menu",
     "preselection": "Pre-selection",
+    "orbiting": "Orbiting",
+    "exploring": "Exploring",
+    "deepSpace": "Deep space",
+    "deepSpaceAbout": "You are in the middle of nowhere. Scan for planets at the {{astro}}, then the Commander travels to one from the {{command}}, using the fuel loaded in the combustion chamber.",
+    "orbitingAbout": "The Daedalus is orbiting this planet. Board the Icarus in the {{bay}} to launch an expedition and explore it.",
+    "exploringAbout": "An expedition is exploring this planet. Its crew returns when the timer runs out.",
     "preselectionAbout": "Nobody is Mush yet. The Mush are chosen when the ship is full, or on day 3 cycle 8. Until then there is no combat.",
     "botsPaused": "AI paused",
     "botsPausedAbout": {
