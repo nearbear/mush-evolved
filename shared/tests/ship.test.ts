@@ -83,7 +83,7 @@ describe("ship resources", () => {
     expect(s.ship.hull).toBe(0);
   });
 
-  it("places fixed eMush starting items, 6 spacesuits in ICARUS, 24 storage items, 5 daedalus items, and 4 random blueprints", () => {
+  it("places fixed eMush starting items, 6 spacesuits in ICARUS, 24 storage items, 1 apprentron, 5 daedalus items, and 4 random blueprints", () => {
     const s = createGame(makeSeats(4, "others"), { ...DEFAULT_CONFIG, startInventory: [] }, 7);
     const inRoom = (id: string) => s.items.filter((i) => i.at.kind === "room" && i.at.id === id);
     expect(inRoom("SICK_BAY").filter((i) => i.type === "bandage")).toHaveLength(2);
@@ -94,11 +94,58 @@ describe("ship resources", () => {
     expect(inRoom("HYDROPONIC_CENTER").filter((i) => i.type === "tree_pot")).toHaveLength(3);
     expect(inRoom("CORRIDOR_A").some((i) => i.type === "support_drone")).toBe(true);
     expect(inRoom("ICARUS").filter((i) => i.type === "space_suit")).toHaveLength(6);
-    // 2 + 12 (drugs) + 35 + 3 + 1 + 6 + 24 + 5 + 4 = 92 items total
-    expect(s.items).toHaveLength(92);
+    // 2 + 12 (drugs) + 35 + 3 + 1 + 6 + 24 + 1 (apprentron) + 5 + 4 = 93 items total
+    expect(s.items).toHaveLength(93);
     // Same seed is deterministic; different seeds distribute pooled items differently.
     expect(createGame(makeSeats(4, "others"), { ...DEFAULT_CONFIG, startInventory: [] }, 7).items).toEqual(s.items);
     expect(createGame(makeSeats(4, "others"), { ...DEFAULT_CONFIG, startInventory: [] }, 8).items).not.toEqual(s.items);
+  });
+
+  it("spawns 1 apprentron (skill book) in a random storage room drawn from the weighted skill pool", () => {
+    const bookEntry = DEFAULT_CONFIG.startItems.find((i) => i.type === "book");
+    expect(bookEntry).toEqual({
+      type: "book",
+      pool: "storage",
+      teachesWeights: {
+        engineer: 14,
+        pilot: 12,
+        astrophysician: 10,
+        biologist: 10,
+        botanic: 10,
+        gunman: 10,
+        radio_expert: 9,
+        medic: 8,
+        sprint: 8,
+        shrink: 6,
+        robotics: 4,
+        fireman: 2,
+        computer: 2,
+        diplomacy: 2,
+        logistics: 2,
+      },
+    });
+    const poolSkills = new Set(Object.keys(bookEntry!.teachesWeights!));
+    const storageRooms = new Set(DEFAULT_CONFIG.snoop.rooms);
+    const seenSkills = new Set<string>();
+    const seenRooms = new Set<string>();
+    const seats = makeSeats(4, "others");
+    const config = { ...DEFAULT_CONFIG, startInventory: [] };
+    for (let seed = 1; seed <= 80; seed++) {
+      const s = createGame(seats, config, seed);
+      const books = s.items.filter((i) => i.type === "book");
+      expect(books).toHaveLength(1);
+      const book = books[0]!;
+      expect(book.at.kind).toBe("room");
+      if (book.at.kind === "room") {
+        expect(storageRooms.has(book.at.id)).toBe(true);
+        seenRooms.add(book.at.id);
+      }
+      expect(book.teaches).toBeDefined();
+      expect(poolSkills.has(book.teaches!)).toBe(true);
+      seenSkills.add(book.teaches!);
+    }
+    expect(seenRooms.size).toBeGreaterThan(1);
+    expect(seenSkills.size).toBeGreaterThan(1);
   });
 
   it("draws distinct starting blueprints without replacement across seeds", () => {

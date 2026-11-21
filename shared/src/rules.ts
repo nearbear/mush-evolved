@@ -142,11 +142,17 @@ export function createGame(
           })()
         : it.builds;
       if (it.type === "blueprint" && builds !== undefined) drawnBlueprints.add(builds);
+      const teaches = it.teachesWeights
+        ? (() => {
+            const entries = Object.entries(it.teachesWeights);
+            return entries[rollWeighted(startRng, entries.map(([, w]) => w))]![0];
+          })()
+        : it.teaches;
       return {
         type: it.type,
         at: { kind: "room", id: room },
         ...(builds !== undefined && { builds }),
-        ...(it.teaches !== undefined && { teaches: it.teaches }),
+        ...(teaches !== undefined && { teaches }),
         ...(it.plant && { plant: { ...it.plant } }),
         ...chargesFor(config, it.type),
       };

@@ -1,6 +1,6 @@
 import shipRooms from "@mush2/assets/derived/ship-rooms.json";
 import { ALIEN_FRUIT_ITEMS, ITRACKIE_ITEM } from "./itemIds.ts";
-import { HACKER_KIT_ITEM, LUNCHBOX_ITEM, MICROWAVE_ITEM, TREE_POT_ITEM } from "./items.ts";
+import { BOOK_ITEM, HACKER_KIT_ITEM, LUNCHBOX_ITEM, MICROWAVE_ITEM, TREE_POT_ITEM } from "./items.ts";
 import { CHEAT_ROOM, cheatRoomEquipment } from "./cheatRoom.ts";
 import { EQUIPMENT_TYPES } from "./equipment.ts";
 import { ICARUS_CRAFT, patrolEquipment, patrolRooms } from "./patrol.ts";
@@ -684,7 +684,7 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   // Decided 2026-10-17 (owner): every action but ready and access takes a fixed time (2 s, cut to 1.5 s on 2026-10-24) and happens when its bar runs out;
   // up to 3 more can wait behind it.
   action: { durationMs: 1500, queueCap: 3, resolveAt: "end" },
-  // Starting items (matching eMush, 2026-11-17; spacesuits moved to `ICARUS`, 2026-11-20): 5 fixed rooms plus storage_default (5 storages), daedalus_default (27 rooms),
+  // Starting items (matching eMush, 2026-11-17; spacesuits moved to `ICARUS`, 2026-11-20; apprentron added 2026-11-21): 5 fixed rooms plus storage_default (24 items + 1 weighted apprentron across 5 storages), daedalus_default (27 rooms),
   // and 4 weighted randomBlueprints (27 rooms). Medlab's 12 drugs (1 of each) are added by `stockMedlab` in `createGame`.
   startItems: [
     // Medlab (`SICK_BAY`): 2 bandages (1 of each of the 12 drugs is added by `stockMedlab`).
@@ -722,6 +722,28 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
     { type: "grenade", pool: "storage" },
     { type: "drill", pool: "storage" },
     { type: "quad_compass", pool: "storage" },
+    // 1 apprentron (skill book) in a random storage room (owner, 2026-11-21):
+    {
+      type: BOOK_ITEM,
+      pool: "storage",
+      teachesWeights: {
+        engineer: 14,
+        pilot: 12,
+        astrophysician: 10,
+        biologist: 10,
+        botanic: 10,
+        gunman: 10,
+        radio_expert: 9,
+        medic: 8,
+        sprint: 8,
+        shrink: 6,
+        robotics: 4,
+        fireman: 2,
+        computer: 2,
+        diplomacy: 2,
+        logistics: 2,
+      },
+    },
     // `daedalus_default` (5 items across all 27 rooms):
     { type: "medikit", pool: "daedalus" },
     { type: "scooter", pool: "daedalus" },

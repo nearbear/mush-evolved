@@ -924,8 +924,8 @@ export interface GameConfig {
   characterModifiers: Record<string, string[]>; // Modifiers a character starts with, by character id (traits: Ian pacifist, owner 2026-10-18; Chun immunity and mankind_only_hope, owner 2026-10-18; Terrence wheelchair, owner 2026-10-19; Chao hyperactive, owner 2026-11-08; Raluca antisocial, owner 2026-11-19; Finola germaphobe, owner 2026-11-21).
   mankindOnlyHope: { moraleLossCut: number }; // How much less morale the crew loses each day while a holder (Chun) is alive (owner, 2026-10-18).
   hopeless: { deathMorale: number }; // Morale every living player loses for each human who dies Hopeless at a cycle's end (owner, 2026-11-11).
-  /** Items placed in rooms at the start of the game (fixed room, or random from `storage` / `daedalus` pool, optionally with weighted blueprint draws). */
-  startItems: ({ type: string; builds?: string; buildsWeights?: Record<string, number>; teaches?: string; plant?: PlantState } & ({ room: RoomId } | { pool: "storage" | "daedalus" }))[];
+  /** Items placed in rooms at the start of the game (fixed room, or random from `storage` / `daedalus` pool, optionally with weighted blueprint/book draws). */
+  startItems: ({ type: string; builds?: string; buildsWeights?: Record<string, number>; teaches?: string; teachesWeights?: Record<string, number>; plant?: PlantState } & ({ room: RoomId } | { pool: "storage" | "daedalus" }))[];
   startInventory: string[]; // Item types every player starts carrying (one of each).
   rooms: Record<RoomId, RoomId[]>; // Adjacency list. Movement is only allowed along these edges.
   equipment: Record<RoomId, Equipment[]>; // Equipment in each room at launch, copied into `GameState.equipment`. Types come from EQUIPMENT_TYPES in equipment.ts.

@@ -4709,6 +4709,10 @@ Follow-up: the "Inspect" panel heading is now visually hidden on desktop too (ke
 - **What worked:** splitting the rollout into 8 disjoint 20-file subagent batches in the main checkout (since worktrees start from committed `main` without the uncommitted helper), requiring key-by-key config equivalence checks so differences were only accepted in quiet defaults (`mushCount`, `startInventory`, `startItems`, `hunters`, `incidents`), and keeping `noCharacterModifiers` / explicit `{ ...testConfig(), equipment: {} }` spreads where merging `{}` or partial records (such as `snoop.items` and `hunters.debris.types`) would otherwise keep default keys.
 - **Needed correction:** `tools/tests/i18n/i18n.test.ts` flagged an existing diagnostic string (`"random injury"`) in `server/src/testing/survival.ts`; added `"server/src/testing/survival.ts": 1` to `tools/src/i18n/baseline.json` by hand so the full `npm run verify` passes without sweeping in unrelated checkout changes.
 
+### 2026-11-21 — Starting apprentron in random storage room
+- **Decision (owner):** Add 1 apprentron (skill `book`) to the ship's starting state in a random storage room, drawn from a weighted pool (`engineer` 14, `pilot` 12, `astrophysician`/`biologist`/`botanic`/`gunman` 10 each, `radio_expert` 9, `medic`/`sprint` 8 each, `shrink` 6, `robotics` 4, `fireman`/`computer`/`diplomacy`/`logistics` 2 each).
+- **What worked:** Mirroring `buildsWeights` with `teachesWeights` on `GameConfig.startItems` and drawing from the existing seeded `start-items` RNG stream in `createGame` kept the change small, config-driven, and replay-safe.
+
 ### 2026-11-21 — Finola's Germaphobe trait
 
 - **Decision (owner):** Finola starts with `germaphobe` as a permanent, public trait status (Inspect-only in the room, never overhead). At each cycle change while she is `dirty` (human or Mush), she loses 1 morale with a private log (`germaphobeMoraleLoss`).
