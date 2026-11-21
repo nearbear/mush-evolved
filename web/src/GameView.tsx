@@ -42,6 +42,8 @@ import { WakeUpAnnouncement } from "./WakeUp.tsx";
 import { useNames } from "./i18n/names.ts";
 import { Minimap } from "./scene/Minimap.tsx";
 import { useMobile } from "./useMobile.ts";
+import { SpaceBackdrop } from "./SpaceBackdrop.tsx";
+import { BackdropContext } from "./iso/backdrop.ts";
 
 export interface GameViewProps {
   view: PlayerView;
@@ -90,6 +92,8 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
   const [selected, setSelected] = useState<Target | null>(null);
   // Phone layout only: which panel is on screen, and a door tapped in the room.
   const mobile = useMobile();
+  /** Desktop: the fixed layer the star field fills the screen from (SpaceBackdrop.tsx); null on phones. */
+  const [backdrop, setBackdrop] = useState<HTMLDivElement | null>(null);
   const fogDepth = useFogDepth();
   const [panel, setPanel] = useState<MobilePanel>("room");
   const [roomLogRequest, setRoomLogRequest] = useState(0);
@@ -208,7 +212,9 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
 
   return (
     <ServerClockContext.Provider value={clock}>
+    <BackdropContext value={mobile ? null : backdrop}>
     <main className="game">
+      {!mobile && <SpaceBackdrop ref={setBackdrop} />}
       <Announcer />
       <WakeUpAnnouncement waking={waking} text={t("wake.ready", { day: view.day, cycle: view.cycleOfDay, room: names.room(you.room) })} />
       <TerminalDialog terminal={terminal} view={view} onAction={act} onClose={() => setTerminalId(null)} onSharePlanet={(planet, sectors, text) => post({ type: "sharePlanet", planet, sectors, text })} />
@@ -410,6 +416,7 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
       {mobile && transport && <div className="game-transport">{transport}</div>}
       {mobile && <BottomNav panel={panel} onChange={setPanel} view={view} />}
     </main>
+    </BackdropContext>
     </ServerClockContext.Provider>
   );
 }

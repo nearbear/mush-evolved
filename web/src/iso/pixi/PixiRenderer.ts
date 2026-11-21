@@ -16,6 +16,10 @@
 // covers its person. The pulse of those outlines keeps it rendering every frame while one shows, and so
 // does a floating sprite (a drone's bob, `SceneSprite.bob`), though it only redraws when one moves a pixel.
 //
+// On desktop the canvas lives in the screen-wide backdrop (iso/backdrop.ts) instead of the panel, so the star field
+// fills the viewport: the room is drawn at the panel's place on it, clipped to the panel, with the camera it always had.
+// The panel's zoom (a CSS scale on the host) is then the world's scale, and the stars stay at 1x.
+//
 // WebGL context loss (a phone backgrounding the tab, a GPU reset): Pixi keeps the context restorable
 // and rebuilds its textures and programs when it comes back. This only stops drawing while it is lost
 // and draws once it is back, since nothing else would ask for a frame.
@@ -185,6 +189,11 @@ export class PixiRenderer {
   private paceSeen = false;
   private lastTick = 0;
   private camera = { x: 0, y: 0 };
+  /** Where the room panel is on the canvas (all of it without a backdrop), and its zoom (1 without a backdrop: CSS scales the canvas). */
+  private panel = { x: 0, y: 0, width: 0, height: 0 };
+  private zoom = 1;
+  /** With a backdrop: the panel's rectangle, which the world is clipped to. */
+  private clip: Graphics | null = null;
   private readonly world = new Container();
   private readonly ground = new Container();
   private readonly sprites = new Container();
@@ -211,7 +220,11 @@ export class PixiRenderer {
   /** Filters by look (filterKey), cutaway filters by axis+padding, and the outlines' two, made once the renderer is up. */
   private readonly looks = new Map<string, Filter>();
   private readonly cutaways = new Map<string, Filter>();
-  private readonly cameraUniforms = new UniformGroup({ uCamera: { value: new Float32Array([0, 0]), type: "vec2<f32>" } });
+  /** Where the world's origin is on the canvas, and its scale (the panel's zoom), for the cutaway filter. */
+  private readonly cameraUniforms = new UniformGroup({
+    uCamera: { value: new Float32Array([0, 0]), type: "vec2<f32>" },
+    uZoom: { value: 1, type: "f32" },
+  });
   private esp: { pulsing: EspFilters; faint: EspFilters } | null = null;
   /** Whether any outline that pulses is showing, which keeps frames coming. */
   private pulsing = false;
@@ -221,14 +234,21 @@ export class PixiRenderer {
   private selecting = false;
   private readonly reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
-  constructor(private readonly host: HTMLElement) {
+  /** Where the canvas goes and what it fills: the backdrop if there is one, else the panel (`host`). */
+  private readonly surface: HTMLElement;
+
+  constructor(
+    private readonly host: HTMLElement,
+    private readonly backdrop: HTMLElement | null = null,
+  ) {
+    this.surface = backdrop ?? host;
     this.init().catch((e: unknown) => console.error("Pixi renderer failed to start", e));
   }
 
   private async init() {
     await this.app.init({
-      width: Math.max(1, this.host.clientWidth),
-      height: Math.max(1, this.host.clientHeight),
+      width: Math.max(1, this.surface.clientWidth),
+      height: Math.max(1, this.surface.clientHeight),
       backgroundAlpha: 0,
       antialias: false,
       resolution: Math.max(1, Math.round(window.devicePixelRatio || 1)),
@@ -261,6 +281,11 @@ export class PixiRenderer {
     this.sky = [layer(sky(), SKY_SIZE, SKY_PARALLAX, SKY_DRIFT), layer(stars(), STARS_SIZE, STARS_PARALLAX, STARS_DRIFT)];
     this.planet.visible = false;
     this.app.stage.addChild(...this.sky.map((l) => l.sprite), this.planet, this.world);
+    if (this.backdrop) {
+      this.clip = new Graphics();
+      this.app.stage.addChild(this.clip);
+      this.world.mask = this.clip;
+    }
     // The shaders are GLSL; on anything but WebGL the sprites are drawn without effects.
     if (this.app.renderer.type === RendererType.WEBGL) {
       const rim = this.color("--glow-rim");
@@ -269,24 +294,50 @@ export class PixiRenderer {
     }
     this.app.canvas.addEventListener("webglcontextlost", this.onContextLost);
     this.app.canvas.addEventListener("webglcontextrestored", this.onContextRestored);
-    this.host.appendChild(this.app.canvas);
+    this.surface.appendChild(this.app.canvas);
     this.resize = new ResizeObserver(() => this.fit());
     this.resize.observe(this.host);
+    if (this.backdrop) this.resize.observe(this.backdrop);
     this.ready = true;
     if (this.scene) this.setScene(this.scene);
     if (this.lastFrame) this.setFrame(this.lastFrame);
     this.fit();
   }
 
-  /** Match the canvas to the panel. A panel hidden with CSS (phone tabs) measures 0: leave it be. */
+  /**
+   * Match the canvas to what it fills (the panel, or the backdrop), and find the panel on it. A panel hidden with CSS
+   * (phone tabs) measures 0: leave it be.
+   */
   private fit() {
-    const { clientWidth: w, clientHeight: h } = this.host;
-    if (!this.ready || !w || !h) return;
+    const { clientWidth: w, clientHeight: h } = this.surface;
+    if (!this.ready || !w || !h || !this.host.clientWidth || !this.host.clientHeight) return;
     if (this.app.renderer.width !== w || this.app.renderer.height !== h) this.app.renderer.resize(w, h);
     for (const l of this.sky) l.sprite.setSize(w, h);
+    if (this.backdrop) {
+      const at = this.host.getBoundingClientRect();
+      const on = this.backdrop.getBoundingClientRect();
+      this.panel = { x: Math.round(at.left - on.left), y: Math.round(at.top - on.top), width: Math.round(at.width), height: Math.round(at.height) };
+      this.zoom = at.width / this.host.clientWidth;
+      this.clip?.clear().rect(this.panel.x, this.panel.y, this.panel.width, this.panel.height).fill(0xffffff);
+    } else {
+      this.panel = { x: 0, y: 0, width: w, height: h };
+    }
+    this.placeWorld();
     this.placeSky();
     this.placePlanet();
     this.renderNow();
+  }
+
+  /** Puts the world's origin where the camera says, in the panel, at the panel's zoom. */
+  private placeWorld() {
+    const x = this.panel.x + this.zoom * Math.round(this.camera.x);
+    const y = this.panel.y + this.zoom * Math.round(this.camera.y);
+    this.world.position.set(x, y);
+    this.world.scale.set(this.zoom);
+    const cam = this.cameraUniforms.uniforms.uCamera as Float32Array;
+    cam[0] = x;
+    cam[1] = y;
+    this.cameraUniforms.uniforms.uZoom = this.zoom;
   }
 
   setScene(scene: Scene) {
@@ -401,16 +452,13 @@ export class PixiRenderer {
     const { camera } = frame;
     const x = Math.round(camera.x);
     const y = Math.round(camera.y);
-    this.world.position.set(x, y);
-    const cam = this.cameraUniforms.uniforms.uCamera as Float32Array;
-    cam[0] = x;
-    cam[1] = y;
     if (!this.reducedMotion.matches) {
       const dx = camera.x - this.camera.x;
       const dy = camera.y - this.camera.y;
       this.shiftSky((l) => ({ x: dx * l.parallax, y: dy * l.parallax }));
     }
     this.camera = camera;
+    this.placeWorld();
     this.placeSky();
     // Each walker is rounded where it lands on screen, not in the world: your own walker cancels the
     // camera's fraction exactly, so you stay still on screen while the room moves under you.
@@ -450,8 +498,8 @@ export class PixiRenderer {
 
   /** Pinned to the panel's bottom-right corner, in whole pixels; it doesn't move with the camera. */
   private placePlanet() {
-    const { width, height } = this.app.screen;
-    this.planet.position.set(Math.round(width - this.planet.texture.width), Math.round(height - this.planet.texture.height));
+    const { x, y, width, height } = this.panel;
+    this.planet.position.set(Math.round(x + width - this.planet.texture.width), Math.round(y + height - this.planet.texture.height));
   }
 
   /**
@@ -486,7 +534,7 @@ export class PixiRenderer {
    * `angle` about the panel's centre. In whole pixels unless a turn is under way.
    */
   private placeSky() {
-    const center = { x: this.app.screen.width / 2, y: this.app.screen.height / 2 };
+    const center = { x: this.panel.x + this.panel.width / 2, y: this.panel.y + this.panel.height / 2 };
     const whole = this.turning() ? (v: number) => v : Math.round;
     for (const l of this.sky) {
       const p = tilePosition(l.at, this.angle, center);

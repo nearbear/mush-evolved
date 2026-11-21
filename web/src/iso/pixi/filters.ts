@@ -196,6 +196,7 @@ uniform sampler2D uTexture;
 uniform highp vec4 uInputSize;
 uniform highp vec4 uOutputFrame;
 uniform vec2 uCamera;
+uniform float uZoom;
 uniform vec4 uCutBox;
 uniform float uAxis;
 
@@ -213,7 +214,7 @@ void main(void) {
     finalColor = c;
     return;
   }
-  vec2 worldPos = vTextureCoord * uInputSize.xy + uOutputFrame.xy - uCamera;
+  vec2 worldPos = (vTextureCoord * uInputSize.xy + uOutputFrame.xy - uCamera) / uZoom;
 
   float floorY;
   if (uAxis < 0.5) {

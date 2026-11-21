@@ -1,0 +1,31 @@
+/*
+ * Desktop: the star field is the whole screen's background (SpaceBackdrop.tsx). The Pixi canvas sits in this fixed
+ * layer under everything; the room panel is a frame over it, and the panels are translucent over it. Phones keep the
+ * room's own canvas and opaque panels.
+ */
+.space-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+  background: var(--stars, none) repeat, var(--sky, none) repeat, #09092d; /* starfield.ts's SKY */
+  image-rendering: pixelated;
+}
+.space-backdrop canvas {
+  display: block;
+  pointer-events: none;
+  image-rendering: pixelated;
+}
+@media (min-width: 1024px) {
+  main.game:has(> .space-backdrop) {
+    /* The panels' fill, translucent over the stars (a plain fill: no backdrop blur, which would redo every frame). */
+    --panel-glass: color-mix(in srgb, var(--panel-fill) 80%, transparent);
+  }
+  main.game:has(> .space-backdrop) .iso-room {
+    background: transparent;
+  }
+  main.game:has(> .space-backdrop) :is(.inspect, .top-bar, .itrackie)::after {
+    background: var(--panel-glass);
+  }
+}

@@ -19,7 +19,7 @@ Loaded when working on the isometric view. The UI rules in `web/CLAUDE.md` still
   `rendererChoice.ts` picks) is an imperative class behind a thin component,
   lazy-loaded; only `pixi/` (and the lobby's `web/src/lobby/pixi/`) may import `pixi.js` (a Biome rule). Its effects are hand-written GLSL
   filters (`pixi/filters.ts`) drawing the looks in `pixi/effects.ts`, which copies the numbers from
-  `styles/iso.css`: change a look in both. It survives a lost WebGL context (stops drawing, redraws
+  `styles/iso.css`: change a look in both. On desktop its canvas lives in the screen-wide `SpaceBackdrop` (`backdrop.ts`), so the stars fill the viewport; the world is placed at the panel's spot, clipped to it, and scaled by the panel's zoom there. It survives a lost WebGL context (stops drawing, redraws
   when the context is back) and a StrictMode or hot-reload remount (one canvas, one context at a
   time). `IsoRoom` picks one from `RENDERERS`. Effect
   precedence (which wins when hovered and selected) is decided in `describeScene`, not in CSS.
