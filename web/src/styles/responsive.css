@@ -105,14 +105,6 @@
     margin: 0;
     overflow: auto;
   }
-  /* The Inspect heading is dropped on phones (the bottom nav already names the tab); it stays for screen readers. */
-  .left-column > .inspect > .panel-head {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-  }
   .three-panel > * {
     display: none;
   }
@@ -363,5 +355,7 @@
   .inspect-body > .inspect-actions {
     flex: 30;
     max-height: 100%;
+    /* Beside the target, not under it, so its top lines up with the portrait's. */
+    margin-top: 0;
   }
 }

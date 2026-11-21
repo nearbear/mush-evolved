@@ -4647,3 +4647,8 @@ Owner asked whether the star field could be the background for the whole desktop
 - Owner asked to drop the glowing border around the desktop room view and let the scene fill the space it took. One desktop-only rule in `web/src/styles/iso.css` removes the `.iso-room` border, inset glow and 1rem padding, so the scene's clip box (`.iso-scroll`) now runs to the panel's outer edge. Phones keep the frame, since the peek bar is drawn inside it.
 - Follow-up, same day: the frame went on phones too (removed from the base `.iso-room` rule, and the phone padding from `responsive.css`). The phone peek bar now sits flush on the panel's edges (no 1px rim inset; `--peek-clear` drops the rim's pixel) with a 75% `--panel-fill` background so the room shows through.
 - Follow-up: the desktop panels over the star field (Inspect, top bar, iTrackie) went from 80% to 75% fill to match the peek bar; both now read one `--panel-glass` token in `tokens.css` instead of separate values.
+
+## 2026-11-21: Inspect panel's Deselect button
+
+Owner asked to drop Deselect on desktop (clicking the room's floor already clears the selection) and, on phones, move it from under the portrait into the action list, shorter (22px, smaller type) than the actions so it doesn't read as one. Also zeroed the phone action column's top margin, which pushed it below the portrait's top edge. Small CSS/JSX change; `verify:web` passed first time.
+Follow-up: the "Inspect" panel heading is now visually hidden on desktop too (kept for screen readers), one rule in `inspect.css` replacing the phone-only one in `responsive.css`.

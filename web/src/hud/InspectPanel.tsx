@@ -48,7 +48,8 @@ export function InspectPanel({
   const { t } = useTranslation();
   const names = useNames();
   const mobile = useMobile();
-  const deselect = onDeselect && (
+  // Phones only: desktop clears a selection by clicking elsewhere in the room.
+  const deselect = mobile && onDeselect && (
     <button type="button" className="inspect-deselect" onClick={onDeselect}>
       {t("inspect.deselect")}
     </button>
@@ -90,17 +91,16 @@ export function InspectPanel({
     <aside className="panel inspect" ref={root} tabIndex={-1}>
       <div className="panel-head">
         <h2>{t("nav.inspect")}</h2>
-        {!mobile && deselect}
       </div>
       <div className="inspect-body">
       {resolved && (
         <div className="inspect-target">
           <Details view={view} layout={layout} resolved={resolved} onAction={onAction} />
-          {mobile && deselect}
         </div>
       )}
-      {(options.length > 0 || doc || kube) && (
+      {(options.length > 0 || doc || kube || deselect) && (
         <div className="inspect-actions" role="group" aria-label={targetName}>
+          {deselect}
           {doc && <DocumentReader document={doc} />}
           {kube && <SuperkubeOpener view={view} onKube={kube} />}
           {options.map((o) => (

@@ -427,9 +427,14 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* The panel title in the iTrackie's light cyan (the idle tabs' text colour). */
-.inspect .panel-head h2 {
-  color: var(--terminal-bg);
+/* The Inspect heading is dropped on screen (it adds nothing beside the target; on phones the bottom nav names the
+   tab), but stays for screen readers as the panel's name. */
+.inspect > .panel-head {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
 }
 
 /* Only the action list scrolls: the panel and the target (portrait, item, equipment) never do. */
@@ -453,18 +458,11 @@
   /* Room for the buttons' focus outline, which the scroll box would clip. */
   padding: 2px;
 }
-/* Deselect: in the heading row beside the title on desktop, centred under the portrait on phones. */
-.inspect .panel-head {
-  justify-content: flex-start;
-  gap: var(--space-3);
-}
-.inspect-deselect {
-  margin: 0;
-  padding: 0 var(--space-2);
-}
-.inspect-target > .inspect-deselect {
-  align-self: center;
-  margin: var(--space-1) 0 0;
+/* Deselect (phones only): first in the action list, but shorter and in smaller type than the actions, so it doesn't read as one. */
+.inspect-actions button.inspect-deselect {
+  flex: none;
+  height: 22px;
+  font-size: 0.8rem;
 }
 
 /* "Broken" under a piece of equipment's name (breakage.ts). */
