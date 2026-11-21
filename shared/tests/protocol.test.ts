@@ -704,7 +704,11 @@ describe("actions from a client", () => {
       { type: "close_deal", equipment: "e1", signal: "s1", deal: 1, projects: ["PLASMA_SHIELD", "FIRE_SENSOR"] },
     ],
     refuse_signal: [{ type: "refuse_signal", equipment: "e1", signal: "s1" }],
-    set_bios: [{ type: "set_bios", equipment: "e1", option: BIOS_OPTIONS[0]!, value: true }],
+    set_bios: [
+      { type: "set_bios", equipment: "e1", option: BIOS_OPTIONS[0]!, value: true },
+      { type: "set_bios", equipment: "e1", option: "cpu_priority", value: "projects" },
+      { type: "set_bios", equipment: "e1", option: "crew_lock", value: "research" },
+    ],
     scan_planet: [{ type: "scan_planet", equipment: "e1" }],
     analyze_planet: [{ type: "analyze_planet", equipment: "e1", planet: "pl1" }],
     delete_planet: [{ type: "delete_planet", equipment: "e1", planet: "pl1" }],

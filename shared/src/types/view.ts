@@ -1,6 +1,6 @@
 import type { ActionCost, ActionTag } from "../actions.ts";
 import type { CharacterId } from "../characters.ts";
-import type { BiosState } from "../bios.ts";
+import type { BiosState, CpuPriority } from "../bios.ts";
 import type { DrugEffect } from "../drugs.ts";
 import type { FruitEffect } from "../fruits.ts";
 import type { RebelBaseId, XylophEntryId } from "../comms.ts";
@@ -367,6 +367,8 @@ export interface PlayerView {
   comms: { linked: boolean; terminal: CommsTerminalView | null };
   /** NERON's BIOS settings, read-only, only while you are alive in a room with a BIOS terminal (owner, 2026-10-21); otherwise null. */
   bios: BiosState | null;
+  /** NERON's current CPU priority, visible ship-wide to all living players (owner, 2026-11-10); null for dead players. */
+  cpuPriority: CpuPriority | null;
   /**
    * Hunters attacking the ship (owner, 2026-10-24): how many, to everyone. `list` (each hunter's hp) only while you are
    * alive in a turret room or flying a ship (owner, 2026-10-28), with its kind and an asteroid's countdown (#388); `turrets` (charges by turret equipment id) only while

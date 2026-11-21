@@ -434,6 +434,7 @@
     "paidBy": ", coûte un de vos {{resource}}",
     "atCapacity": "Capacité atteinte : les Mush ont déjà extrait toutes les spores possibles aujourd'hui. La limite se réinitialise au jour suivant.",
     "missionIssuedToday": "Une mission a déjà été donnée aujourd'hui. La limite se réinitialise au jour suivant.",
+    "cpuPriorityChangedToday": "Vous avez déjà changé la priorité CPU aujourd'hui. La limite se réinitialise au jour suivant.",
     "lacksAp": "Pas assez de PA : cela coûte {{need}}, vous en avez {{have}}.",
     "onCooldown_one": "De nouveau prête dans {{count}} cycle.",
     "onCooldown_other": "De nouveau prête dans {{count}} cycles.",
@@ -1278,6 +1279,13 @@
     "hullRepairFailed": "Vous n'avez pas réussi à renforcer la coque.",
     "biosShieldOn": "Vous avez activé le bouclier plasma : il protège à nouveau la coque.",
     "biosShieldOff": "Vous avez désactivé le bouclier plasma : il ne protège plus la coque.",
+    "biosCpuNone": "Vous avez réinitialisé la priorité CPU de NERON.",
+    "biosCpuAstronavigation": "Vous avez réglé la priorité CPU de NERON sur l'astronavigation.",
+    "biosCpuProjects": "Vous avez réglé la priorité CPU de NERON sur les projets.",
+    "biosCpuResearch": "Vous avez réglé la priorité CPU de NERON sur la recherche.",
+    "biosLockPiloting": "Vous avez verrouillé le pilotage pour les pilotes.",
+    "biosLockProjects": "Vous avez verrouillé les projets NERON pour les concepteurs.",
+    "biosLockResearch": "Vous avez verrouillé la recherche du laboratoire pour les biologistes et médecins.",
     "fungalCooked": "Vous glissez un spore dans : {{item}}. Niveau de contamination : {{level}}.",
     "massMouldering": "Vous libérez un nuage de spores moisissantes dans tout le vaisseau.",
     "bodyTransferred": "Vous vous êtes glissé dans la peau de {{target}}. {{name}} se réveille humain, dans votre ancien corps.",
@@ -1859,8 +1867,28 @@
     "adminOnly": "Seul l'Administrateur NERON peut modifier ces réglages.",
     "isOn": "{{name}} : oui",
     "isOff": "{{name}} : non",
+    "currentValue": "{{name}} : {{value}}",
     "switchOn": "Activer",
     "switchOff": "Désactiver",
+    "cpu_priority": {
+      "name": "Priorité CPU",
+      "desc": "Alloue la puissance de calcul de NERON à l'astronavigation, aux projets ou à la recherche. Modifiable une fois par jour.",
+      "values": {
+        "none": "Aucune",
+        "astronavigation": "Astronavigation",
+        "projects": "Projets",
+        "research": "Recherche"
+      }
+    },
+    "crew_lock": {
+      "name": "Verrou d'équipage",
+      "desc": "Réserve une activité du vaisseau à l'équipage qualifié : pilotage (Pilotes), projets (Concepteurs) ou recherche (Biologistes et Médecins).",
+      "values": {
+        "piloting": "Pilotage",
+        "projects": "Projets",
+        "research": "Recherche"
+      }
+    },
     "actopi": {
       "name": "ACTOPI",
       "desc": "Activé, tout le monde sait qui est dans quelle pièce. Désactivé, vous ne voyez que le nombre de personnes dans les autres pièces."

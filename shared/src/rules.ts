@@ -256,6 +256,7 @@ export function newPlayer(s: Seat, config: DeepReadonly<GameConfig>, cycle: numb
     history: [],
     logSeen: 0,
     cheats: [],
+    cpuPriorityChangedToday: false,
   };
 }
 
@@ -589,6 +590,7 @@ function advanceCycle(state: GameState, at?: number): void {
       delete p.interrogatedToday;
       delete p.snoopedToday;
       delete p.mycoscannedToday;
+      p.cpuPriorityChangedToday = false;
     }
     const loss = shipInvincible(state) ? 0 : dailyMoraleLoss(state);
     for (const p of state.players) if (p.alive) p.morale = Math.max(0, p.morale - loss);
@@ -892,6 +894,7 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     humanTankFull: hasMushDied(state),
     comms: { linked: state.comms.linked, terminal: you.alive && comTerminalsHere(state, you).length > 0 ? commsTerminalView(state, you) : null },
     bios: you.alive && biosTerminalsHere(state, you).length > 0 ? { ...state.bios } : null,
+    cpuPriority: you.alive ? state.bios.cpu_priority : null,
     // Only the crew sees a report (owner, 2026-10-31), and only while alive, like their private log lines.
     expeditions: you.alive
       ? state.expeditions

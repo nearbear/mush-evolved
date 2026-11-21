@@ -428,6 +428,7 @@
     "paidBy": ", costs one of your {{resource}}",
     "atCapacity": "At capacity: the Mush have already extracted all the spores they can today. The limit resets with the next day.",
     "missionIssuedToday": "A mission has already been issued today. The limit resets with the next day.",
+    "cpuPriorityChangedToday": "You have already changed CPU priority today. The limit resets with the next day.",
     "lacksAp": "Not enough AP: it costs {{need}}, you have {{have}}.",
     "onCooldown_one": "Ready again in {{count}} cycle.",
     "onCooldown_other": "Ready again in {{count}} cycles.",
@@ -1261,6 +1262,13 @@
     "hullRepairFailed": "You failed to reinforce the hull.",
     "biosShieldOn": "You switched the plasma shield on: it protects the hull again.",
     "biosShieldOff": "You switched the plasma shield off: it no longer protects the hull.",
+    "biosCpuNone": "You cleared NERON's CPU priority.",
+    "biosCpuAstronavigation": "You set NERON's CPU priority to astronavigation.",
+    "biosCpuProjects": "You set NERON's CPU priority to projects.",
+    "biosCpuResearch": "You set NERON's CPU priority to research.",
+    "biosLockPiloting": "You locked piloting to pilots.",
+    "biosLockProjects": "You locked NERON projects to designers.",
+    "biosLockResearch": "You locked laboratory research to biologists and medics.",
     "fungalCooked": "You slip a spore into the {{item}}. It now carries {{level}}.",
     "massMouldering": "You release a cloud of mouldering spores across the ship.",
     "bodyTransferred": "You slipped into {{target}}'s body. {{name}} wakes up human, with your old body.",
@@ -1932,8 +1940,28 @@
     "adminOnly": "Only the NERON Admin can change these settings.",
     "isOn": "{{name}}: on",
     "isOff": "{{name}}: off",
+    "currentValue": "{{name}}: {{value}}",
     "switchOn": "Switch on",
     "switchOff": "Switch off",
+    "cpu_priority": {
+      "name": "CPU priority",
+      "desc": "Allocates NERON's extra computing power to astronavigation, projects, or research. Can be changed once per day.",
+      "values": {
+        "none": "None",
+        "astronavigation": "Astronavigation",
+        "projects": "Projects",
+        "research": "Research"
+      }
+    },
+    "crew_lock": {
+      "name": "Crew lock",
+      "desc": "Restricts one ship activity to qualified crew: piloting (Pilots), projects (Designers), or research (Biologists and Medics).",
+      "values": {
+        "piloting": "Piloting",
+        "projects": "Projects",
+        "research": "Research"
+      }
+    },
     "actopi": {
       "name": "ACTOPI",
       "desc": "While on, everyone knows who is in which room. While off, you only see how many people are in the other rooms."

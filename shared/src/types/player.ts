@@ -114,6 +114,8 @@ export interface PlayerState extends Seat {
   snoopedToday?: string[];
   /** True once this character has checked their spores on the MycoScan today (check_spores.ts); cleared at day start; stays with the body. Sent to the owner only. */
   mycoscannedToday?: boolean;
+  /** True once this player has changed NERON's CPU priority today (bios.ts); cleared at day start. Sent to the owner only. */
+  cpuPriorityChangedToday: boolean;
   /**
    * Damaged or Destroyed Ears (owner, 2026-11-17): the messages, by channel and position, other players posted while this
    * body was deaf (`pushChat`). They are never sent to it, even after it is cured (`heardBy` in chat.ts), and don't count

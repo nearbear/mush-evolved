@@ -10,6 +10,8 @@ import {
   BIOS_OPTIONS,
   BLUEPRINTS,
   CHARACTERS,
+  CPU_PRIORITIES,
+  CREW_LOCKS,
   DEFAULT_CONFIG,
   EQUIPMENT_TYPES,
   ITEM_TYPES,
@@ -64,7 +66,9 @@ const REGISTRIES: Record<string, () => readonly string[]> = {
   ROOMS: () => Object.keys(DEFAULT_CONFIG.rooms),
   CHARACTERS: () => CHARACTERS.map((c) => c.id),
   TITLES: () => TITLE_IDS,
-  BIOS_OPTIONS: () => BIOS_OPTIONS,
+  BIOS_OPTIONS: () => [...BIOS_OPTIONS, "cpu_priority", "crew_lock"],
+  CPU_PRIORITIES: () => CPU_PRIORITIES,
+  CREW_LOCKS: () => CREW_LOCKS,
   RESOURCES: () => RESOURCE_IDS,
   // Log lines are ids the client names (`logEvent.<key>`); plural forms share one key.
   LOG_EVENTS: () => [...new Set(Object.keys(englishLog()).map((k) => k.replace(/_(zero|one|two|few|many|other)$/, "")))],
@@ -94,6 +98,8 @@ const VALUE_IDS: Record<string, readonly string[]> = {
   "game.fires[]": ["ROOMS"],
   "game.pendingFires[]": ["ROOMS"],
   "game.projectDeck[]": ["PROJECTS"],
+  "game.bios.cpu_priority": ["CPU_PRIORITIES"],
+  "game.bios.crew_lock": ["CREW_LOCKS"],
   "starts.*.character": ["CHARACTERS"],
 };
 const KEY_IDS: Record<string, readonly string[]> = {

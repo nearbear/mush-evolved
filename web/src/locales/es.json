@@ -434,6 +434,7 @@
     "paidBy": ", cuesta uno de tus {{resource}}",
     "atCapacity": "Capacidad máxima: los Mush ya han extraído todas las esporas posibles hoy. El límite se reinicia al día siguiente.",
     "missionIssuedToday": "Ya se ha dado una misión hoy. El límite se reinicia al día siguiente.",
+    "cpuPriorityChangedToday": "Ya has cambiado la prioridad de la CPU hoy. El límite se reinicia al día siguiente.",
     "lacksAp": "No tienes suficientes PA: cuesta {{need}} y tienes {{have}}.",
     "onCooldown_one": "Lista de nuevo en {{count}} ciclo.",
     "onCooldown_other": "Lista de nuevo en {{count}} ciclos.",
@@ -1278,6 +1279,13 @@
     "hullRepairFailed": "No has conseguido reforzar el casco.",
     "biosShieldOn": "Has activado el escudo de plasma: vuelve a proteger el casco.",
     "biosShieldOff": "Has desactivado el escudo de plasma: ya no protege el casco.",
+    "biosCpuNone": "Has restablecido la prioridad de la CPU de NERON.",
+    "biosCpuAstronavigation": "Has fijado la prioridad de la CPU de NERON en astronavegación.",
+    "biosCpuProjects": "Has fijado la prioridad de la CPU de NERON en proyectos.",
+    "biosCpuResearch": "Has fijado la prioridad de la CPU de NERON en investigación.",
+    "biosLockPiloting": "Has bloqueado el pilotaje para los pilotos.",
+    "biosLockProjects": "Has bloqueado los proyectos de NERON para los diseñadores.",
+    "biosLockResearch": "Has bloqueado la investigación del laboratorio para biólogos y médicos.",
     "fungalCooked": "Escondes una espora en: {{item}}. Nivel de contagio: {{level}}.",
     "massMouldering": "Liberas una nube de esporas de moho por toda la nave.",
     "bodyTransferred": "Te has metido en la piel de {{target}}. {{name}} despierta humano, en tu antiguo cuerpo.",
@@ -1859,8 +1867,28 @@
     "adminOnly": "Solo el Administrador de NERON puede cambiar estos ajustes.",
     "isOn": "{{name}}: sí",
     "isOff": "{{name}}: no",
+    "currentValue": "{{name}}: {{value}}",
     "switchOn": "Activar",
     "switchOff": "Desactivar",
+    "cpu_priority": {
+      "name": "Prioridad de CPU",
+      "desc": "Asigna la potencia de cálculo de NERON a astronavegación, proyectos o investigación. Se puede cambiar una vez al día.",
+      "values": {
+        "none": "Ninguna",
+        "astronavigation": "Astronavegación",
+        "projects": "Proyectos",
+        "research": "Investigación"
+      }
+    },
+    "crew_lock": {
+      "name": "Bloqueo de tripulación",
+      "desc": "Restringe una actividad de la nave a la tripulación cualificada: pilotaje (Pilotos), proyectos (Diseñadores) o investigación (Biólogos y Médicos).",
+      "values": {
+        "piloting": "Pilotaje",
+        "projects": "Proyectos",
+        "research": "Investigación"
+      }
+    },
     "actopi": {
       "name": "ACTOPI",
       "desc": "Activado, todos saben quién está en cada sala. Desactivado, solo ves cuántas personas hay en las otras salas."
