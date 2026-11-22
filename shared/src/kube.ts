@@ -53,7 +53,8 @@ const arriveAt = (ending: "sol" | "eden", logKey: "returnedToSol" | "returnedToE
   arg: "none",
   apply: (state, me) => {
     logPublic(state, undefined, logKey, { name: me.character });
-    endGame(state, winnerOnArrival(state), ending);
+    // Eden is a human win even with Mush alive (#478); Sol goes to whoever is alive (victory.ts).
+    endGame(state, ending === "eden" ? "humans" : winnerOnArrival(state), ending);
     return null;
   },
 });

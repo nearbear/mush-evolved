@@ -481,6 +481,7 @@
     "lacksAntisocial": "Asocial: no puedes vincularte con nadie.",
     "lacksMushNotSelected": "La Tabuladora aún no ha calentado sus válvulas: LA lista se podrá imprimir cuando se elija a los Mush.",
     "lacksListPrinted": "LA lista ya se perforó: solo se puede imprimir una vez por partida.",
+    "lacksFragments": "No hay suficientes fragmentos de mapa estelar en el suelo aquí.",
     "lacksBroken": "Averiado: hace falta una reparación.",
     "lacksGermaphobe": "Germáfoba: no puedes acariciar a Schrödinger.",
     "lacksNotYourSong": "Esta canción no va contigo.",
@@ -491,6 +492,7 @@
     "lacksBoth": "No tienes suficientes PA ni PM: cuesta {{needAp}} PA y {{needMp}} PM, y tienes {{haveAp}} PA y {{haveMp}} PM.",
     "returnToSol": "Volver a Sol",
     "travelToEden": "Viajar a Edén",
+    "computeEden": "Calcular",
     "contactSol": "Establecer contacto con Sol",
     "decodeRebel": "Decodificar señal rebelde",
     "contactXyloph": "Contactar con Xyloph",
@@ -680,6 +682,9 @@
     "seatMoved": "Ahora en {{character}} (empezó como {{start}})",
     "followingAll": "Omnisciente · siguiendo a {{character}}",
     "seenBy": "Visto por {{character}}"
+  },
+  "superCalc": {
+    "computed": "Las coordenadas del Edén están calculadas. El Comandante puede fijar el rumbo desde la terminal de mando."
   },
   "returnToSol": {
     "desc": "Después de tanto tiempo, quizá sea hora de ver qué pasa en Sol.",
@@ -1220,6 +1225,8 @@
     "comforted": "{{name}} consoló a {{target}}.",
     "playArcadeWin": "¡Venciste a Xatator, el jefe del nivel 10 en la Dynarcade!",
     "playArcadeLose": "Has perdido en la Dynarcade.",
+    "edenComputed": "{{name}} le da mil vueltas a los datos hasta que una placa base que se cae le da la respuesta: ¡las coordenadas del Edén están calculadas!",
+    "edenComputeFailed": "Te exprimes el cerebro pero nada, no encuentras manera de triangular los datos...",
     "listenedJukebox": "{{name}} escucha {{song}} en la gramola.",
     "jukeboxPlaylist": "Próximamente en la gramola: {{song1}}, luego {{song2}} y luego {{song3}}.",
     "historyRevealed": "{{name}} hizo hace poco: {{action}}.",
@@ -2150,7 +2157,9 @@
     "tabs": "Terminal de mando",
     "navigationTab": "Interplanetario",
     "intergalacticTab": "Intergaláctico",
-    "edenUnavailable": "Todavía no se puede llegar a Edén.",
+    "edenNotComputed": "Las coordenadas del Edén todavía no se han calculado.",
+    "edenCommanderOnly": "Solo el Comandante puede llevar la nave al Edén.",
+    "edenConfirm": "Esta acción lleva el Daedalus al Edén y termina la partida. ¿Seguro que quieres continuar?",
     "solCommanderOnly": "Solo el Comandante puede llevar la nave a Sol.",
     "solPilgredBroken": "PILGRED todavía no está reparado.",
     "solNotReady": "El camino a casa todavía no está listo."

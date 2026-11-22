@@ -28,6 +28,7 @@ import { clone } from "./helpers.ts";
 import { newNpcState, type NpcState } from "./npcs.ts";
 import { type LostAnalysisState, rollLostAnalysis } from "./lostAnalysis.ts";
 import type { TheListState } from "./theList.ts";
+import type { EdenState } from "./eden.ts";
 import { streamFor } from "./rng.ts";
 import type { DrugDispenserState, DrugEffect } from "./drugs.ts";
 import { drawHybrids, type FruitDisease, type FruitEffect, type PendingDisease } from "./fruits.ts";
@@ -1030,6 +1031,11 @@ export function normalizeMerchantData(raw: Partial<MerchantData>, ctx: Normalize
   });
 }
 
+/** Progress toward Eden (eden.ts, #478). */
+export function normalizeEden(raw: Partial<EdenState>): EdenState {
+  return stripUndefined<EdenState>({ computed: need(raw, "computed", "EdenState") });
+}
+
 export function normalizeFeedEntry(raw: Partial<FeedEntry>): FeedEntry {
   const t = "FeedEntry";
   return stripUndefined<FeedEntry>({
@@ -1324,6 +1330,8 @@ export function normalizeCore(raw: Partial<GameCore>, ctx: NormalizeContext, mod
     trappedRooms: copy(added(raw, "trappedRooms", [])),
     // Gravity restart (owner, 2026-11-22): a game stored before it restored gravity at once, so nothing is restarting.
     gravityRestarting: added(raw, "gravityRestarting", false),
+    // Eden (#478): nothing could compute it in a game stored before it.
+    eden: normalizeEden(added(raw, "eden", { computed: false })),
     titles: {
       commander: need(titles, "commander", `${t}.titles`),
       neron_admin: need(titles, "neron_admin", `${t}.titles`),

@@ -407,6 +407,9 @@ export interface GameConfig {
   /** The Drug Dispenser (owner, 2026-11-11): the cycles of the day it resets on (new list, unused), and what taking a drug costs. */
   drugDispenser: { cost: { ap: number }; resetCycles: number[] };
   checkSpores: { cost: { ap: number } }; // The MycoScan's spore check (owner, 2026-11-01).
+  // Compute Eden at the Super Calculator (#478; owner, 2026-11-22, eMush's numbers): `cost.ap` (or 1 Computer point), `successChance` per
+  // try with the usual failure streak, with at least `fragments` star map fragments (`fragmentItem`) on the room's floor, unhidden.
+  eden: { compute: { cost: { ap: number }; successChance: number; fragments: number; fragmentItem: string } };
   // The jukebox (owner, 2026-11-22): Listen costs `cost.ap` and gives +`morale` once a day while your own song plays; Check playlist is free.
   jukebox: { cost: { ap: number }; morale: number };
   snoop: { cost: { ap: number }; dirtyChance: number; injuryChance: number; rooms: string[]; items: Record<string, number> }; // The Scrapper's Snoop: cost, its dirt and injury odds, the storage rooms it works in, the items it makes by weight (owner, 2026-11-01).
@@ -703,7 +706,7 @@ export interface GameConfig {
     progress: { rate: number; mod: number; skillBoost: number; relayPenalty: number };
     capPoints: number; // Most PILGRED points (`resources.pilgred`) a player can hold (owner, 2026-10-21; the Physicist's IncrMaxPA(PILGRED, 2)).
     pointsPerDay: number; // PILGRED points the `physicist` skill grants at the start of each day (owner, 2026-10-21; the original +1).
-    edenCost: { ap: number }; // AP shown on the Command terminal's Travel to Eden button; Eden is not reachable yet (owner, 2026-10-29: 2, as for Sol).
+    edenCost: { ap: number }; // AP spent to travel to Eden at the Command terminal once Eden is computed (owner, 2026-10-29: 2, as for Sol; actions/travel_to_eden.ts).
     returnCost: { ap: number }; // AP spent to return to Sol at the Command terminal (owner, 2026-10-21; the original's SET_PILGRED_TO_SOL, 2).
     // Coffee regeneration cycles of each day when PILGRED is repaired (owner, 2026-11-02; the original's C1, C3, C5, C7).
     coffeeCycles: number[];

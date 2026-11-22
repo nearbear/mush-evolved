@@ -3,6 +3,7 @@ import type { CharacterId } from "../characters.ts";
 import type { CommsState } from "../comms.ts";
 import type { SignalsState } from "../signals.ts";
 import type { DrugDispenserState, DrugEffect } from "../drugs.ts";
+import type { EdenState } from "../eden.ts";
 import type { FruitEffect } from "../fruits.ts";
 import type { LostAnalysisState } from "../lostAnalysis.ts";
 import type { TheListState } from "../theList.ts";
@@ -237,6 +238,8 @@ export interface GameCore {
   trappedRooms: RoomId[];
   /** A Gravity Simulator was repaired this cycle and gravity comes back at the next cycle change (owner, 2026-11-22, `gravity.ts`). Public: the alert bar shows it. */
   gravityRestarting: boolean;
+  /** Progress toward Eden (eden.ts, #478). An object so the star map tree can extend it. Public: Compute's success is logged and the Command terminal shows it. */
+  eden: EdenState;
   /** Who holds each title (titles.ts); null while vacant. Public: every view has the holders and the lines. */
   titles: Record<TitleId, PlayerId | null>;
   /**

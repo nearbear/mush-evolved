@@ -20,6 +20,8 @@ const ACTION_NAME_KEYS = {
   project: "actions.project",
   repair_pilgred: "actions.repairPilgred",
   return_to_sol: "actions.returnToSol",
+  travel_to_eden: "actions.travelToEden",
+  compute_eden: "actions.computeEden",
   turn_ship: "actions.turnShip",
   travel: "actions.travel",
   leave_orbit: "actions.leaveOrbit",

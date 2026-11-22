@@ -20,6 +20,7 @@ import {
   ANY_CONSUMABLE,
   RESEARCH_IDS,
   RESEARCH_REQUIRES,
+  SUPER_CALC_EQUIPMENT,
   type ResearchNeed,
   researchNeedOrder,
   researchStatus,
@@ -104,8 +105,25 @@ export function TerminalBody({ terminal, view, onAction, onSharePlanet, onShareP
       {terminal.type === "COM_CENTER" && <CommsCenter terminal={terminal} view={view} onAction={onAction} />}
       {terminal.type === "NERON_BIOS_TERM" && <BiosTerminal terminal={terminal} view={view} onAction={onAction} />}
       {terminal.type === "TURRET_COMMAND" && <TurretPanel terminal={terminal} view={view} onAction={onAction} />}
+      {terminal.type === SUPER_CALC_EQUIPMENT && <SuperCalc terminal={terminal} view={view} onAction={onAction} />}
       {terminal.type === "PILOT_MODULE" && <CommandTerminal key={terminal.id} terminal={terminal} view={view} onAction={onAction} />}
     </>
+  );
+}
+
+/**
+ * The Super Calculator (#478): Compute Eden's coordinates, one big button while the view offers it (disabled, with why,
+ * while fragments are short or you are dirty), then a line saying they are computed.
+ */
+function SuperCalc({ terminal, view, onAction }: ListProps) {
+  const { t } = useTranslation();
+  const option = view.actions.find(({ action: a }) => a.type === "compute_eden" && a.equipment === terminal.id);
+  if (view.edenComputed) return <p>{t("superCalc.computed")}</p>;
+  if (!option) return null;
+  return (
+    <ActionButton className="big" view={view} option={option} onAction={onAction}>
+      <ActionLabel text={t("actions.computeEden")} cost={option.cost} chance={option.chance} />
+    </ActionButton>
   );
 }
 

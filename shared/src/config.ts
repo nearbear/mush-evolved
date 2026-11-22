@@ -132,6 +132,8 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   // Owner, 2026-11-01 (eMushpedia "Création du Mycoscan"): checking your spore level on the MycoScan is free, once a day.
   drugDispenser: { cost: { ap: 0 }, resetCycles: [1, 4] },
   checkSpores: { cost: { ap: 0 } },
+  // Compute Eden (#478; owner, 2026-11-22, eMush): 2 AP or 1 Computer point, 33% per try, 3 star map fragments on the floor.
+  eden: { compute: { cost: { ap: 2 }, successChance: 0.33, fragments: 3, fragmentItem: "super_map" } },
   jukebox: { cost: { ap: 0 }, morale: 3 },
   // Owner, 2026-11-01 (eMushpedia "Métalo"): the Scrapper's Snoop, free, once a day per storage room. What it finds
   // (owner, 2026-11-01, eMushpedia "Recycleur" weights): metal scraps 4, plastic scraps 3, a standard (uncooked)

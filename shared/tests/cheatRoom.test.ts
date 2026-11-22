@@ -254,13 +254,13 @@ describe("cheat room", () => {
     });
 
     it.each([
-      ["returnToSol", "sol", "returnedToSol"],
-      ["returnToEden", "eden", "returnedToEden"],
-    ] as const)("%s ends the game at %s once, with the decided winner", (op, ending, logKey) => {
+      ["returnToSol", "sol", "returnedToSol", "mush"],
+      ["returnToEden", "eden", "returnedToEden", "humans"],
+    ] as const)("%s ends the game at %s once, with the decided winner", (op, ending, logKey, winner) => {
       const { s, p } = inRoom();
       const next = ok(kube(s, p, op));
-      // A Mush is aboard and alive at the start, so the Mush win.
-      expect(next).toMatchObject({ phase: "ended", winner: "mush", ending });
+      // A Mush is aboard and alive at the start: the Mush win at Sol, humans win at Eden anyway (#478).
+      expect(next).toMatchObject({ phase: "ended", winner, ending });
       expect(next.log.at(-1)).toMatchObject({ key: logKey, params: { name: me(s, p).character }, visibleTo: "all" });
       expect(kube(next, p, op)).toMatchObject({ ok: false, error: "game_over" });
     });

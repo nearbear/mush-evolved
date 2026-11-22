@@ -15,6 +15,7 @@ import { ARACK_AROUND, AT_CAPACITY, BROKEN, COOLDOWN, DIRTY, EXPLORED, ICARUS_LO
 import { getUp } from "./actions/lie_down.ts";
 import { ANTISOCIAL } from "./actions/bond.ts";
 import { GERMAPHOBE } from "./actions/caress.ts";
+import { FEW_FRAGMENTS } from "./actions/compute_eden.ts";
 import { LIST_PRINTED, MUSH_NOT_SELECTED } from "./actions/print_list.ts";
 import { LISTENED_TODAY, NOT_YOUR_SONG } from "./actions/listen_jukebox.ts";
 import { isNimble } from "./actions/nimble.ts";
@@ -211,6 +212,7 @@ export function createGame(
     pendingFires: [],
     trappedRooms: [],
     gravityRestarting: false,
+    eden: { computed: false },
     failureStreaks: {},
     patrolShips: newPatrolShips(config),
     space: [],
@@ -361,6 +363,7 @@ const isUnaffordableReason = (action: Action, refused: string | null): refused i
     (action.type === "bond" && refused === ANTISOCIAL) ||
     (action.type === "listen_jukebox" && (refused === NOT_YOUR_SONG || refused === LISTENED_TODAY)) ||
     (action.type === "caress" && refused === GERMAPHOBE) ||
+    (action.type === "compute_eden" && refused === FEW_FRAGMENTS) ||
     (ICARUS_ACTIONS.has(action.type) && (refused === EXPLORED || refused === ICARUS_LOST)) ||
     (action.type === "print_list" && (refused === MUSH_NOT_SELECTED || refused === LIST_PRINTED || refused === BROKEN)));
 
@@ -394,6 +397,7 @@ function unaffordableOption(state: GameState, p: PlayerState, def: ActionDef<Act
     ...(refused === GERMAPHOBE ? (["germaphobe"] as const) : []),
     ...(refused === NOT_YOUR_SONG ? (["notYourSong"] as const) : []),
     ...(refused === LISTENED_TODAY ? (["listenedToday"] as const) : []),
+    ...(refused === FEW_FRAGMENTS ? (["fragments"] as const) : []),
     ...(refused === DIRTY ? (["clean"] as const) : []),
     ...(refused === NO_SPACE ? (["space"] as const) : []),
     ...(refused === COOLDOWN ? (["cooldown"] as const) : []),
@@ -951,6 +955,7 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     ...relayView(state, you),
     researchNeeds: you.alive && equipmentHere(state, you, "RESEARCH_LAB").length > 0 ? researchNeedsView(state, you.room) : null,
     pilgredRepaired: isPilgredRepaired(state),
+    edenComputed: state.eden.computed,
     humanTankFull: hasMushDied(state),
     comms: { linked: state.comms.linked, terminal: you.alive && comTerminalsHere(state, you).length > 0 ? commsTerminalView(state, you) : null },
     bios: you.alive && biosTerminalsHere(state, you).length > 0 ? { ...state.bios } : null,

@@ -684,6 +684,8 @@ describe("actions from a client", () => {
     project: [{ type: "project", equipment: "e1", project: "p1" }],
     repair_pilgred: [{ type: "repair_pilgred", equipment: "e1" }],
     return_to_sol: [{ type: "return_to_sol", equipment: "e1" }],
+    travel_to_eden: [{ type: "travel_to_eden", equipment: "e1" }],
+    compute_eden: [{ type: "compute_eden", equipment: "e1" }],
     turn_ship: [{ type: "turn_ship", equipment: "e1", side: "left" }],
     travel: [{ type: "travel", equipment: "e1" }],
     leave_orbit: [{ type: "leave_orbit", equipment: "e1" }],

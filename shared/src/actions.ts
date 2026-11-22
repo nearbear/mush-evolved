@@ -33,6 +33,8 @@ import { ContaminateAction } from "./actions/contaminate.ts";
 import { ProjectAction } from "./actions/project.ts";
 import { RepairPilgredAction } from "./actions/repair_pilgred.ts";
 import { ReturnToSolAction } from "./actions/return_to_sol.ts";
+import { TravelToEdenAction } from "./actions/travel_to_eden.ts";
+import { ComputeEdenAction } from "./actions/compute_eden.ts";
 import { ContactSolAction } from "./actions/contact_sol.ts";
 import { DecodeRebelAction } from "./actions/decode_rebel.ts";
 import { ContactXylophAction } from "./actions/contact_xyloph.ts";
@@ -182,6 +184,8 @@ const REGISTRY = {
   project: new ProjectAction(),
   repair_pilgred: new RepairPilgredAction(),
   return_to_sol: new ReturnToSolAction(),
+  travel_to_eden: new TravelToEdenAction(),
+  compute_eden: new ComputeEdenAction(),
   turn_ship: new TurnShipAction(),
   travel: new TravelAction(),
   leave_orbit: new LeaveOrbitAction(),
@@ -319,7 +323,7 @@ export const ACTIONS: { [T in ActionType]: ActionDef<ActionOf<T>> } = REGISTRY;
 /** Whether an action type is done in a terminal's window (`Action.terminal`), so not offered on the inspect panel. */
 export const actionInTerminal = (type: ActionType): boolean => ACTIONS[type].terminal;
 
-const SHIP_WIDE_ACTIONS: ReadonlySet<ActionType> = new Set(["travel", "leave_orbit", "return_to_sol"]);
+const SHIP_WIDE_ACTIONS: ReadonlySet<ActionType> = new Set(["travel", "leave_orbit", "return_to_sol", "travel_to_eden"]);
 
 /** Whether an action type is public, private, secret or covert. In Nimble mode, room-level public actions become secret. */
 export const actionVisibility = (type: ActionType, view?: { readonly statuses: readonly string[] }): ActionVisibility => {

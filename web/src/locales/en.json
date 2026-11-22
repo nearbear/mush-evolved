@@ -469,6 +469,7 @@
     "lacksAntisocial": "Antisocial: you can't bond with anyone.",
     "lacksMushNotSelected": "The tabulator hasn't warmed up its valves yet: THE List can be printed once the Mush are chosen.",
     "lacksListPrinted": "THE List has already been punched out: it can be printed only once per game.",
+    "lacksFragments": "There aren't enough star map fragments on the floor here.",
     "lacksBroken": "Broken: it must be repaired first.",
     "lacksGermaphobe": "Germaphobe: you can't caress Schrödinger.",
     "lacksNotYourSong": "This song isn't your vibe.",
@@ -479,6 +480,7 @@
     "lacksBoth": "Not enough AP or MP: it costs {{needAp}} AP and {{needMp}} MP, you have {{haveAp}} AP and {{haveMp}} MP.",
     "returnToSol": "Return to Sol",
     "travelToEden": "Travel to Eden",
+    "computeEden": "Compute",
     "contactSol": "Establish link with Sol",
     "decodeRebel": "Decode rebel signal",
     "contactXyloph": "Contact Xyloph",
@@ -667,6 +669,9 @@
     "seatMoved": "Now in {{character}} (started as {{start}})",
     "followingAll": "All-seeing · following {{character}}",
     "seenBy": "Seen by {{character}}"
+  },
+  "superCalc": {
+    "computed": "Eden's coordinates are computed. The Commander can set course from the Command terminal."
   },
   "returnToSol": {
     "desc": "After all this time, maybe it's time to see what's happening on Sol.",
@@ -1197,6 +1202,8 @@
     "comforted": "{{name}} comforted {{target}}.",
     "playArcadeWin": "You beat Xatator, the level 10 boss on the Dynarcade!",
     "playArcadeLose": "You lost on the Dynarcade.",
+    "edenComputed": "{{name}} worked the data over and over until a falling circuit board gave the answer: Eden's coordinates are computed!",
+    "edenComputeFailed": "You work hard at it, but it's to no avail. There seems no way to triangulate the data...",
     "listenedJukebox": "{{name}} listens to {{song}} on the jukebox.",
     "jukeboxPlaylist": "Coming up on the jukebox: {{song1}}, then {{song2}}, then {{song3}}.",
     "historyRevealed": "{{name}} recently did: {{action}}.",
@@ -2213,7 +2220,9 @@
     "tabs": "Command terminal",
     "navigationTab": "Interplanetary",
     "intergalacticTab": "Intergalactic",
-    "edenUnavailable": "Eden cannot be reached yet.",
+    "edenNotComputed": "Eden's coordinates haven't been computed yet.",
+    "edenCommanderOnly": "Only the Commander can take the ship to Eden.",
+    "edenConfirm": "This takes the Daedalus to Eden and ends the game. Are you sure you want to continue?",
     "solCommanderOnly": "Only the Commander can take the ship to Sol.",
     "solPilgredBroken": "PILGRED hasn't been repaired yet.",
     "solNotReady": "The way home isn't ready yet."

@@ -481,6 +481,7 @@
     "lacksAntisocial": "Asociale : vous ne pouvez vous lier avec personne.",
     "lacksMushNotSelected": "La Tabulatrice n'a pas encore chargé ses ampoules : LA liste pourra être imprimée une fois les Mush choisis.",
     "lacksListPrinted": "Ces informations ont déjà été perforées : LA liste ne s'imprime qu'une fois par partie.",
+    "lacksFragments": "Il n'y a pas assez de fragments de carte stellaire au sol ici.",
     "lacksBroken": "En panne : une réparation est nécessaire.",
     "lacksGermaphobe": "Germaphobe : vous ne pouvez pas caresser Schrödinger.",
     "lacksNotYourSong": "Cette chanson ne vous fait pas vibrer.",
@@ -491,6 +492,7 @@
     "lacksBoth": "Pas assez de PA ni de PM : cela coûte {{needAp}} PA et {{needMp}} PM, vous avez {{haveAp}} PA et {{haveMp}} PM.",
     "returnToSol": "Rentrer sur Sol",
     "travelToEden": "Voyager vers Éden",
+    "computeEden": "Calculer",
     "contactSol": "Établir le contact avec Sol",
     "decodeRebel": "Décoder un signal rebelle",
     "contactXyloph": "Contacter Xyloph",
@@ -680,6 +682,9 @@
     "seatMoved": "Maintenant dans {{character}} (au départ {{start}})",
     "followingAll": "Omniscient · en suivant {{character}}",
     "seenBy": "Vu par {{character}}"
+  },
+  "superCalc": {
+    "computed": "Les coordonnées d'Éden sont calculées. Le Commandant peut mettre le cap depuis le terminal de Commandement."
   },
   "returnToSol": {
     "desc": "Après tout ce temps, peut-être serait-il temps de voir ce qu'il se passe sur Sol.",
@@ -1220,6 +1225,8 @@
     "comforted": "{{name}} a réconforté {{target}}.",
     "playArcadeWin": "Vous avez vaincu Xatator, le boss du niveau 10 sur la Dynarcade !",
     "playArcadeLose": "Vous avez perdu sur la Dynarcade.",
+    "edenComputed": "{{name}} retourne les données dans tous les sens jusqu'à ce qu'une carte mère tombée lui donne la réponse : les coordonnées d'Éden sont calculées !",
+    "edenComputeFailed": "Vous vous prenez la tête mais rien n'y fait, aucun moyen de trianguler les données...",
     "listenedJukebox": "{{name}} écoute {{song}} sur le jukebox.",
     "jukeboxPlaylist": "Prochainement sur le jukebox : {{song1}}, puis {{song2}}, puis {{song3}}.",
     "historyRevealed": "{{name}} a récemment fait : {{action}}.",
@@ -2150,7 +2157,9 @@
     "tabs": "Terminal de commande",
     "navigationTab": "Interplanétaire",
     "intergalacticTab": "Intergalactique",
-    "edenUnavailable": "Éden n'est pas encore atteignable.",
+    "edenNotComputed": "Les coordonnées d'Éden n'ont pas encore été calculées.",
+    "edenCommanderOnly": "Seul le Commandant peut emmener le vaisseau vers Éden.",
+    "edenConfirm": "Cette action emmène le Daedalus vers Éden et termine la partie. Êtes-vous sûr de vouloir continuer ?",
     "solCommanderOnly": "Seul le Commandant peut emmener le vaisseau vers Sol.",
     "solPilgredBroken": "PILGRED n'a pas encore été réparé.",
     "solNotReady": "Le chemin du retour n'est pas encore prêt."

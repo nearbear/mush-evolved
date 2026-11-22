@@ -372,6 +372,8 @@ export interface PlayerView {
   yourTokens: { research: Record<string, number>; pilgred: number };
   /** Whether PILGRED is repaired, public to everyone: its completion is announced to the whole crew (repair_pilgred.ts). */
   pilgredRepaired: boolean;
+  /** Whether Eden's coordinates are computed (eden.ts), public: the success is logged and the Command terminal shows it. */
+  edenComputed: boolean;
   /** Whether a Mush has died on the ship (public): the human_tank in Sick Bay shows a person in it. */
   humanTankFull: boolean;
   /**
@@ -491,7 +493,7 @@ export interface ActionOption {
    * Empty when you can do it now; otherwise the points, the inventory space, or the cleanliness ("clean": you are dirty)
    * you lack, or for Collect scrap, "debris" (none out there) or "pasiphae" (a patrol ship can't while the Pasiphae exists), or for Travel and turns, "reactor" (the reactor it needs is broken), or for Travel and Leave orbit, "arack" (an Arack is around), or for Hack, "preselection" (titles aren't assigned yet), or for Board the Icarus and Take off, "explored" (every sector of the planet is explored) or "icarusLost", or for Listen at the jukebox, "notYourSong" or "listenedToday". See `affordable`.
    */
-  lacks: ("ap" | "mp" | "space" | "cooldown" | "capacity" | "clean" | "debris" | "pasiphae" | "reactor" | "arack" | "preselection" | "explored" | "icarusLost" | "antisocial" | "germaphobe" | "mushNotSelected" | "listPrinted" | "broken" | "notYourSong" | "listenedToday")[];
+  lacks: ("ap" | "mp" | "space" | "cooldown" | "capacity" | "clean" | "debris" | "pasiphae" | "reactor" | "arack" | "preselection" | "explored" | "icarusLost" | "antisocial" | "germaphobe" | "mushNotSelected" | "listPrinted" | "broken" | "notYourSong" | "listenedToday" | "fragments")[];
   /** Cycles until it is ready, when `lacks` has "cooldown". */
   cooldown?: number;
 }
