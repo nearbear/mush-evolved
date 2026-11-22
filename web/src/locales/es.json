@@ -87,7 +87,8 @@
     "selectionOf": "Selección: {{name}}",
     "more": "Más",
     "moreHidden_one": "Más, {{count}} acción oculta",
-    "moreHidden_other": "Más, {{count}} acciones ocultas"
+    "moreHidden_other": "Más, {{count}} acciones ocultas",
+    "moreHidden_many": "Más, {{count}} acciones ocultas"
   },
   "stat": {
     "ap": "PA",
@@ -96,6 +97,8 @@
     "morale": "Moral",
     "nextCycle": "Próximo ciclo en {{time}}",
     "chip": "{{label}}: {{value}} de {{max}}",
+    "capChange": "{{label}} máx.: {{base}} → {{max}}",
+    "capSource": "{{name}} {{delta}}",
     "name": {
       "ap": "Puntos de acción",
       "mp": "Puntos de movimiento",

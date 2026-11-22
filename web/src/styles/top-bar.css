@@ -473,6 +473,15 @@
   margin-left: var(--space-2);
   font-variant-numeric: tabular-nums;
 }
+/* What changes the stat's cap (#267): "Max Morale: 14 → 11", then one line per source. */
+.stat-cap p {
+  margin: var(--space-2) 0 0;
+  font-variant-numeric: tabular-nums;
+}
+.stat-cap ul {
+  margin-top: var(--space-1);
+  font-variant-numeric: tabular-nums;
+}
 /* Desktop: your other resources in the ID card (SelfHud; laid out in self-hud.css), as the phone's chips; it opens them all when some don't show. */
 .resource-stack {
   display: flex;

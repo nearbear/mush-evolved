@@ -95,6 +95,8 @@
     "morale": "Morale",
     "nextCycle": "Next cycle in {{time}}",
     "chip": "{{label}}: {{value}} of {{max}}",
+    "capChange": "Max {{label}}: {{base}} → {{max}}",
+    "capSource": "{{name}} {{delta}}",
     "name": {
       "ap": "Action points",
       "mp": "Movement points",
