@@ -15,11 +15,11 @@ interface Props {
 }
 
 /** A BIOS setting's title: hovering, focusing, or tapping opens its description in a tooltip card. */
-function SettingTitle({ title, name, desc }: { title: string; name: string; desc: string }) {
+function SettingTitle({ name, desc }: { name: string; desc: string }) {
   return (
     <Popover.Root>
       <Popover.Trigger openOnHover delay={200} nativeButton={false} render={<strong />} className="has-tip">
-        {title}
+        {name}
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Positioner sideOffset={6}>
@@ -50,7 +50,7 @@ function BiosRadioGroup({
   return (
     <section className="research-item" aria-label={name}>
       <div className="research-body">
-        <SettingTitle title={name} name={name} desc={desc} />
+        <SettingTitle name={name} desc={desc} />
       </div>
       <div className="bios-choices" role="radiogroup" aria-label={name}>
         {choices.map(({ value, label, selected, offer }) =>
@@ -127,7 +127,7 @@ export function BiosTerminal({ terminal, view, onAction }: Props) {
         const name = t(`bios.${option}.name`);
         return (
           <section key={option} className="research-item bios-toggle-row" aria-label={name}>
-            <SettingTitle title={name} name={name} desc={t(`bios.${option}.desc`)} />
+            <SettingTitle name={name} desc={t(`bios.${option}.desc`)} />
             {offer ? (
               <ActionButton
                 view={view}
