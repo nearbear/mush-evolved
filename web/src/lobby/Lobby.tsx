@@ -82,7 +82,7 @@ function nextGuestName(): string {
   return `Guest ${n + 1}`; // i18n-ignore: a player name, stored by the server
 }
 
-export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }) {
+export function Lobby({ onMatched, onPrefetch }: { onMatched: (ticket: SeatTicket) => void; onPrefetch?: () => void }) {
   const { t, i18n } = useTranslation();
   const [name, setName] = useState<string | null>(null);
   const [ship, setShip] = useState<Choice | null>(null);
@@ -134,6 +134,7 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
   // biome-ignore lint/correctness/useExhaustiveDependencies: the UI language only picks which matchmaker launches a single-player ship, read once at launch; changing it must not relaunch.
   useEffect(() => {
     if (name === null || character === null || ship === null) return;
+    onPrefetch?.();
     let timer: ReturnType<typeof setTimeout> | undefined;
     const single = ship === SINGLE_PLAYER;
     const uiLanguage = LOBBY_LANGUAGES.find((l) => l === i18n.resolvedLanguage) ?? "en";
@@ -157,12 +158,13 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
       clearTimeout(timer);
       socket.close();
     };
-  }, [name, character, ship, enterShip, backToShips, t]);
+  }, [name, character, ship, enterShip, backToShips, onPrefetch, t]);
 
   // Resume (#320): straight back to the account's ship, no ship or character to pick. Any language's matchmaker can.
   // biome-ignore lint/correctness/useExhaustiveDependencies: the UI language is read once to pick a matchmaker; changing it must not resend.
   useEffect(() => {
     if (!resuming) return;
+    onPrefetch?.();
     let timer: ReturnType<typeof setTimeout> | undefined;
     const socket = matchmakerSocket(LOBBY_LANGUAGES.find((l) => l === i18n.resolvedLanguage) ?? "en");
     socket.addEventListener("open", () => socket.send(JSON.stringify({ type: "resume" })));
@@ -178,7 +180,7 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
       clearTimeout(timer);
       socket.close();
     };
-  }, [resuming, enterShip, backToShips, t]);
+  }, [resuming, enterShip, backToShips, onPrefetch, t]);
 
   const aboard = account?.aboard ?? false;
   const shipCounts = useShipCounts(webgl && name === null && !resuming && !aboard);
@@ -282,7 +284,10 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
                 <li>
                   <button type="button"
                     className="big pod-ship"
+                    onPointerEnter={onPrefetch}
+                    onFocus={onPrefetch}
                     onClick={() => {
+                      onPrefetch?.();
                       setError("");
                       setResuming(true);
                     }}
@@ -300,8 +305,11 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
                     className="big pod-ship"
                     // Only until the account has loaded: signed out, sign-in buttons show instead.
                     disabled={!account}
+                    onPointerEnter={onPrefetch}
+                    onFocus={onPrefetch}
                     onClick={() => {
                       if (!account) return;
+                      onPrefetch?.();
                       setShip(s);
                       setName(account.displayName);
                     }}
@@ -316,7 +324,10 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
               <li>
                 <button type="button"
                   className="big pod-ship"
+                  onPointerEnter={onPrefetch}
+                  onFocus={onPrefetch}
                   onClick={() => {
+                    onPrefetch?.();
                     setShip(SINGLE_PLAYER);
                     setName(singlePlayerName());
                   }}

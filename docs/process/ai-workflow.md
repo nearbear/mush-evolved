@@ -4802,3 +4802,8 @@ Owner asked to "match eMush". Moved the debris table from `config.hunters.debris
 - **Claude's readings (flagged):** "hostile" = a public `aggressive`-tagged action naming the boarded player as `target`, success or not; covert/private ones (Spike, Demoralize, Body transfer) don't, since the victim leaving would reveal them; area weapons don't. Note: the owner's bed analogy doesn't match the code, where punching someone in bed doesn't get them up (only throw-out does).
 - **Worked:** clearing the flag in `arrive` and `board` covered move, throw-out, wheelchair pushes and patrol takeoff in one place each. `STATE_VERSION` 123 with an upgrade step for docked crews stored in the craft.
 - **Needed correction:** bot tests assumed the craft room; a boarded bot now sees the bay floor and spends a turn sharing an item it sees there, so one test needed a second turn. `crewStillBoarding` had to skip holders already boarded.
+
+### 2026-11-21 — Lazy-load `GameScreen` on `/play` with lobby prefetch
+- Switched `GameScreen` (`web/src/GameScreen.tsx`, `web/src/App.tsx`) to `React.lazy(() => import("./GameScreen.tsx"))` with a `<Suspense>` boundary matching the existing `common.connecting` state so `<WakeUp>` stays mounted during transitions.
+- Added idempotent `prefetchGameScreen` passed into `Lobby` (`web/src/lobby/Lobby.tsx`), triggered on hover/focus/click of the Resume, ship, and Single Player buttons as well as on queue join and resume.
+- Reduced the main entry chunk (`index-*.js`) from ~1,469 kB to ~629 kB (`index-*.css` from 125 kB to 100 kB). Verified with `npm run verify:web`.
