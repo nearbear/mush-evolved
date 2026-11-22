@@ -5,7 +5,7 @@
 // rate limits) is the server's job before these run.
 
 import { ITRACKIE_ITEM, itemsIn, isWorking } from "./items.ts";
-import { channelLimit, isDeaf, isMute } from "./modifiers.ts";
+import { channelLimit, isDeaf, isMute, spokenText } from "./modifiers.ts";
 import { noITrackieNeeded } from "./comms.ts";
 import { cloneState, fail, dayOf, findPlayer, type ActionResult } from "./helpers.ts";
 import { dropChannelPlans, leavePlans } from "./plans.ts";
@@ -168,9 +168,10 @@ export function sendChat(state: GameState, playerId: PlayerId, channel: ChannelI
   if (!chatChannels(state, p).includes(channel)) return { ok: false, error: "cant_post" };
   // Torn Tongue: no post in any channel (owner, 2026-11-17).
   if (isMute(p)) return { ok: false, error: "cant_speak" };
-  const body = text.trim();
+  if (text.trim().length > MAX_CHAT_LENGTH) return { ok: false, error: "message_too_long" };
+  // Missing Teeth drops letters (owner, 2026-11-22); a message left with nothing to say is refused as empty.
+  const body = spokenText(p, text.trim()).trim();
   if (!body) return { ok: false, error: "empty_message" };
-  if (body.length > MAX_CHAT_LENGTH) return { ok: false, error: "message_too_long" };
 
   const next: GameState = {
     ...state,

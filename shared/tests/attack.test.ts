@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ACTIONS } from "../src/actions.ts";
+import { INJURY_UPGRADES } from "../src/diseases.ts";
 import { attackWithHeldWeapon } from "../src/actions/attack.ts";
 import { carriesHeavy, ITEM_TYPES, startCharges } from "../src/items.ts";
 import { parseGameMessage } from "../src/protocol.ts";
@@ -483,5 +484,39 @@ describe("combat outcomes", () => {
     const replayed = replayGame(setup, JSON.parse(JSON.stringify(inputs)) as Input[]);
     expect(replayed).toEqual(s);
     expect(replayed.log.some((e) => e.key !== "crewWakes")).toBe(true);
+  });
+});
+
+describe("weapon injury pools", () => {
+  it("maps each weapon to its kind of wound; blunt has no weapon yet", () => {
+    const pools = Object.fromEntries(Object.entries(W).map(([type, w]) => [type, w.injuryPool]));
+    expect(pools).toEqual({
+      knife: "blade",
+      blaster: "bullet",
+      customized_blaster: "bullet",
+      natamy_riffle: "bullet",
+      sniper_riffle: "bullet",
+      machine_gun: "bullet",
+      missile_launcher: "explosive",
+      grenade: "explosive",
+      bare_hands: undefined,
+    });
+  });
+
+  it("draws a random injury from the weapon's pool", () => {
+    const d = base.diseases;
+    for (const [weapon, pool] of [["knife", d.bladeInjuries], ["blaster", d.bulletInjuries]] as const) {
+      const cfg = tuned(weapon, {
+        accuracy: 1,
+        hitOutcomes: [{ weight: 1, log: "BLASTER_TARGET_RANDOM_INJURY", effects: { injuries: [{ who: "target", injury: "random", chance: 1 }] } }],
+      });
+      const seen = new Set<string>();
+      for (let seed = 1; seed <= 60; seed++) {
+        const r = must(applyAction(ship(weapon, cfg, seed), "p0", shoot("p1")));
+        for (const m of player(r, "p1").modifiers) if (m.endsWith("_injury")) seen.add(m);
+      }
+      expect(seen.size, weapon).toBeGreaterThan(1);
+      for (const id of seen) expect([...pool, ...Object.values(INJURY_UPGRADES)], `${weapon} ${id}`).toContain(id);
+    }
   });
 });

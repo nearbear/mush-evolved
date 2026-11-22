@@ -4879,6 +4879,19 @@ Owner asked to "match eMush". Moved the debris table from `config.hunters.debris
 
 - An edit moved the infected cat's spore from `take`'s `apply` into `onInjury`, and Cat Allergy's `heldCat` call went with it, giving a TS18048 (`item` possibly undefined) and making Quincke's Oedema need an injury. Claude moved `heldCat` back into `apply` (the owner's "on picking him up"), leaving the spore in `onInjury`. `mush_skills.test.ts` still pinned `bacterial_contact` as partial; it is full since give_disease.
 
+- 2026-11-21: Added `third_degree_burn_covering_50%_of_the_body_injury` (+1 AP on actions that already cost AP, as Burnt Hand; 3% an incident disease each cycle, as Rejuvenation). Claude asked the open points first (AP scope, Mush, combat pool); the owner took Burnt Hand's scope, affects Mush, in `combatInjuries`. Rejuvenation's incident roll moved into a shared `catchIncidentDisease` (diseases.ts). The eMushpedia lists +10% to fall ill rather than 3%; logged in changes-from-emush. `verify`'s only failure was a survival-harness timeout under load; it passes alone.
+
+- 2026-11-21: Renamed the 50% burn's id to `third_degree_50_injury` and added its upgrade `third_degree_90_injury` (-4 max HP, +1 AP, 3% incident disease, sepsis death on becoming dirty via `onDirty`, as Open Air Brain), both in `modifiers/third_degree_burn_injury.ts`. Claude asked the open points (keep the disease roll, already dirty when caught, combat pool). The wiki's death on any action or cycle change was left out per the owner's spec. Owner asked for no `verify` run; only the burn, burnt hand and rejuvenation tests were run.
+
+- 2026-11-21: Added per-weapon injury pools (`bladeInjuries`, `bulletInjuries`, `explosiveInjuries`, `bluntInjuries` in `config.diseases`; `WeaponStats.injuryPool`; `weaponInjuryPool` in attack.ts). Knife blade, guns bullet, Rocket Launcher and grenade explosive, blunt unused; contents are Claude's placeholders. The owner wrote "expolsiveInjuries"; Claude used the correct spelling. Not run: `verify` (shared typecheck and the attack, combat injury, burn and stiff neck tests only).
+
+- 2026-11-22: Added `lodged_bullet_injury` (+1 AP with Burnt Hand's scope, -2 max HP, foaming on every room entered), in `bulletInjuries`. No foam chance in the spec or on eMushpedia, so every move foams; flagged to the owner. Owner asked for no `verify`; only the lodged bullet, combat injury and attack tests were run.
+
+- 2026-11-22: Added `broken_foot_injury` (+1 MP per move, -1 max HP; upgrades to Mashed Foot via `INJURY_UPGRADES`), in `combatInjuries` and `bluntInjuries` (Claude's default). fr/es descriptions copied from Mashed Foot's wording. No `verify` (owner); only the broken foot and combat injury tests were run.
+
+- 2026-11-22: Added `broken_leg_injury` (+1 MP per move, -1 max HP, -5 max MP; eMushpedia's "Jambe cassée"), standalone, in `combatInjuries` and `bluntInjuries` (Claude's default). No `verify` (owner); only the broken leg and combat injury tests were run.
+
+- 2026-11-22: Added `unusable_legs_injury` (upgrade of Mashed Foot and Broken Leg; -4 max HP, -12 max MP, Critical Haemorrhage on appearing) and a `legInjury` factory for the four leg/foot injuries. A wheelchair user ignores their MP cost and max MP loss (owner). Mid-task, the owner said max MP may reach 0 and block moving; `moveCost` already refuses a move at a 0 cap, so only the floor changed. Claude found that `addDisease` checked only one tier above, so a Broken Foot could join Unusable Legs; `tiersAbove` now walks the chain. A test first forgot Critical Haemorrhage's own -2 max HP. No `verify` (owner); the injury and accommodate tests were run.
 ## 2026-11-21: THE List, build step 1 (the tabulator item)
 
 - Added `canTake?: boolean` to `ItemType` and the `tabulator` item (`TABULATOR_ITEM`): can't be taken, dropped, hidden or dismantled; breaks (also in cycle-change breakdowns), can be sabotaged, 12% repair. `take` leaves `canTake: false` items out of its candidates and rejects them; `tube_transfer` refuses them too (the `canDrop: false` check already did, the `canTake` check states the intent).
@@ -4947,6 +4960,17 @@ Owner asked to "match eMush". Moved the debris table from `config.hunters.debris
 - Shower guard: 42 → 0 showered deaths, injury 146 → 108, endings within noise (the saved crew suffocate later). The report then showed that about two thirds of injury deaths had spent 3 or more cycles at 5 HP or less, which is the evidence a heal goal needs.
 - Needed correction: the first baseline started in the same worktree as the edit, and the harness spawns vitest children lazily, so it would have picked up the change mid-run. Claude stopped it and reran the baseline from a separate clean detached worktree. Lesson: never edit the worktree a survival run is reading from.
 
+- 2026-11-22: Added `liver_disfunction_injury` (+1 AP, -2 max HP, -2 AP per consume, vomit after food, foaming and 40% vomit per move) and `broken_ribs_injury` (+1 AP, +1 MP per move). The owner's id spelling kept. The spec differs from eMushpedia (liver: vomit on every consumption; ribs: -1 max HP and -20% Shoot accuracy); Claude followed the spec and flagged the differences. No `verify` (owner); only the new and combat injury tests were run.
+
+- 2026-11-22: Added `broken_finger_injury` and its upgrade `missing_finger_injury` (each +1 AP; a 20% Haemorrhage when Missing Finger appears, timing from eMushpedia), in `modifiers/finger_injury.ts`. The first config edit failed on an assumed list layout and was redone. No `verify` (owner); only the finger and combat injury tests were run.
+
+- 2026-11-22: Added `shattered_shoulder_injury`, Broken Shoulder's upgrade (+2 AP, -3 max HP, shots x0.6, no heavy items), with Broken Shoulder moved onto a shared `heavyBlockingShoulder` factory. The locale descriptions copy Broken Shoulder's wording in en/fr/es. No `verify` (owner); only the shoulder and combat injury tests were run.
+
+- 2026-11-22: Added `shredded_hand_injury` and `shattered_arm_injury` from eMushpedia ("Main en charpie", "Bras en charpie"). The wiki's "Annulé par" lists don't fit the one-successor `INJURY_UPGRADES`, so Claude added `INJURY_CANCELS` (cancellers remove lower injuries and block them) and made `tiersAbove` walk both maps; Shattered Shoulder got its wiki cancels too. Burned Arm's wiki row is garbled, so it isn't cancelled; flagged. Also moved a misplaced doc comment in diseases.ts. No `verify` (owner); the injury tests were run.
+
+- 2026-11-22: Missing Finger now has -1 max HP (owner, the wiki's). Burnt Hand already had it, so it was left unchanged. No `verify` (owner); the finger and hand/arm tests were run.
+
+- 2026-11-22: Added `missing_teeth_injury` (-2 max morale; chat posts lose F, V, S, T, D and L in both cases). New `speech` modifier hook, folded by `spokenText` in `sendChat` before the message is stored, so the server stores the mangled text and no client-side logic is needed. An emptied message is refused. Shared-report notes are left alone, matching Torn Tongue; flagged. No `verify` (owner); the missing teeth and channel tests were run.
 ### 2026-11-21 — NERON BIOS toggle switches
 
 - Placed `Mush/www/img/design/switch_bg.gif` (32x17 track) and `Mush/www/img/design/switch.png` (17x17 sliding knob) on the NERON BIOS terminal's boolean options (`actopi`, `death_announcements`, `plasma_shield`) in `web/src/hud/BiosTerminal.tsx` and `web/src/hud/settings.css`, keeping `cpu_priority` and `crew_lock` as multi-choice buttons.

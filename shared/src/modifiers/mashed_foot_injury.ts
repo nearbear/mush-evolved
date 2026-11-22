@@ -1,12 +1,5 @@
-import { updateMaxValues } from "../adjustStats.ts";
-import type { Modifier } from "../modifiers.ts";
+import { legInjury } from "./legInjury.ts";
 
-// Mashed Foot (owner, 2026-11-18): every room-to-room move costs 1 MP more, -1 max health, -3 max MP.
-export const mashed_foot_injury: Modifier = {
-  movement: (rules) => ({ ...rules, mpPerMove: rules.mpPerMove + 1 }),
-  maxHp: (value) => Math.max(1, value - 1),
-  maxMp: (value) => Math.max(1, value - 3),
-  onPick: (next, player) => {
-    updateMaxValues(next, player);
-  },
-};
+// Mashed Foot (owner, 2026-11-18): every room-to-room move costs 1 MP more, -1 max health, -3 max MP. Broken Foot's
+// upgrade, and upgrades to Unusable Legs (INJURY_UPGRADES, diseases.ts). The MP parts skip a wheelchair user.
+export const mashed_foot_injury = legInjury({ mpPerMove: 1, maxHpLoss: 1, maxMpLoss: 3 });
