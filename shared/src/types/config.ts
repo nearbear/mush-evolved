@@ -45,10 +45,16 @@ export interface DiseaseCatagories {
   allDiseases: string [],
   /** The diseases the disease incident (incidents.ts) picks from. */
   incidentDiseases: string[],
+  /** The diseases an expedition's Disease event (expeditions.ts) picks from. */
+  expeditionDiseases: string[],
+  /** Diseases a lost expedition fight can give (expeditions.ts, `expedition.combatDiseaseChance`). */
+  expeditionCombatDiseases: string[],
+  /** The diseases the Mush skill Bacteriophilia's give_disease (actions/give_disease.ts) picks from. */
+  mushSkillDiseases: string[],
   allDisorders: string [],
   allInjuries: StatusId[],
-  /** Injuries left out of the pool a "random injury" combat outcome draws from (attack.ts). */
-  notRandomInjuries: StatusId[],
+  /** The pool a "random injury" combat outcome draws from (attack.ts); each one is in `allInjuries`. */
+  combatInjuries: StatusId[],
   allDiseaseStats: DiseaseStats[],
   allDisorderStats: DiseaseStats[],
   allInjuryStats: DiseaseStats[],
@@ -336,6 +342,9 @@ export interface GameConfig {
   demoralize: {
     cost: { ap: number }; // The Mush skill Demoralizer (disheartening_contact): 2 AP, no limit (owner, 2026-11-14).
     morale: number; // Morale lost by the target (2).
+  };
+  giveDisease: {
+    cost: { ap: number }; // The Mush skill Bacteriophilia (bacterial_contact): 1 AP, no limit (owner, 2026-11-21).
   };
   spores: {
     cost: { ap: number }; // AP spent to extract a spore (confirmed 2026-10-13).
@@ -883,6 +892,7 @@ export interface GameConfig {
     loot: { harvest: string[]; provision: string; starmap: string; artifacts: string[] };
     survivalProvision: number; // Extra steaks per Provision for each living Survival holder in the crew.
     mushTrapChance: number; // Chance each human member gains a spore in a Mush trap.
+    combatDiseaseChance: number; // Chance each surviving member catches one of `diseases.expeditionCombatDiseases` after a lost fight.
     creatures: Record<string, { strength: number[]; loot: CreatureLoot }>; // Fight opponents: a strength drawn uniformly from the list.
     // Event tables by sector tag, plus LANDING (drawn first). A tag with no table explores with nothing happening. A
     // living Pilot in the crew or the Antigrav propeller makes the landing Nothing.

@@ -9,8 +9,8 @@
 // stranded (`strandExpedition`): Magnetic return brings them back, or they die and the Icarus is lost for good.
 // Phases 3 and 4, slice A (owner, 2026-11-08, #357): every tag's table, Again (the sector stays unexplored), Back,
 // Lost item, Kill and Kill all, the Mush trap, starmaps, named creatures with a win roll and loot, random artifacts,
-// Survival's extra steak, and a safe landing with a Pilot or the Antigrav propeller. Disease reads as Nothing until
-// #214. Slice B: getting lost (the member stays on the planet, in a place of their own, and the planet gains a Lost
+// Survival's extra steak, and a safe landing with a Pilot or the Antigrav propeller. Disease (owner, 2026-11-21): one
+// member falls ill (`sicken`). Slice B: getting lost (the member stays on the planet, in a place of their own, and the planet gains a Lost
 // sector), finding them again, and their death when the ship leaves; a Tracker cancels Found dead. A member "with the
 // crew" is alive and in the Icarus (`withCrew`): the lost and the dead take no part in events. Slice C: gear. A
 // planet with no Oxygen sector needs a spacesuit (boarding, below). The other gear changes which sectors are
@@ -43,6 +43,7 @@ import { FAST_EXPEDITION_STEP_MS, fastExpeditions } from "./cheats.ts";
 import { soil } from "./dirt.ts";
 import { rebelContacted } from "./comms.ts";
 import { contaminate } from "./infection.ts";
+import { addDisease } from "./diseases.ts";
 import { CORPSE_ITEM, afterArmor, isWorking, itemsIn, removeItem, sameContainer, spawnInRoom } from "./items.ts";
 import { logPrivate, logPublic } from "./log.ts";
 import { isTraveling } from "./navigation.ts";
@@ -472,8 +473,7 @@ function resolve(ctx: Ctx, sector: PlanetTag | typeof LANDING, table: readonly E
   const weights = table.map((e) => (cancelled(ctx, sector, e) || (sabotaged && !e.negative) ? 0 : eventWeight(ctx, sector, e)));
   if (weights.every((w) => w === 0)) return { sector, kind: "nothing" };
   const rule = table[rollWeighted(state, weights)]!;
-  // Not built yet: Disease (#214) reads as Nothing.
-  const kind = rule.kind === "disease" ? "nothing" : rule.kind;
+  const kind = rule.kind;
   const event: ExpeditionEvent = { sector, kind };
   const rules = state.config.expedition;
   const living = () => ctx.crew.filter((p) => withCrew(state, p));
@@ -561,6 +561,9 @@ function resolve(ctx: Ctx, sector: PlanetTag | typeof LANDING, table: readonly E
     case "killAll":
       kill(ctx, event, living());
       break;
+    case "disease":
+      sicken(ctx, event, living());
+      break;
     case "mushTrap":
       // Each human member, independently, may gain a spore. Secret: the report only says the crew walked into a trap.
       for (const p of living()) if (p.role === "human" && rollFloat(state) < rules.mushTrapChance) contaminate(state, p);
@@ -575,6 +578,25 @@ function resolve(ctx: Ctx, sector: PlanetTag | typeof LANDING, table: readonly E
       break;
   }
   return event;
+}
+
+/**
+ * Disease (owner, 2026-11-21): one member still with the crew, Mush included (they carry it without suffering it), picked
+ * among those who can still catch one, catches a random disease from `config.diseases.expeditionDiseases` they don't
+ * have yet. A Hygienist may resist (`addDisease`), silently. The report doesn't say who: the victim learns it from
+ * their own statuses. Nobody left to catch one: Nothing.
+ */
+function sicken(ctx: Ctx, event: ExpeditionEvent, pool: PlayerState[]): void {
+  const { state } = ctx;
+  const catchable = (p: PlayerState) => state.config.diseases.expeditionDiseases.filter((d) => !p.modifiers.includes(d));
+  const exposed = pool.filter((p) => catchable(p).length > 0);
+  if (exposed.length === 0) {
+    event.kind = "nothing";
+    return;
+  }
+  const victim = exposed[rollInt(state, exposed.length)]!;
+  const diseases = catchable(victim);
+  addDisease(state, victim, diseases[rollInt(state, diseases.length)]!);
 }
 
 /**
@@ -732,6 +754,21 @@ function fight(ctx: Ctx, event: ExpeditionEvent, creature: string): void {
     hits.set(p, (hits.get(p) ?? 0) + 1);
   }
   if (hits.size > 0) hurt(ctx, event, new Map([...hits].sort(([a], [b]) => members.indexOf(a) - members.indexOf(b))), "exploration_combat");
+  if (!won) fightDiseases(ctx, members);
+}
+
+/**
+ * A lost fight (owner, 2026-11-21): each member still with the crew, Mush included (they carry it), has
+ * `combatDiseaseChance` to catch a random disease from `config.diseases.expeditionCombatDiseases` they don't have yet.
+ * A Hygienist may resist (`addDisease`). Silent, like the Disease event: the report doesn't say who.
+ */
+function fightDiseases(ctx: Ctx, members: PlayerState[]): void {
+  const { state } = ctx;
+  for (const p of members) {
+    if (!withCrew(state, p) || rollFloat(state) >= state.config.expedition.combatDiseaseChance) continue;
+    const catchable = state.config.diseases.expeditionCombatDiseases.filter((d) => !p.modifiers.includes(d));
+    if (catchable.length > 0) addDisease(state, p, catchable[rollInt(state, catchable.length)]!);
+  }
 }
 
 /** The chance a crew of `crew` strength beats a creature of `strength` (owner, 2026-11-08; eMushpedia's `Combat`). */

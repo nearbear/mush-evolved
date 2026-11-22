@@ -186,7 +186,7 @@ function applyOutcomeEffects(
     for (const p of group(effects.apLoss.who)) changeAP(state, p, -effects.apLoss.amount);
   }
   if (effects.injuries) {
-    const injuryPool = state.config.diseases.allInjuries.filter((id) => !state.config.diseases.notRandomInjuries.includes(id));
+    const injuryPool = state.config.diseases.combatInjuries;
     for (const inj of effects.injuries) {
       const count = inj.count ?? 1;
       for (const recipient of group(inj.who)) {

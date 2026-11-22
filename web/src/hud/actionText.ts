@@ -14,7 +14,7 @@ export function describeAction(view: PlayerView, names: Names, apUnit: string, a
       ? [...view.inventory, ...view.roomItems].find((i) => i.id === a.item)
       : undefined;
   const equipment = typeof a.equipment === "string" ? view.roomEquipment.find((e) => e.id === a.equipment) : undefined;
-  const personId = typeof a.target === "string" ? a.target : typeof a.subordinate === "string" ? a.subordinate : undefined;
+  const personId = typeof a.target === "string" ? a.target : typeof a.subordinate === "string" ? a.subordinate : typeof a.subject === "string" ? a.subject : undefined;
   const person = personId ? [view.you, ...view.players].find((p) => p.id === personId) : undefined;
   const what = subject
     ? names.itemOf(subject)

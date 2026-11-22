@@ -22,7 +22,7 @@ describe("stiff neck injury", () => {
     const stats = diseaseStats({ config: DEFAULT_CONFIG } as GameState, STIFF_NECK);
     expect([stats?.durationMin, stats?.durationMax]).toEqual([4, 4]);
     expect(DEFAULT_CONFIG.diseases.allInjuries).toContain(STIFF_NECK);
-    expect(DEFAULT_CONFIG.diseases.notRandomInjuries).toEqual([STIFF_NECK]);
+    expect(DEFAULT_CONFIG.diseases.combatInjuries).not.toContain(STIFF_NECK);
   });
 
   it("keeps you from lying down, and an attempt leaves the state unchanged", () => {

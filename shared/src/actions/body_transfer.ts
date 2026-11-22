@@ -20,7 +20,7 @@ export type BodyTransferActionData = { type: "body_transfer"; target: string };
  */
 export class BodyTransferAction extends Action<BodyTransferActionData> {
   override visibility: ActionVisibility = "private";
-  override tags: readonly ActionTag[] = ["spore", "aggressive"];
+  override tags: readonly ActionTag[] = ["spore", "aggressive", "mush"];
   override timed = false;
 
   constructor() {

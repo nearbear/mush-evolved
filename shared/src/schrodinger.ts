@@ -13,6 +13,7 @@
 // rolls on `state.rng`, like every NPC turn. Each move gets public lines in both rooms, like a drone's.
 
 import { CAT_ITEM } from "./items.ts";
+import { catCameIn } from "./modifiers/cat_allergy_disease.ts";
 import { logPublic } from "./log.ts";
 import type { Npc } from "./npcs.ts";
 import { openDoors } from "./doors.ts";
@@ -62,5 +63,7 @@ export const schrodinger: Npc = {
     item.at = { kind: "room", id: to };
     logPublic(state, room, "catLeft", { room: to });
     logPublic(state, to, "catEntered", { room });
+    // Cat Allergy (owner, 2026-11-21): carriers in the room he walks into react.
+    catCameIn(state, to);
   },
 };

@@ -93,6 +93,8 @@ describe("combat injuries", () => {
       }
     }
     for (const upgraded of Object.values(INJURY_UPGRADES)) outcomeInjuries.add(upgraded);
+    // The random injury's pool: every entry must be a real injury too.
+    for (const id of DEFAULT_CONFIG.diseases.combatInjuries) outcomeInjuries.add(id);
 
     for (const id of outcomeInjuries) {
       expect(DEFAULT_CONFIG.diseases.allInjuries, id).toContain(id);

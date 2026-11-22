@@ -51,3 +51,36 @@ describe("burnt hand injury", () => {
     expect(p0.maxHp).toBe(max);
   });
 });
+
+describe("burned arm injury", () => {
+  const BURNED_ARM = "burned_arm_injury";
+
+  it("upgrades a burnt hand: a second burn replaces it, and a burnt hand on top of a burned arm does nothing", () => {
+    const s = burnt();
+    const p0 = player(s, "p0");
+    addDisease(s, p0, BURNT_HAND);
+    expect([p0.modifiers.includes(BURNT_HAND), p0.modifiers.includes(BURNED_ARM)]).toEqual([false, true]);
+    addDisease(s, p0, BURNT_HAND);
+    expect([p0.modifiers.includes(BURNT_HAND), p0.modifiers.includes(BURNED_ARM)]).toEqual([false, true]);
+    const direct = burnt();
+    addDisease(direct, player(direct, "p0"), BURNED_ARM);
+    expect(player(direct, "p0").modifiers.filter((m) => m === BURNT_HAND || m === BURNED_ARM)).toEqual([BURNED_ARM]);
+  });
+
+  it("makes an action that costs AP cost 2 more, leaves free actions and moves alone, and lowers max HP by 1 in all", () => {
+    const plain = ship();
+    const s = ship();
+    const p0 = player(s, "p0");
+    const max = p0.maxHp;
+    addDisease(s, p0, BURNT_HAND);
+    addDisease(s, p0, BURNED_ARM);
+    expect(costOf(s, "p0", { type: "heal", target: "p1" })?.ap).toBe(config.heal.cost.apOther + 2);
+    expect(p0.maxHp).toBe(max - 1);
+    for (const state of [plain, s]) player(state, "p0").mp = 0;
+    expect(costOf(s, "p0", { type: "move" })).toEqual(costOf(plain, "p0", { type: "move" }));
+    player(s, "p0").resources.heal = 1;
+    expect(costOf(s, "p0", { type: "heal", target: "p1" })?.ap).toBe(0);
+    removeDisease(s, p0, BURNED_ARM);
+    expect(p0.maxHp).toBe(max);
+  });
+});

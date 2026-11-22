@@ -5,6 +5,7 @@ import { CAT_ITEM, ITEM_TYPES, canTransfer } from "../items.ts";
 import { isLostPlace } from "../patrol.ts";
 import { logPublic } from "../log.ts";
 import { cantCarryHeavy } from "../modifiers.ts";
+import { heldCat } from "../modifiers/cat_allergy_disease.ts";
 import type { Container, GameState, ItemState, PlayerState } from "../types.ts";
 
 export type TransferActionData = { type: "take"; item: string } | { type: "drop"; item: string };
@@ -53,6 +54,8 @@ export class TransferAction<T extends "take" | "drop" = "take" | "drop"> extends
     item.at = this.type === "take" ? { kind: "player", id: player.id } : { kind: "room", id: player.room };
     state.items.push(item);
     logPublic(state, player.room, this.type === "take" ? "pickedUp" : "dropped", { name: player.character, item: item.type });
+    // Cat Allergy (owner, 2026-11-21): picking Schrödinger up gives Quincke's Oedema, injured or not.
+    if (this.type === "take" && item.type === CAT_ITEM) heldCat(state, player);
   }
 
   override onInjury(state: GameState, player: PlayerState, target: { type: T; item: string }): void {

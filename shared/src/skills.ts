@@ -310,8 +310,9 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   traitor: "full",
   //Mush skill: Allows for accessing Bios.
   neron_access: "full",
-  // Mush skill: a Mush with it can show disease special logs, like vomiting (diseases.ts, canHaveSpecialLogs); giving a crewmate a disease is not built.
-  bacterial_contact: "partial",
+  // Mush skill: a Mush with it can show disease special logs, like vomiting (diseases.ts, canHaveSpecialLogs), and give a
+  // roommate or themselves a disease for 1 AP (owner, 2026-11-21, actions/give_disease.ts).
+  bacterial_contact: "full",
   // Instantly complete a research, project, or repair (owner, 2026-10-25, actions/become_genius.ts).
   genius: "full",
   // +4 Cook points a day and 4 when picked (owner, 2026-11-14, modifiers/cook.ts); alien fruit lore (fruits.ts) and FOOD_RETAILER project bonus (projects.ts).

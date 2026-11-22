@@ -4659,6 +4659,12 @@ Owner asked whether the star field could be the background for the whole desktop
 Owner asked to drop Deselect on desktop (clicking the room's floor already clears the selection) and, on phones, move it from under the portrait into the action list, shorter (22px, smaller type) than the actions so it doesn't read as one. Also zeroed the phone action column's top margin, which pushed it below the portrait's top edge. Small CSS/JSX change; `verify:web` passed first time.
 Follow-up: the "Inspect" panel heading is now visually hidden on desktop too (kept for screen readers), one rule in `inspect.css` replacing the phone-only one in `responsive.css`.
 
+## 2026-11-21: Expedition Disease event
+
+- **Decision (owner):** the Disease event (Forest, Swamp, Insects) gives one random member still with the crew, Mush included as carriers, a disease they lack from `config.diseases.expeditionDiseases` (owner's list, added to `config.ts` by hand). If nobody can catch one, the event is Nothing. The report line is anonymous. Fight diseases (`expeditionCombatDiseases`) are deferred. Claude drafted four questions from eMushpedia's `Évènements` ("un équipier tombe malade"); the owner picked an anonymous report line over Claude's recommendation to name the victim.
+- **What worked:** the disease incident's pattern (`catchable`, `addDisease` for the Hygienist's silent resist) carried over directly as `sicken` in `expeditions.ts`.
+- **Needed correction:** the first test gave the pilot (p0) every disease, and gastroenteritis grounds a pilot, so takeoff failed. A "report never names the victim" check also failed because the report lists its whole crew; it now checks the event's own fields instead.
+- **Verify:** shared passed; server bot/GameRoom tests failed mostly by timeout under load, untouched by this change.
 ### 2026-11-21: Star drift outruns walking
 
 - Owner noticed the stars stopping when you walk up-left against the stream: the camera's parallax (0.6 and 0.25 of a 96 px/s walk) cancelled the 40 and 12 px/s drift. Each layer's cruising drift is now derived as 1.5 x its parallax x the walk speed (`CELLS_PER_SECOND` x a cell's screen width), so it stays ahead if either constant changes: stars 86 px/s, dust 36 px/s. The 150% figure was the owner's.
@@ -4725,6 +4731,51 @@ Follow-up: the "Inspect" panel heading is now visually hidden on desktop too (ke
 - **2026-11-21 — Schrödinger actions (`caress`, `mush_caress`, `take` hooks).** Decided by owner (from `docs/scratchpad/schrodinger.md` + eMush clean-room spec): `caress` (1 AP, 10% injury, public log, floor or inventory, +3 morale once per player per game via `PlayerState.caressedCat`, repeatable for 0 morale, blocked for Germaphobe/Finola as disabled `lacks: ["germaphobe"]`); `mush_caress` (Mush only, post-selection, 1 AP + 1 spore, covert + `spore` tag, floor or inventory, once only, sets `ItemState.mush`, Mush-channel notice, `ItemView.mush` visible to living Mush only); `take` on Schrödinger (0 AP, 20% injury chance, contaminates living humans by 1 via `contaminate` every time when infected, not on `caress`). Reused `TransferAction` and existing `contaminate` / `gainMorale` / `ItemAttrIcons` patterns cleanly; no `STATE_VERSION` bump needed since `mush` and `caressedCat` are optional fields normalized in `normalizeState.ts`.
 - **Follow-up (2026-11-21, owner):** `incidentsCycle` (`shared/src/incidents.ts`) now skips while `state.preselection` is true, so incident points only start accumulating after Mush selection (matching the wiki).
 
+## 2026-11-21: Burned Arm injury
+
+- **Decision (owner):** `burned_arm_injury` upgrades Burnt Hand (`INJURY_UPGRADES`), +2 AP on actions, -1 max HP; matches eMushpedia's "Bras brûlés". Claude gave "all actions" Burnt Hand's already-decided scope (only actions that already cost AP; moves and free actions unchanged) and put it in `allInjuries`, so random combat injuries can give it; both are flagged to the owner.
+- **What worked:** Burnt Hand's modifier became a `burn(surcharge)` factory, so the two injuries share one rule.
+- **Needed correction:** a scripted append to the test file dropped the first `describe`'s closing brace; caught by the test run. Owner asked not to run `verify`; only the related shared test files were run.
+
+## 2026-11-21: combatInjuries list
+
+- **Change (owner):** a "random injury" combat outcome (`attack.ts`) now draws from an explicit `config.diseases.combatInjuries` list instead of `allInjuries` minus `notRandomInjuries`; `notRandomInjuries` is gone (config isn't stored, so no upgrade step). Claude seeded the list with the old effective pool (every injury but Stiff Neck, Burned Arm included) for the owner to edit, and `combat_injuries.test.ts` now checks each entry is a real injury.
+
+## 2026-11-21: Quincke's Oedema
+
+- **Decision (owner):** `quincks_oedema_disease`, 1-3 cycles, -4 max HP, +1 MP per move; when caught -6 HP (death cause `injury`) and Burnt Hand or Burned Arm at equal odds (eMushpedia). Mush carry it with no effects. In `allDiseases` only, no source yet. Claude asked four questions (duration, Mush, death cause, sources); the owner picked reusing `injury` over a new death cause.
+- **What worked:** the fold already drops a Mush's disease hooks, so only `onPick` needed a `diseaseAffects` guard; the burn goes through `addDisease`, so Burnt Hand's upgrade and the Hygienist's resist apply for free.
+- **Needed correction:** the first HP test started at 12 HP, but the -4 max HP clamps HP before the 6 damage; the test now starts below the cap.
+
+## 2026-11-21: Black Bite
+
+- **Decision (owner):** `black_bite_disease`, 20-32 cycles (not the wiki's 40-120); Mush-only actions aimed at a carrier cost 0 AP (Spike still uses its spore), with the price leak to Mush accepted; a spore gives Quincke's Oedema; the wiki's AP-loss and -4 HP effects left out. Claude asked four questions in one round.
+- **What worked:** a new `mush` action tag (Spike, Demoralize, Body Transfer) plus the existing `roomActionCost` hook, since every Mush action that targets a player needs them in the room; the existing `onContaminate` hook covered the spore half, copying Mush Allergy's "a converting spore does nothing".
+- **Needed correction:** `spike.test.ts` pinned Spike's tag list and needed the new tag. A fruits test timed out under load and passed alone.
+
+## 2026-11-21: Cat Allergy
+
+- **Decision (owner):** `cat_allergy_disease`, 12-20 cycles (owner typed it over the offered ∞ / 20-32); sneeze and -1 morale whenever carrier and Schrödinger meet: the carrier walks in, the cat walks in, or someone carrying him walks in (owner widened the offered triggers); ×3 injury chance with him in the room; taking him gives Quincke's Oedema.
+- **What worked:** `onEnterRoom` and `actionInjuryRate` covered two triggers; the other two are explicit calls (`catCameIn` after the cat's move, `catCarriedIn` in `enteredRoom` so move, throw-out and the Kube all count).
+- **Needed correction:** the injury tests needed an Engineer to offer Dismantle. A replay test timed out; timing it with the new hook disabled was slower (16.9s vs 6.7s), so it was machine noise.
+
+## 2026-11-21: Flu and Cat Allergy join incidentDiseases
+
+- **Decision (owner):** `flu_disease` and `cat_allergy_disease` added to `config.diseases.incidentDiseases`. Claude noted that Rejuvenation's per-cycle catch roll reads the same list, so it can now give both too.
+
+## 2026-11-21: Expedition fight diseases
+
+- **Decision (owner):** after a lost expedition fight, each member rolls 5% (`expedition.combatDiseaseChance`) for a disease from `expeditionCombatDiseases`. Claude applied the Disease event's choices without asking: only members still with the crew (not those the fight killed), Mush as carriers, a disease they lack, silent in the report.
+
+## 2026-11-21: Bacteriophilia's give_disease
+
+- **Decision (owner):** the existing Mush skill `bacterial_contact` (English "Bacteriophilia") grants `give_disease`: 1 AP, self or a roommate, a random disease the target lacks from `config.diseases.mushSkillDiseases` (owner wrote the list while Claude asked), covert like Demoralize.
+- **What worked:** Demoralize was the template; the `mush` tag from Black Bite made it free on carriers with no extra code. Claude offered it even when the target has every listed disease, so the offer can't reveal a private disease list.
+- **Needed correction:** the owner had added `mushSkillDiseases` to `config.ts` but not to its type; and the expedition fight test pinned `expeditionCombatDiseases`, which the owner had since extended (Cat Allergy, Black Bite), so the pin was updated.
+
+## 2026-11-21: Premonition picks any crewmate, like Issue mission
+
+- **Change (owner):** Premonition uses the mission's selection. Its `target` field made `namedTarget` treat it as a walk-up action, so the client only showed it on roommates' panels; renamed to `subject` (as `issue_mission` uses `subordinate`). `IssueMissionDialog` became `CrewPickerDialog` with `collapsePickers`, serving both: one button on your own panel, a picker of every living crewmate. Premonition joins `SINGLE_PRESS_ACTIONS` like Issue mission (it only opens the picker). New `web/tests/hud/crewPicker.test.ts`.
 ### 2026-11-21 — BIOS CPU priority and crew lock (Phase 1)
 - **What:** Implemented Phase 1 of `docs/plans/bios-priority-lock.md`: added `cpu_priority` (`none`, `astronavigation`, `projects`, `research`) and `crew_lock` (`piloting`, `projects`, `research`) to `BiosState`, `PlayerState.cpuPriorityChangedToday` (reset on day change, own-view only), ship-wide `PlayerView.cpuPriority` for living players, `set_bios` support with once-per-player-per-day limit on `cpu_priority` (`AT_CAPACITY`, shown disabled with tooltip) and no limit on `crew_lock`, additive normalization without bumping `STATE_VERSION`, BIOS terminal selectors in `BiosTerminal.tsx` (en/fr/es), and tests.
 - **What needed correction:** `server/tests/storedRooms.test.ts` checks `game.bios` keys against `REGISTRIES.BIOS_OPTIONS`, so updated `storedRooms.test.ts` to include `cpu_priority`/`crew_lock` keys and validate their values against `CPU_PRIORITIES`/`CREW_LOCKS`.
@@ -4802,3 +4853,7 @@ Owner asked to "match eMush". Moved the debris table from `config.hunters.debris
 - **Claude's readings (flagged):** "hostile" = a public `aggressive`-tagged action naming the boarded player as `target`, success or not; covert/private ones (Spike, Demoralize, Body transfer) don't, since the victim leaving would reveal them; area weapons don't. Note: the owner's bed analogy doesn't match the code, where punching someone in bed doesn't get them up (only throw-out does).
 - **Worked:** clearing the flag in `arrive` and `board` covered move, throw-out, wheelchair pushes and patrol takeoff in one place each. `STATE_VERSION` 123 with an upgrade step for docked crews stored in the craft.
 - **Needed correction:** bot tests assumed the craft room; a boarded bot now sees the bay floor and spends a turn sharing an item it sees there, so one test needed a second turn. `crewStillBoarding` had to skip holders already boarded.
+
+## 2026-11-21: Typecheck and test fixes after the cat-spore move
+
+- An edit moved the infected cat's spore from `take`'s `apply` into `onInjury`, and Cat Allergy's `heldCat` call went with it, giving a TS18048 (`item` possibly undefined) and making Quincke's Oedema need an injury. Claude moved `heldCat` back into `apply` (the owner's "on picking him up"), leaving the spore in `onInjury`. `mush_skills.test.ts` still pinned `bacterial_contact` as partial; it is full since give_disease.
