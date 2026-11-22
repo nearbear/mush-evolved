@@ -593,7 +593,6 @@
     "report_not_found": "Vous n'étiez pas de cette expédition.",
     "not_in_cheat_room": "Vous devez être dans la salle de triche.",
     "already_has": "Vous l'avez déjà.",
-    "mush_immune": "Un Mush ne peut pas attraper de maladie.",
     "cannot_contaminate": "Vous ne pouvez pas être contaminé."
   },
   "terminal": {
@@ -2242,7 +2241,7 @@
       "destinations": "Destinations"
     },
     "ops": {
-      "ailment": "S'infliger une affection",
+      "ailment": "Appliquer une affection",
       "cure": "Tout soigner",
       "hp": "Fixer les PV",
       "morale": "Fixer le moral",

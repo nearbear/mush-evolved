@@ -146,7 +146,7 @@ describe("cheat room", () => {
       expect(types.some((t) => t === "kube" || Object.hasOwn(KUBE_OPS, t))).toBe(false);
     });
 
-    it("gives a chosen disease, disorder or injury, but no disease to a Mush", () => {
+    it("gives a chosen disease, disorder or injury, including to a Mush", () => {
       const { s, p } = inRoom();
       const { allDiseases, allDisorders, allInjuries } = s.config.diseases;
       let next = s;
@@ -157,7 +157,7 @@ describe("cheat room", () => {
       const mush = devShip();
       const m = mush.players.find((pl) => pl.role === "mush")!;
       m.room = CHEAT_ROOM;
-      expect(kube(mush, m.id, "ailment", allDiseases[0]!)).toMatchObject({ ok: false, error: "mush_immune" });
+      expect(me(ok(kube(mush, m.id, "ailment", allDiseases[0]!)), m.id).modifiers).toContain(allDiseases[0]);
       expect(me(ok(kube(mush, m.id, "ailment", allInjuries[0]!)), m.id).modifiers).toContain(allInjuries[0]);
     });
 

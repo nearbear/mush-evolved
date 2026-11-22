@@ -580,7 +580,6 @@
     "report_not_found": "You weren't on that expedition.",
     "not_in_cheat_room": "You need to be in the cheat room.",
     "already_has": "You already have that.",
-    "mush_immune": "A Mush can't catch a disease.",
     "cannot_contaminate": "You can't be contaminated."
   },
   "terminal": {
@@ -2303,7 +2302,7 @@
       "destinations": "Destinations"
     },
     "ops": {
-      "ailment": "Give yourself an ailment",
+      "ailment": "Apply ailment",
       "cure": "Cure everything",
       "hp": "Set HP",
       "morale": "Set morale",

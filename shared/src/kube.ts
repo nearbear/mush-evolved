@@ -60,15 +60,13 @@ const arriveAt = (ending: "sol" | "eden", logKey: "returnedToSol" | "returnedToE
 });
 
 export const KUBE_OPS = {
-  // A disease, disorder or injury of the ship's (`config.diseases`). As the old Self disease cheat did, no disease while
-  // you're Mush (a disorder or an injury is fine). One you already have is refused.
+  // A disease, disorder or injury of the ship's (`config.diseases`). One you already have is refused.
   ailment: {
     group: "health",
     arg: "ailment",
     apply: (state, me, arg) => {
       const name = arg as StatusId;
       if (me.modifiers.includes(name)) return "already_has";
-      if (me.role === "mush" && state.config.diseases.allDiseases.includes(name)) return "mush_immune";
       addDisease(state, me, name);
       return null;
     },

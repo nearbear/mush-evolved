@@ -593,7 +593,6 @@
     "report_not_found": "No estabas en esa expedición.",
     "not_in_cheat_room": "Tienes que estar en la sala de trucos.",
     "already_has": "Ya lo tienes.",
-    "mush_immune": "Un Mush no puede contraer enfermedades.",
     "cannot_contaminate": "No puedes ser contaminado."
   },
   "terminal": {
@@ -2242,7 +2241,7 @@
       "destinations": "Destinos"
     },
     "ops": {
-      "ailment": "Provocarse una dolencia",
+      "ailment": "Aplicar dolencia",
       "cure": "Curarlo todo",
       "hp": "Fijar los PV",
       "morale": "Fijar la moral",
