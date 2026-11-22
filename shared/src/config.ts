@@ -840,12 +840,16 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
       "busted_arm_joint_injury",
       "punctured_lung_injury",
       "bruised_shoulder_injury",
+      "broken_foot_injury",
       "mashed_foot_injury",
+      "broken_leg_injury",
+      "unusable_legs_injury",
       "broken_shoulder_injury",
       "burnt_hand_injury",
       "burned_arm_injury",
       "third_degree_50_injury",
       "third_degree_90_injury",
+      "lodged_bullet_injury",
       "stiff_neck_injury",
     ],
     // What a "random injury" combat outcome draws from (attack.ts). Owner, 2026-11-20: never Stiff Neck.
@@ -861,7 +865,9 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
       "busted_arm_joint_injury",
       "punctured_lung_injury",
       "bruised_shoulder_injury",
+      "broken_foot_injury",
       "mashed_foot_injury",
+      "broken_leg_injury",
       "broken_shoulder_injury",
       "burnt_hand_injury",
       "burned_arm_injury",
@@ -871,9 +877,9 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
     // Owner, 2026-11-21: the pool a weapon's random injury draws from, by its `injuryPool`. Placeholder contents
     // (Claude's pick, by kind of wound); no weapon uses blunt yet.
     bladeInjuries: ["haemorrhage_injury", "critical_haemorrhage_injury", "busted_arm_joint_injury", "torn_tongue_injury", "punctured_lung_injury"],
-    bulletInjuries: ["haemorrhage_injury", "punctured_lung_injury", "broken_shoulder_injury", "mashed_foot_injury", "damaged_ears_injury"],
+    bulletInjuries: ["haemorrhage_injury", "punctured_lung_injury", "broken_shoulder_injury", "mashed_foot_injury", "damaged_ears_injury", "lodged_bullet_injury"],
     explosiveInjuries: ["burnt_hand_injury", "third_degree_50_injury", "damaged_ears_injury", "destroyed_ears_injury", "mashed_foot_injury", "head_trauma_injury"],
-    bluntInjuries: ["broken_nose_injury", "head_trauma_injury", "bruised_shoulder_injury", "busted_arm_joint_injury", "mashed_foot_injury"],
+    bluntInjuries: ["broken_nose_injury", "head_trauma_injury", "bruised_shoulder_injury", "busted_arm_joint_injury", "broken_foot_injury", "mashed_foot_injury", "broken_leg_injury"],
     allDiseaseStats: [
       {label: "cold_disease", type: "disease", durationMin: 8, durationMax: 12, roomSpread: 0.02, cycleSpread: 0.04}, 
       {label: "extreme_tinnitus_disease", type: "disease", durationMin: 12, durationMax: 20}, 
@@ -909,7 +915,7 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
       {label: "black_bite_disease", type: "disease", durationMin: 20, durationMax: 32},
       // Owner, 2026-11-21: 12-20 cycles.
       {label: "cat_allergy_disease", type: "disease", durationMin: 12, durationMax: 20},
-      ...["broken_nose_injury", "damaged_ears_injury", "destroyed_ears_injury", "torn_tongue_injury", "open_air_brain_injury", "head_trauma_injury", "haemorrhage_injury", "critical_haemorrhage_injury", "busted_arm_joint_injury", "punctured_lung_injury", "bruised_shoulder_injury", "mashed_foot_injury", "broken_shoulder_injury", "burnt_hand_injury", "burned_arm_injury", "third_degree_50_injury", "third_degree_90_injury"].map((label) => ({ label, type: "injury" })),
+      ...["broken_nose_injury", "damaged_ears_injury", "destroyed_ears_injury", "torn_tongue_injury", "open_air_brain_injury", "head_trauma_injury", "haemorrhage_injury", "critical_haemorrhage_injury", "busted_arm_joint_injury", "punctured_lung_injury", "bruised_shoulder_injury", "mashed_foot_injury", "broken_shoulder_injury", "burnt_hand_injury", "burned_arm_injury", "third_degree_50_injury", "third_degree_90_injury", "lodged_bullet_injury", "broken_foot_injury", "broken_leg_injury", "unusable_legs_injury"].map((label) => ({ label, type: "injury" })),
       // Owner, 2026-11-20: unlike the other injuries, Stiff Neck wears off after 4 cycles.
       {label: "stiff_neck_injury", type: "injury", durationMin: 4, durationMax: 4}],
     allDisorderStats: [{type: "disorder", resistance: 8}],

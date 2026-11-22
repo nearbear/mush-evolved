@@ -19,7 +19,7 @@ export interface DiseaseTracker {
 /**
  * Injury upgrades: getting a lower-tier injury again (or getting its upgraded form directly) replaces
  * the lower-tier injury with the higher-tier one; getting a lower-tier injury while already holding
- * its higher-tier form is a no-op.
+ * any higher tier of it is a no-op. Tiers chain (Broken Foot → Mashed Foot → Unusable Legs).
  */
 export const INJURY_UPGRADES: Readonly<Record<string, StatusId>> = {
   damaged_ears_injury: "destroyed_ears_injury",
@@ -28,27 +28,32 @@ export const INJURY_UPGRADES: Readonly<Record<string, StatusId>> = {
   bruised_shoulder_injury: "broken_shoulder_injury",
   burnt_hand_injury: "burned_arm_injury",
   third_degree_50_injury: "third_degree_90_injury",
+  broken_foot_injury: "mashed_foot_injury",
+  mashed_foot_injury: "unusable_legs_injury",
+  broken_leg_injury: "unusable_legs_injury",
 };
 
 /** A disease's numbers, found by its `label` (config.ts), not by its place in the list. */
+/** Every injury above `name` in its upgrade chain, nearest first. */
+function tiersAbove(name: string): StatusId[] {
+  const out: StatusId[] = [];
+  for (let up = INJURY_UPGRADES[name]; up && !out.includes(up); up = INJURY_UPGRADES[up]) out.push(up);
+  return out;
+}
+
 export function diseaseStats(state: Readonly<GameState>, name: string): DiseaseStats | undefined {
   return state.config.diseases.allDiseaseStats.find((stats) => stats.label === name);
 }
 
 export function addDisease(state: GameState, player: PlayerState, name: StatusId){
+    if (tiersAbove(name).some((higher) => player.modifiers.includes(higher))) return;
     const upgradeTo = INJURY_UPGRADES[name];
-    if (upgradeTo) {
-      if (player.modifiers.includes(upgradeTo)) return;
-      if (player.modifiers.includes(name)) {
-        removeDisease(state, player, name);
-        name = upgradeTo;
-      }
-    } else {
-      for (const [lower, higher] of Object.entries(INJURY_UPGRADES)) {
-        if (higher === name && player.modifiers.includes(lower)) {
-          removeDisease(state, player, lower);
-        }
-      }
+    if (upgradeTo && player.modifiers.includes(name)) {
+      removeDisease(state, player, name);
+      name = upgradeTo;
+    }
+    for (const lower of Object.keys(INJURY_UPGRADES)) {
+      if (player.modifiers.includes(lower) && tiersAbove(lower).includes(name)) removeDisease(state, player, lower);
     }
     if(player.modifiers.includes(name)){
         return;

@@ -91,6 +91,10 @@ import { black_bite_disease } from "./modifiers/black_bite_disease.ts";
 import { quincks_oedema_disease } from "./modifiers/quincks_oedema_disease.ts";
 import { burned_arm_injury, burnt_hand_injury } from "./modifiers/burnt_hand_injury.ts";
 import { third_degree_50_injury, third_degree_90_injury } from "./modifiers/third_degree_burn_injury.ts";
+import { lodged_bullet_injury } from "./modifiers/lodged_bullet_injury.ts";
+import { broken_foot_injury } from "./modifiers/broken_foot_injury.ts";
+import { broken_leg_injury } from "./modifiers/broken_leg_injury.ts";
+import { unusable_legs_injury } from "./modifiers/unusable_legs_injury.ts";
 import { stiff_neck_injury } from "./modifiers/stiff_neck_injury.ts";
 import { damaged_ears_injury } from "./modifiers/damaged_ears_injury.ts";
 import { destroyed_ears_injury } from "./modifiers/destroyed_ears_injury.ts";
@@ -349,6 +353,10 @@ export const MODIFIERS: Record<string, Modifier> = {
   burned_arm_injury,
   third_degree_50_injury,
   third_degree_90_injury,
+  lodged_bullet_injury,
+  broken_foot_injury,
+  broken_leg_injury,
+  unusable_legs_injury,
   stiff_neck_injury,
   quincks_oedema_disease,
   black_bite_disease,
