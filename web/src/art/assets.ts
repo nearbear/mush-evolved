@@ -69,9 +69,9 @@ export function bustIcon(character: CharacterId | undefined): string {
   return (character && busts[character]) || portrait(character);
 }
 
-// The cast sheet (RGBA, so no keying): per character a row of 48px-tall cells at x=127 (walk frames), then a lying pose.
+// The cast sheet (RGBA, so no keying; lossless WebP of www/img/art/char.png): per character a row of 48px-tall cells at x=127 (walk frames), then a lying pose.
 const castSheet = Object.values(
-  import.meta.glob<string>("../../../Mush/www/img/art/char.png", { eager: true, query: "?url", import: "default" }),
+  import.meta.glob<string>("../../../Mush/derived/webp/char.webp", { eager: true, query: "?url", import: "default" }),
 )[0]!;
 const CAST_SHEET_SIZE = { w: 953, h: 2315 };
 const LYING = { x: 554, w: 50, h: 48 };
@@ -496,9 +496,9 @@ export const TAB_ICONS = {
   expeditions: uiIcons["survival"]!,
 } as const;
 
-/** The space battle sprite sheet (640x715). Its slices are in `Mush/clients/iso/xml/tiles.xml` (`<sheet src="BmpGfxFx">`). */
+/** The space battle sprite sheet (640x715; lossless WebP of clients/iso/gfx/fx.png). Its slices are in `Mush/clients/iso/xml/tiles.xml` (`<sheet src="BmpGfxFx">`). */
 export const FX_SHEET = urls(
-  import.meta.glob<string>("../../../Mush/clients/iso/gfx/fx.png", { eager: true, query: "?url", import: "default" }),
+  import.meta.glob<string>("../../../Mush/derived/webp/fx.webp", { eager: true, query: "?url", import: "default" }),
 )["fx"]!;
 /** Each hunter kind's battle-view slice in `FX_SHEET` (x, y, w, h), from the `FX_SPC_*` slices in tiles.xml. Keyed by
     `HunterType` (spider is the Arack, dice the D1000). They range from 48x26 (hunter) to 84x92 (D1000). */

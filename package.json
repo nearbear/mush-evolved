@@ -34,6 +34,7 @@
     "ship-check": "npm run ship-check -w tools --",
     "asset-index": "npm run asset-index -w tools",
     "pip-bar": "npm run pip-bar -w tools",
+    "webp-sheets": "npm run webp-sheets -w tools",
     "ods-data": "npm run ods-data -w tools",
     "screenshot": "npm run screenshot -w tools --",
     "a11y": "npm run a11y -w tools --",

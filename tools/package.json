@@ -9,6 +9,7 @@
     "layout-query": "node src/shipLayout/query.ts",
     "ship-check": "node src/shipLayout/check.ts",
     "pip-bar": "node src/pipBar/pipBar.ts",
+    "webp-sheets": "node src/webpSheets/webpSheets.ts",
     "asset-index": "node src/assetIndex/assetIndex.ts",
     "ods-data": "node src/odsData/odsData.ts",
     "wiki": "node src/wiki/wiki.ts",

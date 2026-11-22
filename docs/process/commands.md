@@ -13,6 +13,7 @@ Node is installed via nvm and is already on `PATH` in Claude Code shells (the us
 - `npm run build`: production build of `web`.
 - `npm run preview`: build `web` for production, then serve it with `vite preview` beside wrangler (same ports as `npm run dev`, so stop that first). Unlike the dev server, it sends the security headers from `web/public/_headers` (CSP and friends; `securityHeaders()` in `web/vite.config.ts`), so a CSP break shows up here before a deploy.
 - `npm run ship-layout`: regenerate `Mush/derived/ship-art.json` and `ship-rooms.json` from `ship-map.json` (see `web/src/iso/CLAUDE.md`, "The ship map"). A test fails if either is stale.
+- `npm run webp-sheets`: regenerate `Mush/derived/webp/*.webp` (lossless WebP copies of the 7 largest PNG spritesheets, verified pixel-identical on visible pixels; run after `npm run ship-layout` if `BigFill` pages change).
 - `npm run ship-check`: report-only checks on `ship-map.json` (overlaps, misaligned doors, gaps).
 - `npm run layout-query -- <regex>`: search `ship-art.json` and `ship-map.json` (reading them directly is denied), capped at 60 lines.
 - `npm run art-align [-- --slice NAME --each]`: how the wall, door and floor art sits on the grid, in pixels, per slice (`tools/src/play/artAlign.ts`; see `web/src/iso/CLAUDE.md`, "Directions"). Use it before judging alignment from screenshots.

@@ -4898,6 +4898,12 @@ Owner asked to "match eMush". Moved the debris table from `config.hunters.debris
 - Reading the plan with Transfer in mind: role moves with the mind, so "a living starting Mush" became "a starting-Mush body still Mush"; a Mush mind moved to another body falls to the "any living Mush" step. Flagged to the owner.
 - Needed correction: the normalizer's no-`??` rule (a repo test) caught my fallback; rewritten as an explicit branch.
 
+### 2026-11-21 — Lossless WebP for the 7 largest PNG spritesheets
+
+- Added `npm run webp-sheets` (`tools/src/webpSheets/webpSheets.ts`), which encodes the 7 largest PNG spritesheets (`BigFill-0`, `BigFill2-0`, `char`, `gfx_01`, `MidFill`, `MidFill2`, `fx`) to lossless WebP (`VP8L`, `method=6`) under `Mush/derived/webp/`, leaving `Mush/` originals and `Mush/derived/pages/*.png` untouched.
+- Kept `ship-art.json` pointing at the PNG paths so offline Node tools (`ship-render`, `art-align`, `shipLayout.test.ts`) continue using the pure-TS PNG decoder; `web/src/iso/shipLayout.ts` and `web/src/art/assets.ts` load the derived `.webp` files instead so Vite excludes those 7 PNGs from `web/dist/`.
+- Reduced the 7 sheets from 1,712 KiB to 1,035 KiB (−39.5%, ~677 KiB saved), verified pixel-identical on every visible (`alpha > 0`) pixel.
+
 ### 2026-11-21 — THE List: printing (#266, steps 4-5 and the web side)
 
 - `print_list` (`actions/print_list.ts`, 0 AP from `config.theList.cost`): a Tracker at the tabulator rolls `rollList`, marks the one print spent, and gets a `{ kind: "the_list", characters }` document (hands, else floor); public log. Disabled with `lacks` `mushNotSelected`, `listPrinted` (also after a tear) and `broken`, the first time `BROKEN` is shown rather than hidden, scoped to this action in `isUnaffordableReason`.
