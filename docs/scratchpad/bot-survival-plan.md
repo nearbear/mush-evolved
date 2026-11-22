@@ -2,7 +2,7 @@
 
 Owner decisions of 2026-11-19. Run A is built and committed; everything after it is not. Method: the `bot-strategy` skill (one change per run, same seeds, measured against the run before).
 
-Order of work: Run A (done) → Run A2 (bedroom loop, done) → Run A2c (fuel relay, done) → Run A3 (bed tiers, done) → Run A4 (Shrink beds and announcement, done, no gain) → Run B onward (Run D done). Run G (give up on Eden) added 2026-11-21. The bed runs came out of tracing Run A's remaining orbit stays (below).
+Order of work: Run A (done) → Run A2 (bedroom loop, done) → Run A2c (fuel relay, done) → Run A3 (bed tiers, done) → Run A4 (Shrink beds and announcement, done, no gain) → Run C (done, no gain, reverted) → Run B (done) → Run E onward (Run D done). Run G (give up on Eden) added 2026-11-21. The bed runs came out of tracing Run A's remaining orbit stays (below).
 
 ## Diagnosis (2026-11-19)
 
@@ -113,10 +113,14 @@ Raluca should never be in a dorm; today she often just stands in the rear corrid
 - A share that arrives while an escape jump is held: jump to the planet at once.
 - **Bar:** median hold before a planet jump, 9 cycles, down to about 0–2. First orbit (mean cycle 18.5) earlier, and oxygen on arrival (median 8) higher.
 
+**Status (2026-11-21): built and measured** (trigger back at 5, against the Run C baseline). First jump median cycle 7 → 4, first orbit 13 → 6, Oxygen orbits 67 → 96, oxygen before a planet jump median 8 → 14, oxygen at 0 median cycle 31 → 45, asphyxia 600 → 470, mean days 6.59 → 7.28 (+0.69, 32 longer, 15 shorter). Held median 7 → 5 (the harness counts from the first hold line, so an upgraded escape hold and the fuel relay's wait are in it). Watch: injury deaths 83 → 146 (showers, flu), exploration deaths 15 → 31, ships destroyed 2 → 5. The fuel relay's wait still applies to planet jumps (Claude's pick). Details in `docs/plans/bot-goals.md` ("Reaching Eden").
+
 ### Run C: escape on 7 hunters
 
 - `HOLD_HUNTER_TRIGGER` 5 → 7 (5 is too few).
 - **Watch:** hull, ships destroyed (7 now) and hunters shed by jumps.
+
+**Status (2026-11-21): built and measured, no gain.** Escape jumps on hunters 58 → 29, but the trigger also fires held planet jumps: first jump median cycle 7 → 13, runs reaching an Oxygen orbit 38 → 30, oxygen at 0 median cycle 31 → 24; daedalus_destroyed deaths 10 → 15; mean days 6.59 → 6.35 (edge of noise, wrong way). Reverted to 5 for Run B; retry on top of Run B, where the trigger only governs escape jumps. Details in `docs/plans/bot-goals.md` ("Reaching Eden").
 
 ### Run D: no escape jump on oxygen
 
