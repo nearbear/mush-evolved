@@ -8,7 +8,6 @@
     "mainMenu": "Menu principal",
     "preselection": "Pré-sélection",
     "orbiting": "En orbite",
-    "exploring": "En exploration",
     "deepSpace": "Espace profond",
     "deepSpaceAbout": "Vous êtes au milieu de nulle part. Cherchez des planètes au {{astro}}, puis le Commandant en rejoint une depuis le {{command}}, avec le carburant chargé dans la chambre de combustion.",
     "orbitingAbout": "Le Daedalus est en orbite autour de cette planète. Montez dans l'Icarus, dans la {{bay}}, pour lancer une expédition et l'explorer.",

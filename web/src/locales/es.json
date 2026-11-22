@@ -8,7 +8,6 @@
     "mainMenu": "Menú principal",
     "preselection": "Preselección",
     "orbiting": "En órbita",
-    "exploring": "Explorando",
     "deepSpace": "Espacio profundo",
     "deepSpaceAbout": "Estás en medio de la nada. Busca planetas en la {{astro}} y luego el Comandante viaja a uno desde la {{command}}, con el combustible cargado en la cámara de combustión.",
     "orbitingAbout": "El Daedalus está en órbita alrededor de este planeta. Sube al Ícaro en la {{bay}} para lanzar una expedición y explorarlo.",

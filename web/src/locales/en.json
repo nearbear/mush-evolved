@@ -8,7 +8,6 @@
     "mainMenu": "Main menu",
     "preselection": "Pre-selection",
     "orbiting": "Orbiting",
-    "exploring": "Exploring",
     "deepSpace": "Deep space",
     "deepSpaceAbout": "You are in the middle of nowhere. Scan for planets at the {{astro}}, then the Commander travels to one from the {{command}}, using the fuel loaded in the combustion chamber.",
     "orbitingAbout": "The Daedalus is orbiting this planet. Board the Icarus in the {{bay}} to launch an expedition and explore it.",
