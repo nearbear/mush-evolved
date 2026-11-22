@@ -5083,3 +5083,7 @@ Moving the jukebox sprite to the Refectory with the editor's "move to room" left
 ## 2026-11-22: Game name decided (#43)
 
 The owner named the game **Mush: Evolved**. Updated the display name only (CLAUDE.md, README heading, the browser tab title in `web/index.html`). Internal identifiers stay `mush2` (repo, npm workspaces, Worker and D1 names, localStorage keys), since renaming them would break deploys and saved client state for no player-visible gain.
+
+### 2026-11-22: Peek bar More shows how many actions are hidden
+
+- Asked for a badge on the phone peek bar's "…" button counting the actions not shown. `useOneRow` already marked the wrapped-off buttons inert, so it now also returns that count; `Bar` owns the More button (both callers passed the same one) and draws a blue `--badge` chip, deliberately not the red unread badge. The count goes into the button's label (`peek.moreHidden`, en/fr/es). Examine (always left to Inspect) and the throw-out/crew-picker collapses are not counted: only actions the row clipped.

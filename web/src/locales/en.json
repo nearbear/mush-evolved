@@ -84,7 +84,9 @@
     "noAccess": "No access",
     "selection": "Selection",
     "selectionOf": "Selection: {{name}}",
-    "more": "More"
+    "more": "More",
+    "moreHidden_one": "More, {{count}} action not shown",
+    "moreHidden_other": "More, {{count}} actions not shown"
   },
   "stat": {
     "ap": "AP",
