@@ -92,6 +92,7 @@ Both games start characters with 0 skills (3 pickable + 1 book slot) and permane
 
 | Mush Skill | eMush | Mush: Evolved |
 | :--- | :--- | :--- |
+| **Fertile (`fertile`)** | Pickable Mush skill that takes up one of the 4 Mush skill slots. | **Innate for every Mush** (alpha and converted) for free without taking a Mush skill slot; removed from the Mush skill picker (active silently). |
 | **Mass Mouldering (`massggedon`)** | Costs **2 spores**, drains **2 AP** from humans, and bypasses Apron/Stickler (`ACTION_SUPER_DIRTY`). | **2 AP, 0 spores**, once per game, private (`spore`-tagged): soils every living player aboard (Apron/Stickler **block it**) and **omits the 2 AP drain**. |
 | **Doorman (`doorman`)** | Once per day (0 AP) on a **random** working door in the room. | Lets the Mush **choose which working door** in the room to break, with **no daily limit** (**first use each day is 0 AP**, subsequent uses cost **2 AP**). |
 | **Nimble Fingers (`nimble_fingers`)** | Grants secret camera install/remove actions only. | **0 AP instant toggle** (enter/exit Nimble mode, private status). While active, all room-level **Public** actions (including movement) become **Secret** when unwitnessed and unfilmed (staying plain Public if witnessed/filmed so Nimble mode doesn't leak). |

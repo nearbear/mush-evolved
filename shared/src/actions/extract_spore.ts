@@ -8,7 +8,7 @@ import type { GameState, PlayerState } from "../types.ts";
 
 export type ExtractSporeActionData = { type: "extract_spore" };
 
-/** Fertile's daily extraction is still unspent: free of AP (owner, 2026-10-27). */
+/** Fertile (innate for every Mush) makes the first daily extraction free of AP (owner, 2026-10-27, 2026-11-11, 2026-11-21). */
 function freeExtraction(player: Readonly<PlayerState>): boolean {
   return hasSkill(player, "fertile") && !player.fertileToday;
 }

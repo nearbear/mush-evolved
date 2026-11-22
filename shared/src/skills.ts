@@ -151,21 +151,37 @@ export function isMushSkill(value: unknown): value is MushSkillId {
   return typeof value === "string" && (MUSH_SKILLS as readonly string[]).includes(value);
 }
 
+/** Mush skills every Mush gets for free without picking or using a Mush skill slot (owner, 2026-11-11, 2026-11-21). */
+export const INNATE_MUSH_SKILLS = ["fertile"] as const satisfies readonly MushSkillId[];
+
+export function isInnateMushSkill(value: unknown): value is (typeof INNATE_MUSH_SKILLS)[number] {
+  return typeof value === "string" && (INNATE_MUSH_SKILLS as readonly string[]).includes(value);
+}
+
+/** Mush skills offered in the Mush skill picker (excludes innate Mush skills). */
+export const PICKABLE_MUSH_SKILLS: readonly MushSkillId[] = MUSH_SKILLS.filter((s) => !isInnateMushSkill(s));
+
 /** Mush skill slots per Mush player (owner, 2026-10-24), separate from the human ones. */
 export const MUSH_SKILL_SLOTS = 4;
 
 /** Human skill slots per player. The book slot (`PlayerState.bookSkill`) is a fourth, filled only by a skill book. */
 export const SKILL_SLOTS = 3;
 
-type SkillHolder = Pick<PlayerState, "skills" | "bookSkill" | "mushSkills">;
+type SkillHolder = Pick<PlayerState, "skills" | "bookSkill" | "mushSkills"> & Partial<Pick<PlayerState, "role">>;
 
-/** Every skill the player has: the picked human ones, the book slot's, then the Mush ones. */
+/** Every skill the player has: the picked human ones, the book slot's, the picked Mush ones, and any innate Mush skills. */
 export function skillsOf(player: Readonly<SkillHolder>): string[] {
-  return [...player.skills, ...(player.bookSkill === undefined ? [] : [player.bookSkill]), ...player.mushSkills];
+  const innate = player.role === "mush" ? INNATE_MUSH_SKILLS.filter((s) => !player.mushSkills.includes(s)) : [];
+  return [...player.skills, ...(player.bookSkill === undefined ? [] : [player.bookSkill]), ...player.mushSkills, ...innate];
 }
 
 export function hasSkill(player: Readonly<SkillHolder>, skill: string): boolean {
-  return player.skills.includes(skill) || player.bookSkill === skill || player.mushSkills.includes(skill);
+  return (
+    player.skills.includes(skill) ||
+    player.bookSkill === skill ||
+    player.mushSkills.includes(skill) ||
+    (player.role === "mush" && isInnateMushSkill(skill))
+  );
 }
 
 /** How much of a skill's listed effects the rules implement. A skill missing from SKILL_STATUS is "none". */
@@ -248,7 +264,7 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   fungus_cook: "partial",
   // Mush skill: eat a spore for 4 HP and 4 AP (owner, 2026-11-04, actions/consume_spore.ts).
   phagocytosis: "full",
-  // Mush skill: one free spore extraction a day (owner, 2026-10-27, actions/extract_spore.ts).
+  // Innate Mush skill: every Mush gets one free spore extraction a day without using a slot (owner, 2026-10-27, 2026-11-11, 2026-11-21, actions/extract_spore.ts).
   fertile: "full",
   // Mush skill: showering costs at most 1 AP and no HP (owner reading of eMushpedia, 2026-10-27, actions/shower.ts).
   water_resistant: "full",

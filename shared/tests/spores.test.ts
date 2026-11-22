@@ -20,10 +20,13 @@ function ship(): GameState {
   return s;
 }
 describe("spore extraction", () => {
-  it("costs 1 AP and gives the Mush 1 spore, available straight away", () => {
-    const s = mustApply(ship(), "p0", extract);
-    expect(player(s, "p0").spores).toBe(1);
-    expect(player(s, "p0").ap).toBe(config.startAp - 1);
+  it("is free on the first extraction of the day (innate Fertile), then costs 1 AP and gives 1 spore", () => {
+    const first = mustApply(ship(), "p0", extract);
+    expect(player(first, "p0").spores).toBe(1);
+    expect(player(first, "p0").ap).toBe(config.startAp);
+    const second = mustApply(first, "p0", extract);
+    expect(player(second, "p0").spores).toBe(2);
+    expect(player(second, "p0").ap).toBe(config.startAp - 1);
   });
 
   it("is Mush only: not offered to, and refused for, humans", () => {
@@ -88,21 +91,24 @@ describe("spore extraction", () => {
     }
   });
 
-  it("refuses without AP and leaves state unchanged", () => {
+  it("refuses without AP after the daily free extraction and leaves state unchanged", () => {
     const s = ship();
+    player(s, "p0").fertileToday = true;
     player(s, "p0").ap = 0;
     const before = JSON.stringify(s);
     expect(applyAction(s, "p0", extract).ok).toBe(false);
     expect(JSON.stringify(s)).toBe(before);
   });
 
-  it("costs constipasporeExtraAp more AP once CONSTIPASPORE_SERUM is complete", () => {
+  it("costs constipasporeExtraAp more AP once CONSTIPASPORE_SERUM is complete (after the daily free extraction)", () => {
     expect(DEFAULT_CONFIG.spores.constipasporeExtraAp).toBe(2);
     const partial = ship();
+    player(partial, "p0").fertileToday = true;
     partial.research.CONSTIPASPORE_SERUM = RESEARCH_COMPLETE - 1;
     expect(costOf(partial, "p0", extract).ap).toBe(config.spores.cost.ap);
 
     const done = ship();
+    player(done, "p0").fertileToday = true;
     done.research.CONSTIPASPORE_SERUM = RESEARCH_COMPLETE;
     const expectedCost = config.spores.cost.ap + config.spores.constipasporeExtraAp;
     expect(costOf(done, "p0", extract).ap).toBe(expectedCost);

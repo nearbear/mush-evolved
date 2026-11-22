@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, legalActions, viewFor } from "../src/rules.ts";
-import { CHARACTER_SKILLS, MUSH_SKILLS, MUSH_SKILL_SLOTS, SKILLS, SKILL_SLOTS, skillStatus } from "../src/skills.ts";
+import { CHARACTER_SKILLS, MUSH_SKILLS, MUSH_SKILL_SLOTS, PICKABLE_MUSH_SKILLS, SKILLS, SKILL_SLOTS, skillStatus } from "../src/skills.ts";
 import type { GameState } from "../src/types.ts";
 import { makeSeats, must, testConfig } from "./support.ts";
 
@@ -22,17 +22,18 @@ describe("Mush skills", () => {
     expect(MUSH_SKILLS.filter((s) => (SKILLS as readonly string[]).includes(s))).toEqual([]);
   });
 
-  it("offers a Mush every Mush skill as well as their character's human ones; a human gets only human ones", () => {
+  it("offers a Mush every pickable Mush skill (excluding innate Fertile) as well as their character's human ones; a human gets only human ones", () => {
     const state = ship();
-    expect(offered(state, "p0").sort()).toEqual([...CHARACTER_SKILLS.chao, ...MUSH_SKILLS].sort());
+    expect(offered(state, "p0").sort()).toEqual([...CHARACTER_SKILLS.chao, ...PICKABLE_MUSH_SKILLS].sort());
+    expect(offered(state, "p0")).not.toContain("fertile");
     expect(offered(state, "p2").sort()).toEqual([...CHARACTER_SKILLS.eleesha].sort());
   });
 
   it("puts a Mush skill in the Mush slots for free, separate from the human slots", () => {
     const before = ship();
-    const after = must(pick(before, "p0", "fertile"));
+    const after = must(pick(before, "p0", "pyromane"));
     const p = after.players[0]!;
-    expect(p.mushSkills).toEqual(["fertile"]);
+    expect(p.mushSkills).toEqual(["pyromane"]);
     expect(p.skills).toEqual([]);
     expect([p.ap, p.mp]).toEqual([before.players[0]!.ap, before.players[0]!.mp]);
     expect(before.players[0]!.mushSkills).toEqual([]);
@@ -40,9 +41,9 @@ describe("Mush skills", () => {
 
   it("fills the Mush slots and the human slots independently", () => {
     let state = ship();
-    for (const skill of MUSH_SKILLS.slice(0, MUSH_SKILL_SLOTS)) state = must(pick(state, "p0", skill));
+    for (const skill of PICKABLE_MUSH_SKILLS.slice(0, MUSH_SKILL_SLOTS)) state = must(pick(state, "p0", skill));
     expect(offered(state, "p0").filter((s) => (MUSH_SKILLS as readonly string[]).includes(s))).toEqual([]);
-    expect(pick(state, "p0", MUSH_SKILLS[MUSH_SKILL_SLOTS]!).ok).toBe(false);
+    expect(pick(state, "p0", PICKABLE_MUSH_SKILLS[MUSH_SKILL_SLOTS]!).ok).toBe(false);
     for (const skill of CHARACTER_SKILLS.chao.slice(0, SKILL_SLOTS)) state = must(pick(state, "p0", skill));
     expect(state.players[0]!.mushSkills).toHaveLength(MUSH_SKILL_SLOTS);
     expect(state.players[0]!.skills).toHaveLength(SKILL_SLOTS);

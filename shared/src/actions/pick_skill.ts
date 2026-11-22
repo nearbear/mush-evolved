@@ -1,6 +1,17 @@
 import { Action, type ActionVisibility } from "./action.ts";
 import { skillPicked } from "../modifiers.ts";
-import { CHARACTER_SKILLS, MUSH_SKILLS, MUSH_SKILL_SLOTS, SKILLS, SKILL_SLOTS, hasSkill, isMushSkill, isSkill, type SkillId } from "../skills.ts";
+import {
+  CHARACTER_SKILLS,
+  MUSH_SKILL_SLOTS,
+  PICKABLE_MUSH_SKILLS,
+  SKILLS,
+  SKILL_SLOTS,
+  hasSkill,
+  isInnateMushSkill,
+  isMushSkill,
+  isSkill,
+  type SkillId,
+} from "../skills.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
 export type PickSkillActionData = { type: "pick_skill"; skill: string };
@@ -25,15 +36,15 @@ export class PickSkillAction extends Action<PickSkillActionData> {
   }
 
   override getCandidates(_state: Readonly<GameState>, player: Readonly<PlayerState>): PickSkillActionData[] {
-    const mush = player.role === "mush" ? MUSH_SKILLS : [];
+    const mush = player.role === "mush" ? PICKABLE_MUSH_SKILLS : [];
     return [...pickable(player), ...mush].filter((s) => !hasSkill(player, s) && !spent(player, s)).map((skill) => ({ type: "pick_skill", skill }));
   }
 
   override validate(_state: Readonly<GameState>, player: Readonly<PlayerState>, target: PickSkillActionData): string | null {
     if (isMushSkill(target.skill)) {
       if (player.role !== "mush") return "not_mush";
-      if (hasSkill(player, target.skill)) return "have_skill";
-      return player.mushSkills.length < MUSH_SKILL_SLOTS ? null : "no_free_slot";
+      if (isInnateMushSkill(target.skill) || hasSkill(player, target.skill)) return "have_skill";
+      return player.mushSkills.filter((s) => !isInnateMushSkill(s)).length < MUSH_SKILL_SLOTS ? null : "no_free_slot";
     }
     if (!isSkill(target.skill)) return "no_such_skill";
     if (hasSkill(player, target.skill)) return "have_skill";
