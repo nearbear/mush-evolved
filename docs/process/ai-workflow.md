@@ -4819,3 +4819,8 @@ Owner asked to "match eMush". Moved the debris table from `config.hunters.debris
 - Switched `web/src/i18n/index.ts` from statically bundling all three UI catalogs (`en/fr/es.json`) and `NAME_CATALOGS` to loading only the active locale's UI catalog and shared name catalog (`@mush2/shared/src/locales/names.<locale>.json`) via dynamic `import()` behind an i18next `BackendModule` with top-level `await` before mounting, and loading other locales on `changeLanguage`.
 - Kept compile-time key checking via `type EnCatalog = typeof import("../locales/en.json")` merged with `NameCatalog`, and set `fallbackLng: false` so French/Spanish startups don't also fetch English (key parity is already enforced by `tools/tests/i18n/i18n.test.ts`).
 - Verified in `web/tests/i18n/i18n.test.ts` that only the initial locale's resource bundle is loaded on startup and other locales load on demand; Vite now emits separate per-locale chunks (`en/fr/es` + `names.en/fr/es`) with none in the entry bundle or `index.html` modulepreloads.
+
+### 2026-11-21 — Self-hosted fonts via `@fontsource`
+
+- Replaced vendored `.ttf` files for Kanit (18 weights, ~3.1 MB) and Days One with `@fontsource/kanit` and `@fontsource/days-one` imported in `web/src/styles/fonts.css`, keeping `web/src/fonts/pixel-square/` local (not on Fontsource).
+- Imported only the `latin` and `latin-ext` subsets for the weights actually used (`400`/`400-italic`/`700`/`700-italic`, plus `800` for the pod sticker in `web/src/lobby/podArt.ts`; `@fontsource/days-one` only ships `latin-400`). Vite bundles the `.woff2`/`.woff` files into `web/dist/assets/`, keeping CSP `font-src 'self'` intact with zero external requests.
