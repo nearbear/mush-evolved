@@ -92,6 +92,7 @@ import { BecomeGeniusAction } from "./actions/become_genius.ts";
 import { CeasefireAction } from "./actions/ceasefire.ts";
 import { ReadBookAction } from "./actions/read_book.ts";
 import { TearAction } from "./actions/tear.ts";
+import { PrintListAction } from "./actions/print_list.ts";
 import { AnathemaAction } from "./actions/anathema.ts";
 import { CoupAction } from "./actions/coup.ts";
 import { IssueMissionAction } from "./actions/issue_mission.ts";
@@ -121,6 +122,7 @@ import { TransferAction } from "./actions/transfer.ts";
 import { WaterAction } from "./actions/water.ts";
 import { TreatAction } from "./actions/treat.ts";
 import { SowAction } from "./actions/sow.ts";
+import { GraftAction } from "./actions/graft.ts";
 import type { GameState, PlayerState } from "./types.ts";
 
 export type ActionType = Action["type"];
@@ -236,6 +238,7 @@ const REGISTRY = {
   water: new WaterAction(),
   treat: new TreatAction(),
   sow: new SowAction(),
+  graft: new GraftAction(),
   build: new BuildAction(),
   jettison: new JettisonAction(),
   install: new InstallAction(),
@@ -293,6 +296,7 @@ const REGISTRY = {
   ceasefire: new CeasefireAction(),
   read_book: new ReadBookAction(),
   tear: new TearAction(),
+  print_list: new PrintListAction(),
   warp_to_planet: new WarpToPlanetAction(),
   claim_slot: new ClaimSlotAction(),
   withdraw_slot: new WithdrawSlotAction(),

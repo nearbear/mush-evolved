@@ -1,5 +1,5 @@
 // PILGRED, the Daedalus's faster-than-light reactor, broken at the start; repairing it is the way home (decided 2026-10-21,
-// plan in docs/scratchpad/pilgred-plan.md). Progress is state (`GameState.pilgred`), seen only by the living in a room
+// plan in docs/scratchpad/archive/pilgred-plan.md). Progress is state (`GameState.pilgred`), seen only by the living in a room
 // with the PILGRED terminal. Once it is repaired, the Commander can return to Sol (actions/return_to_sol.ts).
 
 import { hasTitleAccess } from "./titles.ts";

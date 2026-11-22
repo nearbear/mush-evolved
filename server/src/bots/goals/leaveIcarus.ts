@@ -7,7 +7,7 @@ import type { GoalDef } from "./types.ts";
 export const LEAVE_ICARUS_PRIORITY = 101;
 
 /**
- * Get off the docked Icarus (owner, 2026-11-17: boarding, docs/plans/expedition-boarding.md) when there is no takeoff
+ * Get off the docked Icarus (owner, 2026-11-17: boarding, docs/plans/archive/expedition-boarding.md) when there is no takeoff
  * to wait for: not a launcher who can still take off (`expeditionLaunch`), not crew still waiting (`waitingAboard`).
  * Keeps a bot from sitting aboard for good, whatever put it there.
  */

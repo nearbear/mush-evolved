@@ -11,15 +11,23 @@ import artUrl from "../../../Mush/derived/ship-art.json?url";
 import mapUrl from "../../../Mush/derived/ship-map.json?url";
 import { withoutBuiltOnly } from "./equipmentTiles.ts";
 
+// The 6 largest iso sheets ship as lossless WebP in Mush/derived/webp/ (npm run webp-sheets);
+// ship-art.json keeps their PNG paths for the offline Node tools, and atlasUrl maps them here.
 const atlases = import.meta.glob<string>(
-  ["../../../Mush/clients/iso/gfx/{gfx_01,fx,SmallFill,MidFill,MidFill2,dev,Masks}.png", "../../../Mush/derived/pages/*.png", "../../../Mush/derived/items/super_kube.jpg"],
+  [
+    "../../../Mush/clients/iso/gfx/{SmallFill,dev,Masks}.png",
+    "../../../Mush/derived/webp/{BigFill-0,BigFill2-0,gfx_01,MidFill,MidFill2,fx}.webp",
+    "../../../Mush/derived/items/super_kube.jpg",
+  ],
   { eager: true, query: "?url", import: "default" },
 );
 
 /** URL of a sheet's image; `image` is relative to Mush/, as in the layout file. */
 export function atlasUrl(layout: ShipLayout, sheet: string): string | undefined {
   const image = layout.sheets[sheet]?.image;
-  return image ? atlases[`../../../Mush/${image}`] : undefined;
+  if (!image) return undefined;
+  const stem = image.split("/").at(-1)?.replace(/\.png$/, "");
+  return (stem && atlases[`../../../Mush/derived/webp/${stem}.webp`]) ?? atlases[`../../../Mush/${image}`];
 }
 
 let loading: Promise<ShipLayout> | undefined;

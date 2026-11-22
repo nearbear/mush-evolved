@@ -1,4 +1,4 @@
-// The Com center terminal's Signals tab (docs/plans/signals.md): every ship or base that reached the Daedalus, as a list
+// The Com center terminal's Signals tab (docs/plans/archive/signals.md): every ship or base that reached the Daedalus, as a list
 // grouped into Active and Inactive. Choosing one opens its conversation (SignalConversation.tsx) in the same panel, with
 // a back button. Only a player with Comms Officer access gets the signals (`view.comms.terminal.signals`, signals.ts);
 // anyone else sees one line, and the tab stays so its appearing never tells a hacker their hack worked. Merchants and

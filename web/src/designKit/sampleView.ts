@@ -1,4 +1,4 @@
-// The design kit's PlayerView fixture (docs/plans/design-kit.md). Built from the real rules, never by hand: a
+// The design kit's PlayerView fixture (docs/plans/archive/design-kit.md). Built from the real rules, never by hand: a
 // launched 16-seat ship from `createGame`, a few changes on top, then `viewFor` for one seat. A hand-written view
 // would drift every time PlayerView changes; this one cannot, and a type change breaks it at compile time.
 //

@@ -1,4 +1,4 @@
-// What the room view shows while you fly a patrol ship (docs/plans/patrol.md; owner, 2026-11-10): a space scene. Your
+// What the room view shows while you fly a patrol ship (docs/plans/archive/patrol.md; owner, 2026-11-10): a space scene. Your
 // ship, drawn with its docked sprite, sits in the upper right with its nose to the lower left; the star field streams
 // the other way to show the speed. The hunter you aim at is drawn large just ahead of the ship's nose, inside a reticle;
 // the rest wait in the lower left as one small sprite per kind with a count (so 99 hunters take the room of one), and

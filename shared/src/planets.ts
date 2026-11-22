@@ -1,4 +1,4 @@
-// Planets found at the Astro terminal (plan and decisions: docs/plans/astro.md, owner 2026-10-19). Each player's planets are
+// Planets found at the Astro terminal (plan and decisions: docs/plans/archive/astro.md, owner 2026-10-19). Each player's planets are
 // private to them (`GameState.planets`); `viewFor` sends your own with the unknown sectors' tags stripped.
 import { nextInt, shuffle, type RngState } from "./rng.ts";
 import type { GameState, Planet } from "./types.ts";

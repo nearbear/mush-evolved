@@ -23,7 +23,7 @@ export class TransferAction<T extends "take" | "drop" = "take" | "drop"> extends
     const kind = this.type === "take" ? "room" : "player";
     const id = this.type === "take" ? player.room : player.id;
     return state.items
-      .filter((item) => item.at.kind === kind && item.at.id === id)
+      .filter((item) => item.at.kind === kind && item.at.id === id && (this.type !== "take" || ITEM_TYPES[item.type]?.canTake !== false))
       .map((item) => ({ type: this.type as T, item: item.id }));
   }
 
@@ -31,6 +31,7 @@ export class TransferAction<T extends "take" | "drop" = "take" | "drop"> extends
     const item = state.items.find((i) => i.id === target.item);
     if (!item) return "no_such_item";
     if (this.type === "drop" && ITEM_TYPES[item.type]?.canDrop === false) return "cant_transfer";
+    if (this.type === "take" && ITEM_TYPES[item.type]?.canTake === false) return "cant_transfer";
   // Broken Shoulder: no heavy item (owner, 2026-11-18).
     if (this.type === "take" && ITEM_TYPES[item.type]?.heavy && cantCarryHeavy(player)) return "too_heavy";
     // Nothing can be dropped on an expedition (owner, 2026-11-08 and 2026-11-09, #359): aboard its craft or lost on the

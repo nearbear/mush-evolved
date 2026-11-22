@@ -6,9 +6,9 @@
 
 import { inventorySlots } from "./modifiers.ts";
 import type { Container, DeepReadonly, GameConfig, GameState, ItemState, PlayerState, RoomId } from "./types.ts";
-import { ALIEN_FRUIT_ITEMS, BOOK_ITEM, ITRACKIE_ITEM } from "./itemIds.ts";
+import { ALIEN_FRUIT_ITEMS, BOOK_ITEM, HYBRID_FRUIT_ITEMS, ITRACKIE_ITEM } from "./itemIds.ts";
 
-export { ALIEN_FRUIT_ITEMS, BOOK_ITEM, ITRACKIE_ITEM } from "./itemIds.ts";
+export { ALIEN_FRUIT_ITEMS, BOOK_ITEM, HYBRID_FRUIT_ITEMS, ITRACKIE_ITEM, hybridOf, hybridParents, isAlienFruitType } from "./itemIds.ts";
 export type { AlienFruitItem } from "./itemIds.ts";
 
 export interface ItemType {
@@ -32,6 +32,8 @@ export interface ItemType {
   hyperfreeze?: { into: string };
   /** Carrying one makes every room-to-room move cost `heavyMpPenalty` more MP, once however many you carry (confirmed 2026-10-16). Skills may cancel it. */
   heavy?: boolean;
+  /** False: it can't be picked up (`take`) or sent by tube, so it stays where it was placed (the tabulator). */
+  canTake?: boolean;
   canDrop?: boolean;
   /** What dismantling it leaves in the room: scraps, plus `extra` item types (the Lizaro Jungle's thick tube). `chance` replaces `config.dismantle.successChance` for this type. */
   dismantle?: { metal: number; plastic: number; extra?: string[]; chance?: number };
@@ -69,6 +71,9 @@ export const MICROWAVE_ITEM = "microwave";
 
 /** Hyperfreezes cooked rations and alien steaks into uncooked rations (actions/hyperfreeze.ts). */
 export const FREEZER_ITEM = "freezer";
+
+/** The tabulator (THE List, docs/plans/archive/the-list.md): fixed in front storage; a Tracker prints THE List on it. */
+export const TABULATOR_ITEM = "tabulator";
 
 /** The hydropot: an empty one takes a sown fruit, a planted one grows (`ItemState.plant`, botany.ts). */
 export const TREE_POT_ITEM = "tree_pot";
@@ -190,6 +195,8 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   fruit_banana: { fruit: true, perishable: true, consume: { ap: 1, satiety: 1, morale: 1, hp: 1 } },
   // #437 (owner, 2026-11-14): 12 alien species whose rolled stats live on `state.fruits`.
   ...Object.fromEntries(ALIEN_FRUIT_ITEMS.map((id) => [id, { fruit: true, perishable: true, consume: { ap: 1, satiety: 1 } }])),
+  // #438 (owner, 2026-11-21): the 66 graft hybrids, one per pair of alien species; rolled stats on `state.hybrids`.
+  ...Object.fromEntries(HYBRID_FRUIT_ITEMS.map((id) => [id, { fruit: true, perishable: true, consume: { ap: 1, satiety: 1 } }])),
   // Owner, 2026-10-23, the wiki: one unit of fuel, taken from a tank and loaded into the combustion chamber. One slot
   // each, never dropped (actions/take_fuel.ts). Named after its icon.
   [FUEL_CAPSULE_ITEM]: { canDrop: false },
@@ -208,6 +215,9 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   [FREEZER_ITEM]: { heavy: true, dismantle: { metal: 2, plastic: 0, chance: 0.25 }, canBreak: true, canBeSabotaged: true, repairChance: 0.25 },
   // Owner, 2026-10-19: spawns in the refectory; heavy. Express cook spends its charges (`ItemState.charges`).
   [MICROWAVE_ITEM]: { heavy: true, dismantle: { metal: 2, plastic: 0, chance: 0.25 }, canBreak: true, canBeSabotaged: true, repairChance: 0.25 },
+  // Owner, 2026-11-21 (#266, docs/plans/archive/the-list.md): starts in front storage and never leaves it; breaks (also at a cycle
+  // change), can be sabotaged, 12% repair (eMush's tabulatrix). Not heavy (moot), no dismantle.
+  [TABULATOR_ITEM]: { canTake: false, canDrop: false, canHide: false, canBreak: true, canBreakOnCycleChange: true, canBeSabotaged: true, repairChance: 0.12 },
   // Decided 2026-10-16: a dead player's body (death.ts). Takes one slot like any item; heavy.
   [CORPSE_ITEM]: { heavy: true },
   // #411 (owner, 2026-11-11; eMushpedia "Drone de soutien"): 12% repair chance, can't be hidden or sabotaged, never

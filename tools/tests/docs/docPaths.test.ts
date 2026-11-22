@@ -1,4 +1,4 @@
-// Docs are referenced by repo-rooted path (`docs/plans/patrol.md`) from CLAUDE.md files, skills, code comments, tests
+// Docs are referenced by repo-rooted path (`docs/plans/archive/patrol.md`) from CLAUDE.md files, skills, code comments, tests
 // and other docs, mostly inside backticks rather than as Markdown links, so ordinary link checkers miss them. This
 // finds every such path in the tracked files and fails if it doesn't exist, so a moved or renamed doc can't leave
 // stale pointers behind. It also checks relative Markdown links between docs.

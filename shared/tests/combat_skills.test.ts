@@ -251,7 +251,7 @@ describe("Green Thumb", () => {
     expect(pots(s, "p0")).toHaveLength(DEFAULT_CONFIG.greenThumb.pots);
     expect(pots(s, "p0").every((i) => i.plant === undefined)).toBe(true);
     expect(pots(s, "p1")).toHaveLength(0);
-    expect(skillStatus("green_thumb")).toBe("partial");
+    expect(skillStatus("green_thumb")).toBe("full");
   });
 });
 

@@ -5,7 +5,7 @@ import type { GameState, PlayerState } from "../types.ts";
 export type LeaveIcarusActionData = { type: "leave_icarus" };
 
 /**
- * Get off the docked Icarus (owner, 2026-11-17, docs/plans/expedition-boarding.md): free, while aboard it. The player
+ * Get off the docked Icarus (owner, 2026-11-17, docs/plans/archive/expedition-boarding.md): free, while aboard it. The player
  * never left the bay (#469). The line is public in the bay (`leaveIcarus`).
  */
 export class LeaveIcarusAction extends Action<LeaveIcarusActionData> {

@@ -1,8 +1,8 @@
-// An expedition's report (owner, 2026-10-31, docs/plans/expedition.md): what happened in each sector, from the
+// An expedition's report (owner, 2026-10-31, docs/plans/archive/expedition.md): what happened in each sector, from the
 // member's own view (`view.expeditions`). Opened from the member's private "back from the expedition" line in the
 // Icarus Bay's room log, from the Icarus while away (IcarusPanel.tsx), where it grows as each step happens (phase 2),
 // or from the Expeditions feature's list of your reports (SharedReports.tsx).
-// A compact summary to read afterwards (docs/plans/expedition-ui.md, "The report"): one row per step, its sector's
+// A compact summary to read afterwards (docs/plans/archive/expedition-ui.md, "The report"): one row per step, its sector's
 // icon and name, the outcome in a line, and the HP each member lost; the screen to watch while away is the timeline.
 // In the terminal frame (FramedDialog), the owner's modal style. Renders the report only; the rules wrote everything
 // in it. A living member with an iTrackie may share it from here to the Expeditions feature (owner, 2026-11-07, #356) as editable text; sharing again appends to its entry's thread.

@@ -47,16 +47,23 @@ describe("i18n runtime", () => {
   });
   afterAll(() => vi.unstubAllGlobals());
 
-  it("starts in the saved language, ready immediately and with <html lang> set", () => {
+  it("starts in the saved language, loading only that locale with <html lang> set", () => {
     expect(i18n.isInitialized).toBe(true);
     expect(i18n.language).toBe("fr");
+    expect(i18n.hasResourceBundle("fr", "translation")).toBe(true);
+    expect(i18n.hasResourceBundle("en", "translation")).toBe(false);
+    expect(i18n.hasResourceBundle("es", "translation")).toBe(false);
     expect(i18n.t("nav.room")).toBe("Salle");
+    expect(i18n.t("rooms.COMMAND_CENTER")).toBe("Pont");
     expect(html.lang).toBe("fr");
   });
 
-  it("switches language at runtime, remembers it, and updates <html lang>", async () => {
+  it("loads another locale on demand when switching language, remembers it, and updates <html lang>", async () => {
     await i18n.changeLanguage("es");
+    expect(i18n.hasResourceBundle("es", "translation")).toBe(true);
+    expect(i18n.hasResourceBundle("en", "translation")).toBe(false);
     expect(i18n.t("nav.room")).toBe("Sala");
+    expect(i18n.t("rooms.COMMAND_CENTER")).toBe("Puente");
     expect(html.lang).toBe("es");
     expect(store.get(LOCALE_KEY)).toBe("es");
   });

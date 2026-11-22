@@ -9,7 +9,7 @@ import type { GameState, PlayerState } from "../types.ts";
 export type ContactSignalActionData = { type: "contact_signal"; equipment: string; signal: string };
 
 /**
- * Answer a signal's hail at the Com center terminal (owner, 2026-11-16; docs/plans/signals.md): free, for whoever has
+ * Answer a signal's hail at the Com center terminal (owner, 2026-11-16; docs/plans/archive/signals.md): free, for whoever has
  * access to the Comms Officer title, on a signal whose script offers Contact (a merchant that just arrived). The
  * officer's greeting and the signal's hail go into its feed, and the dialogue moves on. Private (owner, 2026-11-16: NERON's
  * arrival announcement replaced the public room line).

@@ -1,4 +1,4 @@
-// Signals (owner, 2026-11-16; plan in docs/plans/signals.md): every ship or base that reaches the Daedalus is one
+// Signals (owner, 2026-11-16; plan in docs/plans/archive/signals.md): every ship or base that reaches the Daedalus is one
 // signal, kept for the whole game (nothing is removed when it ends; its status changes). The Com center terminal's
 // Signals tab lists them, and each holds its conversation with the Comms Officers of the time as a feed of i18n keys.
 // Only players with access to the Comms Officer title see any of it (`signalsView`), and every action on a signal is
@@ -8,7 +8,7 @@
 // What each kind may say next is a small script (`SIGNAL_SCRIPTS`): steps, each with the options offered there. It is
 // plain data, so branching dialogue later is new steps, not new code. Built so far: merchants (merchants.ts) and rebel
 // bases (comms.ts: each decode is one exchange, the base's message clearer each time). Distress calls and information
-// ships come later (docs/plans/signals.md).
+// ships come later (docs/plans/archive/signals.md).
 
 import type { CharacterId } from "./characters.ts";
 import type { RebelBaseId } from "./comms.ts";
@@ -95,7 +95,7 @@ export const newSignals = (): SignalsState => ({ list: [], nextId: 1 });
  * One option at a script step. `contact` starts the dialogue (`contact_signal`); `deal` is one button per deal
  * (`close_deal`); `refuse` is No thank you (`refuse_signal`); `decode` decodes a rebel base's message further
  * (`decode_rebel`). Later kinds add replies that move to another step and claims that stay disabled until a condition
- * holds (docs/plans/signals.md).
+ * holds (docs/plans/archive/signals.md).
  */
 export type SignalOption = { kind: "contact"; next: string } | { kind: "deal" } | { kind: "refuse" } | { kind: "decode" };
 

@@ -55,6 +55,10 @@ function aimedAt(view: PlayerView, a: Action, target: Target): boolean {
   return sameTarget(namedTarget(a), target);
 }
 
+/** The held fruit a graft uses (#438), for its button text ("Graft (Creepnut)") on the plant's panel. */
+export const graftFruit = (view: PlayerView, action: Action): ItemView | undefined =>
+  action.type === "graft" ? view.inventory.find((i) => i.id === action.fruit) : undefined;
+
 /** The carried weapon an attack uses, for its button text ("Attack (knife)"); a carried weapon is in the inventory. */
 export const attackWeapon = (view: PlayerView, action: Action): ItemView | undefined =>
   action.type === "attack" ? view.inventory.find((i) => i.id === action.weapon) : undefined;

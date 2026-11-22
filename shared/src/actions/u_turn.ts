@@ -6,7 +6,7 @@ import type { GameState, PlayerState } from "../types.ts";
 export type UTurnActionData = { type: "u_turn" };
 
 /**
- * The U-turn skill (`fast_backward`; owner, 2026-11-08, #358, docs/plans/expedition.md): `expedition.uTurn.cost` AP to
+ * The U-turn skill (`fast_backward`; owner, 2026-11-08, #358, docs/plans/archive/expedition.md): `expedition.uTurn.cost` AP to
  * end the expedition under way at once, for a holder still with its crew. The crew comes back with what it found;
  * anyone lost stays lost. A report line names who turned back (`turnBack`); the public timer just ends.
  */

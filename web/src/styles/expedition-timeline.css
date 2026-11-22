@@ -1,4 +1,4 @@
-/* The expedition screen (hud/ExpeditionTimeline.tsx, docs/plans/expedition-ui.md): in the Icarus while away it sits
+/* The expedition screen (hud/ExpeditionTimeline.tsx, docs/plans/archive/expedition-ui.md): in the Icarus while away it sits
    above the seats, with the top of the room view to itself (no ID card or minimap there; owner, 2026-11-20); the current column scrolls up and down; in the lost panel it sits
    under the heading. The current column is full size in the middle, its neighbours clipped at each side, the arrows
    outside them. Tag icons are 40x40 pixel art (the unknown one 36x36) at whole-number scales: 2x beside, 3x in the

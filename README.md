@@ -71,7 +71,7 @@ Please read the architecture rules in [`CLAUDE.md`](CLAUDE.md) before changing c
 - Before opening a pull request, run `npm run typecheck`, `npm run lint`, and `npm test`.
 - For UI changes, run `npm run screenshot` and check both the desktop and phone passes.
 - Please don't add AI-generated non-text assets (art, sound) without discussing it first.
-- Open items are tracked as GitHub issues in the [project board](https://github.com/users/nearbear/projects/1); open rule questions carry the [`rule-decision`](https://github.com/nearbear/mush2/issues?q=is%3Aopen+label%3Arule-decision) label. Answered ones are recorded in [`docs/rules/rules-design.md`](docs/rules/rules-design.md) and [`docs/plans/action-plans.md`](docs/plans/action-plans.md).
+- Open items are tracked as GitHub issues in the [project board](https://github.com/users/nearbear/projects/1); open rule questions carry the [`rule-decision`](https://github.com/nearbear/mush2/issues?q=is%3Aopen+label%3Arule-decision) label. Answered ones are recorded in [`docs/rules/rules-design.md`](docs/rules/rules-design.md) and [`docs/plans/archive/action-plans.md`](docs/plans/archive/action-plans.md).
 
 [`CLAUDE.md`](CLAUDE.md) holds the same project conventions for AI coding assistants; the project is developed with Claude Code, and [`docs/process/ai-workflow.md`](docs/process/ai-workflow.md) logs what worked and what didn't.
 

@@ -4,10 +4,10 @@
 
 import { changeAP, gainMorale } from "./adjustStats.ts";
 import { heal } from "./death.ts";
-import { ALIEN_FRUIT_ITEMS } from "./itemIds.ts";
+import { ALIEN_FRUIT_ITEMS, hybridOf } from "./itemIds.ts";
 import { type HasRng, roll, rollFloat, rollInt, rollShuffle } from "./rng.ts";
 import { skillsOf } from "./skills.ts";
-import type { DeepReadonly, FruitsConfig, GameState, PlayerState } from "./types.ts";
+import type { DeepReadonly, FruitsConfig, GameConfig, GameState, GraftConfig, PlayerState } from "./types.ts";
 
 export const FRUIT_BUFF_IDS = ["treat_disease", "energize", "resistance", "perception"] as const;
 export type FruitBuffId = (typeof FRUIT_BUFF_IDS)[number];
@@ -112,6 +112,93 @@ export function drawFruits(
     if (!chosen) throw new Error("fruit_generation_exceeded_max_tries");
     out[id] = chosen;
   }
+  return out;
+}
+
+/** A disease's share of a fruit's value: −max(1, round(cost × odds / divisor)). */
+const diseaseValue = (cfg: DeepReadonly<FruitsConfig>, d: Readonly<FruitDisease>): number =>
+  -Math.max(1, Math.round(((cfg.diseases[d.id] ?? 0) * d.odds) / cfg.diseaseValueDivisor));
+
+/** What a fruit's effects are worth on pass 1's scale (`config.botany.fruits`), the base +1 AP and satiety aside. */
+export function fruitValue(cfg: DeepReadonly<FruitsConfig>, f: Readonly<Omit<FruitEffect, "growCycles">>): number {
+  const ap = f.ap === 0 ? 0 : (cfg.ap.find((o) => o.ap === f.ap)?.value ?? 0);
+  const morale = f.morale === 0 ? 0 : (cfg.morale.find((o) => o.morale === f.morale)?.value ?? 0);
+  const hp = f.hp === 0 ? 0 : (cfg.hp.find((o) => o.hp === f.hp)?.value ?? 0);
+  const buffs = f.buffs.reduce((sum, id) => sum + cfg.buffs[id].value, 0);
+  const diseases = f.diseases.reduce((sum, d) => sum + diseaseValue(cfg, d), 0);
+  return ap + morale + hp + buffs + diseases;
+}
+
+/** Keeps each of `pool` at `keepChance`, in a shuffled order, up to `max`. */
+function keepSome<T>(rng: HasRng, pool: readonly T[], keepChance: number, max: number): T[] {
+  const kept: T[] = [];
+  for (const x of rollShuffle(rng, pool)) {
+    if (rollFloat(rng) < keepChance && kept.length < max) kept.push(x);
+  }
+  return kept;
+}
+
+/** One draw of a hybrid from its parents, before the value fit. */
+function rollHybrid(rng: HasRng, graft: DeepReadonly<GraftConfig>, a: Readonly<FruitEffect>, b: Readonly<FruitEffect>): Omit<FruitEffect, "growCycles"> {
+  const pick = (): Readonly<FruitEffect> => (rollInt(rng, 2) === 0 ? a : b);
+  const ap = pick().ap;
+  const morale = pick().morale;
+  const hp = pick().hp;
+  const buffPool = [...new Set([...a.buffs, ...b.buffs])].sort();
+  const buffs = keepSome(rng, buffPool, graft.keepChance, graft.maxBuffs);
+  const diseaseIds = [...new Set([...a.diseases, ...b.diseases].map((d) => d.id))].sort();
+  const diseases = keepSome(rng, diseaseIds, graft.keepChance, graft.maxDiseases).map((id): FruitDisease => {
+    const fromA = a.diseases.find((d) => d.id === id);
+    const fromB = b.diseases.find((d) => d.id === id);
+    // A disease both parents share keeps one parent's odds at random.
+    const odds = fromA && fromB ? (rollInt(rng, 2) === 0 ? fromA.odds : fromB.odds) : (fromA ?? fromB)!.odds;
+    return { id, odds };
+  });
+  return { ap, morale, hp, buffs, diseases };
+}
+
+/**
+ * Draws one hybrid (owner, 2026-11-21): AP, morale and HP each from one parent at random; each parent buff and disease
+ * kept at `keepChance`, up to the caps; the whole hybrid re-rolled until its value lands in `graft.valueRange`. Grow
+ * time is 4 cycles per point, capped. Null when no try fits: that pair can't be grafted.
+ */
+export function drawHybrid(
+  rng: HasRng,
+  config: DeepReadonly<Pick<GameConfig, "botany">>,
+  a: Readonly<FruitEffect>,
+  b: Readonly<FruitEffect>,
+): FruitEffect | null {
+  const { fruits: cfg, graft } = config.botany;
+  const [minValue, maxValue] = graft.valueRange;
+  for (let attempt = 0; attempt < graft.maxAttempts; attempt++) {
+    const hybrid = rollHybrid(rng, graft, a, b);
+    const value = fruitValue(cfg, hybrid);
+    if (value >= minValue && value <= maxValue) {
+      return { ...hybrid, growCycles: Math.min(graft.maxGrowCycles, value * cfg.growCyclesPerPoint) };
+    }
+  }
+  return null;
+}
+
+/**
+ * Every pair's hybrid, drawn at launch on its own stream (`createGame` passes `streamFor(seed, "grafts")`) and kept
+ * server-side in `state.hybrids` until grafted. A pair with no fitting hybrid is left out.
+ */
+export function drawHybrids(
+  rng: HasRng,
+  config: DeepReadonly<Pick<GameConfig, "botany">>,
+  fruits: Readonly<Record<string, FruitEffect>>,
+): Record<string, FruitEffect> {
+  const out: Record<string, FruitEffect> = {};
+  ALIEN_FRUIT_ITEMS.forEach((a, i) => {
+    for (const b of ALIEN_FRUIT_ITEMS.slice(i + 1)) {
+      const pa = fruits[a];
+      const pb = fruits[b];
+      if (!pa || !pb) continue;
+      const hybrid = drawHybrid(rng, config, pa, pb);
+      if (hybrid) out[hybridOf(a, b)!] = hybrid;
+    }
+  });
   return out;
 }
 

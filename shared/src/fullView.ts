@@ -41,8 +41,9 @@ export function seatStarts(state: Readonly<GameState>): SeatStarts {
  */
 export function fullViewFor(state: Readonly<GameState>, starts: Readonly<SeatStarts> | null): FullView {
   // The outbox only carries copies of pages already in the history, on their way to storage. The NPCs' queue lists
-  // names not yet given (npcs.ts). The lost analysis's stream and rows are server-only until printed (#394).
-  const { config, rng: _rng, npcs: _npcs, lostAnalysis: _lostAnalysis, merchantRng: _merchantRng, chatOutbox: _outbox, ...rest } = state;
+  // names not yet given (npcs.ts). The lost analysis's stream and rows are server-only until printed (#394). The
+  // graft hybrids (#438) are server-only until grafted, when they join `fruits`.
+  const { config, rng: _rng, npcs: _npcs, lostAnalysis: _lostAnalysis, theList: _theList, merchantRng: _merchantRng, hybrids: _hybrids, chatOutbox: _outbox, ...rest } = state;
   return { ...clone({ ...rest, starts }), config } as FullView;
 }
 

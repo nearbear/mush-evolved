@@ -196,7 +196,7 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   medic: "partial",
   // Each heal or bandage by a human Mycologist removes 1 contamination from a human patient, silently (owner, 2026-11-14, modifiers/mycologist.ts).
   mycologist: "full",
-  // 16 cycles of room log (owner, 2026-11-05, #365, log.ts) and cancels Found dead on expeditions (owner, 2026-11-08, #357); no movement sources, ship logs or List.
+  // 16 cycles of room log (owner, 2026-11-05, #365, log.ts) and cancels Found dead on expeditions (owner, 2026-11-08, #357), and prints THE List (owner, 2026-11-21, #266, actions/print_list.ts); no movement sources or ship logs.
   hunt: "partial",
   // Apprenticeship (owner, 2026-11-05, actions/apprenticeship.ts).
   apprentice: "full",
@@ -282,7 +282,7 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   // Search 1 AP cheaper (modifiers/observant.ts) and a 25% chance per Observant to reveal a covert action in their room (owner, 2026-11-14, log.ts).
   observant: "full",
   // Two empty hydropots when picked (owner, 2026-11-01); the graft bonus waits for grafting.
-  green_thumb: "partial",
+  green_thumb: "full",
   // A support drone blueprint when picked and upgrading drones with metal scraps (#411, #412, modifiers/robotics.ts, actions/upgrade_drone.ts).
   robotics: "full",
   // Doubled turret odds and damage (owner, 2026-10-24).

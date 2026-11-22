@@ -1,8 +1,8 @@
-// Hunters and space combat, first pass (owner, 2026-10-24, #208; docs/plans/space-combat.md). A server-only point pool
+// Hunters and space combat, first pass (owner, 2026-10-24, #208; docs/plans/archive/space-combat.md). A server-only point pool
 // starts when Mush are chosen and grows each cycle change; a 20% roll spends it on a wave of hunters, never in the
 // first two cycle changes. Each hunter takes one action a cycle: pick the ship as its target, or shoot at it. The crew
 // shoots back from the six turrets (actions/turret_attack.ts) and patches the hull (actions/repair_hull.ts). At 0 hull
-// the Daedalus explodes and everyone aboard dies. Hunters also aim at patrol ships in flight (docs/plans/patrol.md,
+// the Daedalus explodes and everyone aboard dies. Hunters also aim at patrol ships in flight (docs/plans/archive/patrol.md,
 // phase 4): at 0 armor a ship is destroyed for good and its pilot dies, as when the Daedalus jumps with ships out.
 // Destroyed hunters and ships leave debris in space (`state.space`, phase 5), which patrol ships collect
 // (actions/collect_scrap.ts) until the Daedalus jumps.

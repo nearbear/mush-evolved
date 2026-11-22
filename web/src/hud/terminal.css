@@ -296,3 +296,17 @@
 .pilgred-relay:empty {
   display: none;
 }
+.pilgred-share-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+}
+.share-pilgred-percent {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9em;
+}
+.share-pilgred-percent input {
+  width: 4.5rem;
+}

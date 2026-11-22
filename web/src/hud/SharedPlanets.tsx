@@ -1,6 +1,6 @@
 // The Astrophysics feature (owner, 2026-10-31): the feature's general thread, then one row per shared planet, listed
 // like private channels, by the planet's name. Picking a planet shows its sector slots as icons and its shared text
-// above its own discussion thread (owner, 2026-11-19, docs/plans/expedition-ui.md). Entries no longer applicable (the
+// above its own discussion thread (owner, 2026-11-19, docs/plans/archive/expedition-ui.md). Entries no longer applicable (the
 // planet was lost) are hidden unless the player asks to see them.
 
 import { useTranslation } from "react-i18next";

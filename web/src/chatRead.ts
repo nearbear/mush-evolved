@@ -1,4 +1,4 @@
-// Chat read state on the client (#400, docs/plans/chat-pages.md "Read state (#400)"). Two ideas:
+// Chat read state on the client (#400, docs/plans/archive/chat-pages.md "Read state (#400)"). Two ideas:
 //
 // - **Read**: one high-water count per channel (`ChatRead`, shared/src/chatRead.ts), kept in localStorage and on the
 //   server. Drives the badges, the Mush tab and the page bar. Counts only rise; the store sends what rose to the server

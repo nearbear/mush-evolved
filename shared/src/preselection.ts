@@ -15,6 +15,7 @@ import { cloneState, fail, type ActionResult } from "./helpers.ts";
 import { logPrivate, startLogSeen } from "./log.ts";
 import { callNextRebel } from "./comms.ts";
 import { rollAtSelection } from "./lostAnalysis.ts";
+import { recordSelection } from "./theList.ts";
 import { startHunters } from "./hunters.ts";
 import { rollShuffle } from "./rng.ts";
 import { catArrival } from "./schrodinger.ts";
@@ -85,6 +86,7 @@ export function selectMush(state: GameState): void {
   state.titles = assignTitles(state.players);
   callNextRebel(state);
   rollAtSelection(state);
+  recordSelection(state);
   startHunters(state);
   spawnSelectionItems(state);
 

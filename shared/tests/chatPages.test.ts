@@ -1,4 +1,4 @@
-// Chat pages (#355, docs/plans/chat-pages.md): fixed pages of CHAT_PAGE messages per channel, sealed into an outbox the
+// Chat pages (#355, docs/plans/archive/chat-pages.md): fixed pages of CHAT_PAGE messages per channel, sealed into an outbox the
 // server stores, with views naming messages by channel and seq, never the game-wide id.
 import { describe, expect, it } from "vitest";
 import { CHAT_PAGE, chatPageOf, createChannel, leaveChannel, sendChat, takeChatOutbox, toggleCheckbox } from "../src/chat.ts";

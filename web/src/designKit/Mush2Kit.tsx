@@ -113,7 +113,7 @@ function Overview() {
       <p>
         Our own components with sample props, one page each, so every look can be checked in isolation at desktop and at
         the 360px phone width without playing to the state that shows it. Components that fill a whole panel sit in a
-        skeleton of the game screen. See <code>docs/plans/design-kit.md</code>.
+        skeleton of the game screen. See <code>docs/plans/archive/design-kit.md</code>.
       </p>
       <div className="m2k-overview">
         {GROUPS.map(([heading, pages]) => (

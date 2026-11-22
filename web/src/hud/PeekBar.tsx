@@ -13,7 +13,7 @@ import { collapseThrowOut, ThrowOutDialog } from "./ThrowOutDialog.tsx";
 import { DoublePressButton } from "./DoublePress.tsx";
 import { SuperkubeOpener, type SendKube } from "./Superkube.tsx";
 import { useKeepFocus } from "./useKeepFocus.ts";
-import { attackWeapon, optionsOn, resolveTarget } from "./targets.ts";
+import { attackWeapon, graftFruit, optionsOn, resolveTarget } from "./targets.ts";
 
 export function PeekBar({
   view,
@@ -38,8 +38,11 @@ export function PeekBar({
   const names = useNames();
   const labelFor = ({ action, cost, chance }: ActionOption): ReactNode => {
     const weapon = attackWeapon(view, action);
+    const fruit = graftFruit(view, action);
     const text = weapon
       ? t("actions.attackWith", { weapon: names.itemOf(weapon) })
+      : fruit
+        ? t("actions.graftWith", { fruit: names.itemOf(fruit) })
       : action.type === "apprenticeship"
         ? t("actions.apprenticeshipOf", { skill: names.skill(action.skill) })
         : action.type === "upgrade_drone"

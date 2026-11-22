@@ -117,8 +117,11 @@ export interface DocumentRow {
   negative: boolean;
 }
 
-/** What a document says, by kind. Finola's lost analysis (#394); THE List (#266) will add its own kind. */
-export type DocumentState = { kind: "lost_analysis"; rows: DocumentRow[] };
+/**
+ * What a document says, by kind. Finola's lost analysis (#394), and THE List (#266, theList.ts): the characters it
+ * names, at least one of them Mush when printed; empty means it says no Mush are left aboard.
+ */
+export type DocumentState = { kind: "lost_analysis"; rows: DocumentRow[] } | { kind: "the_list"; characters: CharacterId[] };
 
 /** A support drone's own state (#411; drones.ts). Its name, serial and upgrades are public with the item; the failure counts never leave the server. */
 export interface DroneState {
@@ -132,7 +135,7 @@ export interface DroneState {
   failures: { repair: number; extinguish: number; shoot: number };
 }
 
-/** A plant in a hydropot (owner, 2026-10-22; docs/scratchpad/botany-plan.md, Pass 1). */
+/** A plant in a hydropot (owner, 2026-10-22; docs/scratchpad/archive/botany-plan.md, Pass 1). */
 export interface PlantState {
   /** The fruit item type it grows from and produces (only `fruit_banana` for now). */
   species: string;
@@ -142,6 +145,8 @@ export interface PlantState {
   thirst: 0 | 1 | 2;
   /** Hidden: only the Botanist role sees it (`isBotanistRole`). */
   sick: boolean;
+  /** Cycles the plant has been sick (1 on the cycle it fell sick, +1 each cycle while sick; cleared on treat). Hidden like `sick`. */
+  sickCycles?: number;
 }
 
 /**

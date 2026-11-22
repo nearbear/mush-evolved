@@ -1,4 +1,4 @@
-// What the room view shows aboard the Icarus (docs/plans/expedition.md, phase 2; owner, 2026-11-07): a room with no
+// What the room view shows aboard the Icarus (docs/plans/archive/expedition.md, phase 2; owner, 2026-11-07): a room with no
 // doors, drawn as a plain panel. Owner, 2026-11-17: docked, the middle shows the seats as podiums (the character
 // picker's, Podium.tsx), one per place the Icarus holds (`view.icarusSeats`: 4, or 6 with the larger bay), with whoever
 // is aboard standing on theirs; pressing one selects them (a bandage, say). Away (owner, 2026-11-19), the expedition
@@ -75,7 +75,7 @@ export function IcarusPanel({ view, expedition, selected, onSelect, onAction, pl
       {/* The iso view's backdrop (owner, 2026-11-20): the star field, and the orbited planet at the bottom right. */}
       <div className="icarus-sky" aria-hidden="true" />
       {planet && <img className="icarus-planet" src={planet} alt="" data-away={expedition ? true : undefined} />}
-      {/* Away, the expedition screen sits above the seats (docs/plans/expedition-ui.md; owner, 2026-11-19). */}
+      {/* Away, the expedition screen sits above the seats (docs/plans/archive/expedition-ui.md; owner, 2026-11-19). */}
       {expedition && <ExpeditionTimeline expedition={expedition} report={view.expeditions.find((r) => r.id === expedition.report)} />}
       <ul className="icarus-seats" data-away={expedition ? true : undefined} aria-label={t("expedition.seats")} style={{ "--seats": seats, "--half": Math.ceil(seats / 2) } as CSSProperties}>
         {awaySeats

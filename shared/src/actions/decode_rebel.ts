@@ -10,7 +10,7 @@ export type DecodeRebelActionData = { type: "decode_rebel"; equipment: string; b
  * Decode a rebel base's signal at the Com center terminal (owner, 2026-10-21): 2 AP (free with a Computer point, which is
  * spent), for the Comms Officer while the link with Sol is up, not dirty, Mush included. Only a base whose call is open
  * (it called and hasn't expired). The gain is rolled in comms.ts; at 100% the base is reached and its bonus applies.
- * Each decode is one exchange in the call's signal feed (comms.ts `decodeRebel`; docs/plans/signals.md). Private: only
+ * Each decode is one exchange in the call's signal feed (comms.ts `decodeRebel`; docs/plans/archive/signals.md). Private: only
  * the decoder gets a log line, and only those with Comms Officer access see the signal.
  */
 export class DecodeRebelAction extends Action<DecodeRebelActionData> {

@@ -1,9 +1,9 @@
-// The communication center (owner, 2026-10-19 and 2026-10-21; plan in docs/plans/comms.md). Anyone can try to
+// The communication center (owner, 2026-10-19 and 2026-10-21; plan in docs/plans/archive/comms.md). Anyone can try to
 // establish the link with Sol at the Com center terminal; with the link up, the Comms Officer decodes rebel bases'
 // calls, contacts Xyloph and updates NERON. The state (`GameState.comms`) is shown read-only to anyone at the
 // terminal; the actions' log lines are private to the actor. The link status itself goes to everyone.
 //
-// Rebel calls are signals (signals.ts; docs/plans/signals.md, step 3): each call is a `rebel` signal in
+// Rebel calls are signals (signals.ts; docs/plans/archive/signals.md, step 3): each call is a `rebel` signal in
 // `GameState.signals`, seen only with Comms Officer access. Each decode is one exchange in its feed: the officer's line,
 // then the base's message at the new progress, which the client garbles less as the progress rises. At 100% the whole
 // message comes through and the signal is `reached`.

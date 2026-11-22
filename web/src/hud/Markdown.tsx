@@ -1,18 +1,30 @@
-// Chat message body: GitHub-flavoured markdown, limited to text formatting.
-// react-markdown builds React elements (never innerHTML) and ignores raw HTML.
-// Links, images, and tables are left out on purpose: moderation strips links,
-// and a remote image would let a message ping a server. Disallowed elements
-// are unwrapped, so their text still shows.
+// Chat message body: CommonMark plus GFM strikethrough and task lists, limited
+// to text formatting. react-markdown builds React elements (never innerHTML)
+// and ignores raw HTML. Links, images, tables, footnotes, and autolinks are
+// left out on purpose: moderation strips links, and a remote image would let a
+// message ping a server. Disallowed elements are unwrapped, so their text still
+// shows.
 
+import { gfmStrikethroughFromMarkdown } from "mdast-util-gfm-strikethrough";
+import { gfmTaskListItemFromMarkdown } from "mdast-util-gfm-task-list-item";
+import { gfmStrikethrough } from "micromark-extension-gfm-strikethrough";
+import { gfmTaskListItem } from "micromark-extension-gfm-task-list-item";
 import { createContext, useContext } from "react";
 import { useTranslation } from "react-i18next";
 import ReactMarkdown, { type Components } from "react-markdown";
-import remarkGfm from "remark-gfm";
 
 const ALLOWED = [
   "p", "strong", "em", "del", "br", "code", "pre", "blockquote",
   "h1", "h2", "h3", "h4", "h5", "h6", "ul", "ol", "li", "input", "hr",
 ];
+
+function remarkChatGfm(this: { data(): object }) {
+  const data = this.data() as { micromarkExtensions?: unknown[]; fromMarkdownExtensions?: unknown[] };
+  (data.micromarkExtensions ??= []).push(gfmStrikethrough(), gfmTaskListItem());
+  (data.fromMarkdownExtensions ??= []).push(gfmStrikethroughFromMarkdown(), gfmTaskListItemFromMarkdown());
+}
+
+const REMARK_PLUGINS = [remarkChatGfm];
 
 /** Source line (0-based) of the list item being rendered. The checkbox element itself carries no position. */
 const ItemLine = createContext(-1);
@@ -29,7 +41,7 @@ export function Markdown({ text, onToggle }: { text: string; onToggle?: (line: n
   };
   return (
     <div className="md">
-      <ReactMarkdown remarkPlugins={[remarkGfm]} allowedElements={ALLOWED} unwrapDisallowed components={components}>
+      <ReactMarkdown remarkPlugins={REMARK_PLUGINS} allowedElements={ALLOWED} unwrapDisallowed components={components}>
         {text}
       </ReactMarkdown>
     </div>
