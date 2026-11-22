@@ -91,7 +91,7 @@ const VALUE_IDS: Record<string, readonly string[]> = {
   "game.players[].mushSkills[]": ["MUSH_SKILLS"],
   "game.players[].modifiers[]": ["MODIFIERS"],
   "game.players[].statuses[]": ["STATUSES", "DISEASES"],
-  "game.players[].diseaseTrackers[].name": ["DISEASES"],
+  "game.players[].diseaseTrackers[].name": ["STATUSES", "DISEASES"],
   "game.equipment.*[].type": ["EQUIPMENT_TYPES"],
   "game.log[].key": ["LOG_EVENTS"],
   "game.log[].room": ["ROOMS"],

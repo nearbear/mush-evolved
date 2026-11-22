@@ -259,10 +259,11 @@ describe("research", () => {
       "MUSH_BREEDS",
       "MUSH_BREEDING_SYSTEM",
     ] as const;
-    const s = game();
+    const s = createGame(seats, testConfig(), 7, { p0: "mush", p1: "human", p2: "human" });
+    for (const p of s.players) p.room = "LABORATORY";
     s.items.push({ id: "disk", type: "mush_floppy_disk", at: { kind: "room", id: "LABORATORY" } });
     const mush = s.players.find((p) => p.role === "mush")!;
-    const human = s.players.find((p) => p.role === "human" && p.id !== "p0" && p.character !== "chun") ?? s.players.find((p) => p.role === "human" && p.id !== "p0")!;
+    const human = s.players.find((p) => p.role === "human" && p.character !== "chun")!;
     const actor = s.players.find((p) => p.id !== mush.id && p.id !== human.id)!;
 
     // None offered while all Mush are alive, and direct attempts are refused.
