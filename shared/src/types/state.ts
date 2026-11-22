@@ -14,7 +14,7 @@ import type { RelayPool, RelayStreak, ResearchPool } from "../relay.ts";
 import type { RngState } from "../rng.ts";
 import type { TitleId } from "../titles.ts";
 import type { ItemState, LogEntry, PlayerId, RoomId } from "../types.ts";
-import type { ChannelId, ChatMark, ChatMessage, ChatOutbox, ChatThread, PrivateChannel, SharedPlanet, SharedReport } from "./chat.ts";
+import type { ChannelId, ChatMark, ChatMessage, ChatOutbox, ChatThread, PrivateChannel, SharedPlanet, SharedPlantStatus, SharedReport } from "./chat.ts";
 import type { DeepReadonly, Equipment, ExpeditionEventKind, GameConfig } from "./config.ts";
 import type { Plan } from "./plan.ts";
 import type { PlayerState } from "./player.ts";
@@ -160,6 +160,8 @@ export interface GameCore {
   /** Expedition reports shared in the Expeditions feature (sharedReports.ts), oldest first. `report` is never sent. */
   sharedReports: SharedReportState[];
   nextSharedReportId: number;
+  /** Latest greenhouse plant status shared from the Hydroponics center (sharedPlants.ts), pinned in the Botany feature. */
+  sharedPlants: SharedPlantStatus | null;
   /**
    * The expedition under way, if any (expeditions.ts, phase 2; owner, 2026-11-07): the crew is in the Icarus
    * (`config.expedition.craft`) until its last step. Who is out, the planet and when they are back are public; the

@@ -137,7 +137,7 @@ export interface ReplayMeta {
 export interface BlockedText {
   at: number;
   by: PlayerId;
-  type: "chat" | "createChannel" | "createThread" | "sharePlanet" | "shareReport";
+  type: "chat" | "createChannel" | "createThread" | "sharePlanet" | "shareReport" | "sharePlants";
   raw: string;
   reason: string;
 }

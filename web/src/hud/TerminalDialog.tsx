@@ -29,6 +29,7 @@ import {
   type PlanetTag,
   type PlayerView,
   type RelayTargetView,
+  type SharedPlantRow,
 } from "@mush2/shared";
 import { useTranslation } from "react-i18next";
 import { CHECK_ICON, itemIcon, PILGRED_CARD, PROJECT_CARDS, RESEARCH_CARDS, skillIcon, UNCHECK_ICON } from "../art/assets.ts";
@@ -42,6 +43,7 @@ import { CommsCenter } from "./CommsCenter.tsx";
 import { TerminalFrame } from "./TerminalFrame.tsx";
 import { terminalLogin } from "./terminalUsername.ts";
 import { PlanetList } from "./PlanetList.tsx";
+import { PlantTerminal } from "./PlantTerminal.tsx";
 import { CommandTerminal } from "./CommandTerminal.tsx";
 import { TurretPanel } from "./TurretPanel.tsx";
 import "./settings.css";
@@ -54,9 +56,11 @@ interface Props {
   onClose: () => void;
   /** Shares a planet in the Astrophysics feature, from the Astro terminal. */
   onSharePlanet?: (planet: string, sectors: (PlanetTag | null)[], text: string) => void;
+  /** Shares the greenhouse plant status in the Botany feature, from the Hydroponics center. */
+  onSharePlants?: (plants: SharedPlantRow[], text: string) => void;
 }
 
-export function TerminalDialog({ terminal, view, onAction, onClose, onSharePlanet }: Props) {
+export function TerminalDialog({ terminal, view, onAction, onClose, onSharePlanet, onSharePlants }: Props) {
   const names = useNames();
   const titleId = useId();
   return (
@@ -73,7 +77,7 @@ export function TerminalDialog({ terminal, view, onAction, onClose, onSharePlane
               onClose={onClose}
               titleId={titleId}
             >
-              <TerminalBody terminal={terminal} view={view} onAction={onAction} onSharePlanet={onSharePlanet} />
+              <TerminalBody terminal={terminal} view={view} onAction={onAction} onSharePlanet={onSharePlanet} onSharePlants={onSharePlants} />
             </TerminalFrame>
           )}
         </Dialog.Popup>
@@ -85,12 +89,13 @@ export function TerminalDialog({ terminal, view, onAction, onClose, onSharePlane
 type ListProps = Omit<Props, "onClose"> & { terminal: EquipmentView };
 
 /** What a terminal shows inside its frame, by type (blank for the rest). Exported for the design kit. */
-export function TerminalBody({ terminal, view, onAction, onSharePlanet }: ListProps) {
+export function TerminalBody({ terminal, view, onAction, onSharePlanet, onSharePlants }: ListProps) {
   return (
     <>
       {terminal.type === "RESEARCH_LAB" && <ResearchList terminal={terminal} view={view} onAction={onAction} />}
       {terminal.type === "NERON_CORE" && <ProjectList terminal={terminal} view={view} onAction={onAction} />}
       {terminal.type === "ASTRO_MODULE" && <PlanetList terminal={terminal} view={view} onAction={onAction} onShare={onSharePlanet} />}
+      {terminal.type === "PLANT_CONTROLLER" && <PlantTerminal terminal={terminal} view={view} onShare={onSharePlants} />}
       {terminal.type === "DRUG_DISP" && <DrugDispenser terminal={terminal} view={view} onAction={onAction} />}
       {terminal.type === "PILGRED" && <PilgredRepair terminal={terminal} view={view} onAction={onAction} />}
       {terminal.type === "COM_CENTER" && <CommsCenter terminal={terminal} view={view} onAction={onAction} />}

@@ -35,6 +35,7 @@ export * from "./dispense.ts";
 export * from "./planets.ts";
 export { ICARUS_CRAFT, inCraft, isLostPlace, lostPlace, patrolShip } from "./patrol.ts";
 export * from "./sharedPlanets.ts";
+export * from "./sharedPlants.ts";
 export * from "./sharedReports.ts";
 export * from "./navigation.ts";
 export * from "./ship.ts";

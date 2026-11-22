@@ -24,6 +24,7 @@ import { Thread, type ThreadLinks } from "./Thread.tsx";
 import { Threads, threadNameFrom } from "./Threads.tsx";
 import { Tracker } from "./Tracker.tsx";
 import { SharedPlanets } from "./SharedPlanets.tsx";
+import { SharedPlantsCard } from "./SharedPlantsCard.tsx";
 import { SharedReports } from "./SharedReports.tsx";
 import { ResearchTracker } from "./ResearchTracker.tsx";
 import { ProjectTracker } from "./ProjectTracker.tsx";
@@ -307,7 +308,9 @@ export function ITrackie({
               }
               return (
               <div key={f} className="feature" hidden={f !== feature}>
-                {!alive ? null : !carrying ? (
+                {f === "botany" && view.sharedPlants ? (
+                  <SharedPlantsCard shared={view.sharedPlants} view={view} />
+                ) : !alive ? null : !carrying ? (
                   <p className="sub">{t("itrackie.needITrackieTrack")}</p>
                 ) : f === "research" ? (
                   <ResearchTracker view={view} />

@@ -66,6 +66,33 @@ export interface SharedReport {
   cycleOfDay: number;
 }
 
+/** One plant row in a greenhouse status shared from the Hydroponics center (`PLANT_CONTROLLER`, sharedPlants.ts). */
+export interface SharedPlantRow {
+  /** Fruit species id (`fruit_banana`, `fruit01`–`fruit12`, or `graft_fruitXX_fruitYY`). */
+  species: string;
+  /** Effects claimed by the sharer, newline-separated (moderated free text, editable so players can lie). */
+  effects: string;
+  /** Thirst claimed by the sharer: 0 none, 1 thirsty, 2 dried out. */
+  thirst: 0 | 1 | 2;
+  /** Cycles diseased claimed by the sharer, or null if not claimed diseased. */
+  sickCycles: number | null;
+  /** Whether the sharer claims the plant is young. */
+  young: boolean;
+}
+
+/**
+ * The latest greenhouse plant status shared from the Hydroponics center (`PLANT_CONTROLLER`, sharedPlants.ts), pinned
+ * above the Botany feature thread. Sharing again replaces it. Sent to whoever can read the Botany feature.
+ */
+export interface SharedPlantStatus {
+  plants: SharedPlantRow[];
+  /** Optional free-text note (moderated). */
+  text: string;
+  by: PlayerId;
+  day: number;
+  cycleOfDay: number;
+}
+
 /** Chat among the members only. Anyone in it may invite others; it ends when the last member leaves. */
 export interface PrivateChannel {
   id: PrivateChannelId;

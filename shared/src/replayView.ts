@@ -16,6 +16,7 @@ import { plansView } from "./plans.ts";
 import { perspective, type FullView } from "./fullView.ts";
 import type { ReplayIndex } from "./replayChunks.ts";
 import { messageView, sharedPlanetsView, sharedReportsView, threadsView } from "./rules.ts";
+import { sharedPlantsView } from "./sharedPlants.ts";
 import type { HistoryFrame } from "./viewHistory.ts";
 import { CHAT_CHANNELS, GRAVEYARD_CHANNEL, MUSH_CHANNEL, type ChannelId, type ChatMessage, type ItemView, type LogEntry, type PlayerId, type SeatView, type YouView } from "./types.ts";
 
@@ -111,6 +112,7 @@ export function revealFor(full: Readonly<FullView>, followSeat: PlayerId, stream
     threads: threadsView(full),
     sharedPlanets: sharedPlanetsView(full),
     sharedReports: sharedReportsView(full),
+    sharedPlants: sharedPlantsView(full),
   };
   return { view, reveal: revealOf(full, log, chat) };
 }

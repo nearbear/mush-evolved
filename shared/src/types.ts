@@ -145,6 +145,8 @@ export interface PlantState {
   thirst: 0 | 1 | 2;
   /** Hidden: only the Botanist role sees it (`isBotanistRole`). */
   sick: boolean;
+  /** Cycles the plant has been sick (1 on the cycle it fell sick, +1 each cycle while sick; cleared on treat). Hidden like `sick`. */
+  sickCycles?: number;
 }
 
 /**

@@ -555,6 +555,7 @@
     "planet_not_found": "That planet isn't one of yours.",
     "share_text_invalid": "Shared text needs to be up to 500 characters and 20 lines, and not empty.",
     "share_sectors_invalid": "The sectors you share must match the planet's sectors, one for each.",
+    "share_plants_invalid": "The plant status you tried to share is invalid.",
     "report_share_forbidden": "You need your iTrackie to share a report.",
     "report_not_found": "You weren't on that expedition.",
     "not_in_cheat_room": "You need to be in the cheat room.",
@@ -793,6 +794,11 @@
       "showStale": "Show planets no longer applicable",
       "placeholder": "Discuss this planet…"
     },
+    "sharedPlants": {
+      "title": "Shared greenhouse status",
+      "show": "Show",
+      "hide": "Hide"
+    },
     "pages": {
       "label": "Chat pages",
       "earliest": "Earliest page",
@@ -1004,6 +1010,30 @@
     "charges_one": "{{count}} charge left",
     "charges_other": "{{count}} charges left",
     "heavyDesc": "Carrying it makes every move between rooms cost {{mp}} extra movement points, regardless of how many heavy objects you are carrying. The Solid skill cancels this."
+  },
+  "botanyTerminal": {
+    "label": "Hydroponics plant status",
+    "listLabel": "Greenhouse plants",
+    "empty": "No planted hydropots on the greenhouse floor.",
+    "broken": "The Hydroponics center is broken; status sharing is unavailable until it is repaired.",
+    "effectsUnknown": "Effects unknown",
+    "healthy": "Healthy",
+    "driedOut": "Dried out",
+    "diseasedFor_one": "Diseased ({{count}} cycle)",
+    "diseasedFor_other": "Diseased ({{count}} cycles)",
+    "share": "Share status",
+    "shareTitle": "Share greenhouse status",
+    "shareHint": "Edit the plant statuses, effects, or add a note before posting to the Botany tab. Sharing replaces the previous status.",
+    "shareDisclaimer": "The crew will see whatever you write here.",
+    "effectsLabel": "Effects (one per line)",
+    "effectsPlaceholder": "Unknown or none",
+    "thirstLabel": "Water",
+    "thirstNone": "Watered",
+    "cyclesLabel": "Cycles",
+    "removeRow": "Remove",
+    "noteLabel": "Note (optional)",
+    "notePlaceholder": "Add a note for the crew…",
+    "sharePost": "Share"
   },
   "logEvent": {
     "summonArrived": "You were summoned to: {{room}}. You are there.",
@@ -1351,6 +1381,8 @@
     "contaminated": "{{name}} tampered with the {{research}} samples.",
     "planetShared": "{{name}} shared a planet.",
     "planetShareUpdated": "{{name}} updated a shared planet.",
+    "plantShared": "{{name}} shared the greenhouse status.",
+    "plantShareUpdated": "{{name}} updated the greenhouse status.",
     "bricBrocPrevented": "NERON: general patching up has held the Daedalus together; no incident struck this cycle.",
     "neronProjectCompleted": "NERON: the {{project}} project is complete.",
     "equipmentBroken": "NERON: the {{equipment}} has broken down.",

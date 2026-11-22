@@ -39,21 +39,25 @@ export function paidWithGardenPoint(state: Readonly<GameState>, player: Readonly
   return player.resources.garden > 0 && pot !== undefined && potRoom(state, pot) === state.config.botany.gardenRoom;
 }
 
-/** A pot's plant as `viewer` may see it: sickness only for the Botanist role. */
+/** A pot's plant as `viewer` may see it: sickness and diseased duration only for the Botanist role. */
 export function plantView(plant: Readonly<PlantState>, viewer: Readonly<PlayerState>): NonNullable<ItemView["plant"]> {
-  const { species, age, thirst, sick } = plant;
-  return { species, age, thirst, ...(isBotanistRole(viewer) && { sick }) };
+  const { species, age, thirst, sick, sickCycles } = plant;
+  return { species, age, thirst, ...(isBotanistRole(viewer) && { sick, ...(sick && { sickCycles: sickCycles ?? 1 }) }) };
 }
+
+/** Working Hydroponics center terminals (`PLANT_CONTROLLER`) in `room`. */
+export const plantControllerHere = (state: Readonly<GameState>, room: string) =>
+  (state.equipment[room] ?? []).filter((e) => e.type === "PLANT_CONTROLLER" && !e.broken);
 
 /** Whether the Hydroponics center (`PLANT_CONTROLLER`) in the garden room is working. */
 export const plantControllerWorking = (state: Readonly<GameState>): boolean =>
-  (state.equipment[state.config.botany.gardenRoom] ?? []).some((e) => e.type === "PLANT_CONTROLLER" && !e.broken);
+  plantControllerHere(state, state.config.botany.gardenRoom).length > 0;
 
 /**
  * At every cycle change: young plants age by one (2× in the garden while `HYDROPONIC_INCUBATOR` is complete and
  * `PLANT_CONTROLLER` is working), and each healthy plant, young or adult, may fall sick (`sickChancePerCycle`, seeded)
- * unless `PARASITE_ELIM` is complete, `PLANT_CONTROLLER` is working, and the pot is in the garden. Mutates a state
- * the caller already cloned.
+ * unless `PARASITE_ELIM` is complete, `PLANT_CONTROLLER` is working, and the pot is in the garden. Already-sick plants
+ * increment `sickCycles`. Mutates a state the caller already cloned.
  */
 export function botanyCycle(state: GameState): void {
   const { botany, project } = state.config;
@@ -68,9 +72,15 @@ export function botanyCycle(state: GameState): void {
       const rate = incubatorActive && inGarden ? project.hydroponicIncubator.growthMultiplier : 1;
       plant.age += rate;
     }
-    if (plant.sick) continue;
+    if (plant.sick) {
+      plant.sickCycles = (plant.sickCycles ?? 0) + 1;
+      continue;
+    }
     if (parasiteElimActive && inGarden) continue;
-    if (rollFloat(state) < botany.sickChancePerCycle) plant.sick = true;
+    if (rollFloat(state) < botany.sickChancePerCycle) {
+      plant.sick = true;
+      plant.sickCycles = 1;
+    }
   }
 }
 

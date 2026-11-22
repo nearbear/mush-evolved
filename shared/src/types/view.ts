@@ -11,7 +11,7 @@ import type { PlanetDirection, PlanetTag } from "../planets.ts";
 import type { TitleId } from "../titles.ts";
 import type { Alerts } from "../reports.ts";
 import type { Action, BotKind, DocumentState, ItemId, LogEntry, LogLine, LogParams, PlayerId, Role, RoomId, SpoilStage } from "../types.ts";
-import type { ChannelId, ChatLine, ChatMessage, ChatThread, PrivateChannel, SeqRange, SharedPlanet, SharedPlanetId, SharedReport, SharedReportId } from "./chat.ts";
+import type { ChannelId, ChatLine, ChatMessage, ChatThread, PrivateChannel, SeqRange, SharedPlanet, SharedPlanetId, SharedPlantStatus, SharedReport, SharedReportId } from "./chat.ts";
 import type { Plan } from "./plan.ts";
 import type { MovementRules } from "./config.ts";
 import type { ActionInProgress, PlayerState, Spot } from "./player.ts";
@@ -63,8 +63,8 @@ export interface ItemView {
   spores?: number;
   /** For perishable food that has spoiled (spoilage.ts). Sent to living Chefs only. */
   spoil?: SpoilStage;
-  /** For a planted hydropot. `sick` is there only for the Botanist role; everyone else never gets the field. */
-  plant?: { species: string; age: number | null; thirst: 0 | 1 | 2; sick?: boolean };
+  /** For a planted hydropot. `sick` and `sickCycles` are there only for the Botanist role; everyone else never gets them. */
+  plant?: { species: string; age: number | null; thirst: 0 | 1 | 2; sick?: boolean; sickCycles?: number };
   /** For a support drone (#411): its name, serial and upgrades, public to whoever can see it. Never its failure counts. */
   drone?: { name: string; serial: number; upgrades: string[] };
   /** For a document (#394): its kind and rows (characters and marks), public to whoever can see it. */
@@ -313,6 +313,8 @@ export interface PlayerView {
   sharedPlanets: SharedPlanet[];
   /** Expedition reports shared in the Expeditions feature (sharedReports.ts), to whoever can read that feature. */
   sharedReports: SharedReport[];
+  /** Latest greenhouse plant status shared in the Botany feature (sharedPlants.ts), to whoever can read that feature. */
+  sharedPlants: SharedPlantStatus | null;
   /** How many private channels you may belong to, after modifiers. */
   channelLimit: number;
   /** Your effective movement rules, after modifiers. */
@@ -422,6 +424,8 @@ export interface PlayerView {
   canSharePlanets: boolean;
   /** Whether you may share the reports in `expeditions` now (sharedReports.ts): alive with an iTrackie. */
   canShareReports: boolean;
+  /** Whether you may share the greenhouse plant status in the Botany feature now (sharedPlants.ts): alive at a working Hydroponics center with an iTrackie. */
+  canSharePlants: boolean;
   /** How many planets one player can hold (a config constant, public). */
   maxPlanets: number;
   /**

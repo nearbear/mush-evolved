@@ -567,6 +567,7 @@
     "planet_not_found": "Ese planeta no es uno de los tuyos.",
     "share_text_invalid": "Un texto compartido debe tener como máximo 500 caracteres y 20 líneas, y no estar vacío.",
     "share_sectors_invalid": "Los sectores que compartes deben coincidir con los del planeta, uno por cada uno.",
+    "share_plants_invalid": "El estado de las plantas que intentaste compartir no es válido.",
     "report_share_forbidden": "Necesitas tu iTrackie para compartir un informe.",
     "report_not_found": "No estabas en esa expedición.",
     "not_in_cheat_room": "Tienes que estar en la sala de trucos.",
@@ -808,6 +809,11 @@
       "showStale": "Mostrar los planetas que ya no son aplicables",
       "placeholder": "Habla sobre este planeta…"
     },
+    "sharedPlants": {
+      "title": "Estado compartido del invernadero",
+      "show": "Mostrar",
+      "hide": "Ocultar"
+    },
     "pages": {
       "label": "Páginas del chat",
       "earliest": "Primera página",
@@ -1026,6 +1032,31 @@
     "charges_many": "Quedan {{count}} cargas",
     "charges_other": "Quedan {{count}} cargas",
     "heavyDesc": "Transportarlo hace que cada desplazamiento entre salas cueste {{mp}} puntos de movimiento adicionales, independientemente de cuántos objetos pesados lleves. La habilidad Robusto anula esta penalización."
+  },
+  "botanyTerminal": {
+    "label": "Estado de las plantas hidropónicas",
+    "listLabel": "Plantas del invernadero",
+    "empty": "No hay hidromacetas plantadas en el suelo del invernadero.",
+    "broken": "La central hidropónica está averiada; no se puede compartir el estado hasta repararla.",
+    "effectsUnknown": "Efectos desconocidos",
+    "healthy": "Sana",
+    "driedOut": "Seca",
+    "diseasedFor_one": "Enferma ({{count}} ciclo)",
+    "diseasedFor_many": "Enferma ({{count}} ciclos)",
+    "diseasedFor_other": "Enferma ({{count}} ciclos)",
+    "share": "Compartir estado",
+    "shareTitle": "Compartir estado del invernadero",
+    "shareHint": "Edita los estados o efectos de las plantas, o añade una nota antes de publicar en la pestaña Botánica. Compartir reemplaza el estado anterior.",
+    "shareDisclaimer": "La tripulación verá lo que escribas aquí.",
+    "effectsLabel": "Efectos (uno por línea)",
+    "effectsPlaceholder": "Desconocidos o ninguno",
+    "thirstLabel": "Riego",
+    "thirstNone": "Regada",
+    "cyclesLabel": "Ciclos",
+    "removeRow": "Quitar",
+    "noteLabel": "Nota (opcional)",
+    "notePlaceholder": "Añade una nota para la tripulación…",
+    "sharePost": "Compartir"
   },
   "logEvent": {
     "summonArrived": "Te han convocado a: {{room}}. Ya estás allí.",
@@ -1378,6 +1409,8 @@
     "contaminated": "{{name}} manipuló las muestras de {{research}}.",
     "planetShared": "{{name}} ha compartido un planeta.",
     "planetShareUpdated": "{{name}} ha actualizado un planeta compartido.",
+    "plantShared": "{{name}} ha compartido el estado del invernadero.",
+    "plantShareUpdated": "{{name}} ha actualizado el estado del invernadero.",
     "bricBrocPrevented": "NERON: los arreglos generales han mantenido unido al Daedalus; ningún incidente ocurrió este ciclo.",
     "neronProjectCompleted": "NERON: el proyecto {{project}} se ha completado.",
     "equipmentBroken": "NERON: el equipo «{{equipment}}» se ha averiado.",

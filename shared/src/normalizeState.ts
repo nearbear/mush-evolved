@@ -72,6 +72,8 @@ import type {
   PrivateChannel,
   SealedChatPage,
   SharedPlanetState,
+  SharedPlantRow,
+  SharedPlantStatus,
   SharedReportState,
   ShipResources,
   SpaceDebris,
@@ -405,7 +407,15 @@ export function normalizeContainer(raw: Partial<Container>): Container {
 
 export function normalizePlant(raw: Partial<PlantState>): PlantState {
   const t = "PlantState";
-  return stripUndefined<PlantState>({ species: need(raw, "species", t), age: need(raw, "age", t), thirst: need(raw, "thirst", t), sick: need(raw, "sick", t) });
+  const sick = need(raw, "sick", t);
+  return stripUndefined<PlantState>({
+    species: need(raw, "species", t),
+    age: need(raw, "age", t),
+    thirst: need(raw, "thirst", t),
+    sick,
+    // Plants already sick before `sickCycles` existed default to 1 cycle; healthy plants keep undefined.
+    sickCycles: raw.sickCycles !== undefined ? raw.sickCycles : sick ? 1 : undefined,
+  });
 }
 
 /** The fields an item has wherever it is, in a container or in space. */
@@ -741,6 +751,28 @@ export function normalizeSharedReport(raw: Partial<SharedReportState>): SharedRe
     day: need(raw, "day", t),
     cycleOfDay: need(raw, "cycleOfDay", t),
     report: need(raw, "report", t),
+  });
+}
+
+export function normalizeSharedPlantRow(raw: Partial<SharedPlantRow>): SharedPlantRow {
+  const t = "SharedPlantRow";
+  return stripUndefined<SharedPlantRow>({
+    species: need(raw, "species", t),
+    effects: need(raw, "effects", t),
+    thirst: need(raw, "thirst", t),
+    sickCycles: need(raw, "sickCycles", t),
+    young: need(raw, "young", t),
+  });
+}
+
+export function normalizeSharedPlantStatus(raw: Partial<SharedPlantStatus>): SharedPlantStatus {
+  const t = "SharedPlantStatus";
+  return stripUndefined<SharedPlantStatus>({
+    plants: need(raw, "plants", t).map(normalizeSharedPlantRow),
+    text: need(raw, "text", t),
+    by: need(raw, "by", t),
+    day: need(raw, "day", t),
+    cycleOfDay: need(raw, "cycleOfDay", t),
   });
 }
 
@@ -1250,6 +1282,8 @@ export function normalizeCore(raw: Partial<GameCore>, ctx: NormalizeContext, mod
     // Shared reports (#356): none in a game stored before them.
     sharedReports: added(raw, "sharedReports", []).map(normalizeSharedReport),
     nextSharedReportId: added(raw, "nextSharedReportId", 1),
+    // Shared greenhouse plant status (owner, 2026-11-21): none in a game stored before it.
+    sharedPlants: orNull(added(raw, "sharedPlants", null), normalizeSharedPlantStatus),
     // Phase 2 (#356): none under way in a game stored before it, where every expedition was over at takeoff.
     expedition: orNull(added(raw, "expedition", null), normalizeActiveExpedition),
     // Stranding (#356): no game stored before it could lose the Icarus.

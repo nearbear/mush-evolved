@@ -567,6 +567,7 @@
     "planet_not_found": "Cette planète n'est pas l'une des vôtres.",
     "share_text_invalid": "Un texte partagé doit faire au plus 500 caractères et 20 lignes, et ne pas être vide.",
     "share_sectors_invalid": "Les secteurs partagés doivent correspondre à ceux de la planète, un pour chacun.",
+    "share_plants_invalid": "L'état des plantes partagé n'est pas valide.",
     "report_share_forbidden": "Il vous faut votre iTrackie pour partager un rapport.",
     "report_not_found": "Vous n'étiez pas de cette expédition.",
     "not_in_cheat_room": "Vous devez être dans la salle de triche.",
@@ -808,6 +809,11 @@
       "showStale": "Afficher les planètes qui ne sont plus d'actualité",
       "placeholder": "Discuter de cette planète…"
     },
+    "sharedPlants": {
+      "title": "État partagé de la serre",
+      "show": "Afficher",
+      "hide": "Masquer"
+    },
     "pages": {
       "label": "Pages du chat",
       "earliest": "Première page",
@@ -1026,6 +1032,31 @@
     "charges_many": "{{count}} charges restantes",
     "charges_other": "{{count}} charges restantes",
     "heavyDesc": "Le porter ajoute {{mp}} points de mouvement au coût de chaque déplacement entre deux pièces, indépendamment du nombre d'objets lourds que vous transportez. La compétence Robuste annule cette pénalité."
+  },
+  "botanyTerminal": {
+    "label": "État des plantes hydroponiques",
+    "listLabel": "Plantes de la serre",
+    "empty": "Aucun hydropot planté au sol de la serre.",
+    "broken": "Le centre hydroponique est en panne ; le partage d'état est indisponible jusqu'à réparation.",
+    "effectsUnknown": "Effets inconnus",
+    "healthy": "Saine",
+    "driedOut": "Desséchée",
+    "diseasedFor_one": "Malade ({{count}} cycle)",
+    "diseasedFor_many": "Malade ({{count}} cycles)",
+    "diseasedFor_other": "Malade ({{count}} cycles)",
+    "share": "Partager l'état",
+    "shareTitle": "Partager l'état de la serre",
+    "shareHint": "Modifiez l'état ou les effets des plantes, ou ajoutez une note avant de publier dans l'onglet Botanique. Un nouveau partage remplace le précédent.",
+    "shareDisclaimer": "L'équipage verra ce que vous écrivez ici.",
+    "effectsLabel": "Effets (un par ligne)",
+    "effectsPlaceholder": "Inconnus ou aucun",
+    "thirstLabel": "Arrosage",
+    "thirstNone": "Arrosée",
+    "cyclesLabel": "Cycles",
+    "removeRow": "Retirer",
+    "noteLabel": "Note (facultatif)",
+    "notePlaceholder": "Ajouter une note pour l'équipage…",
+    "sharePost": "Partager"
   },
   "logEvent": {
     "summonArrived": "Vous avez été convoqué(e) : {{room}}. Vous y êtes.",
@@ -1378,6 +1409,8 @@
     "contaminated": "{{name}} a trafiqué les échantillons de {{research}}.",
     "planetShared": "{{name}} a partagé une planète.",
     "planetShareUpdated": "{{name}} a mis à jour une planète partagée.",
+    "plantShared": "{{name}} a partagé l'état de la serre.",
+    "plantShareUpdated": "{{name}} a mis à jour l'état de la serre.",
     "bricBrocPrevented": "NERON : le rafistolage général a tenu le Daedalus ensemble ; aucun incident n'a frappé ce cycle.",
     "neronProjectCompleted": "NERON : le projet {{project}} est terminé.",
     "equipmentBroken": "NERON : panne de l'équipement « {{equipment}} ».",
