@@ -568,6 +568,7 @@
     "share_text_invalid": "Un texte partagé doit faire au plus 500 caractères et 20 lignes, et ne pas être vide.",
     "share_sectors_invalid": "Les secteurs partagés doivent correspondre à ceux de la planète, un pour chacun.",
     "share_plants_invalid": "L'état des plantes partagé n'est pas valide.",
+    "share_pilgred_invalid": "La progression de PILGRED partagée doit être comprise entre 0 % et 100 %.",
     "report_share_forbidden": "Il vous faut votre iTrackie pour partager un rapport.",
     "report_not_found": "Vous n'étiez pas de cette expédition.",
     "not_in_cheat_room": "Vous devez être dans la salle de triche.",
@@ -586,7 +587,15 @@
   },
   "pilgred": {
     "label": "Réparation de PILGRED",
-    "desc": "Le réacteur PILGRED. La seule façon de voyager plus vite que la lumière connue au moment du départ du Daedalus. Sa remise en état vous permettra peut-être de retourner sur Sol."
+    "desc": "Le réacteur PILGRED. La seule façon de voyager plus vite que la lumière connue au moment du départ du Daedalus. Sa remise en état vous permettra peut-être de retourner sur Sol.",
+    "share": "Partager l'état",
+    "shareTitle": "Partager la progression de PILGRED",
+    "shareHint": "Modifiez le pourcentage de progression ou ajoutez une note avant de publier dans l'onglet PILGRED. Partager remplace l'état précédent.",
+    "percentLabel": "Progression (%)",
+    "shareDisclaimer": "L'équipage verra tout ce que vous écrivez ici.",
+    "noteLabel": "Note (facultatif)",
+    "notePlaceholder": "Ajouter une note pour l'équipage…",
+    "sharePost": "Partager"
   },
   "gameOver": {
     "title": "La partie est terminée",
@@ -813,6 +822,9 @@
       "title": "État partagé de la serre",
       "show": "Afficher",
       "hide": "Masquer"
+    },
+    "sharedPilgred": {
+      "title": "Progression partagée de PILGRED"
     },
     "pages": {
       "label": "Pages du chat",
@@ -1411,6 +1423,8 @@
     "planetShareUpdated": "{{name}} a mis à jour une planète partagée.",
     "plantShared": "{{name}} a partagé l'état de la serre.",
     "plantShareUpdated": "{{name}} a mis à jour l'état de la serre.",
+    "pilgredShared": "{{name}} a partagé la progression de PILGRED.",
+    "pilgredShareUpdated": "{{name}} a mis à jour la progression de PILGRED.",
     "bricBrocPrevented": "NERON : le rafistolage général a tenu le Daedalus ensemble ; aucun incident n'a frappé ce cycle.",
     "neronProjectCompleted": "NERON : le projet {{project}} est terminé.",
     "equipmentBroken": "NERON : panne de l'équipement « {{equipment}} ».",

@@ -71,6 +71,7 @@ import type {
   PreselectionRules,
   PrivateChannel,
   SealedChatPage,
+  SharedPilgredStatus,
   SharedPlanetState,
   SharedPlantRow,
   SharedPlantStatus,
@@ -776,6 +777,17 @@ export function normalizeSharedPlantStatus(raw: Partial<SharedPlantStatus>): Sha
   });
 }
 
+export function normalizeSharedPilgredStatus(raw: Partial<SharedPilgredStatus>): SharedPilgredStatus {
+  const t = "SharedPilgredStatus";
+  return stripUndefined<SharedPilgredStatus>({
+    percent: need(raw, "percent", t),
+    text: need(raw, "text", t),
+    by: need(raw, "by", t),
+    day: need(raw, "day", t),
+    cycleOfDay: need(raw, "cycleOfDay", t),
+  });
+}
+
 export function normalizeThread(raw: Partial<ChatThread>): ChatThread {
   const t = "ChatThread";
   return stripUndefined<ChatThread>({ id: need(raw, "id", t), name: need(raw, "name", t), from: raw.from, createdBy: need(raw, "createdBy", t), cycle: need(raw, "cycle", t) });
@@ -1284,6 +1296,8 @@ export function normalizeCore(raw: Partial<GameCore>, ctx: NormalizeContext, mod
     nextSharedReportId: added(raw, "nextSharedReportId", 1),
     // Shared greenhouse plant status (owner, 2026-11-21): none in a game stored before it.
     sharedPlants: orNull(added(raw, "sharedPlants", null), normalizeSharedPlantStatus),
+    // Shared PILGRED repair progress (owner, 2026-11-21): none in a game stored before it.
+    sharedPilgred: orNull(added(raw, "sharedPilgred", null), normalizeSharedPilgredStatus),
     // Phase 2 (#356): none under way in a game stored before it, where every expedition was over at takeoff.
     expedition: orNull(added(raw, "expedition", null), normalizeActiveExpedition),
     // Stranding (#356): no game stored before it could lose the Icarus.

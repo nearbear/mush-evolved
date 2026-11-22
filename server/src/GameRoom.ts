@@ -12,6 +12,8 @@ import {
   MAX_SHARED_PLANT_EFFECTS_LINES,
   MAX_SHARED_PLANT_TEXT_LENGTH,
   MAX_SHARED_PLANT_TEXT_LINES,
+  MAX_SHARED_PILGRED_TEXT_LENGTH,
+  MAX_SHARED_PILGRED_TEXT_LINES,
   parseGameMessage,
   startGame,
   stampEntries,
@@ -1026,6 +1028,21 @@ export class GameRoom extends Server<Env> {
       }
       const rawCombined = changed ? [msg.text, ...msg.plants.map((r) => r.effects)].filter(Boolean).join("\n---\n") : undefined;
       return this.act({ type: "sharePlants", by, plants, text }, rawCombined);
+    }
+    if (msg.type === "sharePilgred") {
+      let text = "";
+      let rawText: string | undefined;
+      if (msg.text.trim()) {
+        const mod = moderateChat(msg.text, undefined, { length: MAX_SHARED_PILGRED_TEXT_LENGTH, lines: MAX_SHARED_PILGRED_TEXT_LINES });
+        if (!mod.ok) {
+          const blocked: BlockedText = { at: Date.now(), by: playerId, type: msg.type, raw: msg.text, reason: mod.reason };
+          await this.ctx.storage.put(`blocked:${String(this.blocked++).padStart(9, "0")}`, blocked);
+          return "share_text_invalid";
+        }
+        text = mod.text;
+        if (mod.text !== msg.text) rawText = msg.text;
+      }
+      return this.act({ type: "sharePilgred", by, percent: msg.percent, text }, rawText);
     }
     if (msg.type !== "chat" && msg.type !== "createChannel" && msg.type !== "createThread" && msg.type !== "sharePlanet" && msg.type !== "shareReport") return this.act({ ...msg, by });
     const raw = msg.type === "chat" || msg.type === "sharePlanet" || msg.type === "shareReport" ? msg.text : (msg.name ?? "");

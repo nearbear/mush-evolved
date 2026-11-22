@@ -11,7 +11,7 @@ import type { PlanetDirection, PlanetTag } from "../planets.ts";
 import type { TitleId } from "../titles.ts";
 import type { Alerts } from "../reports.ts";
 import type { Action, BotKind, DocumentState, ItemId, LogEntry, LogLine, LogParams, PlayerId, Role, RoomId, SpoilStage } from "../types.ts";
-import type { ChannelId, ChatLine, ChatMessage, ChatThread, PrivateChannel, SeqRange, SharedPlanet, SharedPlanetId, SharedPlantStatus, SharedReport, SharedReportId } from "./chat.ts";
+import type { ChannelId, ChatLine, ChatMessage, ChatThread, PrivateChannel, SeqRange, SharedPilgredStatus, SharedPlanet, SharedPlanetId, SharedPlantStatus, SharedReport, SharedReportId } from "./chat.ts";
 import type { Plan } from "./plan.ts";
 import type { MovementRules } from "./config.ts";
 import type { ActionInProgress, PlayerState, Spot } from "./player.ts";
@@ -315,6 +315,8 @@ export interface PlayerView {
   sharedReports: SharedReport[];
   /** Latest greenhouse plant status shared in the Botany feature (sharedPlants.ts), to whoever can read that feature. */
   sharedPlants: SharedPlantStatus | null;
+  /** Latest PILGRED repair progress shared in the PILGRED feature (sharedPilgred.ts), to whoever can read that feature. */
+  sharedPilgred: SharedPilgredStatus | null;
   /** How many private channels you may belong to, after modifiers. */
   channelLimit: number;
   /** Your effective movement rules, after modifiers. */
@@ -426,6 +428,8 @@ export interface PlayerView {
   canShareReports: boolean;
   /** Whether you may share the greenhouse plant status in the Botany feature now (sharedPlants.ts): alive at a working Hydroponics center with an iTrackie. */
   canSharePlants: boolean;
+  /** Whether you may share the PILGRED repair progress in the PILGRED feature now (sharedPilgred.ts): alive at a PILGRED terminal with an iTrackie. */
+  canSharePilgred: boolean;
   /** How many planets one player can hold (a config constant, public). */
   maxPlanets: number;
   /**

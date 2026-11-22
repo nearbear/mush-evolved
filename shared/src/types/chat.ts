@@ -93,6 +93,20 @@ export interface SharedPlantStatus {
   cycleOfDay: number;
 }
 
+/**
+ * Latest PILGRED repair progress shared from the PILGRED terminal in the PILGRED feature (sharedPilgred.ts):
+ * an editable progress percent (lies allowed) and optional free-text note, pinned above the PILGRED thread.
+ */
+export interface SharedPilgredStatus {
+  /** Claimed repair percent (integer 0..PILGRED_COMPLETE). */
+  percent: number;
+  /** Optional free-text note (moderated). */
+  text: string;
+  by: PlayerId;
+  day: number;
+  cycleOfDay: number;
+}
+
 /** Chat among the members only. Anyone in it may invite others; it ends when the last member leaves. */
 export interface PrivateChannel {
   id: PrivateChannelId;

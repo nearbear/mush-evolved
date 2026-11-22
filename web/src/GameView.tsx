@@ -228,6 +228,7 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
         onClose={() => setTerminalId(null)}
         onSharePlanet={(planet, sectors, text) => post({ type: "sharePlanet", planet, sectors, text })}
         onSharePlants={(plants, text) => post({ type: "sharePlants", plants, text })}
+        onSharePilgred={(percent, text) => post({ type: "sharePilgred", percent, text })}
       />
       <EndScreen view={view} open={view.phase === "ended" && !endClosed} onOpenChange={(open) => setEndClosed(!open)} replayId={replayId} />
       {!readOnly && <BodyTakenDialog view={view} onAcknowledge={() => post({ type: "acknowledgeTransfer" })} />}

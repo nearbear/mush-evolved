@@ -13,6 +13,7 @@ import { walk } from "./spot.ts";
 import { createChannel, createThread, inviteToChannel, leaveChannel, sendChat, takeChatOutbox, toggleCheckbox } from "./chat.ts";
 import { sharePlanet } from "./sharedPlanets.ts";
 import { sharePlants } from "./sharedPlants.ts";
+import { sharePilgred } from "./sharedPilgred.ts";
 import { shareReport } from "./sharedReports.ts";
 import { postPlan } from "./plans.ts";
 import { pruneReports } from "./reports.ts";
@@ -127,6 +128,8 @@ function applyInputOnly(state: GameState, input: Input): ActionResult {
       return shareReport(state, input.by, input.report, input.text);
     case "sharePlants":
       return sharePlants(state, input.by, input.plants, input.text);
+    case "sharePilgred":
+      return sharePilgred(state, input.by, input.percent, input.text);
     case "invite":
       return inviteToChannel(state, input.by, input.channel, input.player);
     case "leaveChannel":

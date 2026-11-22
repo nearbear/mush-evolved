@@ -56,6 +56,7 @@ import { ringMycoAlarms } from "./mycoalarm.ts";
 import { planetsOf } from "./planets.ts";
 import { canSharePlanets } from "./sharedPlanets.ts";
 import { canSharePlants, sharedPlantsView } from "./sharedPlants.ts";
+import { canSharePilgred, sharedPilgredView } from "./sharedPilgred.ts";
 import { canShareReports } from "./sharedReports.ts";
 import { arriveShip, orbitName, orbitPicture } from "./navigation.ts";
 import { commandTerminalsHere, isPilgredRepaired } from "./pilgred.ts";
@@ -190,6 +191,7 @@ export function createGame(
     sharedReports: [],
     nextSharedReportId: 1,
     sharedPlants: null,
+    sharedPilgred: null,
     expeditions: [],
     nextExpeditionId: 1,
     expedition: null,
@@ -887,6 +889,7 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     sharedPlanets: channels.includes("astrophysics") ? sharedPlanetsView(state) : [],
     sharedReports: channels.includes("expeditions") ? sharedReportsView(state) : [],
     sharedPlants: channels.includes("botany") ? sharedPlantsView(state) : null,
+    sharedPilgred: channels.includes("pilgred") ? sharedPilgredView(state) : null,
     channelLimit: channelLimit(state, you),
     movement: movementRules(state, you),
     bonds: {
@@ -949,6 +952,7 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     canSharePlanets: canSharePlanets(state, you),
     canShareReports: canShareReports(state, you),
     canSharePlants: canSharePlants(state, you),
+    canSharePilgred: canSharePilgred(state, you),
     planets: planetsOf(state, playerId).map((p) => ({
       id: p.id,
       name: p.name,

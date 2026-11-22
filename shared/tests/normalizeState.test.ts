@@ -119,6 +119,7 @@ function handFilled() {
   game.sharedReports.push({ id: "sr-1", text: "we won", by: a.id, day: 1, cycleOfDay: 4, report: "ex-1" });
   game.nextSharedReportId = 2;
   game.sharedPlants = { plants: [{ species: "fruit_banana", effects: "+1 AP", thirst: 1, sickCycles: 2, young: false }], text: "water me", by: a.id, day: 1, cycleOfDay: 4 };
+  game.sharedPilgred = { percent: 45, text: "need physicist", by: a.id, day: 1, cycleOfDay: 4 };
   game.expeditions.push({
     id: "ex-1",
     members: [a.id, b.id],

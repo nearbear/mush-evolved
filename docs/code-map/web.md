@@ -81,6 +81,7 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 - `PrivateChannels.tsx`: the Private tab, one row per channel slot, with a create dialog.
 - `SharedPlanets.tsx`: the Astrophysics feature: its general thread, then one row per shared planet by name (newest first; entries no longer applicable hidden unless shown), each opening its sector icons and text above its own thread.
 - `PlantTerminal.tsx`, `SharedPlantsCard.tsx`: the Hydroponics center (`PLANT_CONTROLLER`) terminal's vertical plant status list and editable Share form (`sharePlants`), and the collapsible pinned greenhouse status card above the Botany feature thread.
+- `SharedPilgredCard.tsx`: pinned PILGRED repair progress bar card above the PILGRED feature thread (`view.sharedPilgred`), shared from the PILGRED terminal (`TerminalDialog.tsx`).
 - `SharedSectors.tsx`: a shared planet's sector slots as a row of tag icons; used by the Astrophysics feature and the expedition timeline's shared strip.
 - `SharedReports.tsx`: the Expeditions feature: your own reports (opening `ExpeditionReportDialog`), its general thread, then one row per shared report (newest first), each opening its first text above its own thread.
 - `ExpeditionReportDialog.tsx`: an expedition's report (`view.expeditions`), opened from the member's `expeditionReturned` line in the room log (`ITrackie.tsx`), from `IcarusPanel` while away, or from the Expeditions feature: in the terminal frame (`FramedDialog`), one compact row per step (sector icon, name, outcome, HP lost); its Share form posts `shareReport`.

@@ -556,6 +556,7 @@
     "share_text_invalid": "Shared text needs to be up to 500 characters and 20 lines, and not empty.",
     "share_sectors_invalid": "The sectors you share must match the planet's sectors, one for each.",
     "share_plants_invalid": "The plant status you tried to share is invalid.",
+    "share_pilgred_invalid": "The PILGRED progress you tried to share must be between 0% and 100%.",
     "report_share_forbidden": "You need your iTrackie to share a report.",
     "report_not_found": "You weren't on that expedition.",
     "not_in_cheat_room": "You need to be in the cheat room.",
@@ -574,7 +575,15 @@
   },
   "pilgred": {
     "label": "PILGRED repair",
-    "desc": "The PILGRED reactor. The only known way to travel faster than light when the Daedalus left. Repairing it may let you return to Sol."
+    "desc": "The PILGRED reactor. The only known way to travel faster than light when the Daedalus left. Repairing it may let you return to Sol.",
+    "share": "Share status",
+    "shareTitle": "Share PILGRED progress",
+    "shareHint": "Edit the progress percentage or add a note before posting to the PILGRED tab. Sharing replaces the previous status.",
+    "percentLabel": "Progress (%)",
+    "shareDisclaimer": "The crew will see whatever you write here.",
+    "noteLabel": "Note (optional)",
+    "notePlaceholder": "Add a note for the crew…",
+    "sharePost": "Share"
   },
   "gameOver": {
     "title": "The game is over",
@@ -798,6 +807,9 @@
       "title": "Shared greenhouse status",
       "show": "Show",
       "hide": "Hide"
+    },
+    "sharedPilgred": {
+      "title": "Shared PILGRED progress"
     },
     "pages": {
       "label": "Chat pages",
@@ -1383,6 +1395,8 @@
     "planetShareUpdated": "{{name}} updated a shared planet.",
     "plantShared": "{{name}} shared the greenhouse status.",
     "plantShareUpdated": "{{name}} updated the greenhouse status.",
+    "pilgredShared": "{{name}} shared the PILGRED progress.",
+    "pilgredShareUpdated": "{{name}} updated the PILGRED progress.",
     "bricBrocPrevented": "NERON: general patching up has held the Daedalus together; no incident struck this cycle.",
     "neronProjectCompleted": "NERON: the {{project}} project is complete.",
     "equipmentBroken": "NERON: the {{equipment}} has broken down.",

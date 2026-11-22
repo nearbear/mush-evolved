@@ -25,6 +25,7 @@ import { Threads, threadNameFrom } from "./Threads.tsx";
 import { Tracker } from "./Tracker.tsx";
 import { SharedPlanets } from "./SharedPlanets.tsx";
 import { SharedPlantsCard } from "./SharedPlantsCard.tsx";
+import { SharedPilgredCard } from "./SharedPilgredCard.tsx";
 import { SharedReports } from "./SharedReports.tsx";
 import { ResearchTracker } from "./ResearchTracker.tsx";
 import { ProjectTracker } from "./ProjectTracker.tsx";
@@ -310,6 +311,8 @@ export function ITrackie({
               <div key={f} className="feature" hidden={f !== feature}>
                 {f === "botany" && view.sharedPlants ? (
                   <SharedPlantsCard shared={view.sharedPlants} view={view} />
+                ) : f === "pilgred" && view.sharedPilgred ? (
+                  <SharedPilgredCard shared={view.sharedPilgred} view={view} />
                 ) : !alive ? null : !carrying ? (
                   <p className="sub">{t("itrackie.needITrackieTrack")}</p>
                 ) : f === "research" ? (
