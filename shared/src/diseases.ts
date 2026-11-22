@@ -26,21 +26,47 @@ export const INJURY_UPGRADES: Readonly<Record<string, StatusId>> = {
   head_trauma_injury: "open_air_brain_injury",
   haemorrhage_injury: "critical_haemorrhage_injury",
   bruised_shoulder_injury: "broken_shoulder_injury",
+  broken_shoulder_injury: "shattered_shoulder_injury",
   burnt_hand_injury: "burned_arm_injury",
   third_degree_50_injury: "third_degree_90_injury",
   broken_foot_injury: "mashed_foot_injury",
   mashed_foot_injury: "unusable_legs_injury",
   broken_leg_injury: "unusable_legs_injury",
+  broken_finger_injury: "missing_finger_injury",
 };
 
-/** A disease's numbers, found by its `label` (config.ts), not by its place in the list. */
-/** Every injury above `name` in its upgrade chain, nearest first. */
+/**
+ * Injuries that cancel others without being their upgrade (eMushpedia's "Annulé par"; owner, 2026-11-22): getting the
+ * key removes every listed injury held, and getting a listed injury while holding the key (or anything above it) is a
+ * no-op, as with an upgrade. Getting a listed injury twice still upgrades it through INJURY_UPGRADES.
+ */
+export const INJURY_CANCELS: Readonly<Record<string, readonly StatusId[]>> = {
+  shredded_hand_injury: ["broken_finger_injury", "missing_finger_injury", "burnt_hand_injury"],
+  shattered_arm_injury: ["broken_finger_injury", "missing_finger_injury", "burnt_hand_injury", "shredded_hand_injury", "busted_arm_joint_injury"],
+  shattered_shoulder_injury: ["broken_finger_injury", "missing_finger_injury", "burnt_hand_injury", "shredded_hand_injury", "shattered_arm_injury", "busted_arm_joint_injury"],
+};
+
+/** The injuries directly above `name`: its upgrade and every injury that cancels it. */
+function directlyAbove(name: string): StatusId[] {
+  const up = INJURY_UPGRADES[name];
+  const cancellers = Object.keys(INJURY_CANCELS).filter((key) => INJURY_CANCELS[key]!.includes(name));
+  return up ? [up, ...cancellers] : cancellers;
+}
+
+/** Every injury above `name`, through upgrades and cancels, however many steps up. */
 function tiersAbove(name: string): StatusId[] {
   const out: StatusId[] = [];
-  for (let up = INJURY_UPGRADES[name]; up && !out.includes(up); up = INJURY_UPGRADES[up]) out.push(up);
+  const queue = directlyAbove(name);
+  while (queue.length > 0) {
+    const next = queue.shift()!;
+    if (out.includes(next)) continue;
+    out.push(next);
+    queue.push(...directlyAbove(next));
+  }
   return out;
 }
 
+/** A disease's numbers, found by its `label` (config.ts), not by its place in the list. */
 export function diseaseStats(state: Readonly<GameState>, name: string): DiseaseStats | undefined {
   return state.config.diseases.allDiseaseStats.find((stats) => stats.label === name);
 }
@@ -52,8 +78,8 @@ export function addDisease(state: GameState, player: PlayerState, name: StatusId
       removeDisease(state, player, name);
       name = upgradeTo;
     }
-    for (const lower of Object.keys(INJURY_UPGRADES)) {
-      if (player.modifiers.includes(lower) && tiersAbove(lower).includes(name)) removeDisease(state, player, lower);
+    for (const held of [...player.modifiers]) {
+      if (tiersAbove(held).includes(name)) removeDisease(state, player, held);
     }
     if(player.modifiers.includes(name)){
         return;

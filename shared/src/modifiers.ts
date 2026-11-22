@@ -78,7 +78,7 @@ import { rubella_disease } from "./modifiers/rubella_disease.ts";
 import { syphilis_disease } from "./modifiers/syphilis_disease.ts";
 import { sepsis_disease } from "./modifiers/sepsis_disease.ts";
 import { broken_nose_injury } from "./modifiers/broken_nose_injury.ts";
-import { broken_shoulder_injury, bruised_shoulder_injury } from "./modifiers/shoulder_injuries.ts";
+import { broken_shoulder_injury, bruised_shoulder_injury, shattered_shoulder_injury } from "./modifiers/shoulder_injuries.ts";
 import { mashed_foot_injury } from "./modifiers/mashed_foot_injury.ts";
 import { torn_tongue_injury } from "./modifiers/torn_tongue_injury.ts";
 import { open_air_brain_injury } from "./modifiers/open_air_brain_injury.ts";
@@ -95,6 +95,11 @@ import { lodged_bullet_injury } from "./modifiers/lodged_bullet_injury.ts";
 import { broken_foot_injury } from "./modifiers/broken_foot_injury.ts";
 import { broken_leg_injury } from "./modifiers/broken_leg_injury.ts";
 import { unusable_legs_injury } from "./modifiers/unusable_legs_injury.ts";
+import { liver_disfunction_injury } from "./modifiers/liver_disfunction_injury.ts";
+import { broken_ribs_injury } from "./modifiers/broken_ribs_injury.ts";
+import { broken_finger_injury, missing_finger_injury } from "./modifiers/finger_injury.ts";
+import { shattered_arm_injury, shredded_hand_injury } from "./modifiers/hand_arm_injuries.ts";
+import { missing_teeth_injury } from "./modifiers/missing_teeth_injury.ts";
 import { stiff_neck_injury } from "./modifiers/stiff_neck_injury.ts";
 import { damaged_ears_injury } from "./modifiers/damaged_ears_injury.ts";
 import { destroyed_ears_injury } from "./modifiers/destroyed_ears_injury.ts";
@@ -254,6 +259,8 @@ export interface Modifier extends Partial<FoldHooks> {
   deaf?: boolean;
   /** Torn Tongue, Punctured Lung: no `talking`-tagged action (Action.check), no chat post (`sendChat`), no new private channel (`createChannel`). */
   mute?: boolean;
+  /** Missing Teeth: rewrites the text of every chat message the holder posts (`sendChat`). Must be pure. */
+  speech?: (text: string) => string;
   /** Broken Shoulder: can't take a heavy item (TransferAction), and drops any held when it starts. */
   noHeavy?: boolean;
   /** Runs whenever the ship moves */
@@ -349,6 +356,7 @@ export const MODIFIERS: Record<string, Modifier> = {
   bruised_shoulder_injury,
   mashed_foot_injury,
   broken_shoulder_injury,
+  shattered_shoulder_injury,
   burnt_hand_injury,
   burned_arm_injury,
   third_degree_50_injury,
@@ -357,6 +365,13 @@ export const MODIFIERS: Record<string, Modifier> = {
   broken_foot_injury,
   broken_leg_injury,
   unusable_legs_injury,
+  liver_disfunction_injury,
+  broken_ribs_injury,
+  broken_finger_injury,
+  missing_finger_injury,
+  shredded_hand_injury,
+  shattered_arm_injury,
+  missing_teeth_injury,
   stiff_neck_injury,
   quincks_oedema_disease,
   black_bite_disease,
@@ -835,6 +850,11 @@ export function skillPicked(next: GameState, player: PlayerState, skill: string,
 /** Whether the player can't speak right now (a `mute` modifier: Torn Tongue, Punctured Lung): no `talking` action, no chat post. */
 export function isMute(player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS): boolean {
   return modifierIds(player).some((id) => registry[id]?.mute === true);
+}
+
+/** A chat message's text as the player actually says it: folded through every `speech` modifier (Missing Teeth). */
+export function spokenText(player: Readonly<PlayerState>, text: string, registry: ModifierRegistry = MODIFIERS): string {
+  return modifierIds(player).reduce((said, id) => registry[id]?.speech?.(said) ?? said, text);
 }
 
 /** Whether the player can't carry heavy items right now (a `noHeavy` modifier: Broken Shoulder). */
