@@ -4878,3 +4878,10 @@ Owner asked to "match eMush". Moved the debris table from `config.hunters.debris
 ## 2026-11-21: Typecheck and test fixes after the cat-spore move
 
 - An edit moved the infected cat's spore from `take`'s `apply` into `onInjury`, and Cat Allergy's `heldCat` call went with it, giving a TS18048 (`item` possibly undefined) and making Quincke's Oedema need an injury. Claude moved `heldCat` back into `apply` (the owner's "on picking him up"), leaving the spore in `onInjury`. `mush_skills.test.ts` still pinned `bacterial_contact` as partial; it is full since give_disease.
+
+## 2026-11-21: THE List, build step 1 (the tabulator item)
+
+- Added `canTake?: boolean` to `ItemType` and the `tabulator` item (`TABULATOR_ITEM`): can't be taken, dropped, hidden or dismantled; breaks (also in cycle-change breakdowns), can be sabotaged, 12% repair. `take` leaves `canTake: false` items out of its candidates and rejects them; `tube_transfer` refuses them too (the `canDrop: false` check already did, the `canTake` check states the intent).
+- Checked the other movers: `search` only finds hidden items, the expedition moves only touch craft rooms, drones and Schrödinger move only themselves, and death and shoulder injuries only move carried items, so none reach a bridge-bound tabulator.
+- Tests in `shared/tests/theList.test.ts` (the step-1 part). Not yet in the starting items, and no names, icon or print action: those are later steps of `docs/plans/the-list.md`.
+- Follow-up (owner, same day): the tabulator starts in front storage (`STORAGE_FRONT`), not on the bridge as in the original and eMush. Plan, item comments and test updated; to be listed in `changes-from-emush.md` once it spawns.

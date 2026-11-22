@@ -13,10 +13,11 @@ export const OUTPUT_TUBE_ITEM = "output_tube";
 const hasInputTube = (state: Readonly<GameState>, room: string): boolean =>
   state.items.some((i) => i.type === INPUT_TUBE_ITEM && isWorking(i) && i.at.kind === "room" && i.at.id === room);
 
-/** What the tube accepts: anything the player can reach (floor or own inventory) except the tubes, and except what can't be dropped. */
+/** What the tube accepts: anything the player can reach (floor or own inventory) except the tubes, and except what can't be dropped or taken. */
 function sendable(state: Readonly<GameState>, player: Readonly<PlayerState>, item: Readonly<ItemState>): boolean {
   if (item.type === INPUT_TUBE_ITEM || item.type === OUTPUT_TUBE_ITEM) return false;
-  return ITEM_TYPES[item.type]?.canDrop !== false && canReachItem(state, player, item);
+  const type = ITEM_TYPES[item.type];
+  return type?.canDrop !== false && type?.canTake !== false && canReachItem(state, player, item);
 }
 
 /**

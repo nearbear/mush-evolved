@@ -12,8 +12,8 @@
 
 ### The tabulator
 
-- A new item type, `tabulator`, starting in `COMMAND_CENTER` (in the starting items, as the freezer is in the refectory).
-- It **can't be taken** (so it never leaves the bridge), dropped, hidden or dismantled. Not heavy (moot, since it never moves).
+- A new item type, `tabulator`, starting in `STORAGE_FRONT` (in the starting items, as the freezer is in the refectory). Owner, 2026-11-21: front storage, not the bridge where the original and eMush put it.
+- It **can't be taken** (so it never leaves front storage), dropped, hidden or dismantled. Not heavy (moot, since it never moves).
 - It can break, including in random cycle-change breakdowns (`canBreakOnCycleChange`), be sabotaged, and be repaired (`repairChance` 0.12, eMush's value).
 - Names: Tabulator / Tabulatrice / Tabuladora. Icon: `printer.jpg` (through the `asset` skill).
 
@@ -46,7 +46,7 @@
 ### `shared`
 
 1. **`items.ts`:** a `canTake?: boolean` flag on `ItemType`, and the `tabulator` type with `canTake: false, canDrop: false, canHide: false, canBreak: true, canBreakOnCycleChange: true, canBeSabotaged: true, repairChance: 0.12` and no `dismantle`. Check `canTake` in `take` (`actions/transfer.ts`: left out of the candidates) and `tube_transfer`; check other movers (`search`, the Schrödinger and expedition moves) don't apply to it.
-2. **Starting items** (`config.ts`): `{ type: "tabulator", room: "COMMAND_CENTER" }`.
+2. **Starting items** (`config.ts`): `{ type: "tabulator", room: "STORAGE_FRONT" }`.
 3. **`theList.ts`** (new): `TheListState` on `GameState.theList`, never in any view:
    - `rng`: its own stream, `streamFor(seed, "the-list")`, so printing moves no other roll.
    - `startingMush: CharacterId[]` and `selectedAt: number | null`, set at selection (next to `rollAtSelection`, from `selectMush` and `createGame`).
@@ -76,4 +76,4 @@
 ### Checks and docs
 
 - `leak-check` skill; bots never print (single player is out of scope); `npm run verify` and `npm run build`.
-- `implemented-rules.md`, `rules-design.md` (these decisions), `changes-from-emush.md` (the tabulator is an item, the list can name a converted Mush or Chun, filler is living crew only, the "no Mush left" print, 8 names and one a day), the code-map, `docs/README.md`, the ai-workflow log, and [#266](https://github.com/nearbear/mush2/issues/266).
+- `implemented-rules.md`, `rules-design.md` (these decisions), `changes-from-emush.md` (the tabulator is an item in front storage rather than bridge equipment, the list can name a converted Mush or Chun, filler is living crew only, the "no Mush left" print, 8 names and one a day), the code-map, `docs/README.md`, the ai-workflow log, and [#266](https://github.com/nearbear/mush2/issues/266).
