@@ -367,6 +367,18 @@ describe("GoalBot", () => {
     expect(shower.options(withHull(49), memory)).toEqual([]);
   });
 
+  it("doesn't shower with skin inflammation, which hurts in the shower", () => {
+    const { game: start, id } = setup();
+    const dirty = (extra: string[]) =>
+      edit(start, id, (p) => {
+        p.statuses = [...p.statuses.filter((s) => s !== "dirty"), "dirty", ...extra];
+        p.ap = 10;
+      });
+    const memory = { reserve: 2, scripted: true, language: "en" as const, ended: new Set<string>(), today: new Set<string>(), visited: new Set<string>(), holdSince: null, jump: newJumpMemory(), roll: roll0 };
+    expect(shower.options(viewFor(dirty([]), id), memory)).toHaveLength(1);
+    expect(shower.options(viewFor(dirty(["skin_inflammation_disease"]), id), memory)).toEqual([]);
+  });
+
   it("can rest in the same bed again later in the cycle", async () => {
     const { game: start, id } = setup();
     const bed = roomsWith(viewFor(start, id), ["BED"])[0]!;

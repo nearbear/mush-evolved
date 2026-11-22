@@ -8,16 +8,21 @@ import { researchOptions } from "./research.ts";
 import type { GoalDef } from "./types.ts";
 import { deskWorkReserve } from "./work.ts";
 
+/** Diseases that hurt in the shower (skin inflammation: -6 HP, `shared/src/modifiers/skin_inflammation_disease.ts`). */
+const SHOWER_HURTS = ["skin_inflammation_disease"];
+const showerHurts = (statuses: readonly string[]) => SHOWER_HURTS.some((id) => statuses.includes(id));
+
 /**
  * Shower when dirty and the work the bot would otherwise choose refuses dirty players (comms, astro, research,
  * projects): not while it could repair the hull, which comes first and doesn't mind dirt. Just before the work goals in
  * the scripted order. Needs the AP for the shower and a round of work after it (the walk on from the shower isn't priced).
+ * Not while a disease makes the shower hurt (42 deaths in Run B, 2026-11-21): the bot stays dirty until it heals.
  */
 export const shower: GoalDef = {
   id: "shower",
   priority: 70,
   options(view, memory) {
-    if (!view.statuses.includes("dirty")) return [];
+    if (!view.statuses.includes("dirty") || showerHurts(view.statuses)) return [];
     if (repairHull.options(view, memory).length > 0) return [];
     const wantSol = contactSolOptions(view, memory, true).length > 0;
     const wantAstro = astroOptions(view, memory, true).length > 0;
@@ -47,7 +52,7 @@ export const shower: GoalDef = {
         key: `shower:${room}`,
         label: `Shower ${where(view, room)} (you are dirty, and research and projects refuse dirty players)`,
         step(v) {
-          if (!v.statuses.includes("dirty")) return { kind: "done" };
+          if (!v.statuses.includes("dirty") || showerHurts(v.statuses)) return { kind: "done" };
           const walk = goTo(v, room);
           if (walk) return walk;
           const wash = find(v, "shower");
