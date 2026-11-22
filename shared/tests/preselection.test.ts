@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG, PRESELECTION, resolveConfig } from "../src/config.ts";
-import { ITRACKIE_ITEM } from "../src/items.ts";
+import { BOOK_ITEM, ITRACKIE_ITEM } from "../src/items.ts";
 import { joinShip, preselectionDeadline } from "../src/preselection.ts";
 import { applyInput, type Input } from "../src/replay.ts";
 import { createGame, viewFor } from "../src/rules.ts";
@@ -210,5 +210,18 @@ describe("Mush selection", () => {
     const deadlineSamples = sDeadline.items.filter((i) => i.type === "mush_sample");
     expect(deadlineSamples).toHaveLength(1);
     expect(deadlineSamples[0]!.at.kind === "room" && allRooms.has(deadlineSamples[0]!.at.id)).toBe(true);
+  });
+
+  it("spawns the apprentron only upon Mush selection, in a storage room, teaching a skill from its pool", () => {
+    const storageRooms = new Set(DEFAULT_CONFIG.snoop.rooms);
+    const pool = new Set(Object.keys(DEFAULT_CONFIG.startItems.find((i) => i.type === BOOK_ITEM)!.teachesWeights!));
+    const s3 = ship(3);
+    expect(s3.items.filter((i) => i.type === BOOK_ITEM)).toHaveLength(0);
+    for (const s of [must(joinShip(s3, makeSeats(4)[3]!)), toDeadline(ship(3, SMALL, 11))]) {
+      const books = s.items.filter((i) => i.type === BOOK_ITEM);
+      expect(books).toHaveLength(1);
+      expect(books[0]!.at.kind === "room" && storageRooms.has(books[0]!.at.id)).toBe(true);
+      expect(pool.has(books[0]!.teaches!)).toBe(true);
+    }
   });
 });

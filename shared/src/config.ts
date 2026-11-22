@@ -705,7 +705,7 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   // Decided 2026-10-17 (owner): every action but ready and access takes a fixed time (2 s, cut to 1.5 s on 2026-10-24) and happens when its bar runs out;
   // up to 3 more can wait behind it.
   action: { durationMs: 1500, queueCap: 3, resolveAt: "end" },
-  // Starting items (matching eMush, 2026-11-17; spacesuits moved to `ICARUS`, 2026-11-20; apprentron, selection-time Mush sample and the tabulator added 2026-11-21): 6 fixed rooms plus storage_default (24 items + 1 weighted apprentron across 5 storages), daedalus_default (27 rooms),
+  // Starting items (matching eMush, 2026-11-17; spacesuits moved to `ICARUS`, 2026-11-20; apprentron, selection-time Mush sample and the tabulator added 2026-11-21; apprentron moved to selection time 2026-11-22): 6 fixed rooms plus storage_default (24 items + 1 weighted apprentron, spawned on Mush selection, across 5 storages), daedalus_default (27 rooms),
   // 4 weighted randomBlueprints (27 rooms), and 1 Mush sample (27 rooms, spawned on Mush selection). Medlab's 12 drugs (1 of each) are added by `stockMedlab` in `createGame`.
   startItems: [
     // Medlab (`SICK_BAY`): 2 bandages (1 of each of the 12 drugs is added by `stockMedlab`).
@@ -745,10 +745,11 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
     { type: "grenade", pool: "storage" },
     { type: "drill", pool: "storage" },
     { type: "quad_compass", pool: "storage" },
-    // 1 apprentron (skill book) in a random storage room (owner, 2026-11-21):
+    // 1 apprentron (skill book) in a random storage room (owner, 2026-11-21), spawned upon Mush selection like eMush (2026-11-22):
     {
       type: BOOK_ITEM,
       pool: "storage",
+      atSelection: true,
       teachesWeights: {
         engineer: 14,
         pilot: 12,

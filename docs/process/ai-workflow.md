@@ -5009,3 +5009,8 @@ Owner asked to "match eMush". Moved the debris table from `config.hunters.debris
 
 - Owner asked that End cycle never wait on other humans. `cycleEndsByReady` (rules.ts) now ends the cycle once a living human is ready and every living bot is (or, with no human alive, once every living bot is); goal bots' `waitForCycle` readies once any living human has, instead of all of them.
 - What needed correction: several tests (cycles, queue, death, inactivity) and the seeded random game (`shared/tests/randomGame.ts`) assumed all-human seats where one ready human didn't end the cycle. With all humans, cycles churned so fast that storedRooms' `gameAt` found nobody alive; making seats 1–7 bots restored the old pace.
+
+## 2026-11-22: Apprentron spawns at Mush selection, as in eMush
+
+- An eMush comparison found our starting apprentron spawned at ship creation (visible during pre-selection), while eMush spawns it in `onFullDaedalus`. Fix: `atSelection: true` on its `startItems` entry in `shared/src/config.ts`; the existing `spawnSelectionItems` path (built for the Mush sample) already handled storage pools and `teachesWeights`, so no rules code changed.
+- Worked: reusing the existing selection-time spawn hook made it a one-line config change. Needed correction: `ship.test.ts` pinned the entry's exact shape; there was also no test that the book is absent in pre-selection, so one was added to `preselection.test.ts` (full ship and deadline).
