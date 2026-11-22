@@ -135,6 +135,7 @@ Both games start characters with 0 skills (3 pickable + 1 book slot) and permane
 - **Starting Ship Items & Hyperfreeze:**
   - The **6 spacesuits** start in the **Icarus Bay** (instead of the ship-wide random pool).
   - **1 Mush sample** spawns in a random Daedalus room **upon Mush selection** (not at ship creation).
+  - The **tabulator** (THE List, #266) is a fixed item in **Front Storage**, not bridge equipment: it can't be taken, dropped, hidden, dismantled or sent by tube, and it breaks (also at a cycle change), can be sabotaged and repairs at 12%. Printing the list isn't built yet.
   - **1 built Oscilloscope** spawns in **Alpha Bay 2** at game start (in addition to its random blueprint; in eMush it is blueprint-only).
   - **Hyperfreeze** only targets **cooked rations and alien steaks** (never fruits) and **preserves their current spoilage stage** in place when turning them into non-perishable `uncooked_ration` (eMush freezes fruits with `FROZEN` and resets ration spoilage).
 

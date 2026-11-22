@@ -4885,3 +4885,9 @@ Owner asked to "match eMush". Moved the debris table from `config.hunters.debris
 - Checked the other movers: `search` only finds hidden items, the expedition moves only touch craft rooms, drones and Schrödinger move only themselves, and death and shoulder injuries only move carried items, so none reach a bridge-bound tabulator.
 - Tests in `shared/tests/theList.test.ts` (the step-1 part). Not yet in the starting items, and no names, icon or print action: those are later steps of `docs/plans/the-list.md`.
 - Follow-up (owner, same day): the tabulator starts in front storage (`STORAGE_FRONT`), not on the bridge as in the original and eMush. Plan, item comments and test updated; to be listed in `changes-from-emush.md` once it spawns.
+
+## 2026-11-21: THE List, build step 2 (the tabulator spawns)
+
+- `config.startItems` now places one `tabulator` in `STORAGE_FRONT`. Since it now shows in game, the same step gave it its names (Tabulator / Tabulatrice / Tabuladora, from the plan) and its icon (`ICON_FILE` maps it to the original's `printer.jpg`, which the item glob already bundles), and listed it in `implemented-rules.md` and `changes-from-emush.md`.
+- Needed correction: `ship.test.ts` pins the total number of starting items (94), which the first `verify` caught; it is now 95 with a front-storage check. A new spawn test is in `theList.test.ts`.
+- Running ships get no tabulator (no normalizer change; the databases are empty). Next: step 3, `theList.ts` and `GameState.theList`.

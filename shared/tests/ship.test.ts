@@ -83,7 +83,7 @@ describe("ship resources", () => {
     expect(s.ship.hull).toBe(0);
   });
 
-  it("places fixed eMush starting items, 6 spacesuits in ICARUS, 24 storage items, 1 apprentron, 5 daedalus items, 4 random blueprints, and 1 Mush sample", () => {
+  it("places fixed eMush starting items, 6 spacesuits in ICARUS, the tabulator in STORAGE_FRONT, 24 storage items, 1 apprentron, 5 daedalus items, 4 random blueprints, and 1 Mush sample", () => {
     const s = createGame(makeSeats(4, "others"), { ...DEFAULT_CONFIG, startInventory: [] }, 7);
     const inRoom = (id: string) => s.items.filter((i) => i.at.kind === "room" && i.at.id === id);
     expect(inRoom("SICK_BAY").filter((i) => i.type === "bandage")).toHaveLength(2);
@@ -94,8 +94,9 @@ describe("ship resources", () => {
     expect(inRoom("HYDROPONIC_CENTER").filter((i) => i.type === "tree_pot")).toHaveLength(3);
     expect(inRoom("CORRIDOR_A").some((i) => i.type === "support_drone")).toBe(true);
     expect(inRoom("ICARUS").filter((i) => i.type === "space_suit")).toHaveLength(6);
-    // 2 + 12 (drugs) + 35 + 3 + 1 + 6 + 24 + 1 (apprentron) + 5 + 4 + 1 (mush_sample) = 94 items total
-    expect(s.items).toHaveLength(94);
+    expect(inRoom("STORAGE_FRONT").filter((i) => i.type === "tabulator")).toHaveLength(1);
+    // 2 + 12 (drugs) + 35 + 3 + 1 + 6 + 1 (tabulator) + 24 + 1 (apprentron) + 5 + 4 + 1 (mush_sample) = 95 items total
+    expect(s.items).toHaveLength(95);
     expect(s.items.filter((i) => i.type === "mush_sample")).toHaveLength(1);
     // Same seed is deterministic; different seeds distribute pooled items differently.
     expect(createGame(makeSeats(4, "others"), { ...DEFAULT_CONFIG, startInventory: [] }, 7).items).toEqual(s.items);

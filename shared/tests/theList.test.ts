@@ -2,9 +2,10 @@ import { describe, expect, it } from "vitest";
 import { ITEM_TYPES, TABULATOR_ITEM } from "../src/items.ts";
 import { applyAction, createGame } from "../src/rules.ts";
 import type { Action, GameState, ItemState } from "../src/types.ts";
+import { DEFAULT_CONFIG } from "../src/config.ts";
 import { makeSeats, nextCycle, offered, player, testConfig } from "./support.ts";
 
-// THE List (owner, 2026-11-21, #266; docs/plans/the-list.md). Step 1: the tabulator item.
+// THE List (owner, 2026-11-21, #266; docs/plans/the-list.md). Steps 1-2: the tabulator item, spawned in front storage.
 
 const STORAGE = "STORAGE_FRONT";
 const config = testConfig({ manualCycles: true });
@@ -25,6 +26,13 @@ function ship(): GameState {
 }
 
 describe("the tabulator", () => {
+  it("starts in front storage, exactly one per ship", () => {
+    const s = createGame(makeSeats(2), testConfig({ startItems: DEFAULT_CONFIG.startItems }), 5);
+    const tabs = s.items.filter((i) => i.type === TABULATOR_ITEM);
+    expect(tabs).toHaveLength(1);
+    expect(tabs[0]!.at).toEqual(room(STORAGE));
+  });
+
   it("pins eMush's 12% repair chance and its flags", () => {
     expect(ITEM_TYPES[TABULATOR_ITEM]).toMatchObject({
       canTake: false,

@@ -698,7 +698,7 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   // Decided 2026-10-17 (owner): every action but ready and access takes a fixed time (2 s, cut to 1.5 s on 2026-10-24) and happens when its bar runs out;
   // up to 3 more can wait behind it.
   action: { durationMs: 1500, queueCap: 3, resolveAt: "end" },
-  // Starting items (matching eMush, 2026-11-17; spacesuits moved to `ICARUS`, 2026-11-20; apprentron and selection-time Mush sample added 2026-11-21): 5 fixed rooms plus storage_default (24 items + 1 weighted apprentron across 5 storages), daedalus_default (27 rooms),
+  // Starting items (matching eMush, 2026-11-17; spacesuits moved to `ICARUS`, 2026-11-20; apprentron, selection-time Mush sample and the tabulator added 2026-11-21): 6 fixed rooms plus storage_default (24 items + 1 weighted apprentron across 5 storages), daedalus_default (27 rooms),
   // 4 weighted randomBlueprints (27 rooms), and 1 Mush sample (27 rooms, spawned on Mush selection). Medlab's 12 drugs (1 of each) are added by `stockMedlab` in `createGame`.
   startItems: [
     // Medlab (`SICK_BAY`): 2 bandages (1 of each of the 12 drugs is added by `stockMedlab`).
@@ -715,6 +715,8 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
     { type: "tree_pot", room: "HYDROPONIC_CENTER", plant: { species: "fruit_banana", age: null, thirst: 0, sick: false } },
     // Front Corridor (`CORRIDOR_A`): 1 support drone.
     { type: "support_drone", room: "CORRIDOR_A" },
+    // Front Storage (`STORAGE_FRONT`): the tabulator, for THE List (owner, 2026-11-21, #266; the bridge in the original and eMush).
+    { type: "tabulator", room: "STORAGE_FRONT" },
     // Icarus Bay (`ICARUS`): 6 spacesuits (moved from `daedalus_default`, 2026-11-20).
     ...Array.from({ length: 6 }, () => ({ type: "space_suit", room: "ICARUS" as RoomId })),
     // `storage_default` (24 items across the 5 storages):
