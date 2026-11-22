@@ -667,6 +667,28 @@
   align-items: center;
   font-size: 0.75rem;
 }
+.ship-status-shared {
+  width: 100%;
+  margin-top: var(--space-1);
+  padding-top: var(--space-1);
+  border-top: 1px solid var(--panel-rim);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+}
+.ship-status-shared .shared-sectors {
+  justify-content: center;
+  margin: 0;
+}
+.ship-status-shared-text {
+  width: 100%;
+  max-height: 8rem;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
 
 /* The alerts popover's located problems (ShipResources `AlertList`, #444). */
 .alert-list {
@@ -681,4 +703,22 @@
 /* A ship resource's popover: how it is gained, lost, and what happens at 0 (ShipResources `ResourceInfo`). */
 .resource-info li + li {
   margin-top: var(--space-1);
+}
+/* The crew bar (CrewBar.tsx): one 7x15 figure per seat, packed 1px apart, at 1x. */
+.crew-bar {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1px;
+  cursor: help;
+}
+.crew-bar img {
+  display: block;
+  image-rendering: pixelated;
+}
+.crew-card .crew-group {
+  margin-top: var(--space-1);
+}
+.crew-card .crew-group p {
+  margin: 0;
 }

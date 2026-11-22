@@ -154,6 +154,8 @@ export interface ActionDef<A extends Action> {
   cooldownLeft(state: Readonly<GameState>, player: Readonly<PlayerState>, action: A): number;
   dirtChanceMods(state: Readonly<GameState>, player: Readonly<PlayerState>, action: A): number;
   injuryChanceMods(state: Readonly<GameState>, player: Readonly<PlayerState>, action: A): number;
+  /** Runs when the action's injury roll triggers and isn't blocked by gloves (after damage). */
+  onInjury(next: GameState, player: PlayerState, action: A): void;
   /** Counts the roll toward the player's failure streak at this action type (performAction): a miss adds one, a success clears it. */
   recordOutcome(next: GameState, player: PlayerState, succeeded: boolean): void;
   /** The effect on failure (the cost stays paid). Mutates a state the caller already cloned. */

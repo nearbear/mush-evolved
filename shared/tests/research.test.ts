@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { ACTIONS } from "../src/actions.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { EQUIPMENT_TYPES } from "../src/equipment.ts";
@@ -63,8 +64,8 @@ describe("research", () => {
     const s = game();
     expect(s.research).toEqual({});
     expect(RESEARCH_IDS).toHaveLength(24);
-    // p1 is Chun and pre-selection is off; the lab has none of the needed items at the start.
-    const free = RESEARCH_IDS.filter((id) => !RESEARCH_REQUIRES[id]?.items);
+    // p1 is Chun and pre-selection is off; the lab has none of the needed items and no Mush is dead at the start.
+    const free = RESEARCH_IDS.filter((id) => !RESEARCH_REQUIRES[id]?.items && !RESEARCH_REQUIRES[id]?.deadMush);
     expect(researches(s, "p0").sort()).toEqual([...free].sort());
     for (const id of RESEARCH_IDS) stockLab(s, "LABORATORY", id);
     expect(researches(s, "p0").sort()).toEqual([...RESEARCH_IDS].sort());
@@ -185,6 +186,12 @@ describe("research", () => {
 
   it("pins the needs taken from the original's research data", () => {
     expect(RESEARCH_REQUIRES.ANTI_MUSH_SERUM).toEqual({ items: ["mush_sample", "mush_floppy_disk"], chun: true, postSelection: true });
+    expect(RESEARCH_REQUIRES.PHEROMODEM).toEqual({ items: ["mush_floppy_disk"], postSelection: true });
+    expect(RESEARCH_REQUIRES.PATULINE_SCRAMBLER).toEqual({ deadMush: true });
+    expect(RESEARCH_REQUIRES.FUNGUS_SCRAMBLER).toEqual({ deadMush: true });
+    expect(RESEARCH_REQUIRES.MUSH_BREEDS).toEqual({ deadMush: true });
+    expect(RESEARCH_REQUIRES.MUSH_BREEDING_SYSTEM).toEqual({ items: ["mush_floppy_disk"], deadMush: true });
+    expect(RESEARCH_REQUIRES.MUSHOPHAGE_BACTERIA).toEqual({ chun: true, deadMush: true });
     expect(RESEARCH_REQUIRES.NATAMY_GUN).toEqual({ items: ["mush_sample", "blaster"], consumes: ["blaster"] });
     expect(RESEARCH_REQUIRES.MUSHICIDE_SOAP).toEqual({ items: ["soap"], consumes: ["soap"], chun: true });
     expect(RESEARCH_REQUIRES.CONSTIPASPORE_SERUM).toEqual({ items: [ANY_CONSUMABLE, "mush_sample"] });
@@ -236,11 +243,54 @@ describe("research", () => {
 
   it("waits for the Mush to be chosen when it needs post-selection", () => {
     const s = game();
+    s.items.push({ id: "disk", type: "mush_floppy_disk", at: { kind: "room", id: "LABORATORY" } });
     s.preselection = true;
-    expect(researches(s, "p0")).not.toContain("MUSH_BREEDS");
+    expect(researches(s, "p0")).not.toContain("PHEROMODEM");
     expect(researches(s, "p0")).toContain("STEROIDS");
     s.preselection = false;
-    expect(researches(s, "p0")).toContain("MUSH_BREEDS");
+    expect(researches(s, "p0")).toContain("PHEROMODEM");
+  });
+
+  it("requires a dead Mush (hasMushDied) for the five dead-Mush researches", () => {
+    const deadMushResearches = [
+      "MUSHOPHAGE_BACTERIA",
+      "FUNGUS_SCRAMBLER",
+      "PATULINE_SCRAMBLER",
+      "MUSH_BREEDS",
+      "MUSH_BREEDING_SYSTEM",
+    ] as const;
+    const s = createGame(seats, testConfig(), 7, { p0: "mush", p1: "human", p2: "human" });
+    for (const p of s.players) p.room = "LABORATORY";
+    s.items.push({ id: "disk", type: "mush_floppy_disk", at: { kind: "room", id: "LABORATORY" } });
+    const mush = s.players.find((p) => p.role === "mush")!;
+    const human = s.players.find((p) => p.role === "human" && p.character !== "chun")!;
+    const actor = s.players.find((p) => p.id !== mush.id && p.id !== human.id)!;
+
+    // None offered while all Mush are alive, and direct attempts are refused.
+    for (const id of deadMushResearches) {
+      expect(researches(s, actor.id)).not.toContain(id);
+      expect(applyAction(s, actor.id, work(id))).toMatchObject({ ok: false });
+    }
+    expect(viewFor(s, actor.id).researchNeeds?.MUSHOPHAGE_BACTERIA).toEqual([true, false]);
+    expect(viewFor(s, actor.id).researchNeeds?.MUSH_BREEDING_SYSTEM).toEqual([true, false]);
+    expect(viewFor(s, actor.id).researchNeeds?.PATULINE_SCRAMBLER).toEqual([false]);
+
+    // A dead human does not satisfy the requirement.
+    human.alive = false;
+    for (const id of deadMushResearches) expect(researches(s, actor.id)).not.toContain(id);
+    human.alive = true;
+
+    // Unrestricted terminals (freeHacking) bypasses deadMush.
+    actor.cheats.push("freeHacking");
+    for (const id of deadMushResearches) expect(researches(s, actor.id)).toContain(id);
+    actor.cheats = [];
+
+    // Once a Mush dies (even with no corpse aboard, matching hasMushDied), all five unlock.
+    mush.alive = false;
+    for (const id of deadMushResearches) expect(researches(s, actor.id)).toContain(id);
+    expect(viewFor(s, actor.id).researchNeeds?.MUSHOPHAGE_BACTERIA).toEqual([true, true]);
+    expect(viewFor(s, actor.id).researchNeeds?.MUSH_BREEDING_SYSTEM).toEqual([true, true]);
+    expect(viewFor(s, actor.id).researchNeeds?.PATULINE_SCRAMBLER).toEqual([true]);
   });
 
   it("tells people at the terminal which of each research's needs the lab meets, in order, and nobody else", () => {
@@ -403,5 +453,70 @@ describe("computer scientist skill (computer)", () => {
     const s = pick(game());
     expect(viewFor(s, "p0").you.resources.comp).toBe(cfg.pointsPerDay);
     expect(JSON.stringify(viewFor(s, "p1"))).not.toContain('"comp":2');
+  });
+});
+
+describe("BIOS research crew lock", () => {
+  it("blocks non-Biologist/Medic/Polyvalent from research and spoil_research, allows qualified crew and freeHacking, and leaves contaminate unaffected", () => {
+    const s = game();
+    s.bios.crew_lock = "research";
+    s.players[0]!.role = "human";
+    s.players[0]!.skills = [];
+    s.players[1]!.role = "mush";
+    s.players[1]!.skills = [];
+
+    // Unqualified human and Mush are blocked from research and spoil_research.
+    expect(offered(s, "p0").some((a) => a.type === "research")).toBe(false);
+    expect(ACTIONS.research.check(s, s.players[0]!, work("STEROIDS"))).toBe("crew_lock");
+    expect(applyAction(s, "p0", work("STEROIDS")).ok).toBe(false);
+    const spoil: Action = { type: "spoil_research", equipment: "LABORATORY:RESEARCH_LAB", research: "STEROIDS" };
+    expect(offered(s, "p1").some((a) => a.type === "research" || a.type === "spoil_research")).toBe(false);
+    expect(ACTIONS.spoil_research.check(s, s.players[1]!, spoil)).toBe("crew_lock");
+    expect(applyAction(s, "p1", spoil).ok).toBe(false);
+
+    // Biologist, Medic, and Polyvalent (skilful) are allowed for both research and spoil_research.
+    for (const skill of ["biologist", "medic", "skilful"] as const) {
+      const qualified = game();
+      qualified.bios.crew_lock = "research";
+      qualified.rng = CLEAN;
+      qualified.players[0]!.skills = [skill];
+      qualified.players[1]!.role = "mush";
+      qualified.players[1]!.skills = [skill];
+      expect(offered(qualified, "p0").some((a) => a.type === "research" && a.research === "STEROIDS")).toBe(true);
+      expect(applyAction(qualified, "p0", work("STEROIDS")).ok).toBe(true);
+      expect(offered(qualified, "p1").some((a) => a.type === "spoil_research" && a.research === "STEROIDS")).toBe(true);
+      expect(applyAction(qualified, "p1", spoil).ok).toBe(true);
+    }
+
+    // freeHacking bypasses the lock.
+    const hacked = game();
+    hacked.bios.crew_lock = "research";
+    hacked.rng = CLEAN;
+    hacked.players[0]!.cheats.push("freeHacking");
+    expect(offered(hacked, "p0").some((a) => a.type === "research" && a.research === "STEROIDS")).toBe(true);
+    expect(applyAction(hacked, "p0", work("STEROIDS")).ok).toBe(true);
+
+    // contaminate is unaffected for a Saboteur without Biologist/Medic/Polyvalent.
+    const contam = game();
+    contam.bios.crew_lock = "research";
+    contam.rng = CLEAN;
+    contam.players[0]!.skills = ["biologist"];
+    const afterWork = mustApply(contam, "p0", work("STEROIDS"));
+    afterWork.players[1]!.role = "mush";
+    afterWork.players[1]!.skills = ["sapper"];
+    expect(offered(afterWork, "p1").some((a) => a.type === "contaminate" && a.research === "STEROIDS")).toBe(true);
+    expect(applyAction(afterWork, "p1", { type: "contaminate", equipment: "LABORATORY:RESEARCH_LAB", research: "STEROIDS" }).ok).toBe(true);
+
+    // Non-research locks allow everyone.
+    for (const lock of ["piloting", "projects"] as const) {
+      const unlocked = game();
+      unlocked.bios.crew_lock = lock;
+      unlocked.rng = CLEAN;
+      unlocked.players[1]!.role = "mush";
+      expect(offered(unlocked, "p0").some((a) => a.type === "research" && a.research === "STEROIDS")).toBe(true);
+      expect(applyAction(unlocked, "p0", work("STEROIDS")).ok).toBe(true);
+      expect(offered(unlocked, "p1").some((a) => a.type === "spoil_research" && a.research === "STEROIDS")).toBe(true);
+      expect(applyAction(unlocked, "p1", spoil).ok).toBe(true);
+    }
   });
 });

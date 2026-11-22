@@ -260,6 +260,22 @@
     "buttonCount_one": "Inventory ({{count}} item in this room)",
     "buttonCount_other": "Inventory ({{count}} items in this room)"
   },
+  "crew": {
+    "title": "Crew",
+    "label": "Crew: {{summary}}",
+    "count": {
+      "alive_one": "{{count}} alive",
+      "alive_other": "{{count}} alive",
+      "mush_one": "{{count}} Mush",
+      "mush_other": "{{count}} Mush",
+      "cryo_one": "{{count}} empty seat in cryosleep",
+      "cryo_other": "{{count}} empty seats in cryosleep",
+      "dead_one": "{{count}} dead",
+      "dead_other": "{{count}} dead",
+      "deadMush_one": "{{count}} dead Mush",
+      "deadMush_other": "{{count}} dead Mush"
+    }
+  },
   "titles": {
     "label": "Titles",
     "holder": "{{title}}: {{name}}",
@@ -428,6 +444,7 @@
     "paidBy": ", costs one of your {{resource}}",
     "atCapacity": "At capacity: the Mush have already extracted all the spores they can today. The limit resets with the next day.",
     "missionIssuedToday": "A mission has already been issued today. The limit resets with the next day.",
+    "cpuPriorityChangedToday": "You have already changed CPU priority today. The limit resets with the next day.",
     "lacksAp": "Not enough AP: it costs {{need}}, you have {{have}}.",
     "onCooldown_one": "Ready again in {{count}} cycle.",
     "onCooldown_other": "Ready again in {{count}} cycles.",
@@ -695,6 +712,7 @@
     "nothingTracked": "Nothing tracked yet.",
     "removeNote": "Remove \"{{note}}\"",
     "researchTracker": "Research tracker",
+    "projectTracker": "NERON projects tracker",
     "trackPlaceholder": "Track something…",
     "newTrackerLine": "New tracker line",
     "add": "Add",
@@ -868,6 +886,7 @@
     "contaminated": "Contamination: {{level}}",
     "hopeless": "Hopeless",
     "nimble": "Nimble",
+    "pregnant": "Pregnant",
     "desc": {
       "dirty": "Can't research. Taking a shower removes it.",
       "full_belly": "You can't eat more until you are hungrier.",
@@ -929,14 +948,15 @@
       "focused": "At a terminal, looking at its screen. Ends when they close it, walk off or leave the room.",
       "contaminated": "A human you have contaminated. At their capacity they turn Mush.",
       "hopeless": "At 0 morale. Any morale gain ends it. A human still Hopeless when the cycle ends dies.",
-      "nimble": "All of your room-level public actions (including movement) become secret. Only you can see this status."
+      "nimble": "All of your room-level public actions (including movement) become secret. Only you can see this status.",
+      "pregnant": "Expecting a child. If this crewmate dies, every living crewmate loses 2 morale."
     }
   },
   "itemAttr": {
     "contaminated": "Contamination: {{level}}",
     "contaminatedDesc": "Mush food: a human who eats it is contaminated by this many levels. Only Mush can see this.",
     "mushCat": "Mush cat",
-    "mushCatDesc": "Infected by the Mush: any human who picks Schrödinger up is contaminated by 1 level. Only Mush can see this.",
+    "mushCatDesc": "Infected by the Mush: any human scratched by Schrödinger (on Take or Caress) is contaminated by 1 level. Only Mush can see this.",
     "jelly_one": "Green jelly: breaks in {{count}} cycle",
     "jelly_other": "Green jelly: breaks in {{count}} cycles",
     "jellyDesc": "It breaks when the cycles run out.",
@@ -982,6 +1002,7 @@
     "loseMorale": "You have lost {{amount}} morale.",
     "antisocialMoraleLoss": "Being around other people has cost you {{amount}} morale.",
     "germaphobeMoraleLoss": "Being dirty has cost you {{amount}} morale.",
+    "pregnantDeathMoraleLoss": "A pregnant crewmate has died. You have lost {{amount}} morale.",
     "gainMorale": "You gain {{amount}} morale.",
     "actionCostChanged": "Your queued action ({{action}}) was cancelled because its cost changed: it now costs {{ap}} AP and {{mp}} MP.",
     "actionDropped": "Your queued action ({{action}}) was no longer possible and was dropped.",
@@ -1183,6 +1204,8 @@
     "bonded": "You bonded with {{name}}.",
     "shareDid": "You did {{label}} with {{name}}.",
     "shareDidToYou": "{{name}} did {{label}} with you.",
+    "becamePregnant": "You are pregnant!",
+    "partnerBecamePregnant": "{{name}} is pregnant!",
     "sporeExtracted": "{{name}} extracted a spore.",
     "ignited": "{{name}} sprayed microspores on a wall.",
     "sabotaged": "{{name}} sabotaged the {{equipment}}.",
@@ -1261,12 +1284,20 @@
     "hullRepairFailed": "You failed to reinforce the hull.",
     "biosShieldOn": "You switched the plasma shield on: it protects the hull again.",
     "biosShieldOff": "You switched the plasma shield off: it no longer protects the hull.",
+    "biosCpuNone": "You cleared NERON's CPU priority.",
+    "biosCpuAstronavigation": "You set NERON's CPU priority to astronavigation.",
+    "biosCpuProjects": "You set NERON's CPU priority to projects.",
+    "biosCpuResearch": "You set NERON's CPU priority to research.",
+    "biosLockPiloting": "You locked piloting to pilots.",
+    "biosLockProjects": "You locked NERON projects to designers.",
+    "biosLockResearch": "You locked laboratory research to biologists and medics.",
     "fungalCooked": "You slip a spore into the {{item}}. It now carries {{level}}.",
     "massMouldering": "You release a cloud of mouldering spores across the ship.",
     "bodyTransferred": "You slipped into {{target}}'s body. {{name}} wakes up human, with your old body.",
     "patrolTakeoff": "{{name}} took off in {{room}}.",
     "icarusBoarded": "{{name}} boarded the Icarus.",
     "icarusLeft": "{{name}} left the Icarus.",
+    "icarusKnockedOff": "{{name}} was knocked off the Icarus.",
     "icarusDisembarked": "The Daedalus left the planet, so you returned to the Icarus bay.",
     "icarusNoSpacesuit": "You have no working spacesuit, and {{planet}} has no oxygen: you stay in the bay.",
     "icarusTakeoff": "{{name}} took off in the Icarus for {{planet}}.",
@@ -1688,6 +1719,7 @@
     "anyConsumable": "any food, drink or drug",
     "needChun": "Chun present",
     "needPostSelection": "Mush chosen",
+    "needDeadMush": "Dead Mush",
     "progress": "{{percent}}% done",
     "done": "Complete",
     "work": "Progress",
@@ -1873,7 +1905,7 @@
       "FIRE_SENSOR": "Fires are reported on your personal modules.",
       "DOOR_SENSOR": "Jammed doors are reported on your personal modules.",
       "EQUIPMENT_SENSOR": "Damaged equipment is reported on your personal modules.",
-      "QUANTUM_SENSORS": "The planet scanner reveals one more sector per attempt.",
+      "QUANTUM_SENSORS": "Upgrades the planet scanner (+30% scan chance and +1 analysis sector while unbroken).",
       "CHIPSET_ACCELERATION": "Searching for a planet costs 1 action point less.",
       "ICARUS_ANTIGRAV_PROPELLER": "Improves your chances of landing on planets.",
       "ICARUS_LARGER_BAY": "The Icarus can carry 2 more people.",
@@ -1932,8 +1964,28 @@
     "adminOnly": "Only the NERON Admin can change these settings.",
     "isOn": "{{name}}: on",
     "isOff": "{{name}}: off",
+    "currentValue": "{{name}}: {{value}}",
     "switchOn": "Switch on",
     "switchOff": "Switch off",
+    "cpu_priority": {
+      "name": "CPU priority",
+      "desc": "Allocates NERON's extra computing power to astronavigation, projects, or research. Can be changed once per day.",
+      "values": {
+        "none": "None",
+        "astronavigation": "Astronavigation",
+        "projects": "Projects",
+        "research": "Research"
+      }
+    },
+    "crew_lock": {
+      "name": "Crew lock",
+      "desc": "Restricts one ship activity to qualified crew: piloting (Pilots), projects (Designers), or research (Biologists and Medics).",
+      "values": {
+        "piloting": "Piloting",
+        "projects": "Projects",
+        "research": "Research"
+      }
+    },
     "actopi": {
       "name": "ACTOPI",
       "desc": "While on, everyone knows who is in which room. While off, you only see how many people are in the other rooms."

@@ -20,7 +20,7 @@ import { projectDone } from "./projects.ts";
 import { RESEARCH_COMPLETE } from "./research.ts";
 import { roll, rollFloat, rollInt, rollShuffle, rollWeighted } from "./rng.ts";
 import { damageShip } from "./ship.ts";
-import { type GameState, HUNTER_TYPES, type Hunter, type HunterTarget, type HunterType, type PlayerState } from "./types.ts";
+import { type DebrisTable, type DeepReadonly, type GameState, HUNTER_TYPES, type Hunter, type HunterTarget, type HunterType, type PlayerState } from "./types.ts";
 import { endGame } from "./victory.ts";
 
 export const TURRET_EQUIPMENT = "TURRET_COMMAND";
@@ -76,13 +76,16 @@ export function damageHunter(state: GameState, id: string, amount: number): bool
   hunter.hp = Math.max(0, hunter.hp - Math.max(0, amount - state.config.hunters.types[hunter.type].armor));
   if (hunter.hp > 0) return false;
   state.hunters.list = state.hunters.list.filter((h) => h.id !== id);
-  dropDebris(state);
+  dropDebris(state, state.config.hunters.types[hunter.type].debris);
   return true;
 }
 
-/** eMush's wreckage (owner, 2026-10-28): 1 piece (2/3) or 2 (1/3), each metal scraps, a space capsule or plastic scraps (2 : 1 : 1). */
-export function dropDebris(state: GameState): void {
-  const { count, types } = state.config.hunters.debris;
+/**
+ * Leaves wreckage in space from `table` (owner, 2026-11-21, #422: eMush's table per hunter kind): a weighted piece
+ * count, then a weighted item type for each piece.
+ */
+export function dropDebris(state: GameState, table: DeepReadonly<DebrisTable>): void {
+  const { count, types } = table;
   const kinds = Object.keys(types);
   const weights = kinds.map((kind) => types[kind]!);
   for (let i = rollWeighted(state, count); i > 0; i--) state.space.push({ id: newItemId(state), type: kinds[rollWeighted(state, weights)]! });
@@ -182,11 +185,13 @@ function hunterAction(state: GameState, hunter: Hunter): void {
 
 /**
  * An asteroid's countdown ran out (owner, 2026-11-12, #388): it hits the Daedalus for its hp, through the shield like
- * any hit, and is gone, leaving no debris. NERON tells the whole crew.
+ * any hit, and is gone. Like eMush, its debris is left in space as if shot down (owner, 2026-11-21, #422). NERON tells
+ * the whole crew.
  */
 function asteroidImpact(state: GameState, asteroid: Hunter): void {
   state.hunters.list = state.hunters.list.filter((h) => h.id !== asteroid.id);
   damageShip(state, asteroid.hp);
+  dropDebris(state, state.config.hunters.types.asteroid.debris);
   logPublic(state, undefined, "asteroidImpact", undefined, "warning");
 }
 

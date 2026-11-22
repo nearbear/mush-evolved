@@ -10,17 +10,37 @@ export const BIOS_OPTIONS = ["actopi", "death_announcements", "plasma_shield"] a
 export type BiosOption = (typeof BIOS_OPTIONS)[number];
 export const isBiosOption = (value: unknown): value is BiosOption => BIOS_OPTIONS.some((o) => o === value);
 
+export const CPU_PRIORITIES = ["none", "astronavigation", "projects", "research"] as const;
+export type CpuPriority = (typeof CPU_PRIORITIES)[number];
+export const isCpuPriority = (value: unknown): value is CpuPriority => CPU_PRIORITIES.some((p) => p === value);
+
+export const CREW_LOCKS = ["piloting", "projects", "research"] as const;
+export type CrewLock = (typeof CREW_LOCKS)[number];
+export const isCrewLock = (value: unknown): value is CrewLock => CREW_LOCKS.some((l) => l === value);
+
 /**
  * - `actopi`: while on, everyone sees who is in which room; while off, only how many people are in each other room.
  * - `death_announcements`: while on, a death is announced in global chat with the dead player's role. The room's
  *   own log line is written either way (death.ts).
  * - `plasma_shield`: while off, the shield absorbs nothing, doesn't regenerate and shows as 0; switched back on, it has
  *   the points it had (ship.ts, hunters.ts).
+ * - `cpu_priority`: boosts astronavigation, NERON projects, or lab research (owner, 2026-11-21). Visible ship-wide to
+ *   living players (`PlayerView.cpuPriority`).
+ * - `crew_lock`: restricts piloting, NERON projects, or lab research to qualified crew (owner, 2026-11-21).
  */
-export type BiosState = Record<BiosOption, boolean>;
+export type BiosState = Record<BiosOption, boolean> & {
+  cpu_priority: CpuPriority;
+  crew_lock: CrewLock;
+};
 
-/** All start on, as in the original (the shield: owner, 2026-10-24). */
-export const newBios = (): BiosState => ({ actopi: true, death_announcements: true, plasma_shield: true });
+/** All switches start on, CPU priority starts at none, and crew lock starts at piloting, as in eMush. */
+export const newBios = (): BiosState => ({
+  actopi: true,
+  death_announcements: true,
+  plasma_shield: true,
+  cpu_priority: "none",
+  crew_lock: "piloting",
+});
 
 /** BIOS terminals in the player's room. */
 export function biosTerminalsHere(state: Readonly<GameState>, player: Readonly<PlayerState>) {
@@ -28,3 +48,7 @@ export function biosTerminalsHere(state: Readonly<GameState>, player: Readonly<P
 }
 
 export const canChangeBios = (state: Readonly<GameState>, player: Readonly<PlayerState>) => hasTitleAccess(state, player, "neron_admin");
+
+/** Bonus added to `tokenBase` when BIOS CPU priority matches `"projects"` or `"research"` (owner, 2026-11-21). */
+export const cpuPriorityBonus = (state: Readonly<GameState>, target: "projects" | "research"): number =>
+  state.bios.cpu_priority === target ? state.config.bios.cpuPriorityBonus : 0;

@@ -60,7 +60,8 @@ describe("Takeoff thruster (PATROL_SHIP_LAUNCHER)", () => {
 
   it("reduces Icarus expedition takeoff by 1 AP once complete, and spends the discounted AP", () => {
     // Aboard the docked Icarus, suited for a planet with no Oxygen sector.
-    const s = pilotGame("ICARUS_CRAFT");
+    const s = pilotGame("ICARUS");
+    player(s, "p0").boardedIcarus = true;
     s.items.push({ id: "suit", type: "space_suit", at: { kind: "player", id: "p0" } });
     s.planets.p0 = [orbitedPlanet];
     s.navigation.orbit = orbitedPlanet.id;

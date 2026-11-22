@@ -82,6 +82,11 @@ export interface PlayerState extends Seat {
   lyingIn?: string;
   /** The cycle the player lay down in, while lying down (Lethargy counts from it). Never sent. */
   lyingSince?: number;
+  /**
+   * Aboard the docked Icarus (actions/board_icarus.ts, #469): you stay in the Icarus Bay until takeoff moves the crew
+   * into the craft. Public to your room (`OtherPlayerView.boarded`).
+   */
+  boardedIcarus?: true;
   /** Who is pushing your wheelchair (accommodate.ts). Public to your room (`OtherPlayerView.pushedBy`, the `accommodated` status). */
   pushedBy?: PlayerId;
   /** The Persecutor whose Anathema made this player an Outcast (anathema.ts). Never sent; the public `outcast` status is. */
@@ -114,6 +119,8 @@ export interface PlayerState extends Seat {
   snoopedToday?: string[];
   /** True once this character has checked their spores on the MycoScan today (check_spores.ts); cleared at day start; stays with the body. Sent to the owner only. */
   mycoscannedToday?: boolean;
+  /** True once this player has changed NERON's CPU priority today (bios.ts); cleared at day start. Sent to the owner only. */
+  cpuPriorityChangedToday: boolean;
   /**
    * Damaged or Destroyed Ears (owner, 2026-11-17): the messages, by channel and position, other players posted while this
    * body was deaf (`pushChat`). They are never sent to it, even after it is cured (`heardBy` in chat.ts), and don't count

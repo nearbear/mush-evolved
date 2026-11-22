@@ -56,7 +56,7 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 - `LostPanel.tsx`: the room view while lost on a planet (slice B of expedition phase 3): names the planet and opens the report you got lost on.
 - `ShipNavigation.tsx`: the Command terminal window's steering: heading, in-orbit flag, combustion chamber fuel, and the Commander's turn, travel (no distance: it burns the chamber) and leave orbit buttons; the last two ask to confirm (`ConfirmPanel`) while an expedition is out.
 - `PlanetList.tsx`: your planets with their sector tags (unknown ones as `tag_unknown`) and a bin button to delete; in the Astro terminal window it adds the scan and analyse buttons.
-- `InventoryOverlay.tsx` + `styles/inventory.css`: the sack button in the room view's lower right (badge = items in the room) that opens `InventoryPanel` over the room; closes on the button, Escape, or a press elsewhere in the room view. Both layouts; hidden when dead.
+- `InventoryOverlay.tsx` + `styles/inventory.css`: the sack button in the room view's lower right (badge = items in the room) that opens `InventoryPanel` over the room, across its full width in the band between your ID card and the minimap's card (`useBand` measures it, with a `ResizeObserver`, and sets the popup's top and bottom); closes on the button, Escape, or a press elsewhere in the room view. Both layouts; hidden when dead.
 - `InventoryPanel.tsx`: item zones; drag to take/drop, tap fallback.
 - `InspectPanel.tsx`: the selected person, equipment, or item, with its legal actions.
 - `ThrowOutDialog.tsx`: collapses per-room `throw_out` options into one button and opens `ConfirmPanel` to pick an adjacent room with an unbroken door.
@@ -87,9 +87,10 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 - `SharePlanetForm.tsx`: the Astro window's Share form, shown in place of the planet's card (Back returns), the planet's name, one sector slot per sector (an icon picker of every tag or unknown), a disclaimer and editable text, posted as `sharePlanet`.
 - `FeedEntry.tsx`, `CycleDivider.tsx`, `RecencyStamp.tsx` + `recency.ts` (pure), `VisibilityBadge.tsx`: an iTrackie feed row, the "Cycle N" rule between cycles, the "47min ago" caption with the exact time in a popover, and a log line's kind badge (private, secret, covert; leaked or not) in a popover (#366, reused by the replay's story 5).
 - `Scroller.tsx`: a scroll area that sticks to the bottom as items arrive.
-- `ResearchTracker.tsx`, `Tracker.tsx`: the Research feature's strip of research cards, and a notes list the player types in.
+- `ResearchTracker.tsx`, `ProjectTracker.tsx`, `Tracker.tsx`: the Research and NERON projects features' strips of cards, and a notes list the player types in.
 - `ResourceChips.tsx`: your other resources as chips (the first two, or as many as fit on a phone, then "…" for the rest); satiety leads the list on both layouts.
 - `ShipResources.tsx`: the ship card (resources, hunters, titles and the crew lost on planets, `view.lost`); in the desktop top bar, and opened by `ShipOverlay.tsx` on phones. `TitleChip.tsx`: one title and its line of succession.
+- `CrewBar.tsx`: the crew bar, one 7x15 figure per seat (alive, Mush, cryo, dead, dead Mush; Mush from `OtherPlayerView.mush`, sent to Mush only), with a popover of who is in each group; in `ShipResources` after the titles. On phones the ship card puts the titles side by side on one row and the crew bar on its own row (`inventory.css`).
 - `BotsPausedTag.tsx`: the top-bar tag shown while model bots are paused (`botsPaused`, #114), with why.
 - `ShipStatus.tsx`: where the ship is (pre-selection, deep space, orbiting, exploring with the return countdown and crew), each with an explanatory popover; joined to the clock's amber plate on desktop, its own plate under the name on phones.
 - `RelayDetails.tsx`: relay tokens in the research, project and PILGRED terminals: `RelayHelp` (the rule sentence), `RelayDetails` (waiting line and token faces; research samples, pending ones underlined), `withGain` (a work button's text with the gain).

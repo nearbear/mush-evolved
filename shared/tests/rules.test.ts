@@ -415,6 +415,20 @@ describe("viewFor (hidden information)", () => {
     }
   });
 
+  it("tells Mush, and only Mush, which other players are Mush, living or dead", () => {
+    const state = newGame();
+    const mush = state.players.filter((p) => p.role === "mush");
+    expect(mush.length).toBeGreaterThan(1);
+    // A dead Mush still counts, and a dead Mush viewer still knows.
+    mush[0]!.alive = false;
+    const mushIds = mush.map((p) => p.id).sort();
+    for (const p of state.players) {
+      const flagged = viewFor(state, p.id).players.filter((o) => o.mush).map((o) => o.id);
+      if (p.role === "mush") expect(flagged.sort()).toEqual(mushIds.filter((id) => id !== p.id));
+      else expect(flagged).toEqual([]);
+    }
+  });
+
   it("never exposes anyone's account name, own included: people are known by character", () => {
     let state = newGame();
     const here = player(state, "p1").room;

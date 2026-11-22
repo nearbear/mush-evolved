@@ -26,6 +26,7 @@ import { Tracker } from "./Tracker.tsx";
 import { SharedPlanets } from "./SharedPlanets.tsx";
 import { SharedReports } from "./SharedReports.tsx";
 import { ResearchTracker } from "./ResearchTracker.tsx";
+import { ProjectTracker } from "./ProjectTracker.tsx";
 import { Scroller } from "./Scroller.tsx";
 import { ExpeditionReportDialog } from "./ExpeditionReportDialog.tsx";
 import { TAB_ICONS } from "../art/assets.ts";
@@ -310,6 +311,8 @@ export function ITrackie({
                   <p className="sub">{t("itrackie.needITrackieTrack")}</p>
                 ) : f === "research" ? (
                   <ResearchTracker view={view} />
+                ) : f === "neron" ? (
+                  <ProjectTracker view={view} />
                 ) : (
                   <Tracker notes={notes[f]} onChange={(next) => setNotes((all) => ({ ...all, [f]: next }))} />
                 )}

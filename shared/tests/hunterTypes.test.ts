@@ -53,6 +53,44 @@ describe("hunter kinds", () => {
   });
 });
 
+describe("debris by kind (owner, 2026-11-21, #422)", () => {
+  it("eMush's tables: weights by piece count (index = count) and by item", () => {
+    const { types } = DEFAULT_CONFIG.hunters;
+    expect(HUNTER_TYPES.map((t) => types[t].debris)).toEqual([
+      { count: [0, 2, 1], types: { metal_scraps: 2, space_capsule: 1, plastic_scraps: 1 } },
+      { count: [0, 2, 1], types: { metal_scraps: 2, space_capsule: 2, plastic_scraps: 1 } },
+      { count: [0, 2, 1, 1], types: { metal_scraps: 2, space_capsule: 1 } },
+      { count: [0, 2, 1, 1, 1], types: { metal_scraps: 2, space_capsule: 2, plastic_scraps: 1 } },
+      { count: [0, 2, 1, 1], types: { metal_scraps: 2, space_capsule: 1, plastic_scraps: 1 } },
+    ]);
+  });
+
+  it("a kind shot down leaves its own table's debris: every piece count it allows, only its items", () => {
+    for (const type of HUNTER_TYPES) {
+      const table = DEFAULT_CONFIG.hunters.types[type].debris;
+      const counts = new Set<number>();
+      for (let seed = 1; seed <= 120; seed++) {
+        const s = createGame(makeSeats(3), testConfig(), seed);
+        const hunter = newHunter(s, type);
+        s.hunters.list.push(hunter);
+        expect(damageHunter(s, hunter.id, hunter.hp + 1)).toBe(true);
+        counts.add(s.space.length);
+        for (const d of s.space) expect(table.types[d.type]).toBeGreaterThan(0);
+      }
+      const allowed = table.count.flatMap((w, n) => (w > 0 ? [n] : []));
+      expect([...counts].sort()).toEqual(allowed);
+    }
+  });
+
+  it("the asteroid never leaves plastic scraps", () => {
+    const s = ship(["asteroid"], { hunters: { types: { asteroid: { debris: { count: [0, 0, 0, 1] } } } } });
+    const id = s.hunters.list[0]!.id;
+    damageHunter(s, id, 100);
+    expect(s.space).toHaveLength(3);
+    expect(s.space.some((d) => d.type === "plastic_scraps")).toBe(false);
+  });
+});
+
 describe("a wave's kinds", () => {
   it("before day 5 a wave is all plain hunters", () => {
     for (const seed of [1, 2, 3, 4, 5]) {
@@ -141,7 +179,9 @@ describe("the asteroid", () => {
     expect(s.hunters.list).toEqual([]);
     expect(s.ship.hull).toBe(hull - (12 - toShield));
     expect(s.ship.plasmaShield).toBe(Math.min(s.config.ship.plasmaShield.max, plasmaShield - toShield + s.config.ship.plasmaShield.regen));
-    expect(s.space).toEqual([]);
+    // Its debris is left in space, as in eMush (owner, 2026-11-21, #422).
+    expect(s.space.length).toBeGreaterThanOrEqual(1);
+    for (const d of s.space) expect(Object.keys(s.config.hunters.types.asteroid.debris.types)).toContain(d.type);
     for (const id of ["p0", "p1", "p2"]) expect(viewFor(s, id).log.filter((e) => e.key === "asteroidImpact")).toHaveLength(1);
   });
 

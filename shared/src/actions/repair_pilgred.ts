@@ -49,7 +49,8 @@ export class RepairPilgredAction extends Action<RepairPilgredActionData> {
   }
 
   override apply(state: GameState, player: PlayerState, _target: RepairPilgredActionData): void {
-    state.pilgred.progress = contribute(state, state.pilgred.pool, state.config.pilgred.progress, player, PILGRED_SKILLS, PILGRED_COMPLETE);
+    // PILGRED is never boosted by BIOS CPU priority (bonus = 0).
+    state.pilgred.progress = contribute(state, state.pilgred.pool, state.config.pilgred.progress, player, PILGRED_SKILLS, PILGRED_COMPLETE, 0);
     if (!isPilgredRepaired(state)) {
       logPrivate(state, player.id, "pilgredRepaired");
       return;

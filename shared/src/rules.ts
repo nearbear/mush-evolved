@@ -63,7 +63,7 @@ import { burnOxygen, rollOxygenSaved, shipView, startShip } from "./ship.ts";
 import { merchantsCycle, merchantsInSpace } from "./merchants.ts";
 import { newSignals, signalName } from "./signals.ts";
 import { allTurrets, huntersCycle, newHunters, startHunters, turretCharges, turretsHere } from "./hunters.ts";
-import { expeditionReturnAt, lostPlayers, maxCrew, nextSectorFor, onExpedition, withCrew } from "./expeditions.ts";
+import { expeditionReturnAt, knockOffIcarus, lostPlayers, maxCrew, nextSectorFor, onExpedition, withCrew } from "./expeditions.ts";
 import { ICARUS_EQUIPMENT } from "./actions/icarus_takeoff.ts";
 import { canScavenge, interfaceId, isLostPlace, newPatrolShips, offShip, PATROL_INTERFACE, PATROL_SHIPS, shipAboard } from "./patrol.ts";
 import { preselectionCycle } from "./preselection.ts";
@@ -256,6 +256,7 @@ export function newPlayer(s: Seat, config: DeepReadonly<GameConfig>, cycle: numb
     history: [],
     logSeen: 0,
     cheats: [],
+    cpuPriorityChangedToday: false,
   };
 }
 
@@ -457,6 +458,7 @@ export function performAction(next: GameState, actor: PlayerState, action: Actio
     }
   };
   withNimbleActor(isNimble(actor) ? actor.id : null, run);
+  knockOffTarget(next, def, action);
   // After apply, so an action that reveals your own history (Chitchat) doesn't show itself.
   if (def.recorded) recordAction(next, actor, action.type);
   if (dirtyChance > 0) {
@@ -470,6 +472,7 @@ export function performAction(next: GameState, actor: PlayerState, action: Actio
       else{
       logPrivate(next, actor.id, "randomInjury", { name: actor.character });
       damage(next, actor, 2, "injury");
+      def.onInjury(next, actor, action);
       }
     }
   }
@@ -482,6 +485,18 @@ export function performAction(next: GameState, actor: PlayerState, action: Actio
   applyCheats(next, actor);
   if (next.players.every((pl) => !pl.alive || pl.ready)) advanceCycle(next);
   return true;
+}
+
+/**
+ * An aggressive action the room sees (public), aimed at someone aboard the docked Icarus, puts them off it whether it
+ * succeeded or not, as being punched gets you out of bed (owner, 2026-11-21, #469). Covert and private ones don't: the
+ * victim leaving the Icarus would give them away.
+ */
+function knockOffTarget(next: GameState, def: ActionDef<Action>, action: Action): void {
+  if (def.visibility !== "public" || !def.tagsFor(next, action).includes("aggressive")) return;
+  const target = (action as { target?: unknown }).target;
+  const victim = typeof target === "string" ? next.players.find((p) => p.id === target) : undefined;
+  if (victim?.boardedIcarus) knockOffIcarus(next, victim);
 }
 
 // The summons walk performs live moves through performAction (actions/summon.ts can't import it: an import cycle).
@@ -589,6 +604,7 @@ function advanceCycle(state: GameState, at?: number): void {
       delete p.interrogatedToday;
       delete p.snoopedToday;
       delete p.mycoscannedToday;
+      p.cpuPriorityChangedToday = false;
     }
     const loss = shipInvincible(state) ? 0 : dailyMoraleLoss(state);
     for (const p of state.players) if (p.alive) p.morale = Math.max(0, p.morale - loss);
@@ -759,6 +775,7 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     unheard: _unheard,
     ...yours
   } = you;
+  const orbitShared = channels.includes("astrophysics") && state.navigation.orbit !== null ? state.sharedPlanets.find((e) => e.planet === state.navigation.orbit)?.id : undefined;
   return {
     you: {
       ...yours,
@@ -771,7 +788,6 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     statuses: statusesOf(state, you),
     drugEffects: drugEffectsSeenBy(state, you),
     fruitEffects: fruitEffectsSeenBy(state, you),
-    // TODO(rules): should Mush see each other's roles? Hidden for now.
     players: others.map((o) => {
       const { id, isBot, botKind, character, room, alive, ready } = o;
       const here = o.alive && present(room);
@@ -791,6 +807,8 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
         ...(here && o.bookSkill !== undefined ? { bookSkill: o.bookSkill } : {}),
         // Who is in bed, and which bed, is visible to the room (owner, 2026-10-18).
         ...(here && o.lyingIn ? { lying: o.lyingIn } : {}),
+        // Who is aboard the docked Icarus is visible to the bay (#469).
+        ...(here && o.boardedIcarus ? { boarded: true as const } : {}),
         // Where they stand, and whether they sit, is visible to the room (owner, 2026-10-20). Standing at the door they
         // came in by would say where they came from: only a Tracker sees that spot (owner, 2026-11-21, `moveLineFor`).
         ...(here && o.spot && state.config.sharedSpots && (o.spot.kind !== "door" || tracker) ? { spot: { ...o.spot } } : {}),
@@ -801,6 +819,8 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
         ...(here && protectingOf(o.id) !== undefined ? { protecting: protectingOf(o.id) } : {}),
         // Mush see a contaminated human's level, like a status, on people in their room.
         ...(contamination !== undefined ? { contamination } : {}),
+        // Mush know who the other Mush are, living or dead (owner, 2026-11-21); humans never learn it from the view.
+        ...(you.role === "mush" && o.role === "mush" ? { mush: true as const } : {}),
         // A busy bar, never the action: only when its log entry could reach you.
         ...(here && o.current && activitySeen(state, room, actionVisibility(o.current.action.type, o), o)
           ? { busy: { since: o.current.since, until: o.current.until } }
@@ -868,7 +888,8 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
       scanAp: state.config.astro.scan.cost.ap, astrophysicistScanDiscount: state.config.astrophysicist.scanApDiscount,
       analyzeAp: state.config.astro.analyze.cost.ap, orbitAnalyzeAp: state.config.astro.analyze.orbitCost.ap,
       contactSolAp: state.config.comms.sol.cost.ap, rebelAp: state.config.comms.rebel.cost.ap, neronAp: state.config.comms.neron.cost.ap,
-      gardenRoom: state.config.botany.gardenRoom, cyclesPerDay: state.config.cyclesPerDay },
+      gardenRoom: state.config.botany.gardenRoom, cyclesPerDay: state.config.cyclesPerDay,
+      seats: state.config.preselection?.seats ?? state.players.length },
     maxAp: you.maxAp,
     maxMp: you.maxMp,
     maxHp: you.maxHp,
@@ -892,6 +913,7 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     humanTankFull: hasMushDied(state),
     comms: { linked: state.comms.linked, terminal: you.alive && comTerminalsHere(state, you).length > 0 ? commsTerminalView(state, you) : null },
     bios: you.alive && biosTerminalsHere(state, you).length > 0 ? { ...state.bios } : null,
+    cpuPriority: you.alive ? state.bios.cpu_priority : null,
     // Only the crew sees a report (owner, 2026-10-31), and only while alive, like their private log lines.
     expeditions: you.alive
       ? state.expeditions
@@ -927,6 +949,7 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
       traveling: state.navigation.arriving !== null,
       orbitPicture: orbitPicture(state),
       orbitName: orbitName(state),
+      ...(orbitShared !== undefined && { orbitShared }),
       heading: you.alive && commandTerminalsHere(state, you).length > 0 ? state.navigation.heading : null,
       lastTurn: state.navigation.lastTurn,
     },

@@ -154,11 +154,9 @@
   font-size: 9px;
   line-height: 11px;
 }
-/* Desktop room zone: more items than fit one row drop to two rows of smaller tiles; beyond two rows it scrolls. */
+/* Desktop room zone: more items than fit its space at full size shrink to smaller tiles; beyond that it scrolls. */
 .item-grid[data-compact] {
   --tile: 52px;
-  max-height: calc(var(--tile) * 2 + 6px);
-  overflow-y: auto;
 }
 /* A corpse's icon: the owner's lying pose cropped from the cast sheet, centered and unsmoothed. */
 .corpse-icon {
