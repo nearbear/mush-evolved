@@ -57,6 +57,7 @@ export function arrive(p: PlayerState, from: RoomId): void {
   p.enteredFrom = from;
   removeStatus(p, "guardian"); // changing room ends guarding (guard.ts)
   delete p.hackedEquipment;
+  delete p.boardedIcarus; // leaving the Icarus Bay gets you off the docked Icarus (#469)
 }
 
 /** The cells of the chairs at a terminal, from the map (`ShipRoom` equipment's `chairs`); none for most equipment. */

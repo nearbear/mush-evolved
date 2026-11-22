@@ -1297,6 +1297,7 @@
     "patrolTakeoff": "{{name}} took off in {{room}}.",
     "icarusBoarded": "{{name}} boarded the Icarus.",
     "icarusLeft": "{{name}} left the Icarus.",
+    "icarusKnockedOff": "{{name}} was knocked off the Icarus.",
     "icarusDisembarked": "The Daedalus left the planet, so you returned to the Icarus bay.",
     "icarusNoSpacesuit": "You have no working spacesuit, and {{planet}} has no oxygen: you stay in the bay.",
     "icarusTakeoff": "{{name}} took off in the Icarus for {{planet}}.",

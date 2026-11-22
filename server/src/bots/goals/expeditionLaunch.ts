@@ -10,7 +10,6 @@ import type { BotMemory, Goal, GoalDef, GoalStep } from "./types.ts";
 export const EXPEDITION_LAUNCH_PRIORITY = 73.5;
 
 const ICARUS = DEFAULT_CONFIG.expedition.room;
-const CRAFT = DEFAULT_CONFIG.expedition.craft;
 
 const openExpeditionPlan = (view: PlayerView) =>
   view.plans.find((p) => p.purpose === "expedition" && p.status === "open");
@@ -55,7 +54,7 @@ function crewStillBoarding(view: PlayerView, memory: BotMemory): boolean {
   const plan: Plan | undefined = view.plans.find((p) => p.purpose === "expedition" && p.status === "called" && p.author === view.you.id);
   if (!plan || !memory.today.has(summonedKey(plan.id, view.cycle))) return false;
   const holders = new Set(plan.slots.flatMap((s) => (s.kind === "onCall" && s.holder !== null && s.holder !== view.you.id ? [s.holder] : [])));
-  return view.players.some((p) => holders.has(p.id) && p.alive && p.room === ICARUS);
+  return view.players.some((p) => holders.has(p.id) && p.alive && p.room === ICARUS && p.boarded !== true);
 }
 
 /**
@@ -81,7 +80,7 @@ export const expeditionLaunch: GoalDef = {
       return [];
     }
 
-    if (view.you.room === CRAFT) {
+    if (view.you.boardedIcarus === true) {
       if (launchOffers(view, "icarus_takeoff").length === 0) return [];
     } else if (view.you.room === ICARUS) {
       if (launchOffers(view, "board_icarus").length === 0 && fetchSpacesuit(view, memory) === null) return [];
@@ -103,7 +102,7 @@ function launchGoal(key: string): Goal {
     label: "Summon the expedition crew, board the Icarus and launch it", // i18n-ignore: model prompt text, not player-visible
     step(v, m) {
       if (!v.navigation.orbiting || v.expedition !== null) return { kind: "done" };
-      if (v.you.room === CRAFT) {
+      if (v.you.boardedIcarus === true) {
         const offers = launchOffers(v, "icarus_takeoff");
         if (offers.length === 0) {
           m.once.add(noTakeoffKey(v));

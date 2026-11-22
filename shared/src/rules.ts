@@ -63,7 +63,7 @@ import { burnOxygen, rollOxygenSaved, shipView, startShip } from "./ship.ts";
 import { merchantsCycle, merchantsInSpace } from "./merchants.ts";
 import { newSignals, signalName } from "./signals.ts";
 import { allTurrets, huntersCycle, newHunters, startHunters, turretCharges, turretsHere } from "./hunters.ts";
-import { expeditionReturnAt, lostPlayers, maxCrew, nextSectorFor, onExpedition, withCrew } from "./expeditions.ts";
+import { expeditionReturnAt, knockOffIcarus, lostPlayers, maxCrew, nextSectorFor, onExpedition, withCrew } from "./expeditions.ts";
 import { ICARUS_EQUIPMENT } from "./actions/icarus_takeoff.ts";
 import { canScavenge, interfaceId, isLostPlace, newPatrolShips, offShip, PATROL_INTERFACE, PATROL_SHIPS, shipAboard } from "./patrol.ts";
 import { preselectionCycle } from "./preselection.ts";
@@ -458,6 +458,7 @@ export function performAction(next: GameState, actor: PlayerState, action: Actio
     }
   };
   withNimbleActor(isNimble(actor) ? actor.id : null, run);
+  knockOffTarget(next, def, action);
   // After apply, so an action that reveals your own history (Chitchat) doesn't show itself.
   if (def.recorded) recordAction(next, actor, action.type);
   if (dirtyChance > 0) {
@@ -484,6 +485,18 @@ export function performAction(next: GameState, actor: PlayerState, action: Actio
   applyCheats(next, actor);
   if (next.players.every((pl) => !pl.alive || pl.ready)) advanceCycle(next);
   return true;
+}
+
+/**
+ * An aggressive action the room sees (public), aimed at someone aboard the docked Icarus, puts them off it whether it
+ * succeeded or not, as being punched gets you out of bed (owner, 2026-11-21, #469). Covert and private ones don't: the
+ * victim leaving the Icarus would give them away.
+ */
+function knockOffTarget(next: GameState, def: ActionDef<Action>, action: Action): void {
+  if (def.visibility !== "public" || !def.tagsFor(next, action).includes("aggressive")) return;
+  const target = (action as { target?: unknown }).target;
+  const victim = typeof target === "string" ? next.players.find((p) => p.id === target) : undefined;
+  if (victim?.boardedIcarus) knockOffIcarus(next, victim);
 }
 
 // The summons walk performs live moves through performAction (actions/summon.ts can't import it: an import cycle).
@@ -794,6 +807,8 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
         ...(here && o.bookSkill !== undefined ? { bookSkill: o.bookSkill } : {}),
         // Who is in bed, and which bed, is visible to the room (owner, 2026-10-18).
         ...(here && o.lyingIn ? { lying: o.lyingIn } : {}),
+        // Who is aboard the docked Icarus is visible to the bay (#469).
+        ...(here && o.boardedIcarus ? { boarded: true as const } : {}),
         // Where they stand, and whether they sit, is visible to the room (owner, 2026-10-20). Standing at the door they
         // came in by would say where they came from: only a Tracker sees that spot (owner, 2026-11-21, `moveLineFor`).
         ...(here && o.spot && state.config.sharedSpots && (o.spot.kind !== "door" || tracker) ? { spot: { ...o.spot } } : {}),

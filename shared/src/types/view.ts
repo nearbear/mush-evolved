@@ -99,6 +99,8 @@ export interface OtherPlayerView {
   statuses: string[];
   /** The bed (equipment id) they are lying in. Public to anyone in your room (empty for people elsewhere). */
   lying?: string;
+  /** Aboard the docked Icarus, in the bay (#469). Public to anyone in your room. */
+  boarded?: true;
   /** Where they stand in the room (spot.ts). Public to anyone in your room (empty for people elsewhere). */
   spot?: Spot;
   /** Who is pushing their wheelchair. Public to anyone in your room (empty for people elsewhere). */

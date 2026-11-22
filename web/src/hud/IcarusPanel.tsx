@@ -41,7 +41,11 @@ interface Props {
 export function IcarusPanel({ view, expedition, selected, onSelect, onAction, planet, leave, onShareReport }: Props) {
   const { t } = useTranslation();
   const names = useNames();
-  const aboard = [view.you, ...view.players].filter((p) => p.alive && p.room === view.you.room).sort((a, b) => a.id.localeCompare(b.id));
+  // Docked, the crew waits in the bay among everyone else there (#469): only the boarded are aboard.
+  const boarded = new Set([...(view.you.boardedIcarus ? [view.you.id] : []), ...view.players.filter((p) => p.boarded).map((p) => p.id)]);
+  const aboard = [view.you, ...view.players]
+    .filter((p) => p.alive && p.room === view.you.room && (expedition !== null || boarded.has(p.id)))
+    .sort((a, b) => a.id.localeCompare(b.id));
   // A patrol ship's landing has room for its pilot only; the Icarus has its seats, never fewer than who is aboard.
   const launch = expedition ? undefined : view.actions.find((o) => o.action.type === "icarus_takeoff");
   const seats = expedition?.ship !== undefined ? aboard.length : Math.max(view.icarusSeats, aboard.length);

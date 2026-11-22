@@ -2,7 +2,8 @@ import { describe, expect, it } from "vitest";
 import { BLUEPRINTS } from "../src/blueprints.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { addDisease } from "../src/diseases.ts";
-import { pickSectors, runExpedition, winChance } from "../src/expeditions.ts";
+import { aboardIcarus, pickSectors, runExpedition, winChance } from "../src/expeditions.ts";
+import { killPlayer } from "../src/death.ts";
 import { nextDue } from "../src/queue.ts";
 import { projectStatus } from "../src/projects.ts";
 import { PLANET_TAG_IDS } from "../src/planets.ts";
@@ -81,6 +82,7 @@ function aboard(s: GameState, by: PlayerId = "p0"): GameState {
   return t;
 }
 /** Why the action is refused, or null. */
+const aboardIds = (s: GameState) => aboardIcarus(s).map((p) => p.id);
 const why = (s: GameState, id: PlayerId, action: Action) => ACTIONS[action.type]!.check(s, player(s, id), action as never);
 /** Board (`aboard`), then `by` takes off from inside. */
 const go = (s: GameState, by: PlayerId = "p0") => must(applyAction(aboard(s, by), by, takeoff));
@@ -105,7 +107,11 @@ describe("expeditions, phase 1 (instant, as in single player)", () => {
       expect(option(s, id, boardIcarus)?.cost).toEqual({ ap: 0, mp: 0 });
     }
     const next = must(applyAction(s, "p1", boardIcarus));
-    expect(player(next, "p1").room).toBe(CRAFT);
+    // Aboard, they stay in the bay until takeoff (#469).
+    expect(player(next, "p1").room).toBe(ICARUS);
+    expect(player(next, "p1").boardedIcarus).toBe(true);
+    expect(offered(next, "p1")).not.toContainEqual(boardIcarus);
+    expect(why(next, "p1", boardIcarus)).toBe("already_aboard");
     expect(player(next, "p1").ap).toBe(player(s, "p1").ap);
     expect(next.log.slice(s.log.length)).toEqual([expect.objectContaining({ key: "icarusBoarded", room: ICARUS, visibleTo: "all", params: { name: player(s, "p1").character } })]);
     // Takeoff is no longer offered from the bay, only from inside.
@@ -158,22 +164,64 @@ describe("expeditions, phase 1 (instant, as in single player)", () => {
 
   it("boarding without a spacesuit is allowed on a planet with an Oxygen sector", () => {
     const s = game({ suits: false });
-    expect(must(applyAction(s, "p1", boardIcarus)).players.find((p) => p.id === "p1")!.room).toBe(CRAFT);
+    expect(player(must(applyAction(s, "p1", boardIcarus)), "p1").boardedIcarus).toBe(true);
   });
 
-  it("leave_icarus: free, from inside the docked Icarus, a public line in the bay; the last to leave takes its floor with them", () => {
+  it("leave_icarus: free, while aboard the docked Icarus, a public line in the bay", () => {
     const s = aboard(game());
     expect(offered(s, "p1")).toContainEqual(getOff);
     expect(offered(game(), "p1")).not.toContainEqual(getOff);
-    const body = { id: "item-test-body", type: "ration", at: { kind: "room" as const, id: CRAFT } };
-    s.items.push(body);
-    let t = must(applyAction(s, "p1", getOff));
+    const t = must(applyAction(s, "p1", getOff));
     expect(player(t, "p1").room).toBe(ICARUS);
+    expect(player(t, "p1").boardedIcarus).toBeUndefined();
     expect(player(t, "p1").ap).toBe(player(s, "p1").ap);
     expect(t.log.slice(s.log.length)).toEqual([expect.objectContaining({ key: "icarusLeft", room: ICARUS, visibleTo: "all", params: { name: player(s, "p1").character } })]);
-    expect(t.items.find((i) => i.id === body.id)!.at).toEqual({ kind: "room", id: CRAFT });
-    for (const id of ["p0", "p2", "p3"]) t = must(applyAction(t, id, getOff));
-    expect(t.items.find((i) => i.id === body.id)!.at).toEqual({ kind: "room", id: ICARUS });
+  });
+
+  it("aboard the docked Icarus you stay in the bay (#469): the bay sees you boarded, and takeoff moves the crew into the craft", () => {
+    const s = aboard(game());
+    // p4 is in the Laboratory: brought to the bay, they see the boarded; elsewhere nobody does.
+    const bay = clone(s);
+    player(bay, "p4").room = ICARUS;
+    expect(viewFor(bay, "p4").players.find((p) => p.id === "p1")?.boarded).toBe(true);
+    expect(viewFor(s, "p4").players.find((p) => p.id === "p1")?.boarded).toBeUndefined();
+    expect(viewFor(s, "p1").you.boardedIcarus).toBe(true);
+    const out = must(applyAction(s, "p0", takeoff));
+    for (const id of ["p0", "p1", "p2", "p3"] as const) {
+      expect(player(out, id).boardedIcarus).toBeUndefined();
+    }
+  });
+
+  it("walking out of the bay, being thrown out or dying gets you off the docked Icarus (#469)", () => {
+    const s = aboard(game());
+    const to = s.config.rooms[ICARUS]![0]!;
+    const walked = must(applyAction(s, "p1", { type: "move", to }));
+    expect(player(walked, "p1").boardedIcarus).toBeUndefined();
+    expect(offered(walked, "p1")).not.toContainEqual(getOff);
+
+    const thrower = clone(s);
+    player(thrower, "p4").room = ICARUS;
+    player(thrower, "p4").skills.push("wrestler" as never);
+    player(thrower, "p4").ap = 10;
+    const thrown = must(applyAction(thrower, "p4", { type: "throw_out", target: "p1", to }));
+    expect(player(thrown, "p1").room).toBe(to);
+    expect(player(thrown, "p1").boardedIcarus).toBeUndefined();
+
+    const dead = clone(s);
+    killPlayer(dead, player(dead, "p1"), "injury");
+    expect(player(dead, "p1").boardedIcarus).toBeUndefined();
+  });
+
+  it("a public aggressive action on someone aboard the docked Icarus puts them off it, with a line in the bay (#469)", () => {
+    const s = aboard(game());
+    player(s, "p4").room = ICARUS;
+    player(s, "p4").ap = 10;
+    const punched = must(applyAction(s, "p4", { type: "punch", target: "p1" }));
+    expect(player(punched, "p1").boardedIcarus).toBeUndefined();
+    expect(punched.log.slice(s.log.length)).toContainEqual(expect.objectContaining({ key: "icarusKnockedOff", room: ICARUS, visibleTo: "all", params: { name: player(s, "p1").character } }));
+    expect(aboardIds(punched)).toEqual(["p0", "p2", "p3"]);
+    // The boarded can be reached from the bay at all: punch is offered on them.
+    expect(offered(s, "p4")).toContainEqual({ type: "punch", target: "p1" });
   });
 
   it("takeoff is offered aboard to Pilots (or freeHacking) under the piloting lock, or anyone ungrounded once unlocked", () => {
@@ -1754,10 +1802,9 @@ describe("expeditions, phase 5: hold extension, patrol-ship landings, no droppin
     const knife = s.items.at(-1)!.id;
     const drop: Action = { type: "drop", item: knife };
     expect(offered(s, "p1")).toContainEqual(drop);
-    // Aboard the docked Icarus too (owner, 2026-11-17), so nothing is left in it.
+    // Aboard the docked Icarus you are in the bay and may drop there (owner, 2026-11-21, #469).
     const docked = aboard(s);
-    expect(offered(docked, "p1")).not.toContainEqual(drop);
-    expect(refusal(docked, "p1", drop)).toBe("on_expedition");
+    expect(offered(docked, "p1")).toContainEqual(drop);
     const away = go(s);
     expect(offered(away, "p1")).not.toContainEqual(drop);
     expect(refusal(away, "p1", drop)).toBe("on_expedition");

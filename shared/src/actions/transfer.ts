@@ -33,8 +33,8 @@ export class TransferAction<T extends "take" | "drop" = "take" | "drop"> extends
   // Broken Shoulder: no heavy item (owner, 2026-11-18).
     if (this.type === "take" && ITEM_TYPES[item.type]?.heavy && cantCarryHeavy(player)) return "too_heavy";
     // Nothing can be dropped on an expedition (owner, 2026-11-08 and 2026-11-09, #359): aboard its craft or lost on the
-    // planet; nor aboard the docked Icarus (owner, 2026-11-17).
-    if (this.type === "drop" && (onExpedition(state, player) || isLostPlace(player.room) || player.room === state.config.expedition.craft)) return "on_expedition";
+    // planet. Aboard the docked Icarus you are in the bay and may drop there (owner, 2026-11-21, #469).
+    if (this.type === "drop" && (onExpedition(state, player) || isLostPlace(player.room))) return "on_expedition";
     const destination: Container = this.type === "take" ? { kind: "player", id: player.id } : { kind: "room", id: player.room };
     return canTransfer(state, player, item, destination) ? null : "cant_transfer";
   }

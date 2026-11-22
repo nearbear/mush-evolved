@@ -1319,6 +1319,7 @@
     "patrolTakeoff": "{{name}} despegó a bordo de {{room}}.",
     "icarusBoarded": "{{name}} subió al Ícaro.",
     "icarusLeft": "{{name}} salió del Ícaro.",
+    "icarusKnockedOff": "{{name}} fue expulsado del Ícaro.",
     "icarusDisembarked": "El Daedalus dejó el planeta; regresaste a la Bahía Ícaro.",
     "icarusNoSpacesuit": "No tienes un traje espacial que funcione y {{planet}} no tiene oxígeno: te quedas en la bahía.",
     "icarusTakeoff": "{{name}} despegó a bordo del Ícaro rumbo a {{planet}}.",

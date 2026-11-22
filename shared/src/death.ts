@@ -90,6 +90,7 @@ export function killPlayer(state: GameState, player: PlayerState, cause: DeathCa
   player.ready = false;
   player.current = null;
   player.queue = [];
+  delete player.boardedIcarus; // the body lies in the Icarus Bay (#469)
 
   // The iTrackie is destroyed; everything else drops into the room, then the body.
   const mine = { kind: "player", id: player.id } as const;

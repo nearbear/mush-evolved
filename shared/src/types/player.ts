@@ -82,6 +82,11 @@ export interface PlayerState extends Seat {
   lyingIn?: string;
   /** The cycle the player lay down in, while lying down (Lethargy counts from it). Never sent. */
   lyingSince?: number;
+  /**
+   * Aboard the docked Icarus (actions/board_icarus.ts, #469): you stay in the Icarus Bay until takeoff moves the crew
+   * into the craft. Public to your room (`OtherPlayerView.boarded`).
+   */
+  boardedIcarus?: true;
   /** Who is pushing your wheelchair (accommodate.ts). Public to your room (`OtherPlayerView.pushedBy`, the `accommodated` status). */
   pushedBy?: PlayerId;
   /** The Persecutor whose Anathema made this player an Outcast (anathema.ts). Never sent; the public `outcast` status is. */

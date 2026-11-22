@@ -62,6 +62,7 @@ export function board(player: PlayerState, room: RoomId): void {
   delete player.enteredFrom;
   removeStatus(player, "guardian"); // changing room ends guarding (guard.ts)
   delete player.hackedEquipment;
+  delete player.boardedIcarus; // changing room gets you off the docked Icarus (#469)
 }
 
 /**

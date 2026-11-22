@@ -584,6 +584,17 @@ describe("upgrade", () => {
     });
     expect(normalized.signals.list[1]!.feed).toEqual([{ from: "system", at: 18, key: "signals.lost", closes: true }]);
   });
+
+  it("upgradeTo123 puts the crew aboard the docked Icarus back in the bay, boarded (#469), with the craft's floor", () => {
+    const { game, overrides } = fresh();
+    const raw = stored(game);
+    raw.players[0].room = "ICARUS_CRAFT";
+    raw.items.push({ id: "item-test-craft", type: "ration", at: { kind: "room", id: "ICARUS_CRAFT" } });
+    upgrade({ game: raw, overrides }, 122);
+    const g = normalizeGame(raw, overrides);
+    expect([g.players[0]!.room, g.players[0]!.boardedIcarus]).toEqual(["ICARUS", true]);
+    expect(g.items.find((i) => i.id === "item-test-craft")!.at).toEqual({ kind: "room", id: "ICARUS" });
+  });
 });
 
 describe("normalizeFrame (#384)", () => {

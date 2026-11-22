@@ -32,7 +32,8 @@ export class IcarusTakeoffAction extends Action<IcarusTakeoffActionData> {
   }
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>): string | null {
-    if (player.room !== state.config.expedition.craft) return "not_in_icarus";
+    // Aboard the docked Icarus (#469): boarded, in the bay. Its other refusals (away, lost) come below.
+    if (!player.alive || !player.boardedIcarus || player.room !== state.config.expedition.room) return "not_in_icarus";
     if (!canLaunchExpedition(state, player)) return canFly(player) ? "crew_lock" : "cant_fly";
     if (state.icarusLost) return ICARUS_LOST;
     if (state.expedition) return state.expedition.ship === null ? "icarus_away" : "expedition_away";

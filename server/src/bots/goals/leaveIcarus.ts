@@ -1,10 +1,9 @@
-import { DEFAULT_CONFIG } from "@mush2/shared";
 import { act, find } from "./blocks.ts";
 import { expeditionLaunch } from "./expeditionLaunch.ts";
 import { waitingAboard } from "./expeditionPrep.ts";
 import type { GoalDef } from "./types.ts";
 
-/** Above every other goal: the docked Icarus has no doors or equipment, so nothing else can be done from inside. */
+/** Above every other goal: aboard the docked Icarus a bot waits for takeoff and does nothing else. */
 export const LEAVE_ICARUS_PRIORITY = 101;
 
 /**
@@ -16,14 +15,14 @@ export const leaveIcarus: GoalDef = {
   id: "leaveIcarus",
   priority: LEAVE_ICARUS_PRIORITY,
   options(view, memory) {
-    if (view.you.room !== DEFAULT_CONFIG.expedition.craft) return [];
+    if (view.you.boardedIcarus !== true) return [];
     if (!find(view, "leave_icarus")) return [];
     if (waitingAboard(view, memory) || expeditionLaunch.options(view, memory).length > 0) return [];
     return [
       {
         id: "leaveIcarus",
         key: "leaveIcarus",
-        label: "Get off the Icarus, back into its bay", // i18n-ignore: model prompt text, not player-visible
+        label: "Get off the docked Icarus", // i18n-ignore: model prompt text, not player-visible
         step(v, m) {
           // Crew that waited aboard its while gives up on the plan, so it doesn't board again (`expeditionPrep`).
           if (m.expeditionPrep?.ready) m.expeditionPrep.done = true;
