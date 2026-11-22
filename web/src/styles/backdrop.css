@@ -22,7 +22,32 @@
     background: transparent;
   }
   /* The panels' fill, translucent over the stars (tokens.css's --panel-glass; a plain fill: no backdrop blur, which
-     would redo every frame). */
+     would redo every frame). Hollow out ::before so its solid rim polygon doesn't block the stars behind ::after. */
+  main.game:has(> .space-backdrop) :is(.inspect, .top-bar, .itrackie)::before {
+    clip-path: polygon(
+      evenodd,
+      50% 0,
+      calc(100% - var(--cut-tr)) 0,
+      100% var(--cut-tr),
+      100% calc(100% - var(--cut-br)),
+      calc(100% - var(--cut-br)) 100%,
+      var(--cut-bl) 100%,
+      0 calc(100% - var(--cut-bl)),
+      0 var(--cut-tl),
+      var(--cut-tl) 0,
+      50% 0,
+      50% 1px,
+      calc(var(--stripe, 1px) + max(0px, var(--cut-tl) - 0.4px)) 1px,
+      var(--stripe, 1px) calc(1px + max(0px, var(--cut-tl) - 0.4px)),
+      var(--stripe, 1px) calc(100% - 1px - max(0px, var(--cut-bl) - 0.4px)),
+      calc(var(--stripe, 1px) + max(0px, var(--cut-bl) - 0.4px)) calc(100% - 1px),
+      calc(100% - 1px - max(0px, var(--cut-br) - 0.4px)) calc(100% - 1px),
+      calc(100% - 1px) calc(100% - 1px - max(0px, var(--cut-br) - 0.4px)),
+      calc(100% - 1px) calc(1px + max(0px, var(--cut-tr) - 0.4px)),
+      calc(100% - 1px - max(0px, var(--cut-tr) - 0.4px)) 1px,
+      50% 1px
+    );
+  }
   main.game:has(> .space-backdrop) :is(.inspect, .top-bar, .itrackie)::after {
     background: var(--panel-glass);
   }
