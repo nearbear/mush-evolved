@@ -4971,3 +4971,36 @@ Owner asked to "match eMush". Moved the debris table from `config.hunters.debris
 - 2026-11-22: Missing Finger now has -1 max HP (owner, the wiki's). Burnt Hand already had it, so it was left unchanged. No `verify` (owner); the finger and hand/arm tests were run.
 
 - 2026-11-22: Added `missing_teeth_injury` (-2 max morale; chat posts lose F, V, S, T, D and L in both cases). New `speech` modifier hook, folded by `spokenText` in `sendChat` before the message is stored, so the server stores the mangled text and no client-side logic is needed. An emptied message is refused. Shared-report notes are left alone, matching Torn Tongue; flagged. No `verify` (owner); the missing teeth and channel tests were run.
+### 2026-11-21 — NERON BIOS toggle switches
+
+- Placed `Mush/www/img/design/switch_bg.gif` (32x17 track) and `Mush/www/img/design/switch.png` (17x17 sliding knob) on the NERON BIOS terminal's boolean options (`actopi`, `death_announcements`, `plasma_shield`) in `web/src/hud/BiosTerminal.tsx` and `web/src/hud/settings.css`, keeping `cpu_priority` and `crew_lock` as multi-choice buttons.
+- Extended `ActionButton` with `switchProps` so admin switches keep double-press arming (knob nudges partway + outline on `[data-armed]`) and disabled-reason popovers while Biome's `useAriaPropsSupportedByRole` statically sees `role="switch"`. Non-admins see the same switches disabled to reflect current on/off state.
+
+### 2026-11-21 — Trapper Mush skill (#473)
+- **Decision (owner, 2026-11-21, #473):** Implemented the `trapper` Mush skill (`trap_room`: 1 AP + 1 spore, no cooldown, covert + `spore`-tagged, blocked in pre-selection, off-ship, or when already trapped). Triggers in the actor's own room (success or failure) on voluntary `get_up`, `search`, `report_*`, room `equipment`/`door` actions, and actions targeting an item on the room's floor/shelf before resolution; consumes the trap and calls `contaminate(state, actor)` (Mush and Immune waste it silently). Living Mush see active traps ship-wide on the minimap (`PlayerView.trappedRooms`); humans and dead players always receive `[]`.
+- **What worked:** Evaluating `willTriggerRoomTrap` before `def.apply` in `performAction` cleanly handled `take` and floor-vs-carried item checks without touching individual actions. Additive `trappedRooms` in `normalizeCore` needed no `STATE_VERSION` bump. Placing the trap icon through `iconSpots` in `ShipPlanSvg` kept it cleanly inside room walls without overlapping crew icons.
+- Follow-up: scaled `.bios-switch` to exact 2x (`64x24px`, clipping off the tiny `OFF`/`ON` pixel text beneath the track), switched the BIOS controls to single-click, moved all BIOS setting descriptions into `.has-tip` Popover tooltips on their titles, and rendered `cpu_priority` and `crew_lock` as `role="radiogroup"` radio buttons using `Mush/derived/ui/pa_empty.png` (unselected) and `Mush/www/img/icons/ui/pa_slot1.png` (selected).
+
+### 2026-11-21 — Modal and terminal close button sprites
+
+- Replaced the text `×` close button in `DialogHeader` and `TerminalFrame` with Motion Twin's 16×16 `Mush/www/img/icons/ui/close.png` (and `close_over.png` on hover/active) in `web/src/hud/settings.css`, drawn at 1x with `image-rendering: pixelated` and an expanded `::before` hit area for touch targets.
+- Covers all terminals (`TerminalFrame`) and modals (`FramedDialog`, `AccountButton`, `CharacterPicker`, `EndScreen`). Verified with `npm run verify:web`.
+- Extended the same `close.png` / `close_over.png` button styling to `TipCard` (`web/src/hud/tips.css`), and raised `.tip-card` to `z-index: 3` so tips render above `.room-corner` (minimap, `z-index: 2`) while staying under `.inventory-overlay` (later in DOM at `z-index: 3`).
+
+### 2026-11-21 — TerminalCollapsible pattern & greenhouse botany basics caption
+- Added reusable `TerminalCollapsible` (`web/src/hud/TerminalCollapsible.tsx`, styles in `web/src/hud/terminal.css`) wrapping Base UI's `Collapsible`, using `--terminal-header-bg` and `Mush/www/img/icons/ui/{less,more}.png` (`COLLAPSE_ICON` / `EXPAND_ICON` in `web/src/art/assets.ts`).
+- Added a collapsed-by-default "Botany basics" caption at the top of `PlantTerminal` (`web/src/hud/PlantTerminal.tsx`) covering planting/production, thirst/sickness/specialist visibility, and the gist of grafting, with en/fr/es copy in `web/src/locales/`.
+- Documented the terminal collapsible pattern in `web/CLAUDE.md` and added `web/tests/hud/PlantTerminal.test.tsx`. Verified with `npm test -w tools -- i18n` and `npm run verify:web`.
+
+### 2026-11-22 — NERON chat icon and name row
+
+- Wired `Mush/www/img/design/neron_chat.png` (38×38, unscaled) as `NERON_CHAT_ICON` in `web/src/art/assets.ts` for explicit NERON chat announcements and non-warning NERON room-log entries (`neronProjectCompleted`), with a `NERON` name row matching player messages.
+- Widened `.feed > li.entry` / `.entry-inline` marker column from 32px to 38px so the full-size icon fits without scaling and all message bodies stay aligned.
+- Stripped the now-redundant `NERON:` / `NERON :` prefix from those 12 messages across `en`/`fr`/`es` locales (keeping `NERON:` on warning-level room-log alerts and prepending it in screen-reader speech).
+
+## 2026-11-22: `npm run retire-ships`, retiring every ship without a version bump
+
+- **Asked:** a way to force-reset the test server's ships without bumping `STATE_VERSION`/`MIN_STATE_VERSION` (a bump retires ships in every environment it is later deployed to).
+- **Built:** `GameRoom.retire()` does what a `MIN_STATE_VERSION` bump does on load: frees `account_ships` and deletes the `ships` row (D1 first, so a failure changes nothing), drops the snapshot but keeps the record (so `onStart` keeps it retired), clears timers and closes sockets with 4001. A token-protected `POST /admin/retire-ships` (`server/src/adminRoutes.ts`) retires every `ships` row plus each lobby's open ship, then has each Matchmaker `recheckOpen` so the lobby forgets a retired open ship. `npm run retire-ships -- --env <env>` calls it; `--init` generates the `ADMIN_TOKEN` secret, puts it with wrangler and saves it under `~/.config/mush2/`.
+- **Tradeoff:** wrangler can't call a Durable Object, so this is the first web route for operator tools (`ships` deliberately had none). It exists only where `ADMIN_TOKEN` is set, so production stays without it unless the owner sets one.
+- **Caught in review:** `/admin/*` had to be added to `run_worker_first` in all three `wrangler.jsonc` environments, or the static-assets layer would have answered with the SPA page.

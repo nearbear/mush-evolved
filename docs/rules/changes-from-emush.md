@@ -97,6 +97,7 @@ Both games start characters with 0 skills (3 pickable + 1 book slot) and permane
 | **Doorman (`doorman`)** | Once per day (0 AP) on a **random** working door in the room. | Lets the Mush **choose which working door** in the room to break, with **no daily limit** (**first use each day is 0 AP**, subsequent uses cost **2 AP**). |
 | **Nimble Fingers (`nimble_fingers`)** | Grants secret camera install/remove actions only. | **0 AP instant toggle** (enter/exit Nimble mode, private status). While active, all room-level **Public** actions (including movement) become **Secret** when unwitnessed and unfilmed (staying plain Public if witnessed/filmed so Nimble mode doesn't leak). |
 | **Traitor (`traitor`)** | Sabotages **all remaining sectors** of the expedition without revealing the next sector. | **0 AP, private, unrecorded**, once per expedition while away: forces **only the next sector** to draw a negative event and **reveals the next sector's tag** to the Traitor. |
+| **Trapper (`trapper`)** | Living Mush see a trap icon only in their **current room**; interacting with a shared door can depend on which side the door belongs to. | Living Mush see all active traps **ship-wide on the minimap** (icon + room caption), and interacting with a shared door only ever triggers a trap in the **actor's own room** (never an adjacent room). |
 
 ---
 

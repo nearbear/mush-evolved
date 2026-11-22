@@ -88,6 +88,7 @@ export const GAME_STATE_FIELDS: Record<string, FieldRule> = {
   turrets: { reach: "room", test: "hunters.test.ts", note: "Every turret's charges, to the living in a turret room." },
   incidentPoints: { reach: "never", test: "leaks.test.ts", note: "The incident pool (#189): no one, no skill or role." },
   pendingFires: { reach: "never", test: "leaks.test.ts", note: "Rooms a Pyromaniac set to ignite at the next cycle change (2026-11-03)." },
+  trappedRooms: { reach: "filtered", test: "trapper.test.ts", note: "Rooms booby-trapped with a spore (#473): sent only to living Mush (`PlayerView.trappedRooms`); humans and the dead always receive `[]` (leaks.test.ts too)." },
   reports: { reach: "filtered", test: "reports.test.ts", note: "As `alerts` (and reported fires in `burningRooms`) to the living, only while the problem lasts; reporters are public, as NERON names them (owner, 2026-11-14, #444)." },
   doors: { reach: "room", test: "doors.test.ts", note: "Only as `PlayerView.doors`, the doors of your own room, to the living (#330): a door's state reaches both rooms it joins and no other." },
   fires: { reach: "room", test: "incidents.test.ts", note: "Only as `roomOnFire` to the living in the room, or `burningRooms` to the living once reported by a player or Fire detectors (owner, 2026-11-02, 2026-11-14); counted for the living in `alerts` (#444, reports.test.ts)." },

@@ -365,6 +365,9 @@ export interface GameConfig {
   giveDisease: {
     cost: { ap: number }; // The Mush skill Bacteriophilia (bacterial_contact): 1 AP, no limit (owner, 2026-11-21).
   };
+  trapper: {
+    cost: { ap: number }; // The Mush skill Trapper (trapper): 1 AP and 1 spore, no cooldown (owner, 2026-11-21, #473).
+  };
   spores: {
     cost: { ap: number }; // AP spent to extract a spore (confirmed 2026-10-13).
     effect: { spores: number }; // Spores one extraction gives (confirmed 2026-10-13).

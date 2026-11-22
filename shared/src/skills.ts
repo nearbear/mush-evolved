@@ -331,6 +331,8 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   disheartening_contact: "full",
   // Mush skill (Doorman): sabotage any working door of your room, always succeeds; first use each day free, later ones cost 2 AP, covert (owner, 2026-11-14, actions/sabotage_door.ts).
   doorman: "full",
+  // Mush skill (Trapper): 1 AP and 1 spore, covert + spore-tagged, booby-traps the current room so the next player to interact with it is contaminated (owner, 2026-11-21, #473, traps.ts, actions/trap_room.ts).
+  trapper: "full",
 };
 
 export function skillStatus(skill: string): SkillStatus {

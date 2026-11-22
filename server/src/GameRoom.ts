@@ -521,6 +521,42 @@ export class GameRoom extends Server<Env> {
   }
 
   /**
+   * Retires this ship at the operator's request (`npm run retire-ships`, adminRoutes.ts): what a `MIN_STATE_VERSION`
+   * bump does on load, without a deploy or a version change. Every account aboard is freed and the running-ships row
+   * goes (D1 first, so a failure there changes nothing), then the snapshot. The record ("setup", "input:*",
+   * "account:*") stays, so `onStart` keeps the room retired after eviction. Open sockets close with 4001, which sends
+   * players to the lobby. A ship that isn't running (ended, never launched, already retired) is left alone. Returns
+   * whether this one was retired.
+   */
+  async retire(): Promise<boolean> {
+    if (this.retired || !this.running()) return false;
+    await accountStoreFor(this.env).endShip(this.name, Date.now());
+    await shipStoreFor(this.env).ended(this.name);
+    await this.ctx.storage.delete("game");
+    if (this.retryTimer !== null) {
+      clearTimeout(this.retryTimer);
+      this.retryTimer = null;
+    }
+    this.retired = true;
+    this.unavailable = false;
+    this.game = null;
+    this.tokens = {};
+    this.aboard = {};
+    this.tokenSessions = {};
+    this.shipRetryAt = null;
+    this.listRetryAt = null;
+    this.replayRetryAt = null;
+    this.reclaimAt = null;
+    this.bots.clear();
+    this.pendingBots.clear();
+    this.wakes.clear();
+    this.modelGate = null;
+    await this.scheduleTick();
+    for (const conn of this.getConnections<SeatState>()) conn.close(4001, "Ship retired");
+    return true;
+  }
+
+  /**
    * Leave ship, a developer cheat (`ALLOW_CHEATS` only): frees the seat's account in D1 so the lobby offers other
    * ships, and drops every token for the seat, closing its sockets (4001 sends the client to the lobby). The character
    * stays aboard, unplayed; nothing goes through the rules. Not a player rule: a living player can't leave a ship.

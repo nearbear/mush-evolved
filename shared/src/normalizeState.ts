@@ -1319,6 +1319,8 @@ export function normalizeCore(raw: Partial<GameCore>, ctx: NormalizeContext, mod
     // Reports (#444): none in a game stored before them.
     reports: added(raw, "reports", []).map(normalizeReport),
     pendingFires: copy(need(raw, "pendingFires", t)),
+    // Trapper (#473): no rooms trapped in a game stored before it.
+    trappedRooms: copy(added(raw, "trappedRooms", [])),
     titles: {
       commander: need(titles, "commander", `${t}.titles`),
       neron_admin: need(titles, "neron_admin", `${t}.titles`),
