@@ -29,6 +29,7 @@ import { catArrival } from "./schrodinger.ts";
 import { CHEAT_ROOM } from "./cheatRoom.ts";
 import { teleport, teleportBlocked } from "./kube.ts";
 import { newLostAnalysis, rollAtSelection } from "./lostAnalysis.ts";
+import { newTheList, recordSelection } from "./theList.ts";
 import { hopelessCycle } from "./morale.ts";
 import { relayView } from "./relayView.ts";
 import { itemsIn, newItemId, rechargeMicrowaves, rechargeScooters, startCharges, visibleItemsIn } from "./items.ts";
@@ -137,6 +138,7 @@ export function createGame(
     rng,
     npcs: newNpcState(seed, npcSeed),
     lostAnalysis: newLostAnalysis(seed),
+    theList: newTheList(seed),
     merchantRng: streamFor(seed, "merchants"),
     cycle: startCycle,
     phase: "playing",
@@ -210,6 +212,7 @@ export function createGame(
   if (!preselection) {
     callNextRebel(state);
     rollAtSelection(state);
+    recordSelection(state);
     startHunters(state);
     spawnSelectionItems(state);
   }

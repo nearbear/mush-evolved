@@ -691,6 +691,9 @@ export interface GameConfig {
     // hails: event id -> its deals (the original's trade_events), in order.
     kinds: Record<MerchantKind, { weight: number; hp: number; events: Record<string, DealTemplate[]> }>;
   };
+  theList: {
+    startNames: number; // Names on THE List printed the day the Mush are chosen; one fewer per whole day since, never below 1 (eMushpedia, 8; owner, 2026-11-21; #266).
+  };
   comms: {
     sol: {
       cost: { ap: number }; // AP spent to try to establish the link with Sol (owner, 2026-10-19).

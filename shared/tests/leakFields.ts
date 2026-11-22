@@ -23,6 +23,7 @@ export const GAME_STATE_FIELDS: Record<string, FieldRule> = {
   config: { reach: "public", test: "rules.test.ts", note: "Only `rooms` and `PublicConfig` go out." },
   rng: { reach: "never", test: "leaks.test.ts" },
   npcs: { reach: "never", test: "leaks.test.ts", note: "The NPCs' own stream and the names the next drones get (#411)." },
+  theList: { reach: "never", test: "leaks.test.ts", note: "THE List (#266): its stream, the starting Mush bodies, when they were chosen, and whether it was printed. Only a printed copy (`ItemState.document`) is ever seen." },
   merchantRng: { reach: "never", test: "leaks.test.ts", note: "The merchants' own stream (#143): arrivals and deal rolls." },
   lostAnalysis: { reach: "never", test: "leaks.test.ts", note: "Finola's lost analysis (#394): its stream and the rows rolled at selection. Only a printed copy (`ItemState.document`) is ever seen." },
   cycle: { reach: "public", test: "rules.test.ts" },

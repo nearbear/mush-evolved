@@ -27,6 +27,7 @@ import { resolveConfig } from "./config.ts";
 import { clone } from "./helpers.ts";
 import { newNpcState, type NpcState } from "./npcs.ts";
 import { type LostAnalysisState, rollLostAnalysis } from "./lostAnalysis.ts";
+import type { TheListState } from "./theList.ts";
 import { streamFor } from "./rng.ts";
 import type { DrugDispenserState, DrugEffect } from "./drugs.ts";
 import type { FruitDisease, FruitEffect, PendingDisease } from "./fruits.ts";
@@ -459,6 +460,25 @@ function lostAnalysisFor(raw: Partial<Omit<GameState, "config">>, config: DeepRe
   if (need(raw, "preselection", t)) return state;
   const aboard = need(raw, "players", t).map((p) => ({ character: need(p, "character", "PlayerState"), mush: need(p, "alpha", "PlayerState") }));
   state.rows = rollLostAnalysis(state, aboard, config.comms.xyloph.lostAnalysisPerMush);
+  return state;
+}
+
+export function normalizeTheList(raw: Partial<TheListState>): TheListState {
+  const t = "TheListState";
+  return { rng: need(raw, "rng", t), startingMush: [...need(raw, "startingMush", t)], selectedAt: need(raw, "selectedAt", t), printed: need(raw, "printed", t) };
+}
+
+/**
+ * A game saved before THE List (#266): a stream derived from where its `rng` stands, not printed and, once the Mush are
+ * chosen, today's Mush bodies as the starting ones and the first rebel call's cycle as selection (it calls then).
+ */
+function theListFor(raw: Partial<Omit<GameState, "config">>): TheListState {
+  const t = "GameState";
+  const state: TheListState = { rng: streamFor(need(raw, "rng", t), "the-list"), startingMush: [], selectedAt: null, printed: false };
+  if (need(raw, "preselection", t)) return state;
+  state.startingMush = need(raw, "players", t).filter((p) => need(p, "role", "PlayerState") === "mush").map((p) => need(p, "character", "PlayerState"));
+  const firstCall = raw.signals?.list.find((s) => s.kind === "rebel");
+  state.selectedAt = firstCall ? firstCall.arrivedAt : need(raw, "cycle", t);
   return state;
 }
 
@@ -1272,6 +1292,7 @@ export function normalizeGame(raw: Partial<Omit<GameState, "config">>, overrides
     // A game saved before the NPCs had a stream of their own derives one from where its `rng` stands.
     npcs: normalizeNpcs(added(raw, "npcs", newNpcState(need(raw, "rng", t)))),
     lostAnalysis: normalizeLostAnalysis(added(raw, "lostAnalysis", lostAnalysisFor(raw, config))),
+    theList: normalizeTheList(added(raw, "theList", theListFor(raw))),
     // A game saved before merchants (#143) derives their stream from where its `rng` stands.
     merchantRng: added(raw, "merchantRng", streamFor(need(raw, "rng", t), "merchants")),
     chatOutbox: normalizeOutbox(need(raw, "chatOutbox", t)),

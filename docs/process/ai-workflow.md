@@ -4891,3 +4891,9 @@ Owner asked to "match eMush". Moved the debris table from `config.hunters.debris
 - `config.startItems` now places one `tabulator` in `STORAGE_FRONT`. Since it now shows in game, the same step gave it its names (Tabulator / Tabulatrice / Tabuladora, from the plan) and its icon (`ICON_FILE` maps it to the original's `printer.jpg`, which the item glob already bundles), and listed it in `implemented-rules.md` and `changes-from-emush.md`.
 - Needed correction: `ship.test.ts` pins the total number of starting items (94), which the first `verify` caught; it is now 95 with a front-storage check. A new spawn test is in `theList.test.ts`.
 - Running ships get no tabulator (no normalizer change; the databases are empty). Next: step 3, `theList.ts` and `GameState.theList`.
+
+### 2026-11-21: THE List's hidden state and rolls (#266, step 3)
+
+- `shared/src/theList.ts`: `GameState.theList` (own `"the-list"` stream, starting Mush bodies, selection cycle, `printed`), set by `recordSelection` next to `rollAtSelection`; pure `listSize`, `guaranteedGroup`, `guaranteedName`, `rollList`; `config.theList.startNames` 8. Never in any view (leakFields + sentinel); excluded from the full view; `added()` default for games in progress (selection from the first rebel call).
+- Reading the plan with Transfer in mind: role moves with the mind, so "a living starting Mush" became "a starting-Mush body still Mush"; a Mush mind moved to another body falls to the "any living Mush" step. Flagged to the owner.
+- Needed correction: the normalizer's no-`??` rule (a repo test) caught my fallback; rewritten as an explicit branch.

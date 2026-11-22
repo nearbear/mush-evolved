@@ -122,6 +122,8 @@ function ship(): { state: GameState; sentinels: Sentinel[] } {
   s.npcs = { rng: num("npcRng", []), droneNames: [str("nextDroneName", [])] };
   // The unprinted lost analysis (#394) reaches nobody.
   s.lostAnalysis = { rng: num("lostAnalysisRng", []), rows: [{ character: str("lostAnalysisRow", []) as CharacterId, negative: true }] };
+  // THE List's state (#266) reaches nobody, the starting Mush bodies included.
+  s.theList = { rng: num("theListRng", []), startingMush: [str("theListStartingMush", []) as CharacterId], selectedAt: num("theListSelectedAt", []), printed: false };
   // The merchants' stream (#143) and the signals' id counter reach nobody.
   s.merchantRng = num("merchantRng", []);
   s.signals.nextId = num("signalsNextId", []);
