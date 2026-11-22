@@ -52,6 +52,10 @@
     "alertsUnreported_one": "1 autre non signalé",
     "alertsUnreported_other": "{{count}} autres non signalés",
     "alertsUnreported_many": "{{count}} autres non signalés",
+    "gravityBroken": "Pas de simulateur de gravité",
+    "gravityBrokenText": "Le Simulateur de gravité n'est pas démarré. Chaque gain de Points de mouvement est réduit de {{mp}} PM ! Réparez-le pour que NERON puisse rétablir la gravité au cycle d'après.",
+    "gravityRestarting": "Pas de simulateur de gravité",
+    "gravityRestartingText": "Le simulateur de gravité est en train de redémarrer. Chaque gain de points de mouvement est réduit de {{mp}} PM !",
     "alertsNone": "Aucun incendie ni panne signalé",
     "info": {
       "oxygen": {
@@ -1464,6 +1468,7 @@
     "bricBrocPrevented": "Le rafistolage général a tenu le Daedalus ensemble ; aucun incident n'a frappé ce cycle.",
     "neronProjectCompleted": "Le projet {{project}} est terminé.",
     "equipmentBroken": "Panne de l'équipement « {{equipment}} ».",
+    "gravityRestarted": "Annonce : redémarrage de l'équipement Simulateur de Gravité. Rapport d'activité : propulsion humaine facilitée.",
     "itemBroken": "Panne de l'objet « {{item}} ».",
     "fireStarted": "Un incendie s'est déclaré à bord !",
     "fireExtinguishedSprinklers": "Les arroseurs automatiques ont éteint un incendie.",
@@ -1471,7 +1476,8 @@
     "fireReported": "{{name}} signale un incendie ({{room}}).",
     "equipmentReported": "{{name}} signale une panne de l'équipement « {{equipment}} » ({{room}}).",
     "doorReported": "{{name}} signale que la porte entre {{room}} et {{other}} est cassée.",
-    "tremor": "La pièce est violemment secouée !",
+    "tremor": "La salle est soudainement prise de fortes secousses. Les membres d'équipage présents sont projetés au sol et des morceaux du plafond se sont effondrés çà et là. Quel chantier...",
+    "tremorNoGravity": "La salle est soudainement prise de fortes secousses. Les objets volent à travers la salle et heurtent les membres d'équipage présents.",
     "panicAttack": "Vous faites une crise de panique.",
     "incidentDisease": "Vous ne vous sentez pas bien.",
     "metalPlate": "Une plaque de métal tombe sur {{name}} !",

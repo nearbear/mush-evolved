@@ -323,7 +323,7 @@ describe("incidents", () => {
     const outsider = after.players.find((p) => p.room !== a && p.room !== b)!;
     expect(viewFor(after, outsider.id).doors.some((d) => d.broken)).toBe(false);
     expect(viewFor(after, outsider.id).brokenDoors).toEqual([]);
-    expect(viewFor(after, outsider.id).alerts).toEqual({ fires: 0, broken: 1, reports: [] });
+    expect(viewFor(after, outsider.id).alerts).toEqual({ fires: 0, broken: 1, reports: [], gravity: null });
 
     const allBroken = ship(config);
     for (const id of allDoors(allBroken.config.rooms)) allBroken.doors[id] = { broken: true };

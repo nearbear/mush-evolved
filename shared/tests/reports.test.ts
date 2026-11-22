@@ -76,10 +76,10 @@ describe("reporting a fire", () => {
     startFire(s, HERE);
     startFire(s, "BRIDGE");
     expect(viewFor(s, "p2").burningRooms).toEqual([]);
-    expect(viewFor(s, "p2").alerts).toEqual({ fires: 2, broken: 0, reports: [] });
+    expect(viewFor(s, "p2").alerts).toEqual({ fires: 2, broken: 0, reports: [], gravity: null });
     const after = mustApply(s, "p0", { type: "report_fire" });
     expect(viewFor(after, "p2").burningRooms).toEqual([HERE]);
-    expect(viewFor(after, "p2").alerts).toEqual({ fires: 2, broken: 0, reports: [{ kind: "fire", room: HERE, by: player(s, "p0").character }] });
+    expect(viewFor(after, "p2").alerts).toEqual({ fires: 2, broken: 0, reports: [{ kind: "fire", room: HERE, by: player(s, "p0").character }], gravity: null });
   });
 });
 
@@ -92,7 +92,7 @@ describe("reporting a breakdown", () => {
     expect(offered(s, "p0").filter((a) => a.type === "report_equipment")).toEqual([{ type: "report_equipment", equipment: COFFEE }]);
     const after = mustApply(s, "p0", { type: "report_equipment", equipment: COFFEE });
     expect(globalSystem(after).at(-1)).toEqual({ key: "equipmentReported", params: { name: player(s, "p0").character, room: HERE, equipment: "COFFEE_DISPENSER" } });
-    expect(viewFor(after, "p2").alerts).toEqual({ fires: 0, broken: 2, reports: [{ kind: "equipment", room: HERE, equipment: "COFFEE_DISPENSER", by: player(s, "p0").character }] });
+    expect(viewFor(after, "p2").alerts).toEqual({ fires: 0, broken: 2, reports: [{ kind: "equipment", room: HERE, equipment: "COFFEE_DISPENSER", by: player(s, "p0").character }], gravity: null });
     expect(offered(after, "p1").some((a) => a.type === "report_equipment")).toBe(false);
   });
 
@@ -124,6 +124,7 @@ describe("reporting a broken door", () => {
       fires: 0,
       broken: 2,
       reports: [{ kind: "door", door: HERE_DOOR, by: player(s, "p0").character }],
+      gravity: null,
     });
     // Without DOOR_SENSOR, reporting a door never lights it on the minimap.
     expect(viewFor(after, "p2").brokenDoors).toEqual([]);
@@ -188,7 +189,7 @@ describe("detectors", () => {
     const s = ship();
     breakDoor(s, HERE_DOOR);
     s.projects.EQUIPMENT_SENSOR = PROJECT_COMPLETE;
-    expect(viewFor(s, "p2").alerts).toEqual({ fires: 0, broken: 1, reports: [] });
+    expect(viewFor(s, "p2").alerts).toEqual({ fires: 0, broken: 1, reports: [], gravity: null });
     expect(viewFor(s, "p2").brokenDoors).toEqual([]);
     expect(offered(s, "p0")).toContainEqual({ type: "report_door", door: HERE_DOOR });
 
@@ -237,7 +238,7 @@ describe("a report lasts until the problem is fixed", () => {
     expect(pruneReports(s).reports).toEqual([]);
     breakIt(s, COFFEE);
     expect(s.reports).toEqual([]);
-    expect(viewFor(s, "p2").alerts).toEqual({ fires: 0, broken: 1, reports: [] });
+    expect(viewFor(s, "p2").alerts).toEqual({ fires: 0, broken: 1, reports: [], gravity: null });
   });
 
   it("repairing a door drops the report, and breaking it again starts unreported", () => {
@@ -248,7 +249,7 @@ describe("a report lasts until the problem is fixed", () => {
     expect(pruneReports(s).reports).toEqual([]);
     breakDoor(s, HERE_DOOR);
     expect(s.reports).toEqual([]);
-    expect(viewFor(s, "p2").alerts).toEqual({ fires: 0, broken: 1, reports: [] });
+    expect(viewFor(s, "p2").alerts).toEqual({ fires: 0, broken: 1, reports: [], gravity: null });
   });
 
   it("pruning never mutates its input and keeps open reports", () => {
@@ -270,7 +271,7 @@ describe("hidden information", () => {
     breakDoor(s, ELSEWHERE_DOOR);
     for (const id of ["p0", "p1"]) {
       const v = viewFor(s, id);
-      expect(v.alerts).toEqual({ fires: 1, broken: 2, reports: [] });
+      expect(v.alerts).toEqual({ fires: 1, broken: 2, reports: [], gravity: null });
       expect(v.burningRooms).toEqual([]);
       expect(v.brokenDoors).toEqual([]);
       expect(JSON.stringify(v.alerts)).not.toContain(ELSEWHERE);
@@ -286,7 +287,7 @@ describe("hidden information", () => {
     s.projects.DOOR_SENSOR = PROJECT_COMPLETE;
     s = mustApply(s, "p0", { type: "report_fire" }, { type: "report_equipment", equipment: COFFEE });
     player(s, "p2").alive = false;
-    expect(viewFor(s, "p2").alerts).toEqual({ fires: 0, broken: 0, reports: [] });
+    expect(viewFor(s, "p2").alerts).toEqual({ fires: 0, broken: 0, reports: [], gravity: null });
     expect(viewFor(s, "p2").burningRooms).toEqual([]);
     expect(viewFor(s, "p2").brokenDoors).toEqual([]);
   });

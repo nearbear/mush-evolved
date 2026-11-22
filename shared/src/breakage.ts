@@ -8,6 +8,7 @@ import { forgetReports } from "./reports.ts";
 import { getUp } from "./actions/lie_down.ts";
 import { pushChat } from "./chat.ts";
 import { loseLink } from "./comms.ts";
+import { GRAVITY_SIMULATOR, gravityLost } from "./gravity.ts";
 import { isEquipmentEnabled } from "./equipment.ts";
 import { ITEM_TYPES, removeItem } from "./items.ts";
 import type { Equipment, GameState, ItemState, RoomId } from "./types.ts";
@@ -36,6 +37,7 @@ export function breakEquipment(state: GameState, equipment: Equipment, announce 
     }
   }
   if (equipment.type === "COM_CENTER") loseLink(state);
+  if (equipment.type === GRAVITY_SIMULATOR) gravityLost(state);
   if (announce) pushChat(state, "global", { from: null, isBot: false, text: "", system: { key: "equipmentBroken", params: { equipment: equipment.type } } });
 }
 

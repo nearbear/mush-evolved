@@ -5026,3 +5026,24 @@ Owner asked to "match eMush". Moved the debris table from `config.hunters.debris
 - Added `docs/ops/rollback.md` (indexed in `docs/README.md` and linked from `docs/ops/deploy.md`) covering pre-rollback checks (`deployments list`, `versions view`, `STATE_VERSION` and DO migration checks), `wrangler rollback` for production/staging/test (and git-checkout fallback), when to leave D1 alone vs. restoring with D1 Time Travel, and post-rollback verification.
 - Kept raw `wrangler` commands rather than adding `rollback:*` npm scripts for now (owner's choice).
 - Fixed `--env production` in the verify snippet to omit `--env` since production is the top-level `wrangler.jsonc` config.
+
+## 2026-11-22: Gravity Simulator restart, alert data, no-gravity effects (shared/server half)
+
+- Picked up a handoff from an earlier session (gravity.ts, the restart flag, modifiers, breakage, drones, incidents already edited) and finished the non-UI half: `Alerts.gravity` and `selfReported` in reports.ts (the simulator is never reported, by players or the Anomaly detector, but still counts as broken), the dead's empty alerts, report_equipment filtering, locales (`gravityRestarted`, `tremorNoGravity`, the longer eMush `tremor` line), `gravityRestarted` as a NERON-styled key, `shared/tests/gravity.test.ts`, and docs.
+- Worked: putting every equipment repair through one `repairEquipment` made the drone and Repair paths share the restart, and running `gravityCycle` before incidents and the NPC turn settled both timing cases (tremor at the restart's end has gravity; a drone's repair at the cycle change restarts for a full cycle) without special cases.
+- Needed correction: rewriting the locale JSON with a parser silently dropped a pre-existing duplicate key; redone as a line insert. A test's ship forgot sure repairs, so the "repair" failed quietly and the tremor looked wrong. A non-candidate action is refused as `illegal_action` before `validate`, so the test checks `validate` directly for `already_reported`.
+- Caught in review: the tank-search bot compared `alerts.broken` with reported equipment; an unreportable broken simulator would have kept it searching forever, so it now discounts it.
+- `npm run emush -- find` truncates translation lines, so the FR/ES tremor and NERON endings were completed by hand from eMush's openings.
+
+### 2026-11-22: Gravity Simulator alert rows in the web client
+
+- Built the UI half of decision 6 (owner, 2026-11-22): the alerts popover (desktop `AlertBar`/`Counter` and phone `AlertButton`) gets a Gravity Simulator row (`simulator.png`, eMush's `no_gravity` or `gravity_reboot` title and description) from `alerts.gravity`. The alerts counter is `broken + (restarting ? 1 : 0)`, since a broken simulator is already in `broken`; the unreported count leaves a broken simulator out, as `tankShare.ts` does for bots.
+- What worked: `npm run emush -- translations alerts <lang>` returned the full en/fr/es alert strings in one call; `find` cuts lines at 90 characters, and `spec` paraphrases instead of quoting, so neither is good for exact text. `:pm:` is written as the catalog's MP/PM abbreviation, with the penalty taken from `DEFAULT_CONFIG` instead of a hard-coded 1. I fixed eMush's English grammar ("Every Movement Point gains are" became "gain is").
+- Needed correction / gaps: the popovers render in a portal, so static-markup tests can't open them. The tests cover the exported `alertCount` and `BreakdownAlerts` instead. There was no visual check, because no dev cheat breaks the simulator and `npm run screenshot` never opens popovers.
+
+## 2026-11-22: Eden plan and decisions
+
+- Planned Eden in phases with the owner. First a minimal Eden on eMush's route (fragments, Super Calculator, a 33% Compute, Travel to Eden). Then launch keys, then the star map tree, then False Eden. Filed as epic #483 with #478 to #482, milestone Private beta.
+- The owner decided that Eden is a human win even with Mush alive, superseding 2026-10-22. Also decided: eMush's Compute numbers with the fragments kept; one launch key per title at the Command terminal for Sol and Eden, visible to anyone on the bridge; no target day yet. All recorded in `rules-design.md`.
+- What worked: checking the tree first showed fragments, the research, the Super Calculator, the greyed-out button and the end screen were already built, so phase 1 is small. The clean-room spec (`npm run emush -- spec`) settled that the fragments aren't used up, where the wiki was ambiguous.
+- Correction: I proposed Commander-only travel and mentioned the hacker kit as unbuilt. It is built, and already grants the Commander's access through `hasTitleAccess`. The stale "not built" lines in `rules-design.md`, `implemented-rules.md` and `pilgred.ts` are fixed.

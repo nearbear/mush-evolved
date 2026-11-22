@@ -2,7 +2,7 @@ import { Action, isString } from "./action.ts";
 import { pushChat } from "../chat.ts";
 import { doorOtherRoom, doorsOf } from "../doors.ts";
 import { isOnFire } from "../fire.ts";
-import { breakdownReported, breakdownsDetected, doorReported, doorsDetected, fireReported, firesDetected } from "../reports.ts";
+import { breakdownReported, breakdownsDetected, doorReported, doorsDetected, fireReported, firesDetected, selfReported } from "../reports.ts";
 import type { DoorId, GameState, PlayerState } from "../types.ts";
 
 export type ReportFireActionData = { type: "report_fire" };
@@ -11,7 +11,8 @@ export type ReportDoorActionData = { type: "report_door"; door: DoorId };
 
 // Reports (owner, 2026-11-14, #444; reports.ts): free (`config.report.cost`), instantaneous, always succeed, Mush
 // included. Only a real, unreported problem in your own room can be reported, and not once a detector covers its kind.
-// NERON posts the reporter and the room (and the equipment) in global chat.
+// NERON posts the reporter and the room (and the equipment) in global chat. The Gravity Simulator is never reported:
+// its state is public (owner, 2026-11-22, reports.ts `selfReported`).
 
 /** Report the fire in your room. */
 export class ReportFireAction extends Action<ReportFireActionData> {
@@ -58,14 +59,14 @@ export class ReportEquipmentAction extends Action<ReportEquipmentActionData> {
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): ReportEquipmentActionData[] {
     if (breakdownsDetected(state)) return [];
     return (state.equipment[player.room] ?? [])
-      .filter((e) => e.broken && !breakdownReported(state, e.id))
+      .filter((e) => e.broken && !selfReported(e) && !breakdownReported(state, e.id))
       .map((e): ReportEquipmentActionData => ({ type: "report_equipment", equipment: e.id }));
   }
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: ReportEquipmentActionData): string | null {
     const equipment = state.equipment[player.room]?.find((e) => e.id === target.equipment);
     if (!equipment?.broken) return "not_broken";
-    if (breakdownReported(state, equipment.id)) return "already_reported";
+    if (selfReported(equipment) || breakdownReported(state, equipment.id)) return "already_reported";
     return null;
   }
 

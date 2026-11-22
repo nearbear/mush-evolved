@@ -232,6 +232,11 @@ export const FIRE_ICON = urls(
   import.meta.glob<string>("../../../Mush/www/img/icons/ui/fire.png", { eager: true, query: "?url", import: "default" }),
 )["fire"]!;
 
+/** The Gravity Simulator (the original's), on the alert bar's gravity row while gravity is down (ShipResources). */
+export const GRAVITY_ICON = urls(
+  import.meta.glob<string>("../../../Mush/www/img/icons/ui/simulator.png", { eager: true, query: "?url", import: "default" }),
+)["simulator"]!;
+
 /** A gold star (the original's): one per difficulty level in the lobby's character picker, grayed out when empty. */
 export const STAR_ICON = urls(
   import.meta.glob<string>("../../../Mush/www/img/icons/ui/star.png", { eager: true, query: "?url", import: "default" }),

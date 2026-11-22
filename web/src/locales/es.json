@@ -52,6 +52,10 @@
     "alertsUnreported_one": "1 más sin informar",
     "alertsUnreported_other": "{{count}} más sin informar",
     "alertsUnreported_many": "{{count}} más sin informar",
+    "gravityBroken": "Sin simulador de gravedad",
+    "gravityBrokenText": "El simulador de gravedad no se ha iniciado. ¡Cada ganancia de Puntos de Movimiento se ve reducida en {{mp}} PM! Repáralo para que NERON pueda restablecer la gravedad en el próximo ciclo.",
+    "gravityRestarting": "Sin simulador de gravedad",
+    "gravityRestartingText": "El simulador se está reiniciando. Cada ganancia de Puntos de Movimiento se ve reducida en {{mp}} PM.",
     "alertsNone": "No se ha informado de incendios ni averías",
     "info": {
       "oxygen": {
@@ -1464,6 +1468,7 @@
     "bricBrocPrevented": "Los arreglos generales han mantenido unido al Daedalus; ningún incidente ocurrió este ciclo.",
     "neronProjectCompleted": "El proyecto {{project}} se ha completado.",
     "equipmentBroken": "El equipo «{{equipment}}» se ha averiado.",
+    "gravityRestarted": "Anuncio: reinicio del Simulador de gravedad. Reporte de actividad: desplazamiento humano facilitado.",
     "itemBroken": "El objeto «{{item}}» se ha averiado.",
     "fireStarted": "¡Se ha declarado un incendio a bordo!",
     "fireExtinguishedSprinklers": "Los aspersores automáticos han apagado un incendio.",
@@ -1471,7 +1476,8 @@
     "fireReported": "{{name}} informa de un incendio en {{room}}.",
     "equipmentReported": "{{name}} informa de que el equipo «{{equipment}}» de {{room}} está averiado.",
     "doorReported": "{{name}} informa de que la puerta entre {{room}} y {{other}} está rota.",
-    "tremor": "¡La sala tiembla violentamente!",
+    "tremor": "La sala empieza a sacudirse. Los tripulantes presentes caen al suelo y el techo se derrumba aquí y allá. Qué desastre...",
+    "tremorNoGravity": "La sala empieza a sacudirse. Los objetos vuelan a través de la sala y chocan contra los tripulantes presentes.",
     "panicAttack": "Sufres un ataque de pánico.",
     "incidentDisease": "No te encuentras bien.",
     "metalPlate": "¡Una placa de metal cae sobre {{name}}!",

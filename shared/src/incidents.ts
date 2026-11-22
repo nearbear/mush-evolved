@@ -4,6 +4,7 @@
 // have a valid target, until none is left. Unspent points carry over. Pre-selection earns and spends nothing
 // (owner, 2026-11-21: incident points start accumulating only after Mush selection). Incidents hit humans and Mush alike.
 
+import { noGravity } from "./gravity.ts";
 import { gainMorale } from "./adjustStats.ts";
 import { breakEquipment, breakItem, workingBreakable } from "./breakage.ts";
 import { damage } from "./death.ts";
@@ -103,7 +104,8 @@ const INCIDENTS: Record<IncidentId, Incident> = {
     possible: (state) => occupiedRooms(state).length > 0,
     apply: (state) => {
       const room = pick(state, occupiedRooms(state));
-      logPublic(state, room, "tremor");
+      // Without gravity (broken or restarting), objects fly instead of the crew falling (owner, 2026-11-22).
+      logPublic(state, room, noGravity(state) ? "tremorNoGravity" : "tremor");
       for (const p of state.players.filter((o) => o.alive && o.room === room)) damage(state, p, roll(state, state.config.incidents.tremor.damage), "injury");
     },
   },

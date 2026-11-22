@@ -2,9 +2,12 @@
 // A player reports a fire or a broken piece of equipment in their own room (actions/report.ts); the report lasts until
 // the problem is fixed. Fire detectors (`FIRE_SENSOR`) report every fire and the Anomaly detector (`EQUIPMENT_SENSOR`)
 // every broken piece of equipment; that coverage is derived here, never stored. The alert bar counts every fire and
-// every broken piece of equipment, reported or not, but locates only the reported ones (`alertsFor`).
+// every broken piece of equipment, reported or not, but locates only the reported ones (`alertsFor`). The Gravity
+// Simulator is never reported, by anyone or any detector (owner, 2026-11-22): its state is public, on its own gravity
+// row (`Alerts.gravity`, gravity.ts), and it still counts as broken.
 
 import type { CharacterId } from "./characters.ts";
+import { GRAVITY_SIMULATOR, gravityAlert } from "./gravity.ts";
 import { findPlayer } from "./helpers.ts";
 import { projectDone } from "./projects.ts";
 import type { DoorId, Equipment, GameState, Report, RoomId } from "./types.ts";
@@ -23,7 +26,12 @@ export interface Alerts {
   fires: number;
   broken: number;
   reports: AlertReport[];
+  /** The Gravity Simulator: broken, restarting after a repair (gravity.ts), or null when gravity is on. */
+  gravity: "broken" | "restarting" | null;
 }
+
+/** Equipment whose state is public, so it is never reported (owner, 2026-11-22): the Gravity Simulator. */
+export const selfReported = (equipment: Readonly<Equipment>): boolean => equipment.type === GRAVITY_SIMULATOR;
 
 /** Whether Fire detectors report every fire. */
 export const firesDetected = (state: Readonly<GameState>): boolean => projectDone(state, "FIRE_SENSOR");
@@ -96,7 +104,9 @@ export function alertsFor(state: Readonly<GameState>): Alerts {
     ? state.fires.map((room) => ({ kind: "fire", room, by: "FIRE_SENSOR" }))
     : state.reports.flatMap((r): AlertReport[] => (r.kind === "fire" && state.fires.includes(r.room) ? [{ kind: "fire", room: r.room, by: reporter(r.by) }] : []));
   const equipmentReports: AlertReport[] = breakdownsDetected(state)
-    ? broken.map(({ room, equipment }) => ({ kind: "equipment", room, equipment: equipment.type, by: "EQUIPMENT_SENSOR" }))
+    ? broken.flatMap(({ room, equipment }): AlertReport[] =>
+        selfReported(equipment) ? [] : [{ kind: "equipment", room, equipment: equipment.type, by: "EQUIPMENT_SENSOR" }],
+      )
     : state.reports.flatMap((r): AlertReport[] => {
         if (r.kind !== "equipment") return [];
         const found = broken.find((b) => b.equipment.id === r.equipment);
@@ -107,5 +117,10 @@ export function alertsFor(state: Readonly<GameState>): Alerts {
     : state.reports.flatMap((r): AlertReport[] =>
         r.kind === "door" && state.doors[r.door]?.broken ? [{ kind: "door", door: r.door, by: reporter(r.by) }] : [],
       );
-  return { fires: state.fires.length, broken: broken.length + doors.length, reports: [...fireReports, ...equipmentReports, ...doorReports] };
+  return {
+    fires: state.fires.length,
+    broken: broken.length + doors.length,
+    reports: [...fireReports, ...equipmentReports, ...doorReports],
+    gravity: gravityAlert(state),
+  };
 }

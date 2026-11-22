@@ -11,6 +11,7 @@
 import { spreadAtCycle, spreadOnEncounter } from "./diseases.ts";
 import { isBrokenIn } from "./equipment.ts";
 import { activeScooter, carriesHeavy, isWorking } from "./items.ts";
+import { gravityBroken, noGravity } from "./gravity.ts";
 import { projectDone } from "./projects.ts";
 import { RESEARCH_COMPLETE } from "./research.ts";
 import { hasSkill, skillsOf } from "./skills.ts";
@@ -638,8 +639,9 @@ export function movementRules(
   if (player.energizeUntil !== undefined && state.cycle < player.energizeUntil) {
     rules.mpPerConversion += state.config.botany.fruits.buffs.energize.extraMpPerConversion;
   }
-  if (gravityBroken(state)) rules.mpPerConversion = Math.max(0, rules.mpPerConversion - state.config.gravitySimulator.brokenMpPenalty);
-  if (carriesHeavy(state, player)) rules.mpPerMove += fold("heavyMpPenalty", state.config.heavy.mpPenalty, state, player, registry);
+  // Broken or restarting (gravity.ts): conversions give less, and a heavy item weighs nothing (owner, 2026-11-22, eMush's Burdened).
+  if (noGravity(state)) rules.mpPerConversion = Math.max(0, rules.mpPerConversion - state.config.gravitySimulator.brokenMpPenalty);
+  else if (carriesHeavy(state, player)) rules.mpPerMove += fold("heavyMpPenalty", state.config.heavy.mpPenalty, state, player, registry);
   return rules;
 }
 
@@ -647,11 +649,10 @@ export function movementRules(
 export const apGain = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
   fold("apPerCycle", state.config.apPerCycle, state, player, registry);
 
-/** Whether any Gravity Simulator is broken (owner, 2026-11-08): it costs everyone MP, see `mpGain` and `movementRules`. */
-export const gravityBroken = (state: Readonly<GameState>): boolean =>
-  Object.values(state.equipment).some((list) => list.some((e) => e.type === "GRAVITY_SIMULATOR" && e.broken));
-
-/** MP gained at the start of a cycle: the base gain folded through the player's modifiers, less the broken-gravity penalty; never below 0. */
+/**
+ * MP gained at the start of a cycle: the base gain folded through the player's modifiers, less the broken-gravity penalty; never below 0.
+ * Only a broken simulator: a restarting one is back by then (gravity.ts).
+ */
 export const mpGain = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
   Math.max(0, fold("mpPerCycle", state.config.mpPerCycle, state, player, registry) - (gravityBroken(state) ? state.config.gravitySimulator.brokenMpPenalty : 0));
 

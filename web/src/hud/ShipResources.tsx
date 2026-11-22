@@ -1,7 +1,7 @@
 import { Popover } from "@base-ui/react/popover";
 import { Trans, useTranslation } from "react-i18next";
-import { doorRooms, type PlayerView } from "@mush2/shared";
-import { SHIP_RESOURCE_ICONS } from "../art/assets.ts";
+import { DEFAULT_CONFIG, doorRooms, type PlayerView } from "@mush2/shared";
+import { GRAVITY_ICON, SHIP_RESOURCE_ICONS } from "../art/assets.ts";
 import { useNames } from "../i18n/names.ts";
 import { CrewBar, type CrewProps } from "./CrewBar.tsx";
 import { TitleChip, TitlesChip } from "./TitleChip.tsx";
@@ -16,7 +16,8 @@ type CounterId = (typeof SHIP_COUNTERS)[number] | (typeof ALERT_COUNTERS)[number
  * Where the ship is (orbit, expedition) is in ShipStatus.tsx, right of the clock. The desktop top bar moves hunters, fires
  * and alerts out to the AlertBar (`alertsApart`).
  * Fires count every fire aboard and alerts count every broken piece of equipment; each popover locates only the
- * reported ones (owner, 2026-11-14, #444).
+ * reported ones (owner, 2026-11-14, #444). The Gravity Simulator has its own row in the alerts popover while gravity is
+ * down (`alerts.gravity`, eMush's `no_gravity` and `gravity_reboot`; owner, 2026-11-22).
  */
 export function ShipResources({
   ship,
@@ -94,8 +95,8 @@ export function AlertBar({ ship, hunters, alerts }: { ship: PlayerView["ship"]; 
 export function AlertButton({ hunters, alerts }: { hunters: number; alerts: PlayerView["alerts"] }) {
   const { t } = useTranslation();
   const on = hunters > 0 || alerts.fires > 0;
-  const empty = !on && alerts.broken === 0;
-  const counts = { hunters, fires: alerts.fires, alerts: alerts.broken };
+  const counts = { hunters, fires: alerts.fires, alerts: alertCount(alerts) };
+  const empty = !on && counts.alerts === 0;
   const lines = ALERT_COUNTERS.map((id) => `${t(`shipResources.${id}`)}: ${counts[id]}`);
   return (
     <Popover.Root>
@@ -119,7 +120,7 @@ export function AlertButton({ hunters, alerts }: { hunters: number; alerts: Play
                   {lines[i]}
                 </strong>
                 {id === "fires" && <AlertList kind="fire" total={alerts.fires} reports={alerts.reports} />}
-                {id === "alerts" && <AlertList kind="equipment" total={alerts.broken} reports={alerts.reports} />}
+                {id === "alerts" && <BreakdownAlerts alerts={alerts} />}
               </section>
             ))}
           </Popover.Popup>
@@ -137,14 +138,14 @@ function Counter({ id, ship, hunters, alerts }: { id: CounterId; ship: PlayerVie
     id === "fires"
       ? String(alerts.fires)
       : id === "alerts"
-        ? String(alerts.broken)
+        ? String(alertCount(alerts))
         : id === "hunters"
           ? String(hunters)
           : `${ship[id]}/${ship.max[id]}`;
   // No fixed-width slot: one sized for the widest reading left a gap after a short value (55/100). Tabular figures keep
   // a value's width steady until its digit count changes, which is rare.
   // Nothing to report (no hunters, no fires, no alerts) is muted. Values get no warning colour: no thresholds are decided (owner, 2026-11-12).
-  const empty = (id === "hunters" && hunters === 0) || (id === "fires" && alerts.fires === 0) || (id === "alerts" && alerts.broken === 0);
+  const empty = (id === "hunters" && hunters === 0) || (id === "fires" && alerts.fires === 0) || (id === "alerts" && alertCount(alerts) === 0);
   return (
     <li className={empty ? "empty" : undefined}>
       {/* A popover, not a tooltip, so a tap opens it on phones (touch has no hover). */}
@@ -174,13 +175,47 @@ function Counter({ id, ship, hunters, alerts }: { id: CounterId; ship: PlayerVie
             <Popover.Popup className="tooltip">
               {`${name}: ${value}`}
               {id === "fires" && <AlertList kind="fire" total={alerts.fires} reports={alerts.reports} />}
-              {id === "alerts" && <AlertList kind="equipment" total={alerts.broken} reports={alerts.reports} />}
+              {id === "alerts" && <BreakdownAlerts alerts={alerts} />}
               {(id === "oxygen" || id === "fuel" || id === "hull" || id === "plasmaShield") && <ResourceInfo id={id} />}
             </Popover.Popup>
           </Popover.Positioner>
         </Popover.Portal>
       </Popover.Root>
     </li>
+  );
+}
+
+/**
+ * The alerts counter: every broken piece of equipment and door, plus a restarting Gravity Simulator. A broken one is
+ * already in `broken`, so it isn't added again.
+ */
+export const alertCount = (alerts: PlayerView["alerts"]): number => alerts.broken + (alerts.gravity === "restarting" ? 1 : 0);
+
+/**
+ * The alerts popover's body: the gravity row, then the reported breakdowns. A broken Gravity Simulator is never reported
+ * (reports.ts), so it is left out of the breakdowns the list counts as unreported.
+ */
+export function BreakdownAlerts({ alerts }: { alerts: PlayerView["alerts"] }) {
+  return (
+    <>
+      {alerts.gravity !== null && <GravityAlert state={alerts.gravity} />}
+      <AlertList kind="equipment" total={alerts.broken - (alerts.gravity === "broken" ? 1 : 0)} reports={alerts.reports} />
+    </>
+  );
+}
+
+/** The Gravity Simulator's row: broken, or restarting until the next cycle change (gravity.ts). */
+function GravityAlert({ state }: { state: "broken" | "restarting" }) {
+  const { t } = useTranslation();
+  const key = state === "broken" ? "gravityBroken" : "gravityRestarting";
+  return (
+    <div className="alert-gravity" data-gravity={state}>
+      <strong className="alert-popup-head">
+        <img src={GRAVITY_ICON} alt="" />
+        {t(`shipResources.${key}`)}
+      </strong>
+      <p>{t(`shipResources.${key}Text`, { mp: DEFAULT_CONFIG.gravitySimulator.brokenMpPenalty })}</p>
+    </div>
   );
 }
 

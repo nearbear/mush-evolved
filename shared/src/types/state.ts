@@ -235,6 +235,8 @@ export interface GameCore {
   pendingFires: RoomId[];
   /** Rooms booby-trapped with a spore by a Mush Trapper (traps.ts, #473). Sent only to living Mush (`PlayerView.trappedRooms`). */
   trappedRooms: RoomId[];
+  /** A Gravity Simulator was repaired this cycle and gravity comes back at the next cycle change (owner, 2026-11-22, `gravity.ts`). Public: the alert bar shows it. */
+  gravityRestarting: boolean;
   /** Who holds each title (titles.ts); null while vacant. Public: every view has the holders and the lines. */
   titles: Record<TitleId, PlayerId | null>;
   /**

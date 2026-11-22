@@ -1321,6 +1321,8 @@ export function normalizeCore(raw: Partial<GameCore>, ctx: NormalizeContext, mod
     pendingFires: copy(need(raw, "pendingFires", t)),
     // Trapper (#473): no rooms trapped in a game stored before it.
     trappedRooms: copy(added(raw, "trappedRooms", [])),
+    // Gravity restart (owner, 2026-11-22): a game stored before it restored gravity at once, so nothing is restarting.
+    gravityRestarting: added(raw, "gravityRestarting", false),
     titles: {
       commander: need(titles, "commander", `${t}.titles`),
       neron_admin: need(titles, "neron_admin", `${t}.titles`),

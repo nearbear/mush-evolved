@@ -6,6 +6,7 @@
 // chat and private channels in chat.ts. Win conditions and voting are open
 // decisions: do not add them without confirming the rules first.
 
+import { gravityCycle } from "./gravity.ts";
 import { expirePlans, plansView, strikeSlots } from "./plans.ts";
 import { bindPerformAction } from "./actions/summon.ts";
 import { applyCheats, makeHuman, shipInvincible, type Cheat, type RoleCheat } from "./cheats.ts";
@@ -206,6 +207,7 @@ export function createGame(
     reports: [],
     pendingFires: [],
     trappedRooms: [],
+    gravityRestarting: false,
     failureStreaks: {},
     patrolShips: newPatrolShips(config),
     space: [],
@@ -612,6 +614,8 @@ function advanceCycle(state: GameState, at?: number): void {
   }
   diseaseTrackerCycleChange(state);
   cycleChanged(state);
+  // A repaired Gravity Simulator is back, before incidents, so this cycle change's tremors have gravity.
+  gravityCycle(state);
   const oxygenSaved = rollOxygenSaved(state);
   burnOxygen(state, oxygenSaved);
   commsCycle(state);
@@ -885,7 +889,7 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     brokenDoors: you.alive && doorsDetected(state) ? brokenDoors(state) : [],
     // Rooms booby-trapped with a spore (#473): living Mush only; humans and the dead never see them.
     trappedRooms: you.alive && you.role === "mush" ? [...state.trappedRooms] : [],
-    alerts: you.alive ? alertsFor(state) : { fires: 0, broken: 0, reports: [] },
+    alerts: you.alive ? alertsFor(state) : { fires: 0, broken: 0, reports: [], gravity: null },
     // `seesLine` (log.ts) says which lines are yours; room lines, private ones included, only within your window (#365).
     // A private line names only you in the view: no one learns who else saw it (`leaked` marks a secret line others saw).
     // `kind` and `leaked` go with every line you see (#366). A crew move's direction only with Tracker (`moveLineFor`).

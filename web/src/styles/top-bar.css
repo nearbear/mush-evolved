@@ -719,3 +719,15 @@
 .crew-card .crew-group p {
   margin: 0;
 }
+
+/* The alerts popover's Gravity Simulator row (ShipResources `GravityAlert`): icon and title, then eMush's description. */
+.alert-gravity {
+  margin-top: 4px;
+  max-width: min(320px, calc(100vw - 32px));
+}
+.alert-gravity img {
+  image-rendering: pixelated;
+}
+.alert-gravity p {
+  margin: 2px 0 0;
+}

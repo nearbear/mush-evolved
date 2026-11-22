@@ -84,6 +84,7 @@ const NERON_MESSAGE_KEYS: ReadonlySet<string> = new Set([
   "bricBrocPrevented",
   "neronProjectCompleted",
   "equipmentBroken",
+  "gravityRestarted",
   "itemBroken",
   "fireStarted",
   "fireExtinguishedSprinklers",

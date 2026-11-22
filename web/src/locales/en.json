@@ -51,6 +51,10 @@
     "alertDoorDetector": "Broken door: {{roomA}} – {{roomB}} ({{detector}})",
     "alertsUnreported_one": "1 more unreported",
     "alertsUnreported_other": "{{count}} more unreported",
+    "gravityBroken": "No gravity simulator",
+    "gravityBrokenText": "The gravity simulator hasn't been started up. Every Movement Point gain is reduced by {{mp}} MP! Fix it so that NERON can re-establish gravity for the next cycle.",
+    "gravityRestarting": "No gravity simulator",
+    "gravityRestartingText": "The gravity simulator is restarting. Each gain of movement points is reduced by {{mp}} MP!",
     "alertsNone": "No fires or breakdowns reported",
     "info": {
       "oxygen": {
@@ -1436,6 +1440,7 @@
     "bricBrocPrevented": "General patching up has held the Daedalus together; no incident struck this cycle.",
     "neronProjectCompleted": "The {{project}} project is complete.",
     "equipmentBroken": "The {{equipment}} has broken down.",
+    "gravityRestarted": "Announcement: Gravity Simulator restarted. Activity report: human propulsion made easier.",
     "itemBroken": "The {{item}} has broken down.",
     "fireStarted": "A fire has broken out aboard!",
     "fireExtinguishedSprinklers": "The automatic sprinklers have put out a fire.",
@@ -1443,7 +1448,8 @@
     "fireReported": "{{name}} reports a fire in {{room}}.",
     "equipmentReported": "{{name}} reports that the {{equipment}} in {{room}} is broken.",
     "doorReported": "{{name}} reports that the door between {{room}} and {{other}} is broken.",
-    "tremor": "The room shakes violently!",
+    "tremor": "The room suddenly starts to shake violently. Present crew members find themselves thrown to the floor and bits of the ceiling have collapsed here and there. What a wreck...",
+    "tremorNoGravity": "The room suddenly starts to shake violently. Objects fly across the room and collide with the crew members present.",
     "panicAttack": "You have a panic attack.",
     "incidentDisease": "You feel unwell.",
     "metalPlate": "A metal plate falls on {{name}}!",
