@@ -5103,3 +5103,9 @@ Follow-up: the owner dropped the Intergalactic line from the helper and had the 
 - Phase 2's sync test (`shared/tests/capBreakdown.test.ts`) adds and removes every cap modifier one by one (all agree) and walks the role and start paths. It found five mismatches, kept as `it.fails` until the owner decides: a sick human turning Mush (convert, and alpha selection at pre-selection end) keeps the disease's reduction; a sick Mush made human (serum, role cheat) doesn't get it back; `newPlayer` stores `config.maxAp` without folding `startSkills` (empty in the default config, so latent).
 - Worked: iterating `MODIFIERS` for any cap hook instead of hand-listing the ~35 modifiers, so a new one is covered automatically.
 - Follow-up, same day: owner chose "recompute caps on every role change". `updateMaxValues` now runs in `convert`, the serum `cure`, `selectMush` and `setRoleCheat`, and after `newPlayer` in `createGame` and `joinShip` (so starting skills fold in). The five `it.fails` became plain tests; recorded in `rules-design.md`.
+
+## 2026-11-22: Stat cap breakdown, phase 3 (#267)
+
+- `PlayerView.caps` (`Record<CapStat, CapBreakdown>`) is filled in `viewFor` from `capBreakdown(state, you)`, so it is derived per view and needs no migration; `maxAp|maxMp|maxHp|maxMorale` stay the stored caps. A test in `capBreakdown.test.ts` checks the view carries its own breakdown and another seat's view doesn't name your disease.
+- Leak check (forked skill) found nothing: the sources are modifier ids already in `you.modifiers`, a Mush's diseases stay out as in every fold, and the Noise Reducer is a public project. Bots get only their own seat's `caps`.
+- Needed correction: `rules.test.ts`'s "HP and morale only to their owner" counts `"hp"`/`"morale"` keys in the whole view JSON, and `caps` adds stat-named keys. The test now blanks `caps` like the drug and fruit tables.

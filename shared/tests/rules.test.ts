@@ -515,7 +515,8 @@ describe("viewFor (hidden information)", () => {
         expect(other).not.toHaveProperty("hp");
         expect(other).not.toHaveProperty("morale");
       }
-      const json = JSON.stringify({ ...view, drugEffects: null, fruitEffects: null }); // drugs and fruits list their own hp/morale effects
+      // Drugs and fruits list their own hp/morale effects; `caps` is keyed by stat (your own caps, #267).
+      const json = JSON.stringify({ ...view, drugEffects: null, fruitEffects: null, caps: null });
       expect(json.match(/"hp"/g)).toHaveLength(1);
       expect(json.match(/"morale"/g)).toHaveLength(1);
     }

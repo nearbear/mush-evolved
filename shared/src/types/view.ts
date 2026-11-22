@@ -10,6 +10,7 @@ import type { TurnSide } from "../navigation.ts";
 import type { PlanetDirection, PlanetTag } from "../planets.ts";
 import type { TitleId } from "../titles.ts";
 import type { Alerts } from "../reports.ts";
+import type { CapBreakdown, CapStat } from "../modifiers.ts";
 import type { Action, BotKind, DocumentState, ItemId, LogEntry, LogLine, LogParams, PlayerId, Role, RoomId, SpoilStage } from "../types.ts";
 import type { ChannelId, ChatLine, ChatMessage, ChatThread, PrivateChannel, SeqRange, SharedPilgredStatus, SharedPlanet, SharedPlanetId, SharedPlantStatus, SharedReport, SharedReportId } from "./chat.ts";
 import type { Plan } from "./plan.ts";
@@ -336,6 +337,12 @@ export interface PlayerView {
   /** Caps for drawing your HP and morale bars. */
   maxHp: number;
   maxMorale: number;
+  /**
+   * Why each of your caps is what it is (`capBreakdown`, modifiers.ts, #267): the configured base and each modifier or
+   * project that changed it, for the stat cards. Derived on every view, never stored; your own seat only. Display only:
+   * `maxAp`, `maxMp`, `maxHp` and `maxMorale` stay the caps in force (the stored ones).
+   */
+  caps: Record<CapStat, CapBreakdown>;
   /** Bonds you are part of, with people in any room. Others' bonds are never sent. */
   bonds: {
     /** People you have bonded to. */

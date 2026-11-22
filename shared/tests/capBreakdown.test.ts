@@ -1,6 +1,6 @@
 // #267: why a stat's cap is what it is. Phase 1 checks `capBreakdown` itself; Phase 2 checks that the stored caps
 // (`player.maxAp|maxMp|maxHp|maxMorale`, recomputed only by `updateMaxValues`) agree with it after every path that
-// changes a cap.
+// changes a cap. Phase 3 checks that `viewFor` sends the breakdown to its own seat.
 import { describe, expect, it } from "vitest";
 import { addDisease, removeDisease } from "../src/diseases.ts";
 import { convert, cure } from "../src/infection.ts";
@@ -8,7 +8,7 @@ import { KUBE_OPS } from "../src/kube.ts";
 import { capBreakdown, MODIFIERS, type CapStat } from "../src/modifiers.ts";
 import { completeProject, loseProject } from "../src/projectEffects.ts";
 import { joinShip, selectMush } from "../src/preselection.ts";
-import { createGame, setRoleCheat } from "../src/rules.ts";
+import { createGame, setRoleCheat, viewFor } from "../src/rules.ts";
 import { isSkill } from "../src/skills.ts";
 import type { GameConfig, GameState, PlayerState } from "../src/types.ts";
 import { makeSeats, noCharacterModifiers, pickSkill, player, testConfig } from "./support.ts";
@@ -194,5 +194,21 @@ describe("stored caps match capBreakdown", () => {
     const next = setRoleCheat(s, m.id, "human");
     if (!next.ok) throw new Error(next.error);
     expectInSync(next.state, player(next.state, m.id), "role cheat");
+  });
+});
+
+describe("PlayerView.caps", () => {
+  it("is your own breakdown, beside the stored caps, and nobody else's", () => {
+    const s = game();
+    const p = human(s);
+    addDisease(s, p, "cold_disease");
+    const other = s.players.find((o) => o.id !== p.id)!;
+    const view = viewFor(s, p.id);
+    expect(view.caps).toEqual(capBreakdown(s, p));
+    expect(view.caps.morale.sources).toEqual([{ kind: "modifier", id: "cold_disease", delta: -3 }]);
+    expect({ ap: view.maxAp, mp: view.maxMp, hp: view.maxHp, morale: view.maxMorale }).toEqual(stored(p));
+    // Another seat gets its own breakdown, which says nothing of your cold.
+    expect(viewFor(s, other.id).caps).toEqual(capBreakdown(s, other));
+    expect(JSON.stringify(viewFor(s, other.id).caps)).not.toContain("cold_disease");
   });
 });
