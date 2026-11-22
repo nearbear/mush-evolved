@@ -45,6 +45,7 @@ import { Check, EditorMenu, Heading, Item, PopoverPanel, Radios, Separator, Sub 
 import { checkCounts, Checks, useChecks } from "./Checks.tsx";
 import { Hierarchy, hideKey, LAYER_NAMES } from "./Hierarchy.tsx";
 import { Inspector, isSofa } from "./Inspector.tsx";
+import { decodeDraft, decodePlace, type EditorPlace, encodeDraft, type Restored, restore } from "./draft.ts";
 import { Palette } from "./Palette.tsx";
 import { Splitter, useStoredSize } from "./Splitter.tsx";
 import {
@@ -77,32 +78,76 @@ const NOBODY = { people: new Map(), walkers: new Map(), seats: new Map(), corpse
 /** Who lies in every bed when the editor shows sleepers. */
 const SLEEPER_FRAME = lyingFrame("frieda")!;
 const SLEEPER_IMAGE: SceneImage = { url: SLEEPER_FRAME.url, frame: SLEEPER_FRAME, keyed: false };
+/** localStorage keys for the autosave (draft.ts): the map and its history, and where the editor was looking. */
+const DRAFT_KEY = "editor.draft";
+const PLACE_KEY = "editor.place";
+
+function readStored(key: string): string | null {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+function writeStored(key: string, value: string): boolean {
+  try {
+    localStorage.setItem(key, value);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** The autosaved draft to start from, if any; a stale one (edited from another version of the file) only if confirmed. */
+function restoredDraft(disk: ShipMap): Restored | undefined {
+  const draft = decodeDraft(readStored(DRAFT_KEY));
+  const r = restore(draft, disk);
+  if (r !== "stale" || !draft) return r === "stale" ? undefined : r;
+  const keep = window.confirm(
+    "The autosaved draft was edited from an older ship-map.json than the one on disk now (another save or a pull changed it). " +
+      "Restore the draft anyway? Saving it would undo those changes. Cancel starts from the file and discards the draft.",
+  );
+  return keep ? { map: draft.map, saved: disk, past: draft.past, future: draft.future } : undefined;
+}
 
 export default function ShipEditor() {
-  const [ship, setShip] = useState<{ art: ShipArt; map: ShipMap }>();
+  const [ship, setShip] = useState<{ art: ShipArt; map: ShipMap; restored?: Restored; place: Partial<EditorPlace> }>();
   const [error, setError] = useState<string>();
   useEffect(() => {
-    loadShip().then(({ rooms, ...art }) => setShip({ art, map: { rooms } }), (e: unknown) => setError(String(e)));
+    // Once only (StrictMode mounts twice in dev), so a stale draft asks once.
+    let gone = false;
+    loadShip().then(
+      ({ rooms, ...art }) => {
+        if (gone) return;
+        const map = { rooms };
+        const restored = restoredDraft(map);
+        setShip({ art, map, restored, place: decodePlace(readStored(PLACE_KEY), restored?.map ?? map, MAX_ZOOM) });
+      },
+      (e: unknown) => setError(String(e)),
+    );
+    return () => {
+      gone = true;
+    };
   }, []);
   if (error) return <p className="editor-message">{error}</p>;
   if (!ship) return <p className="editor-message">Loading the ship…</p>;
-  return <Editor art={ship.art} initial={ship.map} />;
+  return <Editor art={ship.art} initial={ship.map} restored={ship.restored} place={ship.place} />;
 }
 
 type SaveState = { state: "clean" | "dirty" | "saving" | "saved" } | { state: "failed"; errors: string[] };
 
-function Editor({ art, initial }: { art: ShipArt; initial: ShipMap }) {
-  // The map, what was last saved (or loaded), and the undo and redo stacks.
-  const [map, setMap] = useState(initial);
-  const [saved, setSaved] = useState(initial);
-  const [past, setPast] = useState<ShipMap[]>([]);
-  const [future, setFuture] = useState<ShipMap[]>([]);
+function Editor({ art, initial, restored, place: start }: { art: ShipArt; initial: ShipMap; restored?: Restored; place: Partial<EditorPlace> }) {
+  // The map, what was last saved (or loaded), and the undo and redo stacks: from the autosave if there is one.
+  const [map, setMap] = useState(restored?.map ?? initial);
+  const [saved, setSaved] = useState(restored?.saved ?? initial);
+  const [past, setPast] = useState<ShipMap[]>(restored?.past ?? []);
+  const [future, setFuture] = useState<ShipMap[]>(restored?.future ?? []);
   const [save, setSave] = useState<SaveState>({ state: "clean" });
-  const [selected, setSelected] = useState<TileAt | null>(null);
+  const [selected, setSelected] = useState<TileAt | null>(start.selected ?? null);
   // The room the room tools act on: the selected tile's, or one picked from the list.
-  const [roomSel, setRoomSel] = useState<string | null>(null);
+  const [roomSel, setRoomSel] = useState<string | null>(start.roomSel ?? start.selected?.room ?? null);
   const [picked, setPicked] = useState<Problem | null>(null);
-  const [message, setMessage] = useState<string>();
+  const [message, setMessage] = useState<string | undefined>(restored && restored.map !== restored.saved ? "Restored the unsaved changes from the autosave." : undefined);
   const dirty = map !== saved;
   // What was under the last click, front first: Tab steps through it.
   const stack = useRef<{ keys: string[]; at: number }>({ keys: [], at: 0 });
@@ -159,6 +204,15 @@ function Editor({ art, initial }: { art: ShipArt; initial: ShipMap }) {
     setSelected(null);
     setSave({ state: "clean" });
   };
+  // Autosave on every change (draft.ts), so a reload of any kind loses nothing. If the browser won't
+  // hold the history too, the map alone is kept.
+  const autosaveFailed = useRef(false);
+  useEffect(() => {
+    const draft = { base: saved, map, past, future };
+    const ok = writeStored(DRAFT_KEY, encodeDraft(draft)) || writeStored(DRAFT_KEY, encodeDraft(draft, 0));
+    if (!ok && !autosaveFailed.current) setMessage("Autosave failed: this browser won't store the draft. Save often.");
+    autosaveFailed.current = !ok;
+  }, [saved, map, past, future]);
   // Leaving with unsaved changes asks first.
   useEffect(() => {
     if (!dirty) return;
@@ -168,7 +222,7 @@ function Editor({ art, initial }: { art: ShipArt; initial: ShipMap }) {
   }, [dirty]);
 
   const layout: ShipLayout = useMemo(() => ({ ...art, ...map }), [art, map]);
-  const [view, setView] = useState<ShipView>({ from: null });
+  const [view, setView] = useState<ShipView>(start.view ?? { from: null });
   // Sleepers lie mirrored where their bed says so, as in the game (IsoRoom); hit-testing mirrors with them.
   const placed = useMemo(
     () =>
@@ -289,8 +343,12 @@ function Editor({ art, initial }: { art: ShipArt; initial: ShipMap }) {
     resize.observe(el);
     return () => resize.disconnect();
   }, []);
-  const [zoom, setZoom] = useState(2);
-  const [cam, setCam] = useState<{ x: number; y: number } | null>(null);
+  const [zoom, setZoom] = useState(start.zoom ?? 2);
+  const [cam, setCam] = useState<{ x: number; y: number } | null>(start.cam ?? null);
+  // Where the editor is looking and what's selected, remembered for the next load.
+  useEffect(() => {
+    writeStored(PLACE_KEY, JSON.stringify({ zoom, cam, view, selected, roomSel } satisfies EditorPlace));
+  }, [zoom, cam, view, selected, roomSel]);
   const camera = cam ?? { x: Math.round((panel.width / zoom - box.width) / 2), y: Math.round((panel.height / zoom - box.height) / 2) };
 
   const frame = useRef<FrameUpdate>({ camera, offsetOf: STILL });
