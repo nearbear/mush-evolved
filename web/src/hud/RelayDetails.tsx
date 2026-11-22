@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
 import { bustIcon } from "../art/assets.ts";
 
-/** A work button's text with the gain if you contribute now (relay tokens, docs/plans/relay-tokens.md): "Progress +6-9%". */
+/** A work button's text with the gain if you contribute now (relay tokens, docs/plans/archive/relay-tokens.md): "Progress +6-9%". */
 export function withGain(t: TFunction, action: string, gain: RelayTargetView["gain"] | undefined): string {
   if (!gain) return action;
   const text = gain.min === gain.max ? t("relay.gainOne", { min: gain.min }) : t("relay.gain", { min: gain.min, max: gain.max });
@@ -24,7 +24,7 @@ export function RelayDetails({ target, view }: { target: RelayTargetView | undef
     <>
       {target.waiting > 0 && <p className="relay-waiting">{t("relay.waiting", { percent: target.waiting })}</p>}
       {target.tokens.length > 0 && (
-        // A research's tokens are samples, and the pending ones are marked until their assay (docs/plans/research-sabotage.md).
+        // A research's tokens are samples, and the pending ones are marked until their assay (docs/plans/archive/research-sabotage.md).
         <ul className="relay-tokens" aria-label={target.pending !== undefined ? t("relay.samples") : t("relay.tokens")}>
           {target.tokens.map((token, i) => {
             const character = characterOf(token.by);

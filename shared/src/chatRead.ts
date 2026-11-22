@@ -4,7 +4,7 @@
 // messages a view carries. Not game state: the server keeps it per seat in its own storage, outside the input log
 // (never recorded or replayed), and no view carries it. Keyed by seat (the mind), it follows a Transfer, which is also
 // why it can't leak how far a body's previous mind had read (the reason `logSeen` restarts in `swapMinds`).
-// docs/plans/chat-pages.md, "Read state (#400)".
+// docs/plans/archive/chat-pages.md, "Read state (#400)".
 
 import { countInRanges, readChannels } from "./chat.ts";
 import type { ChannelId, GameState, PlayerState, SeqRange } from "./types.ts";

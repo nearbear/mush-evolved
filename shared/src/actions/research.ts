@@ -75,7 +75,7 @@ function countsParam(state: Readonly<GameState>, counts: SampleCounts): string {
 }
 
 /**
- * Adds `player`'s pending sample to a research (docs/plans/research-sabotage.md), contaminated by themselves when `spoiled`
+ * Adds `player`'s pending sample to a research (docs/plans/archive/research-sabotage.md), contaminated by themselves when `spoiled`
  * (a Mush's own spoil), then runs an assay if one is due and completes the research if it leaves it at 100.
  */
 export function addSample(state: GameState, player: Readonly<PlayerState>, research: ResearchId, spoiled: boolean): void {

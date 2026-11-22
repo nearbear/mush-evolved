@@ -1,4 +1,4 @@
-// Patrol ships and the Pasiphae (docs/plans/patrol.md, phase 2; owner, 2026-10-24, #208 and #147). Eight small ships
+// Patrol ships and the Pasiphae (docs/plans/archive/patrol.md, phase 2; owner, 2026-10-24, #208 and #147). Eight small ships
 // dock in the three bays. Each is a room of its own with no doors (ships are rooms, answer 1), holding only its
 // command: a pilot takes off from the ship's interface in the bay and lands from the command. Taking off and landing
 // are secret, seen in the bay (answer 4). Only Pilots fly for now (answer 3); a manoeuvre by anyone else would be rough
@@ -34,7 +34,7 @@ export const PATROL_SHIPS: readonly PatrolShip[] = [
 export const PATROL_INTERFACE = "PATROL_INTERFACE";
 
 /**
- * The Icarus while away on an expedition (docs/plans/expedition.md, phase 2; owner, 2026-11-07): a room with no doors
+ * The Icarus while away on an expedition (docs/plans/archive/expedition.md, phase 2; owner, 2026-11-07): a room with no doors
  * and no equipment, like a patrol ship's. A permanent room id. Here so config.ts can import it.
  */
 export const ICARUS_CRAFT = "ICARUS_CRAFT";
@@ -43,7 +43,7 @@ export const ICARUS_CRAFT = "ICARUS_CRAFT";
 export const inCraft = (room: RoomId): boolean => room === ICARUS_CRAFT || patrolShip(room) !== undefined;
 
 /**
- * Where a member lost on a planet is (docs/plans/expedition.md, phase 3, slice B; owner, 2026-11-08, #357): a place of
+ * Where a member lost on a planet is (docs/plans/archive/expedition.md, phase 3, slice B; owner, 2026-11-08, #357): a place of
  * their own, off the map, with no doors or equipment, so their speech reaches nobody. Not in `config.rooms`.
  */
 export const lostPlace = (player: PlayerId): RoomId => `${LOST_PREFIX}${player}`;

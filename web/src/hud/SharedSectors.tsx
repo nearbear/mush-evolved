@@ -1,4 +1,4 @@
-// A shared planet's sector slots as a row of tag icons (docs/plans/expedition-ui.md, "Sharing planets with sectors"):
+// A shared planet's sector slots as a row of tag icons (docs/plans/archive/expedition-ui.md, "Sharing planets with sectors"):
 // what the sharer chose for each sector, unknown included. Shown in the Astrophysics feature and on the expedition
 // screen; the icons are named for screen readers.
 

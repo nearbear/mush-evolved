@@ -1,4 +1,4 @@
-// What a player sees of the relay state (relay.ts; docs/plans/relay-tokens.md; research's samples, assay.ts):
+// What a player sees of the relay state (relay.ts; docs/plans/archive/relay-tokens.md; research's samples, assay.ts):
 // research and PILGRED token pools and progress, plus the currently offered NERON projects' progress and relay streak gain
 // ranges (projects use no tokens). All progress, `waiting`, gains and tokens go only to the living in the target's room until
 // complete; completion reaches every room (owner, 2026-10-31). Rolls and contamination never go out.
@@ -18,7 +18,7 @@ const EMPTY: RelayPool = { tokens: [] };
 const EMPTY_RESEARCH: ResearchPool = { tokens: [], pending: [] };
 
 /**
- * A research as seen from the lab (docs/plans/research-sabotage.md): `waiting`, the gain and the sample values come from all
+ * A research as seen from the lab (docs/plans/archive/research-sabotage.md): `waiting`, the gain and the sample values come from all
  * its samples, verified and pending, since that is what the next assay tests; `pending` is the striped segment. Nothing
  * says whether a sample is contaminated.
  */

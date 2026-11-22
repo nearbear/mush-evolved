@@ -4,7 +4,7 @@
 
 **Sources:**
 
-- `docs/plans/balance.md`, `docs/rules/rules-design.md`, `docs/rules/implemented-rules.md`, `docs/plans/research-sabotage.md`.
+- `docs/plans/balance.md`, `docs/rules/rules-design.md`, `docs/rules/implemented-rules.md`, `docs/plans/archive/research-sabotage.md`.
 - eMushpedia pages "Triomphe", "Points de Moral", "Atteindre Eden", "Daedalus détruit" and "Les morts" (see "What eMush does").
 - Nine community discussion threads the owner shared, digested at the end without names. Two contain the owner's own proposals.
 

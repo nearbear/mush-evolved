@@ -8,6 +8,12 @@ import {
   moderateChat,
   MAX_SHARED_PLANET_LENGTH,
   MAX_SHARED_PLANET_LINES,
+  MAX_SHARED_PLANT_EFFECTS_LENGTH,
+  MAX_SHARED_PLANT_EFFECTS_LINES,
+  MAX_SHARED_PLANT_TEXT_LENGTH,
+  MAX_SHARED_PLANT_TEXT_LINES,
+  MAX_SHARED_PILGRED_TEXT_LENGTH,
+  MAX_SHARED_PILGRED_TEXT_LINES,
   parseGameMessage,
   startGame,
   stampEntries,
@@ -991,6 +997,53 @@ export class GameRoom extends Server<Env> {
       this.countRateLimited(playerId);
       return "too_many_messages";
     }
+    if (msg.type === "sharePlants") {
+      // Moderate both the optional note and each row's editable effects string.
+      let text = "";
+      let changed = false;
+      if (msg.text.trim()) {
+        const mod = moderateChat(msg.text, undefined, { length: MAX_SHARED_PLANT_TEXT_LENGTH, lines: MAX_SHARED_PLANT_TEXT_LINES });
+        if (!mod.ok) {
+          const blocked: BlockedText = { at: Date.now(), by: playerId, type: msg.type, raw: msg.text, reason: mod.reason };
+          await this.ctx.storage.put(`blocked:${String(this.blocked++).padStart(9, "0")}`, blocked);
+          return "share_text_invalid";
+        }
+        text = mod.text;
+        if (mod.text !== msg.text) changed = true;
+      }
+      const plants = [];
+      for (const row of msg.plants) {
+        if (!row.effects.trim()) {
+          plants.push({ ...row, effects: "" });
+          continue;
+        }
+        const mod = moderateChat(row.effects, undefined, { length: MAX_SHARED_PLANT_EFFECTS_LENGTH, lines: MAX_SHARED_PLANT_EFFECTS_LINES });
+        if (!mod.ok) {
+          const blocked: BlockedText = { at: Date.now(), by: playerId, type: msg.type, raw: row.effects, reason: mod.reason };
+          await this.ctx.storage.put(`blocked:${String(this.blocked++).padStart(9, "0")}`, blocked);
+          return "share_text_invalid";
+        }
+        if (mod.text !== row.effects) changed = true;
+        plants.push({ ...row, effects: mod.text });
+      }
+      const rawCombined = changed ? [msg.text, ...msg.plants.map((r) => r.effects)].filter(Boolean).join("\n---\n") : undefined;
+      return this.act({ type: "sharePlants", by, plants, text }, rawCombined);
+    }
+    if (msg.type === "sharePilgred") {
+      let text = "";
+      let rawText: string | undefined;
+      if (msg.text.trim()) {
+        const mod = moderateChat(msg.text, undefined, { length: MAX_SHARED_PILGRED_TEXT_LENGTH, lines: MAX_SHARED_PILGRED_TEXT_LINES });
+        if (!mod.ok) {
+          const blocked: BlockedText = { at: Date.now(), by: playerId, type: msg.type, raw: msg.text, reason: mod.reason };
+          await this.ctx.storage.put(`blocked:${String(this.blocked++).padStart(9, "0")}`, blocked);
+          return "share_text_invalid";
+        }
+        text = mod.text;
+        if (mod.text !== msg.text) rawText = msg.text;
+      }
+      return this.act({ type: "sharePilgred", by, percent: msg.percent, text }, rawText);
+    }
     if (msg.type !== "chat" && msg.type !== "createChannel" && msg.type !== "createThread" && msg.type !== "sharePlanet" && msg.type !== "shareReport") return this.act({ ...msg, by });
     const raw = msg.type === "chat" || msg.type === "sharePlanet" || msg.type === "shareReport" ? msg.text : (msg.name ?? "");
     // A private channel may be created without a name (it shows its day and cycle instead).
@@ -1185,7 +1238,7 @@ export class GameRoom extends Server<Env> {
   }
 
   /**
-   * Records a `dropQueues` input for the actions the load dropped (#384, docs/plans/normalize-state.md "The action queue"), so the record still rebuilds the
+   * Records a `dropQueues` input for the actions the load dropped (#384, docs/plans/archive/normalize-state.md "The action queue"), so the record still rebuilds the
    * stored state. It isn't applied: `normalizeGame` has already done the same thing. It carries the view as loaded,
    * with no change, and is saved with the snapshot in one write. Nobody is told; they press again.
    */

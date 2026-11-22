@@ -4854,6 +4854,27 @@ Owner asked to "match eMush". Moved the debris table from `config.hunters.debris
 - **Worked:** clearing the flag in `arrive` and `board` covered move, throw-out, wheelchair pushes and patrol takeoff in one place each. `STATE_VERSION` 123 with an upgrade step for docked crews stored in the craft.
 - **Needed correction:** bot tests assumed the craft room; a boarded bot now sees the bay floor and spends a turn sharing an item it sees there, so one test needed a second turn. `crewStillBoarding` had to skip holders already boarded.
 
+### 2026-11-21 — Lazy-load `GameScreen` on `/play` with lobby prefetch
+- Switched `GameScreen` (`web/src/GameScreen.tsx`, `web/src/App.tsx`) to `React.lazy(() => import("./GameScreen.tsx"))` with a `<Suspense>` boundary matching the existing `common.connecting` state so `<WakeUp>` stays mounted during transitions.
+- Added idempotent `prefetchGameScreen` passed into `Lobby` (`web/src/lobby/Lobby.tsx`), triggered on hover/focus/click of the Resume, ship, and Single Player buttons as well as on queue join and resume.
+- Reduced the main entry chunk (`index-*.js`) from ~1,469 kB to ~629 kB (`index-*.css` from 125 kB to 100 kB). Verified with `npm run verify:web`.
+
+## 2026-11-21: Legality property test (#108)
+
+- Added `shared/tests/legality.test.ts`: a seeded random walk where every action `legalActions` offers must be accepted by `applyAction`, and every action made by swapping one item, room or player id in an offered action must be accepted exactly when it is offered too; plus a dead player refused everything.
+- What needed correction: the first version checked all four seats with three swaps per id on three seeds and took 11 s. Profiling showed every `applyAction` clones the ~75 KB state (~0.2 ms even when refused). Checking only the acting seat, two swaps per id, and one seed in `verify` (five under `npm run test:slow`, reusing `REPLAY_SEEDS`) brought it to ~0.4 s alone (under 1 s under verify's load), inside the 1 s per-test budget.
+- What worked: planting a bug (skipping `canTransfer` for `drop`) made the test fail at once with `accepted unoffered {"type":"drop",...}`, so the swap check has teeth.
+
+### Dynamic-import locale JSONs on demand (2026-11-21)
+
+- Switched `web/src/i18n/index.ts` from statically bundling all three UI catalogs (`en/fr/es.json`) and `NAME_CATALOGS` to loading only the active locale's UI catalog and shared name catalog (`@mush2/shared/src/locales/names.<locale>.json`) via dynamic `import()` behind an i18next `BackendModule` with top-level `await` before mounting, and loading other locales on `changeLanguage`.
+- Kept compile-time key checking via `type EnCatalog = typeof import("../locales/en.json")` merged with `NameCatalog`, and set `fallbackLng: false` so French/Spanish startups don't also fetch English (key parity is already enforced by `tools/tests/i18n/i18n.test.ts`).
+- Verified in `web/tests/i18n/i18n.test.ts` that only the initial locale's resource bundle is loaded on startup and other locales load on demand; Vite now emits separate per-locale chunks (`en/fr/es` + `names.en/fr/es`) with none in the entry bundle or `index.html` modulepreloads.
+
+### 2026-11-21 — Self-hosted fonts via `@fontsource`
+
+- Replaced vendored `.ttf` files for Kanit (18 weights, ~3.1 MB) and Days One with `@fontsource/kanit` and `@fontsource/days-one` imported in `web/src/styles/fonts.css`, keeping `web/src/fonts/pixel-square/` local (not on Fontsource).
+- Imported only the `latin` and `latin-ext` subsets for the weights actually used (`400`/`400-italic`/`700`/`700-italic`, plus `800` for the pod sticker in `web/src/lobby/podArt.ts`; `@fontsource/days-one` only ships `latin-400`). Vite bundles the `.woff2`/`.woff` files into `web/dist/assets/`, keeping CSP `font-src 'self'` intact with zero external requests.
 ## 2026-11-21: Typecheck and test fixes after the cat-spore move
 
 - An edit moved the infected cat's spore from `take`'s `apply` into `onInjury`, and Cat Allergy's `heldCat` call went with it, giving a TS18048 (`item` possibly undefined) and making Quincke's Oedema need an injury. Claude moved `heldCat` back into `apply` (the owner's "on picking him up"), leaving the spore in `onInjury`. `mush_skills.test.ts` still pinned `bacterial_contact` as partial; it is full since give_disease.
@@ -4871,3 +4892,70 @@ Owner asked to "match eMush". Moved the debris table from `config.hunters.debris
 - 2026-11-22: Added `broken_leg_injury` (+1 MP per move, -1 max HP, -5 max MP; eMushpedia's "Jambe cassée"), standalone, in `combatInjuries` and `bluntInjuries` (Claude's default). No `verify` (owner); only the broken leg and combat injury tests were run.
 
 - 2026-11-22: Added `unusable_legs_injury` (upgrade of Mashed Foot and Broken Leg; -4 max HP, -12 max MP, Critical Haemorrhage on appearing) and a `legInjury` factory for the four leg/foot injuries. A wheelchair user ignores their MP cost and max MP loss (owner). Mid-task, the owner said max MP may reach 0 and block moving; `moveCost` already refuses a move at a 0 cap, so only the floor changed. Claude found that `addDisease` checked only one tier above, so a Broken Foot could join Unusable Legs; `tiersAbove` now walks the chain. A test first forgot Critical Haemorrhage's own -2 max HP. No `verify` (owner); the injury and accommodate tests were run.
+## 2026-11-21: THE List, build step 1 (the tabulator item)
+
+- Added `canTake?: boolean` to `ItemType` and the `tabulator` item (`TABULATOR_ITEM`): can't be taken, dropped, hidden or dismantled; breaks (also in cycle-change breakdowns), can be sabotaged, 12% repair. `take` leaves `canTake: false` items out of its candidates and rejects them; `tube_transfer` refuses them too (the `canDrop: false` check already did, the `canTake` check states the intent).
+- Checked the other movers: `search` only finds hidden items, the expedition moves only touch craft rooms, drones and Schrödinger move only themselves, and death and shoulder injuries only move carried items, so none reach a bridge-bound tabulator.
+- Tests in `shared/tests/theList.test.ts` (the step-1 part). Not yet in the starting items, and no names, icon or print action: those are later steps of `docs/plans/the-list.md`.
+- Follow-up (owner, same day): the tabulator starts in front storage (`STORAGE_FRONT`), not on the bridge as in the original and eMush. Plan, item comments and test updated; to be listed in `changes-from-emush.md` once it spawns.
+
+## 2026-11-21: THE List, build step 2 (the tabulator spawns)
+
+- `config.startItems` now places one `tabulator` in `STORAGE_FRONT`. Since it now shows in game, the same step gave it its names (Tabulator / Tabulatrice / Tabuladora, from the plan) and its icon (`ICON_FILE` maps it to the original's `printer.jpg`, which the item glob already bundles), and listed it in `implemented-rules.md` and `changes-from-emush.md`.
+- Needed correction: `ship.test.ts` pins the total number of starting items (94), which the first `verify` caught; it is now 95 with a front-storage check. A new spawn test is in `theList.test.ts`.
+- Running ships get no tabulator (no normalizer change; the databases are empty). Next: step 3, `theList.ts` and `GameState.theList`.
+
+### 2026-11-21: THE List's hidden state and rolls (#266, step 3)
+
+- `shared/src/theList.ts`: `GameState.theList` (own `"the-list"` stream, starting Mush bodies, selection cycle, `printed`), set by `recordSelection` next to `rollAtSelection`; pure `listSize`, `guaranteedGroup`, `guaranteedName`, `rollList`; `config.theList.startNames` 8. Never in any view (leakFields + sentinel); excluded from the full view; `added()` default for games in progress (selection from the first rebel call).
+- Reading the plan with Transfer in mind: role moves with the mind, so "a living starting Mush" became "a starting-Mush body still Mush"; a Mush mind moved to another body falls to the "any living Mush" step. Flagged to the owner.
+- Needed correction: the normalizer's no-`??` rule (a repo test) caught my fallback; rewritten as an explicit branch.
+
+### 2026-11-21 — Lossless WebP for the 7 largest PNG spritesheets
+
+- Added `npm run webp-sheets` (`tools/src/webpSheets/webpSheets.ts`), which encodes the 7 largest PNG spritesheets (`BigFill-0`, `BigFill2-0`, `char`, `gfx_01`, `MidFill`, `MidFill2`, `fx`) to lossless WebP (`VP8L`, `method=6`) under `Mush/derived/webp/`, leaving `Mush/` originals and `Mush/derived/pages/*.png` untouched.
+- Kept `ship-art.json` pointing at the PNG paths so offline Node tools (`ship-render`, `art-align`, `shipLayout.test.ts`) continue using the pure-TS PNG decoder; `web/src/iso/shipLayout.ts` and `web/src/art/assets.ts` load the derived `.webp` files instead so Vite excludes those 7 PNGs from `web/dist/`.
+- Reduced the 7 sheets from 1,712 KiB to 1,035 KiB (−39.5%, ~677 KiB saved), verified pixel-identical on every visible (`alpha > 0`) pixel.
+
+### 2026-11-21 — THE List: printing (#266, steps 4-5 and the web side)
+
+- `print_list` (`actions/print_list.ts`, 0 AP from `config.theList.cost`): a Tracker at the tabulator rolls `rollList`, marks the one print spent, and gets a `{ kind: "the_list", characters }` document (hands, else floor); public log. Disabled with `lacks` `mushNotSelected`, `listPrinted` (also after a tear) and `broken`, the first time `BROKEN` is shown rather than hidden, scoped to this action in `isUnaffordableReason`.
+- Widening `DocumentState` to a union broke the view's hand-written copy of the lost analysis's rows; replaced it with `copyDocument`. `DocumentReader` now switches on the kind (list, one-name certainty, "no Mush left aboard").
+- The disabled-reason and log wording in French reuses the original's own lines for PRINT_ZE_LIST ("chargé ses ampoules", "perforé ces informations"); fr/es are drafts.
+- Needed correction: my leak test grepped the view for "theList", which matched the log key `theListPrinted`; narrowed to the state's field names (the sentinel test in `leaks.test.ts` already covers the state).
+- Another session's uncommitted WebP work shared the checkout; the user stashed mid-task, and I popped only my own stash entry.
+### 2026-11-21: Alien fruits pass 2, grafting (#438)
+
+- **Decision (owner, in the issue):** one hybrid per pair of the 12 alien species, drawn at launch from both parents and fitted to 4–9; eMush's Graft action (Botanist only, no roll, fails when dirty or the plant is unwell); Green Thumb's 25% head start. Claude built all four phases in a worktree.
+- **Worked:** the issue's phased plan was complete enough to build without new questions. The clean-room `emush spec` settled the one gap (eMush's Graft has no dirt or injury chance). A quick simulation showed 65–66 of the 66 pairs fit per ship, with values weighted toward 4–6.
+- **Needed correction:** the seed isn't stored in the game, so "draw live games' hybrids from the seed" wasn't possible. Live games instead derive the stream from their stored `rng`, as `merchantRng` already does. `hybrids` first went on `GameCore` and moved to the server-only part of `GameState`. `storedRooms` caught the new dictionary missing from `DICTS` in `storedShape.ts`. The worktree's shell guard refused compound commands, so edits went through scratch scripts. Claude once typed `git checkout -- .` while meaning `git status`; the auto-mode classifier blocked it before any work was lost.
+
+- **2026-11-21, bot survival plan Run C (escape on 7 hunters).** Built `HOLD_HUNTER_TRIGGER` 5 → 7 in a worktree and measured it on 50 seeds against a back-to-back rerun of `main` (the saved Run A4 run was 0.42 days off after #438, so a fresh baseline mattered). The targeted number moved (escape jumps on hunters 58 → 29), but the run got worse overall (mean days −0.24, Oxygen orbits 67 → 59, first jump cycle 7 → 13): the same trigger fires held jumps to a shared planet, which the plan's "escape" framing didn't account for. Lesson: read which jumps a trigger fires (the report's per-trigger jump lines) before predicting a threshold change; the plan's order (B before C) mattered. Recorded as a negative result in `bot-goals.md`; landing is the owner's call.
+
+- **2026-11-21, bot survival plan Run B (destination jumps go at once).** Same worktree as Run C, with Run C's trigger reverted to 5 so Run B was one change against the same baseline. `shouldJumpNow` returns true for a planet jump (keeping `Jump: now` and the crew wait), and `HOLD_MIN_OXYGEN` went away as dead code. Mean days +0.69 (32 longer, 15 shorter), first orbit at a median cycle 13 → 6, oxygen at 0 at cycle 31 → 45. What needed correcting along the way: the first version also cut the fuel relay's wait short (the relay treated "due" as "urgent"), which two existing Commander tests caught. Nine hold tests had used planet jumps to exercise the hold and were moved to escape jumps. An `abandoned` rise was traced to an explorer left on the planet (an owner-accepted rule), not the jump race the plan's safeguard guards against.
+
+### 2026-11-21 — Hydroponics center terminal and shared greenhouse plant status
+
+- **Decision (owner):** Made `PLANT_CONTROLLER` in `HYDROPONIC_CENTER` an accessible terminal (`terminal: true`) with no game actions of its own, displaying planted hydropots on the greenhouse floor as a vertical list (`(icon + name) -> effects -> statuses`, including how many cycles a plant has been diseased, thirsty/dried out, young, or healthy). Kept pot inspection visibility (sickness and `sickCycles` only for Botanist & Skilful; alien fruit effects only for Botanist, Skilful, Chef & Mush). Added `sharePlants` (free, server-moderated, editable rows + optional note so players can lie, like Astrophysics) that pins one collapsible status card above the Botany feature thread and posts a system message in Botany chat.
+- **What worked:** Clarifying the 4 open rule questions up front via multiple-choice questions avoided inventing rules or rework; reusing the `sharePlanet` / `SharePlanetForm` architecture kept state normalization, replay, moderation, and leak checks consistent.
+- **What needed correction:** `normalizePlant` needed a direct undefined check instead of `added()` for the optional `sickCycles` field, and `normalizeState.test.ts`'s `handFilled()` fixture needed `sickCycles` populated to match the normalized output.
+
+### 2026-11-21 — Shared PILGRED progress in the Features tab
+- **Decision (owner):** PILGRED progress in the Features tab is a manually shared snapshot from the `PILGRED` terminal (like Botany's `sharePlants` / Astrophysics's `sharePlanet`), editable (0–100%, lies allowed) with an optional note, pinned as a single progress bar card above the PILGRED feature thread. Real PILGRED progress (`view.pilgred`) stays room-scoped.
+- **What worked:** Asking one clarifying question before coding prevented implementing a live tracker like `ResearchTracker`/`ProjectTracker` (which would either have broken the room-scoped visibility rule or omitted manual sharing). Mirroring `sharedPlants` (`sharedPilgred.ts`, `SharedPilgredCard.tsx`, `SharePilgredForm` in `TerminalDialog.tsx`, server-side moderation in `GameRoom.ts`, and `normalizeCore` with `added(..., null)`) kept the implementation small, consistent, and leak-free.
+
+### 2026-11-21 — Docs cleanup: archive completed plans and scratchpad notes
+
+- **Decision (owner):** Archived 17 completed or superseded plans from `docs/plans/` into `docs/plans/archive/`, and 10 completed scratchpad plans/handoffs/audits plus 39 past survival JSON files from `docs/scratchpad/` into `docs/scratchpad/archive/` (leaving `survival-shower-*.json` untouched for an active worktree). Replaced the `docs/README.md` plans table with a concise bullet list of the 10 remaining active/draft plans.
+- **What worked:** Updating all repo-rooted `docs/plans/*.md` and `docs/scratchpad/*.md` references across tracked files (101 files) kept `tools/tests/docs/docPaths.test.ts` passing with zero broken paths or relative links.
+
+### 2026-11-21 — Client-side room item stacking and spiked-item priority
+
+- **Decision (owner):** Stack room items that are identical to the viewer (`ItemView` ignoring `id`) into one UI slot on the client, leaving carried inventory unstacked so each item occupies a physical slot. On `take` and `consume` of a room item, the server picks the highest-spore item among visible items in that room that look identical to the viewer (`preferSpikedInRoom`). Only `spores` is prioritized (not spoilage or other hidden traits).
+- **What worked:** Moving `itemView` into `shared/src/itemView.ts` alongside `itemViewKey`, `stackItemViews`, and `preferSpikedInRoom` let both the client UI (`InventoryPanel`, `RoomList`) and server actions (`TransferAction`, `ConsumeAction`) share the exact same viewer-equivalence key without reordering `view.roomItems` on the wire (zero hidden-information leak). Reusing `ItemFace`'s existing `count` badge and updating `useOverflowsSpace` to count stacks instead of raw items kept the UI change minimal.
+- **What needed correction:** Initial `item_stacking.test.ts` checked `player.contamination` instead of `state.contamination[id]` and picked the first human seat without checking `isImmune` (Chun). Both were caught immediately by the targeted test run.
+## 2026-11-21: Injury deaths: shower guard and HP report
+
+- Asked whether healing should come next because bots die of injuries. Claude tallied the saved runs before answering: asphyxia was still first (~58%), injury second (~25%), scripted bots don't heal at all (deferred 2026-11-01), and 42 injury deaths came from bots showering with skin inflammation. The owner picked "shower fix plus HP report" over designing healing straight away.
+- Shower guard: 42 → 0 showered deaths, injury 146 → 108, endings within noise (the saved crew suffocate later). The report then showed that about two thirds of injury deaths had spent 3 or more cycles at 5 HP or less, which is the evidence a heal goal needs.
+- Needed correction: the first baseline started in the same worktree as the edit, and the harness spawns vitest children lazily, so it would have picked up the change mid-run. Claude stopped it and reran the baseline from a separate clean detached worktree. Lesson: never edit the worktree a survival run is reading from.

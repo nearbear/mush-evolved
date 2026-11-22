@@ -1,4 +1,4 @@
-// A rebel base's message as it comes through at a given decode progress (docs/plans/signals.md, step 3): a share of its
+// A rebel base's message as it comes through at a given decode progress (docs/plans/archive/signals.md, step 3): a share of its
 // characters equal to the missing percentage is hidden as noise, and the whole message shows at 100%. Presentation only:
 // the full text is in the locale files, which ship in the client bundle anyway.
 //

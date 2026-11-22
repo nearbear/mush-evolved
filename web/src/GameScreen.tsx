@@ -18,7 +18,7 @@ import { ChatReadProvider, chatReadKey, createChatReadStore } from "./chatRead.t
 /** How slow-render warnings name this screen (dev console only). */
 const WATCH_ID = "GameView"; // i18n-ignore: dev console only
 
-export function GameScreen({ ticket, onLeave, waking = false }: { ticket: SeatTicket; onLeave: () => void; waking?: boolean }) {
+export default function GameScreen({ ticket, onLeave, waking = false }: { ticket: SeatTicket; onLeave: () => void; waking?: boolean }) {
   const { t } = useTranslation();
   const [view, setView] = useState<PlayerView | null>(null);
   const [cheatsAllowed, setCheatsAllowed] = useState(false);

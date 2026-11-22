@@ -92,7 +92,7 @@ function handFilled() {
     bookSkill: "cook",
   } satisfies Partial<PlayerState>);
   game.items[0]!.hiddenBy = a.id;
-  Object.assign(game.items[1]!, { of: b.id, builds: "x", charges: 2, teaches: "y", spores: 1, broken: true, jelly: 3, plant: { species: "fruit_banana", age: null, thirst: 2, sick: true } });
+  Object.assign(game.items[1]!, { of: b.id, builds: "x", charges: 2, teaches: "y", spores: 1, broken: true, jelly: 3, plant: { species: "fruit_banana", age: null, thirst: 2, sick: true, sickCycles: 2 } });
   game.doors = { "CORRIDOR_A|LABORATORY": { broken: true } };
   game.space = [{ id: "d1", type: "metal_scraps", plant: { species: "fruit_banana", age: 1, thirst: 0, sick: false } }];
   game.equipment.BRIDGE = [{ id: "BRIDGE:X", type: "X", broken: true, jelly: 2 }];
@@ -118,6 +118,8 @@ function handFilled() {
   game.sharedPlanets.push({ id: "sp-1", name: "Pila", sectors: ["OXYGEN", null], text: "nice", by: a.id, day: 1, cycleOfDay: 3, stale: true, planet: "pl-1" });
   game.sharedReports.push({ id: "sr-1", text: "we won", by: a.id, day: 1, cycleOfDay: 4, report: "ex-1" });
   game.nextSharedReportId = 2;
+  game.sharedPlants = { plants: [{ species: "fruit_banana", effects: "+1 AP", thirst: 1, sickCycles: 2, young: false }], text: "water me", by: a.id, day: 1, cycleOfDay: 4 };
+  game.sharedPilgred = { percent: 45, text: "need physicist", by: a.id, day: 1, cycleOfDay: 4 };
   game.expeditions.push({
     id: "ex-1",
     members: [a.id, b.id],
@@ -409,7 +411,15 @@ describe("union normalizers", () => {
     ["ReceiveAsset", normalizeReceiveAsset, Object.values(receives)],
     ["PlanTask", normalizePlanTask, Object.values(tasks)],
     ["PlanSlot", normalizePlanSlot, Object.values(slots).flat()],
-    ["DocumentState", normalizeDocument, [{ kind: "lost_analysis", rows: [{ character: "chun", negative: true }, { character: "chao", negative: false }] }]],
+    [
+      "DocumentState",
+      normalizeDocument,
+      [
+        { kind: "lost_analysis", rows: [{ character: "chun", negative: true }, { character: "chao", negative: false }] },
+        { kind: "the_list", characters: ["chun", "chao"] },
+        { kind: "the_list", characters: [] },
+      ],
+    ],
   ];
 
   for (const [type, normalize, samples] of variants) {

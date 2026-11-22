@@ -3,7 +3,7 @@
 // helpers turn ids into the player's language. Call `useNames()` in a
 // component so it re-renders when the language changes.
 
-import { BLUEPRINTS, LOST_PLACE_NAME, characterGivenName, characterName, type ActionType, isLostPlace, type ItemView, type LogEntry, type RoomId } from "@mush2/shared";
+import { BLUEPRINTS, LOST_PLACE_NAME, characterGivenName, characterName, hybridParents, type ActionType, isLostPlace, type ItemView, type LogEntry, type RoomId } from "@mush2/shared";
 import { useTranslation } from "react-i18next";
 
 /** The name of each kind of action, for the action queue and log lines that mention one. Ready never waits in a queue. */
@@ -133,10 +133,12 @@ const ACTION_NAME_KEYS = {
   ceasefire: "actions.ceasefire",
   read_book: "actions.readBook",
   tear: "actions.tear",
+  print_list: "actions.printList",
   warp_to_planet: "actions.warpToPlanet",
   water: "actions.water",
   treat: "actions.treat",
   sow: "actions.sow",
+  graft: "actions.graft",
   claim_slot: "actions.claimSlot",
   withdraw_slot: "actions.withdrawSlot",
   mark_done: "actions.markDone",
@@ -157,8 +159,10 @@ export function useNames() {
     const makes = BLUEPRINTS[builds]?.makes;
     return makes && "item" in makes ? lookup("items", makes.item) : lookup("equipment", makes ? makes.equipment : builds);
   };
-  /** A blueprint is named for what it builds. */
+  /** A blueprint is named for what it builds; a graft hybrid (#438) for its two parents, lower-numbered first. */
   const item = (type: string, builds?: string) => {
+    const parents = hybridParents(type);
+    if (parents) return t("items.hybridOf" as never, { a: lookup("items", parents[0]), b: lookup("items", parents[1]), defaultValue: type });
     if (builds === undefined) return lookup("items", type);
     const thing = built(builds);
     return t("items.blueprintOf" as never, { thing, defaultValue: type });

@@ -4,7 +4,7 @@
 
 import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { type PlayerView, type RoomId, type ShipLayout, type Target } from "@mush2/shared";
+import { stackItemViews, type PlayerView, type RoomId, type ShipLayout, type Target } from "@mush2/shared";
 import { announce } from "../announce.ts";
 import { useNames } from "../i18n/names.ts";
 import { DoublePressButton } from "./DoublePress.tsx";
@@ -89,7 +89,15 @@ export function RoomList({
     },
     {
       key: "items",
-      entries: view.roomItems.map((i) => ({ key: i.id, label: names.itemOf(i), onClick: () => onSelect({ kind: "item", id: i.id }) })),
+      entries: stackItemViews(view.roomItems).map((stack) => {
+        const rep = stack.items[0]!;
+        const count = stack.items.length;
+        return {
+          key: stack.key,
+          label: count > 1 ? t("inventory.stackCount", { item: names.itemOf(rep), count }) : names.itemOf(rep),
+          onClick: () => onSelect({ kind: "item", id: rep.id }),
+        };
+      }),
     },
     {
       key: "exits",

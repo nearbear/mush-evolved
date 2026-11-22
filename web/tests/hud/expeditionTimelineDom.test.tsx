@@ -125,13 +125,17 @@ describe("ExpeditionTimeline", () => {
     expect(screen.getByText(/Shared by Lai Kuan-Ti/)).toBeTruthy();
     expect(screen.getByText(shared.text)).toBeTruthy();
     cleanup();
-    // While exploring.
+    // While exploring: planet icon + countdown clock (no "Exploring" text), same popover.
     render(
       <I18nextProvider i18n={i18n}>
         <ShipStatus preselection={false} orbit="Sicyrus" expedition={expeditionSamples.away.expedition} shared={shared} sharedBy="Lai Kuan-Ti" />
       </I18nextProvider>,
     );
-    fireEvent.click(screen.getByRole("button", { name: /Expedition to Sicyrus/ }));
+    const trigger = screen.getByRole("button", { name: /Expedition to Sicyrus/ });
+    expect(trigger.querySelector("img")).toBeTruthy();
+    expect(trigger.querySelector(".cycle-countdown")).toBeTruthy();
+    expect(trigger.textContent).not.toContain("Exploring");
+    fireEvent.click(trigger);
     expect(screen.getByText(/Shared by Lai Kuan-Ti/)).toBeTruthy();
     expect(screen.getByText(shared.text)).toBeTruthy();
   });

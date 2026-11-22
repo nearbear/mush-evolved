@@ -1,4 +1,4 @@
-// What the room view shows while you are lost on a planet (docs/plans/expedition.md, phase 3, slice B; owner,
+// What the room view shows while you are lost on a planet (docs/plans/archive/expedition.md, phase 3, slice B; owner,
 // 2026-11-08, #357): a place of your own with no doors, drawn as a plain panel like the Icarus's (IcarusPanel.tsx). It
 // names the planet, says how you get back, and opens the report of the expedition you got lost on, which stops at
 // that line, and shows its timeline up to there (ExpeditionTimeline.tsx, owner 2026-11-19). Your items are in the inventory panel as anywhere.

@@ -7,9 +7,10 @@
 import { Dialog } from "@base-ui/react/dialog";
 import { Popover } from "@base-ui/react/popover";
 import { Tabs } from "@base-ui/react/tabs";
-import React, { useId, useState, type CSSProperties } from "react";
+import React, { useEffect, useId, useRef, useState, type CSSProperties } from "react";
 import {
   hasSkill,
+  MAX_SHARED_PILGRED_TEXT_LENGTH,
   PILGRED_COMPLETE,
   PROJECT_COMPLETE,
   PROJECT_IDS,
@@ -29,6 +30,7 @@ import {
   type PlanetTag,
   type PlayerView,
   type RelayTargetView,
+  type SharedPlantRow,
 } from "@mush2/shared";
 import { useTranslation } from "react-i18next";
 import { CHECK_ICON, itemIcon, PILGRED_CARD, PROJECT_CARDS, RESEARCH_CARDS, skillIcon, UNCHECK_ICON } from "../art/assets.ts";
@@ -42,6 +44,7 @@ import { CommsCenter } from "./CommsCenter.tsx";
 import { TerminalFrame } from "./TerminalFrame.tsx";
 import { terminalLogin } from "./terminalUsername.ts";
 import { PlanetList } from "./PlanetList.tsx";
+import { PlantTerminal } from "./PlantTerminal.tsx";
 import { CommandTerminal } from "./CommandTerminal.tsx";
 import { TurretPanel } from "./TurretPanel.tsx";
 import "./settings.css";
@@ -54,9 +57,13 @@ interface Props {
   onClose: () => void;
   /** Shares a planet in the Astrophysics feature, from the Astro terminal. */
   onSharePlanet?: (planet: string, sectors: (PlanetTag | null)[], text: string) => void;
+  /** Shares the greenhouse plant status in the Botany feature, from the Hydroponics center. */
+  onSharePlants?: (plants: SharedPlantRow[], text: string) => void;
+  /** Shares PILGRED's repair progress in the PILGRED feature, from the PILGRED terminal. */
+  onSharePilgred?: (percent: number, text: string) => void;
 }
 
-export function TerminalDialog({ terminal, view, onAction, onClose, onSharePlanet }: Props) {
+export function TerminalDialog({ terminal, view, onAction, onClose, onSharePlanet, onSharePlants, onSharePilgred }: Props) {
   const names = useNames();
   const titleId = useId();
   return (
@@ -73,7 +80,7 @@ export function TerminalDialog({ terminal, view, onAction, onClose, onSharePlane
               onClose={onClose}
               titleId={titleId}
             >
-              <TerminalBody terminal={terminal} view={view} onAction={onAction} onSharePlanet={onSharePlanet} />
+              <TerminalBody terminal={terminal} view={view} onAction={onAction} onSharePlanet={onSharePlanet} onSharePlants={onSharePlants} onSharePilgred={onSharePilgred} />
             </TerminalFrame>
           )}
         </Dialog.Popup>
@@ -85,14 +92,15 @@ export function TerminalDialog({ terminal, view, onAction, onClose, onSharePlane
 type ListProps = Omit<Props, "onClose"> & { terminal: EquipmentView };
 
 /** What a terminal shows inside its frame, by type (blank for the rest). Exported for the design kit. */
-export function TerminalBody({ terminal, view, onAction, onSharePlanet }: ListProps) {
+export function TerminalBody({ terminal, view, onAction, onSharePlanet, onSharePlants, onSharePilgred }: ListProps) {
   return (
     <>
       {terminal.type === "RESEARCH_LAB" && <ResearchList terminal={terminal} view={view} onAction={onAction} />}
       {terminal.type === "NERON_CORE" && <ProjectList terminal={terminal} view={view} onAction={onAction} />}
       {terminal.type === "ASTRO_MODULE" && <PlanetList terminal={terminal} view={view} onAction={onAction} onShare={onSharePlanet} />}
+      {terminal.type === "PLANT_CONTROLLER" && <PlantTerminal terminal={terminal} view={view} onShare={onSharePlants} />}
       {terminal.type === "DRUG_DISP" && <DrugDispenser terminal={terminal} view={view} onAction={onAction} />}
-      {terminal.type === "PILGRED" && <PilgredRepair terminal={terminal} view={view} onAction={onAction} />}
+      {terminal.type === "PILGRED" && <PilgredRepair terminal={terminal} view={view} onAction={onAction} onSharePilgred={onSharePilgred} />}
       {terminal.type === "COM_CENTER" && <CommsCenter terminal={terminal} view={view} onAction={onAction} />}
       {terminal.type === "NERON_BIOS_TERM" && <BiosTerminal terminal={terminal} view={view} onAction={onAction} />}
       {terminal.type === "TURRET_COMMAND" && <TurretPanel terminal={terminal} view={view} onAction={onAction} />}
@@ -133,7 +141,7 @@ function ResearchList({ terminal, view, onAction }: ListProps) {
       }}
       option={(id) => view.actions.find(({ action: a }) => a.type === "research" && a.equipment === terminal.id && a.research === id)}
       more={(id) =>
-        // A Mush's own spoil and Saboteur's Contaminate, beside Participate when the view offers them (docs/plans/research-sabotage.md).
+        // A Mush's own spoil and Saboteur's Contaminate, beside Participate when the view offers them (docs/plans/archive/research-sabotage.md).
         (["spoil_research", "contaminate"] as const).flatMap((type) => {
           const option = view.actions.find(({ action: a }) => a.type === type && a.equipment === terminal.id && a.research === id);
           return option ? [{ option, label: type === "spoil_research" ? withGain(t, t("research.spoil"), view.relay.research[id]?.gain) : t("research.contaminate") }] : [];
@@ -177,10 +185,29 @@ function ProjectList({ terminal, view, onAction }: ListProps) {
  * PILGRED's repair: its card on the left (hover, focus or tap for the description), and beside it the progress bar (sent only
  * to people at the terminal) over, when the view offers it, the repair as one big button (as Return to Sol). Relay tokens below.
  */
-function PilgredRepair({ terminal, view, onAction }: ListProps) {
+function PilgredRepair({ terminal, view, onAction, onSharePilgred }: ListProps) {
   const { t } = useTranslation();
+  const [sharing, setSharing] = useState(false);
+  const refocusShare = useRef(false);
   const percent = view.pilgred ?? 0;
   const option = view.actions.find(({ action: a }) => a.type === "repair_pilgred" && a.equipment === terminal.id);
+
+  if (sharing && onSharePilgred) {
+    return (
+      <SharePilgredForm
+        initialPercent={percent}
+        onPost={(sharedPercent, text) => {
+          onSharePilgred(sharedPercent, text);
+          setSharing(false);
+        }}
+        onBack={() => {
+          refocusShare.current = true;
+          setSharing(false);
+        }}
+      />
+    );
+  }
+
   return (
     <div className="pilgred-repair" role="group" aria-label={t("pilgred.label")}>
       <EntryTip name={t("pilgred.label")} desc={t("pilgred.desc")} trigger={<img className="research-card" src={PILGRED_CARD} alt={t("pilgred.label")} />} />
@@ -204,7 +231,100 @@ function PilgredRepair({ terminal, view, onAction }: ListProps) {
       <div className="pilgred-relay">
         <RelayDetails target={view.relay.pilgred ?? undefined} view={view} />
       </div>
+      {onSharePilgred && view.canSharePilgred && (
+        <div className="pilgred-share-actions">
+          <button
+            type="button"
+            ref={(el) => {
+              if (el && refocusShare.current) {
+                refocusShare.current = false;
+                el.focus();
+              }
+            }}
+            onClick={() => setSharing(true)}
+          >
+            {t("pilgred.share")}
+          </button>
+        </div>
+      )}
     </div>
+  );
+}
+
+/** Editable share form inside the PILGRED terminal window (mirrors SharePlantsForm). */
+function SharePilgredForm({
+  initialPercent,
+  onPost,
+  onBack,
+}: {
+  initialPercent: number;
+  onPost: (percent: number, text: string) => void;
+  onBack: () => void;
+}) {
+  const { t } = useTranslation();
+  const headingId = useId();
+  const [percent, setPercent] = useState(initialPercent);
+  const [text, setText] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => inputRef.current?.focus(), []);
+
+  return (
+    <form
+      className="share-planet-form share-pilgred-form"
+      aria-labelledby={headingId}
+      onSubmit={(e) => {
+        e.preventDefault();
+        onPost(percent, text);
+      }}
+    >
+      <h3 id={headingId}>{t("pilgred.shareTitle")}</h3>
+      <p className="sub">{t("pilgred.shareHint")}</p>
+      <label className="share-pilgred-percent">
+        <span>{t("pilgred.percentLabel")}</span>
+        <input
+          ref={inputRef}
+          type="number"
+          min={0}
+          max={PILGRED_COMPLETE}
+          value={percent}
+          onChange={(e) => {
+            const parsed = Number.parseInt(e.target.value, 10);
+            const clamped = Number.isFinite(parsed) ? Math.max(0, Math.min(PILGRED_COMPLETE, parsed)) : 0;
+            setPercent(clamped);
+          }}
+        />
+      </label>
+      <div className="research-progress">
+        <ProgressBar
+          label={t("pilgred.label")}
+          percent={percent}
+          complete={PILGRED_COMPLETE}
+          pending={undefined}
+          style={{ "--value": Math.min(1, percent / PILGRED_COMPLETE) } as CSSProperties}
+        />
+        <span>{t("research.percent", { percent })}</span>
+      </div>
+      <p className="sub share-planet-disclaimer">{t("pilgred.shareDisclaimer")}</p>
+      <label className="share-planet-text">
+        <span>{t("pilgred.noteLabel")}</span>
+        <textarea
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          maxLength={MAX_SHARED_PILGRED_TEXT_LENGTH}
+          rows={3}
+          placeholder={t("pilgred.notePlaceholder")}
+        />
+      </label>
+      <span className="sub share-planet-count" aria-hidden="true">
+        {text.length}/{MAX_SHARED_PILGRED_TEXT_LENGTH}
+      </span>
+      <div className="share-planet-buttons">
+        <button type="button" onClick={onBack}>
+          {t("astro.back")}
+        </button>
+        <button type="submit">{t("pilgred.sharePost")}</button>
+      </div>
+    </form>
   );
 }
 
@@ -373,7 +493,7 @@ function ProgressList({ label, ids, progress, relay, complete, cards, name, desc
                         <span>{t("research.done")}</span>
                       ) : (
                         <div className="research-progress">
-                          {/* Research: solid for verified progress, striped for pending samples not yet assayed (docs/plans/research-sabotage.md). */}
+                          {/* Research: solid for verified progress, striped for pending samples not yet assayed (docs/plans/archive/research-sabotage.md). */}
                           <ProgressBar
                             label={name(id)}
                             percent={percent}

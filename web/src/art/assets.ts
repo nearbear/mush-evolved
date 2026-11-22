@@ -1,7 +1,7 @@
 // Maps game ids to Motion Twin art in Mush/ (CC BY-NC-SA 4.0, see
 // Mush/ATTRIBUTION.md). Vite bundles only the files matched here.
 
-import { DEFAULT_CONFIG, REBEL_BASES, type CharacterId, type RebelBaseId, type Ending, type ItemView, type MerchantTargetView, type ResourceId, type SpoilStage, type TitleId } from "@mush2/shared";
+import { DEFAULT_CONFIG, REBEL_BASES, hybridParents, type CharacterId, type RebelBaseId, type Ending, type ItemView, type MerchantTargetView, type ResourceId, type SpoilStage, type TitleId } from "@mush2/shared";
 
 type UrlMap = Record<string, string>;
 const urls = (map: UrlMap) =>
@@ -69,9 +69,9 @@ export function bustIcon(character: CharacterId | undefined): string {
   return (character && busts[character]) || portrait(character);
 }
 
-// The cast sheet (RGBA, so no keying): per character a row of 48px-tall cells at x=127 (walk frames), then a lying pose.
+// The cast sheet (RGBA, so no keying; lossless WebP of www/img/art/char.png): per character a row of 48px-tall cells at x=127 (walk frames), then a lying pose.
 const castSheet = Object.values(
-  import.meta.glob<string>("../../../Mush/www/img/art/char.png", { eager: true, query: "?url", import: "default" }),
+  import.meta.glob<string>("../../../Mush/derived/webp/char.webp", { eager: true, query: "?url", import: "default" }),
 )[0]!;
 const CAST_SHEET_SIZE = { w: 953, h: 2315 };
 const LYING = { x: 554, w: 50, h: 48 };
@@ -144,11 +144,13 @@ Object.assign(
 export const ITEM_ICONS: Readonly<Record<string, string>> = itemIcons;
 
 /** Item types whose icon file has a different name. ration_0 is the plain unopened box; ration_1 is the cooked one; ration_7 is a cup of coffee. */
-const ICON_FILE: Readonly<Record<string, string>> = { input_tube: "thick_tube", output_tube: "thick_tube", uncooked_ration: "ration_0", alien_steak: "ration_5", coffee: "ration_7", oscilloscope: "wavoscope", steroids: "ration_6", anabolics: "ration_6", drill: "driller", thermosensor: "heat_seeker", support_drone: "help_drone", customized_blaster: "blaster", duct_tape: "duck_tape", block_of_post_it: "postit_bloc", scooter: "antigrav_scooter", sniper_helmet: "aiming_helmet" };
+const ICON_FILE: Readonly<Record<string, string>> = { input_tube: "thick_tube", output_tube: "thick_tube", uncooked_ration: "ration_0", alien_steak: "ration_5", coffee: "ration_7", oscilloscope: "wavoscope", steroids: "ration_6", anabolics: "ration_6", drill: "driller", thermosensor: "heat_seeker", support_drone: "help_drone", customized_blaster: "blaster", duct_tape: "duck_tape", block_of_post_it: "postit_bloc", scooter: "antigrav_scooter", sniper_helmet: "aiming_helmet", tabulator: "printer" };
 
 /** Icon for an item type. Item type ids are named after their icon files unless ICON_FILE says otherwise; undefined if there's none. */
 export function itemIcon(type: string): string | undefined {
-  return itemIcons[ICON_FILE[type] ?? type];
+  // A graft hybrid (#438) has no art of its own: it shows its lower-numbered parent's fruit.
+  const species = hybridParents(type)?.[0] ?? type;
+  return itemIcons[ICON_FILE[species] ?? species];
 }
 
 /** A planted hydropot's icon, by species (its fruit's item type): the original's tree_* / fruit_tree* icons. */
@@ -170,7 +172,8 @@ const PLANT_ICON_FILE: Readonly<Record<string, string>> = {
 
 /** Icon for an item as the view has it: a planted hydropot shows its plant. */
 export function itemViewIcon(item: Pick<ItemView, "type" | "plant">): string | undefined {
-  const plant = item.plant && itemIcons[PLANT_ICON_FILE[item.plant.species] ?? ""];
+  // A graft hybrid's plant (#438) shows its lower-numbered parent's tree.
+  const plant = item.plant && itemIcons[PLANT_ICON_FILE[hybridParents(item.plant.species)?.[0] ?? item.plant.species] ?? ""];
   return plant ?? itemIcon(item.type);
 }
 
@@ -496,9 +499,9 @@ export const TAB_ICONS = {
   expeditions: uiIcons["survival"]!,
 } as const;
 
-/** The space battle sprite sheet (640x715). Its slices are in `Mush/clients/iso/xml/tiles.xml` (`<sheet src="BmpGfxFx">`). */
+/** The space battle sprite sheet (640x715; lossless WebP of clients/iso/gfx/fx.png). Its slices are in `Mush/clients/iso/xml/tiles.xml` (`<sheet src="BmpGfxFx">`). */
 export const FX_SHEET = urls(
-  import.meta.glob<string>("../../../Mush/clients/iso/gfx/fx.png", { eager: true, query: "?url", import: "default" }),
+  import.meta.glob<string>("../../../Mush/derived/webp/fx.webp", { eager: true, query: "?url", import: "default" }),
 )["fx"]!;
 /** Each hunter kind's battle-view slice in `FX_SHEET` (x, y, w, h), from the `FX_SPC_*` slices in tiles.xml. Keyed by
     `HunterType` (spider is the Arack, dice the D1000). They range from 48x26 (hunter) to 84x92 (D1000). */

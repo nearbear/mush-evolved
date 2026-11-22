@@ -1,9 +1,9 @@
 // Where the ship is (owner, 2026-11-20), part of the game state, so joined to the clock's amber plate past a divider:
 // pre-selection until the Mush are chosen, then in orbit around a planet, exploring it while an expedition is away, or
 // deep space (most of the game). Each has a popover saying what it means and what to do next. Orbiting and exploring
-// lead with the planet icon; exploring ends with the countdown to the return in the clock's fixed-width digits, and its
-// popover shows the crew. All public: the orbited planet's name (owner, 2026-10-31) and the expedition (2026-11-07).
-// Phones join it to the clock the same way, on the plate over the ID card.
+// lead with the planet icon; exploring shows the countdown to the return in the clock's fixed-width digits instead of
+// text, and its popover shows the crew. All public: the orbited planet's name (owner, 2026-10-31) and the expedition
+// (2026-11-07). Phones join it to the clock the same way, on the plate over the ID card.
 
 import { Popover } from "@base-ui/react/popover";
 import type { PlayerView, SharedPlanet } from "@mush2/shared";
@@ -76,10 +76,10 @@ function DeepSpace() {
 }
 
 /**
- * Orbiting or exploring: the planet icon and the status, then while exploring the return countdown, all one trigger.
- * Its accessible name is the status as a sentence (where, who, when back), so what it shows is hidden from screen
- * readers. The popover names the planet, says what to do, and while exploring shows the crew's sprites over their
- * given names.
+ * Orbiting or exploring: the planet icon with "Orbiting" while in orbit, or the return countdown while exploring, all
+ * one trigger. Its accessible name is the status as a sentence (where, who, when back), so what it shows is hidden from
+ * screen readers. The popover names the planet, says what to do, and while exploring shows the crew's sprites over
+ * their given names.
  */
 function AtPlanet({
   planet,
@@ -101,8 +101,7 @@ function AtPlanet({
       trigger={
         <>
           <img src={SHIP_STATUS_PLANET_ICON} alt="" />
-          <span>{t(expedition ? "topBar.exploring" : "topBar.orbiting")}</span>
-          {expedition && <ReturnClock at={expedition.returnAt} />}
+          {expedition ? <ReturnClock at={expedition.returnAt} /> : <span>{t("topBar.orbiting")}</span>}
         </>
       }
     >
@@ -144,11 +143,8 @@ function useExpeditionLabel(expedition: PlayerView["expedition"]): string | null
 
 function ReturnClock({ at }: { at: number }) {
   return (
-    <>
-      <span className="clock-divider" aria-hidden="true" />
-      <span className="cycle-countdown" aria-hidden="true">
-        <ClockDigits time={useCountdown(at)} />
-      </span>
-    </>
+    <span className="cycle-countdown" aria-hidden="true">
+      <ClockDigits time={useCountdown(at)} />
+    </span>
   );
 }

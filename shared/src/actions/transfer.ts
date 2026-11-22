@@ -2,6 +2,7 @@ import { Action, isString } from "./action.ts";
 import { onExpedition } from "../expeditions.ts";
 import { contaminate } from "../infection.ts";
 import { CAT_ITEM, ITEM_TYPES, canTransfer } from "../items.ts";
+import { preferSpikedInRoom } from "../itemView.ts";
 import { isLostPlace } from "../patrol.ts";
 import { logPublic } from "../log.ts";
 import { cantCarryHeavy } from "../modifiers.ts";
@@ -23,7 +24,7 @@ export class TransferAction<T extends "take" | "drop" = "take" | "drop"> extends
     const kind = this.type === "take" ? "room" : "player";
     const id = this.type === "take" ? player.room : player.id;
     return state.items
-      .filter((item) => item.at.kind === kind && item.at.id === id)
+      .filter((item) => item.at.kind === kind && item.at.id === id && (this.type !== "take" || ITEM_TYPES[item.type]?.canTake !== false))
       .map((item) => ({ type: this.type as T, item: item.id }));
   }
 
@@ -31,6 +32,7 @@ export class TransferAction<T extends "take" | "drop" = "take" | "drop"> extends
     const item = state.items.find((i) => i.id === target.item);
     if (!item) return "no_such_item";
     if (this.type === "drop" && ITEM_TYPES[item.type]?.canDrop === false) return "cant_transfer";
+    if (this.type === "take" && ITEM_TYPES[item.type]?.canTake === false) return "cant_transfer";
   // Broken Shoulder: no heavy item (owner, 2026-11-18).
     if (this.type === "take" && ITEM_TYPES[item.type]?.heavy && cantCarryHeavy(player)) return "too_heavy";
     // Nothing can be dropped on an expedition (owner, 2026-11-08 and 2026-11-09, #359): aboard its craft or lost on the
@@ -48,7 +50,9 @@ export class TransferAction<T extends "take" | "drop" = "take" | "drop"> extends
   }
 
   override apply(state: GameState, player: PlayerState, target: { type: T; item: string }): void {
-    const index = state.items.findIndex((i) => i.id === target.item);
+    const requested = state.items.find((i) => i.id === target.item)!;
+    const chosen = this.type === "take" ? preferSpikedInRoom(state, player, requested) : requested;
+    const index = state.items.findIndex((i) => i.id === chosen.id);
     const [item] = state.items.splice(index, 1) as [ItemState];
     delete item.hiddenBy;
     item.at = this.type === "take" ? { kind: "player", id: player.id } : { kind: "room", id: player.room };

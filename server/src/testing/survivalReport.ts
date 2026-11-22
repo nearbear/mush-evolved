@@ -3,7 +3,7 @@
 // the crew removed, what each hunter cost, how often anyone shot or patched, and where the AP went instead. Read it
 // before changing a bot, and again after (the `bot-strategy` skill).
 
-import type { CycleReport, SurvivalResult } from "./survival.ts";
+import { LOW_HP, type CycleReport, type SurvivalResult } from "./survival.ts";
 
 const sum = (xs: readonly number[]): number => xs.reduce((a, b) => a + b, 0);
 const per = (a: number, b: number, digits = 2): string => (b === 0 ? "-" : (a / b).toFixed(digits));
@@ -76,6 +76,14 @@ export function lossReport(results: readonly SurvivalResult[], repairBelow: numb
   const hits: Record<string, number> = {};
   for (const d of runs.flatMap((r) => r.deaths.filter((x) => x.cause === "injury"))) hits[d.hit ?? "unknown"] = (hits[d.hit ?? "unknown"] ?? 0) + 1;
   lines.push(`injury deaths by last hit: ${Object.entries(hits).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${v}`).join(", ") || "none"}`);
+  // Whether healing could help: HP coming back, and how long the injured dead had been badly hurt before dying.
+  const gainBy: Record<string, number> = {};
+  for (const r of rows) for (const [k, v] of Object.entries(r.hpGained ?? {})) gainBy[k] = (gainBy[k] ?? 0) + v;
+  const gainTop = Object.entries(gainBy).sort((a, b) => b[1] - a[1]).slice(0, 8);
+  lines.push(`HP gained a run: ${per(sum(Object.values(gainBy)), n, 1)} (${gainTop.map(([k, v]) => `${k} ${per(v, n, 1)}`).join(", ") || "none"}); crew at ${LOW_HP} HP or less at a cycle's end: ${per(total((r) => r.lowHp ?? 0), rows.length)}`);
+  const hurt = runs.flatMap((r) => r.deaths.filter((x) => (x.cause === "injury" || x.cause === "metal_plate") && x.lowCycles !== undefined));
+  const band = (lo: number, hi: number): number => hurt.filter((d) => d.lowCycles! >= lo && d.lowCycles! <= hi).length;
+  lines.push(`injury deaths by cycle ends spent at ${LOW_HP} HP or less before: 0 ${band(0, 0)}, 1-2 ${band(1, 2)}, 3-5 ${band(3, 5)}, 6+ ${band(6, Infinity)}`);
   // Oxygen: what came in against the burn, and how far each run got along the planet pipeline before it ran dry.
   const withOxygen = rows.filter((r) => r.oxygen > 0);
   const inBy: Record<string, number> = {};

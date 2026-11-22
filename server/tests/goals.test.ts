@@ -31,7 +31,7 @@ import { COFFEE_DRINKER, COFFEE_DROP_ROOM, coffeeReflex, coffeeRun, deliverCoffe
 import { tendPlants } from "../src/bots/goals/tendPlants.ts";
 import { sowHere } from "../src/bots/goals/sow.ts";
 import { POT_STORAGES, setOutPots, storageCheckedKey } from "../src/bots/goals/setOutPots.ts";
-import { FUEL_WAIT_CYCLES, HOLD_HUNTER_TRIGGER, HOLD_MAX_DAYS, HOLD_MIN_OXYGEN, JUMP_WAIT_CYCLES, sharedDestination, targetJump, travel, turnsTo } from "../src/bots/goals/travel.ts";
+import { FUEL_WAIT_CYCLES, HOLD_HUNTER_TRIGGER, HOLD_MAX_DAYS, JUMP_WAIT_CYCLES, jumpDueByChat, sharedDestination, targetJump, travel, turnsTo } from "../src/bots/goals/travel.ts";
 import { helpGoal, helpTasks } from "../src/bots/goals/help.ts";
 import type { BotMemory, GoalDef } from "../src/bots/goals/types.ts";
 import { BOT_MEMORY_VERSION } from "../src/bots/memoryStore.ts";
@@ -365,6 +365,18 @@ describe("GoalBot", () => {
     expect(shower.options(withHull(50), memory)).toHaveLength(1);
     expect(repairHull.options(withHull(49), memory)).toHaveLength(1);
     expect(shower.options(withHull(49), memory)).toEqual([]);
+  });
+
+  it("doesn't shower with skin inflammation, which hurts in the shower", () => {
+    const { game: start, id } = setup();
+    const dirty = (extra: string[]) =>
+      edit(start, id, (p) => {
+        p.statuses = [...p.statuses.filter((s) => s !== "dirty"), "dirty", ...extra];
+        p.ap = 10;
+      });
+    const memory = { reserve: 2, scripted: true, language: "en" as const, ended: new Set<string>(), today: new Set<string>(), visited: new Set<string>(), holdSince: null, jump: newJumpMemory(), roll: roll0 };
+    expect(shower.options(viewFor(dirty([]), id), memory)).toHaveLength(1);
+    expect(shower.options(viewFor(dirty(["skin_inflammation_disease"]), id), memory)).toEqual([]);
   });
 
   it("can rest in the same bed again later in the cycle", async () => {
@@ -1937,7 +1949,7 @@ describe("travel: the Commander (#417)", () => {
     game.equipment.MOTOR_ROOM = game.equipment.MOTOR_ROOM!.map((e) => (e.id === "MOTOR_ROOM:reac_b" ? { ...e, broken: true } : e));
     const { taken } = await play(game, id, new GoalBot(1, 2, [travel]), 60);
     expect(taken.filter((a) => a.type === "turn_ship").map((a) => (a as { side: string }).side)).toEqual(["left", "left", "left"]);
-    expect(taken.at(-1)?.type).toBe("travel");
+    expect(taken.map((a) => a.type)).toContain("travel");
   });
 
   it("with a helper's report, only turns and travels: no tank, no Motor Room", async () => {
@@ -2111,17 +2123,16 @@ describe("travel holds & escape jumps (#421)", () => {
     expect(isHoldingJump(viewFor(off.state, id), memory())).toBe(false);
   });
 
-  it("prepares and holds a jump with 'Jump: hold' until 8 hunters attack, then jumps and posts 'Jump: off'", async () => {
-    const { game, id } = commander([planet("pl-1", "Kaxor", "east", 2)]);
+  it("prepares and holds an escape jump with 'Jump: hold' until 5 hunters attack, then jumps and posts 'Jump: off'", async () => {
+    const { game, id } = commander([]);
     const bot = new GoalBot(1, 2, [travel]);
     const { game: prepared, taken } = await prepare(game, id, bot);
     expect(taken.filter((a) => a.type === "travel")).toEqual([]);
-    expect(prepared.ship.combustion).toBe(2);
-    expect(prepared.navigation.heading).toBe("east");
+    expect(prepared.ship.combustion).toBe(1);
     expect(prepared.players.find((p) => p.id === id)!.room).toBe("COMMAND_CENTER");
     expect(isHoldingJump(viewFor(prepared, id), memory())).toBe(true);
 
-    // 7 hunters: still holds.
+    // 4 hunters: still holds.
     prepared.hunters.list = makeHunters(HOLD_HUNTER_TRIGGER - 1);
     const next = newCycle(edit(prepared, id, (p) => (p.ap = 6)));
     expect(next.ok).toBe(true);
@@ -2130,14 +2141,14 @@ describe("travel holds & escape jumps (#421)", () => {
     expect(stillHeld.navigation.arriving).toBeNull();
     expect(isHoldingJump(viewFor(stillHeld, id), memory())).toBe(true);
 
-    // 8 hunters: jumps and posts 'Jump: off'.
+    // 5 hunters: jumps and posts 'Jump: off'.
     stillHeld.hunters.list = makeHunters(HOLD_HUNTER_TRIGGER);
     const next2 = newCycle(stillHeld);
     expect(next2.ok).toBe(true);
     if (!next2.ok) return;
     const { game: jumped, taken: taken2 } = await untilReady(next2.state, id, bot);
     expect(taken2.map((a) => a.type)).toContain("travel");
-    expect(jumped.navigation.arriving?.planet).toBe("pl-1");
+    expect(jumped.navigation.arriving).toEqual({ planet: null });
     expect(isHoldingJump(viewFor(jumped, id), memory())).toBe(false);
   });
 
@@ -2214,12 +2225,12 @@ describe("travel holds & escape jumps (#421)", () => {
     expect(isHoldingJump(viewFor(jumped, id), memory())).toBe(false);
   });
 
-  it("keeps holding an escape jump when oxygen drops to 8 or below (Run D: empty space brings no oxygen)", async () => {
+  it("keeps holding an escape jump at low oxygen (Run D: empty space brings no oxygen)", async () => {
     const { game, id } = commander([]);
     const bot = new GoalBot(1, 2, [travel]);
     const { game: held } = await prepare(game, id, bot);
     expect(isHoldingJump(viewFor(held, id), memory())).toBe(true);
-    held.ship.oxygen = HOLD_MIN_OXYGEN;
+    held.ship.oxygen = 4;
     const next = newCycle(held);
     expect(next.ok).toBe(true);
     if (!next.ok) return;
@@ -2263,22 +2274,30 @@ describe("travel holds & escape jumps (#421)", () => {
     expect(upgraded.navigation.arriving).toBeNull();
   });
 
-  it("stops waiting after 4 days of holding, or when oxygen drops to 8 or below", async () => {
-    const { game: o2Start, id: o2Id } = commander([planet("pl-1", "Kaxor", "north", 1)]);
-    o2Start.ship.combustion = 1;
-    const o2Bot = new GoalBot(1, 2, [travel]);
-    const { game: o2Held } = await untilReady(o2Start, o2Id, o2Bot);
-    expect(isHoldingJump(viewFor(o2Held, o2Id), memory())).toBe(true);
-    o2Held.ship.oxygen = HOLD_MIN_OXYGEN;
-    const o2Next = newCycle(o2Held);
-    expect(o2Next.ok).toBe(true);
-    if (!o2Next.ok) return;
-    const { game: o2Jumped } = await untilReady(o2Next.state, o2Id, o2Bot);
-    expect(o2Jumped.navigation.arriving?.planet).toBe("pl-1");
-    expect(isHoldingJump(viewFor(o2Jumped, o2Id), memory())).toBe(false);
+  it("jumps to a shared planet as soon as it is prepared: 'Jump: hold', 'Jump: now', then the jump, with no hunters (Run B)", async () => {
+    const { game, id } = commander([planet("pl-1", "Kaxor", "north", 2)]);
+    game.ship.oxygen = 30;
+    game.hunters.list = [];
+    game.hunters.points = 0;
+    const bot = new GoalBot(1, 2, [travel]);
+    const { game: prepared, taken } = await prepare(game, id, bot); // the fuel relay's report
+    expect(taken.map((a) => a.type)).not.toContain("travel");
+    const { game: jumped, taken: next } = await untilReady(newCycleOk(prepared), id, bot); // no hunters, no hold: it goes
+    expect(next.map((a) => a.type)).toContain("travel");
+    expect(jumped.navigation.arriving?.planet).toBe("pl-1");
+    const lines = jumped.chat.filter((m) => m.from === id && parseJumpHold(m.text) !== null).map((m) => m.text);
+    expect(lines).toEqual([HOLD_JUMP_LINE, JUMP_NOW_LINE, CANCEL_HOLD_LINE]);
+    // A pilot reading the hold line with a planet shared stays docked: the jump is due.
+    const pilotId = game.players.find((p) => p.id !== id && p.alive)!.id;
+    const posted = applyInput(game, { type: "chat", channel: "global", text: HOLD_JUMP_LINE, by: id });
+    expect(posted.ok).toBe(true);
+    if (!posted.ok) return;
+    expect(jumpDueByChat(viewFor(posted.state, pilotId), memory())).toBe(true);
+  });
 
+  it("jumps after 4 days of holding an escape jump", async () => {
     // 4 days: backdate the hold (as the bot read it) rather than play 32 cycles (starvation and hull damage would end the game first).
-    const { game: timeStart, id: timeId } = commander([planet("pl-1", "Kaxor", "north", 1)]);
+    const { game: timeStart, id: timeId } = commander([]);
     timeStart.ship.combustion = 1;
     const timeBot = new GoalBot(1, 2, [travel]);
     const { game: timeHeld } = await untilReady(timeStart, timeId, timeBot);
@@ -2300,12 +2319,12 @@ describe("travel holds & escape jumps (#421)", () => {
     if (!last.ok) return;
     last.state.hunters.list = [];
     const { game: timedOut } = await untilReady(last.state, timeId, timeBot);
-    expect(timedOut.navigation.arriving?.planet).toBe("pl-1");
+    expect(timedOut.navigation.arriving).toEqual({ planet: null });
     expect(isHoldingJump(viewFor(timedOut, timeId), memory())).toBe(false);
   });
 
   it("keeps 1 AP and bridge reach while running other goals during a hold, and wakes from rest on jump trigger", async () => {
-    const { game: start, id } = commander([planet("pl-1", "Kaxor", "north", 1)]);
+    const { game: start, id } = commander([]);
     start.ship.combustion = 1;
     const bot = new GoalBot(1, 2, SOLO_GOALS);
     const { game: initialHold } = await untilReady(start, id, bot);
@@ -2330,7 +2349,7 @@ describe("travel holds & escape jumps (#421)", () => {
     expect(canAfford(viewFor(spareMp, id), "BEDROOM_A", 0, 0, memory())).toBe(true);
     expect(canAfford(viewFor(spareMp, id), "BEDROOM_A", 1, 0, memory())).toBe(false);
 
-    // Put Commander to rest on the ship while holding, then wake at 8 hunters to jump.
+    // Put Commander to rest on the ship while holding, then wake at 5 hunters to jump.
     const resting = edit(held, id, (p) => {
       p.room = "BEDROOM_A";
       p.ap = 2;
@@ -2348,7 +2367,7 @@ describe("travel holds & escape jumps (#421)", () => {
     if (!woken.ok) return;
     const { game: jumped, taken } = await untilReady(woken.state, id, sleepBot);
     expect(taken.map((a) => a.type)).toContain("travel");
-    expect(jumped.navigation.arriving?.planet).toBe("pl-1");
+    expect(jumped.navigation.arriving).toEqual({ planet: null });
   });
 
   /** Pushes enough unrelated global lines that every earlier page leaves the state (#427). */
@@ -2358,7 +2377,7 @@ describe("travel holds & escape jumps (#421)", () => {
   const memoryOf = (bot: GoalBot) => (bot as unknown as { memory: ReturnType<typeof memory> }).memory;
 
   it("keeps a hold through chat pagination: no re-post, and the clock runs from the first line (#427)", async () => {
-    const { game: start, id } = commander([planet("pl-1", "Kaxor", "north", 1)]);
+    const { game: start, id } = commander([]);
     start.ship.combustion = 1;
     const bot = new GoalBot(1, 2, [travel]);
     const { game: held } = await prepare(start, id, bot);
@@ -2387,7 +2406,7 @@ describe("travel holds & escape jumps (#421)", () => {
   });
 
   it("keeps a hold across a room restart: no second 'Jump: hold', and the same holdSince (#440)", async () => {
-    const { game: start, id } = commander([planet("pl-1", "Kaxor", "north", 1)]);
+    const { game: start, id } = commander([]);
     start.ship.combustion = 1;
     const before = new GoalBot(1, 2, [travel]);
     const { game: held } = await untilReady(start, id, before);

@@ -11,6 +11,8 @@ import { isRecord } from "./helpers.ts";
 import { parsePlanDraft } from "./plans.ts";
 import { PLANET_TAGS, type PlanetTag } from "./planets.ts";
 import { MAX_SHARED_PLANET_LENGTH } from "./sharedPlanets.ts";
+import { MAX_SHARED_PLANT_EFFECTS_LENGTH, MAX_SHARED_PLANT_TEXT_LENGTH, MAX_SHARED_PLANTS, parseSharedPlantRow } from "./sharedPlants.ts";
+import { MAX_SHARED_PILGRED_TEXT_LENGTH, parseSharedPilgredPercent } from "./sharedPilgred.ts";
 import { isSpotCell } from "./spot.ts";
 import {
   CHAT_CHANNELS,
@@ -25,6 +27,7 @@ import {
   type PlayerView,
   type PrivateChannelId,
   type SharedPlanetId,
+  type SharedPlantRow,
   type SharedReportId,
   type ThreadId,
 } from "./types.ts";
@@ -109,6 +112,10 @@ export type GameClientMessage =
   | { type: "sharePlanet"; planet: string; sectors: (PlanetTag | null)[]; text: string }
   // Shares the report of an expedition you went on in the Expeditions feature, as free text (sharedReports.ts).
   | { type: "shareReport"; report: string; text: string }
+  // Shares the greenhouse plant status in the Botany feature: editable plant rows and optional free text (sharedPlants.ts).
+  | { type: "sharePlants"; plants: SharedPlantRow[]; text: string }
+  // Shares PILGRED's repair progress in the PILGRED feature: editable percent and optional free text (sharedPilgred.ts).
+  | { type: "sharePilgred"; percent: number; text: string }
   | { type: "invite"; channel: PrivateChannelId; player: PlayerId }
   | { type: "leaveChannel"; channel: PrivateChannelId }
   // The channel's creator posts its plan (plans.ts, docs/plans/on-call.md). Chat-like, since a draft can't be
@@ -214,6 +221,21 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
     // Generous bound here, as for chat; moderation and the rules enforce the real limit.
     if (typeof msg.report !== "string" || msg.report.length > 64 || typeof msg.text !== "string" || msg.text.length > MAX_SHARED_PLANET_LENGTH * 4) return null;
     return { type: "shareReport", report: msg.report, text: msg.text };
+  }
+  if (msg?.type === "sharePlants") {
+    if (!Array.isArray(msg.plants) || msg.plants.length > MAX_SHARED_PLANTS || typeof msg.text !== "string" || msg.text.length > MAX_SHARED_PLANT_TEXT_LENGTH * 4) return null;
+    const plants: SharedPlantRow[] = [];
+    for (const row of msg.plants) {
+      const parsed = parseSharedPlantRow(row, MAX_SHARED_PLANT_EFFECTS_LENGTH * 4);
+      if (!parsed) return null;
+      plants.push(parsed);
+    }
+    return { type: "sharePlants", plants, text: msg.text };
+  }
+  if (msg?.type === "sharePilgred") {
+    const percent = parseSharedPilgredPercent(msg.percent);
+    if (percent === null || typeof msg.text !== "string" || msg.text.length > MAX_SHARED_PILGRED_TEXT_LENGTH * 4) return null;
+    return { type: "sharePilgred", percent, text: msg.text };
   }
   if (msg?.type === "invite") {
     const channel = privateChannelId(msg.channel);

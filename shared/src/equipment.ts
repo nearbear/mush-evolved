@@ -60,7 +60,7 @@ export const EQUIPMENT_TYPES: Record<string, EquipmentType> = {
   PLANET_SCANNER: {canBeSabotaged: true},
   // The engine room's shield emitter, so the iso view can select it; examine only for now.
   PLASMA_SHIELD: {},
-  PLANT_CONTROLLER: { canBeSabotaged: true },
+  PLANT_CONTROLLER: { terminal: true, canBeSabotaged: true },
   RESEARCH_LAB: { terminal: true, canBeSabotaged: true },
   ROTATIONAL_REACTOR: {canBeSabotaged: true},
   SHOWER: { shower: true, canBeSabotaged: true },

@@ -11,7 +11,7 @@ import type { PlanetDirection, PlanetTag } from "../planets.ts";
 import type { TitleId } from "../titles.ts";
 import type { Alerts } from "../reports.ts";
 import type { Action, BotKind, DocumentState, ItemId, LogEntry, LogLine, LogParams, PlayerId, Role, RoomId, SpoilStage } from "../types.ts";
-import type { ChannelId, ChatLine, ChatMessage, ChatThread, PrivateChannel, SeqRange, SharedPlanet, SharedPlanetId, SharedReport, SharedReportId } from "./chat.ts";
+import type { ChannelId, ChatLine, ChatMessage, ChatThread, PrivateChannel, SeqRange, SharedPilgredStatus, SharedPlanet, SharedPlanetId, SharedPlantStatus, SharedReport, SharedReportId } from "./chat.ts";
 import type { Plan } from "./plan.ts";
 import type { MovementRules } from "./config.ts";
 import type { ActionInProgress, PlayerState, Spot } from "./player.ts";
@@ -63,8 +63,8 @@ export interface ItemView {
   spores?: number;
   /** For perishable food that has spoiled (spoilage.ts). Sent to living Chefs only. */
   spoil?: SpoilStage;
-  /** For a planted hydropot. `sick` is there only for the Botanist role; everyone else never gets the field. */
-  plant?: { species: string; age: number | null; thirst: 0 | 1 | 2; sick?: boolean };
+  /** For a planted hydropot. `sick` and `sickCycles` are there only for the Botanist role; everyone else never gets them. */
+  plant?: { species: string; age: number | null; thirst: 0 | 1 | 2; sick?: boolean; sickCycles?: number };
   /** For a support drone (#411): its name, serial and upgrades, public to whoever can see it. Never its failure counts. */
   drone?: { name: string; serial: number; upgrades: string[] };
   /** For a document (#394): its kind and rows (characters and marks), public to whoever can see it. */
@@ -313,6 +313,10 @@ export interface PlayerView {
   sharedPlanets: SharedPlanet[];
   /** Expedition reports shared in the Expeditions feature (sharedReports.ts), to whoever can read that feature. */
   sharedReports: SharedReport[];
+  /** Latest greenhouse plant status shared in the Botany feature (sharedPlants.ts), to whoever can read that feature. */
+  sharedPlants: SharedPlantStatus | null;
+  /** Latest PILGRED repair progress shared in the PILGRED feature (sharedPilgred.ts), to whoever can read that feature. */
+  sharedPilgred: SharedPilgredStatus | null;
   /** How many private channels you may belong to, after modifiers. */
   channelLimit: number;
   /** Your effective movement rules, after modifiers. */
@@ -392,7 +396,7 @@ export interface PlayerView {
    * member still with the crew (alive and not lost), whose view holds it in `expeditions`. `next` is the next sector's
    * tag, only to a member with U-turn or Traitor still with the crew (owner, 2026-11-17, `nextSectorFor`). `steps` (the
    * steps left, the next included) and `nextAt` (when the next resolves, server ms) are public, as the timer already
-   * reveals them (docs/plans/expedition-ui.md). `hp` is each member's exact HP by character as of the latest step (not
+   * reveals them (docs/plans/archive/expedition-ui.md). `hp` is each member's exact HP by character as of the latest step (not
    * live: losses between steps only humans take would show), only to a member still with the crew, and only for those
    * still with it: never a lost member's, never a max HP (owner, 2026-11-19). `shared` is the Astrophysics entry shared
    * from the planet being explored, to whoever reads that feature (its `sharedPlanets` holds the entry).
@@ -422,6 +426,10 @@ export interface PlayerView {
   canSharePlanets: boolean;
   /** Whether you may share the reports in `expeditions` now (sharedReports.ts): alive with an iTrackie. */
   canShareReports: boolean;
+  /** Whether you may share the greenhouse plant status in the Botany feature now (sharedPlants.ts): alive at a working Hydroponics center with an iTrackie. */
+  canSharePlants: boolean;
+  /** Whether you may share the PILGRED repair progress in the PILGRED feature now (sharedPilgred.ts): alive at a PILGRED terminal with an iTrackie. */
+  canSharePilgred: boolean;
   /** How many planets one player can hold (a config constant, public). */
   maxPlanets: number;
   /**
@@ -451,13 +459,13 @@ export interface PlayerView {
 /** One action you are offered: what it costs, its chance of success, and which of your points fall short. */
 /** One pooled target as seen from its room (relayView.ts). */
 export interface RelayTargetView {
-  /** Progress held back only for lack of other contributors (docs/plans/relay-tokens.md). */
+  /** Progress held back only for lack of other contributors (docs/plans/archive/relay-tokens.md). */
   waiting: number;
   /** How much the target goes up if you contribute now, over your token's roll. */
   gain: { min: number; max: number };
   /**
    * Its tokens in the order they were made: who made each and what it is worth in the best arrangement. A research's
-   * are samples: verified ones first, then `pending` ones waiting for the next assay (docs/plans/research-sabotage.md).
+   * are samples: verified ones first, then `pending` ones waiting for the next assay (docs/plans/archive/research-sabotage.md).
    */
   tokens: { by: PlayerId; value: number; pending?: true }[];
   /** Research only: the striped segment, how much the pending samples add above verified progress if they all pass. */
@@ -479,7 +487,7 @@ export interface ActionOption {
    * Empty when you can do it now; otherwise the points, the inventory space, or the cleanliness ("clean": you are dirty)
    * you lack, or for Collect scrap, "debris" (none out there) or "pasiphae" (a patrol ship can't while the Pasiphae exists), or for Travel and turns, "reactor" (the reactor it needs is broken), or for Travel and Leave orbit, "arack" (an Arack is around), or for Hack, "preselection" (titles aren't assigned yet), or for Board the Icarus and Take off, "explored" (every sector of the planet is explored) or "icarusLost". See `affordable`.
    */
-  lacks: ("ap" | "mp" | "space" | "cooldown" | "capacity" | "clean" | "debris" | "pasiphae" | "reactor" | "arack" | "preselection" | "explored" | "icarusLost" | "antisocial" | "germaphobe")[];
+  lacks: ("ap" | "mp" | "space" | "cooldown" | "capacity" | "clean" | "debris" | "pasiphae" | "reactor" | "arack" | "preselection" | "explored" | "icarusLost" | "antisocial" | "germaphobe" | "mushNotSelected" | "listPrinted" | "broken")[];
   /** Cycles until it is ready, when `lacks` has "cooldown". */
   cooldown?: number;
 }

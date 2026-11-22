@@ -10,15 +10,16 @@ import { expirePlans, plansView, strikeSlots } from "./plans.ts";
 import { bindPerformAction } from "./actions/summon.ts";
 import { applyCheats, makeHuman, shipInvincible, type Cheat, type RoleCheat } from "./cheats.ts";
 import { ACTIONS, actionVisibility, type ActionDef } from "./actions.ts";
-import { ARACK_AROUND, AT_CAPACITY, COOLDOWN, DIRTY, EXPLORED, ICARUS_LOST, IN_PRESELECTION, NO_DEBRIS, NO_SPACE, PASIPHAE_INTACT, REACTOR_BROKEN } from "./actions/action.ts";
+import { ARACK_AROUND, AT_CAPACITY, BROKEN, COOLDOWN, DIRTY, EXPLORED, ICARUS_LOST, IN_PRESELECTION, NO_DEBRIS, NO_SPACE, PASIPHAE_INTACT, REACTOR_BROKEN } from "./actions/action.ts";
 import { getUp } from "./actions/lie_down.ts";
 import { ANTISOCIAL } from "./actions/bond.ts";
 import { GERMAPHOBE } from "./actions/caress.ts";
+import { LIST_PRINTED, MUSH_NOT_SELECTED } from "./actions/print_list.ts";
 import { isNimble } from "./actions/nimble.ts";
 import { researchNeedsView } from "./actions/research.ts";
 import { equipmentHere } from "./equipment.ts";
 import { jellyCycle, leakOxygen } from "./breakage.ts";
-import { seesSpoil, spoilFood } from "./spoilage.ts";
+import { spoilFood } from "./spoilage.ts";
 import { newProjectDeck } from "./projects.ts";
 import { doorsOf } from "./doors.ts";
 import { fireCycle, ignitePending, isGardenProtected, isOnFire } from "./fire.ts";
@@ -29,6 +30,7 @@ import { catArrival } from "./schrodinger.ts";
 import { CHEAT_ROOM } from "./cheatRoom.ts";
 import { teleport, teleportBlocked } from "./kube.ts";
 import { newLostAnalysis, rollAtSelection } from "./lostAnalysis.ts";
+import { newTheList, recordSelection } from "./theList.ts";
 import { hopelessCycle } from "./morale.ts";
 import { relayView } from "./relayView.ts";
 import { itemsIn, newItemId, rechargeMicrowaves, rechargeScooters, startCharges, visibleItemsIn } from "./items.ts";
@@ -53,12 +55,15 @@ import { recordAction } from "./history.ts";
 import { ringMycoAlarms } from "./mycoalarm.ts";
 import { planetsOf } from "./planets.ts";
 import { canSharePlanets } from "./sharedPlanets.ts";
+import { canSharePlants, sharedPlantsView } from "./sharedPlants.ts";
+import { canSharePilgred, sharedPilgredView } from "./sharedPilgred.ts";
 import { canShareReports } from "./sharedReports.ts";
 import { arriveShip, orbitName, orbitPicture } from "./navigation.ts";
 import { commandTerminalsHere, isPilgredRepaired } from "./pilgred.ts";
 import { biosTerminalsHere, newBios } from "./bios.ts";
 import { callNextRebel, commsCycle, commsTerminalView, comTerminalsHere, newComms } from "./comms.ts";
-import { botanyCycle, botanyDay, plantView } from "./botany.ts";
+import { botanyCycle, botanyDay } from "./botany.ts";
+import { itemView, seesShield } from "./itemView.ts";
 import { burnOxygen, rollOxygenSaved, shipView, startShip } from "./ship.ts";
 import { merchantsCycle, merchantsInSpace } from "./merchants.ts";
 import { newSignals, signalName } from "./signals.ts";
@@ -76,9 +81,7 @@ import type {
   DeepReadonly,
   GameConfig,
   GameState,
-  DroneState,
   ItemState,
-  ItemView,
   ActionOption,
   PlayerId,
   PlayerState,
@@ -93,7 +96,7 @@ import type {
   Seat,
 } from "./types.ts";
 import { drawDrugs, drugEffectsSeenBy, hasDrugDispenser, resetDrugDispenser, stockMedlab } from "./drugs.ts";
-import { drawFruits, fruitEffectsSeenBy } from "./fruits.ts";
+import { drawFruits, drawHybrids, fruitEffectsSeenBy } from "./fruits.ts";
 import { changeAP, changeMP } from "./adjustStats.ts";
 import { diseaseTrackerCycleChange } from "./diseases.ts";
 
@@ -137,6 +140,7 @@ export function createGame(
     rng,
     npcs: newNpcState(seed, npcSeed),
     lostAnalysis: newLostAnalysis(seed),
+    theList: newTheList(seed),
     merchantRng: streamFor(seed, "merchants"),
     cycle: startCycle,
     phase: "playing",
@@ -150,6 +154,7 @@ export function createGame(
     dispensedOn: {},
     drugs: {},
     fruits: {},
+    hybrids: {},
     drugDispenser: { list: [], used: false },
     log: [{ id: 1, cycle: startCycle, key: "crewWakes", visibleTo: "all" }],
     nextLogId: 2,
@@ -184,6 +189,8 @@ export function createGame(
     nextSharedPlanetId: 1,
     sharedReports: [],
     nextSharedReportId: 1,
+    sharedPlants: null,
+    sharedPilgred: null,
     expeditions: [],
     nextExpeditionId: 1,
     expedition: null,
@@ -210,12 +217,14 @@ export function createGame(
   if (!preselection) {
     callNextRebel(state);
     rollAtSelection(state);
+    recordSelection(state);
     startHunters(state);
     spawnSelectionItems(state);
   }
   // Setup draws on streams of their own, so changing them doesn't move any roll on `state.rng`.
   state.drugs = drawDrugs({ rng: streamFor(seed, "drugs"), config });
   state.fruits = drawFruits({ rng: streamFor(seed, "fruits"), config });
+  state.hybrids = drawHybrids({ rng: streamFor(seed, "grafts") }, config, state.fruits);
   stockMedlab(state, { rng: streamFor(seed, "medlab-stock") });
   for (const item of state.items) initNpc(state, item);
   grantCarePoints(state); // day 1 begins now
@@ -344,7 +353,8 @@ const isUnaffordableReason = (action: Action, refused: string | null): refused i
     (action.type === "hack" && refused === IN_PRESELECTION) ||
     (action.type === "bond" && refused === ANTISOCIAL) ||
     (action.type === "caress" && refused === GERMAPHOBE) ||
-    (ICARUS_ACTIONS.has(action.type) && (refused === EXPLORED || refused === ICARUS_LOST)));
+    (ICARUS_ACTIONS.has(action.type) && (refused === EXPLORED || refused === ICARUS_LOST)) ||
+    (action.type === "print_list" && (refused === MUSH_NOT_SELECTED || refused === LIST_PRINTED || refused === BROKEN)));
 
 function actionOption(state: GameState, p: PlayerState, def: ActionDef<Action>, a: Action, lacks: ActionOption["lacks"]): ActionOption {
   return {
@@ -369,6 +379,9 @@ function unaffordableOption(state: GameState, p: PlayerState, def: ActionDef<Act
     ...(refused === ARACK_AROUND ? (["arack"] as const) : []),
     ...(refused === EXPLORED ? (["explored"] as const) : []),
     ...(refused === ICARUS_LOST ? (["icarusLost"] as const) : []),
+    ...(refused === MUSH_NOT_SELECTED ? (["mushNotSelected"] as const) : []),
+    ...(refused === LIST_PRINTED ? (["listPrinted"] as const) : []),
+    ...(refused === BROKEN ? (["broken"] as const) : []),
     ...(refused === ANTISOCIAL ? (["antisocial"] as const) : []),
     ...(refused === GERMAPHOBE ? (["germaphobe"] as const) : []),
     ...(refused === DIRTY ? (["clean"] as const) : []),
@@ -383,7 +396,7 @@ function unaffordableOption(state: GameState, p: PlayerState, def: ActionDef<Act
 }
 
 /**
- * Actions that fail only on cost (`cant_afford`), on room in the inventory (`NO_SPACE`), on a cooldown (`COOLDOWN`), on a shared limit (`AT_CAPACITY`), on being dirty (`DIRTY`) or, for Collect scrap, on no debris (`NO_DEBRIS`) or the Pasiphae still existing (`PASIPHAE_INTACT`), or for Travel and turns on a broken reactor (`REACTOR_BROKEN`), or for Travel and Leave orbit on an Arack around (`ARACK_AROUND`), with the cost and what falls
+ * Actions that fail only on cost (`cant_afford`), on room in the inventory (`NO_SPACE`), on a cooldown (`COOLDOWN`), on a shared limit (`AT_CAPACITY`), on being dirty (`DIRTY`) or, for Collect scrap, on no debris (`NO_DEBRIS`) or the Pasiphae still existing (`PASIPHAE_INTACT`), or for Travel and turns on a broken reactor (`REACTOR_BROKEN`), or for Travel and Leave orbit on an Arack around (`ARACK_AROUND`), or for Print THE List before selection, after the print or on a broken tabulator, with the cost and what falls
  * short. For showing them disabled.
  * Moves are left out: an unaffordable move has no cost to report, and doors aren't action buttons.
  */
@@ -874,6 +887,8 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     threads: channels.includes("global") ? threadsView(state) : [],
     sharedPlanets: channels.includes("astrophysics") ? sharedPlanetsView(state) : [],
     sharedReports: channels.includes("expeditions") ? sharedReportsView(state) : [],
+    sharedPlants: channels.includes("botany") ? sharedPlantsView(state) : null,
+    sharedPilgred: channels.includes("pilgred") ? sharedPilgredView(state) : null,
     channelLimit: channelLimit(state, you),
     movement: movementRules(state, you),
     bonds: {
@@ -935,6 +950,8 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     maxPlanets: state.config.astro.maxPlanets,
     canSharePlanets: canSharePlanets(state, you),
     canShareReports: canShareReports(state, you),
+    canSharePlants: canSharePlants(state, you),
+    canSharePilgred: canSharePilgred(state, you),
     planets: planetsOf(state, playerId).map((p) => ({
       id: p.id,
       name: p.name,
@@ -970,17 +987,6 @@ export const affordable = (option: Readonly<ActionOption>): boolean => option.la
 
 /** The actions a view lets you do right now: its affordable options. */
 export const legalIn = (view: Pick<PlayerView, "actions">): Action[] => view.actions.filter(affordable).map((o) => o.action);
-
-/** Shielding (actions/reinforce.ts) is seen by living Engineers and Mush only. */
-const seesShield = (viewer: Readonly<PlayerState>): boolean => viewer.alive && (viewer.role === "mush" || hasSkill(viewer, "engineer"));
-
-/** An item as `viewer` sees it; a plant's sickness only for the Botanist role (`plantView`). */
-function itemView({ id, type, of, builds, charges, teaches, plant, spores, hiddenBy, broken, jelly, shield, drone, document, spoil, mush }: ItemState, viewer: Readonly<PlayerState>): ItemView {
-  return { id, type, ...(broken && { broken }), ...(spoil !== undefined && seesSpoil(viewer) && { spoil }), ...(jelly !== undefined && viewer.role === "mush" && viewer.alive && { jelly }), ...(shield !== undefined && seesShield(viewer) && { shield }), ...(hiddenBy === viewer.id && { hidden: true as const }), ...(spores && viewer.role === "mush" && viewer.alive && { spores }), ...(mush && viewer.role === "mush" && viewer.alive && { mush }), ...(of !== undefined && { of }), ...(builds !== undefined && { builds }), ...(charges !== undefined && { charges }), ...(teaches !== undefined && { teaches }), ...(plant && { plant: plantView(plant, viewer) }), ...(drone && { drone: droneView(drone) }), ...(document && { document: { kind: document.kind, rows: document.rows.map((r) => ({ ...r })) } }) };
-}
-
-/** A drone's public part (#411): name, serial and upgrades; its failure counts never leave the server. */
-const droneView = ({ name, serial, upgrades }: Readonly<DroneState>): NonNullable<ItemView["drone"]> => ({ name, serial, upgrades: [...upgrades] });
 
 function equipmentView(state: GameState, { id, type, broken, jelly, shield }: Equipment, viewer: Readonly<PlayerState>): EquipmentView {
   // Out and destroyed are known in the bay, where the ship is missing (owner, 2026-10-24); a docked ship's armor too,
@@ -1019,7 +1025,7 @@ function expeditionView(state: GameState, you: PlayerState, readsAstrophysics: b
     crew: [...report.crew],
     planet: report.planet,
     returnAt: expeditionReturnAt(state)!,
-    // Public, as the timer already reveals both (docs/plans/expedition-ui.md).
+    // Public, as the timer already reveals both (docs/plans/archive/expedition-ui.md).
     steps: away.sectors.length,
     nextAt: away.nextAt,
     // The patrol ship that landed (owner, 2026-11-09, #359): public, as its bay shows it out and the crew is named.

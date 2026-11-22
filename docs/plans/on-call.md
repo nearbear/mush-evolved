@@ -1,6 +1,6 @@
 # Plan: channel plans and on-call summons (written 2026-10-30)
 
-A **plan** is a private channel's shared to-do list: a room, a purpose and a set of slots that members claim. Some slots are promises done live; **on-call** slots let the author, once in the room, summon the holders there with one button: the game walks their bodies in, paying as live. That walk is the only thing the game ever does on an absent player's behalf. This replaces the generic executor of `docs/plans/action-plans.md` (scheduled time, locked AP, knowledge sandbox, composer for arbitrary actions), which the owner dropped on 2026-10-30. Relaying is handled separately by pooled contributions (`docs/plans/relay-tokens.md`), so plans have no relay execution. Steps 2 (`shared`) and 3 (server) built 2026-10-31; UI and bots not yet. **Decisions** are the owner's; **Open questions** block the part they belong to. Epic #317; issues #311 (pooled tokens), #312 (remove locked AP), #313 (shared), #314 (server), #315 (UI), #316 (bots). Do not guess them.
+A **plan** is a private channel's shared to-do list: a room, a purpose and a set of slots that members claim. Some slots are promises done live; **on-call** slots let the author, once in the room, summon the holders there with one button: the game walks their bodies in, paying as live. That walk is the only thing the game ever does on an absent player's behalf. This replaces the generic executor of `docs/plans/archive/action-plans.md` (scheduled time, locked AP, knowledge sandbox, composer for arbitrary actions), which the owner dropped on 2026-10-30. Relaying is handled separately by pooled contributions (`docs/plans/archive/relay-tokens.md`), so plans have no relay execution. Steps 2 (`shared`) and 3 (server) built 2026-10-31; UI and bots not yet. **Decisions** are the owner's; **Open questions** block the part they belong to. Epic #317; issues #311 (pooled tokens), #312 (remove locked AP), #313 (shared), #314 (server), #315 (UI), #316 (bots). Do not guess them.
 
 ## The problem
 
@@ -19,7 +19,7 @@ The rule that keeps the executor tiny: **the person who will act summons the peo
 - **Expiry: the end of the next day.** A plan posted on day N is cancelled at the end of day N+1 (`config.plans.expiryDays`, 1) if still open, so nobody is summoned on stale consent.
 - **No generic executor.** The game never performs a planned action for anyone. The walk is the only automatic movement, and it is pre-consented, one per claim.
 
-Carried over from `docs/plans/action-plans.md` (owner, 2026-10-13 and 2026-10-26), still valid for the walk:
+Carried over from `docs/plans/archive/action-plans.md` (owner, 2026-10-13 and 2026-10-26), still valid for the walk:
 
 - **No new powers.** A summoned walk is the normal `move`, door by door along `shortestPath`, paying MP or the AP conversion exactly as live, visible to anyone along the way with the same log lines. A plan can never place anyone where walking could not.
 - **No lookahead, stop without rollback.** Each door is checked when the walker reaches it; a refused door or an unaffordable step stops that walker where they stand. Doors already walked stay walked. Nobody is refunded.
@@ -144,7 +144,7 @@ Plans are for structured coordination: a fixed roster and a summons (an expediti
 
 ## Build order
 
-1. **Pooled contributions** (`docs/plans/relay-tokens.md`, #311; built 2026-10-31): independent, and it removes the only reason for relay execution.
+1. **Pooled contributions** (`docs/plans/archive/relay-tokens.md`, #311; built 2026-10-31): independent, and it removes the only reason for relay execution.
 2. **Plans in `shared`** (#313; built 2026-10-31): types, `postPlan`, the five registry actions, the walk, cleanup and expiry, `viewFor`, rules and leak tests. As built: `postPlan` is a function, not yet an `Input` (step 3 adds the message and the `applyInput` case); the walk calls `performAction` through a binding `rules.ts` sets (`bindPerformAction`), since `actions/summon.ts` can't import it without an import cycle, so a ready holder is still walked; a task slot's strike is stored (`struck`), set by `strikeSlots` after every action, cycle and death; each channel stores its open plan plus `finishedKept` finished ones (the UI decides which to show); the five actions stay out of the action history, like `ready`. After a code review: plans follow the channel's iTrackie rule (`plansView` filters by `readChannels`; posting and the slot actions need `chatChannels`), and `postPlan` refuses a reservation the claim rules would refuse to its own player (an on-call slot for the author, a second on-call slot for the same player, an STT or Comfort for its target).
 3. **Protocol and server** (#314; built 2026-10-31): the `postPlan` message, `GameRoom` handling, `STATE_VERSION`. As built: the message is `{ type: "postPlan", plan: PlanDraft }`, rebuilt by `parsePlanDraft` (in `plans.ts`, called from `protocol.ts`) with known keys only at every level (generous wire bounds: 64 slots, ids up to 64 characters; the rules check the real limits and that ids exist); `applyInput` calls `postPlan`; `GameRoom.social` takes it under the per-seat chat rate limit and, having no free text, sends it to the rules without moderation. No stored-shape change: step 2 already added the plan state, and a new input type changes no stored shape (old records hold no `postPlan`).
 4. **UI:** card, composer, phone layout, en/fr/es.
@@ -152,7 +152,7 @@ Plans are for structured coordination: a fixed roster and a summons (an expediti
 
 ## Deferred
 
-From `docs/plans/action-plans.md`, still wanted later and still requiring an executor of some kind, now scoped per feature rather than generic: arrival actions (board, sit), secret substitution (spiking the coffee you bring), item handles, templates, natural pacing. Scheduled times, locked AP, optional jobs and the knowledge sandbox are dropped, not deferred.
+From `docs/plans/archive/action-plans.md`, still wanted later and still requiring an executor of some kind, now scoped per feature rather than generic: arrival actions (board, sit), secret substitution (spiking the coffee you bring), item handles, templates, natural pacing. Scheduled times, locked AP, optional jobs and the knowledge sandbox are dropped, not deferred.
 
 ## Open questions
 

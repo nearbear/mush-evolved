@@ -2,7 +2,7 @@
 
 Owner decisions of 2026-11-19. Run A is built and committed; everything after it is not. Method: the `bot-strategy` skill (one change per run, same seeds, measured against the run before).
 
-Order of work: Run A (done) → Run A2 (bedroom loop, done) → Run A2c (fuel relay, done) → Run A3 (bed tiers, done) → Run A4 (Shrink beds and announcement, done, no gain) → Run B onward (Run D done). Run G (give up on Eden) added 2026-11-21. The bed runs came out of tracing Run A's remaining orbit stays (below).
+Order of work: Run A (done) → Run A2 (bedroom loop, done) → Run A2c (fuel relay, done) → Run A3 (bed tiers, done) → Run A4 (Shrink beds and announcement, done, no gain) → Run C (done, no gain, reverted) → Run B (done) → Run E onward (Run D done) → Run H (healing, after E and F). Run G (give up on Eden) added 2026-11-21. The shower guard and the HP report (2026-11-21) are done; Run H comes from them. The bed runs came out of tracing Run A's remaining orbit stays (below).
 
 ## Diagnosis (2026-11-19)
 
@@ -45,7 +45,7 @@ Answered from Run A (owner, 2026-11-21):
 
 - **Every Pilot dead** (sectors left, nobody able to launch, seed 1's last orbit): a losing position for Eden. Bots should recognize a couple of such scenarios and go for return to Sol instead, the Commander making the call. Which scenarios, and what the crew does then (PILGRED), is Run G below; not decided.
 - **Board turning to "explored" before a patrol-ship landing's report:** not a leak; a planet being explored isn't secret. Bots don't use patrol ships for exploration.
-- **Injury deaths (62 → 95 in Run A3):** the harness should record what dealt the injury, so they can be diagnosed. `injury` is the catch-all `DeathCause` for HP loss (diseases, tremors, showers, bites, the spore remover and more all call `damage(..., "injury")`).
+- **Injury deaths (62 → 95 in Run A3):** the harness should record what dealt the injury, so they can be diagnosed. `injury` is the catch-all `DeathCause` for HP loss (diseases, tremors, showers, bites, the spore remover and more all call `damage(..., "injury")`). Done: the report records HP lost and gained by source and how long the dead spent at low HP (2026-11-21); it led to Run H.
 
 ### Run A2: stop the bedroom loop
 
@@ -113,10 +113,14 @@ Raluca should never be in a dorm; today she often just stands in the rear corrid
 - A share that arrives while an escape jump is held: jump to the planet at once.
 - **Bar:** median hold before a planet jump, 9 cycles, down to about 0–2. First orbit (mean cycle 18.5) earlier, and oxygen on arrival (median 8) higher.
 
+**Status (2026-11-21): built and measured** (trigger back at 5, against the Run C baseline). First jump median cycle 7 → 4, first orbit 13 → 6, Oxygen orbits 67 → 96, oxygen before a planet jump median 8 → 14, oxygen at 0 median cycle 31 → 45, asphyxia 600 → 470, mean days 6.59 → 7.28 (+0.69, 32 longer, 15 shorter). Held median 7 → 5 (the harness counts from the first hold line, so an upgraded escape hold and the fuel relay's wait are in it). Watch: injury deaths 83 → 146 (showers, flu), exploration deaths 15 → 31, ships destroyed 2 → 5. The fuel relay's wait still applies to planet jumps (Claude's pick). Details in `docs/plans/bot-goals.md` ("Reaching Eden").
+
 ### Run C: escape on 7 hunters
 
 - `HOLD_HUNTER_TRIGGER` 5 → 7 (5 is too few).
 - **Watch:** hull, ships destroyed (7 now) and hunters shed by jumps.
+
+**Status (2026-11-21): built and measured, no gain.** Escape jumps on hunters 58 → 29, but the trigger also fires held planet jumps: first jump median cycle 7 → 13, runs reaching an Oxygen orbit 38 → 30, oxygen at 0 median cycle 31 → 24; daedalus_destroyed deaths 10 → 15; mean days 6.59 → 6.35 (edge of noise, wrong way). Reverted to 5 for Run B; retry on top of Run B, where the trigger only governs escape jumps. Details in `docs/plans/bot-goals.md` ("Reaching Eden").
 
 ### Run D: no escape jump on oxygen
 
@@ -140,6 +144,32 @@ Raluca should never be in a dorm; today she often just stands in the rear corrid
 - An Astrophysicist whose saved AP plus 3 would reach its analysis threshold, or that holds no planets and can't afford a scan, posts a fixed global line, e.g. `Mission: <name> needs AP`.
 - The Commander gives the day's mission (+3 AP, 1 AP, any room, once a day) to the first one who asks that day.
 - **Bar:** fewer cycles from finding a planet to sharing it, more astro AP spent.
+
+### Run H: bots heal each other (owner, 2026-11-21; not built)
+
+Why: injury is the second killer after asphyxia (about a quarter of deaths since Run B). The HP report (2026-11-21, `survival-hp-report-2026-11-21.json`) found that about two thirds of injury and metal-plate deaths (96 of 148) had spent 3 or more cycle ends at 5 HP or less first. The only HP coming back was natural regen at a cycle change (43 a run); scripted bots don't heal at all (deferred 2026-11-01, now decided below). The shower guard came first (no showering with skin inflammation: showered deaths 42 → 0, endings within noise). Details in `docs/plans/bot-goals.md` ("Reaching Eden").
+
+Order: after Runs E and F. The shower guard showed that crew saved from injury mostly suffocate later, so healing should move endings only once the oxygen runs have pushed asphyxia back. Measure it on top of them.
+
+Rules it rests on: `heal` needs a medikit in hand or standing in the Sick Bay (the medlab, `config.heal.rooms`); 2 AP on someone else, 3 on yourself; +3 HP (+2 for a Medic). Max HP is 14.
+
+- **Anyone heals** (owner). Not limited to Medics or First Aid.
+- **Non-urgent request: 10 HP or less.** The bot posts a fixed global line asking for healing where it is.
+- **Urgent request: 7 HP or less.** The bot first walks to whichever is closer, the Sick Bay or the medikit's last reported place, then posts the urgent line from there.
+- **Who answers.** A bot in the same room as the asker is preferred. When none is there, or the bots in the room have something more important (Raluca alone in the Comms Center; Frieda putting astro first), either:
+  - (a) a bot goes to the Sick Bay or the medikit with the patient (the urgent case already does this), or
+  - (b) a bot fetches the medikit (found the usual way: `itemShare.ts`, adding `medikit` to `SHARED_ITEMS`) and brings it to the patient.
+- **Medikit home.** After use, the medikit is left in Alpha or Bravo Dorm (`BEDROOM_A`/`BEDROOM_B`) when one is within 2 MP, else dropped on the spot (answer 6 below).
+- **Bar (proposed):** injury and metal-plate deaths with 3+ cycle ends at 5 HP or less (96) down; HP gained from `heal` in the report's `hpGained`; crew at 5 HP or less a cycle (0.78) down. **Watch:** AP taken from astro, comms, the fuel relay and shooting; medikit walks; endings against the E/F run.
+
+Answered (owner, 2026-11-21):
+
+1. **Thresholds are inclusive:** non-urgent at 10 HP or less, urgent at 7 HP or less.
+2. **A request lapses after its cycle;** a bot still at or below a threshold posts it again. Line formats (confirmed by the owner, 2026-11-21): `Heal: need in <ROOM>`, `Heal: urgent in <ROOM>`, and a claim line `Heal: going to <name>` (like `Tank: going to`) so only one helper sets out.
+3. **Self-heal after a wait.** An urgent bot at the Sick Bay or the medikit waits 5 minutes for a helper, then heals itself (3 AP) until it is out of the urgent range (8 HP or more). Open: the survival harness has no wall clock, so the wait needs a harness equivalent (proposed: the asker's own turns, or the rest of the cycle).
+4. **Priorities and reserve.** Only urgent answering (and the urgent bot's own walk and self-heal) may spend the AP reserve. Urgent ranks above piloting (`patrolShootHunters`, 75); non-urgent below astro (76). Open: astro (76) already ranks above piloting (75), so the exact numbers need a pick. Proposed: urgent 76.2 (above both), non-urgent 74.5 (below piloting too).
+5. **Bring the patient or bring the medikit: whichever is closer.**
+6. **Medikit afterwards.** A bot never keeps the medikit once it's done healing. It leaves it in Alpha or Bravo Dorm only if one is within 2 MP; otherwise it drops it where it stands (and reports it as a shared item). A separate inventory-management goal may tidy items later (not in this run).
 
 ### For every run
 

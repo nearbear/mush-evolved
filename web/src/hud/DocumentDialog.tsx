@@ -1,9 +1,10 @@
 // A printed document's Read window (#394): the rows travel on the item in the view (`ItemView.document`), so reading
-// is client-only, free and private. Finola's lost analysis lists characters, some marked negative (not Mush).
+// is client-only, free and private. Finola's lost analysis lists characters, some marked negative (not Mush); THE List
+// (#266) lists characters with at least one Mush among them, or says none are left.
 
 import { Dialog } from "@base-ui/react/dialog";
-import type { DocumentState } from "@mush2/shared";
-import { useState } from "react";
+import type { CharacterId, DocumentState } from "@mush2/shared";
+import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { bustIcon } from "../art/assets.ts";
 import { useNames } from "../i18n/names.ts";
@@ -21,18 +22,47 @@ export function DocumentReader({ document }: { document: DocumentState }) {
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Trigger>{t("document.read")}</Dialog.Trigger>
-      <FramedDialog className="document-popup" heading={t("document.lostAnalysisTitle")} closeLabel={t("document.close")}>
-        <Dialog.Description className="document-headline">{t("document.lostAnalysisHeadline")}</Dialog.Description>
-        <ul className="document-rows">
-          {document.rows.map((row) => (
-            <li key={row.character} className="document-row">
-              <img src={bustIcon(row.character)} alt="" />
-              <span className="document-name">{names.character(row.character)}</span>
-              {row.negative && <strong className="document-negative">{t("document.negative")}</strong>}
-            </li>
-          ))}
-        </ul>
-      </FramedDialog>
+      {document.kind === "lost_analysis" ? (
+        <FramedDialog className="document-popup" heading={t("document.lostAnalysisTitle")} closeLabel={t("document.close")}>
+          <Dialog.Description className="document-headline">{t("document.lostAnalysisHeadline")}</Dialog.Description>
+          <ul className="document-rows">
+            {document.rows.map((row) => (
+              <DocumentRow key={row.character} character={row.character}>
+                {row.negative && <strong className="document-negative">{t("document.negative")}</strong>}
+              </DocumentRow>
+            ))}
+          </ul>
+        </FramedDialog>
+      ) : (
+        <FramedDialog className="document-popup" heading={t("document.theListTitle")} closeLabel={t("document.close")}>
+          <Dialog.Description className="document-headline">
+            {document.characters.length === 0
+              ? t("document.theListNoMush")
+              : document.characters.length === 1
+                ? t("document.theListCertainty", { name: names.character(document.characters[0]!) })
+                : t("document.theListHeadline")}
+          </Dialog.Description>
+          {document.characters.length > 0 && (
+            <ul className="document-rows">
+              {document.characters.map((character) => (
+                <DocumentRow key={character} character={character} />
+              ))}
+            </ul>
+          )}
+        </FramedDialog>
+      )}
     </Dialog.Root>
+  );
+}
+
+/** One named character on a document: their bust and name, then anything the document marks them with. */
+function DocumentRow({ character, children }: { character: CharacterId; children?: ReactNode }) {
+  const names = useNames();
+  return (
+    <li className="document-row">
+      <img src={bustIcon(character)} alt="" />
+      <span className="document-name">{names.character(character)}</span>
+      {children}
+    </li>
   );
 }

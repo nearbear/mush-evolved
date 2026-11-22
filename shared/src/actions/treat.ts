@@ -41,7 +41,10 @@ export class TreatAction extends Action<TreatActionData> {
 
   override apply(state: GameState, player: PlayerState, target: TreatActionData): void {
     const pot = state.items.find((i) => i.id === target.item)!;
-    if (isPlanted(pot)) pot.plant.sick = false;
+    if (isPlanted(pot)) {
+      pot.plant.sick = false;
+      delete pot.plant.sickCycles;
+    }
     logPublic(state, player.room, "treatedPlant", { name: player.character, item: pot.plant!.species });
   }
 }

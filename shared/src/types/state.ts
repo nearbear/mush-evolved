@@ -5,6 +5,7 @@ import type { SignalsState } from "../signals.ts";
 import type { DrugDispenserState, DrugEffect } from "../drugs.ts";
 import type { FruitEffect } from "../fruits.ts";
 import type { LostAnalysisState } from "../lostAnalysis.ts";
+import type { TheListState } from "../theList.ts";
 import type { NpcState } from "../npcs.ts";
 import type { TurnSide } from "../navigation.ts";
 import type { PlanetDirection, PlanetTag } from "../planets.ts";
@@ -13,7 +14,7 @@ import type { RelayPool, RelayStreak, ResearchPool } from "../relay.ts";
 import type { RngState } from "../rng.ts";
 import type { TitleId } from "../titles.ts";
 import type { ItemState, LogEntry, PlayerId, RoomId } from "../types.ts";
-import type { ChannelId, ChatMark, ChatMessage, ChatOutbox, ChatThread, PrivateChannel, SharedPlanet, SharedReport } from "./chat.ts";
+import type { ChannelId, ChatMark, ChatMessage, ChatOutbox, ChatThread, PrivateChannel, SharedPilgredStatus, SharedPlanet, SharedPlantStatus, SharedReport } from "./chat.ts";
 import type { DeepReadonly, Equipment, ExpeditionEventKind, GameConfig } from "./config.ts";
 import type { Plan } from "./plan.ts";
 import type { PlayerState } from "./player.ts";
@@ -159,6 +160,10 @@ export interface GameCore {
   /** Expedition reports shared in the Expeditions feature (sharedReports.ts), oldest first. `report` is never sent. */
   sharedReports: SharedReportState[];
   nextSharedReportId: number;
+  /** Latest greenhouse plant status shared from the Hydroponics center (sharedPlants.ts), pinned in the Botany feature. */
+  sharedPlants: SharedPlantStatus | null;
+  /** Latest PILGRED repair progress shared from the PILGRED terminal (sharedPilgred.ts), pinned in the PILGRED feature. */
+  sharedPilgred: SharedPilgredStatus | null;
   /**
    * The expedition under way, if any (expeditions.ts, phase 2; owner, 2026-11-07): the crew is in the Icarus
    * (`config.expedition.craft`) until its last step. Who is out, the planet and when they are back are public; the
@@ -202,7 +207,7 @@ export interface GameCore {
    */
   patrolShips: Record<RoomId, { armor: number; charges: number; out: boolean; destroyed: boolean; onPlanet: PlayerId | null }>;
   /**
-   * Debris floating around the Daedalus (docs/plans/patrol.md, phase 5): what destroyed hunters drop and what floats off
+   * Debris floating around the Daedalus (docs/plans/archive/patrol.md, phase 5): what destroyed hunters drop and what floats off
    * a destroyed patrol ship, as items with no container. Lost when the ship jumps. Never sent, except how many pieces
    * there are, to whoever flies a patrol ship (owner, 2026-10-28).
    */
@@ -246,15 +251,19 @@ export interface GameState extends GameCore {
   npcs: NpcState;
   /** Finola's lost analysis (#394): its own stream, then the rows rolled at Mush selection. Server-only until printed; not in the full view. */
   lostAnalysis: LostAnalysisState;
+  /** THE List (#266): its own stream, the starting Mush bodies, when they were chosen, and whether the one print is spent. Server-only; not in the full view. */
+  theList: TheListState;
   /** The merchants' own stream (merchants.ts), seeded apart from `rng` so arrivals don't shift the rest of the game. Not in the full view. */
   merchantRng: RngState;
+  /** Every pair's graft hybrid (#438), drawn at launch; a hybrid is copied into `fruits` once grafted. Server-only: not in the full view, never sent to anyone. */
+  hybrids: Record<string, FruitEffect>;
   /** Pages to store and delete, which the server takes after every input. Not in the full view. */
   chatOutbox: ChatOutbox;
 }
 
 /**
  * What a hunter is aiming at (hunters.ts): the Daedalus or a patrol ship in flight, by its room id. Players out in space
- * come with Mush auto-ejection (docs/plans/patrol.md, "Later"; owner, 2026-10-28).
+ * come with Mush auto-ejection (docs/plans/archive/patrol.md, "Later"; owner, 2026-10-28).
  */
 /** A problem a player reported (reports.ts, #444, #330): a fire by its room, a breakdown by its equipment's id, or a broken door by its id. `by` is the reporter. */
 export type Report =

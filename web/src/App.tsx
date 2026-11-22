@@ -1,14 +1,29 @@
-import { useCallback, useState } from "react";
+import { lazy, Suspense, useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Navigate, Route, Routes, useNavigate } from "react-router";
-import { GameScreen } from "./GameScreen.tsx";
 import { Lobby } from "./lobby/Lobby.tsx";
 import { WakeUp } from "./WakeUp.tsx";
 import { loadTicket, saveTicket, type SeatTicket } from "./net.ts";
+
+// Loaded only for /play (or prefetched from the lobby on hover / queue join) so `/` doesn't pull in the game UI.
+const loadGameScreen = () => import("./GameScreen.tsx");
+const GameScreen = lazy(loadGameScreen);
+
+let gamePrefetched = false;
+/** Warm the GameScreen chunk before navigating to /play; safe to call repeatedly. */
+function prefetchGameScreen(): void {
+  if (gamePrefetched) return;
+  gamePrefetched = true;
+  void loadGameScreen().catch(() => {
+    gamePrefetched = false;
+  });
+}
 
 // The lobby at `/` and the game at `/play`. Both live under one component so the seat ticket (in sessionStorage, see
 // net.ts) is shared state: Back from the game returns to the lobby with the seat kept, and Forward goes back aboard.
 // `/play` without a ticket (a pasted address, a new tab, or after leaving) replaces itself with `/`.
 export function App() {
+  const { t } = useTranslation();
   const [ticket, setTicket] = useState<SeatTicket | null>(loadTicket);
   const navigate = useNavigate();
   // Stable callbacks: they are effect dependencies that own sockets.
@@ -37,7 +52,9 @@ export function App() {
         element={
           ticket ? (
             <>
-              <GameScreen ticket={ticket} onLeave={leave} waking={waking} />
+              <Suspense fallback={<main className="connecting loading">{t("common.connecting")}</main>}>
+                <GameScreen ticket={ticket} onLeave={leave} waking={waking} />
+              </Suspense>
               {waking && <WakeUp onDone={woke} />}
             </>
           ) : (
@@ -45,7 +62,7 @@ export function App() {
           )
         }
       />
-      <Route path="*" element={<Lobby onMatched={join} />} />
+      <Route path="*" element={<Lobby onMatched={join} onPrefetch={prefetchGameScreen} />} />
     </Routes>
   );
 }

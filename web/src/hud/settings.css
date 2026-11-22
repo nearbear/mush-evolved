@@ -224,7 +224,7 @@ li.research-item .research-title {
   flex: 1 1 0;
   min-width: 2rem;
 }
-/* Research's pending samples (docs/plans/research-sabotage.md): a striped segment after the solid verified fill. */
+/* Research's pending samples (docs/plans/archive/research-sabotage.md): a striped segment after the solid verified fill. */
 .research-progress .kit-progress.neron::after {
   content: "";
   position: absolute;

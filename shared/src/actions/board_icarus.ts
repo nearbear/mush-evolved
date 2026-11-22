@@ -8,7 +8,7 @@ import type { GameState, PlayerState } from "../types.ts";
 export type BoardIcarusActionData = { type: "board_icarus"; equipment: string };
 
 /**
- * Board the docked Icarus from its bay (owner, 2026-11-17, docs/plans/expedition-boarding.md): free, at the Icarus,
+ * Board the docked Icarus from its bay (owner, 2026-11-17, docs/plans/archive/expedition-boarding.md): free, at the Icarus,
  * while the ship orbits a planet with an unexplored sector and there is room aboard, with a working spacesuit unless the
  * planet has an Oxygen sector (`boardRefusal`). Whoever is aboard at takeoff is the crew (actions/icarus_takeoff.ts).
  * Boarded players stay in the bay (`boardedIcarus`, #469), where they can still be reached, until takeoff moves the crew

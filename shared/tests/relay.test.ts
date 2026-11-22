@@ -3,7 +3,7 @@ import { arrangeTokens, contributionGain, poolProgress, type RelayProgressConfig
 import { nextFloat } from "../src/rng.ts";
 import type { PlayerState } from "../src/types.ts";
 
-// Base 6, penalty 2: the worked examples in docs/plans/relay-tokens.md.
+// Base 6, penalty 2: the worked examples in docs/plans/archive/relay-tokens.md.
 const CFG: RelayProgressConfig = { rate: 6, mod: 10, skillBoost: 4, relayPenalty: 2 };
 const tok = (by: string, base = 6, roll = 0): RelayToken => ({ by, base, roll });
 const many = (by: string, n: number, base = 6) => Array.from({ length: n }, () => tok(by, base));

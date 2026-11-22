@@ -5,10 +5,14 @@
 
 import type { CharacterId } from "./characters.ts";
 import { type HasRng, type RngState, rollShuffle, streamFor } from "./rng.ts";
-import type { DocumentRow, GameState } from "./types.ts";
+import type { DocumentRow, DocumentState, GameState } from "./types.ts";
 
-/** The generic document item (`ItemState.document`); THE List (#266) will reuse it. Named after its icon. */
+/** The generic document item (`ItemState.document`): this analysis, and THE List (#266, actions/print_list.ts). Named after its icon. */
 export const DOCUMENT_ITEM = "document";
+
+/** A deep copy of what a document says, for a view. */
+export const copyDocument = (document: Readonly<DocumentState>): DocumentState =>
+  document.kind === "lost_analysis" ? { kind: "lost_analysis", rows: document.rows.map((r) => ({ ...r })) } : { kind: "the_list", characters: [...document.characters] };
 
 export interface LostAnalysisState {
   /** Its own stream, from `streamFor(seed, "lost-analysis")`; kept until selection, since only creation knows the seed. */

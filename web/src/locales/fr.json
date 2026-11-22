@@ -8,7 +8,6 @@
     "mainMenu": "Menu principal",
     "preselection": "Pré-sélection",
     "orbiting": "En orbite",
-    "exploring": "En exploration",
     "deepSpace": "Espace profond",
     "deepSpaceAbout": "Vous êtes au milieu de nulle part. Cherchez des planètes au {{astro}}, puis le Commandant en rejoint une depuis le {{command}}, avec le carburant chargé dans la chambre de combustion.",
     "orbitingAbout": "Le Daedalus est en orbite autour de cette planète. Montez dans l'Icarus, dans la {{bay}}, pour lancer une expédition et l'explorer.",
@@ -264,7 +263,8 @@
     "button": "Inventaire",
     "buttonCount_one": "Inventaire ({{count}} objet dans cette salle)",
     "buttonCount_many": "Inventaire ({{count}} objets dans cette salle)",
-    "buttonCount_other": "Inventaire ({{count}} objets dans cette salle)"
+    "buttonCount_other": "Inventaire ({{count}} objets dans cette salle)",
+    "stackCount": "{{item}} ×{{count}}"
   },
   "crew": {
     "title": "Équipage",
@@ -384,10 +384,12 @@
     "water": "Arroser",
     "treat": "Traiter",
     "sow": "Semer",
+    "graft": "Greffer",
     "expressCook": "Cuisine Express",
     "hyperfreeze": "Hypergeler",
     "readBook": "Apprentissage",
     "tear": "Déchirer",
+    "printList": "Imprimer LA liste",
     "build": "Assembler",
     "jettison": "Larguer",
     "install": "Installer",
@@ -428,6 +430,7 @@
     "fierySpeech": "Discours enflammé",
     "boringSpeech": "Discours barbant",
     "attack": "Attaquer",
+    "graftWith": "Greffer ({{fruit}})",
     "attackWith": "Attaquer ({{weapon}})",
     "spike": "Contaminer",
     "demoralize": "Démoraliser",
@@ -469,6 +472,9 @@
     "lacksExplored": "Tous les secteurs de cette planète ont été explorés : il ne reste rien pour une expédition.",
     "lacksIcarusLost": "L'Icarus est perdu : plus aucune expédition n'est possible.",
     "lacksAntisocial": "Asociale : vous ne pouvez vous lier avec personne.",
+    "lacksMushNotSelected": "La Tabulatrice n'a pas encore chargé ses ampoules : LA liste pourra être imprimée une fois les Mush choisis.",
+    "lacksListPrinted": "Ces informations ont déjà été perforées : LA liste ne s'imprime qu'une fois par partie.",
+    "lacksBroken": "En panne : une réparation est nécessaire.",
     "lacksGermaphobe": "Germaphobe : vous ne pouvez pas caresser Schrödinger.",
     "lacksReactorTurn": "Le réacteur latéral de ce côté est en panne : le Daedalus ne peut pas tourner de ce côté tant qu'il n'est pas réparé.",
     "lacksPreselection": "Indisponible en pré-sélection : les titres ne sont attribués qu'une fois les Mush choisis.",
@@ -562,6 +568,8 @@
     "planet_not_found": "Cette planète n'est pas l'une des vôtres.",
     "share_text_invalid": "Un texte partagé doit faire au plus 500 caractères et 20 lignes, et ne pas être vide.",
     "share_sectors_invalid": "Les secteurs partagés doivent correspondre à ceux de la planète, un pour chacun.",
+    "share_plants_invalid": "L'état des plantes partagé n'est pas valide.",
+    "share_pilgred_invalid": "La progression de PILGRED partagée doit être comprise entre 0 % et 100 %.",
     "report_share_forbidden": "Il vous faut votre iTrackie pour partager un rapport.",
     "report_not_found": "Vous n'étiez pas de cette expédition.",
     "not_in_cheat_room": "Vous devez être dans la salle de triche.",
@@ -580,7 +588,15 @@
   },
   "pilgred": {
     "label": "Réparation de PILGRED",
-    "desc": "Le réacteur PILGRED. La seule façon de voyager plus vite que la lumière connue au moment du départ du Daedalus. Sa remise en état vous permettra peut-être de retourner sur Sol."
+    "desc": "Le réacteur PILGRED. La seule façon de voyager plus vite que la lumière connue au moment du départ du Daedalus. Sa remise en état vous permettra peut-être de retourner sur Sol.",
+    "share": "Partager l'état",
+    "shareTitle": "Partager la progression de PILGRED",
+    "shareHint": "Modifiez le pourcentage de progression ou ajoutez une note avant de publier dans l'onglet PILGRED. Partager remplace l'état précédent.",
+    "percentLabel": "Progression (%)",
+    "shareDisclaimer": "L'équipage verra tout ce que vous écrivez ici.",
+    "noteLabel": "Note (facultatif)",
+    "notePlaceholder": "Ajouter une note pour l'équipage…",
+    "sharePost": "Partager"
   },
   "gameOver": {
     "title": "La partie est terminée",
@@ -802,6 +818,14 @@
       "stale": "N'est plus d'actualité",
       "showStale": "Afficher les planètes qui ne sont plus d'actualité",
       "placeholder": "Discuter de cette planète…"
+    },
+    "sharedPlants": {
+      "title": "État partagé de la serre",
+      "show": "Afficher",
+      "hide": "Masquer"
+    },
+    "sharedPilgred": {
+      "title": "Progression partagée de PILGRED"
     },
     "pages": {
       "label": "Pages du chat",
@@ -1034,6 +1058,31 @@
     "charges_other": "{{count}} charges restantes",
     "heavyDesc": "Le porter ajoute {{mp}} points de mouvement au coût de chaque déplacement entre deux pièces, indépendamment du nombre d'objets lourds que vous transportez. La compétence Robuste annule cette pénalité."
   },
+  "botanyTerminal": {
+    "label": "État des plantes hydroponiques",
+    "listLabel": "Plantes de la serre",
+    "empty": "Aucun hydropot planté au sol de la serre.",
+    "broken": "Le centre hydroponique est en panne ; le partage d'état est indisponible jusqu'à réparation.",
+    "effectsUnknown": "Effets inconnus",
+    "healthy": "Saine",
+    "driedOut": "Desséchée",
+    "diseasedFor_one": "Malade ({{count}} cycle)",
+    "diseasedFor_many": "Malade ({{count}} cycles)",
+    "diseasedFor_other": "Malade ({{count}} cycles)",
+    "share": "Partager l'état",
+    "shareTitle": "Partager l'état de la serre",
+    "shareHint": "Modifiez l'état ou les effets des plantes, ou ajoutez une note avant de publier dans l'onglet Botanique. Un nouveau partage remplace le précédent.",
+    "shareDisclaimer": "L'équipage verra ce que vous écrivez ici.",
+    "effectsLabel": "Effets (un par ligne)",
+    "effectsPlaceholder": "Inconnus ou aucun",
+    "thirstLabel": "Arrosage",
+    "thirstNone": "Arrosée",
+    "cyclesLabel": "Cycles",
+    "removeRow": "Retirer",
+    "noteLabel": "Note (facultatif)",
+    "notePlaceholder": "Ajouter une note pour l'équipage…",
+    "sharePost": "Partager"
+  },
   "logEvent": {
     "summonArrived": "Vous avez été convoqué(e) : {{room}}. Vous y êtes.",
     "summonStopped": "Vous avez été convoqué(e) : {{room}}, mais n'avez pas pu y arriver ; vous vous êtes arrêté(e) en chemin.",
@@ -1099,6 +1148,8 @@
     "wateredPlant": "{{name}} a arrosé un plant : {{item}}.",
     "treatedPlant": "{{name}} a traité un plant : {{item}}.",
     "sowedPlant": "{{name}} a semé : {{item}}.",
+    "graftedPlant": "{{name}} a greffé une nouvelle plante : {{item}}.",
+    "graftFailed": "{{name}} a tenté une greffe sur un plant ({{item}}), mais quelque chose a dû contaminer l'opération. Le plant est perdu.",
     "plantMatured": "Un plant a atteint la maturité : {{item}}.",
     "sneezes": "{{name}} éternue.",
     "scratches": "{{name}} se gratte frénétiquement.",
@@ -1112,6 +1163,7 @@
     "plantExtraFruit": "Les lampes à chaleur ont permis à un plant de produire un fruit supplémentaire : {{item}}.",
     "bookRead": "{{name}} a lu un Apprentron et appris la compétence {{skill}}.",
     "documentTorn": "{{name}} a déchiré un document.",
+    "theListPrinted": "{{name}} a imprimé LA liste.",
     "expressCooked": "{{name}} a fait une cuisine express : {{item}}.",
     "hyperfrozen": "{{name}} a hypergelé : {{item}}.",
     "jettisoned": "{{name}} a largué le corps de {{body}}.",
@@ -1382,6 +1434,10 @@
     "contaminated": "{{name}} a trafiqué les échantillons de {{research}}.",
     "planetShared": "{{name}} a partagé une planète.",
     "planetShareUpdated": "{{name}} a mis à jour une planète partagée.",
+    "plantShared": "{{name}} a partagé l'état de la serre.",
+    "plantShareUpdated": "{{name}} a mis à jour l'état de la serre.",
+    "pilgredShared": "{{name}} a partagé la progression de PILGRED.",
+    "pilgredShareUpdated": "{{name}} a mis à jour la progression de PILGRED.",
     "bricBrocPrevented": "NERON : le rafistolage général a tenu le Daedalus ensemble ; aucun incident n'a frappé ce cycle.",
     "neronProjectCompleted": "NERON : le projet {{project}} est terminé.",
     "equipmentBroken": "NERON : panne de l'équipement « {{equipment}} ».",
@@ -2110,6 +2166,10 @@
     "close": "Fermer",
     "lostAnalysisTitle": "L'analyse perdue de Finola",
     "lostAnalysisHeadline": "Dépistage de l'infection de l'équipage au départ. Les personnes notées négatives n'étaient pas Mush.",
+    "theListTitle": "LA liste",
+    "theListHeadline": "Résultat d'enquête : au moins une de ces personnes est infectée par le Mush.",
+    "theListCertainty": "Le Mush infecte {{name}}. C'est une certitude.",
+    "theListNoMush": "Résultat d'enquête : il n'y a plus aucun Mush à bord.",
     "negative": "Négatif"
   },
   "kube": {

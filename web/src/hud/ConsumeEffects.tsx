@@ -1,7 +1,7 @@
 // What eating or drinking an item does, one effect per line with its icon, read from the shared item table (static data, not game state).
 
 import {
-  ALIEN_FRUIT_ITEMS,
+  isAlienFruitType,
   FRUIT_LORE_SKILLS,
   ITEM_TYPES,
   type FruitBuffId,
@@ -48,8 +48,9 @@ export function ConsumeEffects({
   const drug = isDrug ? view.drugEffects?.[type] : undefined;
   if (isDrug && !drug)
     return <p className="consume-unknown">{t("itemAttr.drugUnknown")}</p>;
-  // Alien fruit species (`fruit01`–`fruit12`) are likewise drawn per ship and revealed only via `view.fruitEffects`.
-  const isAlienFruit = (ALIEN_FRUIT_ITEMS as readonly string[]).includes(type);
+  // Alien fruit species (`fruit01`–`fruit12`) and their graft hybrids (#438) are likewise drawn per ship and revealed
+  // only via `view.fruitEffects`.
+  const isAlienFruit = isAlienFruitType(type);
   const fruit = isAlienFruit ? view.fruitEffects?.[type] : undefined;
   if (isAlienFruit && !fruit)
     return <p className="consume-unknown">{t("inspect.fruitUnknown")}</p>;

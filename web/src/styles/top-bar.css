@@ -618,15 +618,12 @@
 }
 
 /* Where the ship is (ShipStatus.tsx): the last part of the clock's plate, past a divider, so the plate is chamfered on the
-   right as well. The planet icon (16px) leads while orbiting or exploring; exploring ends with the return countdown past
-   another divider. */
+   right as well. The planet icon (16px) leads while orbiting or exploring; exploring shows the return countdown in place
+   of text. */
 .top-bar .cycle-label {
   --cut-tr: 6px;
   --cut-br: 6px;
   padding-right: var(--space-3);
-}
-.ship-status .clock-divider {
-  margin-inline: calc(var(--space-2) - var(--space-1) - 1px);
 }
 .ship-status {
   display: inline-flex;

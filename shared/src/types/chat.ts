@@ -36,7 +36,7 @@ export type ChannelId = ChatChannel | typeof MUSH_CHANNEL | typeof GRAVEYARD_CHA
  * whoever can read the Astrophysics feature, without the planet it came from (see `SharedPlanetState`).
  * `name` is the planet's true name, never edited; `sectors` has one slot per sector of the planet when it was shared
  * (its true size), each the tag the sharer chose or null for unknown, lies included (owner, 2026-11-19,
- * docs/plans/expedition-ui.md).
+ * docs/plans/archive/expedition-ui.md).
  */
 export interface SharedPlanet {
   id: SharedPlanetId;
@@ -62,6 +62,47 @@ export interface SharedReport {
   text: string;
   by: PlayerId;
   /** Day and cycle of that day of the first share. */
+  day: number;
+  cycleOfDay: number;
+}
+
+/** One plant row in a greenhouse status shared from the Hydroponics center (`PLANT_CONTROLLER`, sharedPlants.ts). */
+export interface SharedPlantRow {
+  /** Fruit species id (`fruit_banana`, `fruit01`–`fruit12`, or `graft_fruitXX_fruitYY`). */
+  species: string;
+  /** Effects claimed by the sharer, newline-separated (moderated free text, editable so players can lie). */
+  effects: string;
+  /** Thirst claimed by the sharer: 0 none, 1 thirsty, 2 dried out. */
+  thirst: 0 | 1 | 2;
+  /** Cycles diseased claimed by the sharer, or null if not claimed diseased. */
+  sickCycles: number | null;
+  /** Whether the sharer claims the plant is young. */
+  young: boolean;
+}
+
+/**
+ * The latest greenhouse plant status shared from the Hydroponics center (`PLANT_CONTROLLER`, sharedPlants.ts), pinned
+ * above the Botany feature thread. Sharing again replaces it. Sent to whoever can read the Botany feature.
+ */
+export interface SharedPlantStatus {
+  plants: SharedPlantRow[];
+  /** Optional free-text note (moderated). */
+  text: string;
+  by: PlayerId;
+  day: number;
+  cycleOfDay: number;
+}
+
+/**
+ * Latest PILGRED repair progress shared from the PILGRED terminal in the PILGRED feature (sharedPilgred.ts):
+ * an editable progress percent (lies allowed) and optional free-text note, pinned above the PILGRED thread.
+ */
+export interface SharedPilgredStatus {
+  /** Claimed repair percent (integer 0..PILGRED_COMPLETE). */
+  percent: number;
+  /** Optional free-text note (moderated). */
+  text: string;
+  by: PlayerId;
   day: number;
   cycleOfDay: number;
 }
@@ -122,7 +163,7 @@ export interface ChatMessage {
 export type ChatLine = Omit<ChatMessage, "id">;
 
 /**
- * Which task lines of a checklist message are ticked (#355, docs/plans/chat-pages.md phase 2). Kept in the state beside
+ * Which task lines of a checklist message are ticked (#355, docs/plans/archive/chat-pages.md phase 2). Kept in the state beside
  * the chat (`GameState.chatMarks`), so a message's text stays as typed and a sealed page is never written again. Every
  * view applies it to the text (`markedText`).
  */

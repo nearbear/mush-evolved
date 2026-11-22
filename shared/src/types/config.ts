@@ -250,6 +250,16 @@ export interface FruitsConfig {
   diseases: Record<string, number>; // Pool of alien fruit disease ids -> cost; cold is never included.
 }
 
+export interface GraftConfig {
+  cost: { ap: number }; // AP spent to graft, unless a garden point pays in the garden (owner, 2026-11-21: 2).
+  valueRange: [number, number]; // Inclusive value budget [min, max] a hybrid is re-rolled into (4–9).
+  maxGrowCycles: number; // Grow time cap: 4 cycles per point of value, never above this (32).
+  keepChance: number; // Chance each parent buff or disease is kept by the hybrid (0.5).
+  maxBuffs: number; // Most buffs a hybrid keeps (3).
+  maxDiseases: number; // Most diseases a hybrid keeps (3).
+  maxAttempts: number; // Re-rolls before a pair counts as unfittable (no hybrid, no graft offered).
+}
+
 export interface GameConfig {
   mushCount: number; // Mush picked at launch. Unused with `preselection`, where the player count decides.
   // Null: everyone is seated at launch and Mush are picked then (tests, single player later).
@@ -442,13 +452,14 @@ export interface GameConfig {
     meleeSuccessFactor: number; // Multiplies the success chance of a punch or melee weapon attack aimed at an Escape holder (owner, 2026-11-06: 0.75).
   };
   botany: {
-    // Owner, 2026-10-22 (docs/scratchpad/botany-plan.md, Pass 1).
+    // Owner, 2026-10-22 (docs/scratchpad/archive/botany-plan.md, Pass 1).
     water: { cost: { ap: number } }; // Water one thirsty or dried plant.
     treat: { cost: { ap: number }, injuryChance: number }; // Treat one plant (clears sickness).
     sow: { cost: { ap: number } }; // Plant a carried fruit in an empty hydropot.
     dirtyChance: number; // Chance of getting dirty after watering, treating or sowing (the original's 15%).
     growCycles: Record<string, number>; // Cycles a young plant of each species needs before it becomes adult.
     fruits: FruitsConfig; // Seeded alien fruit rules (fruits.ts, #437).
+    graft: GraftConfig; // Graft and its hybrids (actions/graft.ts, fruits.ts, #438).
     sickChancePerCycle: number; // PLACEHOLDER: each healthy plant's chance of falling sick at each cycle change.
     oxygenPerPlant: number; // Oxygen each producing plant gives at day start.
     gardenRoom: RoomId; // Garden points pay for an action only on a plant here.
@@ -544,6 +555,7 @@ export interface GameConfig {
   };
   greenThumb: {
     pots: number; // Empty hydropots the `green_thumb` skill gives when picked (owner, 2026-11-01; the original's 2).
+    graftHeadStart: number; // Share of a hybrid's grow time already done when a Green Thumb grafts it (owner, 2026-11-21: 0.25).
   };
   gunner: {
     accuracyFactor: number; // The `gunner` skill multiplies the chance to hit from a turret by this (owner, 2026-10-24; the data's MulActionOdd 2.0).
@@ -700,6 +712,10 @@ export interface GameConfig {
     // hails: event id -> its deals (the original's trade_events), in order.
     kinds: Record<MerchantKind, { weight: number; hp: number; events: Record<string, DealTemplate[]> }>;
   };
+  theList: {
+    startNames: number; // Names on THE List printed the day the Mush are chosen; one fewer per whole day since, never below 1 (eMushpedia, 8; owner, 2026-11-21; #266).
+    cost: { ap: number }; // AP to print it at the tabulator (the original's PRINT_ZE_LIST, 0; owner, 2026-11-21).
+  };
   comms: {
     sol: {
       cost: { ap: number }; // AP spent to try to establish the link with Sol (owner, 2026-10-19).
@@ -805,7 +821,7 @@ export interface GameConfig {
   };
   // Turrets (owner, 2026-10-24, the wiki's Tourelle): 1 AP, a charge per shot, 30% to hit, x1.25 per miss in a row, reset by a hit.
   turrets: { cost: { ap: number }; chance: number; failureMultiplier: number; damage: [number, number]; charges: number; rechargePerCycle: number };
-  // Patrol ships and the Pasiphae (owner, 2026-10-24, docs/plans/patrol.md): takeoff and landing cost 2 AP each; armor
+  // Patrol ships and the Pasiphae (owner, 2026-10-24, docs/plans/archive/patrol.md): takeoff and landing cost 2 AP each; armor
   // 10 (Pasiphae 12); a manoeuvre is clean at `cleanChance` (a Pilot always), otherwise rough: hull and pilot hp
   // ranges, uniform, and a fixed armor loss. Phase 3 (owner, 2026-10-28): a patrol ship (not the Pasiphae) holds
   // `charges` shots, regaining `rechargePerCycle` a cycle only while docked; a shot is like a turret's, with its own
@@ -877,7 +893,7 @@ export interface GameConfig {
     dirtyChance: number; // Chance of getting the dirty status after dismantling an item (confirmed 2026-10-13).
     injuryChance: number; // Chance of getting injured after dismantling an item.
   };
-  // Expeditions, phases 1 and 2 (owner, 2026-10-31 and 2026-11-07, docs/plans/expedition.md): expeditions.ts and actions/icarus_takeoff.ts.
+  // Expeditions, phases 1 and 2 (owner, 2026-10-31 and 2026-11-07, docs/plans/archive/expedition.md): expeditions.ts and actions/icarus_takeoff.ts.
   expedition: {
     cost: { ap: number }; // AP the launcher pays (the original's ICARUS_TAKEOFF, 4); the rest of the crew pays nothing.
     room: RoomId; // Where the Icarus docks: launchers stand here, the crew is everyone living here, and the Icarus unloads here.

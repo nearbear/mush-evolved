@@ -1,6 +1,6 @@
 // The Com center terminal's window, in three tabs: Overview (the link with Sol, drawn as a spectrogram, and NERON's
 // update), Xyloph, and Signals (Signals.tsx: every merchant ship and rebel base that reached the Daedalus and its
-// conversation, Comms Officer access only; docs/plans/signals.md). The screen (`view.comms.terminal`) is read-only for
+// conversation, Comms Officer access only; docs/plans/archive/signals.md). The screen (`view.comms.terminal`) is read-only for
 // anyone at the terminal; every button comes from view.actions.
 
 import { Tabs } from "@base-ui/react/tabs";
