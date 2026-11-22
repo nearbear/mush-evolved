@@ -56,8 +56,8 @@ Goal priorities and triggers were mostly set by the owner. A number in the table
 | `REPAIR_DOOR_PRIORITY` | 56 | `goals/repairDoor.ts` | Owner, 2026-11-15: just above `repairHull` (55); every bot; preserves `BOT_AP_RESERVE`; `view.alerts.reports` only (no chat claiming) |
 | `EXTINGUISHER_HOMES` | front and rear corridors | `goals/extinguish.ts` | Owner, 2026-11-14 (#429): central, so anyone can reach one |
 | `HULL_REPAIR_BELOW` | 50 | `goals/repairHull.ts` | Owner, 2026-11-01, kept 2026-11-13: above it scrap is worth more elsewhere |
-| `HOLD_HUNTER_TRIGGER` | 5 | `goals/travel.ts` | Owner, 2026-11-13 (#421); left open as a tuning knob |
-| `HOLD_MAX_DAYS`, `HOLD_MIN_OXYGEN`, `JUMP_WAIT_CYCLES` | 4, 8, 2 | `goals/travel.ts` | #421; owner's plan Run D, 2026-11-20: `HOLD_MIN_OXYGEN` fires only a jump to a shared planet, never an escape jump |
+| `HOLD_HUNTER_TRIGGER` | 5 | `goals/travel.ts` | Owner, 2026-11-13 (#421); left open as a tuning knob. 7 (owner's oxygen plan Run C, 2026-11-21) lost 0.24 days while planet jumps still held; since Run B it governs escape jumps only, so retry it there |
+| `HOLD_MAX_DAYS`, `JUMP_WAIT_CYCLES` | 4, 2 | `goals/travel.ts` | #421. Owner's plan Run D, 2026-11-20: oxygen never fires an escape jump; Run B, 2026-11-21: a jump to a shared planet doesn't hold (still `Jump: now` and the crew wait), so `HOLD_MIN_OXYGEN` is gone. The fuel relay's wait still applies to a planet jump |
 | `BOT_EAT_AFTER_CYCLES` | 16 | `goals/eat.ts` | Owner |
 | `SHRINK_DESK_WORK_WITHIN` | 4 | `goals/work.ts` | Owner, 2026-11-01 |
 | `SELF_CARE_MORALE`, `SELF_CARE_PRIORITY` | 5, 79 | `goals/selfCare.ts` | Owner, 2026-11-18 (#452): at 5 or less a bot lies in a bed in the Shrink's room (ACTOPI) and posts `Morale: low`; in bed it gets up for fires and oxygen |
