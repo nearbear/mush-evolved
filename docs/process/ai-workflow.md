@@ -4808,6 +4808,12 @@ Owner asked to "match eMush". Moved the debris table from `config.hunters.debris
 - Added idempotent `prefetchGameScreen` passed into `Lobby` (`web/src/lobby/Lobby.tsx`), triggered on hover/focus/click of the Resume, ship, and Single Player buttons as well as on queue join and resume.
 - Reduced the main entry chunk (`index-*.js`) from ~1,469 kB to ~629 kB (`index-*.css` from 125 kB to 100 kB). Verified with `npm run verify:web`.
 
+## 2026-11-21: Legality property test (#108)
+
+- Added `shared/tests/legality.test.ts`: a seeded random walk where every action `legalActions` offers must be accepted by `applyAction`, and every action made by swapping one item, room or player id in an offered action must be accepted exactly when it is offered too; plus a dead player refused everything.
+- What needed correction: the first version checked all four seats with three swaps per id on three seeds and took 11 s. Profiling showed every `applyAction` clones the ~75 KB state (~0.2 ms even when refused). Checking only the acting seat, two swaps per id, and one seed in `verify` (five under `npm run test:slow`, reusing `REPLAY_SEEDS`) brought it to ~0.4 s alone (under 1 s under verify's load), inside the 1 s per-test budget.
+- What worked: planting a bug (skipping `canTransfer` for `drop`) made the test fail at once with `accepted unoffered {"type":"drop",...}`, so the swap check has teeth.
+
 ### Dynamic-import locale JSONs on demand (2026-11-21)
 
 - Switched `web/src/i18n/index.ts` from statically bundling all three UI catalogs (`en/fr/es.json`) and `NAME_CATALOGS` to loading only the active locale's UI catalog and shared name catalog (`@mush2/shared/src/locales/names.<locale>.json`) via dynamic `import()` behind an i18next `BackendModule` with top-level `await` before mounting, and loading other locales on `changeLanguage`.
