@@ -10,7 +10,9 @@ import { nextInt, type RngState } from "../src/rng.ts";
 import { MAX_SPOT_CELL } from "../src/spot.ts";
 import { CHAT_CHANNELS, type GameState, type Seat } from "../src/types.ts";
 
-export const seat = (i: number): Seat => ({ id: `p${i}`, name: `Player ${i}`, isBot: false, character: CHARACTERS[i]!.id });
+// Seat 0 is human and the rest bots: End cycle waits on bots only, so with one human and seven bots a cycle still
+// needs all eight ready, as before that rule (owner, 2026-11-22).
+export const seat = (i: number): Seat => ({ id: `p${i}`, name: `Player ${i}`, isBot: i > 0, character: CHARACTERS[i]!.id });
 
 export const setup: GameSetup = {
   seats: Array.from({ length: 8 }, (_, i) => seat(i)),

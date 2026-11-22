@@ -107,11 +107,12 @@ describe("death", () => {
     expect(JSON.stringify(s)).toBe(before);
   });
 
-  it("the dead don't hold up the cycle", () => {
+  it("dead bots don't hold up the cycle", () => {
     let s = ship();
+    for (const p of s.players) p.isBot = p.id !== "p0";
     for (const id of ["p2", "p3"]) s = must(applyAction(s, id, { type: "ready" }));
     const cycle = s.cycle;
-    s = punchToDeath(s); // p1 never readied; p0 still has to
+    s = punchToDeath(s); // bot p1 never readied; human p0 still has to
     expect(s.cycle).toBe(cycle);
     s = must(applyAction(s, "p0", { type: "ready" }));
     expect(s.cycle).toBe(cycle + 1);

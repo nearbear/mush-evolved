@@ -501,8 +501,17 @@ export function performAction(next: GameState, actor: PlayerState, action: Actio
   // A research, project or PILGRED this finished strikes out its task slots (plans.ts).
   strikeSlots(next);
   applyCheats(next, actor);
-  if (next.players.every((pl) => !pl.alive || pl.ready)) advanceCycle(next);
+  if (cycleEndsByReady(next)) advanceCycle(next);
   return true;
+}
+
+/**
+ * End cycle waits on bots only (owner, 2026-11-22): the cycle ends once a living human is ready and every living bot
+ * is, whether or not the other humans are. With no living human, once every living bot is ready.
+ */
+export function cycleEndsByReady(state: Readonly<GameState>): boolean {
+  const living = state.players.filter((p) => p.alive);
+  return living.every((p) => !p.isBot || p.ready) && (living.some((p) => !p.isBot && p.ready) || living.every((p) => p.isBot));
 }
 
 /**

@@ -87,7 +87,7 @@ describe("inactivity", () => {
   });
 
   it("never makes anyone inactive on a cycle that everyone ended by being ready (single player)", () => {
-    let s = createGame(makeSeats(2), { ...config, manualCycles: true }, 3);
+    let s = createGame(makeSeats(2, "others"), { ...config, manualCycles: true }, 3);
     for (const p of s.players) p.lastSeenAt = 0;
     const cycle = s.cycle;
     for (const id of ["p0", "p1"]) s = must(applyAction(s, id, { type: "ready" }));
