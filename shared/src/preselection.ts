@@ -8,6 +8,7 @@
 // Stopgap (owner, 2026-10-24): with fewer than `minPlayers` aboard at selection, every human dies at once, so the
 // game ends with the Mush win.
 
+import { updateMaxValues } from "./adjustStats.ts";
 import { pushChat } from "./chat.ts";
 import { newItemId } from "./items.ts";
 import { killPlayer } from "./death.ts";
@@ -34,6 +35,7 @@ export function joinShip(state: GameState, seat: Seat): ActionResult {
   const next = cloneState(state);
   const player = newPlayer(seat, next.config, next.cycle, "human");
   next.players.push(player);
+  updateMaxValues(next, player); // `newPlayer` stores the configured caps; fold in starting skills and modifiers (#267)
   startLogSeen(next, player);
   for (const item of [...startInventory(next.config, seat.id), ...catArrival(next.config, seat.character)]) next.items.push({ id: newItemId(next), ...item });
   if (next.players.length >= rules.seats) selectMush(next);
@@ -80,6 +82,7 @@ export function selectMush(state: GameState): void {
     // Satiety and hunger are human-only.
     p.satiety = 0;
     p.satietyZeroSince = null;
+    updateMaxValues(state, p); // the folds now skip their diseases (#267)
     logPrivate(state, p.id, "chosenMush");
   }
   pushChat(state, "global", { from: null, isBot: false, text: "", system: { key: "mushChosen" } });

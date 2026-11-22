@@ -102,7 +102,7 @@ import type {
 } from "./types.ts";
 import { drawDrugs, drugEffectsSeenBy, hasDrugDispenser, resetDrugDispenser, stockMedlab } from "./drugs.ts";
 import { drawFruits, drawHybrids, fruitEffectsSeenBy } from "./fruits.ts";
-import { changeAP, changeMP } from "./adjustStats.ts";
+import { changeAP, changeMP, updateMaxValues } from "./adjustStats.ts";
 import { diseaseTrackerCycleChange } from "./diseases.ts";
 
 export type { ActionResult };
@@ -237,6 +237,8 @@ export function createGame(
   stockMedlab(state, { rng: streamFor(seed, "medlab-stock") });
   for (const item of state.items) initNpc(state, item);
   grantCarePoints(state); // day 1 begins now
+  // `newPlayer` stores the configured caps; fold in starting skills and modifiers (#267).
+  for (const p of state.players) updateMaxValues(state, p);
   for (const p of state.players) startLogSeen(state, p);
   return state;
 }
@@ -567,6 +569,7 @@ export function setRoleCheat(state: GameState, playerId: PlayerId, role: RoleChe
   const p = findPlayer(next, playerId)!;
   if (role === "mush" && p.role === "human") convert(next, p);
   else if (role === "human") makeHuman(p, next.cycle);
+  updateMaxValues(next, p); // a role change changes which diseases the cap folds count (#267)
   applyCheats(next, p);
   return { ok: true, state: next };
 }
