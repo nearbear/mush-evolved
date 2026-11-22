@@ -4853,3 +4853,7 @@ Owner asked to "match eMush". Moved the debris table from `config.hunters.debris
 - **Claude's readings (flagged):** "hostile" = a public `aggressive`-tagged action naming the boarded player as `target`, success or not; covert/private ones (Spike, Demoralize, Body transfer) don't, since the victim leaving would reveal them; area weapons don't. Note: the owner's bed analogy doesn't match the code, where punching someone in bed doesn't get them up (only throw-out does).
 - **Worked:** clearing the flag in `arrive` and `board` covered move, throw-out, wheelchair pushes and patrol takeoff in one place each. `STATE_VERSION` 123 with an upgrade step for docked crews stored in the craft.
 - **Needed correction:** bot tests assumed the craft room; a boarded bot now sees the bay floor and spends a turn sharing an item it sees there, so one test needed a second turn. `crewStillBoarding` had to skip holders already boarded.
+
+## 2026-11-21: Typecheck and test fixes after the cat-spore move
+
+- An edit moved the infected cat's spore from `take`'s `apply` into `onInjury`, and Cat Allergy's `heldCat` call went with it, giving a TS18048 (`item` possibly undefined) and making Quincke's Oedema need an injury. Claude moved `heldCat` back into `apply` (the owner's "on picking him up"), leaving the spore in `onInjury`. `mush_skills.test.ts` still pinned `bacterial_contact` as partial; it is full since give_disease.
