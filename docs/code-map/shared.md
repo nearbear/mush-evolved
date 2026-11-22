@@ -82,6 +82,7 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 - `death.ts`: `damage` (the one way HP goes down) and `killPlayer`, both taking a `DeathCause` (`DEATH_CAUSES`, #177).
 - `infection.ts`: `contaminate` (the one way contamination rises), conversion, `contaminationSeenBy`.
 - `items.ts`: item types, containers, capacity and reach helpers, `produceItem`, `removeItem`, `newItemId`.
+- `itemView.ts`: `itemView`, `seesShield`, `itemViewKey`, `stackItemViews`, and `preferSpikedInRoom` (client-side viewer-equivalent stacking and server-side spiked-item priority for room `take`/`consume`).
 - `spoilage.ts`: food spoilage: `spoilFood` (day change, one stage per perishable item), `eatSpoiled` (Food Poisoning roll on eating), `seesSpoil` (living Chefs), `nextSpoilStage`.
 - `fruits.ts`: the 12 seeded alien fruit species (`ALIEN_FRUIT_ITEMS`, `FRUIT_BUFF_IDS`, `FRUIT_LORE_SKILLS`): `drawFruits` (budget-filtered draw on the `"fruits"` stream), `fruitEffectsSeenBy` (living Botanist, Skilful, Chef and Mush), and `applyFruit` (AP/morale/HP bonuses, non-stacking buff timers, delayed diseases), and the graft hybrids (#438): `fruitValue`, `drawHybrid` and `drawHybrids` (the 66 pairs at launch on the `"grafts"` stream, into the server-only `state.hybrids`). Hybrid ids and parents are `HYBRID_FRUIT_ITEMS`, `hybridOf`, `hybridParents` and `isAlienFruitType` in `itemIds.ts`.
 - `itemIds.ts`: dependency-light IDs used by item definitions and the default config.

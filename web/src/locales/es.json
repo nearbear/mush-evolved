@@ -263,7 +263,8 @@
     "button": "Inventario",
     "buttonCount_one": "Inventario ({{count}} objeto en esta sala)",
     "buttonCount_many": "Inventario ({{count}} objetos en esta sala)",
-    "buttonCount_other": "Inventario ({{count}} objetos en esta sala)"
+    "buttonCount_other": "Inventario ({{count}} objetos en esta sala)",
+    "stackCount": "{{item}} ×{{count}}"
   },
   "crew": {
     "title": "Tripulación",

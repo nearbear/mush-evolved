@@ -7,7 +7,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
-import { legalIn, type Action, type ItemView, type PlayerView, type Target } from "@mush2/shared";
+import { legalIn, stackItemViews, type Action, type ItemView, type PlayerView, type Target } from "@mush2/shared";
 import { Hint } from "./IconButton.tsx";
 import { ConsumeEffects } from "./ConsumeEffects.tsx";
 import { DoublePressButton } from "./DoublePress.tsx";
@@ -60,9 +60,18 @@ export function InventoryPanel({
   const [dragging, setDragging] = useState<{ id: string; from: Zone } | null>(null);
   const [over, setOver] = useState<Zone | null>(null);
 
+  const byName = (items: ItemView[]) => [...items].sort((a, b) => names.itemOf(a).localeCompare(names.itemOf(b), i18n.language));
+  const sortedInventory = byName(view.inventory);
+  // Room items that look identical to this viewer stack into one UI slot (owner, 2026-11-21);
+  // inventory stays unstacked so each carried item shows its physical slot.
+  const sortedRoomStacks = stackItemViews(view.roomItems).sort((a, b) =>
+    names.itemOf(a.items[0]!).localeCompare(names.itemOf(b.items[0]!), i18n.language),
+  );
+  const empty = Math.max(0, view.inventorySlots - view.inventory.length);
+
   const root = useRef<HTMLDivElement>(null);
   useKeepFocus(root);
-  const roomGrid = useOverflowsSpace(view.roomItems.length);
+  const roomGrid = useOverflowsSpace(sortedRoomStacks.length);
 
   const legal = (type: "take" | "drop", item: ItemView) =>
     legalIn(view).some((a) => a.type === type && a.item === item.id);
@@ -93,24 +102,26 @@ export function InventoryPanel({
     },
   });
 
-  const tile = (item: ItemView, zone: Zone) => {
+  const tile = (item: ItemView, zone: Zone, key: string, count?: number, isDraggingOverride?: boolean) => {
     const target: Target = { kind: "item", id: item.id };
     const isSelected = sameTarget(selected, target);
+    const isDragging = isDraggingOverride ?? dragging?.id === item.id;
     const type = zone === "room" ? "take" : "drop";
+    const displayName = count !== undefined ? t("inventory.stackCount", { item: names.itemOf(item), count }) : names.itemOf(item);
     return (
-      <li key={item.id} className="item-slot">
+      <li key={key} className="item-slot">
         <Hint
           label={
             <>
-              {names.itemOf(item)}
+              {displayName}
               <ConsumeEffects type={item.type} view={view} />
             </>
           }
         >
           <button type="button"
-            aria-label={names.itemOf(item)}
+            aria-label={displayName}
             aria-pressed={isSelected}
-            className={`item-tile${isSelected ? " selected" : ""}${dragging?.id === item.id ? " dragging" : ""}`}
+            className={`item-tile${isSelected ? " selected" : ""}${isDragging ? " dragging" : ""}`}
             draggable
             onMouseDown={(e) => {
               if (e.shiftKey) e.preventDefault(); // no text selection from shift-click
@@ -130,7 +141,7 @@ export function InventoryPanel({
               setOver(null);
             }}
           >
-            <ItemFace label={names.itemLabel(item)}>
+            <ItemFace label={names.itemLabel(item)} count={count}>
               <ItemIcon className="item-icon" item={item} view={view} />
             </ItemFace>
           </button>
@@ -144,20 +155,21 @@ export function InventoryPanel({
       </li>
     );
   };
-  const byName = (items: ItemView[]) => [...items].sort((a, b) => names.itemOf(a).localeCompare(names.itemOf(b), i18n.language));
-  const sortedInventory = byName(view.inventory);
-  const sortedRoomItems = byName(view.roomItems);
-  const empty = Math.max(0, view.inventorySlots - view.inventory.length);
 
   return (
     <div className="self-cards" ref={root} tabIndex={-1}>
       <section {...zoneProps("room")} data-zone="room">
         <h2>{t("inventory.inRoom")}</h2>
-        {view.roomItems.length === 0 ? (
+        {sortedRoomStacks.length === 0 ? (
           <p className="sub">{t("inventory.nothingHere")}</p>
         ) : (
           <ul className="item-grid" ref={roomGrid.ref} data-compact={roomGrid.compact || undefined}>
-            {sortedRoomItems.map((item) => tile(item, "room"))}
+            {sortedRoomStacks.map((stack) => {
+              const rep = (selected.kind === "item" ? stack.items.find((i) => i.id === selected.id) : undefined) ?? stack.items[0]!;
+              const count = stack.items.length > 1 ? stack.items.length : undefined;
+              const isDragging = dragging !== null && stack.items.some((i) => i.id === dragging.id);
+              return tile(rep, "room", stack.key, count, isDragging);
+            })}
           </ul>
         )}
       </section>
@@ -165,7 +177,7 @@ export function InventoryPanel({
       <section {...zoneProps("inventory")} data-zone="inventory">
         <h2>{t("inventory.title")}</h2>
         <ul className="item-grid">
-          {sortedInventory.map((item) => tile(item, "inventory"))}
+          {sortedInventory.map((item) => tile(item, "inventory", item.id))}
           {Array.from({ length: empty }, (_, i) => (
             <li key={`empty-${i}`} className="item-slot">
               <span className="item-tile empty">

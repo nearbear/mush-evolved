@@ -2,6 +2,7 @@ import { Action, isString } from "./action.ts";
 import { onExpedition } from "../expeditions.ts";
 import { contaminate } from "../infection.ts";
 import { CAT_ITEM, ITEM_TYPES, canTransfer } from "../items.ts";
+import { preferSpikedInRoom } from "../itemView.ts";
 import { isLostPlace } from "../patrol.ts";
 import { logPublic } from "../log.ts";
 import { cantCarryHeavy } from "../modifiers.ts";
@@ -49,7 +50,9 @@ export class TransferAction<T extends "take" | "drop" = "take" | "drop"> extends
   }
 
   override apply(state: GameState, player: PlayerState, target: { type: T; item: string }): void {
-    const index = state.items.findIndex((i) => i.id === target.item);
+    const requested = state.items.find((i) => i.id === target.item)!;
+    const chosen = this.type === "take" ? preferSpikedInRoom(state, player, requested) : requested;
+    const index = state.items.findIndex((i) => i.id === chosen.id);
     const [item] = state.items.splice(index, 1) as [ItemState];
     delete item.hiddenBy;
     item.at = this.type === "take" ? { kind: "player", id: player.id } : { kind: "room", id: player.room };
