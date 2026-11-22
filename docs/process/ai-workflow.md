@@ -5014,3 +5014,9 @@ Owner asked to "match eMush". Moved the debris table from `config.hunters.debris
 
 - An eMush comparison found our starting apprentron spawned at ship creation (visible during pre-selection), while eMush spawns it in `onFullDaedalus`. Fix: `atSelection: true` on its `startItems` entry in `shared/src/config.ts`; the existing `spawnSelectionItems` path (built for the Mush sample) already handled storage pools and `teachesWeights`, so no rules code changed.
 - Worked: reusing the existing selection-time spawn hook made it a one-line config change. Needed correction: `ship.test.ts` pinned the entry's exact shape; there was also no test that the book is absent in pre-selection, so one was added to `preselection.test.ts` (full ship and deadline).
+
+## 2026-11-22: Medlab starting drugs match eMush (8 types + 4 duplicates)
+
+- **Decision (owner):** match eMush's `createMedication`. `stockMedlab` (`shared/src/drugs.ts`) now spawns 8 of the 12 drug types once each (`START_DRUG_TYPES`), then 4 extras drawn with replacement from those same 8 (`START_DRUG_EXTRAS`): still 12 pills, but 4 types missing at start. Replaces the 2026-11-17 "1 of each of the 12" rule, which had been recorded as matching eMush but did not.
+- **What worked:** the clean-room `npm run emush -- spec` on the subscriber file settled the one open detail (the extras come from the chosen 8, not all 12) without asking. Same `"medlab-stock"` stream, so `state.rng` is unaffected; no state-shape change.
+- **Needed correction:** missed the old "one of each" assertion in `drugs.test.ts` at first; replaced it with a 40-seed test there.
