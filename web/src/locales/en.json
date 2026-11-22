@@ -257,7 +257,8 @@
     "title": "Inventory",
     "button": "Inventory",
     "buttonCount_one": "Inventory ({{count}} item in this room)",
-    "buttonCount_other": "Inventory ({{count}} items in this room)"
+    "buttonCount_other": "Inventory ({{count}} items in this room)",
+    "stackCount": "{{item}} ×{{count}}"
   },
   "crew": {
     "title": "Crew",

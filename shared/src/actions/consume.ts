@@ -1,6 +1,7 @@
 import { Action, isString } from "./action.ts";
 import { heal as healHp } from "../death.ts";
 import { ITEM_TYPES, canReachItem, removeItem } from "../items.ts";
+import { preferSpikedInRoom } from "../itemView.ts";
 import { logSecret } from "../log.ts";
 import { consumed, consumedByMush, mealApGain } from "../modifiers.ts";
 import { rationApBonus } from "../comms.ts";
@@ -38,7 +39,8 @@ export class ConsumeAction extends Action<ConsumeActionData> {
   }
 
   override apply(state: GameState, player: PlayerState, target: ConsumeActionData): void {
-    const item = removeItem(state, target.item);
+    const requested = state.items.find((i) => i.id === target.item)!;
+    const item = removeItem(state, preferSpikedInRoom(state, player, requested).id);
     if (player.role !== "human") {
       // Mush get no food effects, but the meal still fills them (owner, 2026-11-05). The one exception is morale, the
       // food's and a drug's, so a Mush's morale follows a human's and they never have to track it (owner, 2026-11-11).

@@ -19,7 +19,7 @@ import { isNimble } from "./actions/nimble.ts";
 import { researchNeedsView } from "./actions/research.ts";
 import { equipmentHere } from "./equipment.ts";
 import { jellyCycle, leakOxygen } from "./breakage.ts";
-import { seesSpoil, spoilFood } from "./spoilage.ts";
+import { spoilFood } from "./spoilage.ts";
 import { newProjectDeck } from "./projects.ts";
 import { doorsOf } from "./doors.ts";
 import { fireCycle, ignitePending, isGardenProtected, isOnFire } from "./fire.ts";
@@ -29,7 +29,7 @@ import { initNpc, newNpcState, npcCycle } from "./npcs.ts";
 import { catArrival } from "./schrodinger.ts";
 import { CHEAT_ROOM } from "./cheatRoom.ts";
 import { teleport, teleportBlocked } from "./kube.ts";
-import { copyDocument, newLostAnalysis, rollAtSelection } from "./lostAnalysis.ts";
+import { newLostAnalysis, rollAtSelection } from "./lostAnalysis.ts";
 import { newTheList, recordSelection } from "./theList.ts";
 import { hopelessCycle } from "./morale.ts";
 import { relayView } from "./relayView.ts";
@@ -62,7 +62,8 @@ import { arriveShip, orbitName, orbitPicture } from "./navigation.ts";
 import { commandTerminalsHere, isPilgredRepaired } from "./pilgred.ts";
 import { biosTerminalsHere, newBios } from "./bios.ts";
 import { callNextRebel, commsCycle, commsTerminalView, comTerminalsHere, newComms } from "./comms.ts";
-import { botanyCycle, botanyDay, plantView } from "./botany.ts";
+import { botanyCycle, botanyDay } from "./botany.ts";
+import { itemView, seesShield } from "./itemView.ts";
 import { burnOxygen, rollOxygenSaved, shipView, startShip } from "./ship.ts";
 import { merchantsCycle, merchantsInSpace } from "./merchants.ts";
 import { newSignals, signalName } from "./signals.ts";
@@ -80,9 +81,7 @@ import type {
   DeepReadonly,
   GameConfig,
   GameState,
-  DroneState,
   ItemState,
-  ItemView,
   ActionOption,
   PlayerId,
   PlayerState,
@@ -988,17 +987,6 @@ export const affordable = (option: Readonly<ActionOption>): boolean => option.la
 
 /** The actions a view lets you do right now: its affordable options. */
 export const legalIn = (view: Pick<PlayerView, "actions">): Action[] => view.actions.filter(affordable).map((o) => o.action);
-
-/** Shielding (actions/reinforce.ts) is seen by living Engineers and Mush only. */
-const seesShield = (viewer: Readonly<PlayerState>): boolean => viewer.alive && (viewer.role === "mush" || hasSkill(viewer, "engineer"));
-
-/** An item as `viewer` sees it; a plant's sickness only for the Botanist role (`plantView`). */
-function itemView({ id, type, of, builds, charges, teaches, plant, spores, hiddenBy, broken, jelly, shield, drone, document, spoil, mush }: ItemState, viewer: Readonly<PlayerState>): ItemView {
-  return { id, type, ...(broken && { broken }), ...(spoil !== undefined && seesSpoil(viewer) && { spoil }), ...(jelly !== undefined && viewer.role === "mush" && viewer.alive && { jelly }), ...(shield !== undefined && seesShield(viewer) && { shield }), ...(hiddenBy === viewer.id && { hidden: true as const }), ...(spores && viewer.role === "mush" && viewer.alive && { spores }), ...(mush && viewer.role === "mush" && viewer.alive && { mush }), ...(of !== undefined && { of }), ...(builds !== undefined && { builds }), ...(charges !== undefined && { charges }), ...(teaches !== undefined && { teaches }), ...(plant && { plant: plantView(plant, viewer) }), ...(drone && { drone: droneView(drone) }), ...(document && { document: copyDocument(document) }) };
-}
-
-/** A drone's public part (#411): name, serial and upgrades; its failure counts never leave the server. */
-const droneView = ({ name, serial, upgrades }: Readonly<DroneState>): NonNullable<ItemView["drone"]> => ({ name, serial, upgrades: [...upgrades] });
 
 function equipmentView(state: GameState, { id, type, broken, jelly, shield }: Equipment, viewer: Readonly<PlayerState>): EquipmentView {
   // Out and destroyed are known in the bay, where the ship is missing (owner, 2026-10-24); a docked ship's armor too,
