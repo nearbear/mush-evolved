@@ -21,6 +21,7 @@ import { useTranslation } from "react-i18next";
 import { AP_PIP, HP_ICON, itemIcon, MORALE_ICON, MP_PIP, PLANT_ICONS, SATIETY_ICON } from "../art/assets.ts";
 import { useNames } from "../i18n/names.ts";
 import { isMushOnlyFruitLore } from "./ConsumeEffects.tsx";
+import { TerminalCollapsible } from "./TerminalCollapsible.tsx";
 
 const FRUIT_BUFF_KEYS = {
   treat_disease: "inspect.fruitBuffs.treat_disease",
@@ -182,6 +183,11 @@ export function PlantTerminal({ terminal, view, onShare }: Props) {
 
   return (
     <div className="plant-terminal" role="group" aria-label={t("botanyTerminal.label")}>
+      <TerminalCollapsible heading={t("botanyTerminal.basicsHeading")}>
+        <p>{t("botanyTerminal.basicsGrowth")}</p>
+        <p>{t("botanyTerminal.basicsCare")}</p>
+        <p>{t("botanyTerminal.basicsGraft")}</p>
+      </TerminalCollapsible>
       {terminal.broken && <p className="sub">{t("botanyTerminal.broken")}</p>}
       {planted.length === 0 ? (
         <p className="sub">{t("botanyTerminal.empty")}</p>

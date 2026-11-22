@@ -4962,3 +4962,8 @@ Owner asked to "match eMush". Moved the debris table from `config.hunters.debris
 - Replaced the text `×` close button in `DialogHeader` and `TerminalFrame` with Motion Twin's 16×16 `Mush/www/img/icons/ui/close.png` (and `close_over.png` on hover/active) in `web/src/hud/settings.css`, drawn at 1x with `image-rendering: pixelated` and an expanded `::before` hit area for touch targets.
 - Covers all terminals (`TerminalFrame`) and modals (`FramedDialog`, `AccountButton`, `CharacterPicker`, `EndScreen`). Verified with `npm run verify:web`.
 - Extended the same `close.png` / `close_over.png` button styling to `TipCard` (`web/src/hud/tips.css`), and raised `.tip-card` to `z-index: 3` so tips render above `.room-corner` (minimap, `z-index: 2`) while staying under `.inventory-overlay` (later in DOM at `z-index: 3`).
+
+### 2026-11-21 — TerminalCollapsible pattern & greenhouse botany basics caption
+- Added reusable `TerminalCollapsible` (`web/src/hud/TerminalCollapsible.tsx`, styles in `web/src/hud/terminal.css`) wrapping Base UI's `Collapsible`, using `--terminal-header-bg` and `Mush/www/img/icons/ui/{less,more}.png` (`COLLAPSE_ICON` / `EXPAND_ICON` in `web/src/art/assets.ts`).
+- Added a collapsed-by-default "Botany basics" caption at the top of `PlantTerminal` (`web/src/hud/PlantTerminal.tsx`) covering planting/production, thirst/sickness/specialist visibility, and the gist of grafting, with en/fr/es copy in `web/src/locales/`.
+- Documented the terminal collapsible pattern in `web/CLAUDE.md` and added `web/tests/hud/PlantTerminal.test.tsx`. Verified with `npm test -w tools -- i18n` and `npm run verify:web`.

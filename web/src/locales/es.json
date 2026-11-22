@@ -1050,6 +1050,10 @@
   },
   "botanyTerminal": {
     "label": "Estado de las plantas hidropónicas",
+    "basicsHeading": "Nociones de botánica",
+    "basicsGrowth": "Planta una fruta en una hidromaceta vacía para cultivar una nueva planta. Cuando madura, cada planta regada y sana produce una fruta y restaura oxígeno al comienzo de cada día.",
+    "basicsCare": "Las plantas tienen más sed cada día y pueden enfermar entre ciclos; una planta sedienta, seca o enferma deja de producir hasta que se riega o se trata. Solo los Botánicos y los tripulantes Polivalentes pueden detectar y tratar las enfermedades de las plantas, y solo ellos —junto con los Cocineros— pueden ver los efectos de las frutas alienígenas.",
+    "basicsGraft": "Los Botánicos también pueden injertar una fruta alienígena en una planta alienígena sana y regada de otra especie para crear un híbrido que combina rasgos de ambos progenitores.",
     "listLabel": "Plantas del invernadero",
     "empty": "No hay hidromacetas plantadas en el suelo del invernadero.",
     "broken": "La central hidropónica está averiada; no se puede compartir el estado hasta repararla.",

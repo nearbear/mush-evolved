@@ -288,7 +288,7 @@ export const MORALE_ICON = statIcons["moral"]!;
 // Tab icons (16x16-ish pixel art). Keys are the names the user chose; see docs/assets/tab-icons.md.
 const uiIcons = urls(
   import.meta.glob<string>(
-    "../../../Mush/www/img/icons/ui/{mush,mush_progressive,starter,o2,fuel,plasma,alert,p_alive,survival,awake,comm,learned,stock,microsc,neron,info,infoalert,local,planet,conceptor,talkie,shield,basicplus,goldplus,notebook,pa_cook,pa_garden,plant_youngling,plant_thirsty,plant_dry,plant_diseased,sat,pa_pilgred,pam,pa_heal,pa_eng,pa_exp,pa_comp,pa_core,pa_shoot,hunter,private,search,spore,talk,wall,fav,triumph,heavy,charge,dead,check,uncheck,rebellion,food_unstable,food_hazardous,food_decaying}.{png,gif}",
+    "../../../Mush/www/img/icons/ui/{mush,mush_progressive,starter,o2,fuel,plasma,alert,p_alive,survival,awake,comm,learned,stock,microsc,neron,info,infoalert,local,planet,conceptor,talkie,shield,basicplus,goldplus,notebook,pa_cook,pa_garden,plant_youngling,plant_thirsty,plant_dry,plant_diseased,sat,pa_pilgred,pam,pa_heal,pa_eng,pa_exp,pa_comp,pa_core,pa_shoot,hunter,private,search,spore,talk,wall,fav,triumph,heavy,charge,dead,check,uncheck,rebellion,food_unstable,food_hazardous,food_decaying,less,more}.{png,gif}",
     { eager: true, query: "?url", import: "default" },
   ),
 );
@@ -315,6 +315,9 @@ export const SHIP_RESOURCE_ICONS: Readonly<Record<"oxygen" | "fuel" | "hull" | "
 export const SIGNAL_KIND_ICONS = { merchant: uiIcons["stock"]!, rebel: uiIcons["rebellion"]! } as const;
 export const CHECK_ICON = uiIcons["check"]!;
 export const UNCHECK_ICON = uiIcons["uncheck"]!;
+/** 16x16 minus and plus icons (`less.png`, `more.png`), for collapsible sections inside terminals. */
+export const COLLAPSE_ICON = uiIcons["less"]!;
+export const EXPAND_ICON = uiIcons["more"]!;
 
 /** The marker beside iTrackie entries that come from the ship rather than a person. */
 export const INFO_ICON = uiIcons["info"]!;

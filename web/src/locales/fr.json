@@ -1050,6 +1050,10 @@
   },
   "botanyTerminal": {
     "label": "État des plantes hydroponiques",
+    "basicsHeading": "Bases de la botanique",
+    "basicsGrowth": "Plantez un fruit dans un hydropot vide pour faire pousser une nouvelle plante. Une fois arrivée à maturité, chaque plante arrosée et saine produit un fruit et restaure de l'oxygène au début de chaque jour.",
+    "basicsCare": "Les plantes ont plus soif chaque jour et peuvent tomber malades entre les cycles ; une plante assoiffée, desséchée ou malade cesse de produire tant qu'elle n'est pas arrosée ou soignée. Seuls les Botanistes et les équipiers Polyvalents peuvent repérer et soigner les maladies des plantes, et eux seuls — ainsi que les Cuistots — peuvent lire les effets des fruits aliens.",
+    "basicsGraft": "Les Botanistes peuvent aussi greffer un fruit alien sur une plante alien saine et arrosée d'une autre espèce pour créer un hybride combinant des traits des deux parents.",
     "listLabel": "Plantes de la serre",
     "empty": "Aucun hydropot planté au sol de la serre.",
     "broken": "Le centre hydroponique est en panne ; le partage d'état est indisponible jusqu'à réparation.",

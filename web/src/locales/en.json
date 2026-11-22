@@ -1028,6 +1028,10 @@
   },
   "botanyTerminal": {
     "label": "Hydroponics plant status",
+    "basicsHeading": "Botany basics",
+    "basicsGrowth": "Plant a fruit in an empty hydropot to grow a new plant. Once mature, each watered, healthy plant produces a fruit and restores oxygen at the start of every day.",
+    "basicsCare": "Plants get thirstier every day and can fall sick between cycles; thirsty, dried-out, or diseased plants stop producing until watered or treated. Only Botanists and Polyvant crewmates can spot and treat plant diseases, and only they—plus Chefs—can read alien fruit effects.",
+    "basicsGraft": "Botanists can also graft an alien fruit onto a healthy, watered alien plant of another species to create a hybrid that mixes traits from both parents.",
     "listLabel": "Greenhouse plants",
     "empty": "No planted hydropots on the greenhouse floor.",
     "broken": "The Hydroponics center is broken; status sharing is unavailable until it is repaired.",

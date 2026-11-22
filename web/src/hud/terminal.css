@@ -310,3 +310,64 @@
 .share-pilgred-percent input {
   width: 4.5rem;
 }
+
+/* Collapsible caption/section inside a terminal (TerminalCollapsible.tsx): uses the terminal header's deeper cyan
+   (--terminal-header-bg) with less.png/more.png toggles, replacing the global Mush button sprite. */
+.terminal-collapsible {
+  background: var(--terminal-header-bg);
+  border: 1px solid var(--terminal-rule);
+  border-radius: 4px;
+}
+.terminal-collapsible-trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  width: 100%;
+  height: auto;
+  min-height: 28px;
+  margin: 0;
+  padding: 0.4rem 0.6rem;
+  background: none;
+  border: 0;
+  border-radius: 3px;
+  color: var(--text);
+  text-shadow: none;
+  font-size: 0.85rem;
+  font-weight: bold;
+  text-align: left;
+}
+@media (hover: hover) {
+  .terminal-collapsible-trigger:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--terminal-rule) 70%, transparent);
+  }
+}
+.terminal-collapsible-trigger:active:not(:disabled) {
+  background: var(--terminal-rule);
+}
+.terminal-collapsible-trigger:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+.terminal-collapsible-icon {
+  flex: none;
+  display: block;
+  width: 16px;
+  height: 16px;
+  image-rendering: pixelated;
+}
+.terminal-collapsible-heading {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.terminal-collapsible-panel {
+  padding: 0 0.6rem 0.55rem;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--text);
+}
+.terminal-collapsible-panel > p {
+  margin: 0.35rem 0 0;
+}
+.terminal-collapsible-panel > p:first-child {
+  margin-top: 0;
+}
