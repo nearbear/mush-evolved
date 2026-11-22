@@ -1,9 +1,8 @@
 import { changeMP } from "../adjustStats.ts";
 import { soil } from "../dirt.ts";
-import { addDisease, diseaseAffects } from "../diseases.ts";
-import { logPrivate } from "../log.ts";
+import { catchIncidentDisease, diseaseAffects } from "../diseases.ts";
 import type { Modifier } from "../modifiers.ts";
-import { rollFloat, rollInt } from "../rng.ts";
+import { rollFloat } from "../rng.ts";
 
 /** Chance to lose 1 MP at each cycle change. */
 const CYCLE_MP_CHANCE = 0.5;
@@ -24,11 +23,6 @@ export const rejuvenation_disease: Modifier = {
     if (!diseaseAffects(player)) return;
     if (rollFloat(next) < CYCLE_MP_CHANCE && player.mp > 0) changeMP(next, player, -1);
     if (rollFloat(next) < CYCLE_DIRTY_CHANCE) soil(next, player);
-    if (rollFloat(next) < CYCLE_DISEASE_CHANCE) {
-      const catchable = next.config.diseases.incidentDiseases.filter((d) => !player.modifiers.includes(d));
-      if (catchable.length === 0) return;
-      addDisease(next, player, catchable[rollInt(next, catchable.length)]!);
-      logPrivate(next, player.id, "incidentDisease");
-    }
+    if (rollFloat(next) < CYCLE_DISEASE_CHANCE) catchIncidentDisease(next, player);
   },
 };

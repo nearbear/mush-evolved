@@ -55,6 +55,11 @@ export interface DiseaseCatagories {
   allInjuries: StatusId[],
   /** The pool a "random injury" combat outcome draws from (attack.ts); each one is in `allInjuries`. */
   combatInjuries: StatusId[],
+  /** The pools a weapon's "random injury" draws from instead, by its `WeaponStats.injuryPool` (attack.ts); each one is in `allInjuries`. */
+  bladeInjuries: StatusId[],
+  bulletInjuries: StatusId[],
+  explosiveInjuries: StatusId[],
+  bluntInjuries: StatusId[],
   allDiseaseStats: DiseaseStats[],
   allDisorderStats: DiseaseStats[],
   allInjuryStats: DiseaseStats[],
@@ -116,6 +121,9 @@ export interface WeaponMissOutcome {
 }
 
 /** One weapon's numbers (owner, 2026-10-22, from the English wiki; "??" values were set to 12%). */
+/** A weapon's kind of wound, naming the `config.diseases` pool its random injuries come from. */
+export type InjuryPool = "blade" | "bullet" | "explosive" | "blunt";
+
 export interface WeaponStats {
   damage: [min: number, max: number]; // HP a hit removes, rolled uniformly, both ends included.
   mushDamage?: [min: number, max: number]; // Replaces `damage` when the target is a Mush (Natamy rifle).
@@ -124,6 +132,7 @@ export interface WeaponStats {
   charges?: number; // Charges it holds and starts with; each use spends one, and it can't be used at 0. Absent: unlimited.
   area?: true; // No target: the damage roll hits every other living person in the room (grenade).
   selfDamage?: [min: number, max: number]; // HP the attacker loses on a hit (rocket launcher, grenade).
+  injuryPool?: InjuryPool; // Which pool its "random injury" outcomes draw from; absent: `diseases.combatInjuries`.
   melee?: boolean; // Used in person, so the attack is tagged `melee` (knife).
   gun?: boolean; // A gun: neither melee nor thrown (not the knife or grenade). Counts for Shooter in expeditions.
   consumed?: boolean; // Used up by using it (grenade).

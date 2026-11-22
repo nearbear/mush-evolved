@@ -6,7 +6,7 @@ import { updateMaxValues } from "./adjustStats.ts";
 import { hasSkill } from "./skills.ts";
 import { damage } from "./death.ts";
 import { soil } from "./dirt.ts";
-import { logPublic } from "./log.ts";
+import { logPrivate, logPublic } from "./log.ts";
 
 export interface DiseaseTracker {
   name: StatusId;
@@ -27,6 +27,7 @@ export const INJURY_UPGRADES: Readonly<Record<string, StatusId>> = {
   haemorrhage_injury: "critical_haemorrhage_injury",
   bruised_shoulder_injury: "broken_shoulder_injury",
   burnt_hand_injury: "burned_arm_injury",
+  third_degree_50_injury: "third_degree_90_injury",
 };
 
 /** A disease's numbers, found by its `label` (config.ts), not by its place in the list. */
@@ -274,4 +275,12 @@ export function blurredVision(view: { statuses: readonly string[]; you: { role: 
  */
 export function rubellaBlocks(player: Readonly<PlayerState>): boolean {
   return player.role === "human" && player.modifiers.includes("rubella_disease");
+}
+
+/** Catches one of `config.diseases.incidentDiseases` the player doesn't have yet, told privately like the incident. */
+export function catchIncidentDisease(state: GameState, player: PlayerState): void {
+  const catchable = state.config.diseases.incidentDiseases.filter((d) => !player.modifiers.includes(d));
+  if (catchable.length === 0) return;
+  addDisease(state, player, catchable[rollInt(state, catchable.length)]! as StatusId);
+  logPrivate(state, player.id, "incidentDisease");
 }
