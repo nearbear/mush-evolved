@@ -329,6 +329,9 @@ export const EXPAND_ICON = uiIcons["more"]!;
 /** The marker beside iTrackie entries that come from the ship rather than a person. */
 export const INFO_ICON = uiIcons["info"]!;
 
+/** 16x16 NERON icon, for project entries (e.g. a NERON project that changes a stat cap). */
+export const NERON_ICON = uiIcons["neron"]!;
+
 /** A person you can see is somewhere but can't identify (ACTOPI off). */
 export const MUSH_ICON = uiIcons["mush"]!;
 

@@ -41,13 +41,18 @@ function openCard(stat: Stat, modifiers: string[], skills: string[] = []): strin
 }
 
 describe("StatInfo cap changes (#267)", () => {
-  it("names each source that lowers a cap, with its real change", async () => {
+  it("names each source that lowers a cap, with its real change and icon, and divides the help text", async () => {
     await i18n.changeLanguage("en");
     const text = openCard("hp", ["cold_disease", "broken_leg_injury", "flu_disease"]);
     expect(text).toContain("Max HP: 14 → 10");
     expect(text).toContain("Broken Leg -1");
     expect(text).toContain("Flu -3");
     expect(text).not.toContain("Cold"); // cold changes morale only
+    const icons = [...document.querySelectorAll(".stat-cap li img")].map((img) => img.getAttribute("src") ?? "");
+    expect(icons).toHaveLength(2);
+    expect(icons[0]).toContain("hurt");
+    expect(icons[1]).toContain("disease");
+    expect(document.querySelector(".stat-info-help-divided")).not.toBeNull();
   });
 
   it("shows the morale cap and its sources on the morale card", async () => {
@@ -64,9 +69,10 @@ describe("StatInfo cap changes (#267)", () => {
     expect(text).toContain("Lethargy +12");
   });
 
-  it("says nothing about the cap when nothing changes it", async () => {
+  it("says nothing about the cap and omits the divider when nothing changes it", async () => {
     await i18n.changeLanguage("en");
     expect(openCard("ap", [])).not.toContain("→");
+    expect(document.querySelector(".stat-info-help-divided")).toBeNull();
   });
 
   it("uses the French template", async () => {
