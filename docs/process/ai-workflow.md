@@ -5109,3 +5109,14 @@ Follow-up: the owner dropped the Intergalactic line from the helper and had the 
 - `PlayerView.caps` (`Record<CapStat, CapBreakdown>`) is filled in `viewFor` from `capBreakdown(state, you)`, so it is derived per view and needs no migration; `maxAp|maxMp|maxHp|maxMorale` stay the stored caps. A test in `capBreakdown.test.ts` checks the view carries its own breakdown and another seat's view doesn't name your disease.
 - Leak check (forked skill) found nothing: the sources are modifier ids already in `you.modifiers`, a Mush's diseases stay out as in every fold, and the Noise Reducer is a public project. Bots get only their own seat's `caps`.
 - Needed correction: `rules.test.ts`'s "HP and morale only to their owner" counts `"hp"`/`"morale"` keys in the whole view JSON, and `caps` adds stat-named keys. The test now blanks `caps` like the drug and fruit tables.
+
+### 2026-11-22: Stat cards show what changes a cap (#267, phase 4)
+
+`StatInfo` now shows "Max Morale: 14 → 11" and one line per source ("Cold -3") when `view.caps[stat].sources` is not empty, from the server's breakdown; the client only names sources (status, then skill name keys; project names for NOISE_REDUCER) and formats the signed delta with `Intl`. Two new keys, `stat.capChange` and `stat.capSource`, in en/fr/es (fr/es drafts). A jsdom test opens the real popover with cold, flu, a broken leg and Lethargy. What worked: the phase 3 view made this a pure rendering change. What needed correction: a stray `cat` in a shell command hung waiting on stdin. Screenshots at 360px and desktop are left for a manual `/play` run, since that skill is user-invoked.
+
+## 2026-11-22: Standing up from a terminal's chair with the game open in two tabs
+
+- Bug: seated at the Command terminal, pressing Turn stood the owner up. A first session wrongly suspected a long-lived tab and wrote a fix for sitting by clicking the chair, which the owner's case never reached (opening the window already gives the server's `occupancy` seat). It was reverted.
+- What found it: the game's input record showed exactly one walk to the standing spot after every `access` and three after every Turn, even after a fresh floor walk. Those counts fit a second tab connected as the same player: without the window open there, `IsoRoom`'s occupancy effect read the new seat as "window closed" and walked out, and its `actingOn` effect walked up for the Turn. The owner confirmed a phone-width tab was open.
+- Fix (`web/src/iso/IsoRoom.tsx`): a tab gets you up only after opening a window itself or loading with you seated (`mayGetUp`); otherwise it draws you in the chair. A public action on the terminal you occupy sends no walk from any tab. The owner checked it by hand; a two-tab Playwright check was started but not needed.
+- Lesson: count the inputs per event before guessing at client state; a fixed count across all occurrences points at a structural cause (a second client), not a flaky one.
