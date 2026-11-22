@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { RoomLayout, ShipArt, ShipMap, TilePlacement } from "@mush2/shared";
+import { placedEquipment, type RoomLayout, type ShipArt, type ShipMap, type TilePlacement } from "@mush2/shared";
 import { gridToPx } from "../../src/iso/placement.ts";
 import {
   ARROWS,
@@ -67,6 +67,27 @@ describe("edits", () => {
     expect(r.map.rooms[0]!.tiles).toHaveLength(2);
     expect(moveToRoom(map, { room: "A", index: 0 }, "OFF")).toBeUndefined();
     expect(moveToRoom(map, { room: "A", index: 0 }, "A")).toBeUndefined();
+  });
+
+  it("take the equipment a tile draws with it to the other room, chairs on the same ship cells", () => {
+    const bound: ShipMap = {
+      rooms: [
+        {
+          ...room("A", { x: 0, y: 0 }, [tile(1, 1, "jukebox", "entity"), tile(2, 1, "jukebox", "entity")]),
+          equipment: [
+            { id: "BEAT_BOX", tile: "jukebox", key: "first" },
+            { id: "BEAT_BOX", tile: "jukebox", key: "second", chairs: [{ x: 2, y: 2 }] },
+          ],
+        },
+        { ...room("B", { x: 10, y: 5 }, [tile(0, 0)]), equipment: [{ id: "SOFA", tile: "sofa" }] },
+      ],
+    };
+    const r = moveToRoom(bound, { room: "A", index: 1 }, "B")!;
+    expect(r.map.rooms[0]!.equipment.map((b) => b.key)).toEqual(["first"]);
+    expect(r.map.rooms[1]!.equipment).toEqual([{ id: "SOFA", tile: "sofa" }, { id: "BEAT_BOX", tile: "jukebox", key: "second", chairs: [{ x: -8, y: -3 }] }]);
+    expect(placedEquipment(r.map.rooms[1]!)).toContainEqual(expect.objectContaining({ id: "B:second", tile: r.at.index }));
+    // A tile no binding claims moves alone.
+    expect(moveToRoom(map, { room: "A", index: 2 }, "B")!.map.rooms[1]!.equipment).toEqual([]);
   });
 
   it("move a whole room on the plan, and leave a room off the plan off it", () => {
