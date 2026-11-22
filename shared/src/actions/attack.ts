@@ -166,6 +166,13 @@ function adjustedDamageRange(
   return [min, max];
 }
 
+/** The pool a weapon's "random injury" draws from: its kind's (`WeaponStats.injuryPool`), else `combatInjuries`. */
+export function weaponInjuryPool(state: Readonly<GameState>, weapon: Readonly<ItemState>): readonly string[] {
+  const kind = state.config.weapons.types[weapon.type]?.injuryPool;
+  const d = state.config.diseases;
+  return kind ? d[`${kind}Injuries` as const] : d.combatInjuries;
+}
+
 /** Applies secondary combat outcome effects to the target, the splash or the attacker (backfire kill, splash damage, AP loss, injuries, weapon drop/break/destroy, room item breakage). */
 function applyOutcomeEffects(
   state: GameState,
@@ -186,7 +193,7 @@ function applyOutcomeEffects(
     for (const p of group(effects.apLoss.who)) changeAP(state, p, -effects.apLoss.amount);
   }
   if (effects.injuries) {
-    const injuryPool = state.config.diseases.combatInjuries;
+    const injuryPool = weaponInjuryPool(state, weapon);
     for (const inj of effects.injuries) {
       const count = inj.count ?? 1;
       for (const recipient of group(inj.who)) {

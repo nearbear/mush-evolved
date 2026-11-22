@@ -6,7 +6,7 @@ import { updateMaxValues } from "./adjustStats.ts";
 import { hasSkill } from "./skills.ts";
 import { damage } from "./death.ts";
 import { soil } from "./dirt.ts";
-import { logPublic } from "./log.ts";
+import { logPrivate, logPublic } from "./log.ts";
 
 export interface DiseaseTracker {
   name: StatusId;
@@ -19,15 +19,52 @@ export interface DiseaseTracker {
 /**
  * Injury upgrades: getting a lower-tier injury again (or getting its upgraded form directly) replaces
  * the lower-tier injury with the higher-tier one; getting a lower-tier injury while already holding
- * its higher-tier form is a no-op.
+ * any higher tier of it is a no-op. Tiers chain (Broken Foot → Mashed Foot → Unusable Legs).
  */
 export const INJURY_UPGRADES: Readonly<Record<string, StatusId>> = {
   damaged_ears_injury: "destroyed_ears_injury",
   head_trauma_injury: "open_air_brain_injury",
   haemorrhage_injury: "critical_haemorrhage_injury",
   bruised_shoulder_injury: "broken_shoulder_injury",
+  broken_shoulder_injury: "shattered_shoulder_injury",
   burnt_hand_injury: "burned_arm_injury",
+  third_degree_50_injury: "third_degree_90_injury",
+  broken_foot_injury: "mashed_foot_injury",
+  mashed_foot_injury: "unusable_legs_injury",
+  broken_leg_injury: "unusable_legs_injury",
+  broken_finger_injury: "missing_finger_injury",
 };
+
+/**
+ * Injuries that cancel others without being their upgrade (eMushpedia's "Annulé par"; owner, 2026-11-22): getting the
+ * key removes every listed injury held, and getting a listed injury while holding the key (or anything above it) is a
+ * no-op, as with an upgrade. Getting a listed injury twice still upgrades it through INJURY_UPGRADES.
+ */
+export const INJURY_CANCELS: Readonly<Record<string, readonly StatusId[]>> = {
+  shredded_hand_injury: ["broken_finger_injury", "missing_finger_injury", "burnt_hand_injury"],
+  shattered_arm_injury: ["broken_finger_injury", "missing_finger_injury", "burnt_hand_injury", "shredded_hand_injury", "busted_arm_joint_injury"],
+  shattered_shoulder_injury: ["broken_finger_injury", "missing_finger_injury", "burnt_hand_injury", "shredded_hand_injury", "shattered_arm_injury", "busted_arm_joint_injury"],
+};
+
+/** The injuries directly above `name`: its upgrade and every injury that cancels it. */
+function directlyAbove(name: string): StatusId[] {
+  const up = INJURY_UPGRADES[name];
+  const cancellers = Object.keys(INJURY_CANCELS).filter((key) => INJURY_CANCELS[key]!.includes(name));
+  return up ? [up, ...cancellers] : cancellers;
+}
+
+/** Every injury above `name`, through upgrades and cancels, however many steps up. */
+function tiersAbove(name: string): StatusId[] {
+  const out: StatusId[] = [];
+  const queue = directlyAbove(name);
+  while (queue.length > 0) {
+    const next = queue.shift()!;
+    if (out.includes(next)) continue;
+    out.push(next);
+    queue.push(...directlyAbove(next));
+  }
+  return out;
+}
 
 /** A disease's numbers, found by its `label` (config.ts), not by its place in the list. */
 export function diseaseStats(state: Readonly<GameState>, name: string): DiseaseStats | undefined {
@@ -35,19 +72,14 @@ export function diseaseStats(state: Readonly<GameState>, name: string): DiseaseS
 }
 
 export function addDisease(state: GameState, player: PlayerState, name: StatusId){
+    if (tiersAbove(name).some((higher) => player.modifiers.includes(higher))) return;
     const upgradeTo = INJURY_UPGRADES[name];
-    if (upgradeTo) {
-      if (player.modifiers.includes(upgradeTo)) return;
-      if (player.modifiers.includes(name)) {
-        removeDisease(state, player, name);
-        name = upgradeTo;
-      }
-    } else {
-      for (const [lower, higher] of Object.entries(INJURY_UPGRADES)) {
-        if (higher === name && player.modifiers.includes(lower)) {
-          removeDisease(state, player, lower);
-        }
-      }
+    if (upgradeTo && player.modifiers.includes(name)) {
+      removeDisease(state, player, name);
+      name = upgradeTo;
+    }
+    for (const held of [...player.modifiers]) {
+      if (tiersAbove(held).includes(name)) removeDisease(state, player, held);
     }
     if(player.modifiers.includes(name)){
         return;
@@ -274,4 +306,12 @@ export function blurredVision(view: { statuses: readonly string[]; you: { role: 
  */
 export function rubellaBlocks(player: Readonly<PlayerState>): boolean {
   return player.role === "human" && player.modifiers.includes("rubella_disease");
+}
+
+/** Catches one of `config.diseases.incidentDiseases` the player doesn't have yet, told privately like the incident. */
+export function catchIncidentDisease(state: GameState, player: PlayerState): void {
+  const catchable = state.config.diseases.incidentDiseases.filter((d) => !player.modifiers.includes(d));
+  if (catchable.length === 0) return;
+  addDisease(state, player, catchable[rollInt(state, catchable.length)]! as StatusId);
+  logPrivate(state, player.id, "incidentDisease");
 }
