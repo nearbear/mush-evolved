@@ -11,7 +11,7 @@ All under `tools/src/`.
 - `wiki/wiki.ts`: `npm run wiki`, reads eMushpedia (see the `wiki` skill).
 - `odsData/`: `npm run ods-data` (`odsData.ts`; `ods.ts` reads the spreadsheets).
 - `dev/`: `npm run dev` (`dev.ts`), `npm run preview` (`preview.ts`) per-worktree ports (`ports.ts`), `npm run verify` (`verify.ts`: typecheck, lint and tests, quiet unless something fails) and `npm run dev-state` (`devState.ts`: reads the local dev game state from wrangler's Durable Object storage, read-only).
-- `ops/`: `npm run ships -- --env <production|staging|test>` (`ships.ts`, #431): the running ships in a deployment's D1 through `wrangler d1 execute --remote`, with the operator's login. The fixed read-only query and the report are in `shipsReport.ts` (pure, tested); no account IDs or names.
+- `ops/`: `npm run ships -- --env <production|staging|test>` (`ships.ts`, #431): the running ships in a deployment's D1 through `wrangler d1 execute --remote`, with the operator's login. The fixed read-only query and the report are in `shipsReport.ts` (pure, tested); no account IDs or names. `npm run retire-ships -- --env <test|staging|production|dev>` (`retireShips.ts`): retires every running ship through `POST /admin/retire-ships` (server `adminRoutes.ts`); `--init` makes the token, sets it as the Worker's `ADMIN_TOKEN` secret and saves it to `~/.config/mush2/` (`dev`: `server/.dev.vars`).
 - `i18n/`: catalog checks (`catalog.ts`) and the hardcoded-text ratchet (`hardcoded.ts`, `baseline.json`).
 - `editor/vitePlugin.ts`: the ship map editor's save, a Vite dev-server plugin (`web/vite.config.ts`): `PUT /__editor/map` checks the map, writes `ship-map.json` and `ship-rooms.json`, and keeps its own writes from reloading pages (the editor would lose its undo history).
 

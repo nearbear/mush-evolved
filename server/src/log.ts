@@ -36,7 +36,8 @@ export type LogEvent =
   // Other modules
   | "model_call_failed"
   | "seat_revoke_failed"
-  | "sweep_ask_failed";
+  | "sweep_ask_failed"
+  | "retire_failed";
 
 /** The keys a line may carry. Never add one that could hold game state, chat, a name, an account ID or a secret. */
 export type LogFields = {

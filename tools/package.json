@@ -28,7 +28,8 @@
     "ship-top": "node src/play/shipTop.ts",
     "contact-sheet": "node src/contactSheet/contactSheet.ts",
     "sim-readings": "node src/sims/readings.ts",
-    "ships": "node src/ops/ships.ts"
+    "ships": "node src/ops/ships.ts",
+    "retire-ships": "node src/ops/retireShips.ts"
   },
   "dependencies": {
     "@mush2/shared": "*"

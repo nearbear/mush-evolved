@@ -4973,3 +4973,10 @@ Owner asked to "match eMush". Moved the debris table from `config.hunters.debris
 - Wired `Mush/www/img/design/neron_chat.png` (38×38, unscaled) as `NERON_CHAT_ICON` in `web/src/art/assets.ts` for explicit NERON chat announcements and non-warning NERON room-log entries (`neronProjectCompleted`), with a `NERON` name row matching player messages.
 - Widened `.feed > li.entry` / `.entry-inline` marker column from 32px to 38px so the full-size icon fits without scaling and all message bodies stay aligned.
 - Stripped the now-redundant `NERON:` / `NERON :` prefix from those 12 messages across `en`/`fr`/`es` locales (keeping `NERON:` on warning-level room-log alerts and prepending it in screen-reader speech).
+
+## 2026-11-22: `npm run retire-ships`, retiring every ship without a version bump
+
+- **Asked:** a way to force-reset the test server's ships without bumping `STATE_VERSION`/`MIN_STATE_VERSION` (a bump retires ships in every environment it is later deployed to).
+- **Built:** `GameRoom.retire()` does what a `MIN_STATE_VERSION` bump does on load: frees `account_ships` and deletes the `ships` row (D1 first, so a failure changes nothing), drops the snapshot but keeps the record (so `onStart` keeps it retired), clears timers and closes sockets with 4001. A token-protected `POST /admin/retire-ships` (`server/src/adminRoutes.ts`) retires every `ships` row plus each lobby's open ship, then has each Matchmaker `recheckOpen` so the lobby forgets a retired open ship. `npm run retire-ships -- --env <env>` calls it; `--init` generates the `ADMIN_TOKEN` secret, puts it with wrangler and saves it under `~/.config/mush2/`.
+- **Tradeoff:** wrangler can't call a Durable Object, so this is the first web route for operator tools (`ships` deliberately had none). It exists only where `ADMIN_TOKEN` is set, so production stays without it unless the owner sets one.
+- **Caught in review:** `/admin/*` had to be added to `run_worker_first` in all three `wrangler.jsonc` environments, or the static-assets layer would have answered with the SPA page.
