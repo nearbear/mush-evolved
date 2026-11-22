@@ -5068,3 +5068,8 @@ Implemented the `BEAT_BOX` NERON project per the owner's rules in #477: no kit, 
 ## 2026-11-22: Ship editor "move to room" takes the equipment binding along
 
 Moving the jukebox sprite to the Refectory with the editor's "move to room" left its `BEAT_BOX` binding in the old room (fixed by hand in the jukebox commit). `moveToRoom` in `web/src/editor/edits.ts` now moves the binding of the tile it hands over (found with `placedEquipment`, as the game does) to the end of the destination room's bindings, shifting any terminal `chairs` so they stay on the same ship cells. Moving within a room never had the problem: bindings follow the sprite, not the cell. Known limit: if the destination already has an unclaimed tile with the same sprite earlier in its list, the binding claims that one instead.
+
+### 2026-11-22 — Broken equipment docs and #331 wrap-up
+
+- **Decided / verified:** Confirmed that the remaining three rows of #331 (Jukebox `BEAT_BOX`, Super Calculator `SUPER_CALC` via Compute/Eden, and Gravity Simulator next-cycle restart + alert rows) are all implemented and tested by the recent commits (`c312a210`, `2001903e`, `68788fd4`).
+- **Docs updated:** Recorded the decided broken-equipment effects under Incident points -> Breakage in `docs/rules/rules-design.md` and expanded the Breakage summary in `docs/rules/implemented-rules.md` so every breakable equipment type's effect is listed.
