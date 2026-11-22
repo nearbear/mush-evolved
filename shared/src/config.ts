@@ -80,7 +80,7 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
 
   //Actions
 
-  // Owner, 2026-11-21 (docs/plans/bios-priority-lock.md): BIOS CPU priority effects (+1 sector for astronavigation, +1 tokenBase for projects/research).
+  // Owner, 2026-11-21 (docs/plans/archive/bios-priority-lock.md): BIOS CPU priority effects (+1 sector for astronavigation, +1 tokenBase for projects/research).
   bios: { astroExtraSectors: 1, cpuPriorityBonus: 1 },
   // Confirmed 2026-10-14: bonding, DTT, and STT cost 1 AP each; DTT and STT give each of the two 2 morale.
   // Owner, 2026-11-21: DTT has an independent 8% pregnancy chance per non-pregnant partner (all characters, human or Mush),
@@ -164,7 +164,7 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   gravitySimulator: { brokenMpPenalty: 1 },
   // Owner, 2026-11-06: the Escape skill takes a quarter off (relative) the success chance of punches and melee weapon attacks aimed at its holder.
   escape: { meleeSuccessFactor: 0.75 },
-  // Owner, 2026-10-22 (docs/scratchpad/botany-plan.md, Pass 1): water 1 AP, treat 2, sow 2, the original's 15% dirt.
+  // Owner, 2026-10-22 (docs/scratchpad/archive/botany-plan.md, Pass 1): water 1 AP, treat 2, sow 2, the original's 15% dirt.
   // Bananas take 36 cycles (the original's genTreeList). Sickness odds are a placeholder. +1 oxygen per producing
   // plant per day (eMush). The Botanist gains 2 garden points a day, holds 4, spent only on a plant in the garden.
   botany: {
@@ -315,10 +315,10 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   shrink: { lyingMorale: 1 },
   interrogate: { cost: { ap: 1 }, damage: 1, dirtyChance: 0.15, injuryChance: 0.1 },
   // Decided 2026-10-16: working on a research costs 2 AP. Owner, 2026-10-26: its progress follows the original's relay formula, 6-9% at difficulty 10.
-  // Owner, 2026-10-31 (docs/plans/research-sabotage.md): assays at the quarter marks, 5% noise, Contaminate costs 1 AP.
+  // Owner, 2026-10-31 (docs/plans/archive/research-sabotage.md): assays at the quarter marks, 5% noise, Contaminate costs 1 AP.
   research: { cost: { ap: 2 }, progress: { rate: 6, mod: 10, skillBoost: 4, relayPenalty: 2 }, dirtyChance: 0.15, assayMarks: [25, 50, 75, 100], spoilChance: 0.05, contaminate: { cost: { ap: 1 } }, guaranaExtraAp: 1 },
   // Owner, 2026-11-08: a scan succeeds 80% of the time, 50% while the Planet scanner (Motor Room) is broken.
-  // Decided 2026-10-19 (docs/plans/astro.md): scan 3 AP, x1.25 per failure in a row (the 50% was the original's); x1.25 per failure in a row; analysis 2 AP; 2 planets per player.
+  // Decided 2026-10-19 (docs/plans/archive/astro.md): scan 3 AP, x1.25 per failure in a row (the 50% was the original's); x1.25 per failure in a row; analysis 2 AP; 2 planets per player.
   // Owner, 2026-10-22: planets get a direction and a distance (2 to 9 fuel, unique on the ship), and grow with the day.
   astro: {
     scan: { cost: { ap: 3 }, chance: 0.8, brokenScannerChance: 0.5, failureMultiplier: 1.25 },
@@ -376,7 +376,7 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   // Owner, 2026-10-21: repairing PILGRED uses the original's numbers (DIG_RATE 6, PILGRED_MOD 2, DIG_BOOST 4, -2 per repeat),
   // 2 AP, 25% dirty; the Physicist gains 1 PILGRED point a day and holds 2.
   pilgred: { cost: { ap: 2 }, dirtyChance: 0.25, injuryChance: 0.05, progress: { rate: 6, mod: 2, skillBoost: 4, relayPenalty: 2 }, capPoints: 2, pointsPerDay: 1, returnCost: { ap: 2 }, edenCost: { ap: 2 }, coffeeCycles: [1, 3, 5, 7] },
-  // Owner, 2026-10-19 and 2026-10-21 (docs/plans/comms.md): every comms action is 2 AP. Sol: 4%, +4% per failure, floor 4%.
+  // Owner, 2026-10-19 and 2026-10-21 (docs/plans/archive/comms.md): every comms action is 2 AP. Sol: 4%, +4% per failure, floor 4%.
   // Rebels: avg of two 1..40 draws, +100% each for Rebel and Kivanç, a window of 8..16 cycles. NERON update: 25% per action.
   // Cygni: +1 damage on every patrol ship hit once reached (owner, 2026-11-07; eMush stacks it with the blaster gun).
   // Merchant ships (owner, 2026-11-15, #143): about 2 a day, 4 cycles in orbit, 2 AP a deal, paid from storage,
@@ -569,7 +569,7 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   hunger: { satietyPerCycle: 1, fullBellyAt: 3, hungryAfterCycles: 24, hpPerCycle: 1, tapewormHungryAfterCycles: 8 },
   // Confirmed 2026-10-13: dismantle cost and default odds; a type's own odds are `ItemType.dismantle.chance` (knife and blaster 50%, owner 2026-10-22).
   dismantle: { cost: { ap: 3 }, successChance: 0.12, dirtyChance: 0.25, injuryChance: 0.05 },
-  // Owner, 2026-10-31 (docs/plans/expedition.md): phase 1. Event weights 4/3/2/1 as on the wiki. Phase 2 (2026-11-07,
+  // Owner, 2026-10-31 (docs/plans/archive/expedition.md): phase 1. Event weights 4/3/2/1 as on the wiki. Phase 2 (2026-11-07,
   // #356): one step every 10 real minutes, the Icarus a room while away, 10% dirt on return (placeholder).
   expedition: {
     cost: { ap: 4 },
@@ -796,8 +796,8 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   ],
   // Confirmed 2026-10-13: every player starts with an iTrackie.
   startInventory: [ITRACKIE_ITEM],
-  // The patrol ships' rooms have no doors and sit off the map (patrol.ts, docs/plans/patrol.md answer 1).
-  // So does the Icarus while away (expeditions.ts, docs/plans/expedition.md phase 2).
+  // The patrol ships' rooms have no doors and sit off the map (patrol.ts, docs/plans/archive/patrol.md answer 1).
+  // So does the Icarus while away (expeditions.ts, docs/plans/archive/expedition.md phase 2).
   rooms: { ...(Object.fromEntries(SHIP_ROOMS.map((r) => [r.id, r.doors])) as Record<RoomId, RoomId[]>), ...patrolRooms(), [ICARUS_CRAFT]: [] },
   // Confirmed 2026-10-11: the equipment drawn in each room of the original map; each patrol ship holds its command.
   // Terminals' chairs stay out: they are map data the rules read from the map (`terminalChairs`, spot.ts), not game state.

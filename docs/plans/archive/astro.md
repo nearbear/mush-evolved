@@ -47,9 +47,9 @@ The build followed the plan, with these differences:
 - **Deep analysis** (owner, 2026-10-27): analysing the orbited planet costs 1 AP and reveals 1 extra sector (`analyze_planet.ts`).
 - **Modifiers:** the Astrophysicist skill (owner, 2026-10-27; `modifiers/astrophysician.ts`), and the CPU Overclocking (`CHIPSET_ACCELERATION`) and Quantum Sensors projects (owner, 2026-11-01; `modifiers.ts`).
 - **Sharing planets** in the Astrophysics feature (owner, 2026-10-31; `sharedPlanets.ts`).
-- **Exploration:** its own plan, `docs/plans/expedition.md`.
+- **Exploration:** its own plan, `docs/plans/archive/expedition.md`.
 
 ## Not built
 
 - The PLANET_SCANNER's +30% scan odds, together with what a broken scanner does: [#331](https://github.com/nearbear/mush2/issues/331).
-- Exploration beyond phase 1: `docs/plans/expedition.md` and its issues.
+- Exploration beyond phase 1: `docs/plans/archive/expedition.md` and its issues.

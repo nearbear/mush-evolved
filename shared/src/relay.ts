@@ -1,4 +1,4 @@
-// Relay tokens (docs/plans/relay-tokens.md; owner, 2026-10-30/31), shared by research, NERON projects and PILGRED. Each
+// Relay tokens (docs/plans/archive/relay-tokens.md; owner, 2026-10-30/31), shared by research, NERON projects and PILGRED. Each
 // contribution adds a token to its target's pool instead of rolling a gain at once. The target's progress is the best
 // total any ordering of its tokens could give under the original's relay penalty (`getBaseProgress` in
 // Mush/src/common/Solver.hx): each token in a row by the same player loses `relayPenalty` more. Players never arrange
@@ -23,7 +23,7 @@ export type RelayToken = { by: PlayerId; base: number; roll: number; unpenalized
 export type RelayPool = { tokens: RelayToken[] };
 
 /**
- * A research token, which players call a sample (docs/plans/research-sabotage.md). `contaminatedBy` is set by a Mush's own
+ * A research token, which players call a sample (docs/plans/archive/research-sabotage.md). `contaminatedBy` is set by a Mush's own
  * spoil (their own id) or by Saboteur's Contaminate: the sample spoils at the next assay. Never in a view.
  */
 export type Sample = RelayToken & { contaminatedBy?: PlayerId };
@@ -65,7 +65,7 @@ export function rolled(g: number, roll: number): number {
  * The penalty each token takes in the best ordering, by index into `tokens`. Only the player with the most tokens can be
  * penalized, and only when they hold more than everyone else combined plus one: then their tokens are split into as
  * even runs as possible between the others' tokens, and their highest bases take the lowest
- * penalties. That maximizes the sum of `max(0, base - penalty)` over every ordering (docs/plans/relay-tokens.md, "The formula").
+ * penalties. That maximizes the sum of `max(0, base - penalty)` over every ordering (docs/plans/archive/relay-tokens.md, "The formula").
  */
 export function arrangeTokens(tokens: readonly Readonly<RelayToken>[], relayPenalty: number): number[] {
   const penalties = tokens.map(() => 0);

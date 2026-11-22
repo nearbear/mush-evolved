@@ -15,7 +15,7 @@ export const MUSH_NOT_SELECTED = "mush_not_selected";
 export const LIST_PRINTED = "list_printed";
 
 /**
- * Print THE List (#266, owner 2026-10-25 and 2026-11-21; docs/plans/the-list.md): a Tracker (`hunt`, Stephen's too
+ * Print THE List (#266, owner 2026-10-25 and 2026-11-21; docs/plans/archive/the-list.md): a Tracker (`hunt`, Stephen's too
  * through Apprentice) at the tabulator, for `theList.cost.ap`. Once per game, whoever prints first; a torn list can't be
  * printed again. The document (theList.ts `rollList`) goes into the printer's hands, or onto the floor if they're
  * full. Public room log. Disabled with a reason before selection, after the print, and on a broken tabulator.

@@ -1,5 +1,5 @@
 // ---- Shared expedition reports ---------------------------------------------------
-// Sharing an expedition's report in the Expeditions feature (owner, 2026-11-07, #356, docs/plans/expedition.md item 13).
+// Sharing an expedition's report in the Expeditions feature (owner, 2026-11-07, #356, docs/plans/archive/expedition.md item 13).
 // Any living member of the expedition, from anywhere, with what opens the feature (an iTrackie, or the rebel base's
 // brain probes), posts free text about it, for free. The text is never parsed: lies are allowed. Each expedition gets
 // one entry, which is also a discussion thread with the feature's access (chat.ts). Unlike a shared planet, sharing

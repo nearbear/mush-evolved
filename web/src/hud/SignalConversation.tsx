@@ -1,4 +1,4 @@
-// One signal's conversation (docs/plans/signals.md), opened from the Signals tab (Signals.tsx): the name and time left
+// One signal's conversation (docs/plans/archive/signals.md), opened from the Signals tab (Signals.tsx): the name and time left
 // with a back button at the top right, the audio wave, then one feed that reads like global chat (owner, 2026-11-16:
 // cycle dividers, the officer's sprite and name on the left, the signal's icon and name on the right), starting at the
 // bottom, with the options under its last line in the same scroll area.

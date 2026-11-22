@@ -1,4 +1,4 @@
-// Stored rooms across builds (#384, docs/plans/normalize-state.md): the committed fixtures in ./stored are snapshots
+// Stored rooms across builds (#384, docs/plans/archive/normalize-state.md): the committed fixtures in ./stored are snapshots
 // GameRoom wrote at an older STATE_VERSION, never refreshed, so every run loads the oldest one through every upgrade
 // step and every `added()` default. The same tests run on rooms generated now (./storedRooms.ts), for the current shape.
 //

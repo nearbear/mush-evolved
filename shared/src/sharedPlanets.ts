@@ -4,7 +4,7 @@
 // parsed: it may say anything, lies and mistakes included. Each planet gets one entry, which is also a discussion
 // thread with the Astrophysics feature's access (chat.ts). Entries are never removed, only marked no longer applicable
 // when the planet is lost. Like chat, this is not an Action, and the server moderates the text first.
-// Structured shares (owner, 2026-11-19, docs/plans/expedition-ui.md): an entry also carries the planet's true name
+// Structured shares (owner, 2026-11-19, docs/plans/archive/expedition-ui.md): an entry also carries the planet's true name
 // and one sector slot per sector of the planet (its true size), each any tag or unknown as the sharer chose.
 
 import { chatChannels, pushChat } from "./chat.ts";

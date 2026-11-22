@@ -9,7 +9,7 @@ export type IcarusTakeoffActionData = { type: "icarus_takeoff" };
 export const ICARUS_EQUIPMENT = "ICARUS_COMMAND";
 
 /**
- * Take off in the Icarus for an expedition (owner, 2026-10-31, docs/plans/expedition.md): `expedition.cost` AP, paid by
+ * Take off in the Icarus for an expedition (owner, 2026-10-31, docs/plans/archive/expedition.md): `expedition.cost` AP, paid by
  * the launcher alone, from inside the docked Icarus (owner, 2026-11-17: the crew boards first, actions/board_icarus.ts)
  * while the ship orbits a planet with an unexplored sector. Gated by NERON's piloting crew lock unless the launcher is
  * a Pilot or has `freeHacking` (`canLaunchExpedition`, owner 2026-11-21), with a working spacesuit on a planet with no

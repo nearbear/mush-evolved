@@ -1,6 +1,6 @@
 # Communication center (plan)
 
-Status: **done.** Built 2026-10-21; travel and leaving orbit end open rebel calls since 2026-11-07. Since 2026-11-16 rebel calls are signals, seen only with Comms Officer access (`docs/plans/signals.md` step 3). `docs/rules/implemented-rules.md` ("Communication center") is the authority on what the code does. The 2026-10-21 answers below supersede decisions 2, 4 and 5 where they differ. What is left is in GitHub issues (see the end).
+Status: **done.** Built 2026-10-21; travel and leaving orbit end open rebel calls since 2026-11-07. Since 2026-11-16 rebel calls are signals, seen only with Comms Officer access (`docs/plans/archive/signals.md` step 3). `docs/rules/implemented-rules.md` ("Communication center") is the authority on what the code does. The 2026-10-21 answers below supersede decisions 2, 4 and 5 where they differ. What is left is in GitHub issues (see the end).
 
 ## What the original gives us
 
@@ -41,7 +41,7 @@ The snapshot has the data but no server logic for these actions.
 Where the build differs from the first draft of this plan (which is no longer kept here):
 
 - All four actions are private, the Sol link included: only the actor gets a log line. The only public signal is the link status (`PlayerView.comms.linked`) and NERON's rebel call announcement in global chat while the link is up.
-- Nothing per-player is stored. The Sol chance, Xyloph entries left and NERON progress are ship-wide, in `GameState.comms`, and go read-only to anyone alive in the room with the terminal (`comms.terminal`). Rebel calls were there too until 2026-11-16; they are now `rebel` signals in `GameState.signals`, sent only with Comms Officer access, and the Rebel bases tab became part of the Signals tab (`docs/plans/signals.md`). Which Xyloph entries were drawn is never sent.
+- Nothing per-player is stored. The Sol chance, Xyloph entries left and NERON progress are ship-wide, in `GameState.comms`, and go read-only to anyone alive in the room with the terminal (`comms.terminal`). Rebel calls were there too until 2026-11-16; they are now `rebel` signals in `GameState.signals`, sent only with Comms Officer access, and the Rebel bases tab became part of the Signals tab (`docs/plans/archive/signals.md`). Which Xyloph entries were drawn is never sent.
 - The Xyloph items now work through other systems: skill books (`read_book`), blueprints (`build`), and the genome disk and Mush sample as research ingredients. Zong Chun's ghost stands in for Chun at the researches that need her.
 
 ## Left, in issues

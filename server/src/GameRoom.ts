@@ -1238,7 +1238,7 @@ export class GameRoom extends Server<Env> {
   }
 
   /**
-   * Records a `dropQueues` input for the actions the load dropped (#384, docs/plans/normalize-state.md "The action queue"), so the record still rebuilds the
+   * Records a `dropQueues` input for the actions the load dropped (#384, docs/plans/archive/normalize-state.md "The action queue"), so the record still rebuilds the
    * stored state. It isn't applied: `normalizeGame` has already done the same thing. It carries the view as loaded,
    * with no change, and is saved with the snapshot in one write. Nobody is told; they press again.
    */

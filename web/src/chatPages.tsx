@@ -1,4 +1,4 @@
-// Sealed chat pages the client fetched (#355, docs/plans/chat-pages.md): kept for the game, since a sealed page never
+// Sealed chat pages the client fetched (#355, docs/plans/archive/chat-pages.md): kept for the game, since a sealed page never
 // changes except for its ticks, which `chatEdit` brings. The view carries only the open page and the tail; Thread asks
 // for anything older through `request`. GameScreen owns the cache (it owns the socket); a view with no socket gets
 // none, so it can show only the pages its view carries.

@@ -1,6 +1,6 @@
 # Signals: the Com center's conversation tab (plan)
 
-Status: **built, 2026-11-16 (all four steps); no open questions.** The answers under "Decided" and "Defaults confirmed" are the owner's (2026-11-16). "Proposed" is Claude's design, reviewed with the owner. Related: [#143](https://github.com/nearbear/mush2/issues/143) (merchants), `docs/plans/merchants.md`, `docs/plans/comms.md` (rebel bases).
+Status: **built, 2026-11-16 (all four steps); no open questions.** The answers under "Decided" and "Defaults confirmed" are the owner's (2026-11-16). "Proposed" is Claude's design, reviewed with the owner. Related: [#143](https://github.com/nearbear/mush2/issues/143) (merchants), `docs/plans/merchants.md`, `docs/plans/archive/comms.md` (rebel bases).
 
 ## Goal
 

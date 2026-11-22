@@ -1,6 +1,6 @@
 # Plan: scheduled action plans (#44; written 2026-10-13, narrowed 2026-10-26)
 
-> **Superseded (2026-10-30).** The owner dropped the generic executor (scheduled time, locked AP, knowledge sandbox, arbitrary jobs). Relaying is now pooled contributions, `docs/plans/relay-tokens.md`; coordination is channel plans with on-call summons, `docs/plans/on-call.md`, which lists which decisions below still carry over. Kept for history and for the deferred features.
+> **Superseded (2026-10-30).** The owner dropped the generic executor (scheduled time, locked AP, knowledge sandbox, arbitrary jobs). Relaying is now pooled contributions, `docs/plans/archive/relay-tokens.md`; coordination is channel plans with on-call summons, `docs/plans/on-call.md`, which lists which decisions below still carry over. Kept for history and for the deferred features.
 
 Implemented so far: the action registry and private channels; build steps 1 (the relay formula) and 2 (`actNow` in `queue.ts`, `shortestPath` in `paths.ts`; its `PlayerState.lockedAp` and `freeAp` were removed on 2026-10-31, #312, as `docs/plans/on-call.md` decided). The rest is not built. **Decisions** are confirmed by the owner; **Open questions** must be answered before building the phase they block. Do not guess them.
 

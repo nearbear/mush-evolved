@@ -1,4 +1,4 @@
-// The Astro terminal's Share form (owner, 2026-10-31; structured, owner 2026-11-19, docs/plans/expedition-ui.md): one
+// The Astro terminal's Share form (owner, 2026-10-31; structured, owner 2026-11-19, docs/plans/archive/expedition-ui.md): one
 // of your planets as the crew will read it in the Astrophysics feature. The name is the planet's and can't be changed;
 // there is one sector slot per sector of the planet, each starting as what you know (the tag, or unknown) and
 // changeable to any tag or unknown, lies included; then free text, prefilled with the name and position, which you

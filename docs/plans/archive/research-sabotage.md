@@ -1,6 +1,6 @@
 # Plan: research samples, assays and sabotage (written 2026-10-30)
 
-How a Mush sabotages research without being caught by bookkeeping, built on the relay token system of `docs/plans/relay-tokens.md`. Built 2026-10-31 (#311 part B). Players see a research's relay tokens as **samples**, and an **assay** tests a research's pending samples. "Relay tokens" is the name behind the scenes (code and docs); "sample" and "assay" are the words players see. **Decisions** are the owner's; **Proposed** items are Claude's and need the owner's confirmation before they are built; **Open questions** block the part they belong to. Do not guess them.
+How a Mush sabotages research without being caught by bookkeeping, built on the relay token system of `docs/plans/archive/relay-tokens.md`. Built 2026-10-31 (#311 part B). Players see a research's relay tokens as **samples**, and an **assay** tests a research's pending samples. "Relay tokens" is the name behind the scenes (code and docs); "sample" and "assay" are the words players see. **Decisions** are the owner's; **Proposed** items are Claude's and need the owner's confirmation before they are built; **Open questions** block the part they belong to. Do not guess them.
 
 ## The problem
 
@@ -15,7 +15,7 @@ Inspiration: Battlestar Galactica's skill checks (contributions go in face down,
 - **Every Mush can spoil their own samples** (fake work that looks like a contribution).
 - ~~A Mush skill lets its holder contaminate other players' pending tokens, and the holder picks which token.~~ Superseded 2026-10-31, see below.
 - **Only people in the room see an assay's result** (which samples spoiled and whose they were).
-- **Research only.** Projects and PILGRED use the pool (`docs/plans/relay-tokens.md`) but have no pending stage and no sabotage for now.
+- **Research only.** Projects and PILGRED use the pool (`docs/plans/archive/relay-tokens.md`) but have no pending stage and no sabotage for now.
 - ~~Word: "breakthrough", not "assay".~~ Superseded 2026-10-31: "sample" and "assay".
 - **The sample list is the evidence, seen only in the lab.** Anyone in the lab sees a research's samples, verified and pending, each with the contributor's face and its value (values reveal skill bonuses; accepted). Nobody elsewhere sees them.
 - **Research becomes a private action:** no room log line when someone contributes. The sample list and the assay lines are the record of who worked.
@@ -35,7 +35,7 @@ Inspiration: Battlestar Galactica's skill checks (contributions go in face down,
 - **The assay line** (lab room log, i18n en/fr/es) names everyone tested, with counts, and whose samples spoiled: "MycoAlarm assay: 6 samples tested (Chun ×3, Paola ×2, Finola ×1), 1 spoiled (Paola's)." It never says why a sample spoiled. It stays in the lab's log like any other line, so anyone who comes to the lab later can read it.
 - **The progress bar:** solid for verified progress, striped for pending; hovering the bar shows the exact numbers.
 - **Research progress is visible only to living players in the lab**, verified and pending alike. Elsewhere on the ship nobody sees a research's progress; the only research news that reaches other rooms is its completion. This replaces today's public research progress.
-- **Participate's percentage** is how much the research goes up if you contribute now (see `docs/plans/relay-tokens.md`).
+- **Participate's percentage** is how much the research goes up if you contribute now (see `docs/plans/archive/relay-tokens.md`).
 - **The help text** gets one sentence: "Your contributions only lose value when you've made more than everyone else combined, plus one."
 - **Tuning:** 5% and the quarter marks are first guesses.
 - **Which samples count toward "least":** all of the contributor's samples in that research, verified and pending, since the separator effect depends on the whole pool. A tie is broken by the seeded RNG (Claude's proposal, confirmed).
@@ -43,7 +43,7 @@ Inspiration: Battlestar Galactica's skill checks (contributions go in face down,
 
 ## Confirmed (Claude's proposals of 2026-10-30, confirmed by the owner 2026-10-31)
 
-- **Verified and pending pools.** Research progress is the best arrangement (`docs/plans/relay-tokens.md`) of the **verified** samples only. The striped segment is the best arrangement of verified plus pending, minus verified progress.
+- **Verified and pending pools.** Research progress is the best arrangement (`docs/plans/archive/relay-tokens.md`) of the **verified** samples only. The striped segment is the best arrangement of verified plus pending, minus verified progress.
 - **The trigger.** An assay runs when the striped total reaches the first quarter mark above verified progress. Survivors join the verified pool and the pool is rearranged.
 - **Verified progress never falls.** Spoils only remove pending samples and adding samples never lowers the best arrangement, so `relay-tokens.md`'s "progress never falls" holds for verified progress, and completion side effects stay safe.
 - **Completion side effects** run at the assay that completes the research: the Mush sample item is consumed and the MycoAlarm drops then, not when the striped bar reaches 100.

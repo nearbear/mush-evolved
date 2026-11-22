@@ -1,8 +1,8 @@
 # Expedition UI: the sector timeline, the compact report and shared sectors (plan)
 
 2026-11-19. All four slices built (1 the view data, 2 the timeline, 3 the compact report, 4 structured shares). No open questions. The concept and the decisions below are the owner's (2026-11-19); the layout details and
-build order are Claude's proposal. Builds on `docs/plans/expedition.md` (the rules, all built),
-`docs/plans/expedition-boarding.md` (boarding, the next sector) and `docs/plans/astro.md` (planets, sharing).
+build order are Claude's proposal. Builds on `docs/plans/archive/expedition.md` (the rules, all built),
+`docs/plans/archive/expedition-boarding.md` (boarding, the next sector) and `docs/plans/archive/astro.md` (planets, sharing).
 
 ## Goals
 

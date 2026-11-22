@@ -4930,3 +4930,8 @@ Owner asked to "match eMush". Moved the debris table from `config.hunters.debris
 ### 2026-11-21 — Shared PILGRED progress in the Features tab
 - **Decision (owner):** PILGRED progress in the Features tab is a manually shared snapshot from the `PILGRED` terminal (like Botany's `sharePlants` / Astrophysics's `sharePlanet`), editable (0–100%, lies allowed) with an optional note, pinned as a single progress bar card above the PILGRED feature thread. Real PILGRED progress (`view.pilgred`) stays room-scoped.
 - **What worked:** Asking one clarifying question before coding prevented implementing a live tracker like `ResearchTracker`/`ProjectTracker` (which would either have broken the room-scoped visibility rule or omitted manual sharing). Mirroring `sharedPlants` (`sharedPilgred.ts`, `SharedPilgredCard.tsx`, `SharePilgredForm` in `TerminalDialog.tsx`, server-side moderation in `GameRoom.ts`, and `normalizeCore` with `added(..., null)`) kept the implementation small, consistent, and leak-free.
+
+### 2026-11-21 — Docs cleanup: archive completed plans and scratchpad notes
+
+- **Decision (owner):** Archived 17 completed or superseded plans from `docs/plans/` into `docs/plans/archive/`, and 10 completed scratchpad plans/handoffs/audits plus 39 past survival JSON files from `docs/scratchpad/` into `docs/scratchpad/archive/` (leaving `survival-shower-*.json` untouched for an active worktree). Replaced the `docs/README.md` plans table with a concise bullet list of the 10 remaining active/draft plans.
+- **What worked:** Updating all repo-rooted `docs/plans/*.md` and `docs/scratchpad/*.md` references across tracked files (101 files) kept `tools/tests/docs/docPaths.test.ts` passing with zero broken paths or relative links.

@@ -1037,7 +1037,7 @@ function expeditionView(state: GameState, you: PlayerState, readsAstrophysics: b
     crew: [...report.crew],
     planet: report.planet,
     returnAt: expeditionReturnAt(state)!,
-    // Public, as the timer already reveals both (docs/plans/expedition-ui.md).
+    // Public, as the timer already reveals both (docs/plans/archive/expedition-ui.md).
     steps: away.sectors.length,
     nextAt: away.nextAt,
     // The patrol ship that landed (owner, 2026-11-09, #359): public, as its bay shows it out and the crew is named.

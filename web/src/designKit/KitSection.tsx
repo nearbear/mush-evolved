@@ -1,4 +1,4 @@
-// The kit's section and figure frames (docs/plans/design-kit.md, "Conventions for new sections").
+// The kit's section and figure frames (docs/plans/archive/design-kit.md, "Conventions for new sections").
 
 import type { ReactNode } from "react";
 

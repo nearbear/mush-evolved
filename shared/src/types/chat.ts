@@ -36,7 +36,7 @@ export type ChannelId = ChatChannel | typeof MUSH_CHANNEL | typeof GRAVEYARD_CHA
  * whoever can read the Astrophysics feature, without the planet it came from (see `SharedPlanetState`).
  * `name` is the planet's true name, never edited; `sectors` has one slot per sector of the planet when it was shared
  * (its true size), each the tag the sharer chose or null for unknown, lies included (owner, 2026-11-19,
- * docs/plans/expedition-ui.md).
+ * docs/plans/archive/expedition-ui.md).
  */
 export interface SharedPlanet {
   id: SharedPlanetId;
@@ -163,7 +163,7 @@ export interface ChatMessage {
 export type ChatLine = Omit<ChatMessage, "id">;
 
 /**
- * Which task lines of a checklist message are ticked (#355, docs/plans/chat-pages.md phase 2). Kept in the state beside
+ * Which task lines of a checklist message are ticked (#355, docs/plans/archive/chat-pages.md phase 2). Kept in the state beside
  * the chat (`GameState.chatMarks`), so a message's text stays as typed and a sealed page is never written again. Every
  * view applies it to the text (`markedText`).
  */

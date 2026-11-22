@@ -10,7 +10,7 @@ import { joinShip, selectMush } from "../src/preselection.ts";
 import { guaranteedGroup, listSize, rollList } from "../src/theList.ts";
 import { clone, costOf, makeSeats, must, nextCycle, offered, option, player, testConfig } from "./support.ts";
 
-// THE List (owner, 2026-11-21, #266; docs/plans/the-list.md): the tabulator item, spawned in front storage, the
+// THE List (owner, 2026-11-21, #266; docs/plans/archive/the-list.md): the tabulator item, spawned in front storage, the
 // list's hidden state and rolls, and printing it.
 
 const STORAGE = "STORAGE_FRONT";

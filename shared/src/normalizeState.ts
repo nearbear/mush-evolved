@@ -1,4 +1,4 @@
-// Normalizing stored state on load (#384, docs/plans/normalize-state.md): a snapshot read from storage goes through
+// Normalizing stored state on load (#384, docs/plans/archive/normalize-state.md): a snapshot read from storage goes through
 // these before the game continues from it, the way `resolveConfig` treats `ConfigOverrides`. One function per stored
 // type, each returning an object literal that names every field, so only listed keys survive and a type's new field
 // doesn't compile until its normalizer handles it.
@@ -81,7 +81,7 @@ import type {
   Spot,
 } from "./types.ts";
 
-// Upgrade steps (docs/plans/normalize-state.md, "Versions and upgrade steps").
+// Upgrade steps (docs/plans/archive/normalize-state.md, "Versions and upgrade steps").
 
 /**
  * The stored shape's version, written with every snapshot. A new field never bumps it: it takes `added()` in its
@@ -233,7 +233,7 @@ const upgradeTo119: UpgradeStep = {
 
 /**
  * Before 120, rebel calls were `game.comms.rebels` (`{ base, calledAt, expiresAt, progress }[]`); they are now rebel
- * signals in `game.signals` (signals.ts, docs/plans/signals.md step 3), after the signals already there, oldest first.
+ * signals in `game.signals` (signals.ts, docs/plans/archive/signals.md step 3), after the signals already there, oldest first.
  * A call decoded to 100% is `reached`, one past its window `lost` (with the "Signal lost" line at its end), the rest
  * active. The feed of earlier decodes was never kept, so it starts empty.
  */
@@ -588,7 +588,7 @@ export function normalizeAccommodationOffer(raw: Partial<AccommodationOffer>): A
 }
 
 /**
- * What happens to a player's action under way and queue (#384, "The action queue" in docs/plans/normalize-state.md).
+ * What happens to a player's action under way and queue (#384, "The action queue" in docs/plans/archive/normalize-state.md).
  * `drop`, for a live game: both are emptied (amendment 5). Nothing has been paid for them, and the player presses
  * again. That keeps `Action` out of the shape this file covers. `keep`, for a replay frame: both are copied through
  * as stored, unchecked, so a replay still shows action bars. They are display only: if an older `Action` shape breaks
@@ -797,7 +797,7 @@ export function normalizeSharedPlanet(raw: Partial<SharedPlanetState>): SharedPl
   const t = "SharedPlanetState";
   return stripUndefined<SharedPlanetState>({
     id: need(raw, "id", t),
-    // Entries shared before structured shares (docs/plans/expedition-ui.md): the text's first line stands for the
+    // Entries shared before structured shares (docs/plans/archive/expedition-ui.md): the text's first line stands for the
     // name, and no sector slots.
     name: added(raw, "name", need(raw, "text", t).split("\n", 1)[0]!),
     sectors: added(raw, "sectors", []),
@@ -1304,7 +1304,7 @@ export function normalizeCore(raw: Partial<GameCore>, ctx: NormalizeContext, mod
     icarusLost: added(raw, "icarusLost", false),
     navigation: normalizeNavigation(need(raw, "navigation", t)),
     hunters: normalizeHunters(need(raw, "hunters", t)),
-    // Signals (docs/plans/signals.md): none in a game stored before merchants (#143); upgradeTo119 moved those.
+    // Signals (docs/plans/archive/signals.md): none in a game stored before merchants (#143); upgradeTo119 moved those.
     signals: normalizeSignals(added(raw, "signals", { list: [], nextId: 1 }), ctx),
     turrets: dict(need(raw, "turrets", t)),
     patrolShips: mapValues(need(raw, "patrolShips", t), normalizePatrolShip),
@@ -1359,7 +1359,7 @@ export function normalizeGame(raw: Partial<Omit<GameState, "config">>, overrides
 
 /**
  * Whether the stored snapshot has an action under way or queued, which `normalizeGame` drops. The server then records
- * a `dropQueues` input (docs/plans/normalize-state.md, "The action queue"), which does the same, so the record still rebuilds the state it stores.
+ * a `dropQueues` input (docs/plans/archive/normalize-state.md, "The action queue"), which does the same, so the record still rebuilds the state it stores.
  */
 export function hasQueues(raw: Partial<Omit<GameState, "config">>): boolean {
   const players = need(raw, "players", "GameState");
@@ -1388,7 +1388,7 @@ export function overridesOf(config: Partial<DeepReadonly<GameConfig>>): ConfigOv
 }
 
 /**
- * A replay frame (docs/plans/normalize-state.md, "Normalizers"). Its config is stored whole, but may predate newer config
+ * A replay frame (docs/plans/archive/normalize-state.md, "Normalizers"). Its config is stored whole, but may predate newer config
  * fields, so it is rebuilt from its overrides (`overridesOf`, then `resolveConfig`): the frame shows this build's
  * balance numbers, as a live game does on every reload, `view.actions` costs included. The action queues are kept.
  */

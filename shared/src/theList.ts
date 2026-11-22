@@ -1,4 +1,4 @@
-// THE List (#266, owner 2026-10-25 and 2026-11-21; docs/plans/the-list.md): a Tracker prints, once per game, a list
+// THE List (#266, owner 2026-10-25 and 2026-11-21; docs/plans/archive/the-list.md): a Tracker prints, once per game, a list
 // of names from the tabulator in front storage, with at least one Mush among them when any are left. This file holds
 // its server-only state and the pure rolls; the action is `print_list`. The list names characters (bodies), like
 // Finola's lost analysis, and never changes once printed.

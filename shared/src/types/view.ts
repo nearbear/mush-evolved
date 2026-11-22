@@ -396,7 +396,7 @@ export interface PlayerView {
    * member still with the crew (alive and not lost), whose view holds it in `expeditions`. `next` is the next sector's
    * tag, only to a member with U-turn or Traitor still with the crew (owner, 2026-11-17, `nextSectorFor`). `steps` (the
    * steps left, the next included) and `nextAt` (when the next resolves, server ms) are public, as the timer already
-   * reveals them (docs/plans/expedition-ui.md). `hp` is each member's exact HP by character as of the latest step (not
+   * reveals them (docs/plans/archive/expedition-ui.md). `hp` is each member's exact HP by character as of the latest step (not
    * live: losses between steps only humans take would show), only to a member still with the crew, and only for those
    * still with it: never a lost member's, never a max HP (owner, 2026-11-19). `shared` is the Astrophysics entry shared
    * from the planet being explored, to whoever reads that feature (its `sharedPlanets` holds the entry).
@@ -459,13 +459,13 @@ export interface PlayerView {
 /** One action you are offered: what it costs, its chance of success, and which of your points fall short. */
 /** One pooled target as seen from its room (relayView.ts). */
 export interface RelayTargetView {
-  /** Progress held back only for lack of other contributors (docs/plans/relay-tokens.md). */
+  /** Progress held back only for lack of other contributors (docs/plans/archive/relay-tokens.md). */
   waiting: number;
   /** How much the target goes up if you contribute now, over your token's roll. */
   gain: { min: number; max: number };
   /**
    * Its tokens in the order they were made: who made each and what it is worth in the best arrangement. A research's
-   * are samples: verified ones first, then `pending` ones waiting for the next assay (docs/plans/research-sabotage.md).
+   * are samples: verified ones first, then `pending` ones waiting for the next assay (docs/plans/archive/research-sabotage.md).
    */
   tokens: { by: PlayerId; value: number; pending?: true }[];
   /** Research only: the striped segment, how much the pending samples add above verified progress if they all pass. */

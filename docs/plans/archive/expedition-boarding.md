@@ -1,7 +1,7 @@
 # Expeditions: instant landing, boarding the Icarus, next-sector sight, one-sector Sabotage
 
 Handoff plan, 2026-11-17. Every rule below was decided by the owner in conversation on 2026-11-17; none is open.
-Follows `docs/plans/expedition.md` (phases 1-5) and closes the last "not built" note of slice D (#358).
+Follows `docs/plans/archive/expedition.md` (phases 1-5) and closes the last "not built" note of slice D (#358).
 
 ## Decisions (owner, 2026-11-17)
 
@@ -241,7 +241,7 @@ The original notes:
 - `docs/rules/implemented-rules.md:134` (slice D): Traitor covers the next sector only; both skills see the next
   sector; drop "Not built: ...". Update the phase 2 and slice C bullets for the instant landing and boarding (grep
   `landing` and `suitless` there).
-- `docs/plans/expedition.md`: decisions 6-7 and "Build order", plus phase 2's "landing a step later" and slice C's
+- `docs/plans/archive/expedition.md`: decisions 6-7 and "Build order", plus phase 2's "landing a step later" and slice C's
   suitless text.
 - `docs/rules/rules-design.md`: add the 2026-11-17 decisions to "Decisions received", including the correction of the
   2026-11-08 Traitor reading.

@@ -4,7 +4,7 @@
 
 ## Sources
 
-The numbers come from eMush's source and eMushpedia (*Pilotage*, *Baie*, *Collecte de débris*, *Capsule spatiale*). The archived original's numbers are in `docs/plans/space-combat.md`; they agree except where noted.
+The numbers come from eMush's source and eMushpedia (*Pilotage*, *Baie*, *Collecte de débris*, *Capsule spatiale*). The archived original's numbers are in `docs/plans/archive/space-combat.md`; they agree except where noted.
 
 ### The ships
 

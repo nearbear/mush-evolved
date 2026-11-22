@@ -1,4 +1,4 @@
-// Expeditions (docs/plans/expedition.md). Phase 1 (owner, 2026-10-31): a Pilot in the Icarus Bay takes off while the
+// Expeditions (docs/plans/archive/expedition.md). Phase 1 (owner, 2026-10-31): a Pilot in the Icarus Bay takes off while the
 // ship orbits a planet with unexplored sectors; everyone living in the bay goes, up to `maxCrew`. A landing event, then
 // up to `sectors` unexplored sectors drawn by their tag's `explo` weight, each with an event from its table.
 // Phase 2 (owner, 2026-11-07, #356): the crew is away over time, in the Icarus (`config.expedition.craft`, a room with

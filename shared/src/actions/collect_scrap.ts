@@ -10,7 +10,7 @@ export type CollectScrapActionData = { type: "collect_scrap"; equipment: string 
 
 /**
  * Collect debris floating around the Daedalus from a patrol ship or the Pasiphae in flight, at its command (owner,
- * 2026-10-28, docs/plans/patrol.md phase 5): 2 AP. Offered whenever the ship is in flight, but refused (shown disabled) while
+ * 2026-10-28, docs/plans/archive/patrol.md phase 5): 2 AP. Offered whenever the ship is in flight, but refused (shown disabled) while
  * there is no debris, and from a patrol ship while the Pasiphae hasn't been destroyed (owner, 2026-11-11). A patrol ship brings in 0 pieces
  * (75%) or 1, the Pasiphae 1, 2 or 3, picked at random and put in the ship's room; the landing unloads them. While
  * hunters remain, each try costs the ship 2 to 4 armor (at 0 it is destroyed) and the pilot 0 hp (50%) or 2 to 4.

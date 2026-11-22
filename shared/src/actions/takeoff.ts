@@ -13,7 +13,7 @@ import type { GameState, PlayerState, RoomId } from "../types.ts";
 export type TakeoffActionData = { type: "takeoff"; equipment: string };
 
 /**
- * Take off in a docked patrol ship or the Pasiphae from its interface in the bay (owner, 2026-10-24, docs/plans/patrol.md):
+ * Take off in a docked patrol ship or the Pasiphae from its interface in the bay (owner, 2026-10-24, docs/plans/archive/patrol.md):
  * 2 AP, always works, and moves the pilot alone into the ship's room. Gated by NERON's piloting crew lock unless the
  * actor is a Pilot or has `freeHacking` (owner, 2026-11-21). Secret: the line goes in the bay before the pilot leaves,
  * so whoever is there (or a camera) sees it. A push the pilot is part of ends.

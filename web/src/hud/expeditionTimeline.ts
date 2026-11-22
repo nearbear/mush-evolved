@@ -1,4 +1,4 @@
-// The expedition screen's columns (docs/plans/expedition-ui.md, "The expedition screen"), oldest first: each resolved
+// The expedition screen's columns (docs/plans/archive/expedition-ui.md, "The expedition screen"), oldest first: each resolved
 // step of the report, then, while the crew is still out, the next step, the steps still to come, and Return. Pure: it
 // only arranges what the view already holds (ExpeditionTimeline.tsx draws it).
 

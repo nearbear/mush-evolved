@@ -178,7 +178,7 @@ export function ExpeditionSection() {
       about={
         <>
           <code>hud/ExpeditionTimeline.tsx</code>: what <code>IcarusPanel</code> shows while away and{" "}
-          <code>LostPanel</code> while lost (docs/plans/expedition-ui.md). Sectors in a row, oldest left, the current one in
+          <code>LostPanel</code> while lost (docs/plans/archive/expedition-ui.md). Sectors in a row, oldest left, the current one in
           the middle; the arrows (or Left and Right) move one step. Hand-built report and view. Each fills the
           game screen&apos;s room view.
         </>

@@ -824,7 +824,7 @@ describe("expeditions, phase 2: time away", () => {
     const s = timed({ tags: ["OXYGEN", "PREDATOR"] });
     const t = tickAt(go(s), T0 + step);
     const report = t.expeditions[0]!;
-    // The steps left and the next step's time are public: the timer reveals both (docs/plans/expedition-ui.md).
+    // The steps left and the next step's time are public: the timer reveals both (docs/plans/archive/expedition-ui.md).
     const status = { crew: report.crew, planet: "Fugunys", returnAt: T0 + 2 * step, steps: 1, nextAt: T0 + 2 * step };
     const hp = report.members.map((id) => ({ name: player(t, id).character, hp: player(t, id).hp }));
     for (const id of ["p4", "p5"]) {

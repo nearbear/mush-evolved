@@ -1,6 +1,6 @@
 # Plan: relay tokens (pooled contributions; written 2026-10-30)
 
-How research, NERON projects and PILGRED take contributions once players no longer have to alternate live. Replaces the "relay jobs" of `docs/plans/action-plans.md`, whose executor is dropped (see `docs/plans/on-call.md`). "Relay tokens" is the owner's name for this system behind the scenes (code and docs). Players see research tokens as **samples**, which also go through a pending stage with assays and sabotage, `docs/plans/research-sabotage.md`. Part A (pools for all three, no pending stage) built 2026-10-31; part B (research samples and assays) built the same day. **Decisions** are the owner's. Do not guess beyond them.
+How research, NERON projects and PILGRED take contributions once players no longer have to alternate live. Replaces the "relay jobs" of `docs/plans/archive/action-plans.md`, whose executor is dropped (see `docs/plans/on-call.md`). "Relay tokens" is the owner's name for this system behind the scenes (code and docs). Players see research tokens as **samples**, which also go through a pending stage with assays and sabotage, `docs/plans/archive/research-sabotage.md`. Part A (pools for all three, no pending stage) built 2026-10-31; part B (research samples and assays) built the same day. **Decisions** are the owner's. Do not guess beyond them.
 
 ## The problem
 
@@ -9,16 +9,16 @@ The relay formula (`shared/src/relay.ts`, owner 2026-10-26) cuts a contribution'
 ## Decisions (owner, 2026-10-30)
 
 - **Contributions are tokens.** Each research, project or PILGRED action adds one token to that target's pool instead of rolling a gain at once. A token records who made it and what it is worth.
-- **The game arranges the pool.** A target's progress is the best total any ordering of its tokens could give under the existing penalty for consecutive tokens by the same player. Players never arrange anything; they only contribute. (Player rearrangement on a hex grid was explored and deferred, `docs/plans/research-sabotage.md`.)
+- **The game arranges the pool.** A target's progress is the best total any ordering of its tokens could give under the existing penalty for consecutive tokens by the same player. Players never arrange anything; they only contribute. (Player rearrangement on a hex grid was explored and deferred, `docs/plans/archive/research-sabotage.md`.)
 - **The penalty is unchanged.** If the best arrangement still has to put several of one player's tokens in a row, those tokens lose `relayPenalty` per step as they do today. A lone contributor is penalized exactly as now.
 - **No new AP source.** A token costs what the action costs today (2 AP, or a Computer or Designer point); nothing is refunded or lent.
-- **All three progressibles pool:** research, projects and PILGRED. Only research has the pending stage and sabotage (`docs/plans/research-sabotage.md`).
-- **Research's token list is the evidence:** visible to anyone in the lab, with faces and values; research becomes private, with no room log line (`docs/plans/research-sabotage.md`). This answers the log-credit question: the list and the assay lines show who did what.
+- **All three progressibles pool:** research, projects and PILGRED. Only research has the pending stage and sabotage (`docs/plans/archive/research-sabotage.md`).
+- **Research's token list is the evidence:** visible to anyone in the lab, with faces and values; research becomes private, with no room log line (`docs/plans/archive/research-sabotage.md`). This answers the log-credit question: the list and the assay lines show who did what.
 - **Pace:** no retune before building; the owner expects contamination to offset the gain from pooling. Watch it in playtests.
 
 ## Decisions (owner, 2026-10-31)
 
-- **Name:** "relay tokens" behind the scenes; research tokens are "samples" to players (`docs/plans/research-sabotage.md`). All three progressibles still pool (reconfirmed).
+- **Name:** "relay tokens" behind the scenes; research tokens are "samples" to players (`docs/plans/archive/research-sabotage.md`). All three progressibles still pool (reconfirmed).
 - **The gain if you contribute now.** Every action that adds a relay token (research's Participate, projects, PILGRED) shows on its button how much the target goes up if you contribute now. That can be more than your token is worth on its own, when your token is what breaks up someone else's streak.
 - **Progress is visible only to living players in the target's room until it completes.** Research (the lab), projects (the NERON core's room) and PILGRED (a room with a PILGRED terminal): nobody outside that room sees anything about the target, not its progress, `waiting`, the gain or its token list. Completion is the only news that reaches other rooms. This replaces today's public research and project progress.
 - **The help text** sentence below, in the owner's wording.
@@ -66,16 +66,16 @@ PILGRED keeps its own constants (`mod` 2, so base 1, or 5 with the Engineer or P
 
 ## Properties
 
-- **Progress never falls.** Adding a token can only improve the best arrangement (append it at the end of any ordering), so the number shown after each action is final-as-of-now, completion is never undone, and completion side effects (PILGRED's repair, a project's effect) run in the contribution that crosses the line, as today. Research completes at an assay instead (`docs/plans/research-sabotage.md`). With the tie-break, this must be tested for the rolled total too (see Tests); if it fails, rolls move from tokens to slots.
+- **Progress never falls.** Adding a token can only improve the best arrangement (append it at the end of any ordering), so the number shown after each action is final-as-of-now, completion is never undone, and completion side effects (PILGRED's repair, a project's effect) run in the contribution that crosses the line, as today. Research completes at an assay instead (`docs/plans/archive/research-sabotage.md`). With the tie-break, this must be tested for the rolled total too (see Tests); if it fails, rolls move from tokens to slots.
 - **No new power.** The best arrangement is a sequence the crew could have played live, so the pool never beats the best live play with the same contributions. It only removes the luck of being awake in the right order.
 - **Lone work stays penalized** in exactly today's amounts, and it becomes worth more the moment someone else contributes, which is what should make a lone player ask for help. Solo work becomes an investment rather than a loss.
-- **Mush angle.** More tokens never lower progress, a token that is never matched is just wasted AP, and the log still names every contributor to those present. A Mush can make the single contribution that unlocks a big jump, but the token list shows exactly what each token is worth, so it earns no extra credit. Research sabotage is in `docs/plans/research-sabotage.md`.
+- **Mush angle.** More tokens never lower progress, a token that is never matched is just wasted AP, and the log still names every contributor to those present. A Mush can make the single contribution that unlocks a big jump, but the token list shows exactly what each token is worth, so it earns no extra credit. Research sabotage is in `docs/plans/archive/research-sabotage.md`.
 
 ## State and code
 
-- `RelayStreak` (`lastBy`, `streak`) becomes `RelayPool = { tokens: RelayToken[] }` for `state.relay.research[id]`, `state.relay.projects[id]` and PILGRED's record in `state.pilgred`. Research pools also get `pending` (`docs/plans/research-sabotage.md`). A changed type, so an upgrade step and a `STATE_VERSION` bump (#384).
+- `RelayStreak` (`lastBy`, `streak`) becomes `RelayPool = { tokens: RelayToken[] }` for `state.relay.research[id]`, `state.relay.projects[id]` and PILGRED's record in `state.pilgred`. Research pools also get `pending` (`docs/plans/archive/research-sabotage.md`). A changed type, so an upgrade step and a `STATE_VERSION` bump (#384).
 - `relay.ts`: `makeToken(state, config, player, skills)` (the roll draws from the seeded RNG; the cheat is read here), `poolProgress(pool, config) → { progress, waiting }` (pure; `waiting` is `min(100, progress with all penalties waived) − progress`), and `arrangeTokens` exposed for tests. `relayGainRange`, `rollRelayGain` and `touchRelay` go.
-- `research.ts`, `project.ts` and `pilgred.ts` push a token and set the target's percent from `poolProgress(...)` (research: of the verified tokens, `docs/plans/research-sabotage.md`). Nothing else about the actions changes: cost, dirt and injury rolls, the Computer and Designer points, the dirty refusal, the public line.
+- `research.ts`, `project.ts` and `pilgred.ts` push a token and set the target's percent from `poolProgress(...)` (research: of the verified tokens, `docs/plans/archive/research-sabotage.md`). Nothing else about the actions changes: cost, dirt and injury rolls, the Computer and Designer points, the dirty refusal, the public line.
 - The view: `waiting` beside each progress, with the same visibility as that progress (all three are room-gated until complete). Each viewer also gets their own token count per target (their own information) and, in the target's room, the gain if they contribute now. A viewer in the room of a target's terminal also gets that target's token list (contributor and value). Nothing else from the pool goes in a view.
 
 ## UI

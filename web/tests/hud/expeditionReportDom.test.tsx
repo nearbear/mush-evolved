@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-// The report as compact rows (docs/plans/expedition-ui.md, "The report"), in the terminal frame.
+// The report as compact rows (docs/plans/archive/expedition-ui.md, "The report"), in the terminal frame.
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { I18nextProvider } from "react-i18next";

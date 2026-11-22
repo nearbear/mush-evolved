@@ -1,4 +1,4 @@
-// Botany, Pass 1 (owner, 2026-10-22; docs/scratchpad/botany-plan.md): plants grow in hydropots, anywhere, carried
+// Botany, Pass 1 (owner, 2026-10-22; docs/scratchpad/archive/botany-plan.md): plants grow in hydropots, anywhere, carried
 // too. Thirst is public; sickness is hidden from everyone outside the Botanist role. No plant dies yet: a plant left
 // unwatered stops at dried, and a sick one stays sick until treated.
 

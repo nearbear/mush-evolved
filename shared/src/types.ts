@@ -135,7 +135,7 @@ export interface DroneState {
   failures: { repair: number; extinguish: number; shoot: number };
 }
 
-/** A plant in a hydropot (owner, 2026-10-22; docs/scratchpad/botany-plan.md, Pass 1). */
+/** A plant in a hydropot (owner, 2026-10-22; docs/scratchpad/archive/botany-plan.md, Pass 1). */
 export interface PlantState {
   /** The fruit item type it grows from and produces (only `fruit_banana` for now). */
   species: string;

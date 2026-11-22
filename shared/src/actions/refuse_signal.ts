@@ -9,7 +9,7 @@ import type { GameState, PlayerState } from "../types.ts";
 export type RefuseSignalActionData = { type: "refuse_signal"; equipment: string; signal: string };
 
 /**
- * No thank you (owner, 2026-11-16; docs/plans/signals.md): free, for whoever has access to the Comms Officer title,
+ * No thank you (owner, 2026-11-16; docs/plans/archive/signals.md): free, for whoever has access to the Comms Officer title,
  * on a contacted merchant (the `offers` step). The officer declines, the ship says farewell, and the conversation
  * closes as `refused`. Private.
  */

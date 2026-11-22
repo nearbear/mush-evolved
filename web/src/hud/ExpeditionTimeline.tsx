@@ -1,4 +1,4 @@
-// The expedition screen while away (docs/plans/expedition-ui.md, "The expedition screen"; owner, 2026-11-19): a
+// The expedition screen while away (docs/plans/archive/expedition-ui.md, "The expedition screen"; owner, 2026-11-19): a
 // timeline of columns, oldest left (expeditionTimeline.ts), with the current one full size in the middle and its
 // neighbours clipped at each side. The arrow buttons, a sideways swipe, and the Left and Right keys while focus is in
 // it move one column. A step that resolves while you are on the latest one moves you to it (owner, 2026-11-19); while

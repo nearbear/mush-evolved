@@ -72,7 +72,7 @@ export const MICROWAVE_ITEM = "microwave";
 /** Hyperfreezes cooked rations and alien steaks into uncooked rations (actions/hyperfreeze.ts). */
 export const FREEZER_ITEM = "freezer";
 
-/** The tabulator (THE List, docs/plans/the-list.md): fixed in front storage; a Tracker prints THE List on it. */
+/** The tabulator (THE List, docs/plans/archive/the-list.md): fixed in front storage; a Tracker prints THE List on it. */
 export const TABULATOR_ITEM = "tabulator";
 
 /** The hydropot: an empty one takes a sown fruit, a planted one grows (`ItemState.plant`, botany.ts). */
@@ -215,7 +215,7 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   [FREEZER_ITEM]: { heavy: true, dismantle: { metal: 2, plastic: 0, chance: 0.25 }, canBreak: true, canBeSabotaged: true, repairChance: 0.25 },
   // Owner, 2026-10-19: spawns in the refectory; heavy. Express cook spends its charges (`ItemState.charges`).
   [MICROWAVE_ITEM]: { heavy: true, dismantle: { metal: 2, plastic: 0, chance: 0.25 }, canBreak: true, canBeSabotaged: true, repairChance: 0.25 },
-  // Owner, 2026-11-21 (#266, docs/plans/the-list.md): starts in front storage and never leaves it; breaks (also at a cycle
+  // Owner, 2026-11-21 (#266, docs/plans/archive/the-list.md): starts in front storage and never leaves it; breaks (also at a cycle
   // change), can be sabotaged, 12% repair (eMush's tabulatrix). Not heavy (moot), no dismantle.
   [TABULATOR_ITEM]: { canTake: false, canDrop: false, canHide: false, canBreak: true, canBreakOnCycleChange: true, canBeSabotaged: true, repairChance: 0.12 },
   // Decided 2026-10-16: a dead player's body (death.ts). Takes one slot like any item; heavy.

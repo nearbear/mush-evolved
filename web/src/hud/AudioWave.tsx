@@ -1,4 +1,4 @@
-// A signal's audio wave (docs/plans/signals.md): a row of bars drawn in CSS, no image asset. Flat at rest; while the
+// A signal's audio wave (docs/plans/archive/signals.md): a row of bars drawn in CSS, no image asset. Flat at rest; while the
 // other side is speaking, each character in the message shapes the frequency bands (lows for vowels, highs for
 // sibilants and garbled static, dips on spaces and punctuation). No audio plays. Under prefers-reduced-motion the bars
 // stay still and only change height when the speaker changes (settings.css).
