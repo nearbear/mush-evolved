@@ -80,11 +80,15 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
 
   //Actions
 
+  // Owner, 2026-11-21 (docs/plans/bios-priority-lock.md): BIOS CPU priority effects (+1 sector for astronavigation, +1 tokenBase for projects/research).
+  bios: { astroExtraSectors: 1, cpuPriorityBonus: 1 },
   // Confirmed 2026-10-14: bonding, DTT, and STT cost 1 AP each; DTT and STT give each of the two 2 morale.
+  // Owner, 2026-11-21: DTT has an independent 8% pregnancy chance per non-pregnant partner (all characters, human or Mush),
+  // +1 extra spore if a Mush causes pregnancy in a human, and -2 morale to all living crew if a pregnant crewmember dies.
   bond: { cost: { ap: 1 } },
   antisocial: { moraleLoss: 1 },
   germaphobe: { moraleLoss: 1 },
-  share: { cost: { ap: 1 }, effect: { morale: 2 } },
+  share: { cost: { ap: 1 }, effect: { morale: 2 }, pregnancy: { chance: 0.08, deathMoraleLoss: 2, mushExtraSpore: 1 } },
   // Confirmed 2026-10-14: a human converts on reaching 3 contamination (items and skills will raise it).
   infection: { capacity: 3, mushophageBonus: 1 },
   // Confirmed 2026-10-15: spiking costs 1 AP and 1 spore, and raises a human's contamination by 1.
@@ -337,7 +341,7 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
     // Owner, 2026-11-08: the chance that a cycle change's incidents are all prevented (the points are still spent).
     bricBroc: { preventChance: 0.15 },
     foodRetailer: { room: "NEXUS_ROOM", items: ["output_tube", "input_tube", "input_tube"] },
-    quantumSensors: { extraSectors: 1 },
+    quantumSensors: { scanChanceBonus: 0.3, extraSectors: 1 },
     chipsetAcceleration: { scanApDiscount: 1 },
     radarTransVoid: { apDiscount: 1 },
     patrolShipLauncher: { takeoffApDiscount: 1 },
@@ -470,18 +474,17 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
     patrolTargetChance: 0.15,
     // Owner, 2026-11-14: Meridon scrambler (FUNGUS_SCRAMBLER) gives a 20% chance to target a random shooting teammate.
     meridonScramblerChance: 0.2,
-    // Owner, 2026-10-28 (patrol plan, phase 5): eMush's 1 piece (2/3) or 2 (1/3), metal scraps 2 : space capsule 1 : plastic scraps 1.
-    debris: { count: [0, 2, 1], types: { metal_scraps: 2, space_capsule: 1, plastic_scraps: 1 } },
     // Owner, 2026-11-12 (#388): eMush's kinds (`HunterConfigData`). Draw weights 10/1/1/1/2, the Arack, asteroid and Trax
     // from day 5 and the D1000 from day 10, at most 2 of each a wave (1 D1000). The Arack stops travel and leaving orbit
     // (actions/travel.ts), the D1000 acts 3 times a cycle with armor 1, every Trax follows a jump, and the asteroid
     // doesn't shoot: 6 cycle changes after it arrives it hits the Daedalus for its hp, through the shield.
+    // Debris (owner, 2026-11-21, #422): eMush's table per kind, weights by piece count (index = count) and by item.
     types: {
-      hunter: { hp: 6, damage: [2, 4], hitChance: 0.8, actions: 1, armor: 0, cost: 10, weight: 10, fromDay: 1, maxPerWave: null, follows: "share", countdown: null },
-      spider: { hp: 6, damage: [1, 3], hitChance: 0.4, actions: 1, armor: 0, cost: 20, weight: 1, fromDay: 5, maxPerWave: 2, follows: "share", countdown: null },
-      asteroid: { hp: 20, damage: [0, 0], hitChance: 1, actions: 0, armor: 0, cost: 25, weight: 1, fromDay: 5, maxPerWave: 2, follows: "never", countdown: 6 },
-      dice: { hp: 30, damage: [3, 6], hitChance: 0.6, actions: 3, armor: 1, cost: 30, weight: 1, fromDay: 10, maxPerWave: 1, follows: "never", countdown: null },
-      trax: { hp: 10, damage: [2, 3], hitChance: 0.5, actions: 1, armor: 0, cost: 20, weight: 2, fromDay: 5, maxPerWave: 2, follows: "all", countdown: null },
+      hunter: { hp: 6, damage: [2, 4], hitChance: 0.8, actions: 1, armor: 0, cost: 10, weight: 10, fromDay: 1, maxPerWave: null, follows: "share", countdown: null, debris: { count: [0, 2, 1], types: { metal_scraps: 2, space_capsule: 1, plastic_scraps: 1 } } },
+      spider: { hp: 6, damage: [1, 3], hitChance: 0.4, actions: 1, armor: 0, cost: 20, weight: 1, fromDay: 5, maxPerWave: 2, follows: "share", countdown: null, debris: { count: [0, 2, 1], types: { metal_scraps: 2, space_capsule: 2, plastic_scraps: 1 } } },
+      asteroid: { hp: 20, damage: [0, 0], hitChance: 1, actions: 0, armor: 0, cost: 25, weight: 1, fromDay: 5, maxPerWave: 2, follows: "never", countdown: 6, debris: { count: [0, 2, 1, 1], types: { metal_scraps: 2, space_capsule: 1 } } },
+      dice: { hp: 30, damage: [3, 6], hitChance: 0.6, actions: 3, armor: 1, cost: 30, weight: 1, fromDay: 10, maxPerWave: 1, follows: "never", countdown: null, debris: { count: [0, 2, 1, 1, 1], types: { metal_scraps: 2, space_capsule: 2, plastic_scraps: 1 } } },
+      trax: { hp: 10, damage: [2, 3], hitChance: 0.5, actions: 1, armor: 0, cost: 20, weight: 2, fromDay: 5, maxPerWave: 2, follows: "all", countdown: null, debris: { count: [0, 2, 1, 1], types: { metal_scraps: 2, space_capsule: 1, plastic_scraps: 1 } } },
     },
   },
   turrets: { cost: { ap: 1 }, chance: 0.3, failureMultiplier: 1.25, damage: [2, 4], charges: 4, rechargePerCycle: 1 },

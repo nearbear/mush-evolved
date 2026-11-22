@@ -1,6 +1,6 @@
 # BIOS CPU Priority and Crew Lock (plan)
 
-2026-11-21. Status: **Not built** (fully answered). Numbers and behavior extracted from upstream eMush via `npm run emush`, with all design decisions confirmed by the owner on 2026-11-21.
+2026-11-21. Status: **Done** (built 2026-11-21). Numbers and behavior extracted from upstream eMush via `npm run emush`, with all design decisions confirmed by the owner on 2026-11-21.
 
 ## What eMush does
 

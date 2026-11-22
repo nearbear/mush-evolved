@@ -266,6 +266,27 @@
     "buttonCount_many": "Inventaire ({{count}} objets dans cette salle)",
     "buttonCount_other": "Inventaire ({{count}} objets dans cette salle)"
   },
+  "crew": {
+    "title": "Équipage",
+    "label": "Équipage : {{summary}}",
+    "count": {
+      "alive_one": "{{count}} en vie",
+      "alive_many": "{{count}} en vie",
+      "alive_other": "{{count}} en vie",
+      "mush_one": "{{count}} Mush",
+      "mush_many": "{{count}} Mush",
+      "mush_other": "{{count}} Mush",
+      "cryo_one": "{{count}} place libre en cryosommeil",
+      "cryo_many": "{{count}} places libres en cryosommeil",
+      "cryo_other": "{{count}} places libres en cryosommeil",
+      "dead_one": "{{count}} mort",
+      "dead_many": "{{count}} morts",
+      "dead_other": "{{count}} morts",
+      "deadMush_one": "{{count}} Mush mort",
+      "deadMush_many": "{{count}} Mush morts",
+      "deadMush_other": "{{count}} Mush morts"
+    }
+  },
   "titles": {
     "label": "Titres",
     "holder": "{{title}} : {{name}}",
@@ -435,6 +456,7 @@
     "paidBy": ", coûte un de vos {{resource}}",
     "atCapacity": "Capacité atteinte : les Mush ont déjà extrait toutes les spores possibles aujourd'hui. La limite se réinitialise au jour suivant.",
     "missionIssuedToday": "Une mission a déjà été donnée aujourd'hui. La limite se réinitialise au jour suivant.",
+    "cpuPriorityChangedToday": "Vous avez déjà changé la priorité CPU aujourd'hui. La limite se réinitialise au jour suivant.",
     "lacksAp": "Pas assez de PA : cela coûte {{need}}, vous en avez {{have}}.",
     "onCooldown_one": "De nouveau prête dans {{count}} cycle.",
     "onCooldown_other": "De nouveau prête dans {{count}} cycles.",
@@ -705,6 +727,7 @@
     "nothingTracked": "Rien de suivi pour l'instant.",
     "removeNote": "Supprimer « {{note}} »",
     "researchTracker": "Suivi des recherches",
+    "projectTracker": "Suivi des projets NERON",
     "trackPlaceholder": "Suivre quelque chose…",
     "newTrackerLine": "Nouvelle ligne de suivi",
     "add": "Ajouter",
@@ -886,6 +909,7 @@
     "focused": "Concentré",
     "hopeless": "Sans espoir",
     "nimble": "Agile",
+    "pregnant": "Enceinte",
     "contaminated": "Contamination : {{level}}",
     "desc": {
       "dirty": "Vous ne pouvez pas faire de recherche. Prendre une douche l'enlève.",
@@ -952,14 +976,15 @@
       "focused": "Accède à un terminal avec un air concentré. Prend fin quand il le ferme, s'éloigne ou quitte la salle.",
       "contaminated": "Un humain que vous avez contaminé. À sa capacité maximale, il devient Mush.",
       "hopeless": "À 0 de moral. Tout gain de moral y met fin. Un humain encore Sans espoir à la fin du cycle meurt.",
-      "nimble": "Toutes vos actions publiques dans une salle (déplacements compris) deviennent secrètes. Vous seul voyez cet état."
+      "nimble": "Toutes vos actions publiques dans une salle (déplacements compris) deviennent secrètes. Vous seul voyez cet état.",
+      "pregnant": "Attend un enfant. Si ce coéquipier meurt, chaque membre vivant de l'équipage perd 2 points de moral."
     }
   },
   "itemAttr": {
     "contaminated": "Contamination : {{level}}",
     "contaminatedDesc": "Nourriture fongique : un humain qui la mange est contaminé de ce nombre de niveaux. Seuls les Mush le voient.",
     "mushCat": "Chat Mush",
-    "mushCatDesc": "Infecté par le Mush : tout humain qui prend Schrödinger est contaminé d'un niveau. Seuls les Mush le voient.",
+    "mushCatDesc": "Infecté par le Mush : tout humain griffé par Schrödinger (en le prenant ou en le caressant) est contaminé d'un niveau. Seuls les Mush le voient.",
     "jelly_one": "Gélée verte : panne dans {{count}} cycle",
     "jelly_many": "Gélée verte : panne dans {{count}} cycles",
     "jelly_other": "Gélée verte : panne dans {{count}} cycles",
@@ -1007,6 +1032,7 @@
     "loseMorale": "Vous avez perdu {{amount}} point de moral.",
     "antisocialMoraleLoss": "La présence des autres vous a coûté {{amount}} point de moral.",
     "germaphobeMoraleLoss": "Être sale vous a coûté {{amount}} point de moral.",
+    "pregnantDeathMoraleLoss": "Un membre enceinte de l'équipage est mort. Vous avez perdu {{amount}} points de moral.",
     "gainMorale": "Vous avez gagné {{amount}} point de moral.",
     "actionCostChanged": "Votre action en attente ({{action}}) a été annulée car son coût a changé : elle coûte maintenant {{ap}} PA et {{mp}} PM.",
     "actionDropped": "Votre action en attente ({{action}}) n'était plus possible et a été annulée.",
@@ -1210,6 +1236,8 @@
     "bonded": "Vous avez créé un lien avec {{name}}.",
     "shareDid": "Vous avez fait {{label}} avec {{name}}.",
     "shareDidToYou": "{{name}} a fait {{label}} avec vous.",
+    "becamePregnant": "Vous êtes enceinte !",
+    "partnerBecamePregnant": "{{name}} est enceinte !",
     "sporeExtracted": "{{name}} a extrait une spore.",
     "ignited": "{{name}} a aspergé un mur de microspores.",
     "sabotaged": "{{name}} a saboté l'équipement « {{equipment}} ».",
@@ -1289,12 +1317,20 @@
     "hullRepairFailed": "Vous n'avez pas réussi à renforcer la coque.",
     "biosShieldOn": "Vous avez activé le bouclier plasma : il protège à nouveau la coque.",
     "biosShieldOff": "Vous avez désactivé le bouclier plasma : il ne protège plus la coque.",
+    "biosCpuNone": "Vous avez réinitialisé la priorité CPU de NERON.",
+    "biosCpuAstronavigation": "Vous avez réglé la priorité CPU de NERON sur l'astronavigation.",
+    "biosCpuProjects": "Vous avez réglé la priorité CPU de NERON sur les projets.",
+    "biosCpuResearch": "Vous avez réglé la priorité CPU de NERON sur la recherche.",
+    "biosLockPiloting": "Vous avez verrouillé le pilotage pour les pilotes.",
+    "biosLockProjects": "Vous avez verrouillé les projets NERON pour les concepteurs.",
+    "biosLockResearch": "Vous avez verrouillé la recherche du laboratoire pour les biologistes et médecins.",
     "fungalCooked": "Vous glissez un spore dans : {{item}}. Niveau de contamination : {{level}}.",
     "massMouldering": "Vous libérez un nuage de spores moisissantes dans tout le vaisseau.",
     "bodyTransferred": "Vous vous êtes glissé dans la peau de {{target}}. {{name}} se réveille humain, dans votre ancien corps.",
     "patrolTakeoff": "{{name}} a décollé à bord du {{room}}.",
     "icarusBoarded": "{{name}} a embarqué dans l'Icarus.",
     "icarusLeft": "{{name}} a quitté l'Icarus.",
+    "icarusKnockedOff": "{{name}} a été éjecté de l'Icarus.",
     "icarusDisembarked": "Le Daedalus a quitté la planète ; vous regagnez la Baie Icarus.",
     "icarusNoSpacesuit": "Vous n'avez pas de combinaison spatiale en état, et {{planet}} n'a pas d'oxygène : vous restez dans la baie.",
     "icarusTakeoff": "{{name}} a décollé à bord de l'Icarus vers {{planet}}.",
@@ -1632,6 +1668,7 @@
     "anyConsumable": "un aliment, une boisson ou un médicament",
     "needChun": "Chun présente",
     "needPostSelection": "Mush désignés",
+    "needDeadMush": "Mush mort",
     "progress": "{{percent}} % accompli",
     "done": "Terminée",
     "work": "Progresser",
@@ -1817,7 +1854,7 @@
       "FIRE_SENSOR": "Les incendies sont reportés sur vos modules persos.",
       "DOOR_SENSOR": "Les portes bloquées sont reportées sur vos modules persos.",
       "EQUIPMENT_SENSOR": "Les équipements touchés sont reportés sur vos modules persos.",
-      "QUANTUM_SENSORS": "Le scanner de planète révèle une section de plus par essai.",
+      "QUANTUM_SENSORS": "Améliore le scanner de planète (+30 % de chance de scan et +1 secteur analysé tant qu'il n'est pas cassé).",
       "CHIPSET_ACCELERATION": "La recherche d'une planète coûte 1 PA de moins.",
       "ICARUS_ANTIGRAV_PROPELLER": "Augmente vos chances de réussir à atterrir sur des planètes.",
       "ICARUS_LARGER_BAY": "L'Icarus peut transporter 2 personnes supplémentaires.",
@@ -1876,8 +1913,28 @@
     "adminOnly": "Seul l'Administrateur NERON peut modifier ces réglages.",
     "isOn": "{{name}} : oui",
     "isOff": "{{name}} : non",
+    "currentValue": "{{name}} : {{value}}",
     "switchOn": "Activer",
     "switchOff": "Désactiver",
+    "cpu_priority": {
+      "name": "Priorité CPU",
+      "desc": "Alloue la puissance de calcul de NERON à l'astronavigation, aux projets ou à la recherche. Modifiable une fois par jour.",
+      "values": {
+        "none": "Aucune",
+        "astronavigation": "Astronavigation",
+        "projects": "Projets",
+        "research": "Recherche"
+      }
+    },
+    "crew_lock": {
+      "name": "Verrou d'équipage",
+      "desc": "Réserve une activité du vaisseau à l'équipage qualifié : pilotage (Pilotes), projets (Concepteurs) ou recherche (Biologistes et Médecins).",
+      "values": {
+        "piloting": "Pilotage",
+        "projects": "Projets",
+        "research": "Recherche"
+      }
+    },
     "actopi": {
       "name": "ACTOPI",
       "desc": "Activé, tout le monde sait qui est dans quelle pièce. Désactivé, vous ne voyez que le nombre de personnes dans les autres pièces."

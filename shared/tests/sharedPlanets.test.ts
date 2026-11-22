@@ -143,6 +143,18 @@ describe("sharing planets", () => {
     expect(viewFor(lied, "p3").sharedPlanets[0]).toMatchObject({ name: "Name-planet-a", sectors: ["CRISTAL_FIELD", null, "OXYGEN"] });
   });
 
+  it("navigation.orbitShared links the entry shared from the orbited planet, only for readers of the feature", () => {
+    const s = shared();
+    expect(viewFor(s, "p3").navigation.orbitShared).toBeUndefined();
+    s.navigation.orbit = "planet-a";
+    expect(viewFor(s, "p3").navigation.orbitShared).toBe("sp-1");
+    const mine = viewFor(s, "p3").inventory.find((i) => i.type === ITRACKIE_ITEM)!.id;
+    const bare = must(applyAction(s, "p3", { type: "drop", item: mine }));
+    expect(viewFor(bare, "p3").navigation.orbitShared).toBeUndefined();
+    s.navigation.orbit = "planet-c";
+    expect(viewFor(s, "p3").navigation.orbitShared).toBeUndefined();
+  });
+
   it("an expedition's view links the entry shared from the planet being explored, only for readers of the feature", () => {
     const s = shared();
     s.expedition = { report: "r1", planet: "planet-b", sectors: [0], nextAt: 0, carried: {}, sabotaged: false, sabotageNext: false, hp: {}, ship: null };

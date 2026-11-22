@@ -5,6 +5,8 @@ import type { GameState, PlayerState } from "../types.ts";
 import { gainMorale } from "../adjustStats.ts";
 import { spreadByTouch } from "../diseases.ts";
 import { dayOf } from "../helpers.ts";
+import { rollFloat } from "../rng.ts";
+import { addStatus } from "../statuses.ts";
 
 export type ShareActionData = { type: "dtt" | "stt"; target: string };
 
@@ -44,6 +46,24 @@ export class ShareAction<T extends "dtt" | "stt" = "dtt" | "stt"> extends Action
     logPrivate(state, player.id, "shareDid", { label, name: other.character });
     logPrivate(state, other.id, "shareDidToYou", { label, name: player.character });
     if (contaminating) contaminate(state, human);
+    // Owner, 2026-11-21: on DTT, each living non-pregnant partner rolls independently for pregnancy (everyone eligible).
+    if (this.type === "dtt") {
+      const { chance, mushExtraSpore } = state.config.share.pregnancy;
+      for (const [who, partner] of [
+        [player, other],
+        [other, player],
+      ] as const) {
+        if (!who.alive || who.statuses.includes("pregnant")) continue;
+        if (rollFloat(state) < chance) {
+          addStatus(who, "pregnant");
+          logPrivate(state, who.id, "becamePregnant");
+          logPrivate(state, partner.id, "partnerBecamePregnant", { name: who.character });
+          if (who.role === "human" && partner.role === "mush" && mushExtraSpore > 0) {
+            contaminate(state, who, mushExtraSpore);
+          }
+        }
+      }
+    }
     spreadByTouch(state, player, other);
   }
 }

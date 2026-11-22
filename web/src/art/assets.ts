@@ -335,7 +335,7 @@ export const ENDING_ART: Readonly<Record<Ending, string>> = {
 
 // Status effect icons (16x16 pixel art), keyed by status id (shared/src/statuses.ts).
 const statusIconFiles = urls(
-  import.meta.glob<string>("../../../Mush/www/img/icons/ui/status/{dirty,belly_full,hungry,immune,pacifist,hyperactive,unsociable,germaphobic,guardian,disabled,paria,disease,hurt,sleepy,genius_idea,moduling,demoralized}.png", { eager: true, query: "?url", import: "default" }),
+  import.meta.glob<string>("../../../Mush/www/img/icons/ui/status/{dirty,belly_full,hungry,immune,pacifist,hyperactive,unsociable,germaphobic,guardian,disabled,paria,disease,hurt,sleepy,genius_idea,moduling,demoralized,pregnant}.png", { eager: true, query: "?url", import: "default" }),
 );
 const diseaseStatusIcons = Object.fromEntries(DEFAULT_CONFIG.diseases.allDiseases.map((id) => [id, statusIconFiles["disease"]!]));
 const injuryStatusIcons = Object.fromEntries(DEFAULT_CONFIG.diseases.allInjuries.map((id) => [id, statusIconFiles["hurt"]!]));
@@ -375,6 +375,7 @@ export const STATUS_ICONS: Readonly<Record<string, string>> = {
   hopeless: statusIconFiles["demoralized"]!,
   // Nimble mode (Nimble Fingers): reuses the Nimble Fingers skill icon.
   nimble: traitSkillIcons["nimble_fingers"]!,
+  pregnant: statusIconFiles["pregnant"]!,
 };
 /**
  * A class for a status icon that is another status's art recoloured at render time (owner, 2026-10-31, #145): no new
@@ -533,3 +534,15 @@ export const SHIP_CARD_ICONS: Readonly<Record<string, string>> = urls(
     { eager: true, query: "?url", import: "default" },
   ),
 );
+
+const crewIcons = urls(
+  import.meta.glob<string>("../../../Mush/www/img/icons/ui/p_{alive,mush,cryo,dead,deadmush}.png", { eager: true, query: "?url", import: "default" }),
+);
+/** The original's 7x15 crew figures, one per seat in the crew bar (CrewBar.tsx). */
+export const CREW_ICONS = {
+  alive: crewIcons["p_alive"]!,
+  mush: crewIcons["p_mush"]!,
+  cryo: crewIcons["p_cryo"]!,
+  dead: crewIcons["p_dead"]!,
+  deadMush: crewIcons["p_deadmush"]!,
+} as const;

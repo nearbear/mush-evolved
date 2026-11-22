@@ -151,13 +151,17 @@ export const costOf = (s: GameState, id: PlayerId, match: ActionMatch) => option
 
 /**
  * Meets a research's RESEARCH_REQUIRES in `room`, for tests about something else: its items on the floor (coffee for
- * any consumable), Chun's requirement lifted by her Xyloph entry, and pre-selection over.
+ * any consumable), Chun's requirement lifted by her Xyloph entry, pre-selection over, and a dead Mush if needed.
  */
 export function stockLab(s: GameState, room: string, research: ResearchId): void {
   const needs = RESEARCH_REQUIRES[research] ?? {};
   for (const type of needs.items ?? []) s.items.push({ id: `item-${s.nextItemId++}`, type: type === ANY_CONSUMABLE ? "coffee" : type, at: { kind: "room", id: room } });
   if (needs.chun && !s.comms.xyloph.includes("ZONG_CHUN_SAMPLE")) s.comms.xyloph.push("ZONG_CHUN_SAMPLE");
   if (needs.postSelection) s.preselection = false;
+  if (needs.deadMush && !s.players.some((p) => p.role === "mush" && !p.alive)) {
+    const mush = s.players.find((p, i) => i > 0 && p.role === "mush") ?? s.players.find((p) => p.role === "mush");
+    if (mush) mush.alive = false;
+  }
 }
 
 /** Puts `percent` in a relay pool as one token from a player not in the game, so later contributions add to it (relay.ts). */

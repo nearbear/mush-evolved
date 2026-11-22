@@ -18,6 +18,13 @@ export interface HunterTypeConfig {
   maxPerWave: number | null; // At most this many in one wave; null: no cap.
   follows: "share" | "all" | "never"; // On a jump: part of the `followShare` draw, always, or never.
   countdown: number | null; // Cycle changes before it hits the Daedalus for its hp and is gone (the asteroid); null: never.
+  debris: DebrisTable; // What it leaves in space when destroyed, or when an asteroid hits.
+}
+
+/** Wreckage left in space: weights by piece count (index = count), and by item type for each piece. */
+export interface DebrisTable {
+  count: number[];
+  types: Record<string, number>;
 }
 
 /** `T` with every field read-only, all the way down. */
@@ -280,6 +287,10 @@ export interface GameConfig {
    * so a cost in morale or MP can sit next to an effect without being confused with it. Conditions (rooms, odds,
    * cooldowns) stay beside them.
    */
+  bios: {
+    astroExtraSectors: number; // Extra sectors revealed by analyze_planet when BIOS CPU priority is astronavigation (owner, 2026-11-21).
+    cpuPriorityBonus: number; // Bonus added to tokenBase for NERON projects / lab research when BIOS CPU priority matches (owner, 2026-11-21).
+  };
   bond: {
     cost: { ap: number }; // Confirmed 2026-10-14.
   };
@@ -292,6 +303,11 @@ export interface GameConfig {
   share: {
     cost: { ap: number }; // Paid by the one who starts a DTT or STT (confirmed 2026-10-14).
     effect: { morale: number }; // What each of the two gets from a DTT or STT (confirmed 2026-10-14).
+    pregnancy: {
+      chance: number; // Per non-pregnant partner on DTT; everyone (all characters, human or Mush) is eligible (owner, 2026-11-21).
+      deathMoraleLoss: number; // Morale lost by every living crewmember when a pregnant crewmember dies (owner, 2026-11-21).
+      mushExtraSpore: number; // Extra contamination when a human becomes pregnant from a Mush (owner, 2026-11-21).
+    };
   };
   infection: {
     capacity: number; // Contamination a human reaches before converting to Mush, before modifiers (confirmed 2026-10-14).
@@ -605,8 +621,8 @@ export interface GameConfig {
     bricBroc: { preventChance: number };
     // Owner, 2026-11-04: completing it puts these item types on the floor of `room` (one item per list entry).
     foodRetailer: { room: RoomId; items: readonly string[] };
-    // Quantum Sensors (owner, 2026-11-01; eMushpedia *Détecteur à ondes de probabilité*): each planet analysis reveals +extraSectors sectors.
-    quantumSensors: { extraSectors: number };
+    // Quantum Sensors (owner, 2026-11-01, updated 2026-11-21; eMushpedia *Détecteur à ondes de probabilité*): while the Motor Room planet scanner is unbroken, +scanChanceBonus (30%) scan chance and +extraSectors (1) analysis sector.
+    quantumSensors: { scanChanceBonus: number; extraSectors: number };
     // CPU Overclocking (owner, 2026-11-01; eMushpedia *Accélération du processeur*): Scan for planets costs -scanApDiscount AP.
     chipsetAcceleration: { scanApDiscount: number };
     radarTransVoid: { apDiscount: number };
@@ -776,8 +792,6 @@ export interface GameConfig {
     followShare: number; // Share of the hunters whose kind `follows: "share"` that follow a jump (travel or leaving orbit), rounded up.
     patrolTargetChance: number; // Chance a hunter picking a target aims at a patrol ship in flight (one at random), when any is out.
     meridonScramblerChance: number; // Chance a hunter picking a target aims at a random shooting teammate when FUNGUS_SCRAMBLER is complete (owner, 2026-11-14).
-    // What a destroyed hunter leaves in space: weights by piece count (index = count), and by item type for each piece.
-    debris: { count: number[]; types: Record<string, number> };
     types: Record<HunterType, HunterTypeConfig>;
   };
   // Turrets (owner, 2026-10-24, the wiki's Tourelle): 1 AP, a charge per shot, 30% to hit, x1.25 per miss in a row, reset by a hit.

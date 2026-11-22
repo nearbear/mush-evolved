@@ -542,7 +542,6 @@ function drawSticker(ctx: Ctx, r: Rect, rem: number) {
     y += 1.1 * size + 0.15 * rem;
   };
   line("ChangMei-Tech", "800", 0.8 * rem, 0.15); // i18n-ignore: placeholder sticker copy
-  line("Placeholder slogan goes here", "italic", 0.5 * rem, 0); // i18n-ignore: placeholder sticker copy
   // The barcode: bars of 1, 2 and 1px in every 10px.
   y += 0.1 * rem;
   const barWidth = 0.7 * r.width;

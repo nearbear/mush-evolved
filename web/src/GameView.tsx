@@ -2,7 +2,7 @@
 // the server decides what is legal and sends it in view.actions. No socket either: see GameScreen.
 
 import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
-import { CHEAT_ROOM, CORPSE_ITEM, ICARUS_CRAFT, SUPPORT_DRONE_ITEM, doorId, doorOtherRoom, isLostPlace, legalIn, type Action, type BotPause, type CharacterId, type Cheat, type GameClientMessage, type KubeOpId, type PlayerView, type RoleCheat, type RoomId, type Spot, type Target } from "@mush2/shared";
+import { CHEAT_ROOM, CORPSE_ITEM, SUPPORT_DRONE_ITEM, doorId, doorOtherRoom, isLostPlace, legalIn, type Action, type BotPause, type CharacterId, type Cheat, type GameClientMessage, type KubeOpId, type PlayerView, type RoleCheat, type RoomId, type Spot, type Target } from "@mush2/shared";
 import { useTranslation } from "react-i18next";
 import { Hint } from "./hud/IconButton.tsx";
 import { ActionQueue } from "./hud/ActionQueue.tsx";
@@ -163,11 +163,15 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
 
   const { you } = view;
   const reachable = new Set(legalIn(view).flatMap((a) => (a.type === "move" ? [a.to] : [])));
-  // Away with an expedition, or aboard the docked Icarus (owner, 2026-11-17): both show the Icarus panel.
-  const inIcarus = view.expedition?.report !== undefined || you.room === ICARUS_CRAFT;
+  // Away with an expedition, or aboard the docked Icarus (owner, 2026-11-17): both show the Icarus panel. Aboard, you
+  // are still in the bay (#469), where the others see you and can reach you.
+  const isLost = isLostPlace(you.room);
+  const inIcarus = view.expedition?.report !== undefined || you.boardedIcarus === true;
+  // In the Icarus (docked or away) or lost on a planet: its panel takes the whole room view (no ID card, minimap or mobile peek bar).
+  const inExpeditionScreen = inIcarus || isLost;
   /** The room view shows your room's scene (not death, the patrol cockpit, a lost place or Icarus), so it gets the name plate. */
   const leaveIcarus = inIcarus ? view.actions.find((o) => o.action.type === "leave_icarus") : undefined;
-  const inRoom = you.alive && !(view.patrolShip && view.expedition?.report === undefined) && !isLostPlace(you.room) && !inIcarus;
+  const inRoom = you.alive && !(view.patrolShip && view.expedition?.report === undefined) && !inExpeditionScreen;
   const occupant = (p: { id: string; isBot: boolean; character: CharacterId; statuses: string[]; busy?: Bar; lying?: string; spot?: Spot; pushedBy?: string }): Occupant => {
     const busy = p.id === you.id && you.current ? { bar: you.current, label: names.action(you.current.action.type) } : p.busy && { bar: p.busy };
     return {
@@ -309,14 +313,14 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
             )}
             {you.alive && <RoomList view={view} layout={layout} reachable={reachable} onSelect={(target) => { select(target); setFocusActions((n) => n + 1); }} onMove={move} quiet={readOnly} />}
             {mobile && <ShipOverlay view={view} />}
-            {/* Not in the Icarus (owner, 2026-11-20): its panel takes the whole room view. */}
-            {!mobile && you.alive && !inIcarus && <SelfHud view={view} onInspect={() => select({ kind: "player", id: you.id })} />}
+            {/* Not in the Icarus or while lost (owner, 2026-11-20, 2026-11-21): its panel takes the whole room view. */}
+            {!mobile && you.alive && !inExpeditionScreen && <SelfHud view={view} onInspect={() => select({ kind: "player", id: you.id })} />}
             {/* The action queue: top-right on desktop; on phones under your ID card in the top-left, as the desktop
-                card is (not in the Icarus, whose panel takes the whole room view). */}
+                card is (not in the Icarus or while lost, whose panel takes the whole room view). */}
             {you.alive &&
               (mobile ? (
                 <div className="room-top-left">
-                  {!inIcarus && (
+                  {!inExpeditionScreen && (
                     <PlayerSummary
                       view={view}
                       tags={botsPaused && <BotsPausedTag pause={botsPaused} />}
@@ -347,8 +351,8 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
               />
             )}
             {/* Bottom-left: one card (amber, red when your room is on fire) holding your room's name with the minimap under it.
-                Not in the Icarus (owner, 2026-11-20): its panel takes the whole room view. */}
-            {!inIcarus && (
+                Not in the Icarus or while lost (owner, 2026-11-20, 2026-11-21): its panel takes the whole room view. */}
+            {!inExpeditionScreen && (
               <div className={`room-corner${inRoom && view.roomOnFire ? " alert" : ""}`}>
                 {inRoom && (
                   <div className="room-title">
@@ -378,8 +382,9 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
                 />
               </div>
             )}
-            {/* Phones: over the bottom of the room view; the corners' overlays sit above it (--peek-clear, responsive.css). */}
-            {mobile && panel === "room" && you.alive && (
+            {/* Phones: over the bottom of the room view; the corners' overlays sit above it (--peek-clear, responsive.css).
+                Hidden in the Icarus and while lost. */}
+            {mobile && panel === "room" && you.alive && !inExpeditionScreen && (
               <PeekBar
                 view={view}
                 target={target}

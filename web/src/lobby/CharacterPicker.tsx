@@ -57,6 +57,7 @@ function DesktopPicker({ free, onBoard }: PickerProps) {
   const [selected, setSelected] = useState<CharacterId | null>(null);
   // Someone may take the selected one while you look: fall back to the first free one.
   const current = selected && free(selected) ? selected : (ORDER.find((c) => free(c.id))?.id ?? null);
+  const selectedCharacter = ORDER.find((c) => c.id === current);
 
   return (
     <div className="pod-picker">
@@ -77,16 +78,12 @@ function DesktopPicker({ free, onBoard }: PickerProps) {
           {/* The portrait with the selected crew member's skills beside it. */}
           <div className="pod-detail-top">
             <img className="pod-detail-portrait" src={characterImage(current ?? undefined)} alt="" />
-            {/* Every crew member's skills and text in one grid cell each, only the selected one visible, so the pane
-                is always sized to the longest (in any language) and never changes height between selections. */}
-            <div className="pod-detail-stack">
-              {ORDER.map((c) => (
-                <div key={c.id} className="pod-detail-stacked" inert={c.id !== current}>
-                  <CharacterSkills character={c} tooltips />
-                </div>
-              ))}
-            </div>
+            {/* Only the selected one's skills, so a short list leaves its room to the text below; the pane's height
+                is fixed by the panel either way. */}
+            <div className="pod-detail-skills-column">{selectedCharacter && <CharacterSkills character={selectedCharacter} tooltips />}</div>
           </div>
+          {/* Every crew member's text in one grid cell each, only the selected one visible, so the text area keeps
+              one height (the longest, in any language) between selections. */}
           <div className="pod-detail-stack pod-detail-texts">
             {ORDER.map((c) => (
               <div key={c.id} className="pod-detail-stacked pod-detail-text" inert={c.id !== current}>

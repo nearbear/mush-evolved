@@ -57,7 +57,7 @@ describe("Mass Mouldering", () => {
 
   it("is only offered to and usable by a Mush holding massggedon outside preselection", () => {
     const noSkill = ship();
-    player(noSkill, "p0").mushSkills = ["fertile"];
+    player(noSkill, "p0").mushSkills = ["ninja"];
     expect(offered(noSkill, "p0")).toBe(false);
     expect(applyAction(noSkill, "p0", { type: "mass_mouldering" }).ok).toBe(false);
 

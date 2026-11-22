@@ -1,7 +1,6 @@
 import { Action, EXPLORED, ICARUS_LOST, isString } from "./action.ts";
 import { endPushToLeave } from "./accommodate.ts";
 import { ICARUS_EQUIPMENT } from "./icarus_takeoff.ts";
-import { board } from "./takeoff.ts";
 import { boardRefusal } from "../expeditions.ts";
 import { logPublic } from "../log.ts";
 import type { GameState, PlayerState } from "../types.ts";
@@ -12,7 +11,8 @@ export type BoardIcarusActionData = { type: "board_icarus"; equipment: string };
  * Board the docked Icarus from its bay (owner, 2026-11-17, docs/plans/expedition-boarding.md): free, at the Icarus,
  * while the ship orbits a planet with an unexplored sector and there is room aboard, with a working spacesuit unless the
  * planet has an Oxygen sector (`boardRefusal`). Whoever is aboard at takeoff is the crew (actions/icarus_takeoff.ts).
- * The line is public in the bay, written before the player leaves it. A push the player is part of ends. On a fully
+ * Boarded players stay in the bay (`boardedIcarus`, #469), where they can still be reached, until takeoff moves the crew
+ * into the craft. The line is public in the bay. A push the player is part of ends. On a fully
  * explored planet or once the Icarus is lost it shows disabled with the reason (owner, 2026-11-19), not hidden.
  */
 export class BoardIcarusAction extends Action<BoardIcarusActionData> {
@@ -34,7 +34,7 @@ export class BoardIcarusAction extends Action<BoardIcarusActionData> {
   override apply(state: GameState, player: PlayerState): void {
     endPushToLeave(state, player);
     logPublic(state, player.room, "icarusBoarded", { name: player.character });
-    board(player, state.config.expedition.craft);
+    player.boardedIcarus = true;
   }
 }
 

@@ -28,6 +28,8 @@
 // `boardRefusal`), only with a spacesuit unless the planet has an Oxygen sector, up to `maxCrew`; anyone aboard who can
 // fly launches from inside (actions/icarus_takeoff.ts), and the landing happens at once. Anyone whose suit stopped
 // working since boarding is put off at takeoff. Leaving orbit puts everyone aboard off (`disembarkAll`).
+// Boarded crew stay in the bay (owner, 2026-11-21, #469: `boardedIcarus`, `isAboard`) until takeoff moves them into the
+// craft, so they can still be reached; a public aggressive action on one puts them off (`knockOffIcarus`).
 // Pure: every draw goes through the seeded RNG.
 // The actions are actions/board_icarus.ts, actions/leave_icarus.ts, actions/icarus_takeoff.ts and
 // actions/land_on_planet.ts.
@@ -46,7 +48,7 @@ import { CORPSE_ITEM, afterArmor, isWorking, itemsIn, removeItem, sameContainer,
 import { logPrivate, logPublic } from "./log.ts";
 import { isTraveling } from "./navigation.ts";
 import { retargetNow } from "./hunters.ts";
-import { canFly, isLostPlace, lostPlace, PATROL_SHIPS, patrolShip, type PatrolShip } from "./patrol.ts";
+import { canFly, canTakeoff, isLostPlace, lostPlace, PATROL_SHIPS, patrolShip, type PatrolShip } from "./patrol.ts";
 import { PLANET_TAGS, type PlanetTag } from "./planets.ts";
 import { projectDone } from "./projects.ts";
 import { roll, rollFloat, rollInt, rollWeighted } from "./rng.ts";
@@ -58,10 +60,10 @@ import type { CreatureLoot, ExpeditionEvent, ExpeditionEventRule, ExpeditionRepo
 export const LANDING = "LANDING";
 
 /**
- * Who may launch: anyone who can fly (owner, 2026-11-15). Kept as one helper so the NERON piloting lock can gate it
- * later.
+ * Who may launch the Icarus (owner, 2026-11-15, 2026-11-21): anyone who can take off (not grounded, and either a Pilot,
+ * `freeHacking`, or the BIOS crew lock is off piloting).
  */
-export const canLaunchExpedition = (_state: Readonly<GameState>, player: Readonly<PlayerState>): boolean => canFly(player);
+export const canLaunchExpedition = (state: Readonly<GameState>, player: Readonly<PlayerState>): boolean => canTakeoff(state, player);
 
 /** The planet the ship orbits, if any, while not leaving it. */
 export function orbitedPlanet(state: Readonly<GameState>): Planet | undefined {
@@ -83,11 +85,15 @@ export const maxCrew = (state: Readonly<GameState>): number =>
   projectDone(state, "ICARUS_LARGER_BAY") ? state.config.expedition.largerBayCrew : state.config.expedition.maxCrew;
 
 /**
- * Who is aboard the docked Icarus (owner, 2026-11-17): the living in its room while no Icarus expedition is away. They
- * boarded it (actions/board_icarus.ts) and are the crew of its next takeoff.
+ * Who is aboard the docked Icarus (owner, 2026-11-17): the living who boarded it (actions/board_icarus.ts) while no
+ * Icarus expedition is away. They stay in the Icarus Bay, boarded, until takeoff moves them into the craft (#469), and
+ * are the crew of its next takeoff.
  */
-export const aboardIcarus = (state: Readonly<GameState>): PlayerState[] =>
-  icarusDocked(state) ? state.players.filter((p) => p.alive && p.room === state.config.expedition.craft) : [];
+export const aboardIcarus = (state: Readonly<GameState>): PlayerState[] => (icarusDocked(state) ? state.players.filter((p) => isAboard(state, p)) : []);
+
+/** Whether this player is aboard the docked Icarus: boarded, alive and in the Icarus Bay (#469). */
+export const isAboard = (state: Readonly<GameState>, p: Readonly<PlayerState>): boolean =>
+  p.alive && p.boardedIcarus === true && p.room === state.config.expedition.room && icarusDocked(state);
 
 /** Whether the Icarus is in its bay: not away on an expedition, and not lost. */
 export const icarusDocked = (state: Readonly<GameState>): boolean => !state.icarusLost && !(state.expedition !== null && state.expedition.ship === null);
@@ -100,6 +106,7 @@ export const icarusDocked = (state: Readonly<GameState>): boolean => !state.icar
 export function boardRefusal(state: Readonly<GameState>, p: Readonly<PlayerState>): string | null {
   if (!p.alive) return "dead";
   if (p.room !== state.config.expedition.room) return "not_in_bay";
+  if (p.boardedIcarus) return "already_aboard";
   if (!icarusDocked(state)) return state.icarusLost ? ICARUS_LOST : "icarus_away";
   const planet = orbitedPlanet(state);
   if (!planet) return "not_in_orbit";
@@ -110,16 +117,22 @@ export function boardRefusal(state: Readonly<GameState>, p: Readonly<PlayerState
 }
 
 /**
- * Off the docked Icarus into its bay (owner, 2026-11-17): the player, with a public line in the bay unless `quiet`. Once
- * nobody living is left aboard, whatever is on its floor (a body, say) goes onto the bay's, so nothing is stranded in a
- * room nobody can reach. Mutates a cloned state.
+ * Off the docked Icarus (owner, 2026-11-17): the player, who never left the bay (#469), is no longer boarded, with a
+ * public line in the bay unless `quiet`. Mutates a cloned state.
  */
 export function leaveIcarus(state: GameState, p: PlayerState, quiet = false): void {
-  const rules = state.config.expedition;
-  board(p, rules.room);
-  if (!quiet) logPublic(state, rules.room, "icarusLeft", { name: p.character });
-  if (aboardIcarus(state).length > 0) return;
-  for (const item of state.items) if (sameContainer(item.at, { kind: "room", id: rules.craft })) item.at = { kind: "room", id: rules.room };
+  delete p.boardedIcarus;
+  if (!quiet) logPublic(state, state.config.expedition.room, "icarusLeft", { name: p.character });
+}
+
+/**
+ * An aggressive action seen by the bay hit someone aboard the docked Icarus (owner, 2026-11-21, #469): they are put off
+ * it, as being punched gets you out of bed, with a public line in the bay. Mutates a cloned state.
+ */
+export function knockOffIcarus(state: GameState, p: PlayerState): void {
+  if (!p.boardedIcarus) return;
+  delete p.boardedIcarus;
+  if (p.alive) logPublic(state, state.config.expedition.room, "icarusKnockedOff", { name: p.character });
 }
 
 /** The ship left the planet (owner, 2026-11-17): everyone aboard the docked Icarus is back in the bay, each told why. */
@@ -181,7 +194,11 @@ export function runExpedition(state: GameState, launcher: PlayerState, ship?: Pa
     logPublic(state, launcher.room, "patrolPlanetLanding", { name: launcher.character, room: ship.id, planet: planet.name });
     state.patrolShips[ship.id]!.onPlanet = launcher.id;
     retargetNow(state, ship);
-  } else logPublic(state, rules.room, "icarusTakeoff", { name: launcher.character, planet: planet.name });
+  } else {
+    logPublic(state, rules.room, "icarusTakeoff", { name: launcher.character, planet: planet.name });
+    // The boarded crew waited in the bay (#469); now they are in the Icarus.
+    for (const p of crew) board(p, rules.craft);
+  }
 
   const report: ExpeditionReport = {
     id: `expedition-${state.nextExpeditionId++}`,

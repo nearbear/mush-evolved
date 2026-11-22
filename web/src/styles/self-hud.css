@@ -67,7 +67,7 @@
   position: absolute;
   top: 0.5rem;
   left: 0.5rem;
-  z-index: 2; /* under the inventory popup (3), which may cover it */
+  z-index: 2; /* under the inventory popup (3), which sits below it */
   max-width: calc(100% - 1rem);
 }
 /*

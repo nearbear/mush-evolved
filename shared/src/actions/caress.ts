@@ -1,6 +1,7 @@
 import { Action, isString } from "./action.ts";
 import { gainMorale } from "../adjustStats.ts";
-import { CAT_ITEM, canReachItem } from "../items.ts";
+import { contaminate } from "../infection.ts";
+import { CAT_ITEM } from "../items.ts";
 import { logPublic } from "../log.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
@@ -11,8 +12,8 @@ export type CaressActionData = { type: "caress"; item: string };
 
 /**
  * Caress Schrödinger (owner, 2026-11-21; eMush PetCat): 1 AP, 10% injury chance, public room log,
- * works on floor or in inventory. Grants +3 morale once per player per game (still repeatable after
- * for 0 morale). Blocked for Germaphobe (Finola).
+ * must be carried in inventory. Grants +3 morale once per player per game (still repeatable after
+ * for 0 morale). Blocked for Germaphobe (Finola). If Schrödinger is Mush and scratches, contaminates by 1.
  */
 export class CaressAction extends Action<CaressActionData> {
   constructor() {
@@ -29,13 +30,13 @@ export class CaressAction extends Action<CaressActionData> {
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): CaressActionData[] {
     return state.items
-      .filter((item) => item.type === CAT_ITEM && canReachItem(state, player, item))
+      .filter((item) => item.type === CAT_ITEM && item.at.kind === "player" && item.at.id === player.id)
       .map((item) => ({ type: "caress", item: item.id }));
   }
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: CaressActionData): string | null {
     const item = state.items.find((i) => i.id === target.item);
-    if (!item || item.type !== CAT_ITEM || !canReachItem(state, player, item)) return "no_such_item";
+    if (!item || item.type !== CAT_ITEM || item.at.kind !== "player" || item.at.id !== player.id) return "no_such_item";
     if (player.modifiers.includes("germaphobe")) return GERMAPHOBE;
     return null;
   }
@@ -46,5 +47,10 @@ export class CaressAction extends Action<CaressActionData> {
       player.caressedCat = true;
       gainMorale(state, player, state.config.schrodinger.caress.morale);
     }
+  }
+
+  override onInjury(state: GameState, player: PlayerState, target: CaressActionData): void {
+    const item = state.items.find((i) => i.id === target.item);
+    if (item?.type === CAT_ITEM && item.mush) contaminate(state, player);
   }
 }

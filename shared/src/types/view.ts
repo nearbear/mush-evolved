@@ -1,6 +1,6 @@
 import type { ActionCost, ActionTag } from "../actions.ts";
 import type { CharacterId } from "../characters.ts";
-import type { BiosState } from "../bios.ts";
+import type { BiosState, CpuPriority } from "../bios.ts";
 import type { DrugEffect } from "../drugs.ts";
 import type { FruitEffect } from "../fruits.ts";
 import type { RebelBaseId, XylophEntryId } from "../comms.ts";
@@ -99,6 +99,8 @@ export interface OtherPlayerView {
   statuses: string[];
   /** The bed (equipment id) they are lying in. Public to anyone in your room (empty for people elsewhere). */
   lying?: string;
+  /** Aboard the docked Icarus, in the bay (#469). Public to anyone in your room. */
+  boarded?: true;
   /** Where they stand in the room (spot.ts). Public to anyone in your room (empty for people elsewhere). */
   spot?: Spot;
   /** Who is pushing their wheelchair. Public to anyone in your room (empty for people elsewhere). */
@@ -113,6 +115,8 @@ export interface OtherPlayerView {
   bookSkill?: string;
   /** Their contamination, shown as a status. Only when you are Mush, they are a contaminated human, and they are in your room. */
   contamination?: number;
+  /** This player is Mush (alive or dead). Only when you are Mush yourself (owner, 2026-11-21: Mush know each other, and which dead were Mush). */
+  mush?: true;
   /**
    * The bar of the timed action they are busy with (server ms), never which action. Only for people in your room, and
    * only when the action's log entry could reach you (`activitySeen` in log.ts).
@@ -172,6 +176,8 @@ export interface PublicConfig {
   gardenRoom: RoomId;
   /** Cycles in one day (24 / `cycleHours`), so the client can turn a log or chat entry's global `cycle` into day and cycle-of-day. */
   cyclesPerDay: number;
+  /** Seats on this ship (pre-selection's `seats`, else the crew size); the crew bar draws unfilled ones as cryo sleepers. */
+  seats: number;
 }
 
 /**
@@ -367,6 +373,8 @@ export interface PlayerView {
   comms: { linked: boolean; terminal: CommsTerminalView | null };
   /** NERON's BIOS settings, read-only, only while you are alive in a room with a BIOS terminal (owner, 2026-10-21); otherwise null. */
   bios: BiosState | null;
+  /** NERON's current CPU priority, visible ship-wide to all living players (owner, 2026-11-10); null for dead players. */
+  cpuPriority: CpuPriority | null;
   /**
    * Hunters attacking the ship (owner, 2026-10-24): how many, to everyone. `list` (each hunter's hp) only while you are
    * alive in a turret room or flying a ship (owner, 2026-10-28), with its kind and an asteroid's countdown (#388); `turrets` (charges by turret equipment id) only while
@@ -419,10 +427,11 @@ export interface PlayerView {
   /**
    * Whether the ship is in orbit, public to everyone (the planet fills the portholes), with the planet's name
    * (`orbitName`, owner 2026-10-31); its sectors are only in its finder's `planets`; `orbitPicture` is only which picture it is drawn with (`planetPicture`, cosmetic, owner 2026-10-28),
-   * so everyone sees the same planet out of the window. `heading` only while you are alive at a Command terminal (owner, 2026-10-22); otherwise null.
+   * so everyone sees the same planet out of the window. `orbitShared` is the Astrophysics entry shared from the orbited
+   * planet, to whoever reads that feature (`sharedPlanets` holds the entry). `heading` only while you are alive at a Command terminal (owner, 2026-10-22); otherwise null.
    * `lastTurn` is the ship's latest quarter turn (`n` counts them, so a new one shows), public to everyone aboard (owner, 2026-10-29).
    */
-  navigation: { orbiting: boolean; traveling: boolean; orbitPicture: number | null; orbitName: string | null; heading: PlanetDirection | null; lastTurn: { n: number; side: TurnSide } | null };
+  navigation: { orbiting: boolean; traveling: boolean; orbitPicture: number | null; orbitName: string | null; orbitShared?: SharedPlanetId; heading: PlanetDirection | null; lastTurn: { n: number; side: TurnSide } | null };
   /**
    * The patrol ship you are flying (its room id) with its armor and charges (null for the Pasiphae, which can't shoot),
    * while you are alive aboard (patrol.ts); otherwise null. `debris` is how many pieces float around the Daedalus, not

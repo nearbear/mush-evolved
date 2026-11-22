@@ -6,6 +6,7 @@ One line per document. Paths in docs and code are written from the repo root (`d
 
 - `rules/rules-design.md`: answered rule decisions and the design for rules not built yet.
 - `rules/implemented-rules.md`: what the rules code does today, one bullet per rule.
+- `rules/changes-from-emush.md`: implemented changes in Mush: Evolved compared to eMush.
 
 ## Plans
 
@@ -23,7 +24,8 @@ Feature designs in `plans/`, one per file. Each plan's own header is the authori
 | `plans/space-combat.md` | Hunters and space combat | Partly | Phase 1 built 2026-10-24, hunters following travel ([#240](https://github.com/nearbear/mush2/issues/240)) too. Wave scaling: [#241](https://github.com/nearbear/mush2/issues/241). |
 | `plans/expedition.md` | Expeditions | Partly | Phase 1 built 2026-11-04 ([#319](https://github.com/nearbear/mush2/issues/319)). Phases 2–5: [#356](https://github.com/nearbear/mush2/issues/356), [#357](https://github.com/nearbear/mush2/issues/357), [#358](https://github.com/nearbear/mush2/issues/358), [#359](https://github.com/nearbear/mush2/issues/359). |
 | `plans/expedition-ui.md` | Expedition screen (sector timeline), compact report, sectors in shared planets | Not built | Planned 2026-11-19; fully answered. |
-| `plans/bios-priority-lock.md` | NERON BIOS CPU priority and crew lock | Not built | Planned 2026-11-21; fully answered. |
+| `plans/bios-priority-lock.md` | NERON BIOS CPU priority and crew lock | Done | Built 2026-11-21. |
+| `plans/the-list.md` | THE List (Tracker) and the tabulator ([#266](https://github.com/nearbear/mush2/issues/266)) | Not built | Decided 2026-11-21. |
 | `plans/on-call.md` | Channel plans and on-call summons | Partly | `shared` and server built ([#313](https://github.com/nearbear/mush2/issues/313), [#314](https://github.com/nearbear/mush2/issues/314)). UI: [#315](https://github.com/nearbear/mush2/issues/315); bots: [#316](https://github.com/nearbear/mush2/issues/316). |
 | `plans/bot-goals.md` | Single-player bot goals and chat coordination | Partly | Steps 1–3 built 2026-11-01. Plans for bots ([#316](https://github.com/nearbear/mush2/issues/316)) and the open questions remain. 2026-11-10: a direction for a bot crew reaching Eden was added (survival harness, scripted upkeep, a daily plan); none of it is built. |
 | `plans/chat-pages.md` | Fixed 50-message chat pages ([#355](https://github.com/nearbear/mush2/issues/355)) | Done | Built 2026-11-06; wrapped up 2026-11-08 (flat-view test, screenshots). |

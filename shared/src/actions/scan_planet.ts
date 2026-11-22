@@ -4,6 +4,7 @@ import { dayOf } from "../helpers.ts";
 import { logPrivate, logPublic } from "../log.ts";
 import { isTraveling } from "../navigation.ts";
 import { astroTerminalsHere, freePositions, generatePlanet, pickPosition, planetsOf, sizeRangeOn } from "../planets.ts";
+import { projectDone } from "../projects.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
 export type ScanPlanetActionData = { type: "scan_planet"; equipment: string };
@@ -28,7 +29,9 @@ export class ScanPlanetAction extends Action<ScanPlanetActionData> {
 
   override getSuccessChance(state: Readonly<GameState>): number {
     const { chance, brokenScannerChance } = state.config.astro.scan;
-    return isBrokenIn(state, "MOTOR_ROOM", "MOTOR_ROOM:PLANET_SCANNER") ? brokenScannerChance : chance;
+    if (isBrokenIn(state, "MOTOR_ROOM", "MOTOR_ROOM:PLANET_SCANNER")) return brokenScannerChance;
+    const bonus = projectDone(state, "QUANTUM_SENSORS") ? state.config.project.quantumSensors.scanChanceBonus : 0;
+    return Math.min(1, chance + bonus);
   }
 
   override getFailureMultiplier(state: Readonly<GameState>): number {

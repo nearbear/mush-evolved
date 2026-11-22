@@ -3,9 +3,11 @@ import { useState } from "react";
 import { Menu } from "@base-ui/react/menu";
 import { useTranslation } from "react-i18next";
 import { SETTINGS_ICON } from "../art/assets.ts";
+import { useNames } from "../i18n/names.ts";
 import { useMobile } from "../useMobile.ts";
 import { BotsPausedTag } from "./BotsPausedTag.tsx";
 import { CycleCountdown } from "./CycleCountdown.tsx";
+import { crewProps } from "./CrewBar.tsx";
 import { AlertBar, AlertButton, ShipResources } from "./ShipResources.tsx";
 import { ShipStatus } from "./ShipStatus.tsx";
 import { SettingsDialog } from "./SettingsDialog.tsx";
@@ -47,8 +49,14 @@ export function TopBar({
 }) {
   const { you } = view;
   const { t } = useTranslation();
+  const names = useNames();
   const mobile = useMobile();
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const sharedPlanetId = view.expedition?.shared ?? view.navigation.orbitShared;
+  const sharedPlanet = sharedPlanetId ? view.sharedPlanets.find((e) => e.id === sharedPlanetId) : undefined;
+  const sharedPlanetBy = sharedPlanet
+    ? names.character((sharedPlanet.by === you.id ? you : view.players.find((p) => p.id === sharedPlanet.by))?.character ?? sharedPlanet.by)
+    : undefined;
   const endCycleLabel = you.ready ? (
     <>
       {mobile ? t("topBar.waiting") : t("topBar.waitingForOthers")}
@@ -78,7 +86,7 @@ export function TopBar({
           <CycleCountdown nextCycleAt={nextCycleAt} />
         </>
       )}
-      <ShipStatus preselection={view.preselection} orbit={view.navigation.orbitName} expedition={view.expedition} />
+      <ShipStatus preselection={view.preselection} orbit={view.navigation.orbitName} expedition={view.expedition} shared={sharedPlanet} sharedBy={sharedPlanetBy} />
     </span>
   );
   // Phones: the actions live in a hamburger menu, at the strip's right end, to save top bar space.
@@ -130,7 +138,7 @@ export function TopBar({
           {botsPaused && <BotsPausedTag pause={botsPaused} />}
         </div>
       )}
-      {!mobile && <ShipResources ship={view.ship} hunters={view.hunters.count} titles={view.titles} preselection={view.preselection} compactTitles alertsApart lost={view.lost} alerts={view.alerts} />}
+      {!mobile && <ShipResources ship={view.ship} hunters={view.hunters.count} titles={view.titles} preselection={view.preselection} compactTitles alertsApart lost={view.lost} alerts={view.alerts} crew={crewProps(view)} />}
       <div className="top-bar-actions">
         {!mobile && (
           <>

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { ACTIONS } from "../src/actions.ts";
 import { advanceNeron } from "../src/comms.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import projets from "@mush2/assets/derived/data/Data/projets.json";
@@ -329,5 +330,45 @@ describe("NERON participation (NERON_PROJECT_THREAD)", () => {
     expect(s.items.filter((i) => i.type === "tree_pot")).toHaveLength(potsBefore);
     expect(s.log.filter((e) => e.key === "neronProjectCompleted")).toHaveLength(1);
     expect(offeredProjects(s)).not.toContain("EXTRA_HYDROPONPOTS");
+  });
+});
+
+describe("BIOS projects crew lock", () => {
+  it("blocks non-Designers from project and allows Designers and freeHacking, leaving coup and become_genius unaffected", () => {
+    const s = game();
+    s.bios.crew_lock = "projects";
+    const [first] = offeredProjects(s);
+    const act = work(first!);
+
+    // Non-Designer is blocked: not offered and refused with "crew_lock".
+    expect(offered(s, "p0").some((a) => a.type === "project")).toBe(false);
+    expect(ACTIONS.project.check(s, s.players[0]!, act)).toBe("crew_lock");
+    expect(applyAction(s, "p0", act).ok).toBe(false);
+
+    // Designer is allowed.
+    s.players[0]!.skills = ["designer"];
+    expect(offered(s, "p0").some((a) => a.type === "project" && a.project === first)).toBe(true);
+    expect(applyAction(s, "p0", act).ok).toBe(true);
+
+    // freeHacking bypasses the lock.
+    const hacked = must(setCheat(s, "p1", "freeHacking", true));
+    expect(offered(hacked, "p1").some((a) => a.type === "project" && a.project === first)).toBe(true);
+    expect(applyAction(hacked, "p1", act).ok).toBe(true);
+
+    // coup and become_genius are unaffected for non-Designers.
+    const coupState = game();
+    coupState.bios.crew_lock = "projects";
+    coupState.titles.commander = "p0";
+    coupState.players[1]!.skills = ["politician", "genius"];
+    expect(offered(coupState, "p1").some((a) => a.type === "coup")).toBe(true);
+    expect(offered(coupState, "p1").some((a) => a.type === "become_genius")).toBe(true);
+
+    // Non-projects locks do not block non-Designers.
+    for (const lock of ["piloting", "research"] as const) {
+      const unlocked = game();
+      unlocked.bios.crew_lock = lock;
+      expect(offered(unlocked, "p1").some((a) => a.type === "project")).toBe(true);
+      expect(applyAction(unlocked, "p1", act).ok).toBe(true);
+    }
   });
 });

@@ -6,12 +6,13 @@
 // Phones join it to the clock the same way, on the plate over the ID card.
 
 import { Popover } from "@base-ui/react/popover";
-import type { PlayerView } from "@mush2/shared";
+import type { PlayerView, SharedPlanet } from "@mush2/shared";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { SHIP_STATUS_PLANET_ICON, standingSprite } from "../art/assets.ts";
 import { useNames } from "../i18n/names.ts";
 import { ClockDigits } from "./CycleCountdown.tsx";
+import { SharedSectors } from "./SharedSectors.tsx";
 import { useCountdown } from "./useCountdown.ts";
 
 interface Props {
@@ -19,11 +20,15 @@ interface Props {
   /** The orbited planet's name (`navigation.orbitName`), or null out of orbit. */
   orbit: string | null;
   expedition: PlayerView["expedition"];
+  /** What was shared in the Astrophysics feature about this planet, if any and readable. */
+  shared?: SharedPlanet | undefined;
+  /** Who shared it, by name. */
+  sharedBy?: string | undefined;
 }
 
-export function ShipStatus({ preselection, orbit, expedition }: Props) {
+export function ShipStatus({ preselection, orbit, expedition, shared, sharedBy }: Props) {
   const planet = orbit ?? expedition?.planet ?? null;
-  const content = preselection ? <Preselection /> : planet !== null ? <AtPlanet planet={planet} expedition={expedition} /> : <DeepSpace />;
+  const content = preselection ? <Preselection /> : planet !== null ? <AtPlanet planet={planet} expedition={expedition} shared={shared} sharedBy={sharedBy} /> : <DeepSpace />;
   return (
     <>
       <span className="clock-divider" aria-hidden="true" />
@@ -76,7 +81,17 @@ function DeepSpace() {
  * readers. The popover names the planet, says what to do, and while exploring shows the crew's sprites over their
  * given names.
  */
-function AtPlanet({ planet, expedition }: { planet: string; expedition: PlayerView["expedition"] }) {
+function AtPlanet({
+  planet,
+  expedition,
+  shared,
+  sharedBy,
+}: {
+  planet: string;
+  expedition: PlayerView["expedition"];
+  shared?: SharedPlanet | undefined;
+  sharedBy?: string | undefined;
+}) {
   const { t } = useTranslation();
   const names = useNames();
   const label = useExpeditionLabel(expedition);
@@ -102,6 +117,14 @@ function AtPlanet({ planet, expedition }: { planet: string; expedition: PlayerVi
             </li>
           ))}
         </ul>
+      )}
+      {/* Never ticked off against explored sectors (owner, 2026-11-19): a share may lie. */}
+      {shared && sharedBy !== undefined && (
+        <div className="ship-status-shared">
+          <p className="sub">{t("expedition.timeline.shared", { name: sharedBy, day: shared.day, cycle: shared.cycleOfDay })}</p>
+          <SharedSectors sectors={shared.sectors} />
+          {shared.text && <p className="ship-status-shared-text">{shared.text}</p>}
+        </div>
       )}
     </StatusPopover>
   );

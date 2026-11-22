@@ -6,7 +6,7 @@ import { makeSeats, mustApply, player, testConfig } from "./support.ts";
 const ship = () => {
   const s = createGame(makeSeats(4), testConfig(), 5, { p0: "mush" });
   const p = player(s, "p0");
-  p.mushSkills.push("epigenetics", "fertile", "ninja");
+  p.mushSkills.push("epigenetics", "pyromane", "ninja");
   p.ap = 5;
   return s;
 };
@@ -26,7 +26,7 @@ describe("Epigenetics", () => {
 
   it("is only for a Mush holding the skill", () => {
     const s = ship();
-    player(s, "p0").mushSkills = ["fertile"];
+    player(s, "p0").mushSkills = ["pyromane"];
     expect(offered(s, "p0")).toBe(false);
     const h = ship();
     player(h, "p0").role = "human";

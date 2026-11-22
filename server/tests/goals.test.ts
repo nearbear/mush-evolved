@@ -18,7 +18,7 @@ import { repairHull } from "../src/bots/goals/repairHull.ts";
 import { LEAVE_SHRINK_BEDS_MORALE, observeBeds, rest } from "../src/bots/goals/rest.ts";
 import { SELF_CARE_MORALE, SELF_CARE_UNTIL, selfCare } from "../src/bots/goals/selfCare.ts";
 import { research } from "../src/bots/goals/research.ts";
-import { BOT_PROJECT_ORDER, pickProject, project } from "../src/bots/goals/project.ts";
+import { BOT_PROJECT_ORDER, pickProject, project, projectOptions } from "../src/bots/goals/project.ts";
 import { SHRINK_DESK_WORK_WITHIN } from "../src/bots/goals/work.ts";
 import { onlyAsteroids, shotOrder } from "../src/bots/goals/hunterTargets.ts";
 import { patrolShootHunters } from "../src/bots/goals/patrolShootHunters.ts";
@@ -55,7 +55,6 @@ import { seats } from "../src/testing/fakes.ts";
 // End cycle on, as on the dev server, so a bot with nothing to do ends its cycle instead of waiting for the clock.
 const config = { ...DEFAULT_CONFIG, manualCycles: true };
 const ICARUS_BAY = DEFAULT_CONFIG.expedition.room;
-const ICARUS_CRAFT = DEFAULT_CONFIG.expedition.craft;
 /** The game with the first spacesuit on the ship moved into `id`'s hands. */
 function suited(game: GameState, id: string): GameState {
   const suit = game.items.find((i) => i.type === "space_suit")!;
@@ -3380,7 +3379,7 @@ describe("expeditionLaunch: Pilot walks to ICARUS, summons open plan, and launch
     expect(expeditionLaunch.options(viewFor(lost, pilot), m)).toEqual([]);
 
     const done = orbitSetup({ sectors: [{ tag: "FOREST", explored: true }] });
-    const aboard = edit(done.game, done.pilot, (p) => (p.room = ICARUS_CRAFT));
+    const aboard = edit(done.game, done.pilot, (p) => Object.assign(p, { room: ICARUS_BAY, boardedIcarus: true }));
     expect(viewFor(aboard, done.pilot).actions.find((o) => o.action.type === "icarus_takeoff")?.lacks).toEqual(["explored"]);
     expect(expeditionLaunch.options(viewFor(aboard, done.pilot), memory())).toEqual([]);
   });
@@ -3400,7 +3399,7 @@ describe("expeditionLaunch: Pilot walks to ICARUS, summons open plan, and launch
     // The summoned crew bot boards on arrival.
     const { game: boarded, taken: crewTaken } = await untilReady(summoned, crew, crewBot);
     expect(crewTaken.some((a) => a.type === "board_icarus")).toBe(true);
-    expect(boarded.players.find((p) => p.id === crew)!.room).toBe(ICARUS_CRAFT);
+    expect(boarded.players.find((p) => p.id === crew)!.boardedIcarus).toBe(true);
 
     const { game: after, taken: taken2 } = await untilReady(boarded, pilot, pilotBot);
     expect(taken2.map((a) => a.type)).toEqual(["board_icarus", "icarus_takeoff"]);
@@ -3440,7 +3439,7 @@ describe("expeditionLaunch: Pilot walks to ICARUS, summons open plan, and launch
     if (!cycle2.ok) return;
     const { game: aboard, taken: taken2a } = await untilReady(edit(cycle2.state, pilot, (p) => (p.ap = 1)), pilot, bot);
     expect(taken2a.map((a) => a.type)).toEqual(["board_icarus"]);
-    expect(aboard.players.find((p) => p.id === pilot)!.room).toBe(ICARUS_CRAFT);
+    expect(aboard.players.find((p) => p.id === pilot)!.boardedIcarus).toBe(true);
     expect(leaveIcarus.options(viewFor(aboard, pilot), memory())).toEqual([]);
 
     const next = newCycle(edit(aboard, pilot, (p) => (p.ap = 6)));
@@ -3480,7 +3479,7 @@ describe("expeditionLaunch: Pilot walks to ICARUS, summons open plan, and launch
     const pilotBot = new GoalBot(1, 2, [expeditionLaunch]);
     const { game: summoned } = await untilReady(start, pilot, pilotBot);
     let { game } = await untilReady(summoned, crew, crewBot);
-    expect(game.players.find((p) => p.id === crew)!.room).toBe(ICARUS_CRAFT);
+    expect(game.players.find((p) => p.id === crew)!.boardedIcarus).toBe(true);
 
     // The Pilot never launches: the crew bot waits aboard, then gets off.
     for (let c = 1; c < ICARUS_BOARD_WAIT_CYCLES; c++) {
@@ -3505,10 +3504,11 @@ describe("leaveIcarus: no bot is left aboard the docked Icarus with nothing to w
     const { game: base, id } = setup();
     const inBay = edit(base, id, (p) => (p.room = ICARUS_BAY));
     expect(leaveIcarus.options(viewFor(inBay, id), memory())).toEqual([]);
-    const aboard = edit(base, id, (p) => (p.room = ICARUS_CRAFT));
+    const aboard = edit(base, id, (p) => Object.assign(p, { room: ICARUS_BAY, boardedIcarus: true }));
     expect(leaveIcarus.options(viewFor(aboard, id), memory())).toHaveLength(1);
     const bot = new GoalBot(1, 2, SOLO_GOALS);
-    const { game, taken } = await play(aboard, id, bot, 1);
+    // Boarded, it is still in the bay and sees its floor (#469): its first turn may share an item seen there.
+    const { game, taken } = await play(aboard, id, bot, 2);
     expect(taken.map((a) => a.type)).toEqual(["leave_icarus"]);
     expect(game.players.find((p) => p.id === id)!.room).toBe(ICARUS_BAY);
   });
@@ -3786,5 +3786,66 @@ describe("the fuel relay (owner, 2026-11-20, Run A2c)", () => {
     observeFuel(viewFor(asCommander, id), cm);
     expect(loadFuel.options(viewFor(asCommander, id), cm)).toEqual([]);
     expect(SOLO_GOALS).toContain(loadFuel);
+  });
+});
+
+describe("BIOS crew locks in bot goals", () => {
+  it("does not offer project to non-Designers in the Nexus under projects lock, and offers it to Designers", () => {
+    const { game: start, id } = setup();
+    const base = edit(start, id, (p) => {
+      p.room = "NEXUS_ROOM";
+      p.skills = [];
+      p.ap = 12;
+    });
+    base.bios.crew_lock = "projects";
+    expect(project.options(viewFor(base, id), memory())).toEqual([]);
+    // Dirty non-Designer is not told to work on locked projects (so shower won't fire for projects).
+    const dirty = edit(base, id, (p) => {
+      p.statuses = ["dirty"];
+    });
+    expect(projectOptions(viewFor(dirty, id), memory(), true)).toEqual([]);
+    // Designer IS offered project.
+    const designer = edit(base, id, (p) => {
+      p.skills = ["designer"];
+    });
+    expect(project.options(viewFor(designer, id), memory())).toHaveLength(1);
+  });
+
+  it("does not offer research to unqualified bots in the lab or Nexus under research lock, and offers it to Biologist/Medic/Polyvalent", () => {
+    const { game: start, id } = setup();
+    for (const room of ["LABORATORY", "NEXUS_ROOM"] as const) {
+      const base = edit(start, id, (p) => {
+        p.room = room;
+        p.skills = [];
+        p.ap = 12;
+      });
+      base.bios.crew_lock = "research";
+      expect(research.options(viewFor(base, id), memory())).toEqual([]);
+    }
+    for (const skill of ["biologist", "medic", "skilful"] as const) {
+      const qualified = edit(start, id, (p) => {
+        p.room = "LABORATORY";
+        p.skills = [skill];
+        p.ap = 12;
+      });
+      qualified.bios.crew_lock = "research";
+      expect(research.options(viewFor(qualified, id), memory())).toHaveLength(1);
+    }
+  });
+
+  it("bots act legally without looping under all three crew locks", async () => {
+    for (const lock of ["piloting", "projects", "research"] as const) {
+      const { game: start, id } = setup(11);
+      const game = edit(start, id, (p) => {
+        p.room = "REFECTORY";
+        p.skills = [];
+        p.ap = 12;
+      });
+      game.bios.crew_lock = lock;
+      const { taken } = await play(game, id, new GoalBot(1, 2, SOLO_GOALS), 15);
+      expect(taken.every((a) => (lock === "projects" ? a.type !== "project" : true))).toBe(true);
+      expect(taken.every((a) => (lock === "research" ? a.type !== "research" : true))).toBe(true);
+      expect(taken.every((a) => (lock === "piloting" ? a.type !== "takeoff" && a.type !== "icarus_takeoff" : true))).toBe(true);
+    }
   });
 });

@@ -125,6 +125,13 @@
   gap: 0.5rem;
 }
 
+.bios-choices {
+  display: flex;
+  flex: 1 0 100%;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
 /* A list row: the card on the left, the title row beside it, then the progress and checklist. On a phone the title row
    spans the card too (responsive.css), so a title isn't squeezed into the space left by the card and pill. */
 li.research-item {

@@ -44,9 +44,11 @@ const FIXED_STATUS_PUBLIC = {
   hopeless: false,
   // Owner, 2026-11-14: Nimble mode (Nimble Fingers); private to its holder.
   nimble: false,
+  // Owner, 2026-11-21: public to roommates and floated overhead; permanent on the body.
+  pregnant: true,
 } as const;
 
-export const STATUS_IDS = ["dirty", "full_belly", "hungry", "immune", "immunity", "pacifist", "hyperactive", "antisocial", "germaphobe", "mankind_only_hope", "wheelchair", "accommodated", "outcast", "protecting", "protected", "guardian", "genius", "inactive", "super_inactive", "focused", "hopeless", "nimble"] as const;
+export const STATUS_IDS = ["dirty", "full_belly", "hungry", "immune", "immunity", "pacifist", "hyperactive", "antisocial", "germaphobe", "mankind_only_hope", "wheelchair", "accommodated", "outcast", "protecting", "protected", "guardian", "genius", "inactive", "super_inactive", "focused", "hopeless", "nimble", "pregnant"] as const;
 export type StatusId = string;
 /**
  * The fixed statuses plus the ship's configured diseases and injuries (`config.diseases.allDiseases` and

@@ -209,6 +209,9 @@ export class Action<T extends { type: string }> {
     return 0;
   }
 
+  /** Runs when the action's injury roll triggers and isn't blocked by gloves (after damage). */
+  onInjury(state: GameState, player: PlayerState, target: T): void {}
+
   dirtChanceMods(state: Readonly<GameState>, player: Readonly<PlayerState>, target: T): number {
     return actionDirtRate(this.dirtChance(state, player, target), this.context(state, player, target));
   }

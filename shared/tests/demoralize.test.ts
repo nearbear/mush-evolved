@@ -62,7 +62,7 @@ describe("Demoralizer (demoralize)", () => {
 
   it("rejects non-Mush, missing skill, pre-selection, missing/dead/distant targets, self, and low AP", () => {
     const noSkill = ship();
-    player(noSkill, "p0").mushSkills = ["fertile"];
+    player(noSkill, "p0").mushSkills = ["ninja"];
     expect(offeredTargets(noSkill, "p0")).toEqual([]);
     expect(applyAction(noSkill, "p0", { type: "demoralize", target: "p2" }).ok).toBe(false);
 

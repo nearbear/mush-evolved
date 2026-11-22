@@ -3,6 +3,7 @@
 // ranges (projects use no tokens). All progress, `waiting`, gains and tokens go only to the living in the target's room until
 // complete; completion reaches every room (owner, 2026-10-31). Rolls and contamination never go out.
 
+import { cpuPriorityBonus } from "./bios.ts";
 import { equipmentHere } from "./equipment.ts";
 import { PILGRED_COMPLETE, PILGRED_SKILLS, pilgredTerminalsHere } from "./pilgred.ts";
 import { offeredProjects } from "./projectEffects.ts";
@@ -21,21 +22,21 @@ const EMPTY_RESEARCH: ResearchPool = { tokens: [], pending: [] };
  * its samples, verified and pending, since that is what the next assay tests; `pending` is the striped segment. Nothing
  * says whether a sample is contaminated.
  */
-function researchView(pool: Readonly<ResearchPool> | undefined, config: Readonly<RelayProgressConfig>, you: Readonly<PlayerState>): RelayTargetView {
+function researchView(pool: Readonly<ResearchPool> | undefined, config: Readonly<RelayProgressConfig>, you: Readonly<PlayerState>, bonus: number): RelayTargetView {
   const p = pool ?? EMPTY_RESEARCH;
-  const all = targetView({ tokens: [...p.tokens, ...p.pending] }, config, you, RESEARCH_SKILLS, RESEARCH_COMPLETE);
+  const all = targetView({ tokens: [...p.tokens, ...p.pending] }, config, you, RESEARCH_SKILLS, RESEARCH_COMPLETE, bonus);
   const verified = p.tokens.length;
   return { ...all, pending: researchProgress(p, config, RESEARCH_COMPLETE).pending, tokens: all.tokens.map((t, i) => (i < verified ? t : { ...t, pending: true })) };
 }
 
-function targetView(pool: Readonly<RelayPool> | undefined, config: Readonly<RelayProgressConfig>, you: Readonly<PlayerState>, skills: readonly SkillId[], complete: number): RelayTargetView {
+function targetView(pool: Readonly<RelayPool> | undefined, config: Readonly<RelayProgressConfig>, you: Readonly<PlayerState>, skills: readonly SkillId[], complete: number, bonus = 0): RelayTargetView {
   const p = pool ?? EMPTY;
   const { waiting, values } = poolProgress(p, config, complete);
-  return { waiting, gain: contributionGain(p, config, you, skills, complete), tokens: p.tokens.map((t, i) => ({ by: t.by, value: values[i]! })) };
+  return { waiting, gain: contributionGain(p, config, you, skills, complete, bonus), tokens: p.tokens.map((t, i) => ({ by: t.by, value: values[i]! })) };
 }
 
-function streakEntry(streak: Readonly<RelayStreak> | undefined, config: Readonly<RelayProgressConfig>, you: Readonly<PlayerState>, skills: readonly SkillId[]): RelayTargetView {
-  return { waiting: 0, gain: relayGainRange(config, you, skills, streak), tokens: [] };
+function streakEntry(streak: Readonly<RelayStreak> | undefined, config: Readonly<RelayProgressConfig>, you: Readonly<PlayerState>, skills: readonly SkillId[], bonus = 0): RelayTargetView {
+  return { waiting: 0, gain: relayGainRange(config, you, skills, streak, bonus), tokens: [] };
 }
 
 /** Each target's percent for this viewer: all of them in its room, otherwise only the completed ones. */
@@ -50,6 +51,8 @@ export function relayView(state: Readonly<GameState>, you: Readonly<PlayerState>
   const atPilgred = you.alive && pilgredTerminalsHere(state, you).length > 0;
   const research = state.config.research.progress;
   const project = state.config.project.progress;
+  const researchBonus = cpuPriorityBonus(state, "research");
+  const projectBonus = cpuPriorityBonus(state, "projects");
   const offered = atCore ? offeredProjects(state, you) : [];
   const offeredSet = new Set<string>(offered);
   const count = (pool: Readonly<RelayPool | ResearchPool> | undefined) => (pool ? [...pool.tokens, ...("pending" in pool ? pool.pending : [])].filter((t) => t.by === you.id).length : 0);
@@ -59,9 +62,9 @@ export function relayView(state: Readonly<GameState>, you: Readonly<PlayerState>
     projects: Object.fromEntries(Object.entries(state.projects).filter(([id, percent]) => percent >= PROJECT_COMPLETE || (atCore && offeredSet.has(id)))),
     pilgred: atPilgred ? state.pilgred.progress : null,
     relay: {
-      research: inLab ? Object.fromEntries(RESEARCH_IDS.map((id) => [id, researchView(state.relay.research[id], research, you)])) : {},
-      projects: atCore ? Object.fromEntries(offered.map((id) => [id, streakEntry(state.relay.projects[id], project, you, projectSkills(id))])) : {},
-      pilgred: atPilgred ? targetView(state.pilgred.pool, state.config.pilgred.progress, you, PILGRED_SKILLS, PILGRED_COMPLETE) : null,
+      research: inLab ? Object.fromEntries(RESEARCH_IDS.map((id) => [id, researchView(state.relay.research[id], research, you, researchBonus)])) : {},
+      projects: atCore ? Object.fromEntries(offered.map((id) => [id, streakEntry(state.relay.projects[id], project, you, projectSkills(id), projectBonus)])) : {},
+      pilgred: atPilgred ? targetView(state.pilgred.pool, state.config.pilgred.progress, you, PILGRED_SKILLS, PILGRED_COMPLETE, 0) : null,
     },
     // Your own tokens, wherever you are: your own information.
     yourTokens: { research: counts(state.relay.research), pilgred: count(state.pilgred.pool) },

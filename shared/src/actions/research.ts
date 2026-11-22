@@ -1,12 +1,15 @@
 import { Action, type ActionCost, type ActionVisibility, DIRTY, isString } from "./action.ts";
+import { cpuPriorityBonus } from "../bios.ts";
 import { ANY_CONSUMABLE, RESEARCH_COMPLETE, RESEARCH_IDS, RESEARCH_REQUIRES, RESEARCH_SKILLS, type ResearchId, researchNeedOrder } from "../research.ts";
 import { logPrivate, logPublic } from "../log.ts";
+import { hasMushDied } from "../death.ts";
 import { resetDrugDispenser } from "../drugs.ts";
 import { DRUG_DISPENSER_EQUIPMENT, equipmentHere, SUPER_CALC_EQUIPMENT } from "../equipment.ts";
 import { ITEM_TYPES, removeItem, spawnInRoom, SPORE_SUCKER_ITEM, STEROIDS_ITEM, STEROIDS_YIELD } from "../items.ts";
 import { xylophFound } from "../comms.ts";
 import { makeToken, type ResearchPool } from "../relay.ts";
 import { assayDue, researchProgress, runAssay, type SampleCounts } from "../assay.ts";
+import { hasSkill } from "../skills.ts";
 import { removeStatus } from "../statuses.ts";
 import { dropMycoAlarms } from "../mycoalarm.ts";
 import { ANTI_MUSH_SERUM_ITEM } from "./vaccinate.ts";
@@ -23,7 +26,7 @@ const matches = (item: Readonly<ItemState>, need: string) => (need === ANY_CONSU
 
 /**
  * Which of a research's requirements (RESEARCH_REQUIRES) the lab meets, in `researchNeedOrder`'s order: each item, then
- * Chun, then post-selection. Empty when it has none.
+ * Chun, then post-selection, then dead Mush. Empty when it has none.
  */
 export function researchNeedsMet(state: Readonly<GameState>, room: RoomId, research: ResearchId): boolean[] {
   const needs = RESEARCH_REQUIRES[research];
@@ -32,6 +35,7 @@ export function researchNeedsMet(state: Readonly<GameState>, room: RoomId, resea
   return researchNeedOrder(needs).map((need) => {
     if (need === "chun") return xylophFound(state, "ZONG_CHUN_SAMPLE") || state.players.some((p) => p.alive && p.room === room && p.character === "chun");
     if (need === "postSelection") return !state.preselection;
+    if (need === "deadMush") return hasMushDied(state);
     return items.some((item) => matches(item, need.item));
   });
 }
@@ -46,6 +50,17 @@ export function researchAllowed(state: Readonly<GameState>, room: RoomId, resear
   if (player?.cheats.includes("freeHacking")) return true;
   return researchNeedsMet(state, room, research).every(Boolean);
 }
+
+/**
+ * Whether `player` may work on lab research (or Mush own-spoil) under the current BIOS crew lock (owner, 2026-11-21):
+ * anyone unless the lock is on research, in which case only Biologists, Medics, Polyvalent (`skilful`), or `freeHacking`.
+ */
+export const canWorkResearch = (state: Readonly<GameState>, player: Readonly<PlayerState>): boolean =>
+  state.bios.crew_lock !== "research" ||
+  hasSkill(player, "biologist") ||
+  hasSkill(player, "medic") ||
+  hasSkill(player, "skilful") ||
+  player.cheats.includes("freeHacking");
 
 export type ResearchActionData = { type: "research"; equipment: string; research: string };
 
@@ -66,7 +81,7 @@ function countsParam(state: Readonly<GameState>, counts: SampleCounts): string {
 export function addSample(state: GameState, player: Readonly<PlayerState>, research: ResearchId, spoiled: boolean): void {
   const config = state.config.research;
   const pool = researchPool(state, research);
-  pool.pending.push({ ...makeToken(state, config.progress, player, RESEARCH_SKILLS), ...(spoiled && { contaminatedBy: player.id }) });
+  pool.pending.push({ ...makeToken(state, config.progress, player, RESEARCH_SKILLS, cpuPriorityBonus(state, "research")), ...(spoiled && { contaminatedBy: player.id }) });
   const before = researchProgress(pool, config.progress, RESEARCH_COMPLETE);
   // Owner, 2026-10-30: research is private; the sample list and the assay lines are the record of who worked.
   logPrivate(state, player.id, "researched", { name: player.character, research, percent: before.verified + before.pending });
@@ -159,6 +174,7 @@ export class ResearchAction extends Action<ResearchActionData> {
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): ResearchActionData[] {
+    if (!canWorkResearch(state, player)) return [];
     return equipmentHere(state, player, "RESEARCH_LAB").flatMap((lab) =>
       RESEARCH_IDS.filter((id) => (state.research[id] ?? 0) < RESEARCH_COMPLETE && researchAllowed(state, player.room, id, player)).map((research): ResearchActionData => ({ type: "research", equipment: lab.id, research })),
     );
@@ -166,6 +182,7 @@ export class ResearchAction extends Action<ResearchActionData> {
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: ResearchActionData): string | null {
     if (!equipmentHere(state, player, "RESEARCH_LAB").some((lab) => lab.id === target.equipment)) return "cant_research";
+    if (!canWorkResearch(state, player)) return "crew_lock";
     if (!(RESEARCH_IDS as readonly string[]).includes(target.research)) return "no_such_research";
     if ((state.research[target.research] ?? 0) >= RESEARCH_COMPLETE) return "research_done";
     if (!researchAllowed(state, player.room, target.research as ResearchId, player)) return "research_needs";

@@ -8,7 +8,6 @@ import type { BotMemory, Goal, GoalDef, GoalStep } from "./types.ts";
 export const EXPEDITION_PREP_PRIORITY = 73;
 
 const ICARUS = DEFAULT_CONFIG.expedition.room;
-const CRAFT = DEFAULT_CONFIG.expedition.craft;
 /**
  * Cycles a crew bot waits aboard the docked Icarus for a takeoff before it gets off and gives up on the plan, so a
  * launch that never comes (the Pilot died, ran out of AP, or was refused) doesn't keep it there for good.
@@ -120,7 +119,7 @@ function stepPrep(view: PlayerView, memory: BotMemory, planId: string, slotIndex
   if (memory.expeditionPrep === null || memory.expeditionPrep.done) return { kind: "done" };
 
   // Aboard the docked Icarus: wait for the takeoff, for a while (`waitingAboard`), then get off and give up.
-  if (view.you.room === CRAFT) {
+  if (view.you.boardedIcarus === true) {
     if (waitingAboard(view, memory)) return { kind: "wait" };
     memory.expeditionPrep.done = true;
     const leave = find(view, "leave_icarus");
@@ -179,7 +178,7 @@ function boardOrWait(view: PlayerView, memory: BotMemory): GoalStep {
   if (!board || memory.expeditionPrep === null) return { kind: "wait" };
   const author = memory.expeditionPrep.author;
   const launcher = author === undefined ? undefined : view.players.find((p) => p.id === author);
-  if (launcher?.alive && launcher.room !== ICARUS && launcher.room !== CRAFT) return { kind: "wait" };
+  if (launcher?.alive && launcher.room !== ICARUS) return { kind: "wait" };
   memory.expeditionPrep.boardedCycle = view.cycle;
   return act(board);
 }
@@ -188,7 +187,7 @@ function boardOrWait(view: PlayerView, memory: BotMemory): GoalStep {
 export function waitingAboard(view: PlayerView, memory: BotMemory): boolean {
   const prep = memory.expeditionPrep;
   if (prep === null || !prep.ready || prep.done === true) return false;
-  if (view.you.room !== CRAFT || !view.navigation.orbiting || view.expedition !== null) return false;
+  if (view.you.boardedIcarus !== true || !view.navigation.orbiting || view.expedition !== null) return false;
   return view.cycle - (prep.boardedCycle ?? view.cycle) < ICARUS_BOARD_WAIT_CYCLES;
 }
 
@@ -247,7 +246,7 @@ export const expeditionPrep: GoalDef = {
       !memory.expeditionPrep.done &&
       view.navigation.orbiting &&
       view.expedition === null &&
-      (view.you.room === ICARUS || view.you.room === CRAFT)
+      view.you.room === ICARUS
     ) {
       return [
         {

@@ -54,27 +54,34 @@ export interface ResearchRequirement {
   chun?: true;
   /** Only after the Mush are chosen, never in pre-selection (`need_cryo`). */
   postSelection?: true;
+  /** At least one Mush has died aboard (`hasMushDied`, matching the Sick Bay cryo tank; owner, 2026-11-21). */
+  deadMush?: true;
 }
 
-/** One of a research's requirements: an item type, Chun, or the Mush having been chosen. */
-export type ResearchNeed = { item: string } | "chun" | "postSelection";
+/** One of a research's requirements: an item type, Chun, post-selection, or a dead Mush. */
+export type ResearchNeed = { item: string } | "chun" | "postSelection" | "deadMush";
 
 /** A research's requirements one by one, in the order the terminal lists them and `PlayerView.researchNeeds` reports them. */
 export function researchNeedOrder(needs: Readonly<ResearchRequirement>): ResearchNeed[] {
-  return [...(needs.items ?? []).map((item) => ({ item })), ...(needs.chun ? ["chun" as const] : []), ...(needs.postSelection ? ["postSelection" as const] : [])];
+  return [
+    ...(needs.items ?? []).map((item) => ({ item })),
+    ...(needs.chun ? ["chun" as const] : []),
+    ...(needs.postSelection ? ["postSelection" as const] : []),
+    ...(needs.deadMush ? ["deadMush" as const] : []),
+  ];
 }
 
 export const RESEARCH_REQUIRES: Readonly<Partial<Record<ResearchId, ResearchRequirement>>> = {
   MYCOSCAN: { chun: true },
-  PATULINE_SCRAMBLER: { postSelection: true },
-  FUNGUS_SCRAMBLER: { postSelection: true },
+  PATULINE_SCRAMBLER: { deadMush: true },
+  FUNGUS_SCRAMBLER: { deadMush: true },
   PHEROMODEM: { items: ["mush_floppy_disk"], postSelection: true },
   CONSTIPASPORE_SERUM: { items: [ANY_CONSUMABLE, "mush_sample"] },
   MYCO_ALARM: { items: ["mush_sample"] },
   SPORE_EXTRACTOR: { items: ["mush_sample"] },
   MYCO_DIALECT: { items: ["mush_floppy_disk"] },
-  MUSH_BREEDING_SYSTEM: { items: ["mush_floppy_disk"], postSelection: true },
-  MUSH_BREEDS: { postSelection: true },
+  MUSH_BREEDING_SYSTEM: { items: ["mush_floppy_disk"], deadMush: true },
+  MUSH_BREEDS: { deadMush: true },
   MUSH_PREDATOR: { items: ["mush_sample"], chun: true },
   ANTI_MUSH_SERUM: { items: ["mush_sample", "mush_floppy_disk"], chun: true, postSelection: true },
   HEALING_OINTMANT: { items: ["medikit"] },
@@ -84,7 +91,7 @@ export const RESEARCH_REQUIRES: Readonly<Partial<Record<ResearchId, ResearchRequ
   INFINITE_WATER: { items: ["water_stick"] },
   GUARANA_CAPUCCINO: { items: ["coffee"] },
   MUSHICIDE_SOAP: { items: ["soap"], consumes: ["soap"], chun: true },
-  MUSHOPHAGE_BACTERIA: { chun: true, postSelection: true },
+  MUSHOPHAGE_BACTERIA: { chun: true, deadMush: true },
   ANTISPORE_GAZ: { items: ["mush_sample"] },
   SUPER_CALC: { items: ["super_map"] },
 };
@@ -96,7 +103,7 @@ export type ResearchStatus = "full" | "partial" | "none";
  * Implementation status shown in the terminal's research list. Update it when a research gains effects. Progress
  * itself works for all of them; only researches with completion effects are listed.
  */
-export const RESEARCH_STATUS: Readonly<Partial<Record<ResearchId, ResearchStatus>>> = { ANTI_MUSH_SERUM: "full", ANTISPORE_GAZ: "full", CONSTIPASPORE_SERUM: "full", DRUG_DISPENSER: "full", FUNGUS_SCRAMBLER: "full", GUARANA_CAPUCCINO: "full", HEALING_OINTMANT: "full", MUSHOPHAGE_BACTERIA: "full", MYCO_ALARM: "partial", MYCOSCAN: "full", SPORE_EXTRACTOR: "full", STEROIDS: "full", SUPER_CALC: "partial" };
+export const RESEARCH_STATUS: Readonly<Partial<Record<ResearchId, ResearchStatus>>> = { ANTI_MUSH_SERUM: "full", ANTISPORE_GAZ: "full", CONSTIPASPORE_SERUM: "full", DRUG_DISPENSER: "full", FUNGUS_SCRAMBLER: "full", GUARANA_CAPUCCINO: "full", HEALING_OINTMANT: "full", MUSHOPHAGE_BACTERIA: "full", MYCO_ALARM: "full", MYCOSCAN: "full", SPORE_EXTRACTOR: "full", STEROIDS: "full", SUPER_CALC: "partial" };
 
 export function researchStatus(research: string): ResearchStatus {
   return RESEARCH_STATUS[research as ResearchId] ?? "none";

@@ -86,7 +86,7 @@ import type {
  * override key. A step lands in a deploy of its own (docs/ops/deploy.md: roll back only to the same version). Something
  * that never reached a deploy (test or production) is in no stored snapshot, so changing or removing it needs no step.
  */
-export const STATE_VERSION = 122;
+export const STATE_VERSION = 123;
 
 /**
  * The oldest stored version this build reads: 114, the shape the normalizers were written against. A snapshot below it
@@ -261,7 +261,6 @@ const upgradeTo120: UpgradeStep = {
   },
 };
 
-/** Every step, in order of `to`: `upgradeTo115`, `upgradeTo116`, ... */
 /**
  * Before 121, an expedition away had `landed` (the landing was a step of its own) and `suitless` (members left in the
  * Icarus for want of a spacesuit). The landing now happens at takeoff and only the suited board (owner, 2026-11-17): an
@@ -291,7 +290,33 @@ const upgradeTo122: UpgradeStep = {
   },
 };
 
-export const UPGRADE_STEPS: readonly UpgradeStep[] = [upgradeTo115, upgradeTo116, upgradeTo117, upgradeTo118, upgradeTo119, upgradeTo120, upgradeTo121, upgradeTo122];
+/**
+ * Before 123, boarding the docked Icarus moved the player into its craft room (`ICARUS_CRAFT`). Now they stay in the
+ * Icarus Bay (`ICARUS`) with `boardedIcarus` until takeoff (#469). Anyone in the craft while the Icarus is docked (not
+ * lost, no Icarus expedition away) is put back in the bay, boarded, standing anywhere; the craft's floor goes onto the bay's.
+ */
+const upgradeTo123: UpgradeStep = {
+  to: 123,
+  paths: ["game.players[].room", "game.players[].boardedIcarus", "game.players[].spot", "game.items[].at"],
+  run: (game) => {
+    const away = game.expedition as { ship?: unknown } | null | undefined;
+    if (game.icarusLost === true || (away && away.ship === null)) return;
+    const players = Array.isArray(game.players) ? (game.players as Array<Record<string, unknown>>) : [];
+    const items = Array.isArray(game.items) ? (game.items as Array<{ at?: { kind?: string; id?: string } }>) : [];
+    for (const p of players) {
+      if (p.room !== "ICARUS_CRAFT") continue;
+      p.room = "ICARUS";
+      delete p.spot;
+      if (p.alive === true) p.boardedIcarus = true;
+    }
+    for (const item of items) {
+      if (item.at?.kind === "room" && item.at.id === "ICARUS_CRAFT") item.at.id = "ICARUS";
+    }
+  },
+};
+
+/** Every step, in order of `to`: `upgradeTo115`, `upgradeTo116`, ... */
+export const UPGRADE_STEPS: readonly UpgradeStep[] = [upgradeTo115, upgradeTo116, upgradeTo117, upgradeTo118, upgradeTo119, upgradeTo120, upgradeTo121, upgradeTo122, upgradeTo123];
 
 /**
  * Brings a stored snapshot from version `from` to `STATE_VERSION`, before it is normalized: runs every step with
@@ -567,6 +592,7 @@ export function normalizePlayer(raw: Partial<PlayerState>, mode: QueueMode): Pla
     maxAp: need(raw, "maxAp", t),
     lyingIn: raw.lyingIn,
     lyingSince: raw.lyingSince,
+    boardedIcarus: raw.boardedIcarus,
     pushedBy: raw.pushedBy,
     outcastBy: raw.outcastBy,
     protectedBy: raw.protectedBy,
@@ -580,6 +606,7 @@ export function normalizePlayer(raw: Partial<PlayerState>, mode: QueueMode): Pla
     interrogatedToday: raw.interrogatedToday,
     snoopedToday: opt(raw.snoopedToday, copy),
     mycoscannedToday: raw.mycoscannedToday,
+    cpuPriorityChangedToday: added(raw, "cpuPriorityChangedToday", false),
     hackedEquipment: opt(raw.hackedEquipment, copy),
     unheard: opt(raw.unheard, dict),
     history: copy(need(raw, "history", t)),
@@ -1173,6 +1200,8 @@ export function normalizeCore(raw: Partial<GameCore>, ctx: NormalizeContext, mod
       actopi: need(bios, "actopi", `${t}.bios`),
       death_announcements: need(bios, "death_announcements", `${t}.bios`),
       plasma_shield: need(bios, "plasma_shield", `${t}.bios`),
+      cpu_priority: added(bios, "cpu_priority", "none"),
+      crew_lock: added(bios, "crew_lock", "piloting"),
     } satisfies AllKeys<GameCore["bios"]>,
     bonds: dict(need(raw, "bonds", t)),
     sharedOnDay: dict(need(raw, "sharedOnDay", t)),
