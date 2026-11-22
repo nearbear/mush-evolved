@@ -407,6 +407,8 @@ export interface GameConfig {
   /** The Drug Dispenser (owner, 2026-11-11): the cycles of the day it resets on (new list, unused), and what taking a drug costs. */
   drugDispenser: { cost: { ap: number }; resetCycles: number[] };
   checkSpores: { cost: { ap: number } }; // The MycoScan's spore check (owner, 2026-11-01).
+  // The jukebox (owner, 2026-11-22): Listen costs `cost.ap` and gives +`morale` once a day while your own song plays; Check playlist is free.
+  jukebox: { cost: { ap: number }; morale: number };
   snoop: { cost: { ap: number }; dirtyChance: number; injuryChance: number; rooms: string[]; items: Record<string, number> }; // The Scrapper's Snoop: cost, its dirt and injury odds, the storage rooms it works in, the items it makes by weight (owner, 2026-11-01).
   sporeSucker: {
     cost: { ap: number }; // AP using the Spore Sucker costs (owner, 2026-11-20).
@@ -664,6 +666,8 @@ export interface GameConfig {
     armourCorridor: { damageReduction: number };
     // Fission Coffee Roaster (owner, 2026-11-02; eMushpedia *Torréfacteur à fission*): coffee machine regenerates at these cycles of each day (C1, C5; every cycle with PILGRED).
     fissionCoffeeRoaster: { cycles: number[] };
+    // Jukebox (BEAT_BOX; owner, 2026-11-22): spawns the jukebox in `room` (the refectory; Alpha Bay 2 in eMush).
+    jukebox: { room: RoomId };
     // Dynarcade (CALL_OF_DIRTY; owner, 2026-11-14): spawns the Dynarcade in `room`, where anyone can play for `cost.ap` AP (`successChance` x`failureMultiplier` per miss for +`morale`, `injuryChance` of 2 HP injury).
     dynarcade: { room: RoomId; cost: { ap: number }; successChance: number; failureMultiplier: number; morale: number; injuryChance: number };
     // Extra hydropots (EXTRA_HYDROPONPOTS; owner, 2026-11-14): completing it puts `count` empty hydropots on the floor of `room`.

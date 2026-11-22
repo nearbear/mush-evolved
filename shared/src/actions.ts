@@ -18,6 +18,8 @@ import { HackAction } from "./actions/hack.ts";
 import type { ActionCost, ActionTag, ActionVisibility } from "./actions/action.ts";
 import { DispenseAction } from "./actions/dispense.ts";
 import { PlayArcadeAction } from "./actions/play_arcade.ts";
+import { ListenJukeboxAction } from "./actions/listen_jukebox.ts";
+import { CheckJukeboxAction } from "./actions/check_jukebox.ts";
 import { ExamineAction } from "./actions/examine.ts";
 import { ConsumeSporeAction } from "./actions/consume_spore.ts";
 import { TubeTransferAction } from "./actions/tube_transfer.ts";
@@ -227,6 +229,8 @@ const REGISTRY = {
   open_lunchbox: new OpenLunchboxAction(),
   dispense: new DispenseAction(),
   play_arcade: new PlayArcadeAction(),
+  listen_jukebox: new ListenJukeboxAction(),
+  check_jukebox: new CheckJukeboxAction(),
   consume: new ConsumeAction(),
   hide: new HideAction(),
   search: new SearchAction(),

@@ -16,9 +16,11 @@ import { getUp } from "./actions/lie_down.ts";
 import { ANTISOCIAL } from "./actions/bond.ts";
 import { GERMAPHOBE } from "./actions/caress.ts";
 import { LIST_PRINTED, MUSH_NOT_SELECTED } from "./actions/print_list.ts";
+import { LISTENED_TODAY, NOT_YOUR_SONG } from "./actions/listen_jukebox.ts";
 import { isNimble } from "./actions/nimble.ts";
 import { researchNeedsView } from "./actions/research.ts";
-import { equipmentHere } from "./equipment.ts";
+import { equipmentHere, JUKEBOX_EQUIPMENT } from "./equipment.ts";
+import { songAt } from "./jukebox.ts";
 import { jellyCycle, leakOxygen } from "./breakage.ts";
 import { spoilFood } from "./spoilage.ts";
 import { newProjectDeck } from "./projects.ts";
@@ -144,6 +146,7 @@ export function createGame(
     lostAnalysis: newLostAnalysis(seed),
     theList: newTheList(seed),
     merchantRng: streamFor(seed, "merchants"),
+    jukeboxSeed: streamFor(seed, "jukebox"),
     cycle: startCycle,
     phase: "playing",
     preselection: preselection !== null,
@@ -356,6 +359,7 @@ const isUnaffordableReason = (action: Action, refused: string | null): refused i
   (UNAFFORDABLE_REASONS.has(refused) ||
     (action.type === "hack" && refused === IN_PRESELECTION) ||
     (action.type === "bond" && refused === ANTISOCIAL) ||
+    (action.type === "listen_jukebox" && (refused === NOT_YOUR_SONG || refused === LISTENED_TODAY)) ||
     (action.type === "caress" && refused === GERMAPHOBE) ||
     (ICARUS_ACTIONS.has(action.type) && (refused === EXPLORED || refused === ICARUS_LOST)) ||
     (action.type === "print_list" && (refused === MUSH_NOT_SELECTED || refused === LIST_PRINTED || refused === BROKEN)));
@@ -388,6 +392,8 @@ function unaffordableOption(state: GameState, p: PlayerState, def: ActionDef<Act
     ...(refused === BROKEN ? (["broken"] as const) : []),
     ...(refused === ANTISOCIAL ? (["antisocial"] as const) : []),
     ...(refused === GERMAPHOBE ? (["germaphobe"] as const) : []),
+    ...(refused === NOT_YOUR_SONG ? (["notYourSong"] as const) : []),
+    ...(refused === LISTENED_TODAY ? (["listenedToday"] as const) : []),
     ...(refused === DIRTY ? (["clean"] as const) : []),
     ...(refused === NO_SPACE ? (["space"] as const) : []),
     ...(refused === COOLDOWN ? (["cooldown"] as const) : []),
@@ -1016,7 +1022,9 @@ function equipmentView(state: GameState, { id, type, broken, jelly, shield }: Eq
   const docked = shipState && !shipState.out && !shipState.destroyed && { armor: shipState.armor, maxArmor: state.config.patrol.armor[ship.kind] };
   // The Icarus is missing from its bay while away or once lost (owner, 2026-11-07); both are public anyway.
   const out = shipState?.out || (type === ICARUS_EQUIPMENT && ((state.expedition !== null && state.expedition.ship === null) || state.icarusLost));
-  return { id, type, ...(broken && { broken }), ...(jelly !== undefined && viewer.role === "mush" && viewer.alive && { jelly }), ...(shield !== undefined && seesShield(viewer) && { shield }), ...(out && { out: true as const }), ...(shipState?.destroyed && { destroyed: true as const }), ...docked };
+  // The song playing this cycle, to anyone in the jukebox's room (they hear it); a broken jukebox plays nothing.
+  const song = type === JUKEBOX_EQUIPMENT && !broken ? songAt(state)?.character : undefined;
+  return { id, type, ...(broken && { broken }), ...(song !== undefined && { song }), ...(jelly !== undefined && viewer.role === "mush" && viewer.alive && { jelly }), ...(shield !== undefined && seesShield(viewer) && { shield }), ...(out && { out: true as const }), ...(shipState?.destroyed && { destroyed: true as const }), ...docked };
 }
 
 /**

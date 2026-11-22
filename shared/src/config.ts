@@ -132,6 +132,7 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   // Owner, 2026-11-01 (eMushpedia "Création du Mycoscan"): checking your spore level on the MycoScan is free, once a day.
   drugDispenser: { cost: { ap: 0 }, resetCycles: [1, 4] },
   checkSpores: { cost: { ap: 0 } },
+  jukebox: { cost: { ap: 0 }, morale: 3 },
   // Owner, 2026-11-01 (eMushpedia "Métalo"): the Scrapper's Snoop, free, once a day per storage room. What it finds
   // (owner, 2026-11-01, eMushpedia "Recycleur" weights): metal scraps 4, plastic scraps 3, a standard (uncooked)
   // ration 1, a fuel capsule 1, an oxygen capsule 1. Owner, 2026-11-01: 50% to get dirty (eMushpedia "Saleté") and a 10%
@@ -357,6 +358,7 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
     neronTargetingAssist: { accuracyFactor: 1.25 },
     armourCorridor: { damageReduction: 1 },
     fissionCoffeeRoaster: { cycles: [1, 5] },
+    jukebox: { room: "REFECTORY" },
     dynarcade: { room: "SPACESHIP_BAY_AA", cost: { ap: 1 }, successChance: 0.33, failureMultiplier: 1.5, morale: 2, injuryChance: 0.33 },
     extraHydropots: { room: "HYDROPONIC_CENTER", count: 3 },
     heatLamp: { extraFruitChance: 0.5 },

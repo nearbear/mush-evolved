@@ -639,6 +639,7 @@ export function normalizePlayer(raw: Partial<PlayerState>, mode: QueueMode): Pla
     interrogatedToday: raw.interrogatedToday,
     snoopedToday: opt(raw.snoopedToday, copy),
     mycoscannedToday: raw.mycoscannedToday,
+    jukeboxDay: raw.jukeboxDay,
     cpuPriorityChangedToday: added(raw, "cpuPriorityChangedToday", false),
     hackedEquipment: opt(raw.hackedEquipment, copy),
     unheard: opt(raw.unheard, dict),
@@ -1349,6 +1350,8 @@ export function normalizeGame(raw: Partial<Omit<GameState, "config">>, overrides
     theList: normalizeTheList(added(raw, "theList", theListFor(raw))),
     // A game saved before merchants (#143) derives their stream from where its `rng` stands.
     merchantRng: added(raw, "merchantRng", streamFor(need(raw, "rng", t), "merchants")),
+    // A game saved before the jukebox (#477) derives its seed from where its `rng` stands.
+    jukeboxSeed: added(raw, "jukeboxSeed", streamFor(need(raw, "rng", t), "jukebox")),
     // A game saved before grafting (#438) draws its hybrids now from its parents, on a stream derived from where its
     // `rng` stands: the same for every load of that snapshot, and stored with the game from then on.
     hybrids: mapValues(

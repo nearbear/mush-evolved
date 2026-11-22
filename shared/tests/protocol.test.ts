@@ -734,6 +734,8 @@ describe("actions from a client", () => {
     open_lunchbox: [{ type: "open_lunchbox", item: "i1" }],
     dispense: [{ type: "dispense", equipment: "e1" }],
     play_arcade: [{ type: "play_arcade", equipment: "SPACESHIP_BAY_AA:DYNARCADE" }],
+    listen_jukebox: [{ type: "listen_jukebox", equipment: "REFECTORY:BEAT_BOX" }],
+    check_jukebox: [{ type: "check_jukebox", equipment: "REFECTORY:BEAT_BOX" }],
     consume: [{ type: "consume", item: "i1" }],
     hide: [{ type: "hide", item: "i1" }],
     search: [{ type: "search" }],

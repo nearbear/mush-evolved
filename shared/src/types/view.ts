@@ -37,6 +37,8 @@ export interface EquipmentView {
   /** A docked patrol ship's armor, on its interface: shown to anyone in its bay (owner, 2026-10-28). Absent while it is out. */
   armor?: number;
   maxArmor?: number;
+  /** The jukebox's song this cycle (jukebox.ts), as the character whose favourite it is: to anyone in its room, unless broken. */
+  song?: string;
 }
 
 /** An item as a client sees it. */
@@ -487,9 +489,9 @@ export interface ActionOption {
   tags: ActionTag[];
   /**
    * Empty when you can do it now; otherwise the points, the inventory space, or the cleanliness ("clean": you are dirty)
-   * you lack, or for Collect scrap, "debris" (none out there) or "pasiphae" (a patrol ship can't while the Pasiphae exists), or for Travel and turns, "reactor" (the reactor it needs is broken), or for Travel and Leave orbit, "arack" (an Arack is around), or for Hack, "preselection" (titles aren't assigned yet), or for Board the Icarus and Take off, "explored" (every sector of the planet is explored) or "icarusLost". See `affordable`.
+   * you lack, or for Collect scrap, "debris" (none out there) or "pasiphae" (a patrol ship can't while the Pasiphae exists), or for Travel and turns, "reactor" (the reactor it needs is broken), or for Travel and Leave orbit, "arack" (an Arack is around), or for Hack, "preselection" (titles aren't assigned yet), or for Board the Icarus and Take off, "explored" (every sector of the planet is explored) or "icarusLost", or for Listen at the jukebox, "notYourSong" or "listenedToday". See `affordable`.
    */
-  lacks: ("ap" | "mp" | "space" | "cooldown" | "capacity" | "clean" | "debris" | "pasiphae" | "reactor" | "arack" | "preselection" | "explored" | "icarusLost" | "antisocial" | "germaphobe" | "mushNotSelected" | "listPrinted" | "broken")[];
+  lacks: ("ap" | "mp" | "space" | "cooldown" | "capacity" | "clean" | "debris" | "pasiphae" | "reactor" | "arack" | "preselection" | "explored" | "icarusLost" | "antisocial" | "germaphobe" | "mushNotSelected" | "listPrinted" | "broken" | "notYourSong" | "listenedToday")[];
   /** Cycles until it is ready, when `lacks` has "cooldown". */
   cooldown?: number;
 }

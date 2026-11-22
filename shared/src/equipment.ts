@@ -31,7 +31,8 @@ export interface EquipmentType {
  */
 export const EQUIPMENT_TYPES: Record<string, EquipmentType> = {
   ASTRO_MODULE: { terminal: true, canBeSabotaged: true },
-  BEAT_BOX: { canBeSabotaged: true },
+  // Spawned in the refectory by the BEAT_BOX project (owner, 2026-11-22; projectEffects.ts); never there at the start.
+  BEAT_BOX: { builtOnly: true, canBeSabotaged: true },
   BED: { bed: true },
   // Installed from a carried `camera` item (actions/install.ts); never part of the map. Dismantling it leaves the
   // camera item's scrap (#35, owner 2026-10-17).
@@ -85,6 +86,9 @@ export const DRUG_DISPENSER_EQUIPMENT = "DRUG_DISP";
 export const SUPER_CALC_EQUIPMENT = "SUPER_CALC";
 /** Equipment type the CALL_OF_DIRTY project adds to Alpha Bay 2. */
 export const DYNARCADE_EQUIPMENT = "DYNARCADE";
+
+/** Equipment type the BEAT_BOX project adds to the refectory (`config.project.jukebox.room`). */
+export const JUKEBOX_EQUIPMENT = "BEAT_BOX";
 
 /** Id of the camera installed in a room (at most one per room). */
 export const cameraEquipmentId = (room: string): string => `${room}:${CAMERA_EQUIPMENT}`;

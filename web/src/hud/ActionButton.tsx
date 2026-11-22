@@ -198,6 +198,10 @@ export function DisabledActionButton({
       ? t("actions.lacksAntisocial")
       : lacks[0] === "germaphobe"
       ? t("actions.lacksGermaphobe")
+      : lacks[0] === "notYourSong"
+      ? t("actions.lacksNotYourSong")
+      : lacks[0] === "listenedToday"
+      ? t("actions.lacksListenedToday")
       : lacks[0] === "clean"
       ? t("actions.lacksClean")
       : lacks[0] === "capacity"

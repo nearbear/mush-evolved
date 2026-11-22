@@ -129,6 +129,8 @@ export const PROJECT_STATUS: Readonly<Partial<Record<ProjectId, ProjectStatus>>>
   BRIC_BROC: "full",
   // Completing it adds the Dynarcade in Alpha Bay 2 (hiding the broken patrol ship); anyone can play for 1 AP (owner, 2026-11-14).
   CALL_OF_DIRTY: "full",
+  // Completing it adds the jukebox in the refectory; Listen gives +3 morale once a day while your song plays (owner, 2026-11-22; jukebox.ts).
+  BEAT_BOX: "full",
   // Completing it spawns 3 empty hydropots on the Hydroponic Garden floor (owner, 2026-11-14; projectEffects.ts).
   EXTRA_HYDROPONPOTS: "full",
   // Each producing plant in the garden (floor or carried) has a 50% chance at day start of producing an extra fruit while PLANT_CONTROLLER is working (owner, 2026-11-14; botany.ts).

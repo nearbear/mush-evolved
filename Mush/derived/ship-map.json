@@ -166,7 +166,7 @@
         {"x":18,"y":12,"kind":"ground","layer":0,"slice":"GROUND","frame":1},
         {"x":17,"y":12,"kind":"ground","layer":0,"slice":"GROUND","frame":1},
         {"x":14,"y":12,"kind":"ground","layer":0,"slice":"GROUND_DECK","frame":1},
-        {"x":17,"y":13,"kind":"entity","layer":2,"slice":"sofaReverse","frame":0},
+        {"x":16,"y":13,"kind":"entity","layer":2,"slice":"sofaReverse","frame":0},
         {"x":20,"y":12,"kind":"wall","layer":0,"slice":"BIG_WALL_R","frame":0}
       ]
     },
@@ -730,7 +730,7 @@
         {"x":6,"y":13,"kind":"ground","layer":0,"slice":"GROUND","frame":1},
         {"x":6,"y":15,"kind":"ground","layer":0,"slice":"GROUND","frame":1},
         {"kind":"wall","layer":0,"slice":"corner_02","frame":0,"x":28,"y":11},
-        {"x":26,"y":12,"kind":"entity","layer":2,"slice":"sofaReverse","frame":0}
+        {"x":24,"y":12,"kind":"entity","layer":2,"slice":"sofaReverse","frame":0}
       ]
     },
     {
@@ -741,7 +741,6 @@
         {"id":"PATROL_INTERFACE","tile":"spaceship","dir":"up","key":"PATROL_SHIP_AA_0"},
         {"id":"PATROL_INTERFACE","tile":"pasiphae","dir":"up","key":"PATROL_SHIP_AA_1"},
         {"id":"DYNARCADE","tile":"dynarcade","dir":"up"},
-        {"id":"BEAT_BOX","tile":"beat_box","dir":"up"},
         {"id":"SOFA","tile":"sofa"}
       ],
       "tiles": [
@@ -995,7 +994,6 @@
         {"x":11,"y":15,"kind":"entity","layer":2,"slice":"spaceship_broken","frame":0},
         {"x":17,"y":15,"kind":"entity","layer":2,"slice":"spaceship","frame":0},
         {"x":23,"y":15,"kind":"entity","layer":2,"slice":"pasiphae","frame":0},
-        {"x":6,"y":14,"kind":"entity","layer":3,"slice":"beat_box","frame":0},
         {"x":5,"y":17,"kind":"entity","layer":3,"slice":"camera","frame":0},
         {"x":5,"y":19,"kind":"ground","layer":0,"slice":"GROUND_DECK","frame":8},
         {"x":5,"y":18,"kind":"ground","layer":0,"slice":"GROUND_DECK","frame":8},
@@ -1384,7 +1382,8 @@
       "equipment": [
         {"id":"KITCHEN","tile":"kitchen_p0","mask":"kitchen_mask","dir":"right","module":true},
         {"id":"COFFEE_DISPENSER","tile":"coffee","dir":"left","module":true},
-        {"id":"SOFA","tile":"sofa"}
+        {"id":"BEAT_BOX","tile":"beat_box","dir":"up"},
+        {"id":"SOFA","tile":"sofaReverse"}
       ],
       "tiles": [
         {"x":10,"y":10,"kind":"wall","layer":0,"slice":"COLUMN","frame":0},
@@ -1504,7 +1503,6 @@
         {"x":10,"y":20,"kind":"entity","layer":1,"slice":"auto_watering_2","frame":0},
         {"x":20,"y":11,"kind":"entity","layer":2,"slice":"kitchen_p0","frame":0},
         {"x":20,"y":12,"kind":"entity","layer":2,"slice":"kitchen_p1","frame":0},
-        {"x":11,"y":13,"kind":"entity","layer":2,"slice":"food_retailer_refectory","frame":0},
         {"x":19,"y":14,"kind":"entity","layer":2,"slice":"cupboard3","frame":0},
         {"x":14,"y":17,"kind":"entity","layer":2,"slice":"chair_4","frame":0},
         {"x":17,"y":17,"kind":"entity","layer":2,"slice":"chair_1","frame":2},
@@ -1526,7 +1524,8 @@
         {"kind":"wall","layer":0,"slice":"BIG_WALL_L","frame":1,"x":10,"y":21},
         {"kind":"wall","layer":0,"slice":"BIG_WALL_L","frame":1,"x":21,"y":12},
         {"kind":"wall","layer":0,"slice":"COLUMN","frame":0,"x":21,"y":10},
-        {"x":11,"y":16,"kind":"entity","layer":2,"slice":"sofa","frame":0}
+        {"x":15,"y":15,"kind":"entity","layer":2,"slice":"sofaReverse","frame":0},
+        {"x":11,"y":13,"kind":"entity","layer":3,"slice":"beat_box","frame":0}
       ]
     },
     {
@@ -3747,7 +3746,7 @@
       "label": "Storage front",
       "at": {"x":-23,"y":1},
       "equipment": [
-        {"id":"SOFA","tile":"sofa"}
+        {"id":"SOFA","tile":"sofaReverse"}
       ],
       "tiles": [
         {"x":10,"y":10,"kind":"wall","layer":0,"slice":"COLUMN","frame":0},
@@ -3887,7 +3886,7 @@
         {"x":20,"y":10,"kind":"ground","layer":0,"slice":"GROUND","frame":1},
         {"x":21,"y":10,"kind":"ground","layer":0,"slice":"GROUND","frame":1},
         {"kind":"wall","layer":0,"slice":"BIG_WALL_R","frame":1,"x":21,"y":10},
-        {"x":11,"y":20,"kind":"entity","layer":2,"slice":"sofa","frame":0},
+        {"x":14,"y":12,"kind":"entity","layer":2,"slice":"sofaReverse","frame":0},
         {"x":22,"y":10,"kind":"wall","layer":0,"slice":"BIG_WALL_R","frame":1},
         {"x":10,"y":21,"kind":"wall","layer":0,"slice":"BIG_WALL_L","frame":1}
       ]
