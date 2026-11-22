@@ -122,6 +122,7 @@ import { TransferAction } from "./actions/transfer.ts";
 import { WaterAction } from "./actions/water.ts";
 import { TreatAction } from "./actions/treat.ts";
 import { SowAction } from "./actions/sow.ts";
+import { GraftAction } from "./actions/graft.ts";
 import type { GameState, PlayerState } from "./types.ts";
 
 export type ActionType = Action["type"];
@@ -237,6 +238,7 @@ const REGISTRY = {
   water: new WaterAction(),
   treat: new TreatAction(),
   sow: new SowAction(),
+  graft: new GraftAction(),
   build: new BuildAction(),
   jettison: new JettisonAction(),
   install: new InstallAction(),

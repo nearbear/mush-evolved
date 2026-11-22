@@ -95,7 +95,7 @@ import type {
   Seat,
 } from "./types.ts";
 import { drawDrugs, drugEffectsSeenBy, hasDrugDispenser, resetDrugDispenser, stockMedlab } from "./drugs.ts";
-import { drawFruits, fruitEffectsSeenBy } from "./fruits.ts";
+import { drawFruits, drawHybrids, fruitEffectsSeenBy } from "./fruits.ts";
 import { changeAP, changeMP } from "./adjustStats.ts";
 import { diseaseTrackerCycleChange } from "./diseases.ts";
 
@@ -153,6 +153,7 @@ export function createGame(
     dispensedOn: {},
     drugs: {},
     fruits: {},
+    hybrids: {},
     drugDispenser: { list: [], used: false },
     log: [{ id: 1, cycle: startCycle, key: "crewWakes", visibleTo: "all" }],
     nextLogId: 2,
@@ -220,6 +221,7 @@ export function createGame(
   // Setup draws on streams of their own, so changing them doesn't move any roll on `state.rng`.
   state.drugs = drawDrugs({ rng: streamFor(seed, "drugs"), config });
   state.fruits = drawFruits({ rng: streamFor(seed, "fruits"), config });
+  state.hybrids = drawHybrids({ rng: streamFor(seed, "grafts") }, config, state.fruits);
   stockMedlab(state, { rng: streamFor(seed, "medlab-stock") });
   for (const item of state.items) initNpc(state, item);
   grantCarePoints(state); // day 1 begins now

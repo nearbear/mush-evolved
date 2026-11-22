@@ -241,6 +241,16 @@ export interface FruitsConfig {
   diseases: Record<string, number>; // Pool of alien fruit disease ids -> cost; cold is never included.
 }
 
+export interface GraftConfig {
+  cost: { ap: number }; // AP spent to graft, unless a garden point pays in the garden (owner, 2026-11-21: 2).
+  valueRange: [number, number]; // Inclusive value budget [min, max] a hybrid is re-rolled into (4–9).
+  maxGrowCycles: number; // Grow time cap: 4 cycles per point of value, never above this (32).
+  keepChance: number; // Chance each parent buff or disease is kept by the hybrid (0.5).
+  maxBuffs: number; // Most buffs a hybrid keeps (3).
+  maxDiseases: number; // Most diseases a hybrid keeps (3).
+  maxAttempts: number; // Re-rolls before a pair counts as unfittable (no hybrid, no graft offered).
+}
+
 export interface GameConfig {
   mushCount: number; // Mush picked at launch. Unused with `preselection`, where the player count decides.
   // Null: everyone is seated at launch and Mush are picked then (tests, single player later).
@@ -440,6 +450,7 @@ export interface GameConfig {
     dirtyChance: number; // Chance of getting dirty after watering, treating or sowing (the original's 15%).
     growCycles: Record<string, number>; // Cycles a young plant of each species needs before it becomes adult.
     fruits: FruitsConfig; // Seeded alien fruit rules (fruits.ts, #437).
+    graft: GraftConfig; // Graft and its hybrids (actions/graft.ts, fruits.ts, #438).
     sickChancePerCycle: number; // PLACEHOLDER: each healthy plant's chance of falling sick at each cycle change.
     oxygenPerPlant: number; // Oxygen each producing plant gives at day start.
     gardenRoom: RoomId; // Garden points pay for an action only on a plant here.
@@ -535,6 +546,7 @@ export interface GameConfig {
   };
   greenThumb: {
     pots: number; // Empty hydropots the `green_thumb` skill gives when picked (owner, 2026-11-01; the original's 2).
+    graftHeadStart: number; // Share of a hybrid's grow time already done when a Green Thumb grafts it (owner, 2026-11-21: 0.25).
   };
   gunner: {
     accuracyFactor: number; // The `gunner` skill multiplies the chance to hit from a turret by this (owner, 2026-10-24; the data's MulActionOdd 2.0).

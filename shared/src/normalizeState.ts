@@ -30,7 +30,7 @@ import { type LostAnalysisState, rollLostAnalysis } from "./lostAnalysis.ts";
 import type { TheListState } from "./theList.ts";
 import { streamFor } from "./rng.ts";
 import type { DrugDispenserState, DrugEffect } from "./drugs.ts";
-import type { FruitDisease, FruitEffect, PendingDisease } from "./fruits.ts";
+import { drawHybrids, type FruitDisease, type FruitEffect, type PendingDisease } from "./fruits.ts";
 import type { FullView, SeatStart, SeatStarts } from "./fullView.ts";
 import { PROJECT_IDS } from "./projects.ts";
 import type { GiveAsset, MerchantDeal, ReceiveAsset } from "./merchants.ts";
@@ -1297,6 +1297,14 @@ export function normalizeGame(raw: Partial<Omit<GameState, "config">>, overrides
     theList: normalizeTheList(added(raw, "theList", theListFor(raw))),
     // A game saved before merchants (#143) derives their stream from where its `rng` stands.
     merchantRng: added(raw, "merchantRng", streamFor(need(raw, "rng", t), "merchants")),
+    // A game saved before grafting (#438) draws its hybrids now from its parents, on a stream derived from where its
+    // `rng` stands: the same for every load of that snapshot, and stored with the game from then on.
+    hybrids: mapValues(
+      raw.hybrids === undefined
+        ? drawHybrids({ rng: streamFor(need(raw, "rng", t), "grafts") }, config, mapValues(added(raw, "fruits", {}), normalizeFruit))
+        : raw.hybrids,
+      normalizeFruit,
+    ),
     chatOutbox: normalizeOutbox(need(raw, "chatOutbox", t)),
   });
 }

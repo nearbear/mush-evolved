@@ -218,6 +218,10 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
         tapeworm_disease: 2,
       },
     },
+    // Owner, 2026-11-21 (#438): Graft costs 2 AP (or a garden point in the garden). Each hybrid takes each AP, morale
+    // and HP slot from a parent at random, keeps each parent buff and disease at 50% (up to 3 each), and is re-rolled
+    // until worth 4–9; 4 cycles per point of grow time, capped at 32.
+    graft: { cost: { ap: 2 }, valueRange: [4, 9], maxGrowCycles: 32, keepChance: 0.5, maxBuffs: 3, maxDiseases: 3, maxAttempts: 1000 },
     sickChancePerCycle: 0.05,
     oxygenPerPlant: 1,
     gardenRoom: "HYDROPONIC_CENTER",
@@ -266,7 +270,7 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   // Owner, 2026-11-14 (eMushpedia Observateur, upstream eMush): Search costs Observant 1 AP less; each Observant present has a 25% chance to reveal a covert action.
   observant: { searchApDiscount: 1, revealChance: 0.25 },
   // Owner, 2026-11-01: Green Thumb gives 2 empty hydropots when picked (the original's skills.json).
-  greenThumb: { pots: 2 },
+  greenThumb: { pots: 2, graftHeadStart: 0.25 },
   // #411, owner, 2026-11-11 (eMushpedia "Drone de soutien"): x1.25 a failure in a row, capped at 99%; reset by a success.
   // Owner, 2026-11-12 (#412): Upgrade is 2 AP and 2 metal scraps, 25% dirt and 5% injury (the original's actions.json); Turbo's 80% is eMushpedia's.
   drones: { failureMultiplier: 1.25, maxChance: 0.99, upgrade: { cost: { ap: 2 }, scraps: 2, dirtyChance: 0.25, injuryChance: 0.05 }, turboChance: 0.8 },

@@ -6,9 +6,9 @@
 
 import { inventorySlots } from "./modifiers.ts";
 import type { Container, DeepReadonly, GameConfig, GameState, ItemState, PlayerState, RoomId } from "./types.ts";
-import { ALIEN_FRUIT_ITEMS, BOOK_ITEM, ITRACKIE_ITEM } from "./itemIds.ts";
+import { ALIEN_FRUIT_ITEMS, BOOK_ITEM, HYBRID_FRUIT_ITEMS, ITRACKIE_ITEM } from "./itemIds.ts";
 
-export { ALIEN_FRUIT_ITEMS, BOOK_ITEM, ITRACKIE_ITEM } from "./itemIds.ts";
+export { ALIEN_FRUIT_ITEMS, BOOK_ITEM, HYBRID_FRUIT_ITEMS, ITRACKIE_ITEM, hybridOf, hybridParents, isAlienFruitType } from "./itemIds.ts";
 export type { AlienFruitItem } from "./itemIds.ts";
 
 export interface ItemType {
@@ -195,6 +195,8 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   fruit_banana: { fruit: true, perishable: true, consume: { ap: 1, satiety: 1, morale: 1, hp: 1 } },
   // #437 (owner, 2026-11-14): 12 alien species whose rolled stats live on `state.fruits`.
   ...Object.fromEntries(ALIEN_FRUIT_ITEMS.map((id) => [id, { fruit: true, perishable: true, consume: { ap: 1, satiety: 1 } }])),
+  // #438 (owner, 2026-11-21): the 66 graft hybrids, one per pair of alien species; rolled stats on `state.hybrids`.
+  ...Object.fromEntries(HYBRID_FRUIT_ITEMS.map((id) => [id, { fruit: true, perishable: true, consume: { ap: 1, satiety: 1 } }])),
   // Owner, 2026-10-23, the wiki: one unit of fuel, taken from a tank and loaded into the combustion chamber. One slot
   // each, never dropped (actions/take_fuel.ts). Named after its icon.
   [FUEL_CAPSULE_ITEM]: { canDrop: false },

@@ -1,7 +1,7 @@
 // Maps game ids to Motion Twin art in Mush/ (CC BY-NC-SA 4.0, see
 // Mush/ATTRIBUTION.md). Vite bundles only the files matched here.
 
-import { DEFAULT_CONFIG, REBEL_BASES, type CharacterId, type RebelBaseId, type Ending, type ItemView, type MerchantTargetView, type ResourceId, type SpoilStage, type TitleId } from "@mush2/shared";
+import { DEFAULT_CONFIG, REBEL_BASES, hybridParents, type CharacterId, type RebelBaseId, type Ending, type ItemView, type MerchantTargetView, type ResourceId, type SpoilStage, type TitleId } from "@mush2/shared";
 
 type UrlMap = Record<string, string>;
 const urls = (map: UrlMap) =>
@@ -148,7 +148,9 @@ const ICON_FILE: Readonly<Record<string, string>> = { input_tube: "thick_tube", 
 
 /** Icon for an item type. Item type ids are named after their icon files unless ICON_FILE says otherwise; undefined if there's none. */
 export function itemIcon(type: string): string | undefined {
-  return itemIcons[ICON_FILE[type] ?? type];
+  // A graft hybrid (#438) has no art of its own: it shows its lower-numbered parent's fruit.
+  const species = hybridParents(type)?.[0] ?? type;
+  return itemIcons[ICON_FILE[species] ?? species];
 }
 
 /** A planted hydropot's icon, by species (its fruit's item type): the original's tree_* / fruit_tree* icons. */
@@ -170,7 +172,8 @@ const PLANT_ICON_FILE: Readonly<Record<string, string>> = {
 
 /** Icon for an item as the view has it: a planted hydropot shows its plant. */
 export function itemViewIcon(item: Pick<ItemView, "type" | "plant">): string | undefined {
-  const plant = item.plant && itemIcons[PLANT_ICON_FILE[item.plant.species] ?? ""];
+  // A graft hybrid's plant (#438) shows its lower-numbered parent's tree.
+  const plant = item.plant && itemIcons[PLANT_ICON_FILE[hybridParents(item.plant.species)?.[0] ?? item.plant.species] ?? ""];
   return plant ?? itemIcon(item.type);
 }
 

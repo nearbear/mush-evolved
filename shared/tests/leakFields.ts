@@ -24,6 +24,7 @@ export const GAME_STATE_FIELDS: Record<string, FieldRule> = {
   rng: { reach: "never", test: "leaks.test.ts" },
   npcs: { reach: "never", test: "leaks.test.ts", note: "The NPCs' own stream and the names the next drones get (#411)." },
   theList: { reach: "never", test: "leaks.test.ts", note: "THE List (#266): its stream, the starting Mush bodies, when they were chosen, and whether it was printed. Only a printed copy (`ItemState.document`) is ever seen." },
+  hybrids: { reach: "never", test: "leaks.test.ts", note: "Every pair's graft hybrid (#438), drawn at launch. A grafted one is copied into `fruits` and reaches what `fruits` reaches." },
   merchantRng: { reach: "never", test: "leaks.test.ts", note: "The merchants' own stream (#143): arrivals and deal rolls." },
   lostAnalysis: { reach: "never", test: "leaks.test.ts", note: "Finola's lost analysis (#394): its stream and the rows rolled at selection. Only a printed copy (`ItemState.document`) is ever seen." },
   cycle: { reach: "public", test: "rules.test.ts" },

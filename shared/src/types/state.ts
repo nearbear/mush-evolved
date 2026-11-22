@@ -251,6 +251,8 @@ export interface GameState extends GameCore {
   theList: TheListState;
   /** The merchants' own stream (merchants.ts), seeded apart from `rng` so arrivals don't shift the rest of the game. Not in the full view. */
   merchantRng: RngState;
+  /** Every pair's graft hybrid (#438), drawn at launch; a hybrid is copied into `fruits` once grafted. Server-only: not in the full view, never sent to anyone. */
+  hybrids: Record<string, FruitEffect>;
   /** Pages to store and delete, which the server takes after every input. Not in the full view. */
   chatOutbox: ChatOutbox;
 }

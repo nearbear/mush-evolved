@@ -104,6 +104,7 @@
     "blueprintOf": "Plan : {{thing}}",
     "book": "Apprentron",
     "bookOf": "Apprentron : {{skill}}",
+    "hybridOf": "Greffe {{a}}–{{b}}",
     "freezer": "Congélateur",
     "microwave": "Micro-onde",
     "tabulator": "Tabulatrice",

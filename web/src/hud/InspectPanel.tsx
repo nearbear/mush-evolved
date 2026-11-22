@@ -24,7 +24,7 @@ import { ActionButton } from "./ActionButton.tsx";
 import { collapsePickers, CrewPickerDialog, isPickerAction, type PickerAction } from "./CrewPickerDialog.tsx";
 import { collapseThrowOut, ThrowOutDialog } from "./ThrowOutDialog.tsx";
 import { useKeepFocus } from "./useKeepFocus.ts";
-import { attackWeapon, optionsOn, resolveTarget, type Resolved } from "./targets.ts";
+import { attackWeapon, graftFruit, optionsOn, resolveTarget, type Resolved } from "./targets.ts";
 
 export function InspectPanel({
   view,
@@ -56,8 +56,11 @@ export function InspectPanel({
   );
   const labelFor = ({ action, cost, chance }: ActionOption): ReactNode => {
     const weapon = attackWeapon(view, action);
+    const fruit = graftFruit(view, action);
     const text = weapon
       ? t("actions.attackWith", { weapon: names.itemOf(weapon) })
+      : fruit
+        ? t("actions.graftWith", { fruit: names.itemOf(fruit) })
       : action.type === "apprenticeship"
         ? t("actions.apprenticeshipOf", { skill: names.skill(action.skill) })
         : action.type === "upgrade_drone"
