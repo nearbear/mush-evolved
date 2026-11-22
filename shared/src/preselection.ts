@@ -11,7 +11,7 @@
 import { updateMaxValues } from "./adjustStats.ts";
 import { pushChat } from "./chat.ts";
 import { newItemId } from "./items.ts";
-import { killPlayer } from "./death.ts";
+import { endIfAllInactive, killPlayer } from "./death.ts";
 import { cloneState, fail, type ActionResult } from "./helpers.ts";
 import { logPrivate, startLogSeen } from "./log.ts";
 import { callNextRebel } from "./comms.ts";
@@ -23,7 +23,7 @@ import { catArrival } from "./schrodinger.ts";
 import { newPlayer, spawnSelectionItems, startInventory } from "./rules.ts";
 import { MUSH_SEAT_MARGIN } from "./setups.ts";
 import { assignTitles } from "./titles.ts";
-import { endGame, mushWinOnDeath } from "./victory.ts";
+import { endGame } from "./victory.ts";
 import type { GameState, PreselectionRules, Seat } from "./types.ts";
 
 /** A player boards the ship. Only in pre-selection, with a seat free and a character nobody aboard has. */
@@ -94,7 +94,9 @@ export function selectMush(state: GameState): void {
   spawnSelectionItems(state);
 
   if (aboard.length < rules.minPlayers) {
+    endGame(state, "mush", "humans_dead");
     for (const p of aboard) if (p.role === "human") killPlayer(state, p, "daedalus_destroyed");
-    if (mushWinOnDeath(state)) endGame(state, "mush", "humans_dead");
+  } else {
+    endIfAllInactive(state);
   }
 }

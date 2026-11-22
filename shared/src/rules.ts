@@ -624,7 +624,10 @@ function advanceCycle(state: GameState, at?: number): void {
     changeMP(state, p, mpGain(state, p));
     p.ready = false;
   }
-  if (at !== undefined) inactivityCycle(state, at);
+  if (at !== undefined) {
+    inactivityCycle(state, at);
+    if (state.phase !== "playing") return;
+  }
   coupCycle(state);
   for (const [room, left] of Object.entries(state.ceasefires)) {
     if (left <= 1) delete state.ceasefires[room];

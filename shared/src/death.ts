@@ -16,7 +16,7 @@ import { PATROL_SHIPS } from "./patrol.ts";
 import { removeStatus } from "./statuses.ts";
 import { strikeSlots } from "./plans.ts";
 import { refreshTitles } from "./titles.ts";
-import { endGame, mushWinOnDeath } from "./victory.ts";
+import { allLivingInactive, endGame, mushWinOnDeath } from "./victory.ts";
 import type { ChannelId, GameState, PlayerState } from "./types.ts";
 
 /**
@@ -132,6 +132,19 @@ export function killPlayer(state: GameState, player: PlayerState, cause: DeathCa
   }
   refreshTitles(state);
   if (mushWinOnDeath(state)) endGame(state, "mush", "humans_dead");
+  else endIfAllInactive(state);
+}
+
+/**
+ * When every living player is inactive (while playing, not in pre-selection), NERON destroys the ship and the Mush
+ * win (#484, owner 2026-11-22). Ends the game first so `killPlayer` doesn't re-enter or end it as `humans_dead`.
+ */
+export function endIfAllInactive(state: GameState): boolean {
+  if (!allLivingInactive(state)) return false;
+  logPublic(state, undefined, "shipDestroyedInactive", undefined, "warning");
+  endGame(state, "mush", "ship_destroyed");
+  for (const p of state.players) killPlayer(state, p, "daedalus_destroyed");
+  return true;
 }
 
 /**

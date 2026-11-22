@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { CHARACTERS } from "../src/characters.ts";
+import { PRESELECTION } from "../src/config.ts";
+import { killPlayer } from "../src/death.ts";
 import { inactivityOf } from "../src/inactivity.ts";
 import { dailyMoraleLoss } from "../src/modifiers.ts";
+import { joinShip, preselectionDeadline } from "../src/preselection.ts";
 import { applyInput } from "../src/replay.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { overheadStatuses, STATUS_PUBLIC } from "../src/statuses.ts";
@@ -65,10 +68,11 @@ describe("inactivity", () => {
   });
 
   it("makes them super inactive at the first cycle change 48 hours after they were last seen", () => {
-    let s = cycleAt(ship(), h(inactiveAfterHours));
-    s = cycleAt(s, h(superAfterHours) - 1);
+    // Keep p3 active so total-inactivity destruction (#484) doesn't end the game first.
+    let s = cycleAt(must(seen(ship(), h(inactiveAfterHours), "p3")), h(inactiveAfterHours));
+    s = cycleAt(must(seen(s, h(superAfterHours) - 1, "p3")), h(superAfterHours) - 1);
     expect(status(s, "p0")).toBe("inactive");
-    s = cycleAt(s, h(superAfterHours));
+    s = cycleAt(must(seen(s, h(superAfterHours), "p3")), h(superAfterHours));
     expect(status(s, "p0")).toBe("super_inactive");
   });
 
@@ -97,14 +101,15 @@ describe("inactivity", () => {
 
   it("clears either status at once when the player connects, and counts again from then", () => {
     for (const hours of [inactiveAfterHours, superAfterHours]) {
-      const away = cycleAt(ship(), h(hours));
+      // Keep p3 active so the ship stays alive while p0..p2 go inactive.
+      const away = cycleAt(must(seen(ship(), h(hours), "p3")), h(hours));
       expect(status(away, "p0")).not.toBeNull();
       const s = must(seen(away, h(hours + 1), "p0"));
       expect(status(s, "p0")).toBeNull();
       expect(player(s, "p0").lastSeenAt).toBe(h(hours + 1));
       expect(status(s, "p1"), "only the player who connected").not.toBeNull();
-      expect(status(cycleAt(s, h(hours + inactiveAfterHours)), "p0")).toBeNull();
-      expect(status(cycleAt(s, h(hours + 1 + inactiveAfterHours)), "p0")).toBe("inactive");
+      expect(status(cycleAt(must(seen(s, h(hours + inactiveAfterHours), "p3")), h(hours + inactiveAfterHours)), "p0")).toBeNull();
+      expect(status(cycleAt(must(seen(s, h(hours + 1 + inactiveAfterHours), "p3")), h(hours + 1 + inactiveAfterHours)), "p0")).toBe("inactive");
     }
   });
 
@@ -123,7 +128,7 @@ describe("inactivity", () => {
   });
 
   it("is not announced, in the log or in chat", () => {
-    const before = ship();
+    const before = must(seen(ship(), h(inactiveAfterHours), "p3"));
     const after = cycleAt(before, h(inactiveAfterHours));
     expect(status(after, "p0")).toBe("inactive");
     // Only a title changing hands is announced (crew chat); the log gets nothing.
@@ -133,8 +138,9 @@ describe("inactivity", () => {
   });
 
   it("is a public status, the same for a human and a Mush, floating over the head", () => {
-    const s = cycleAt(ship(), h(inactiveAfterHours));
-    for (const id of ["p0", "p1", "p2", "p3"] as const) {
+    // Keep p3 active (human) while p0..p2 (including a Mush) go inactive.
+    const s = cycleAt(must(seen(ship(), h(inactiveAfterHours), "p3")), h(inactiveAfterHours));
+    for (const id of ["p0", "p1", "p2"] as const) {
       const other = id === "p0" ? "p1" : "p0";
       expect(viewFor(s, other).players.find((p) => p.id === id)!.statuses).toContain("inactive");
       expect(viewFor(s, id).statuses).toContain("inactive");
@@ -173,14 +179,96 @@ describe("inactivity and titles", () => {
     const s = must(applyInput(everyone(), { type: "inactivate", player: "p-janice" }));
     expect(s.titles.neron_admin).toBe("p-raluca");
   });
+});
 
-  it("gives a vacant title to a player who comes back", () => {
+describe("all living players inactive (#484)", () => {
+  it("destroys the ship as a Mush win when the last active living player goes inactive at a cycle change", () => {
+    let s = must(seen(ship(makeSeats(2)), h(inactiveAfterHours), "p1"));
+    s = cycleAt(s, h(inactiveAfterHours));
+    expect(s.phase).toBe("playing");
+    expect(status(s, "p0")).toBe("inactive");
+    expect(status(s, "p1")).toBeNull();
+
+    // Now p1 also goes inactive: NERON destroys the ship and kills everyone.
+    s = cycleAt(s, h(inactiveAfterHours * 2));
+    expect([s.phase, s.winner, s.ending]).toEqual(["ended", "mush", "ship_destroyed"]);
+    expect(s.players.every((p) => !p.alive)).toBe(true);
+    expect(s.log.some((e) => e.key === "shipDestroyedInactive" && e.visibleTo === "all" && e.room === undefined && e.level === "warning")).toBe(true);
+    expect(viewFor(s, "p0").ending).toBe("ship_destroyed");
+    expect(viewFor(s, "p0").crew?.every((c) => !c.alive)).toBe(true);
+  });
+
+  it("destroys the ship when the last active living player is inactivated by a ban", () => {
     let s = createGame(makeSeats(2), config, 1);
-    const holder = s.titles.commander!;
-    for (const id of ["p0", "p1"]) s = must(applyInput(s, { type: "inactivate", player: id }));
-    expect(s.titles.commander).toBeNull();
-    s = must(seen(s, T0, holder));
-    expect(s.titles.commander).toBe(holder);
+    s = must(applyInput(s, { type: "inactivate", player: "p0" }));
+    expect(s.phase).toBe("playing");
+    s = must(applyInput(s, { type: "inactivate", player: "p1" }));
+    expect([s.phase, s.winner, s.ending]).toEqual(["ended", "mush", "ship_destroyed"]);
+    expect(s.players.every((p) => !p.alive)).toBe(true);
+    expect(s.log.some((e) => e.key === "shipDestroyedInactive" && e.level === "warning")).toBe(true);
+  });
+
+  it("destroys the ship when the last active living player dies while remaining living crew are inactive", () => {
+    // p0 (human, active), p1 (human, inactive), p2 (mush, inactive): p0 dies -> humans still alive, but all inactive.
+    let s = createGame(makeSeats(3), config, 1, { p2: "mush" });
+    s = must(applyInput(s, { type: "inactivate", player: "p1" }));
+    s = must(applyInput(s, { type: "inactivate", player: "p2" }));
+    expect(s.phase).toBe("playing");
+    killPlayer(s, player(s, "p0"), "injury");
+    expect([s.phase, s.winner, s.ending]).toEqual(["ended", "mush", "ship_destroyed"]);
+    expect(s.players.every((p) => !p.alive)).toBe(true);
+    expect(s.log.some((e) => e.key === "shipDestroyedInactive")).toBe(true);
+  });
+
+  it("ends as humans_dead rather than ship_destroyed if the dying active player was the last human", () => {
+    // p0 (human, active), p1 (mush, inactive): p0 dies -> no living humans remain.
+    let s = createGame(makeSeats(2), config, 1, { p1: "mush" });
+    s = must(applyInput(s, { type: "inactivate", player: "p1" }));
+    killPlayer(s, player(s, "p0"), "injury");
+    expect([s.phase, s.winner, s.ending]).toEqual(["ended", "mush", "humans_dead"]);
+    expect(player(s, "p1").alive).toBe(true);
+    expect(s.log.some((e) => e.key === "shipDestroyedInactive")).toBe(false);
+  });
+
+  it("does not destroy the ship during pre-selection, but destroys it when selection ends if everyone is still inactive", () => {
+    const preConfig = testConfig({
+      ship: { oxygen: { perCycle: 0 } },
+      preselection: { ...PRESELECTION, seats: 4, minPlayers: 2, endsOn: { day: 1, cycle: 4 } },
+    });
+    let s = createGame([], preConfig, 7);
+    for (const seat of makeSeats(2)) s = must(joinShip(s, seat));
+    s = must(seen(s, T0, "p0", "p1"));
+    // Both go inactive during pre-selection (cycle 1 -> 2): game stays in pre-selection.
+    s = cycleAt(s, h(inactiveAfterHours));
+    expect(s.preselection).toBe(true);
+    expect(s.phase).toBe("playing");
+    expect(s.players.every((p) => p.alive && status(s, p.id) === "inactive")).toBe(true);
+
+    // Advance to the pre-selection deadline: selectMush runs and sees everyone is inactive.
+    const deadline = preselectionDeadline(s, preConfig.preselection!);
+    let t = h(inactiveAfterHours);
+    while (s.cycle < deadline) {
+      t += 3 * HOUR;
+      s = cycleAt(s, t);
+    }
+    expect([s.preselection, s.phase, s.winner, s.ending]).toEqual([false, "ended", "mush", "ship_destroyed"]);
+    expect(s.players.every((p) => !p.alive)).toBe(true);
+    expect(s.log.some((e) => e.key === "shipDestroyedInactive")).toBe(true);
+  });
+
+  it("still ends as humans_dead when pre-selection ends below minPlayers even if everyone is inactive", () => {
+    const preConfig = testConfig({
+      ship: { oxygen: { perCycle: 0 } },
+      preselection: { ...PRESELECTION, seats: 4, minPlayers: 3, endsOn: { day: 1, cycle: 3 } },
+    });
+    let s = createGame([], preConfig, 7);
+    for (const seat of makeSeats(2)) s = must(joinShip(s, seat));
+    s = must(seen(s, T0, "p0", "p1"));
+    s = cycleAt(s, h(inactiveAfterHours));
+    expect(s.phase).toBe("playing");
+    s = cycleAt(s, h(inactiveAfterHours + 3));
+    expect([s.phase, s.winner, s.ending]).toEqual(["ended", "mush", "humans_dead"]);
+    expect(s.log.some((e) => e.key === "shipDestroyedInactive")).toBe(false);
   });
 });
 
