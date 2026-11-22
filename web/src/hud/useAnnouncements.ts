@@ -8,6 +8,7 @@ import { FEATURE_CHANNELS, MUSH_CHANNEL, GRAVEYARD_CHANNEL, type ChannelId, type
 import { announce, freshIn, getVerbosity, isUrgent, unreadToAnnounce, type Seen } from "../announce.ts";
 import { useChatReadStore } from "../chatRead.ts";
 import { useNames } from "../i18n/names.ts";
+import { isNeronMessage } from "./FeedEntry.tsx";
 
 /** The channel's name for a reader: "Global chat", "Botany", the thread's or private channel's own name. */
 export function useChannelLabel(view: PlayerView): (channel: ChannelId) => string {
@@ -49,8 +50,9 @@ export function useAnnouncements(view: PlayerView, reading: ChannelId | null, qu
 
     for (const e of fresh.log) {
       if (verbosity === "off") break;
-      if (isUrgent(e)) announce(names.logLine(e), "assertive");
-      else if (verbosity === "all" || e.visibleTo !== "all") announce(names.logLine(e));
+      const line = !e.kind && e.level !== "warning" && e.level !== "danger" && isNeronMessage(e.key) ? `NERON: ${names.logLine(e)}` : names.logLine(e);
+      if (isUrgent(e)) announce(line, "assertive");
+      else if (verbosity === "all" || e.visibleTo !== "all") announce(line);
     }
 
     const myName = names.characterGiven(view.you.character).toLowerCase();
@@ -73,7 +75,7 @@ export function useAnnouncements(view: PlayerView, reading: ChannelId | null, qu
 
 /** "Mira: hello", or "Mira in Botany: hello" when the channel is not the one on screen. */
 function spoken(m: ChatLine, view: PlayerView, names: ReturnType<typeof useNames>, label: (c: ChannelId) => string, named: boolean): string {
-  if (m.system) return names.logLine(m.system);
+  if (m.system) return isNeronMessage(m.system.key) ? `NERON: ${names.logLine(m.system)}` : names.logLine(m.system);
   const character = view.players.find((p) => p.id === m.from)?.character;
   const who = names.character(character ?? "");
   return `${who}${named ? ` (${label(m.channel)})` : ""}: ${m.text}`;

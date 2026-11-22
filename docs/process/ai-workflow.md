@@ -4967,3 +4967,9 @@ Owner asked to "match eMush". Moved the debris table from `config.hunters.debris
 - Added reusable `TerminalCollapsible` (`web/src/hud/TerminalCollapsible.tsx`, styles in `web/src/hud/terminal.css`) wrapping Base UI's `Collapsible`, using `--terminal-header-bg` and `Mush/www/img/icons/ui/{less,more}.png` (`COLLAPSE_ICON` / `EXPAND_ICON` in `web/src/art/assets.ts`).
 - Added a collapsed-by-default "Botany basics" caption at the top of `PlantTerminal` (`web/src/hud/PlantTerminal.tsx`) covering planting/production, thirst/sickness/specialist visibility, and the gist of grafting, with en/fr/es copy in `web/src/locales/`.
 - Documented the terminal collapsible pattern in `web/CLAUDE.md` and added `web/tests/hud/PlantTerminal.test.tsx`. Verified with `npm test -w tools -- i18n` and `npm run verify:web`.
+
+### 2026-11-22 — NERON chat icon and name row
+
+- Wired `Mush/www/img/design/neron_chat.png` (38×38, unscaled) as `NERON_CHAT_ICON` in `web/src/art/assets.ts` for explicit NERON chat announcements and non-warning NERON room-log entries (`neronProjectCompleted`), with a `NERON` name row matching player messages.
+- Widened `.feed > li.entry` / `.entry-inline` marker column from 32px to 38px so the full-size icon fits without scaling and all message bodies stay aligned.
+- Stripped the now-redundant `NERON:` / `NERON :` prefix from those 12 messages across `en`/`fr`/`es` locales (keeping `NERON:` on warning-level room-log alerts and prepending it in screen-reader speech).

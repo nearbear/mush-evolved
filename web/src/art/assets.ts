@@ -181,7 +181,7 @@ export function itemViewIcon(item: Pick<ItemView, "type" | "plant">): string | u
 export const EMPTY_SLOT_ICON = itemIcons["empty"]!;
 
 const design = urls(
-  import.meta.glob<string>("../../../Mush/www/img/design/{pa1,pa2,lifebar,lifebar2,bdd,bdd_off}.png", { eager: true, query: "?url", import: "default" }),
+  import.meta.glob<string>("../../../Mush/www/img/design/{pa1,pa2,lifebar,lifebar2,bdd,bdd_off,neron_chat}.png", { eager: true, query: "?url", import: "default" }),
 );
 
 /** Research cards, keyed by the lowercase research id (the file name). */
@@ -271,6 +271,8 @@ export const MORALE_PIP = design["lifebar2"]!;
 /** 36x28 Xyloph database cells: deciphered, and not yet deciphered. */
 export const XYLOPH_DONE = design["bdd"]!;
 export const XYLOPH_TODO = design["bdd_off"]!;
+/** 38x38 red glowing NERON eye in a steel ring, drawn full-size beside NERON messages. */
+export const NERON_CHAT_ICON = design["neron_chat"]!;
 /** 70x65 rebel base icons. The art is generic colony skylines; base01..06 follow the order of `REBEL_BASES` (the original's data sheet has ten slots, six live). */
 const baseIcons = urls(
   import.meta.glob<string>("../../../Mush/www/img/icons/bases/base0[1-6].png", { eager: true, query: "?url", import: "default" }),

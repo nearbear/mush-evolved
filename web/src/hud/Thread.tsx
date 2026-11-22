@@ -10,7 +10,7 @@ import { Markdown } from "./Markdown.tsx";
 import { firstUnreadRow, rowAfterKey } from "./feedKeys.ts";
 import { MarkAllContext, dividerAt, dividerPlacement } from "./unreadDivider.ts";
 import { CycleDivider } from "./CycleDivider.tsx";
-import { FeedEntry, CrewAvatar, InfoMarker } from "./FeedEntry.tsx";
+import { FeedEntry, CrewAvatar, InfoMarker, NeronAvatar, NeronName, isNeronMessage } from "./FeedEntry.tsx";
 import { ChatInput } from "./ChatInput.tsx";
 import { Scroller } from "./Scroller.tsx";
 import { SHIP_RESOURCE_ICONS, TAB_ICONS } from "../art/assets.ts";
@@ -447,6 +447,13 @@ export function MessageEntry({
   const { t } = useTranslation();
   const names = useNames();
   if (m.system) {
+    if (isNeronMessage(m.system.key)) {
+      return (
+        <FeedEntry marker={<NeronAvatar />} name={<NeronName />} at={m.at} className={className} seq={seq}>
+          {names.logLine(m.system)}
+        </FeedEntry>
+      );
+    }
     return (
       <FeedEntry marker={<InfoMarker />} at={m.at} className={className} seq={seq}>
         {names.logLine(m.system)}

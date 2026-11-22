@@ -17,7 +17,7 @@ import { FeatureSelect } from "./FeatureSelect.tsx";
 import { Hint, IconTab } from "./IconButton.tsx";
 import { TabOutline } from "./TabOutline.tsx";
 import { CycleDivider } from "./CycleDivider.tsx";
-import { FeedEntry, InfoMarker, WarningMarker } from "./FeedEntry.tsx";
+import { FeedEntry, InfoMarker, NeronAvatar, NeronName, WarningMarker, isNeronMessage } from "./FeedEntry.tsx";
 import { VisibilityBadge } from "./VisibilityBadge.tsx";
 import { PrivateChannels, type ChannelHandlers } from "./PrivateChannels.tsx";
 import { Thread, type ThreadLinks } from "./Thread.tsx";
@@ -78,7 +78,10 @@ const LogRow = memo(
   function LogRow({ entry: e, canRead, onRead }: { entry: LogLine; canRead: boolean; onRead: (report: string) => void }) {
     const { t } = useTranslation();
     const names = useNames();
-    const marker = e.kind ? (
+    const neron = !e.kind && e.level !== "warning" && e.level !== "danger" && isNeronMessage(e.key);
+    const marker = neron ? (
+      <NeronAvatar />
+    ) : e.kind ? (
       <VisibilityBadge kind={e.kind} leaked={e.leaked === true} />
     ) : e.level === "warning" || e.level === "danger" ? (
       <WarningMarker />
@@ -88,6 +91,7 @@ const LogRow = memo(
     return (
       <FeedEntry
         marker={marker}
+        name={neron ? <NeronName /> : undefined}
         at={e.at}
         className={logRowClass(e)}
       >
