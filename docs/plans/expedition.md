@@ -120,7 +120,7 @@ One rule pass for both phases. Everything in phases 1 and 2 stands except where 
 4. **Back:** the expedition ends at once and the crew comes home with what it found.
 5. **Lost item:** one item, picked uniformly among every item carried by members still with the crew (never a spacesuit), is destroyed. Nothing carried: Nothing.
 6. **Kill:** one random member still with the crew dies; Survival holders are picked last. **Kill all:** every member still with the crew dies; nothing prevents it. Deaths follow the existing expedition death rules.
-7. **Disease:** ~~reads as Nothing until Diseases (#214)~~ built 2026-11-21 (owner): one member, Mush included, catches a disease they lack from `config.diseases.expeditionDiseases`; anonymous report line. Still no disease chance after fights.
+7. **Disease:** ~~reads as Nothing until Diseases (#214)~~ built 2026-11-21 (owner): one member, Mush included, catches a disease they lack from `config.diseases.expeditionDiseases`; anonymous report line. After a lost fight (owner, 2026-11-21), each member still with the crew has 5% (`expedition.combatDiseaseChance`) to catch one of `expeditionCombatDiseases` they lack; silent.
 8. **Mush trap:** each human member still with the crew independently has 50% (`config.expedition.mushTrapChance`) to gain 1 spore, secretly; the report only says the crew walked into a trap. Antique Perfume's immunity protects; a Mush member is unaffected.
 9. **Landing** (replaces phase 1's Pilot rule): a living Pilot in the crew or the Antigrav propeller project (`ICARUS_ANTIGRAV_PROPELLER`) makes the landing always Nothing.
 

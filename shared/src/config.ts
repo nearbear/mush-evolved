@@ -95,6 +95,8 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   massMouldering: { cost: { ap: 2 } },
   // Owner, 2026-11-14: Demoralizer (disheartening_contact) costs 2 AP and lowers a living roommate's morale by 2.
   demoralize: { cost: { ap: 2 }, morale: 2 },
+  // Owner, 2026-11-21: Bacteriophilia's give_disease, 1 AP, from `diseases.mushSkillDiseases`.
+  giveDisease: { cost: { ap: 1 } },
   // Owner, 2026-11-05: the Apprentice skill's apprenticeship action costs 1 AP.
   apprenticeship: { cost: { ap: 1 } },
   // Owner, 2026-11-04: the pneumatic tube is free to use.
@@ -588,6 +590,8 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
     // Phases 3 and 4 (owner, 2026-11-08, #357): +1 steak per living Survival holder on Provision; 50% a spore per human in a Mush trap.
     survivalProvision: 1,
     mushTrapChance: 0.5,
+    // Owner, 2026-11-21: after a lost fight, each member still with the crew has 5% to catch one of `diseases.expeditionCombatDiseases`.
+    combatDiseaseChance: 0.05,
     // The original's monsters (`monster.json`); loot is the owner's choice (2026-11-08). The Wreck's creature has a random strength.
     creatures: {
       CHAB_CHAB: { strength: [8], loot: { provision: 2 } },
@@ -810,12 +814,16 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
       "flu_disease",
       "rubella_disease",
       "syphilis_disease",
-      "sepsis_disease"],
+      "sepsis_disease",
+      "quincks_oedema_disease",
+      "black_bite_disease",
+      "cat_allergy_disease"],
     // Owner, 2026-11-14: what the disease incident can give.
-    incidentDiseases: ["cold_disease", "skin_inflammation_disease", "migraine_disease", "sinus_storm_disease"],
-    // Owner, 2026-11-21: what an expedition's Disease event can give (expeditions.ts); the fight list isn't used yet.
+    incidentDiseases: ["cold_disease", "skin_inflammation_disease", "migraine_disease", "sinus_storm_disease", "flu_disease", "cat_allergy_disease", "vitamin_deficiency_disease"],
+    // Owner, 2026-11-21: what an expedition's Disease event, and a lost fight (`expedition.combatDiseaseChance`), can give.
     expeditionDiseases: ["migraine_disease", "skin_inflammation_disease", "fungal_infection_disease", "gastroenteritis_disease", "flu_disease", "rubella_disease", "syphilis_disease", "rejuvenation_disease", "mush_allergy_disease", "pink_eye_disease", "slight_nausea_disease"],
-    expeditionCombatDiseases: ["space_rabies_disease", "flu_disease", "syphilis_disease", "rejuvenation_disease"],
+    expeditionCombatDiseases: ["space_rabies_disease", "flu_disease", "syphilis_disease", "rejuvenation_disease", "cat_allergy_disease", "black_bite_disease"],
+    mushSkillDiseases: ["space_rabies_disease", "fungal_infection_disease", "cold_disease", "extreme_tinnitus_disease"],
     allDisorders: ["depression_disorder"],
     allInjuries: [
       "broken_nose_injury",
@@ -832,10 +840,27 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
       "mashed_foot_injury",
       "broken_shoulder_injury",
       "burnt_hand_injury",
+      "burned_arm_injury",
       "stiff_neck_injury",
     ],
-    // Owner, 2026-11-20: injuries a "random injury" combat outcome never gives.
-    notRandomInjuries: ["stiff_neck_injury"],
+    // What a "random injury" combat outcome draws from (attack.ts). Owner, 2026-11-20: never Stiff Neck.
+    combatInjuries: [
+      "broken_nose_injury",
+      "damaged_ears_injury",
+      "destroyed_ears_injury",
+      "torn_tongue_injury",
+      "open_air_brain_injury",
+      "head_trauma_injury",
+      "haemorrhage_injury",
+      "critical_haemorrhage_injury",
+      "busted_arm_joint_injury",
+      "punctured_lung_injury",
+      "bruised_shoulder_injury",
+      "mashed_foot_injury",
+      "broken_shoulder_injury",
+      "burnt_hand_injury",
+      "burned_arm_injury",
+    ],
     allDiseaseStats: [
       {label: "cold_disease", type: "disease", durationMin: 8, durationMax: 12, roomSpread: 0.02, cycleSpread: 0.04}, 
       {label: "extreme_tinnitus_disease", type: "disease", durationMin: 12, durationMax: 20}, 
@@ -865,7 +890,13 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
       {label: "syphilis_disease", type: "disease", durationMin: 20, durationMax: 32, spreadByDTT: true},
       // Owner, 2026-11-17: from a failed surgery.
       {label: "sepsis_disease", type: "disease", durationMin: 1, durationMax: 3},
-      ...["broken_nose_injury", "damaged_ears_injury", "destroyed_ears_injury", "torn_tongue_injury", "open_air_brain_injury", "head_trauma_injury", "haemorrhage_injury", "critical_haemorrhage_injury", "busted_arm_joint_injury", "punctured_lung_injury", "bruised_shoulder_injury", "mashed_foot_injury", "broken_shoulder_injury", "burnt_hand_injury"].map((label) => ({ label, type: "injury" })),
+      // Owner, 2026-11-21: 1-3 cycles, as on eMushpedia.
+      {label: "quincks_oedema_disease", type: "disease", durationMin: 1, durationMax: 3},
+      // Owner, 2026-11-21: 20-32 cycles.
+      {label: "black_bite_disease", type: "disease", durationMin: 20, durationMax: 32},
+      // Owner, 2026-11-21: 12-20 cycles.
+      {label: "cat_allergy_disease", type: "disease", durationMin: 12, durationMax: 20},
+      ...["broken_nose_injury", "damaged_ears_injury", "destroyed_ears_injury", "torn_tongue_injury", "open_air_brain_injury", "head_trauma_injury", "haemorrhage_injury", "critical_haemorrhage_injury", "busted_arm_joint_injury", "punctured_lung_injury", "bruised_shoulder_injury", "mashed_foot_injury", "broken_shoulder_injury", "burnt_hand_injury", "burned_arm_injury"].map((label) => ({ label, type: "injury" })),
       // Owner, 2026-11-20: unlike the other injuries, Stiff Neck wears off after 4 cycles.
       {label: "stiff_neck_injury", type: "injury", durationMin: 4, durationMax: 4}],
     allDisorderStats: [{type: "disorder", resistance: 8}],

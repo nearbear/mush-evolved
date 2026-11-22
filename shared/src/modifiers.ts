@@ -86,7 +86,10 @@ import { head_trauma_injury } from "./modifiers/head_trauma_injury.ts";
 import { critical_haemorrhage_injury, haemorrhage_injury } from "./modifiers/haemorrhage_injury.ts";
 import { busted_arm_joint_injury } from "./modifiers/busted_arm_joint_injury.ts";
 import { punctured_lung_injury } from "./modifiers/punctured_lung_injury.ts";
-import { burnt_hand_injury } from "./modifiers/burnt_hand_injury.ts";
+import { cat_allergy_disease, catCarriedIn } from "./modifiers/cat_allergy_disease.ts";
+import { black_bite_disease } from "./modifiers/black_bite_disease.ts";
+import { quincks_oedema_disease } from "./modifiers/quincks_oedema_disease.ts";
+import { burned_arm_injury, burnt_hand_injury } from "./modifiers/burnt_hand_injury.ts";
 import { stiff_neck_injury } from "./modifiers/stiff_neck_injury.ts";
 import { damaged_ears_injury } from "./modifiers/damaged_ears_injury.ts";
 import { destroyed_ears_injury } from "./modifiers/destroyed_ears_injury.ts";
@@ -342,7 +345,11 @@ export const MODIFIERS: Record<string, Modifier> = {
   mashed_foot_injury,
   broken_shoulder_injury,
   burnt_hand_injury,
+  burned_arm_injury,
   stiff_neck_injury,
+  quincks_oedema_disease,
+  black_bite_disease,
+  cat_allergy_disease,
 };
 
 /**
@@ -849,6 +856,8 @@ export function shipMoved(next: GameState, registry: ModifierRegistry = MODIFIER
 /** Runs every onEnterRoom hook of the player's modifiers, once they are in the new room. Mutates a state the caller already cloned. */
 export function enteredRoom(next: GameState, player: PlayerState, tools: EnterRoomTools = NO_TOOLS, registry: ModifierRegistry = MODIFIERS): void {
   for (const id of eventIds(player)) registry[id]?.onEnterRoom?.(next, player, tools);
+  // Carrying Schrödinger in sets off any Cat Allergy already in the room (owner, 2026-11-21).
+  catCarriedIn(next, player);
 }
 
 /**

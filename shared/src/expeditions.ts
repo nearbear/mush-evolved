@@ -737,6 +737,21 @@ function fight(ctx: Ctx, event: ExpeditionEvent, creature: string): void {
     hits.set(p, (hits.get(p) ?? 0) + 1);
   }
   if (hits.size > 0) hurt(ctx, event, new Map([...hits].sort(([a], [b]) => members.indexOf(a) - members.indexOf(b))), "exploration_combat");
+  if (!won) fightDiseases(ctx, members);
+}
+
+/**
+ * A lost fight (owner, 2026-11-21): each member still with the crew, Mush included (they carry it), has
+ * `combatDiseaseChance` to catch a random disease from `config.diseases.expeditionCombatDiseases` they don't have yet.
+ * A Hygienist may resist (`addDisease`). Silent, like the Disease event: the report doesn't say who.
+ */
+function fightDiseases(ctx: Ctx, members: PlayerState[]): void {
+  const { state } = ctx;
+  for (const p of members) {
+    if (!withCrew(state, p) || rollFloat(state) >= state.config.expedition.combatDiseaseChance) continue;
+    const catchable = state.config.diseases.expeditionCombatDiseases.filter((d) => !p.modifiers.includes(d));
+    if (catchable.length > 0) addDisease(state, p, catchable[rollInt(state, catchable.length)]!);
+  }
 }
 
 /** The chance a crew of `crew` strength beats a creature of `strength` (owner, 2026-11-08; eMushpedia's `Combat`). */

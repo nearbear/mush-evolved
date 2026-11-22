@@ -584,6 +584,27 @@ describe("expeditions, phases 3 and 4, slice A: events and fights", () => {
     expect(dead.items.filter((i) => i.type === "corpse" && i.at.kind === "room" && i.at.id === ICARUS)).toHaveLength(4);
   });
 
+  it("a lost fight gives each member still with the crew a combat disease at its chance, silently; a won one never", () => {
+    expect(expedition.combatDiseaseChance).toBe(0.05);
+    const list = DEFAULT_CONFIG.diseases.expeditionCombatDiseases;
+    expect(list).toEqual(["space_rabies_disease", "flu_disease", "syphilis_disease", "rejuvenation_disease", "cat_allergy_disease", "black_bite_disease"]);
+    const sick = (s: GameState) => crewIds.filter((id) => player(s, id).modifiers.some((m) => list.includes(m)));
+    const fightWith = (strength: number, chance: number) => {
+      const s = game({ tags: ["PREDATOR"], events: only({ kind: "fight", weight: 1, creature: "TEST" }), config: { combatDiseaseChance: chance, creatures: { ...expedition.creatures, TEST: { strength: [strength], loot: {} } } } });
+      for (const id of crewIds) Object.assign(player(s, id), { modifiers: [], hp: 14 });
+      return s;
+    };
+    // Crew strength 4 against 12: a sure loss, 8 HP shared out, nobody dies.
+    const lost = go(fightWith(12, 1));
+    expect(event(lost).fight?.won).toBe(false);
+    expect(sick(lost)).toEqual(crewIds);
+    expect(JSON.stringify(viewFor(lost, "p0").expeditions[0]!.events[1])).not.toMatch(/disease/);
+    expect(sick(go(fightWith(12, 0)))).toEqual([]);
+    const won = go(fightWith(1, 1));
+    expect(event(won).fight?.won).toBe(true);
+    expect(sick(won)).toEqual([]);
+  });
+
   it("Disease gives one member, Mush included, a disease from the expedition list they lack; the report names nobody", () => {
     const list = DEFAULT_CONFIG.diseases.expeditionDiseases;
     expect(list).toEqual(["migraine_disease", "skin_inflammation_disease", "fungal_infection_disease", "gastroenteritis_disease", "flu_disease", "rubella_disease", "syphilis_disease", "rejuvenation_disease", "mush_allergy_disease", "pink_eye_disease", "slight_nausea_disease"]);

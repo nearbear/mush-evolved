@@ -14,7 +14,7 @@ export type SpikeActionData = { type: "spike"; target: string };
  */
 export class SpikeAction extends Action<SpikeActionData> {
   override visibility: ActionVisibility = "covert";
-  override tags: readonly ActionTag[] = ["spore", "aggressive"];
+  override tags: readonly ActionTag[] = ["spore", "aggressive", "mush"];
 
   constructor() {
     super("spike", { target: isString });

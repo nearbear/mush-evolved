@@ -8,7 +8,7 @@ import { useNames } from "../i18n/names.ts";
 import { actionVisibility, ITEM_TYPES, SUPERKUBE, type Action, type ActionOption, type PlayerView, type RoomId, type Target } from "@mush2/shared";
 import { ActionLabel } from "./ActionLabel.tsx";
 import { ActionButton } from "./ActionButton.tsx";
-import { collapseIssueMission, IssueMissionDialog } from "./IssueMissionDialog.tsx";
+import { collapsePickers, CrewPickerDialog, isPickerAction, type PickerAction } from "./CrewPickerDialog.tsx";
 import { collapseThrowOut, ThrowOutDialog } from "./ThrowOutDialog.tsx";
 import { DoublePressButton } from "./DoublePress.tsx";
 import { SuperkubeOpener, type SendKube } from "./Superkube.tsx";
@@ -48,7 +48,7 @@ export function PeekBar({
     return <ActionLabel text={text} cost={cost} chance={chance} visibility={actionVisibility(action.type, view)} />;
   };
   const [throwingOut, setThrowingOut] = useState(false);
-  const [issuingMission, setIssuingMission] = useState(false);
+  const [picking, setPicking] = useState<PickerAction | null>(null);
   const resolved = resolveTarget(view, target);
   if (!resolved) return null;
   if (resolved.kind === "door") {
@@ -81,7 +81,7 @@ export function PeekBar({
   const { options: afterThrowOut, throwOut } = collapseThrowOut(
     optionsOn(view, target).filter((o) => o.action.type !== "examine"),
   );
-  const { options: peekOptions, issueMission } = collapseIssueMission(afterThrowOut);
+  const { options: peekOptions, picks } = collapsePickers(afterThrowOut);
   return (
     <>
       <Bar
@@ -103,8 +103,8 @@ export function PeekBar({
             onAction={
               o.action.type === "throw_out"
                 ? () => setThrowingOut(true)
-                : o.action.type === "issue_mission"
-                  ? () => setIssuingMission(true)
+                : isPickerAction(o.action.type)
+                  ? () => setPicking(o.action.type as PickerAction)
                   : onAction
             }
           >
@@ -119,11 +119,11 @@ export function PeekBar({
         onClose={() => setThrowingOut(false)}
         onAction={onAction}
       />
-      <IssueMissionDialog
-        open={issuingMission}
+      <CrewPickerDialog
+        kind={picking}
         view={view}
-        options={issueMission}
-        onClose={() => setIssuingMission(false)}
+        picks={picks}
+        onClose={() => setPicking(null)}
         onAction={onAction}
       />
     </>

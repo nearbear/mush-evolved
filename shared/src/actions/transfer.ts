@@ -5,6 +5,7 @@ import { CAT_ITEM, ITEM_TYPES, canTransfer } from "../items.ts";
 import { isLostPlace } from "../patrol.ts";
 import { logPublic } from "../log.ts";
 import { cantCarryHeavy } from "../modifiers.ts";
+import { heldCat } from "../modifiers/cat_allergy_disease.ts";
 import type { Container, GameState, ItemState, PlayerState } from "../types.ts";
 
 export type TransferActionData = { type: "take"; item: string } | { type: "drop"; item: string };
@@ -56,5 +57,6 @@ export class TransferAction<T extends "take" | "drop" = "take" | "drop"> extends
     if (this.type === "take" && item.type === CAT_ITEM && item.mush) {
       contaminate(state, player);
     }
+    if (this.type === "take" && item.type === CAT_ITEM) heldCat(state, player);
   }
 }

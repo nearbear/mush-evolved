@@ -56,7 +56,8 @@ export type ActionVisibility = "public" | "private" | "secret" | "covert";
  * - `shoot`: a shot at a hunter from a turret. No effects yet; later ones include Gunner's accuracy and Gunman's pool.
  * - `talking`: speaking to someone in the room (Fiery speech, Boring speech, Chitchat, Comfort). A mute player (Torn Tongue) can't.
  */
-export type ActionTag = "aggressive" | "spore" | "shoot" | "melee" | "talking";
+/** `mush`: a Mush-only action (Black Bite makes one aimed at its carrier free, modifiers/black_bite_disease.ts). */
+export type ActionTag = "aggressive" | "spore" | "shoot" | "melee" | "talking" | "mush";
 
 /**
  * What an action costs. `paidBy` names a skill resource (a Computer point, a care point...) that pays for it in place of

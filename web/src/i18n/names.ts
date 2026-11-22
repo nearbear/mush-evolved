@@ -92,6 +92,7 @@ const ACTION_NAME_KEYS = {
   reset_skills: "actions.resetSkills",
   mass_mouldering: "actions.massMouldering",
   demoralize: "actions.demoralize",
+  give_disease: "actions.giveDisease",
   tube_transfer: "actions.tubeTransfer",
   consume_spore: "actions.consumeSpore",
   fungal_cuisine: "actions.fungalCuisine",
