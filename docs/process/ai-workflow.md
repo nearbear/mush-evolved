@@ -4807,3 +4807,9 @@ Owner asked to "match eMush". Moved the debris table from `config.hunters.debris
 - Switched `GameScreen` (`web/src/GameScreen.tsx`, `web/src/App.tsx`) to `React.lazy(() => import("./GameScreen.tsx"))` with a `<Suspense>` boundary matching the existing `common.connecting` state so `<WakeUp>` stays mounted during transitions.
 - Added idempotent `prefetchGameScreen` passed into `Lobby` (`web/src/lobby/Lobby.tsx`), triggered on hover/focus/click of the Resume, ship, and Single Player buttons as well as on queue join and resume.
 - Reduced the main entry chunk (`index-*.js`) from ~1,469 kB to ~629 kB (`index-*.css` from 125 kB to 100 kB). Verified with `npm run verify:web`.
+
+### Dynamic-import locale JSONs on demand (2026-11-21)
+
+- Switched `web/src/i18n/index.ts` from statically bundling all three UI catalogs (`en/fr/es.json`) and `NAME_CATALOGS` to loading only the active locale's UI catalog and shared name catalog (`@mush2/shared/src/locales/names.<locale>.json`) via dynamic `import()` behind an i18next `BackendModule` with top-level `await` before mounting, and loading other locales on `changeLanguage`.
+- Kept compile-time key checking via `type EnCatalog = typeof import("../locales/en.json")` merged with `NameCatalog`, and set `fallbackLng: false` so French/Spanish startups don't also fetch English (key parity is already enforced by `tools/tests/i18n/i18n.test.ts`).
+- Verified in `web/tests/i18n/i18n.test.ts` that only the initial locale's resource bundle is loaded on startup and other locales load on demand; Vite now emits separate per-locale chunks (`en/fr/es` + `names.en/fr/es`) with none in the entry bundle or `index.html` modulepreloads.
