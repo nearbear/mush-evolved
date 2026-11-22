@@ -2168,7 +2168,12 @@
     "edenConfirm": "Esta acción lleva el Daedalus al Edén y termina la partida. ¿Seguro que quieres continuar?",
     "solCommanderOnly": "Solo el Comandante puede llevar la nave a Sol.",
     "solPilgredBroken": "PILGRED todavía no está reparado.",
-    "solNotReady": "El camino a casa todavía no está listo."
+    "solNotReady": "El camino a casa todavía no está listo.",
+    "basicsHeading": "Nociones de viaje",
+    "basicsPlanets": "Busca planetas en la Terminal astro. Cada planeta está en una dirección (norte, este, sur u oeste), a una distancia medida en combustible.",
+    "basicsFuel": "Saca cápsulas de combustible de un depósito y cárgalas en la Cámara de combustión de la Sala de motores, hasta 9. Viajar quema todo lo cargado y la nave recorre exactamente esa distancia, así que carga exactamente la distancia del planeta. Con la cámara vacía, la nave no se mueve.",
+    "basicsSteer": "Solo el Comandante puede pilotar. Gira a la izquierda o a la derecha hasta que el rumbo coincida con la dirección del planeta y luego viaja. Si el rumbo o el combustible no coinciden, la nave salta al vacío. En ambos casos, se pierden todos los demás planetas que la tripulación haya encontrado.",
+    "basicsArrive": "La nave llega en el siguiente cambio de ciclo, y cerca de la mitad de los hunters la siguen. Para volver a viajar desde una órbita, primero abandona la órbita, lo que quema 1 de combustible. Un Reactor de emergencia roto impide viajar; un Reactor lateral roto impide girar hacia su lado."
   },
   "navigation": {
     "title": "Navegación",
@@ -2181,7 +2186,6 @@
     "leaveOrbit": "Salir de la órbita",
     "jumpConfirm": "Atención: mover la nave puede tener consecuencias graves. Las naves patrulla en vuelo se pierden con sus pilotos, una expedición que siga fuera queda abandonada, y una señal rebelde en decodificación se pierde. Consulta a tus compañeros antes de continuar.",
     "jumpBack": "Volver",
-    "warning": "Viajar quema todo el combustible de la cámara de combustión, y la nave avanza esa distancia. Sin combustible cargado se pierden los PA. Todo planeta que no esté justo delante a esa distancia se pierde.",
     "unavailableCommanderOnly": "Solo el Comandante puede dirigir la nave.",
     "unavailableTraveling": "La nave está viajando.",
     "unavailable": "No disponible en este momento."

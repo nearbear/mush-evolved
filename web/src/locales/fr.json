@@ -2168,7 +2168,12 @@
     "edenConfirm": "Cette action emmène le Daedalus vers Éden et termine la partie. Êtes-vous sûr de vouloir continuer ?",
     "solCommanderOnly": "Seul le Commandant peut emmener le vaisseau vers Sol.",
     "solPilgredBroken": "PILGRED n'a pas encore été réparé.",
-    "solNotReady": "Le chemin du retour n'est pas encore prêt."
+    "solNotReady": "Le chemin du retour n'est pas encore prêt.",
+    "basicsHeading": "Bases du voyage",
+    "basicsPlanets": "Cherchez des planètes au Terminal Astro. Chaque planète se trouve dans une direction (nord, est, sud ou ouest), à une distance mesurée en fuel.",
+    "basicsFuel": "Prenez des capsules de fuel dans un réservoir et chargez-les dans la Chambre de Combustion de la Salle des moteurs, jusqu'à 9. Un voyage brûle tout le fuel chargé et le vaisseau parcourt exactement cette distance : chargez donc exactement la distance de la planète. Chambre vide, le vaisseau ne bouge pas.",
+    "basicsSteer": "Seul le Commandant peut piloter. Tournez à gauche ou à droite jusqu'à ce que le cap corresponde à la direction de la planète, puis voyagez. Si le cap ou le fuel ne correspond pas, le vaisseau saute dans le vide. Dans les deux cas, toutes les autres planètes trouvées par l'équipage sont perdues.",
+    "basicsArrive": "Le vaisseau arrive au prochain changement de cycle, et environ la moitié des hunters le suivent. Pour repartir depuis une orbite, quittez d'abord l'orbite, ce qui brûle 1 fuel. Un Réacteur d'urgence cassé empêche de voyager ; un Réacteur Latéral cassé empêche de tourner de son côté."
   },
   "navigation": {
     "title": "Navigation",
@@ -2181,7 +2186,6 @@
     "leaveOrbit": "Quitter l'orbite",
     "jumpConfirm": "Attention : déplacer le vaisseau peut avoir des conséquences majeures. Les patrouilleurs en vol sont perdus avec leurs pilotes, une expédition encore dehors est abandonnée, et un signal rebelle en cours de décodage est perdu. Consultez vos coéquipiers avant de continuer.",
     "jumpBack": "Retour",
-    "warning": "Voyager brûle tout le fuel de la chambre de combustion, et le vaisseau avance d'autant. Sans fuel chargé, les PA sont perdus. Toute planète qui ne se trouve pas droit devant à cette distance est perdue.",
     "unavailableCommanderOnly": "Seul le Commandant peut diriger le vaisseau.",
     "unavailableTraveling": "Le vaisseau est en route.",
     "unavailable": "Indisponible pour le moment."

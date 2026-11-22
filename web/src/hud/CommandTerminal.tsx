@@ -10,6 +10,7 @@ import { ConfirmPanel } from "./ConfirmPanel.tsx";
 import { ActionButton } from "./ActionButton.tsx";
 import { ActionLabel } from "./ActionLabel.tsx";
 import { ShipNavigation } from "./ShipNavigation.tsx";
+import { TerminalCollapsible } from "./TerminalCollapsible.tsx";
 import { terminalLogin } from "./terminalUsername.ts";
 import "./settings.css";
 import "./terminal.css";
@@ -32,12 +33,26 @@ export function CommandTerminal({ terminal, view, onAction }: Props) {
         <Tabs.Tab className="settings-tab" value="intergalactic">{t("command.intergalacticTab")}</Tabs.Tab>
       </Tabs.List>
       <Tabs.Panel value="navigation">
+        <TravelBasics />
         <ShipNavigation terminal={terminal} view={view} onAction={onAction} />
       </Tabs.Panel>
       <Tabs.Panel value="intergalactic">
         <Intergalactic terminal={terminal} view={view} onAction={onAction} />
       </Tabs.Panel>
     </Tabs.Root>
+  );
+}
+
+/** A collapsed primer on how a jump works, as the Hydroponics terminal's botany basics (owner, 2026-11-22). Static text only. */
+function TravelBasics() {
+  const { t } = useTranslation();
+  return (
+    <TerminalCollapsible heading={t("command.basicsHeading")}>
+      <p>{t("command.basicsPlanets")}</p>
+      <p>{t("command.basicsFuel")}</p>
+      <p>{t("command.basicsSteer")}</p>
+      <p>{t("command.basicsArrive")}</p>
+    </TerminalCollapsible>
   );
 }
 

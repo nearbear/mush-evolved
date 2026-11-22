@@ -98,7 +98,6 @@ export function ShipNavigation({ terminal, view, onAction }: Props) {
           )}
         </div>
       )}
-      {(travel || leave) && <p className="ship-navigation-warning">{t("navigation.warning")}</p>}
       <ConfirmPanel
         open={confirming !== null}
         onOpenChange={(open) => !open && setConfirming(null)}

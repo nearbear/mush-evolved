@@ -2231,7 +2231,12 @@
     "edenConfirm": "This takes the Daedalus to Eden and ends the game. Are you sure you want to continue?",
     "solCommanderOnly": "Only the Commander can take the ship to Sol.",
     "solPilgredBroken": "PILGRED hasn't been repaired yet.",
-    "solNotReady": "The way home isn't ready yet."
+    "solNotReady": "The way home isn't ready yet.",
+    "basicsHeading": "Travel basics",
+    "basicsPlanets": "Scan for planets at the Astro terminal. Each planet lies in one direction (north, east, south or west) at a distance measured in fuel.",
+    "basicsFuel": "Take fuel capsules from a fuel tank and load them into the combustion chamber in the Engine room, up to 9. Travel burns everything loaded and the ship goes exactly that far, so load exactly the planet's distance. With the chamber empty, the ship doesn't move.",
+    "basicsSteer": "Only the Commander can steer. Turn left or right until the heading matches the planet's direction, then travel. If the heading or the fuel is wrong, the ship jumps into empty space. Either way, every other planet the crew has found is lost.",
+    "basicsArrive": "The ship arrives at the next cycle change, and about half the hunters follow it. To travel again from orbit, first leave orbit, which burns 1 fuel. A broken Emergency reactor stops travel; a broken Lateral reactor stops turning to its side."
   },
   "navigation": {
     "title": "Navigation",
@@ -2244,7 +2249,6 @@
     "leaveOrbit": "Leave orbit",
     "jumpConfirm": "Warning: moving the ship can have major consequences. Patrol ships in flight are lost with their pilots, an expedition still out is stranded, and a rebel signal being decoded is lost. Consult your crewmates before going ahead.",
     "jumpBack": "Back",
-    "warning": "Travel burns all the fuel in the combustion chamber, and the ship goes that far. With none loaded the AP is wasted. Every planet not lying exactly ahead at that distance is lost.",
     "unavailableCommanderOnly": "Only the Commander can steer the ship.",
     "unavailableTraveling": "The ship is traveling.",
     "unavailable": "Unavailable right now."

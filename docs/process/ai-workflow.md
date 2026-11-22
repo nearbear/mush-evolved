@@ -5087,3 +5087,8 @@ The owner named the game **Mush: Evolved**. Updated the display name only (CLAUD
 ### 2026-11-22: Peek bar More shows how many actions are hidden
 
 - Asked for a badge on the phone peek bar's "…" button counting the actions not shown. `useOneRow` already marked the wrapped-off buttons inert, so it now also returns that count; `Bar` owns the More button (both callers passed the same one) and draws a blue `--badge` chip, deliberately not the red unread badge. The count goes into the button's label (`peek.moreHidden`, en/fr/es). Examine (always left to Inspect) and the throw-out/crew-picker collapses are not counted: only actions the row clipped.
+
+## 2026-11-22: Travel basics helper on the Command terminal
+
+Added a collapsed "Travel basics" section (`TerminalCollapsible`, as the Hydroponics botany basics) to the Command terminal's Interplanetary tab, with en/fr/es text written from `implemented-rules.md` (scanning, loading exactly the planet's distance since travel burns the whole chamber, Commander-only steering to match the heading, other planets lost on any jump, arrival next cycle with hunters following, leaving orbit costs 1 fuel, broken reactors,). Worked: describing only built rules kept it from inventing mechanics. fr/es reuse the existing "hunters"/equipment names rather than fresh translations.
+Follow-up: the owner dropped the Intergalactic line from the helper and had the static travel warning under the Travel/Leave orbit buttons removed (`navigation.warning`), since the helper now covers it.

@@ -195,10 +195,6 @@
   font-weight: bold;
   font-size: 1.15em;
 }
-.ship-navigation-warning {
-  color: var(--warning);
-  font-size: 0.9em;
-}
 
 /* The shared title bar (TerminalFrame, and the settings window). The settings window: title on the left, close on the right. */
 .terminal-header {
