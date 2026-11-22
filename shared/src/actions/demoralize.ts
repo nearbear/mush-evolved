@@ -16,7 +16,7 @@ export type DemoralizeActionData = { type: "demoralize"; target: string };
  */
 export class DemoralizeAction extends Action<DemoralizeActionData> {
   override visibility: ActionVisibility = "covert";
-  override tags: readonly ActionTag[] = ["aggressive"];
+  override tags: readonly ActionTag[] = ["aggressive", "mush"];
 
   constructor() {
     super("demoralize", { target: isString });

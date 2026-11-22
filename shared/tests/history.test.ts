@@ -229,7 +229,7 @@ describe("Chitchat with a Confident", () => {
 });
 
 describe("Premonition", () => {
-  const premonition = (target: PlayerId): Action => ({ type: "premonition", target });
+  const premonition = (subject: PlayerId): Action => ({ type: "premonition", subject });
 
   it("costs 1 morale and no AP, and shows a crewmate's last action in another room", () => {
     let s = ship("premonition");
@@ -254,7 +254,7 @@ describe("Premonition", () => {
   it("is offered only to someone with the skill and the morale, for living others, and refused otherwise", () => {
     let s = ship("premonition");
     killPlayer(s, player(s, "p3"), "assassinated");
-    expect(offered(s, "p0").filter((a) => a.type === "premonition").map((a) => (a as { target: string }).target).sort()).toEqual(["p1", "p2"]);
+    expect(offered(s, "p0").filter((a) => a.type === "premonition").map((a) => (a as { subject: string }).subject).sort()).toEqual(["p1", "p2"]);
     expect(offered(s, "p1").some((a) => a.type === "premonition")).toBe(false);
     expect(applyAction(s, "p1", premonition("p2"))).toMatchObject({ ok: false });
     expect(applyAction(s, "p0", premonition("p0"))).toMatchObject({ ok: false });

@@ -21,7 +21,7 @@ import { ActionLabel } from "./ActionLabel.tsx";
 import { SkillSlots } from "./SkillSlots.tsx";
 import { StatusIcon, StatusIcons } from "./StatusIcons.tsx";
 import { ActionButton } from "./ActionButton.tsx";
-import { collapseIssueMission, IssueMissionDialog } from "./IssueMissionDialog.tsx";
+import { collapsePickers, CrewPickerDialog, isPickerAction, type PickerAction } from "./CrewPickerDialog.tsx";
 import { collapseThrowOut, ThrowOutDialog } from "./ThrowOutDialog.tsx";
 import { useKeepFocus } from "./useKeepFocus.ts";
 import { attackWeapon, optionsOn, resolveTarget, type Resolved } from "./targets.ts";
@@ -66,10 +66,10 @@ export function InspectPanel({
     return <ActionLabel text={text} cost={cost} chance={chance} visibility={actionVisibility(action.type, view)} />;
   };
   const [throwingOut, setThrowingOut] = useState(false);
-  const [issuingMission, setIssuingMission] = useState(false);
+  const [picking, setPicking] = useState<PickerAction | null>(null);
   const resolved = resolveTarget(view, target);
   const { options: afterThrowOut, throwOut } = collapseThrowOut(optionsOn(view, target));
-  const { options, issueMission } = collapseIssueMission(afterThrowOut);
+  const { options, picks } = collapsePickers(afterThrowOut);
   // A printed document's Read (#394) is client-only, so it is not one of the options, but it sits with them.
   const doc = resolved?.kind === "item" ? resolved.item.document : undefined;
   // The Superkube's Open (#170) is a cheat, not an action, so it isn't one of the options either.
@@ -111,8 +111,8 @@ export function InspectPanel({
               onAction={
                 o.action.type === "throw_out"
                   ? () => setThrowingOut(true)
-                  : o.action.type === "issue_mission"
-                    ? () => setIssuingMission(true)
+                  : isPickerAction(o.action.type)
+                    ? () => setPicking(o.action.type as PickerAction)
                     : onAction
               }
             >
@@ -130,11 +130,11 @@ export function InspectPanel({
           onAction={onAction}
         />
       )}
-      <IssueMissionDialog
-        open={issuingMission}
+      <CrewPickerDialog
+        kind={picking}
         view={view}
-        options={issueMission}
-        onClose={() => setIssuingMission(false)}
+        picks={picks}
+        onClose={() => setPicking(null)}
         onAction={onAction}
       />
       </div>
