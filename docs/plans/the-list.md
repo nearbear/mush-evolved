@@ -1,6 +1,6 @@
 # THE List (plan)
 
-2026-11-21. Decided by the owner (2026-10-25 on [#266](https://github.com/nearbear/mush2/issues/266), and 2026-11-21 in planning); not built. Builds on Finola's lost analysis ([#394](https://github.com/nearbear/mush2/issues/394)): the generic `document` item, `DocumentDialog`, and the `tear` action.
+2026-11-21. Decided by the owner (2026-10-25 on [#266](https://github.com/nearbear/mush2/issues/266), and 2026-11-21 in planning); built 2026-11-21 (shared and web). Builds on Finola's lost analysis ([#394](https://github.com/nearbear/mush2/issues/394)): the generic `document` item, `DocumentDialog`, and the `tear` action.
 
 ## Sources
 

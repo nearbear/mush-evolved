@@ -133,6 +133,7 @@ const ACTION_NAME_KEYS = {
   ceasefire: "actions.ceasefire",
   read_book: "actions.readBook",
   tear: "actions.tear",
+  print_list: "actions.printList",
   warp_to_planet: "actions.warpToPlanet",
   water: "actions.water",
   treat: "actions.treat",

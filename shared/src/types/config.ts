@@ -693,6 +693,7 @@ export interface GameConfig {
   };
   theList: {
     startNames: number; // Names on THE List printed the day the Mush are chosen; one fewer per whole day since, never below 1 (eMushpedia, 8; owner, 2026-11-21; #266).
+    cost: { ap: number }; // AP to print it at the tabulator (the original's PRINT_ZE_LIST, 0; owner, 2026-11-21).
   };
   comms: {
     sol: {

@@ -10,10 +10,11 @@ import { expirePlans, plansView, strikeSlots } from "./plans.ts";
 import { bindPerformAction } from "./actions/summon.ts";
 import { applyCheats, makeHuman, shipInvincible, type Cheat, type RoleCheat } from "./cheats.ts";
 import { ACTIONS, actionVisibility, type ActionDef } from "./actions.ts";
-import { ARACK_AROUND, AT_CAPACITY, COOLDOWN, DIRTY, EXPLORED, ICARUS_LOST, IN_PRESELECTION, NO_DEBRIS, NO_SPACE, PASIPHAE_INTACT, REACTOR_BROKEN } from "./actions/action.ts";
+import { ARACK_AROUND, AT_CAPACITY, BROKEN, COOLDOWN, DIRTY, EXPLORED, ICARUS_LOST, IN_PRESELECTION, NO_DEBRIS, NO_SPACE, PASIPHAE_INTACT, REACTOR_BROKEN } from "./actions/action.ts";
 import { getUp } from "./actions/lie_down.ts";
 import { ANTISOCIAL } from "./actions/bond.ts";
 import { GERMAPHOBE } from "./actions/caress.ts";
+import { LIST_PRINTED, MUSH_NOT_SELECTED } from "./actions/print_list.ts";
 import { isNimble } from "./actions/nimble.ts";
 import { researchNeedsView } from "./actions/research.ts";
 import { equipmentHere } from "./equipment.ts";
@@ -28,7 +29,7 @@ import { initNpc, newNpcState, npcCycle } from "./npcs.ts";
 import { catArrival } from "./schrodinger.ts";
 import { CHEAT_ROOM } from "./cheatRoom.ts";
 import { teleport, teleportBlocked } from "./kube.ts";
-import { newLostAnalysis, rollAtSelection } from "./lostAnalysis.ts";
+import { copyDocument, newLostAnalysis, rollAtSelection } from "./lostAnalysis.ts";
 import { newTheList, recordSelection } from "./theList.ts";
 import { hopelessCycle } from "./morale.ts";
 import { relayView } from "./relayView.ts";
@@ -347,7 +348,8 @@ const isUnaffordableReason = (action: Action, refused: string | null): refused i
     (action.type === "hack" && refused === IN_PRESELECTION) ||
     (action.type === "bond" && refused === ANTISOCIAL) ||
     (action.type === "caress" && refused === GERMAPHOBE) ||
-    (ICARUS_ACTIONS.has(action.type) && (refused === EXPLORED || refused === ICARUS_LOST)));
+    (ICARUS_ACTIONS.has(action.type) && (refused === EXPLORED || refused === ICARUS_LOST)) ||
+    (action.type === "print_list" && (refused === MUSH_NOT_SELECTED || refused === LIST_PRINTED || refused === BROKEN)));
 
 function actionOption(state: GameState, p: PlayerState, def: ActionDef<Action>, a: Action, lacks: ActionOption["lacks"]): ActionOption {
   return {
@@ -372,6 +374,9 @@ function unaffordableOption(state: GameState, p: PlayerState, def: ActionDef<Act
     ...(refused === ARACK_AROUND ? (["arack"] as const) : []),
     ...(refused === EXPLORED ? (["explored"] as const) : []),
     ...(refused === ICARUS_LOST ? (["icarusLost"] as const) : []),
+    ...(refused === MUSH_NOT_SELECTED ? (["mushNotSelected"] as const) : []),
+    ...(refused === LIST_PRINTED ? (["listPrinted"] as const) : []),
+    ...(refused === BROKEN ? (["broken"] as const) : []),
     ...(refused === ANTISOCIAL ? (["antisocial"] as const) : []),
     ...(refused === GERMAPHOBE ? (["germaphobe"] as const) : []),
     ...(refused === DIRTY ? (["clean"] as const) : []),
@@ -386,7 +391,7 @@ function unaffordableOption(state: GameState, p: PlayerState, def: ActionDef<Act
 }
 
 /**
- * Actions that fail only on cost (`cant_afford`), on room in the inventory (`NO_SPACE`), on a cooldown (`COOLDOWN`), on a shared limit (`AT_CAPACITY`), on being dirty (`DIRTY`) or, for Collect scrap, on no debris (`NO_DEBRIS`) or the Pasiphae still existing (`PASIPHAE_INTACT`), or for Travel and turns on a broken reactor (`REACTOR_BROKEN`), or for Travel and Leave orbit on an Arack around (`ARACK_AROUND`), with the cost and what falls
+ * Actions that fail only on cost (`cant_afford`), on room in the inventory (`NO_SPACE`), on a cooldown (`COOLDOWN`), on a shared limit (`AT_CAPACITY`), on being dirty (`DIRTY`) or, for Collect scrap, on no debris (`NO_DEBRIS`) or the Pasiphae still existing (`PASIPHAE_INTACT`), or for Travel and turns on a broken reactor (`REACTOR_BROKEN`), or for Travel and Leave orbit on an Arack around (`ARACK_AROUND`), or for Print THE List before selection, after the print or on a broken tabulator, with the cost and what falls
  * short. For showing them disabled.
  * Moves are left out: an unaffordable move has no cost to report, and doors aren't action buttons.
  */
@@ -979,7 +984,7 @@ const seesShield = (viewer: Readonly<PlayerState>): boolean => viewer.alive && (
 
 /** An item as `viewer` sees it; a plant's sickness only for the Botanist role (`plantView`). */
 function itemView({ id, type, of, builds, charges, teaches, plant, spores, hiddenBy, broken, jelly, shield, drone, document, spoil, mush }: ItemState, viewer: Readonly<PlayerState>): ItemView {
-  return { id, type, ...(broken && { broken }), ...(spoil !== undefined && seesSpoil(viewer) && { spoil }), ...(jelly !== undefined && viewer.role === "mush" && viewer.alive && { jelly }), ...(shield !== undefined && seesShield(viewer) && { shield }), ...(hiddenBy === viewer.id && { hidden: true as const }), ...(spores && viewer.role === "mush" && viewer.alive && { spores }), ...(mush && viewer.role === "mush" && viewer.alive && { mush }), ...(of !== undefined && { of }), ...(builds !== undefined && { builds }), ...(charges !== undefined && { charges }), ...(teaches !== undefined && { teaches }), ...(plant && { plant: plantView(plant, viewer) }), ...(drone && { drone: droneView(drone) }), ...(document && { document: { kind: document.kind, rows: document.rows.map((r) => ({ ...r })) } }) };
+  return { id, type, ...(broken && { broken }), ...(spoil !== undefined && seesSpoil(viewer) && { spoil }), ...(jelly !== undefined && viewer.role === "mush" && viewer.alive && { jelly }), ...(shield !== undefined && seesShield(viewer) && { shield }), ...(hiddenBy === viewer.id && { hidden: true as const }), ...(spores && viewer.role === "mush" && viewer.alive && { spores }), ...(mush && viewer.role === "mush" && viewer.alive && { mush }), ...(of !== undefined && { of }), ...(builds !== undefined && { builds }), ...(charges !== undefined && { charges }), ...(teaches !== undefined && { teaches }), ...(plant && { plant: plantView(plant, viewer) }), ...(drone && { drone: droneView(drone) }), ...(document && { document: copyDocument(document) }) };
 }
 
 /** A drone's public part (#411): name, serial and upgrades; its failure counts never leave the server. */

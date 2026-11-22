@@ -801,6 +801,7 @@ describe("actions from a client", () => {
     apprenticeship: [{ type: "apprenticeship", target: "p1", skill: SKILLS[0] }],
     read_book: [{ type: "read_book", item: "i1" }],
     tear: [{ type: "tear", item: "i1" }],
+    print_list: [{ type: "print_list", item: "i1" }],
     caress: [{ type: "caress", item: "i1" }],
     mush_caress: [{ type: "mush_caress", item: "i1" }],
   };

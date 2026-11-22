@@ -409,7 +409,15 @@ describe("union normalizers", () => {
     ["ReceiveAsset", normalizeReceiveAsset, Object.values(receives)],
     ["PlanTask", normalizePlanTask, Object.values(tasks)],
     ["PlanSlot", normalizePlanSlot, Object.values(slots).flat()],
-    ["DocumentState", normalizeDocument, [{ kind: "lost_analysis", rows: [{ character: "chun", negative: true }, { character: "chao", negative: false }] }]],
+    [
+      "DocumentState",
+      normalizeDocument,
+      [
+        { kind: "lost_analysis", rows: [{ character: "chun", negative: true }, { character: "chao", negative: false }] },
+        { kind: "the_list", characters: ["chun", "chao"] },
+        { kind: "the_list", characters: [] },
+      ],
+    ],
   ];
 
   for (const [type, normalize, samples] of variants) {

@@ -4897,3 +4897,11 @@ Owner asked to "match eMush". Moved the debris table from `config.hunters.debris
 - `shared/src/theList.ts`: `GameState.theList` (own `"the-list"` stream, starting Mush bodies, selection cycle, `printed`), set by `recordSelection` next to `rollAtSelection`; pure `listSize`, `guaranteedGroup`, `guaranteedName`, `rollList`; `config.theList.startNames` 8. Never in any view (leakFields + sentinel); excluded from the full view; `added()` default for games in progress (selection from the first rebel call).
 - Reading the plan with Transfer in mind: role moves with the mind, so "a living starting Mush" became "a starting-Mush body still Mush"; a Mush mind moved to another body falls to the "any living Mush" step. Flagged to the owner.
 - Needed correction: the normalizer's no-`??` rule (a repo test) caught my fallback; rewritten as an explicit branch.
+
+### 2026-11-21 — THE List: printing (#266, steps 4-5 and the web side)
+
+- `print_list` (`actions/print_list.ts`, 0 AP from `config.theList.cost`): a Tracker at the tabulator rolls `rollList`, marks the one print spent, and gets a `{ kind: "the_list", characters }` document (hands, else floor); public log. Disabled with `lacks` `mushNotSelected`, `listPrinted` (also after a tear) and `broken`, the first time `BROKEN` is shown rather than hidden, scoped to this action in `isUnaffordableReason`.
+- Widening `DocumentState` to a union broke the view's hand-written copy of the lost analysis's rows; replaced it with `copyDocument`. `DocumentReader` now switches on the kind (list, one-name certainty, "no Mush left aboard").
+- The disabled-reason and log wording in French reuses the original's own lines for PRINT_ZE_LIST ("chargé ses ampoules", "perforé ces informations"); fr/es are drafts.
+- Needed correction: my leak test grepped the view for "theList", which matched the log key `theListPrinted`; narrowed to the state's field names (the sentinel test in `leaks.test.ts` already covers the state).
+- Another session's uncommitted WebP work shared the checkout; the user stashed mid-task, and I popped only my own stash entry.

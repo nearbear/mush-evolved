@@ -92,6 +92,7 @@ import { BecomeGeniusAction } from "./actions/become_genius.ts";
 import { CeasefireAction } from "./actions/ceasefire.ts";
 import { ReadBookAction } from "./actions/read_book.ts";
 import { TearAction } from "./actions/tear.ts";
+import { PrintListAction } from "./actions/print_list.ts";
 import { AnathemaAction } from "./actions/anathema.ts";
 import { CoupAction } from "./actions/coup.ts";
 import { IssueMissionAction } from "./actions/issue_mission.ts";
@@ -293,6 +294,7 @@ const REGISTRY = {
   ceasefire: new CeasefireAction(),
   read_book: new ReadBookAction(),
   tear: new TearAction(),
+  print_list: new PrintListAction(),
   warp_to_planet: new WarpToPlanetAction(),
   claim_slot: new ClaimSlotAction(),
   withdraw_slot: new WithdrawSlotAction(),

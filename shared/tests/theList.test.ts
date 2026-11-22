@@ -1,16 +1,17 @@
 import { describe, expect, it } from "vitest";
 import { ITEM_TYPES, TABULATOR_ITEM } from "../src/items.ts";
-import { applyAction, createGame } from "../src/rules.ts";
+import { applyAction, createGame, viewFor } from "../src/rules.ts";
+import { DOCUMENT_ITEM } from "../src/lostAnalysis.ts";
 import type { Action, GameState, ItemState } from "../src/types.ts";
 import { DEFAULT_CONFIG, PRESELECTION } from "../src/config.ts";
 import type { CharacterId } from "../src/characters.ts";
 import { normalizeGame } from "../src/normalizeState.ts";
 import { joinShip, selectMush } from "../src/preselection.ts";
 import { guaranteedGroup, listSize, rollList } from "../src/theList.ts";
-import { clone, makeSeats, must, nextCycle, offered, player, testConfig } from "./support.ts";
+import { clone, costOf, makeSeats, must, nextCycle, offered, option, player, testConfig } from "./support.ts";
 
-// THE List (owner, 2026-11-21, #266; docs/plans/the-list.md). Steps 1-3: the tabulator item, spawned in front storage,
-// and the list's hidden state and rolls.
+// THE List (owner, 2026-11-21, #266; docs/plans/the-list.md): the tabulator item, spawned in front storage, the
+// list's hidden state and rolls, and printing it.
 
 const STORAGE = "STORAGE_FRONT";
 const config = testConfig({ manualCycles: true });
@@ -218,5 +219,100 @@ describe("THE List's state", () => {
     expect(loaded).toMatchObject({ startingMush: [char(s, "p3"), char(s, "p5")] as CharacterId[], selectedAt: 1, printed: false });
     const { config: _c2, ...stored } = clone(s);
     expect(normalizeGame(stored, {}).theList).toEqual(s.theList);
+  });
+});
+
+/** `crew()` with p0 a Tracker and p2 not, both in front storage with the tabulator. */
+function printShop(seed = 5): GameState {
+  const s = crew(seed);
+  for (const id of ["p0", "p2"]) player(s, id).room = STORAGE;
+  player(s, "p0").skills = ["hunt"];
+  player(s, "p2").skills = [];
+  put(s, "tab", TABULATOR_ITEM, room(STORAGE));
+  return s;
+}
+const PRINT = { type: "print_list", item: "tab" } as const;
+const printed = (s: GameState) => s.items.find((i) => i.type === DOCUMENT_ITEM)!;
+const lacks = (s: GameState, id: string) => option(s, id, PRINT)?.lacks;
+
+describe("printing THE List", () => {
+  it("is free (pinned at the original's 0 AP) and offered only to a Tracker at the tabulator", () => {
+    const s = printShop();
+    expect(DEFAULT_CONFIG.theList.cost.ap).toBe(0);
+    expect(offered(s, "p0")).toContainEqual(PRINT);
+    expect(costOf(s, "p0", PRINT)).toEqual({ ap: 0, mp: 0 });
+    expect(option(s, "p2", PRINT)).toBeUndefined();
+    expect(applyAction(s, "p2", PRINT).ok).toBe(false);
+    player(s, "p0").room = "BRIDGE";
+    expect(option(s, "p0", PRINT)).toBeUndefined();
+  });
+
+  it("is offered to Stephen once Apprentice copied Tracker", () => {
+    const s = printShop();
+    player(s, "p2").skills = ["apprentice"];
+    player(s, "p0").skills = ["hunt"];
+    const next = must(applyAction(s, "p2", { type: "apprenticeship", target: "p0", skill: "hunt" }));
+    expect(offered(next, "p2")).toContainEqual(PRINT);
+  });
+
+  it("hands the printer a document naming today's list, logs it publicly, and spends the one print", () => {
+    const s = printShop();
+    days(s, 3);
+    const expected = rollList(clone(s));
+    const next = must(applyAction(s, "p0", PRINT));
+    const doc = printed(next);
+    expect(doc.at).toEqual({ kind: "player", id: "p0" });
+    expect(doc.document).toEqual({ kind: "the_list", characters: expected });
+    expect(expected).toHaveLength(5);
+    expect(next.theList.printed).toBe(true);
+    expect(next.log.at(-1)).toMatchObject({ key: "theListPrinted", params: { name: char(s, "p0") }, room: STORAGE });
+    expect(next.rng).toEqual(s.rng);
+  });
+
+  it("drops the document on the floor when the printer's hands are full", () => {
+    const s = printShop();
+    for (let i = 0; i < 10; i++) put(s, `junk${i}`, "metal_scraps", { kind: "player", id: "p0" });
+    expect(printed(must(applyAction(s, "p0", PRINT))).at).toEqual(room(STORAGE));
+  });
+
+  it("prints an empty list when no Mush is left, and that spends the print", () => {
+    const s = printShop();
+    for (const id of ["p3", "p5"]) player(s, id).alive = false;
+    const next = must(applyAction(s, "p0", PRINT));
+    expect(printed(next).document).toEqual({ kind: "the_list", characters: [] });
+    expect(next.theList.printed).toBe(true);
+  });
+
+  it("is disabled with a reason after the print, also once the list is torn", () => {
+    let s = must(applyAction(printShop(), "p0", PRINT));
+    expect(lacks(s, "p0")).toEqual(["listPrinted"]);
+    expect(applyAction(s, "p0", PRINT).ok).toBe(false);
+    s = must(applyAction(s, "p0", { type: "tear", item: printed(s).id }));
+    expect(lacks(s, "p0")).toEqual(["listPrinted"]);
+    expect(applyAction(s, "p0", PRINT).ok).toBe(false);
+  });
+
+  it("is disabled with a reason on a broken tabulator", () => {
+    const s = printShop();
+    tab(s).broken = true;
+    expect(lacks(s, "p0")).toEqual(["broken"]);
+    expect(applyAction(s, "p0", PRINT).ok).toBe(false);
+  });
+
+  it("is disabled with a reason before Mush selection", () => {
+    const s = ship();
+    s.preselection = true;
+    s.theList.selectedAt = null;
+    player(s, "p0").skills = ["hunt"];
+    expect(lacks(s, "p0")).toEqual(["mushNotSelected"]);
+    expect(applyAction(s, "p0", PRINT).ok).toBe(false);
+  });
+
+  it("shows the names to whoever sees the document, and never the list's state", () => {
+    const next = must(applyAction(printShop(), "p0", PRINT));
+    const doc = printed(next);
+    const mine = viewFor(next, "p0").inventory.find((i) => i.id === doc.id)!;
+    expect(mine.document).toEqual(doc.document);
+    for (const id of ["p0", "p2", "p3"]) for (const field of ["startingMush", "selectedAt", "printed\""]) expect(JSON.stringify(viewFor(next, id))).not.toContain(field);
   });
 });

@@ -439,7 +439,7 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
       },
     },
   },
-  theList: { startNames: 8 },
+  theList: { startNames: 8, cost: { ap: 0 } },
   comms: {
     sol: { cost: { ap: 2 }, startChance: 4, chancePerFail: 4, radioExpertFactor: 2, radioExpertRoomFactor: 1.5 },
     rebel: { cost: { ap: 2 }, gainMax: 40, windowMin: 8, windowMax: 16, rebelBonus: 1, kivancBonus: 1, kaladaanMorale: 6, cygniMorale: 3, cygniPatrolDamage: 1, siriusRationAp: 1 },

@@ -440,6 +440,8 @@ export function normalizeDocument(raw: Partial<DocumentState>): DocumentState {
   switch (raw.kind) {
     case "lost_analysis":
       return { kind: "lost_analysis", rows: need(raw, "rows", t).map(normalizeDocumentRow) };
+    case "the_list":
+      return { kind: "the_list", characters: [...need(raw, "characters", t)] };
     default:
       throw unknownVariant(t, "kind", raw.kind satisfies undefined);
   }

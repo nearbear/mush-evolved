@@ -117,8 +117,11 @@ export interface DocumentRow {
   negative: boolean;
 }
 
-/** What a document says, by kind. Finola's lost analysis (#394); THE List (#266) will add its own kind. */
-export type DocumentState = { kind: "lost_analysis"; rows: DocumentRow[] };
+/**
+ * What a document says, by kind. Finola's lost analysis (#394), and THE List (#266, theList.ts): the characters it
+ * names, at least one of them Mush when printed; empty means it says no Mush are left aboard.
+ */
+export type DocumentState = { kind: "lost_analysis"; rows: DocumentRow[] } | { kind: "the_list"; characters: CharacterId[] };
 
 /** A support drone's own state (#411; drones.ts). Its name, serial and upgrades are public with the item; the failure counts never leave the server. */
 export interface DroneState {
