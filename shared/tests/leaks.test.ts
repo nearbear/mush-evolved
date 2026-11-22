@@ -98,6 +98,7 @@ function ship(): { state: GameState; sentinels: Sentinel[] } {
     s.items.push({ id: str(`inventory-${p.id}`, own), type: "wrench", at: { kind: "player", id: p.id } });
     s.failureStreaks[p.id] = { scan_planet: num(`failureStreaks-${p.id}`, []) };
     s.pendingFires = [str("pendingFires", [])];
+    s.trappedRooms = [str("trappedRooms", ["p0"])];
     s.sharedOnDay[p.id] = num(`sharedOnDay-${p.id}`, []);
     s.planets[p.id] = [
       {

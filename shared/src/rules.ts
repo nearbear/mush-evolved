@@ -53,6 +53,7 @@ import { damage, healDaily, hasMushDied } from "./death.ts";
 import { activitySeen, inLogWindow, logPrivate, logWindowOf, moveLineFor, pruneLog, seesLine, startLogSeen, withNimbleActor } from "./log.ts";
 import { recordAction } from "./history.ts";
 import { ringMycoAlarms } from "./mycoalarm.ts";
+import { triggerRoomTrap, willTriggerRoomTrap } from "./traps.ts";
 import { planetsOf } from "./planets.ts";
 import { canSharePlanets } from "./sharedPlanets.ts";
 import { canSharePlants, sharedPlantsView } from "./sharedPlants.ts";
@@ -204,6 +205,7 @@ export function createGame(
     ceasefires: {},
     reports: [],
     pendingFires: [],
+    trappedRooms: [],
     failureStreaks: {},
     patrolShips: newPatrolShips(config),
     space: [],
@@ -456,6 +458,8 @@ export function performAction(next: GameState, actor: PlayerState, action: Actio
   actor.mp -= cost.mp;
   if (cost.paidBy) actor.resources[cost.paidBy] -= 1;
   const room = actor.room;
+  // Checked before `run()` so actions like `take` still see the item was on the room's shelf/floor (#473).
+  const triggersTrap = willTriggerRoomTrap(next, actor, action);
   const run = () => {
     if (chance < 1) {
       const succeeded = rollFloat(next) < chance;
@@ -471,6 +475,7 @@ export function performAction(next: GameState, actor: PlayerState, action: Actio
     }
   };
   withNimbleActor(isNimble(actor) ? actor.id : null, run);
+  if (triggersTrap && actor.alive) triggerRoomTrap(next, actor, room);
   knockOffTarget(next, def, action);
   // After apply, so an action that reveals your own history (Chitchat) doesn't show itself.
   if (def.recorded) recordAction(next, actor, action.type);
@@ -869,6 +874,8 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     burningRooms: you.alive ? state.fires.filter((room) => fireReported(state, room)) : [],
     // Broken doors aboard, only once Defective piston sensors is complete (#330).
     brokenDoors: you.alive && doorsDetected(state) ? brokenDoors(state) : [],
+    // Rooms booby-trapped with a spore (#473): living Mush only; humans and the dead never see them.
+    trappedRooms: you.alive && you.role === "mush" ? [...state.trappedRooms] : [],
     alerts: you.alive ? alertsFor(state) : { fires: 0, broken: 0, reports: [] },
     // `seesLine` (log.ts) says which lines are yours; room lines, private ones included, only within your window (#365).
     // A private line names only you in the view: no one learns who else saw it (`leaked` marks a secret line others saw).

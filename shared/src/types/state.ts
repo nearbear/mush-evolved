@@ -233,6 +233,8 @@ export interface GameCore {
   reports: Report[];
   /** Rooms a Pyromaniac set to catch fire at the next cycle change (actions/ignite.ts). Never sent. */
   pendingFires: RoomId[];
+  /** Rooms booby-trapped with a spore by a Mush Trapper (traps.ts, #473). Sent only to living Mush (`PlayerView.trappedRooms`). */
+  trappedRooms: RoomId[];
   /** Who holds each title (titles.ts); null while vacant. Public: every view has the holders and the lines. */
   titles: Record<TitleId, PlayerId | null>;
   /**

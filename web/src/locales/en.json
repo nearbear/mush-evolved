@@ -224,7 +224,8 @@
     "selectRoom": "Point at a room",
     "unidentified": "Unidentified",
     "unidentifiedCount": "{{count}} unidentified",
-    "onFire": "On fire"
+    "onFire": "On fire",
+    "trapped": "Trapped"
   },
   "inspect": {
     "self": "{{character}} (you): inspect",
@@ -496,6 +497,7 @@
     "tubeTransfer": "Send through tube",
     "consumeSpore": "Devour a spore",
     "fungalCuisine": "Fungal cuisine",
+    "trapRoom": "Trap room",
     "takeoff": "Take off",
     "board_icarus": "Board the Icarus",
     "leave_icarus": "Leave the Icarus",
@@ -1353,6 +1355,7 @@
     "biosLockProjects": "You locked NERON projects to designers.",
     "biosLockResearch": "You locked laboratory research to biologists and medics.",
     "fungalCooked": "You slip a spore into the {{item}}. It now carries {{level}}.",
+    "roomTrapped": "{{name}} booby-trapped the room with a spore.",
     "massMouldering": "You release a cloud of mouldering spores across the ship.",
     "bodyTransferred": "You slipped into {{target}}'s body. {{name}} wakes up human, with your old body.",
     "patrolTakeoff": "{{name}} took off in {{room}}.",
@@ -2033,11 +2036,6 @@
   "bios": {
     "label": "NERON's BIOS settings",
     "adminOnly": "Only the NERON Admin can change these settings.",
-    "isOn": "{{name}}: on",
-    "isOff": "{{name}}: off",
-    "currentValue": "{{name}}: {{value}}",
-    "switchOn": "Switch on",
-    "switchOff": "Switch off",
     "cpu_priority": {
       "name": "CPU priority",
       "desc": "Allocates NERON's extra computing power to astronavigation, projects, or research. Can be changed once per day.",

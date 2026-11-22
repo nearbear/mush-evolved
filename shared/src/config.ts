@@ -101,6 +101,8 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   demoralize: { cost: { ap: 2 }, morale: 2 },
   // Owner, 2026-11-21: Bacteriophilia's give_disease, 1 AP, from `diseases.mushSkillDiseases`.
   giveDisease: { cost: { ap: 1 } },
+  // Owner, 2026-11-21 (#473): Trapper's trap_room, 1 AP and 1 spore, no cooldown.
+  trapper: { cost: { ap: 1 } },
   // Owner, 2026-11-05: the Apprentice skill's apprenticeship action costs 1 AP.
   apprenticeship: { cost: { ap: 1 } },
   // Owner, 2026-11-04: the pneumatic tube is free to use.

@@ -228,7 +228,8 @@
     "selectRoom": "Señala una sala",
     "unidentified": "Sin identificar",
     "unidentifiedCount": "{{count}} sin identificar",
-    "onFire": "En llamas"
+    "onFire": "En llamas",
+    "trapped": "Con trampa"
   },
   "inspect": {
     "self": "{{character}} (tú): inspeccionar",
@@ -508,6 +509,7 @@
     "tubeTransfer": "Enviar por el tubo",
     "consumeSpore": "Devorar una espora",
     "fungalCuisine": "Cocina fúngica",
+    "trapRoom": "Poner trampa",
     "takeoff": "Despegar",
     "board_icarus": "Subir al Ícaro",
     "leave_icarus": "Salir del Ícaro",
@@ -1377,6 +1379,7 @@
     "biosLockProjects": "Has bloqueado los proyectos de NERON para los diseñadores.",
     "biosLockResearch": "Has bloqueado la investigación del laboratorio para biólogos y médicos.",
     "fungalCooked": "Escondes una espora en: {{item}}. Nivel de contagio: {{level}}.",
+    "roomTrapped": "{{name}} colocó una trampa de espora en la sala.",
     "massMouldering": "Liberas una nube de esporas de moho por toda la nave.",
     "bodyTransferred": "Te has metido en la piel de {{target}}. {{name}} despierta humano, en tu antiguo cuerpo.",
     "patrolTakeoff": "{{name}} despegó a bordo de {{room}}.",
@@ -1967,11 +1970,6 @@
   "bios": {
     "label": "Ajustes de la BIOS de NERON",
     "adminOnly": "Solo el Administrador de NERON puede cambiar estos ajustes.",
-    "isOn": "{{name}}: sí",
-    "isOff": "{{name}}: no",
-    "currentValue": "{{name}}: {{value}}",
-    "switchOn": "Activar",
-    "switchOff": "Desactivar",
     "cpu_priority": {
       "name": "Prioridad de CPU",
       "desc": "Asigna la potencia de cálculo de NERON a astronavegación, proyectos o investigación. Se puede cambiar una vez al día.",

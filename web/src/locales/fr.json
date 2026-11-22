@@ -228,7 +228,8 @@
     "selectRoom": "Pointez une pièce",
     "unidentified": "Non identifié",
     "unidentifiedCount": "{{count}} non identifié(s)",
-    "onFire": "En feu"
+    "onFire": "En feu",
+    "trapped": "Piégée"
   },
   "inspect": {
     "self": "{{character}} (vous) : inspecter",
@@ -508,6 +509,7 @@
     "tubeTransfer": "Envoyer dans le tuyau",
     "consumeSpore": "Dévorer une spore",
     "fungalCuisine": "Cuisine fongique",
+    "trapRoom": "Piéger pièce",
     "takeoff": "Décoller",
     "board_icarus": "Embarquer dans l'Icarus",
     "leave_icarus": "Quitter l'Icarus",
@@ -1377,6 +1379,7 @@
     "biosLockProjects": "Vous avez verrouillé les projets NERON pour les concepteurs.",
     "biosLockResearch": "Vous avez verrouillé la recherche du laboratoire pour les biologistes et médecins.",
     "fungalCooked": "Vous glissez un spore dans : {{item}}. Niveau de contamination : {{level}}.",
+    "roomTrapped": "{{name}} a piégé la pièce avec une spore.",
     "massMouldering": "Vous libérez un nuage de spores moisissantes dans tout le vaisseau.",
     "bodyTransferred": "Vous vous êtes glissé dans la peau de {{target}}. {{name}} se réveille humain, dans votre ancien corps.",
     "patrolTakeoff": "{{name}} a décollé à bord du {{room}}.",
@@ -1967,11 +1970,6 @@
   "bios": {
     "label": "Réglages du BIOS de NERON",
     "adminOnly": "Seul l'Administrateur NERON peut modifier ces réglages.",
-    "isOn": "{{name}} : oui",
-    "isOff": "{{name}} : non",
-    "currentValue": "{{name}} : {{value}}",
-    "switchOn": "Activer",
-    "switchOff": "Désactiver",
     "cpu_priority": {
       "name": "Priorité CPU",
       "desc": "Alloue la puissance de calcul de NERON à l'astronavigation, aux projets ou à la recherche. Modifiable une fois par jour.",

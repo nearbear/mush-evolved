@@ -20,6 +20,7 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 - `queue.ts`: timed actions: `queueAction`, `actNow` (an action at once with the untimed path's hooks), `clearQueue` (optionally telling the player, through `queueCore.ts`), `dropQueues` (every player's, the server input a restart records, #384), `tick` (also runs expedition steps due), `nextDue` (when the server's alarm should fire, expedition steps included); cancels a queued action whose modifier adjustment changed (`repriced`).
 - `bed.ts`: `getUp` (out of bed), import-free so modifiers can call it; `actions/lie_down.ts` re-exports it.
 - `mycoalarm.ts`: the `myco_alarm` item, `ringMycoAlarms` (called by `performAction` for `spore`-tagged actions) and `dropMycoAlarms` (research yield).
+- `traps.ts`: `GameState.trappedRooms` (#473): `isRoomTrapped`, `willTriggerRoomTrap` (evaluated before `def.apply` in `performAction`), and `triggerRoomTrap` (consumes the trap and calls `contaminate`). Action `trap_room` (`actions/trap_room.ts`).
 - `actions/surgery.ts`: Surgery, removing one random injury (Surgery Pod, or a medic with a medikit); a failure gives the patient `sepsis_disease`.
 - `actions/hide.ts`, `actions/search.ts`: hiding a carried item in the room (`ItemState.hiddenBy`) and searching the room for hidden items.
 - `research.ts`: `RESEARCH_IDS` (the researches with card art), `RESEARCH_COMPLETE`, and `RESEARCH_REQUIRES` (items, Chun, post-selection, dead Mush each research needs; checked by `researchAllowed` in `actions/research.ts`).
