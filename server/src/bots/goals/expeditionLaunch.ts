@@ -4,7 +4,7 @@ import { roomsHolding } from "../itemShare.ts";
 import { activeSharedPlanet } from "../planetShare.ts";
 import { EXPEDITIONS_OVER_LACKS, expeditionsOver } from "../expeditionShare.ts";
 import { orbitExplored } from "../reportShare.ts";
-import { act, canAfford, find, goTo, nearest, offered } from "./blocks.ts";
+import { act, canAfford, find, goTo, grounded, nearest, offered } from "./blocks.ts";
 import type { BotMemory, Goal, GoalDef, GoalStep } from "./types.ts";
 
 export const EXPEDITION_LAUNCH_PRIORITY = 73.5;
@@ -19,7 +19,7 @@ const hasKnownUnexplored = (view: PlayerView, memory: BotMemory): boolean => orb
 
 /** Board or Take off as offered, leaving out the ones shown disabled because no expedition can launch (owner, 2026-11-19). */
 const launchOffers = (view: PlayerView, type: "board_icarus" | "icarus_takeoff") =>
-  offered(view, type).filter((o) => !o.lacks.some((l) => EXPEDITIONS_OVER_LACKS.includes(l)));
+  offered(view, type).filter((o) => !grounded(o) && !o.lacks.some((l) => EXPEDITIONS_OVER_LACKS.includes(l)));
 
 const noTakeoffKey = (view: PlayerView): string => `noTakeoff:${view.navigation.orbitName ?? "orbit"}`;
 

@@ -188,6 +188,10 @@ export function DisabledActionButton({
       ? t("actions.lacksExplored")
       : lacks[0] === "icarusLost"
       ? t("actions.lacksIcarusLost")
+      : lacks[0] === "vertigo"
+      ? t("actions.lacksVertigo")
+      : lacks[0] === "grounded"
+      ? t("actions.lacksGrounded")
       : lacks[0] === "mushNotSelected"
       ? t("actions.lacksMushNotSelected")
       : lacks[0] === "listPrinted"

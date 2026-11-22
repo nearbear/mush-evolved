@@ -1,5 +1,5 @@
 // Status effects. `dirty` is stored in `PlayerState.statuses`; `full_belly`, `hungry`,
-// `immune`, `immunity`, `pacifist`, `hyperactive`, `antisocial`, `mankind_only_hope`, `wheelchair`, `accommodated`, `inactive`, `super_inactive`, `focused` and `hopeless` are derived each time they are asked for (from satiety, skills
+// `immune`, `immunity`, `pacifist`, `hyperactive`, `antisocial`, `germaphobe`, `chronic_vertigo`, `mankind_only_hope`, `wheelchair`, `accommodated`, `inactive`, `super_inactive`, `focused` and `hopeless` are derived each time they are asked for (from satiety, skills
 // and traits), so they can't drift out of step with it. Public statuses show on the Inspect panel for
 // everyone in the room; private ones appear only in your own view.
 // Names and icons live in the client (i18n keys `status.<id>`).
@@ -22,6 +22,8 @@ const FIXED_STATUS_PUBLIC = {
   antisocial: true,
   // Owner, 2026-11-21: Finola's Germaphobe trait is public, like every trait.
   germaphobe: true,
+  // Owner, 2026-11-22: Eleesha's Chronic Vertigo trait is public, like every trait.
+  chronic_vertigo: true,
   mankind_only_hope: true,
   wheelchair: true,
   // Owner, 2026-10-19: roommates see that Terrence's wheelchair is being pushed.
@@ -48,7 +50,7 @@ const FIXED_STATUS_PUBLIC = {
   pregnant: true,
 } as const;
 
-export const STATUS_IDS = ["dirty", "full_belly", "hungry", "immune", "immunity", "pacifist", "hyperactive", "antisocial", "germaphobe", "mankind_only_hope", "wheelchair", "accommodated", "outcast", "protecting", "protected", "guardian", "genius", "inactive", "super_inactive", "focused", "hopeless", "nimble", "pregnant"] as const;
+export const STATUS_IDS = ["dirty", "full_belly", "hungry", "immune", "immunity", "pacifist", "hyperactive", "antisocial", "germaphobe", "chronic_vertigo", "mankind_only_hope", "wheelchair", "accommodated", "outcast", "protecting", "protected", "guardian", "genius", "inactive", "super_inactive", "focused", "hopeless", "nimble", "pregnant"] as const;
 export type StatusId = string;
 /**
  * The fixed statuses plus the ship's configured diseases and injuries (`config.diseases.allDiseases` and
@@ -62,7 +64,7 @@ export function statusIdsFor(diseases: readonly string[], injuries: readonly str
 export const STATUS_PUBLIC: Readonly<Record<string, boolean>> = FIXED_STATUS_PUBLIC;
 
 /** Statuses that are character traits (permanent, innate): public, but shown on Inspect only, never over the head. */
-export const TRAIT_STATUS_IDS: readonly StatusId[] = ["immunity", "pacifist", "hyperactive", "antisocial", "germaphobe", "mankind_only_hope", "wheelchair"];
+export const TRAIT_STATUS_IDS: readonly StatusId[] = ["immunity", "pacifist", "hyperactive", "antisocial", "germaphobe", "chronic_vertigo", "mankind_only_hope", "wheelchair"];
 
 /** Statuses never floated over the head, whatever their visibility (owner, 2026-11-05: full belly is Inspect-only). */
 const NO_OVERHEAD_STATUS_IDS: readonly StatusId[] = ["full_belly"];
@@ -124,6 +126,7 @@ export function statusesOf(state: Readonly<Pick<GameState, "config" | "cycle" | 
     ...(p.modifiers.includes("hyperactive") ? ["hyperactive"] : []),
     ...(p.modifiers.includes("antisocial") ? ["antisocial"] : []),
     ...(p.modifiers.includes("germaphobe") ? ["germaphobe"] : []),
+    ...(p.modifiers.includes("chronic_vertigo") ? ["chronic_vertigo"] : []),
     ...(p.modifiers.includes("mankind_only_hope") ? ["mankind_only_hope"] : []),
     ...(p.modifiers.includes("wheelchair") ? ["wheelchair"] : []),
     ...(p.pushedBy !== undefined ? ["accommodated"] : []),

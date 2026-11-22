@@ -2,7 +2,7 @@ import { Action, isString } from "./action.ts";
 import { hasSpacesuit, hasUnexplored, needsSpacesuit, orbitedPlanet, runExpedition } from "../expeditions.ts";
 import { logPrivate } from "../log.ts";
 import { dock } from "./land.ts";
-import { canFly, commandId, onPlanet, type PatrolShip, shipAboard } from "../patrol.ts";
+import { CANT_FLY, CHRONIC_VERTIGO, commandId, groundedBy, onPlanet, type PatrolShip, shipAboard } from "../patrol.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
 export type LandOnPlanetActionData = { type: "land_on_planet"; equipment: string };
@@ -24,7 +24,10 @@ export class LandOnPlanetAction extends Action<LandOnPlanetActionData> {
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): LandOnPlanetActionData[] {
     const ship = shipAboard(player);
-    if (!ship || this.refused(state, player, ship) !== null) return [];
+    if (!ship) return [];
+    const refused = this.refused(state, player, ship);
+    // Grounded shows disabled with the reason (owner, 2026-11-22); the other refusals hide it.
+    if (refused !== null && refused !== CANT_FLY && refused !== CHRONIC_VERTIGO) return [];
     return [{ type: "land_on_planet", equipment: commandId(ship) }];
   }
 
@@ -36,7 +39,8 @@ export class LandOnPlanetAction extends Action<LandOnPlanetActionData> {
 
   /** Why this pilot can't land their ship on the planet now. */
   private refused(state: Readonly<GameState>, player: Readonly<PlayerState>, ship: Readonly<PatrolShip>): string | null {
-    if (!canFly(player)) return "cant_fly";
+    const grounded = groundedBy(player);
+    if (grounded !== null) return grounded;
     if (onPlanet(state, ship)) return "on_planet";
     if (state.expedition) return "expedition_away";
     const planet = orbitedPlanet(state);

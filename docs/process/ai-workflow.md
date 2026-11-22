@@ -5073,3 +5073,9 @@ Moving the jukebox sprite to the Refectory with the editor's "move to room" left
 
 - **Decided / verified:** Confirmed that the remaining three rows of #331 (Jukebox `BEAT_BOX`, Super Calculator `SUPER_CALC` via Compute/Eden, and Gravity Simulator next-cycle restart + alert rows) are all implemented and tested by the recent commits (`c312a210`, `2001903e`, `68788fd4`).
 - **Docs updated:** Recorded the decided broken-equipment effects under Incident points -> Breakage in `docs/rules/rules-design.md` and expanded the Breakage summary in `docs/rules/implemented-rules.md` so every breakable equipment type's effect is listed.
+
+## 2026-11-22: Eleesha's Chronic Vertigo trait
+
+- **Decided by the user:** Chronic Vertigo is a permanent, public trait (not eMush's curable disorder), named "Chronic Vertigo" with the catalog's `icons/ui/vertigo.png`. It grounds Eleesha as eMush's Vertigo symptom does (no takeoff, no Icarus launch, no planet landing; still a passenger), Pilot or not, Mush included. Grounded flight buttons show disabled with the reason, and the user extended that to Gastroenteritis and Slight Nausea.
+- **What worked:** the wiki and `npm run emush -- find` gave the symptom ("prevents takeoff, not being a passenger") quickly; copying the Germaphobe commit's file list covered every touch point. One `groundedBy` helper in `patrol.ts` returns the refusal code, so `canFly`, the three actions and the disabled-button reason all agree.
+- **Needed care:** showing grounded actions disabled broke two bot goals' assumptions (an offered `icarus_takeoff` or `takeoff` meant "can fly"): a grounded bot aboard the Icarus would have waited forever and a grounded Pilot would have walked back to the bay each turn. Added `grounded` to the bot blocks and filtered it out. One existing test pinned the old "grounded sees nothing" rule and was updated.

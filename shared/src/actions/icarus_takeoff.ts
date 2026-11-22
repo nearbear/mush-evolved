@@ -1,6 +1,6 @@
 import { Action, EXPLORED, ICARUS_LOST } from "./action.ts";
 import { canLaunchExpedition, hasSpacesuit, hasUnexplored, icarusDocked, needsSpacesuit, orbitedPlanet, runExpedition } from "../expeditions.ts";
-import { canFly } from "../patrol.ts";
+import { CANT_FLY, CHRONIC_VERTIGO, groundedBy } from "../patrol.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
 export type IcarusTakeoffActionData = { type: "icarus_takeoff" };
@@ -15,7 +15,8 @@ export const ICARUS_EQUIPMENT = "ICARUS_COMMAND";
  * a Pilot or has `freeHacking` (`canLaunchExpedition`, owner 2026-11-21), with a working spacesuit on a planet with no
  * Oxygen sector. Not while another expedition is away. The crew is whoever is aboard (expeditions.ts): the takeoff line
  * is public in the bay, the report goes to the crew only. Never again once the Icarus is lost (`strandExpedition`). On
- * a fully explored planet or once the Icarus is lost it shows disabled with the reason (owner, 2026-11-19), not hidden.
+ * a fully explored planet, once the Icarus is lost or for a grounded launcher it shows disabled with the reason (owner,
+ * 2026-11-19, 2026-11-22), not hidden.
  */
 export class IcarusTakeoffAction extends Action<IcarusTakeoffActionData> {
   constructor() {
@@ -28,13 +29,14 @@ export class IcarusTakeoffAction extends Action<IcarusTakeoffActionData> {
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): IcarusTakeoffActionData[] {
     const refused = this.validate(state, player);
-    return refused === null || refused === EXPLORED || refused === ICARUS_LOST ? [{ type: "icarus_takeoff" }] : [];
+    const shown = refused === null || refused === EXPLORED || refused === ICARUS_LOST || refused === CANT_FLY || refused === CHRONIC_VERTIGO;
+    return shown ? [{ type: "icarus_takeoff" }] : [];
   }
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>): string | null {
     // Aboard the docked Icarus (#469): boarded, in the bay. Its other refusals (away, lost) come below.
     if (!player.alive || !player.boardedIcarus || player.room !== state.config.expedition.room) return "not_in_icarus";
-    if (!canLaunchExpedition(state, player)) return canFly(player) ? "crew_lock" : "cant_fly";
+    if (!canLaunchExpedition(state, player)) return groundedBy(player) ?? "crew_lock";
     if (state.icarusLost) return ICARUS_LOST;
     if (state.expedition) return state.expedition.ship === null ? "icarus_away" : "expedition_away";
     if (!icarusDocked(state)) return "icarus_away";

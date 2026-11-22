@@ -1,6 +1,6 @@
 import type { PlayerView, RoomId } from "@mush2/shared";
 import { dutyPriority, holdsTrigger } from "../duties.ts";
-import { act, canAfford, failed, find, goTo, offered, roomsWith, where } from "./blocks.ts";
+import { act, canAfford, failed, find, goTo, grounded, offered, roomsWith, where } from "./blocks.ts";
 import { onlyAsteroids, shotOrder } from "./hunterTargets.ts";
 import { jumpDueByChat } from "./travel.ts";
 import type { BotMemory, Goal, GoalDef, GoalStep } from "./types.ts";
@@ -62,7 +62,7 @@ function sortie(view: PlayerView, bay: RoomId | null): Goal {
       if (flown || bay === null || v.hunters.count === 0 || jumpDueByChat(v, memory) || onlyAsteroids(v, memory)) return { kind: "done" };
       const walk = goTo(v, bay);
       if (walk) return walk;
-      const takeoff = offered(v, "takeoff").find((o) => !o.action.equipment.endsWith(`:${PASIPHAE}`));
+      const takeoff = offered(v, "takeoff").find((o) => !grounded(o) && !o.action.equipment.endsWith(`:${PASIPHAE}`));
       if (!takeoff) return failed("no_ship");
       // Walking may have cost AP: take off only if one shot and the landing are still paid for.
       const shot = v.you.resources.shoot > 0 ? 0 : v.config.patrolShotAp;

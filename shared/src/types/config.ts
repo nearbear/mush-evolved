@@ -988,7 +988,7 @@ export interface GameConfig {
     mpPenalty: number; // MP added to each move while carrying a heavy item, however many (confirmed 2026-10-16).
   };
   startSkills: string[]; // Skills every player starts with (none since 2026-10-15; players pick their own).
-  characterModifiers: Record<string, string[]>; // Modifiers a character starts with, by character id (traits: Ian pacifist, owner 2026-10-18; Chun immunity and mankind_only_hope, owner 2026-10-18; Terrence wheelchair, owner 2026-10-19; Chao hyperactive, owner 2026-11-08; Raluca antisocial, owner 2026-11-19; Finola germaphobe, owner 2026-11-21).
+  characterModifiers: Record<string, string[]>; // Modifiers a character starts with, by character id (traits: Ian pacifist, owner 2026-10-18; Chun immunity and mankind_only_hope, owner 2026-10-18; Terrence wheelchair, owner 2026-10-19; Chao hyperactive, owner 2026-11-08; Raluca antisocial, owner 2026-11-19; Finola germaphobe, owner 2026-11-21; Eleesha chronic_vertigo, owner 2026-11-22).
   mankindOnlyHope: { moraleLossCut: number }; // How much less morale the crew loses each day while a holder (Chun) is alive (owner, 2026-10-18).
   hopeless: { deathMorale: number }; // Morale every living player loses for each human who dies Hopeless at a cycle's end (owner, 2026-11-11).
   /** Items placed in rooms at the start of the game (fixed room, or random from `storage` / `daedalus` pool, optionally with weighted blueprint/book draws; `atSelection` waits until Mush selection). */

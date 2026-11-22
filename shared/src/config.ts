@@ -691,7 +691,7 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   // Confirmed 2026-10-15: nobody starts with a skill; players pick up to three
   // (SKILL_SLOTS) with the free, permanent pick_skill action.
   startSkills: [],
-  characterModifiers: { ian: ["pacifist"], chun: ["immunity", "mankind_only_hope"], terrence: ["wheelchair"], chao: ["hyperactive"], raluca: ["antisocial"], finola: ["germaphobe"] },
+  characterModifiers: { ian: ["pacifist"], chun: ["immunity", "mankind_only_hope"], terrence: ["wheelchair"], chao: ["hyperactive"], raluca: ["antisocial"], finola: ["germaphobe"], eleesha: ["chronic_vertigo"] },
   mankindOnlyHope: { moraleLossCut: 1 },
   // Owner, 2026-11-11: a human still at 0 morale (Hopeless) when a cycle ends dies, and each such death costs every
   // living player, Mush included, 1 morale.

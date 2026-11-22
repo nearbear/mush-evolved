@@ -75,7 +75,7 @@ import { newSignals, signalName } from "./signals.ts";
 import { allTurrets, huntersCycle, newHunters, startHunters, turretCharges, turretsHere } from "./hunters.ts";
 import { expeditionReturnAt, knockOffIcarus, lostPlayers, maxCrew, nextSectorFor, onExpedition, withCrew } from "./expeditions.ts";
 import { ICARUS_EQUIPMENT } from "./actions/icarus_takeoff.ts";
-import { canScavenge, interfaceId, isLostPlace, newPatrolShips, offShip, PATROL_INTERFACE, PATROL_SHIPS, shipAboard } from "./patrol.ts";
+import { canScavenge, CANT_FLY, CHRONIC_VERTIGO, interfaceId, isLostPlace, newPatrolShips, offShip, PATROL_INTERFACE, PATROL_SHIPS, shipAboard } from "./patrol.ts";
 import { preselectionCycle } from "./preselection.ts";
 import { neronParticipationCycle } from "./projectEffects.ts";
 import { SUCCESSION, TITLE_IDS, assignTitles, noTitles } from "./titles.ts";
@@ -351,6 +351,9 @@ const UNAFFORDABLE_REASONS = new Set<string>([
   PASIPHAE_INTACT,
   REACTOR_BROKEN,
   ARACK_AROUND,
+  // Owner, 2026-11-22: Take off, the Icarus launch and Land on planet show disabled for a grounded player (patrol.ts, `groundedBy`).
+  CANT_FLY,
+  CHRONIC_VERTIGO,
 ]);
 
 /** Board the Icarus and Take off show disabled on a fully explored planet or a lost Icarus (owner, 2026-11-19), not hidden. */
@@ -390,6 +393,8 @@ function unaffordableOption(state: GameState, p: PlayerState, def: ActionDef<Act
     ...(refused === ARACK_AROUND ? (["arack"] as const) : []),
     ...(refused === EXPLORED ? (["explored"] as const) : []),
     ...(refused === ICARUS_LOST ? (["icarusLost"] as const) : []),
+    ...(refused === CHRONIC_VERTIGO ? (["vertigo"] as const) : []),
+    ...(refused === CANT_FLY ? (["grounded"] as const) : []),
     ...(refused === MUSH_NOT_SELECTED ? (["mushNotSelected"] as const) : []),
     ...(refused === LIST_PRINTED ? (["listPrinted"] as const) : []),
     ...(refused === BROKEN ? (["broken"] as const) : []),
