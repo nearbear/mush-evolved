@@ -129,3 +129,4 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 - `actions/anathema.ts`: the Persecutor's Anathema (the Outcast status, `PlayerState.outcastBy`).
 - `actions/protect.ts`: the Bodyguard's Protect (`PlayerState.protectedBy`, `protecting`/`protected` statuses).
 - `actions/nimble.ts`: Nimble Fingers (`enter_nimble` / `exit_nimble` toggling the private `nimble` status; `withNimbleActor` in `log.ts` converts room-level `logPublic` calls into `logSecretIn`).
+- `actions/ninja.ts`: Ninja (`become_ninja` / `become_normal` toggling the private `ninja` status; `isNinja`). The masking itself is `withNinjaActor` / `ninjaMasked` in `log.ts`.

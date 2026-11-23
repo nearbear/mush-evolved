@@ -362,7 +362,7 @@ const injuryStatusIcons = Object.fromEntries(DEFAULT_CONFIG.diseases.allInjuries
 // Mankind's Only Hope has no status icon in the original (it was a skill there), so its skill icon stands in;
 // Bodyguard's statuses (protecting/protected) use Bodyguard's brick-wall skill icon (`unconcerned.png`).
 const traitSkillIcons = urls(
-  import.meta.glob<string>("../../../Mush/www/img/icons/skills/{mankind_only_hope,unconcerned,nimble_fingers}.png", { eager: true, query: "?url", import: "default" }),
+  import.meta.glob<string>("../../../Mush/www/img/icons/skills/{mankind_only_hope,unconcerned,nimble_fingers,ninja}.png", { eager: true, query: "?url", import: "default" }),
 );
 export const STATUS_ICONS: Readonly<Record<string, string>> = {
   ...diseaseStatusIcons,
@@ -397,6 +397,8 @@ export const STATUS_ICONS: Readonly<Record<string, string>> = {
   hopeless: statusIconFiles["demoralized"]!,
   // Nimble mode (Nimble Fingers): reuses the Nimble Fingers skill icon.
   nimble: traitSkillIcons["nimble_fingers"]!,
+  // Ninja mode (Ninja): reuses the Ninja skill icon.
+  ninja: traitSkillIcons["ninja"]!,
   pregnant: statusIconFiles["pregnant"]!,
 };
 /**

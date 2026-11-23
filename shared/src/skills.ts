@@ -270,6 +270,8 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   water_resistant: "full",
   // Mush skill: enter/exit Nimble mode for 0 AP; room-level public actions become secret (owner, 2026-11-14, actions/nimble.ts).
   nimble_fingers: "full",
+  // Mush skill: become a ninja / become normal for 0 AP; your room lines name you "Someone" (owner, 2026-11-22, actions/ninja.ts).
+  ninja: "full",
   //Increases success rate, injury chance, and dirty chance by 20%
   expert: "full",
   // Free turret shots from Shoot points (owner, 2026-10-25), +1 expedition strength with a working gun (owner,

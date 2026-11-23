@@ -3,7 +3,7 @@
 // helpers turn ids into the player's language. Call `useNames()` in a
 // component so it re-renders when the language changes.
 
-import { BLUEPRINTS, LOST_PLACE_NAME, characterGivenName, characterName, hybridParents, type ActionType, isLostPlace, type ItemView, type LogEntry, type RoomId } from "@mush2/shared";
+import { BLUEPRINTS, LOST_PLACE_NAME, SOMEONE, characterGivenName, characterName, hybridParents, type ActionType, isLostPlace, type ItemView, type LogEntry, type RoomId } from "@mush2/shared";
 import { useTranslation } from "react-i18next";
 
 /** The name of each kind of action, for the action queue and log lines that mention one. Ready never waits in a queue. */
@@ -110,6 +110,8 @@ const ACTION_NAME_KEYS = {
   stop_guarding: "actions.stopGuarding",
   enter_nimble: "actions.enterNimble",
   exit_nimble: "actions.exitNimble",
+  become_ninja: "actions.becomeNinja",
+  become_normal: "actions.becomeNormal",
   accommodate: "actions.accommodate",
   accept_accommodation: "actions.acceptAccommodation",
   stop_accommodation: "actions.stopAccommodation",
@@ -227,10 +229,13 @@ export function useNames() {
     if (typeof params.cause === "string") resolved.cause = t(`deathCause.${params.cause}` as never, { defaultValue: params.cause });
     // The jukebox's songs (shared/src/jukebox.ts), by the character whose favourite each is.
     for (const song of ["song", "song1", "song2", "song3"] as const) if (typeof params[song] === "string") resolved[song] = jukeboxSong(params[song]);
-    for (const who of ["name", "target", "body"] as const) if (typeof params[who] === "string") resolved[who] = characterGivenName(params[who]);
+    // A ninja's name is `SOMEONE` (shared/src/log.ts): "someone", capitalized when the line starts with it.
+    for (const who of ["name", "target", "body"] as const)
+      if (typeof params[who] === "string") resolved[who] = params[who] === SOMEONE ? t("logEvent.someone") : characterGivenName(params[who]);
     // An assay's "chun:3,paola:1" lists (shared/src/actions/research.ts): "Chun ×3, Paola ×1".
     for (const list of ["tested", "spoiledBy"] as const) if (typeof params[list] === "string") resolved[list] = sampleCounts(params[list]);
-    return t(`logEvent.${key}` as never, { ...resolved, defaultValue: key });
+    const line = t(`logEvent.${key}` as never, { ...resolved, defaultValue: key });
+    return Object.values(params).includes(SOMEONE) ? line.charAt(0).toLocaleUpperCase() + line.slice(1) : line;
   };
 
   return { room, equipment, item, itemOf, itemLabel, drone, droneUpgrade, jukeboxSong, research, project, skill, title, rebelBase, action, character: characterName, characterGiven: characterGivenName, logLine };

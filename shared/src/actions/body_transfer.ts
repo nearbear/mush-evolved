@@ -55,6 +55,8 @@ export class BodyTransferAction extends Action<BodyTransferActionData> {
     const taker = player.character;
     removeStatus(player, "nimble");
     removeStatus(victim, "nimble");
+    removeStatus(player, "ninja");
+    removeStatus(victim, "ninja");
     swapMinds(state, player, victim);
     // `player` is the old body, now the victim's (human); `victim` is the Mush's new body.
     delete state.contamination[victim.id];

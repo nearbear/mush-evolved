@@ -21,7 +21,7 @@ import type { GameState, LogEntry, LogLevel, LogParams, PlayerId, PlayerState, R
 
 /** Appends `entry` with the next id and the current cycle. Every log line goes through here. Mutates a state the caller already cloned. */
 export function pushLog(state: GameState, entry: Omit<LogEntry, "id" | "cycle">): void {
-  const line: LogEntry = { id: state.nextLogId++, cycle: state.cycle, ...entry };
+  const line: LogEntry = { id: state.nextLogId++, cycle: state.cycle, ...ninjaMasked(state, entry) };
   state.log.push(line);
   for (const p of state.players) if (seesLine(line, p)) p.logSeen += 1;
 }
@@ -89,6 +89,45 @@ export function startLogSeen(state: Readonly<GameState>, p: PlayerState): void {
 }
 
 let nimbleActorId: PlayerId | null = null;
+let ninjaActorId: PlayerId | null = null;
+
+/** The sentinel a ninja's name becomes in a log line's character params; the client shows it as "Someone". */
+export const SOMEONE = "someone";
+
+/** The log params that name a character (the client's `logLine` resolves the same ones). */
+const CHARACTER_PARAMS = ["name", "target", "body"] as const;
+
+/**
+ * Runs `fn` with `actor` acting as a ninja (Ninja, owner 2026-11-22), or `null` for no one: every room line written
+ * meanwhile that anyone besides the actor can see names them `SOMEONE` instead (`ninjaMasked`). Ship-wide lines keep
+ * their name, as NERON's do in eMush.
+ */
+export function withNinjaActor<T>(actor: PlayerId | null, fn: () => T): T {
+  const prev = ninjaActorId;
+  ninjaActorId = actor;
+  try {
+    return fn();
+  } finally {
+    ninjaActorId = prev;
+  }
+}
+
+/** Runs `fn` as no one's action: neither Nimble nor Ninja applies to a death line or a line about someone pushed along. */
+export function withoutActor<T>(fn: () => T): T {
+  return withNimbleActor(null, () => withNinjaActor(null, fn));
+}
+
+/** `entry` with the acting ninja's character params replaced by `SOMEONE`, when it is a room line someone else may see. */
+function ninjaMasked(state: Readonly<GameState>, entry: Omit<LogEntry, "id" | "cycle">): Omit<LogEntry, "id" | "cycle"> {
+  if (ninjaActorId === null || entry.room === undefined || !entry.params) return entry;
+  const actor = ninjaActorId;
+  if (entry.visibleTo !== "all" && entry.visibleTo.every((id) => id === actor)) return entry;
+  const character = state.players.find((p) => p.id === actor)?.character;
+  if (!CHARACTER_PARAMS.some((k) => entry.params![k] === character)) return entry;
+  const params = { ...entry.params };
+  for (const k of CHARACTER_PARAMS) if (params[k] === character) params[k] = SOMEONE;
+  return { ...entry, params };
+}
 
 /**
  * Runs `fn` with `actor` marked as acting in Nimble mode (or `null` to suspend Nimble mode for a nested action or

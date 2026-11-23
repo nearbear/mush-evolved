@@ -81,4 +81,5 @@ export function makeHuman(p: PlayerState, cycle: number): void {
   p.satietyZeroSince = cycle; // humans start hungry-counting from now
   p.mushSkills = []; // Mush skills belong to the Mush (rules-design.md, Transfer)
   removeStatus(p, "nimble");
+  removeStatus(p, "ninja");
 }

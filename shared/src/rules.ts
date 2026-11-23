@@ -19,6 +19,7 @@ import { FEW_FRAGMENTS } from "./actions/compute_eden.ts";
 import { LIST_PRINTED, MUSH_NOT_SELECTED } from "./actions/print_list.ts";
 import { LISTENED_TODAY, NOT_YOUR_SONG } from "./actions/listen_jukebox.ts";
 import { isNimble } from "./actions/nimble.ts";
+import { isNinja } from "./actions/ninja.ts";
 import { researchNeedsView } from "./actions/research.ts";
 import { equipmentHere, JUKEBOX_EQUIPMENT } from "./equipment.ts";
 import { songAt } from "./jukebox.ts";
@@ -54,7 +55,7 @@ import { clone, cloneState, dayOf, fail, findPlayer, type ActionResult } from ".
 
 export { dayOf };
 import { damage, healDaily, hasMushDied } from "./death.ts";
-import { activitySeen, inLogWindow, logPrivate, logWindowOf, moveLineFor, pruneLog, seesLine, startLogSeen, withNimbleActor } from "./log.ts";
+import { activitySeen, inLogWindow, logPrivate, logWindowOf, moveLineFor, pruneLog, seesLine, startLogSeen, withNimbleActor, withNinjaActor } from "./log.ts";
 import { recordAction } from "./history.ts";
 import { ringMycoAlarms } from "./mycoalarm.ts";
 import { triggerRoomTrap, willTriggerRoomTrap } from "./traps.ts";
@@ -493,7 +494,7 @@ export function performAction(next: GameState, actor: PlayerState, action: Actio
       def.apply(next, actor, action, cost);
     }
   };
-  withNimbleActor(isNimble(actor) ? actor.id : null, run);
+  withNinjaActor(isNinja(actor) ? actor.id : null, () => withNimbleActor(isNimble(actor) ? actor.id : null, run));
   if (triggersTrap && actor.alive) triggerRoomTrap(next, actor, room);
   knockOffTarget(next, def, action);
   // After apply, so an action that reveals your own history (Chitchat) doesn't show itself.
@@ -873,8 +874,9 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
         ...(contamination !== undefined ? { contamination } : {}),
         // Mush know who the other Mush are, living or dead (owner, 2026-11-21); humans never learn it from the view.
         ...(you.role === "mush" && o.role === "mush" ? { mush: true as const } : {}),
-        // A busy bar, never the action: only when its log entry could reach you.
-        ...(here && o.current && activitySeen(state, room, actionVisibility(o.current.action.type, o), o)
+        // A busy bar, never the action: only when its log entry could reach you, and never on a ninja, whose lines
+        // say "Someone" (owner, 2026-11-22): the bar ending as the line appears would name them.
+        ...(here && o.current && !isNinja(o) && activitySeen(state, room, actionVisibility(o.current.action.type, o), o)
           ? { busy: { since: o.current.since, until: o.current.until } }
           : {}),
       };
