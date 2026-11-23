@@ -5138,3 +5138,7 @@ Follow-up: the owner dropped the Intergalactic line from the helper and had the 
 ### 2026-11-22 — Days One font on cycle dividers, portrait names, and chatlog headers
 
 - Switched `.feed > li.cycle-divider` (`web/src/styles/chat.css`, `web/src/styles/itrackie.css`), character portrait names (`.inspect-figure-name` in `web/src/styles/inspect.css`, `.pod-detail-name` in `web/src/lobby/lobby.css`), and chatlog header names (`.entry-name > strong` in `web/src/styles/chat.css`) to `var(--font-display)` (`Days One`) with `font-weight: 400` so the 400-only display face is not faux-bolded.
+
+### 2026-11-22: Removed the free-text "Track something…" tracker from the feature tabs
+
+The owner asked to drop the typed-notes tracker (`hud/Tracker.tsx`, client-only state that never reached the server) from every feature tab, since each feature will get its own specialized tracker. Feature tabs without one yet (e.g. Pilgred and Botany before anything is shared) now show only their thread, and the "needs an iTrackie to track" note shows only on Research and NERON, which have real trackers. Removed the component, its state, CSS and the five en/fr/es strings it used. Straightforward; no corrections needed.
