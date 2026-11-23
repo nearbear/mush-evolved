@@ -110,7 +110,7 @@ import { destroyed_ears_injury } from "./modifiers/destroyed_ears_injury.ts";
 import type { ActionCost } from "./actions.ts";
 import type { ActionTag } from "./actions/action.ts";
 import type { DeepReadonly, WeaponStats } from "./types/config.ts";
-import type { Action, GameState, ItemState, MovementRules, PlayerState } from "./types.ts";
+import type { Action, GameState, ItemState, MovementRules, PlayerState, RoomId } from "./types.ts";
 
 /** A numeric hook: takes the running value and returns the adjusted one. Must be pure. */
 type FoldHook = (value: number, player: Readonly<PlayerState>, state: Readonly<GameState>) => number;
@@ -163,6 +163,18 @@ export interface CostContext {
   tags: readonly ActionTag[];
 }
 
+/**
+ * What the hooks of someone other than the actor see (the room's `roomActionCost`, the target's `targetedSuccessRate`):
+ * the actor is a player, or null when a hostile NPC acts (hostiles.ts, owner 2026-11-23: Pacifist, Bodyguard, Elusive
+ * and the like apply to them too). A hostile's actions share a player action's shape (`{ type: "punch", target }`).
+ */
+export interface OthersContext extends Omit<CostContext, "actor"> {
+  actor: Readonly<PlayerState> | null;
+  /** The room the action is done in: the actor's. */
+  room: RoomId;
+  holder: Readonly<PlayerState>;
+}
+
 /** What is being weighted, for weapon outcome hooks. */
 export interface WeaponOutcomeContext {
   state: Readonly<GameState>;
@@ -193,7 +205,7 @@ export interface Modifier extends Partial<FoldHooks> {
    * Adjusts the success rate of an action aimed at the holder (Escape), after the actor's own hooks. `ctx.actor` is the
    * one acting; the hook sees only actions whose `target` names the holder. Must be pure.
    */
-  targetedSuccessRate?: (successRate: number, ctx: CostContext & { holder: Readonly<PlayerState> }) => number;
+  targetedSuccessRate?: (successRate: number, ctx: OthersContext) => number;
   /** Adjusts what one of the holder's own actions injury rates. Must be pure. */
   actionInjuryRate?: (cost: number, ctx: CostContext) => number;
   /** Adjusts what one of the holder's own actions dirtiness chance. Must be pure. */
@@ -205,7 +217,7 @@ export interface Modifier extends Partial<FoldHooks> {
    * Read when a price is asked for, so nothing is stored when people come and go. Holders stack. Must be pure.
    * Only for a holder the actor can see, since the price itself tells them the effect is there.
    */
-  roomActionCost?: (cost: ActionCost, ctx: CostContext & { holder: Readonly<PlayerState> }) => ActionCost;
+  roomActionCost?: (cost: ActionCost, ctx: OthersContext) => ActionCost;
   /** Adjusts the morale every living player loses when a day ends, while the holder is alive (Mankind's Only Hope). Must be pure. */
   crewMoraleLoss?: (loss: number, holder: Readonly<PlayerState>, state: Readonly<GameState>) => number;
   /** Adjusts the points the hunter pool gains each cycle change, while the holder is alive (for Space Tactics; none yet). Must be pure. */
@@ -437,6 +449,34 @@ function fold(
   return value;
 }
 
+/**
+ * `cost` through the `roomActionCost` hooks of everyone living in `ctx.room`, in seat order (Pacifist, Bodyguard, Black
+ * Bite). Players' actions (`actionCost`) and hostile NPCs' (hostiles/hostile.ts) both go through it.
+ */
+export function roomActionCost(cost: ActionCost, ctx: Omit<OthersContext, "holder">, registry: ModifierRegistry = MODIFIERS): ActionCost {
+  let result = { ...cost };
+  for (const holder of roomHolders(ctx.state, ctx.room)) {
+    for (const id of modifierIds(holder)) {
+      const hook = registry[id]?.roomActionCost;
+      if (hook) result = hook(result, { ...ctx, holder });
+    }
+  }
+  return result;
+}
+
+/** `chance` through the `targetedSuccessRate` hooks of the player the action is aimed at, if any (Elusive). Players' and hostile NPCs' actions both go through it. */
+export function targetedSuccessRate(chance: number, ctx: Omit<OthersContext, "holder">, registry: ModifierRegistry = MODIFIERS): number {
+  const aimed = (ctx.action as { target?: unknown }).target;
+  const holder = typeof aimed === "string" ? ctx.state.players.find((o) => o.id === aimed) : undefined;
+  if (!holder) return chance;
+  let result = chance;
+  for (const id of modifierIds(holder)) {
+    const hook = registry[id]?.targetedSuccessRate;
+    if (hook) result = hook(result, { ...ctx, holder });
+  }
+  return result;
+}
+
 /** Who brings room effects into `room`: every living player there, in seat order. */
 function roomHolders(state: Readonly<GameState>, room: string): readonly Readonly<PlayerState>[] {
   return state.players.filter((p) => p.alive && p.room === room);
@@ -453,12 +493,7 @@ export function actionCost(base: ActionCost, ctx: CostContext, registry: Modifie
     const hook = registry[id]?.actionCost;
     if (hook) cost = hook(cost, ctx);
   }
-  for (const holder of roomHolders(ctx.state, ctx.actor.room)) {
-    for (const id of modifierIds(holder)) {
-      const hook = registry[id]?.roomActionCost;
-      if (hook) cost = hook(cost, { ...ctx, holder });
-    }
-  }
+  cost = roomActionCost(cost, { ...ctx, room: ctx.actor.room }, registry);
   if (ctx.action.type === "scan_planet" && projectDone(ctx.state, "CHIPSET_ACCELERATION")) {
     cost.ap -= ctx.state.config.project.chipsetAcceleration.scanApDiscount;
   }
@@ -494,14 +529,7 @@ export function actionSuccessRate(base: number, ctx: CostContext, registry: Modi
     if (hook) chance = hook(chance, ctx);
   }
   // Whoever the action is aimed at gets a say too (Escape).
-  const aimed = (ctx.action as { target?: unknown }).target;
-  const holder = typeof aimed === "string" ? ctx.state.players.find((o) => o.id === aimed) : undefined;
-  if (holder) {
-    for (const id of modifierIds(holder)) {
-      const hook = registry[id]?.targetedSuccessRate;
-      if (hook) chance = hook(chance, { ...ctx, holder });
-    }
-  }
+  chance = targetedSuccessRate(chance, { ...ctx, room: ctx.actor.room }, registry);
   // Carrying the oscilloscope multiplies the odds of the repairing actions (owner, 2026-10-28). Once however many are carried.
   if ((ctx.action.type === "repair_hull" || ctx.action.type === "renovate") && ctx.state.items.some((i) => i.type === "oscilloscope" && isWorking(i) && i.at.kind === "player" && i.at.id === ctx.actor.id)) {
     chance *= ctx.state.config.oscilloscope.repairFactor;

@@ -36,6 +36,8 @@ export const GAME_STATE_FIELDS: Record<string, FieldRule> = {
   players: { reach: "filtered", test: "leaks.test.ts", note: "Field by field: PLAYER_STATE_FIELDS." },
   items: { reach: "filtered", test: "leaks.test.ts", note: "Your inventory and your room's storage only." },
   nextItemId: { reach: "never", test: "leaks.test.ts", note: "Not secret (item ids show it), just not sent." },
+  hostiles: { reach: "room", test: "hostiles.test.ts", note: "Hostile NPCs (owner, 2026-11-22): the living in a hostile's room see its id, kind and HP (`PlayerView.hostiles`); never its AP or MP." },
+  nextHostileId: { reach: "never", test: "leaks.test.ts", note: "Not secret (hostile ids show it), just not sent." },
   equipment: { reach: "room", test: "build.test.ts", note: "Your room's, while alive (`roomEquipment`); broken pieces counted for the living in `alerts`, and located once reported (#444, reports.test.ts)." },
   dispensedOn: { reach: "never", test: "leaks.test.ts" },
   drugDispenser: { reach: "never", test: "leaks.test.ts", note: "Its list is secret; `view.actions` offers each player only their own first N." },

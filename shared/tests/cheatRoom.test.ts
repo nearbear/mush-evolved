@@ -9,7 +9,8 @@ import { shortestPath } from "../src/paths.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { applyInput, replayGame } from "../src/replay.ts";
 import { ICARUS_CRAFT } from "../src/patrol.ts";
-import { KUBE_OPS, kubeChoices, type KubeOpId } from "../src/kube.ts";
+import { INTRUDER } from "../src/hostiles.ts";
+import { HOSTILE_SPAWN_ROOM, KUBE_OPS, kubeChoices, type KubeOpId } from "../src/kube.ts";
 import { CHEAT_PLANET_SECTORS } from "../src/actions/warp_to_planet.ts";
 import { PLANET_TAG_IDS } from "../src/planets.ts";
 import { makeSeats } from "./support.ts";
@@ -122,6 +123,13 @@ describe("cheat room", () => {
       return r.state;
     };
     const me = (s: S, id: string) => s.players.find((pl) => pl.id === id)!;
+
+    it("spawns an intruder in Alpha Bay, not beside you", () => {
+      const { s, p } = inRoom();
+      const next = ok(kube(s, p, "spawnHostile"));
+      expect(HOSTILE_SPAWN_ROOM).toBe("SPACESHIP_BAY_A");
+      expect(next.hostiles.map((h) => [h.kind, h.room])).toEqual([[INTRUDER, HOSTILE_SPAWN_ROOM]]);
+    });
 
     it("is refused on a ship without the room, from outside it, from a bot, and with a bad argument", () => {
       const plain = createGame(makeSeats(3), { ...resolveConfig(), mushCount: 1 }, 7);

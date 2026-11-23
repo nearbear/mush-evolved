@@ -11,7 +11,7 @@ const ON_SPORE = "quincks_oedema_disease";
 // converts the carrier gives nothing, as with Mush Allergy.
 export const black_bite_disease: Modifier = {
   roomActionCost: (cost, { actor, action, tags, holder }) =>
-    actor.role === "mush" && tags.includes("mush") && "target" in action && action.target === holder.id ? { ...cost, ap: 0 } : cost,
+    actor?.role === "mush" && tags.includes("mush") && "target" in action && action.target === holder.id ? { ...cost, ap: 0 } : cost,
   onContaminate(next, player) {
     if (!player.alive || !diseaseAffects(player)) return;
     addDisease(next, player, ON_SPORE);

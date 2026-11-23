@@ -1531,7 +1531,21 @@
     "reportShareAppended": "{{name}} added to the shared report of the expedition to {{planet}}.",
     "missionIssued": "You gave a mission to {{target}}.",
     "missionReceived": "The Commander gave you a mission: +{{amount}} AP.",
-    "lunchboxOpened": "You took a Standard Ration out of the lunchbox."
+    "lunchboxOpened": "You took a Standard Ration out of the lunchbox.",
+    "punchedHostile": "{{name}} punched {{hostile}}.",
+    "punchCritHostile": "{{name}} landed a magnificent punch on {{hostile}}.",
+    "punchMissedHostile": "{{name}} swung at {{hostile}} and missed.",
+    "attackedHostile": "{{name}} attacked {{hostile}} with the {{item}}.",
+    "attackMissedHostile": "{{name}} attacked {{hostile}} with the {{item}} and missed.",
+    "threwOutHostile": "{{name}} threw {{hostile}} out into {{room}}.",
+    "hostileThrownIn": "{{hostile}} was thrown in from {{room}}.",
+    "hostileLeft": "{{hostile}} left for {{room}}.",
+    "hostileArrived": "{{hostile}} came in from {{room}}.",
+    "hostilePunched": "{{hostile}} punched {{target}}.",
+    "hostilePunchCrit": "{{hostile}} landed a magnificent punch on {{target}}.",
+    "hostilePunchArmor": "{{hostile}} tried to hit {{target}} but only found their protections.",
+    "hostilePunchMissed": "{{hostile}} swung at {{target}} and missed.",
+    "hostileDied": "{{hostile}} is dead."
   },
   "throwOut": {
     "confirm": "Throw {{name}} out into which room?",
@@ -2331,6 +2345,7 @@
       "mp": "Set MP",
       "dirty": "Make yourself dirty",
       "contaminate": "Add contamination",
+      "spawnHostile": "Spawn an intruder",
       "spawn": "Spawn an item",
       "teleport": "Teleport to a room",
       "breakDoor": "Break a door",
@@ -2666,5 +2681,15 @@
         "CYGNI": "We salute the crew of the Daedalus. 61 Cygni was explored during your voyage. The Federation does not know that our whole unit is human. We fake regular reports with an advanced Pheromodem. By slipping past the Mush's watch, we are preparing the rebellion's armed counter-attack from this system. The plans for our SP2SP-230 missile have been sent to NERON."
       }
     }
+  },
+  "hostiles": {
+    "kinds": {
+      "intruder": "the intruder"
+    },
+    "names": {
+      "intruder": "Intruder"
+    },
+    "sub": "Hostile",
+    "hp": "{{hp}}/{{max}} HP"
   }
 }

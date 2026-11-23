@@ -192,6 +192,10 @@ export function useNames() {
   const droneUpgrade = (id: string) => t(`drones.upgrades.${id}` as never, { defaultValue: id });
   /** A character's favourite song on the jukebox (#477): "Night Flowers by Rob Vivan". */
   const jukeboxSong = (character: string) => t(`jukebox.songs.${character}` as never, { defaultValue: character });
+  /** A hostile NPC's kind (shared/src/hostiles.ts), with its article, lowercase: "the intruder". */
+  const hostile = (kind: string) => t(`hostiles.kinds.${kind}` as never, { defaultValue: kind });
+  /** A hostile NPC's kind as a name on its own, for a heading: "Intruder". */
+  const hostileName = (kind: string) => t(`hostiles.names.${kind}` as never, { defaultValue: kind });
   const research = (id: string) => t(`research.names.${id}` as never, { defaultValue: id });
   const project = (id: string) => t(`projects.names.${id}` as never, { defaultValue: id });
   const title = (id: string) => t(`titles.names.${id}` as never, { defaultValue: id });
@@ -209,7 +213,7 @@ export function useNames() {
       }),
     );
 
-  /** The text of a log entry. `room`, `item`, `research`, `project`, `equipment`, `action`, `title`, `skill`, `base` (a rebel base), `direction` (a heading), `entry` (a Xyloph entry), `cause` (a cause of death) and `song`/`song1`..`song3` (a jukebox song, by character) params are ids and get translated; `drone` and `serial` make a drone's name, and `upgrade` is a drone upgrade; `name`, `target` and `body` are character ids; `tested` and `spoiledBy` are an assay's counts by character. */
+  /** The text of a log entry. `room`, `item`, `research`, `project`, `equipment`, `action`, `title`, `skill`, `base` (a rebel base), `direction` (a heading), `entry` (a Xyloph entry), `cause` (a cause of death) and `song`/`song1`..`song3` (a jukebox song, by character) params are ids and get translated; `drone` and `serial` make a drone's name, and `upgrade` is a drone upgrade, `hostile` a hostile NPC's kind; `name`, `target` and `body` are character ids; `tested` and `spoiledBy` are an assay's counts by character. */
   const logLine = ({ key, params = {} }: Pick<LogEntry, "key" | "params">): string => {
     const resolved: Record<string, string | number> = { ...params };
     if (typeof params.room === "string") resolved.room = room(params.room);
@@ -226,6 +230,8 @@ export function useNames() {
     // A drone's `drone` (its name) and `serial` (shared/src/drones.ts) come together as one name.
     if (typeof params.drone === "string" && typeof params.serial === "number") resolved.drone = drone(params.drone, params.serial);
     if (typeof params.upgrade === "string") resolved.upgrade = droneUpgrade(params.upgrade);
+    // A hostile NPC's kind (shared/src/hostiles.ts), with its article: "the intruder".
+    if (typeof params.hostile === "string") resolved.hostile = hostile(params.hostile);
     if (typeof params.entry === "string") resolved.entry = t(`comms.xyloph.${params.entry}` as never, { defaultValue: params.entry });
     // A cause of death (shared/src/death.ts, #177).
     if (typeof params.cause === "string") resolved.cause = t(`deathCause.${params.cause}` as never, { defaultValue: params.cause });
@@ -237,8 +243,9 @@ export function useNames() {
     // An assay's "chun:3,paola:1" lists (shared/src/actions/research.ts): "Chun ×3, Paola ×1".
     for (const list of ["tested", "spoiledBy"] as const) if (typeof params[list] === "string") resolved[list] = sampleCounts(params[list]);
     const line: string = t(`logEvent.${key}` as never, { ...resolved, defaultValue: key });
-    return Object.values(params).includes(SOMEONE) ? line.charAt(0).toLocaleUpperCase() + line.slice(1) : line;
+    // A line may start with a lowercase name: "someone", or a hostile's "the intruder".
+    return Object.values(params).includes(SOMEONE) || typeof params.hostile === "string" ? line.charAt(0).toLocaleUpperCase() + line.slice(1) : line;
   };
 
-  return { room, equipment, item, itemOf, itemLabel, drone, droneUpgrade, jukeboxSong, research, project, skill, title, rebelBase, action, character: characterName, characterGiven: characterGivenName, logLine };
+  return { room, equipment, item, itemOf, itemLabel, drone, droneUpgrade, hostile, hostileName, jukeboxSong, research, project, skill, title, rebelBase, action, character: characterName, characterGiven: characterGivenName, logLine };
 }

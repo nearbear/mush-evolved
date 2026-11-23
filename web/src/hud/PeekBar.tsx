@@ -75,7 +75,13 @@ export function PeekBar({
   }
   // The phone layout shows given names only, so the surname stays out of the bar.
   const name =
-    resolved.kind === "player" ? names.characterGiven(resolved.person.character) : resolved.kind === "equipment" ? names.equipment(resolved.equipment.type) : names.itemOf(resolved.item);
+    resolved.kind === "player"
+      ? names.characterGiven(resolved.person.character)
+      : resolved.kind === "equipment"
+        ? names.equipment(resolved.equipment.type)
+        : resolved.kind === "hostile"
+          ? names.hostileName(resolved.hostile.kind)
+          : names.itemOf(resolved.item);
   const isBot = resolved.kind === "player" && resolved.person.isBot;
   const { options: afterThrowOut, throwOut } = collapseThrowOut(
     optionsOn(view, target).filter((o) => o.action.type !== "examine"),
@@ -85,7 +91,13 @@ export function PeekBar({
     <>
       <Bar
         heading={name}
-        sub={resolved.kind === "item" && ITEM_TYPES[resolved.item.type]?.notImplemented ? t("itemAttr.notImplemented") : undefined}
+        sub={
+          resolved.kind === "item" && ITEM_TYPES[resolved.item.type]?.notImplemented
+            ? t("itemAttr.notImplemented")
+            : resolved.kind === "hostile"
+              ? t("hostiles.hp", { hp: resolved.hostile.hp, max: resolved.hostile.maxHp })
+              : undefined
+        }
         isBot={isBot}
         onMore={onMore}
       >

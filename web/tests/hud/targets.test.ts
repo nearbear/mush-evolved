@@ -350,3 +350,20 @@ describe("integration with sampleView", () => {
     }
   });
 });
+
+describe("hostile NPC targets", () => {
+  const hostile = { id: "hostile:1", kind: "intruder", hp: 14, maxHp: 14 };
+  const punch: ActionOption = { action: { type: "punch", target: "hostile:1" }, cost: { ap: 1, mp: 0 } } as ActionOption;
+
+  it("resolves a hostile in your room, and not one that has gone", () => {
+    const view = mockView({ hostiles: [hostile] });
+    expect(resolveTarget(view, { kind: "hostile", id: "hostile:1" })).toEqual({ kind: "hostile", hostile });
+    expect(resolveTarget(mockView({ hostiles: [] }), { kind: "hostile", id: "hostile:1" })).toBeNull();
+  });
+
+  it("puts an action aimed at it on its panel, not on a person's", () => {
+    const view = mockView({ hostiles: [hostile], actions: [punch] });
+    expect(optionsOn(view, { kind: "hostile", id: "hostile:1" })).toEqual([punch]);
+    expect(optionsOn(view, { kind: "player", id: "hostile:1" })).toEqual([]);
+  });
+});

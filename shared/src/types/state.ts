@@ -7,6 +7,7 @@ import type { EdenState } from "../eden.ts";
 import type { FruitEffect } from "../fruits.ts";
 import type { LostAnalysisState } from "../lostAnalysis.ts";
 import type { TheListState } from "../theList.ts";
+import type { HostileState } from "../hostiles/hostile.ts";
 import type { NpcState } from "../npcs.ts";
 import type { TurnSide } from "../navigation.ts";
 import type { PlanetDirection, PlanetTag } from "../planets.ts";
@@ -57,6 +58,10 @@ export interface GameCore {
   /** Every item in the game, wherever it is. */
   items: ItemState[];
   nextItemId: number;
+  /** Hostile NPCs aboard (hostiles.ts). Never in `players`: they don't count as crew. */
+  hostiles: HostileState[];
+  /** The number the next hostile's id gets (`hostile:<n>`). */
+  nextHostileId: number;
   /**
    * Equipment in each room: the map's (`config.equipment`, copied at launch) plus what players build or install, minus
    * what they dismantle or uninstall. Lives in the state, not the config, since the config isn't stored with the game.
