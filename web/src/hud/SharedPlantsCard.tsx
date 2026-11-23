@@ -1,20 +1,46 @@
-// Pinned greenhouse plant status card shown above the Botany feature thread (owner, 2026-11-21).
-// Displays the latest snapshot shared from the Hydroponics center (`view.sharedPlants`), with the same
-// vertical list layout: (icon + name stacked) -> effects stacked -> statuses stacked.
+// Pinned Hydroponics card shown above the Botany feature thread (owner, 2026-11-21): the latest snapshot shared from
+// the Hydroponics center (`view.sharedPlants`), each plant a `PlantStatusRow` as in the terminal (owner, 2026-11-22),
+// in a `TerminalCollapsible` like every other collapsible, with who shared it (given name) and when as a caption in its
+// header. The effects are the sharer's free text, so each line is sorted by its shape: "+N <resource>" lines become
+// amounts, a temporary effect exactly as the share form prefills it becomes its name with a popover, the rest bulleted
+// notes (cures, ailment odds).
 
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { PlayerView, SharedPlantStatus } from "@mush2/shared";
-import { itemIcon } from "../art/assets.ts";
+import type { TFunction } from "i18next";
 import { useNames } from "../i18n/names.ts";
-import { PlantStatusLines } from "./PlantTerminal.tsx";
+import { FRUIT_BUFF_IDS, fruitBuffNote, PlantStatusRow, type PlantNote, type ResourceLine } from "./PlantStatusRow.tsx";
+import { RESOURCE_STATS, type StatDelta } from "./StatAmount.tsx";
+import { TerminalCollapsible } from "./TerminalCollapsible.tsx";
+
+/** Splits the shared effects text into resource lines ("+1 AP") and everything else (cures, ailment odds). */
+function splitEffects(effects: string, t: TFunction): { resources: ResourceLine[]; notes: PlantNote[] } {
+  const stats = new Map<string, StatDelta["stat"]>(RESOURCE_STATS.map((stat) => [t(`stat.${stat}`).toLowerCase(), stat]));
+  stats.set(t("itemAttr.satiety").toLowerCase(), "satiety");
+  const buffs = new Map(FRUIT_BUFF_IDS.map((buff) => [t(`inspect.fruitBuffs.${buff}`), buff]));
+  const resources: ResourceLine[] = [];
+  const notes: PlantNote[] = [];
+  for (const raw of effects.split("\n")) {
+    const text = raw.trim();
+    if (!text) continue;
+    const match = /^([+\-−])\s*(\d+)\s+(.+)$/.exec(text);
+    if (!match) {
+      const buff = buffs.get(text);
+      notes.push(buff ? fruitBuffNote(buff, t) : { text });
+      continue;
+    }
+    const stat = stats.get(match[3]!.trim().toLowerCase());
+    const amount = Number(match[2]) * (match[1] === "+" ? 1 : -1);
+    resources.push(stat && amount !== 0 ? { stat, amount } : { text });
+  }
+  return { resources, notes };
+}
 
 export function SharedPlantsCard({ shared, view }: { shared: SharedPlantStatus; view: PlayerView }) {
   const { t } = useTranslation();
   const names = useNames();
-  const [open, setOpen] = useState(true);
   const author = (id: string) =>
-    names.character((id === view.you.id ? view.you : view.players.find((p) => p.id === id))?.character ?? id);
+    names.characterGiven((id === view.you.id ? view.you : view.players.find((p) => p.id === id))?.character ?? id);
   const byLine = t("itrackie.sharedPlanets.by", {
     name: author(shared.by),
     day: shared.day,
@@ -22,61 +48,38 @@ export function SharedPlantsCard({ shared, view }: { shared: SharedPlantStatus; 
   });
 
   return (
-    <section className="shared-plants-card" aria-label={t("itrackie.sharedPlants.title")}>
-      <div className="shared-plants-card-head">
-        <div>
-          <strong className="shared-plants-card-title">{t("itrackie.sharedPlants.title")}</strong>
-          <p className="sub">{byLine}</p>
-        </div>
-        <button
-          type="button"
-          className="shared-plants-toggle"
-          aria-expanded={open}
-          onClick={() => setOpen((v) => !v)}
-        >
-          {open ? t("itrackie.sharedPlants.hide") : t("itrackie.sharedPlants.show")}
-        </button>
-      </div>
-      {open && (
-        <div className="shared-plants-card-body">
-          {shared.plants.length === 0 ? (
-            <p className="sub">{t("botanyTerminal.empty")}</p>
-          ) : (
-            <ul className="plant-status-list plant-status-list-compact" aria-label={t("botanyTerminal.listLabel")}>
-              {shared.plants.map((row, i) => {
-                const icon = itemIcon(row.species);
-                const effectLines = row.effects
-                  .split("\n")
-                  .map((line) => line.trim())
-                  .filter(Boolean);
-                return (
-                  <li key={`${row.species}-${i}`} className="plant-status-row">
-                    <div className="plant-status-head">
-                      {icon && <img className="plant-status-icon" src={icon} alt="" />}
-                      <strong className="plant-status-name">{names.item(row.species)}</strong>
-                    </div>
-                    <div className="plant-status-col">
-                      {effectLines.length > 0 ? (
-                        <ul className="plant-status-effects">
-                          {effectLines.map((line, j) => (
-                            <li key={j}>{line}</li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p className="plant-status-unknown">{t("botanyTerminal.effectsUnknown")}</p>
-                      )}
-                    </div>
-                    <div className="plant-status-col">
-                      <PlantStatusLines thirst={row.thirst} sickCycles={row.sickCycles} young={row.young} />
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-          {shared.text && <p className="shared-plants-note">{shared.text}</p>}
-        </div>
-      )}
+    <section className="shared-plants" aria-label={t("itrackie.sharedPlants.title")}>
+      <TerminalCollapsible
+        heading={
+          <>
+            {t("itrackie.sharedPlants.title")} <span className="sub shared-plants-by">{byLine}</span>
+          </>
+        }
+        defaultOpen
+      >
+        {shared.plants.length === 0 ? (
+          <p className="sub">{t("botanyTerminal.empty")}</p>
+        ) : (
+          <ul className="plant-status-list shared-plants-list" aria-label={t("botanyTerminal.listLabel")}>
+            {shared.plants.map((row, i) => {
+              const { resources, notes } = splitEffects(row.effects, t);
+              return (
+                <PlantStatusRow
+                  key={`${row.species}-${i}`}
+                  species={row.species}
+                  thirst={row.thirst}
+                  sickCycles={row.sickCycles}
+                  young={row.young}
+                  resources={resources}
+                  notes={notes}
+                  unknown={resources.length === 0 && notes.length === 0 ? t("botanyTerminal.effectsUnknown") : undefined}
+                />
+              );
+            })}
+          </ul>
+        )}
+        {shared.text && <p className="shared-plants-note">{shared.text}</p>}
+      </TerminalCollapsible>
     </section>
   );
 }

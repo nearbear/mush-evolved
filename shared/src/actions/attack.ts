@@ -3,7 +3,7 @@ import { changeAP } from "../adjustStats.ts";
 import { breakItem } from "../breakage.ts";
 import { damage } from "../death.ts";
 import { addDisease } from "../diseases.ts";
-import { ITEM_TYPES, afterArmor, dropWeapon, itemsIn, removeItem, removeItemIfPresent, isWorking } from "../items.ts";
+import { ITEM_TYPES, afterProtection, dropWeapon, itemsIn, removeItem, removeItemIfPresent, isWorking } from "../items.ts";
 import { logPublic } from "../log.ts";
 import { weaponOutcomeWeight } from "../modifiers.ts";
 import { roll, rollFloat, rollInt, rollShuffle, rollWeighted } from "../rng.ts";
@@ -150,10 +150,10 @@ function spend(state: GameState, target: AttackActionData): ItemState {
   return weapon;
 }
 
-/** A weapon hit's damage after the target's Plastenite Armor, which a critical hit goes through (owner, 2026-11-17). */
+/** A weapon hit's damage after the target's Plastenite Armor and Hard-boiled, which a critical hit goes through (owner, 2026-11-17, 2026-11-22). */
 function armoredHit(critical: boolean) {
   return (state: Readonly<GameState>, target: Readonly<PlayerState>, amount: number): number =>
-    critical ? amount : afterArmor(state, target, amount);
+    critical ? amount : afterProtection(state, target, amount);
 }
 
 /** Shifts a `[min, max]` damage range by an outcome's `damageDelta` and `maxDamageDelta`, clamped at 0. */

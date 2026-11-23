@@ -202,7 +202,8 @@ describe("Space Tactics", () => {
     const full = waves(false, 1).hunters.list.length;
     expect(waves(true, 0).hunters.list).toHaveLength(full);
     expect(waves(false, 1).hunters.list).toHaveLength(full);
-    expect(waves(true, 1, false).hunters.list).toHaveLength(full);
+    // A dead crew member thins the wave by itself (#241), so the dead holder is weighed against the same crew.
+    expect(waves(true, 1, false).hunters.list).toHaveLength(waves(false, 1, false).hunters.list.length);
   });
 });
 

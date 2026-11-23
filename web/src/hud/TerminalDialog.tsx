@@ -190,7 +190,7 @@ function ProjectList({ terminal, view, onAction }: ListProps) {
       needs={(id) => {
         const skills = PROJECTS.find((p) => p.id === id)?.skills ?? [];
         // Only the worker's own skills speed up their work (relay.ts), so yours are the ones checked.
-        return skills.length ? { items: skills.map((skill) => ({ label: names.skill(skill), met: hasSkill(view.you, skill), icon: skillIcon(skill) })) } : null;
+        return skills.length ? { items: skills.map((skill) => ({ label: names.skill(skill), met: hasSkill(view.you, skill), icon: skillIcon(skill), className: "skill-name" })) } : null;
       }}
       option={(id) => view.actions.find(({ action: a }) => a.type === "project" && a.equipment === terminal.id && a.project === id)}
       view={view}
@@ -382,7 +382,7 @@ function DrugDispenser({ terminal, view, onAction }: ListProps) {
 
 interface Checklist {
   /** `icon` is an extra picture after the box (a project's skills show their skill icon). */
-  items: { label: string; met: boolean; icon?: string }[];
+  items: { label: string; met: boolean; icon?: string; className?: string }[];
 }
 
 interface ProgressListProps {
@@ -536,8 +536,8 @@ function ProgressList({ label, ids, progress, relay, complete, cards, name, desc
                       {needed && (
                         <div className="research-needs">
                           <ul>
-                            {needed.items.map(({ label, met, icon }) => (
-                              <li key={label} className={met ? "research-need-met" : undefined}>
+                            {needed.items.map(({ label, met, icon, className }) => (
+                              <li key={label} className={[met && "research-need-met", className].filter(Boolean).join(" ") || undefined}>
                                 <img src={met ? CHECK_ICON : UNCHECK_ICON} alt={met ? t("research.met") : t("research.unmet")} />
                                 {icon && <img src={icon} alt="" />}
                                 {label}

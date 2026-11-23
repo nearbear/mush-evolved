@@ -90,6 +90,7 @@ export function cure(state: GameState, player: PlayerState): boolean {
     player.satietyZeroSince = state.cycle;
     delete state.spikedOn[player.id];
     removeStatus(player, "nimble");
+    removeStatus(player, "ninja");
     updateMaxValues(state, player); // their diseases count again (#267)
     logPrivate(state, player.id, "cured");
     return true;

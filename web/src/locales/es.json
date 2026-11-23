@@ -250,6 +250,18 @@
       "resistance": "Resistencia (inmune a las esporas durante 2 ciclos)",
       "perception": "Percepción (+10 % de probabilidad de éxito en acciones durante 2 ciclos)"
     },
+    "fruitBuffNames": {
+      "treat_disease": "Tratar enfermedad",
+      "energize": "Energizante",
+      "resistance": "Resistencia",
+      "perception": "Percepción"
+    },
+    "fruitBuffTips": {
+      "treat_disease": "Las enfermedades curan 1 ciclo más rápido por ciclo durante 4 ciclos.",
+      "energize": "+2 PM por conversión de PA durante 2 ciclos.",
+      "resistance": "Inmune a las esporas durante 2 ciclos.",
+      "perception": "+10 % de probabilidad de éxito en acciones durante 2 ciclos."
+    },
     "fruitDiseaseOdds": "{{disease}} ({{percent}} %)",
     "fruitGrowCycles_one": "Maduración: {{count}} ciclo",
     "fruitGrowCycles_many": "Maduración: {{count}} ciclos",
@@ -420,6 +432,9 @@
     "stopGuarding": "Dejar de vigilar",
     "enterNimble": "Entrar en modo ágil",
     "exitNimble": "Salir del modo ágil",
+    "becomeNinja": "Convertirte en un ninja",
+    "becomeNormal": "Volver a la normalidad",
+    "delog": "Borrar el registro",
     "accommodate": "Empujar la silla",
     "acceptAccommodation": "Aceptar ayuda",
     "stopAccommodation": "Terminar la ayuda",
@@ -837,9 +852,7 @@
       "placeholder": "Habla sobre este planeta…"
     },
     "sharedPlants": {
-      "title": "Estado compartido del invernadero",
-      "show": "Mostrar",
-      "hide": "Ocultar"
+      "title": "Hidroponía"
     },
     "sharedPilgred": {
       "title": "Progreso compartido de PILGRED"
@@ -968,6 +981,7 @@
     "contaminated": "Contaminación: {{level}}",
     "hopeless": "Sin esperanza",
     "nimble": "Ágil",
+    "ninja": "Ninja",
     "pregnant": "Embarazada",
     "desc": {
       "dirty": "No puedes investigar. Darte una ducha lo elimina.",
@@ -1051,6 +1065,7 @@
       "contaminated": "Un humano que has contaminado. Al llegar a su capacidad se vuelve Mush.",
       "hopeless": "Con 0 de moral. Cualquier ganancia de moral lo termina. Un humano que siga Sin esperanza al acabar el ciclo muere.",
       "nimble": "Todas tus acciones públicas en una sala (incluido el movimiento) se vuelven secretas. Solo tú puedes ver este estado.",
+      "ninja": "Todas tus acciones son anónimas: los registros de la sala te nombran «Alguien». Solo tú puedes ver este estado.",
       "pregnant": "Espera un bebé. Si este tripulante muere, cada miembro vivo de la tripulación pierde 2 puntos de moral."
     }
   },
@@ -1229,6 +1244,10 @@
     "stoppedGuarding": "{{name}} dejó de vigilar la sala.",
     "enteredNimble": "Entraste en modo ágil.",
     "exitedNimble": "Saliste del modo ágil.",
+    "becameNinja": "Ahora eres un ninja: tus acciones son anónimas.",
+    "becameNormal": "Ya no eres un ninja.",
+    "delogged": "Los registros están todos revueltos... ¡¿Quién ha vuelto a jugar con los sensores?!",
+    "someone": "alguien",
     "interrogated": "{{name}} interrogó a {{target}}.",
     "chitchatted": "{{name}} charló con {{target}}.",
     "comforted": "{{name}} consoló a {{target}}.",
@@ -1742,9 +1761,9 @@
       "infantryman": "Duplica tus probabilidades de acertar con las torretas.\n+1 punto de Disparo al día.\nEmpiezas la partida con un Bláster personalizado.",
       "maintenance_agent": "Cada día: +1 punto de Reparación, +1 punto de Jardinería y +1 punto de Cocina.",
       "pyromane": "Por 4 PA puedes provocar un Incendio en una sala.",
-      "tough": "Cada punto de daño de combate que recibes se reduce en uno.",
+      "tough": "Cada puñetazo o golpe de arma no crítico que recibes se reduce en 1, sin bajar de 1. No se aplica en expediciones.",
       "fertile": "Cada día puedes generar una espora gratis.",
-      "ninja": "Tus ataques cuerpo a cuerpo se vuelven acciones anónimas.",
+      "ninja": "Desbloquea la acción Convertirte en un ninja. Mientras seas un ninja, todas tus acciones son anónimas: los registros de la sala te nombran «Alguien». Salvo en expedición.",
       "sapper": "Tus probabilidades de éxito al Sabotear equipos u objetos se triplican.",
       "nimble_fingers": "Te permite entrar y salir del modo ágil por 0 PA. En modo ágil, todas tus acciones públicas en una sala (incluido el movimiento) se vuelven secretas.",
       "water_resistant": "Ducharte no te hace perder ningún PV y cuesta 1 PA como máximo, con o sin jabón.",
@@ -1767,7 +1786,7 @@
       "nerondepress": "Por 3 PA puedes confundir a NERON en el próximo ciclo, lo que cambia sus ajustes al azar.\nNo funciona con la restricción DMZ si está bloqueada.",
       "slimetrap": "Por 1 PA, el jugador elegido se ensuciará en 1 a 4 ciclos.",
       "electro_slime": "Por 1 PA puedes hacer que se rompa un objeto electrónico. Tardará varios ciclos en estropearse.",
-      "defacer": "Una vez al día. Por 2 PA puedes borrar todos los registros de una sala. Se volverán a registrar a partir del próximo ciclo."
+      "defacer": "Desbloquea Borrar el registro: una vez al día, por 2 PA, borra todos los registros de una sala. No se registra nada en ella hasta el siguiente ciclo y NERON no anuncia las muertes que ocurran allí. Salvo en expedición."
     }
   },
   "drugDispenser": {

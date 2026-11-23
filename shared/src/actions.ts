@@ -111,6 +111,8 @@ import { AttackAction } from "./actions/attack.ts";
 import { ShareAction } from "./actions/share.ts";
 import { GuardAction, StopGuardingAction } from "./actions/guard.ts";
 import { EnterNimbleAction, ExitNimbleAction, NIMBLE } from "./actions/nimble.ts";
+import { BecomeNinjaAction, BecomeNormalAction } from "./actions/ninja.ts";
+import { DelogAction } from "./actions/delog.ts";
 import { ProtectAction } from "./actions/protect.ts";
 import { GetUpAction, LieDownAction } from "./actions/lie_down.ts";
 import { ReportDoorAction, ReportEquipmentAction, ReportFireAction } from "./actions/report.ts";
@@ -280,6 +282,9 @@ const REGISTRY = {
   stop_guarding: new StopGuardingAction(),
   enter_nimble: new EnterNimbleAction(),
   exit_nimble: new ExitNimbleAction(),
+  become_ninja: new BecomeNinjaAction(),
+  become_normal: new BecomeNormalAction(),
+  delog: new DelogAction(),
   protect: new ProtectAction(),
   accommodate: new AccommodateAction(),
   accept_accommodation: new AcceptAccommodationAction(),

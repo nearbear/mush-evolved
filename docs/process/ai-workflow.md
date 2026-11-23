@@ -5149,3 +5149,55 @@ Follow-up: the owner dropped the Intergalactic line from the helper and had the 
 ### 2026-11-22: Removed the free-text "Track something…" tracker from the feature tabs
 
 The owner asked to drop the typed-notes tracker (`hud/Tracker.tsx`, client-only state that never reached the server) from every feature tab, since each feature will get its own specialized tracker. Feature tabs without one yet (e.g. Pilgred and Botany before anything is shared) now show only their thread, and the "needs an iTrackie to track" note shows only on Research and NERON, which have real trackers. Removed the component, its state, CSS and the five en/fr/es strings it used. Straightforward; no corrections needed.
+
+## 2026-11-22: Botany shared status card in three rows
+
+- Owner asked for the pinned Botany status card (`SharedPlantsCard.tsx`) to stack each plant as three rows on both layouts: plant + status, resource gains/losses, then cures and ailment odds as caption text; AP/MP use the `pa_slot1`/`pa_slot2` gems (`AP_SLOT_ICON`/`MP_SLOT_ICON`).
+- The shared effects are the sharer's free text, so the card sorts lines by shape: `+N <stat>` lines go to the resource row (with an icon when the stat name matches the viewer's locale), everything else to the caption. Edited or other-language lines fall back gracefully (no icon, or caption).
+
+## 2026-11-22: Hard-boiled Mush skill, with a combat damage floor of 1
+
+- **Decision (owner):** implement Hard-boiled (`tough`) per eMushpedia (-1 on each non-critical punch or weapon hit, not expeditions, stacking with Plastenite Armor), but with damage clamped to a minimum of 1. Asked how the floor combines with armor; the owner chose a floor of 1 **for everyone**, so Plastenite Armor alone (including expedition fights) can no longer fully absorb a hit either. New knobs `tough.absorb` and `combatDamageFloor`; `afterProtection` in `items.ts` combines both for punches and weapon hits.
+- **What worked:** the wiki page settled scope (crits, expeditions, stacking) without asking; only the floor/armor interaction needed a question. Keeping the floor in config let the existing `punchArmor`/`attackArmor` log tests stay covered by running them with a floor of 0.
+- **Needed correction:** `npm run emush -- spec TOUGH` returned an invented spec (a max-HP bonus, "human skill"), so the wiki was the source used. A first scripted edit anchored on a helper that lives in `expeditions.ts`, not `items.ts`, and had to be redone.
+- Follow-up: resource effects became one shared component, `StatAmount`/`StatAmounts` (`web/src/hud/StatAmount.tsx`), drawn as the signed amount then the resource's icon (`pa_slot` gems for AP/MP), with `consumeDeltas` replacing three copies of the consume-stat sums. Used by consumable tooltips (`ConsumeEffects`), the Hydroponics terminal and the Botany card; the card now puts the plant icon on the left with name/status, amounts and caption lines to its right. Unrecognised "+N x" lines stay as text.
+- Follow-up 2: one `PlantStatusRow` (`web/src/hud/PlantStatusRow.tsx`) now draws a plant in both the Hydroponics center terminal and the Botany card: name on its own line, icon with status and `StatAmount`s beside it, cures/ailment odds as a bulleted caption under the icon; rows divided by rules instead of boxed. The card was renamed "Hydroponics" (fr Hydroponie, es Hidroponía) and moved onto `TerminalCollapsible` (open by default), dropping its Show/Hide button and strings.
+
+## 2026-11-22: Ninja (Mush skill) made every action anonymous, as in eMush
+
+- **Decision (owner):** the original's footnote makes only melee anonymous; the owner wanted eMush's version. Claude found via the clean-room tool and eMushpedia that eMush's Ninja is not always on: it is a free, invisible "Become a ninja" / "Become normal" toggle (usable in bed, not on an expedition), and NERON's ship-wide lines may still name you. Owner picked: toggle like eMush; mask room lines only; hide a ninja's busy bar; the ninja's own lines say "Someone" too.
+- **How:** `actions/ninja.ts` copies the Nimble Fingers toggle. Masking sits in `pushLog` (`withNinjaActor` / `ninjaMasked` in `log.ts`), so public, leaked secret/covert and private-to-victim lines are all covered by one hook rather than per action; a new `withoutActor` suspends both Nimble and Ninja for death and wheelchair lines.
+- **What worked:** reusing the Nimble scoping pattern; asking about the busy bar, which would have de-anonymized every timed action and has no eMush equivalent. eMush's "lie down/get up private" sub-rule needed nothing, since those write no line here.
+
+## 2026-11-22: Mush skill icon shuffle and Mass Mushification rename
+
+Owner asked to rotate three Mush skill icons (Slime Trap's to Mass Mouldering, Mass Mouldering's to Bacteriophilia, Bacteriophilia's to Defacer) and rename Mass Mouldering to Mass Mushification in English. Done as a remap in `web/src/art/assets.ts` (same pattern as the earlier Epigenetics/Defacer swap, Slime Trap falls back to the empty-slot icon) plus the en locale names; internal ids (`massggedon`, `mass_mouldering`) unchanged. Worked first time; no correction needed.
+
+### 2026-11-22: Hydroponics card and plant rows, round two
+
+- Botany card: the byline (given name only, day, cycle) moved into the collapsible's header as a caption. Hybrid names drop "graft" in en/fr/es ("A–B"). Plant rows put the name under the icon in a min-content column so a hybrid wraps at its dash; status, amounts and notes share the right column. A fruit's temporary effects show only their name there, with what they do in a Popover (new `inspect.fruitBuffNames`/`fruitBuffTips` keys); the shared card recognises a buff line only when it matches the prefilled text exactly, so an edited line stays plain. Consumable tooltips keep the full buff text but now lay out resource changes in a row, with buffs and odds as a muted caption; the action-risk grid got its own `.action-risks` class instead of borrowing `consume-effects`.
+- Verify: a server bot test (`GameRoom.bots.test.ts`, chat wake timeout) timed out; untouched by this change.
+
+### 2026-11-22 — Days One display font for skill names, space craft, and expedition sectors
+- Applied `var(--font-display)` (`font-weight: 400`) to skill names (`.skill-card > strong`, `.skill-pick-card header strong`, `.skill-name` in `inspect.css`; `.pod-skill` in `lobby.css`; merchant skill tooltip in `SignalConversation.tsx`; project skill needs in `TerminalDialog.tsx`), craft names in space (`.space-ship > strong, .space-aim > strong` in `space.css`), and expedition sector names (`.timeline-column h3` in `expedition-timeline.css`, `.report-row-text > strong` in `settings.css`).
+- `npm run verify:web` passed `lint`, `test` (531 tests in 67 files), and `build`, while `typecheck` failed in untouched `web/src/i18n/names.ts`.
+
+## 2026-11-22: Defacer Mush skill (Clear the logs)
+
+- **Decision (owner):** "mirror how eMush has it." Claude got the behavior from the clean-room `npm run emush -- spec` on `Delog.php`, `DelogCest.php`, `HideRoomLogsService.php` and `RoomLogNormalizer.php`, and the cost from eMushpedia (2 AP, daily; NERON doesn't announce deaths there). Claude's call, flagged: not usable on an expedition (as with Ninja).
+- **Implementation:** `actions/delog.ts` plus `deface` / `isDefaced` / `endDefacing` in `log.ts`. Instead of eMush's hidden flag, lines are erased from state and `pushLog` drops every new line in a defaced room until the cycle change, which also removes the notice. `GameState.deloggedRooms` (added with a normalizer default) and `PlayerState.delogToday` (a mind field).
+- **What worked:** following the Torturer's daily-flag pattern and the Ninja commit as a checklist of the places to touch.
+- **Needed correction:** the first `spec` query (`spec skill defacer`) went to an unrelated subscriber. Searching for the action name (`find delog`) found the right files. A test assumed an own-seat flag was never sent, but `viewFor` spreads the player's own fields, so it is "own" reach, like `interrogatedToday`.
+- **Found, not fixed (from the Ninja commit):** the web typecheck error at `web/src/i18n/names.ts:238` (`line` typed `never`), which is present at clean HEAD, and `history.test.ts`, which doesn't yet expect `become_ninja` / `become_normal` as unrecorded.
+
+### 2026-11-22 — Mark Botanist (`botanic`) as `"full"` in `SKILL_STATUS`
+- Updated `SKILL_STATUS.botanic` from `"partial"` to `"full"` (and refreshed the stale comments on `botanic` and `green_thumb`) in `shared/src/skills.ts`.
+- Added `botanic` to the `SKILL_STATUS` assertion in `shared/tests/skills.test.ts`; `npm test -w shared -- skills.test.ts` passed (3 files, 53 tests), while `npm run verify` failed in `web/src/i18n/names.ts` (untouched by this task).
+
+- **2026-11-22 — Tracker ship takeoff/landing logs (owner):** Extended `moveLineFor` in `shared/src/log.ts` so `patrolTakeoff` and `patrolLanded` keep `params.room` (the ship) only for a Tracker (`hunt`); everyone else (including the pilot and camera viewers) sees `patrolTakeoffShip` / `patrolLandedShip` with no ship name (`patrolPlanetLanding` left as-is). Updated `SKILL_STATUS.hunt` to `"full"`, added `en`/`fr`/`es` log strings, and added tests in `logWindow.test.ts`.
+
+## 2026-11-22: activity overload for hunter and incident points (#241, #263)
+
+- **Decision (owner):** eMush's `DifficultyService` multiplier on both hunter and incident points: threshold 7 AP × the ship's seats (`config.preselection.seats`); at or under it, living players ÷ seats (the dead don't count, unlike eMush); above it, AP spent today ÷ threshold; rounded. Skill-point actions count the AP they would have cost (the wiki's rule). Supersedes the wiki formula adopted for #263.
+- **What worked:** the clean-room `npm run emush -- spec` on `DaedalusCycleSubscriber` surfaced a detail the issue didn't mention: the count is a running total, and the day-change cycle uses the whole day before the reset. Our new-day block runs before hunters and incidents, so the reset had to move to the end of the cycle change.
+- **Needed correction:** the plan missed that #263 had already adopted a different (wiki) formula for incidents and that special points count there; found only while updating `implemented-rules.md`, then put to the owner. Grep open issues for the same mechanic before planning.

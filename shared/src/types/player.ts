@@ -115,6 +115,8 @@ export interface PlayerState extends Seat {
   chitchatToday?: boolean;
   /** True once the Torturer has interrogated someone today (interrogate.ts); cleared at day start. Never sent. */
   interrogatedToday?: boolean;
+  /** True once this Defacer has cleared a room's logs today (actions/delog.ts); cleared at day start; moves with the mind in a Transfer. Sent to the owner only. */
+  delogToday?: boolean;
   /** The storage rooms this Scrapper has snooped in today (snoop.ts); cleared at day start. Sent to the owner only. */
   snoopedToday?: string[];
   /** True once this character has checked their spores on the MycoScan today (check_spores.ts); cleared at day start; stays with the body. Sent to the owner only. */

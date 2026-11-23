@@ -42,6 +42,7 @@ function ship(): { state: GameState; sentinels: Sentinel[] } {
   };
 
   s.incidentPoints = num("incidentPoints", []);
+  s.apSpentToday = num("apSpentToday", []);
   for (const p of s.players) {
     const own = [p.id];
     p.room = p.id === "p3" ? ELSEWHERE : HERE;

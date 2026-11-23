@@ -1,4 +1,4 @@
-// What eating or drinking an item does, one effect per line with its icon, read from the shared item table (static data, not game state).
+// What eating or drinking an item does, resource changes side by side (amount then icon, `StatAmounts`), read from the shared item table (static data, not game state).
 
 import {
   isAlienFruitType,
@@ -8,13 +8,7 @@ import {
   type PlayerView,
 } from "@mush2/shared";
 import { useTranslation } from "react-i18next";
-import {
-  AP_PIP,
-  HP_ICON,
-  MORALE_ICON,
-  MP_PIP,
-  SATIETY_ICON,
-} from "../art/assets.ts";
+import { consumeDeltas, StatAmounts } from "./StatAmount.tsx";
 
 const FRUIT_BUFF_KEYS = {
   treat_disease: "inspect.fruitBuffs.treat_disease",
@@ -54,33 +48,13 @@ export function ConsumeEffects({
   const fruit = isAlienFruit ? view.fruitEffects?.[type] : undefined;
   if (isAlienFruit && !fruit)
     return <p className="consume-unknown">{t("inspect.fruitUnknown")}</p>;
-  const effects: [number | undefined, string, string][] = [
-    [consume.ap + (drug?.ap ?? 0) + (fruit?.ap ?? 0), AP_PIP, t("stat.ap")],
-    [(consume.mp ?? 0) + (drug?.mp ?? 0), MP_PIP, t("stat.mp")],
-    [consume.satiety, SATIETY_ICON, t("itemAttr.satiety")],
-    [
-      (consume.morale ?? 0) + (drug?.morale ?? 0) + (fruit?.morale ?? 0),
-      MORALE_ICON,
-      t("stat.morale"),
-    ],
-    [(consume.hp ?? 0) + (fruit?.hp ?? 0), HP_ICON, t("stat.hp")],
-  ];
-  const shown = effects.filter(([n]) => n);
+  const shown = consumeDeltas(type, view);
   const treats = drug?.treats ?? [];
   if (shown.length === 0 && treats.length === 0 && !fruit) return null;
   const mushWarning = fruit ? isMushOnlyFruitLore(view) : false;
   return (
     <>
-      {shown.length > 0 && (
-        <ul className="consume-effects">
-          {shown.map(([n, icon, label]) => (
-            <li key={label}>
-              <img src={icon} alt={label} />
-              <span>{`${n! > 0 ? "+" : "−"}${Math.abs(n!)}`}</span>
-            </li>
-          ))}
-        </ul>
-      )}
+      <StatAmounts deltas={shown} layout="row" className="consume-effects" />
       {treats.length > 0 && (
         <p className="consume-treats">
           {t("itemAttr.drugTreats", {

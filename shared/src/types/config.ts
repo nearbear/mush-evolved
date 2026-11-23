@@ -614,8 +614,12 @@ export interface GameConfig {
     charges: { start: number; max: number; perCycle: number }; // Starts with 8 charges, spends 1 per conversion, recharges 1 per cycle (owner, 2026-11-17).
   };
   plasteniteArmor: {
-    absorb: number; // Damage a working Plastenite Armor in the target's inventory takes off each non-critical punch or weapon hit and each expedition fight (owner, 2026-11-17). Never below 0; several armors absorb no more than one.
+    absorb: number; // Damage a working Plastenite Armor in the target's inventory takes off each non-critical punch or weapon hit and each expedition fight (owner, 2026-11-17). Never below `combatDamageFloor`; several armors absorb no more than one.
   };
+  tough: {
+    absorb: number; // Damage the Hard-boiled Mush skill (`tough`) takes off each non-critical punch or weapon hit, not expedition fights; stacks with Plastenite Armor (owner, 2026-11-22; eMushpedia). Never below `combatDamageFloor`.
+  };
+  combatDamageFloor: number; // Plastenite Armor and Hard-boiled never take a combat hit below this (owner, 2026-11-22: 1, so no hit is fully absorbed; eMush's floor is 0). Damage already below it is left alone.
   anathema: {
     cost: { ap: number }; // AP the `juge` (Persecutor) skill's Anathema costs (owner, 2026-10-24; eMushpedia).
     successFactor: number; // An Outcast's chance on every action that rolls one is multiplied by this (owner, 2026-10-24: x0.8).
@@ -636,6 +640,7 @@ export interface GameConfig {
   chitchat: { cost: { ap: number }; morale: number }; // Confiding in a `confident` in your room: AP cost and the morale you gain; once a day (owner, 2026-10-24).
   comfort: { cost: { ap: number }; morale: number }; // The Shrink's Comfort: AP cost and the morale the roommate gains; no daily limit (owner, 2026-10-26).
   shrink: { lyingMorale: number }; // Morale a cycle for lying in a bed with a living Shrink (not yourself) in the room; doesn't stack (owner, 2026-10-26).
+  delog: { cost: { ap: number } }; // The `defacer` Mush skill's Clear the logs: AP cost; once a day (owner, 2026-11-22, eMush 2 AP).
   interrogate: { cost: { ap: number }; damage: number; dirtyChance: number; injuryChance: number }; // The `torturer` skill's Interrogate: AP cost, guaranteed damage, dirt and injury odds; once a day (owner, 2026-10-24).
   research: {
     cost: { ap: number }; // AP spent to work on a research (decided 2026-10-16).
@@ -863,6 +868,8 @@ export interface GameConfig {
   spaceCapsule: { cost: { ap: number }; dirtyChance: number; injuryChance: number; contents: string[] };
   // Hull repair (owner, 2026-10-24, the wiki's Armure et Bouclier): 1 AP, 25%, +5 hull, a metal scrap used up on a success.
   hullRepair: { cost: { ap: number }; chance: number; injuryChance: number; amount: number };
+  // Activity overload (owner, 2026-11-22, #241; eMush): hunter and incident points scale with the crew; difficulty.ts.
+  difficulty: { apPerSeat: number };
   // Incident points (owner, 2026-10-25, #184; eMushpedia "Embûches"): incidents.ts. Each cycle change adds
   // `budget.base[min(day, base.length) - 1]`, plus `tier1.bonus + (day - tier1.fromDay)` from `tier1.fromDay`, plus
   // `tier2.bonus + tier1's addition + (day - tier2.fromDay)` from `tier2.fromDay`. Incidents happen with chance

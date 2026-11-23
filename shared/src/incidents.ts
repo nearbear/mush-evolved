@@ -1,13 +1,15 @@
 // Incident points (owner, 2026-10-25, #184 and #185-#190; eMushpedia "Embûches"). At each cycle change the ship's
-// pool (`GameState.incidentPoints`, never sent to anyone) grows by the day's budget; then, with chance pool ÷
-// `rollPoints`, incidents are bought one after another, each picked by weight among those the pool can afford that
-// have a valid target, until none is left. Unspent points carry over. Pre-selection earns and spends nothing
-// (owner, 2026-11-21: incident points start accumulating only after Mush selection). Incidents hit humans and Mush alike.
+// pool (`GameState.incidentPoints`, never sent to anyone) grows by the day's budget, scaled by the activity overload
+// (difficulty.ts, #241); then, with chance pool ÷ `rollPoints`, incidents are bought one after another, each picked
+// by weight among those the pool can afford that have a valid target, until none is left. Unspent points carry over.
+// Pre-selection earns and spends nothing (owner, 2026-11-21: incident points start accumulating only after Mush
+// selection). Incidents hit humans and Mush alike.
 
 import { noGravity } from "./gravity.ts";
 import { gainMorale } from "./adjustStats.ts";
 import { breakEquipment, breakItem, workingBreakable } from "./breakage.ts";
 import { damage } from "./death.ts";
+import { scaleByActivity } from "./difficulty.ts";
 import { addDisease } from "./diseases.ts";
 import { allDoors, breakDoor } from "./doors.ts";
 import { pushChat } from "./chat.ts";
@@ -194,7 +196,7 @@ export function incidentPointsForDay(config: DeepReadonly<GameConfig>, day: numb
  */
 export function incidentsCycle(state: GameState, day: number): void {
   if (state.phase !== "playing" || state.preselection) return;
-  state.incidentPoints += incidentPointsForDay(state.config, day);
+  state.incidentPoints += scaleByActivity(incidentPointsForDay(state.config, day), state);
   if (state.incidentPoints <= 0 || rollFloat(state) >= state.incidentPoints / state.config.incidents.rollPoints) return;
   // Bric-a-brac (owner, 2026-11-08): one roll per cycle change, made only once incidents are due; if it succeeds they are bought as usual but none happens.
   const prevented = projectDone(state, "BRIC_BROC") && rollFloat(state) < state.config.project.bricBroc.preventChance;

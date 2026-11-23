@@ -12,6 +12,7 @@
 // Daedalus for its hp once its countdown runs out.
 
 import { killPlayer } from "./death.ts";
+import { scaleByActivity } from "./difficulty.ts";
 import { newItemId, sameContainer } from "./items.ts";
 import { logPublic } from "./log.ts";
 import { followingHuntersShare, hunterPointsPerCycle, waveShrinkChance } from "./modifiers.ts";
@@ -91,11 +92,14 @@ export function dropDebris(state: GameState, table: DeepReadonly<DebrisTable>): 
   for (let i = rollWeighted(state, count); i > 0; i--) state.space.push({ id: newItemId(state), type: kinds[rollWeighted(state, weights)]! });
 }
 
-/** Points the pool gains at a cycle change on `day`: day + 6, +1 from day 5, +2 instead from day 10 (eMush's hard and very hard modes). */
+/**
+ * Points the pool gains at a cycle change on `day`: day + 6, +1 from day 5, +2 instead from day 10 (eMush's hard and
+ * very hard modes), scaled by the activity overload (difficulty.ts, #241) and then through the crew's hooks.
+ */
 export function huntersPerCyclePoints(state: Readonly<GameState>, day: number): number {
   const { perCycle, hardFromDay, hardBonus, veryHardFromDay, veryHardBonus } = state.config.hunters.points;
   const bonus = day >= veryHardFromDay ? veryHardBonus : day >= hardFromDay ? hardBonus : 0;
-  return hunterPointsPerCycle(day + perCycle + bonus, state);
+  return hunterPointsPerCycle(scaleByActivity(day + perCycle + bonus, state), state);
 }
 
 /**

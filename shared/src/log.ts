@@ -21,9 +21,39 @@ import type { GameState, LogEntry, LogLevel, LogParams, PlayerId, PlayerState, R
 
 /** Appends `entry` with the next id and the current cycle. Every log line goes through here. Mutates a state the caller already cloned. */
 export function pushLog(state: GameState, entry: Omit<LogEntry, "id" | "cycle">): void {
-  const line: LogEntry = { id: state.nextLogId++, cycle: state.cycle, ...entry };
+  if (entry.room !== undefined && isDefaced(state, entry.room)) return;
+  const line: LogEntry = { id: state.nextLogId++, cycle: state.cycle, ...ninjaMasked(state, entry) };
   state.log.push(line);
   for (const p of state.players) if (seesLine(line, p)) p.logSeen += 1;
+}
+
+/** The notice a defaced room shows for the rest of the cycle (Defacer, `deface`). */
+export const DELOGGED_KEY = "delogged";
+
+/** Whether `room` is defaced this cycle (Defacer): nothing is written there until the cycle ends. */
+export function isDefaced(state: Readonly<GameState>, room: RoomId): boolean {
+  return state.deloggedRooms.includes(room);
+}
+
+/**
+ * Defacer's Clear the logs (owner, 2026-11-22, as in eMush): erases every line in `room`, whoever could see it
+ * (private ones too), writes the public `delogged` notice, and drops every line written there until the cycle ends
+ * (`pushLog`), private ones and death lines included. The notice is not Nimble's or a ninja's to change. The record
+ * keeps every line. Mutates a state the caller already cloned.
+ */
+export function deface(state: GameState, room: RoomId): void {
+  if (isDefaced(state, room)) return; // nothing but the notice is there
+  state.log = state.log.filter((e) => e.room !== room);
+  pushLog(state, { key: DELOGGED_KEY, room, visibleTo: "all" });
+  state.deloggedRooms.push(room);
+}
+
+/** As a cycle begins: defaced rooms record again, and their notice goes (eMush hides it then). Mutates a state the caller already cloned. */
+export function endDefacing(state: GameState): void {
+  if (state.deloggedRooms.length === 0) return;
+  const rooms = new Set(state.deloggedRooms);
+  state.log = state.log.filter((e) => !(e.key === DELOGGED_KEY && e.room !== undefined && rooms.has(e.room)));
+  state.deloggedRooms = [];
 }
 
 /**
@@ -89,6 +119,45 @@ export function startLogSeen(state: Readonly<GameState>, p: PlayerState): void {
 }
 
 let nimbleActorId: PlayerId | null = null;
+let ninjaActorId: PlayerId | null = null;
+
+/** The sentinel a ninja's name becomes in a log line's character params; the client shows it as "Someone". */
+export const SOMEONE = "someone";
+
+/** The log params that name a character (the client's `logLine` resolves the same ones). */
+const CHARACTER_PARAMS = ["name", "target", "body"] as const;
+
+/**
+ * Runs `fn` with `actor` acting as a ninja (Ninja, owner 2026-11-22), or `null` for no one: every room line written
+ * meanwhile that anyone besides the actor can see names them `SOMEONE` instead (`ninjaMasked`). Ship-wide lines keep
+ * their name, as NERON's do in eMush.
+ */
+export function withNinjaActor<T>(actor: PlayerId | null, fn: () => T): T {
+  const prev = ninjaActorId;
+  ninjaActorId = actor;
+  try {
+    return fn();
+  } finally {
+    ninjaActorId = prev;
+  }
+}
+
+/** Runs `fn` as no one's action: neither Nimble nor Ninja applies to a death line or a line about someone pushed along. */
+export function withoutActor<T>(fn: () => T): T {
+  return withNimbleActor(null, () => withNinjaActor(null, fn));
+}
+
+/** `entry` with the acting ninja's character params replaced by `SOMEONE`, when it is a room line someone else may see. */
+function ninjaMasked(state: Readonly<GameState>, entry: Omit<LogEntry, "id" | "cycle">): Omit<LogEntry, "id" | "cycle"> {
+  if (ninjaActorId === null || entry.room === undefined || !entry.params) return entry;
+  const actor = ninjaActorId;
+  if (entry.visibleTo !== "all" && entry.visibleTo.every((id) => id === actor)) return entry;
+  const character = state.players.find((p) => p.id === actor)?.character;
+  if (!CHARACTER_PARAMS.some((k) => entry.params![k] === character)) return entry;
+  const params = { ...entry.params };
+  for (const k of CHARACTER_PARAMS) if (params[k] === character) params[k] = SOMEONE;
+  return { ...entry, params };
+}
 
 /**
  * Runs `fn` with `actor` marked as acting in Nimble mode (or `null` to suspend Nimble mode for a nested action or

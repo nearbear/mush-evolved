@@ -10,7 +10,7 @@ import { gravityCycle } from "./gravity.ts";
 import { expirePlans, plansView, strikeSlots } from "./plans.ts";
 import { bindPerformAction } from "./actions/summon.ts";
 import { applyCheats, makeHuman, shipInvincible, type Cheat, type RoleCheat } from "./cheats.ts";
-import { ACTIONS, actionVisibility, type ActionDef } from "./actions.ts";
+import { ACTIONS, type ActionCost, actionVisibility, type ActionDef } from "./actions.ts";
 import { ARACK_AROUND, AT_CAPACITY, BROKEN, COOLDOWN, DIRTY, EXPLORED, ICARUS_LOST, IN_PRESELECTION, NO_DEBRIS, NO_SPACE, PASIPHAE_INTACT, REACTOR_BROKEN } from "./actions/action.ts";
 import { getUp } from "./actions/lie_down.ts";
 import { ANTISOCIAL } from "./actions/bond.ts";
@@ -19,6 +19,7 @@ import { FEW_FRAGMENTS } from "./actions/compute_eden.ts";
 import { LIST_PRINTED, MUSH_NOT_SELECTED } from "./actions/print_list.ts";
 import { LISTENED_TODAY, NOT_YOUR_SONG } from "./actions/listen_jukebox.ts";
 import { isNimble } from "./actions/nimble.ts";
+import { isNinja } from "./actions/ninja.ts";
 import { researchNeedsView } from "./actions/research.ts";
 import { equipmentHere, JUKEBOX_EQUIPMENT } from "./equipment.ts";
 import { songAt } from "./jukebox.ts";
@@ -55,7 +56,7 @@ import { clone, cloneState, dayOf, fail, findPlayer, type ActionResult } from ".
 
 export { dayOf };
 import { damage, healDaily, hasMushDied } from "./death.ts";
-import { activitySeen, inLogWindow, logPrivate, logWindowOf, moveLineFor, pruneLog, seesLine, startLogSeen, withNimbleActor } from "./log.ts";
+import { activitySeen, endDefacing, inLogWindow, logPrivate, logWindowOf, moveLineFor, pruneLog, seesLine, startLogSeen, withNimbleActor, withNinjaActor } from "./log.ts";
 import { recordAction } from "./history.ts";
 import { ringMycoAlarms } from "./mycoalarm.ts";
 import { triggerRoomTrap, willTriggerRoomTrap } from "./traps.ts";
@@ -206,12 +207,14 @@ export function createGame(
     signals: newSignals(),
     turrets: {},
     incidentPoints: 0,
+    apSpentToday: 0,
     doors: {},
     fires: [],
     ceasefires: {},
     reports: [],
     pendingFires: [],
     trappedRooms: [],
+    deloggedRooms: [],
     gravityRestarting: false,
     eden: { computed: false },
     failureStreaks: {},
@@ -456,6 +459,16 @@ function viewActionOptions(state: GameState, p: PlayerState): ActionOption[] {
   return [...legal, ...unaffordable];
 }
 
+/**
+ * The AP an action adds to the crew's day (`apSpentToday`, #241): its AP price, or for one paid with a skill point, the
+ * AP it would have cost without one (owner, 2026-11-22, the wiki's rule; eMush counts only real AP).
+ */
+function apCounted(state: Readonly<GameState>, actor: Readonly<PlayerState>, def: ActionDef<Action>, action: Action, cost: ActionCost): number {
+  if (!cost.paidBy) return Math.round(cost.ap);
+  const unpaid = { ...actor, resources: { ...actor.resources, [cost.paidBy]: 0 } };
+  return Math.round(def.cost(state, unpaid, action).ap);
+}
+
 /** Does an action at once, skipping the queue and its timing (queue.ts is how players act; this is its last step). */
 export function applyAction(state: GameState, playerId: PlayerId, action: Action): ActionResult {
   const p = findPlayer(state, playerId);
@@ -478,6 +491,7 @@ export function performAction(next: GameState, actor: PlayerState, action: Actio
   const dirtyChance = def.dirtChanceMods(next, actor, action);
   const injuryChance = def.injuryChanceMods(next, actor, action);
   if (def.timed && action.type !== "lie_down") getUp(actor);
+  next.apSpentToday += apCounted(next, actor, def, action, cost);
   actor.ap -= cost.ap;
   actor.mp -= cost.mp;
   if (cost.paidBy) actor.resources[cost.paidBy] -= 1;
@@ -498,7 +512,7 @@ export function performAction(next: GameState, actor: PlayerState, action: Actio
       def.apply(next, actor, action, cost);
     }
   };
-  withNimbleActor(isNimble(actor) ? actor.id : null, run);
+  withNinjaActor(isNinja(actor) ? actor.id : null, () => withNimbleActor(isNimble(actor) ? actor.id : null, run));
   if (triggersTrap && actor.alive) triggerRoomTrap(next, actor, room);
   knockOffTarget(next, def, action);
   // After apply, so an action that reveals your own history (Chitchat) doesn't show itself.
@@ -623,6 +637,7 @@ function advanceCycle(state: GameState, at?: number): void {
   // The ending cycle's Hopeless humans die first, so anyone this cycle change takes to 0 gets a full cycle (morale.ts).
   hopelessCycle(state);
   state.cycle += 1;
+  endDefacing(state);
   pruneLog(state);
   for (const p of state.players) {
     changeAP(state, p, apRefill(state, p));
@@ -659,6 +674,7 @@ function advanceCycle(state: GameState, at?: number): void {
       delete p.doormanToday;
       delete p.chitchatToday;
       delete p.interrogatedToday;
+      delete p.delogToday;
       delete p.snoopedToday;
       delete p.mycoscannedToday;
       p.cpuPriorityChangedToday = false;
@@ -697,6 +713,8 @@ function advanceCycle(state: GameState, at?: number): void {
   npcCycle(state);
   preselectionCycle(state);
   strikeSlots(state);
+  // After hunters and incidents, so a new day's first cycle change still weighs the whole day before (#241, as eMush).
+  if (newDay) state.apSpentToday = 0;
 }
 
 /** Day-start care, Computer and PILGRED points: every living player gains what their skills grant (Computer and PILGRED points stop at their caps). Mutates a state the caller already cloned. */
@@ -882,8 +900,9 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
         ...(contamination !== undefined ? { contamination } : {}),
         // Mush know who the other Mush are, living or dead (owner, 2026-11-21); humans never learn it from the view.
         ...(you.role === "mush" && o.role === "mush" ? { mush: true as const } : {}),
-        // A busy bar, never the action: only when its log entry could reach you.
-        ...(here && o.current && activitySeen(state, room, actionVisibility(o.current.action.type, o), o)
+        // A busy bar, never the action: only when its log entry could reach you, and never on a ninja, whose lines
+        // say "Someone" (owner, 2026-11-22): the bar ending as the line appears would name them.
+        ...(here && o.current && !isNinja(o) && activitySeen(state, room, actionVisibility(o.current.action.type, o), o)
           ? { busy: { since: o.current.since, until: o.current.until } }
           : {}),
       };

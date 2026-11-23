@@ -250,6 +250,18 @@
       "resistance": "Résistance (immunisé contre les spores pendant 2 cycles)",
       "perception": "Perception (+10 % de chances de réussite aux actions pendant 2 cycles)"
     },
+    "fruitBuffNames": {
+      "treat_disease": "Soin des maladies",
+      "energize": "Énergisant",
+      "resistance": "Résistance",
+      "perception": "Perception"
+    },
+    "fruitBuffTips": {
+      "treat_disease": "Les maladies guérissent d'un cycle de plus par cycle pendant 4 cycles.",
+      "energize": "+2 PM par conversion de PA pendant 2 cycles.",
+      "resistance": "Immunisé contre les spores pendant 2 cycles.",
+      "perception": "+10 % de chances de réussite aux actions pendant 2 cycles."
+    },
     "fruitDiseaseOdds": "{{disease}} ({{percent}} %)",
     "fruitGrowCycles_one": "Maturation : {{count}} cycle",
     "fruitGrowCycles_many": "Maturation : {{count}} cycles",
@@ -420,6 +432,9 @@
     "stopGuarding": "Cesser de garder",
     "enterNimble": "Passer en mode agile",
     "exitNimble": "Quitter le mode agile",
+    "becomeNinja": "Devenir un ninja",
+    "becomeNormal": "Redevenir banal",
+    "delog": "Effacer les logs",
     "accommodate": "Pousser le fauteuil",
     "acceptAccommodation": "Accepter l'aide",
     "stopAccommodation": "Mettre fin à l'aide",
@@ -837,9 +852,7 @@
       "placeholder": "Discuter de cette planète…"
     },
     "sharedPlants": {
-      "title": "État partagé de la serre",
-      "show": "Afficher",
-      "hide": "Masquer"
+      "title": "Hydroponie"
     },
     "sharedPilgred": {
       "title": "Progression partagée de PILGRED"
@@ -967,6 +980,7 @@
     "focused": "Concentré",
     "hopeless": "Sans espoir",
     "nimble": "Agile",
+    "ninja": "Ninja",
     "pregnant": "Enceinte",
     "contaminated": "Contamination : {{level}}",
     "desc": {
@@ -1051,6 +1065,7 @@
       "contaminated": "Un humain que vous avez contaminé. À sa capacité maximale, il devient Mush.",
       "hopeless": "À 0 de moral. Tout gain de moral y met fin. Un humain encore Sans espoir à la fin du cycle meurt.",
       "nimble": "Toutes vos actions publiques dans une salle (déplacements compris) deviennent secrètes. Vous seul voyez cet état.",
+      "ninja": "Toutes vos actions sont anonymes : les logs de la salle vous nomment « Quelqu'un ». Vous seul voyez cet état.",
       "pregnant": "Attend un enfant. Si ce coéquipier meurt, chaque membre vivant de l'équipage perd 2 points de moral."
     }
   },
@@ -1229,6 +1244,10 @@
     "stoppedGuarding": "{{name}} a cessé de garder la salle.",
     "enteredNimble": "Vous êtes passé en mode agile.",
     "exitedNimble": "Vous avez quitté le mode agile.",
+    "becameNinja": "Vous êtes maintenant un ninja : vos actions sont anonymes.",
+    "becameNormal": "Vous n'êtes plus un ninja.",
+    "delogged": "Les archives sont toutes brouillées… Qui a fait mumuse avec les senseurs encore !?",
+    "someone": "quelqu'un",
     "interrogated": "{{name}} a interrogé {{target}}.",
     "chitchatted": "{{name}} a papoté avec {{target}}.",
     "comforted": "{{name}} a réconforté {{target}}.",
@@ -1742,9 +1761,9 @@
       "infantryman": "Double vos chances de toucher aux tourelles.\n+1 Shoot par jour.\nCommence la partie avec un Blaster customisé.",
       "maintenance_agent": "Chaque jour : +1 point de Réparation, +1 point de Jardinage et +1 point de Cuisine.",
       "pyromane": "Pour 4 PA vous pouvez déclencher un Incendie dans une salle.",
-      "tough": "Chaque dégât de combat qui vous est infligé est réduit d'un point.",
+      "tough": "Chaque coup de poing ou coup d'arme non critique que vous subissez est réduit de 1, sans descendre sous 1. Sans effet en expédition.",
       "fertile": "Chaque jour, vous pouvez générer un spore gratuitement.",
-      "ninja": "Vos attaques de corps-à-corps deviennent des actions anonymes.",
+      "ninja": "Débloque l'action Devenir un ninja. Quand vous agissez comme un ninja, toutes vos actions sont anonymes : les logs de la salle vous nomment « Quelqu'un ». Sauf en expédition.",
       "sapper": "Vos chances de succès pour le Sabotage d'équipement ou d'objets sont triplées.",
       "nimble_fingers": "Vous permet d'entrer et de sortir du mode agile pour 0 PA. En mode agile, toutes vos actions publiques dans une salle (déplacements compris) deviennent secrètes.",
       "water_resistant": "Se doucher ne vous fait perdre aucun PV et coûte 1 PA au plus, avec ou sans savon.",
@@ -1767,7 +1786,7 @@
       "nerondepress": "Pour 3 PA, Vous pouvez embrouiller NERON au prochain cycle ce qui modifie aléatoirement ses réglages.\nNe fonctionne pas sur l'entrave DMZ si elle est bloquée.",
       "slimetrap": "Pour 1 PA, le joueur ciblé deviendra sale dans 1 à 4 cycles.",
       "electro_slime": "Pour 1 PA, vous pouvez provoquer la casse d' un objet electroniques. Celui-ci mettra plusieurs cycles avant de se dégrader.",
-      "defacer": "Une fois par jour. Pour 2 PA, vous pouvez effacer tous les logs d'une salle. L'enregistrement des logs se fera à nouveau à partir du prochain cycle."
+      "defacer": "Débloque l'action Effacer les logs : une fois par jour, pour 2 PA, effacez tous les logs d'une salle. Rien n'y est enregistré jusqu'au prochain cycle, et NERON n'y annonce pas les morts. Sauf en expédition."
     }
   },
   "drugDispenser": {

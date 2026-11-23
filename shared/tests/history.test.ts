@@ -39,10 +39,10 @@ describe("action history", () => {
     expect(player(s, "p0").history).toEqual(["fiery_speech", "punch", "punch"]);
   });
 
-  it("leaves out moving, taking and dropping, Examine, BIOS changes, accessing a terminal, ending the cycle, picking a skill, Premonition, plan actions and the Traitor's expedition Sabotage", () => {
+  it("leaves out moving, taking and dropping, Examine, BIOS changes, accessing a terminal, ending the cycle, picking a skill, Premonition, Ninja mode, plan actions and the Traitor's expedition Sabotage", () => {
     const unrecorded = Object.entries(ACTIONS).filter(([, def]) => !def.recorded).map(([type]) => type).sort();
     // Plan actions (claim, withdraw, Done, cancel, summon) are channel business, not something your character does.
-    expect(unrecorded).toEqual(["access", "cancel_plan", "claim_slot", "drop", "examine", "mark_done", "move", "pick_skill", "premonition", "ready", "sabotage_expedition", "set_bios", "summon", "take", "warp_to_planet", "withdraw_slot"]);
+    expect(unrecorded).toEqual(["access", "become_ninja", "become_normal", "cancel_plan", "claim_slot", "drop", "examine", "mark_done", "move", "pick_skill", "premonition", "ready", "sabotage_expedition", "set_bios", "summon", "take", "warp_to_planet", "withdraw_slot"]);
     const s = ship("leadership");
     const move = offered(s, "p0").find((a) => a.type === "move")!;
     expect(player(mustApply(s, "p0", move), "p0").history).toEqual([]);

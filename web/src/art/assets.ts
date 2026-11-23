@@ -247,10 +247,14 @@ export const BIN_ICON = urls(
   import.meta.glob<string>("../../../Mush/www/img/icons/ui/bin.png", { eager: true, query: "?url", import: "default" }),
 )["bin"]!;
 
+const paSlots = urls(
+  import.meta.glob<string>("../../../Mush/www/img/icons/ui/pa_slot{1,2}.png", { eager: true, query: "?url", import: "default" }),
+);
 /** Blue gem with a pink core, drawn beside an action's label. */
-export const ACTION_ICON = urls(
-  import.meta.glob<string>("../../../Mush/www/img/icons/ui/pa_slot1.png", { eager: true, query: "?url", import: "default" }),
-)["pa_slot1"]!;
+export const ACTION_ICON = paSlots["pa_slot1"]!;
+/** The action point and movement point slot gems (pink and cyan), as icons beside an amount. */
+export const AP_SLOT_ICON = paSlots["pa_slot1"]!;
+export const MP_SLOT_ICON = paSlots["pa_slot2"]!;
 
 /** Marks a warning in the room log: a secret or covert action that got out, or an alarm. */
 export const WARNING_ICON = urls(
@@ -358,7 +362,7 @@ const injuryStatusIcons = Object.fromEntries(DEFAULT_CONFIG.diseases.allInjuries
 // Mankind's Only Hope has no status icon in the original (it was a skill there), so its skill icon stands in;
 // Bodyguard's statuses (protecting/protected) use Bodyguard's brick-wall skill icon (`unconcerned.png`).
 const traitSkillIcons = urls(
-  import.meta.glob<string>("../../../Mush/www/img/icons/skills/{mankind_only_hope,unconcerned,nimble_fingers,nightmare}.png", { eager: true, query: "?url", import: "default" }),
+  import.meta.glob<string>("../../../Mush/www/img/icons/skills/{mankind_only_hope,unconcerned,nimble_fingers,ninja,nightmare}.png", { eager: true, query: "?url", import: "default" }),
 );
 export const STATUS_ICONS: Readonly<Record<string, string>> = {
   ...diseaseStatusIcons,
@@ -395,6 +399,8 @@ export const STATUS_ICONS: Readonly<Record<string, string>> = {
   hopeless: statusIconFiles["demoralized"]!,
   // Nimble mode (Nimble Fingers): reuses the Nimble Fingers skill icon.
   nimble: traitSkillIcons["nimble_fingers"]!,
+  // Ninja mode (Ninja): reuses the Ninja skill icon.
+  ninja: traitSkillIcons["ninja"]!,
   pregnant: statusIconFiles["pregnant"]!,
 };
 /**
@@ -448,6 +454,15 @@ delete skillIcons["crazy_eye"];
 // Epigenetics takes Defacer's icon; Defacer falls back to the empty-slot icon.
 skillIcons["epigenetics"] = skillIcons["defacer"]!;
 delete skillIcons["defacer"];
+// Mass Mushification (massggedon) takes Slime Trap's icon, Bacteriophilia takes Mass Mushification's, and Defacer
+// takes Bacteriophilia's; Slime Trap falls back to the empty-slot icon.
+{
+  const [slimetrap, massggedon, bacterial] = [skillIcons["slimetrap"]!, skillIcons["massggedon"]!, skillIcons["bacterial_contact"]!];
+  skillIcons["massggedon"] = slimetrap;
+  skillIcons["bacterial_contact"] = massggedon;
+  skillIcons["defacer"] = bacterial;
+  delete skillIcons["slimetrap"];
+}
 export const skillIcon = (id: string): string => skillIcons[id] ?? EMPTY_SLOT_ICON;
 /** Green jelly on an item or equipment, as Mush see it: the Electro-slime skill's icon. */
 export const JELLY_ICON = skillIcons["electro_slime"]!;

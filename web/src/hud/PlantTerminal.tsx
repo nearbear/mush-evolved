@@ -1,6 +1,5 @@
 // The Hydroponics center (`PLANT_CONTROLLER`) terminal window (owner, 2026-11-21): displays planted hydropots on the
-// greenhouse floor as a vertical list — each row showing (icon + name stacked) -> effects stacked -> statuses stacked —
-// and lets a living player with an iTrackie share an editable status snapshot to the Botany feature tab.
+// greenhouse floor as a list of `PlantStatusRow`s, and lets a living player with an iTrackie share an editable status snapshot to the Botany feature tab.
 
 import {
   isAlienFruitType,
@@ -18,9 +17,11 @@ import {
 import { useEffect, useId, useRef, useState } from "react";
 import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
-import { AP_PIP, HP_ICON, itemIcon, MORALE_ICON, MP_PIP, PLANT_ICONS, SATIETY_ICON } from "../art/assets.ts";
+import { itemIcon } from "../art/assets.ts";
 import { useNames } from "../i18n/names.ts";
 import { isMushOnlyFruitLore } from "./ConsumeEffects.tsx";
+import { fruitBuffNote, PlantStatusRow, type PlantNote } from "./PlantStatusRow.tsx";
+import { consumeDeltas, signedAmount, type StatDelta } from "./StatAmount.tsx";
 import { TerminalCollapsible } from "./TerminalCollapsible.tsx";
 
 const FRUIT_BUFF_KEYS = {
@@ -43,17 +44,7 @@ function prefillEffects(species: string, view: PlayerView, t: TFunction): string
   const isAlien = isAlienFruitType(species);
   const fruit = isAlien ? view.fruitEffects?.[species] : undefined;
   if (isAlien && !fruit) return "";
-  const lines: string[] = [];
-  const stats: [number | undefined, string][] = [
-    [consume.ap + (fruit?.ap ?? 0), t("stat.ap")],
-    [consume.mp ?? 0, t("stat.mp")],
-    [consume.satiety, t("itemAttr.satiety")],
-    [(consume.morale ?? 0) + (fruit?.morale ?? 0), t("stat.morale")],
-    [(consume.hp ?? 0) + (fruit?.hp ?? 0), t("stat.hp")],
-  ];
-  for (const [n, label] of stats) {
-    if (n) lines.push(`${n > 0 ? "+" : "−"}${Math.abs(n)} ${label}`);
-  }
+  const lines = consumeDeltas(species, view).map(({ stat, amount }) => `${signedAmount(amount)} ${t(`stat.${stat}`)}`);
   if (fruit) {
     for (const buff of fruit.buffs) lines.push(t(FRUIT_BUFF_KEYS[buff]));
     for (const d of fruit.diseases) {
@@ -68,89 +59,26 @@ function prefillEffects(species: string, view: PlayerView, t: TFunction): string
   return lines.join("\n").slice(0, MAX_SHARED_PLANT_EFFECTS_LENGTH);
 }
 
-/** Stacked effects for a live plant in the terminal, respecting the viewer's fruit lore visibility. */
-function LivePlantEffects({ species, view }: { species: string; view: PlayerView }) {
-  const { t } = useTranslation();
-  const consume = ITEM_TYPES[species]?.consume;
-  if (!consume) return null;
+/** What a live plant's fruit does, as `PlantStatusRow` reads it, respecting the viewer's fruit lore. */
+function liveEffects(species: string, view: PlayerView, t: TFunction): { resources: StatDelta[]; notes: PlantNote[]; unknown: boolean } {
   const isAlien = isAlienFruitType(species);
   const fruit = isAlien ? view.fruitEffects?.[species] : undefined;
-  if (isAlien && !fruit) {
-    return <p className="plant-status-unknown">{t("botanyTerminal.effectsUnknown")}</p>;
-  }
-  const stats: [number | undefined, string, string][] = [
-    [consume.ap + (fruit?.ap ?? 0), AP_PIP, t("stat.ap")],
-    [consume.mp ?? 0, MP_PIP, t("stat.mp")],
-    [consume.satiety, SATIETY_ICON, t("itemAttr.satiety")],
-    [(consume.morale ?? 0) + (fruit?.morale ?? 0), MORALE_ICON, t("stat.morale")],
-    [(consume.hp ?? 0) + (fruit?.hp ?? 0), HP_ICON, t("stat.hp")],
+  if (isAlien && !fruit) return { resources: [], notes: [], unknown: true };
+  const notes: PlantNote[] = [
+    ...(fruit?.buffs ?? []).map((buff) => fruitBuffNote(buff, t)),
+    ...(fruit?.diseases ?? []).map((d) => ({
+      text: t("inspect.fruitDiseaseOdds", {
+        disease: t(`status.${d.id}` as never, { defaultValue: t(d.id as never, { defaultValue: d.id }) }),
+        percent: Math.round(d.odds * 100),
+      }),
+    })),
+    ...(fruit && isMushOnlyFruitLore(view) ? [{ text: t("inspect.fruitMushWarning"), danger: true }] : []),
   ];
-  const shown = stats.filter(([n]) => n);
-  const mushWarning = fruit ? isMushOnlyFruitLore(view) : false;
-  return (
-    <ul className="plant-status-effects">
-      {shown.map(([n, icon, label]) => (
-        <li key={label} className="plant-status-effect-stat">
-          <img src={icon} alt="" />
-          <span>{`${n! > 0 ? "+" : "−"}${Math.abs(n!)} ${label}`}</span>
-        </li>
-      ))}
-      {fruit?.buffs.map((buff) => (
-        <li key={buff} className="plant-status-effect-buff">
-          {t(FRUIT_BUFF_KEYS[buff])}
-        </li>
-      ))}
-      {fruit?.diseases.map((d) => (
-        <li key={d.id} className="plant-status-effect-disease">
-          {t("inspect.fruitDiseaseOdds", {
-            disease: t(`status.${d.id}`, { defaultValue: t(d.id as never, { defaultValue: d.id }) }),
-            percent: Math.round(d.odds * 100),
-          })}
-        </li>
-      ))}
-      {mushWarning && <li className="consume-mush-warning">{t("inspect.fruitMushWarning")}</li>}
-    </ul>
-  );
-}
-
-/** Stacked statuses for a live or shared plant. */
-export function PlantStatusLines({ thirst, sickCycles, young }: { thirst: 0 | 1 | 2; sickCycles: number | null; young: boolean }) {
-  const { t } = useTranslation();
-  const needsAttention = thirst > 0 || sickCycles !== null;
-  return (
-    <ul className="plant-status-states">
-      {sickCycles !== null && (
-        <li className="plant-status-state plant-status-sick">
-          <img src={PLANT_ICONS.sick} alt="" />
-          <span>{t("botanyTerminal.diseasedFor", { count: sickCycles })}</span>
-        </li>
-      )}
-      {thirst === 1 && (
-        <li className="plant-status-state plant-status-thirsty">
-          <img src={PLANT_ICONS.thirsty} alt="" />
-          <span>{t("itemAttr.thirsty")}</span>
-        </li>
-      )}
-      {thirst === 2 && (
-        <li className="plant-status-state plant-status-dried">
-          <img src={PLANT_ICONS.dried} alt="" />
-          <span>{t("botanyTerminal.driedOut")}</span>
-        </li>
-      )}
-      {!needsAttention && <li className="plant-status-state plant-status-healthy">{t("botanyTerminal.healthy")}</li>}
-      {young && (
-        <li className="plant-status-state plant-status-young">
-          <img src={PLANT_ICONS.young} alt="" />
-          <span>{t("itemAttr.young")}</span>
-        </li>
-      )}
-    </ul>
-  );
+  return { resources: consumeDeltas(species, view), notes, unknown: false };
 }
 
 export function PlantTerminal({ terminal, view, onShare }: Props) {
   const { t } = useTranslation();
-  const names = useNames();
   const [sharing, setSharing] = useState(false);
   const refocusShare = useRef(false);
 
@@ -194,24 +122,18 @@ export function PlantTerminal({ terminal, view, onShare }: Props) {
       ) : (
         <ul className="plant-status-list" aria-label={t("botanyTerminal.listLabel")}>
           {planted.map(({ id, plant }) => {
-            const icon = itemIcon(plant.species);
+            const { resources, notes, unknown } = liveEffects(plant.species, view, t);
             return (
-              <li key={id} className="plant-status-row">
-                <div className="plant-status-head">
-                  {icon && <img className="plant-status-icon" src={icon} alt="" />}
-                  <strong className="plant-status-name">{names.item(plant.species)}</strong>
-                </div>
-                <div className="plant-status-col">
-                  <LivePlantEffects species={plant.species} view={view} />
-                </div>
-                <div className="plant-status-col">
-                  <PlantStatusLines
-                    thirst={plant.thirst}
-                    sickCycles={plant.sick ? (plant.sickCycles ?? 1) : null}
-                    young={plant.age !== null}
-                  />
-                </div>
-              </li>
+              <PlantStatusRow
+                key={id}
+                species={plant.species}
+                thirst={plant.thirst}
+                sickCycles={plant.sick ? (plant.sickCycles ?? 1) : null}
+                young={plant.age !== null}
+                resources={resources}
+                notes={notes}
+                unknown={unknown ? t("botanyTerminal.effectsUnknown") : undefined}
+              />
             );
           })}
         </ul>

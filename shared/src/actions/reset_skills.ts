@@ -35,6 +35,7 @@ export class ResetSkillsAction extends Action<ResetSkillsActionData> {
   override apply(_state: GameState, player: PlayerState): void {
     player.mushSkills = player.mushSkills.filter((s) => s === "epigenetics");
     removeStatus(player, "nimble");
+    removeStatus(player, "ninja");
     player.epigeneticsUsed = true;
   }
 }

@@ -245,6 +245,18 @@
       "resistance": "Resistance (immune to spores for 2 cycles)",
       "perception": "Perception (+10% action success chance for 2 cycles)"
     },
+    "fruitBuffNames": {
+      "treat_disease": "Treat Disease",
+      "energize": "Energize",
+      "resistance": "Resistance",
+      "perception": "Perception"
+    },
+    "fruitBuffTips": {
+      "treat_disease": "Diseases heal 1 cycle faster per cycle for 4 cycles.",
+      "energize": "+2 MP per AP conversion for 2 cycles.",
+      "resistance": "Immune to spores for 2 cycles.",
+      "perception": "+10% action success chance for 2 cycles."
+    },
     "fruitDiseaseOdds": "{{disease}} ({{percent}}%)",
     "fruitGrowCycles_one": "Maturation: {{count}} cycle",
     "fruitGrowCycles_other": "Maturation: {{count}} cycles",
@@ -408,6 +420,9 @@
     "stopGuarding": "Stop guarding",
     "enterNimble": "Enter Nimble mode",
     "exitNimble": "Exit Nimble mode",
+    "becomeNinja": "Become a ninja",
+    "becomeNormal": "Become normal again",
+    "delog": "Clear the logs",
     "accommodate": "Accommodate",
     "acceptAccommodation": "Accept accommodation",
     "stopAccommodation": "End accommodation",
@@ -510,7 +525,7 @@
     "repairHull": "Reinforce the hull",
     "bodyTransfer": "Transfer",
     "resetSkills": "Reset Mush skills",
-    "massMouldering": "Mass Mouldering",
+    "massMouldering": "Mass Mushification",
     "tubeTransfer": "Send through tube",
     "consumeSpore": "Devour a spore",
     "fungalCuisine": "Fungal cuisine",
@@ -821,9 +836,7 @@
       "placeholder": "Discuss this planet…"
     },
     "sharedPlants": {
-      "title": "Shared greenhouse status",
-      "show": "Show",
-      "hide": "Hide"
+      "title": "Hydroponics"
     },
     "sharedPilgred": {
       "title": "Shared PILGRED progress"
@@ -947,6 +960,7 @@
     "contaminated": "Contamination: {{level}}",
     "hopeless": "Hopeless",
     "nimble": "Nimble",
+    "ninja": "Ninja",
     "pregnant": "Pregnant",
     "desc": {
       "dirty": "Can't research. Taking a shower removes it.",
@@ -1030,6 +1044,7 @@
       "contaminated": "A human you have contaminated. At their capacity they turn Mush.",
       "hopeless": "At 0 morale. Any morale gain ends it. A human still Hopeless when the cycle ends dies.",
       "nimble": "All of your room-level public actions (including movement) become secret. Only you can see this status.",
+      "ninja": "All of your actions are anonymous: room logs name you \"Someone\". Only you can see this status.",
       "pregnant": "Expecting a child. If this crewmate dies, every living crewmate loses 2 morale."
     }
   },
@@ -1205,6 +1220,10 @@
     "stoppedGuarding": "{{name}} stopped guarding the room.",
     "enteredNimble": "You entered Nimble mode.",
     "exitedNimble": "You exited Nimble mode.",
+    "becameNinja": "You are now a ninja: your actions are anonymous.",
+    "becameNormal": "You are no longer a ninja.",
+    "delogged": "The logs are all scrambled... Who has been messing with the sensors again!?",
+    "someone": "someone",
     "interrogated": "{{name}} interrogated {{target}}.",
     "chitchatted": "{{name}} chitchatted with {{target}}.",
     "comforted": "{{name}} comforted {{target}}.",
@@ -1640,7 +1659,7 @@
       "trapper": "Trapper",
       "mycellium_spirit": "Mycelium Spirit",
       "anonymous": "Anonymush",
-      "massggedon": "Mass Mouldering",
+      "massggedon": "Mass Mushification",
       "nerondepress": "NERON's Depression",
       "slimetrap": "Slime Trap",
       "electro_slime": "Green Jelly",
@@ -1807,9 +1826,9 @@
       "infantryman": "Doubles your chance to hit with turrets.\n+1 Shoot point per day.\nStarts the game with a customized Blaster.",
       "maintenance_agent": "You gain +1 Repair action point, +1 Gardening action point and +1 Cook action point per day.",
       "pyromane": "For 4 AP you can start a Fire in a room.",
-      "tough": "Each point of combat damage dealt to you is reduced by one.",
+      "tough": "Each non-critical punch or weapon hit you take is reduced by 1, but never below 1. Doesn't apply on expeditions.",
       "fertile": "Each day, you can create a spore for free.",
-      "ninja": "Your melee attacks become anonymous actions.",
+      "ninja": "Unlocks Become a ninja. While a ninja, all of your actions are anonymous: room logs name you \"Someone\". Not on an expedition.",
       "sapper": "Your chances of success when Sabotaging equipment or items are tripled.",
       "nimble_fingers": "Allows you to enter and exit Nimble mode for 0 AP. In Nimble mode, all of your room-level public actions (including movement) become secret.",
       "water_resistant": "Taking a shower doesn't cost you any HP, and costs 1 AP at most, soap or not.",
@@ -1832,7 +1851,7 @@
       "nerondepress": "For 3 AP, you can confuse NERON next cycle, which changes its settings at random.\nDoesn't work on the DMZ restriction if it is locked.",
       "slimetrap": "For 1 AP, the targeted player will become dirty in 1 to 4 cycles.",
       "electro_slime": "For 1 AP, you can make an electronic item break. It takes several cycles to break down.",
-      "defacer": "Once a day. For 2 AP, you can erase all of a room's logs. Logs are recorded again from the next cycle."
+      "defacer": "Unlocks Clear the logs: once a day, for 2 AP, erase all of a room's logs. Nothing is recorded there until the next cycle, and NERON doesn't announce a death there. Not on an expedition."
     }
   },
   "drugDispenser": {
