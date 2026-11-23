@@ -452,6 +452,15 @@ delete skillIcons["crazy_eye"];
 // Epigenetics takes Defacer's icon; Defacer falls back to the empty-slot icon.
 skillIcons["epigenetics"] = skillIcons["defacer"]!;
 delete skillIcons["defacer"];
+// Mass Mushification (massggedon) takes Slime Trap's icon, Bacteriophilia takes Mass Mushification's, and Defacer
+// takes Bacteriophilia's; Slime Trap falls back to the empty-slot icon.
+{
+  const [slimetrap, massggedon, bacterial] = [skillIcons["slimetrap"]!, skillIcons["massggedon"]!, skillIcons["bacterial_contact"]!];
+  skillIcons["massggedon"] = slimetrap;
+  skillIcons["bacterial_contact"] = massggedon;
+  skillIcons["defacer"] = bacterial;
+  delete skillIcons["slimetrap"];
+}
 export const skillIcon = (id: string): string => skillIcons[id] ?? EMPTY_SLOT_ICON;
 /** Green jelly on an item or equipment, as Mush see it: the Electro-slime skill's icon. */
 export const JELLY_ICON = skillIcons["electro_slime"]!;
