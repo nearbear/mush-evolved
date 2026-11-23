@@ -820,9 +820,7 @@
       "placeholder": "Discuss this planet…"
     },
     "sharedPlants": {
-      "title": "Shared greenhouse status",
-      "show": "Show",
-      "hide": "Hide"
+      "title": "Hydroponics"
     },
     "sharedPilgred": {
       "title": "Shared PILGRED progress"

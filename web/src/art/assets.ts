@@ -247,10 +247,14 @@ export const BIN_ICON = urls(
   import.meta.glob<string>("../../../Mush/www/img/icons/ui/bin.png", { eager: true, query: "?url", import: "default" }),
 )["bin"]!;
 
+const paSlots = urls(
+  import.meta.glob<string>("../../../Mush/www/img/icons/ui/pa_slot{1,2}.png", { eager: true, query: "?url", import: "default" }),
+);
 /** Blue gem with a pink core, drawn beside an action's label. */
-export const ACTION_ICON = urls(
-  import.meta.glob<string>("../../../Mush/www/img/icons/ui/pa_slot1.png", { eager: true, query: "?url", import: "default" }),
-)["pa_slot1"]!;
+export const ACTION_ICON = paSlots["pa_slot1"]!;
+/** The action point and movement point slot gems (pink and cyan), as icons beside an amount. */
+export const AP_SLOT_ICON = paSlots["pa_slot1"]!;
+export const MP_SLOT_ICON = paSlots["pa_slot2"]!;
 
 /** Marks a warning in the room log: a secret or covert action that got out, or an alarm. */
 export const WARNING_ICON = urls(

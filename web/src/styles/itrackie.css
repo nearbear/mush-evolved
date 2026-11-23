@@ -693,63 +693,72 @@ button.blurred-vision {
 .plant-status-list {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
   margin: 0;
   padding: 0;
   list-style: none;
 }
-.plant-status-row {
+/* PlantStatusRow.tsx: the name across the top; the icon, with status and amounts beside it; bulleted notes under the
+   icon. Rows aren't boxed: a divider separates each from the one before (owner, 2026-11-22). */
+.plant-row {
   display: grid;
-  grid-template-columns: minmax(4.5rem, 6.5rem) minmax(0, 1fr) minmax(0, 1fr);
-  gap: 0.5rem 0.75rem;
-  align-items: start;
-  padding: 0.5rem;
-  border: 1px solid color-mix(in srgb, currentColor 20%, transparent);
-  border-radius: 4px;
-}
-.plant-status-head {
-  display: flex;
-  flex-direction: column;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.25rem 0.5rem;
   align-items: center;
-  gap: 0.25rem;
-  text-align: center;
-  min-width: 0;
+  padding: 0.45rem 0;
 }
-.plant-status-icon {
-  display: block;
-  image-rendering: pixelated;
+.plant-row + .plant-row {
+  border-top: 1px solid var(--terminal-rule);
 }
-.plant-status-name {
+.plant-row-name {
+  grid-column: 1 / -1;
   font-size: 0.85em;
   line-height: 1.2;
   overflow-wrap: anywhere;
 }
-.plant-status-col {
-  min-width: 0;
+.plant-row-icon {
+  display: block;
+  image-rendering: pixelated;
 }
-.plant-status-effects,
-.plant-status-states {
+.plant-row-side {
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
+  min-width: 0;
+}
+.plant-row-side .stat-amounts-row {
+  font-size: 0.85em;
+}
+.plant-row-notes {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding-left: 1.1rem;
+  list-style: disc;
+  font-size: 0.75rem;
+  line-height: 1.3;
+  color: var(--muted);
+}
+.plant-row-notes .plant-row-danger {
+  color: var(--danger);
+}
+.plant-status-states {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 0.6rem;
   margin: 0;
   padding: 0;
   list-style: none;
   font-size: 0.85em;
   line-height: 1.25;
 }
-.plant-status-effect-stat,
 .plant-status-state {
   display: flex;
   align-items: center;
   gap: 0.3rem;
 }
-.plant-status-effect-stat img,
 .plant-status-state img {
   flex: none;
   image-rendering: pixelated;
 }
-.plant-status-effect-disease,
 .plant-status-sick,
 .plant-status-dried {
   color: var(--danger, #a32222);
@@ -764,6 +773,22 @@ button.blurred-vision {
   margin: 0;
   font-size: 0.85em;
   opacity: 0.75;
+}
+/* The share form's row heading: icon then name. */
+.plant-status-head {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 0;
+}
+.plant-status-icon {
+  display: block;
+  image-rendering: pixelated;
+}
+.plant-status-name {
+  font-size: 0.85em;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
 }
 /* Editable Share form inside the Hydroponics center terminal. */
 .share-plants-rows {
@@ -787,10 +812,6 @@ button.blurred-vision {
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
-}
-.share-plants-row-head .plant-status-head {
-  flex-direction: row;
-  text-align: left;
 }
 .share-plants-remove {
   flex: none;
@@ -830,7 +851,7 @@ button.blurred-vision {
   align-items: center;
   gap: 0.25rem;
 }
-/* Pinned Botany status card above the Botany feature thread. */
+/* Pinned PILGRED progress card above the PILGRED feature thread (SharedPilgredCard.tsx). */
 .shared-plants-card {
   display: flex;
   flex-direction: column;
@@ -852,23 +873,16 @@ button.blurred-vision {
 .shared-plants-card-title {
   font-size: 0.9em;
 }
-.shared-plants-toggle {
-  flex: none;
-  margin: 0;
-  padding: 0.1rem 0.5rem;
-  font-size: 0.8em;
+/* The pinned Hydroponics card is a TerminalCollapsible; its plant list scrolls past a few rows. */
+.shared-plants {
+  margin-bottom: var(--space-2);
 }
-.shared-plants-card-body {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
+.shared-plants .terminal-collapsible-panel > .sub {
+  margin: 0;
+}
+.shared-plants-list {
   max-height: 14rem;
   overflow-y: auto;
-}
-.plant-status-list-compact .plant-status-row {
-  grid-template-columns: minmax(3.75rem, 5rem) minmax(0, 1fr) minmax(0, 1fr);
-  gap: 0.35rem 0.5rem;
-  padding: 0.35rem;
 }
 .shared-plants-note {
   margin: 0;

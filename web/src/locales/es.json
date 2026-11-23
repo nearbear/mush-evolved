@@ -836,9 +836,7 @@
       "placeholder": "Habla sobre este planeta…"
     },
     "sharedPlants": {
-      "title": "Estado compartido del invernadero",
-      "show": "Mostrar",
-      "hide": "Ocultar"
+      "title": "Hidroponía"
     },
     "sharedPilgred": {
       "title": "Progreso compartido de PILGRED"

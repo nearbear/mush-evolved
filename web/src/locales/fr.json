@@ -836,9 +836,7 @@
       "placeholder": "Discuter de cette planète…"
     },
     "sharedPlants": {
-      "title": "État partagé de la serre",
-      "show": "Afficher",
-      "hide": "Masquer"
+      "title": "Hydroponie"
     },
     "sharedPilgred": {
       "title": "Progression partagée de PILGRED"
