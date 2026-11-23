@@ -1114,6 +1114,8 @@
     "germaphobeMoraleLoss": "Being dirty has cost you {{amount}} morale.",
     "pregnantDeathMoraleLoss": "A pregnant crewmate has died. You have lost {{amount}} morale.",
     "gainMorale": "You gain {{amount}} morale.",
+    "loseHp": "You have lost {{amount}} HP.",
+    "gainHp": "You gain {{amount}} HP.",
     "actionCostChanged": "Your queued action ({{action}}) was cancelled because its cost changed: it now costs {{ap}} AP and {{mp}} MP.",
     "actionDropped": "Your queued action ({{action}}) was no longer possible and was dropped.",
     "becomeDirty": "You're filthy! You have become dirty.",

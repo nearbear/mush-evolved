@@ -388,7 +388,7 @@ describe("rough manoeuvres", () => {
     const p1 = player(s, "p1");
     const before = { hull: s.ship.hull, shield: s.ship.plasmaShield, hp: p1.hp };
     manoeuvre(s, p1, LONGANE);
-    const entry = s.log.at(-1)!;
+    const entry = s.log.find((e) => e.key === "patrolRough")!;
     expect(entry).toMatchObject({ key: "patrolRough", visibleTo: ["p1"] });
     const { hull, armor, hp } = entry.params as { hull: number; armor: number; hp: number };
     expect(hull).toBeGreaterThanOrEqual(2);

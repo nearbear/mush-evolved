@@ -5130,3 +5130,7 @@ Follow-up: the owner dropped the Intergalactic line from the helper and had the 
 - Replaced bullet points in `StatInfo`'s cap source list with each source's 16x16 pixel icon (`STATUS_ICONS` for diseases/injuries/statuses, `skillIcon` for skills, `NERON_ICON` for projects), and styled the static rules help text as a caption (`0.75rem`, `opacity: 0.75`) separated by a subtle horizontal divider whenever any cap modifier is active.
 - Captured and inspected desktop (1600x1000) and phone (360px) screenshots with Cold (`cold_disease`) and Broken Leg (`broken_leg_injury`) via the Superkube.
 - What worked: inspecting the actual screenshots caught a CSS specificity tie where `.skill-card ul` indented `.stat-cap ul` by `1.1rem` (`inspect.css` overriding `top-bar.css`); tightening the selector to `.skill-card .stat-cap ul` aligned the icons flush left.
+
+### 2026-11-22 — Private HP loss/gain log lines
+- **Decision (owner):** Every non-zero HP loss or gain (`damage` and `heal` in `shared/src/death.ts`) emits a private `loseHp`/`gainHp` log line with the actual HP delta, whether the player survives or not (`loseHp` before `died`); caller-specific duplicates ignored for now.
+- **What worked:** Centralizing in `damage()`/`heal()` covered all HP sources at once, and measuring `before - player.hp` / `player.hp - before` avoided zero-delta spam (e.g., `healDaily` at full HP or armor-blocked hits). Added en/fr/es locale keys and unit + hidden-info tests in `shared/tests/death.test.ts`.

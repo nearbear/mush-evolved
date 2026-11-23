@@ -1138,6 +1138,8 @@
     "germaphobeMoraleLoss": "La suciedad te ha costado {{amount}} punto de moral.",
     "pregnantDeathMoraleLoss": "Ha muerto un miembro embarazado de la tripulación. Has perdido {{amount}} puntos de moral.",
     "gainMorale": "Has ganado {{amount}} punto de moral.",
+    "loseHp": "Has perdido {{amount}} PV.",
+    "gainHp": "Has ganado {{amount}} PV.",
     "actionCostChanged": "Tu acción en cola ({{action}}) se ha cancelado porque su coste ha cambiado: ahora cuesta {{ap}} PA y {{mp}} PM.",
     "actionDropped": "Tu acción en cola ({{action}}) ya no era posible y se ha descartado.",
     "becomeDirty": "¡Tienes suciedad por todas partes! Te has ensuciado.",

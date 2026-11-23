@@ -10,7 +10,7 @@ import { shipInvincible } from "./cheats.ts";
 import type { CharacterId } from "./characters.ts";
 import { removeFromChannel, pushChat } from "./chat.ts";
 import { CORPSE_ITEM, ITRACKIE_ITEM, sameContainer, spawnInRoom } from "./items.ts";
-import { logPublic, withNimbleActor } from "./log.ts";
+import { logPrivate, logPublic, withNimbleActor } from "./log.ts";
 import { damageTaken } from "./modifiers.ts";
 import { PATROL_SHIPS } from "./patrol.ts";
 import { removeStatus } from "./statuses.ts";
@@ -61,8 +61,11 @@ export function damage(state: GameState, player: PlayerState, amount: number, ca
     return;
   }
   // Modifiers can make a loss bigger (Space Rabies), never turn a zero into a loss.
+  const before = player.hp;
   const dealt = amount > 0 ? damageTaken(state, player, amount) : amount;
   player.hp = Math.max(0, player.hp - dealt);
+  const lost = before - player.hp;
+  if (lost > 0) logPrivate(state, player.id, "loseHp", { amount: lost });
   if (player.hp === 0) killPlayer(state, player, cause);
 }
 
@@ -70,9 +73,12 @@ export function damage(state: GameState, player: PlayerState, amount: number, ca
  * The one way HP goes up. Only raises HP: a negative amount does nothing, the dead stay dead, and HP caps at the
  * player's max. Mutates a state the caller already cloned.
  */
-export function heal(_state: GameState, player: PlayerState, amount: number): void {
+export function heal(state: GameState, player: PlayerState, amount: number): void {
   if (!player.alive) return;
+  const before = player.hp;
   player.hp = Math.min(player.maxHp, player.hp + Math.max(0, amount));
+  const gained = player.hp - before;
+  if (gained > 0) logPrivate(state, player.id, "gainHp", { amount: gained });
 }
 
 /** Day-start healing: a living player regains `dailyHeal` HP, up to their max. */
