@@ -69,6 +69,7 @@ The rooms were converted from `ShipMap.png` into what is now `Mush/derived/ship-
 - `<slice params>` is `x,y,width,height,framesX,framesY` (the XML comment saying `top,left` is wrong).
 - Door targets live in `tiles.xml` `<extras><room><makeDoor tgt>`, assigned to door pixels in scan order. Door counts match in every room and the resulting graph is symmetric, but which physical door gets which target is not yet visually verified.
 - Flash sheet classes map to images: `BmpGfx2` = `gfx_01.png` (not `gfx_02.png`), `BmpGfxFx` = `fx.png`, `BmpGfxChar` = `char.png`, `BmpSmallFill`/`BmpMidFill`/`BmpMidFill2`/`BmpBigFill`/`BmpBigFill2`/`BmpMasks` = the same-named PNGs, `BmpGfxDev` = `dev.png`. Inferred from sizes and by eye; the original binding file is missing.
+- `char.png` (the cast sheet, `Mush/derived/webp/char.webp`): rows 0-15 are the 16 crew (`CAST_ROW` in `web/src/art/assets.ts`; Terrence is row 15). Rows 16 and 17 are two uncast characters with full standing, sitting and walk frames and a tied-up frame but no lying pose: row 16 a woman with long orange hair in a short maroon dress (the intruder hostile NPC's art, `HOSTILE_ROW`), row 17 a brown-haired man in a maroon vest. Row 18 holds four small cat frames. Seen by eye, 2026-11-23.
 
 ## Game data spreadsheets
 

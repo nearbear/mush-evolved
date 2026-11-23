@@ -2,13 +2,14 @@
 // No rules here: a target is shown only if the view contains it, and actions
 // come from view.actions.
 
-import { actionInTerminal, namedTarget, type Action, type ActionOption, type DoorView, type EquipmentView, type ItemView, type OtherPlayerView, type PlayerView, type Target, type YouView } from "@mush2/shared";
+import { actionInTerminal, namedTarget, type Action, type ActionOption, type DoorView, type EquipmentView, type HostileView, type ItemView, type OtherPlayerView, type PlayerView, type Target, type YouView } from "@mush2/shared";
 
 export type Resolved =
   | { kind: "player"; person: YouView | OtherPlayerView }
   | { kind: "equipment"; equipment: EquipmentView }
   | { kind: "item"; item: ItemView; carried: boolean }
-  | { kind: "door"; door: DoorView };
+  | { kind: "door"; door: DoorView }
+  | { kind: "hostile"; hostile: HostileView };
 
 export function sameTarget(a: Target | null, b: Target | null): boolean {
   return !!a && !!b && a.kind === b.kind && a.id === b.id;
@@ -33,6 +34,10 @@ export function resolveTarget(view: PlayerView, target: Target): Resolved | null
     case "door": {
       const door = view.doors.find((d) => d.id === target.id);
       return door ? { kind: "door", door } : null;
+    }
+    case "hostile": {
+      const hostile = view.hostiles.find((h) => h.id === target.id);
+      return hostile ? { kind: "hostile", hostile } : null;
     }
   }
 }

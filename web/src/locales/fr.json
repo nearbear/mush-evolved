@@ -945,7 +945,6 @@
     "syphilis_disease": "Syphilis",
     "sepsis_disease": "Septicémie",
     "quincks_oedema_disease": "Œdème de Quincke",
-    "black_bite_disease": "Morsure noire",
     "broken_nose_injury": "Nez explosé",
     "damaged_ears_injury": "Oreilles abîmées",
     "destroyed_ears_injury": "Oreilles détruites",
@@ -1565,7 +1564,21 @@
     "reportShareAppended": "{{name}} a complété le rapport partagé de l'expédition sur {{planet}}.",
     "missionIssued": "Vous avez donné une mission à {{target}}.",
     "missionReceived": "Le Commandant vous a donné une mission : +{{amount}} PA.",
-    "lunchboxOpened": "Vous avez sorti une Ration standard du panier repas."
+    "lunchboxOpened": "Vous avez sorti une Ration standard du panier repas.",
+    "punchedHostile": "{{name}} a frappé {{hostile}}.",
+    "punchCritHostile": "{{name}} a placé un magistral uppercut à {{hostile}}.",
+    "punchMissedHostile": "{{name}} a tenté de frapper {{hostile}} mais a raté.",
+    "attackedHostile": "{{name}} a attaqué {{hostile}} avec : {{item}}.",
+    "attackMissedHostile": "{{name}} a attaqué {{hostile}} avec : {{item}}, et a raté.",
+    "threwOutHostile": "{{name}} a mis {{hostile}} à la porte vers {{room}}.",
+    "hostileThrownIn": "{{hostile}} a été jeté depuis {{room}}.",
+    "hostileLeft": "{{hostile}} est parti vers {{room}}.",
+    "hostileArrived": "{{hostile}} est arrivé depuis {{room}}.",
+    "hostilePunched": "{{hostile}} a frappé {{target}}.",
+    "hostilePunchCrit": "{{hostile}} a placé un magistral uppercut à {{target}}.",
+    "hostilePunchArmor": "{{hostile}} a tenté de frapper {{target}} mais n'a trouvé que ses protections.",
+    "hostilePunchMissed": "{{hostile}} a tenté de frapper {{target}} mais a raté.",
+    "hostileDied": "{{hostile}} est mort."
   },
   "throwOut": {
     "confirm": "Dans quelle salle jeter {{name}} ?",
@@ -2284,6 +2297,7 @@
       "mp": "Fixer les PM",
       "dirty": "Se salir",
       "contaminate": "Ajouter une contamination",
+      "spawnHostile": "Faire apparaître un intrus",
       "spawn": "Faire apparaître un objet",
       "teleport": "Se téléporter dans une pièce",
       "breakDoor": "Casser une porte",
@@ -2635,5 +2649,15 @@
         "CYGNI": "Nous saluons l'équipage du Daedalus. 61 Cygni a été exploré durant votre voyage. La Fédération ne sait pas que l'intégralité de notre formation est humaine. Nous simulons des envois d'information réguliers à l'aide d'un Pheromodem évolué. En trompant la vigilance du Mush, nous préparons la contre-attaque armée de la rébellion depuis ce système. Les plans de notre missile SP2SP-230 ont été transférés vers NERON."
       }
     }
+  },
+  "hostiles": {
+    "kinds": {
+      "intruder": "l'intrus"
+    },
+    "names": {
+      "intruder": "Intrus"
+    },
+    "sub": "Hostile",
+    "hp": "{{hp}}/{{max}} PV"
   }
 }

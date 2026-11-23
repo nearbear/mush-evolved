@@ -9,7 +9,7 @@
 import type { Ref } from "react";
 import type { CharacterId, EquipmentView, ItemId, RoomId, ShipLayout, SliceInfo, Spot, Target, TileKind } from "@mush2/shared";
 import { sameTarget } from "../hud/targets.ts";
-import { lyingFrame, sittingFrame, spriteStrip } from "../art/assets.ts";
+import { hostileFrame, lyingFrame, sittingFrame, spriteStrip } from "../art/assets.ts";
 import type { Bar } from "../scene/ActionBar.tsx";
 import { atlasUrl } from "./shipLayout.ts";
 import { CAMERA_SLICES, LOCKER_HOVER_KEY, isLockerSlice } from "./equipmentTiles.ts";
@@ -45,6 +45,15 @@ export interface Corpse {
 export interface Drone {
   id: ItemId;
 }
+
+/** A hostile NPC in this room (shared/src/hostiles.ts), drawn standing by its kind's art. */
+export interface Hostile {
+  id: string;
+  kind: string;
+}
+
+/** Actor ids for hostile NPCs get this prefix, so they can't collide with player ids. */
+export const HOSTILE_PREFIX = "npc:";
 
 /** How someone sits on a chair: which sitting frame, and whether it is mirrored. */
 export interface Seat {
@@ -397,6 +406,8 @@ export interface SceneInput {
   corpses: readonly Corpse[];
   /** Support drones on this room's floor; none when not given. */
   drones?: readonly Drone[];
+  /** Hostile NPCs in this room; none when not given. */
+  hostiles?: readonly Hostile[];
   /** Sprite key -> the equipment it draws (this room only). */
   equipment: ReadonlyMap<string, EquipmentView>;
   reachable: ReadonlySet<RoomId>;
@@ -432,11 +443,16 @@ export function droneOf(s: PlacedSprite, drones: readonly Drone[] | undefined): 
   return s.kind === "actor" && s.key.startsWith(`a:${DRONE_PREFIX}`) ? drones?.find((d) => `a:${DRONE_PREFIX}${d.id}` === s.key) : undefined;
 }
 
+/** The hostile NPC an actor sprite draws, if it is one. */
+export function hostileOf(s: PlacedSprite, hostiles: readonly Hostile[] | undefined): Hostile | undefined {
+  return s.kind === "actor" && s.key.startsWith(`a:${HOSTILE_PREFIX}`) ? hostiles?.find((h) => `a:${HOSTILE_PREFIX}${h.id}` === s.key) : undefined;
+}
+
 /**
  * The image a placed sprite's pixels come from: its unflipped, unanimated frame (what hit-testing
  * reads; `hitTest` mirrors with `flipX`).
  */
-export function imageOf(s: PlacedSprite, input: Pick<SceneInput, "layout" | "room" | "people" | "walkers" | "seats" | "corpses" | "drones" | "looks">): SceneImage {
+export function imageOf(s: PlacedSprite, input: Pick<SceneInput, "layout" | "room" | "people" | "walkers" | "seats" | "corpses" | "drones" | "hostiles" | "looks">): SceneImage {
   if (s.kind !== "actor") {
     const look = input.looks?.get(s.slice);
     const slice = look ? input.layout.slices[look] : undefined;
@@ -451,6 +467,11 @@ export function imageOf(s: PlacedSprite, input: Pick<SceneInput, "layout" | "roo
   if (droneOf(s, input.drones)) {
     const slice = input.layout.slices[DRONE_SLICE];
     return { url: slice && atlasUrl(input.layout, slice.sheet), frame: { ...(slice ? frameRect(slice, 0) : { sx: 0, sy: 0 }), ...DRONE_SIZE }, keyed: false };
+  }
+  const hostile = hostileOf(s, input.hostiles);
+  if (hostile) {
+    const frame = hostileFrame(hostile.kind);
+    return { url: frame?.url, frame: frame ?? { sx: 0, sy: 0, width: 32, height: 48 }, keyed: false };
   }
   const o = input.people.get(s.key.slice(2));
   const lying = o?.lying ? lyingFrame(o.character) : undefined;
@@ -590,7 +611,8 @@ export function describeScene(input: SceneInput): Scene {
     const tile = () => ({ ...base, image: imageOf(s, input), flipX: s.flipX || undefined, flipY: s.flipY || undefined, ...(opening && { anim: opening }) });
     const corpse = corpseOf(s, corpses);
     const drone = droneOf(s, drones);
-    if (s.kind === "actor" && !corpse && !drone) {
+    const hostile = hostileOf(s, input.hostiles);
+    if (s.kind === "actor" && !corpse && !drone && !hostile) {
       outlines.push({ ...personPicture(s, input, base), occluded: !!s.occluded, faint: s.room !== room });
     }
     if (s.room !== room) {
@@ -622,6 +644,11 @@ export function describeScene(input: SceneInput): Scene {
       const part = (top: number, rows: number) => ({ y: base.y + top, height: rows, image: { ...image, frame: { ...image.frame, sy: image.frame.sy + top, height: rows } } });
       sprites.push({ ...base, key: `${s.key}|shadow`, ...part(DRONE_BODY_ROWS, height - DRONE_BODY_ROWS), role: "drone", kind: s.kind, slice: s.slice });
       sprites.push({ ...base, ...part(0, DRONE_BODY_ROWS), role: "drone", effect, bob: true, kind: s.kind, slice: s.slice });
+      continue;
+    }
+    if (hostile) {
+      const effect = isSelected("hostile", hostile.id) ? "selected" : hover ? "hover" : undefined;
+      sprites.push({ ...base, image: imageOf(s, input), role: "person", effect, shadow: "standing", kind: s.kind, slice: s.slice });
       continue;
     }
     if (s.kind === "actor") {

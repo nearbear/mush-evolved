@@ -13,6 +13,13 @@
   background: rgb(0 0 0 / 0.3);
   border-radius: 4px;
 }
+
+/* A hostile NPC's standing frame (art/assets.ts hostileSprite), sized inline at 3x. */
+.inspect-hostile {
+  display: block;
+  flex: none;
+  margin: 0 auto;
+}
 /* The item face (see .item-face) at inspect size. */
 .inspect-item {
   position: relative;

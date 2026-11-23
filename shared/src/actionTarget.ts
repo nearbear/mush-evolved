@@ -2,6 +2,7 @@
 // equipment or another person ends a wheelchair push you're part of (accommodate.ts), since that walk takes you away.
 
 import type { ActionVisibility } from "./actions/action.ts";
+import { isHostileId } from "./hostiles/hostile.ts";
 import type { Action, PlayerId, Target } from "./types.ts";
 
 /**
@@ -13,7 +14,8 @@ export function namedTarget(a: Action): Target | null {
   if ("item" in a) return { kind: "item", id: a.item };
   if ("door" in a) return { kind: "door", id: a.door };
   // Before `weapon`: an attack with a target is aimed at the person.
-  if ("target" in a) return typeof a.target === "string" ? { kind: "player", id: a.target } : a.target;
+  // A hostile NPC's id starts `hostile:` (hostiles.ts), so it never reads as a person's.
+  if ("target" in a) return typeof a.target === "string" ? { kind: isHostileId(a.target) ? "hostile" : "player", id: a.target } : a.target;
   if ("weapon" in a) return { kind: "item", id: a.weapon };
   return null;
 }
@@ -33,5 +35,6 @@ export function actionTarget(a: Action): Target | null {
 export function endsAccommodation(action: Action, by: PlayerId, visibility: ActionVisibility): boolean {
   if (visibility !== "public" || action.type === "accommodate" || action.type === "accept_accommodation" || action.type === "stop_accommodation") return false;
   const target = actionTarget(action);
-  return target?.kind === "equipment" || target?.kind === "door" || (target?.kind === "player" && target.id !== by);
+  // A hostile NPC counts as a person here: acting on it walks you up to it.
+  return target?.kind === "equipment" || target?.kind === "door" || target?.kind === "hostile" || (target?.kind === "player" && target.id !== by);
 }

@@ -83,6 +83,33 @@ const CAST_ROW: Record<CharacterId, number> = {
   finola: 8, stephen: 9, ian: 10, chun: 11, raluca: 12, gioele: 13, eleesha: 14, terrence: 15,
 };
 
+/**
+ * The cast-sheet row each hostile NPC kind (shared/src/hostiles.ts) is drawn with. The intruder uses row 16, the
+ * unnamed woman in a maroon dress just below Terrence (owner, 2026-11-23). Not a crew character, so not in `CAST_ROW`.
+ */
+const HOSTILE_ROW: Record<string, number> = { intruder: 16 };
+
+/** A hostile NPC standing, facing the camera or away, as a 32x48 pixel frame of the cast sheet; undefined for a kind with no art. */
+export function hostileFrame(kind: string, facing: "face" | "back" = "face") {
+  const row = HOSTILE_ROW[kind];
+  if (row === undefined) return undefined;
+  return { url: castSheet, sx: facing === "face" ? 0 : 32, sy: row * LYING.h, width: 32, height: 48 };
+}
+
+/** A hostile NPC standing, facing the camera, as CSS for a `scale`x pixel-exact crop (like `standingSprite`). */
+export function hostileSprite(kind: string, scale = 1) {
+  const frame = hostileFrame(kind);
+  if (!frame) return undefined;
+  return {
+    width: 32 * scale,
+    height: 48 * scale,
+    backgroundImage: `url(${castSheet})`,
+    backgroundSize: `${CAST_SHEET_SIZE.w * scale}px ${CAST_SHEET_SIZE.h * scale}px`,
+    backgroundPosition: `${-frame.sx * scale}px ${-frame.sy * scale}px`,
+    imageRendering: "pixelated" as const,
+  };
+}
+
 /** The character lying down, as a crop of the cast sheet: CSS `background` pieces plus the crop's aspect ratio. */
 export function lyingSprite(character: CharacterId | undefined) {
   if (!character) return undefined;

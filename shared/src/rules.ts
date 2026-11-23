@@ -31,6 +31,7 @@ import { fireCycle, ignitePending, isGardenProtected, isOnFire } from "./fire.ts
 import { alertsFor, brokenDoors, doorsDetected, fireReported } from "./reports.ts";
 import { incidentsCycle } from "./incidents.ts";
 import { initNpc, newNpcState, npcCycle } from "./npcs.ts";
+import { hostileCycle, hostilesHere } from "./hostiles.ts";
 import { catArrival } from "./schrodinger.ts";
 import { CHEAT_ROOM } from "./cheatRoom.ts";
 import { teleport, teleportBlocked } from "./kube.ts";
@@ -159,6 +160,8 @@ export function createGame(
     players,
     items,
     nextItemId: items.length + 1,
+    hostiles: [],
+    nextHostileId: 1,
     equipment: clone(config.equipment),
     dispensedOn: {},
     drugs: {},
@@ -722,6 +725,7 @@ function advanceCycle(state: GameState, at?: number): void {
   leakOxygen(state, oxygenSaved);
   jellyCycle(state);
   npcCycle(state);
+  hostileCycle(state);
   preselectionCycle(state);
   strikeSlots(state);
   // After hunters and incidents, so a new day's first cycle change still weighs the whole day before (#241, as eMush).
@@ -937,6 +941,7 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     rooms: state.config.rooms,
     inventory: itemsIn(state, { kind: "player", id: you.id }).map((item) => itemView(item, you)),
     inventorySlots: inventorySlots(state, you),
+    hostiles: hostilesHere(state, you).map(({ id, kind, hp, maxHp }) => ({ id, kind, hp, maxHp })),
     roomItems: you.alive ? visibleItemsIn(state, { kind: "room", id: you.room }, you).map((item) => itemView(item, you)) : [],
     roomEquipment: you.alive ? (state.equipment[you.room] ?? []).map((e) => equipmentView(state, e, you)) : [],
     // Your room's doors (#330): a door's state reaches only the living on either side of it.

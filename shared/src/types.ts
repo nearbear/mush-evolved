@@ -157,6 +157,8 @@ export type Target =
   | { kind: "player"; id: PlayerId }
   | { kind: "equipment"; id: string }
   | { kind: "item"; id: ItemId }
-  | { kind: "door"; id: DoorId };
+  | { kind: "door"; id: DoorId }
+  // A hostile NPC (hostiles.ts): its `hostile:<n>` id.
+  | { kind: "hostile"; id: string };
 
 export type { Action } from "./actions.ts";

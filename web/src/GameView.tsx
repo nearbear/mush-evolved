@@ -28,7 +28,7 @@ import { TopBar } from "./hud/TopBar.tsx";
 import { PlayerSummary } from "./hud/PlayerSummary.tsx";
 import { BotsPausedTag } from "./hud/BotsPausedTag.tsx";
 import { ServerClockContext, serverTime, type ServerClock } from "./hud/serverClock.ts";
-import { shipPace, type Corpse, type Drone, type Occupant } from "./iso/scene.ts";
+import { shipPace, type Corpse, type Drone, type Hostile, type Occupant } from "./iso/scene.ts";
 import { FIRE_ICON, orbitImage, skillIcon } from "./art/assets.ts";
 import { LeavingIsoRoom } from "./iso/LeavingRoom.tsx";
 import { type DoorMove, recentDoorMoves } from "./iso/doorMoves.ts";
@@ -198,6 +198,8 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
     .map((i) => ({ id: i.id, character: [you, ...view.players].find((p) => p.id === i.of)?.character }));
   // Support drones on the floor here (#411), floating over their shadows.
   const drones: Drone[] = view.roomItems.filter((i) => i.type === SUPPORT_DRONE_ITEM).map((i) => ({ id: i.id }));
+  // Hostile NPCs here (shared/src/hostiles.ts), standing in their kind's art.
+  const hostiles: Hostile[] = view.hostiles.map(({ id, kind }) => ({ id, kind }));
   const move = (to: string) => act({ type: "move", to });
   const select = (t: Target | null) => {
     markSelected();
@@ -285,6 +287,7 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
                 nearby={nearby}
                 corpses={corpses}
                 drones={drones}
+                hostiles={hostiles}
                 fogDepth={fogDepth}
                 renderer={ROOM_RENDERER}
                 zoom={zoom}

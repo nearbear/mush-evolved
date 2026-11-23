@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
 import type { CSSProperties, ReactNode } from "react";
 import { actionVisibility, CHARACTERS, ITEM_TYPES, PROJECT_COMPLETE, characterGivenName, characterName, SUPER_CALC_EQUIPMENT, SUPERKUBE, type Action, type ActionOption, type EquipmentView, type PlayerView, type ShipLayout, type Target } from "@mush2/shared";
-import { BROKEN_ICON, characterImage, portrait } from "../art/assets.ts";
+import { BROKEN_ICON, characterImage, hostileSprite, portrait } from "../art/assets.ts";
 import { useMobile } from "../useMobile.ts";
 import { atlasUrl } from "../iso/shipLayout.ts";
 import { equipmentByTileKey, roomAsBuilt } from "../iso/equipmentTiles.ts";
@@ -86,7 +86,9 @@ export function InspectPanel({
         ? names.equipment(resolved.equipment.type)
         : resolved?.kind === "door"
           ? t("peek.doorTo", { room: names.room(resolved.door.to) })
-          : resolved
+          : resolved?.kind === "hostile"
+            ? names.hostileName(resolved.hostile.kind)
+            : resolved
             ? names.itemOf(resolved.item)
             : undefined;
 
@@ -226,6 +228,20 @@ function Details({ view, layout, resolved, onAction }: { view: PlayerView; layou
           {resolved.item.drone && <DroneUpgrades upgrades={resolved.item.drone.upgrades} />}
         </>
       );
+    case "hostile": {
+      const { hostile } = resolved;
+      const sprite = hostileSprite(hostile.kind, 3);
+      return (
+        <>
+          {sprite && <span className="inspect-hostile" style={sprite} aria-hidden="true" />}
+          <div className="inspect-name">
+            <strong>{names.hostileName(hostile.kind)}</strong>
+            <div className="sub">{t("hostiles.sub")}</div>
+            <div className="sub">{t("hostiles.hp", { hp: hostile.hp, max: hostile.maxHp })}</div>
+          </div>
+        </>
+      );
+    }
     case "door":
       return (
         <>

@@ -26,6 +26,7 @@
 import { resolveConfig } from "./config.ts";
 import { clone } from "./helpers.ts";
 import { newNpcState, type NpcState } from "./npcs.ts";
+import { HOSTILE_ID_PREFIX, type HostileState } from "./hostiles/hostile.ts";
 import { type LostAnalysisState, rollLostAnalysis } from "./lostAnalysis.ts";
 import type { TheListState } from "./theList.ts";
 import type { EdenState } from "./eden.ts";
@@ -505,6 +506,27 @@ export function normalizeDrone(raw: Partial<DroneState>): DroneState {
 export function normalizeNpcs(raw: Partial<NpcState>): NpcState {
   const t = "NpcState";
   return { rng: need(raw, "rng", t), droneNames: [...need(raw, "droneNames", t)] };
+}
+
+export function normalizeHostile(raw: Partial<HostileState>): HostileState {
+  const t = "HostileState";
+  return stripUndefined<HostileState>({
+    id: need(raw, "id", t),
+    kind: need(raw, "kind", t),
+    room: need(raw, "room", t),
+    hp: need(raw, "hp", t),
+    maxHp: need(raw, "maxHp", t),
+    ap: need(raw, "ap", t),
+    maxAp: need(raw, "maxAp", t),
+    mp: need(raw, "mp", t),
+    maxMp: need(raw, "maxMp", t),
+    enteredFrom: raw.enteredFrom,
+  } satisfies AllKeys<HostileState>);
+}
+
+/** One past the highest `hostile:<n>` in the list (1 for none). */
+function nextHostileIdOf(list: readonly Partial<HostileState>[]): number {
+  return Math.max(0, ...list.map((h) => Number(String(h.id).slice(HOSTILE_ID_PREFIX.length)) || 0)) + 1;
 }
 
 export function normalizeItem(raw: Partial<ItemState>): ItemState {
@@ -1253,6 +1275,9 @@ export function normalizeCore(raw: Partial<GameCore>, ctx: NormalizeContext, mod
     players: need(raw, "players", t).map((p) => normalizePlayer(p, mode)),
     items: need(raw, "items", t).map(normalizeItem),
     nextItemId: need(raw, "nextItemId", t),
+    // Hostile NPCs (owner, 2026-11-22): a game stored before them has none, and its counter is rebuilt from the list.
+    hostiles: added(raw, "hostiles", []).map(normalizeHostile),
+    nextHostileId: added(raw, "nextHostileId", nextHostileIdOf(added(raw, "hostiles", []))),
     equipment: mapValues(need(raw, "equipment", t), (list) => list.map(normalizeEquipment)),
     dispensedOn: dict(need(raw, "dispensedOn", t)),
     drugs: mapValues(added(raw, "drugs", {}), normalizeDrug),
