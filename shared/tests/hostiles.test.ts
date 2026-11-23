@@ -199,6 +199,57 @@ describe("hostile NPCs", () => {
     });
   });
 
+  describe("the intruder punches back at a melee attack", () => {
+    const counters = (s: GameState) => s.log.filter((e) => e.key.startsWith("hostilePunch"));
+
+    it("after a punch that lands, at the attacker, paying the punch's AP", () => {
+      const { s, id } = ship(sure);
+      const next = mustApply(s, "p0", { type: "punch", target: id });
+      expect(counters(next).map((e) => [e.key, e.params?.target])).toEqual([["hostilePunched", player(s, "p0").character]]);
+      expect(hostile(next, id)!.ap).toBe(hostile(s, id)!.ap - base.punch.cost.ap);
+      expect(player(next, "p0").hp).toBeLessThan(player(s, "p0").hp);
+      expect(player(next, "p1").hp).toBe(player(s, "p1").hp);
+    });
+
+    it("after a punch that misses too", () => {
+      const { s, id } = ship({ punch: { successChance: 0 } });
+      const next = mustApply(s, "p0", { type: "punch", target: id });
+      expect(logKeys(next)).toContain("punchMissedHostile");
+      expect(counters(next).map((e) => e.key)).toEqual(["hostilePunchMissed"]);
+    });
+
+    it("after a knife attack, but not a gun", () => {
+      const { s, id } = ship({ ...sure, weapons: { types: { knife: { accuracy: 1 }, blaster: { accuracy: 1 } } } });
+      s.items.push({ id: "knife1", type: "knife", at: { kind: "player", id: "p0" } }, { id: "blaster1", type: "blaster", charges: 3, at: { kind: "player", id: "p1" } });
+      hostile(s, id)!.hp = 99;
+      expect(counters(mustApply(s, "p0", { type: "attack", weapon: "knife1", target: id })).length).toBe(1);
+      expect(counters(mustApply(s, "p1", { type: "attack", weapon: "blaster1", target: id }))).toEqual([]);
+    });
+
+    it("not when it can't pay, Pacifist included, nor when the blow killed it", () => {
+      const broke = ship(sure);
+      hostile(broke.s, broke.id)!.ap = 0;
+      expect(counters(mustApply(broke.s, "p0", { type: "punch", target: broke.id }))).toEqual([]);
+
+      const calm = ship(sure);
+      player(calm.s, "p1").modifiers.push("pacifist");
+      hostile(calm.s, calm.id)!.ap = base.punch.cost.ap; // enough for a plain punch, not with the surcharge
+      expect(counters(mustApply(calm.s, "p0", { type: "punch", target: calm.id }))).toEqual([]);
+
+      const dying = ship(sure);
+      hostile(dying.s, dying.id)!.hp = 1;
+      const next = mustApply(dying.s, "p0", { type: "punch", target: dying.id });
+      expect(logKeys(next)).toContain("hostileDied");
+      expect(counters(next)).toEqual([]);
+    });
+
+    it("not after being thrown out", () => {
+      const { s, id } = ship(sure);
+      player(s, "p0").skills = ["wrestler"];
+      expect(counters(mustApply(s, "p0", { type: "throw_out", target: id, to: NEXT_DOOR! }))).toEqual([]);
+    });
+  });
+
   it("lets a kind with the base's turn spend all its AP", () => {
     class Brute extends HostileNpc {
       readonly kind = INTRUDER;

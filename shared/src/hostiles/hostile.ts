@@ -12,7 +12,7 @@ import { HOSTILE_MOVE } from "./actions/move.ts";
 import { HOSTILE_PUNCH } from "./actions/punch.ts";
 import { roomActionCost, targetedSuccessRate } from "../modifiers.ts";
 import { rollFloat, rollInt } from "../rng.ts";
-import type { Action, DeepReadonly, GameState, HostileStats, RoomId } from "../types.ts";
+import type { Action, DeepReadonly, GameState, HostileStats, PlayerState, RoomId } from "../types.ts";
 
 /** A hostile NPC as stored. `kind` names its class in `HOSTILE_KINDS` and its stats in `config.hostiles.kinds`. */
 export interface HostileState {
@@ -123,14 +123,25 @@ export abstract class HostileNpc {
       if (!self || state.phase !== "playing" || state.preselection) return;
       const pick = this.choose(state, self, this.options(state, self));
       if (!pick) return;
-      const cost = this.price(state, self, pick);
-      self.ap -= cost.ap;
-      self.mp -= cost.mp;
-      const chance = this.chance(state, self, pick);
-      if (chance >= 1 || rollFloat(state) < chance) pick.action.apply(state, self, pick.data);
-      else pick.action.fail(state, self, pick.data);
+      this.perform(state, self, pick);
     }
   }
+
+  /** Pays for an option and does it: one roll against its `chance`, then `apply` or `fail`. The caller checked it is affordable. */
+  perform(state: GameState, self: HostileState, option: HostileOption): void {
+    const cost = this.price(state, self, option);
+    self.ap -= cost.ap;
+    self.mp -= cost.mp;
+    const chance = this.chance(state, self, option);
+    if (chance >= 1 || rollFloat(state) < chance) option.action.apply(state, self, option.data);
+    else option.action.fail(state, self, option.data);
+  }
+
+  /**
+   * After a player's action against it is resolved, hit or miss, while it is still alive (hostiles.ts `hostileAttacked`).
+   * `melee` is a blow in person (Punch, a melee weapon). Nothing for the base; a kind may answer.
+   */
+  onAttacked(_state: GameState, _self: HostileState, _attacker: Readonly<PlayerState>, _melee: boolean): void {}
 
   /** What else happens when it dies, after it is removed and its death is logged. Nothing for the base. */
   onDeath(_state: GameState, _self: Readonly<HostileState>): void {}

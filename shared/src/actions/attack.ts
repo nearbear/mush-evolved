@@ -2,7 +2,7 @@ import { Action, IN_PRESELECTION, peopleHere, type ActionTag, isString } from ".
 import { changeAP } from "../adjustStats.ts";
 import { breakItem } from "../breakage.ts";
 import { damage } from "../death.ts";
-import { damageHostile, hostileHere, hostilesHere } from "../hostiles.ts";
+import { damageHostile, hostileAttacked, hostileHere, hostilesHere } from "../hostiles.ts";
 import { addDisease } from "../diseases.ts";
 import { ITEM_TYPES, afterProtection, dropWeapon, itemsIn, removeItem, removeItemIfPresent, isWorking } from "../items.ts";
 import { logPublic } from "../log.ts";
@@ -26,7 +26,8 @@ export type AttackActionData = { type: "attack"; weapon: string; target: string 
  * A hostile NPC in the room (hostiles.ts) can be aimed at too, and an area weapon hits the hostiles in the room as well.
  * A hostile takes the weapon's `damage` range (never `mushDamage`), has no armor, and dies to an instant kill; the
  * outcome's other effects on the target (injuries, AP loss) don't apply to it, while those on the attacker and the
- * splash do. Its hits and misses log with the hostile's kind instead of the outcome's own line.
+ * splash do. Its hits and misses log with the hostile's kind instead of the outcome's own line. Hit or miss, once the
+ * attack and all its effects are done, it may answer (`hostileAttacked`: the intruder punches back at a melee weapon).
  */
 export class AttackAction extends Action<AttackActionData> {
   override tags: readonly ActionTag[] = ["aggressive"];
@@ -116,6 +117,7 @@ export class AttackAction extends Action<AttackActionData> {
     }
     if (stats.selfDamage) damage(state, player, roll(state, stats.selfDamage), "assassinated");
     applyOutcomeEffects(state, player, weapon, { target: victim, splash }, effects);
+    if (hostile && player.alive) hostileAttacked(state, hostile.id, player, !!stats.melee);
   }
 
   override fail(state: GameState, player: PlayerState, target: AttackActionData): void {
@@ -140,6 +142,7 @@ export class AttackAction extends Action<AttackActionData> {
       logPublic(state, player.room, outcome.log, { name: player.character, item: type });
     }
     applyOutcomeEffects(state, player, weapon, { target: victim, splash }, outcome.effects);
+    if (hostile && player.alive) hostileAttacked(state, hostile.id, player, !!stats.melee);
   }
 }
 
