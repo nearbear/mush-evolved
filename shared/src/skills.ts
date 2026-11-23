@@ -248,8 +248,8 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   radio_expert: "full",
   // +100% rebel decoding (owner, 2026-10-21, comms.ts).
   rebel: "full",
-  // Garden points, seeing plant sickness, and +1 fruit on expedition Harvest events (botany.ts, expeditions.ts); no grafting or fruit properties.
-  botanic: "partial",
+  // Garden points, seeing plant sickness, fruit lore, grafting, +1 fruit on expedition Harvest events, merchant deal, and NERON project bonuses (botany.ts, fruits.ts, actions/graft.ts, expeditions.ts, merchants.ts, projects.ts).
+  botanic: "full",
   // Counts as Botanist, Diplomat, and Biologist without their actions or resources: plant sickness (botany.ts), fruit lore (fruits.ts), drug lore / +2 Drug Dispenser options (drugs.ts), +4 research bonus (research.ts), merchant deals (merchants.ts), and Intelligent life Fight cancellation + Harvest +1 fruit on expeditions (expeditions.ts); NERON project bonuses are left out of this count.
   skilful: "full",
   // Mush skill: the one-use reset of the Mush skills (owner, 2026-11-13, actions/reset_skills.ts).
@@ -285,7 +285,7 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   paranoid: "full",
   // Search 1 AP cheaper (modifiers/observant.ts) and a 25% chance per Observant to reveal a covert action in their room (owner, 2026-11-14, log.ts).
   observant: "full",
-  // Two empty hydropots when picked (owner, 2026-11-01); the graft bonus waits for grafting.
+  // Two empty hydropots when picked (owner, 2026-11-01) and 25% graft head start (#438, actions/graft.ts).
   green_thumb: "full",
   // A support drone blueprint when picked and upgrading drones with metal scraps (#411, #412, modifiers/robotics.ts, actions/upgrade_drone.ts).
   robotics: "full",
