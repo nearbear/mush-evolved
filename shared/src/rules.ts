@@ -10,7 +10,7 @@ import { gravityCycle } from "./gravity.ts";
 import { expirePlans, plansView, strikeSlots } from "./plans.ts";
 import { bindPerformAction } from "./actions/summon.ts";
 import { applyCheats, makeHuman, shipInvincible, type Cheat, type RoleCheat } from "./cheats.ts";
-import { ACTIONS, actionVisibility, type ActionDef } from "./actions.ts";
+import { ACTIONS, type ActionCost, actionVisibility, type ActionDef } from "./actions.ts";
 import { ARACK_AROUND, AT_CAPACITY, BROKEN, COOLDOWN, DIRTY, EXPLORED, ICARUS_LOST, IN_PRESELECTION, NO_DEBRIS, NO_SPACE, PASIPHAE_INTACT, REACTOR_BROKEN } from "./actions/action.ts";
 import { getUp } from "./actions/lie_down.ts";
 import { ANTISOCIAL } from "./actions/bond.ts";
@@ -206,6 +206,7 @@ export function createGame(
     signals: newSignals(),
     turrets: {},
     incidentPoints: 0,
+    apSpentToday: 0,
     doors: {},
     fires: [],
     ceasefires: {},
@@ -453,6 +454,16 @@ function viewActionOptions(state: GameState, p: PlayerState): ActionOption[] {
   return [...legal, ...unaffordable];
 }
 
+/**
+ * The AP an action adds to the crew's day (`apSpentToday`, #241): its AP price, or for one paid with a skill point, the
+ * AP it would have cost without one (owner, 2026-11-22, the wiki's rule; eMush counts only real AP).
+ */
+function apCounted(state: Readonly<GameState>, actor: Readonly<PlayerState>, def: ActionDef<Action>, action: Action, cost: ActionCost): number {
+  if (!cost.paidBy) return Math.round(cost.ap);
+  const unpaid = { ...actor, resources: { ...actor.resources, [cost.paidBy]: 0 } };
+  return Math.round(def.cost(state, unpaid, action).ap);
+}
+
 /** Does an action at once, skipping the queue and its timing (queue.ts is how players act; this is its last step). */
 export function applyAction(state: GameState, playerId: PlayerId, action: Action): ActionResult {
   const p = findPlayer(state, playerId);
@@ -475,6 +486,7 @@ export function performAction(next: GameState, actor: PlayerState, action: Actio
   const dirtyChance = def.dirtChanceMods(next, actor, action);
   const injuryChance = def.injuryChanceMods(next, actor, action);
   if (def.timed && action.type !== "lie_down") getUp(actor);
+  next.apSpentToday += apCounted(next, actor, def, action, cost);
   actor.ap -= cost.ap;
   actor.mp -= cost.mp;
   if (cost.paidBy) actor.resources[cost.paidBy] -= 1;
@@ -696,6 +708,8 @@ function advanceCycle(state: GameState, at?: number): void {
   npcCycle(state);
   preselectionCycle(state);
   strikeSlots(state);
+  // After hunters and incidents, so a new day's first cycle change still weighs the whole day before (#241, as eMush).
+  if (newDay) state.apSpentToday = 0;
 }
 
 /** Day-start care, Computer and PILGRED points: every living player gains what their skills grant (Computer and PILGRED points stop at their caps). Mutates a state the caller already cloned. */

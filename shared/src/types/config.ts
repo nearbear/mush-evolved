@@ -861,6 +861,8 @@ export interface GameConfig {
   spaceCapsule: { cost: { ap: number }; dirtyChance: number; injuryChance: number; contents: string[] };
   // Hull repair (owner, 2026-10-24, the wiki's Armure et Bouclier): 1 AP, 25%, +5 hull, a metal scrap used up on a success.
   hullRepair: { cost: { ap: number }; chance: number; injuryChance: number; amount: number };
+  // Activity overload (owner, 2026-11-22, #241; eMush): hunter and incident points scale with the crew; difficulty.ts.
+  difficulty: { apPerSeat: number };
   // Incident points (owner, 2026-10-25, #184; eMushpedia "Embûches"): incidents.ts. Each cycle change adds
   // `budget.base[min(day, base.length) - 1]`, plus `tier1.bonus + (day - tier1.fromDay)` from `tier1.fromDay`, plus
   // `tier2.bonus + tier1's addition + (day - tier2.fromDay)` from `tier2.fromDay`. Incidents happen with chance

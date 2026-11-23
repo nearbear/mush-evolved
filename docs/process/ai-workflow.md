@@ -5186,3 +5186,11 @@ Owner asked to rotate three Mush skill icons (Slime Trap's to Mass Mouldering, M
 ### 2026-11-22 — Mark Botanist (`botanic`) as `"full"` in `SKILL_STATUS`
 - Updated `SKILL_STATUS.botanic` from `"partial"` to `"full"` (and refreshed the stale comments on `botanic` and `green_thumb`) in `shared/src/skills.ts`.
 - Added `botanic` to the `SKILL_STATUS` assertion in `shared/tests/skills.test.ts`; `npm test -w shared -- skills.test.ts` passed (3 files, 53 tests), while `npm run verify` failed in `web/src/i18n/names.ts` (untouched by this task).
+
+- **2026-11-22 — Tracker ship takeoff/landing logs (owner):** Extended `moveLineFor` in `shared/src/log.ts` so `patrolTakeoff` and `patrolLanded` keep `params.room` (the ship) only for a Tracker (`hunt`); everyone else (including the pilot and camera viewers) sees `patrolTakeoffShip` / `patrolLandedShip` with no ship name (`patrolPlanetLanding` left as-is). Updated `SKILL_STATUS.hunt` to `"full"`, added `en`/`fr`/`es` log strings, and added tests in `logWindow.test.ts`.
+
+## 2026-11-22: activity overload for hunter and incident points (#241, #263)
+
+- **Decision (owner):** eMush's `DifficultyService` multiplier on both hunter and incident points: threshold 7 AP × the ship's seats (`config.preselection.seats`); at or under it, living players ÷ seats (the dead don't count, unlike eMush); above it, AP spent today ÷ threshold; rounded. Skill-point actions count the AP they would have cost (the wiki's rule). Supersedes the wiki formula adopted for #263.
+- **What worked:** the clean-room `npm run emush -- spec` on `DaedalusCycleSubscriber` surfaced a detail the issue didn't mention: the count is a running total, and the day-change cycle uses the whole day before the reset. Our new-day block runs before hunters and incidents, so the reset had to move to the end of the cycle change.
+- **Needed correction:** the plan missed that #263 had already adopted a different (wiki) formula for incidents and that special points count there; found only while updating `implemented-rules.md`, then put to the owner. Grep open issues for the same mechanic before planning.

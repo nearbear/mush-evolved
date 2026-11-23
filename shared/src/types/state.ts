@@ -217,6 +217,8 @@ export interface GameCore {
   failureStreaks: Record<PlayerId, Record<string, number>>;
   /** The incident pool (incidents.ts): points earned each cycle change and spent on incidents. Never sent to anyone (#189). */
   incidentPoints: number;
+  /** AP the crew has paid for actions since the day began (difficulty.ts, #241); reset after a new day's first cycle change. Never sent. */
+  apSpentToday: number;
   /**
    * Doors' state (doors.ts, #330), by `doorId`: only doors that aren't working are listed. A door's state reaches only
    * the living in either room it joins (`PlayerView.doors`).

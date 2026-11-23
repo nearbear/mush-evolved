@@ -88,6 +88,7 @@ export const GAME_STATE_FIELDS: Record<string, FieldRule> = {
   signals: { reach: "room", test: "signals.test.ts", note: "Every signal and its conversation, only to the living with Comms Officer access at a Com center terminal (`comms.terminal.signals`); `nextId` never. A merchant in space's id, kind, name and hp also go to gunners (`hunters.merchants`, #143)." },
   turrets: { reach: "room", test: "hunters.test.ts", note: "Every turret's charges, to the living in a turret room." },
   incidentPoints: { reach: "never", test: "leaks.test.ts", note: "The incident pool (#189): no one, no skill or role." },
+  apSpentToday: { reach: "never", test: "leaks.test.ts", note: "The crew's AP spent today (#241), behind the activity overload." },
   pendingFires: { reach: "never", test: "leaks.test.ts", note: "Rooms a Pyromaniac set to ignite at the next cycle change (2026-11-03)." },
   deloggedRooms: { reach: "never", test: "defacer.test.ts", note: "Rooms a Defacer cleared this cycle (2026-11-22): only their public `delogged` notice shows it, to those in the room." },
   trappedRooms: { reach: "filtered", test: "trapper.test.ts", note: "Rooms booby-trapped with a spore (#473): sent only to living Mush (`PlayerView.trappedRooms`); humans and the dead always receive `[]` (leaks.test.ts too)." },

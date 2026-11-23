@@ -164,6 +164,7 @@ Both games start characters with 0 skills (3 pickable + 1 book slot) and permane
 
 | Mechanic | eMush | Mush: Evolved |
 | :--- | :--- | :--- |
+| **Activity Overload (Hunter & Incident Points)** | Each cycle's hunter and incident points are multiplied by every boarded player (dead included) ÷ max players while the day's AP spent is at most 7 × max players, else by AP spent ÷ that threshold; only real AP counts. | Same formula and threshold (7 × the ship's 16 seats), but the low-activity share counts **only living players**, and an action paid with a **skill point counts the AP it would have cost**. |
 | **1-Cycle Travel Transit & Following Hunters** | Enters `IN_ORBIT` immediately at departure while `TRAVELING` lasts 1 cycle; following plain Hunters unpool on arrival (spending pool points, or spawning $\ge 1$ hunter from half the pool if 0 plain hunters were present). | Jumping or leaving orbit enters orbit (or empty space) at the **next cycle change**. Following hunters ($\lceil 50\% \rceil$ of plain Hunters and Aracks, plus all Trax) resolve at departure without spending pool points; jumping with **0 hunters present brings 0 hunters**. |
 | **Public Turns & Orbited Planet Name** | Heading/turns and planet names are console-restricted. | Every quarter-turn (`lastTurn`, rotating the starfield) and the **orbited planet's name** (once arrived) are visible to **everyone aboard** (sectors and finder remain private). |
 | **Jump Confirmation** | Travel/Leave Orbit execute immediately. | Travel and Leave Orbit always show a static confirmation dialog. |
