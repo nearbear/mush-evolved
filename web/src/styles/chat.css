@@ -280,6 +280,7 @@
   padding: var(--space-2) 0 var(--space-1);
   border-bottom: 0;
   color: var(--muted);
+  font-family: var(--font-display);
   font-size: 0.7rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -416,6 +417,10 @@
   align-items: baseline;
   gap: 0 var(--space-2);
   min-width: 0;
+}
+.entry-name > strong {
+  font-family: var(--font-display);
+  font-weight: 400;
 }
 /* The message's "⋯" menu button. With a mouse it shows only while the message is hovered or focused, or its menu is
    open; touch screens can't hover, so there it always shows. */

@@ -75,7 +75,7 @@
   padding: 3px var(--space-2);
   background: var(--terminal-header-bg);
   color: #171b5c;
-  font-weight: bold;
+  font-weight: 400;
 }
 .itrackie-card .feed > li.cycle-divider::before,
 .itrackie-card .feed > li.cycle-divider::after,

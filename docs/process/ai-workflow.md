@@ -5134,3 +5134,7 @@ Follow-up: the owner dropped the Intergalactic line from the helper and had the 
 ### 2026-11-22 — Private HP loss/gain log lines
 - **Decision (owner):** Every non-zero HP loss or gain (`damage` and `heal` in `shared/src/death.ts`) emits a private `loseHp`/`gainHp` log line with the actual HP delta, whether the player survives or not (`loseHp` before `died`); caller-specific duplicates ignored for now.
 - **What worked:** Centralizing in `damage()`/`heal()` covered all HP sources at once, and measuring `before - player.hp` / `player.hp - before` avoided zero-delta spam (e.g., `healDaily` at full HP or armor-blocked hits). Added en/fr/es locale keys and unit + hidden-info tests in `shared/tests/death.test.ts`.
+
+### 2026-11-22 — Days One font on cycle dividers, portrait names, and chatlog headers
+
+- Switched `.feed > li.cycle-divider` (`web/src/styles/chat.css`, `web/src/styles/itrackie.css`), character portrait names (`.inspect-figure-name` in `web/src/styles/inspect.css`, `.pod-detail-name` in `web/src/lobby/lobby.css`), and chatlog header names (`.entry-name > strong` in `web/src/styles/chat.css`) to `var(--font-display)` (`Days One`) with `font-weight: 400` so the 400-only display face is not faux-bolded.
