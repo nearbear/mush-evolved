@@ -3,7 +3,7 @@
 
 import { Popover } from "@base-ui/react/popover";
 import { useTranslation } from "react-i18next";
-import { DEFAULT_CONFIG, STATUS_PUBLIC, statusIdsFor } from "@mush2/shared";
+import { DEFAULT_CONFIG, STATUS_PUBLIC, isCurseId, statusIdsFor } from "@mush2/shared";
 import { CONTAMINATED_ICON, statusIcon, statusIconClass } from "../art/assets.ts";
 
 /** `contamination` is set only when the server sent one (a Mush looking at a contaminated human). */
@@ -35,7 +35,7 @@ export function StatusIcons({
             iconClass={statusIconClass(id)}
             name={t(`status.${id}`, { defaultValue: id })}
             description={descriptionFor(id)}
-            visibility={STATUS_PUBLIC[id] ? "public" : "private"}
+            visibility={isCurseId(id) ? "mushOnly" : STATUS_PUBLIC[id] ? "public" : "private"}
           />
         </li>
       ))}
@@ -69,7 +69,7 @@ export function StatusIcon({
   iconClass?: string | undefined;
   name: string;
   description?: string;
-  visibility?: "public" | "private";
+  visibility?: "public" | "private" | "mushOnly";
   children?: React.ReactNode;
 }) {
   const { t } = useTranslation();
