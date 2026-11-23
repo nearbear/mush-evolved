@@ -434,6 +434,7 @@
     "exitNimble": "Quitter le mode agile",
     "becomeNinja": "Devenir un ninja",
     "becomeNormal": "Redevenir banal",
+    "delog": "Effacer les logs",
     "accommodate": "Pousser le fauteuil",
     "acceptAccommodation": "Accepter l'aide",
     "stopAccommodation": "Mettre fin à l'aide",
@@ -1241,6 +1242,7 @@
     "exitedNimble": "Vous avez quitté le mode agile.",
     "becameNinja": "Vous êtes maintenant un ninja : vos actions sont anonymes.",
     "becameNormal": "Vous n'êtes plus un ninja.",
+    "delogged": "Les archives sont toutes brouillées… Qui a fait mumuse avec les senseurs encore !?",
     "someone": "quelqu'un",
     "interrogated": "{{name}} a interrogé {{target}}.",
     "chitchatted": "{{name}} a papoté avec {{target}}.",
@@ -1779,7 +1781,7 @@
       "nerondepress": "Pour 3 PA, Vous pouvez embrouiller NERON au prochain cycle ce qui modifie aléatoirement ses réglages.\nNe fonctionne pas sur l'entrave DMZ si elle est bloquée.",
       "slimetrap": "Pour 1 PA, le joueur ciblé deviendra sale dans 1 à 4 cycles.",
       "electro_slime": "Pour 1 PA, vous pouvez provoquer la casse d' un objet electroniques. Celui-ci mettra plusieurs cycles avant de se dégrader.",
-      "defacer": "Une fois par jour. Pour 2 PA, vous pouvez effacer tous les logs d'une salle. L'enregistrement des logs se fera à nouveau à partir du prochain cycle."
+      "defacer": "Débloque l'action Effacer les logs : une fois par jour, pour 2 PA, effacez tous les logs d'une salle. Rien n'y est enregistré jusqu'au prochain cycle, et NERON n'y annonce pas les morts. Sauf en expédition."
     }
   },
   "drugDispenser": {

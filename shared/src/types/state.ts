@@ -236,6 +236,8 @@ export interface GameCore {
   pendingFires: RoomId[];
   /** Rooms booby-trapped with a spore by a Mush Trapper (traps.ts, #473). Sent only to living Mush (`PlayerView.trappedRooms`). */
   trappedRooms: RoomId[];
+  /** Rooms a Defacer cleared this cycle (log.ts `deface`): nothing is written there until the cycle ends. Never sent; their `delogged` notice shows it. */
+  deloggedRooms: RoomId[];
   /** A Gravity Simulator was repaired this cycle and gravity comes back at the next cycle change (owner, 2026-11-22, `gravity.ts`). Public: the alert bar shows it. */
   gravityRestarting: boolean;
   /** Progress toward Eden (eden.ts, #478). An object so the star map tree can extend it. Public: Compute's success is logged and the Command terminal shows it. */

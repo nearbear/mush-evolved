@@ -272,6 +272,8 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   nimble_fingers: "full",
   // Mush skill: become a ninja / become normal for 0 AP; your room lines name you "Someone" (owner, 2026-11-22, actions/ninja.ts).
   ninja: "full",
+  // Mush skill: Clear the logs, once a day for 2 AP; the room records nothing until the cycle ends (owner, 2026-11-22, actions/delog.ts).
+  defacer: "full",
   //Increases success rate, injury chance, and dirty chance by 20%
   expert: "full",
   // Free turret shots from Shoot points (owner, 2026-10-25), +1 expedition strength with a working gun (owner,

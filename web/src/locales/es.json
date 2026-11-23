@@ -434,6 +434,7 @@
     "exitNimble": "Salir del modo ágil",
     "becomeNinja": "Convertirte en un ninja",
     "becomeNormal": "Volver a la normalidad",
+    "delog": "Borrar el registro",
     "accommodate": "Empujar la silla",
     "acceptAccommodation": "Aceptar ayuda",
     "stopAccommodation": "Terminar la ayuda",
@@ -1241,6 +1242,7 @@
     "exitedNimble": "Saliste del modo ágil.",
     "becameNinja": "Ahora eres un ninja: tus acciones son anónimas.",
     "becameNormal": "Ya no eres un ninja.",
+    "delogged": "Los registros están todos revueltos... ¡¿Quién ha vuelto a jugar con los sensores?!",
     "someone": "alguien",
     "interrogated": "{{name}} interrogó a {{target}}.",
     "chitchatted": "{{name}} charló con {{target}}.",
@@ -1779,7 +1781,7 @@
       "nerondepress": "Por 3 PA puedes confundir a NERON en el próximo ciclo, lo que cambia sus ajustes al azar.\nNo funciona con la restricción DMZ si está bloqueada.",
       "slimetrap": "Por 1 PA, el jugador elegido se ensuciará en 1 a 4 ciclos.",
       "electro_slime": "Por 1 PA puedes hacer que se rompa un objeto electrónico. Tardará varios ciclos en estropearse.",
-      "defacer": "Una vez al día. Por 2 PA puedes borrar todos los registros de una sala. Se volverán a registrar a partir del próximo ciclo."
+      "defacer": "Desbloquea Borrar el registro: una vez al día, por 2 PA, borra todos los registros de una sala. No se registra nada en ella hasta el siguiente ciclo y NERON no anuncia las muertes que ocurran allí. Salvo en expedición."
     }
   },
   "drugDispenser": {

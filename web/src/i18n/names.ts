@@ -111,6 +111,7 @@ const ACTION_NAME_KEYS = {
   enter_nimble: "actions.enterNimble",
   exit_nimble: "actions.exitNimble",
   become_ninja: "actions.becomeNinja",
+  delog: "actions.delog",
   become_normal: "actions.becomeNormal",
   accommodate: "actions.accommodate",
   accept_accommodation: "actions.acceptAccommodation",

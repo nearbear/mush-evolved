@@ -638,6 +638,7 @@ export function normalizePlayer(raw: Partial<PlayerState>, mode: QueueMode): Pla
     doormanToday: raw.doormanToday,
     chitchatToday: raw.chitchatToday,
     interrogatedToday: raw.interrogatedToday,
+    delogToday: raw.delogToday,
     snoopedToday: opt(raw.snoopedToday, copy),
     mycoscannedToday: raw.mycoscannedToday,
     jukeboxDay: raw.jukeboxDay,
@@ -1328,6 +1329,8 @@ export function normalizeCore(raw: Partial<GameCore>, ctx: NormalizeContext, mod
     pendingFires: copy(need(raw, "pendingFires", t)),
     // Trapper (#473): no rooms trapped in a game stored before it.
     trappedRooms: copy(added(raw, "trappedRooms", [])),
+    // Defacer (owner, 2026-11-22): no room defaced in a game stored before it.
+    deloggedRooms: copy(added(raw, "deloggedRooms", [])),
     // Gravity restart (owner, 2026-11-22): a game stored before it restored gravity at once, so nothing is restarting.
     gravityRestarting: added(raw, "gravityRestarting", false),
     // Eden (#478): nothing could compute it in a game stored before it.

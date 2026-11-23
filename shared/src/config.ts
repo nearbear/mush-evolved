@@ -322,6 +322,7 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   // Shrink (owner, 2026-10-26, eMushpedia Psy): Comfort costs 1 AP and gives a roommate 2 morale; lying in a bed with a Shrink in the room gives 1 morale a cycle.
   comfort: { cost: { ap: 1 }, morale: 2 },
   shrink: { lyingMorale: 1 },
+  delog: { cost: { ap: 2 } },
   interrogate: { cost: { ap: 1 }, damage: 1, dirtyChance: 0.15, injuryChance: 0.1 },
   // Decided 2026-10-16: working on a research costs 2 AP. Owner, 2026-10-26: its progress follows the original's relay formula, 6-9% at difficulty 10.
   // Owner, 2026-10-31 (docs/plans/archive/research-sabotage.md): assays at the quarter marks, 5% noise, Contaminate costs 1 AP.

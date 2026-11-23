@@ -780,6 +780,7 @@ describe("actions from a client", () => {
     enter_nimble: [{ type: "enter_nimble" }],
     exit_nimble: [{ type: "exit_nimble" }],
     become_ninja: [{ type: "become_ninja" }],
+    delog: [{ type: "delog" }],
     become_normal: [{ type: "become_normal" }],
     accommodate: [{ type: "accommodate", target: "p1" }],
     accept_accommodation: [{ type: "accept_accommodation", target: "p1" }],

@@ -21,9 +21,39 @@ import type { GameState, LogEntry, LogLevel, LogParams, PlayerId, PlayerState, R
 
 /** Appends `entry` with the next id and the current cycle. Every log line goes through here. Mutates a state the caller already cloned. */
 export function pushLog(state: GameState, entry: Omit<LogEntry, "id" | "cycle">): void {
+  if (entry.room !== undefined && isDefaced(state, entry.room)) return;
   const line: LogEntry = { id: state.nextLogId++, cycle: state.cycle, ...ninjaMasked(state, entry) };
   state.log.push(line);
   for (const p of state.players) if (seesLine(line, p)) p.logSeen += 1;
+}
+
+/** The notice a defaced room shows for the rest of the cycle (Defacer, `deface`). */
+export const DELOGGED_KEY = "delogged";
+
+/** Whether `room` is defaced this cycle (Defacer): nothing is written there until the cycle ends. */
+export function isDefaced(state: Readonly<GameState>, room: RoomId): boolean {
+  return state.deloggedRooms.includes(room);
+}
+
+/**
+ * Defacer's Clear the logs (owner, 2026-11-22, as in eMush): erases every line in `room`, whoever could see it
+ * (private ones too), writes the public `delogged` notice, and drops every line written there until the cycle ends
+ * (`pushLog`), private ones and death lines included. The notice is not Nimble's or a ninja's to change. The record
+ * keeps every line. Mutates a state the caller already cloned.
+ */
+export function deface(state: GameState, room: RoomId): void {
+  if (isDefaced(state, room)) return; // nothing but the notice is there
+  state.log = state.log.filter((e) => e.room !== room);
+  pushLog(state, { key: DELOGGED_KEY, room, visibleTo: "all" });
+  state.deloggedRooms.push(room);
+}
+
+/** As a cycle begins: defaced rooms record again, and their notice goes (eMush hides it then). Mutates a state the caller already cloned. */
+export function endDefacing(state: GameState): void {
+  if (state.deloggedRooms.length === 0) return;
+  const rooms = new Set(state.deloggedRooms);
+  state.log = state.log.filter((e) => !(e.key === DELOGGED_KEY && e.room !== undefined && rooms.has(e.room)));
+  state.deloggedRooms = [];
 }
 
 /**

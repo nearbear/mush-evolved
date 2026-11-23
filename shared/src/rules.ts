@@ -55,7 +55,7 @@ import { clone, cloneState, dayOf, fail, findPlayer, type ActionResult } from ".
 
 export { dayOf };
 import { damage, healDaily, hasMushDied } from "./death.ts";
-import { activitySeen, inLogWindow, logPrivate, logWindowOf, moveLineFor, pruneLog, seesLine, startLogSeen, withNimbleActor, withNinjaActor } from "./log.ts";
+import { activitySeen, endDefacing, inLogWindow, logPrivate, logWindowOf, moveLineFor, pruneLog, seesLine, startLogSeen, withNimbleActor, withNinjaActor } from "./log.ts";
 import { recordAction } from "./history.ts";
 import { ringMycoAlarms } from "./mycoalarm.ts";
 import { triggerRoomTrap, willTriggerRoomTrap } from "./traps.ts";
@@ -212,6 +212,7 @@ export function createGame(
     reports: [],
     pendingFires: [],
     trappedRooms: [],
+    deloggedRooms: [],
     gravityRestarting: false,
     eden: { computed: false },
     failureStreaks: {},
@@ -619,6 +620,7 @@ function advanceCycle(state: GameState, at?: number): void {
   // The ending cycle's Hopeless humans die first, so anyone this cycle change takes to 0 gets a full cycle (morale.ts).
   hopelessCycle(state);
   state.cycle += 1;
+  endDefacing(state);
   pruneLog(state);
   for (const p of state.players) {
     changeAP(state, p, apRefill(state, p));
@@ -655,6 +657,7 @@ function advanceCycle(state: GameState, at?: number): void {
       delete p.doormanToday;
       delete p.chitchatToday;
       delete p.interrogatedToday;
+      delete p.delogToday;
       delete p.snoopedToday;
       delete p.mycoscannedToday;
       p.cpuPriorityChangedToday = false;

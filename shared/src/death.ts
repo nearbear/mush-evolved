@@ -10,7 +10,7 @@ import { shipInvincible } from "./cheats.ts";
 import type { CharacterId } from "./characters.ts";
 import { removeFromChannel, pushChat } from "./chat.ts";
 import { CORPSE_ITEM, ITRACKIE_ITEM, sameContainer, spawnInRoom } from "./items.ts";
-import { logPrivate, logPublic, withoutActor } from "./log.ts";
+import { isDefaced, logPrivate, logPublic, withoutActor } from "./log.ts";
 import { damageTaken } from "./modifiers.ts";
 import { PATROL_SHIPS } from "./patrol.ts";
 import { removeStatus } from "./statuses.ts";
@@ -128,7 +128,8 @@ export function killPlayer(state: GameState, player: PlayerState, cause: DeathCa
   // death announcements off (bios.ts). Both give the cause, never the killer (#177).
   loseShipOnPlanet(state, player);
   if (!traded) withoutActor(() => logPublic(state, player.room, "died", { name: player.character, cause }));
-  if (!traded && state.bios.death_announcements) {
+  // NERON doesn't announce a death in a room a Defacer cleared this cycle (eMush; owner, 2026-11-22).
+  if (!traded && state.bios.death_announcements && !isDefaced(state, player.room)) {
     systemMessage(state, "global", player.role === "mush" ? "diedMush" : "diedHuman", { name: player.character, cause });
   }
   // Owner, 2026-11-21: if a pregnant crewmember dies, every living crewmember (human or Mush) loses morale.
