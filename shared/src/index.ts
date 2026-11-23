@@ -25,6 +25,7 @@ export * from "./cheats.ts";
 export { CHEAT_ROOM, SUPERKUBE } from "./cheatRoom.ts";
 export { KUBE_OPS, isKubeOp, kubeChoices, type KubeArgKind, type KubeChoiceSource, type KubeGroup, type KubeOpId } from "./kube.ts";
 export * from "./statuses.ts";
+export * from "./curses.ts";
 export { blurredVision } from "./diseases.ts";
 export * from "./resources.ts";
 export * from "./skills.ts";

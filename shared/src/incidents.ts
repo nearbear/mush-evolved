@@ -13,6 +13,7 @@ import { pushChat } from "./chat.ts";
 import { daedalusRooms, isOnFire, startFire } from "./fire.ts";
 import { ITEM_TYPES, isWorking, itemsIn } from "./items.ts";
 import { logPrivate, logPublic } from "./log.ts";
+import { takesWorstDamage } from "./modifiers.ts";
 import { projectDone } from "./projects.ts";
 import { roll, rollFloat, rollInt, rollWeighted } from "./rng.ts";
 import type { DeepReadonly, Equipment, GameConfig, GameState, ItemState, PlayerId, PlayerState, RoomId } from "./types.ts";
@@ -97,6 +98,11 @@ const sickenable = (state: Readonly<GameState>, sickened: ReadonlySet<PlayerId>)
 
 const workingDoors = (state: Readonly<GameState>) => allDoors(state.config.rooms).filter((id) => !state.doors[id]?.broken);
 
+/** An incident's damage roll for one person: the top of the range under Bad Luck (`takesWorstDamage`), with no roll. */
+export function incidentDamage(state: GameState, p: Readonly<PlayerState>, range: readonly [number, number]): number {
+  return takesWorstDamage(p) ? range[1] : roll(state, range);
+}
+
 const INCIDENTS: Record<IncidentId, Incident> = {
   // One room with crew; everyone there loses their own 1-3 HP roll (owner, 2026-11-01).
   tremor: {
@@ -104,7 +110,7 @@ const INCIDENTS: Record<IncidentId, Incident> = {
     apply: (state) => {
       const room = pick(state, occupiedRooms(state));
       logPublic(state, room, "tremor");
-      for (const p of state.players.filter((o) => o.alive && o.room === room)) damage(state, p, roll(state, state.config.incidents.tremor.damage), "injury");
+      for (const p of state.players.filter((o) => o.alive && o.room === room)) damage(state, p, incidentDamage(state, p, state.config.incidents.tremor.damage), "injury");
     },
   },
   // One working door aboard breaks silently (owner, 2026-11-14, #330).
@@ -151,7 +157,7 @@ const INCIDENTS: Record<IncidentId, Incident> = {
       const victim = pick(state, aboard(state).filter((p) => !plated.has(p.id)));
       plated.add(victim.id);
       logPublic(state, victim.room, "metalPlate", { name: victim.character });
-      damage(state, victim, roll(state, state.config.incidents.metalPlate.damage), "metal_plate");
+      damage(state, victim, incidentDamage(state, victim, state.config.incidents.metalPlate.damage), "metal_plate");
     },
   },
   // Owner, 2026-11-14: one person aboard, Mush included, once per cycle each, catches a random disease from

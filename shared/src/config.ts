@@ -101,6 +101,10 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   demoralize: { cost: { ap: 2 }, morale: 2 },
   // Owner, 2026-11-21: Bacteriophilia's give_disease, 1 AP, from `diseases.mushSkillDiseases`.
   giveDisease: { cost: { ap: 1 } },
+  // Owner, 2026-11-22: Nightmarish's curse costs 2 AP and gives Bad Luck (`bad_luck_curse`).
+  nightmare: { cost: { ap: 2 } },
+  // Owner, 2026-11-22: Bad Luck multiplies an action's random injury and dirt chances by 4.
+  badLuckCurse: { injuryFactor: 4, dirtFactor: 4 },
   // Owner, 2026-11-05: the Apprentice skill's apprenticeship action costs 1 AP.
   apprenticeship: { cost: { ap: 1 } },
   // Owner, 2026-11-04: the pneumatic tube is free to use.
@@ -925,6 +929,8 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
       {label: "slight_nausea_disease", type: "disease", durationMin: 12, durationMax: 20},
       {label: "food_poisoning_disease", type: "disease", durationMin: 8, durationMax: 12},
       {label: "vitamin_deficiency_disease", type: "disease", durationMin: 12, durationMax: 20},
+      // Owner, 2026-11-22: a curse (curses.ts), 8-16 cycles; recursing rerolls it.
+      {label: "bad_luck_curse", type: "curse", durationMin: 8, durationMax: 16},
       {label: "flu_disease", type: "disease", durationMin: 8, durationMax: 12, spreadByDTT: true, roomSpread: 0.02, cycleSpread: 0.02},
       {label: "rubella_disease", type: "disease", durationMin: 12, durationMax: 20, roomSpread: 0.02, cycleSpread: 0.02},
       {label: "syphilis_disease", type: "disease", durationMin: 20, durationMax: 32, spreadByDTT: true},

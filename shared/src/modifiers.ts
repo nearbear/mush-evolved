@@ -77,6 +77,8 @@ import { flu_disease } from "./modifiers/flu_disease.ts";
 import { rubella_disease } from "./modifiers/rubella_disease.ts";
 import { syphilis_disease } from "./modifiers/syphilis_disease.ts";
 import { sepsis_disease } from "./modifiers/sepsis_disease.ts";
+import { bad_luck_curse } from "./modifiers/bad_luck_curse.ts";
+import { isCurseId } from "./curses.ts";
 import { broken_nose_injury } from "./modifiers/broken_nose_injury.ts";
 import { broken_shoulder_injury, bruised_shoulder_injury, shattered_shoulder_injury } from "./modifiers/shoulder_injuries.ts";
 import { mashed_foot_injury } from "./modifiers/mashed_foot_injury.ts";
@@ -261,6 +263,8 @@ export interface Modifier extends Partial<FoldHooks> {
   mute?: boolean;
   /** Missing Teeth: rewrites the text of every chat message the holder posts (`sendChat`). Must be pure. */
   speech?: (text: string) => string;
+  /** Bad Luck: the Metal Plate and Tremor incidents always deal the top of their damage range (`incidentDamage`). */
+  worstDamage?: boolean;
   /** Broken Shoulder: can't take a heavy item (TransferAction), and drops any held when it starts. */
   noHeavy?: boolean;
   /** Runs whenever the ship moves */
@@ -342,6 +346,8 @@ export const MODIFIERS: Record<string, Modifier> = {
   rubella_disease,
   syphilis_disease,
   sepsis_disease,
+  // Curses (curses.ts)
+  bad_luck_curse,
   // Injuries
   broken_nose_injury,
   damaged_ears_injury,
@@ -387,7 +393,8 @@ export function modifierIds(player: Readonly<PlayerState>): string[] {
   return player.role === "mush" ? ids.filter((id) => !isDiseaseId(id)) : ids;
 }
 
-const isDiseaseId = (id: string): boolean => id.endsWith("_disease");
+// Curses count as diseases here: like a disease, a curse does nothing to a Mush (owner, 2026-11-22).
+const isDiseaseId = (id: string): boolean => id.endsWith("_disease") || isCurseId(id);
 
 /** The diseases a Mush has, which `modifierIds` leaves out. Empty for anyone else. */
 function mushDiseaseIds(player: Readonly<PlayerState>): string[] {
@@ -860,6 +867,11 @@ export function spokenText(player: Readonly<PlayerState>, text: string, registry
 /** Whether the player can't carry heavy items right now (a `noHeavy` modifier: Broken Shoulder). */
 export function cantCarryHeavy(player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS): boolean {
   return modifierIds(player).some((id) => registry[id]?.noHeavy === true);
+}
+
+/** Whether incident damage always rolls its maximum for this player (a `worstDamage` modifier: Bad Luck). */
+export function takesWorstDamage(player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS): boolean {
+  return modifierIds(player).some((id) => registry[id]?.worstDamage === true);
 }
 
 /** Whether the player can't hear other players' chat right now (a `deaf` modifier: Damaged or Destroyed Ears). */

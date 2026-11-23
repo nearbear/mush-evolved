@@ -93,6 +93,7 @@ const ACTION_NAME_KEYS = {
   mass_mouldering: "actions.massMouldering",
   demoralize: "actions.demoralize",
   give_disease: "actions.giveDisease",
+  nightmare: "actions.nightmare",
   tube_transfer: "actions.tubeTransfer",
   consume_spore: "actions.consumeSpore",
   fungal_cuisine: "actions.fungalCuisine",

@@ -4,6 +4,7 @@
 // everyone in the room; private ones appear only in your own view.
 // Names and icons live in the client (i18n keys `status.<id>`).
 
+import { CURSE_IDS, isCurseId } from "./curses.ts";
 import { inactivityOf } from "./inactivity.ts";
 import type { GameState, PlayerState } from "./types.ts";
 
@@ -52,10 +53,11 @@ export const STATUS_IDS = ["dirty", "full_belly", "hungry", "immune", "immunity"
 export type StatusId = string;
 /**
  * The fixed statuses plus the ship's configured diseases and injuries (`config.diseases.allDiseases` and
- * `allInjuries`). Those aren't listed above: they are private, since `STATUS_PUBLIC` has no entry for them.
+ * `allInjuries`), and the curses (curses.ts). Those aren't listed above: they are private, since `STATUS_PUBLIC` has no
+ * entry for them (a curse is more than private: hidden from its holder, shown only to Mush, `curseStatusesSeenBy`).
  */
 export function statusIdsFor(diseases: readonly string[], injuries: readonly string[] = []): string[] {
-  return [...new Set([...STATUS_IDS, ...diseases, ...injuries])];
+  return [...new Set([...STATUS_IDS, ...diseases, ...injuries, ...CURSE_IDS])];
 }
 
 /** Confirmed 2026-10-14: dirty is public; full belly and hungry are private. */
@@ -64,8 +66,11 @@ export const STATUS_PUBLIC: Readonly<Record<string, boolean>> = FIXED_STATUS_PUB
 /** Statuses that are character traits (permanent, innate): public, but shown on Inspect only, never over the head. */
 export const TRAIT_STATUS_IDS: readonly StatusId[] = ["immunity", "pacifist", "hyperactive", "antisocial", "germaphobe", "mankind_only_hope", "wheelchair"];
 
-/** Statuses never floated over the head, whatever their visibility (owner, 2026-11-05: full belly is Inspect-only). */
-const NO_OVERHEAD_STATUS_IDS: readonly StatusId[] = ["full_belly"];
+/**
+ * Statuses never floated over the head, whatever their visibility (owner, 2026-11-05: full belly is Inspect-only;
+ * 2026-11-22: so are curses).
+ */
+const NO_OVERHEAD_STATUS_IDS: readonly StatusId[] = ["full_belly", ...CURSE_IDS];
 
 /** The statuses worth floating over a character's head: everything but traits. */
 export function overheadStatuses(statuses: readonly string[]): string[] {
@@ -140,6 +145,14 @@ export function statusesOf(state: Readonly<Pick<GameState, "config" | "cycle" | 
 /** The statuses anyone may see on this player. */
 export function publicStatusesOf(state: Readonly<Pick<GameState, "config" | "cycle" | "players">>, p: Readonly<PlayerState>): string[] {
   return statusesOf(state, p).filter((id) => !state.config.diseases.allDiseases.includes(id) && (STATUS_PUBLIC[id] ?? false));
+}
+
+/**
+ * The curses `viewer` sees on `p`, someone else in their room (owner, 2026-11-22): all of them for a Mush, none for a
+ * human. Nobody ever sees their own (`viewFor` strips them).
+ */
+export function curseStatusesSeenBy(viewer: Readonly<PlayerState>, p: Readonly<PlayerState>): string[] {
+  return viewer.role === "mush" && viewer.id !== p.id ? p.statuses.filter(isCurseId) : [];
 }
 
 /** Mutates a state that the caller already cloned. */

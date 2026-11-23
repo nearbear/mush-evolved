@@ -765,6 +765,7 @@ describe("actions from a client", () => {
     mass_mouldering: [{ type: "mass_mouldering" }],
     demoralize: [{ type: "demoralize", target: "p1" }],
     give_disease: [{ type: "give_disease", target: "p1" }],
+    nightmare: [{ type: "nightmare", target: "p1" }],
     lie_down: [{ type: "lie_down", equipment: "e1" }],
     report_fire: [{ type: "report_fire" }],
     report_equipment: [{ type: "report_equipment", equipment: "e1" }],

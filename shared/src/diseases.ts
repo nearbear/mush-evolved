@@ -1,4 +1,5 @@
 import { roll, rollFloat, rollInt } from "./rng.ts";
+import type { CurseId } from "./curses.ts";
 import { skillPicked } from "./modifiers.ts";
 import { addStatus, removeStatus, type StatusId } from "./statuses.ts";
 import type { DiseaseStats, GameState, PlayerState } from "./types.ts";
@@ -113,6 +114,20 @@ export function addDisease(state: GameState, player: PlayerState, name: StatusId
     const duration = roll(state, [stats?.durationMin || 1, stats?.durationMax || 2]);
 
     player.diseaseTrackers.push({ name, duration: duration, resistance: 8, complete: false, forever: false });
+}
+
+/**
+ * Curses a player (curses.ts): a new curse goes through `addDisease`; one they already have gets a fresh duration,
+ * rolled again from its stats (owner, 2026-11-22: recursing refreshes it).
+ */
+export function addCurse(state: GameState, player: PlayerState, name: CurseId): void {
+  const tracker = player.diseaseTrackers.find((t) => t.name === name && !t.complete);
+  if (!player.modifiers.includes(name) || !tracker) {
+    addDisease(state, player, name);
+    return;
+  }
+  const stats = diseaseStats(state, name);
+  tracker.duration = roll(state, [stats?.durationMin || 1, stats?.durationMax || 2]);
 }
 
 export function removeDisease(state: GameState, player: PlayerState, name: StatusId){
