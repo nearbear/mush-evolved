@@ -73,6 +73,8 @@ Both games start characters with 0 skills (3 pickable + 1 book slot) and permane
 
 ### Spore Economy, Morale, Diseases, and Transfer
 
+- **Nightmarish Curses With Bad Luck (owner, 2026-11-22):** In eMush, Nightmarish (0 AP) gives nightmares to a sleeping player, costing them the sleep bonuses. Here it is a **2 AP covert** action on any living human roommate (in bed or not) that applies the curse **Bad Luck** for **8–16 cycles** (recursing rerolls it): the victim's action **injury and dirt chances ×4**, and the Metal Plate and Tremor incidents always deal their **maximum** damage. **Curses** are a new kind of ailment that works like a disease but is **hidden from its holder** (even their action odds hide it); Mush see it on others in their room as a status with the nightmarish icon, marked Mush-only, never overhead.
+
 > [!IMPORTANT]
 > **Major Change — Mush Have Real, Tracked Morale:** In eMush, Mush morale is permanently locked at 14 and unaffected by food, traits, or penalties (allowing "what's your morale?" arithmetic checks). In **Mush: Evolved**, **Mush track real morale** so a Mush's morale naturally mirrors a human's:
 >

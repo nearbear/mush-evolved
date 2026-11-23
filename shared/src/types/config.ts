@@ -368,6 +368,13 @@ export interface GameConfig {
   trapper: {
     cost: { ap: number }; // The Mush skill Trapper (trapper): 1 AP and 1 spore, no cooldown (owner, 2026-11-21, #473).
   };
+  nightmare: {
+    cost: { ap: number }; // The Mush skill Nightmarish's curse (actions/nightmare.ts): 2 AP, no limit (owner, 2026-11-22).
+  };
+  badLuckCurse: {
+    injuryFactor: number; // Bad Luck (`bad_luck_curse`): multiplies each action's random injury chance (4).
+    dirtFactor: number; // ...and its dirt chance (4).
+  };
   spores: {
     cost: { ap: number }; // AP spent to extract a spore (confirmed 2026-10-13).
     effect: { spores: number }; // Spores one extraction gives (confirmed 2026-10-13).

@@ -1,7 +1,7 @@
 // Maps game ids to Motion Twin art in Mush/ (CC BY-NC-SA 4.0, see
 // Mush/ATTRIBUTION.md). Vite bundles only the files matched here.
 
-import { DEFAULT_CONFIG, REBEL_BASES, hybridParents, type CharacterId, type RebelBaseId, type Ending, type ItemView, type MerchantTargetView, type ResourceId, type SpoilStage, type TitleId } from "@mush2/shared";
+import { CURSE_IDS, DEFAULT_CONFIG, REBEL_BASES, hybridParents, type CharacterId, type RebelBaseId, type Ending, type ItemView, type MerchantTargetView, type ResourceId, type SpoilStage, type TitleId } from "@mush2/shared";
 
 type UrlMap = Record<string, string>;
 const urls = (map: UrlMap) =>
@@ -362,7 +362,7 @@ const injuryStatusIcons = Object.fromEntries(DEFAULT_CONFIG.diseases.allInjuries
 // Mankind's Only Hope has no status icon in the original (it was a skill there), so its skill icon stands in;
 // Bodyguard's statuses (protecting/protected) use Bodyguard's brick-wall skill icon (`unconcerned.png`).
 const traitSkillIcons = urls(
-  import.meta.glob<string>("../../../Mush/www/img/icons/skills/{mankind_only_hope,unconcerned,nimble_fingers,ninja}.png", { eager: true, query: "?url", import: "default" }),
+  import.meta.glob<string>("../../../Mush/www/img/icons/skills/{mankind_only_hope,unconcerned,nimble_fingers,ninja,nightmare}.png", { eager: true, query: "?url", import: "default" }),
 );
 export const STATUS_ICONS: Readonly<Record<string, string>> = {
   ...diseaseStatusIcons,
@@ -383,6 +383,8 @@ export const STATUS_ICONS: Readonly<Record<string, string>> = {
   wheelchair: statusIconFiles["disabled"]!,
   accommodated: statusIconFiles["disabled"]!,
   outcast: statusIconFiles["paria"]!,
+  // Curses, which only Mush see, use the Nightmarish skill's icon (owner, 2026-11-22).
+  ...Object.fromEntries(CURSE_IDS.map((id) => [id, traitSkillIcons["nightmare"]!])),
   protecting: traitSkillIcons["unconcerned"]!,
   protected: traitSkillIcons["unconcerned"]!,
   guardian: statusIconFiles["guardian"]!,

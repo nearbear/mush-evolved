@@ -4971,6 +4971,13 @@ Owner asked to "match eMush". Moved the debris table from `config.hunters.debris
 - 2026-11-22: Missing Finger now has -1 max HP (owner, the wiki's). Burnt Hand already had it, so it was left unchanged. No `verify` (owner); the finger and hand/arm tests were run.
 
 - 2026-11-22: Added `missing_teeth_injury` (-2 max morale; chat posts lose F, V, S, T, D and L in both cases). New `speech` modifier hook, folded by `spokenText` in `sendChat` before the message is stored, so the server stores the mangled text and no client-side logic is needed. An emptied message is refused. Shared-report notes are left alone, matching Torn Tongue; flagged. No `verify` (owner); the missing teeth and channel tests were run.
+
+### 2026-11-22: Curses, Bad Luck and the Nightmarish skill
+
+- **Decision (owner):** curses work like diseases but are hidden from the cursed player; Mush see other players' curses like statuses, with the nightmarish icon, not overhead, with a Mush-only warning. First curse `bad_luck_curse`: 8-16 cycles, action injury and dirt chances x4, always maximum damage from Metal Plate and Tremor. Source: Nightmarish (Mush skill `nightmare`), now a 2 AP covert action on a living human roommate (no bed needed, replacing the original's sleep-bonus effect), no limit, recursing rerolls the duration.
+- **How:** a curse reuses the disease plumbing (`addDisease`, tracker countdown, the existing `actionInjuryRate`/`actionDirtRate` hooks), plus a leaf `curses.ts`, a `worstDamage` modifier flag and `incidentDamage` in incidents.ts. Hiding is all in `viewFor`: own statuses, modifiers and trackers are filtered, and others' statuses gain `curseStatusesSeenBy` for Mush in the room.
+- **What worked:** asking in two rounds. The first answers (the effect, the source) raised new questions (targets, recursing, the existing skill text) that couldn't have been asked up front.
+- **Caught during design:** the action options' dirt and injury odds would have shown the cursed player ×4 numbers and given the curse away. They are now computed for the player without their curses (`unaware` in rules.ts), and a test checks the odds are unchanged. A curse does nothing to a Mush, like a disease (the "function like diseases" reading; worth confirming).
 ### 2026-11-21 — NERON BIOS toggle switches
 
 - Placed `Mush/www/img/design/switch_bg.gif` (32x17 track) and `Mush/www/img/design/switch.png` (17x17 sliding knob) on the NERON BIOS terminal's boolean options (`actopi`, `death_announcements`, `plasma_shield`) in `web/src/hud/BiosTerminal.tsx` and `web/src/hud/settings.css`, keeping `cpu_priority` and `crew_lock` as multi-choice buttons.

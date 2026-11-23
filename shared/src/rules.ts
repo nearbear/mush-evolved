@@ -41,7 +41,8 @@ import { relayView } from "./relayView.ts";
 import { itemsIn, newItemId, rechargeMicrowaves, rechargeScooters, startCharges, visibleItemsIn } from "./items.ts";
 import { actionDone, actionFailed, apRefill, capBreakdown, mpGain, carePointsGain, channelLimit, computerPointsCap, computerPointsGain, cookPointsGain, shootPointsGain, cycleChanged, designerPointsGain, engineerPointsGain, gardenPointsGain, dailyMoraleLoss, inventorySlots, movementRules, pilgredPointsGain, satietyLoss } from "./modifiers.ts";
 import { contaminationSeenBy, convert } from "./infection.ts";
-import { isHungry, publicStatusesOf, statusesOf } from "./statuses.ts";
+import { curseStatusesSeenBy, isHungry, publicStatusesOf, statusesOf } from "./statuses.ts";
+import { isCurseId, withoutCurses } from "./curses.ts";
 import { coupCycle } from "./coup.ts";
 import { inactivityCycle } from "./inactivity.ts";
 import { emptyResources } from "./resources.ts";
@@ -379,13 +380,17 @@ const isUnaffordableReason = (action: Action, refused: string | null): refused i
     (ICARUS_ACTIONS.has(action.type) && (refused === EXPLORED || refused === ICARUS_LOST)) ||
     (action.type === "print_list" && (refused === MUSH_NOT_SELECTED || refused === LIST_PRINTED || refused === BROKEN)));
 
+/** The player as they know themselves: without their curses, which only their odds would otherwise show. */
+const unaware = (p: PlayerState): PlayerState => (p.modifiers.some(isCurseId) ? { ...p, modifiers: withoutCurses(p.modifiers) } : p);
+
 function actionOption(state: GameState, p: PlayerState, def: ActionDef<Action>, a: Action, lacks: ActionOption["lacks"]): ActionOption {
   return {
     action: a,
     cost: def.cost(state, p, a),
     chance: def.chance(state, p, a),
-    dirt: def.dirtChanceMods(state, p, a),
-    injury: def.injuryChanceMods(state, p, a),
+    // Shown as if uncursed: the odds would give your own curse away (curses.ts).
+    dirt: def.dirtChanceMods(state, unaware(p), a),
+    injury: def.injuryChanceMods(state, unaware(p), a),
     tags: [...def.tagsFor(state, a)],
     lacks,
   };
@@ -861,12 +866,15 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     you: {
       ...yours,
       ...(yourProtecting !== undefined ? { protecting: yourProtecting } : {}),
-      statuses: [...you.statuses],
+      // Your own curses are never sent, in any form (curses.ts).
+      modifiers: withoutCurses(you.modifiers),
+      diseaseTrackers: you.diseaseTrackers.filter((t) => !isCurseId(t.name)).map((t) => ({ ...t })),
+      statuses: withoutCurses(you.statuses),
       mushSkills: [...you.mushSkills],
       current: you.current && { action: you.current.action, since: you.current.since, until: you.current.until },
       queue: you.queue.map((q) => q.action),
     },
-    statuses: statusesOf(state, you),
+    statuses: withoutCurses(statusesOf(state, you)),
     drugEffects: drugEffectsSeenBy(state, you),
     fruitEffects: fruitEffectsSeenBy(state, you),
     players: others.map((o) => {
@@ -882,7 +890,8 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
         alive,
         ready,
         // Public statuses are what you can see on someone standing in your room; nobody else's.
-        statuses: here ? publicStatusesOf(state, o) : [],
+        // A Mush also sees their curses there (owner, 2026-11-22).
+        statuses: here ? [...publicStatusesOf(state, o), ...curseStatusesSeenBy(you, o)] : [],
         // Skills are public, but like statuses only to people who can see the player.
         skills: here ? [...o.skills] : [],
         ...(here && o.bookSkill !== undefined ? { bookSkill: o.bookSkill } : {}),
