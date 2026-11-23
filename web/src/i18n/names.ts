@@ -235,7 +235,7 @@ export function useNames() {
       if (typeof params[who] === "string") resolved[who] = params[who] === SOMEONE ? t("logEvent.someone") : characterGivenName(params[who]);
     // An assay's "chun:3,paola:1" lists (shared/src/actions/research.ts): "Chun ×3, Paola ×1".
     for (const list of ["tested", "spoiledBy"] as const) if (typeof params[list] === "string") resolved[list] = sampleCounts(params[list]);
-    const line = t(`logEvent.${key}` as never, { ...resolved, defaultValue: key });
+    const line: string = t(`logEvent.${key}` as never, { ...resolved, defaultValue: key });
     return Object.values(params).includes(SOMEONE) ? line.charAt(0).toLocaleUpperCase() + line.slice(1) : line;
   };
 
