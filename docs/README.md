@@ -37,6 +37,7 @@ Feature designs in `plans/`, one per file. Decided rules are in `rules/rules-des
 
 - `ops/d1-runbook.md`: D1 migrations and restores.
 - `ops/deploy.md`: the three deployments and deploying test from CI.
+- `ops/rollback.md`: rolling back a bad deploy (Worker, static assets, D1, and `STATE_VERSION` checks).
 - `ops/sign-in.md`: OAuth apps, secrets and sessions.
 - `ops/r2.md`: the replay buckets, what a finished game's copy holds, and inspecting one.
 - `ops/observability.md`: Workers Logs, the log events and what must never be logged; the running-ships table and `npm run ships`.

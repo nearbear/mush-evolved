@@ -110,16 +110,27 @@ export const setDoorTarget = (map: ShipMap, at: TileAt, target: string): ShipMap
 
 /**
  * The tile handed to another room, on the same ship cell (both rooms must be on the plan): it is drawn
- * with that room and lit as part of it. It goes at the end of the room's tiles.
+ * with that room and lit as part of it. It goes at the end of the room's tiles. Equipment the tile
+ * draws goes with it: its binding moves to the end of the other room's bindings, its chairs kept on
+ * the same ship cells.
  */
 export function moveToRoom(map: ShipMap, at: TileAt, to: string): { map: ShipMap; at: TileAt } | undefined {
   const from = map.rooms.find((r) => r.id === at.room);
   const dest = map.rooms.find((r) => r.id === to);
   const t = from?.tiles[at.index];
   if (!from?.at || !dest?.at || !t || to === at.room) return undefined;
-  const moved = { ...t, x: t.x + from.at.x - dest.at.x, y: t.y + from.at.y - dest.at.y };
-  const without = deleteTile(map, at);
-  return { map: withRoom(without, to, (r) => ({ ...r, tiles: [...r.tiles, moved] })), at: { room: to, index: dest.tiles.length } };
+  const dx = from.at.x - dest.at.x;
+  const dy = from.at.y - dest.at.y;
+  const moved = { ...t, x: t.x + dx, y: t.y + dy };
+  const placed = placedEquipment(from).find((e) => e.tile === at.index);
+  const bi = placed ? from.equipment.findIndex((b) => `${from.id}:${b.key ?? b.id}` === placed.id) : -1;
+  const b = from.equipment[bi];
+  const binding = b && { ...b, ...(b.chairs && { chairs: b.chairs.map((c) => ({ x: c.x + dx, y: c.y + dy })) }) };
+  const without = withRoom(deleteTile(map, at), at.room, (r) => (binding ? { ...r, equipment: r.equipment.filter((_, i) => i !== bi) } : r));
+  return {
+    map: withRoom(without, to, (r) => ({ ...r, tiles: [...r.tiles, moved], ...(binding && { equipment: [...r.equipment, binding] }) })),
+    at: { room: to, index: dest.tiles.length },
+  };
 }
 
 /** A new tile on ship cell `cell`, in room `room` (which must be on the plan), at the end of its tiles. */

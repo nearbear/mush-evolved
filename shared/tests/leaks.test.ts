@@ -98,6 +98,7 @@ function ship(): { state: GameState; sentinels: Sentinel[] } {
     s.items.push({ id: str(`inventory-${p.id}`, own), type: "wrench", at: { kind: "player", id: p.id } });
     s.failureStreaks[p.id] = { scan_planet: num(`failureStreaks-${p.id}`, []) };
     s.pendingFires = [str("pendingFires", [])];
+    s.trappedRooms = [str("trappedRooms", ["p0"])];
     s.sharedOnDay[p.id] = num(`sharedOnDay-${p.id}`, []);
     s.planets[p.id] = [
       {
@@ -126,6 +127,8 @@ function ship(): { state: GameState; sentinels: Sentinel[] } {
   s.theList = { rng: num("theListRng", []), startingMush: [str("theListStartingMush", []) as CharacterId], selectedAt: num("theListSelectedAt", []), printed: false };
   // The merchants' stream (#143) and the signals' id counter reach nobody.
   s.merchantRng = num("merchantRng", []);
+  // The jukebox's seed (#477) reaches nobody.
+  s.jukeboxSeed = num("jukeboxSeed", []);
   // Hybrids not yet grafted (#438) reach nobody, lore holders included.
   s.hybrids = { graft_fruit01_fruit02: { ap: 0, morale: 0, hp: 0, buffs: [], diseases: [], growCycles: num("hybridGrowCycles", []) } };
   s.signals.nextId = num("signalsNextId", []);

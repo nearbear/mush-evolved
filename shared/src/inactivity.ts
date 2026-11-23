@@ -5,6 +5,7 @@
 // clock cycle begins (the `cycle` input's `at`). Single player has no clock cycles, so nobody there goes inactive.
 // Going inactive costs titles (titles.ts) and ends an Outcast's curse. Both statuses are public and never announced.
 
+import { endIfAllInactive } from "./death.ts";
 import { fail, findPlayer, cloneState, type ActionResult } from "./helpers.ts";
 import { refreshTitles } from "./titles.ts";
 import type { GameState, Inactivity, PlayerId, PlayerState } from "./types.ts";
@@ -58,7 +59,10 @@ export function inactivityCycle(state: GameState, at: number): void {
     // Checked straight after, so a gauge that only fills after the longer wait goes straight to super inactive.
     if (p.inactivity === "inactive" && away >= superAfterHours * HOUR_MS) p.inactivity = "super_inactive";
   }
-  if (changed) refreshTitles(state);
+  if (changed) {
+    refreshTitles(state);
+    endIfAllInactive(state);
+  }
 }
 
 /**
@@ -100,5 +104,6 @@ export function inactivate(state: GameState, id: PlayerId): ActionResult {
   const next = cloneState(state);
   goInactive(findPlayer(next, id)!, "inactive");
   refreshTitles(next);
+  endIfAllInactive(next);
   return { ok: true, state: next };
 }

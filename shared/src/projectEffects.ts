@@ -4,7 +4,7 @@
 
 import { updateMaxValues } from "./adjustStats.ts";
 import { BLUEPRINT_ITEM } from "./blueprints.ts";
-import { DYNARCADE_EQUIPMENT } from "./equipment.ts";
+import { DYNARCADE_EQUIPMENT, JUKEBOX_EQUIPMENT } from "./equipment.ts";
 import { logPublic } from "./log.ts";
 import { PATROL_SHIPS, patrolMaxCharges } from "./patrol.ts";
 import { availableProjects, PROJECT_COMPLETE, PROJECT_IDS, projectDone, type ProjectId } from "./projects.ts";
@@ -43,6 +43,13 @@ function onProjectCompleted(state: GameState, project: ProjectId): void {
     const id = `${room}:${DYNARCADE_EQUIPMENT}`;
     const list = (state.equipment[room] ??= []);
     if (!list.some((e) => e.id === id)) list.push({ id, type: DYNARCADE_EQUIPMENT });
+  }
+  // Jukebox (BEAT_BOX; owner, 2026-11-22): spawns the jukebox in the refectory once complete (no kit to build).
+  if (project === "BEAT_BOX") {
+    const { room } = state.config.project.jukebox;
+    const id = `${room}:${JUKEBOX_EQUIPMENT}`;
+    const list = (state.equipment[room] ??= []);
+    if (!list.some((e) => e.id === id)) list.push({ id, type: JUKEBOX_EQUIPMENT });
   }
   // Teslatron reservoir (PATROLSHIP_EXTRA_AMMO; owner, 2026-11-14): non-destroyed patrol ships gain +6 charges (capped at new max; Pasiphae unaffected).
   if (project === "PATROLSHIP_EXTRA_AMMO") {
@@ -99,6 +106,7 @@ function onProjectCompleted(state: GameState, project: ProjectId): void {
 export const ONE_TIME_PROJECTS: readonly ProjectId[] = [
   "FOOD_RETAILER",
   "CALL_OF_DIRTY",
+  "BEAT_BOX",
   "PATROLSHIP_EXTRA_AMMO",
   "EXTRA_HYDROPONPOTS",
   "EXTRA_DRONE",

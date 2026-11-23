@@ -104,15 +104,21 @@ describe("timed actions", () => {
     expect(s.log.filter((e) => e.key === "actionDropped")).toHaveLength(1);
   });
 
+  /** p1 and p2 become bots, so p0 readying alone doesn't end the cycle (End cycle waits on bots). */
+  const withBots = (s: GameState): GameState => {
+    for (const p of s.players) p.isBot = p.id !== "p0";
+    return s;
+  };
+
   it("ready and access are not timed: they happen at once, even while busy", () => {
-    let s = must(queueAction(ship(), "p0", punch("p1"), 0));
+    let s = must(queueAction(withBots(ship()), "p0", punch("p1"), 0));
     s = must(queueAction(s, "p0", { type: "ready" }, 0));
     expect(player(s, "p0").ready).toBe(true);
     expect(player(s, "p0").queue).toEqual([]);
   });
 
   it("an action queued before End cycle still happens, but nothing new can be queued once ready", () => {
-    let s = must(queueAction(ship(), "p0", punch("p1"), 0));
+    let s = must(queueAction(withBots(ship()), "p0", punch("p1"), 0));
     s = must(queueAction(s, "p0", { type: "ready" }, 0));
     expect(queueAction(s, "p0", punch("p1"), 0).ok).toBe(false);
     s = must(tick(s, D));
@@ -121,7 +127,7 @@ describe("timed actions", () => {
 
   it("an action under way carries over into the next cycle", () => {
     let s = must(queueAction(ship(), "p0", punch("p1"), 0));
-    for (const id of ["p0", "p1", "p2"]) s = must(queueAction(s, id, { type: "ready" }, 0));
+    s = must(queueAction(s, "p0", { type: "ready" }, 0)); // all humans: End cycle waits on nobody
     expect(s.cycle).toBe(2);
     s = must(tick(s, D));
     expect(hp(s, "p1")).toBe(base.startHp - 2);

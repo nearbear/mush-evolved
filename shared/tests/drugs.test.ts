@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { createGame, viewFor } from "../src/rules.ts";
 import { makeSeats } from "./support.ts";
-import { drawDrugs, MAX_TREATED } from "../src/drugs.ts";
+import { drawDrugs, MAX_TREATED, START_DRUG_EXTRAS, START_DRUG_TYPES } from "../src/drugs.ts";
 import { DRUG_ITEMS } from "../src/items.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 
@@ -27,12 +27,18 @@ describe("drawDrugs", () => {
 });
 
 describe("the Medlab's stock", () => {
-  it("starts with one of each of the 12 drug types in the Medlab", () => {
-    const state = createGame(makeSeats(3), DEFAULT_CONFIG, 7);
-    const drugs = state.items.filter((i) => DRUG_ITEMS.includes(i.type));
-    expect(drugs).toHaveLength(12);
-    expect(drugs.map((i) => i.type).sort()).toEqual([...DRUG_ITEMS].sort());
-    expect(drugs.every((i) => i.at.kind === "room" && i.at.id === "SICK_BAY")).toBe(true);
+  it("starts as in eMush: 8 drug types once each, plus 4 extras drawn from those 8, all in the Medlab", () => {
+    expect([START_DRUG_TYPES, START_DRUG_EXTRAS, DRUG_ITEMS.length]).toEqual([8, 4, 12]);
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 40; seed++) {
+      const drugs = createGame(makeSeats(3), DEFAULT_CONFIG, seed).items.filter((i) => DRUG_ITEMS.includes(i.type));
+      expect(drugs).toHaveLength(START_DRUG_TYPES + START_DRUG_EXTRAS);
+      expect(new Set(drugs.map((i) => i.type)).size).toBe(START_DRUG_TYPES);
+      expect(drugs.every((i) => i.at.kind === "room" && i.at.id === "SICK_BAY")).toBe(true);
+      for (const d of drugs) seen.add(d.type);
+    }
+    // Across seeds, any drug type can be among the 8.
+    expect(seen.size).toBe(DRUG_ITEMS.length);
   });
 });
 

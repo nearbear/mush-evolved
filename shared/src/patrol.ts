@@ -111,10 +111,25 @@ export function rechargePatrolShips(state: GameState): void {
   }
 }
 
-/** Who may fly: anyone, except humans with Gastroenteritis or Slight Nausea. */
-// Gastroenteris / Slight Nausea grounds a human (owner, 2026-11-14, 2026-11-15); a Mush's diseases have no effect (diseases.ts).
-export const canFly = (player: Readonly<PlayerState>): boolean =>
-  player.role === "mush" || !GROUNDING_DISEASES.some((id) => player.modifiers.includes(id));
+/** The `validate` code for flying while ill (Gastroenteritis, Slight Nausea): shown disabled with the reason (owner, 2026-11-22). */
+export const CANT_FLY = "cant_fly";
+
+/** The `validate` code for flying with Eleesha's Chronic Vertigo trait: shown disabled with the reason (owner, 2026-11-22). */
+export const CHRONIC_VERTIGO = "chronic_vertigo";
+
+/**
+ * Why a player can't fly, or null if they can: Eleesha's Chronic Vertigo trait (`CHRONIC_VERTIGO`, owner 2026-11-22, Mush
+ * included), else Gastroenteritis or Slight Nausea (`CANT_FLY`, owner 2026-11-14, 2026-11-15; a human's only, since a
+ * Mush's diseases have no effect, diseases.ts). The code doubles as the `validate` reason, shown on a disabled button.
+ */
+export function groundedBy(player: Readonly<PlayerState>): typeof CHRONIC_VERTIGO | typeof CANT_FLY | null {
+  if (player.modifiers.includes("chronic_vertigo")) return CHRONIC_VERTIGO;
+  if (player.role !== "mush" && GROUNDING_DISEASES.some((id) => player.modifiers.includes(id))) return CANT_FLY;
+  return null;
+}
+
+/** Who may fly: anyone not grounded (`groundedBy`). */
+export const canFly = (player: Readonly<PlayerState>): boolean => groundedBy(player) === null;
 
 /**
  * Who may take off in a patrol ship, the Pasiphae, or the Icarus (owner, 2026-11-21): anyone who can fly, unless

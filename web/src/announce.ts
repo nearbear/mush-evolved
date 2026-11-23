@@ -143,6 +143,7 @@ export const URGENT_LOG_KEYS: ReadonlySet<string> = new Set([
   "hunterWave_other",
   "hunterWave",
   "shipDestroyed",
+  "shipDestroyedInactive",
   "patrolRough",
   "hunterHitPatrol",
 ]);

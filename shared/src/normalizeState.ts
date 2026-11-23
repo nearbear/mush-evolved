@@ -28,6 +28,7 @@ import { clone } from "./helpers.ts";
 import { newNpcState, type NpcState } from "./npcs.ts";
 import { type LostAnalysisState, rollLostAnalysis } from "./lostAnalysis.ts";
 import type { TheListState } from "./theList.ts";
+import type { EdenState } from "./eden.ts";
 import { streamFor } from "./rng.ts";
 import type { DrugDispenserState, DrugEffect } from "./drugs.ts";
 import { drawHybrids, type FruitDisease, type FruitEffect, type PendingDisease } from "./fruits.ts";
@@ -639,6 +640,7 @@ export function normalizePlayer(raw: Partial<PlayerState>, mode: QueueMode): Pla
     interrogatedToday: raw.interrogatedToday,
     snoopedToday: opt(raw.snoopedToday, copy),
     mycoscannedToday: raw.mycoscannedToday,
+    jukeboxDay: raw.jukeboxDay,
     cpuPriorityChangedToday: added(raw, "cpuPriorityChangedToday", false),
     hackedEquipment: opt(raw.hackedEquipment, copy),
     unheard: opt(raw.unheard, dict),
@@ -1029,6 +1031,11 @@ export function normalizeMerchantData(raw: Partial<MerchantData>, ctx: Normalize
   });
 }
 
+/** Progress toward Eden (eden.ts, #478). */
+export function normalizeEden(raw: Partial<EdenState>): EdenState {
+  return stripUndefined<EdenState>({ computed: need(raw, "computed", "EdenState") });
+}
+
 export function normalizeFeedEntry(raw: Partial<FeedEntry>): FeedEntry {
   const t = "FeedEntry";
   return stripUndefined<FeedEntry>({
@@ -1319,6 +1326,12 @@ export function normalizeCore(raw: Partial<GameCore>, ctx: NormalizeContext, mod
     // Reports (#444): none in a game stored before them.
     reports: added(raw, "reports", []).map(normalizeReport),
     pendingFires: copy(need(raw, "pendingFires", t)),
+    // Trapper (#473): no rooms trapped in a game stored before it.
+    trappedRooms: copy(added(raw, "trappedRooms", [])),
+    // Gravity restart (owner, 2026-11-22): a game stored before it restored gravity at once, so nothing is restarting.
+    gravityRestarting: added(raw, "gravityRestarting", false),
+    // Eden (#478): nothing could compute it in a game stored before it.
+    eden: normalizeEden(added(raw, "eden", { computed: false })),
     titles: {
       commander: need(titles, "commander", `${t}.titles`),
       neron_admin: need(titles, "neron_admin", `${t}.titles`),
@@ -1345,6 +1358,8 @@ export function normalizeGame(raw: Partial<Omit<GameState, "config">>, overrides
     theList: normalizeTheList(added(raw, "theList", theListFor(raw))),
     // A game saved before merchants (#143) derives their stream from where its `rng` stands.
     merchantRng: added(raw, "merchantRng", streamFor(need(raw, "rng", t), "merchants")),
+    // A game saved before the jukebox (#477) derives its seed from where its `rng` stands.
+    jukeboxSeed: added(raw, "jukeboxSeed", streamFor(need(raw, "rng", t), "jukebox")),
     // A game saved before grafting (#438) draws its hybrids now from its parents, on a stream derived from where its
     // `rng` stands: the same for every load of that snapshot, and stored with the game from then on.
     hybrids: mapValues(

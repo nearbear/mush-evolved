@@ -55,15 +55,21 @@ export function drawDrugs(state: Pick<GameState, "rng"> & { config: Pick<GameSta
   return out;
 }
 
-/** How many drugs each ship starts with, in the Medlab: one of each type (matching eMush, 2026-11-17). */
-export const START_DRUGS = DRUG_ITEMS.length;
+/** Distinct drug types in the starting Medlab, one of each (matching eMush's `createMedication`, owner 2026-11-22). */
+export const START_DRUG_TYPES = 8;
+/** Extra drugs in the starting Medlab, each drawn with replacement from those types (eMush, owner 2026-11-22). */
+export const START_DRUG_EXTRAS = 4;
 
 /**
- * Puts one of each drug type on the Medlab's floor in a shuffled order, rolling on `rng` (`createGame` passes its own
- * `"medlab-stock"` stream, so `state.rng` doesn't move). Mutates a state the caller already cloned.
+ * Stocks the Medlab's floor as eMush does: `START_DRUG_TYPES` distinct drug types, one of each, then
+ * `START_DRUG_EXTRAS` more drawn with replacement from those same types (12 drugs, some types missing). Rolls on
+ * `rng` (`createGame` passes its own `"medlab-stock"` stream, so `state.rng` doesn't move). Mutates a state the
+ * caller already cloned.
  */
 export function stockMedlab(state: GameState, rng: HasRng): void {
-  for (const drug of rollShuffle(rng, DRUG_ITEMS)) spawnInRoom(state, "SICK_BAY", drug);
+  const types = rollShuffle(rng, DRUG_ITEMS).slice(0, START_DRUG_TYPES);
+  for (const drug of types) spawnInRoom(state, "SICK_BAY", drug);
+  for (let i = 0; i < START_DRUG_EXTRAS; i++) spawnInRoom(state, "SICK_BAY", types[rollInt(rng, types.length)]!);
 }
 
 /** The skills that reveal the drugs' effects: Biologist, Skilful (counts as Biologist), Medic and Nurse (`first_aid`). Mush see them too. */

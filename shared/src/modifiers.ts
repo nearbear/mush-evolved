@@ -11,6 +11,7 @@
 import { spreadAtCycle, spreadOnEncounter } from "./diseases.ts";
 import { isBrokenIn } from "./equipment.ts";
 import { activeScooter, carriesHeavy, isWorking } from "./items.ts";
+import { gravityBroken, noGravity } from "./gravity.ts";
 import { projectDone } from "./projects.ts";
 import { RESEARCH_COMPLETE } from "./research.ts";
 import { hasSkill, skillsOf } from "./skills.ts";
@@ -51,6 +52,7 @@ import { sturdy } from "./modifiers/sturdy.ts";
 import { hyperactive } from "./modifiers/hyperactive.ts";
 import { antisocial } from "./modifiers/antisocial.ts";
 import { germaphobe } from "./modifiers/germaphobe.ts";
+import { chronic_vertigo } from "./modifiers/chronic_vertigo.ts";
 import { immunity } from "./modifiers/immunity.ts";
 import { mankind_only_hope } from "./modifiers/mankind_only_hope.ts";
 import { pacifist } from "./modifiers/pacifist.ts";
@@ -318,6 +320,7 @@ export const MODIFIERS: Record<string, Modifier> = {
   hyperactive,
   antisocial,
   germaphobe,
+  chronic_vertigo,
   immunity,
   mankind_only_hope,
   pacifist,
@@ -411,18 +414,25 @@ function eventIds(player: Readonly<PlayerState>): string[] {
   return [...modifierIds(player), ...mushDiseaseIds(player)];
 }
 
-/** Folds `base` through the named hook of each of the player's modifiers, in list order. */
+/**
+ * Folds `base` through the named hook of each of the player's modifiers, in list order. With `trace`, it also records
+ * each modifier that changed the value and by how much (its real change at that step, so a clamped step shows less).
+ */
 function fold(
   hook: keyof FoldHooks,
   base: number,
   state: Readonly<GameState>,
   player: Readonly<PlayerState>,
   registry: ModifierRegistry,
+  trace?: CapSource[],
 ): number {
   let value = base;
   for (const id of modifierIds(player)) {
     const fn = registry[id]?.[hook];
-    if (fn) value = fn(value, player, state);
+    if (!fn) continue;
+    const before = value;
+    value = fn(value, player, state);
+    if (trace && value !== before) trace.push({ kind: "modifier", id, delta: value - before });
   }
   return value;
 }
@@ -645,8 +655,9 @@ export function movementRules(
   if (player.energizeUntil !== undefined && state.cycle < player.energizeUntil) {
     rules.mpPerConversion += state.config.botany.fruits.buffs.energize.extraMpPerConversion;
   }
-  if (gravityBroken(state)) rules.mpPerConversion = Math.max(0, rules.mpPerConversion - state.config.gravitySimulator.brokenMpPenalty);
-  if (carriesHeavy(state, player)) rules.mpPerMove += fold("heavyMpPenalty", state.config.heavy.mpPenalty, state, player, registry);
+  // Broken or restarting (gravity.ts): conversions give less, and a heavy item weighs nothing (owner, 2026-11-22, eMush's Burdened).
+  if (noGravity(state)) rules.mpPerConversion = Math.max(0, rules.mpPerConversion - state.config.gravitySimulator.brokenMpPenalty);
+  else if (carriesHeavy(state, player)) rules.mpPerMove += fold("heavyMpPenalty", state.config.heavy.mpPenalty, state, player, registry);
   return rules;
 }
 
@@ -654,11 +665,10 @@ export function movementRules(
 export const apGain = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
   fold("apPerCycle", state.config.apPerCycle, state, player, registry);
 
-/** Whether any Gravity Simulator is broken (owner, 2026-11-08): it costs everyone MP, see `mpGain` and `movementRules`. */
-export const gravityBroken = (state: Readonly<GameState>): boolean =>
-  Object.values(state.equipment).some((list) => list.some((e) => e.type === "GRAVITY_SIMULATOR" && e.broken));
-
-/** MP gained at the start of a cycle: the base gain folded through the player's modifiers, less the broken-gravity penalty; never below 0. */
+/**
+ * MP gained at the start of a cycle: the base gain folded through the player's modifiers, less the broken-gravity penalty; never below 0.
+ * Only a broken simulator: a restarting one is back by then (gravity.ts).
+ */
 export const mpGain = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
   Math.max(0, fold("mpPerCycle", state.config.mpPerCycle, state, player, registry) - (gravityBroken(state) ? state.config.gravitySimulator.brokenMpPenalty : 0));
 
@@ -800,7 +810,9 @@ export const punchDamage = (state: Readonly<GameState>, player: Readonly<PlayerS
  * comes after the fold so Lethargy doubles only the base (owner, 2026-11-01: 12 + 2 = 14, or 24 + 2 = 26 with Lethargy).
  */
 export const maxAp = (state: Readonly<GameState>, player: Readonly<PlayerState>, base: number, registry: ModifierRegistry = MODIFIERS) =>
-  fold("maxAp", base, state, player, registry) + (projectDone(state, "NOISE_REDUCER") ? state.config.project.noiseReducer.maxAp : 0);
+  fold("maxAp", base, state, player, registry) + noiseReducerBonus(state);
+
+const noiseReducerBonus = (state: Readonly<GameState>): number => (projectDone(state, "NOISE_REDUCER") ? state.config.project.noiseReducer.maxAp : 0);
 
 /** Max MP */
 export const maxMp = (state: Readonly<GameState>, player: Readonly<PlayerState>, base: number, registry: ModifierRegistry = MODIFIERS) =>
@@ -809,6 +821,50 @@ export const maxMp = (state: Readonly<GameState>, player: Readonly<PlayerState>,
 /** Max Morale */
 export const maxMorale = (state: Readonly<GameState>, player: Readonly<PlayerState>, base: number, registry: ModifierRegistry = MODIFIERS) =>
   fold("maxMorale", base, state, player, registry);
+
+/** One thing that changes a stat's cap: a modifier (skill, disease, injury, …) or a finished project, and its real change. */
+export interface CapSource {
+  kind: "modifier" | "project";
+  id: string;
+  delta: number;
+}
+
+/** A stat's cap and why: the configured `base`, each source that changed it in the order applied, and the resulting `max`. */
+export interface CapBreakdown {
+  base: number;
+  max: number;
+  sources: CapSource[];
+}
+
+export type CapStat = "ap" | "mp" | "hp" | "morale";
+
+/**
+ * Each cap the way `updateMaxValues` (adjustStats.ts) computes it, with the steps that got it there. `max` equals the
+ * matching accessor (`maxAp`, `maxMp`, `maxHp`, `maxMorale`) on the same base; a Mush's diseases are left out, as in
+ * every fold. Derived, never stored.
+ */
+export function capBreakdown(
+  state: Readonly<GameState>,
+  player: Readonly<PlayerState>,
+  registry: ModifierRegistry = MODIFIERS,
+): Record<CapStat, CapBreakdown> {
+  const traced = (hook: "maxAp" | "maxMp" | "maxHp" | "maxMorale", base: number): CapBreakdown => {
+    const sources: CapSource[] = [];
+    return { base, max: fold(hook, base, state, player, registry, sources), sources };
+  };
+  const ap = traced("maxAp", state.config.maxAp);
+  const bonus = noiseReducerBonus(state);
+  if (bonus !== 0) {
+    ap.max += bonus;
+    ap.sources.push({ kind: "project", id: "NOISE_REDUCER", delta: bonus });
+  }
+  return {
+    ap,
+    mp: traced("maxMp", state.config.movement.mpCap),
+    hp: traced("maxHp", state.config.maxHp),
+    morale: traced("maxMorale", state.config.maxMorale),
+  };
+}
 
 /** HP damage the player is about to take (Space Rabies adds 1); `damage` (death.ts) applies it to every loss. */
 export const damageTaken = (state: Readonly<GameState>, player: Readonly<PlayerState>, base: number, registry: ModifierRegistry = MODIFIERS) =>

@@ -17,12 +17,11 @@ import { FeatureSelect } from "./FeatureSelect.tsx";
 import { Hint, IconTab } from "./IconButton.tsx";
 import { TabOutline } from "./TabOutline.tsx";
 import { CycleDivider } from "./CycleDivider.tsx";
-import { FeedEntry, InfoMarker, WarningMarker } from "./FeedEntry.tsx";
+import { FeedEntry, InfoMarker, NeronAvatar, NeronName, WarningMarker, isNeronMessage } from "./FeedEntry.tsx";
 import { VisibilityBadge } from "./VisibilityBadge.tsx";
 import { PrivateChannels, type ChannelHandlers } from "./PrivateChannels.tsx";
 import { Thread, type ThreadLinks } from "./Thread.tsx";
 import { Threads, threadNameFrom } from "./Threads.tsx";
-import { Tracker } from "./Tracker.tsx";
 import { SharedPlanets } from "./SharedPlanets.tsx";
 import { SharedPlantsCard } from "./SharedPlantsCard.tsx";
 import { SharedPilgredCard } from "./SharedPilgredCard.tsx";
@@ -35,8 +34,6 @@ import { TAB_ICONS } from "../art/assets.ts";
 
 export type { ChannelHandlers };
 
-type Notes = Record<FeatureChannel, string[]>;
-const NO_NOTES = Object.fromEntries(FEATURE_CHANNELS.map((f) => [f, []])) as unknown as Notes;
 
 const NO_UNREAD: Record<TabId, number> = { room: 0, global: 0, threads: 0, features: 0, private: 0, mush: 0, graveyard: 0 };
 
@@ -78,7 +75,10 @@ const LogRow = memo(
   function LogRow({ entry: e, canRead, onRead }: { entry: LogLine; canRead: boolean; onRead: (report: string) => void }) {
     const { t } = useTranslation();
     const names = useNames();
-    const marker = e.kind ? (
+    const neron = !e.kind && e.level !== "warning" && e.level !== "danger" && isNeronMessage(e.key);
+    const marker = neron ? (
+      <NeronAvatar />
+    ) : e.kind ? (
       <VisibilityBadge kind={e.kind} leaked={e.leaked === true} />
     ) : e.level === "warning" || e.level === "danger" ? (
       <WarningMarker />
@@ -88,6 +88,7 @@ const LogRow = memo(
     return (
       <FeedEntry
         marker={marker}
+        name={neron ? <NeronName /> : undefined}
         at={e.at}
         className={logRowClass(e)}
       >
@@ -139,9 +140,6 @@ export function ITrackie({
   // anywhere; the Room tab shows what belongs to the room we're standing in.
   const roomLog = view.log.filter((e) => e.room === undefined || e.room === here);
   const [feature, setFeature] = useState<FeatureChannel>("botany");
-  // UI-only for now: lives in this tab and is lost on reload. Will become
-  // private server-side state tied to the iTrackie.
-  const [notes, setNotes] = useState<Notes>(NO_NOTES);
   // The Mush tab exists only for Mush (the server sends the channel to no one else) and pulses while it has unread.
   const mush = view.readChannels.includes(MUSH_CHANNEL);
   // The Graveyard tab is for the dead alone; the server sends the channel to no one else.
@@ -291,7 +289,7 @@ export function ITrackie({
             {/* One block per feature, hidden with CSS, so each keeps its own draft. */}
             {FEATURE_CHANNELS.map((f) => {
               const name = t(`itrackie.features.${f}`);
-              // Astrophysics lists the shared planets, each with its own thread, in place of the tracker notes (owner, 2026-10-31).
+              // Astrophysics lists the shared planets, each with its own thread, as its tracker (owner, 2026-10-31).
               if (f === "astrophysics") {
                 return (
                   <div key={f} className="feature" hidden={f !== feature}>
@@ -313,14 +311,13 @@ export function ITrackie({
                   <SharedPlantsCard shared={view.sharedPlants} view={view} />
                 ) : f === "pilgred" && view.sharedPilgred ? (
                   <SharedPilgredCard shared={view.sharedPilgred} view={view} />
-                ) : !alive ? null : !carrying ? (
+                ) : !alive || (f !== "research" && f !== "neron") ? null : !carrying ? (
+                  // Every feature will get its own tracker; the ones without one yet show none (owner, 2026-11-22).
                   <p className="sub">{t("itrackie.needITrackieTrack")}</p>
                 ) : f === "research" ? (
                   <ResearchTracker view={view} />
-                ) : f === "neron" ? (
-                  <ProjectTracker view={view} />
                 ) : (
-                  <Tracker notes={notes[f]} onChange={(next) => setNotes((all) => ({ ...all, [f]: next }))} />
+                  <ProjectTracker view={view} />
                 )}
                 <Thread
                   view={view}

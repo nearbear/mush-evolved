@@ -50,7 +50,7 @@ describe("ShipResources compactTitles", () => {
     { id: "neron_admin" as const, holder: "janice" as const, line: ["janice" as const] },
     { id: "comms_officer" as const, holder: "paola" as const, line: ["paola" as const] },
   ];
-  const alerts = { fires: 0, broken: 0, reports: [] };
+  const alerts = { fires: 0, broken: 0, reports: [], gravity: null };
 
   it("renders a single commander-icon button on desktop when compactTitles is set", () => {
     const out = renderToStaticMarkup(

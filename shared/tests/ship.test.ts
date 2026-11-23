@@ -125,11 +125,12 @@ describe("ship resources", () => {
     expect(seenRooms.size).toBeGreaterThan(10);
   });
 
-  it("spawns 1 apprentron (skill book) in a random storage room drawn from the weighted skill pool", () => {
+  it("spawns 1 apprentron (skill book) in a random storage room, upon Mush selection, drawn from the weighted skill pool", () => {
     const bookEntry = DEFAULT_CONFIG.startItems.find((i) => i.type === "book");
     expect(bookEntry).toEqual({
       type: "book",
       pool: "storage",
+      atSelection: true,
       teachesWeights: {
         engineer: 14,
         pilot: 12,

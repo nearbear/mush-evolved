@@ -280,6 +280,7 @@
   padding: var(--space-2) 0 var(--space-1);
   border-bottom: 0;
   color: var(--muted);
+  font-family: var(--font-display);
   font-size: 0.7rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -311,10 +312,10 @@
   cursor: help;
 }
 
-/* An entry: marker (info icon or crew sprite) on the left; name and recency on top, body below. */
+/* An entry: marker (info icon, NERON eye, or crew sprite) on the left; name and recency on top, body below. */
 .feed > li.entry {
   display: grid;
-  grid-template-columns: 32px minmax(0, 1fr);
+  grid-template-columns: 38px minmax(0, 1fr);
   grid-template-areas:
     "marker head"
     "marker body";
@@ -322,9 +323,9 @@
   align-items: start;
 }
 /* Ship and room log messages: marker (info icon or visibility badge) with the recency stamp under it on the left, body
-   on the right. The column matches chat entries' 32px so every body starts at the same edge. */
+   on the right. The column matches chat entries' 38px so every body starts at the same edge. */
 .feed > li.entry-inline {
-  grid-template-columns: 32px minmax(0, 1fr);
+  grid-template-columns: 38px minmax(0, 1fr);
   grid-template-areas: "marker body";
   column-gap: var(--space-2);
   /* The body centres on the icon-and-stamp stack (and the stack on a body that wraps past it). */
@@ -390,6 +391,13 @@
   background-repeat: no-repeat;
   image-rendering: pixelated;
 }
+/* Full-size NERON chat icon (38x38), unscaled. */
+.entry-neron {
+  display: block;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+}
 .entry-head {
   grid-area: head;
   display: flex;
@@ -409,6 +417,10 @@
   align-items: baseline;
   gap: 0 var(--space-2);
   min-width: 0;
+}
+.entry-name > strong {
+  font-family: var(--font-display);
+  font-weight: 400;
 }
 /* The message's "⋯" menu button. With a mouse it shows only while the message is hovered or focused, or its menu is
    open; touch screens can't hover, so there it always shows. */

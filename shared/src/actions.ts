@@ -18,6 +18,8 @@ import { HackAction } from "./actions/hack.ts";
 import type { ActionCost, ActionTag, ActionVisibility } from "./actions/action.ts";
 import { DispenseAction } from "./actions/dispense.ts";
 import { PlayArcadeAction } from "./actions/play_arcade.ts";
+import { ListenJukeboxAction } from "./actions/listen_jukebox.ts";
+import { CheckJukeboxAction } from "./actions/check_jukebox.ts";
 import { ExamineAction } from "./actions/examine.ts";
 import { ConsumeSporeAction } from "./actions/consume_spore.ts";
 import { TubeTransferAction } from "./actions/tube_transfer.ts";
@@ -31,6 +33,8 @@ import { ContaminateAction } from "./actions/contaminate.ts";
 import { ProjectAction } from "./actions/project.ts";
 import { RepairPilgredAction } from "./actions/repair_pilgred.ts";
 import { ReturnToSolAction } from "./actions/return_to_sol.ts";
+import { TravelToEdenAction } from "./actions/travel_to_eden.ts";
+import { ComputeEdenAction } from "./actions/compute_eden.ts";
 import { ContactSolAction } from "./actions/contact_sol.ts";
 import { DecodeRebelAction } from "./actions/decode_rebel.ts";
 import { ContactXylophAction } from "./actions/contact_xyloph.ts";
@@ -118,6 +122,7 @@ import { ResetSkillsAction } from "./actions/reset_skills.ts";
 import { MassMoulderingAction } from "./actions/mass_mouldering.ts";
 import { DemoralizeAction } from "./actions/demoralize.ts";
 import { GiveDiseaseAction } from "./actions/give_disease.ts";
+import { TrapRoomAction } from "./actions/trap_room.ts";
 import { NightmareAction } from "./actions/nightmare.ts";
 import { TransferAction } from "./actions/transfer.ts";
 import { WaterAction } from "./actions/water.ts";
@@ -180,6 +185,8 @@ const REGISTRY = {
   project: new ProjectAction(),
   repair_pilgred: new RepairPilgredAction(),
   return_to_sol: new ReturnToSolAction(),
+  travel_to_eden: new TravelToEdenAction(),
+  compute_eden: new ComputeEdenAction(),
   turn_ship: new TurnShipAction(),
   travel: new TravelAction(),
   leave_orbit: new LeaveOrbitAction(),
@@ -227,6 +234,8 @@ const REGISTRY = {
   open_lunchbox: new OpenLunchboxAction(),
   dispense: new DispenseAction(),
   play_arcade: new PlayArcadeAction(),
+  listen_jukebox: new ListenJukeboxAction(),
+  check_jukebox: new CheckJukeboxAction(),
   consume: new ConsumeAction(),
   hide: new HideAction(),
   search: new SearchAction(),
@@ -260,6 +269,7 @@ const REGISTRY = {
   mass_mouldering: new MassMoulderingAction(),
   demoralize: new DemoralizeAction(),
   give_disease: new GiveDiseaseAction(),
+  trap_room: new TrapRoomAction(),
   nightmare: new NightmareAction(),
   lie_down: new LieDownAction(),
   get_up: new GetUpAction(),
@@ -315,7 +325,7 @@ export const ACTIONS: { [T in ActionType]: ActionDef<ActionOf<T>> } = REGISTRY;
 /** Whether an action type is done in a terminal's window (`Action.terminal`), so not offered on the inspect panel. */
 export const actionInTerminal = (type: ActionType): boolean => ACTIONS[type].terminal;
 
-const SHIP_WIDE_ACTIONS: ReadonlySet<ActionType> = new Set(["travel", "leave_orbit", "return_to_sol"]);
+const SHIP_WIDE_ACTIONS: ReadonlySet<ActionType> = new Set(["travel", "leave_orbit", "return_to_sol", "travel_to_eden"]);
 
 /** Whether an action type is public, private, secret or covert. In Nimble mode, room-level public actions become secret. */
 export const actionVisibility = (type: ActionType, view?: { readonly statuses: readonly string[] }): ActionVisibility => {

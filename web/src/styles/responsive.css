@@ -221,6 +221,25 @@
     height: 32px;
     margin: 0;
   }
+  /* How many actions the row clipped: the --badge blue, informational (red badges are for unread). Count is in the label. */
+  .peek-more {
+    position: relative;
+  }
+  .peek-more-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    min-width: 14px;
+    padding: 0 3px;
+    border-radius: 7px;
+    background: var(--badge);
+    color: #fff;
+    font-size: 10px;
+    font-weight: bold;
+    line-height: 14px;
+    text-align: center;
+    pointer-events: none;
+  }
 
   /* As tall as the top bar's strip (top-bar.css): a 26px row with 4px above and below, the rim counted in the top. */
   .bottom-nav {

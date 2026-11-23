@@ -4,7 +4,7 @@ Project context for Claude Code. This file summarizes decisions made during plan
 
 ## What this project is
 
-A turn-based, browser-based social deduction game inspired by **eMush**, the open-source remake (by the nonprofit Eternaltwin) of **Mush** by Motion Twin. In the original, players wake up on a spaceship (the Daedalus), a small number of them are infected "Mush," and the humans have to survive and unmask them. The original runs 16 players with 2 Mush, as asynchronous games lasting a few days.
+**Mush: Evolved** (name decided 2026-11-22, [#43](https://github.com/nearbear/mush2/issues/43)) is a turn-based, browser-based social deduction game inspired by **eMush**, the open-source remake (by the nonprofit Eternaltwin) of **Mush** by Motion Twin. In the original, players wake up on a spaceship (the Daedalus), a small number of them are infected "Mush," and the humans have to survive and unmask them. The original runs 16 players with 2 Mush, as asynchronous games lasting a few days.
 
 This is a **vertical slice**, not a full clone. The goals are:
 
@@ -109,8 +109,7 @@ Open work lives in **GitHub issues** in the [mush2 project](https://github.com/u
 
 Not rules, but still open:
 
-- Game name.
 - Which stage single player (the only mode with bots) belongs in.
 - Single-player model bots: no hosted default for now (decided 2026-10-23, the owner won't pay for unlimited use); players bring their own key. The server side is built (#216: `setModel`/`clearModel`, single player only); the allowlist will be OpenRouter, Google Gemini and OpenAI (owner, 2026-10-24; only OpenRouter is built, the rest and each provider's request body are #217). The settings panel with an opt-in "remember the key" (#218) and key status (#220) are not built, so no client sends a key yet.
-- Hosting and deployment details beyond the current setup (one Worker on `workers.dev`, the client as static assets; a custom domain waits for the game name).
+- Hosting and deployment details beyond the current setup (one Worker on `workers.dev`, the client as static assets; a custom domain for the name below is not set up yet).
 - Internationalization (en/fr/es): the seam is in, the comprehensive pass is not.

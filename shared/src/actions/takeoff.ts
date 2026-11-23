@@ -5,7 +5,7 @@ import { destroyPatrolShip, destroyShip } from "../hunters.ts";
 import { logPrivate, logSecret } from "../log.ts";
 import { isTraveling } from "../navigation.ts";
 import { cleanManoeuvreChance } from "../modifiers.ts";
-import { canFly, canTakeoff, dockedHere, interfaceId, PATROL_SHIPS, type PatrolShip } from "../patrol.ts";
+import { canFly, canTakeoff, dockedHere, groundedBy, interfaceId, PATROL_SHIPS, type PatrolShip } from "../patrol.ts";
 import { roll, rollFloat } from "../rng.ts";
 import { removeStatus } from "../statuses.ts";
 import type { GameState, PlayerState, RoomId } from "../types.ts";
@@ -30,12 +30,13 @@ export class TakeoffAction extends Action<TakeoffActionData> {
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): TakeoffActionData[] {
-    if (!canTakeoff(state, player) || isTraveling(state)) return [];
+    // Grounded (Chronic Vertigo, an illness) shows disabled with the reason (owner, 2026-11-22); the crew lock still hides it.
+    if ((!canTakeoff(state, player) && canFly(player)) || isTraveling(state)) return [];
     return dockedHere(state, player).map((ship): TakeoffActionData => ({ type: "takeoff", equipment: interfaceId(ship) }));
   }
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: TakeoffActionData): string | null {
-    if (!canTakeoff(state, player)) return canFly(player) ? "crew_lock" : "cant_fly";
+    if (!canTakeoff(state, player)) return groundedBy(player) ?? "crew_lock";
     if (isTraveling(state)) return "traveling";
     if (!dockedHere(state, player).some((ship) => interfaceId(ship) === target.equipment)) return "no_ship";
     return null;

@@ -224,6 +224,19 @@ describe("expeditions, phase 1 (instant, as in single player)", () => {
     expect(offered(s, "p4")).toContainEqual({ type: "punch", target: "p1" });
   });
 
+  it("Chronic Vertigo (owner, 2026-11-22): she boards as a passenger and goes along, but can't launch the Icarus herself", () => {
+    const s = game({ events: only({ kind: "nothing", weight: 1 }) });
+    s.bios.crew_lock = "projects";
+    player(s, "p1").modifiers.push("chronic_vertigo");
+    expect(offered(s, "p1")).toContainEqual(boardIcarus);
+    const aboardP1 = must(applyAction(s, "p1", boardIcarus));
+    expect(offered(aboardP1, "p1")).not.toContainEqual(takeoff);
+    expect(why(aboardP1, "p1", takeoff)).toBe("chronic_vertigo");
+    expect(option(aboardP1, "p1", takeoff)?.lacks).toEqual(["vertigo"]);
+    const out = go(aboardP1, "p0");
+    expect(out.expeditions[0]!.members).toContain("p1");
+  });
+
   it("takeoff is offered aboard to Pilots (or freeHacking) under the piloting lock, or anyone ungrounded once unlocked", () => {
     const s = aboard(game());
     expect(s.bios.crew_lock).toBe("piloting");
@@ -251,6 +264,7 @@ describe("expeditions, phase 1 (instant, as in single player)", () => {
     addDisease(grounded, p1, "gastroenteritis_disease");
     expect(offered(grounded, "p1")).not.toContainEqual(takeoff);
     expect(why(grounded, "p1", takeoff)).toBe("cant_fly");
+    expect(option(grounded, "p1", takeoff)?.lacks).toEqual(["grounded"]); // disabled, not hidden (owner, 2026-11-22)
     expect(applyAction(grounded, "p1", takeoff).ok).toBe(false);
 
     const noOrbit = structuredClone(s);
@@ -266,14 +280,15 @@ describe("expeditions, phase 1 (instant, as in single player)", () => {
     for (const sector of done.planets.p5![0]!.sectors) sector.explored = true;
     expect(offered(done, "p0")).not.toContainEqual(takeoff);
     expect(applyAction(done, "p0", takeoff).ok).toBe(false);
-    // Shown disabled with the reason (owner, 2026-11-19), to a pilot only: the locked or grounded still see nothing.
+    // Shown disabled with the reason (owner, 2026-11-19), to a pilot only: the locked still see nothing; the grounded
+    // see the grounding first (owner, 2026-11-22).
     expect(option(done, "p0", takeoff)?.lacks).toEqual(["explored"]);
     expect(option(done, "p1", takeoff)).toBeUndefined();
     done.bios.crew_lock = "projects";
     const doneP1 = player(done, "p1");
     if (doneP1.role === "mush") doneP1.role = "human";
     addDisease(done, doneP1, "gastroenteritis_disease");
-    expect(option(done, "p1", takeoff)).toBeUndefined();
+    expect(option(done, "p1", takeoff)?.lacks).toEqual(["grounded"]);
   });
 
   it("an illegal takeoff leaves the state unchanged", () => {
@@ -1669,6 +1684,20 @@ describe("expeditions, phase 5: hold extension, patrol-ship landings, no droppin
     expect(go(s).expeditions[0]!.members).toHaveLength(expedition.maxCrew);
     s.projects.ICARUS_LARGER_BAY = 100;
     expect(go(s).expeditions[0]!.members).toHaveLength(expedition.largerBayCrew);
+  });
+
+  it("a grounded pilot (Chronic Vertigo, or an illness) sees Land on planet disabled with the reason (owner, 2026-11-22)", () => {
+    const vertigo = flying();
+    player(vertigo, "p0").modifiers.push("chronic_vertigo");
+    expect(offered(vertigo, "p0")).not.toContainEqual(landOn);
+    expect(refusal(vertigo, "p0", landOn)).toBe("chronic_vertigo");
+    expect(option(vertigo, "p0", landOn)?.lacks).toEqual(["vertigo"]);
+    const ill = flying();
+    player(ill, "p0").role = "human";
+    addDisease(ill, player(ill, "p0"), "gastroenteritis_disease");
+    expect(option(ill, "p0", landOn)?.lacks).toEqual(["grounded"]);
+    // Coming home is always allowed.
+    expect(offered(vertigo, "p0")).toContainEqual({ type: "land", equipment: commandId(LONGANE) });
   });
 
   it("a pilot lands their patrol ship alone for 2 AP, exploring half the Icarus's sectors, rounded down", () => {

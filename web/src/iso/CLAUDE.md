@@ -56,7 +56,9 @@ Loaded when working on the isometric view. The UI rules in `web/CLAUDE.md` still
   Opening a terminal (`access`, `ActingOn.seats`) walks you there without sending it: the server seats you
   (an `occupancy` spot, #192), and you go to that chair (`terminalSpot`). Closing the terminal's window
   (`atTerminal` off) walks you to its standing spot, and that walk is sent, which ends the spot. While the
-  window is open, actions (the window is modal, so they're its own) don't walk you anywhere. A chair off
+  window is open, actions (the window is modal, so they're its own) don't walk you anywhere. With the game open in
+  two tabs, the one without the window only draws you seated (`mayGetUp`): it gets you up only once it opened a window
+  itself or loaded with you seated (a reload), and an action on that terminal walks you nowhere there either. A chair off
   the floor (the pilot's, the turrets') is climbed into from the nearest floor cell (`offFloorStep`, `stepsOnto`,
   as a `Goal.then`), and stepped down from the same way.
   "Begins" is read from the view's queue: at once if you were idle, otherwise when it shows up as

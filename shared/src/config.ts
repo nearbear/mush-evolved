@@ -101,6 +101,8 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   demoralize: { cost: { ap: 2 }, morale: 2 },
   // Owner, 2026-11-21: Bacteriophilia's give_disease, 1 AP, from `diseases.mushSkillDiseases`.
   giveDisease: { cost: { ap: 1 } },
+  // Owner, 2026-11-21 (#473): Trapper's trap_room, 1 AP and 1 spore, no cooldown.
+  trapper: { cost: { ap: 1 } },
   // Owner, 2026-11-22: Nightmarish's curse costs 2 AP and gives Bad Luck (`bad_luck_curse`).
   nightmare: { cost: { ap: 2 } },
   // Owner, 2026-11-22: Bad Luck multiplies an action's random injury and dirt chances by 4.
@@ -134,6 +136,9 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   // Owner, 2026-11-01 (eMushpedia "Création du Mycoscan"): checking your spore level on the MycoScan is free, once a day.
   drugDispenser: { cost: { ap: 0 }, resetCycles: [1, 4] },
   checkSpores: { cost: { ap: 0 } },
+  // Compute Eden (#478; owner, 2026-11-22, eMush): 2 AP or 1 Computer point, 33% per try, 3 star map fragments on the floor.
+  eden: { compute: { cost: { ap: 2 }, successChance: 0.33, fragments: 3, fragmentItem: "super_map" } },
+  jukebox: { cost: { ap: 0 }, morale: 3 },
   // Owner, 2026-11-01 (eMushpedia "Métalo"): the Scrapper's Snoop, free, once a day per storage room. What it finds
   // (owner, 2026-11-01, eMushpedia "Recycleur" weights): metal scraps 4, plastic scraps 3, a standard (uncooked)
   // ration 1, a fuel capsule 1, an oxygen capsule 1. Owner, 2026-11-01: 50% to get dirty (eMushpedia "Saleté") and a 10%
@@ -359,6 +364,7 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
     neronTargetingAssist: { accuracyFactor: 1.25 },
     armourCorridor: { damageReduction: 1 },
     fissionCoffeeRoaster: { cycles: [1, 5] },
+    jukebox: { room: "REFECTORY" },
     dynarcade: { room: "SPACESHIP_BAY_AA", cost: { ap: 1 }, successChance: 0.33, failureMultiplier: 1.5, morale: 2, injuryChance: 0.33 },
     extraHydropots: { room: "HYDROPONIC_CENTER", count: 3 },
     heatLamp: { extraFruitChance: 0.5 },
@@ -689,7 +695,7 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   // Confirmed 2026-10-15: nobody starts with a skill; players pick up to three
   // (SKILL_SLOTS) with the free, permanent pick_skill action.
   startSkills: [],
-  characterModifiers: { ian: ["pacifist"], chun: ["immunity", "mankind_only_hope"], terrence: ["wheelchair"], chao: ["hyperactive"], raluca: ["antisocial"], finola: ["germaphobe"] },
+  characterModifiers: { ian: ["pacifist"], chun: ["immunity", "mankind_only_hope"], terrence: ["wheelchair"], chao: ["hyperactive"], raluca: ["antisocial"], finola: ["germaphobe"], eleesha: ["chronic_vertigo"] },
   mankindOnlyHope: { moraleLossCut: 1 },
   // Owner, 2026-11-11: a human still at 0 morale (Hopeless) when a cycle ends dies, and each such death costs every
   // living player, Mush included, 1 morale.
@@ -707,10 +713,10 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   // Decided 2026-10-17 (owner): every action but ready and access takes a fixed time (2 s, cut to 1.5 s on 2026-10-24) and happens when its bar runs out;
   // up to 3 more can wait behind it.
   action: { durationMs: 1500, queueCap: 3, resolveAt: "end" },
-  // Starting items (matching eMush, 2026-11-17; spacesuits moved to `ICARUS`, 2026-11-20; apprentron, selection-time Mush sample and the tabulator added 2026-11-21): 6 fixed rooms plus storage_default (24 items + 1 weighted apprentron across 5 storages), daedalus_default (27 rooms),
-  // 4 weighted randomBlueprints (27 rooms), and 1 Mush sample (27 rooms, spawned on Mush selection). Medlab's 12 drugs (1 of each) are added by `stockMedlab` in `createGame`.
+  // Starting items (matching eMush, 2026-11-17; spacesuits moved to `ICARUS`, 2026-11-20; apprentron, selection-time Mush sample and the tabulator added 2026-11-21; apprentron moved to selection time 2026-11-22): 6 fixed rooms plus storage_default (24 items + 1 weighted apprentron, spawned on Mush selection, across 5 storages), daedalus_default (27 rooms),
+  // 4 weighted randomBlueprints (27 rooms), and 1 Mush sample (27 rooms, spawned on Mush selection). Medlab's 12 drugs (8 types once each + 4 extras from those 8) are added by `stockMedlab` in `createGame`.
   startItems: [
-    // Medlab (`SICK_BAY`): 2 bandages (1 of each of the 12 drugs is added by `stockMedlab`).
+    // Medlab (`SICK_BAY`): 2 bandages (12 drugs, 8 types + 4 duplicates, are added by `stockMedlab`).
     { type: "bandage", room: "SICK_BAY" },
     { type: "bandage", room: "SICK_BAY" },
     // Refectory (`REFECTORY`): 32 standard rations, microwave, freezer, mad kube.
@@ -747,10 +753,11 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
     { type: "grenade", pool: "storage" },
     { type: "drill", pool: "storage" },
     { type: "quad_compass", pool: "storage" },
-    // 1 apprentron (skill book) in a random storage room (owner, 2026-11-21):
+    // 1 apprentron (skill book) in a random storage room (owner, 2026-11-21), spawned upon Mush selection like eMush (2026-11-22):
     {
       type: BOOK_ITEM,
       pool: "storage",
+      atSelection: true,
       teachesWeights: {
         engineer: 14,
         pilot: 12,

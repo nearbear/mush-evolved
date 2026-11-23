@@ -4,6 +4,7 @@ import { doorOtherRoom, doorsOf, repairDoor } from "../doors.ts";
 import { ITEM_TYPES, canReachItem, isWorking, itemsIn } from "../items.ts";
 import { logPrivate, logPublic } from "../log.ts";
 import { removeStatus } from "../statuses.ts";
+import { repairEquipment } from "../gravity.ts";
 import type { DoorId, GameState, PlayerState } from "../types.ts";
 import { rubellaBlocks } from "../diseases.ts";
 
@@ -18,7 +19,8 @@ export const WRENCH_ITEM = "wrench";
 /**
  * Repair broken equipment in your room (owner, 2026-10-25, eMushpedia "Pannes"): 1 AP, at the equipment type's base
  * chance (`config.repair.chance`), x1.5 carrying a wrench and x2 for a Technician (`engineer`, its modifier). A success
- * is public in the room, a failure private (owner, 2026-11-01). A repaired turret gets its old charges back.
+ * is public in the room, a failure private (owner, 2026-11-01). A repaired turret gets its old charges back,
+ * and a repaired Gravity Simulator restarts (gravity.ts).
  * It also repairs a broken item you can reach, at `ItemType.repairChance` with the same factors (owner, 2026-11-07);
  * a type without one can't be repaired. The item's own `broken` flag is cleared; the logs are `itemRepaired` and
  * `itemRepairFailed`.
@@ -83,7 +85,7 @@ export class RepairAction extends Action<RepairActionData> {
       return;
     }
     const equipment = state.equipment[player.room]!.find((e) => e.id === target.equipment)!; // checked, so it exists
-    delete equipment.broken;
+    repairEquipment(state, equipment);
     removeStatus(player, "genius");
     logPublic(state, player.room, "repaired", { name: player.character, equipment: equipment.type });
   }

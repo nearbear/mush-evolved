@@ -1,5 +1,5 @@
 // The Command terminal's window, in two tabs: Interplanetary (steering, ShipNavigation.tsx) and Intergalactic (the ways to end
-// the trip: Sol and Eden). A destination the view doesn't offer is shown greyed out, with the reason on hover, focus or tap.
+// the trip: Sol and Eden, actions/travel_to_eden.ts). A destination the view doesn't offer is shown greyed out, with the reason on hover, focus or tap.
 
 import { Popover } from "@base-ui/react/popover";
 import { Tabs } from "@base-ui/react/tabs";
@@ -10,6 +10,7 @@ import { ConfirmPanel } from "./ConfirmPanel.tsx";
 import { ActionButton } from "./ActionButton.tsx";
 import { ActionLabel } from "./ActionLabel.tsx";
 import { ShipNavigation } from "./ShipNavigation.tsx";
+import { TerminalCollapsible } from "./TerminalCollapsible.tsx";
 import { terminalLogin } from "./terminalUsername.ts";
 import "./settings.css";
 import "./terminal.css";
@@ -32,6 +33,7 @@ export function CommandTerminal({ terminal, view, onAction }: Props) {
         <Tabs.Tab className="settings-tab" value="intergalactic">{t("command.intergalacticTab")}</Tabs.Tab>
       </Tabs.List>
       <Tabs.Panel value="navigation">
+        <TravelBasics />
         <ShipNavigation terminal={terminal} view={view} onAction={onAction} />
       </Tabs.Panel>
       <Tabs.Panel value="intergalactic">
@@ -41,12 +43,24 @@ export function CommandTerminal({ terminal, view, onAction }: Props) {
   );
 }
 
-function Intergalactic({ terminal, view, onAction }: Props) {
+/** A collapsed primer on how a jump works, as the Hydroponics terminal's botany basics (owner, 2026-11-22). Static text only. */
+function TravelBasics() {
   const { t } = useTranslation();
+  return (
+    <TerminalCollapsible heading={t("command.basicsHeading")}>
+      <p>{t("command.basicsPlanets")}</p>
+      <p>{t("command.basicsFuel")}</p>
+      <p>{t("command.basicsSteer")}</p>
+      <p>{t("command.basicsArrive")}</p>
+    </TerminalCollapsible>
+  );
+}
+
+function Intergalactic({ terminal, view, onAction }: Props) {
   return (
     <div className="command-destinations">
       <ReturnToSol terminal={terminal} view={view} onAction={onAction} />
-      <UnavailableButton reason={t("command.edenUnavailable")} ap={view.config.edenAp}>{t("actions.travelToEden")}</UnavailableButton>
+      <TravelToEden terminal={terminal} view={view} onAction={onAction} />
     </div>
   );
 }
@@ -84,6 +98,39 @@ function ReturnToSol({ terminal, view, onAction }: Props) {
         {t("actions.returnToSol")}
       </UnavailableButton>
     )
+  );
+}
+
+/**
+ * The trip to Eden (#478): offered once Eden is computed and PILGRED is repaired, with the Commander's access. It ends
+ * the game, so it asks for confirmation as Return to Sol does; otherwise greyed out with why, from public state.
+ */
+function TravelToEden({ terminal, view, onAction }: Props) {
+  const { t } = useTranslation();
+  const [confirming, setConfirming] = useState(false);
+  const option = view.actions.find(({ action: a }) => a.type === "travel_to_eden" && a.equipment === terminal.id);
+  const commander = terminalLogin(terminal.type, view, terminal.id).access !== "limited";
+  if (!option) {
+    const reason = !view.edenComputed ? t("command.edenNotComputed") : !view.pilgredRepaired ? t("command.solPilgredBroken") : commander ? t("command.solNotReady") : t("command.edenCommanderOnly");
+    return <UnavailableButton reason={reason} ap={view.config.edenAp}>{t("actions.travelToEden")}</UnavailableButton>;
+  }
+  return (
+    <>
+      <ActionButton className="big" view={view} option={option} onAction={() => setConfirming(true)}>
+        <ActionLabel text={t("actions.travelToEden")} cost={option.cost} chance={option.chance} />
+      </ActionButton>
+      <ConfirmPanel
+        open={confirming}
+        onOpenChange={setConfirming}
+        message={t("command.edenConfirm")}
+        yesLabel={t("actions.travelToEden")}
+        backLabel={t("returnToSol.back")}
+        onYes={() => {
+          onAction(option.action);
+          setConfirming(false);
+        }}
+      />
+    </>
   );
 }
 

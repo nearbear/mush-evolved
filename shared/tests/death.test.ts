@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createChannel, inviteToChannel, sendChat, toggleCheckbox } from "../src/chat.ts";
-import { damage, hasMushDied, killPlayer } from "../src/death.ts";
+import { damage, hasMushDied, heal, killPlayer } from "../src/death.ts";
 import { hopelessCycle } from "../src/morale.ts";
 import { burnOxygen } from "../src/ship.ts";
 import { CORPSE_ITEM, ITEM_TYPES, ITRACKIE_ITEM, itemsIn } from "../src/items.ts";
@@ -107,11 +107,12 @@ describe("death", () => {
     expect(JSON.stringify(s)).toBe(before);
   });
 
-  it("the dead don't hold up the cycle", () => {
+  it("dead bots don't hold up the cycle", () => {
     let s = ship();
+    for (const p of s.players) p.isBot = p.id !== "p0";
     for (const id of ["p2", "p3"]) s = must(applyAction(s, id, { type: "ready" }));
     const cycle = s.cycle;
-    s = punchToDeath(s); // p1 never readied; p0 still has to
+    s = punchToDeath(s); // bot p1 never readied; human p0 still has to
     expect(s.cycle).toBe(cycle);
     s = must(applyAction(s, "p0", { type: "ready" }));
     expect(s.cycle).toBe(cycle + 1);
@@ -302,5 +303,57 @@ describe("cause of death", () => {
     player(s, "p2").morale = 0;
     hopelessCycle(s);
     expect(causes(s, player(s, "p2").character)).toEqual(["depression", "depression"]);
+  });
+});
+
+describe("private HP change logs", () => {
+  it("logs non-zero HP loss privately to the victim only, and skips zero-loss calls", () => {
+    const s = ship();
+    const p1 = player(s, "p1");
+    p1.hp = 10;
+    const before = s.log.length;
+    damage(s, p1, 0, "injury");
+    damage(s, p1, 3, "injury");
+    expect(p1.hp).toBe(7);
+    expect(s.log.slice(before)).toMatchObject([
+      { key: "loseHp", params: { amount: 3 }, visibleTo: ["p1"], kind: "private" },
+    ]);
+    // Hidden info: roommate p0 and distant p2 must not see p1's private loseHp line.
+    expect(viewFor(s, "p1").log.some((e) => e.key === "loseHp")).toBe(true);
+    expect(viewFor(s, "p0").log.some((e) => e.key === "loseHp")).toBe(false);
+    expect(viewFor(s, "p2").log.some((e) => e.key === "loseHp")).toBe(false);
+  });
+
+  it("logs fatal HP loss privately before death", () => {
+    const s = ship();
+    const p1 = player(s, "p1");
+    p1.hp = 2;
+    const before = s.log.length;
+    damage(s, p1, 5, "injury");
+    expect(p1.alive).toBe(false);
+    expect(s.log.slice(before).map((e) => [e.key, e.params])).toEqual([
+      ["loseHp", { amount: 2 }],
+      ["died", { name: "chun", cause: "injury" }],
+    ]);
+    expect(s.log[before]).toMatchObject({ visibleTo: ["p1"], kind: "private" });
+    expect(viewFor(s, "p0").log.some((e) => e.key === "loseHp")).toBe(false);
+  });
+
+  it("logs non-zero HP gain privately to the recipient only, capped to actual HP gained, and skips zero-gain calls", () => {
+    const s = ship();
+    const p1 = player(s, "p1");
+    p1.hp = p1.maxHp - 2;
+    const before = s.log.length;
+    heal(s, p1, 0);
+    heal(s, p1, -3);
+    heal(s, p1, 5); // caps at maxHp, so actual gain is 2
+    heal(s, p1, 3); // already at maxHp, so 0 gained
+    expect(p1.hp).toBe(p1.maxHp);
+    expect(s.log.slice(before)).toMatchObject([
+      { key: "gainHp", params: { amount: 2 }, visibleTo: ["p1"], kind: "private" },
+    ]);
+    expect(viewFor(s, "p1").log.some((e) => e.key === "gainHp")).toBe(true);
+    expect(viewFor(s, "p0").log.some((e) => e.key === "gainHp")).toBe(false);
+    expect(viewFor(s, "p2").log.some((e) => e.key === "gainHp")).toBe(false);
   });
 });

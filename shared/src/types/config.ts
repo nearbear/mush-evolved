@@ -365,6 +365,9 @@ export interface GameConfig {
   giveDisease: {
     cost: { ap: number }; // The Mush skill Bacteriophilia (bacterial_contact): 1 AP, no limit (owner, 2026-11-21).
   };
+  trapper: {
+    cost: { ap: number }; // The Mush skill Trapper (trapper): 1 AP and 1 spore, no cooldown (owner, 2026-11-21, #473).
+  };
   nightmare: {
     cost: { ap: number }; // The Mush skill Nightmarish's curse (actions/nightmare.ts): 2 AP, no limit (owner, 2026-11-22).
   };
@@ -411,6 +414,11 @@ export interface GameConfig {
   /** The Drug Dispenser (owner, 2026-11-11): the cycles of the day it resets on (new list, unused), and what taking a drug costs. */
   drugDispenser: { cost: { ap: number }; resetCycles: number[] };
   checkSpores: { cost: { ap: number } }; // The MycoScan's spore check (owner, 2026-11-01).
+  // Compute Eden at the Super Calculator (#478; owner, 2026-11-22, eMush's numbers): `cost.ap` (or 1 Computer point), `successChance` per
+  // try with the usual failure streak, with at least `fragments` star map fragments (`fragmentItem`) on the room's floor, unhidden.
+  eden: { compute: { cost: { ap: number }; successChance: number; fragments: number; fragmentItem: string } };
+  // The jukebox (owner, 2026-11-22): Listen costs `cost.ap` and gives +`morale` once a day while your own song plays; Check playlist is free.
+  jukebox: { cost: { ap: number }; morale: number };
   snoop: { cost: { ap: number }; dirtyChance: number; injuryChance: number; rooms: string[]; items: Record<string, number> }; // The Scrapper's Snoop: cost, its dirt and injury odds, the storage rooms it works in, the items it makes by weight (owner, 2026-11-01).
   sporeSucker: {
     cost: { ap: number }; // AP using the Spore Sucker costs (owner, 2026-11-20).
@@ -668,6 +676,8 @@ export interface GameConfig {
     armourCorridor: { damageReduction: number };
     // Fission Coffee Roaster (owner, 2026-11-02; eMushpedia *Torréfacteur à fission*): coffee machine regenerates at these cycles of each day (C1, C5; every cycle with PILGRED).
     fissionCoffeeRoaster: { cycles: number[] };
+    // Jukebox (BEAT_BOX; owner, 2026-11-22): spawns the jukebox in `room` (the refectory; Alpha Bay 2 in eMush).
+    jukebox: { room: RoomId };
     // Dynarcade (CALL_OF_DIRTY; owner, 2026-11-14): spawns the Dynarcade in `room`, where anyone can play for `cost.ap` AP (`successChance` x`failureMultiplier` per miss for +`morale`, `injuryChance` of 2 HP injury).
     dynarcade: { room: RoomId; cost: { ap: number }; successChance: number; failureMultiplier: number; morale: number; injuryChance: number };
     // Extra hydropots (EXTRA_HYDROPONPOTS; owner, 2026-11-14): completing it puts `count` empty hydropots on the floor of `room`.
@@ -703,7 +713,7 @@ export interface GameConfig {
     progress: { rate: number; mod: number; skillBoost: number; relayPenalty: number };
     capPoints: number; // Most PILGRED points (`resources.pilgred`) a player can hold (owner, 2026-10-21; the Physicist's IncrMaxPA(PILGRED, 2)).
     pointsPerDay: number; // PILGRED points the `physicist` skill grants at the start of each day (owner, 2026-10-21; the original +1).
-    edenCost: { ap: number }; // AP shown on the Command terminal's Travel to Eden button; Eden is not reachable yet (owner, 2026-10-29: 2, as for Sol).
+    edenCost: { ap: number }; // AP spent to travel to Eden at the Command terminal once Eden is computed (owner, 2026-10-29: 2, as for Sol; actions/travel_to_eden.ts).
     returnCost: { ap: number }; // AP spent to return to Sol at the Command terminal (owner, 2026-10-21; the original's SET_PILGRED_TO_SOL, 2).
     // Coffee regeneration cycles of each day when PILGRED is repaired (owner, 2026-11-02; the original's C1, C3, C5, C7).
     coffeeCycles: number[];
@@ -985,7 +995,7 @@ export interface GameConfig {
     mpPenalty: number; // MP added to each move while carrying a heavy item, however many (confirmed 2026-10-16).
   };
   startSkills: string[]; // Skills every player starts with (none since 2026-10-15; players pick their own).
-  characterModifiers: Record<string, string[]>; // Modifiers a character starts with, by character id (traits: Ian pacifist, owner 2026-10-18; Chun immunity and mankind_only_hope, owner 2026-10-18; Terrence wheelchair, owner 2026-10-19; Chao hyperactive, owner 2026-11-08; Raluca antisocial, owner 2026-11-19; Finola germaphobe, owner 2026-11-21).
+  characterModifiers: Record<string, string[]>; // Modifiers a character starts with, by character id (traits: Ian pacifist, owner 2026-10-18; Chun immunity and mankind_only_hope, owner 2026-10-18; Terrence wheelchair, owner 2026-10-19; Chao hyperactive, owner 2026-11-08; Raluca antisocial, owner 2026-11-19; Finola germaphobe, owner 2026-11-21; Eleesha chronic_vertigo, owner 2026-11-22).
   mankindOnlyHope: { moraleLossCut: number }; // How much less morale the crew loses each day while a holder (Chun) is alive (owner, 2026-10-18).
   hopeless: { deathMorale: number }; // Morale every living player loses for each human who dies Hopeless at a cycle's end (owner, 2026-11-11).
   /** Items placed in rooms at the start of the game (fixed room, or random from `storage` / `daedalus` pool, optionally with weighted blueprint/book draws; `atSelection` waits until Mush selection). */

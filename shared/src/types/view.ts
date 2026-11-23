@@ -10,6 +10,7 @@ import type { TurnSide } from "../navigation.ts";
 import type { PlanetDirection, PlanetTag } from "../planets.ts";
 import type { TitleId } from "../titles.ts";
 import type { Alerts } from "../reports.ts";
+import type { CapBreakdown, CapStat } from "../modifiers.ts";
 import type { Action, BotKind, DocumentState, ItemId, LogEntry, LogLine, LogParams, PlayerId, Role, RoomId, SpoilStage } from "../types.ts";
 import type { ChannelId, ChatLine, ChatMessage, ChatThread, PrivateChannel, SeqRange, SharedPilgredStatus, SharedPlanet, SharedPlanetId, SharedPlantStatus, SharedReport, SharedReportId } from "./chat.ts";
 import type { Plan } from "./plan.ts";
@@ -37,6 +38,8 @@ export interface EquipmentView {
   /** A docked patrol ship's armor, on its interface: shown to anyone in its bay (owner, 2026-10-28). Absent while it is out. */
   armor?: number;
   maxArmor?: number;
+  /** The jukebox's song this cycle (jukebox.ts), as the character whose favourite it is: to anyone in its room, unless broken. */
+  song?: string;
 }
 
 /** An item as a client sees it. */
@@ -268,6 +271,8 @@ export interface PlayerView {
   burningRooms: RoomId[];
   /** Broken doors aboard, only once Defective piston sensors (`DOOR_SENSOR`) is complete (reports.ts, #330). Empty before then and for the dead. */
   brokenDoors: DoorId[];
+  /** Rooms currently booby-trapped with a spore (traps.ts, #473). Only to living Mush; always empty for humans and the dead. */
+  trappedRooms: RoomId[];
   /**
    * The alert bar (reports.ts, #444, #330): how many fires and broken pieces of equipment/doors there are aboard,
    * reported or not, and where the reported ones are. Unreported ones are only counted. Zero and empty for the dead.
@@ -332,6 +337,12 @@ export interface PlayerView {
   /** Caps for drawing your HP and morale bars. */
   maxHp: number;
   maxMorale: number;
+  /**
+   * Why each of your caps is what it is (`capBreakdown`, modifiers.ts, #267): the configured base and each modifier or
+   * project that changed it, for the stat cards. Derived on every view, never stored; your own seat only. Display only:
+   * `maxAp`, `maxMp`, `maxHp` and `maxMorale` stay the caps in force (the stored ones).
+   */
+  caps: Record<CapStat, CapBreakdown>;
   /** Bonds you are part of, with people in any room. Others' bonds are never sent. */
   bonds: {
     /** People you have bonded to. */
@@ -368,6 +379,8 @@ export interface PlayerView {
   yourTokens: { research: Record<string, number>; pilgred: number };
   /** Whether PILGRED is repaired, public to everyone: its completion is announced to the whole crew (repair_pilgred.ts). */
   pilgredRepaired: boolean;
+  /** Whether Eden's coordinates are computed (eden.ts), public: the success is logged and the Command terminal shows it. */
+  edenComputed: boolean;
   /** Whether a Mush has died on the ship (public): the human_tank in Sick Bay shows a person in it. */
   humanTankFull: boolean;
   /**
@@ -485,9 +498,9 @@ export interface ActionOption {
   tags: ActionTag[];
   /**
    * Empty when you can do it now; otherwise the points, the inventory space, or the cleanliness ("clean": you are dirty)
-   * you lack, or for Collect scrap, "debris" (none out there) or "pasiphae" (a patrol ship can't while the Pasiphae exists), or for Travel and turns, "reactor" (the reactor it needs is broken), or for Travel and Leave orbit, "arack" (an Arack is around), or for Hack, "preselection" (titles aren't assigned yet), or for Board the Icarus and Take off, "explored" (every sector of the planet is explored) or "icarusLost". See `affordable`.
+   * you lack, or for Collect scrap, "debris" (none out there) or "pasiphae" (a patrol ship can't while the Pasiphae exists), or for Travel and turns, "reactor" (the reactor it needs is broken), or for Travel and Leave orbit, "arack" (an Arack is around), or for Hack, "preselection" (titles aren't assigned yet), or for Board the Icarus and Take off, "explored" (every sector of the planet is explored) or "icarusLost", or for Listen at the jukebox, "notYourSong" or "listenedToday". See `affordable`.
    */
-  lacks: ("ap" | "mp" | "space" | "cooldown" | "capacity" | "clean" | "debris" | "pasiphae" | "reactor" | "arack" | "preselection" | "explored" | "icarusLost" | "antisocial" | "germaphobe" | "mushNotSelected" | "listPrinted" | "broken")[];
+  lacks: ("ap" | "mp" | "space" | "cooldown" | "capacity" | "clean" | "debris" | "pasiphae" | "reactor" | "arack" | "preselection" | "explored" | "icarusLost" | "vertigo" | "grounded" | "antisocial" | "germaphobe" | "mushNotSelected" | "listPrinted" | "broken" | "notYourSong" | "listenedToday" | "fragments")[];
   /** Cycles until it is ready, when `lacks` has "cooldown". */
   cooldown?: number;
 }

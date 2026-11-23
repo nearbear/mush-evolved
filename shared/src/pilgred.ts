@@ -26,8 +26,8 @@ export function commandTerminalsHere(state: Readonly<GameState>, player: Readonl
 
 /**
  * Whether this player may send the ship to Sol, wherever they stand: PILGRED is repaired and they hold the Commander
- * title, Mush included (owner, 2026-10-21). Nobody while the title is vacant; the hacker kit (not built) is to add its
- * route here, through `hasTitleAccess`.
+ * title, Mush included (owner, 2026-10-21), or has its access another way through `hasTitleAccess` (a hacked Command
+ * terminal, the `freeHacking` cheat).
  */
 export function canReturnToSol(state: Readonly<GameState>, player: Readonly<PlayerState>): boolean {
   return isPilgredRepaired(state) && hasTitleAccess(state, player, "commander");

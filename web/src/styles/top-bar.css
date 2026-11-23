@@ -473,6 +473,38 @@
   margin-left: var(--space-2);
   font-variant-numeric: tabular-nums;
 }
+/* What changes the stat's cap (#267): "Max Morale: 14 → 11", then one icon-led line per source. */
+.stat-cap p {
+  margin: var(--space-2) 0 0;
+  font-variant-numeric: tabular-nums;
+}
+.skill-card .stat-cap ul {
+  list-style: none;
+  padding-left: 0;
+  margin: var(--space-1) 0 0;
+  font-variant-numeric: tabular-nums;
+}
+.stat-cap li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+.stat-cap li img {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  image-rendering: pixelated;
+}
+/* Static rules help at the bottom of the stat card: caption-styled, with a divider below any cap breakdown. */
+.stat-info-help {
+  font-size: 0.75rem;
+  opacity: 0.75;
+}
+.stat-info-help-divided {
+  margin-top: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 1px solid rgb(255 255 255 / 0.2);
+}
 /* Desktop: your other resources in the ID card (SelfHud; laid out in self-hud.css), as the phone's chips; it opens them all when some don't show. */
 .resource-stack {
   display: flex;
@@ -718,4 +750,16 @@
 }
 .crew-card .crew-group p {
   margin: 0;
+}
+
+/* The alerts popover's Gravity Simulator row (ShipResources `GravityAlert`): icon and title, then eMush's description. */
+.alert-gravity {
+  margin-top: 4px;
+  max-width: min(320px, calc(100vw - 32px));
+}
+.alert-gravity img {
+  image-rendering: pixelated;
+}
+.alert-gravity p {
+  margin: 2px 0 0;
 }

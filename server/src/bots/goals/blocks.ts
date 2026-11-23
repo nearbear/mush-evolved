@@ -65,6 +65,9 @@ export function offered<T extends Action["type"]>(view: PlayerView, type: T): (A
   return view.actions.filter((o): o is ActionOption & { action: ActionOf<T> } => o.action.type === type);
 }
 
+/** An offer shown disabled because its player can't fly (Chronic Vertigo or an illness; patrol.ts, `groundedBy`): never theirs to wait for. */
+export const grounded = (o: Readonly<ActionOption>): boolean => o.lacks.includes("vertigo") || o.lacks.includes("grounded");
+
 /** The first affordable action of `type` passing `test`. */
 export function find<T extends Action["type"]>(view: PlayerView, type: T, test: (action: ActionOf<T>) => boolean = () => true): ActionOf<T> | undefined {
   return offered(view, type).find((o) => o.lacks.length === 0 && test(o.action))?.action;

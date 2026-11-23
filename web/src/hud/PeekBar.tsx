@@ -62,11 +62,7 @@ export function PeekBar({
       <Bar
         heading={t("peek.doorTo", { room: names.room(door.to) })}
         sub={door.broken ? t("roomList.broken") : canGo ? undefined : t("peek.noAccess")}
-        more={
-          <button type="button" onClick={onMore} aria-label={t("peek.more")}>
-            …
-          </button>
-        }
+        onMore={onMore}
       >
         {canGo && <DoublePressButton onPress={() => onMove(door.to)}>{t("common.go")}</DoublePressButton>}
         {options.map((o) => (
@@ -91,11 +87,7 @@ export function PeekBar({
         heading={name}
         sub={resolved.kind === "item" && ITEM_TYPES[resolved.item.type]?.notImplemented ? t("itemAttr.notImplemented") : undefined}
         isBot={isBot}
-        more={
-          <button type="button" onClick={onMore} aria-label={t("peek.more")}>
-            …
-          </button>
-        }
+        onMore={onMore}
       >
         {onKube && resolved.kind === "equipment" && resolved.equipment.type === SUPERKUBE && <SuperkubeOpener view={view} onKube={onKube} />}
         {peekOptions.map((o) => (
@@ -137,18 +129,18 @@ function Bar({
   heading,
   sub,
   isBot = false,
-  more,
+  onMore,
   children,
 }: {
   heading: string;
   sub?: string | undefined;
   isBot?: boolean;
-  /** Always shown after the actions, however many of them fit. */
-  more?: ReactNode;
+  /** More is always shown after the actions, however many of them fit; it opens them all in Inspect. */
+  onMore: () => void;
   children: ReactNode;
 }) {
   const { t } = useTranslation();
-  const actions = useOneRow();
+  const [actions, clipped] = useOneRow();
   const root = useRef<HTMLDivElement>(null);
   useKeepFocus(root);
   // The name isn't shown (the selection pulses in the room instead, to leave the actions the room); screen readers get it
@@ -164,17 +156,32 @@ function Bar({
       <div className="peek-actions" ref={actions}>
         {children}
       </div>
-      {more}
+      {/* The badge counts the actions clipped off the row; informational (blue), not an alert. */}
+      <button
+        type="button"
+        className="peek-more"
+        onClick={onMore}
+        aria-label={clipped > 0 ? t("peek.moreHidden", { count: clipped }) : t("peek.more")}
+      >
+        …
+        {clipped > 0 && (
+          <span className="peek-more-badge" aria-hidden="true">
+            {clipped}
+          </span>
+        )}
+      </button>
     </div>
   );
 }
 
 /**
  * The actions get one row; CSS clips the ones that wrap past it (More still reaches them).
- * This makes the clipped ones inert too, so keyboards and screen readers skip them.
+ * This makes the clipped ones inert too, so keyboards and screen readers skip them, and returns how many were clipped
+ * (More's badge).
  */
 function useOneRow() {
   const ref = useRef<HTMLDivElement>(null);
+  const [clipped, setClipped] = useState(0);
   // No deps: the buttons change with the selection and the view, so recheck after every render.
   useLayoutEffect(() => {
     const row = ref.current;
@@ -182,12 +189,18 @@ function useOneRow() {
     const mark = () => {
       const buttons = [...row.children] as HTMLElement[];
       const top = buttons[0]?.offsetTop ?? 0;
-      for (const b of buttons) b.inert = b.offsetTop > top;
+      let n = 0;
+      for (const b of buttons) {
+        b.inert = b.offsetTop > top;
+        if (b.inert) n++;
+      }
+      // Bails out when unchanged, so the effect's rerun after this render settles.
+      setClipped(n);
     };
     mark();
     const observer = new ResizeObserver(mark);
     observer.observe(row);
     return () => observer.disconnect();
   });
-  return ref;
+  return [ref, clipped] as const;
 }

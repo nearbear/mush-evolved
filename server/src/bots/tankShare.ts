@@ -87,7 +87,9 @@ export function observeTanks(view: PlayerView, memory: BotMemory): { news: boole
   if (tankHere.some((e) => e.broken)) tanks.broken.add(room); // reported by the reflex this turn
   for (const r of tanks.broken) tanks.suspect.delete(r);
   // Nothing left unlocated (every breakdown aboard is reported) or the Anomaly detector reports them all: no search.
-  if (anomalyDetector(view) || view.alerts.broken <= reported.length) tanks.suspect.clear();
+  // A broken Gravity Simulator counts but is never reported (its own `alerts.gravity` row), so it isn't one to locate.
+  const unreportable = view.alerts.gravity === "broken" ? 1 : 0;
+  if (anomalyDetector(view) || view.alerts.broken - unreportable <= reported.length) tanks.suspect.clear();
   let post: BotSocial | null = null;
   if (tankHere.length > 0 && !tanks.broken.has(room) && tanks.suspect.delete(room) && view.chatChannels.includes("global")) {
     post = { type: "chat", channel: "global", text: formatTankLine({ kind: "fine", room }) }; // seen working: tell the others

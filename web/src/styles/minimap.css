@@ -85,6 +85,10 @@
   opacity: 1;
   filter: drop-shadow(0 0 0.25px #fff) drop-shadow(0 0 0.25px #fff);
 }
+.minimap-trap {
+  image-rendering: pixelated;
+  pointer-events: none;
+}
 .minimap-caption {
   display: flex;
   align-items: center;

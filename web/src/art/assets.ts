@@ -181,7 +181,7 @@ export function itemViewIcon(item: Pick<ItemView, "type" | "plant">): string | u
 export const EMPTY_SLOT_ICON = itemIcons["empty"]!;
 
 const design = urls(
-  import.meta.glob<string>("../../../Mush/www/img/design/{pa1,pa2,lifebar,lifebar2,bdd,bdd_off}.png", { eager: true, query: "?url", import: "default" }),
+  import.meta.glob<string>("../../../Mush/www/img/design/{pa1,pa2,lifebar,lifebar2,bdd,bdd_off,neron_chat}.png", { eager: true, query: "?url", import: "default" }),
 );
 
 /** Research cards, keyed by the lowercase research id (the file name). */
@@ -232,6 +232,11 @@ export const FIRE_ICON = urls(
   import.meta.glob<string>("../../../Mush/www/img/icons/ui/fire.png", { eager: true, query: "?url", import: "default" }),
 )["fire"]!;
 
+/** The Gravity Simulator (the original's), on the alert bar's gravity row while gravity is down (ShipResources). */
+export const GRAVITY_ICON = urls(
+  import.meta.glob<string>("../../../Mush/www/img/icons/ui/simulator.png", { eager: true, query: "?url", import: "default" }),
+)["simulator"]!;
+
 /** A gold star (the original's): one per difficulty level in the lobby's character picker, grayed out when empty. */
 export const STAR_ICON = urls(
   import.meta.glob<string>("../../../Mush/www/img/icons/ui/star.png", { eager: true, query: "?url", import: "default" }),
@@ -271,6 +276,8 @@ export const MORALE_PIP = design["lifebar2"]!;
 /** 36x28 Xyloph database cells: deciphered, and not yet deciphered. */
 export const XYLOPH_DONE = design["bdd"]!;
 export const XYLOPH_TODO = design["bdd_off"]!;
+/** 38x38 red glowing NERON eye in a steel ring, drawn full-size beside NERON messages. */
+export const NERON_CHAT_ICON = design["neron_chat"]!;
 /** 70x65 rebel base icons. The art is generic colony skylines; base01..06 follow the order of `REBEL_BASES` (the original's data sheet has ten slots, six live). */
 const baseIcons = urls(
   import.meta.glob<string>("../../../Mush/www/img/icons/bases/base0[1-6].png", { eager: true, query: "?url", import: "default" }),
@@ -288,7 +295,7 @@ export const MORALE_ICON = statIcons["moral"]!;
 // Tab icons (16x16-ish pixel art). Keys are the names the user chose; see docs/assets/tab-icons.md.
 const uiIcons = urls(
   import.meta.glob<string>(
-    "../../../Mush/www/img/icons/ui/{mush,mush_progressive,starter,o2,fuel,plasma,alert,p_alive,survival,awake,comm,learned,stock,microsc,neron,info,infoalert,local,planet,conceptor,talkie,shield,basicplus,goldplus,notebook,pa_cook,pa_garden,plant_youngling,plant_thirsty,plant_dry,plant_diseased,sat,pa_pilgred,pam,pa_heal,pa_eng,pa_exp,pa_comp,pa_core,pa_shoot,hunter,private,search,spore,talk,wall,fav,triumph,heavy,charge,dead,check,uncheck,rebellion,food_unstable,food_hazardous,food_decaying}.{png,gif}",
+    "../../../Mush/www/img/icons/ui/{mush,mush_progressive,starter,o2,fuel,plasma,alert,p_alive,survival,awake,comm,learned,stock,microsc,neron,info,infoalert,local,planet,conceptor,talkie,shield,basicplus,goldplus,notebook,pa_cook,pa_garden,plant_youngling,plant_thirsty,plant_dry,plant_diseased,sat,pa_pilgred,pam,pa_heal,pa_eng,pa_exp,pa_comp,pa_core,pa_shoot,hunter,private,search,spore,talk,wall,fav,triumph,heavy,charge,dead,check,uncheck,rebellion,food_unstable,food_hazardous,food_decaying,less,more,vertigo}.{png,gif}",
     { eager: true, query: "?url", import: "default" },
   ),
 );
@@ -315,9 +322,15 @@ export const SHIP_RESOURCE_ICONS: Readonly<Record<"oxygen" | "fuel" | "hull" | "
 export const SIGNAL_KIND_ICONS = { merchant: uiIcons["stock"]!, rebel: uiIcons["rebellion"]! } as const;
 export const CHECK_ICON = uiIcons["check"]!;
 export const UNCHECK_ICON = uiIcons["uncheck"]!;
+/** 16x16 minus and plus icons (`less.png`, `more.png`), for collapsible sections inside terminals. */
+export const COLLAPSE_ICON = uiIcons["less"]!;
+export const EXPAND_ICON = uiIcons["more"]!;
 
 /** The marker beside iTrackie entries that come from the ship rather than a person. */
 export const INFO_ICON = uiIcons["info"]!;
+
+/** 16x16 NERON icon, for project entries (e.g. a NERON project that changes a stat cap). */
+export const NERON_ICON = uiIcons["neron"]!;
 
 /** A person you can see is somewhere but can't identify (ACTOPI off). */
 export const MUSH_ICON = uiIcons["mush"]!;
@@ -359,6 +372,8 @@ export const STATUS_ICONS: Readonly<Record<string, string>> = {
   hyperactive: statusIconFiles["hyperactive"]!,
   antisocial: statusIconFiles["unsociable"]!,
   germaphobe: statusIconFiles["germaphobic"]!,
+  // The original's dizzy face (`icons/ui/vertigo.png`; owner, 2026-11-22).
+  chronic_vertigo: uiIcons["vertigo"]!,
   mankind_only_hope: traitSkillIcons["mankind_only_hope"]!,
   // The original's wheelchair icon (its `disabled` status), for the trait and for being pushed.
   wheelchair: statusIconFiles["disabled"]!,

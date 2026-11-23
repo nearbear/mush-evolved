@@ -75,6 +75,8 @@ describe("taking off", () => {
       addDisease(grounded, target, disease);
       expect(offered(grounded, "p1").some((a) => a.type === "takeoff")).toBe(false);
       expect(refusal(grounded, "p1", takeoff())).toBe("cant_fly");
+      // Shown disabled with the reason (owner, 2026-11-22), not hidden.
+      expect(option(grounded, "p1", takeoff())?.lacks).toEqual(["grounded"]);
     }
     // A ship in another bay can't be taken from here.
     expect(refusal(s, "p0", takeoff(patrolShip("PATROL_SHIP_B_0")!))).toBe("no_ship");
@@ -386,7 +388,7 @@ describe("rough manoeuvres", () => {
     const p1 = player(s, "p1");
     const before = { hull: s.ship.hull, shield: s.ship.plasmaShield, hp: p1.hp };
     manoeuvre(s, p1, LONGANE);
-    const entry = s.log.at(-1)!;
+    const entry = s.log.find((e) => e.key === "patrolRough")!;
     expect(entry).toMatchObject({ key: "patrolRough", visibleTo: ["p1"] });
     const { hull, armor, hp } = entry.params as { hull: number; armor: number; hp: number };
     expect(hull).toBeGreaterThanOrEqual(2);

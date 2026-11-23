@@ -20,6 +20,8 @@ const ACTION_NAME_KEYS = {
   project: "actions.project",
   repair_pilgred: "actions.repairPilgred",
   return_to_sol: "actions.returnToSol",
+  travel_to_eden: "actions.travelToEden",
+  compute_eden: "actions.computeEden",
   turn_ship: "actions.turnShip",
   travel: "actions.travel",
   leave_orbit: "actions.leaveOrbit",
@@ -67,6 +69,8 @@ const ACTION_NAME_KEYS = {
   delete_planet: "actions.deletePlanet",
   dispense: "actions.dispense",
   play_arcade: "actions.playArcade",
+  listen_jukebox: "actions.listen_jukebox",
+  check_jukebox: "actions.check_jukebox",
   consume: "actions.consume",
   hide: "actions.hide",
   search: "actions.search",
@@ -93,6 +97,7 @@ const ACTION_NAME_KEYS = {
   mass_mouldering: "actions.massMouldering",
   demoralize: "actions.demoralize",
   give_disease: "actions.giveDisease",
+  trap_room: "actions.trapRoom",
   nightmare: "actions.nightmare",
   tube_transfer: "actions.tubeTransfer",
   consume_spore: "actions.consumeSpore",
@@ -182,6 +187,8 @@ export function useNames() {
   const drone = (name: string, serial: number) => t("itemAttr.droneName", { name, serial });
   /** A drone upgrade id (shared/src/drones.ts, #412): "Firefighter". */
   const droneUpgrade = (id: string) => t(`drones.upgrades.${id}` as never, { defaultValue: id });
+  /** A character's favourite song on the jukebox (#477): "Night Flowers by Rob Vivan". */
+  const jukeboxSong = (character: string) => t(`jukebox.songs.${character}` as never, { defaultValue: character });
   const research = (id: string) => t(`research.names.${id}` as never, { defaultValue: id });
   const project = (id: string) => t(`projects.names.${id}` as never, { defaultValue: id });
   const title = (id: string) => t(`titles.names.${id}` as never, { defaultValue: id });
@@ -199,7 +206,7 @@ export function useNames() {
       }),
     );
 
-  /** The text of a log entry. `room`, `item`, `research`, `project`, `equipment`, `action`, `title`, `skill`, `base` (a rebel base), `direction` (a heading), `entry` (a Xyloph entry) and `cause` (a cause of death) params are ids and get translated; `drone` and `serial` make a drone's name, and `upgrade` is a drone upgrade; `name`, `target` and `body` are character ids; `tested` and `spoiledBy` are an assay's counts by character. */
+  /** The text of a log entry. `room`, `item`, `research`, `project`, `equipment`, `action`, `title`, `skill`, `base` (a rebel base), `direction` (a heading), `entry` (a Xyloph entry), `cause` (a cause of death) and `song`/`song1`..`song3` (a jukebox song, by character) params are ids and get translated; `drone` and `serial` make a drone's name, and `upgrade` is a drone upgrade; `name`, `target` and `body` are character ids; `tested` and `spoiledBy` are an assay's counts by character. */
   const logLine = ({ key, params = {} }: Pick<LogEntry, "key" | "params">): string => {
     const resolved: Record<string, string | number> = { ...params };
     if (typeof params.room === "string") resolved.room = room(params.room);
@@ -219,11 +226,13 @@ export function useNames() {
     if (typeof params.entry === "string") resolved.entry = t(`comms.xyloph.${params.entry}` as never, { defaultValue: params.entry });
     // A cause of death (shared/src/death.ts, #177).
     if (typeof params.cause === "string") resolved.cause = t(`deathCause.${params.cause}` as never, { defaultValue: params.cause });
+    // The jukebox's songs (shared/src/jukebox.ts), by the character whose favourite each is.
+    for (const song of ["song", "song1", "song2", "song3"] as const) if (typeof params[song] === "string") resolved[song] = jukeboxSong(params[song]);
     for (const who of ["name", "target", "body"] as const) if (typeof params[who] === "string") resolved[who] = characterGivenName(params[who]);
     // An assay's "chun:3,paola:1" lists (shared/src/actions/research.ts): "Chun ×3, Paola ×1".
     for (const list of ["tested", "spoiledBy"] as const) if (typeof params[list] === "string") resolved[list] = sampleCounts(params[list]);
     return t(`logEvent.${key}` as never, { ...resolved, defaultValue: key });
   };
 
-  return { room, equipment, item, itemOf, itemLabel, drone, droneUpgrade, research, project, skill, title, rebelBase, action, character: characterName, characterGiven: characterGivenName, logLine };
+  return { room, equipment, item, itemOf, itemLabel, drone, droneUpgrade, jukeboxSong, research, project, skill, title, rebelBase, action, character: characterName, characterGiven: characterGivenName, logLine };
 }

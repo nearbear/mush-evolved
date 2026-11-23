@@ -2,6 +2,7 @@
 // Contamination and conversion (confirmed 2026-10-15). A human whose
 // contamination reaches capacity converts to Mush at once. The anti-Mush serum cures (`cure`).
 
+import { updateMaxValues } from "./adjustStats.ts";
 import { pushChat } from "./chat.ts";
 import { logPrivate } from "./log.ts";
 import { contaminated, contaminationCapacity } from "./modifiers.ts";
@@ -60,7 +61,8 @@ export function contaminationSeenBy(state: Readonly<GameState>, viewer: Readonly
 
 /**
  * Turns a human into a (beta) Mush. Skills, HP, and morale stay; satiety and hunger
- * are human-only, so they go. Spore extraction is ready at once (no cooldown entry).
+ * are human-only, so they go. Spore extraction is ready at once (no cooldown entry). The caps are recomputed, since
+ * the folds skip a Mush's diseases (owner, 2026-11-22, #267).
  * Only the convert is told, privately; nobody learns who caused it.
  */
 export function convert(state: GameState, player: PlayerState): void {
@@ -69,6 +71,7 @@ export function convert(state: GameState, player: PlayerState): void {
   player.satiety = 0;
   player.satietyZeroSince = null;
   delete state.contamination[player.id];
+  updateMaxValues(state, player);
   logPrivate(state, player.id, "converted");
 }
 
@@ -87,6 +90,7 @@ export function cure(state: GameState, player: PlayerState): boolean {
     player.satietyZeroSince = state.cycle;
     delete state.spikedOn[player.id];
     removeStatus(player, "nimble");
+    updateMaxValues(state, player); // their diseases count again (#267)
     logPrivate(state, player.id, "cured");
     return true;
   }

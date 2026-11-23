@@ -634,9 +634,10 @@ export function IsoRoom({
   useEffect(() => {
     // Pushing a wheelchair or pushed in one, you stay with it, unless what you do ends the push (shared `endsAccommodation`).
     if (!actingOn || !roomLayout || !myWalker || leavingTo || ((myPushee || me?.pushedBy !== undefined) && !actingOn.endsPush)) return;
-    // Seated at a terminal with its window open (#192), what you do there keeps you in your chair: a walk would end it.
-    if (atTerminal && mySpot?.kind === "occupancy") return;
     const { target } = actingOn;
+    // Seated at a terminal (#192), what you do there keeps you in your chair: a walk would end it. With its window open
+    // here, everything you do is its own; without, it may still be one sent from another tab where it is open.
+    if (mySpot?.kind === "occupancy" && (atTerminal || (target.kind === "equipment" && target.id === mySpot.equipment))) return;
     let cell: { x: number; y: number } | undefined;
     if (target.kind === "door") {
       const to = "to" in target ? target.to : doorOtherRoom(target.id, room);
@@ -659,17 +660,24 @@ export function IsoRoom({
     if (actingOn.share && !actingOn.seats) onWalk?.(cell, false);
   }, [actingOn?.n]);
 
-  // At a terminal (#192): you go to the chair the server gave you, or stand at it. Once its window is closed (or was
-  // never open here, after a reload), you get up and step to its standing spot, which ends it for your roommates too.
+  // At a terminal (#192): you go to the chair the server gave you, or stand at it. Once its window is closed here (or
+  // you were already seated when this view loaded, after a reload), you get up and step to its standing spot, which
+  // ends it for your roommates too. Seated from another tab (the game open twice), where the window is, you stay put:
+  // a walk from here would end the seat under that window.
   const occupancyKey = mySpot?.kind === "occupancy" ? `${mySpot.equipment}:${mySpot.chair ?? ""}` : "";
+  /** This tab may get you up: it opened a terminal window since you last got up here, or loaded with you seated. */
+  const mayGetUp = useRef<boolean | undefined>(undefined);
   // biome-ignore lint/correctness/useExhaustiveDependencies: only a new seat, or the window closing, moves you.
   useEffect(() => {
     const at = atTerminalOf(mySpot);
+    if (atTerminal) mayGetUp.current = true;
+    else mayGetUp.current ??= !!at;
     if (!at || !roomLayout || leavingTo) return;
-    if (atTerminal) {
+    if (atTerminal || !mayGetUp.current) {
       setWalk({ visit: visit.current.n, cell: at.cell, ...(at.chair !== undefined && { seat: seatFor(at.chair || undefined) }) });
       return;
     }
+    mayGetUp.current = false;
     const key = mySpot?.kind === "occupancy" ? [...equipmentByKey].find(([, e]) => e.id === mySpot.equipment)?.[0] : undefined;
     const stand = key ? standSpot(layout, roomLayout, Number(key.slice(1)), cells) : undefined;
     walkTo(stand ?? at.cell);

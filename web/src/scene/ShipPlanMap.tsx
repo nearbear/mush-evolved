@@ -5,7 +5,7 @@ import { useMemo, type PointerEvent } from "react";
 import { useTranslation } from "react-i18next";
 import planJson from "@mush2/assets/derived/ship-plan.json";
 import { doorId, type DoorId, type OtherPlayerView, type RoomId, type ShipPlan } from "@mush2/shared";
-import { FIRE_ICON, MUSH_ICON, bustIcon } from "../art/assets.ts";
+import { FIRE_ICON, MUSH_ICON, bustIcon, skillIcon } from "../art/assets.ts";
 import { useNames } from "../i18n/names.ts";
 import { cellsPath, iconSpots, runsPath } from "./plan.ts";
 
@@ -43,6 +43,7 @@ export function ShipPlanSvg({
   reachable,
   burningRooms = [],
   brokenDoors = [],
+  trappedRooms = [],
   pointed,
   interactive,
   onPoint,
@@ -57,6 +58,7 @@ export function ShipPlanSvg({
   reachable?: Set<RoomId>;
   burningRooms?: readonly RoomId[];
   brokenDoors?: readonly DoorId[];
+  trappedRooms?: readonly RoomId[];
   pointed: RoomId | null;
   interactive: boolean;
   onPoint: (room: RoomId | null) => void;
@@ -70,14 +72,15 @@ export function ShipPlanSvg({
   const dots = useMemo(
     () =>
       shapes.flatMap((room) => {
-        const inside: (MinimapPerson | undefined)[] = people
+        const inside: (MinimapPerson | "unidentified" | "trap")[] = people
           .filter((p) => p.room === room.id)
           .sort((a, b) => a.id.localeCompare(b.id));
-        for (const r of unidentified) if (r === room.id) inside.push(undefined);
+        for (const r of unidentified) if (r === room.id) inside.push("unidentified");
+        if (trappedRooms.includes(room.id)) inside.push("trap");
         const { size, spots } = spotsFor(room, inside.length);
-        return spots.map((at, i) => ({ ...at, size, key: `${room.id}:${i}`, person: inside[i] }));
+        return spots.map((at, i) => ({ ...at, size, key: `${room.id}:${i}`, entry: inside[i]! }));
       }),
-    [people, unidentified],
+    [people, unidentified, trappedRooms],
   );
 
   return (
@@ -90,7 +93,9 @@ export function ShipPlanSvg({
       <path className="minimap-walls" d={wallsPath} />
       {shapes.map((r) => {
         const burning = burningRooms.includes(r.id);
-        const roomLabel = burning ? `${names.room(r.id)} (${t("minimap.onFire")})` : names.room(r.id);
+        const trapped = trappedRooms.includes(r.id);
+        const tags = [burning && t("minimap.onFire"), trapped && t("minimap.trapped")].filter(Boolean);
+        const roomLabel = tags.length > 0 ? `${names.room(r.id)} (${tags.join(", ")})` : names.room(r.id);
         return (
           // biome-ignore lint/a11y/noStaticElementInteractions: interactive, the shape is a role="button" Tab stop (spread below); collapsed, it is aria-hidden and pointer-only.
           <path
@@ -137,20 +142,35 @@ export function ShipPlanSvg({
           />
         );
       })}
-      {dots.map(({ x, y, size, key, person }) => (
-        <image
-          key={key}
-          className={`minimap-person${person?.id === youId ? " you" : ""}${person && person.room === here ? " near" : ""}`}
-          href={person ? bustIcon(person.character) : MUSH_ICON}
-          x={x - size / 2}
-          y={y - size / 2}
-          width={size}
-          height={size}
-          preserveAspectRatio="xMidYMid meet"
-        >
-          <title>{person ? names.character(person.character) : t("minimap.unidentified")}</title>
-        </image>
-      ))}
+      {dots.map(({ x, y, size, key, entry }) =>
+        entry === "trap" ? (
+          <image
+            key={key}
+            className="minimap-trap"
+            href={skillIcon("trapper")}
+            x={x - size / 2}
+            y={y - size / 2}
+            width={size}
+            height={size}
+            preserveAspectRatio="xMidYMid meet"
+          >
+            <title>{t("minimap.trapped")}</title>
+          </image>
+        ) : (
+          <image
+            key={key}
+            className={`minimap-person${entry !== "unidentified" && entry.id === youId ? " you" : ""}${entry !== "unidentified" && entry.room === here ? " near" : ""}`}
+            href={entry !== "unidentified" ? bustIcon(entry.character) : MUSH_ICON}
+            x={x - size / 2}
+            y={y - size / 2}
+            width={size}
+            height={size}
+            preserveAspectRatio="xMidYMid meet"
+          >
+            <title>{entry !== "unidentified" ? names.character(entry.character) : t("minimap.unidentified")}</title>
+          </image>
+        ),
+      )}
     </svg>
   );
 }
@@ -162,6 +182,7 @@ export function RoomCaption({
   people,
   unidentified,
   burningRooms = [],
+  trappedRooms = [],
   emptyText,
   onClose,
   closeLabel,
@@ -172,6 +193,7 @@ export function RoomCaption({
   people: MinimapPerson[];
   unidentified: RoomId[];
   burningRooms?: readonly RoomId[];
+  trappedRooms?: readonly RoomId[];
   emptyText: string;
   onClose?: () => void;
   closeLabel?: string;
@@ -195,6 +217,11 @@ export function RoomCaption({
                 <img src={FIRE_ICON} alt={t("minimap.onFire")} />
               </span>
             )}
+            {trappedRooms.includes(pointed) && (
+              <span className="minimap-fire">
+                <img src={skillIcon("trapper")} alt={t("minimap.trapped")} />
+              </span>
+            )}
             {names.room(pointed)}
           </strong>
           <div className="sub">
@@ -202,6 +229,7 @@ export function RoomCaption({
               ...(pointed === here ? [t("minimap.youAreHere")] : []),
               ...(who ? [who] : pointed === here ? [] : [t("minimap.nobodyHere")]),
               ...(burningRooms.includes(pointed) ? [t("minimap.onFire")] : []),
+              ...(trappedRooms.includes(pointed) ? [t("minimap.trapped")] : []),
             ].join(" · ")}
           </div>
         </div>

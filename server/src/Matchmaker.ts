@@ -122,6 +122,19 @@ export class Matchmaker extends Server<Env> {
     }
   }
 
+  /** The open ship's room, so `npm run retire-ships` (adminRoutes.ts) retires it even if its running-ships row is missing. */
+  openRoomId(): string | null {
+    return this.open?.roomId ?? null;
+  }
+
+  /**
+   * After `npm run retire-ships`: asks the open ship how it is, so a retired one (which reports itself closed) is
+   * forgotten and its round counted now, and the lobby stops showing it. The next join launches a new ship.
+   */
+  async recheckOpen(): Promise<void> {
+    await this.refresh();
+  }
+
   override async onConnect(connection: Connection<JoinState>, ctx: ConnectionContext): Promise<void> {
     // Rooms are created on first connect, so refuse names that aren't a lobby language.
     if (!(LOBBY_LANGUAGES as readonly string[]).includes(this.name)) {

@@ -33,6 +33,7 @@ export * from "./research.ts";
 export * from "./projects.ts";
 export * from "./reports.ts";
 export * from "./pilgred.ts";
+export * from "./eden.ts";
 export * from "./dispense.ts";
 export * from "./planets.ts";
 export { ICARUS_CRAFT, inCraft, isLostPlace, lostPlace, patrolShip } from "./patrol.ts";

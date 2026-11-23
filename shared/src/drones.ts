@@ -10,6 +10,7 @@
 // of one) nor anything someone carries (inventories are private). A broken drone does nothing. Its lines are public in
 // the room; NERON says nothing.
 
+import { repairEquipment } from "./gravity.ts";
 import { isBreakable } from "./breakage.ts";
 import { isOnFire } from "./fire.ts";
 import { ITEM_TYPES, itemsIn } from "./items.ts";
@@ -81,7 +82,10 @@ function repair(state: GameState, drone: DroneState, room: RoomId): boolean {
   const what: LogParams = "equipment" in target ? { equipment: target.equipment.type } : { item: target.item.type };
   const key = "equipment" in target ? (success ? "droneRepaired" : "droneRepairFailed") : success ? "droneRepairedItem" : "droneRepairFailedItem";
   // A repaired turret gets its charges back on its own (hunters.ts reads `broken`), as with Repair.
-  if (success) delete ("equipment" in target ? target.equipment : target.item).broken;
+  if (success) {
+    if ("equipment" in target) repairEquipment(state, target.equipment);
+    else delete target.item.broken;
+  }
   logPublic(state, room, key, { ...droneParams(drone), ...what });
   return true;
 }

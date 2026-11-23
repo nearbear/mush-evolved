@@ -393,7 +393,8 @@ body:has(.pod) {
   margin: 0;
 }
 .pod-detail-name {
-  font-weight: bold;
+  font-family: var(--font-display);
+  font-weight: 400;
 }
 .pod-detail-profession {
   font-size: 0.75rem;

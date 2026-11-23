@@ -75,11 +75,15 @@ export const WANDER_MOVES_PER_CYCLE = 3;
 const endCycle = (view: PlayerView): Action | null => (legalIn(view).some((a) => a.type === "ready") ? { type: "ready" } : null);
 
 /**
- * Goal bots wait to send `ready` until every living human has, so they stay open to chat wakes, interrupts and `help`
- * while the human is still playing their turn.
+ * Goal bots wait to send `ready` until a living human has pressed End cycle (which waits on bots only, never on the
+ * other humans), so they stay open to chat wakes, interrupts and `help` while the human is still playing their turn.
+ * With no living human, they ready at once.
  */
-const waitForCycle = (view: PlayerView): Action | null =>
-  legalIn(view).some((a) => a.type === "ready") && view.players.every((p) => p.isBot || !p.alive || p.ready) ? { type: "ready" } : null;
+const waitForCycle = (view: PlayerView): Action | null => {
+  if (!legalIn(view).some((a) => a.type === "ready")) return null;
+  const humans = view.players.filter((p) => !p.isBot && p.alive);
+  return humans.length === 0 || humans.some((p) => p.ready) ? { type: "ready" } : null;
+};
 
 /** Scripted placeholder: wanders randomly up to WANDER_MOVES_PER_CYCLE moves a cycle, then ends its cycle or waits. */
 export class WanderBot implements Bot {

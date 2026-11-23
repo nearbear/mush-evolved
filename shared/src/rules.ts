@@ -6,6 +6,7 @@
 // chat and private channels in chat.ts. Win conditions and voting are open
 // decisions: do not add them without confirming the rules first.
 
+import { gravityCycle } from "./gravity.ts";
 import { expirePlans, plansView, strikeSlots } from "./plans.ts";
 import { bindPerformAction } from "./actions/summon.ts";
 import { applyCheats, makeHuman, shipInvincible, type Cheat, type RoleCheat } from "./cheats.ts";
@@ -14,10 +15,13 @@ import { ARACK_AROUND, AT_CAPACITY, BROKEN, COOLDOWN, DIRTY, EXPLORED, ICARUS_LO
 import { getUp } from "./actions/lie_down.ts";
 import { ANTISOCIAL } from "./actions/bond.ts";
 import { GERMAPHOBE } from "./actions/caress.ts";
+import { FEW_FRAGMENTS } from "./actions/compute_eden.ts";
 import { LIST_PRINTED, MUSH_NOT_SELECTED } from "./actions/print_list.ts";
+import { LISTENED_TODAY, NOT_YOUR_SONG } from "./actions/listen_jukebox.ts";
 import { isNimble } from "./actions/nimble.ts";
 import { researchNeedsView } from "./actions/research.ts";
-import { equipmentHere } from "./equipment.ts";
+import { equipmentHere, JUKEBOX_EQUIPMENT } from "./equipment.ts";
+import { songAt } from "./jukebox.ts";
 import { jellyCycle, leakOxygen } from "./breakage.ts";
 import { spoilFood } from "./spoilage.ts";
 import { newProjectDeck } from "./projects.ts";
@@ -34,7 +38,7 @@ import { newTheList, recordSelection } from "./theList.ts";
 import { hopelessCycle } from "./morale.ts";
 import { relayView } from "./relayView.ts";
 import { itemsIn, newItemId, rechargeMicrowaves, rechargeScooters, startCharges, visibleItemsIn } from "./items.ts";
-import { actionDone, actionFailed, apRefill, mpGain, carePointsGain, channelLimit, computerPointsCap, computerPointsGain, cookPointsGain, shootPointsGain, cycleChanged, designerPointsGain, engineerPointsGain, gardenPointsGain, dailyMoraleLoss, inventorySlots, movementRules, pilgredPointsGain, satietyLoss } from "./modifiers.ts";
+import { actionDone, actionFailed, apRefill, capBreakdown, mpGain, carePointsGain, channelLimit, computerPointsCap, computerPointsGain, cookPointsGain, shootPointsGain, cycleChanged, designerPointsGain, engineerPointsGain, gardenPointsGain, dailyMoraleLoss, inventorySlots, movementRules, pilgredPointsGain, satietyLoss } from "./modifiers.ts";
 import { contaminationSeenBy, convert } from "./infection.ts";
 import { curseStatusesSeenBy, isHungry, publicStatusesOf, statusesOf } from "./statuses.ts";
 import { isCurseId, withoutCurses } from "./curses.ts";
@@ -54,6 +58,7 @@ import { damage, healDaily, hasMushDied } from "./death.ts";
 import { activitySeen, inLogWindow, logPrivate, logWindowOf, moveLineFor, pruneLog, seesLine, startLogSeen, withNimbleActor } from "./log.ts";
 import { recordAction } from "./history.ts";
 import { ringMycoAlarms } from "./mycoalarm.ts";
+import { triggerRoomTrap, willTriggerRoomTrap } from "./traps.ts";
 import { planetsOf } from "./planets.ts";
 import { canSharePlanets } from "./sharedPlanets.ts";
 import { canSharePlants, sharedPlantsView } from "./sharedPlants.ts";
@@ -71,7 +76,7 @@ import { newSignals, signalName } from "./signals.ts";
 import { allTurrets, huntersCycle, newHunters, startHunters, turretCharges, turretsHere } from "./hunters.ts";
 import { expeditionReturnAt, knockOffIcarus, lostPlayers, maxCrew, nextSectorFor, onExpedition, withCrew } from "./expeditions.ts";
 import { ICARUS_EQUIPMENT } from "./actions/icarus_takeoff.ts";
-import { canScavenge, interfaceId, isLostPlace, newPatrolShips, offShip, PATROL_INTERFACE, PATROL_SHIPS, shipAboard } from "./patrol.ts";
+import { canScavenge, CANT_FLY, CHRONIC_VERTIGO, interfaceId, isLostPlace, newPatrolShips, offShip, PATROL_INTERFACE, PATROL_SHIPS, shipAboard } from "./patrol.ts";
 import { preselectionCycle } from "./preselection.ts";
 import { neronParticipationCycle } from "./projectEffects.ts";
 import { SUCCESSION, TITLE_IDS, assignTitles, noTitles } from "./titles.ts";
@@ -98,7 +103,7 @@ import type {
 } from "./types.ts";
 import { drawDrugs, drugEffectsSeenBy, hasDrugDispenser, resetDrugDispenser, stockMedlab } from "./drugs.ts";
 import { drawFruits, drawHybrids, fruitEffectsSeenBy } from "./fruits.ts";
-import { changeAP, changeMP } from "./adjustStats.ts";
+import { changeAP, changeMP, updateMaxValues } from "./adjustStats.ts";
 import { diseaseTrackerCycleChange } from "./diseases.ts";
 
 export type { ActionResult };
@@ -143,6 +148,7 @@ export function createGame(
     lostAnalysis: newLostAnalysis(seed),
     theList: newTheList(seed),
     merchantRng: streamFor(seed, "merchants"),
+    jukeboxSeed: streamFor(seed, "jukebox"),
     cycle: startCycle,
     phase: "playing",
     preselection: preselection !== null,
@@ -205,6 +211,9 @@ export function createGame(
     ceasefires: {},
     reports: [],
     pendingFires: [],
+    trappedRooms: [],
+    gravityRestarting: false,
+    eden: { computed: false },
     failureStreaks: {},
     patrolShips: newPatrolShips(config),
     space: [],
@@ -229,6 +238,8 @@ export function createGame(
   stockMedlab(state, { rng: streamFor(seed, "medlab-stock") });
   for (const item of state.items) initNpc(state, item);
   grantCarePoints(state); // day 1 begins now
+  // `newPlayer` stores the configured caps; fold in starting skills and modifiers (#267).
+  for (const p of state.players) updateMaxValues(state, p);
   for (const p of state.players) startLogSeen(state, p);
   return state;
 }
@@ -343,6 +354,9 @@ const UNAFFORDABLE_REASONS = new Set<string>([
   PASIPHAE_INTACT,
   REACTOR_BROKEN,
   ARACK_AROUND,
+  // Owner, 2026-11-22: Take off, the Icarus launch and Land on planet show disabled for a grounded player (patrol.ts, `groundedBy`).
+  CANT_FLY,
+  CHRONIC_VERTIGO,
 ]);
 
 /** Board the Icarus and Take off show disabled on a fully explored planet or a lost Icarus (owner, 2026-11-19), not hidden. */
@@ -353,7 +367,9 @@ const isUnaffordableReason = (action: Action, refused: string | null): refused i
   (UNAFFORDABLE_REASONS.has(refused) ||
     (action.type === "hack" && refused === IN_PRESELECTION) ||
     (action.type === "bond" && refused === ANTISOCIAL) ||
+    (action.type === "listen_jukebox" && (refused === NOT_YOUR_SONG || refused === LISTENED_TODAY)) ||
     (action.type === "caress" && refused === GERMAPHOBE) ||
+    (action.type === "compute_eden" && refused === FEW_FRAGMENTS) ||
     (ICARUS_ACTIONS.has(action.type) && (refused === EXPLORED || refused === ICARUS_LOST)) ||
     (action.type === "print_list" && (refused === MUSH_NOT_SELECTED || refused === LIST_PRINTED || refused === BROKEN)));
 
@@ -384,11 +400,16 @@ function unaffordableOption(state: GameState, p: PlayerState, def: ActionDef<Act
     ...(refused === ARACK_AROUND ? (["arack"] as const) : []),
     ...(refused === EXPLORED ? (["explored"] as const) : []),
     ...(refused === ICARUS_LOST ? (["icarusLost"] as const) : []),
+    ...(refused === CHRONIC_VERTIGO ? (["vertigo"] as const) : []),
+    ...(refused === CANT_FLY ? (["grounded"] as const) : []),
     ...(refused === MUSH_NOT_SELECTED ? (["mushNotSelected"] as const) : []),
     ...(refused === LIST_PRINTED ? (["listPrinted"] as const) : []),
     ...(refused === BROKEN ? (["broken"] as const) : []),
     ...(refused === ANTISOCIAL ? (["antisocial"] as const) : []),
     ...(refused === GERMAPHOBE ? (["germaphobe"] as const) : []),
+    ...(refused === NOT_YOUR_SONG ? (["notYourSong"] as const) : []),
+    ...(refused === LISTENED_TODAY ? (["listenedToday"] as const) : []),
+    ...(refused === FEW_FRAGMENTS ? (["fragments"] as const) : []),
     ...(refused === DIRTY ? (["clean"] as const) : []),
     ...(refused === NO_SPACE ? (["space"] as const) : []),
     ...(refused === COOLDOWN ? (["cooldown"] as const) : []),
@@ -461,6 +482,8 @@ export function performAction(next: GameState, actor: PlayerState, action: Actio
   actor.mp -= cost.mp;
   if (cost.paidBy) actor.resources[cost.paidBy] -= 1;
   const room = actor.room;
+  // Checked before `run()` so actions like `take` still see the item was on the room's shelf/floor (#473).
+  const triggersTrap = willTriggerRoomTrap(next, actor, action);
   const run = () => {
     if (chance < 1) {
       const succeeded = rollFloat(next) < chance;
@@ -476,6 +499,7 @@ export function performAction(next: GameState, actor: PlayerState, action: Actio
     }
   };
   withNimbleActor(isNimble(actor) ? actor.id : null, run);
+  if (triggersTrap && actor.alive) triggerRoomTrap(next, actor, room);
   knockOffTarget(next, def, action);
   // After apply, so an action that reveals your own history (Chitchat) doesn't show itself.
   if (def.recorded) recordAction(next, actor, action.type);
@@ -501,8 +525,17 @@ export function performAction(next: GameState, actor: PlayerState, action: Actio
   // A research, project or PILGRED this finished strikes out its task slots (plans.ts).
   strikeSlots(next);
   applyCheats(next, actor);
-  if (next.players.every((pl) => !pl.alive || pl.ready)) advanceCycle(next);
+  if (cycleEndsByReady(next)) advanceCycle(next);
   return true;
+}
+
+/**
+ * End cycle waits on bots only (owner, 2026-11-22): the cycle ends once a living human is ready and every living bot
+ * is, whether or not the other humans are. With no living human, once every living bot is ready.
+ */
+export function cycleEndsByReady(state: Readonly<GameState>): boolean {
+  const living = state.players.filter((p) => p.alive);
+  return living.every((p) => !p.isBot || p.ready) && (living.some((p) => !p.isBot && p.ready) || living.every((p) => p.isBot));
 }
 
 /**
@@ -541,6 +574,7 @@ export function setRoleCheat(state: GameState, playerId: PlayerId, role: RoleChe
   const p = findPlayer(next, playerId)!;
   if (role === "mush" && p.role === "human") convert(next, p);
   else if (role === "human") makeHuman(p, next.cycle);
+  updateMaxValues(next, p); // a role change changes which diseases the cap folds count (#267)
   applyCheats(next, p);
   return { ok: true, state: next };
 }
@@ -595,7 +629,10 @@ function advanceCycle(state: GameState, at?: number): void {
     changeMP(state, p, mpGain(state, p));
     p.ready = false;
   }
-  if (at !== undefined) inactivityCycle(state, at);
+  if (at !== undefined) {
+    inactivityCycle(state, at);
+    if (state.phase !== "playing") return;
+  }
   coupCycle(state);
   for (const [room, left] of Object.entries(state.ceasefires)) {
     if (left <= 1) delete state.ceasefires[room];
@@ -603,6 +640,8 @@ function advanceCycle(state: GameState, at?: number): void {
   }
   diseaseTrackerCycleChange(state);
   cycleChanged(state);
+  // A repaired Gravity Simulator is back, before incidents, so this cycle change's tremors have gravity.
+  gravityCycle(state);
   const oxygenSaved = rollOxygenSaved(state);
   burnOxygen(state, oxygenSaved);
   commsCycle(state);
@@ -878,7 +917,9 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     burningRooms: you.alive ? state.fires.filter((room) => fireReported(state, room)) : [],
     // Broken doors aboard, only once Defective piston sensors is complete (#330).
     brokenDoors: you.alive && doorsDetected(state) ? brokenDoors(state) : [],
-    alerts: you.alive ? alertsFor(state) : { fires: 0, broken: 0, reports: [] },
+    // Rooms booby-trapped with a spore (#473): living Mush only; humans and the dead never see them.
+    trappedRooms: you.alive && you.role === "mush" ? [...state.trappedRooms] : [],
+    alerts: you.alive ? alertsFor(state) : { fires: 0, broken: 0, reports: [], gravity: null },
     // `seesLine` (log.ts) says which lines are yours; room lines, private ones included, only within your window (#365).
     // A private line names only you in the view: no one learns who else saw it (`leaked` marks a secret line others saw).
     // `kind` and `leaked` go with every line you see (#366). A crew move's direction only with Tracker (`moveLineFor`).
@@ -918,6 +959,7 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     maxMp: you.maxMp,
     maxHp: you.maxHp,
     maxMorale: you.maxMorale,
+    caps: capBreakdown(state, you),
     // While the BIOS has the shield off, it shows as 0 (Claude's default, 2026-10-24); its points are kept.
     ship: shipView(state),
     // How many, to everyone; each hunter's hp and every turret's charges, to the living in a turret room (owner, 2026-10-24);
@@ -934,6 +976,7 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     ...relayView(state, you),
     researchNeeds: you.alive && equipmentHere(state, you, "RESEARCH_LAB").length > 0 ? researchNeedsView(state, you.room) : null,
     pilgredRepaired: isPilgredRepaired(state),
+    edenComputed: state.eden.computed,
     humanTankFull: hasMushDied(state),
     comms: { linked: state.comms.linked, terminal: you.alive && comTerminalsHere(state, you).length > 0 ? commsTerminalView(state, you) : null },
     bios: you.alive && biosTerminalsHere(state, you).length > 0 ? { ...state.bios } : null,
@@ -1005,7 +1048,9 @@ function equipmentView(state: GameState, { id, type, broken, jelly, shield }: Eq
   const docked = shipState && !shipState.out && !shipState.destroyed && { armor: shipState.armor, maxArmor: state.config.patrol.armor[ship.kind] };
   // The Icarus is missing from its bay while away or once lost (owner, 2026-11-07); both are public anyway.
   const out = shipState?.out || (type === ICARUS_EQUIPMENT && ((state.expedition !== null && state.expedition.ship === null) || state.icarusLost));
-  return { id, type, ...(broken && { broken }), ...(jelly !== undefined && viewer.role === "mush" && viewer.alive && { jelly }), ...(shield !== undefined && seesShield(viewer) && { shield }), ...(out && { out: true as const }), ...(shipState?.destroyed && { destroyed: true as const }), ...docked };
+  // The song playing this cycle, to anyone in the jukebox's room (they hear it); a broken jukebox plays nothing.
+  const song = type === JUKEBOX_EQUIPMENT && !broken ? songAt(state)?.character : undefined;
+  return { id, type, ...(broken && { broken }), ...(song !== undefined && { song }), ...(jelly !== undefined && viewer.role === "mush" && viewer.alive && { jelly }), ...(shield !== undefined && seesShield(viewer) && { shield }), ...(out && { out: true as const }), ...(shipState?.destroyed && { destroyed: true as const }), ...docked };
 }
 
 /**

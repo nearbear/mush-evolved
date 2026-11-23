@@ -4978,3 +4978,174 @@ Owner asked to "match eMush". Moved the debris table from `config.hunters.debris
 - **How:** a curse reuses the disease plumbing (`addDisease`, tracker countdown, the existing `actionInjuryRate`/`actionDirtRate` hooks), plus a leaf `curses.ts`, a `worstDamage` modifier flag and `incidentDamage` in incidents.ts. Hiding is all in `viewFor`: own statuses, modifiers and trackers are filtered, and others' statuses gain `curseStatusesSeenBy` for Mush in the room.
 - **What worked:** asking in two rounds. The first answers (the effect, the source) raised new questions (targets, recursing, the existing skill text) that couldn't have been asked up front.
 - **Caught during design:** the action options' dirt and injury odds would have shown the cursed player ×4 numbers and given the curse away. They are now computed for the player without their curses (`unaware` in rules.ts), and a test checks the odds are unchanged. A curse does nothing to a Mush, like a disease (the "function like diseases" reading; worth confirming).
+### 2026-11-21 — NERON BIOS toggle switches
+
+- Placed `Mush/www/img/design/switch_bg.gif` (32x17 track) and `Mush/www/img/design/switch.png` (17x17 sliding knob) on the NERON BIOS terminal's boolean options (`actopi`, `death_announcements`, `plasma_shield`) in `web/src/hud/BiosTerminal.tsx` and `web/src/hud/settings.css`, keeping `cpu_priority` and `crew_lock` as multi-choice buttons.
+- Extended `ActionButton` with `switchProps` so admin switches keep double-press arming (knob nudges partway + outline on `[data-armed]`) and disabled-reason popovers while Biome's `useAriaPropsSupportedByRole` statically sees `role="switch"`. Non-admins see the same switches disabled to reflect current on/off state.
+
+### 2026-11-21 — Trapper Mush skill (#473)
+- **Decision (owner, 2026-11-21, #473):** Implemented the `trapper` Mush skill (`trap_room`: 1 AP + 1 spore, no cooldown, covert + `spore`-tagged, blocked in pre-selection, off-ship, or when already trapped). Triggers in the actor's own room (success or failure) on voluntary `get_up`, `search`, `report_*`, room `equipment`/`door` actions, and actions targeting an item on the room's floor/shelf before resolution; consumes the trap and calls `contaminate(state, actor)` (Mush and Immune waste it silently). Living Mush see active traps ship-wide on the minimap (`PlayerView.trappedRooms`); humans and dead players always receive `[]`.
+- **What worked:** Evaluating `willTriggerRoomTrap` before `def.apply` in `performAction` cleanly handled `take` and floor-vs-carried item checks without touching individual actions. Additive `trappedRooms` in `normalizeCore` needed no `STATE_VERSION` bump. Placing the trap icon through `iconSpots` in `ShipPlanSvg` kept it cleanly inside room walls without overlapping crew icons.
+- Follow-up: scaled `.bios-switch` to exact 2x (`64x24px`, clipping off the tiny `OFF`/`ON` pixel text beneath the track), switched the BIOS controls to single-click, moved all BIOS setting descriptions into `.has-tip` Popover tooltips on their titles, and rendered `cpu_priority` and `crew_lock` as `role="radiogroup"` radio buttons using `Mush/derived/ui/pa_empty.png` (unselected) and `Mush/www/img/icons/ui/pa_slot1.png` (selected).
+
+### 2026-11-21 — Modal and terminal close button sprites
+
+- Replaced the text `×` close button in `DialogHeader` and `TerminalFrame` with Motion Twin's 16×16 `Mush/www/img/icons/ui/close.png` (and `close_over.png` on hover/active) in `web/src/hud/settings.css`, drawn at 1x with `image-rendering: pixelated` and an expanded `::before` hit area for touch targets.
+- Covers all terminals (`TerminalFrame`) and modals (`FramedDialog`, `AccountButton`, `CharacterPicker`, `EndScreen`). Verified with `npm run verify:web`.
+- Extended the same `close.png` / `close_over.png` button styling to `TipCard` (`web/src/hud/tips.css`), and raised `.tip-card` to `z-index: 3` so tips render above `.room-corner` (minimap, `z-index: 2`) while staying under `.inventory-overlay` (later in DOM at `z-index: 3`).
+
+### 2026-11-21 — TerminalCollapsible pattern & greenhouse botany basics caption
+- Added reusable `TerminalCollapsible` (`web/src/hud/TerminalCollapsible.tsx`, styles in `web/src/hud/terminal.css`) wrapping Base UI's `Collapsible`, using `--terminal-header-bg` and `Mush/www/img/icons/ui/{less,more}.png` (`COLLAPSE_ICON` / `EXPAND_ICON` in `web/src/art/assets.ts`).
+- Added a collapsed-by-default "Botany basics" caption at the top of `PlantTerminal` (`web/src/hud/PlantTerminal.tsx`) covering planting/production, thirst/sickness/specialist visibility, and the gist of grafting, with en/fr/es copy in `web/src/locales/`.
+- Documented the terminal collapsible pattern in `web/CLAUDE.md` and added `web/tests/hud/PlantTerminal.test.tsx`. Verified with `npm test -w tools -- i18n` and `npm run verify:web`.
+
+### 2026-11-22 — NERON chat icon and name row
+
+- Wired `Mush/www/img/design/neron_chat.png` (38×38, unscaled) as `NERON_CHAT_ICON` in `web/src/art/assets.ts` for explicit NERON chat announcements and non-warning NERON room-log entries (`neronProjectCompleted`), with a `NERON` name row matching player messages.
+- Widened `.feed > li.entry` / `.entry-inline` marker column from 32px to 38px so the full-size icon fits without scaling and all message bodies stay aligned.
+- Stripped the now-redundant `NERON:` / `NERON :` prefix from those 12 messages across `en`/`fr`/`es` locales (keeping `NERON:` on warning-level room-log alerts and prepending it in screen-reader speech).
+
+## 2026-11-22: `npm run retire-ships`, retiring every ship without a version bump
+
+- **Asked:** a way to force-reset the test server's ships without bumping `STATE_VERSION`/`MIN_STATE_VERSION` (a bump retires ships in every environment it is later deployed to).
+- **Built:** `GameRoom.retire()` does what a `MIN_STATE_VERSION` bump does on load: frees `account_ships` and deletes the `ships` row (D1 first, so a failure changes nothing), drops the snapshot but keeps the record (so `onStart` keeps it retired), clears timers and closes sockets with 4001. A token-protected `POST /admin/retire-ships` (`server/src/adminRoutes.ts`) retires every `ships` row plus each lobby's open ship, then has each Matchmaker `recheckOpen` so the lobby forgets a retired open ship. `npm run retire-ships -- --env <env>` calls it; `--init` generates the `ADMIN_TOKEN` secret, puts it with wrangler and saves it under `~/.config/mush2/`.
+- **Tradeoff:** wrangler can't call a Durable Object, so this is the first web route for operator tools (`ships` deliberately had none). It exists only where `ADMIN_TOKEN` is set, so production stays without it unless the owner sets one.
+- **Caught in review:** `/admin/*` had to be added to `run_worker_first` in all three `wrangler.jsonc` environments, or the static-assets layer would have answered with the SPA page.
+
+### 2026-11-22: End cycle waits on bots only
+
+- Owner asked that End cycle never wait on other humans. `cycleEndsByReady` (rules.ts) now ends the cycle once a living human is ready and every living bot is (or, with no human alive, once every living bot is); goal bots' `waitForCycle` readies once any living human has, instead of all of them.
+- What needed correction: several tests (cycles, queue, death, inactivity) and the seeded random game (`shared/tests/randomGame.ts`) assumed all-human seats where one ready human didn't end the cycle. With all humans, cycles churned so fast that storedRooms' `gameAt` found nobody alive; making seats 1–7 bots restored the old pace.
+
+## 2026-11-22: Apprentron spawns at Mush selection, as in eMush
+
+- An eMush comparison found our starting apprentron spawned at ship creation (visible during pre-selection), while eMush spawns it in `onFullDaedalus`. Fix: `atSelection: true` on its `startItems` entry in `shared/src/config.ts`; the existing `spawnSelectionItems` path (built for the Mush sample) already handled storage pools and `teachesWeights`, so no rules code changed.
+- Worked: reusing the existing selection-time spawn hook made it a one-line config change. Needed correction: `ship.test.ts` pinned the entry's exact shape; there was also no test that the book is absent in pre-selection, so one was added to `preselection.test.ts` (full ship and deadline).
+
+## 2026-11-22: Medlab starting drugs match eMush (8 types + 4 duplicates)
+
+- **Decision (owner):** match eMush's `createMedication`. `stockMedlab` (`shared/src/drugs.ts`) now spawns 8 of the 12 drug types once each (`START_DRUG_TYPES`), then 4 extras drawn with replacement from those same 8 (`START_DRUG_EXTRAS`): still 12 pills, but 4 types missing at start. Replaces the 2026-11-17 "1 of each of the 12" rule, which had been recorded as matching eMush but did not.
+- **What worked:** the clean-room `npm run emush -- spec` on the subscriber file settled the one open detail (the extras come from the chosen 8, not all 12) without asking. Same `"medlab-stock"` stream, so `state.rng` is unaffected; no state-shape change.
+- **Needed correction:** missed the old "one of each" assertion in `drugs.test.ts` at first; replaced it with a 40-seed test there.
+
+### 2026-11-22 — Rollback runbook (#129)
+
+- Added `docs/ops/rollback.md` (indexed in `docs/README.md` and linked from `docs/ops/deploy.md`) covering pre-rollback checks (`deployments list`, `versions view`, `STATE_VERSION` and DO migration checks), `wrangler rollback` for production/staging/test (and git-checkout fallback), when to leave D1 alone vs. restoring with D1 Time Travel, and post-rollback verification.
+- Kept raw `wrangler` commands rather than adding `rollback:*` npm scripts for now (owner's choice).
+- Fixed `--env production` in the verify snippet to omit `--env` since production is the top-level `wrangler.jsonc` config.
+
+## 2026-11-22: Gravity Simulator restart, alert data, no-gravity effects (shared/server half)
+
+- Picked up a handoff from an earlier session (gravity.ts, the restart flag, modifiers, breakage, drones, incidents already edited) and finished the non-UI half: `Alerts.gravity` and `selfReported` in reports.ts (the simulator is never reported, by players or the Anomaly detector, but still counts as broken), the dead's empty alerts, report_equipment filtering, locales (`gravityRestarted`, `tremorNoGravity`, the longer eMush `tremor` line), `gravityRestarted` as a NERON-styled key, `shared/tests/gravity.test.ts`, and docs.
+- Worked: putting every equipment repair through one `repairEquipment` made the drone and Repair paths share the restart, and running `gravityCycle` before incidents and the NPC turn settled both timing cases (tremor at the restart's end has gravity; a drone's repair at the cycle change restarts for a full cycle) without special cases.
+- Needed correction: rewriting the locale JSON with a parser silently dropped a pre-existing duplicate key; redone as a line insert. A test's ship forgot sure repairs, so the "repair" failed quietly and the tremor looked wrong. A non-candidate action is refused as `illegal_action` before `validate`, so the test checks `validate` directly for `already_reported`.
+- Caught in review: the tank-search bot compared `alerts.broken` with reported equipment; an unreportable broken simulator would have kept it searching forever, so it now discounts it.
+- `npm run emush -- find` truncates translation lines, so the FR/ES tremor and NERON endings were completed by hand from eMush's openings.
+
+### 2026-11-22: Gravity Simulator alert rows in the web client
+
+- Built the UI half of decision 6 (owner, 2026-11-22): the alerts popover (desktop `AlertBar`/`Counter` and phone `AlertButton`) gets a Gravity Simulator row (`simulator.png`, eMush's `no_gravity` or `gravity_reboot` title and description) from `alerts.gravity`. The alerts counter is `broken + (restarting ? 1 : 0)`, since a broken simulator is already in `broken`; the unreported count leaves a broken simulator out, as `tankShare.ts` does for bots.
+- What worked: `npm run emush -- translations alerts <lang>` returned the full en/fr/es alert strings in one call; `find` cuts lines at 90 characters, and `spec` paraphrases instead of quoting, so neither is good for exact text. `:pm:` is written as the catalog's MP/PM abbreviation, with the penalty taken from `DEFAULT_CONFIG` instead of a hard-coded 1. I fixed eMush's English grammar ("Every Movement Point gains are" became "gain is").
+- Needed correction / gaps: the popovers render in a portal, so static-markup tests can't open them. The tests cover the exported `alertCount` and `BreakdownAlerts` instead. There was no visual check, because no dev cheat breaks the simulator and `npm run screenshot` never opens popovers.
+
+## 2026-11-22: Eden plan and decisions
+
+- Planned Eden in phases with the owner. First a minimal Eden on eMush's route (fragments, Super Calculator, a 33% Compute, Travel to Eden). Then launch keys, then the star map tree, then False Eden. Filed as epic #483 with #478 to #482, milestone Private beta.
+- The owner decided that Eden is a human win even with Mush alive, superseding 2026-10-22. Also decided: eMush's Compute numbers with the fragments kept; one launch key per title at the Command terminal for Sol and Eden, visible to anyone on the bridge; no target day yet. All recorded in `rules-design.md`.
+- What worked: checking the tree first showed fragments, the research, the Super Calculator, the greyed-out button and the end screen were already built, so phase 1 is small. The clean-room spec (`npm run emush -- spec`) settled that the fragments aren't used up, where the wiki was ambiguous.
+- Correction: I proposed Commander-only travel and mentioned the hacker kit as unbuilt. It is built, and already grants the Commander's access through `hasTitleAccess`. The stale "not built" lines in `rules-design.md`, `implemented-rules.md` and `pilgred.ts` are fixed.
+
+## 2026-11-22: Ship editor autosave
+
+- Hot reloads (and any other reload) threw away unsaved work in `/editor`. Options weighed: block HMR on that page (Vite has no supported way to refuse a full reload, and it would not cover crashes or `shared/` edits) or autosave to localStorage. Recommended and built the autosave (`web/src/editor/draft.ts`, pure and tested).
+- What worked: edits already share untouched rooms (`edits.ts`), so the draft writes each room object once and stores every map as room numbers; the owner's 20 undo steps cost about a room each instead of a ~330 KB map each, well under localStorage's limit. A draft edited from an older `ship-map.json` (another save, a pull) asks before restoring, compared with sorted-key JSON so a save's reformatting doesn't look like a change. Camera, zoom, view and selection are remembered too, dropped if the room or tile no longer exists.
+- Needed correction: React StrictMode mounts twice in dev, which would have asked the stale-draft question twice; the load effect now ignores its first, cancelled run.
+
+## 2026-11-22: Jukebox project (#477)
+
+Implemented the `BEAT_BOX` NERON project per the owner's rules in #477: no kit, the jukebox spawns in the refectory; a per-cycle song from living players only (`jukebox.ts` `songAt`), seeded from a new hidden `jukeboxSeed` (`streamFor(seed, "jukebox")`, the `merchantRng` pattern, since the game seed isn't kept after creation) so it never moves the shared RNG; Listen (0 AP, own song only, +3 morale once a day via `jukeboxDay`, public log) replaces eMush's cycle-change bonus; Check playlist kept (private, next 3). "Not your song" and "already listened today" are new `lacks` reasons so the button shows disabled. Current song in the inspect panel for those in the room. What needed correction: the owner had moved the jukebox tile to the refectory in the ship editor, but the map's `BEAT_BOX` equipment binding still sits under Alpha Bay 2, and the editor/layout files can't be read directly, so the binding move was left to the owner (until then the jukebox works but isn't drawn).
+
+## 2026-11-22: Eden phase 1, Compute and Travel to Eden (#478)
+
+- **Decision (owner):** failed Compute attempts get the usual failure bonus (the base `Action` failure streak); log visibility follows eMush. The clean-room spec (`npm run emush -- spec` on eMush's ComputeEden test) gave success public in the room, failure private.
+- **Built:** `GameState.eden = { computed }` (new field defaulted in `normalizeCore`, no version bump, per the stored-shape rules rather than the issue's "bump"), `eden.ts`, `compute_eden` (2 AP or 1 Computer point, 33%, 3 unhidden fragments on the floor, disabled with `lacks: "fragments"` while short), `travel_to_eden` (human win even with Mush alive), the Super Calculator's terminal body and the Command terminal's Eden button with confirmation.
+- **What worked:** the action registry and `unaffordableActions` made disabled-with-reason a two-line change; the failure streak came for free.
+- **Needed correction:** the `npm run emush -- spec` call with a long question found nothing (it takes a topic or file, not a question); the Superkube's dev route still sent Eden through `winnerOnArrival`, caught by `cheatRoom.test.ts`.
+
+## 2026-11-22: Ship editor "move to room" takes the equipment binding along
+
+Moving the jukebox sprite to the Refectory with the editor's "move to room" left its `BEAT_BOX` binding in the old room (fixed by hand in the jukebox commit). `moveToRoom` in `web/src/editor/edits.ts` now moves the binding of the tile it hands over (found with `placedEquipment`, as the game does) to the end of the destination room's bindings, shifting any terminal `chairs` so they stay on the same ship cells. Moving within a room never had the problem: bindings follow the sprite, not the cell. Known limit: if the destination already has an unclaimed tile with the same sprite earlier in its list, the binding claims that one instead.
+
+### 2026-11-22 — Broken equipment docs and #331 wrap-up
+
+- **Decided / verified:** Confirmed that the remaining three rows of #331 (Jukebox `BEAT_BOX`, Super Calculator `SUPER_CALC` via Compute/Eden, and Gravity Simulator next-cycle restart + alert rows) are all implemented and tested by the recent commits (`c312a210`, `2001903e`, `68788fd4`).
+- **Docs updated:** Recorded the decided broken-equipment effects under Incident points -> Breakage in `docs/rules/rules-design.md` and expanded the Breakage summary in `docs/rules/implemented-rules.md` so every breakable equipment type's effect is listed.
+
+## 2026-11-22: Eleesha's Chronic Vertigo trait
+
+- **Decided by the user:** Chronic Vertigo is a permanent, public trait (not eMush's curable disorder), named "Chronic Vertigo" with the catalog's `icons/ui/vertigo.png`. It grounds Eleesha as eMush's Vertigo symptom does (no takeoff, no Icarus launch, no planet landing; still a passenger), Pilot or not, Mush included. Grounded flight buttons show disabled with the reason, and the user extended that to Gastroenteritis and Slight Nausea.
+- **What worked:** the wiki and `npm run emush -- find` gave the symptom ("prevents takeoff, not being a passenger") quickly; copying the Germaphobe commit's file list covered every touch point. One `groundedBy` helper in `patrol.ts` returns the refusal code, so `canFly`, the three actions and the disabled-button reason all agree.
+- **Needed care:** showing grounded actions disabled broke two bot goals' assumptions (an offered `icarus_takeoff` or `takeoff` meant "can fly"): a grounded bot aboard the Icarus would have waited forever and a grounded Pilot would have walked back to the bay each turn. Added `grounded` to the bot blocks and filtered it out. One existing test pinned the old "grounded sees nothing" rule and was updated.
+
+## 2026-11-22: Game name decided (#43)
+
+The owner named the game **Mush: Evolved**. Updated the display name only (CLAUDE.md, README heading, the browser tab title in `web/index.html`). Internal identifiers stay `mush2` (repo, npm workspaces, Worker and D1 names, localStorage keys), since renaming them would break deploys and saved client state for no player-visible gain.
+
+### 2026-11-22: Peek bar More shows how many actions are hidden
+
+- Asked for a badge on the phone peek bar's "…" button counting the actions not shown. `useOneRow` already marked the wrapped-off buttons inert, so it now also returns that count; `Bar` owns the More button (both callers passed the same one) and draws a blue `--badge` chip, deliberately not the red unread badge. The count goes into the button's label (`peek.moreHidden`, en/fr/es). Examine (always left to Inspect) and the throw-out/crew-picker collapses are not counted: only actions the row clipped.
+
+## 2026-11-22: Travel basics helper on the Command terminal
+
+Added a collapsed "Travel basics" section (`TerminalCollapsible`, as the Hydroponics botany basics) to the Command terminal's Interplanetary tab, with en/fr/es text written from `implemented-rules.md` (scanning, loading exactly the planet's distance since travel burns the whole chamber, Commander-only steering to match the heading, other planets lost on any jump, arrival next cycle with hunters following, leaving orbit costs 1 fuel, broken reactors,). Worked: describing only built rules kept it from inventing mechanics. fr/es reuse the existing "hunters"/equipment names rather than fresh translations.
+Follow-up: the owner dropped the Intergalactic line from the helper and had the static travel warning under the Travel/Leave orbit buttons removed (`navigation.warning`), since the helper now covers it.
+
+## 2026-11-22: Launch keys decided (#480), everyone-inactive ending split out (#484)
+
+- Rules discussion only, no code. Claude read #480 and the title, hacker-kit, Sol and Eden code, then asked 17 numbered questions, each with a suggested default, so the owner could answer by number. Two follow-ups came from writing the answers up: whether launch-time deaths count for the winner, and which ending the all-inactive case uses. Worked: the defaults made answering quick, and reading `titles.ts` turned up the inactive-vacancy edge, which became a new rule ([#484](https://github.com/nearbear/mush2/issues/484)). Needed correction: Claude assumed off-ship crew would die at game end; the owner moved it to the moment of launch, before the winner check. Recorded in `rules-design.md` under "Launch keys" and "Everyone inactive".
+
+## 2026-11-22: Stat cap breakdown, phases 1-2 (#267)
+
+- `fold` (shared/src/modifiers.ts) takes an optional `trace` and records each modifier's real change; `capBreakdown(state, player)` returns `{ base, max, sources }` for ap/mp/hp/morale, with the Noise Reducer as a `project` source after the fold. No view change yet.
+- Phase 2's sync test (`shared/tests/capBreakdown.test.ts`) adds and removes every cap modifier one by one (all agree) and walks the role and start paths. It found five mismatches, kept as `it.fails` until the owner decides: a sick human turning Mush (convert, and alpha selection at pre-selection end) keeps the disease's reduction; a sick Mush made human (serum, role cheat) doesn't get it back; `newPlayer` stores `config.maxAp` without folding `startSkills` (empty in the default config, so latent).
+- Worked: iterating `MODIFIERS` for any cap hook instead of hand-listing the ~35 modifiers, so a new one is covered automatically.
+- Follow-up, same day: owner chose "recompute caps on every role change". `updateMaxValues` now runs in `convert`, the serum `cure`, `selectMush` and `setRoleCheat`, and after `newPlayer` in `createGame` and `joinShip` (so starting skills fold in). The five `it.fails` became plain tests; recorded in `rules-design.md`.
+
+## 2026-11-22: Stat cap breakdown, phase 3 (#267)
+
+- `PlayerView.caps` (`Record<CapStat, CapBreakdown>`) is filled in `viewFor` from `capBreakdown(state, you)`, so it is derived per view and needs no migration; `maxAp|maxMp|maxHp|maxMorale` stay the stored caps. A test in `capBreakdown.test.ts` checks the view carries its own breakdown and another seat's view doesn't name your disease.
+- Leak check (forked skill) found nothing: the sources are modifier ids already in `you.modifiers`, a Mush's diseases stay out as in every fold, and the Noise Reducer is a public project. Bots get only their own seat's `caps`.
+- Needed correction: `rules.test.ts`'s "HP and morale only to their owner" counts `"hp"`/`"morale"` keys in the whole view JSON, and `caps` adds stat-named keys. The test now blanks `caps` like the drug and fruit tables.
+
+### 2026-11-22: Stat cards show what changes a cap (#267, phase 4)
+
+`StatInfo` now shows "Max Morale: 14 → 11" and one line per source ("Cold -3") when `view.caps[stat].sources` is not empty, from the server's breakdown; the client only names sources (status, then skill name keys; project names for NOISE_REDUCER) and formats the signed delta with `Intl`. Two new keys, `stat.capChange` and `stat.capSource`, in en/fr/es (fr/es drafts). A jsdom test opens the real popover with cold, flu, a broken leg and Lethargy. What worked: the phase 3 view made this a pure rendering change. What needed correction: a stray `cat` in a shell command hung waiting on stdin. Screenshots at 360px and desktop are left for a manual `/play` run, since that skill is user-invoked.
+
+## 2026-11-22: Standing up from a terminal's chair with the game open in two tabs
+
+- Bug: seated at the Command terminal, pressing Turn stood the owner up. A first session wrongly suspected a long-lived tab and wrote a fix for sitting by clicking the chair, which the owner's case never reached (opening the window already gives the server's `occupancy` seat). It was reverted.
+- What found it: the game's input record showed exactly one walk to the standing spot after every `access` and three after every Turn, even after a fresh floor walk. Those counts fit a second tab connected as the same player: without the window open there, `IsoRoom`'s occupancy effect read the new seat as "window closed" and walked out, and its `actingOn` effect walked up for the Turn. The owner confirmed a phone-width tab was open.
+- Fix (`web/src/iso/IsoRoom.tsx`): a tab gets you up only after opening a window itself or loading with you seated (`mayGetUp`); otherwise it draws you in the chair. A public action on the terminal you occupy sends no walk from any tab. The owner checked it by hand; a two-tab Playwright check was started but not needed.
+- Lesson: count the inputs per event before guessing at client state; a fixed count across all occurrences points at a structural cause (a second client), not a flaky one.
+
+### 2026-11-22 — End the game when every living player is inactive (#484)
+- **Decision (owner):** When `phase === "playing"` and not in pre-selection, once every living player is inactive (via cycle inactivity, a ban's `inactivate`, the last active player dying while humans remain, or pre-selection ending with everyone already inactive), NERON logs a ship-wide warning (`shipDestroyedInactive`), ends the game as a Mush win with `ending: "ship_destroyed"`, and kills every living player with `daedalus_destroyed`. `gameOver.shipDestroyed` was generalized to drop "hunters".
+- **What worked:** Clarifying the three edge cases upfront (last active player dying / pre-selection ending, killing living crew to match hull 0, and separate NERON log key + generalized end-screen verdict) prevented gaps, and placing `endIfAllInactive` in `death.ts` with `allLivingInactive` in `victory.ts` avoided circular imports and cleanly stopped `advanceCycle` early. Existing `inactivity.test.ts` tests that let all seats go inactive simultaneously were updated to keep one active seat so they still test individual inactivity, and six new tests cover all trigger paths and precedence with `humans_dead`.
+
+## 2026-11-22: Stat cap card polish, icons, divider, and screenshots (#267, phase 4-5)
+
+- Replaced bullet points in `StatInfo`'s cap source list with each source's 16x16 pixel icon (`STATUS_ICONS` for diseases/injuries/statuses, `skillIcon` for skills, `NERON_ICON` for projects), and styled the static rules help text as a caption (`0.75rem`, `opacity: 0.75`) separated by a subtle horizontal divider whenever any cap modifier is active.
+- Captured and inspected desktop (1600x1000) and phone (360px) screenshots with Cold (`cold_disease`) and Broken Leg (`broken_leg_injury`) via the Superkube.
+- What worked: inspecting the actual screenshots caught a CSS specificity tie where `.skill-card ul` indented `.stat-cap ul` by `1.1rem` (`inspect.css` overriding `top-bar.css`); tightening the selector to `.skill-card .stat-cap ul` aligned the icons flush left.
+
+### 2026-11-22 — Private HP loss/gain log lines
+- **Decision (owner):** Every non-zero HP loss or gain (`damage` and `heal` in `shared/src/death.ts`) emits a private `loseHp`/`gainHp` log line with the actual HP delta, whether the player survives or not (`loseHp` before `died`); caller-specific duplicates ignored for now.
+- **What worked:** Centralizing in `damage()`/`heal()` covered all HP sources at once, and measuring `before - player.hp` / `player.hp - before` avoided zero-delta spam (e.g., `healDaily` at full HP or armor-blocked hits). Added en/fr/es locale keys and unit + hidden-info tests in `shared/tests/death.test.ts`.
+
+### 2026-11-22 — Days One font on cycle dividers, portrait names, and chatlog headers
+
+- Switched `.feed > li.cycle-divider` (`web/src/styles/chat.css`, `web/src/styles/itrackie.css`), character portrait names (`.inspect-figure-name` in `web/src/styles/inspect.css`, `.pod-detail-name` in `web/src/lobby/lobby.css`), and chatlog header names (`.entry-name > strong` in `web/src/styles/chat.css`) to `var(--font-display)` (`Days One`) with `font-weight: 400` so the 400-only display face is not faux-bolded.
+
+### 2026-11-22: Removed the free-text "Track something…" tracker from the feature tabs
+
+The owner asked to drop the typed-notes tracker (`hud/Tracker.tsx`, client-only state that never reached the server) from every feature tab, since each feature will get its own specialized tracker. Feature tabs without one yet (e.g. Pilgred and Botany before anything is shared) now show only their thread, and the "needs an iTrackie to track" note shows only on Research and NERON, which have real trackers. Removed the component, its state, CSS and the five en/fr/es strings it used. Straightforward; no corrections needed.

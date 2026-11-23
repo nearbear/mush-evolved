@@ -27,12 +27,45 @@ describe("cycles on the clock", () => {
   });
 
   it("ends the cycle for everyone, ready or not, and refills AP", () => {
-    const s = createGame(seats, { ...config, manualCycles: true }, 3);
+    const s = createGame(makeSeats(4, "others"), { ...config, manualCycles: true }, 3);
     const readied = must(applyAction(s, "p0", { type: "ready" }));
     const next = must(applyInput(readied, { type: "cycle", at: 0 }));
     expect(next.cycle).toBe(s.cycle + 1);
     expect(next.players.every((p) => p.ap === config.startAp + config.apPerCycle && !p.ready)).toBe(true);
     expect(next.log).toEqual(readied.log);
+  });
+
+  it("End cycle waits on bots only, never on other humans", () => {
+    // p0 and p1 are human, p2 and p3 bots.
+    const manual = (): GameState => {
+      const s = createGame(seats, { ...config, manualCycles: true }, 3);
+      for (const p of s.players) p.isBot = p.id === "p2" || p.id === "p3";
+      return s;
+    };
+    let s = must(applyAction(manual(), "p0", { type: "ready" }));
+    s = must(applyAction(s, "p2", { type: "ready" }));
+    expect(s.cycle).toBe(manual().cycle);
+    s = must(applyAction(s, "p3", { type: "ready" })); // p1 never readied
+    expect(s.cycle).toBe(manual().cycle + 1);
+    // Bots alone don't end it while a human is alive and hasn't pressed End cycle.
+    s = manual();
+    for (const id of ["p2", "p3"]) s = must(applyAction(s, id, { type: "ready" }));
+    expect(s.cycle).toBe(manual().cycle);
+    s = must(applyAction(s, "p1", { type: "ready" }));
+    expect(s.cycle).toBe(manual().cycle + 1);
+  });
+
+  it("with no human alive, the cycle ends once every living bot is ready", () => {
+    const s = createGame(seats, { ...config, manualCycles: true }, 3);
+    for (const p of s.players) {
+      p.isBot = p.id !== "p0";
+      if (p.id === "p0") p.alive = false;
+    }
+    let t = must(applyAction(s, "p1", { type: "ready" }));
+    t = must(applyAction(t, "p2", { type: "ready" }));
+    expect(t.cycle).toBe(s.cycle);
+    t = must(applyAction(t, "p3", { type: "ready" }));
+    expect(t.cycle).toBe(s.cycle + 1);
   });
 
   it("refuses once the game is over", () => {

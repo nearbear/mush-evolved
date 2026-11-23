@@ -10,18 +10,77 @@ import { HP_ICON, STATUS_ICONS } from "../art/assets.ts";
 import { SINGLE_PRESS_ACTIONS, useDoublePress } from "./DoublePress.tsx";
 import { affordable, blurredVision, type Action, type ActionOption, type PlayerView } from "@mush2/shared";
 
-/** A button that does the action on a double press (useDoublePress; one press for SINGLE_PRESS_ACTIONS), or the disabled one with the reason when you lack the points. */
-export function ActionButton(props: { view: PlayerView; option: ActionOption; onAction: (action: Action) => void; children: ReactNode; className?: string; hint?: string }) {
-  const { view, option, children, hint } = props;
+/** A button that does the action on a double press (useDoublePress; one press for SINGLE_PRESS_ACTIONS or `singlePress`), or the disabled one with the reason when you lack the points. */
+export function ActionButton(props: {
+  view: PlayerView;
+  option: ActionOption;
+  onAction: (action: Action) => void;
+  children?: ReactNode;
+  className?: string;
+  hint?: string;
+  singlePress?: boolean;
+  switchProps?: { checked: boolean; label: string };
+  radioProps?: { checked: boolean };
+}) {
+  const { view, option, children, hint, switchProps, radioProps } = props;
   // Pink Eye blurs the buttons' text (blurredVision); the card that opens from one stays readable.
   const className = blurredVision(view) ? [props.className, "blurred-vision"].filter(Boolean).join(" ") : props.className;
-  if (!affordable(option)) return <DisabledActionButton view={view} blocked={option} className={className} hint={hint}>{children}</DisabledActionButton>;
+  if (!affordable(option)) {
+    return (
+      <DisabledActionButton view={view} blocked={option} className={className} hint={hint} switchProps={switchProps} radioProps={radioProps}>
+        {children}
+      </DisabledActionButton>
+    );
+  }
   return <EnabledActionButton {...props} className={className} />;
 }
 
-function EnabledActionButton({ view, option, onAction, children, className, hint }: { view: PlayerView; option: ActionOption; onAction: (action: Action) => void; children: ReactNode; className?: string | undefined; hint?: string | undefined }) {
-  const { onClick, armed } = useDoublePress(() => onAction(option.action), SINGLE_PRESS_ACTIONS.has(option.action.type));
-  const button = (
+function EnabledActionButton({
+  view,
+  option,
+  onAction,
+  children,
+  className,
+  hint,
+  singlePress,
+  switchProps,
+  radioProps,
+}: {
+  view: PlayerView;
+  option: ActionOption;
+  onAction: (action: Action) => void;
+  children?: ReactNode;
+  className?: string | undefined;
+  hint?: string | undefined;
+  singlePress?: boolean | undefined;
+  switchProps?: { checked: boolean; label: string } | undefined;
+  radioProps?: { checked: boolean } | undefined;
+}) {
+  const { onClick, armed } = useDoublePress(() => onAction(option.action), singlePress || SINGLE_PRESS_ACTIONS.has(option.action.type));
+  const button = switchProps ? (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={switchProps.checked}
+      aria-label={switchProps.label}
+      className={className}
+      data-armed={armed ? "" : undefined}
+      onClick={onClick}
+    >
+      {children}
+    </button>
+  ) : radioProps ? (
+    <button
+      type="button"
+      role="radio"
+      aria-checked={radioProps.checked}
+      className={className}
+      data-armed={armed ? "" : undefined}
+      onClick={onClick}
+    >
+      {children}
+    </button>
+  ) : (
     <button type="button" className={className} data-armed={armed ? "" : undefined} onClick={onClick}>
       {children}
     </button>
@@ -95,7 +154,23 @@ function consumedType(view: PlayerView, option: ActionOption): string | undefine
   return [...view.inventory, ...view.roomItems].find((i) => i.id === a.item)?.type;
 }
 
-export function DisabledActionButton({ view, blocked, children, className, hint }: { view: PlayerView; blocked: ActionOption; children: ReactNode; className?: string; hint?: string }) {
+export function DisabledActionButton({
+  view,
+  blocked,
+  children,
+  className,
+  hint,
+  switchProps,
+  radioProps,
+}: {
+  view: PlayerView;
+  blocked: ActionOption;
+  children?: ReactNode;
+  className?: string;
+  hint?: string;
+  switchProps?: { checked: boolean; label: string } | undefined;
+  radioProps?: { checked: boolean } | undefined;
+}) {
   const { t } = useTranslation();
   const { cost, lacks } = blocked;
   const reason =
@@ -113,6 +188,10 @@ export function DisabledActionButton({ view, blocked, children, className, hint 
       ? t("actions.lacksExplored")
       : lacks[0] === "icarusLost"
       ? t("actions.lacksIcarusLost")
+      : lacks[0] === "vertigo"
+      ? t("actions.lacksVertigo")
+      : lacks[0] === "grounded"
+      ? t("actions.lacksGrounded")
       : lacks[0] === "mushNotSelected"
       ? t("actions.lacksMushNotSelected")
       : lacks[0] === "listPrinted"
@@ -123,6 +202,12 @@ export function DisabledActionButton({ view, blocked, children, className, hint 
       ? t("actions.lacksAntisocial")
       : lacks[0] === "germaphobe"
       ? t("actions.lacksGermaphobe")
+      : lacks[0] === "notYourSong"
+      ? t("actions.lacksNotYourSong")
+      : lacks[0] === "listenedToday"
+      ? t("actions.lacksListenedToday")
+      : lacks[0] === "fragments"
+      ? t("actions.lacksFragments")
       : lacks[0] === "clean"
       ? t("actions.lacksClean")
       : lacks[0] === "capacity"
@@ -144,7 +229,21 @@ export function DisabledActionButton({ view, blocked, children, className, hint 
         : t("actions.lacksAp", { need: cost.ap, have: view.you.ap });
   return (
     <Popover.Root>
-      <Popover.Trigger openOnHover delay={200} className={className ? `action-disabled ${className}` : "action-disabled"} aria-disabled="true" render={<button type="button" />}>
+      <Popover.Trigger
+        openOnHover
+        delay={200}
+        className={className ? `action-disabled ${className}` : "action-disabled"}
+        aria-disabled="true"
+        render={
+          switchProps ? (
+            <button type="button" role="switch" aria-checked={switchProps.checked} aria-label={switchProps.label} />
+          ) : radioProps ? (
+            <button type="button" role="radio" aria-checked={radioProps.checked} />
+          ) : (
+            <button type="button" />
+          )
+        }
+      >
         {children}
       </Popover.Trigger>
       <Popover.Portal>

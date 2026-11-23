@@ -39,9 +39,7 @@ export function TerminalFrame({ name, type, login, onClose, titleId, children }:
               </h2>
               <LoginBanner login={login} />
             </div>
-            <button type="button" className="dialog-header-close" aria-label={t("terminal.close")} onClick={onClose}>
-              ×
-            </button>
+            <button type="button" className="dialog-header-close" aria-label={t("terminal.close")} onClick={onClose} />
             <span className="terminal-icon" aria-hidden="true" />
           </header>
         </div>

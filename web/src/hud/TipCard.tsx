@@ -44,9 +44,7 @@ export function TipCard({ view }: { view: PlayerView }) {
     <aside className="tip-card" aria-label={t("tips.label")}>
       <div className="tip-head">
         <strong>{t(`tips.${tip.id}.title`)}</strong>
-        <button type="button" className="tip-close" aria-label={t("tips.dismiss")} onClick={() => dismissTip(tip.id)}>
-          ×
-        </button>
+        <button type="button" className="tip-close" aria-label={t("tips.dismiss")} onClick={() => dismissTip(tip.id)} />
       </div>
       <p>{body(tip)}</p>
       {where && <p className="tip-where">{where}</p>}

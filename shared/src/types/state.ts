@@ -3,6 +3,7 @@ import type { CharacterId } from "../characters.ts";
 import type { CommsState } from "../comms.ts";
 import type { SignalsState } from "../signals.ts";
 import type { DrugDispenserState, DrugEffect } from "../drugs.ts";
+import type { EdenState } from "../eden.ts";
 import type { FruitEffect } from "../fruits.ts";
 import type { LostAnalysisState } from "../lostAnalysis.ts";
 import type { TheListState } from "../theList.ts";
@@ -233,6 +234,12 @@ export interface GameCore {
   reports: Report[];
   /** Rooms a Pyromaniac set to catch fire at the next cycle change (actions/ignite.ts). Never sent. */
   pendingFires: RoomId[];
+  /** Rooms booby-trapped with a spore by a Mush Trapper (traps.ts, #473). Sent only to living Mush (`PlayerView.trappedRooms`). */
+  trappedRooms: RoomId[];
+  /** A Gravity Simulator was repaired this cycle and gravity comes back at the next cycle change (owner, 2026-11-22, `gravity.ts`). Public: the alert bar shows it. */
+  gravityRestarting: boolean;
+  /** Progress toward Eden (eden.ts, #478). An object so the star map tree can extend it. Public: Compute's success is logged and the Command terminal shows it. */
+  eden: EdenState;
   /** Who holds each title (titles.ts); null while vacant. Public: every view has the holders and the lines. */
   titles: Record<TitleId, PlayerId | null>;
   /**
@@ -255,6 +262,8 @@ export interface GameState extends GameCore {
   theList: TheListState;
   /** The merchants' own stream (merchants.ts), seeded apart from `rng` so arrivals don't shift the rest of the game. Not in the full view. */
   merchantRng: RngState;
+  /** Seeds the jukebox's song for each cycle (jukebox.ts `songAt`), derived from the game seed. Server-only: it would tell every song to come. Not in the full view. */
+  jukeboxSeed: RngState;
   /** Every pair's graft hybrid (#438), drawn at launch; a hybrid is copied into `fruits` once grafted. Server-only: not in the full view, never sent to anyone. */
   hybrids: Record<string, FruitEffect>;
   /** Pages to store and delete, which the server takes after every input. Not in the full view. */
