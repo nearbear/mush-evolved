@@ -390,10 +390,14 @@
   text-align: center;
 }
 
-/* One effect per line, on a grid: icons in one column (centred), signed amounts in the next (right-aligned). Also used inside tooltips. */
+/* A consumable's effects (StatAmounts row): amounts side by side, as in the Hydroponics plant rows. Also used inside tooltips. */
 .consume-effects {
-  list-style: none;
   margin: 4px 0 0;
+}
+/* An action card's dirt and injury odds: one per line, icon then text. */
+.action-risks {
+  list-style: none;
+  margin: 0;
   padding: 0;
   display: grid;
   grid-template-columns: max-content max-content;
@@ -410,22 +414,28 @@
   max-width: 28ch;
   font-size: 0.75rem;
 }
+/* Temporary effects and ailment odds read as a muted bulleted caption, like a plant row's notes. */
 .consume-buffs {
-  padding-left: var(--space-3);
+  padding-left: 1.1rem;
+  list-style: disc;
+  line-height: 1.3;
+  opacity: 0.8;
+}
+.consume-diseases {
+  opacity: 0.8;
 }
 .consume-mush-warning {
   color: var(--danger);
 }
-.consume-effects li {
+.action-risks li {
   display: contents;
 }
-.consume-effects img {
+.action-risks img {
   justify-self: center;
   image-rendering: pixelated;
 }
-.consume-effects span {
-  justify-self: end;
-  font-variant-numeric: tabular-nums;
+.action-risks span {
+  justify-self: start;
 }
 
 /* The Inspect heading is dropped on screen (it adds nothing beside the target; on phones the bottom nav names the
@@ -518,10 +528,4 @@
   border-top: 1px solid currentColor;
   opacity: 0.4;
   margin: 6px 0 4px;
-}
-.consume-effects.action-risks {
-  margin-top: 0;
-}
-.consume-effects.action-risks span {
-  justify-self: start;
 }

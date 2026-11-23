@@ -697,23 +697,31 @@ button.blurred-vision {
   padding: 0;
   list-style: none;
 }
-/* PlantStatusRow.tsx: the name across the top; the icon, with status and amounts beside it; bulleted notes under the
-   icon. Rows aren't boxed: a divider separates each from the one before (owner, 2026-11-22). */
+/* PlantStatusRow.tsx: the icon with the name under it (the column only as wide as the longest word, so a hybrid's
+   name wraps at its dash); beside them status, amounts and bulleted notes. Rows aren't boxed: a divider separates
+   each from the one before (owner, 2026-11-22). */
 .plant-row {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 0.25rem 0.5rem;
-  align-items: center;
+  grid-template-columns: min-content minmax(0, 1fr);
+  gap: 0.5rem;
+  align-items: start;
   padding: 0.45rem 0;
 }
 .plant-row + .plant-row {
   border-top: 1px solid var(--terminal-rule);
 }
+.plant-row-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  min-width: 3.5rem;
+  text-align: center;
+}
 .plant-row-name {
-  grid-column: 1 / -1;
-  font-size: 0.85em;
-  line-height: 1.2;
-  overflow-wrap: anywhere;
+  font-size: 0.8em;
+  line-height: 1.15;
+  hyphens: manual;
 }
 .plant-row-icon {
   display: block;
@@ -729,7 +737,6 @@ button.blurred-vision {
   font-size: 0.85em;
 }
 .plant-row-notes {
-  grid-column: 1 / -1;
   margin: 0;
   padding-left: 1.1rem;
   list-style: disc;
@@ -739,6 +746,17 @@ button.blurred-vision {
 }
 .plant-row-notes .plant-row-danger {
   color: var(--danger);
+}
+/* A temporary effect's name: opens what it does in a popover. Plain text with a dotted underline, not a button. */
+.plant-row-tip {
+  all: unset;
+  cursor: help;
+  text-decoration: underline dotted;
+  text-underline-offset: 2px;
+}
+.plant-row-tip:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
 }
 .plant-status-states {
   display: flex;
@@ -879,6 +897,11 @@ button.blurred-vision {
 }
 .shared-plants .terminal-collapsible-panel > .sub {
   margin: 0;
+}
+/* Who shared the snapshot and when, as a caption after the card's heading. */
+.shared-plants-by {
+  margin-left: 0.35rem;
+  font-weight: normal;
 }
 .shared-plants-list {
   max-height: 14rem;

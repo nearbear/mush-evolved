@@ -5165,3 +5165,8 @@ The owner asked to drop the typed-notes tracker (`hud/Tracker.tsx`, client-only 
 ## 2026-11-22: Mush skill icon shuffle and Mass Mushification rename
 
 Owner asked to rotate three Mush skill icons (Slime Trap's to Mass Mouldering, Mass Mouldering's to Bacteriophilia, Bacteriophilia's to Defacer) and rename Mass Mouldering to Mass Mushification in English. Done as a remap in `web/src/art/assets.ts` (same pattern as the earlier Epigenetics/Defacer swap, Slime Trap falls back to the empty-slot icon) plus the en locale names; internal ids (`massggedon`, `mass_mouldering`) unchanged. Worked first time; no correction needed.
+
+### 2026-11-22: Hydroponics card and plant rows, round two
+
+- Botany card: the byline (given name only, day, cycle) moved into the collapsible's header as a caption. Hybrid names drop "graft" in en/fr/es ("A–B"). Plant rows put the name under the icon in a min-content column so a hybrid wraps at its dash; status, amounts and notes share the right column. A fruit's temporary effects show only their name there, with what they do in a Popover (new `inspect.fruitBuffNames`/`fruitBuffTips` keys); the shared card recognises a buff line only when it matches the prefilled text exactly, so an edited line stays plain. Consumable tooltips keep the full buff text but now lay out resource changes in a row, with buffs and odds as a muted caption; the action-risk grid got its own `.action-risks` class instead of borrowing `consume-effects`.
+- Verify: a server bot test (`GameRoom.bots.test.ts`, chat wake timeout) timed out; untouched by this change.

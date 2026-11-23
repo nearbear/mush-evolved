@@ -123,7 +123,7 @@ function ActionDetails({ view, option, hint, above }: { view: PlayerView; option
       {type !== undefined && <ConsumeEffects type={type} view={view} />}
       {risky && body && <hr className="action-risks-rule" />}
       {risky && (
-        <ul className="consume-effects action-risks">
+        <ul className="action-risks">
           {dirt > 0 && (
             <li>
               <img src={STATUS_ICONS["dirty"]} alt="" />

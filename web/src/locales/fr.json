@@ -250,6 +250,18 @@
       "resistance": "Résistance (immunisé contre les spores pendant 2 cycles)",
       "perception": "Perception (+10 % de chances de réussite aux actions pendant 2 cycles)"
     },
+    "fruitBuffNames": {
+      "treat_disease": "Soin des maladies",
+      "energize": "Énergisant",
+      "resistance": "Résistance",
+      "perception": "Perception"
+    },
+    "fruitBuffTips": {
+      "treat_disease": "Les maladies guérissent d'un cycle de plus par cycle pendant 4 cycles.",
+      "energize": "+2 PM par conversion de PA pendant 2 cycles.",
+      "resistance": "Immunisé contre les spores pendant 2 cycles.",
+      "perception": "+10 % de chances de réussite aux actions pendant 2 cycles."
+    },
     "fruitDiseaseOdds": "{{disease}} ({{percent}} %)",
     "fruitGrowCycles_one": "Maturation : {{count}} cycle",
     "fruitGrowCycles_many": "Maturation : {{count}} cycles",
@@ -420,6 +432,8 @@
     "stopGuarding": "Cesser de garder",
     "enterNimble": "Passer en mode agile",
     "exitNimble": "Quitter le mode agile",
+    "becomeNinja": "Devenir un ninja",
+    "becomeNormal": "Redevenir banal",
     "accommodate": "Pousser le fauteuil",
     "acceptAccommodation": "Accepter l'aide",
     "stopAccommodation": "Mettre fin à l'aide",
@@ -432,8 +446,6 @@
     "punch": "Frapper",
     "throwOut": "Mettre à la porte",
     "interrogate": "Interroger",
-    "becomeNinja": "Devenir un ninja",
-    "becomeNormal": "Redevenir banal",
     "chitchat": "Papoter",
     "premonition": "Pressentiment",
     "comfort": "Réconforter",
@@ -964,6 +976,7 @@
     "focused": "Concentré",
     "hopeless": "Sans espoir",
     "nimble": "Agile",
+    "ninja": "Ninja",
     "pregnant": "Enceinte",
     "contaminated": "Contamination : {{level}}",
     "desc": {
@@ -976,7 +989,6 @@
       "hyperactive": "Un trait : cette personne gagne 1 PM de plus à chaque changement de cycle, et ne gagne pas de PA supplémentaire en s'allongeant. Ne peut pas être retiré.",
       "antisocial": "Un trait : cette personne perd 1 point de moral à chaque changement de cycle passé dans une pièce avec quelqu'un d'autre, et ne peut pas se lier. Ne peut pas être retiré.",
       "germaphobe": "Un trait : cette personne perd 1 point de moral à chaque changement de cycle tant qu'elle est sale, et ne peut pas caresser Schrödinger. Ne peut pas être retiré.",
-    "ninja": "Ninja",
       "chronic_vertigo": "Un trait : cette personne ne peut ni décoller ni piloter un vaisseau, mais peut monter à bord de l'Icarus comme passagère. Ne peut pas être retiré.",
       "guardian": "Tant que cette personne garde la salle, tous les autres ne peuvent sortir que par la porte par laquelle ils sont entrés, ou pas du tout s'ils sont arrivés autrement. Cela prend fin quand le gardien part, est déplacé ou meurt.",
       "mankind_only_hope": "Un trait : tant que cette personne est en vie, tout l'équipage perd 1 point de moral de moins chaque jour. Ne peut pas être retiré.",
@@ -1048,6 +1060,7 @@
       "contaminated": "Un humain que vous avez contaminé. À sa capacité maximale, il devient Mush.",
       "hopeless": "À 0 de moral. Tout gain de moral y met fin. Un humain encore Sans espoir à la fin du cycle meurt.",
       "nimble": "Toutes vos actions publiques dans une salle (déplacements compris) deviennent secrètes. Vous seul voyez cet état.",
+      "ninja": "Toutes vos actions sont anonymes : les logs de la salle vous nomment « Quelqu'un ». Vous seul voyez cet état.",
       "pregnant": "Attend un enfant. Si ce coéquipier meurt, chaque membre vivant de l'équipage perd 2 points de moral."
     }
   },
@@ -1060,7 +1073,6 @@
     "jelly_many": "Gélée verte : panne dans {{count}} cycles",
     "jelly_other": "Gélée verte : panne dans {{count}} cycles",
     "jellyDesc": "Il tombe en panne quand les cycles sont écoulés.",
-      "ninja": "Toutes vos actions sont anonymes : les logs de la salle vous nomment « Quelqu'un ». Vous seul voyez cet état.",
     "spoil_unstable": "Instable",
     "spoil_unstableDesc": "Périssable : il a passé un changement de jour. Encore sans danger. Seuls les cuistots le voient.",
     "spoil_hazardous": "Avarié",
@@ -1227,6 +1239,9 @@
     "stoppedGuarding": "{{name}} a cessé de garder la salle.",
     "enteredNimble": "Vous êtes passé en mode agile.",
     "exitedNimble": "Vous avez quitté le mode agile.",
+    "becameNinja": "Vous êtes maintenant un ninja : vos actions sont anonymes.",
+    "becameNormal": "Vous n'êtes plus un ninja.",
+    "someone": "quelqu'un",
     "interrogated": "{{name}} a interrogé {{target}}.",
     "chitchatted": "{{name}} a papoté avec {{target}}.",
     "comforted": "{{name}} a réconforté {{target}}.",
@@ -1239,9 +1254,6 @@
     "historyRevealed": "{{name}} a récemment fait : {{action}}.",
     "historyNothing": "Vous n'avez rien appris sur ce que {{name}} a fait récemment.",
     "punchCrit": "{{name}} a placé un magistral uppercut à {{target}}.",
-    "becameNinja": "Vous êtes maintenant un ninja : vos actions sont anonymes.",
-    "becameNormal": "Vous n'êtes plus un ninja.",
-    "someone": "quelqu'un",
     "punchArmor": "{{name}} a tenté de frapper {{target}} mais n'a trouvé que ses protections.",
     "attackArmor": "{{name}} a attaqué {{target}} avec : {{item}}, mais n'a trouvé que ses protections.",
     "anathema": "{{name}} a jeté l'anathème sur {{target}}.",

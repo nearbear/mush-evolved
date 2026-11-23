@@ -59,7 +59,7 @@ export function StatAmount({ stat, amount }: StatDelta) {
 
 /**
  * A list of amounts: `column` lines them up one per line (amounts right-aligned, icons in a column), `row` runs them
- * side by side and wraps. `className` adds to `stat-amounts` (the consumable tooltips keep `consume-effects`).
+ * side by side and wraps. `className` adds to `stat-amounts` (the consumable tooltips add `consume-effects`).
  */
 export function StatAmounts({
   deltas,

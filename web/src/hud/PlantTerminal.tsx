@@ -20,7 +20,7 @@ import { useTranslation } from "react-i18next";
 import { itemIcon } from "../art/assets.ts";
 import { useNames } from "../i18n/names.ts";
 import { isMushOnlyFruitLore } from "./ConsumeEffects.tsx";
-import { PlantStatusRow, type PlantNote } from "./PlantStatusRow.tsx";
+import { fruitBuffNote, PlantStatusRow, type PlantNote } from "./PlantStatusRow.tsx";
 import { consumeDeltas, signedAmount, type StatDelta } from "./StatAmount.tsx";
 import { TerminalCollapsible } from "./TerminalCollapsible.tsx";
 
@@ -65,7 +65,7 @@ function liveEffects(species: string, view: PlayerView, t: TFunction): { resourc
   const fruit = isAlien ? view.fruitEffects?.[species] : undefined;
   if (isAlien && !fruit) return { resources: [], notes: [], unknown: true };
   const notes: PlantNote[] = [
-    ...(fruit?.buffs ?? []).map((buff) => ({ text: t(FRUIT_BUFF_KEYS[buff]) })),
+    ...(fruit?.buffs ?? []).map((buff) => fruitBuffNote(buff, t)),
     ...(fruit?.diseases ?? []).map((d) => ({
       text: t("inspect.fruitDiseaseOdds", {
         disease: t(`status.${d.id}` as never, { defaultValue: t(d.id as never, { defaultValue: d.id }) }),

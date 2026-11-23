@@ -245,6 +245,18 @@
       "resistance": "Resistance (immune to spores for 2 cycles)",
       "perception": "Perception (+10% action success chance for 2 cycles)"
     },
+    "fruitBuffNames": {
+      "treat_disease": "Treat Disease",
+      "energize": "Energize",
+      "resistance": "Resistance",
+      "perception": "Perception"
+    },
+    "fruitBuffTips": {
+      "treat_disease": "Diseases heal 1 cycle faster per cycle for 4 cycles.",
+      "energize": "+2 MP per AP conversion for 2 cycles.",
+      "resistance": "Immune to spores for 2 cycles.",
+      "perception": "+10% action success chance for 2 cycles."
+    },
     "fruitDiseaseOdds": "{{disease}} ({{percent}}%)",
     "fruitGrowCycles_one": "Maturation: {{count}} cycle",
     "fruitGrowCycles_other": "Maturation: {{count}} cycles",
@@ -408,6 +420,8 @@
     "stopGuarding": "Stop guarding",
     "enterNimble": "Enter Nimble mode",
     "exitNimble": "Exit Nimble mode",
+    "becomeNinja": "Become a ninja",
+    "becomeNormal": "Become normal again",
     "accommodate": "Accommodate",
     "acceptAccommodation": "Accept accommodation",
     "stopAccommodation": "End accommodation",
@@ -420,8 +434,6 @@
     "punch": "Punch",
     "throwOut": "Throw out",
     "interrogate": "Interrogate",
-    "becomeNinja": "Become a ninja",
-    "becomeNormal": "Become normal again",
     "chitchat": "Chitchat",
     "premonition": "Premonition",
     "comfort": "Comfort",
@@ -944,6 +956,7 @@
     "contaminated": "Contamination: {{level}}",
     "hopeless": "Hopeless",
     "nimble": "Nimble",
+    "ninja": "Ninja",
     "pregnant": "Pregnant",
     "desc": {
       "dirty": "Can't research. Taking a shower removes it.",
@@ -956,7 +969,6 @@
       "antisocial": "A trait: this person loses 1 morale at each cycle change spent in a room with anyone else, and can't bond. It can't be removed.",
       "germaphobe": "A trait: this person loses 1 morale at each cycle change while dirty, and can't caress Schrödinger. It can't be removed.",
       "chronic_vertigo": "A trait: this person can't take off or fly a ship, though they can ride the Icarus as a passenger. It can't be removed.",
-    "ninja": "Ninja",
       "guardian": "While this person guards the room, everyone else can only leave by the door they came in through, or not at all if they arrived another way. It ends when the guardian leaves, is moved or dies.",
       "mankind_only_hope": "A trait: while this person is alive, the whole crew loses 1 less morale each day. It can't be removed.",
       "wheelchair": "A trait: anyone in this person's room can offer to push their wheelchair. While pushed, they move with the pusher at no MP cost. It can't be removed.",
@@ -1027,6 +1039,7 @@
       "contaminated": "A human you have contaminated. At their capacity they turn Mush.",
       "hopeless": "At 0 morale. Any morale gain ends it. A human still Hopeless when the cycle ends dies.",
       "nimble": "All of your room-level public actions (including movement) become secret. Only you can see this status.",
+      "ninja": "All of your actions are anonymous: room logs name you \"Someone\". Only you can see this status.",
       "pregnant": "Expecting a child. If this crewmate dies, every living crewmate loses 2 morale."
     }
   },
@@ -1039,7 +1052,6 @@
     "jelly_other": "Green jelly: breaks in {{count}} cycles",
     "jellyDesc": "It breaks when the cycles run out.",
     "spoil_unstable": "Unstable",
-      "ninja": "All of your actions are anonymous: room logs name you \"Someone\". Only you can see this status.",
     "spoil_unstableDesc": "Spoiling: it has passed one day change. Still safe to eat. Only Chefs can see this.",
     "spoil_hazardous": "Hazardous",
     "spoil_hazardousDesc": "Spoiled: 50% chance of food poisoning when eaten. Only Chefs can see this.",
@@ -1203,6 +1215,9 @@
     "stoppedGuarding": "{{name}} stopped guarding the room.",
     "enteredNimble": "You entered Nimble mode.",
     "exitedNimble": "You exited Nimble mode.",
+    "becameNinja": "You are now a ninja: your actions are anonymous.",
+    "becameNormal": "You are no longer a ninja.",
+    "someone": "someone",
     "interrogated": "{{name}} interrogated {{target}}.",
     "chitchatted": "{{name}} chitchatted with {{target}}.",
     "comforted": "{{name}} comforted {{target}}.",
@@ -1215,9 +1230,6 @@
     "historyRevealed": "{{name}} recently did: {{action}}.",
     "historyNothing": "You learned nothing about what {{name}} did recently.",
     "punchCrit": "{{name}} landed a magnificent punch on {{target}}.",
-    "becameNinja": "You are now a ninja: your actions are anonymous.",
-    "becameNormal": "You are no longer a ninja.",
-    "someone": "someone",
     "punchArmor": "{{name}} tried to hit {{target}} but only found their protections.",
     "attackArmor": "{{name}} attacked {{target}} with the {{item}} but only found their protections.",
     "anathema": "{{name}} cast the anathema on {{target}}.",

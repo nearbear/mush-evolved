@@ -1,4 +1,4 @@
-// What eating or drinking an item does, one effect per line (amount then icon, `StatAmounts`), read from the shared item table (static data, not game state).
+// What eating or drinking an item does, resource changes side by side (amount then icon, `StatAmounts`), read from the shared item table (static data, not game state).
 
 import {
   isAlienFruitType,
@@ -54,7 +54,7 @@ export function ConsumeEffects({
   const mushWarning = fruit ? isMushOnlyFruitLore(view) : false;
   return (
     <>
-      <StatAmounts deltas={shown} className="consume-effects" />
+      <StatAmounts deltas={shown} layout="row" className="consume-effects" />
       {treats.length > 0 && (
         <p className="consume-treats">
           {t("itemAttr.drugTreats", {

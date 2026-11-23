@@ -1,13 +1,15 @@
 // Pinned Hydroponics card shown above the Botany feature thread (owner, 2026-11-21): the latest snapshot shared from
 // the Hydroponics center (`view.sharedPlants`), each plant a `PlantStatusRow` as in the terminal (owner, 2026-11-22),
-// in a `TerminalCollapsible` like every other collapsible. The effects are the sharer's free text, so each line is
-// sorted by its shape: "+N <resource>" lines become amounts, the rest bulleted notes (cures, ailment odds).
+// in a `TerminalCollapsible` like every other collapsible, with who shared it (given name) and when as a caption in its
+// header. The effects are the sharer's free text, so each line is sorted by its shape: "+N <resource>" lines become
+// amounts, a temporary effect exactly as the share form prefills it becomes its name with a popover, the rest bulleted
+// notes (cures, ailment odds).
 
 import { useTranslation } from "react-i18next";
 import type { PlayerView, SharedPlantStatus } from "@mush2/shared";
 import type { TFunction } from "i18next";
 import { useNames } from "../i18n/names.ts";
-import { PlantStatusRow, type PlantNote, type ResourceLine } from "./PlantStatusRow.tsx";
+import { FRUIT_BUFF_IDS, fruitBuffNote, PlantStatusRow, type PlantNote, type ResourceLine } from "./PlantStatusRow.tsx";
 import { RESOURCE_STATS, type StatDelta } from "./StatAmount.tsx";
 import { TerminalCollapsible } from "./TerminalCollapsible.tsx";
 
@@ -15,6 +17,7 @@ import { TerminalCollapsible } from "./TerminalCollapsible.tsx";
 function splitEffects(effects: string, t: TFunction): { resources: ResourceLine[]; notes: PlantNote[] } {
   const stats = new Map<string, StatDelta["stat"]>(RESOURCE_STATS.map((stat) => [t(`stat.${stat}`).toLowerCase(), stat]));
   stats.set(t("itemAttr.satiety").toLowerCase(), "satiety");
+  const buffs = new Map(FRUIT_BUFF_IDS.map((buff) => [t(`inspect.fruitBuffs.${buff}`), buff]));
   const resources: ResourceLine[] = [];
   const notes: PlantNote[] = [];
   for (const raw of effects.split("\n")) {
@@ -22,7 +25,8 @@ function splitEffects(effects: string, t: TFunction): { resources: ResourceLine[
     if (!text) continue;
     const match = /^([+\-−])\s*(\d+)\s+(.+)$/.exec(text);
     if (!match) {
-      notes.push({ text });
+      const buff = buffs.get(text);
+      notes.push(buff ? fruitBuffNote(buff, t) : { text });
       continue;
     }
     const stat = stats.get(match[3]!.trim().toLowerCase());
@@ -36,7 +40,7 @@ export function SharedPlantsCard({ shared, view }: { shared: SharedPlantStatus; 
   const { t } = useTranslation();
   const names = useNames();
   const author = (id: string) =>
-    names.character((id === view.you.id ? view.you : view.players.find((p) => p.id === id))?.character ?? id);
+    names.characterGiven((id === view.you.id ? view.you : view.players.find((p) => p.id === id))?.character ?? id);
   const byLine = t("itrackie.sharedPlanets.by", {
     name: author(shared.by),
     day: shared.day,
@@ -45,8 +49,14 @@ export function SharedPlantsCard({ shared, view }: { shared: SharedPlantStatus; 
 
   return (
     <section className="shared-plants" aria-label={t("itrackie.sharedPlants.title")}>
-      <TerminalCollapsible heading={t("itrackie.sharedPlants.title")} defaultOpen>
-        <p className="sub">{byLine}</p>
+      <TerminalCollapsible
+        heading={
+          <>
+            {t("itrackie.sharedPlants.title")} <span className="sub shared-plants-by">{byLine}</span>
+          </>
+        }
+        defaultOpen
+      >
         {shared.plants.length === 0 ? (
           <p className="sub">{t("botanyTerminal.empty")}</p>
         ) : (
