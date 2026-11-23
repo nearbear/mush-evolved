@@ -63,7 +63,7 @@
   color: #fff;
 }
 /* Away (owner, 2026-11-19): the expedition screen takes the room above, so the seats are one row under it that
-   scrolls sideways when it doesn't fit, each with the member's HP under their name. */
+   scrolls sideways when it doesn't fit, each with the member's name and HP above their head. */
 .icarus-seats[data-away] {
   flex: none;
   padding-top: 0;

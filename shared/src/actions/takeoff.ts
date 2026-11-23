@@ -1,4 +1,4 @@
-import { Action, type ActionVisibility, isString } from "./action.ts";
+import { Action, type ActionVisibility, isString, TRAVEL_UNDERWAY } from "./action.ts";
 import { endPushToLeave } from "./accommodate.ts";
 import { damage } from "../death.ts";
 import { destroyPatrolShip, destroyShip } from "../hunters.ts";
@@ -37,6 +37,7 @@ export class TakeoffAction extends Action<TakeoffActionData> {
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: TakeoffActionData): string | null {
     if (!canTakeoff(state, player)) return groundedBy(player) ?? "crew_lock";
+    if (state.launched !== null) return TRAVEL_UNDERWAY;
     if (isTraveling(state)) return "traveling";
     if (!dockedHere(state, player).some((ship) => interfaceId(ship) === target.equipment)) return "no_ship";
     return null;

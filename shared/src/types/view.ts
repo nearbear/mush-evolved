@@ -16,7 +16,7 @@ import type { ChannelId, ChatLine, ChatMessage, ChatThread, PrivateChannel, SeqR
 import type { Plan } from "./plan.ts";
 import type { MovementRules } from "./config.ts";
 import type { ActionInProgress, PlayerState, Spot } from "./player.ts";
-import type { DoorId, ExpeditionReport, GameState, HunterType, ShipResources } from "./state.ts";
+import type { DoorId, ExpeditionReport, GameState, HunterType, LaunchState, ShipResources } from "./state.ts";
 
 /** Room equipment as a client sees it. */
 export interface EquipmentView {
@@ -472,6 +472,13 @@ export interface PlayerView {
   /** Every title in `TITLE_IDS` order, public to everyone (owner, 2026-10-20). */
   titles: TitleView[];
   /**
+   * Which titles' launch keys are in (#480), only while you are alive in a room with a Command terminal (owner,
+   * 2026-11-22: only someone on the bridge sees them, the holders included); otherwise null.
+   */
+  launchKeys: Record<TitleId, boolean> | null;
+  /** Intergalactic travel under way (#480, owner 2026-11-22): public to everyone; null before launch. */
+  launched: LaunchState | null;
+  /**
    * Everything you could do right now, plus what you could do if you had the AP or MP (so the client can show
    * it disabled and say why). Affordable ones come first. Only candidates on things you can already see, so
    * nothing hidden is revealed. The client never computes legality; it reads this.
@@ -510,7 +517,7 @@ export interface ActionOption {
    * Empty when you can do it now; otherwise the points, the inventory space, or the cleanliness ("clean": you are dirty)
    * you lack, or for Collect scrap, "debris" (none out there) or "pasiphae" (a patrol ship can't while the Pasiphae exists), or for Travel and turns, "reactor" (the reactor it needs is broken), or for Travel and Leave orbit, "arack" (an Arack is around), or for Hack, "preselection" (titles aren't assigned yet), or for Board the Icarus and Take off, "explored" (every sector of the planet is explored) or "icarusLost", or for Listen at the jukebox, "notYourSong" or "listenedToday". See `affordable`.
    */
-  lacks: ("ap" | "mp" | "space" | "cooldown" | "capacity" | "clean" | "debris" | "pasiphae" | "reactor" | "arack" | "preselection" | "explored" | "icarusLost" | "vertigo" | "grounded" | "antisocial" | "germaphobe" | "mushNotSelected" | "listPrinted" | "broken" | "notYourSong" | "listenedToday" | "fragments")[];
+  lacks: ("ap" | "mp" | "space" | "cooldown" | "capacity" | "clean" | "debris" | "pasiphae" | "reactor" | "arack" | "preselection" | "explored" | "icarusLost" | "vertigo" | "grounded" | "antisocial" | "germaphobe" | "mushNotSelected" | "listPrinted" | "broken" | "notYourSong" | "listenedToday" | "fragments" | "travelUnderway")[];
   /** Cycles until it is ready, when `lacks` has "cooldown". */
   cooldown?: number;
 }

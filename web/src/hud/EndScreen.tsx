@@ -57,7 +57,7 @@ export function EndScreen({
 export function verdictKey(ending: Ending, winner: Winner) {
   if (ending === "humans_dead") return "gameOver.humansDead";
   if (ending === "ship_destroyed") return "gameOver.shipDestroyed";
-  if (ending === "eden") return winner === "mush" ? "gameOver.edenMush" : "gameOver.edenHumans";
+  if (ending === "eden") return "gameOver.eden"; // always a human win (owner, 2026-11-22)
   return winner === "mush" ? "gameOver.solMush" : "gameOver.solHumans";
 }
 

@@ -1,12 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { actionVisibility } from "../src/actions.ts";
+import { ReturnToSolAction } from "../src/actions/return_to_sol.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { PILGRED_COMPLETE } from "../src/pilgred.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, newCycle, viewFor } from "../src/rules.ts";
 import { addStatus } from "../src/statuses.ts";
 import type { Action, GameState } from "../src/types.ts";
-import { makeSeats, must, nextDay, offered, player, pickSkill, setProgress, testConfig } from "./support.ts";
+import { makeSeats, must, nextCycle, nextDay, offered, player, pickSkill, setProgress, testConfig } from "./support.ts";
 
 const seats = makeSeats(3, "others");
 const TERMINAL = "MOTOR_ROOM:PILGRED";
@@ -225,6 +226,7 @@ describe("return to Sol", () => {
     const s = game("COMMAND_CENTER");
     s.pilgred.progress = PILGRED_COMPLETE;
     s.titles.commander = "p0";
+    s.launchKeys = { commander: true, neron_admin: true, comms_officer: true };
     for (const p of s.players) p.role = "human";
     return s;
   }
@@ -238,34 +240,36 @@ describe("return to Sol", () => {
     expect(r.players[0]!.ap).toBe(ap - cfg.returnCost.ap);
   });
 
-  it("humans win when no Mush is alive, and the game ends at once with a ship-wide line", () => {
+  it("humans win when no Mush is alive, ending at the next cycle change with a ship-wide line at launch", () => {
     const s = ready();
     s.players[2]!.role = "mush";
     s.players[2]!.alive = false;
     const r = must(applyAction(s, "p0", home));
-    expect([r.phase, r.winner]).toEqual(["ended", "humans"]);
+    expect([r.phase, r.winner, r.launched]).toEqual(["playing", null, { destination: "sol", by: "p0" }]);
     expect(r.log.at(-1)).toMatchObject({ key: "returnedToSol", visibleTo: "all", params: { name: s.players[0]!.character } });
     expect(r.log.at(-1)).not.toHaveProperty("room");
-    for (const id of ["p0", "p1", "p2"]) {
-      const v = viewFor(r, id);
-      expect([v.phase, v.winner]).toEqual(["ended", "humans"]);
-    }
     // Someone elsewhere sees the line too.
     r.players[1]!.room = "REFECTORY";
     expect(viewFor(r, "p1").log.some((e) => e.key === "returnedToSol")).toBe(true);
+    const ended = nextCycle(r);
+    expect([ended.phase, ended.winner, ended.ending]).toEqual(["ended", "humans", "sol"]);
+    for (const id of ["p0", "p1", "p2"]) {
+      const v = viewFor(ended, id);
+      expect([v.phase, v.winner]).toEqual(["ended", "humans"]);
+    }
   });
 
   it("Mush win when any Mush is alive, wherever they are", () => {
     const s = ready();
     s.players[2]!.role = "mush";
     s.players[2]!.room = "REFECTORY";
-    expect(must(applyAction(s, "p0", home)).winner).toBe("mush");
+    expect(nextCycle(must(applyAction(s, "p0", home))).winner).toBe("mush");
   });
 
   it("a Mush Commander can return, and wins", () => {
     const s = ready();
     s.players[0]!.role = "mush";
-    expect(must(applyAction(s, "p0", home)).winner).toBe("mush");
+    expect(nextCycle(must(applyAction(s, "p0", home))).winner).toBe("mush");
   });
 
   it("is refused before PILGRED is repaired, for a non-Commander, while the title is vacant, and away from the terminal", () => {
@@ -285,8 +289,18 @@ describe("return to Sol", () => {
     expect(JSON.stringify(broken)).toBe(before);
   });
 
+  it("is refused until all three launch keys are in (#480)", () => {
+    for (const title of ["commander", "neron_admin", "comms_officer"] as const) {
+      const s = ready();
+      s.launchKeys[title] = false;
+      expect(offered(s, "p0").some((a) => a.type === "return_to_sol")).toBe(false);
+      expect(applyAction(s, "p0", home).ok).toBe(false);
+      expect(new ReturnToSolAction().validate(s, player(s, "p0"), home as never)).toBe("launch_keys_missing");
+    }
+  });
+
   it("nothing more happens after the game ends", () => {
-    const r = must(applyAction(ready(), "p0", home));
+    const r = nextCycle(must(applyAction(ready(), "p0", home)));
     r.players[1]!.ap = r.config.maxAp;
     expect(offered(r, "p1")).toEqual([]);
     expect(applyAction(r, "p1", { type: "move", to: "CORRIDOR_A" }).ok).toBe(false);

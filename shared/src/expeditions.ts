@@ -35,7 +35,7 @@
 // actions/land_on_planet.ts.
 
 import { endPushToLeave } from "./actions/accommodate.ts";
-import { EXPLORED, ICARUS_LOST } from "./actions/action.ts";
+import { EXPLORED, ICARUS_LOST, TRAVEL_UNDERWAY } from "./actions/action.ts";
 import { dock } from "./actions/land.ts";
 import { board } from "./actions/takeoff.ts";
 import { damage, killPlayer, type DeathCause } from "./death.ts";
@@ -110,6 +110,7 @@ export function boardRefusal(state: Readonly<GameState>, p: Readonly<PlayerState
   if (!icarusDocked(state)) return state.icarusLost ? ICARUS_LOST : "icarus_away";
   const planet = orbitedPlanet(state);
   if (!planet) return "not_in_orbit";
+  if (state.launched !== null) return TRAVEL_UNDERWAY;
   if (!hasUnexplored(planet)) return EXPLORED;
   if (aboardIcarus(state).length >= maxCrew(state)) return "icarus_full";
   if (needsSpacesuit(planet) && !hasSpacesuit(state, p)) return "no_spacesuit";
@@ -384,6 +385,29 @@ export function nextSectorFor(state: Readonly<GameState>, p: Readonly<PlayerStat
 export function strandExpedition(state: GameState): void {
   disembarkAll(state);
   strandCrew(state);
+  abandonLost(state);
+}
+
+/**
+ * Intergalactic launch (#480, owner 2026-11-22): anyone on a planet (in an active expedition or lost) dies at once as
+ * `abandoned`, with no Magnetic return rescue, and the craft/items left behind are lost. Anyone sitting in the docked
+ * Icarus is still aboard the Daedalus and stays alive. Mutates a cloned state.
+ */
+export function abandonExpedition(state: GameState): void {
+  const away = state.expedition;
+  if (away) {
+    const report = state.expeditions.find((r) => r.id === away.report);
+    const craft = expeditionCraft(state);
+    state.expedition = null;
+    if (!away.ship) {
+      state.icarusLost = true;
+      if (report) logPublic(state, undefined, "icarusLost", { planet: report.planet }, "warning");
+    }
+    for (const p of state.players) {
+      if (p.alive && p.room === craft) killPlayer(state, p, "abandoned");
+    }
+    state.items = state.items.filter((i) => !sameContainer(i.at, { kind: "room", id: craft }));
+  }
   abandonLost(state);
 }
 

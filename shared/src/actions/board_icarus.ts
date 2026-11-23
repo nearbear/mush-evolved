@@ -1,4 +1,4 @@
-import { Action, EXPLORED, ICARUS_LOST, isString } from "./action.ts";
+import { Action, EXPLORED, ICARUS_LOST, isString, TRAVEL_UNDERWAY } from "./action.ts";
 import { endPushToLeave } from "./accommodate.ts";
 import { ICARUS_EQUIPMENT } from "./icarus_takeoff.ts";
 import { boardRefusal } from "../expeditions.ts";
@@ -22,7 +22,7 @@ export class BoardIcarusAction extends Action<BoardIcarusActionData> {
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): BoardIcarusActionData[] {
     const refused = boardRefusal(state, player);
-    if (refused !== null && refused !== EXPLORED && refused !== ICARUS_LOST) return [];
+    if (refused !== null && refused !== TRAVEL_UNDERWAY && refused !== EXPLORED && refused !== ICARUS_LOST) return [];
     return icarusHere(state, player).map((equipment): BoardIcarusActionData => ({ type: "board_icarus", equipment }));
   }
 

@@ -1,4 +1,4 @@
-import { Action, isString } from "./action.ts";
+import { Action, isString, TRAVEL_UNDERWAY } from "./action.ts";
 import { hasSpacesuit, hasUnexplored, needsSpacesuit, orbitedPlanet, runExpedition } from "../expeditions.ts";
 import { logPrivate } from "../log.ts";
 import { dock } from "./land.ts";
@@ -27,7 +27,7 @@ export class LandOnPlanetAction extends Action<LandOnPlanetActionData> {
     if (!ship) return [];
     const refused = this.refused(state, player, ship);
     // Grounded shows disabled with the reason (owner, 2026-11-22); the other refusals hide it.
-    if (refused !== null && refused !== CANT_FLY && refused !== CHRONIC_VERTIGO) return [];
+    if (refused !== null && refused !== TRAVEL_UNDERWAY && refused !== CANT_FLY && refused !== CHRONIC_VERTIGO) return [];
     return [{ type: "land_on_planet", equipment: commandId(ship) }];
   }
 
@@ -39,6 +39,7 @@ export class LandOnPlanetAction extends Action<LandOnPlanetActionData> {
 
   /** Why this pilot can't land their ship on the planet now. */
   private refused(state: Readonly<GameState>, player: Readonly<PlayerState>, ship: Readonly<PatrolShip>): string | null {
+    if (state.launched !== null) return TRAVEL_UNDERWAY;
     const grounded = groundedBy(player);
     if (grounded !== null) return grounded;
     if (onPlanet(state, ship)) return "on_planet";

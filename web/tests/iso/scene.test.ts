@@ -3,7 +3,7 @@ import type { RoomId, ShipArt, ShipLayout, SliceInfo } from "@mush2/shared";
 import shipArtJson from "../../../Mush/derived/ship-art.json?raw";
 import { roomLooks } from "../../src/iso/IsoRoom.tsx";
 import type { PlacedSprite } from "../../src/iso/placement.ts";
-import { animFrame, animStep, describeScene, doorAnim, doorOpenMs, frameAt, imageOf, type Occupant, type SceneInput } from "../../src/iso/scene.ts";
+import { animFrame, animStep, describeScene, doorAnim, doorOpenMs, frameAt, imageOf, PACE_SPEED, shipPace, type Occupant, type SceneInput } from "../../src/iso/scene.ts";
 import { HUMAN_TANK_FULL_SLICE } from "../../src/iso/shipLayout.ts";
 import type { Walker } from "../../src/iso/useWalkers.ts";
 
@@ -481,5 +481,16 @@ describe("cutaway", () => {
     expect(byKey.get("n_prop")).toEqual(byKey.get("n_front_r"));
     expect(byKey.get("n_chair")).toBeUndefined();
     expect(byKey.get("n_far")).toBeUndefined();
+  });
+});
+
+describe("shipPace (#480)", () => {
+  it("switches to ftl once launched, faster than normal travel", () => {
+    expect(shipPace({ orbiting: true, traveling: false })).toBe("stopped");
+    expect(shipPace({ orbiting: false, traveling: false })).toBe("cruising");
+    expect(shipPace({ orbiting: false, traveling: true })).toBe("traveling");
+    expect(shipPace({ orbiting: true, traveling: false }, true)).toBe("ftl");
+    expect(shipPace({ orbiting: false, traveling: true }, true)).toBe("ftl");
+    expect(PACE_SPEED.ftl).toBeGreaterThan(PACE_SPEED.traveling);
   });
 });

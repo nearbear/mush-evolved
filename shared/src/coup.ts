@@ -1,7 +1,7 @@
 // The Politician's coup (owner, 2026-11-12), resolved at a cycle change.
 
 import { pushChat } from "./chat.ts";
-import { eligibleForTitle, SUCCESSION } from "./titles.ts";
+import { eligibleForTitle, setTitleHolder, SUCCESSION } from "./titles.ts";
 import type { GameState } from "./types.ts";
 
 /**
@@ -16,6 +16,6 @@ export function coupCycle(state: GameState): void {
   const line = SUCCESSION.commander as readonly string[];
   const winner = [...plotters].sort((a, b) => line.indexOf(a.character) - line.indexOf(b.character))[0]!;
   if (state.titles.commander === winner.id) return;
-  state.titles.commander = winner.id;
+  setTitleHolder(state, "commander", winner.id);
   pushChat(state, "global", { from: null, isBot: false, text: "", system: { key: "titlePassed", params: { name: winner.character, title: "commander" } } });
 }
