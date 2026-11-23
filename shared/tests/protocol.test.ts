@@ -687,6 +687,7 @@ describe("actions from a client", () => {
     travel_to_eden: [{ type: "travel_to_eden", equipment: "e1" }],
     compute_eden: [{ type: "compute_eden", equipment: "e1" }],
     turn_ship: [{ type: "turn_ship", equipment: "e1", side: "left" }],
+    set_launch_key: [{ type: "set_launch_key", equipment: "e1", title: "commander", on: true }],
     travel: [{ type: "travel", equipment: "e1" }],
     leave_orbit: [{ type: "leave_orbit", equipment: "e1" }],
     take_fuel: [{ type: "take_fuel", equipment: "e1" }],

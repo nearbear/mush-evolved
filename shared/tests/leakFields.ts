@@ -84,6 +84,8 @@ export const GAME_STATE_FIELDS: Record<string, FieldRule> = {
   navigation: { reach: "room", test: "navigation.test.ts", note: "`heading` to the living at a Command terminal; `orbit` only as a public in-orbit flag, the planet id to its finder alone (as `orbited` on their planet); `lastTurn` public to everyone (owner, 2026-10-29)." },
   comms: { reach: "room", test: "comms.test.ts", note: "`linked` to everyone; the terminal screen to the living at a Com center terminal, with the Xyloph entries drawn so far (in database order)." },
   titles: { reach: "public", test: "titles.test.ts", note: "Holders and lines, by character (owner, 2026-10-20)." },
+  launchKeys: { reach: "room", test: "launchKeys.test.ts", note: "Which keys are in, only to the living in a room with a Command terminal, holders included (owner, 2026-11-22, #480)." },
+  launched: { reach: "public", test: "launchKeys.test.ts", note: "Intergalactic travel under way (#480): destination and who launched, public to everyone." },
   hunters: { reach: "room", test: "hunters.test.ts", note: "How many, to everyone; each hunter's id, kind, hp and countdown to the living in a turret room or flying a patrol ship (kind and countdown: hunterTypes.test.ts); `points`, `since`, `nextId`, `hitChance` and `target` never (leaks.test.ts)." },
   signals: { reach: "room", test: "signals.test.ts", note: "Every signal and its conversation, only to the living with Comms Officer access at a Com center terminal (`comms.terminal.signals`); `nextId` never. A merchant in space's id, kind, name and hp also go to gunners (`hunters.merchants`, #143)." },
   turrets: { reach: "room", test: "hunters.test.ts", note: "Every turret's charges, to the living in a turret room." },

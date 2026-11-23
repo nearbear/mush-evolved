@@ -1,4 +1,4 @@
-import { Action, ARACK_AROUND, isString, REACTOR_BROKEN } from "./action.ts";
+import { Action, ARACK_AROUND, isString, REACTOR_BROKEN, TRAVEL_UNDERWAY } from "./action.ts";
 import { endRebelCalls } from "../comms.ts";
 import { merchantsLeave } from "../merchants.ts";
 import { arackAround, huntersFollow, loseShipsInFlight } from "../hunters.ts";
@@ -42,6 +42,7 @@ export class TravelAction extends Action<TravelActionData> {
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: TravelActionData): string | null {
     if (!commandTerminalsHere(state, player).some((terminal) => terminal.id === target.equipment)) return "cant_steer";
     if (!canSteer(state, player)) return "not_commander";
+    if (state.launched !== null) return TRAVEL_UNDERWAY;
     if (state.navigation.orbit !== null) return "in_orbit";
     if (isTraveling(state)) return "traveling";
     if (!canTravel(state)) return REACTOR_BROKEN;

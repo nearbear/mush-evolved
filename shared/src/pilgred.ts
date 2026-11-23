@@ -2,7 +2,7 @@
 // plan in docs/scratchpad/archive/pilgred-plan.md). Progress is state (`GameState.pilgred`), seen only by the living in a room
 // with the PILGRED terminal. Once it is repaired, the Commander can return to Sol (actions/return_to_sol.ts).
 
-import { hasTitleAccess } from "./titles.ts";
+import { allLaunchKeysIn, hasTitleAccess } from "./titles.ts";
 import type { GameState, PlayerState } from "./types.ts";
 
 export const PILGRED_COMPLETE = 100;
@@ -27,8 +27,8 @@ export function commandTerminalsHere(state: Readonly<GameState>, player: Readonl
 /**
  * Whether this player may send the ship to Sol, wherever they stand: PILGRED is repaired and they hold the Commander
  * title, Mush included (owner, 2026-10-21), or has its access another way through `hasTitleAccess` (a hacked Command
- * terminal, the `freeHacking` cheat).
+ * terminal, the `freeHacking` cheat), all three launch keys are in, and the ship hasn't already launched (#480).
  */
 export function canReturnToSol(state: Readonly<GameState>, player: Readonly<PlayerState>): boolean {
-  return isPilgredRepaired(state) && hasTitleAccess(state, player, "commander");
+  return state.launched === null && isPilgredRepaired(state) && allLaunchKeysIn(state) && hasTitleAccess(state, player, "commander");
 }

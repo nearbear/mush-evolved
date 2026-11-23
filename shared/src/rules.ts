@@ -11,7 +11,7 @@ import { expirePlans, plansView, strikeSlots } from "./plans.ts";
 import { bindPerformAction } from "./actions/summon.ts";
 import { applyCheats, makeHuman, shipInvincible, type Cheat, type RoleCheat } from "./cheats.ts";
 import { ACTIONS, type ActionCost, actionVisibility, type ActionDef } from "./actions.ts";
-import { ARACK_AROUND, AT_CAPACITY, BROKEN, COOLDOWN, DIRTY, EXPLORED, ICARUS_LOST, IN_PRESELECTION, NO_DEBRIS, NO_SPACE, PASIPHAE_INTACT, REACTOR_BROKEN } from "./actions/action.ts";
+import { ARACK_AROUND, AT_CAPACITY, BROKEN, COOLDOWN, DIRTY, EXPLORED, ICARUS_LOST, IN_PRESELECTION, NO_DEBRIS, NO_SPACE, PASIPHAE_INTACT, REACTOR_BROKEN, TRAVEL_UNDERWAY } from "./actions/action.ts";
 import { getUp } from "./actions/lie_down.ts";
 import { ANTISOCIAL } from "./actions/bond.ts";
 import { GERMAPHOBE } from "./actions/caress.ts";
@@ -79,7 +79,8 @@ import { ICARUS_EQUIPMENT } from "./actions/icarus_takeoff.ts";
 import { canScavenge, CANT_FLY, CHRONIC_VERTIGO, interfaceId, isLostPlace, newPatrolShips, offShip, PATROL_INTERFACE, PATROL_SHIPS, shipAboard } from "./patrol.ts";
 import { preselectionCycle } from "./preselection.ts";
 import { neronParticipationCycle } from "./projectEffects.ts";
-import { SUCCESSION, TITLE_IDS, assignTitles, noTitles } from "./titles.ts";
+import { SUCCESSION, TITLE_IDS, assignTitles, noLaunchKeys, noTitles } from "./titles.ts";
+import { endGame, winnerOnArrival } from "./victory.ts";
 import type {
   Action,
   Equipment,
@@ -222,6 +223,8 @@ export function createGame(
     navigation: { heading: config.navigation.startHeading, orbit: null, arriving: null, lastTurn: null },
     // Issued with Mush selection, whatever the role (owner, 2026-10-13 and 2026-10-20); in pre-selection, by `selectMush`.
     titles: preselection ? noTitles() : assignTitles(players),
+    launchKeys: noLaunchKeys(),
+    launched: null,
     comms: newComms(config),
     now: 0,
   };
@@ -359,6 +362,7 @@ const UNAFFORDABLE_REASONS = new Set<string>([
   // Owner, 2026-11-22: Take off, the Icarus launch and Land on planet show disabled for a grounded player (patrol.ts, `groundedBy`).
   CANT_FLY,
   CHRONIC_VERTIGO,
+  TRAVEL_UNDERWAY,
 ]);
 
 /** Board the Icarus and Take off show disabled on a fully explored planet or a lost Icarus (owner, 2026-11-19), not hidden. */
@@ -408,6 +412,7 @@ function unaffordableOption(state: GameState, p: PlayerState, def: ActionDef<Act
     ...(refused === NOT_YOUR_SONG ? (["notYourSong"] as const) : []),
     ...(refused === LISTENED_TODAY ? (["listenedToday"] as const) : []),
     ...(refused === FEW_FRAGMENTS ? (["fragments"] as const) : []),
+    ...(refused === TRAVEL_UNDERWAY ? (["travelUnderway"] as const) : []),
     ...(refused === DIRTY ? (["clean"] as const) : []),
     ...(refused === NO_SPACE ? (["space"] as const) : []),
     ...(refused === COOLDOWN ? (["cooldown"] as const) : []),
@@ -629,6 +634,12 @@ function chargesFor(config: DeepReadonly<GameConfig>, type: string): { charges?:
  * being ready (single player) has none, and no inactivity check: whoever ended it was there.
  */
 function advanceCycle(state: GameState, at?: number): void {
+  // Intergalactic travel under way (#480, owner 2026-11-22): the game ends at the cycle change with no processing at all.
+  if (state.launched !== null) {
+    const winner = state.launched.destination === "eden" ? "humans" : winnerOnArrival(state);
+    endGame(state, winner, state.launched.destination);
+    return;
+  }
   // The ending cycle's Hopeless humans die first, so anyone this cycle change takes to 0 gets a full cycle (morale.ts).
   hopelessCycle(state);
   state.cycle += 1;
@@ -1040,6 +1051,8 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
         line: SUCCESSION[id].flatMap((c) => state.players.filter((p) => p.character === c).map((p) => p.character)),
       };
     }),
+    launchKeys: you.alive && commandTerminalsHere(state, you).length > 0 ? { ...state.launchKeys } : null,
+    launched: state.launched ? { ...state.launched } : null,
     actions: viewActionOptions(state, you),
   };
 }

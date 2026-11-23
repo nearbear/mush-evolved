@@ -103,6 +103,26 @@ export function noTitles(): Record<TitleId, PlayerId | null> {
   return Object.fromEntries(TITLE_IDS.map((id) => [id, null])) as Record<TitleId, PlayerId | null>;
 }
 
+/** Every launch key out (#480): at the start, and in pre-selection. */
+export function noLaunchKeys(): Record<TitleId, boolean> {
+  return Object.fromEntries(TITLE_IDS.map((id) => [id, false])) as Record<TitleId, boolean>;
+}
+
+/** Whether all three launch keys are in at the Command terminal (#480): travel to Sol or Eden needs every one. */
+export function allLaunchKeysIn(state: Readonly<Pick<GameState, "launchKeys">>): boolean {
+  return TITLE_IDS.every((id) => state.launchKeys[id]);
+}
+
+/**
+ * Gives a title to a new holder (or leaves it vacant). Its launch key goes off whenever the title changes hands, with no
+ * log line: the change itself is announced in crew chat (owner, 2026-11-22, #480). Every change of holder goes through here.
+ */
+export function setTitleHolder(state: GameState, id: TitleId, holder: PlayerId | null): void {
+  if (state.titles[id] === holder) return;
+  state.titles[id] = holder;
+  state.launchKeys[id] = false;
+}
+
 /** Hands out every title at the start, with Mush selection. Not announced: the holders are in every view. */
 export function assignTitles(players: readonly PlayerState[]): Record<TitleId, PlayerId | null> {
   const titles = {} as Record<TitleId, PlayerId | null>;
@@ -121,7 +141,7 @@ export function refreshTitles(state: GameState): void {
     const before = state.titles[id];
     const after = successor(SUCCESSION[id], state.players, before, eligibleForTitle);
     if (after === before) continue;
-    state.titles[id] = after;
+    setTitleHolder(state, id, after);
     const holder = state.players.find((p) => p.id === after);
     pushChat(state, "global", {
       from: null,

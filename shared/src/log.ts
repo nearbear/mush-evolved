@@ -75,16 +75,23 @@ export function logWindowOf(state: Readonly<GameState>, you: Readonly<PlayerStat
 }
 
 /**
- * A crew move line's direction-free key, by its directional one (owner, 2026-11-21; eMushpedia Traqueur): someone
- * without Tracker sees "X left the room" and "X entered the room", never the room. Drones and Schrödinger write their
- * own keys and always show it.
+ * A crew move or ship takeoff/landing line's ship/direction-free key, by its directional one (owner, 2026-11-21,
+ * 2026-11-22; eMushpedia Traqueur): someone without Tracker sees "X left the room", "X entered the room",
+ * "X took off in a ship", and "X landed a ship", never the room or ship. Drones and Schrödinger write their own keys
+ * and always show it.
  */
-const UNDIRECTED_MOVE_KEYS: Readonly<Record<string, string>> = { left: "leftRoom", entered: "enteredRoom" };
+const UNDIRECTED_MOVE_KEYS: Readonly<Record<string, string>> = {
+  left: "leftRoom",
+  entered: "enteredRoom",
+  patrolTakeoff: "patrolTakeoffShip",
+  patrolLanded: "patrolLandedShip",
+};
 
 /**
- * `e` as `you` see it: a crew move line keeps where they came from or went to only with the Tracker skill (`hunt`).
- * Decided when the view is built, so a Tracker learned from a book shows it on the older lines still in the window. No
- * exception for your own moves, and a camera shows no direction (owner, 2026-11-21). The state keeps the room.
+ * `e` as `you` see it: a crew move or ship takeoff/landing line keeps where they came from, went to, or which ship
+ * they flew only with the Tracker skill (`hunt`). Decided when the view is built, so a Tracker learned from a book
+ * shows it on the older lines still in the window. No exception for your own moves, and a camera shows no direction
+ * or ship (owner, 2026-11-21, 2026-11-22). The state keeps the room.
  */
 export function moveLineFor(e: LogEntry, you: Readonly<PlayerState>): LogEntry {
   const key = UNDIRECTED_MOVE_KEYS[e.key];

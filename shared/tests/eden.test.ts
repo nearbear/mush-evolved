@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest";
+import { TravelToEdenAction } from "../src/actions/travel_to_eden.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { SUPER_CALC_EQUIPMENT } from "../src/equipment.ts";
 import { PILGRED_COMPLETE } from "../src/pilgred.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { addStatus } from "../src/statuses.ts";
 import type { Action, GameConfig, GameState } from "../src/types.ts";
-import { makeSeats, must, noCharacterModifiers, offered, option, player, testConfig, type DeepPartial } from "./support.ts";
+import { makeSeats, must, nextCycle, noCharacterModifiers, offered, option, player, testConfig, type DeepPartial } from "./support.ts";
 
 const NEXUS = "NEXUS_ROOM";
 const CALC = `${NEXUS}:${SUPER_CALC_EQUIPMENT}`;
@@ -140,18 +141,21 @@ describe("Travel to Eden", () => {
     s.pilgred.progress = PILGRED_COMPLETE;
     s.eden.computed = true;
     s.titles.commander = "p0";
+    s.launchKeys = { commander: true, neron_admin: true, comms_officer: true };
     return s;
   }
 
-  it("is a human win with a Mush alive, with a ship-wide line, and costs AP", () => {
+  it("is a human win with a Mush alive at the next cycle change, with a ship-wide line at launch, and costs AP", () => {
     const s = ready();
     expect(offered(s, "p0")).toContainEqual(travel);
     const ap = player(s, "p0").ap;
     const r = must(applyAction(s, "p0", travel));
-    expect([r.phase, r.winner, r.ending]).toEqual(["ended", "humans", "eden"]);
+    expect([r.phase, r.winner, r.launched]).toEqual(["playing", null, { destination: "eden", by: "p0" }]);
     expect(player(r, "p0").ap).toBe(ap - s.config.pilgred.edenCost.ap);
     expect(r.log.at(-1)).toMatchObject({ key: "returnedToEden", visibleTo: "all", params: { name: player(s, "p0").character } });
     expect(r.log.at(-1)).not.toHaveProperty("room");
+    const ended = nextCycle(r);
+    expect([ended.phase, ended.winner, ended.ending]).toEqual(["ended", "humans", "eden"]);
   });
 
   it("is refused before Eden is computed, before PILGRED is repaired, and without the Commander's access", () => {
@@ -169,10 +173,20 @@ describe("Travel to Eden", () => {
     expect(JSON.stringify(uncomputed)).toBe(before);
   });
 
+  it("is refused until all three launch keys are in (#480)", () => {
+    for (const title of ["commander", "neron_admin", "comms_officer"] as const) {
+      const s = ready();
+      s.launchKeys[title] = false;
+      expect(option(s, "p0", { type: "travel_to_eden" })).toBeUndefined();
+      expect(applyAction(s, "p0", travel).ok).toBe(false);
+      expect(new TravelToEdenAction().validate(s, player(s, "p0"), travel as never)).toBe("launch_keys_missing");
+    }
+  });
+
   it("is open to someone who hacked the Command terminal, even a Mush, and humans still win", () => {
     const s = ready();
     player(s, "p2").hackedEquipment = [COMMAND];
     expect(offered(s, "p2")).toContainEqual(travel);
-    expect(must(applyAction(s, "p2", travel)).winner).toBe("humans");
+    expect(nextCycle(must(applyAction(s, "p2", travel))).winner).toBe("humans");
   });
 });

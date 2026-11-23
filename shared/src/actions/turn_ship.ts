@@ -1,4 +1,4 @@
-import { Action, isString, REACTOR_BROKEN } from "./action.ts";
+import { Action, isString, REACTOR_BROKEN, TRAVEL_UNDERWAY } from "./action.ts";
 import { logPublic } from "../log.ts";
 import { canSteer, canTurn, isTraveling, isTurnSide, TURN_SIDES, turned, type TurnSide } from "../navigation.ts";
 import { commandTerminalsHere } from "../pilgred.ts";
@@ -30,6 +30,7 @@ export class TurnShipAction extends Action<TurnShipActionData> {
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: TurnShipActionData): string | null {
     if (!commandTerminalsHere(state, player).some((terminal) => terminal.id === target.equipment)) return "cant_steer";
     if (!canSteer(state, player)) return "not_commander";
+    if (state.launched !== null) return TRAVEL_UNDERWAY;
     if (isTraveling(state)) return "traveling";
     if (!canTurn(state, target.side)) return REACTOR_BROKEN;
     return null;

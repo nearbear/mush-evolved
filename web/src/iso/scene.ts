@@ -292,16 +292,17 @@ export interface SceneOutline extends ScenePicture {
   faint: boolean;
 }
 
-/** How the Daedalus is moving: held in orbit, flying between planets, or travelling to one (a jump in progress, until the next cycle change). */
-export type ShipPace = "stopped" | "cruising" | "traveling";
+/** How the Daedalus is moving: held in orbit, flying between planets, jumping to one, or in intergalactic FTL travel (#480). */
+export type ShipPace = "stopped" | "cruising" | "traveling" | "ftl";
 
 /** How fast the stars stream at each pace, as a multiple of the cruising rate. */
-export const PACE_SPEED: Readonly<Record<ShipPace, number>> = { stopped: 0, cruising: 1, traveling: 10 };
+export const PACE_SPEED: Readonly<Record<ShipPace, number>> = { stopped: 0, cruising: 1, traveling: 10, ftl: 25 };
 
 /**
- * The pace to draw from the view's public navigation.
+ * The pace to draw from the view's public navigation and launch state.
  */
-export function shipPace(navigation: { orbiting: boolean; traveling: boolean }): ShipPace {
+export function shipPace(navigation: { orbiting: boolean; traveling: boolean }, launched = false): ShipPace {
+  if (launched) return "ftl";
   if (navigation.traveling) return "traveling";
   return navigation.orbiting ? "stopped" : "cruising";
 }

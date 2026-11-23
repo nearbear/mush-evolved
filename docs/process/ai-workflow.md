@@ -5194,3 +5194,27 @@ Owner asked to rotate three Mush skill icons (Slime Trap's to Mass Mouldering, M
 - **Decision (owner):** eMush's `DifficultyService` multiplier on both hunter and incident points: threshold 7 AP × the ship's seats (`config.preselection.seats`); at or under it, living players ÷ seats (the dead don't count, unlike eMush); above it, AP spent today ÷ threshold; rounded. Skill-point actions count the AP they would have cost (the wiki's rule). Supersedes the wiki formula adopted for #263.
 - **What worked:** the clean-room `npm run emush -- spec` on `DaedalusCycleSubscriber` surfaced a detail the issue didn't mention: the count is a running total, and the day-change cycle uses the whole day before the reset. Our new-day block runs before hunters and incidents, so the reset had to move to the end of the cycle change.
 - **Needed correction:** the plan missed that #263 had already adopted a different (wiki) formula for incidents and that special points count there; found only while updating `implemented-rules.md`, then put to the owner. Grep open issues for the same mechanic before planning.
+
+## 2026-11-22: Launch keys, phase 1 (#480)
+
+- Built the key state and switching from the owner's decided plan on #480: `GameState.launchKeys` (an `added()` default in `normalizeState.ts`, no version bump), `set_launch_key` (0 AP, public room line, holder or `freeHacking` only, deliberately not `hasTitleAccess`), and `PlayerView.launchKeys` only to the living at a Command terminal.
+- Worked: routing every change of title holder through one new `setTitleHolder` (succession and the Politician's coup) so "a key goes off when its title changes hands" can't be missed at a future call site; the broken-terminal refusal came free from the base `check`.
+- Left for phase 2: candidates are offered only for keys the viewer may flip, so the disabled-with-reason switches will need non-holder candidates (and their reasons in the locales) when the terminal UI is built. The "travel underway" lock waits for phase 3's launch state.
+
+## 2026-11-22: Launch keys, phase 2 (#480)
+
+- Gated Return to Sol and Travel to Eden on all three keys (`allLaunchKeysIn` inside `canReturnToSol`/`canTravelToEden`, a `launch_keys_missing` refusal) and added the three switches to the Command terminal's Intergalactic tab, reusing the BIOS switch sprite rotated a quarter turn (no new art) so up is in.
+- Chose not to add non-holder candidates as phase 1's note suggested: whether a switch is enabled still comes only from `view.actions`, and the greyed-out reason is picked from public view data (`view.titles`, `terminal.broken`), as the Sol and Eden buttons already do. Less shared code, same leak surface.
+- Needed correction: naming the component prop `title` tripped the tools a11y test that bans `title=` attributes anywhere in the client (a regex, so a React prop counts); renamed to `titleId`. Not checked in the browser by me: the `play` skill is user-invoked only.
+
+- **2026-11-22 — #480 phase 4 (FTL star field):** Added procedural 2:1 streaked FTL starfield generators (`ftlStarfield` and `ftlStarLayer` in `web/src/iso/starfield.ts`, using only `PALETTE`), an `"ftl"` `ShipPace` (`PACE_SPEED.ftl = 25`) in `web/src/iso/scene.ts`, lazy texture swapping and 0-angle streak alignment in `PixiRenderer.ts`, and animated CSS FTL layers in `SpaceBackdrop.tsx` / `backdrop.css` (hidden while Pixi's canvas covers the backdrop) and `DomScene.tsx` (for phone layout without `SpaceBackdrop`), plus hiding the orbited planet once launched. Verified with `npm run verify:web`.
+
+## 2026-11-22: Launch keys wrap-up (#480) and Eden end text
+
+- Phase 3 (launch and final cycle: `launch.ts`, `GameState.launched`, `travel_underway` locks, the game ending at the next cycle change with no processing) and phase 4 (FTL star field) were in the tree, but the docs still said "not built". Brought `implemented-rules.md`, `changes-from-emush.md`, `rules-design.md`, the code maps and `bot-goals.md` (scripted bots can't insert keys, so `returnToSol` no longer reaches Sol) up to date.
+- Owner's correction: the Eden end screen said "reached Eden with no Mush alive", wrong since Eden is always a human win. Now one `gameOver.eden` line ("The humans win: the Daedalus reached Eden.", en/fr/es); the unreachable `edenMush` text is gone.
+- Owner asked for a Super Calculator progress bar matching eMush's. The clean-room tool showed eMush's server sends the calculator only "nothing to compute"/"Eden computed" text, no progress value; its client isn't in `reference/`, and a web fetch of it was blocked by the permission classifier. The owner dropped the request rather than invent a bar.
+
+## 2026-11-22 — Expedition seat labels above heads
+
+- Moved `.icarus-seat-label` (character name and HP) above `<Podium />` in `web/src/hud/IcarusPanel.tsx` for both docked and away seats, and updated the comment in `web/src/styles/icarus.css`. Verified with `npm run verify:web`.

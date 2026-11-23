@@ -1,11 +1,13 @@
-// The Command terminal's window, in two tabs: Interplanetary (steering, ShipNavigation.tsx) and Intergalactic (the ways to end
-// the trip: Sol and Eden, actions/travel_to_eden.ts). A destination the view doesn't offer is shown greyed out, with the reason on hover, focus or tap.
+// The Command terminal's window, in two tabs: Interplanetary (steering, ShipNavigation.tsx) and Intergalactic (the three
+// launch keys, then the ways to end the trip: Sol and Eden, actions/travel_to_eden.ts). A switch or destination the view
+// doesn't offer is shown greyed out, with the reason on hover, focus or tap.
 
 import { Popover } from "@base-ui/react/popover";
 import { Tabs } from "@base-ui/react/tabs";
-import type { Action, EquipmentView, PlayerView } from "@mush2/shared";
-import { useState } from "react";
+import { TITLE_IDS, type Action, type EquipmentView, type PlayerView, type TitleId } from "@mush2/shared";
+import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNames } from "../i18n/names.ts";
 import { ConfirmPanel } from "./ConfirmPanel.tsx";
 import { ActionButton } from "./ActionButton.tsx";
 import { ActionLabel } from "./ActionLabel.tsx";
@@ -58,15 +60,85 @@ function TravelBasics() {
 
 function Intergalactic({ terminal, view, onAction }: Props) {
   return (
-    <div className="command-destinations">
-      <ReturnToSol terminal={terminal} view={view} onAction={onAction} />
-      <TravelToEden terminal={terminal} view={view} onAction={onAction} />
-    </div>
+    <>
+      <LaunchKeys terminal={terminal} view={view} onAction={onAction} />
+      <div className="command-destinations">
+        <ReturnToSol terminal={terminal} view={view} onAction={onAction} />
+        <TravelToEden terminal={terminal} view={view} onAction={onAction} />
+      </div>
+    </>
+  );
+}
+
+/** Whether all three launch keys are in, as far as this view shows (only on the bridge, `view.launchKeys`). */
+const allKeysIn = (view: PlayerView) => view.launchKeys !== null && TITLE_IDS.every((id) => view.launchKeys![id]);
+
+/**
+ * The three launch keys (#480), one vertical switch per title: up is in. Only that title's holder flips theirs, for free
+ * and with one press (the view offers `set_launch_key` only to them); anyone else sees it greyed out with why.
+ */
+function LaunchKeys({ terminal, view, onAction }: Props) {
+  const { t } = useTranslation();
+  const headingId = useId();
+  const keys = view.launchKeys;
+  if (!keys) return null;
+  return (
+    <section className="launch-keys" aria-labelledby={headingId}>
+      <h3 id={headingId}>{t("command.keysHeading")}</h3>
+      <p className="sub">{t("command.keysHelp")}</p>
+      <ul className="launch-key-list">
+        {TITLE_IDS.map((id) => (
+          <LaunchKey key={id} titleId={id} on={keys[id]} terminal={terminal} view={view} onAction={onAction} />
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+function LaunchKey({ titleId: title, on, terminal, view, onAction }: Props & { titleId: TitleId; on: boolean }) {
+  const { t } = useTranslation();
+  const names = useNames();
+  const titleName = names.title(title);
+  const label = t("command.keyLabel", { title: titleName });
+  const offer = view.actions.find(({ action: a }) => a.type === "set_launch_key" && a.equipment === terminal.id && a.title === title);
+  const holder = view.titles.find((entry) => entry.id === title)?.holder ?? null;
+  const reason = terminal.broken
+    ? t("command.keyBroken")
+    : view.launched !== null
+      ? t("actions.lacksTravelUnderway")
+      : holder !== view.you.character
+        ? t("command.keyHolderOnly", { title: titleName })
+        : t("command.keyUnavailable");
+  return (
+    <li className="launch-key">
+      <div className="launch-key-slot">
+        {offer ? (
+          <ActionButton view={view} option={offer} onAction={onAction} className="bios-switch" singlePress switchProps={{ checked: on, label }} />
+        ) : (
+          <Popover.Root>
+            <Popover.Trigger
+              openOnHover
+              delay={200}
+              className="bios-switch action-disabled"
+              aria-disabled="true"
+              render={<button type="button" role="switch" aria-checked={on} aria-label={label} />}
+            />
+            <Popover.Portal>
+              <Popover.Positioner sideOffset={6}>
+                <Popover.Popup className="tooltip resource-card status-card">{reason}</Popover.Popup>
+              </Popover.Positioner>
+            </Popover.Portal>
+          </Popover.Root>
+        )}
+      </div>
+      <span className="launch-key-name">{titleName}</span>
+      <span className="launch-key-state">{on ? t("command.keyIn") : t("command.keyOut")}</span>
+    </li>
   );
 }
 
 /**
- * The way home: offered by the view only to the Commander once PILGRED is repaired. It ends the game, so the button asks
+ * The way home: offered by the view only to the Commander once PILGRED is repaired and all three launch keys are in. It ends the game, so the button asks
  * for confirmation first (owner, 2026-10-21). When it isn't offered it is greyed out and says why, from what the view
  * already shows everyone (the titles, and whether PILGRED is repaired, which is announced to the whole crew).
  */
@@ -94,7 +166,7 @@ function ReturnToSol({ terminal, view, onAction }: Props) {
         />
       </>
     ) : (
-      <UnavailableButton reason={!view.pilgredRepaired ? t("command.solPilgredBroken") : commander ? t("command.solNotReady") : t("command.solCommanderOnly")} ap={view.config.returnToSolAp}>
+      <UnavailableButton reason={view.launched !== null ? t("actions.lacksTravelUnderway") : !view.pilgredRepaired ? t("command.solPilgredBroken") : !allKeysIn(view) ? t("command.keysMissing") : commander ? t("command.solNotReady") : t("command.solCommanderOnly")} ap={view.config.returnToSolAp}>
         {t("actions.returnToSol")}
       </UnavailableButton>
     )
@@ -102,7 +174,7 @@ function ReturnToSol({ terminal, view, onAction }: Props) {
 }
 
 /**
- * The trip to Eden (#478): offered once Eden is computed and PILGRED is repaired, with the Commander's access. It ends
+ * The trip to Eden (#478): offered once Eden is computed, PILGRED is repaired and all three keys are in, with the Commander's access. It ends
  * the game, so it asks for confirmation as Return to Sol does; otherwise greyed out with why, from public state.
  */
 function TravelToEden({ terminal, view, onAction }: Props) {
@@ -111,7 +183,7 @@ function TravelToEden({ terminal, view, onAction }: Props) {
   const option = view.actions.find(({ action: a }) => a.type === "travel_to_eden" && a.equipment === terminal.id);
   const commander = terminalLogin(terminal.type, view, terminal.id).access !== "limited";
   if (!option) {
-    const reason = !view.edenComputed ? t("command.edenNotComputed") : !view.pilgredRepaired ? t("command.solPilgredBroken") : commander ? t("command.solNotReady") : t("command.edenCommanderOnly");
+    const reason = view.launched !== null ? t("actions.lacksTravelUnderway") : !view.edenComputed ? t("command.edenNotComputed") : !view.pilgredRepaired ? t("command.solPilgredBroken") : !allKeysIn(view) ? t("command.keysMissing") : commander ? t("command.solNotReady") : t("command.edenCommanderOnly");
     return <UnavailableButton reason={reason} ap={view.config.edenAp}>{t("actions.travelToEden")}</UnavailableButton>;
   }
   return (

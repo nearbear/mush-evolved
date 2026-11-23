@@ -1,4 +1,4 @@
-import { Action, EXPLORED, ICARUS_LOST } from "./action.ts";
+import { Action, EXPLORED, ICARUS_LOST, TRAVEL_UNDERWAY } from "./action.ts";
 import { canLaunchExpedition, hasSpacesuit, hasUnexplored, icarusDocked, needsSpacesuit, orbitedPlanet, runExpedition } from "../expeditions.ts";
 import { CANT_FLY, CHRONIC_VERTIGO, groundedBy } from "../patrol.ts";
 import type { GameState, PlayerState } from "../types.ts";
@@ -29,13 +29,14 @@ export class IcarusTakeoffAction extends Action<IcarusTakeoffActionData> {
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): IcarusTakeoffActionData[] {
     const refused = this.validate(state, player);
-    const shown = refused === null || refused === EXPLORED || refused === ICARUS_LOST || refused === CANT_FLY || refused === CHRONIC_VERTIGO;
+    const shown = refused === null || refused === TRAVEL_UNDERWAY || refused === EXPLORED || refused === ICARUS_LOST || refused === CANT_FLY || refused === CHRONIC_VERTIGO;
     return shown ? [{ type: "icarus_takeoff" }] : [];
   }
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>): string | null {
     // Aboard the docked Icarus (#469): boarded, in the bay. Its other refusals (away, lost) come below.
     if (!player.alive || !player.boardedIcarus || player.room !== state.config.expedition.room) return "not_in_icarus";
+    if (state.launched !== null) return TRAVEL_UNDERWAY;
     if (!canLaunchExpedition(state, player)) return groundedBy(player) ?? "crew_lock";
     if (state.icarusLost) return ICARUS_LOST;
     if (state.expedition) return state.expedition.ship === null ? "icarus_away" : "expedition_away";

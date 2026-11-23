@@ -208,6 +208,8 @@ export function DisabledActionButton({
       ? t("actions.lacksListenedToday")
       : lacks[0] === "fragments"
       ? t("actions.lacksFragments")
+      : lacks[0] === "travelUnderway"
+      ? t("actions.lacksTravelUnderway")
       : lacks[0] === "clean"
       ? t("actions.lacksClean")
       : lacks[0] === "capacity"

@@ -23,6 +23,7 @@ const ACTION_NAME_KEYS = {
   travel_to_eden: "actions.travelToEden",
   compute_eden: "actions.computeEden",
   turn_ship: "actions.turnShip",
+  set_launch_key: "actions.setLaunchKey",
   travel: "actions.travel",
   leave_orbit: "actions.leaveOrbit",
   take_fuel: "actions.takeFuel",

@@ -115,14 +115,14 @@ describe("taking off", () => {
 
   it("is secret: the line is in the bay, for whoever is there", () => {
     const next = mustApply(ship(), "p0", takeoff());
-    expect(lines(next, "p1", "patrolTakeoff")).toMatchObject([{ room: BAY, params: { name: player(next, "p0").character, room: LONGANE.id } }]);
-    expect(lines(next, "p2", "patrolTakeoff")).toEqual([]);
+    expect(lines(next, "p1", "patrolTakeoffShip")).toMatchObject([{ room: BAY, params: { name: player(next, "p0").character } }]);
+    expect(lines(next, "p2", "patrolTakeoffShip")).toEqual([]);
     // Unwitnessed, only the pilot has it.
     const alone = ship();
     player(alone, "p1").room = "LABORATORY";
     const flown = mustApply(alone, "p0", takeoff());
     expect(flown.log.at(-1)).toMatchObject({ key: "patrolTakeoff", visibleTo: ["p0"] });
-    expect(lines(flown, "p1", "patrolTakeoff")).toEqual([]);
+    expect(lines(flown, "p1", "patrolTakeoffShip")).toEqual([]);
   });
 
   it("a camera in the bay shows it to everyone who comes in later", () => {
@@ -131,7 +131,7 @@ describe("taking off", () => {
     s.equipment[BAY]!.push({ id: cameraEquipmentId(BAY), type: "CAMERA" });
     const next = mustApply(s, "p0", takeoff());
     player(next, "p2").room = BAY;
-    expect(lines(next, "p2", "patrolTakeoff")).toHaveLength(1);
+    expect(lines(next, "p2", "patrolTakeoffShip")).toHaveLength(1);
   });
 
   it("ends a push the pilot is part of: the person pushed stays in the bay", () => {
@@ -195,8 +195,8 @@ describe("landing", () => {
     expect(player(s, "p0").room).toBe(BAY);
     expect(player(s, "p0").ap).toBe(player(flying, "p0").ap - s.config.patrol.land.cost.ap);
     expect(s.patrolShips[LONGANE.id]!.out).toBe(false);
-    expect(lines(s, "p1", "patrolLanded")).toMatchObject([{ room: BAY, params: { name: player(s, "p0").character, room: LONGANE.id } }]);
-    expect(lines(s, "p2", "patrolLanded")).toEqual([]);
+    expect(lines(s, "p1", "patrolLandedShip")).toMatchObject([{ room: BAY, params: { name: player(s, "p0").character } }]);
+    expect(lines(s, "p2", "patrolLandedShip")).toEqual([]);
     expect(viewFor(s, "p0").patrolShip).toBeNull();
   });
 
@@ -563,8 +563,8 @@ describe("hunters and ships in flight", () => {
 
     it("is seen only as a landing in the bay, not ship-wide", () => {
       const next = mustApply(netted(), "p2", { type: "travel", equipment: terminal });
-      expect(lines(next, "p1", "patrolLanded")).toMatchObject([{ params: { name: player(next, "p0").character, room: LONGANE.id } }]);
-      expect(lines(next, "p2", "patrolLanded")).toEqual([]);
+      expect(lines(next, "p1", "patrolLandedShip")).toMatchObject([{ params: { name: player(next, "p0").character } }]);
+      expect(lines(next, "p2", "patrolLandedShip")).toEqual([]);
     });
 
     it("unloads the ship's cargo into the bay and turns its hunters to the Daedalus; the debris outside is still lost", () => {

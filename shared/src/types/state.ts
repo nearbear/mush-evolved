@@ -29,6 +29,15 @@ export type Winner = "mush" | "humans";
 /** How the game ended (victory.ts): the ship reached Sol or Eden, or the last human died. */
 export type Ending = "sol" | "eden" | "humans_dead" | "ship_destroyed";
 
+/** Where the Daedalus is headed once intergalactic travel has started (#480). */
+export type LaunchDestination = "sol" | "eden";
+
+/** Intergalactic travel under way (#480, owner 2026-11-22): set at launch, ends the game at the next cycle change. */
+export interface LaunchState {
+  destination: LaunchDestination;
+  by: PlayerId;
+}
+
 /** The Daedalus's counters (ship.ts). */
 export interface ShipResources {
   oxygen: number;
@@ -246,6 +255,17 @@ export interface GameCore {
   eden: EdenState;
   /** Who holds each title (titles.ts); null while vacant. Public: every view has the holders and the lines. */
   titles: Record<TitleId, PlayerId | null>;
+  /**
+   * Which titles' launch keys are in at the Command terminal (#480, owner 2026-11-22): all three are needed to travel to
+   * Sol or Eden. Only that title's holder flips its key (actions/set_launch_key.ts); it goes off when the title changes hands
+   * (`setTitleHolder`). Only the living in a room with a Command terminal see it (`PlayerView.launchKeys`).
+   */
+  launchKeys: Record<TitleId, boolean>;
+  /**
+   * Intergalactic travel under way (#480, owner 2026-11-22): set when Return to Sol or Travel to Eden is pressed; the
+   * game ends at the next cycle change with no cycle-change processing. Public: every view has it.
+   */
+  launched: LaunchState | null;
   /**
    * Server time (ms) of the latest action input or tick (queue.ts); 0 before the first. The rules' only clock, for
    * deadlines such as accommodation offers. Never sent.
