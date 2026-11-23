@@ -235,6 +235,10 @@
   background: color-mix(in srgb, var(--panel-fill) 55%, black);
   border-bottom: 1px solid var(--panel-rim);
 }
+.skill-pick-card header strong {
+  font-family: var(--font-display);
+  font-weight: 400;
+}
 .skill-status {
   align-self: flex-start;
   margin: 0 var(--space-2);
@@ -311,6 +315,11 @@
 }
 .skill-card {
   max-width: min(18rem, calc(100vw - 2rem));
+}
+.skill-card > strong,
+.skill-name {
+  font-family: var(--font-display);
+  font-weight: 400;
 }
 .skill-card ul {
   margin: var(--space-2) 0 0;

@@ -327,7 +327,7 @@ function MerchantOptions({ signal, terminalId, view, onAction }: Omit<Props, "on
                   </span>
                   <DealSide label={t("comms.merchants.receive")} side="receive" assets={deal.receive} text={asset} />
                   {deal.skill ? (
-                    <Hint label={names.skill(deal.skill)}>
+                    <Hint label={<span className="skill-name">{names.skill(deal.skill)}</span>}>
                       <img
                         className="signal-deal-skill"
                         data-met={met ? "" : undefined}

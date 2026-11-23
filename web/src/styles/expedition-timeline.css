@@ -131,7 +131,9 @@ button.timeline-arrow > span {
   display: flex;
   align-items: center;
   gap: var(--space-1);
+  font-family: var(--font-display);
   font-size: 1rem;
+  font-weight: 400;
 }
 /* SectorIcon.tsx, here and in the report: --zoom is the whole-number scale, 1 unless a parent sets it. */
 .sector-icon {

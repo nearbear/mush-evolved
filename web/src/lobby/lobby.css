@@ -433,6 +433,7 @@ body:has(.pod) {
   background: none;
   color: inherit;
   font: inherit;
+  font-family: var(--font-display);
   text-align: left;
   text-shadow: none;
 }

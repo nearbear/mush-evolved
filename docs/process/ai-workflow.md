@@ -5182,3 +5182,7 @@ Owner asked to rotate three Mush skill icons (Slime Trap's to Mass Mouldering, M
 - **What worked:** following the Torturer's daily-flag pattern and the Ninja commit as a checklist of the places to touch.
 - **Needed correction:** the first `spec` query (`spec skill defacer`) went to an unrelated subscriber. Searching for the action name (`find delog`) found the right files. A test assumed an own-seat flag was never sent, but `viewFor` spreads the player's own fields, so it is "own" reach, like `interrogatedToday`.
 - **Found, not fixed (from the Ninja commit):** the web typecheck error at `web/src/i18n/names.ts:238` (`line` typed `never`), which is present at clean HEAD, and `history.test.ts`, which doesn't yet expect `become_ninja` / `become_normal` as unrecorded.
+
+### 2026-11-22 — Mark Botanist (`botanic`) as `"full"` in `SKILL_STATUS`
+- Updated `SKILL_STATUS.botanic` from `"partial"` to `"full"` (and refreshed the stale comments on `botanic` and `green_thumb`) in `shared/src/skills.ts`.
+- Added `botanic` to the `SKILL_STATUS` assertion in `shared/tests/skills.test.ts`; `npm test -w shared -- skills.test.ts` passed (3 files, 53 tests), while `npm run verify` failed in `web/src/i18n/names.ts` (untouched by this task).
