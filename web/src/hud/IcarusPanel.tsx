@@ -83,10 +83,10 @@ export function IcarusPanel({ view, expedition, selected, onSelect, onAction, pl
               if (seat.kind === "lost") {
                 return (
                   <li key={`lost-${seat.character}`} className="icarus-seat icarus-seat-lost">
-                    <Podium />
                     <span className="icarus-seat-label">
                       <span>{names.characterGiven(seat.character)}</span>
                     </span>
+                    <Podium />
                   </li>
                 );
               }
@@ -96,7 +96,6 @@ export function IcarusPanel({ view, expedition, selected, onSelect, onAction, pl
               return (
                 <li key={p.id} className="icarus-seat">
                   <button type="button" className="pick-tile" aria-pressed={sameTarget(selected, target)} onClick={() => onSelect(target)}>
-                    <Podium character={p.character} />
                     <span className="icarus-seat-label">
                       <span>{names.characterGiven(p.character)}</span>
                       {memberHp !== undefined && (
@@ -107,6 +106,7 @@ export function IcarusPanel({ view, expedition, selected, onSelect, onAction, pl
                         </span>
                       )}
                     </span>
+                    <Podium character={p.character} />
                   </button>
                 </li>
               );
@@ -125,10 +125,10 @@ export function IcarusPanel({ view, expedition, selected, onSelect, onAction, pl
               return (
                 <li key={p.id} className="icarus-seat">
                   <button type="button" className="pick-tile" aria-pressed={sameTarget(selected, target)} onClick={() => onSelect(target)}>
-                    <Podium character={p.character} />
                     <span className="icarus-seat-label">
                       <span>{names.characterGiven(p.character)}</span>
                     </span>
+                    <Podium character={p.character} />
                   </button>
                 </li>
               );
