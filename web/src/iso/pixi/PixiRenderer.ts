@@ -32,7 +32,7 @@ import { keyedUrl } from "../../art/keyedSprite.ts";
 import { animId, animStep, type Cutaway, FADE_MS, frameAt, PACE_SPEED, type FrameUpdate, type Scene, type SceneImage, type SceneOutline, type ScenePicture, type SceneSprite, type ShipTurn } from "../scene.ts";
 import { shiftTile, stepTurn, tilePosition, type TurnLimits } from "../skyTurn.ts";
 import { gridToPx } from "../placement.ts";
-import { starfield, starLayer } from "../starfield.ts";
+import { ftlStarfield, ftlStarLayer, starfield, starLayer } from "../starfield.ts";
 import { CELLS_PER_SECOND } from "../useWalkers.ts";
 import { ESP, espPulse, filterKey, lookOf, selectionPulse } from "./effects.ts";
 import { cutawayFilter, EspFilters, lookFilter } from "./filters.ts";
@@ -102,29 +102,33 @@ const EASE_SECONDS = 3;
 const TURN: TurnLimits = { speed: 0.24, accel: 0.08 };
 let skyTexture: Texture | null = null;
 let starsTexture: Texture | null = null;
+let ftlSkyTexture: Texture | null = null;
+let ftlStarsTexture: Texture | null = null;
+
+function imageToTexture({ size, rgba }: { size: number; rgba: Uint8ClampedArray<ArrayBuffer> }): Texture {
+  const canvas = document.createElement("canvas");
+  canvas.width = canvas.height = size;
+  canvas.getContext("2d")!.putImageData(new ImageData(rgba, size, size), 0, 0);
+  return Texture.from(canvas);
+}
 
 /** The star field behind the ship, made once (about 0.1 s) and repeated across the panel. */
 function sky(): Texture {
-  if (!skyTexture) {
-    const { size, rgba } = starfield(SKY_SIZE);
-    const canvas = document.createElement("canvas");
-    canvas.width = canvas.height = size;
-    canvas.getContext("2d")!.putImageData(new ImageData(rgba, size, size), 0, 0);
-    skyTexture = Texture.from(canvas);
-  }
-  return skyTexture;
+  return (skyTexture ??= imageToTexture(starfield(SKY_SIZE)));
 }
 
 /** The near stars over the sky, made once. */
 function stars(): Texture {
-  if (!starsTexture) {
-    const { size, rgba } = starLayer(STARS_SIZE);
-    const canvas = document.createElement("canvas");
-    canvas.width = canvas.height = size;
-    canvas.getContext("2d")!.putImageData(new ImageData(rgba, size, size), 0, 0);
-    starsTexture = Texture.from(canvas);
-  }
-  return starsTexture;
+  return (starsTexture ??= imageToTexture(starLayer(STARS_SIZE)));
+}
+
+/** Faster-than-light sky and near streaks (#480), made lazily once the ship launches. */
+function ftlSky(): Texture {
+  return (ftlSkyTexture ??= imageToTexture(ftlStarfield(SKY_SIZE)));
+}
+
+function ftlStars(): Texture {
+  return (ftlStarsTexture ??= imageToTexture(ftlStarLayer(STARS_SIZE)));
 }
 
 interface Drawn {
@@ -202,6 +206,8 @@ export class PixiRenderer {
   private ramp = 1;
   /** Whether a scene has set the pace yet: the first one starts the stream at speed rather than easing up to it. */
   private paceSeen = false;
+  /** Whether the ship is in intergalactic FTL travel (#480): uses streaked textures aligned with the 2:1 stream. */
+  private ftl = false;
   private lastTick = 0;
   private camera = { x: 0, y: 0 };
   /** Where the room panel is on the canvas (all of it without a backdrop), and its zoom (1 without a backdrop: CSS scales the canvas). */
@@ -359,6 +365,13 @@ export class PixiRenderer {
   setScene(scene: Scene) {
     this.scene = scene;
     if (!this.ready) return;
+    const ftl = scene.pace === "ftl";
+    if (ftl !== this.ftl) {
+      this.ftl = ftl;
+      this.sky[0]!.sprite.texture = ftl ? ftlSky() : sky();
+      this.sky[1]!.sprite.texture = ftl ? ftlStars() : stars();
+      this.placeSky();
+    }
     const cruise = this.reducedMotion.matches ? 0 : PACE_SPEED[scene.pace];
     if (!this.paceSeen) {
       this.paceSeen = true;
@@ -541,14 +554,20 @@ export class PixiRenderer {
     this.requestRender();
   }
 
+  /** Active sky rotation: 0 in FTL so the 2:1 streaks always line up with the down-right stream (#480). */
+  private skyAngle() {
+    return this.ftl ? 0 : this.angle;
+  }
+
   /** Whether the stars are still turning toward `heading`. */
   private turning() {
-    return this.angle !== this.heading || this.spin !== 0;
+    return !this.ftl && (this.angle !== this.heading || this.spin !== 0);
   }
 
   /** Moves each layer by `by(layer)` on screen: turned back into the tile's frame, so it moves that way whatever the angle. */
   private shiftSky(by: (l: SkyLayer) => { x: number; y: number }) {
-    for (const l of this.sky) l.at = shiftTile(l.at, by(l), this.angle, l.size);
+    const angle = this.skyAngle();
+    for (const l of this.sky) l.at = shiftTile(l.at, by(l), angle, l.size);
   }
 
   /**
@@ -557,11 +576,12 @@ export class PixiRenderer {
    */
   private placeSky() {
     const center = { x: this.panel.x + this.panel.width / 2, y: this.panel.y + this.panel.height / 2 };
+    const angle = this.skyAngle();
     const whole = this.turning() ? (v: number) => v : Math.round;
     for (const l of this.sky) {
-      const p = tilePosition(l.at, this.angle, center);
+      const p = tilePosition(l.at, angle, center);
       l.sprite.tilePosition.set(whole(p.x), whole(p.y));
-      l.sprite.tileRotation = this.angle;
+      l.sprite.tileRotation = angle;
     }
   }
 

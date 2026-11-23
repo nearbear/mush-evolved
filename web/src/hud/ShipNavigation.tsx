@@ -32,11 +32,13 @@ export function ShipNavigation({ terminal, view, onAction }: Props) {
   const leave = here.find(({ action: a }) => a.type === "leave_orbit");
   const commander = terminalLogin(terminal.type, view, terminal.id).access !== "limited";
   if (heading === null) return null;
-  const jumpReason = !commander
-    ? t("navigation.unavailableCommanderOnly")
-    : traveling
-      ? t("navigation.unavailableTraveling")
-      : t("navigation.unavailable");
+  const jumpReason = view.launched !== null
+    ? t("actions.lacksTravelUnderway")
+    : !commander
+      ? t("navigation.unavailableCommanderOnly")
+      : traveling
+        ? t("navigation.unavailableTraveling")
+        : t("navigation.unavailable");
   return (
     <section className="ship-navigation" aria-label={t("navigation.title")}>
       <div className="ship-compass" role="img" aria-label={t("navigation.heading", { direction: t(`astro.directions.${heading}`) })}>

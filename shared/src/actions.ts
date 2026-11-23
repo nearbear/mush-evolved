@@ -81,6 +81,7 @@ import { TakeFuelAction } from "./actions/take_fuel.ts";
 import { UnloadFuelAction } from "./actions/unload_fuel.ts";
 import { TravelAction } from "./actions/travel.ts";
 import { TurnShipAction } from "./actions/turn_ship.ts";
+import { SetLaunchKeyAction } from "./actions/set_launch_key.ts";
 import { ReadyAction } from "./actions/ready.ts";
 import { HealAction } from "./actions/heal.ts";
 import { SurgeryAction } from "./actions/surgery.ts";
@@ -190,6 +191,7 @@ const REGISTRY = {
   travel_to_eden: new TravelToEdenAction(),
   compute_eden: new ComputeEdenAction(),
   turn_ship: new TurnShipAction(),
+  set_launch_key: new SetLaunchKeyAction(),
   travel: new TravelAction(),
   leave_orbit: new LeaveOrbitAction(),
   take_fuel: new TakeFuelAction(),

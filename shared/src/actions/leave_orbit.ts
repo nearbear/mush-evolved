@@ -1,4 +1,4 @@
-import { Action, ARACK_AROUND, isString } from "./action.ts";
+import { Action, ARACK_AROUND, isString, TRAVEL_UNDERWAY } from "./action.ts";
 import { endRebelCalls } from "../comms.ts";
 import { merchantsLeave } from "../merchants.ts";
 import { arackAround, huntersFollow, loseShipsInFlight } from "../hunters.ts";
@@ -37,6 +37,7 @@ export class LeaveOrbitAction extends Action<LeaveOrbitActionData> {
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: LeaveOrbitActionData): string | null {
     if (!commandTerminalsHere(state, player).some((terminal) => terminal.id === target.equipment)) return "cant_steer";
     if (!canSteer(state, player)) return "not_commander";
+    if (state.launched !== null) return TRAVEL_UNDERWAY;
     if (state.navigation.orbit === null) return "not_in_orbit";
     // Owner, 2026-11-12 (#388; eMush): an Arack around stops the jump, no AP spent.
     if (arackAround(state)) return ARACK_AROUND;

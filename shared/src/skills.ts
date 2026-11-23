@@ -196,8 +196,8 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   medic: "partial",
   // Each heal or bandage by a human Mycologist removes 1 contamination from a human patient, silently (owner, 2026-11-14, modifiers/mycologist.ts).
   mycologist: "full",
-  // 16 cycles of room log (owner, 2026-11-05, #365, log.ts) and cancels Found dead on expeditions (owner, 2026-11-08, #357), and prints THE List (owner, 2026-11-21, #266, actions/print_list.ts); no movement sources or ship logs.
-  hunt: "partial",
+  // 16 cycles of room log (owner, 2026-11-05, #365, log.ts), crew movement direction and ship takeoff/landing logs (owner, 2026-11-21, 2026-11-22, log.ts, rules.ts), cancels Found dead on expeditions (owner, 2026-11-08, #357, expeditions.ts), and prints THE List (owner, 2026-11-21, #266, actions/print_list.ts).
+  hunt: "full",
   // Apprenticeship (owner, 2026-11-05, actions/apprenticeship.ts).
   apprentice: "full",
   // Flying patrol ships and the Pasiphae, clean takeoffs and landings, doubled patrol-ship shot odds, and expedition piloting (patrol.ts, modifiers/pilot.ts, expeditions.ts).

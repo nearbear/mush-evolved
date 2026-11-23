@@ -1264,6 +1264,7 @@ export function normalizeCore(raw: Partial<GameCore>, ctx: NormalizeContext, mod
   const t = "GameCore";
   const bios = need(raw, "bios", t);
   const titles = need(raw, "titles", t);
+  const launchKeys = added(raw, "launchKeys", { commander: false, neron_admin: false, comms_officer: false });
   const projects = dict(need(raw, "projects", t));
   return stripUndefined<GameCore>({
     cycle: need(raw, "cycle", t),
@@ -1367,6 +1368,17 @@ export function normalizeCore(raw: Partial<GameCore>, ctx: NormalizeContext, mod
       neron_admin: need(titles, "neron_admin", `${t}.titles`),
       comms_officer: need(titles, "comms_officer", `${t}.titles`),
     } satisfies AllKeys<GameCore["titles"]>,
+    // Launch keys (#480): none could be in a game stored before them.
+    launchKeys: {
+      commander: need(launchKeys, "commander", `${t}.launchKeys`),
+      neron_admin: need(launchKeys, "neron_admin", `${t}.launchKeys`),
+      comms_officer: need(launchKeys, "comms_officer", `${t}.launchKeys`),
+    } satisfies AllKeys<GameCore["launchKeys"]>,
+    // Intergalactic launch (#480): none in progress in a game stored before it.
+    launched: orNull(added(raw, "launched", null), (l) => ({
+      destination: need(l, "destination", `${t}.launched`),
+      by: need(l, "by", `${t}.launched`),
+    }) satisfies AllKeys<NonNullable<GameCore["launched"]>>),
     now: need(raw, "now", t),
   });
 }

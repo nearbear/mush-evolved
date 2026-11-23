@@ -3,17 +3,29 @@
 // game state); effects are CSS classes (fx-* in styles/iso.css). The class names by role (iso-sprite,
 // door, equipment, reachable, iso-actor, you, neighbor, corpse) are what the screenshot tools look for.
 
-import { useEffect, useId, useRef, useState, type CSSProperties } from "react";
+import { useContext, useEffect, useId, useRef, useState, type CSSProperties } from "react";
 import { useKeyedSprite } from "../../art/keyedSprite.ts";
+import { ftlSpaceSky } from "../../hud/spaceSky.ts";
+import { BackdropContext } from "../backdrop.ts";
 import { animId, animStep, frameAt, type SceneAnim, type ScenePicture, type SceneRendererProps, type SceneSprite } from "../scene.ts";
 import { useDomFrame } from "../useDomFrame.ts";
 
 export function DomScene({ scene, ref }: SceneRendererProps) {
   const world = useRef<HTMLDivElement>(null);
   useDomFrame(world, ref);
+  const backdrop = useContext(BackdropContext);
+  const ftlSky = scene.pace === "ftl" && !backdrop ? ftlSpaceSky() : null;
+  const ftlStyle = ftlSky ? ({ "--sky": `url(${ftlSky.sky})`, "--stars": `url(${ftlSky.stars})` } as CSSProperties) : undefined;
   const espFilter = `iso-esp-${useId().replace(/[^\w-]/g, "")}`;
   return (
     <>
+      {/* Phone layout has no SpaceBackdrop; draw the FTL streaks behind the room here (#480). */}
+      {ftlStyle && (
+        <>
+          <div className="space-backdrop-layer space-backdrop-sky" aria-hidden="true" style={ftlStyle} />
+          <div className="space-backdrop-layer space-backdrop-stars" aria-hidden="true" style={ftlStyle} />
+        </>
+      )}
       {/* The orbited planet, fixed to the panel's bottom-right behind the ship. */}
       {scene.planet && <img className="iso-planet" src={scene.planet} alt="" />}
       <div ref={world} className="iso-world" style={{ width: scene.width, height: scene.height }}>

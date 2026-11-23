@@ -220,7 +220,7 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
     <ServerClockContext.Provider value={clock}>
     <BackdropContext value={mobile ? null : backdrop}>
     <main className="game">
-      {!mobile && <SpaceBackdrop ref={setBackdrop} />}
+      {!mobile && <SpaceBackdrop ref={setBackdrop} ftl={view.launched !== null} />}
       <Announcer />
       <WakeUpAnnouncement waking={waking} text={t("wake.ready", { day: view.day, cycle: view.cycleOfDay, room: names.room(you.room) })} />
       <TerminalDialog
@@ -315,8 +315,8 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
                 humanTankFull={view.humanTankFull}
                 projects={view.projects}
                 research={view.research}
-                pace={shipPace(view.navigation)}
-                planet={orbitImage(view.navigation.orbitPicture)}
+                pace={shipPace(view.navigation, view.launched !== null)}
+                planet={view.launched ? null : orbitImage(view.navigation.orbitPicture)}
                 turn={view.navigation.lastTurn}
               />
             ) : (

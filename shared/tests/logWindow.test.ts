@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG, PRESELECTION } from "../src/config.ts";
+import { cameraEquipmentId } from "../src/equipment.ts";
 import { logPrivate, logPublic } from "../src/log.ts";
 import { swapMinds } from "../src/mind.ts";
+import { PATROL_SHIPS, commandId, interfaceId } from "../src/patrol.ts";
 import { joinShip } from "../src/preselection.ts";
 import { createGame, seatViewFor, viewFor } from "../src/rules.ts";
 import type { GameState } from "../src/types.ts";
@@ -211,5 +213,61 @@ describe("the direction of crew moves", () => {
     logPublic(s, room(s, "p1"), "catEntered", { room: TO });
     expect(line(s, "p1", "droneLeft")?.params?.room).toBe(TO);
     expect(line(s, "p1", "catEntered")?.params?.room).toBe(TO);
+  });
+});
+
+// Ship takeoff and landing logs (owner, 2026-11-22; eMushpedia Traqueur): only a Tracker sees which patrol ship or
+// Pasiphae took off or landed. No exception for the pilot or a camera in the bay.
+describe("ship takeoff and landing logs", () => {
+  const LONGANE = PATROL_SHIPS[0]!;
+  const BAY = LONGANE.bay;
+  const line = (s: GameState, id: string, key: string) => viewFor(s, id).log.find((e) => e.key === key);
+
+  function flownAndLanded(withCamera = false): GameState {
+    const s = ship();
+    for (const id of ["p0", "p1", "p2"]) player(s, id).room = BAY;
+    player(s, "p0").skills.push("pilot");
+    player(s, "p2").bookSkill = "hunt";
+    if (withCamera) s.equipment[BAY]!.push({ id: cameraEquipmentId(BAY), type: "CAMERA" });
+    const flying = mustApply(s, "p0", { type: "takeoff", equipment: interfaceId(LONGANE) });
+    return mustApply(flying, "p0", { type: "land", equipment: commandId(LONGANE) });
+  }
+
+  it("keeps the ship in the state, whoever looks", () => {
+    const s = flownAndLanded();
+    expect(s.log.filter((e) => e.key === "patrolTakeoff" || e.key === "patrolLanded").map((e) => e.params?.room)).toEqual([
+      LONGANE.id,
+      LONGANE.id,
+    ]);
+  });
+
+  it("shows which ship took off and landed only to a Tracker, the pilot included", () => {
+    const s = flownAndLanded();
+    const pilotName = player(s, "p0").character;
+    for (const id of ["p0", "p1"]) {
+      expect(line(s, id, "patrolTakeoffShip")?.params).toEqual({ name: pilotName });
+      expect(line(s, id, "patrolTakeoff")).toBeUndefined();
+      expect(line(s, id, "patrolLandedShip")?.params).toEqual({ name: pilotName });
+      expect(line(s, id, "patrolLanded")).toBeUndefined();
+    }
+    expect(line(s, "p2", "patrolTakeoff")?.params).toEqual({ name: pilotName, room: LONGANE.id });
+    expect(line(s, "p2", "patrolTakeoffShip")).toBeUndefined();
+    expect(line(s, "p2", "patrolLanded")?.params).toEqual({ name: pilotName, room: LONGANE.id });
+    expect(line(s, "p2", "patrolLandedShip")).toBeUndefined();
+  });
+
+  it("does not reveal the ship through a camera in the bay", () => {
+    const s = flownAndLanded(true);
+    expect(line(s, "p1", "patrolTakeoffShip")?.params).toEqual({ name: player(s, "p0").character });
+    expect(line(s, "p1", "patrolTakeoff")).toBeUndefined();
+    expect(line(s, "p1", "patrolLandedShip")?.params).toEqual({ name: player(s, "p0").character });
+    expect(line(s, "p1", "patrolLanded")).toBeUndefined();
+  });
+
+  it("reveals older ship logs once Tracker is learned", () => {
+    const s = flownAndLanded();
+    player(s, "p1").bookSkill = "hunt";
+    expect(line(s, "p1", "patrolTakeoff")?.params?.room).toBe(LONGANE.id);
+    expect(line(s, "p1", "patrolLanded")?.params?.room).toBe(LONGANE.id);
   });
 });

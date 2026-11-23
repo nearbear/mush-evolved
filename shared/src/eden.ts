@@ -5,7 +5,7 @@
 
 import { SUPER_CALC_EQUIPMENT } from "./equipment.ts";
 import { isPilgredRepaired } from "./pilgred.ts";
-import { hasTitleAccess } from "./titles.ts";
+import { allLaunchKeysIn, hasTitleAccess } from "./titles.ts";
 import type { GameState, PlayerState } from "./types.ts";
 
 export interface EdenState {
@@ -29,8 +29,9 @@ export function edenFragmentsIn(state: Readonly<GameState>, room: string): numbe
 
 /**
  * Whether this player may send the ship to Eden, wherever they stand: Eden is computed, PILGRED is repaired, and they
- * have the Commander's access (the title, a hacked Command terminal), the same as Return to Sol.
+ * have the Commander's access (the title, a hacked Command terminal), and all three launch keys are in (#480), the
+ * same as Return to Sol.
  */
 export function canTravelToEden(state: Readonly<GameState>, player: Readonly<PlayerState>): boolean {
-  return state.eden.computed && isPilgredRepaired(state) && hasTitleAccess(state, player, "commander");
+  return state.launched === null && state.eden.computed && isPilgredRepaired(state) && allLaunchKeysIn(state) && hasTitleAccess(state, player, "commander");
 }

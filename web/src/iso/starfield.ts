@@ -24,6 +24,13 @@ const CORES = [0x88eeff, 0x87b3c2];
 /** A "+" sparkle as the original draws it: the arms fade out, three pixels up and down, two across. */
 const SPARKLE = { center: 0x87b3c2, near: 0x447788, far: 0x225566 };
 
+/** FTL streak color ramps (head brightest, tail faintest), all drawn from `PALETTE` (#480). */
+const FTL_NEAR_CYAN = [CORES[0]!, CORES[1]!, STARS[8]!, STARS[6]!, TEAL_DUST[2]!, TEAL_DUST[1]!, TEAL_DUST[0]!];
+const FTL_NEAR_BLUE = [CORES[1]!, STARS[8]!, STARS[7]!, STARS[5]!, STARS[4]!, DUST[1]!];
+const FTL_FAR_VIOLET = [DUST[5]!, DUST[3]!, DUST[2]!, DUST[1]!, DUST[0]!];
+const FTL_FAR_TEAL = [TEAL_DUST[2]!, TEAL_DUST[1]!, TEAL_DUST[0]!];
+const FTL_FAR_BLUE = [STARS[5]!, STARS[4]!, DUST[1]!, DUST[0]!];
+
 export const PALETTE = [SKY, ...DUST, ...TEAL_DUST, ...STARS, ...CORES, SPARKLE.center, SPARKLE.near, SPARKLE.far];
 
 /** A deterministic hash of integers to [0, 1). */
@@ -183,5 +190,113 @@ export function starLayer(size: number, seed = 2): StarfieldImage {
     }
   }
   sparkles(size, seed, put);
+  return { size, rgba };
+}
+
+/**
+ * Draws one seamless 2:1 down-right streak ending at `(hx, hy)` and trailing toward top-left for `steps`
+ * 2x1 pixel steps, fading along `ramp` (head first, tail last).
+ */
+function streak(hx: number, hy: number, steps: number, ramp: readonly number[], put: (x: number, y: number, color: number) => void) {
+  for (let i = 0; i < steps; i++) {
+    const color = ramp[Math.min(ramp.length - 1, Math.floor((i / steps) * ramp.length))]!;
+    put(hx - 2 * i, hy - i, color);
+    put(hx - 2 * i - 1, hy - i, color);
+  }
+}
+
+/**
+ * Faster-than-light far sky (#480): bare navy with faint 2:1 nebula bands and distant streaked stars.
+ * Tiles seamlessly at `size` (a multiple of 32) and uses only `PALETTE`.
+ */
+export function ftlStarfield(size: number, seed = 1): StarfieldImage {
+  const rgba = new Uint8ClampedArray(size * size * 4);
+  const put = (x: number, y: number, color: number) => {
+    const i = (mod(y, size) * size + mod(x, size)) * 4;
+    rgba[i] = color >> 16;
+    rgba[i + 1] = (color >> 8) & 0xff;
+    rgba[i + 2] = color & 0xff;
+    rgba[i + 3] = 255;
+  };
+
+  const n = size / STEP;
+  const dust = new Float32Array(n * n);
+  const teal = new Float32Array(n * n);
+  for (let j = 0; j < n; j++) {
+    for (let i = 0; i < n; i++) {
+      const f = fields(i / n, j / n, seed);
+      dust[j * n + i] = f.dust;
+      teal[j * n + i] = f.teal;
+    }
+  }
+  const sample = (grid: Float32Array, x: number, y: number) => {
+    const i0 = Math.floor(x / STEP);
+    const j0 = Math.floor(y / STEP);
+    const fx = x / STEP - i0;
+    const fy = y / STEP - j0;
+    const at = (i: number, j: number) => grid[mod(j0 + j, n) * n + mod(i0 + i, n)]!;
+    const top = at(0, 0) + (at(1, 0) - at(0, 0)) * fx;
+    return top + (at(0, 1) + (at(1, 1) - at(0, 1)) * fx - top) * fy;
+  };
+
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const d = sample(dust, x, y);
+      const r = hash(x, y, seed + 40);
+      if (r < d ** 1.8 * 0.45) {
+        const shade = hash(x, y, seed + 41);
+        if (hash(x, y, seed + 42) < Math.min(0.5, sample(teal, x, y))) put(x, y, TEAL_DUST[Math.min(1, Math.floor(shade * d * 3))]!);
+        else put(x, y, DUST[Math.min(4, Math.floor(shade ** 3 * d * 7))]!);
+      } else {
+        put(x, y, SKY);
+      }
+    }
+  }
+
+  const cell = 32;
+  const ramps = [FTL_FAR_BLUE, FTL_FAR_TEAL, FTL_FAR_VIOLET] as const;
+  for (let cy = 0; cy < size / cell; cy++) {
+    for (let cx = 0; cx < size / cell; cx++) {
+      if (hash(cx, cy, seed + 50) > 0.45) continue;
+      const hx = cx * cell + Math.floor(hash(cx, cy, seed + 51) * cell);
+      const hy = cy * cell + Math.floor(hash(cx, cy, seed + 52) * cell);
+      const steps = 8 + Math.floor(hash(cx, cy, seed + 53) * 15);
+      const ramp = ramps[Math.floor(hash(cx, cy, seed + 54) * ramps.length)]!;
+      streak(hx, hy, steps, ramp, put);
+    }
+  }
+  return { size, rgba };
+}
+
+/**
+ * Faster-than-light near streaks on a transparent ground (#480): long, bright 2:1 star streaks that
+ * stream over `ftlStarfield` at a faster rate. Tiles seamlessly at `size` (a multiple of 64).
+ */
+export function ftlStarLayer(size: number, seed = 2): StarfieldImage {
+  const rgba = new Uint8ClampedArray(size * size * 4);
+  const put = (x: number, y: number, color: number) => {
+    const i = (mod(y, size) * size + mod(x, size)) * 4;
+    rgba[i] = color >> 16;
+    rgba[i + 1] = (color >> 8) & 0xff;
+    rgba[i + 2] = color & 0xff;
+    rgba[i + 3] = 255;
+  };
+
+  const cell = 64;
+  for (let cy = 0; cy < size / cell; cy++) {
+    for (let cx = 0; cx < size / cell; cx++) {
+      if (hash(cx, cy, seed + 60) > 0.65) continue;
+      const hx = cx * cell + Math.floor(hash(cx, cy, seed + 61) * cell);
+      const hy = cy * cell + Math.floor(hash(cx, cy, seed + 62) * cell);
+      const steps = 18 + Math.floor(hash(cx, cy, seed + 63) * 27);
+      const cyan = hash(cx, cy, seed + 64) < 0.55;
+      streak(hx, hy, steps, cyan ? FTL_NEAR_CYAN : FTL_NEAR_BLUE, put);
+      if (hash(cx, cy, seed + 65) < 0.25) {
+        const glow = cyan ? TEAL_DUST[1]! : STARS[4]!;
+        put(hx, hy - 1, glow);
+        put(hx, hy + 1, glow);
+      }
+    }
+  }
   return { size, rgba };
 }

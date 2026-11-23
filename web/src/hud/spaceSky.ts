@@ -2,7 +2,7 @@
 // draws (iso/starfield.ts), as two tiling images for CSS backgrounds, the sky and the nearer stars over it. Made once,
 // the first time a cockpit shows. Null where there is no 2D canvas (tests).
 
-import { starLayer, starfield, type StarfieldImage } from "../iso/starfield.ts";
+import { ftlStarLayer, ftlStarfield, starLayer, starfield, type StarfieldImage } from "../iso/starfield.ts";
 
 /** The tile's side in pixels; space.css scrolls by multiples of it, so the loop is seamless. */
 const SIZE = 512;
@@ -25,6 +25,7 @@ function toUrl({ size, rgba }: StarfieldImage, transparent: boolean): string | n
 }
 
 let made: { sky: string; stars: string } | null | undefined;
+let madeFtl: { sky: string; stars: string } | null | undefined;
 
 export function spaceSky(): { sky: string; stars: string } | null {
   if (made === undefined) {
@@ -33,4 +34,14 @@ export function spaceSky(): { sky: string; stars: string } | null {
     made = sky && stars ? { sky, stars } : null;
   }
   return made;
+}
+
+/** Faster-than-light streaked sky tiles for CSS backgrounds (#480), made lazily once the ship launches. */
+export function ftlSpaceSky(): { sky: string; stars: string } | null {
+  if (madeFtl === undefined) {
+    const sky = toUrl(ftlStarfield(SIZE), false);
+    const stars = sky && toUrl(ftlStarLayer(SIZE), true);
+    madeFtl = sky && stars ? { sky, stars } : null;
+  }
+  return madeFtl;
 }

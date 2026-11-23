@@ -42,6 +42,9 @@ export const EXPLORED = "explored";
 /** The `validate` code for Board the Icarus or Take off once the Icarus is lost (expeditions.ts): shown disabled with the reason (owner, 2026-11-19). */
 export const ICARUS_LOST = "icarus_lost";
 
+/** The `validate` code for actions locked once intergalactic travel is underway (#480, owner 2026-11-22): shown disabled with the reason. */
+export const TRAVEL_UNDERWAY = "travel_underway";
+
 /**
  * Who learns of an action, for the label on its button (the log entries themselves come from `log.ts`).
  * Declared per action and kept in step with the log call in its `apply`.
