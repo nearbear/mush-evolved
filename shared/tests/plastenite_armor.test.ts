@@ -8,6 +8,8 @@ import { makeSeats, must, player, testConfig, withoutDrugs } from "./support.ts"
 const base = testConfig();
 const W = base.weapons.types;
 const { absorb } = base.plasteniteArmor;
+/** `n` less `reduction`, never below the floor (1 by default; owner, 2026-11-22) unless already under it. */
+const protect = (n: number, reduction: number, floor = base.combatDamageFloor) => (n <= 0 ? n : Math.max(Math.min(n, floor), n - reduction));
 
 /** p0, p1 and p2 share the sick bay; p1 wears the armor, p0 carries `weapon` (id "w") if given. */
 function ship(config: GameConfig, seed: number, weapon?: string, armored = true): GameState {
@@ -24,8 +26,10 @@ function ship(config: GameConfig, seed: number, weapon?: string, armored = true)
 
 const hp = (s: GameState, id: PlayerId) => player(s, id).hp;
 const keys = (s: GameState) => viewFor(s, "p2").log.map((e) => e.key);
-const punchCfg = (crit: number): GameConfig => testConfig({ punch: { successChance: 1, crit: { chance: crit } } });
-const weaponCfg = (type: string, outcome: WeaponOutcome): GameConfig => testConfig({ weapons: { types: { [type]: { accuracy: 1, hitOutcomes: [{ ...outcome, weight: 1 }] } } } });
+const punchCfg = (crit: number, combatDamageFloor = base.combatDamageFloor): GameConfig =>
+  testConfig({ punch: { successChance: 1, crit: { chance: crit } }, combatDamageFloor });
+const weaponCfg = (type: string, outcome: WeaponOutcome, combatDamageFloor = base.combatDamageFloor): GameConfig =>
+  testConfig({ weapons: { types: { [type]: { accuracy: 1, hitOutcomes: [{ ...outcome, weight: 1 }] } } }, combatDamageFloor });
 
 /** HP p1 loses, with and without the armor, on the same seed. */
 function compare(config: GameConfig, seed: number, act: Parameters<typeof applyAction>[2], weapon?: string) {
@@ -35,15 +39,27 @@ function compare(config: GameConfig, seed: number, act: Parameters<typeof applyA
 }
 
 describe("Plastenite Armor", () => {
-  it("absorbs 1 damage and is implemented", () => {
-    expect(absorb).toBe(1);
+  it("absorbs 1 damage, never below 1, and is implemented", () => {
+    expect([absorb, base.combatDamageFloor]).toEqual([1, 1]);
     expect(ITEM_TYPES.plastenite_armor?.notImplemented).toBeFalsy();
   });
 
-  it("takes 1 off a plain punch; a fully absorbed punch logs punchArmor", () => {
-    const seen = new Set<string>();
+  it("takes 1 off a plain punch but never below 1", () => {
+    const seen = new Set<number>();
     for (let seed = 1; seed <= 30; seed++) {
       const r = compare(punchCfg(0), seed, { type: "punch", target: "p1" });
+      expect(r.with).toBe(protect(r.without, absorb));
+      expect(r.with).toBeGreaterThanOrEqual(1);
+      expect(keys(r.armored)).toContain("punched");
+      seen.add(r.without);
+    }
+    expect([...seen].sort()).toEqual([1, 2]); // a 1-damage punch goes through whole
+  });
+
+  it("with a floor of 0 (eMush's), a fully absorbed punch logs punchArmor", () => {
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 30; seed++) {
+      const r = compare(punchCfg(0, 0), seed, { type: "punch", target: "p1" });
       expect(r.with).toBe(Math.max(0, r.without - absorb));
       const k = keys(r.armored);
       expect(k).toContain(r.with === 0 ? "punchArmor" : "punched");
@@ -60,11 +76,20 @@ describe("Plastenite Armor", () => {
     }
   });
 
-  it("takes 1 off a plain weapon hit, and logs attackArmor when it absorbs it all", () => {
+  it("takes 1 off a plain weapon hit, never below 1", () => {
+    const shot = { type: "attack", weapon: "w", target: "p1" } as const;
+    for (let seed = 1; seed <= 60; seed++) {
+      const r = compare(weaponCfg("knife", { weight: 1, log: "KNIFE_SUCCESSFUL_HIT_10_HAEMORRHAGE" }), seed, shot, "knife");
+      expect(r.with).toBe(protect(r.without, absorb));
+      expect(keys(r.armored)).toContain("KNIFE_SUCCESSFUL_HIT_10_HAEMORRHAGE");
+    }
+  });
+
+  it("with a floor of 0, logs attackArmor when it absorbs a weapon hit whole", () => {
     const shot = { type: "attack", weapon: "w", target: "p1" } as const;
     const seen = new Set<string>();
     for (let seed = 1; seed <= 60; seed++) {
-      const r = compare(weaponCfg("knife", { weight: 1, log: "KNIFE_SUCCESSFUL_HIT_10_HAEMORRHAGE" }), seed, shot, "knife");
+      const r = compare(weaponCfg("knife", { weight: 1, log: "KNIFE_SUCCESSFUL_HIT_10_HAEMORRHAGE" }, 0), seed, shot, "knife");
       expect(r.with).toBe(Math.max(0, r.without - absorb));
       const key = r.with === 0 ? "attackArmor" : "KNIFE_SUCCESSFUL_HIT_10_HAEMORRHAGE";
       expect(keys(r.armored)).toContain(key);
@@ -91,7 +116,7 @@ describe("Plastenite Armor", () => {
       armored.items.push({ id: "armor0", type: "plastenite_armor", at: { kind: "player", id: "p0" } });
       const a = must(applyAction(armored, "p0", { type: "attack", weapon: "w" }));
       const b = must(applyAction(ship(cfg, seed, "grenade", false), "p0", { type: "attack", weapon: "w" }));
-      expect(base.startHp - hp(a, "p1")).toBe(Math.max(0, base.startHp - hp(b, "p1") - absorb));
+      expect(base.startHp - hp(a, "p1")).toBe(protect(base.startHp - hp(b, "p1"), absorb));
       expect(hp(a, "p2")).toBe(hp(b, "p2"));
       expect(hp(a, "p0")).toBe(hp(b, "p0")); // self-damage goes through
     }

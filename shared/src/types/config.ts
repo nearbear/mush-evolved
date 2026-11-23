@@ -607,8 +607,12 @@ export interface GameConfig {
     charges: { start: number; max: number; perCycle: number }; // Starts with 8 charges, spends 1 per conversion, recharges 1 per cycle (owner, 2026-11-17).
   };
   plasteniteArmor: {
-    absorb: number; // Damage a working Plastenite Armor in the target's inventory takes off each non-critical punch or weapon hit and each expedition fight (owner, 2026-11-17). Never below 0; several armors absorb no more than one.
+    absorb: number; // Damage a working Plastenite Armor in the target's inventory takes off each non-critical punch or weapon hit and each expedition fight (owner, 2026-11-17). Never below `combatDamageFloor`; several armors absorb no more than one.
   };
+  tough: {
+    absorb: number; // Damage the Hard-boiled Mush skill (`tough`) takes off each non-critical punch or weapon hit, not expedition fights; stacks with Plastenite Armor (owner, 2026-11-22; eMushpedia). Never below `combatDamageFloor`.
+  };
+  combatDamageFloor: number; // Plastenite Armor and Hard-boiled never take a combat hit below this (owner, 2026-11-22: 1, so no hit is fully absorbed; eMush's floor is 0). Damage already below it is left alone.
   anathema: {
     cost: { ap: number }; // AP the `juge` (Persecutor) skill's Anathema costs (owner, 2026-10-24; eMushpedia).
     successFactor: number; // An Outcast's chance on every action that rolls one is multiplied by this (owner, 2026-10-24: x0.8).

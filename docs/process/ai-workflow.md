@@ -5142,3 +5142,9 @@ Follow-up: the owner dropped the Intergalactic line from the helper and had the 
 ### 2026-11-22: Removed the free-text "Track something…" tracker from the feature tabs
 
 The owner asked to drop the typed-notes tracker (`hud/Tracker.tsx`, client-only state that never reached the server) from every feature tab, since each feature will get its own specialized tracker. Feature tabs without one yet (e.g. Pilgred and Botany before anything is shared) now show only their thread, and the "needs an iTrackie to track" note shows only on Research and NERON, which have real trackers. Removed the component, its state, CSS and the five en/fr/es strings it used. Straightforward; no corrections needed.
+
+## 2026-11-22: Hard-boiled Mush skill, with a combat damage floor of 1
+
+- **Decision (owner):** implement Hard-boiled (`tough`) per eMushpedia (-1 on each non-critical punch or weapon hit, not expeditions, stacking with Plastenite Armor), but with damage clamped to a minimum of 1. Asked how the floor combines with armor; the owner chose a floor of 1 **for everyone**, so Plastenite Armor alone (including expedition fights) can no longer fully absorb a hit either. New knobs `tough.absorb` and `combatDamageFloor`; `afterProtection` in `items.ts` combines both for punches and weapon hits.
+- **What worked:** the wiki page settled scope (crits, expeditions, stacking) without asking; only the floor/armor interaction needed a question. Keeping the floor in config let the existing `punchArmor`/`attackArmor` log tests stay covered by running them with a floor of 0.
+- **Needed correction:** `npm run emush -- spec TOUGH` returned an invented spec (a max-HP bonus, "human skill"), so the wiki was the source used. A first scripted edit anchored on a helper that lives in `expeditions.ts`, not `items.ts`, and had to be redone.

@@ -99,6 +99,7 @@ Both games start characters with 0 skills (3 pickable + 1 book slot) and permane
 | **Nimble Fingers (`nimble_fingers`)** | Grants secret camera install/remove actions only. | **0 AP instant toggle** (enter/exit Nimble mode, private status). While active, all room-level **Public** actions (including movement) become **Secret** when unwitnessed and unfilmed (staying plain Public if witnessed/filmed so Nimble mode doesn't leak). |
 | **Traitor (`traitor`)** | Sabotages **all remaining sectors** of the expedition without revealing the next sector. | **0 AP, private, unrecorded**, once per expedition while away: forces **only the next sector** to draw a negative event and **reveals the next sector's tag** to the Traitor. |
 | **Trapper (`trapper`)** | Living Mush see a trap icon only in their **current room**; interacting with a shared door can depend on which side the door belongs to. | Living Mush see all active traps **ship-wide on the minimap** (icon + room caption), and interacting with a shared door only ever triggers a trap in the **actor's own room** (never an adjacent room). |
+| **Hard-boiled (`tough`)** | Takes 1 off each non-critical combat hit (not expeditions), stacking with Plastenite Armor; a 1-damage hit is fully absorbed (floor 0). | Same reduction and stacking, but armor and Hard-boiled together **never take a hit below 1** (`combatDamageFloor`): a 1-damage hit goes through whole and no punch or weapon hit is fully absorbed. Plastenite Armor alone has the same floor of 1, also in expedition fights (owner, 2026-11-22). |
 
 ---
 

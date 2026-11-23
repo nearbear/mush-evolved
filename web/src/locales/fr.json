@@ -1737,7 +1737,7 @@
       "infantryman": "Double vos chances de toucher aux tourelles.\n+1 Shoot par jour.\nCommence la partie avec un Blaster customisé.",
       "maintenance_agent": "Chaque jour : +1 point de Réparation, +1 point de Jardinage et +1 point de Cuisine.",
       "pyromane": "Pour 4 PA vous pouvez déclencher un Incendie dans une salle.",
-      "tough": "Chaque dégât de combat qui vous est infligé est réduit d'un point.",
+      "tough": "Chaque coup de poing ou coup d'arme non critique que vous subissez est réduit de 1, sans descendre sous 1. Sans effet en expédition.",
       "fertile": "Chaque jour, vous pouvez générer un spore gratuitement.",
       "ninja": "Vos attaques de corps-à-corps deviennent des actions anonymes.",
       "sapper": "Vos chances de succès pour le Sabotage d'équipement ou d'objets sont triplées.",

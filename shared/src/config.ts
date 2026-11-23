@@ -302,6 +302,10 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   scooter: { extraMpPerConversion: 2, charges: { start: 8, max: 8, perCycle: 1 } },
   // Owner, 2026-11-17 (eMush, eMushpedia): Plastenite Armor absorbs 1 combat damage; not crits, accidents or self-damage.
   plasteniteArmor: { absorb: 1 },
+  // Owner, 2026-11-22 (eMushpedia): Hard-boiled takes 1 off each non-critical punch or weapon hit (not expeditions), stacking with the armor.
+  tough: { absorb: 1 },
+  // Owner, 2026-11-22 (a difference from eMush): armor and Hard-boiled never take a combat hit below 1.
+  combatDamageFloor: 1,
   // Owner, 2026-10-24 (eMushpedia): Anathema costs 1 AP; the Outcast's actions that roll succeed at x0.8.
   anathema: { cost: { ap: 1 }, successFactor: 0.8 },
   // Owner, 2026-11-12: the Politician's Coup costs 3 AP and has a 50% chance to make the actor dirty.

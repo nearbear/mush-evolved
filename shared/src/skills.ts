@@ -290,6 +290,8 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   // Saboteur: triples the odds of Sabotage (owner, 2026-11-07, modifiers/sapper.ts) and adds Contaminate to research (actions/contaminate.ts).
   sapper: "full",
   electro_slime: "full",
+  // Hard-boiled: -1 on each non-critical punch or weapon hit, not expeditions, never below 1 (owner, 2026-11-22; items.ts afterProtection).
+  tough: "full",
   // Ignite: 4 AP, a secret fire at the next cycle change (owner, 2026-11-03, actions/ignite.ts).
   pyromane: "full",
   // Sure extinguisher use and the manual try (owner, 2026-11-01); its project bonus is in PROJECTS.
