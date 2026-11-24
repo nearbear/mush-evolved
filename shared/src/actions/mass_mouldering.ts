@@ -1,21 +1,22 @@
-import { Action, IN_PRESELECTION, type ActionTag, type ActionVisibility } from "./action.ts";
-import { soil } from "../dirt.ts";
-import { logPrivate } from "../log.ts";
+import { Action, IN_PRESELECTION, type ActionVisibility } from "./action.ts";
+import { changeAP } from "../adjustStats.ts";
+import { logPrivate, logSecret } from "../log.ts";
+import { becameDirty } from "../modifiers.ts";
 import { hasSkill } from "../skills.ts";
+import { addStatus } from "../statuses.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
 export type MassMoulderingActionData = { type: "mass_mouldering" };
 
 /**
- * Mass Mouldering, the Mush skill `massggedon` (owner, 2026-11-14): once per game (follows the mind),
- * 2 AP (`massMouldering.cost.ap`) and 0 spores, makes every living player on the ship (including the actor)
- * dirty via `soil()` (so apron and Stickler still block it). The original 2 AP drain is omitted.
- * Private action with the `spore` tag (triggers myco-alarms): the actor gets a private log line and each
- * affected player gets `soil()`'s private log line.
+ * Mass Mushification, the Mush skill `massggedon` (owner, 2026-11-14; matched to eMush 2026-11-23): once per game
+ * (follows the mind), `massMouldering.cost.ap` (2 AP) and `massMouldering.spores` (2 spores), drains
+ * `massMouldering.apDrain` (2 AP) from every living human and makes every living player (humans and Mush, including
+ * the actor) dirty, bypassing apron and Stickler. Secret action (witnessed by roommates or a camera, does not trigger
+ * myco-alarms); every other living player receives a private `soiledByMassMouldering` log line.
  */
 export class MassMoulderingAction extends Action<MassMoulderingActionData> {
-  override visibility: ActionVisibility = "private";
-  override tags: readonly ActionTag[] = ["spore"];
+  override visibility: ActionVisibility = "secret";
 
   constructor() {
     super("mass_mouldering");
@@ -34,14 +35,21 @@ export class MassMoulderingAction extends Action<MassMoulderingActionData> {
     if (player.role !== "mush") return "not_mush";
     if (!hasSkill(player, "massggedon")) return "no_skill";
     if (player.massMoulderingUsed) return "already_used";
+    if (player.spores < state.config.massMouldering.spores) return "no_spores";
     return null;
   }
 
   override apply(state: GameState, player: PlayerState): void {
+    player.spores -= state.config.massMouldering.spores;
     player.massMoulderingUsed = true;
-    logPrivate(state, player.id, "massMouldering");
+    logSecret(state, player.id, "massMouldering", { name: player.character });
     for (const p of state.players) {
-      if (p.alive) soil(state, p);
+      if (!p.alive) continue;
+      if (p.role === "human") changeAP(state, p, -state.config.massMouldering.apDrain);
+      const wasDirty = p.statuses.includes("dirty");
+      addStatus(p, "dirty");
+      if (p.id !== player.id) logPrivate(state, p.id, "soiledByMassMouldering");
+      if (!wasDirty) becameDirty(state, p);
     }
   }
 }

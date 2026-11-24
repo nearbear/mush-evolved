@@ -114,11 +114,11 @@ describe("myco alarm", () => {
     expect(after.players[1]!.ap).toBe(ap - config.dismantle.cost.ap);
   });
 
-  it("tags all built eMush myco-alarm actions and Mass Mouldering with spore, and excludes extraction, phagocytosis, and punch", () => {
-    for (const type of ["spike", "body_transfer", "fungal_cuisine", "mass_mouldering"] as const) {
+  it("tags all built eMush myco-alarm actions with spore, and excludes extraction, phagocytosis, mass_mouldering, and punch", () => {
+    for (const type of ["spike", "body_transfer", "fungal_cuisine", "trap_room"] as const) {
       expect(ACTIONS[type].tags).toContain("spore");
     }
-    for (const type of ["extract_spore", "consume_spore", "punch"] as const) {
+    for (const type of ["extract_spore", "consume_spore", "mass_mouldering", "punch"] as const) {
       expect(ACTIONS[type].tags).not.toContain("spore");
     }
   });

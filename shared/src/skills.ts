@@ -254,7 +254,7 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   skilful: "full",
   // Mush skill: the one-use reset of the Mush skills (owner, 2026-11-13, actions/reset_skills.ts).
   epigenetics: "full",
-  // Mush skill: once per game, 2 AP and 0 spores, makes every living player dirty via soil() (owner, 2026-11-14, actions/mass_mouldering.ts; 2 AP drain omitted).
+  // Mush skill: once per game, 2 AP and 2 spores, drains 2 AP from living humans and soils every living player bypassing apron/Stickler (owner, 2026-11-23, actions/mass_mouldering.ts).
   massggedon: "full",
   // Mush skill: the one-use body swap (owner, 2026-10-24, body_transfer.ts).
   transfert: "full",

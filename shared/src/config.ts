@@ -95,8 +95,8 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   spike: { cost: { ap: 1 }, cooldownCycles: 4 },
   bodyTransfer: { cost: { ap: 0 } },
   resetSkills: { cost: { ap: 2 } },
-  // Owner, 2026-11-14: Mass Mouldering costs 2 AP and 0 spores, once per game (2 AP drain omitted).
-  massMouldering: { cost: { ap: 2 } },
+  // Owner, 2026-11-23 (matching eMush): Mass Mushification costs 2 AP and 2 spores, once per game, drains 2 AP from living humans and soils every living player.
+  massMouldering: { cost: { ap: 2 }, spores: 2, apDrain: 2 },
   // Owner, 2026-11-14: Demoralizer (disheartening_contact) costs 2 AP and lowers a living roommate's morale by 2.
   demoralize: { cost: { ap: 2 }, morale: 2 },
   // Owner, 2026-11-21: Bacteriophilia's give_disease, 1 AP, from `diseases.mushSkillDiseases`.

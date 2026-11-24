@@ -371,7 +371,9 @@ export interface GameConfig {
     cost: { ap: number }; // The Mush skill Epigenetics: 2 AP (owner, 2026-11-13).
   };
   massMouldering: {
-    cost: { ap: number }; // The Mush skill Mass Mouldering: 2 AP, 0 spores (owner, 2026-11-14).
+    cost: { ap: number }; // The Mush skill Mass Mushification (massggedon): 2 AP, 2 spores, drains 2 AP from humans (owner, 2026-11-23, matching eMush).
+    spores: number; // Spores spent (2).
+    apDrain: number; // AP drained from every living human (2).
   };
   demoralize: {
     cost: { ap: number }; // The Mush skill Demoralizer (disheartening_contact): 2 AP, no limit (owner, 2026-11-14).

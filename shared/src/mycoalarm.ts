@@ -12,9 +12,9 @@ export const MYCO_ALARM_ITEM = "myco_alarm";
 /** What the completed MYCO_ALARM research yields, placed in the lab's room (owner, 2026-10-17). */
 export const MYCO_ALARM_YIELD = 3;
 
-// The Mush abilities that ring an alarm (owner, 2026-10-17, matching eMush's isDetectedByMycoAlarm plus Mass Mouldering):
-// spike, body_transfer, fungal_cuisine, mass_mouldering, and trap_room (built); mutate, infectious_cuddles, nightmarish,
-// bacterophiliac, and radio_pirate (when built). Extracting a spore and Phagocytosis never ring it, so they have no tag.
+// The Mush abilities that ring an alarm (owner, 2026-10-17, matching eMush's isDetectedByMycoAlarm):
+// spike, body_transfer, fungal_cuisine, and trap_room (built); mutate, infectious_cuddles, nightmarish,
+// bacterophiliac, and radio_pirate (when built). Extracting a spore, Phagocytosis, and Mass Mushification never ring it, so they have no tag.
 
 /** Rings once if any alarm is on the floor of `room`, however many there are. Mutates a state the caller already cloned. */
 export function ringMycoAlarms(state: GameState, room: RoomId): void {

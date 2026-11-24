@@ -92,7 +92,6 @@ Both games start characters with 0 skills (3 pickable + 1 book slot) and permane
 
 | Mush Skill | eMush | Mush: Evolved |
 | :--- | :--- | :--- |
-| **Mass Mushification** *(eMush's Massive Mushification)* | Costs **2 spores**, drains **2 AP** from humans, and bypasses Apron/Stickler. | **2 AP, 0 spores**, once per game, private (triggers myco-alarms): soils every living player aboard (Apron/Stickler **block it**) and **omits the 2 AP drain**. |
 | **Doorman** | Once per day (0 AP) on a **random** working door in the room. | Lets the Mush **choose which working door** in the room to break, with **no daily limit** (**first use each day is 0 AP**, subsequent uses cost **2 AP**). |
 | **Nimble Fingers** | Grants secret camera install/remove actions only. | **0 AP instant toggle** (enter/exit Nimble mode, private status). While active, all room-level **Public** actions (including movement) become **Secret** when unwitnessed and unfilmed (staying plain Public if witnessed/filmed so Nimble mode doesn't leak). |
 | **Trapper** | Living Mush see a trap icon only in their **current room**. | Living Mush see all active traps **ship-wide on the minimap** (icon and room caption). |
