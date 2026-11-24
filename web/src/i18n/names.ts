@@ -3,7 +3,7 @@
 // helpers turn ids into the player's language. Call `useNames()` in a
 // component so it re-renders when the language changes.
 
-import { BLUEPRINTS, LOST_PLACE_NAME, SOMEONE, characterGivenName, characterName, hybridParents, type ActionType, isLostPlace, type ItemView, type LogEntry, type RoomId } from "@mush2/shared";
+import { BLUEPRINTS, DELOGGED_KEY, LOST_PLACE_NAME, SOMEONE, characterGivenName, characterName, hybridParents, type ActionType, isLostPlace, type ItemView, type LogEntry, type RoomId } from "@mush2/shared";
 import { useTranslation } from "react-i18next";
 
 /** The name of each kind of action, for the action queue and log lines that mention one. Ready never waits in a queue. */
@@ -211,7 +211,10 @@ export function useNames() {
     );
 
   /** The text of a log entry. `room`, `item`, `research`, `project`, `equipment`, `action`, `title`, `skill`, `base` (a rebel base), `direction` (a heading), `entry` (a Xyloph entry), `cause` (a cause of death) and `song`/`song1`..`song3` (a jukebox song, by character) params are ids and get translated; `drone` and `serial` make a drone's name, and `upgrade` is a drone upgrade; `name`, `target` and `body` are character ids; `tested` and `spoiledBy` are an assay's counts by character. */
-  const logLine = ({ key, params = {} }: Pick<LogEntry, "key" | "params">): string => {
+  const logLine = ({ key, params = {}, maskedActor }: Pick<LogEntry, "key" | "params" | "maskedActor">): string => {
+    if (key === DELOGGED_KEY && maskedActor) {
+      return t("logEvent.deloggedRevealed", { name: characterGivenName(maskedActor) });
+    }
     const resolved: Record<string, string | number> = { ...params };
     if (typeof params.room === "string") resolved.room = room(params.room);
     if (typeof params.item === "string") resolved.item = item(params.item);
@@ -233,8 +236,10 @@ export function useNames() {
     // The jukebox's songs (shared/src/jukebox.ts), by the character whose favourite each is.
     for (const song of ["song", "song1", "song2", "song3"] as const) if (typeof params[song] === "string") resolved[song] = jukeboxSong(params[song]);
     // A ninja's name is `SOMEONE` (shared/src/log.ts): "someone", capitalized when the line starts with it.
+    // All-seeing replays also carry `maskedActor`, shown as "someone (Chao)" (#486).
+    const maskedLabel = maskedActor ? t("logEvent.someoneRevealed", { name: characterGivenName(maskedActor) }) : t("logEvent.someone");
     for (const who of ["name", "target", "body"] as const)
-      if (typeof params[who] === "string") resolved[who] = params[who] === SOMEONE ? t("logEvent.someone") : characterGivenName(params[who]);
+      if (typeof params[who] === "string") resolved[who] = params[who] === SOMEONE ? maskedLabel : characterGivenName(params[who]);
     // An assay's "chun:3,paola:1" lists (shared/src/actions/research.ts): "Chun ×3, Paola ×1".
     for (const list of ["tested", "spoiledBy"] as const) if (typeof params[list] === "string") resolved[list] = sampleCounts(params[list]);
     const line: string = t(`logEvent.${key}` as never, { ...resolved, defaultValue: key });

@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { ACTIONS } from "../src/actions.ts";
 import { killPlayer } from "../src/death.ts";
-import { DELOGGED_KEY, logPrivate, logPublic } from "../src/log.ts";
+import { fullViewFor, perspective, seatStarts } from "../src/fullView.ts";
+import { DELOGGED_KEY, logPrivate, logPublic, logSecret } from "../src/log.ts";
+import { revealFor } from "../src/replayView.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { GameState } from "../src/types.ts";
 import { makeSeats, mustApply, nextCycle, nextDay, option, player, testConfig } from "./support.ts";
@@ -62,15 +64,32 @@ describe("defacer", () => {
     expect(s.log.filter((e) => e.room === ROOM_A)).toHaveLength(1);
   });
 
-  it("records nothing in the room until the cycle ends, then records again and the notice goes", () => {
+  it("records nothing visible in the room until the cycle ends, keeps swallowed lines for replays, then records again", () => {
     const s = delog();
+    const seenBefore = Object.fromEntries(["p0", "p1", "p2"].map((id) => [id, player(s, id).logSeen]));
     logPublic(s, ROOM_A, "during");
     logPrivate(s, "p1", "duringPrivate");
+    logSecret(s, "p0", "duringSecret");
     logPublic(s, ROOM_B, "nextDoor");
-    // Moving out writes nothing in the defaced room, but the next room still records the arrival.
+    // Swallowed lines never advance anyone's `logSeen`.
+    for (const id of ["p0", "p1", "p2"]) expect(player(s, id).logSeen).toBe(seenBefore[id]);
+    // Moving out shows nothing in the defaced room, but the next room still records the arrival.
     const moved = mustApply(s, "p2", { type: "move", to: ROOM_B });
-    expect(moved.log.filter((e) => e.room === ROOM_A).map((e) => e.key)).toEqual([DELOGGED_KEY]);
+    for (const id of ["p0", "p1"]) expect(keysOf(moved, id)).toEqual([DELOGGED_KEY]);
     expect(moved.log.some((e) => e.room === ROOM_B && e.key === "entered")).toBe(true);
+    // Stored as defaced with `visibleTo: []` (and no `leaked` on a swallowed secret line), revealed only in all-seeing replays (#486).
+    const swallowed = moved.log.filter((e) => e.room === ROOM_A && e.key !== DELOGGED_KEY);
+    expect(swallowed.map((e) => e.key)).toEqual(["during", "duringPrivate", "duringSecret", "left"]);
+    for (const e of swallowed) {
+      expect(e.visibleTo).toEqual([]);
+      expect(e.defaced).toBe(true);
+      expect(e.leaked).toBeUndefined();
+    }
+    const full = fullViewFor(moved, seatStarts(moved));
+    expect(perspective(full, "p1").log.filter((e) => e.room === ROOM_A).map((e) => e.key)).toEqual([DELOGGED_KEY]);
+    const revealed = revealFor(full, "p1");
+    expect(revealed.view.log.filter((e) => e.room === ROOM_A).map((e) => e.key)).toEqual([DELOGGED_KEY, "during", "duringPrivate", "duringSecret", "left"]);
+    for (const e of swallowed) expect(revealed.reveal.seenBy.log[e.id]).toEqual([]);
 
     const next = nextCycle(moved);
     expect(next.deloggedRooms).toEqual([]);
@@ -88,10 +107,11 @@ describe("defacer", () => {
     expect(option(nextDay(s), "p0", { type: "delog" })).toBeDefined();
   });
 
-  it("a death in the defaced room gets no room line and no NERON announcement", () => {
+  it("a death in the defaced room gets no visible room line and no NERON announcement, but is kept for replays", () => {
     const s = delog();
     killPlayer(s, player(s, "p1"), "injury");
-    expect(s.log.some((e) => e.key === "died")).toBe(false);
+    for (const id of ["p0", "p1", "p2"]) expect(viewFor(s, id).log.some((e) => e.key === "died")).toBe(false);
+    expect(s.log.find((e) => e.key === "died")).toMatchObject({ room: ROOM_A, visibleTo: [], defaced: true });
     expect(s.chat.some((m) => m.system?.key === "diedHuman")).toBe(false);
 
     const control = ship();
@@ -99,14 +119,23 @@ describe("defacer", () => {
     expect(control.chat.some((m) => m.system?.key === "diedHuman")).toBe(true);
   });
 
-  it("never tells anyone else who defaced, the defaced rooms or the daily use", () => {
+  it("never tells anyone else who defaced, the defaced rooms or the daily use, while all-seeing replays name the defacer", () => {
     const s = delog();
+    const actor = player(s, "p0").character;
+    for (const id of ["p0", "p1", "p2"]) {
+      const notice = viewFor(s, id).log.find((l) => l.key === DELOGGED_KEY)!;
+      expect(notice.params).toBeUndefined();
+      expect(notice.maskedActor).toBeUndefined();
+    }
     for (const id of ["p1", "p2"]) {
       const json = JSON.stringify(viewFor(s, id));
       expect(json).not.toContain("deloggedRooms");
       expect(json).not.toContain("delogToday");
-      const notice = viewFor(s, id).log.find((l) => l.key === DELOGGED_KEY)!;
-      expect(notice.params).toBeUndefined();
+      expect(json).not.toContain("maskedActor");
+      expect(json).not.toContain("defaced");
     }
+    const full = fullViewFor(s, seatStarts(s));
+    expect(perspective(full, "p1").log.find((l) => l.key === DELOGGED_KEY)!.maskedActor).toBeUndefined();
+    expect(revealFor(full, "p1").view.log.find((l) => l.key === DELOGGED_KEY)!.maskedActor).toBe(actor);
   });
 });

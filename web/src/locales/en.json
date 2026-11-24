@@ -752,7 +752,9 @@
       "secret": "Secret action: no one else saw it.",
       "secretLeaked": "Secret action, but someone else saw it.",
       "covert": "Covert action: no one else saw it.",
-      "covertLeaked": "Covert action, but it was revealed."
+      "covertLeaked": "Covert action, but it was revealed.",
+      "defacedLabel": "Defaced",
+      "defaced": "Hidden from the room log by Defacer."
     },
     "unreadTab_one": "{{name}}, {{count}} unread",
     "unreadTab_other": "{{name}}, {{count}} unread",
@@ -1224,7 +1226,9 @@
     "becameNinja": "You are now a ninja: your actions are anonymous.",
     "becameNormal": "You are no longer a ninja.",
     "delogged": "The logs are all scrambled... Who has been messing with the sensors again!?",
+    "deloggedRevealed": "The logs are all scrambled... ({{name}} cleared the logs.)",
     "someone": "someone",
+    "someoneRevealed": "someone ({{name}})",
     "interrogated": "{{name}} interrogated {{target}}.",
     "chitchatted": "{{name}} chitchatted with {{target}}.",
     "comforted": "{{name}} comforted {{target}}.",

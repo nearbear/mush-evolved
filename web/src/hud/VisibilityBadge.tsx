@@ -32,3 +32,20 @@ export function VisibilityBadge({ kind, leaked, text }: { kind: LogKind; leaked:
     </Popover.Root>
   );
 }
+
+/** Badge on a log line swallowed by a Defacer, shown only in all-seeing replays (#486). */
+export function DefacedBadge() {
+  const { t } = useTranslation();
+  return (
+    <Popover.Root>
+      <Popover.Trigger openOnHover delay={200} className="defaced-badge">
+        {t("itrackie.visibility.defacedLabel")}
+      </Popover.Trigger>
+      <Popover.Portal>
+        <Popover.Positioner sideOffset={6}>
+          <Popover.Popup className="tooltip">{t("itrackie.visibility.defaced")}</Popover.Popup>
+        </Popover.Positioner>
+      </Popover.Portal>
+    </Popover.Root>
+  );
+}

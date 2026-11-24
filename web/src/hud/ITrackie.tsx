@@ -18,7 +18,7 @@ import { Hint, IconTab } from "./IconButton.tsx";
 import { TabOutline } from "./TabOutline.tsx";
 import { CycleDivider } from "./CycleDivider.tsx";
 import { FeedEntry, InfoMarker, NeronAvatar, NeronName, WarningMarker, isNeronMessage } from "./FeedEntry.tsx";
-import { VisibilityBadge } from "./VisibilityBadge.tsx";
+import { DefacedBadge, VisibilityBadge } from "./VisibilityBadge.tsx";
 import { PrivateChannels, type ChannelHandlers } from "./PrivateChannels.tsx";
 import { Thread, type ThreadLinks } from "./Thread.tsx";
 import { Threads, threadNameFrom } from "./Threads.tsx";
@@ -92,6 +92,7 @@ const LogRow = memo(
         at={e.at}
         className={logRowClass(e)}
       >
+        {e.defaced && <DefacedBadge />}
         {names.logLine(e)}
         {canRead && (
           <button type="button" className="expedition-read" onClick={() => onRead(String(e.params?.report))}>

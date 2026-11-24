@@ -38,6 +38,6 @@ export class DelogAction extends Action<DelogActionData> {
 
   override apply(state: GameState, player: PlayerState): void {
     player.delogToday = true;
-    deface(state, player.room);
+    deface(state, player.room, player.character);
   }
 }

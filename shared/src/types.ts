@@ -52,6 +52,17 @@ export interface LogEntry {
   kind?: LogKind;
   /** On a secret or covert line that reached anyone besides the actor: a witness, a camera, or an Outcast's room. */
   leaked?: true;
+  /**
+   * The real character behind a ninja's masked line (`SOMEONE` in `params`) or a Defacer's `delogged` notice (#486).
+   * Stripped by `seatViewFor` (never sent in live views or seat perspective); only all-seeing replay mode (`revealFor`)
+   * keeps it.
+   */
+  maskedActor?: CharacterId;
+  /**
+   * Written in a room a Defacer had cleared this cycle (#486). Stored with `visibleTo: []` so no live view or seat
+   * perspective sees it; only all-seeing replay mode (`revealFor`) shows it, marked as defaced.
+   */
+  defaced?: true;
 }
 
 /** Severity level on a log entry (`warning` in amber, `danger` in red). */

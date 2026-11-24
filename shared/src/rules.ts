@@ -953,9 +953,13 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     // `seesLine` (log.ts) says which lines are yours; room lines, private ones included, only within your window (#365).
     // A private line names only you in the view: no one learns who else saw it (`leaked` marks a secret line others saw).
     // `kind` and `leaked` go with every line you see (#366). A crew move's direction only with Tracker (`moveLineFor`).
+    // `maskedActor` and `defaced` are for all-seeing replays only (#486) and are always stripped here.
     log: state.log
       .filter((e) => seesLine(e, you) && inLogWindow(state, e, logWindow))
-      .map((e) => moveLineFor(e.visibleTo === "all" ? e : { ...e, visibleTo: [you.id] }, you)),
+      .map((e) => {
+        const { maskedActor: _maskedActor, defaced: _defaced, ...visible } = e;
+        return moveLineFor(visible.visibleTo === "all" ? visible : { ...visible, visibleTo: [you.id] }, you);
+      }),
     logSeen: you.logSeen,
     chat: state.chat.filter((m) => channels.includes(m.channel) && heardBy(you, m)).map((m) => messageView(m, state.chatMarks)),
     chatCounts: Object.fromEntries(channels.flatMap((c) => (state.chatSeq[c] ? [[c, state.chatSeq[c]]] : []))),

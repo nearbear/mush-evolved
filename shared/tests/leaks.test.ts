@@ -193,6 +193,9 @@ function ship(): { state: GameState; sentinels: Sentinel[] } {
     drone: { name: str("droneName", ["p0", "p1", "p2"]), serial: num("droneSerial", ["p0", "p1", "p2"]), upgrades: [], failures: { repair: num("droneRepairFailures", []), extinguish: num("droneExtinguishFailures", []), shoot: num("droneShootFailures", []) } },
   });
   s.log.push({ id: 10_000 + s.log.length, cycle: s.cycle, key: "test", params: { x: str("roomLog-elsewhere", ["p3"]) }, room: ELSEWHERE, visibleTo: "all" });
+  // Ninja's real actor and lines swallowed by a Defacer stay out of every live view (#486).
+  s.log.push({ id: 10_000 + s.log.length, cycle: s.cycle, key: "test", params: { name: "someone" }, room: HERE, visibleTo: "all", maskedActor: str("maskedActor", []) as CharacterId });
+  s.log.push({ id: 10_000 + s.log.length, cycle: s.cycle, key: "test", params: { x: str("defacedLog", []) }, room: HERE, visibleTo: [], defaced: true });
   // A message's game-wide id never goes out (a gap in it would show posts you can't read, #355); its `seq` does.
   s.chat.push({ id: num("chatId-mush", []), seq: 0, cycle: s.cycle, channel: MUSH_CHANNEL, from: "p0", isBot: false, text: str("mushChat", ["p0"]) });
   s.chatSeq[MUSH_CHANNEL] = num("chatSeq-mush", ["p0"]);

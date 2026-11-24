@@ -5225,3 +5225,20 @@ Owner asked to rotate three Mush skill icons (Slime Trap's to Mass Mouldering, M
 ## 2026-11-22 — Expedition seat labels above heads
 
 - Moved `.icarus-seat-label` (character name and HP) above `<Podium />` in `web/src/hud/IcarusPanel.tsx` for both docked and away seats, and updated the comment in `web/src/styles/icarus.css`. Verified with `npm run verify:web`.
+
+## 2026-11-23: Orbiting star field
+
+- **Decision:** In orbit the Pixi sky circles clockwise on concentric 2:1 ellipses (a circle on the iso plane) about a pivot far off the panel's bottom-left (owner chose this over the planet or the panel's centre, as the physically closer option: the orbit's axis is away from the planet). At the panel's centre the stars move down-right, like the cruising stream, at about 40% of its speed. Leaving orbit, the sky settles at the next whole half turn (where the ellipse map is a plain turn again) and folds that into the turn angle.
+- **What worked:** Treating the sky as one affine map per layer (`skyFrame` in `skyTurn.ts`) generalised the existing turn math, so parallax and streaming still move in straight lines during orbit. The ellipse map stretches a texture up to 2:1, which would smear pixel-art sparkles, so in orbit the near stars are drawn as individual sprites (`starPoints`, tested to match `starLayer` pixel for pixel); the faint dust keeps the tile and its affine transform.
+- **Needed correction:** A fold test compared screen positions exactly, but rebasing wraps the offset by whole tiles; it now compares modulo the tile. No screenshot check was done (owner's request to save credits), so the look and the speed constant are untuned.
+
+### 2026-11-23 — Truthful ninja and defacer logs in all-seeing replays (#486)
+
+- **Decision (owner, 2026-11-23):** In all-seeing replay mode (`revealFor`), Ninja-masked lines show both the mask and real actor (`"Someone (Chao)"`), Defacer's `delogged` notice reveals who cleared the logs, and lines swallowed by Defacer are shown muted (`visibleTo: []`) with a small `Defaced` badge/popover. Live views and seat-perspective replays stay unchanged.
+- **Implementation:** Added optional `maskedActor?: CharacterId` and `defaced?: true` to `LogEntry` (with normalizer pass-through, no `STATE_VERSION` bump). `pushLog` stores swallowed lines in defaced rooms with `visibleTo: []` and `defaced: true` (stripping `leaked` and its spilled warning) so `seesLine` returns false and `logSeen` never advances; `deface` records `maskedActor` on `delogged`; `ninjaMasked` records `maskedActor` when masking to `SOMEONE`. `seatViewFor` strips `maskedActor` and `defaced` from every live view and seat-perspective replay. `web` renders `someoneRevealed`, `deloggedRevealed`, and `<DefacedBadge />` (en/fr/es).
+- **Verification:** Added sentinel leak tests in `shared/tests/leaks.test.ts`, unit tests in `ninja.test.ts`, `defacer.test.ts`, and `web/tests/hud/replayLogReveal.test.tsx`, and ran `npm run verify && npm run build`.
+
+## 2026-11-23: Orbiting star field — bowed 2D elliptical streamlines
+
+- **Decision:** Replaced the uncommitted rigid off-screen-pivot affine orbit with pure 2D bowed elliptical streamlines in `web/src/iso/skyTurn.ts` (`orbitField`, `orbitPoint`, `orbitSearchCorners`). In orbit, each near star glides along an exact 2D ellipse (`u' = halfSpan * sin(t)`, `v' = v + (bow + fan * v) * cos(t)`) sweeping down-right across the canvas like curved latitude lines, while the nebula/dust `TilingSprite` stays completely undistorted.
+- **What worked:** Blending `orbitBlend` in `[0, 1]` over `EASE_SECONDS` makes `blend = 0` the exact identity map, so entering and leaving orbit transitions smoothly between the flat `TilingSprite` and individual star sprites with no pop and no long settling spin (`orbitRest`/`foldOrbit` removed). Verified with `npm run verify:web`.

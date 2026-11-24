@@ -766,7 +766,9 @@
       "secret": "Acción secreta: nadie más la vio.",
       "secretLeaked": "Acción secreta, pero alguien más la vio.",
       "covert": "Acción discreta: nadie más la vio.",
-      "covertLeaked": "Acción discreta, pero fue revelada."
+      "covertLeaked": "Acción discreta, pero fue revelada.",
+      "defacedLabel": "Borrado",
+      "defaced": "Ocultado del registro de la sala por Guionista."
     },
     "unreadTab_one": "{{name}}, {{count}} sin leer",
     "unreadTab_other": "{{name}}, {{count}} sin leer",
@@ -1248,7 +1250,9 @@
     "becameNinja": "Ahora eres un ninja: tus acciones son anónimas.",
     "becameNormal": "Ya no eres un ninja.",
     "delogged": "Los registros están todos revueltos... ¡¿Quién ha vuelto a jugar con los sensores?!",
+    "deloggedRevealed": "Los registros están todos revueltos... ({{name}} borró el registro.)",
     "someone": "alguien",
+    "someoneRevealed": "alguien ({{name}})",
     "interrogated": "{{name}} interrogó a {{target}}.",
     "chitchatted": "{{name}} charló con {{target}}.",
     "comforted": "{{name}} consoló a {{target}}.",

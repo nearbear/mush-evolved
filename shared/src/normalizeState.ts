@@ -704,6 +704,8 @@ export function normalizeLogEntry(raw: Partial<LogEntry>): LogEntry {
     level: raw.level,
     kind: raw.kind,
     leaked: raw.leaked,
+    maskedActor: raw.maskedActor,
+    defaced: raw.defaced,
   });
 }
 

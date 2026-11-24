@@ -766,7 +766,9 @@
       "secret": "Action secrète : personne d'autre ne l'a vue.",
       "secretLeaked": "Action secrète, mais quelqu'un d'autre l'a vue.",
       "covert": "Action discrète : personne d'autre ne l'a vue.",
-      "covertLeaked": "Action discrète, mais elle a été révélée."
+      "covertLeaked": "Action discrète, mais elle a été révélée.",
+      "defacedLabel": "Effacé",
+      "defaced": "Masqué du log de la salle par Dialoguiste."
     },
     "unreadTab_one": "{{name}}, {{count}} non lu",
     "unreadTab_other": "{{name}}, {{count}} non lus",
@@ -1248,7 +1250,9 @@
     "becameNinja": "Vous êtes maintenant un ninja : vos actions sont anonymes.",
     "becameNormal": "Vous n'êtes plus un ninja.",
     "delogged": "Les archives sont toutes brouillées… Qui a fait mumuse avec les senseurs encore !?",
+    "deloggedRevealed": "Les archives sont toutes brouillées… ({{name}} a effacé les logs.)",
     "someone": "quelqu'un",
+    "someoneRevealed": "quelqu'un ({{name}})",
     "interrogated": "{{name}} a interrogé {{target}}.",
     "chitchatted": "{{name}} a papoté avec {{target}}.",
     "comforted": "{{name}} a réconforté {{target}}.",

@@ -14,6 +14,7 @@
 // the body across a Transfer (owner, 2026-11-05, #281) and the log only grows.
 
 import type { ActionVisibility } from "./actions/action.ts";
+import type { CharacterId } from "./characters.ts";
 import { CAMERA_EQUIPMENT } from "./equipment.ts";
 import { rollFloat } from "./rng.ts";
 import { hasSkill } from "./skills.ts";
@@ -21,8 +22,16 @@ import type { GameState, LogEntry, LogLevel, LogParams, PlayerId, PlayerState, R
 
 /** Appends `entry` with the next id and the current cycle. Every log line goes through here. Mutates a state the caller already cloned. */
 export function pushLog(state: GameState, entry: Omit<LogEntry, "id" | "cycle">): void {
-  if (entry.room !== undefined && isDefaced(state, entry.room)) return;
-  const line: LogEntry = { id: state.nextLogId++, cycle: state.cycle, ...ninjaMasked(state, entry) };
+  const masked = ninjaMasked(state, entry);
+  const swallowed = masked.room !== undefined && isDefaced(state, masked.room);
+  let stored = masked;
+  if (swallowed) {
+    // Nobody sees a swallowed line in the live game: drop `leaked` (and the warning level that `spilled` paired with it).
+    const { leaked, ...rest } = masked;
+    const withoutSpill = leaked && rest.level === "warning" ? (({ level: _level, ...r }) => r)(rest) : rest;
+    stored = { ...withoutSpill, visibleTo: [], defaced: true };
+  }
+  const line: LogEntry = { id: state.nextLogId++, cycle: state.cycle, ...stored };
   state.log.push(line);
   for (const p of state.players) if (seesLine(line, p)) p.logSeen += 1;
 }
@@ -37,14 +46,15 @@ export function isDefaced(state: Readonly<GameState>, room: RoomId): boolean {
 
 /**
  * Defacer's Clear the logs (owner, 2026-11-22, as in eMush): erases every line in `room`, whoever could see it
- * (private ones too), writes the public `delogged` notice, and drops every line written there until the cycle ends
- * (`pushLog`), private ones and death lines included. The notice is not Nimble's or a ninja's to change. The record
- * keeps every line. Mutates a state the caller already cloned.
+ * (private ones too), writes the public `delogged` notice (carrying `maskedActor` for all-seeing replays, #486), and
+ * swallows every line written there until the cycle ends (`pushLog`, stored with `visibleTo: []` and `defaced: true`
+ * for all-seeing replays, never sent in live views). The notice is not Nimble's or a ninja's to change. Mutates a
+ * state the caller already cloned.
  */
-export function deface(state: GameState, room: RoomId): void {
+export function deface(state: GameState, room: RoomId, actor?: CharacterId): void {
   if (isDefaced(state, room)) return; // nothing but the notice is there
   state.log = state.log.filter((e) => e.room !== room);
-  pushLog(state, { key: DELOGGED_KEY, room, visibleTo: "all" });
+  pushLog(state, { key: DELOGGED_KEY, room, visibleTo: "all", ...(actor !== undefined && { maskedActor: actor }) });
   state.deloggedRooms.push(room);
 }
 
@@ -160,10 +170,10 @@ function ninjaMasked(state: Readonly<GameState>, entry: Omit<LogEntry, "id" | "c
   const actor = ninjaActorId;
   if (entry.visibleTo !== "all" && entry.visibleTo.every((id) => id === actor)) return entry;
   const character = state.players.find((p) => p.id === actor)?.character;
-  if (!CHARACTER_PARAMS.some((k) => entry.params![k] === character)) return entry;
+  if (!character || !CHARACTER_PARAMS.some((k) => entry.params![k] === character)) return entry;
   const params = { ...entry.params };
   for (const k of CHARACTER_PARAMS) if (params[k] === character) params[k] = SOMEONE;
-  return { ...entry, params };
+  return { ...entry, params, maskedActor: character };
 }
 
 /**

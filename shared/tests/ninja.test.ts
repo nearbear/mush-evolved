@@ -2,8 +2,10 @@ import { describe, expect, it } from "vitest";
 import { ACTIONS } from "../src/actions.ts";
 import { killPlayer } from "../src/death.ts";
 import { CAMERA_EQUIPMENT } from "../src/equipment.ts";
+import { fullViewFor, perspective, seatStarts } from "../src/fullView.ts";
 import { cure } from "../src/infection.ts";
 import { logCovert, logPrivate, logPublic, SOMEONE, withNinjaActor } from "../src/log.ts";
+import { revealFor } from "../src/replayView.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { GameState } from "../src/types.ts";
 import { makeSeats, mustApply, nextCycle, option, player, testConfig } from "./support.ts";
@@ -67,14 +69,24 @@ describe("ninja", () => {
 
   it("names the ninja Someone in every room line of their actions, the victim's and their own included", () => {
     const hit = mustApply(ninja(), "p0", { type: "punch", target: "p1" });
+    const p0 = player(hit, "p0").character;
     const p1 = player(hit, "p1").character;
+    const stored = hit.log.findLast((l) => l.key.startsWith("punch"))!;
+    expect(stored).toMatchObject({ params: { name: SOMEONE, target: p1 }, maskedActor: p0 });
     for (const id of ["p0", "p1", "p2"]) {
       const line = viewFor(hit, id).log.findLast((l) => l.key.startsWith("punch"))!;
       expect(line.params).toMatchObject({ name: SOMEONE, target: p1 });
+      expect(line.maskedActor).toBeUndefined();
     }
-    // Moves too: both rooms read "Someone".
+    // Replay: seat perspective strips `maskedActor`; all-seeing keeps it (#486).
+    const full = fullViewFor(hit, seatStarts(hit));
+    expect(perspective(full, "p1").log.findLast((l) => l.key.startsWith("punch"))!.maskedActor).toBeUndefined();
+    expect(revealFor(full, "p1").view.log.findLast((l) => l.key.startsWith("punch"))!.maskedActor).toBe(p0);
+    // Moves too: both rooms read "Someone" and record `maskedActor`.
     const moved = mustApply(ninja(), "p0", { type: "move", to: ROOM_B });
-    expect(moved.log.filter((l) => l.key === "left" || l.key === "entered").map((l) => l.params?.name)).toEqual([SOMEONE, SOMEONE]);
+    const moves = moved.log.filter((l) => l.key === "left" || l.key === "entered");
+    expect(moves.map((l) => l.params?.name)).toEqual([SOMEONE, SOMEONE]);
+    expect(moves.map((l) => l.maskedActor)).toEqual([p0, p0]);
   });
 
   it("names them again once they become normal", () => {
