@@ -29,12 +29,12 @@ function ship(): GameState {
 const biosOffers = (s: GameState, id: string) => offered(s, id).filter((a) => a.type === "set_bios");
 
 describe("NERON's BIOS", () => {
-  it("starts with all switches on, CPU priority none, crew lock piloting, and changing is free and private", () => {
+  it("starts with ACTOPI and death announcements on, plasma shield off, CPU priority none, crew lock piloting, and changing is free and private", () => {
     const s = ship();
     expect(s.bios).toEqual({
       actopi: true,
       death_announcements: true,
-      plasma_shield: true,
+      plasma_shield: false,
       cpu_priority: "none",
       crew_lock: "piloting",
     });
@@ -67,7 +67,7 @@ describe("NERON's BIOS", () => {
     expect(biosOffers(s, "p0")).toEqual([
       set("actopi", false),
       set("death_announcements", false),
-      set("plasma_shield", false),
+      set("plasma_shield", true),
       setCpu("astronavigation"),
       setCpu("projects"),
       setCpu("research"),
@@ -80,7 +80,7 @@ describe("NERON's BIOS", () => {
     expect(biosOffers(s, "p0")).toEqual([
       set("actopi", true),
       set("death_announcements", false),
-      set("plasma_shield", false),
+      set("plasma_shield", true),
       setCpu("none"),
       setCpu("astronavigation"),
       setCpu("research"),
@@ -202,7 +202,7 @@ describe("NERON's BIOS", () => {
     expect(viewFor(s, "p1").bios).toEqual({
       actopi: true,
       death_announcements: true,
-      plasma_shield: true,
+      plasma_shield: false,
       cpu_priority: "projects",
       crew_lock: "piloting",
     });

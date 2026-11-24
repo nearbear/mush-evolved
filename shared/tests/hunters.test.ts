@@ -79,6 +79,8 @@ describe("hunter waves", () => {
 describe("a hunter's turn", () => {
   it("spends its first action picking the ship, then shoots; a hit does 2-4 through the shield and it picks again", () => {
     let s = ship();
+    s.bios.plasma_shield = true;
+    s.ship.plasmaShield = 50;
     s.hunters.list[0]!.hitChance = 1;
     s = nextCycle(s);
     expect(s.hunters.list[0]!.target).toEqual({ kind: "ship" });
@@ -114,8 +116,9 @@ describe("a hunter's turn", () => {
 });
 
 describe("the cycle change", () => {
-  it("recharges each turret by 1 up to 4, and the shield by 5 up to 100 while the BIOS has it on", () => {
+  it("recharges each turret by 1 up to 4, and the shield by 5 up to 100 while the emitter works and the BIOS has it on", () => {
     let s = ship();
+    s.bios.plasma_shield = true;
     s.turrets[TURRET] = 2;
     s.ship.plasmaShield = 97;
     s = nextCycle(s);
@@ -126,6 +129,11 @@ describe("the cycle change", () => {
     s.ship.plasmaShield = 40;
     s = nextCycle(s);
     expect(s.ship.plasmaShield).toBe(40);
+    s.bios.plasma_shield = true;
+    Object.values(s.equipment).flat().find((e) => e.type === "PLASMA_SHIELD")!.broken = true;
+    s.ship.plasmaShield = 0;
+    s = nextCycle(s);
+    expect(s.ship.plasmaShield).toBe(0);
   });
 });
 

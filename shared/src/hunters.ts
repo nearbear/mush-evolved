@@ -20,7 +20,7 @@ import { type PatrolShip, patrolShip, rechargePatrolShips, shipsInFlight } from 
 import { projectDone } from "./projects.ts";
 import { RESEARCH_COMPLETE } from "./research.ts";
 import { roll, rollFloat, rollInt, rollShuffle, rollWeighted } from "./rng.ts";
-import { damageShip } from "./ship.ts";
+import { damageShip, plasmaShieldActive } from "./ship.ts";
 import { type DebrisTable, type DeepReadonly, type GameState, HUNTER_TYPES, type Hunter, type HunterTarget, type HunterType, type PlayerState } from "./types.ts";
 import { endGame } from "./victory.ts";
 
@@ -122,7 +122,7 @@ export function huntersCycle(state: GameState, day: number): void {
   }
   rechargePatrolShips(state);
   const shield = state.config.ship.plasmaShield;
-  if (state.bios.plasma_shield) state.ship.plasmaShield = Math.min(shield.max, state.ship.plasmaShield + shield.regen);
+  if (plasmaShieldActive(state)) state.ship.plasmaShield = Math.min(shield.max, state.ship.plasmaShield + shield.regen);
   hunters.points += huntersPerCyclePoints(state, day);
   if (state.cycle - hunters.since > state.config.hunters.safeCycles) spawnWave(state, day);
 }

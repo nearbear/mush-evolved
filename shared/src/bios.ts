@@ -22,8 +22,9 @@ export const isCrewLock = (value: unknown): value is CrewLock => CREW_LOCKS.some
  * - `actopi`: while on, everyone sees who is in which room; while off, only how many people are in each other room.
  * - `death_announcements`: while on, a death is announced in global chat with the dead player's role. The room's
  *   own log line is written either way (death.ts).
- * - `plasma_shield`: while off, the shield absorbs nothing, doesn't regenerate and shows as 0; switched back on, it has
- *   the points it had (ship.ts, hunters.ts).
+ * - `plasma_shield`: starts off (owner, 2026-11-23). While off or while the `PLASMA_SHIELD` equipment is broken, the
+ *   shield absorbs nothing, doesn't regenerate and shows as 0 (ship.ts, hunters.ts). Toggling it off preserves stored
+ *   points; breaking the equipment resets them to 0 (breakage.ts).
  * - `cpu_priority`: boosts astronavigation, NERON projects, or lab research (owner, 2026-11-21). Visible ship-wide to
  *   living players (`PlayerView.cpuPriority`).
  * - `crew_lock`: restricts piloting, NERON projects, or lab research to qualified crew (owner, 2026-11-21).
@@ -33,11 +34,11 @@ export type BiosState = Record<BiosOption, boolean> & {
   crew_lock: CrewLock;
 };
 
-/** All switches start on, CPU priority starts at none, and crew lock starts at piloting, as in eMush. */
+/** ACTOPI and death announcements start on, plasma shield starts off (owner, 2026-11-23), CPU priority none, crew lock piloting. */
 export const newBios = (): BiosState => ({
   actopi: true,
   death_announcements: true,
-  plasma_shield: true,
+  plasma_shield: false,
   cpu_priority: "none",
   crew_lock: "piloting",
 });

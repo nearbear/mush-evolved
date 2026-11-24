@@ -11,8 +11,11 @@ const config = DEFAULT_CONFIG;
 const workCore = (project: string): Action => ({ type: "project", equipment: "NEXUS_ROOM:NERON_CORE", project });
 
 function game(shieldOn = false): GameState {
-  const s = createGame(makeSeats(3, "others"), structuredClone(config), 7);
+  const cfg = structuredClone(config);
+  if (shieldOn) cfg.startBrokenEquipment = [];
+  const s = createGame(makeSeats(3, "others"), cfg, 7);
   s.bios.plasma_shield = shieldOn;
+  if (shieldOn) s.ship.plasmaShield = 50;
   return s;
 }
 
@@ -46,13 +49,13 @@ describe("Armoured corridors (ARMOUR_CORRIDOR)", () => {
     oneHit.projects.ARMOUR_CORRIDOR = PROJECT_COMPLETE;
     damageShip(oneHit, 1);
     expect(oneHit.ship.hull).toBe(config.ship.hull.start);
-    expect(oneHit.ship.plasmaShield).toBe(config.ship.plasmaShield.start);
+    expect(oneHit.ship.plasmaShield).toBe(50);
 
     // Shield on (33%): 4 -> 3 effective -> round(3 * 0.33) = 1 shield, 2 hull
     const withShield = game(true);
     withShield.projects.ARMOUR_CORRIDOR = PROJECT_COMPLETE;
     damageShip(withShield, 4);
-    expect(withShield.ship.plasmaShield).toBe(config.ship.plasmaShield.start - 1);
+    expect(withShield.ship.plasmaShield).toBe(50 - 1);
     expect(withShield.ship.hull).toBe(config.ship.hull.start - 2);
 
     // Shield on + PLASMA_SHIELD (67%): 4 -> 3 effective -> round(3 * 0.67) = 2 shield, 1 hull
@@ -60,7 +63,7 @@ describe("Armoured corridors (ARMOUR_CORRIDOR)", () => {
     withPlasma.projects.ARMOUR_CORRIDOR = PROJECT_COMPLETE;
     withPlasma.projects.PLASMA_SHIELD = PROJECT_COMPLETE;
     damageShip(withPlasma, 4);
-    expect(withPlasma.ship.plasmaShield).toBe(config.ship.plasmaShield.start - 2);
+    expect(withPlasma.ship.plasmaShield).toBe(50 - 2);
     expect(withPlasma.ship.hull).toBe(config.ship.hull.start - 1);
   });
 

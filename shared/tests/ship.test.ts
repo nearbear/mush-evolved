@@ -1,11 +1,23 @@
 import { describe, expect, it } from "vitest";
+import { breakEquipment } from "../src/breakage.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
+import { EQUIPMENT_TYPES } from "../src/equipment.ts";
+import { repairEquipment } from "../src/gravity.ts";
 import { createGame, newCycle, viewFor } from "../src/rules.ts";
 import { PROJECT_COMPLETE } from "../src/projects.ts";
-import { damageShip } from "../src/ship.ts";
-import { makeSeats } from "./support.ts";
+import { damageShip, PLASMA_SHIELD, plasmaShieldActive, plasmaShieldBroken } from "../src/ship.ts";
+import { makeSeats, offered, player } from "./support.ts";
 
 const game = () => createGame(makeSeats(4, "others"), DEFAULT_CONFIG, 7);
+const shieldEmitter = (s: ReturnType<typeof game>) => Object.values(s.equipment).flat().find((e) => e.type === PLASMA_SHIELD)!;
+/** A ship with the plasma shield repaired, switched on in BIOS, and charged to `points`. */
+const shieldedGame = (points = 50) => {
+  const s = game();
+  repairEquipment(s, shieldEmitter(s));
+  s.bios.plasma_shield = true;
+  s.ship.plasmaShield = points;
+  return s;
+};
 const cycle = (s: ReturnType<typeof game>) => {
   const r = newCycle(s);
   if (!r.ok) throw new Error(r.error);
@@ -15,8 +27,8 @@ const cycle = (s: ReturnType<typeof game>) => {
 describe("ship resources", () => {
   it("start at the decided values and are public", () => {
     const s = game();
-    expect(s.ship).toEqual({ oxygen: 20, fuel: 20, combustion: 0, hull: 100, plasmaShield: 50 });
-    expect(viewFor(s, "p0").ship).toEqual({ oxygen: s.ship.oxygen, fuel: s.ship.fuel, hull: s.ship.hull, plasmaShield: s.ship.plasmaShield, max: { oxygen: 32, fuel: 32, hull: 100, plasmaShield: 100 } });
+    expect(s.ship).toEqual({ oxygen: 20, fuel: 20, combustion: 0, hull: 100, plasmaShield: 0 });
+    expect(viewFor(s, "p0").ship).toEqual({ oxygen: s.ship.oxygen, fuel: s.ship.fuel, hull: s.ship.hull, plasmaShield: 0, max: { oxygen: 32, fuel: 32, hull: 100, plasmaShield: 100 } });
     expect(viewFor(s, "p3").ship).toEqual(viewFor(s, "p0").ship);
   });
 
@@ -49,8 +61,8 @@ describe("ship resources", () => {
   });
 
   it("splits damage 33% to the shield (rounded) and the rest to the hull", () => {
-    const s = game();
-    expect([s.config.ship.plasmaShield.absorbPercent, s.config.ship.plasmaShield.projectAbsorbPercent, s.config.ship.plasmaShield.regen]).toEqual([33, 67, 5]);
+    const s = shieldedGame(50);
+    expect([s.config.ship.plasmaShield.start, s.config.ship.plasmaShield.absorbPercent, s.config.ship.plasmaShield.projectAbsorbPercent, s.config.ship.plasmaShield.regen, s.config.repair.chance.PLASMA_SHIELD]).toEqual([0, 33, 67, 5, 0.06]);
     damageShip(s, 10);
     expect(s.ship).toMatchObject({ plasmaShield: 47, hull: 93 });
     damageShip(s, 2);
@@ -58,14 +70,14 @@ describe("ship resources", () => {
   });
 
   it("splits 67% to the shield once the Plasma Shield project is done", () => {
-    const s = game();
+    const s = shieldedGame(50);
     s.projects.PLASMA_SHIELD = PROJECT_COMPLETE;
     damageShip(s, 10);
     expect(s.ship).toMatchObject({ plasmaShield: 43, hull: 97 });
   });
 
   it("sends all damage to the hull while the BIOS has the shield off, and shows the shield as 0", () => {
-    const s = game();
+    const s = shieldedGame(50);
     s.bios.plasma_shield = false;
     damageShip(s, 10);
     expect(s.ship).toMatchObject({ plasmaShield: 50, hull: 90 });
@@ -75,12 +87,46 @@ describe("ship resources", () => {
   });
 
   it("sends all damage to the hull once the shield is gone, and never goes below 0", () => {
-    const s = game();
-    s.ship.plasmaShield = 3;
+    const s = shieldedGame(3);
     damageShip(s, 10);
     expect(s.ship).toMatchObject({ plasmaShield: 0, hull: 93 });
     damageShip(s, 200);
     expect(s.ship.hull).toBe(0);
+  });
+
+  it("starts with PLASMA_SHIELD broken, BIOS off, 0 shield, no start-of-game chat line, and resets shield points when broken", () => {
+    const s = game();
+    const emitter = shieldEmitter(s);
+    expect(emitter.broken).toBe(true);
+    expect(plasmaShieldBroken(s)).toBe(true);
+    expect(plasmaShieldActive(s)).toBe(false);
+    expect(s.bios.plasma_shield).toBe(false);
+    expect(s.ship.plasmaShield).toBe(0);
+    expect(EQUIPMENT_TYPES.PLASMA_SHIELD?.canBeSabotaged).toBe(true);
+    expect(s.chat.some((m) => m.system?.key === "equipmentBroken")).toBe(false);
+    expect(viewFor(s, "p0").alerts.broken).toBe(1);
+
+    // Turning BIOS on while broken leaves shield inactive and unregenerating.
+    s.bios.plasma_shield = true;
+    expect(plasmaShieldActive(s)).toBe(false);
+    const afterCycle = cycle(s);
+    expect(afterCycle.ship.plasmaShield).toBe(0);
+    expect(viewFor(afterCycle, "p0").ship.plasmaShield).toBe(0);
+
+    // Repairing with BIOS on makes it active, regenerates on cycle, and offers sabotage to a Mush.
+    const active = shieldedGame(40);
+    expect(plasmaShieldActive(active)).toBe(true);
+    player(active, "p0").room = "MOTOR_ROOM";
+    player(active, "p0").role = "mush";
+    expect(offered(active, "p0")).toContainEqual({ type: "sabotage", equipment: shieldEmitter(active).id });
+
+    // Breaking it resets stored shield points to 0, stops absorbing, and leaves BIOS on.
+    breakEquipment(active, shieldEmitter(active));
+    expect(active.ship.plasmaShield).toBe(0);
+    expect(active.bios.plasma_shield).toBe(true);
+    expect(plasmaShieldActive(active)).toBe(false);
+    damageShip(active, 10);
+    expect(active.ship).toMatchObject({ plasmaShield: 0, hull: 90 });
   });
 
   it("places fixed eMush starting items, 6 spacesuits in ICARUS, the tabulator in STORAGE_FRONT, 24 storage items, 1 apprentron, 5 daedalus items, 4 random blueprints, and 1 Mush sample", () => {

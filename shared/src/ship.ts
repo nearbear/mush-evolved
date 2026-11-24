@@ -12,6 +12,16 @@ import { projectDone } from "./projects.ts";
 import { rollFloat, rollInt } from "./rng.ts";
 import type { DeepReadonly, GameConfig, GameState, PlayerView, ShipResources } from "./types.ts";
 
+export const PLASMA_SHIELD = "PLASMA_SHIELD";
+
+/** Whether any Plasma Shield emitter aboard is broken. */
+export const plasmaShieldBroken = (state: DeepReadonly<GameState>): boolean =>
+  Object.values(state.equipment).some((list) => list.some((e) => e.type === PLASMA_SHIELD && e.broken));
+
+/** Whether the plasma shield is currently active: BIOS on and equipment working. */
+export const plasmaShieldActive = (state: DeepReadonly<GameState>): boolean =>
+  state.bios.plasma_shield && !plasmaShieldBroken(state);
+
 export function startShip(config: GameConfig): ShipResources {
   const { oxygen, fuel, combustion, hull, plasmaShield } = config.ship;
   return { oxygen: oxygen.start, fuel: fuel.start, combustion: combustion.start, hull: hull.start, plasmaShield: plasmaShield.start };
@@ -21,7 +31,7 @@ export function startShip(config: GameConfig): ShipResources {
 export function shipView(state: DeepReadonly<GameState>): PlayerView["ship"] {
   const { combustion: _level, ...resources } = state.ship;
   const { combustion: _cap, ...max } = shipMax(state.config);
-  return { ...resources, plasmaShield: state.bios.plasma_shield ? state.ship.plasmaShield : 0, max };
+  return { ...resources, plasmaShield: plasmaShieldActive(state) ? state.ship.plasmaShield : 0, max };
 }
 
 export function shipMax(config: DeepReadonly<GameConfig>): ShipResources {
@@ -61,10 +71,10 @@ export function burnOxygen(state: GameState, oxygenSaved = false): void {
   }
 }
 
-/** The percent of a hit the shield takes: none while the BIOS has it off, more once the Plasma Shield project is done. */
+/** The percent of a hit the shield takes: none while BIOS has it off or the emitter is broken, more once the Plasma Shield project is done. */
 export function shieldAbsorbPercent(state: Readonly<GameState>): number {
   const shield = state.config.ship.plasmaShield;
-  if (!state.bios.plasma_shield) return 0;
+  if (!plasmaShieldActive(state)) return 0;
   return projectDone(state, "PLASMA_SHIELD") ? shield.projectAbsorbPercent : shield.absorbPercent;
 }
 

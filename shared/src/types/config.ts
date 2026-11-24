@@ -1028,6 +1028,7 @@ export interface GameConfig {
   /** Items placed in rooms at the start of the game (fixed room, or random from `storage` / `daedalus` pool, optionally with weighted blueprint/book draws; `atSelection` waits until Mush selection). */
   startItems: ({ type: string; builds?: string; buildsWeights?: Record<string, number>; teaches?: string; teachesWeights?: Record<string, number>; plant?: PlantState; atSelection?: boolean } & ({ room: RoomId } | { pool: "storage" | "daedalus" }))[];
   startInventory: string[]; // Item types every player starts carrying (one of each).
+  startBrokenEquipment: string[]; // Equipment types that start the game broken (`createGame`), silently without a NERON chat line.
   rooms: Record<RoomId, RoomId[]>; // Adjacency list. Movement is only allowed along these edges.
   equipment: Record<RoomId, Equipment[]>; // Equipment in each room at launch, copied into `GameState.equipment`. Types come from EQUIPMENT_TYPES in equipment.ts.
   diseases: DiseaseCatagories;

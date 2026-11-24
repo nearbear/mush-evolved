@@ -234,6 +234,10 @@ export function createGame(
     comms: newComms(config),
     now: 0,
   };
+  // Mark equipment that starts the game broken (`config.startBrokenEquipment`), silently without a NERON breakdown announcement.
+  for (const equipment of Object.values(state.equipment).flat()) {
+    if (config.startBrokenEquipment.includes(equipment.type)) equipment.broken = true;
+  }
   // Mush selection: the first rebel base calls now (owner, 2026-10-21); in pre-selection, `selectMush` does it.
   if (!preselection) {
     callNextRebel(state);

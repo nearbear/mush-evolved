@@ -8,8 +8,8 @@ import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameState } from "../src/types.ts";
 import { makeSeats, mustApply, nextCycle, noIncidents, offered, setProgress } from "./support.ts";
 
-// No incidents: a random breakdown of the machine would make the schedule depend on the seed.
-const config = noIncidents(DEFAULT_CONFIG);
+// No incidents or hunter waves: random breakdowns or hull loss would make the schedule depend on the seed.
+const config = { ...noIncidents(DEFAULT_CONFIG), hunters: { ...DEFAULT_CONFIG.hunters, waveChance: 0 } };
 const MACHINE = "REFECTORY:COFFEE_DISPENSER";
 const pull: Action = { type: "dispense", equipment: MACHINE };
 const workRoaster: Action = { type: "project", equipment: "NEXUS_ROOM:NERON_CORE", project: "FISSION_COFFEE_ROASTER" };

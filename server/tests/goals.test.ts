@@ -1982,7 +1982,7 @@ describe("travel: the Commander (#417)", () => {
       countdown: null,
     }));
     const { game: after, taken } = await play(game, id, new GoalBot(1, 2, [travel]), 40);
-    expect(taken.map((a) => a.type).filter((t) => t !== "move")).toEqual(["check_combustion", "turn_ship", "travel"]);
+    expect(taken.map((a) => a.type).filter((t) => t !== "move" && !t.startsWith("report_"))).toEqual(["check_combustion", "turn_ship", "travel"]);
     expect(after.log.find((l) => l.key === "shipTraveled")?.cycle).toBe(game.cycle);
     expect(after.navigation.orbit ?? after.navigation.arriving?.planet).toBe("pl-1");
   });

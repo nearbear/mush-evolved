@@ -494,9 +494,9 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   transfer: { injuryChance: 0.01 },
   // Confirmed 2026-10-14: humans lose 1 satiety per cycle (some things will make it more); at 3 they are full and can't
   // eat; hungry starts 24 cycles after satiety reaches 0 and costs 1 HP per cycle.
-  // Decided 2026-11-17 (matching eMush): oxygen 20 of 32, -1 per cycle, nobody survives it at 0; fuel 20 of 32; hull 100. Owner, 2026-10-24: the plasma
-  // shield starts at 50 of 100, +5 a cycle, absorbing 33% of each hit, 67% with the Plasma Shield project.
-  ship: { oxygen: { start: 20, max: 32, perCycle: 1 }, fuel: { start: 20, max: 32 }, combustion: { start: 0, max: 9 }, hull: { start: 100, max: 100 }, plasmaShield: { start: 50, max: 100, absorbPercent: 33, projectAbsorbPercent: 67, regen: 5 } },
+  // Decided 2026-11-17 (matching eMush): oxygen 20 of 32, -1 per cycle, nobody survives it at 0; fuel 20 of 32; hull 100. Owner, 2026-10-24 & 2026-11-23: the plasma
+  // shield starts at 0 of 100 (equipment starts broken, BIOS off), +5 a cycle while working & on, absorbing 33% of each hit, 67% with the Plasma Shield project.
+  ship: { oxygen: { start: 20, max: 32, perCycle: 1 }, fuel: { start: 20, max: 32 }, combustion: { start: 0, max: 9 }, hull: { start: 100, max: 100 }, plasmaShield: { start: 0, max: 100, absorbPercent: 33, projectAbsorbPercent: 67, regen: 5 } },
   // Owner, 2026-10-24 (#208): eMush's hunter numbers, the wiki's turret and hull repair.
   hunters: {
     points: { start: 40, perCycle: 6, hardFromDay: 5, hardBonus: 1, veryHardFromDay: 10, veryHardBonus: 2 },
@@ -591,7 +591,7 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
       CAMERA: 0.25, OXYGEN_TANK: 0.25, FUEL_TANK: 0.25, SHOWER: 0.25,
       ASTRO_MODULE: 0.12, PILOT_MODULE: 0.12, BEAT_BOX: 0.12, SOFA: 0.12, MYCOSCAN: 0.12, COMBUSTION_CHAMBER_ACCESS: 0.12,
       PLANET_SCANNER: 0.12, PLANT_CONTROLLER: 0.12, STELLAR_ANTENNA: 0.12, SUPER_CALC: 0.12, KITCHEN: 0.12, COFFEE_DISPENSER: 0.12, TURRET_COMMAND: 0.12,
-      COM_CENTER: 0.06, RESEARCH_LAB: 0.06, GRAVITY_SIMULATOR: 0.06, EMERGENCY_REACTOR: 0.06, ROTATIONAL_REACTOR: 0.06, NERON_CORE: 0.06,
+      COM_CENTER: 0.06, RESEARCH_LAB: 0.06, GRAVITY_SIMULATOR: 0.06, EMERGENCY_REACTOR: 0.06, ROTATIONAL_REACTOR: 0.06, NERON_CORE: 0.06, PLASMA_SHIELD: 0.06,
       NERON_BIOS_TERM: 0.03,
     },
     wrenchFactor: 1.5,
@@ -829,6 +829,8 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   ],
   // Confirmed 2026-10-13: every player starts with an iTrackie.
   startInventory: [ITRACKIE_ITEM],
+  // Owner, 2026-11-23: the plasma shield emitter starts the game broken, silently without a NERON breakdown announcement.
+  startBrokenEquipment: ["PLASMA_SHIELD"],
   // The patrol ships' rooms have no doors and sit off the map (patrol.ts, docs/plans/archive/patrol.md answer 1).
   // So does the Icarus while away (expeditions.ts, docs/plans/archive/expedition.md phase 2).
   rooms: { ...(Object.fromEntries(SHIP_ROOMS.map((r) => [r.id, r.doors])) as Record<RoomId, RoomId[]>), ...patrolRooms(), [ICARUS_CRAFT]: [] },

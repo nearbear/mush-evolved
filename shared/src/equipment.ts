@@ -59,8 +59,8 @@ export const EQUIPMENT_TYPES: Record<string, EquipmentType> = {
   PILGRED: { terminal: true },
   PILOT_MODULE: { terminal: true, title: "commander", canBeSabotaged: true },
   PLANET_SCANNER: {canBeSabotaged: true},
-  // The engine room's shield emitter, so the iso view can select it; examine only for now.
-  PLASMA_SHIELD: {},
+  // The engine room's shield emitter (owner, 2026-11-23): breakable/sabotageable, 6% base repair chance, starts broken (`config.startBrokenEquipment`).
+  PLASMA_SHIELD: { canBeSabotaged: true },
   PLANT_CONTROLLER: { terminal: true, canBeSabotaged: true },
   RESEARCH_LAB: { terminal: true, canBeSabotaged: true },
   ROTATIONAL_REACTOR: {canBeSabotaged: true},

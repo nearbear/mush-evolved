@@ -45,12 +45,13 @@ export function deepMerge<T>(base: T, overrides: DeepPartial<T>): T {
 }
 
 /**
- * The quiet baseline for a rules test: one Mush, nobody starts with anything, and no item lies on the floor
- * (`startItems`, so no Medlab drugs and no medikit in the lab); no hunter waves and no incidents. A new default that
- * acts on its own (a random event, a spawn) belongs here too, so tests that don't care about it stay unaffected.
+ * The quiet baseline for a rules test: one Mush, nobody starts with anything, no item lies on the floor
+ * (`startItems`, so no Medlab drugs and no medikit in the lab), no equipment starts broken (`startBrokenEquipment`),
+ * no hunter waves and no incidents. A new default that acts on its own (a random event, a spawn) belongs here too,
+ * so tests that don't care about it stay unaffected.
  * Character modifiers stay on: turn them off with `noCharacterModifiers`.
  */
-export const QUIET_CONFIG: GameConfig = noIncidents(noHunters({ ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [] }));
+export const QUIET_CONFIG: GameConfig = noIncidents(noHunters({ ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [], startBrokenEquipment: [] }));
 
 /**
  * `QUIET_CONFIG` with `overrides` deep-merged on top, e.g. `testConfig({ repair: { chance: { COFFEE_DISPENSER: 0 } } })`.

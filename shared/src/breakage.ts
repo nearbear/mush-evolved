@@ -11,6 +11,7 @@ import { loseLink } from "./comms.ts";
 import { GRAVITY_SIMULATOR, gravityLost } from "./gravity.ts";
 import { isEquipmentEnabled } from "./equipment.ts";
 import { ITEM_TYPES, removeItem } from "./items.ts";
+import { PLASMA_SHIELD } from "./ship.ts";
 import type { Equipment, GameState, ItemState, RoomId } from "./types.ts";
 
 /** Whether equipment of this type can break: only types with a repair chance in `config.repair.chance`. */
@@ -38,6 +39,7 @@ export function breakEquipment(state: GameState, equipment: Equipment, announce 
   }
   if (equipment.type === "COM_CENTER") loseLink(state);
   if (equipment.type === GRAVITY_SIMULATOR) gravityLost(state);
+  if (equipment.type === PLASMA_SHIELD) state.ship.plasmaShield = 0;
   if (announce) pushChat(state, "global", { from: null, isBot: false, text: "", system: { key: "equipmentBroken", params: { equipment: equipment.type } } });
 }
 

@@ -161,6 +161,7 @@ describe("the Arack", () => {
 describe("the asteroid", () => {
   it("doesn't aim or shoot; it counts down each cycle change, seen with its hp in a turret room", () => {
     const s = ship(["asteroid"]);
+    s.bios.plasma_shield = true;
     const { hull, plasmaShield } = s.ship;
     huntersCycle(s, 5);
     expect(s.hunters.list[0]).toMatchObject({ target: null, countdown: 5 });
@@ -171,6 +172,8 @@ describe("the asteroid", () => {
 
   it("when the countdown runs out it hits the Daedalus for its hp through the shield, is gone, and NERON tells everyone", () => {
     const s = ship(["asteroid"]);
+    s.bios.plasma_shield = true;
+    s.ship.plasmaShield = 50;
     s.hunters.list[0]!.hp = 12;
     s.hunters.list[0]!.countdown = 1;
     const { hull, plasmaShield } = s.ship;
