@@ -192,8 +192,8 @@ export type SkillStatus = "full" | "partial" | "none";
  * NERON projects are left out of this count (owner, 2026-10-16).
  */
 export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillStatus>>> = {
-  // Heal bonus, research bonus, and reads drug properties; no operations.
-  medic: "partial",
+  // Heal bonus, research bonus, reads drug properties, and surgery (anywhere with a medikit, 1.5x odds; owner, 2026-11-17, actions/surgery.ts, modifiers/medic.ts).
+  medic: "full",
   // Each heal or bandage by a human Mycologist removes 1 contamination from a human patient, silently (owner, 2026-11-14, modifiers/mycologist.ts).
   mycologist: "full",
   // 16 cycles of room log (owner, 2026-11-05, #365, log.ts), crew movement direction and ship takeoff/landing logs (owner, 2026-11-21, 2026-11-22, log.ts, rules.ts), cancels Found dead on expeditions (owner, 2026-11-08, #357, expeditions.ts), and prints THE List (owner, 2026-11-21, #266, actions/print_list.ts).
