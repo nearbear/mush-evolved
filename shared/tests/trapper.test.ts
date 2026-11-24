@@ -319,24 +319,35 @@ describe("Trapper (#473)", () => {
   });
 
   describe("viewFor hidden-information checks", () => {
-    it("shows trappedRooms only to living Mush; humans and dead players always receive []", () => {
+    it("shows roomTrapped only to a living, non-blind Mush in that room", () => {
       const trapped = trapHere(ship());
-      expect(viewFor(trapped, "p0").trappedRooms).toEqual([ROOM]);
-      expect(viewFor(trapped, "p1").trappedRooms).toEqual([ROOM]);
-      expect(viewFor(trapped, "p2").trappedRooms).toEqual([]);
-      expect(viewFor(trapped, "p3").trappedRooms).toEqual([]);
+      expect(viewFor(trapped, "p0").roomTrapped).toBe(true);
+      expect(viewFor(trapped, "p1").roomTrapped).toBe(true);
+      expect(viewFor(trapped, "p2").roomTrapped).toBe(false);
+      expect(viewFor(trapped, "p3").roomTrapped).toBe(false);
 
-      // Dead Mush and dead human both receive []
+      // Living Mush in another room does not see the trap
+      const elsewhere = clone(trapped);
+      player(elsewhere, "p1").room = trapped.config.rooms[ROOM]![0]!;
+      expect(viewFor(elsewhere, "p1").roomTrapped).toBe(false);
+      expect(viewFor(elsewhere, "p0").roomTrapped).toBe(true);
+
+      // Dead Mush and dead human in the room both receive false
       const withDead = clone(trapped);
       player(withDead, "p1").alive = false;
       player(withDead, "p3").alive = false;
-      expect(viewFor(withDead, "p1").trappedRooms).toEqual([]);
-      expect(viewFor(withDead, "p3").trappedRooms).toEqual([]);
+      expect(viewFor(withDead, "p1").roomTrapped).toBe(false);
+      expect(viewFor(withDead, "p3").roomTrapped).toBe(false);
+
+      // Blind (comatose) living Mush in the room receives false
+      const withComa = clone(trapped);
+      player(withComa, "p0").comaUntil = withComa.cycle + 2;
+      expect(viewFor(withComa, "p0").roomTrapped).toBe(false);
 
       // Disappears from living Mush's view once triggered
       const triggered = mustApply(trapped, "p2", { type: "search" });
-      expect(viewFor(triggered, "p0").trappedRooms).toEqual([]);
-      expect(viewFor(triggered, "p1").trappedRooms).toEqual([]);
+      expect(viewFor(triggered, "p0").roomTrapped).toBe(false);
+      expect(viewFor(triggered, "p1").roomTrapped).toBe(false);
     });
   });
 });

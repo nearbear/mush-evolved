@@ -232,8 +232,7 @@
     "selectRoom": "Point at a room",
     "unidentified": "Unidentified",
     "unidentifiedCount": "{{count}} unidentified",
-    "onFire": "On fire",
-    "trapped": "Trapped"
+    "onFire": "On fire"
   },
   "inspect": {
     "self": "{{character}} (you): inspect",
@@ -2504,6 +2503,7 @@
     "exits_count_other": "{{count}} exits",
     "brokenEquipment": "{{equipment}} (broken)",
     "onFire": "This room is on fire!",
+    "trapped": "This room is booby-trapped!",
     "ceasefire_one": "Ceasefire active ({{count}} cycle left)",
     "ceasefire_other": "Ceasefire active ({{count}} cycles left)",
     "broken": "Broken"

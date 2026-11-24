@@ -250,7 +250,7 @@ export interface GameCore {
   reports: Report[];
   /** Rooms a Pyromaniac set to catch fire at the next cycle change (actions/ignite.ts). Never sent. */
   pendingFires: RoomId[];
-  /** Rooms booby-trapped with a spore by a Mush Trapper (traps.ts, #473). Sent only to living Mush (`PlayerView.trappedRooms`). */
+  /** Rooms booby-trapped with a spore by a Mush Trapper (traps.ts, #473). Only whether your current room is trapped reaches a living Mush (`PlayerView.roomTrapped`). */
   trappedRooms: RoomId[];
   /** Rooms a Defacer cleared this cycle (log.ts `deface`): nothing is written there until the cycle ends. Never sent; their `delogged` notice shows it. */
   deloggedRooms: RoomId[];

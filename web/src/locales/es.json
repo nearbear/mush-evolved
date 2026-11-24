@@ -237,8 +237,7 @@
     "selectRoom": "Señala una sala",
     "unidentified": "Sin identificar",
     "unidentifiedCount": "{{count}} sin identificar",
-    "onFire": "En llamas",
-    "trapped": "Con trampa"
+    "onFire": "En llamas"
   },
   "inspect": {
     "self": "{{character}} (tú): inspeccionar",
@@ -2451,6 +2450,7 @@
     "exits_count_many": "{{count}} salidas",
     "brokenEquipment": "{{equipment}} (averiado)",
     "onFire": "¡Esta sala está en llamas!",
+    "trapped": "¡Esta sala tiene una trampa!",
     "ceasefire_one": "Alto el fuego activo ({{count}} ciclo restante)",
     "ceasefire_other": "Alto el fuego activo ({{count}} ciclos restantes)",
     "ceasefire_many": "Alto el fuego activo ({{count}} ciclos restantes)",

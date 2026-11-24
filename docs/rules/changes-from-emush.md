@@ -94,7 +94,6 @@ Both games start characters with 0 skills (3 pickable + 1 book slot) and permane
 | :--- | :--- | :--- |
 | **Doorman** | Once per day (0 AP) on a **random** working door in the room. | Lets the Mush **choose which working door** in the room to break, with **no daily limit** (**first use each day is 0 AP**, subsequent uses cost **2 AP**). |
 | **Nimble Fingers** | Grants secret camera install/remove actions only. | **0 AP instant toggle** (enter/exit Nimble mode, private status). While active, all room-level **Public** actions (including movement) become **Secret** when unwitnessed and unfilmed (staying plain Public if witnessed/filmed so Nimble mode doesn't leak). |
-| **Trapper** | Living Mush see a trap icon only in their **current room**. | Living Mush see all active traps **ship-wide on the minimap** (icon and room caption). |
 | **Hard-boiled** | Takes 1 off each non-critical combat hit (not expeditions), stacking with Plastenite Armor; a 1-damage hit is fully absorbed (0 damage). | Same reduction and stacking, but armor and Hard-boiled together **never reduce a hit below 1 damage**: a 1-damage hit goes through whole and no punch or weapon hit is fully absorbed. Plastenite Armor alone has the same floor of 1, including in expedition fights. |
 | **Pyromaniac** | Costs **4 AP** to start a fire. | Costs **3 AP**. |
 

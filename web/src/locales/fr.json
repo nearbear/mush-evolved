@@ -237,8 +237,7 @@
     "selectRoom": "Pointez une pièce",
     "unidentified": "Non identifié",
     "unidentifiedCount": "{{count}} non identifié(s)",
-    "onFire": "En feu",
-    "trapped": "Piégée"
+    "onFire": "En feu"
   },
   "inspect": {
     "self": "{{character}} (vous) : inspecter",
@@ -2451,6 +2450,7 @@
     "exits_count_many": "{{count}} sorties",
     "brokenEquipment": "{{equipment}} (en panne)",
     "onFire": "Cette pièce est en feu !",
+    "trapped": "Cette pièce est piégée !",
     "ceasefire_one": "Cessez-le-feu actif ({{count}} cycle restant)",
     "ceasefire_other": "Cessez-le-feu actif ({{count}} cycles restants)",
     "ceasefire_many": "Cessez-le-feu actif ({{count}} cycles restants)",

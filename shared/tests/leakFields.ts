@@ -95,7 +95,7 @@ export const GAME_STATE_FIELDS: Record<string, FieldRule> = {
   apSpentToday: { reach: "never", test: "leaks.test.ts", note: "The crew's AP spent today (#241), behind the activity overload." },
   pendingFires: { reach: "never", test: "leaks.test.ts", note: "Rooms a Pyromaniac set to ignite at the next cycle change (2026-11-03)." },
   deloggedRooms: { reach: "never", test: "defacer.test.ts", note: "Rooms a Defacer cleared this cycle (2026-11-22): only their public `delogged` notice shows it, to those in the room." },
-  trappedRooms: { reach: "filtered", test: "trapper.test.ts", note: "Rooms booby-trapped with a spore (#473): sent only to living Mush (`PlayerView.trappedRooms`); humans and the dead always receive `[]` (leaks.test.ts too)." },
+  trappedRooms: { reach: "room", test: "trapper.test.ts", note: "Rooms booby-trapped with a spore (#473): only as `PlayerView.roomTrapped` to a living, non-blind Mush in that room; other rooms, humans, and the dead always receive `false` (leaks.test.ts too)." },
   gravityRestarting: { reach: "public", test: "gravity.test.ts", note: "Not secret: the living see it on the alert bar (`alerts.gravity`), and NERON announces when gravity is back (owner, 2026-11-22)." },
   eden: { reach: "public", test: "eden.test.ts", note: "Whether Eden is computed (#478): Compute's success is logged in the room, and the Command terminal shows it (`edenComputed`)." },
   reports: { reach: "filtered", test: "reports.test.ts", note: "As `alerts` (and reported fires in `burningRooms`) to the living, only while the problem lasts; reporters are public, as NERON names them (owner, 2026-11-14, #444)." },

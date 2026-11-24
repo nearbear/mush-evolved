@@ -281,12 +281,12 @@ export interface PlayerView {
   roomOnFire: boolean;
   /** Cycles remaining on an active Ceasefire in the room you are in (ceasefire.ts), or null if none (and null for the dead). */
   roomCeasefire: number | null;
+  /** Whether the room you are in is booby-trapped with a spore (traps.ts, #473). Only to living Mush in that room; always false for humans, the dead, and blind players. */
+  roomTrapped: boolean;
   /** Burning rooms reported ship-wide, by a player or by Fire detectors (reports.ts, #444). Only to the living. */
   burningRooms: RoomId[];
   /** Broken doors aboard, only once Defective piston sensors (`DOOR_SENSOR`) is complete (reports.ts, #330). Empty before then and for the dead. */
   brokenDoors: DoorId[];
-  /** Rooms currently booby-trapped with a spore (traps.ts, #473). Only to living Mush; always empty for humans and the dead. */
-  trappedRooms: RoomId[];
   /**
    * The alert bar (reports.ts, #444, #330): how many fires and broken pieces of equipment/doors there are aboard,
    * reported or not, and where the reported ones are. Unreported ones are only counted. Zero and empty for the dead.

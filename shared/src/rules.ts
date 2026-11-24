@@ -60,7 +60,7 @@ import { damage, healDaily, hasMushDied } from "./death.ts";
 import { activitySeen, endDefacing, inLogWindow, logPrivate, logWindowOf, moveLineFor, pruneLog, seesLine, startLogSeen, withNimbleActor, withNinjaActor } from "./log.ts";
 import { recordAction } from "./history.ts";
 import { ringMycoAlarms } from "./mycoalarm.ts";
-import { triggerRoomTrap, willTriggerRoomTrap } from "./traps.ts";
+import { isRoomTrapped, triggerRoomTrap, willTriggerRoomTrap } from "./traps.ts";
 import { planetsOf } from "./planets.ts";
 import { canSharePlanets } from "./sharedPlanets.ts";
 import { canSharePlants, sharedPlantsView } from "./sharedPlants.ts";
@@ -965,12 +965,12 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     doors: !blind && you.alive ? doorsOf(state, you.room) : [],
     roomOnFire: !blind && you.alive && isOnFire(state, you.room),
     roomCeasefire: !blind && you.alive ? (state.ceasefires[you.room] ?? null) : null,
+    // Whether your current room is booby-trapped (#473): living Mush in that room only; other rooms, humans, and the dead never see it.
+    roomTrapped: !blind && you.alive && you.role === "mush" && isRoomTrapped(state, you.room),
     // Reported fires, by players or Fire detectors (#444); an unreported fire's room reaches nobody.
     burningRooms: !blind && you.alive ? state.fires.filter((room) => fireReported(state, room)) : [],
     // Broken doors aboard, only once Defective piston sensors is complete (#330).
     brokenDoors: !blind && you.alive && doorsDetected(state) ? brokenDoors(state) : [],
-    // Rooms booby-trapped with a spore (#473): living Mush only; humans and the dead never see them.
-    trappedRooms: !blind && you.alive && you.role === "mush" ? [...state.trappedRooms] : [],
     alerts: !blind && you.alive ? alertsFor(state) : { fires: 0, broken: 0, reports: [], gravity: null },
     // `seesLine` (log.ts) says which lines are yours; room lines, private ones included, only within your window (#365).
     // A private line names only you in the view: no one learns who else saw it (`leaked` marks a secret line others saw).

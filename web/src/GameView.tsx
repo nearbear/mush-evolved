@@ -370,16 +370,21 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
                 onOpenChange={setInventoryOpen}
               />
             )}
-            {/* Bottom-left: one card (amber, red when your room is on fire) holding your room's name with the minimap under it.
+            {/* Bottom-left: one card (amber, red on fire, Mush pink on spore trap) holding your room's name with the minimap under it.
                 Not in the Icarus or while lost (owner, 2026-11-20, 2026-11-21): its panel takes the whole room view. */}
             {!inExpeditionScreen && (
-              <div className={`room-corner${inRoom && view.roomOnFire ? " alert" : ""}`}>
+              <div className={`room-corner${inRoom && view.roomOnFire ? " alert" : inRoom && view.roomTrapped ? " trapped" : ""}`}>
                 {inRoom && (
                   <div className="room-title">
                     <div className="room-icons" role="status">
                       {view.roomOnFire && (
                         <Hint label={t("roomList.onFire")}>
                           <img src={FIRE_ICON} alt={t("roomList.onFire")} />
+                        </Hint>
+                      )}
+                      {view.roomTrapped && (
+                        <Hint label={t("roomList.trapped")}>
+                          <img src={skillIcon("trapper")} alt={t("roomList.trapped")} />
                         </Hint>
                       )}
                       {view.roomCeasefire !== null && (
@@ -399,7 +404,6 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
                   reachable={reachable}
                   burningRooms={view.burningRooms}
                   brokenDoors={view.brokenDoors}
-                  trappedRooms={view.trappedRooms}
                 />
               </div>
             )}

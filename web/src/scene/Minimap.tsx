@@ -22,7 +22,6 @@ export function Minimap({
   reachable,
   burningRooms = [],
   brokenDoors = [],
-  trappedRooms = [],
 }: {
   /** The room you are in. */
   here: RoomId;
@@ -36,8 +35,6 @@ export function Minimap({
   burningRooms?: readonly RoomId[];
   /** Broken doors revealed ship-wide by Defective piston sensors. */
   brokenDoors?: readonly DoorId[];
-  /** Rooms booby-trapped with a spore (living Mush only). */
-  trappedRooms?: readonly RoomId[];
 }) {
   const { t } = useTranslation();
   const [hovering, setHovering] = useState(false);
@@ -81,7 +78,6 @@ export function Minimap({
         reachable={reachable}
         burningRooms={burningRooms}
         brokenDoors={brokenDoors}
-        trappedRooms={trappedRooms}
         pointed={pointed}
         interactive={expanded}
         onPoint={setPointed}
@@ -96,7 +92,6 @@ export function Minimap({
           people={people}
           unidentified={unidentified}
           burningRooms={burningRooms}
-          trappedRooms={trappedRooms}
           emptyText={t("minimap.selectRoom")}
           onClose={opened ? close : undefined}
           closeLabel={t("minimap.close")}

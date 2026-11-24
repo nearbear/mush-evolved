@@ -113,6 +113,11 @@ main.game .room-corner.alert {
   --card-rim: var(--danger);
   filter: drop-shadow(0 0 1px var(--danger)) drop-shadow(0 0 4px var(--danger)) drop-shadow(0 1px 3px var(--panel-shadow));
 }
+/* A spore trap in your room (living Mush only): the outline turns the Mush colour with the same resting glow. */
+main.game .room-corner.trapped {
+  --card-rim: var(--mush);
+  filter: drop-shadow(0 0 1px var(--mush)) drop-shadow(0 0 4px var(--mush)) drop-shadow(0 1px 3px var(--panel-shadow));
+}
 /* Phones: no cut corners at all (the owner's call: bevels don't read well that small). The cards keep their rim and
    fill, square. The iTrackie's own --cut goes too, so the pale card inside it and its tab outline are square as well. */
 @media (max-width: 1023px) {
