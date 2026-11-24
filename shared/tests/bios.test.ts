@@ -4,7 +4,7 @@ import { DEFAULT_CONFIG } from "../src/config.ts";
 import { killPlayer } from "../src/death.ts";
 import { analysisSectors } from "../src/modifiers.ts";
 import { offeredProjects } from "../src/projectEffects.ts";
-import { PROJECT_COMPLETE } from "../src/projects.ts";
+import { PROJECT_COMPLETE, projectProgressConfig } from "../src/projects.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { tokenBase } from "../src/relay.ts";
 import { RESEARCH_IDS, RESEARCH_REQUIRES, RESEARCH_SKILLS } from "../src/research.ts";
@@ -281,7 +281,7 @@ describe("NERON's BIOS", () => {
       const p0 = player(s, "p0");
       p0.skills = [];
 
-      const unboostedBase = tokenBase(s.config.project.progress, p0, []);
+      const unboostedBase = tokenBase(projectProgressConfig(s.config.project.progress, proj), p0, []);
       const boostedBase = unboostedBase + s.config.bios.cpuPriorityBonus;
 
       // Baseline (none) and non-matching priorities do not boost projects.
@@ -306,14 +306,14 @@ describe("NERON's BIOS", () => {
         player(trial, "p0").room = "NEXUS_ROOM";
         player(trial, "p0").skills = [];
         trial.bios.cpu_priority = "projects";
-        const target = offeredProjects(trial)[0]!;
-        const after = must(applyAction(trial, "p0", { type: "project", equipment: core, project: target }));
-        const gain = after.projects[target] ?? 0;
+        trial.projectDeck = [proj, ...trial.projectDeck.filter((id) => id !== proj)];
+        const after = must(applyAction(trial, "p0", { type: "project", equipment: core, project: proj }));
+        const gain = after.projects[proj] ?? 0;
         expect(gain).toBeGreaterThanOrEqual(boostedBase);
         expect(gain).toBeLessThanOrEqual(boostedBase + (boostedBase >> 1));
         gains.add(gain);
       }
-      // Confirms the boosted top of the range (10%) is actually reachable.
+      // Confirms the boosted top of the range is actually reachable.
       expect(gains.has(boostedBase + (boostedBase >> 1))).toBe(true);
     });
 

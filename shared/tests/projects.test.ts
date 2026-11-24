@@ -4,7 +4,7 @@ import { advanceNeron } from "../src/comms.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import projets from "@mush2/assets/derived/data/Data/projets.json";
 import { offeredProjects } from "../src/projectEffects.ts";
-import { PROJECT_COMPLETE, PROJECT_IDS, PROJECT_STATUS, PROJECTS, projectSkills } from "../src/projects.ts";
+import { PROJECT_COMPLETE, PROJECT_IDS, PROJECT_STATUS, PROJECTS, projectEfficiency, projectSkills } from "../src/projects.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, setCheat, viewFor } from "../src/rules.ts";
 import { addStatus } from "../src/statuses.ts";
@@ -42,32 +42,105 @@ describe("NERON projects", () => {
     expect(applyAction(s, "p0", { type: "project", equipment: "NEXUS_ROOM:NERON_BIOS_TERM", project: drawn[0]! }).ok).toBe(false);
   });
 
+  it("pins eMush per-project efficiencies (1 to 18) and uses them in view gain ranges and work rolls", () => {
+    const expected: Record<string, number> = {
+      PATROL_SHIP_LAUNCHER: 12,
+      PATROLSHIP_BLASTER_GUN: 6,
+      BAY_DOOR_XXL: 18,
+      PATROLSHIP_EXTRA_AMMO: 6,
+      TURRET_EXTRA_FIRERATE: 12,
+      FIRE_SENSOR: 6,
+      DOOR_SENSOR: 18,
+      EQUIPMENT_SENSOR: 12,
+      QUANTUM_SENSORS: 6,
+      CHIPSET_ACCELERATION: 6,
+      ICARUS_ANTIGRAV_PROPELLER: 12,
+      ICARUS_LARGER_BAY: 6,
+      ICARUS_LAVATORY: 12,
+      NERON_PROJECT_THREAD: 12,
+      ARMOUR_CORRIDOR: 3,
+      PLASMA_SHIELD: 1,
+      EXTRA_HYDROPONPOTS: 6,
+      HYDROPONIC_INCUBATOR: 12,
+      HEAT_LAMP: 6,
+      AUXILIARY_TERMINAL: 18,
+      AUTO_WATERING: 3,
+      RADAR_TRANS_VOID: 18,
+      MAGNETIC_NET: 6,
+      FOOD_RETAILER: 18,
+      DISMANTLING: 12,
+      AUTO_RETURN_ICARUS: 12,
+      EXTRA_DRONE: 6,
+      FISSION_COFFEE_ROASTER: 6,
+      TRAIL_REDUCER: 3,
+      TRASH_LOAD: 18,
+      CALL_OF_DIRTY: 18,
+      BEAT_BOX: 18,
+      THALASSO: 18,
+      FLOOR_HEATING: 12,
+      NOISE_REDUCER: 18,
+      NERON_TARGETING_ASSIST: 3,
+      PARASITE_ELIM: 6,
+      OXY_MORE: 6,
+      BRIC_BROC: 3,
+      APERO_KITCHEN: 18,
+    };
+    expect(Object.fromEntries(PROJECTS.map((p) => [p.id, p.efficiency]))).toEqual(expected);
+    expect(projectEfficiency("UNKNOWN_PROJECT")).toBe(6);
+
+    const tiers = [
+      ["PLASMA_SHIELD", { min: 1, max: 1 }],
+      ["ARMOUR_CORRIDOR", { min: 3, max: 4 }],
+      ["FIRE_SENSOR", { min: 6, max: 9 }],
+      ["FLOOR_HEATING", { min: 12, max: 18 }],
+      ["NOISE_REDUCER", { min: 18, max: 27 }],
+    ] as const;
+
+    for (const [id, range] of tiers) {
+      const s = game();
+      setProgress(s, { project: id }, 0);
+      expect(viewFor(s, "p0").relay.projects[id]!.gain).toEqual(range);
+      const after = mustApply(s, "p0", work(id));
+      expect(after.projects[id]).toBeGreaterThanOrEqual(range.min);
+      expect(after.projects[id]).toBeLessThanOrEqual(range.max);
+    }
+
+    // Repeating an efficiency-1 project without skills clamps the penalized gain to 0–0%.
+    const plasma = game();
+    setProgress(plasma, { project: "PLASMA_SHIELD" }, 0);
+    const first = mustApply(plasma, "p0", work("PLASMA_SHIELD"));
+    expect(first.projects.PLASMA_SHIELD).toBe(1);
+    expect(viewFor(first, "p0").relay.projects.PLASMA_SHIELD!.gain).toEqual({ min: 0, max: 0 });
+    const repeat = mustApply(first, "p0", work("PLASMA_SHIELD"));
+    expect(repeat.projects.PLASMA_SHIELD).toBe(1);
+  });
+
   it("costs AP and advances the chosen project, for anyone, with the relay penalty for repeats and no tokens", () => {
     const s = game();
-    setProgress(s, { project: "PLASMA_SHIELD" }, 0);
+    setProgress(s, { project: "FIRE_SENSOR" }, 0);
     const ap = s.players[1]!.ap;
-    const r = applyAction(s, "p1", work("PLASMA_SHIELD"));
+    const r = applyAction(s, "p1", work("FIRE_SENSOR"));
     if (!r.ok) throw new Error(r.error);
-    const first = r.state.projects.PLASMA_SHIELD!;
+    const first = r.state.projects.FIRE_SENSOR!;
     expect(first).toBeGreaterThanOrEqual(6);
     expect(first).toBeLessThanOrEqual(9);
     expect(r.state.players[1]!.ap).toBe(ap - AP);
     expect(r.state.research).toEqual({});
-    expect(r.state.relay.projects.PLASMA_SHIELD).toEqual({ lastBy: "p1", streak: 1 });
+    expect(r.state.relay.projects.FIRE_SENSOR).toEqual({ lastBy: "p1", streak: 1 });
     expect("projects" in viewFor(r.state, "p1").yourTokens).toBe(false);
-    const again = applyAction(r.state, "p1", work("PLASMA_SHIELD"));
+    const again = applyAction(r.state, "p1", work("FIRE_SENSOR"));
     // The repeat is penalised by 2: 4-6.
-    const second = again.ok ? again.state.projects.PLASMA_SHIELD! - first : -1;
+    const second = again.ok ? again.state.projects.FIRE_SENSOR! - first : -1;
     expect(second).toBeGreaterThanOrEqual(4);
     expect(second).toBeLessThanOrEqual(6);
     // noRelayPenalty cheat waives the repeat penalty on projects too.
     const noPenalty = must(setCheat(r.state, "p1", "noRelayPenalty", true));
-    expect(viewFor(noPenalty, "p1").relay.projects.PLASMA_SHIELD!.gain).toEqual({ min: 6, max: 9 });
+    expect(viewFor(noPenalty, "p1").relay.projects.FIRE_SENSOR!.gain).toEqual({ min: 6, max: 9 });
     // Someone else in between resets the streak.
-    const other = applyAction(r.state, "p0", work("PLASMA_SHIELD"));
+    const other = applyAction(r.state, "p0", work("FIRE_SENSOR"));
     if (!other.ok) throw new Error(other.error);
-    const back = applyAction(other.state, "p1", work("PLASMA_SHIELD"));
-    expect(back.ok && back.state.projects.PLASMA_SHIELD! - other.state.projects.PLASMA_SHIELD!).toBeGreaterThanOrEqual(6);
+    const back = applyAction(other.state, "p1", work("FIRE_SENSOR"));
+    expect(back.ok && back.state.projects.FIRE_SENSOR! - other.state.projects.FIRE_SENSOR!).toBeGreaterThanOrEqual(6);
   });
 
   it("adds the skill boost for each of the project's skills the worker has, and none for other skills", () => {
@@ -78,14 +151,14 @@ describe("NERON projects", () => {
     setProgress(s, { project: "BRIC_BROC" }, 0);
     const you = s.players[0]!;
     you.skills = ["engineer", "physicist"];
-    expect(viewFor(s, "p0").relay.projects.PLASMA_SHIELD!.gain.min).toBe(6 + 2 * cfg.skillBoost);
+    expect(viewFor(s, "p0").relay.projects.PLASMA_SHIELD!.gain.min).toBe(projectEfficiency("PLASMA_SHIELD") + 2 * cfg.skillBoost);
     const r = mustApply(s, "p0", work("PLASMA_SHIELD"));
-    expect(r.projects.PLASMA_SHIELD).toBeGreaterThanOrEqual(6 + 2 * cfg.skillBoost);
+    expect(r.projects.PLASMA_SHIELD).toBeGreaterThanOrEqual(projectEfficiency("PLASMA_SHIELD") + 2 * cfg.skillBoost);
     you.skills = ["biologist", "medic"];
     const plain = mustApply(s, "p0", work("PLASMA_SHIELD")).projects.PLASMA_SHIELD!;
-    expect(plain).toBeLessThanOrEqual(9);
+    expect(plain).toBeLessThanOrEqual(projectEfficiency("PLASMA_SHIELD") + (projectEfficiency("PLASMA_SHIELD") >> 1));
     you.skills = ["designer"];
-    expect(mustApply(s, "p0", work("BRIC_BROC")).projects.BRIC_BROC).toBeGreaterThanOrEqual(6 + cfg.skillBoost);
+    expect(mustApply(s, "p0", work("BRIC_BROC")).projects.BRIC_BROC).toBeGreaterThanOrEqual(projectEfficiency("BRIC_BROC") + cfg.skillBoost);
   });
 
   it("does not make project work dirty", () => {
@@ -230,7 +303,7 @@ describe("NERON projects", () => {
       expect(viewFor(s, id).projects).toEqual(s.projects);
       expect(viewFor(s, id).relay.projects.FLOOR_HEATING).toEqual({
         waiting: 0,
-        gain: id === "p0" ? { min: 4, max: 6 } : { min: 6, max: 9 },
+        gain: id === "p0" ? { min: 10, max: 15 } : { min: 12, max: 18 },
         tokens: [],
       });
     }

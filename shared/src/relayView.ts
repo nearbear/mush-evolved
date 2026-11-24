@@ -7,7 +7,7 @@ import { cpuPriorityBonus } from "./bios.ts";
 import { equipmentHere } from "./equipment.ts";
 import { PILGRED_COMPLETE, PILGRED_SKILLS, pilgredTerminalsHere } from "./pilgred.ts";
 import { offeredProjects } from "./projectEffects.ts";
-import { PROJECT_COMPLETE, projectSkills } from "./projects.ts";
+import { PROJECT_COMPLETE, projectProgressConfig, projectSkills } from "./projects.ts";
 import { researchProgress } from "./assay.ts";
 import { contributionGain, poolProgress, relayGainRange, type RelayPool, type RelayProgressConfig, type RelayStreak, type ResearchPool } from "./relay.ts";
 import { RESEARCH_COMPLETE, RESEARCH_IDS, RESEARCH_SKILLS } from "./research.ts";
@@ -63,7 +63,7 @@ export function relayView(state: Readonly<GameState>, you: Readonly<PlayerState>
     pilgred: atPilgred ? state.pilgred.progress : null,
     relay: {
       research: inLab ? Object.fromEntries(RESEARCH_IDS.map((id) => [id, researchView(state.relay.research[id], research, you, researchBonus)])) : {},
-      projects: atCore ? Object.fromEntries(offered.map((id) => [id, streakEntry(state.relay.projects[id], project, you, projectSkills(id), projectBonus)])) : {},
+      projects: atCore ? Object.fromEntries(offered.map((id) => [id, streakEntry(state.relay.projects[id], projectProgressConfig(project, id), you, projectSkills(id), projectBonus)])) : {},
       pilgred: atPilgred ? targetView(state.pilgred.pool, state.config.pilgred.progress, you, PILGRED_SKILLS, PILGRED_COMPLETE, 0) : null,
     },
     // Your own tokens, wherever you are: your own information.

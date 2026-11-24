@@ -1,8 +1,10 @@
 // NERON projects, worked on at NERON's core in the Nexus. Built the same way as research (research.ts): only the ids live
 // here (the names are translated in the client), and progress is state (`GameState.projects`, percent). Only 3 randomly
 // drawn projects are offered at a time (`newProjectDeck`, `offeredProjects`; owner, 2026-11-14). Each project's skill
-// tags speed up work on it (owner, 2026-10-27).
+// tags speed up work on it (owner, 2026-10-27), and its `efficiency` (1–18, mirrored from eMush; owner, 2026-11-23) sets
+// its base progress before skill boosts, BIOS priority, migraine and relay penalties.
 
+import type { RelayProgressConfig } from "./relay.ts";
 import { rollShuffle, streamFor } from "./rng.ts";
 import type { SkillId } from "./skills.ts";
 import type { GameState } from "./types.ts";
@@ -11,50 +13,50 @@ import type { GameState } from "./types.ts";
  * Every project in the original's live list (`projets.json`, above `$EOF`), each with card art in `Mush/www/img/cards/projects/`
  * (the file is the lowercase id). `skills` speed up work on it, each by `config.project.progress.skillBoost` (owner, 2026-10-27):
  * the original's `tags` column, with CONCEPTOR as `designer`. The 'plus' projects are tagged ALL, a pseudo-skill nobody has, so
- * they have none. A test checks the skills against the data.
+ * they have none. `efficiency` is eMush's per-project base efficiency (1–18; owner, 2026-11-23).
  */
 export const PROJECTS = [
-  { id: "PATROL_SHIP_LAUNCHER", skills: ["pilot", "physicist"] },
-  { id: "PATROLSHIP_BLASTER_GUN", skills: ["pilot", "gunman"] },
-  { id: "BAY_DOOR_XXL", skills: ["pilot", "engineer"] },
-  { id: "PATROLSHIP_EXTRA_AMMO", skills: ["physicist", "engineer"] },
-  { id: "TURRET_EXTRA_FIRERATE", skills: ["physicist", "engineer"] },
-  { id: "FIRE_SENSOR", skills: ["radio_expert", "fireman"] },
-  { id: "DOOR_SENSOR", skills: ["radio_expert", "robotics"] },
-  { id: "EQUIPMENT_SENSOR", skills: ["radio_expert", "engineer"] },
-  { id: "QUANTUM_SENSORS", skills: ["astrophysician", "radio_expert"] },
-  { id: "CHIPSET_ACCELERATION", skills: ["astrophysician", "computer"] },
-  { id: "ICARUS_ANTIGRAV_PROPELLER", skills: ["pilot", "physicist"] },
-  { id: "ICARUS_LARGER_BAY", skills: ["pilot", "engineer"] },
-  { id: "ICARUS_LAVATORY", skills: ["biologist", "engineer"] },
-  { id: "NERON_PROJECT_THREAD", skills: ["computer", "shrink"] },
-  { id: "ARMOUR_CORRIDOR", skills: ["engineer", "physicist"] },
-  { id: "PLASMA_SHIELD", skills: ["engineer", "physicist"] },
-  { id: "EXTRA_HYDROPONPOTS", skills: ["engineer", "botanic"] },
-  { id: "HYDROPONIC_INCUBATOR", skills: ["physicist", "botanic"] },
-  { id: "HEAT_LAMP", skills: ["engineer", "botanic"] },
-  { id: "AUXILIARY_TERMINAL", skills: ["computer", "radio_expert"] },
-  { id: "AUTO_WATERING", skills: ["engineer", "fireman"] },
-  { id: "RADAR_TRANS_VOID", skills: ["engineer", "radio_expert"] },
-  { id: "MAGNETIC_NET", skills: ["pilot", "physicist"] },
-  { id: "FOOD_RETAILER", skills: ["robotics", "cook"] },
-  { id: "DISMANTLING", skills: ["engineer", "robotics"] },
-  { id: "AUTO_RETURN_ICARUS", skills: ["computer", "robotics"] },
-  { id: "EXTRA_DRONE", skills: ["engineer", "robotics"] },
-  { id: "FISSION_COFFEE_ROASTER", skills: ["caffeinomaniac", "physicist"] },
-  { id: "TRAIL_REDUCER", skills: ["pilot", "engineer"] },
-  { id: "TRASH_LOAD", skills: [] },
-  { id: "CALL_OF_DIRTY", skills: [] },
-  { id: "BEAT_BOX", skills: [] },
-  { id: "THALASSO", skills: [] },
-  { id: "FLOOR_HEATING", skills: [] },
-  { id: "NOISE_REDUCER", skills: [] },
-  { id: "NERON_TARGETING_ASSIST", skills: [] },
-  { id: "PARASITE_ELIM", skills: [] },
-  { id: "OXY_MORE", skills: ["engineer", "biologist"] },
-  { id: "BRIC_BROC", skills: ["designer", "creative"] },
-  { id: "APERO_KITCHEN", skills: [] },
-] as const satisfies readonly { id: string; skills: readonly SkillId[] }[];
+  { id: "PATROL_SHIP_LAUNCHER", skills: ["pilot", "physicist"], efficiency: 12 },
+  { id: "PATROLSHIP_BLASTER_GUN", skills: ["pilot", "gunman"], efficiency: 6 },
+  { id: "BAY_DOOR_XXL", skills: ["pilot", "engineer"], efficiency: 18 },
+  { id: "PATROLSHIP_EXTRA_AMMO", skills: ["physicist", "engineer"], efficiency: 6 },
+  { id: "TURRET_EXTRA_FIRERATE", skills: ["physicist", "engineer"], efficiency: 12 },
+  { id: "FIRE_SENSOR", skills: ["radio_expert", "fireman"], efficiency: 6 },
+  { id: "DOOR_SENSOR", skills: ["radio_expert", "robotics"], efficiency: 18 },
+  { id: "EQUIPMENT_SENSOR", skills: ["radio_expert", "engineer"], efficiency: 12 },
+  { id: "QUANTUM_SENSORS", skills: ["astrophysician", "radio_expert"], efficiency: 6 },
+  { id: "CHIPSET_ACCELERATION", skills: ["astrophysician", "computer"], efficiency: 6 },
+  { id: "ICARUS_ANTIGRAV_PROPELLER", skills: ["pilot", "physicist"], efficiency: 12 },
+  { id: "ICARUS_LARGER_BAY", skills: ["pilot", "engineer"], efficiency: 6 },
+  { id: "ICARUS_LAVATORY", skills: ["biologist", "engineer"], efficiency: 12 },
+  { id: "NERON_PROJECT_THREAD", skills: ["computer", "shrink"], efficiency: 12 },
+  { id: "ARMOUR_CORRIDOR", skills: ["engineer", "physicist"], efficiency: 3 },
+  { id: "PLASMA_SHIELD", skills: ["engineer", "physicist"], efficiency: 1 },
+  { id: "EXTRA_HYDROPONPOTS", skills: ["engineer", "botanic"], efficiency: 6 },
+  { id: "HYDROPONIC_INCUBATOR", skills: ["physicist", "botanic"], efficiency: 12 },
+  { id: "HEAT_LAMP", skills: ["engineer", "botanic"], efficiency: 6 },
+  { id: "AUXILIARY_TERMINAL", skills: ["computer", "radio_expert"], efficiency: 18 },
+  { id: "AUTO_WATERING", skills: ["engineer", "fireman"], efficiency: 3 },
+  { id: "RADAR_TRANS_VOID", skills: ["engineer", "radio_expert"], efficiency: 18 },
+  { id: "MAGNETIC_NET", skills: ["pilot", "physicist"], efficiency: 6 },
+  { id: "FOOD_RETAILER", skills: ["robotics", "cook"], efficiency: 18 },
+  { id: "DISMANTLING", skills: ["engineer", "robotics"], efficiency: 12 },
+  { id: "AUTO_RETURN_ICARUS", skills: ["computer", "robotics"], efficiency: 12 },
+  { id: "EXTRA_DRONE", skills: ["engineer", "robotics"], efficiency: 6 },
+  { id: "FISSION_COFFEE_ROASTER", skills: ["caffeinomaniac", "physicist"], efficiency: 6 },
+  { id: "TRAIL_REDUCER", skills: ["pilot", "engineer"], efficiency: 3 },
+  { id: "TRASH_LOAD", skills: [], efficiency: 18 },
+  { id: "CALL_OF_DIRTY", skills: [], efficiency: 18 },
+  { id: "BEAT_BOX", skills: [], efficiency: 18 },
+  { id: "THALASSO", skills: [], efficiency: 18 },
+  { id: "FLOOR_HEATING", skills: [], efficiency: 12 },
+  { id: "NOISE_REDUCER", skills: [], efficiency: 18 },
+  { id: "NERON_TARGETING_ASSIST", skills: [], efficiency: 3 },
+  { id: "PARASITE_ELIM", skills: [], efficiency: 6 },
+  { id: "OXY_MORE", skills: ["engineer", "biologist"], efficiency: 6 },
+  { id: "BRIC_BROC", skills: ["designer", "creative"], efficiency: 3 },
+  { id: "APERO_KITCHEN", skills: [], efficiency: 18 },
+] as const satisfies readonly { id: string; skills: readonly SkillId[]; efficiency: number }[];
 
 export type ProjectId = (typeof PROJECTS)[number]["id"];
 
@@ -63,6 +65,16 @@ export const PROJECT_IDS: readonly ProjectId[] = PROJECTS.map((p) => p.id);
 /** The skills that speed up work on a project (none for an unknown id). */
 export function projectSkills(project: string): readonly SkillId[] {
   return PROJECTS.find((p) => p.id === project)?.skills ?? [];
+}
+
+/** A project's base progress efficiency (1–18, mirrored from eMush; owner, 2026-11-23), or `fallback` for an unknown id. */
+export function projectEfficiency(project: string, fallback = 6): number {
+  return PROJECTS.find((p) => p.id === project)?.efficiency ?? fallback;
+}
+
+/** The `RelayProgressConfig` for a specific NERON project, applying its per-project efficiency as `rate`. */
+export function projectProgressConfig(config: Readonly<RelayProgressConfig>, project: string): RelayProgressConfig {
+  return { ...config, rate: projectEfficiency(project, config.rate) };
 }
 
 export const PROJECT_COMPLETE = 100;

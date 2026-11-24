@@ -366,6 +366,7 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   navigation: { turn: { cost: { ap: 1 } }, travel: { cost: { ap: 1 } }, leaveOrbit: { cost: { ap: 1 }, fuel: 1 }, startHeading: "north" },
   // Decided 2026-10-18: NERON projects work like research (2 AP; owner, 2026-10-26: the same relay formula).
   // Owner, 2026-11-14: 3 randomly drawn projects offered at a time, rolling progress directly with a relay streak (no tokens).
+  // Owner, 2026-11-23: per-project base efficiency (1–18, mirrored from eMush) overrides `progress.rate` via `projectProgressConfig`.
   project: {
     offerCount: 3,
     cost: { ap: 2 },
