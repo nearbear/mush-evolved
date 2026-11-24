@@ -30,7 +30,7 @@ export function ShipResources({
   alerts,
   crew,
 }: {
-  ship: PlayerView["ship"];
+  ship: NonNullable<PlayerView["ship"]>;
   hunters: number;
   titles: PlayerView["titles"];
   preselection?: boolean;
@@ -76,7 +76,7 @@ export function ShipResources({
  * Desktop top bar: hunters, fires and alerts in the original game's alarm bar, left of the actions. It flashes red (the
  * original's animated "on" art) while there are hunters or fires; broken equipment alone leaves it calm.
  */
-export function AlertBar({ ship, hunters, alerts }: { ship: PlayerView["ship"]; hunters: number; alerts: PlayerView["alerts"] }) {
+export function AlertBar({ ship, hunters, alerts }: { ship: NonNullable<PlayerView["ship"]>; hunters: number; alerts: PlayerView["alerts"] }) {
   const { t } = useTranslation();
   const on = hunters > 0 || alerts.fires > 0;
   return (
@@ -131,7 +131,7 @@ export function AlertButton({ hunters, alerts }: { hunters: number; alerts: Play
 }
 
 /** One counter with its popover. */
-function Counter({ id, ship, hunters, alerts }: { id: CounterId; ship: PlayerView["ship"]; hunters: number; alerts: PlayerView["alerts"] }) {
+function Counter({ id, ship, hunters, alerts }: { id: CounterId; ship: NonNullable<PlayerView["ship"]>; hunters: number; alerts: PlayerView["alerts"] }) {
   const { t } = useTranslation();
   const name = t(`shipResources.${id}`);
   const value =

@@ -188,3 +188,15 @@ describe("broken door routing", () => {
     expect(moves.at(-1)).toBe(targetRoom);
   });
 });
+
+describe("comatose bots (#489)", () => {
+  it("auto-ready cleanly when comatose (view.ship === null)", async () => {
+    const game = startGame({ seats: seats(0), config, seed: 1, rulesVersion: "test" });
+    game.players[0]!.comaUntil = game.cycle + 2;
+    const view = viewFor(game, "p0");
+    expect(view.ship).toBeNull();
+    expect(view.statuses).toContain("coma");
+    expect(await new GoalBot(1).decideAction(view)).toEqual({ type: "ready" });
+    expect(await new WanderBot(7).decideAction(view)).toEqual({ type: "ready" });
+  });
+});

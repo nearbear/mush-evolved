@@ -40,6 +40,7 @@ import {
   fullViewFor,
   historyStep,
   readChannels,
+  isComatose,
   chatReadFor,
   mergeChatRead,
   pruneChatRead,
@@ -1393,13 +1394,15 @@ export class GameRoom extends Server<Env> {
   private sendView(conn: Connection, playerId: PlayerId): void {
     const by = this.body(playerId);
     if (!this.game || !by) return;
+    const body = this.game.players.find((p) => p.id === by);
+    const comatose = this.game.phase === "playing" && body !== undefined && isComatose(this.game, body);
     const msg: GameServerMessage = {
       type: "view",
       view: viewFor(this.game, by),
       cheatsAllowed: this.cheatsAllowed,
       now: Date.now(),
-      nextCycleAt: this.nextCycleAt(),
-      botsPaused: this.botsPaused(),
+      nextCycleAt: comatose ? null : this.nextCycleAt(),
+      botsPaused: comatose ? null : this.botsPaused(),
     };
     this.send(conn, msg);
   }

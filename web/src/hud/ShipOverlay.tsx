@@ -19,6 +19,7 @@ export function ShipOverlay({ view }: { view: PlayerView }) {
   useOverlayDismiss(open, close, rootRef);
   const label = t("shipResources.button");
 
+  if (!view.ship) return null;
   return (
     <div className="ship-overlay" ref={rootRef}>
       {open && (

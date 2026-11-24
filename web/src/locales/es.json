@@ -735,6 +735,10 @@
     "close": "Cerrar",
     "leaveNamed": "Salir de {{name}}"
   },
+  "coma": {
+    "title": "Estás en coma.",
+    "body": "El suero retrofúngico te ha dejado inconsciente. No puedes ver, actuar ni oír nada hasta que despiertes."
+  },
   "death": {
     "title": "Has muerto.",
     "body": "Todavía puedes leer el chat global y los hilos de funciones, pero ya no puedes escribir allí. Puedes hablar con los demás muertos en el Cementerio.",
@@ -986,6 +990,7 @@
     "nimble": "Ágil",
     "ninja": "Ninja",
     "pregnant": "Embarazada",
+    "coma": "Coma",
     "desc": {
       "dirty": "No puedes investigar. Darte una ducha lo elimina.",
       "full_belly": "No puedes comer más hasta tener más hambre.",
@@ -1069,7 +1074,8 @@
       "hopeless": "Con 0 de moral. Cualquier ganancia de moral lo termina. Un humano que siga Sin esperanza al acabar el ciclo muere.",
       "nimble": "Todas tus acciones públicas en una sala (incluido el movimiento) se vuelven secretas. Solo tú puedes ver este estado.",
       "ninja": "Todas tus acciones son anónimas: los registros de la sala te nombran «Alguien». Solo tú puedes ver este estado.",
-      "pregnant": "Espera un bebé. Si este tripulante muere, cada miembro vivo de la tripulación pierde 2 puntos de moral."
+      "pregnant": "Espera un bebé. Si este tripulante muere, cada miembro vivo de la tripulación pierde 2 puntos de moral.",
+      "coma": "Inconsciente por un suero retrofúngico durante 2 ciclos. No puede ver, actuar, leer registros ni usar el chat."
     }
   },
   "itemAttr": {

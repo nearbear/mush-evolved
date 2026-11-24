@@ -355,7 +355,7 @@ export const ENDING_ART: Readonly<Record<Ending, string>> = {
 
 // Status effect icons (16x16 pixel art), keyed by status id (shared/src/statuses.ts).
 const statusIconFiles = urls(
-  import.meta.glob<string>("../../../Mush/www/img/icons/ui/status/{dirty,belly_full,hungry,immune,pacifist,hyperactive,unsociable,germaphobic,guardian,disabled,paria,disease,hurt,sleepy,genius_idea,moduling,demoralized,pregnant}.png", { eager: true, query: "?url", import: "default" }),
+  import.meta.glob<string>("../../../Mush/www/img/icons/ui/status/{dirty,belly_full,hungry,immune,pacifist,hyperactive,unsociable,germaphobic,guardian,disabled,paria,disease,hurt,sleepy,genius_idea,moduling,demoralized,pregnant,knocked_out}.png", { eager: true, query: "?url", import: "default" }),
 );
 const diseaseStatusIcons = Object.fromEntries(DEFAULT_CONFIG.diseases.allDiseases.map((id) => [id, statusIconFiles["disease"]!]));
 const injuryStatusIcons = Object.fromEntries(DEFAULT_CONFIG.diseases.allInjuries.map((id) => [id, statusIconFiles["hurt"]!]));
@@ -402,6 +402,7 @@ export const STATUS_ICONS: Readonly<Record<string, string>> = {
   // Ninja mode (Ninja): reuses the Ninja skill icon.
   ninja: traitSkillIcons["ninja"]!,
   pregnant: statusIconFiles["pregnant"]!,
+  coma: statusIconFiles["knocked_out"]!,
 };
 /**
  * A class for a status icon that is another status's art recoloured at render time (owner, 2026-10-31, #145): no new

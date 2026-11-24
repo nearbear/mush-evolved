@@ -67,6 +67,7 @@ export function TopBar({
   // Ready can't be offered while you already are, so the button stays (disabled, "Waiting…") until the cycle ends.
   const showReady = canReady || you.ready;
   const ended = view.phase === "ended";
+  const comatose = you.alive && view.statuses.includes("coma") && !ended;
   // The day and cycle with the time left, then where the ship is (ShipStatus.tsx, part of the game state), in one amber
   // plate split by amber dividers. Phones abbreviate the day and cycle ("D2 · C3"), with the full words for screen readers.
   const dayCycle = { day: view.day, cycle: view.cycleOfDay };
@@ -126,23 +127,23 @@ export function TopBar({
           on the ID card in the room view (GameView). */}
       {strip ? (
         <div className="summary-strip">
-          {clock}
+          {comatose ? <span /> : clock}
           <span className="summary-strip-end">
-            <AlertButton hunters={view.hunters.count} alerts={view.alerts} />
+            {!comatose && <AlertButton hunters={view.hunters.count} alerts={view.alerts} />}
             {menu}
           </span>
         </div>
       ) : (
         <div className="cycle">
-          {clock}
-          {botsPaused && <BotsPausedTag pause={botsPaused} />}
+          {!comatose && clock}
+          {!comatose && botsPaused && <BotsPausedTag pause={botsPaused} />}
         </div>
       )}
-      {!mobile && <ShipResources ship={view.ship} hunters={view.hunters.count} titles={view.titles} preselection={view.preselection} compactTitles alertsApart lost={view.lost} alerts={view.alerts} crew={crewProps(view)} />}
+      {!mobile && !comatose && view.ship && <ShipResources ship={view.ship} hunters={view.hunters.count} titles={view.titles} preselection={view.preselection} compactTitles alertsApart lost={view.lost} alerts={view.alerts} crew={crewProps(view)} />}
       <div className="top-bar-actions">
         {!mobile && (
           <>
-            <AlertBar ship={view.ship} hunters={view.hunters.count} alerts={view.alerts} />
+            {!comatose && view.ship && <AlertBar ship={view.ship} hunters={view.hunters.count} alerts={view.alerts} />}
             {ended && (
               <button type="button" onClick={onResults}>
                 {t("gameOver.results")}

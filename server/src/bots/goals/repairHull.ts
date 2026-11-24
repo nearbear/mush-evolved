@@ -17,7 +17,7 @@ export const repairHull: GoalDef = {
   id: "repairHull",
   priority: 55,
   options(view, memory) {
-    if (view.ship.hull >= HULL_REPAIR_BELOW) return [];
+    if (!view.ship || view.ship.hull >= HULL_REPAIR_BELOW) return [];
     const here = view.actions.some((o) => o.action.type === "repair_hull");
     const room = here
       ? view.you.room

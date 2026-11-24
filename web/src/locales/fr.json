@@ -735,6 +735,10 @@
     "close": "Fermer",
     "leaveNamed": "Quitter {{name}}"
   },
+  "coma": {
+    "title": "Vous êtes dans le coma.",
+    "body": "Le sérum rétro-fongique vous a assommé. Vous ne pouvez rien voir, faire ni entendre jusqu'à votre réveil."
+  },
   "death": {
     "title": "Vous avez perdu la vie.",
     "body": "Vous pouvez encore lire le chat général et les fils des fonctions, mais vous ne pouvez plus y écrire. Vous pouvez parler avec les autres morts dans le Cimetière.",
@@ -985,6 +989,7 @@
     "nimble": "Agile",
     "ninja": "Ninja",
     "pregnant": "Enceinte",
+    "coma": "Coma",
     "contaminated": "Contamination : {{level}}",
     "desc": {
       "dirty": "Vous ne pouvez pas faire de recherche. Prendre une douche l'enlève.",
@@ -1069,7 +1074,8 @@
       "hopeless": "À 0 de moral. Tout gain de moral y met fin. Un humain encore Sans espoir à la fin du cycle meurt.",
       "nimble": "Toutes vos actions publiques dans une salle (déplacements compris) deviennent secrètes. Vous seul voyez cet état.",
       "ninja": "Toutes vos actions sont anonymes : les logs de la salle vous nomment « Quelqu'un ». Vous seul voyez cet état.",
-      "pregnant": "Attend un enfant. Si ce coéquipier meurt, chaque membre vivant de l'équipage perd 2 points de moral."
+      "pregnant": "Attend un enfant. Si ce coéquipier meurt, chaque membre vivant de l'équipage perd 2 points de moral.",
+      "coma": "Assommé par un sérum rétro-fongique pendant 2 cycles. Ne peut ni voir, ni agir, ni lire les logs ou le chat."
     }
   },
   "itemAttr": {

@@ -21,6 +21,7 @@ import { dropped, emptyQueue } from "./queueCore.ts";
 import { getUp } from "./actions/lie_down.ts";
 import { applyAction, canAct, performAction } from "./rules.ts";
 import { standUp } from "./spot.ts";
+import { isComatose } from "./statuses.ts";
 import type { Action, GameState, PlayerId, PlayerState, QueuedAction } from "./types.ts";
 
 /** A player asks to act: an untimed action happens now; a timed one starts if they are idle, or waits its turn. */
@@ -32,7 +33,7 @@ export function queueAction(state: GameState, playerId: PlayerId, action: Action
   if (!p || !def) return fail("illegal_action");
   if (!def.timed || p.cheats.includes("instantActions")) return actNow(state, playerId, action);
   // Checked against things as they are now, like the buttons the player pressed; checked again when its turn comes.
-  if (!canAct(state, p) || def.check(state, p, action) !== null) return fail("illegal_action");
+  if (!canAct(state, p) || isComatose(state, p) || def.check(state, p, action) !== null) return fail("illegal_action");
   if (p.current && p.queue.length >= state.config.action.queueCap) return fail("queue_full");
   const next = cloneState(state);
   const actor = findPlayer(next, playerId)!;
@@ -137,7 +138,7 @@ export function tick(state: GameState, at: number): ActionResult {
  * Mutates a state the caller already cloned.
  */
 function begin(next: GameState, actor: PlayerState, actions: QueuedAction[], at: number): void {
-  while (actions.length > 0 && actor.alive && next.phase === "playing") {
+  while (actions.length > 0 && actor.alive && !isComatose(next, actor) && next.phase === "playing") {
     const queued = actions.shift()!;
     const { action } = queued;
     const def: ActionDef<Action> = ACTIONS[action.type];

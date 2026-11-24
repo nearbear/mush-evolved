@@ -169,6 +169,10 @@ export interface PlayerState extends Seat {
   diseaseTrackers: DiseaseTracker[];
   /** First cycle the player is no longer immune to infection (`antic_perfume` or fruit `resistance`); unset or past means not immune. Private: your own view only, as the `immune` status. */
   immuneUntil?: number;
+  /** First cycle the player is no longer in a coma (`state.cycle < comaUntil`, RFS vaccination, #489). Stays with the body on Transfer; never sent (public `coma` status is). */
+  comaUntil?: number;
+  /** Log entry ids written while this body was comatose (#489): permanently hidden even after waking (`log.ts`). Stays with the body on Transfer; never sent. */
+  missedLogs?: SeqRange[];
   /** Last cycle (`next.cycle <= treatDiseaseUntil`) a fruit's Treat Disease buff still accelerates disease recovery. Never sent. */
   treatDiseaseUntil?: number;
   /** First cycle a fruit's Energize buff is over (`state.cycle < energizeUntil`). Never sent; reflected in `view.movement.mpPerConversion`. */

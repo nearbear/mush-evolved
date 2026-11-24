@@ -55,7 +55,7 @@ function steerAp(view: PlayerView, direction: PlanetDirection | null, memory?: B
  * tanks, in the chamber (`chamberFuel`), and in the bot's hands covers. Null while traveling or in orbit.
  */
 export function sharedDestination(view: PlayerView, chamberFuel = 0): SharedPlanetInfo | null {
-  if (view.navigation.traveling || view.navigation.orbiting) return null;
+  if (!view.ship || view.navigation.traveling || view.navigation.orbiting) return null;
   const carried = view.inventory.filter((i) => i.type === FUEL_CAPSULE_ITEM).length;
   const reach = view.ship.fuel + carried + chamberFuel;
   const shares = view.sharedPlanets
@@ -70,7 +70,7 @@ export function sharedDestination(view: PlayerView, chamberFuel = 0): SharedPlan
  * heading so the ship can evade hunters even without a discovered planet. Null if out of fuel, traveling, or in orbit.
  */
 export function targetJump(view: PlayerView, chamber: number | null): JumpTarget | null {
-  if (view.navigation.traveling || view.navigation.orbiting) return null;
+  if (!view.ship || view.navigation.traveling || view.navigation.orbiting) return null;
   const dest = sharedDestination(view, chamber ?? 0);
   if (dest) return { direction: dest.direction, distance: dest.distance };
   const carried = view.inventory.filter((i) => i.type === FUEL_CAPSULE_ITEM).length;
@@ -189,13 +189,13 @@ export const travel: GoalDef = {
       memory.holdSince = null;
       // On arriving in orbit, ask for the fuel to leave, so the chamber is filled while the planet is explored.
       const leaveFuel = DEFAULT_CONFIG.navigation.leaveOrbit.fuel;
-      if (view.navigation.orbiting && view.chatChannels.includes("global") && memory.fuel.request?.orbit !== true && (chamberLevel(view, memory) ?? 0) < leaveFuel && view.ship.fuel >= leaveFuel) {
+      if (view.ship && view.navigation.orbiting && view.chatChannels.includes("global") && memory.fuel.request?.orbit !== true && (chamberLevel(view, memory) ?? 0) < leaveFuel && view.ship.fuel >= leaveFuel) {
         return [fuelRequestGoal(leaveFuel)];
       }
       if (!readyToLeaveOrbit(view, memory)) return [];
       const chamber = chamberLevel(view, memory) ?? 0;
       const carried = view.inventory.filter((i) => i.type === FUEL_CAPSULE_ITEM).length;
-      if (view.ship.fuel + carried + chamber < DEFAULT_CONFIG.navigation.leaveOrbit.fuel) return [];
+      if (!view.ship || view.ship.fuel + carried + chamber < DEFAULT_CONFIG.navigation.leaveOrbit.fuel) return [];
       const ap = DEFAULT_CONFIG.navigation.leaveOrbit.cost.ap;
       const bridge = roomsWith(view, [COMMAND]).find((r) => !memory.ended.has(`leaveOrbit:${r}`) && rawCanAfford(view, r, ap, 0));
       return bridge ? [leaveOrbitGoal(view, bridge)] : [];

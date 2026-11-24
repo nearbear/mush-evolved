@@ -204,6 +204,8 @@ export type YouView = Omit<
   | "energizeUntil"
   | "perceptionUntil"
   | "pendingDiseases"
+  | "comaUntil"
+  | "missedLogs"
 > & { current: ActionInProgress | null; queue: Action[]; protecting?: PlayerId };
 
 /** A hunter as a turret or a patrol ship's cockpit shows it: its kind, hp, and an asteroid's cycle changes to impact (null otherwise). */
@@ -353,8 +355,9 @@ export interface PlayerView {
   /**
    * The ship's oxygen, fuel, hull and plasma shield, public to everyone (owner, 2026-10-19), with their caps. Not the
    * combustion chamber's level: nobody sees it, the Commander included, except by checking the chamber (owner, 2026-10-28).
+   * Null while comatose (#489).
    */
-  ship: Omit<ShipResources, "combustion"> & { max: Omit<ShipResources, "combustion"> };
+  ship: (Omit<ShipResources, "combustion"> & { max: Omit<ShipResources, "combustion"> }) | null;
   /**
    * Percent done of each research that has been started: all of them while you are alive in the lab, otherwise only the
    * completed ones (owner, 2026-10-31; relayView.ts).

@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import { Hint } from "./hud/IconButton.tsx";
 import { ActionQueue } from "./hud/ActionQueue.tsx";
 import { BottomNav, type MobilePanel } from "./hud/BottomNav.tsx";
+import { ComaNotice } from "./hud/ComaNotice.tsx";
 import { DeathNotice } from "./hud/DeathNotice.tsx";
 import { RoomList } from "./hud/RoomList.tsx";
 import { InspectPanel } from "./hud/InspectPanel.tsx";
@@ -162,6 +163,7 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
   const bubbles = useSpeechBubbles(view.chat);
 
   const { you } = view;
+  const comatose = you.alive && view.statuses.includes("coma") && view.phase !== "ended";
   const reachable = new Set(legalIn(view).flatMap((a) => (a.type === "move" ? [a.to] : [])));
   // Away with an expedition, or aboard the docked Icarus (owner, 2026-11-17): both show the Icarus panel. Aboard, you
   // are still in the bay (#469), where the others see you and can reach you.
@@ -220,18 +222,20 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
     <main className="game">
       {!mobile && <SpaceBackdrop ref={setBackdrop} ftl={view.launched !== null} />}
       <Announcer />
-      <WakeUpAnnouncement waking={waking} text={t("wake.ready", { day: view.day, cycle: view.cycleOfDay, room: names.room(you.room) })} />
-      <TerminalDialog
-        terminal={terminal}
-        view={view}
-        onAction={act}
-        onClose={() => setTerminalId(null)}
-        onSharePlanet={(planet, sectors, text) => post({ type: "sharePlanet", planet, sectors, text })}
-        onSharePlants={(plants, text) => post({ type: "sharePlants", plants, text })}
-        onSharePilgred={(percent, text) => post({ type: "sharePilgred", percent, text })}
-      />
+      {!comatose && <WakeUpAnnouncement waking={waking} text={t("wake.ready", { day: view.day, cycle: view.cycleOfDay, room: names.room(you.room) })} />}
+      {!comatose && (
+        <TerminalDialog
+          terminal={terminal}
+          view={view}
+          onAction={act}
+          onClose={() => setTerminalId(null)}
+          onSharePlanet={(planet, sectors, text) => post({ type: "sharePlanet", planet, sectors, text })}
+          onSharePlants={(plants, text) => post({ type: "sharePlants", plants, text })}
+          onSharePilgred={(percent, text) => post({ type: "sharePilgred", percent, text })}
+        />
+      )}
       <EndScreen view={view} open={view.phase === "ended" && !endClosed} onOpenChange={(open) => setEndClosed(!open)} replayId={replayId} />
-      {!readOnly && <BodyTakenDialog view={view} onAcknowledge={() => post({ type: "acknowledgeTransfer" })} />}
+      {!readOnly && !comatose && <BodyTakenDialog view={view} onAcknowledge={() => post({ type: "acknowledgeTransfer" })} />}
       <TopBar
         view={view}
         strip={mobile}
@@ -249,7 +253,12 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
       />
       {!mobile && transport && <div className="game-transport">{transport}</div>}
 
-      <div className="three-panel" data-panel={panel}>
+      {comatose ? (
+        <div className="coma-screen">
+          <ComaNotice view={view} />
+        </div>
+      ) : (
+        <div className="three-panel" data-panel={panel}>
         <div className="left-column">
           <InspectPanel view={view} layout={layout} target={target} onAction={act} onDeselect={selected && target === selected ? () => select(null) : undefined} onKube={kube} />
         </div>
@@ -426,9 +435,10 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
           }
         />
       </div>
+      )}
 
       {mobile && transport && <div className="game-transport">{transport}</div>}
-      {mobile && <BottomNav panel={panel} onChange={setPanel} view={view} />}
+      {mobile && !comatose && <BottomNav panel={panel} onChange={setPanel} view={view} />}
     </main>
     </BackdropContext>
     </ServerClockContext.Provider>

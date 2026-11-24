@@ -15,9 +15,11 @@
 
 import type { ActionVisibility } from "./actions/action.ts";
 import type { CharacterId } from "./characters.ts";
+import { inRanges, withSeq } from "./chat.ts";
 import { CAMERA_EQUIPMENT } from "./equipment.ts";
 import { rollFloat } from "./rng.ts";
 import { hasSkill } from "./skills.ts";
+import { isComatose } from "./statuses.ts";
 import type { GameState, LogEntry, LogLevel, LogParams, PlayerId, PlayerState, RoomId } from "./types.ts";
 
 /** Appends `entry` with the next id and the current cycle. Every log line goes through here. Mutates a state the caller already cloned. */
@@ -33,7 +35,10 @@ export function pushLog(state: GameState, entry: Omit<LogEntry, "id" | "cycle">)
   }
   const line: LogEntry = { id: state.nextLogId++, cycle: state.cycle, ...stored };
   state.log.push(line);
-  for (const p of state.players) if (seesLine(line, p)) p.logSeen += 1;
+  for (const p of state.players) {
+    if (isComatose(state, p)) p.missedLogs = withSeq(p.missedLogs ?? [], line.id);
+    else if (seesLine(state, line, p)) p.logSeen += 1;
+  }
 }
 
 /** The notice a defaced room shows for the rest of the cycle (Defacer, `deface`). */
@@ -71,7 +76,12 @@ export function endDefacing(state: GameState): void {
  * you, and the ship-wide lines. The dead keep only ship-wide public lines (decided 2026-10-16, #45); every room line,
  * their own private ones included, goes.
  */
-export function seesLine(e: Readonly<LogEntry>, you: Readonly<Pick<PlayerState, "id" | "alive" | "room">>): boolean {
+export function seesLine(
+  state: Readonly<Pick<GameState, "cycle">>,
+  e: Readonly<LogEntry>,
+  you: Readonly<Pick<PlayerState, "id" | "alive" | "room" | "comaUntil" | "missedLogs">>,
+): boolean {
+  if (isComatose(state, you) || inRanges(you.missedLogs, e.id)) return false;
   if (!you.alive) return e.room === undefined && e.visibleTo === "all";
   return e.visibleTo === "all" ? e.room === undefined || e.room === you.room : e.visibleTo.includes(you.id);
 }
@@ -132,7 +142,7 @@ export function pruneLog(state: GameState): void {
  */
 export function startLogSeen(state: Readonly<GameState>, p: PlayerState): void {
   const window = logWindowOf(state, p);
-  p.logSeen = state.log.filter((e) => seesLine(e, p) && inLogWindow(state, e, window)).length;
+  p.logSeen = state.log.filter((e) => seesLine(state, e, p) && inLogWindow(state, e, window)).length;
 }
 
 let nimbleActorId: PlayerId | null = null;

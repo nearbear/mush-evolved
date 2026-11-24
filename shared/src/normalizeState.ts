@@ -659,6 +659,8 @@ export function normalizePlayer(raw: Partial<PlayerState>, mode: QueueMode): Pla
     statuses: copy(need(raw, "statuses", t)),
     diseaseTrackers: need(raw, "diseaseTrackers", t).map(normalizeDiseaseTracker),
     immuneUntil: raw.immuneUntil,
+    comaUntil: raw.comaUntil,
+    missedLogs: opt(raw.missedLogs, clone),
     treatDiseaseUntil: raw.treatDiseaseUntil,
     energizeUntil: raw.energizeUntil,
     perceptionUntil: raw.perceptionUntil,

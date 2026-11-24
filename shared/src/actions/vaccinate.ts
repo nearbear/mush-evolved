@@ -1,7 +1,12 @@
 import { Action, peopleHere, isString } from "./action.ts";
+import { endPushToLeave } from "./accommodate.ts";
 import { cure } from "../infection.ts";
+import { markSeen } from "../inactivity.ts";
 import { itemsIn, removeItem, isWorking } from "../items.ts";
 import { logPrivate, logPublic } from "../log.ts";
+import { emptyQueue } from "../queueCore.ts";
+import { leaveTerminal } from "../spot.ts";
+import { removeStatus } from "../statuses.ts";
 import type { GameState, ItemState, PlayerState } from "../types.ts";
 
 export type VaccinateActionData = { type: "vaccinate"; target: string };
@@ -38,6 +43,16 @@ export class VaccinateAction extends Action<VaccinateActionData> {
     removeItem(state, serumOf(state, player)!.id);
     logPublic(state, player.room, "vaccinated", { name: player.character, target: patient.character });
     logPrivate(state, player.id, cure(state, patient) ? "vaccineWorked" : "vaccineNothing", { target: patient.character });
+    // Put the patient into a coma after logging `vaccinated` / `cured` so they see those lines upon waking (#489).
+    patient.comaUntil = state.cycle + state.config.vaccine.comaCycles;
+    emptyQueue(state, patient, false);
+    patient.current = null;
+    removeStatus(patient, "guardian");
+    for (const other of state.players) if (other.protectedBy === patient.id) delete other.protectedBy;
+    endPushToLeave(state, patient);
+    delete patient.boardedIcarus;
+    leaveTerminal(patient);
+    if (state.now > 0) markSeen(state, [patient.id], state.now);
   }
 }
 

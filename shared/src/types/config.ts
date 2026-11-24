@@ -431,6 +431,7 @@ export interface GameConfig {
   };
   vaccine: {
     cost: { ap: number }; // AP the anti-Mush serum costs to use (owner, 2026-10-25, from the wiki).
+    comaCycles: number; // Cycles the vaccinated target spends in a coma (#489, owner 2026-11-23).
   };
   punch: {
     cost: { ap: number }; // Issue 29.

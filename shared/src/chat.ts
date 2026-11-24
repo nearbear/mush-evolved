@@ -9,6 +9,7 @@ import { channelLimit, isDeaf, isMute, spokenText } from "./modifiers.ts";
 import { noITrackieNeeded } from "./comms.ts";
 import { cloneState, fail, dayOf, findPlayer, type ActionResult } from "./helpers.ts";
 import { dropChannelPlans, leavePlans } from "./plans.ts";
+import { isComatose } from "./statuses.ts";
 import { CHAT_CHANNELS, GRAVEYARD_CHANNEL, MUSH_CHANNEL } from "./types.ts";
 import type { ChannelId, ChatMark, ChatMessage, ChatOutbox, GameState, PlayerId, PlayerState, PrivateChannelId, SeqRange, SharedPlanetId, SharedReportId, ThreadId } from "./types.ts";
 
@@ -48,11 +49,17 @@ export function pushChat(state: GameState, channel: ChannelId, message: Omit<Cha
   }
   state.chatSeq[channel] = seq + 1;
   state.chat.push({ id: state.nextChatId++, seq, cycle: state.cycle, channel, ...message });
+  // Comatose players permanently miss every message written during their coma, system messages included (#489).
+  for (const p of state.players) {
+    if (!isComatose(state, p)) continue;
+    const unheard = (p.unheard ??= {});
+    unheard[channel] = withSeq(unheard[channel] ?? [], seq);
+  }
   // A checklist keeps its ticks beside the chat, starting from the boxes as typed (phase 2 of the plan).
   if (message.from === null) return;
   // Whoever is deaf now never hears it (Damaged or Destroyed Ears; owner, 2026-11-17).
   for (const p of state.players) {
-    if (p.id === message.from || !isDeaf(p)) continue;
+    if (p.id === message.from || !isDeaf(p) || isComatose(state, p)) continue;
     const unheard = (p.unheard ??= {});
     unheard[channel] = withSeq(unheard[channel] ?? [], seq);
   }
@@ -109,8 +116,8 @@ export function heardBy(player: Readonly<PlayerState>, m: Readonly<Pick<ChatMess
   return !inRanges(player.unheard?.[m.channel], m.seq);
 }
 
-/** `ranges` with `seq` added: it extends the last range when it follows on, so a deaf stretch stays one range. */
-function withSeq(ranges: readonly SeqRange[], seq: number): SeqRange[] {
+/** `ranges` with `seq` added: it extends the last range when it follows on, so a deaf or comatose stretch stays one range. */
+export function withSeq(ranges: readonly SeqRange[], seq: number): SeqRange[] {
   const last = ranges.at(-1);
   if (last && last[1] === seq) return [...ranges.slice(0, -1), [last[0], seq + 1]];
   return [...ranges, [seq, seq + 1]];
@@ -129,6 +136,7 @@ export function countInRanges(ranges: readonly SeqRange[] | undefined, from: num
 }
 
 export function readChannels(state: Readonly<GameState>, player: Readonly<PlayerState>): ChannelId[] {
+  if (isComatose(state, player)) return [];
   if (player.alive) return chatChannels(state, player);
   if (state.phase !== "playing") return [];
   const mush: ChannelId[] = player.role === "mush" ? [MUSH_CHANNEL] : [];
@@ -151,7 +159,7 @@ const threadIds = (state: Readonly<GameState>): (ThreadId | SharedPlanetId | Sha
  * lose them, pick one up and you see the whole history.
  */
 export function chatChannels(state: Readonly<GameState>, player: Readonly<PlayerState>): ChannelId[] {
-  if (state.phase !== "playing") return [];
+  if (state.phase !== "playing" || isComatose(state, player)) return [];
   // The graveyard is the one place the dead may post (decided 2026-10-17), and no iTrackie is needed.
   if (!player.alive) return [GRAVEYARD_CHANNEL];
   // The Mush channel is a link between the Mush, not a device: no iTrackie needed (decided 2026-10-16).
@@ -175,6 +183,9 @@ export function sendChat(state: GameState, playerId: PlayerId, channel: ChannelI
 
   const next: GameState = {
     ...state,
+    players: state.players.some((pl) => isDeaf(pl) || isComatose(state, pl))
+      ? state.players.map((pl) => (isDeaf(pl) || isComatose(state, pl) ? { ...pl, ...(pl.unheard && { unheard: { ...pl.unheard } }) } : pl))
+      : state.players,
     chat: state.chat.map((m) => (m.at === undefined ? { ...m } : m)),
     chatSeq: { ...state.chatSeq },
     chatMarks: { ...state.chatMarks },
@@ -285,7 +296,7 @@ function channelCount(state: GameState, playerId: PlayerId): number {
  */
 export function createChannel(state: GameState, playerId: PlayerId, rawName = "", members: readonly PlayerId[] = []): ActionResult {
   const p = findPlayer(state, playerId);
-  if (!p || !p.alive || state.phase !== "playing") return fail("channel_forbidden");
+  if (!p || !p.alive || isComatose(state, p) || state.phase !== "playing") return fail("channel_forbidden");
   // Torn Tongue: no new private channel either (owner, 2026-11-17).
   if (isMute(p)) return fail("cant_speak");
   const name = rawName.trim();
@@ -308,7 +319,7 @@ export function createChannel(state: GameState, playerId: PlayerId, rawName = ""
 export function inviteToChannel(state: GameState, playerId: PlayerId, channelId: PrivateChannelId, inviteeId: PlayerId): ActionResult {
   const p = findPlayer(state, playerId);
   const channel = state.channels.find((c) => c.id === channelId);
-  if (!p || !p.alive || state.phase !== "playing" || !channel?.members.includes(playerId)) return fail("channel_forbidden");
+  if (!p || !p.alive || isComatose(state, p) || state.phase !== "playing" || !channel?.members.includes(playerId)) return fail("channel_forbidden");
   if (!canJoin(state, channel.members, inviteeId)) return fail("channel_invite_refused");
   const next = cloneState(state);
   next.channels.find((c) => c.id === channelId)!.members.push(inviteeId);
@@ -323,8 +334,9 @@ function canJoin(state: GameState, members: readonly PlayerId[], inviteeId: Play
 
 /** The last member to leave deletes the channel and its messages. */
 export function leaveChannel(state: GameState, playerId: PlayerId, channelId: PrivateChannelId): ActionResult {
+  const p = findPlayer(state, playerId);
   const channel = state.channels.find((c) => c.id === channelId);
-  if (!findPlayer(state, playerId) || !channel?.members.includes(playerId)) return fail("channel_forbidden");
+  if (!p || isComatose(state, p) || !channel?.members.includes(playerId)) return fail("channel_forbidden");
   const next = cloneState(state);
   removeFromChannel(next, channelId, playerId);
   return { ok: true, state: next };

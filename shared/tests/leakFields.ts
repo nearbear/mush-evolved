@@ -164,6 +164,8 @@ export const PLAYER_STATE_FIELDS: Record<string, FieldRule> = {
   history: { reach: "never", test: "leaks.test.ts", note: "Revealed only as private log lines, by Interrogate and Chitchat (history.ts)." },
   logSeen: { reach: "own", test: "logWindow.test.ts", note: "As `PlayerView.logSeen`. Counts only lines this body could see, so it says nothing about hidden ones." },
   immuneUntil: { reach: "own", test: "leaks.test.ts", note: "As the `immune` status." },
+  comaUntil: { reach: "never", test: "vaccinate.test.ts", note: "Only the public `coma` status goes out (#489)." },
+  missedLogs: { reach: "never", test: "vaccinate.test.ts", note: "Log ids missed during coma; never sent (#489)." },
   treatDiseaseUntil: { reach: "never", test: "leaks.test.ts", note: "Server-only timer for fruit Treat Disease buff." },
   energizeUntil: { reach: "never", test: "leaks.test.ts", note: "Server-only timer for fruit Energize buff; shows only in `view.movement`." },
   perceptionUntil: { reach: "never", test: "leaks.test.ts", note: "Server-only timer for fruit Perception buff." },

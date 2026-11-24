@@ -11,7 +11,7 @@
 
 import type { ActionDef } from "./actions.ts";
 import { SHIP_ROOMS } from "./config.ts";
-import { removeStatus } from "./statuses.ts";
+import { isComatose, removeStatus } from "./statuses.ts";
 import { cloneState, fail, findPlayer, type ActionResult } from "./helpers.ts";
 import type { Action, GameState, PlayerId, PlayerState, RoomId, Spot } from "./types.ts";
 
@@ -28,7 +28,7 @@ export const isSpotCell = (x: unknown, y: unknown): boolean => [x, y].every((n) 
 export function walk(state: GameState, playerId: PlayerId, x: number, y: number, sitting: boolean, behind?: { x: number; y: number }): ActionResult {
   const p = findPlayer(state, playerId);
   if (!p) return fail("unknown_player");
-  if (!state.config.sharedSpots || !p.alive || state.phase !== "playing") return fail("cant_walk");
+  if (!state.config.sharedSpots || !p.alive || isComatose(state, p) || state.phase !== "playing") return fail("cant_walk");
   // In bed or pushed in a wheelchair, you can't wander off (as the client already stops you).
   if (p.lyingIn !== undefined || p.pushedBy !== undefined) return fail("cant_walk");
   if (!isSpotCell(x, y) || (behind && !isSpotCell(behind.x, behind.y))) return fail("cant_walk");

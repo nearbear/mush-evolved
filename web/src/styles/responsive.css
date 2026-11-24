@@ -15,13 +15,24 @@
     padding-bottom: var(--space-1);
     box-sizing: border-box;
   }
-  .three-panel {
+  .three-panel,
+  .coma-screen {
     flex: 1;
     min-height: 0;
     align-items: stretch;
     margin: var(--space-2) 0;
+  }
+  .three-panel {
     /* One row capped at the panel's height; an auto row would grow to fit a long action list and push the page past the viewport. */
     grid-template-rows: minmax(0, 1fr);
+  }
+  .coma-screen {
+    display: flex;
+    flex-direction: column;
+  }
+  .coma-screen > .coma-notice {
+    flex: 1 1 0;
+    min-height: 0;
   }
   .three-panel > * {
     min-height: 0;

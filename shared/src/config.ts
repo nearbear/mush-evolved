@@ -150,8 +150,8 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
     rooms: ["STORAGE_FRONT", "STORAGE_A_0", "STORAGE_A_1", "STORAGE_B_0", "STORAGE_B_1"],
     items: { metal_scraps: 4, plastic_scraps: 3, uncooked_ration: 1, fuel_capsule: 1, oxy_capsule: 1 },
   },
-  // Owner, 2026-10-25 (wiki): vaccinating with the anti-Mush serum costs 1 AP.
-  vaccine: { cost: { ap: 1 } },
+  // Owner, 2026-10-25 (wiki): vaccinating with the anti-Mush serum costs 1 AP; 2026-11-23 (#489): 2-cycle coma.
+  vaccine: { cost: { ap: 1 }, comaCycles: 2 },
   // Owner, 2026-11-07 (#397): a bandage heals yourself or a living person in your room 2 HP for 1 AP, and is used up.
   bandage: { cost: { ap: 1 }, effect: { hp: 2 } },
   // Owner, 2026-11-20: the Spore Sucker (actions/remove_spore.ts): 1 AP, 3 damage, 25% dirty.

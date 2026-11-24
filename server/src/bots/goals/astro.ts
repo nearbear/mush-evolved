@@ -28,7 +28,7 @@ export function planetKinds(sectors: readonly (string | null)[]): ExpeditionKind
 export function judgePlanet(view: PlayerView, planet: PlanetView): "delete" | "analyze" | "ready" | null {
   if (planet.orbited) return null;
   if (planet.sectors.some((s) => s !== null && DEADLY_TAGS.includes(s))) return "delete";
-  if (planet.distance > view.ship.fuel) return "delete";
+  if (!view.ship || planet.distance > view.ship.fuel) return "delete";
   if (planetKinds(planet.sectors).length > 0) return "ready";
   return planet.sectors.includes(null) ? "analyze" : "delete";
 }

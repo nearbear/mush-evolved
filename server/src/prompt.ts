@@ -131,7 +131,7 @@ export function buildPrompt(view: PlayerView, options: PromptOptions): ChatTurn[
     `AP ${you.ap}/${view.maxAp}, MP ${you.mp}, HP ${you.hp}/${view.maxHp}, morale ${you.morale}/${view.maxMorale}, satiety ${you.satiety}.`,
     `Your statuses: ${list(view.statuses)}. Your skills: ${skills(you.skills)}.${you.mushSkills.length ? ` Your Mush skills: ${skills(you.mushSkills)}.` : ""}`,
     `You carry: ${list(view.inventory.map((i) => itemName(language, i)))}.`,
-    `Ship: oxygen ${view.ship.oxygen}, fuel ${view.ship.fuel}, hull ${view.ship.hull}.`,
+    ...(view.ship ? [`Ship: oxygen ${view.ship.oxygen}, fuel ${view.ship.fuel}, hull ${view.ship.hull}.`] : []),
     "",
     `Equipment here: ${list(view.roomEquipment.map((e) => equipmentName(language, e.type)))}.`,
     `Items here: ${list(view.roomItems.map((i) => itemName(language, i)))}.`,

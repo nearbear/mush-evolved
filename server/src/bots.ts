@@ -93,6 +93,7 @@ export class WanderBot implements Bot {
   constructor(private rng: RngState) {}
 
   async decideAction(view: PlayerView): Promise<Action | null> {
+    if (view.statuses.includes("coma")) return endCycle(view);
     if (view.cycle !== this.cycle) {
       this.cycle = view.cycle;
       this.moved = 0;
@@ -297,6 +298,11 @@ export class GoalBot implements Bot {
   }
 
   async decideAction(view: PlayerView): Promise<Action | null> {
+    // Comatose (#489): view is blinded (ship is null, cycle/day are 0), so skip observe/goals and auto-ready.
+    if (view.statuses.includes("coma")) {
+      this.goal = null;
+      return endCycle(view);
+    }
     this.observe(view);
     const legal = legalIn(view);
     if (legal.length === 0) return null;

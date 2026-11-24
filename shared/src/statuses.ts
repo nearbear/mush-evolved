@@ -51,9 +51,11 @@ const FIXED_STATUS_PUBLIC = {
   ninja: false,
   // Owner, 2026-11-21: public to roommates and floated overhead; permanent on the body.
   pregnant: true,
+  // Owner, 2026-11-23 (#489): public to roommates and floated overhead; 2 cycles after RFS vaccination.
+  coma: true,
 } as const;
 
-export const STATUS_IDS = ["dirty", "full_belly", "hungry", "immune", "immunity", "pacifist", "hyperactive", "antisocial", "germaphobe", "chronic_vertigo", "mankind_only_hope", "wheelchair", "accommodated", "outcast", "protecting", "protected", "guardian", "genius", "inactive", "super_inactive", "focused", "hopeless", "nimble", "ninja", "pregnant"] as const;
+export const STATUS_IDS = ["dirty", "full_belly", "hungry", "immune", "immunity", "pacifist", "hyperactive", "antisocial", "germaphobe", "chronic_vertigo", "mankind_only_hope", "wheelchair", "accommodated", "outcast", "protecting", "protected", "guardian", "genius", "inactive", "super_inactive", "focused", "hopeless", "nimble", "ninja", "pregnant", "coma"] as const;
 export type StatusId = string;
 /**
  * The fixed statuses plus the ship's configured diseases and injuries (`config.diseases.allDiseases` and
@@ -110,6 +112,11 @@ export function hasImmunityTrait(p: Readonly<PlayerState>): boolean {
   return p.modifiers.includes("immunity");
 }
 
+/** Comatose: knocked out by a Retro-Fungal Serum until `comaUntil` (#489). Ends on wake or death. */
+export function isComatose(state: Readonly<Pick<GameState, "cycle">>, p: Readonly<Pick<PlayerState, "alive" | "comaUntil">>): boolean {
+  return p.alive && p.comaUntil !== undefined && state.cycle < p.comaUntil;
+}
+
 /** Hopeless: alive at 0 morale (owner, 2026-11-11). Any morale gain ends it; a human still Hopeless when a cycle ends dies (morale.ts). */
 export function isHopeless(p: Readonly<PlayerState>): boolean {
   return p.alive && p.morale === 0;
@@ -144,6 +151,7 @@ export function statusesOf(state: Readonly<Pick<GameState, "config" | "cycle" | 
     // At a terminal with its window open (spot.ts, #192).
     ...(p.spot?.kind === "occupancy" ? ["focused"] : []),
     ...(isHopeless(p) ? ["hopeless"] : []),
+    ...(isComatose(state, p) ? ["coma"] : []),
   ];
 }
 

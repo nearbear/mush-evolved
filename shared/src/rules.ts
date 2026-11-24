@@ -41,7 +41,7 @@ import { relayView } from "./relayView.ts";
 import { itemsIn, newItemId, rechargeMicrowaves, rechargeScooters, startCharges, visibleItemsIn } from "./items.ts";
 import { actionDone, actionFailed, apRefill, capBreakdown, mpGain, carePointsGain, channelLimit, computerPointsCap, computerPointsGain, cookPointsGain, shootPointsGain, cycleChanged, designerPointsGain, engineerPointsGain, gardenPointsGain, dailyMoraleLoss, inventorySlots, movementRules, pilgredPointsGain, satietyLoss } from "./modifiers.ts";
 import { contaminationSeenBy, convert } from "./infection.ts";
-import { curseStatusesSeenBy, isHungry, publicStatusesOf, statusesOf } from "./statuses.ts";
+import { curseStatusesSeenBy, isComatose, isHungry, publicStatusesOf, statusesOf } from "./statuses.ts";
 import { isCurseId, withoutCurses } from "./curses.ts";
 import { coupCycle } from "./coup.ts";
 import { inactivityCycle } from "./inactivity.ts";
@@ -345,9 +345,8 @@ export function spawnSelectionItems(state: GameState): void {
 export function legalActions(state: GameState, playerId: PlayerId): Action[] {
   const p = findPlayer(state, playerId);
   if (!p || !canAct(state, p)) return [];
-  return Object.values(ACTIONS).flatMap((def: ActionDef<Action>) =>
-    def.candidates(state, p).filter((a) => def.check(state, p, a) === null),
-  );
+  const defs: ActionDef<Action>[] = isComatose(state, p) ? [ACTIONS.ready] : (Object.values(ACTIONS) as ActionDef<Action>[]);
+  return defs.flatMap((def) => def.candidates(state, p).filter((a) => def.check(state, p, a) === null));
 }
 
 const UNAFFORDABLE_REASONS = new Set<string>([
@@ -436,7 +435,7 @@ function unaffordableOption(state: GameState, p: PlayerState, def: ActionDef<Act
  */
 export function unaffordableActions(state: GameState, playerId: PlayerId): ActionOption[] {
   const p = findPlayer(state, playerId);
-  if (!p || !canAct(state, p)) return [];
+  if (!p || !canAct(state, p) || isComatose(state, p)) return [];
   return Object.values(ACTIONS).flatMap((def: ActionDef<Action>) =>
     def.candidates(state, p).flatMap((a): ActionOption[] => {
       if (a.type === "move") return [];
@@ -451,7 +450,8 @@ function viewActionOptions(state: GameState, p: PlayerState): ActionOption[] {
   if (!canAct(state, p)) return [];
   const legal: ActionOption[] = [];
   const unaffordable: ActionOption[] = [];
-  for (const def of Object.values(ACTIONS) as ActionDef<Action>[]) {
+  const defs: ActionDef<Action>[] = isComatose(state, p) ? [ACTIONS.ready] : (Object.values(ACTIONS) as ActionDef<Action>[]);
+  for (const def of defs) {
     for (const a of def.candidates(state, p)) {
       const refused = def.check(state, p, a);
       if (refused === null) {
@@ -477,8 +477,9 @@ function apCounted(state: Readonly<GameState>, actor: Readonly<PlayerState>, def
 /** Does an action at once, skipping the queue and its timing (queue.ts is how players act; this is its last step). */
 export function applyAction(state: GameState, playerId: PlayerId, action: Action): ActionResult {
   const p = findPlayer(state, playerId);
+  if (!p || !canAct(state, p) || (isComatose(state, p) && action.type !== "ready")) return { ok: false, error: "illegal_action" };
   const next = cloneState(state);
-  if (p && canAct(state, p) && performAction(next, findPlayer(next, playerId)!, action)) return { ok: true, state: next };
+  if (performAction(next, findPlayer(next, playerId)!, action)) return { ok: true, state: next };
   return { ok: false, error: "illegal_action" };
 }
 
@@ -489,7 +490,7 @@ export function applyAction(state: GameState, playerId: PlayerId, action: Action
  */
 export function performAction(next: GameState, actor: PlayerState, action: Action): boolean {
   const def: ActionDef<Action> | undefined = ACTIONS[action.type];
-  if (!actor.alive || next.phase !== "playing" || !def || def.check(next, actor, action) !== null) return false;
+  if (!actor.alive || next.phase !== "playing" || (isComatose(next, actor) && action.type !== "ready") || !def || def.check(next, actor, action) !== null) return false;
   const cost = def.cost(next, actor, action);
   // Odds are read before the cost is paid, as the button showed them.
   const chance = def.chance(next, actor, action);
@@ -823,19 +824,21 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
 export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
   const you = findPlayer(state, playerId);
   if (!you) throw new Error(`Unknown player ${playerId}`);
+  // Comatose while the game runs (#489): total blindness — room and ship-wide state stripped; end screen still works once ended.
+  const blind = state.phase === "playing" && isComatose(state, you);
   const others = state.players.filter((p) => p.id !== playerId);
   const channels = readChannels(state, you);
   // Without ACTOPI, anyone outside your room is a room-only dot: no identity, so no room on their entry.
   const actopi = state.bios.actopi;
   // The dead see nothing that depends on a room (decided 2026-10-16, #45): no
   // room log, items, equipment, or anyone's location or room-only details.
-  const present = (room: RoomId) => you.alive && room === you.room;
-  const located = (room: RoomId) => you.alive && (actopi || room === you.room);
+  const present = (room: RoomId) => !blind && you.alive && room === you.room;
+  const located = (room: RoomId) => !blind && you.alive && (actopi || room === you.room);
   // A dead body is a corpse item, not a person in a room: nobody gets a dead player's room.
   const living = others.filter((o) => o.alive);
   const logWindow = logWindowOf(state, you);
   // At a turret or flying a ship: sees what is in space to shoot at.
-  const gunner = you.alive && (turretsHere(state, you).length > 0 || shipAboard(you) !== undefined);
+  const gunner = !blind && you.alive && (turretsHere(state, you).length > 0 || shipAboard(you) !== undefined);
   const tracker = hasSkill(you, "hunt");
   const protectingOf = (id: PlayerId) => state.players.find((p) => p.alive && p.protectedBy === id)?.id;
   const yourProtecting = protectingOf(you.id);
@@ -858,10 +861,12 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     energizeUntil: _energizeUntil,
     perceptionUntil: _perceptionUntil,
     pendingDiseases: _pendingDiseases,
+    comaUntil: _comaUntil,
+    missedLogs: _missedLogs,
     unheard: _unheard,
     ...yours
   } = you;
-  const orbitShared = channels.includes("astrophysics") && state.navigation.orbit !== null ? state.sharedPlanets.find((e) => e.planet === state.navigation.orbit)?.id : undefined;
+  const orbitShared = !blind && channels.includes("astrophysics") && state.navigation.orbit !== null ? state.sharedPlanets.find((e) => e.planet === state.navigation.orbit)?.id : undefined;
   return {
     you: {
       ...yours,
@@ -875,58 +880,62 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
       queue: you.queue.map((q) => q.action),
     },
     statuses: withoutCurses(statusesOf(state, you)),
-    drugEffects: drugEffectsSeenBy(state, you),
-    fruitEffects: fruitEffectsSeenBy(state, you),
-    players: others.map((o) => {
-      const { id, isBot, botKind, character, room, alive, ready } = o;
-      const here = o.alive && present(room);
-      const contamination = here ? contaminationSeenBy(state, you, o) : undefined;
-      return {
-        id,
-        isBot,
-        ...(botKind && { botKind }),
-        character,
-        ...(o.alive && located(room) ? { room } : {}),
-        alive,
-        ready,
-        // Public statuses are what you can see on someone standing in your room; nobody else's.
-        // A Mush also sees their curses there (owner, 2026-11-22).
-        statuses: here ? [...publicStatusesOf(state, o), ...curseStatusesSeenBy(you, o)] : [],
-        // Skills are public, but like statuses only to people who can see the player.
-        skills: here ? [...o.skills] : [],
-        ...(here && o.bookSkill !== undefined ? { bookSkill: o.bookSkill } : {}),
-        // Who is in bed, and which bed, is visible to the room (owner, 2026-10-18).
-        ...(here && o.lyingIn ? { lying: o.lyingIn } : {}),
-        // Who is aboard the docked Icarus is visible to the bay (#469).
-        ...(here && o.boardedIcarus ? { boarded: true as const } : {}),
-        // Where they stand, and whether they sit, is visible to the room (owner, 2026-10-20). Standing at the door they
-        // came in by would say where they came from: only a Tracker sees that spot (owner, 2026-11-21, `moveLineFor`).
-        ...(here && o.spot && state.config.sharedSpots && (o.spot.kind !== "door" || tracker) ? { spot: { ...o.spot } } : {}),
-        // Who pushes whose wheelchair is public to the room (owner, 2026-10-19).
-        ...(here && o.pushedBy !== undefined ? { pushedBy: o.pushedBy } : {}),
-        // Who protects whom (Bodyguard) is public to the room (owner, 2026-11-14).
-        ...(here && o.protectedBy !== undefined ? { protectedBy: o.protectedBy } : {}),
-        ...(here && protectingOf(o.id) !== undefined ? { protecting: protectingOf(o.id) } : {}),
-        // Mush see a contaminated human's level, like a status, on people in their room.
-        ...(contamination !== undefined ? { contamination } : {}),
-        // Mush know who the other Mush are, living or dead (owner, 2026-11-21); humans never learn it from the view.
-        ...(you.role === "mush" && o.role === "mush" ? { mush: true as const } : {}),
-        // A busy bar, never the action: only when its log entry could reach you, and never on a ninja, whose lines
-        // say "Someone" (owner, 2026-11-22): the bar ending as the line appears would name them.
-        ...(here && o.current && !isNinja(o) && activitySeen(state, room, actionVisibility(o.current.action.type, o), o)
-          ? { busy: { since: o.current.since, until: o.current.until } }
-          : {}),
-      };
-    }),
-    unidentified: living
-      // The lost are left out: their place names them (`LOST:<id>`), and `lost` already says who and where.
-      .filter((p) => you.alive && !located(p.room) && !isLostPlace(p.room))
-      .map((p) => p.room)
-      .sort(),
-    cycle: state.cycle,
-    ...dayOf(state),
+    drugEffects: blind ? null : drugEffectsSeenBy(state, you),
+    fruitEffects: blind ? null : fruitEffectsSeenBy(state, you),
+    players: blind
+      ? []
+      : others.map((o) => {
+          const { id, isBot, botKind, character, room, alive, ready } = o;
+          const here = o.alive && present(room);
+          const contamination = here ? contaminationSeenBy(state, you, o) : undefined;
+          return {
+            id,
+            isBot,
+            ...(botKind && { botKind }),
+            character,
+            ...(o.alive && located(room) ? { room } : {}),
+            alive,
+            ready,
+            // Public statuses are what you can see on someone standing in your room; nobody else's.
+            // A Mush also sees their curses there (owner, 2026-11-22).
+            statuses: here ? [...publicStatusesOf(state, o), ...curseStatusesSeenBy(you, o)] : [],
+            // Skills are public, but like statuses only to people who can see the player.
+            skills: here ? [...o.skills] : [],
+            ...(here && o.bookSkill !== undefined ? { bookSkill: o.bookSkill } : {}),
+            // Who is in bed, and which bed, is visible to the room (owner, 2026-10-18).
+            ...(here && o.lyingIn ? { lying: o.lyingIn } : {}),
+            // Who is aboard the docked Icarus is visible to the bay (#469).
+            ...(here && o.boardedIcarus ? { boarded: true as const } : {}),
+            // Where they stand, and whether they sit, is visible to the room (owner, 2026-10-20). Standing at the door they
+            // came in by would say where they came from: only a Tracker sees that spot (owner, 2026-11-21, `moveLineFor`).
+            ...(here && o.spot && state.config.sharedSpots && (o.spot.kind !== "door" || tracker) ? { spot: { ...o.spot } } : {}),
+            // Who pushes whose wheelchair is public to the room (owner, 2026-10-19).
+            ...(here && o.pushedBy !== undefined ? { pushedBy: o.pushedBy } : {}),
+            // Who protects whom (Bodyguard) is public to the room (owner, 2026-11-14).
+            ...(here && o.protectedBy !== undefined ? { protectedBy: o.protectedBy } : {}),
+            ...(here && protectingOf(o.id) !== undefined ? { protecting: protectingOf(o.id) } : {}),
+            // Mush see a contaminated human's level, like a status, on people in their room.
+            ...(contamination !== undefined ? { contamination } : {}),
+            // Mush know who the other Mush are, living or dead (owner, 2026-11-21); humans never learn it from the view.
+            ...(you.role === "mush" && o.role === "mush" ? { mush: true as const } : {}),
+            // A busy bar, never the action: only when its log entry could reach you, and never on a ninja, whose lines
+            // say "Someone" (owner, 2026-11-22): the bar ending as the line appears would name them.
+            ...(here && o.current && !isNinja(o) && activitySeen(state, room, actionVisibility(o.current.action.type, o), o)
+              ? { busy: { since: o.current.since, until: o.current.until } }
+              : {}),
+          };
+        }),
+    unidentified: blind
+      ? []
+      : living
+          // The lost are left out: their place names them (`LOST:<id>`), and `lost` already says who and where.
+          .filter((p) => you.alive && !located(p.room) && !isLostPlace(p.room))
+          .map((p) => p.room)
+          .sort(),
+    cycle: blind ? 0 : state.cycle,
+    ...(blind ? { day: 0, cycleOfDay: 0 } : dayOf(state)),
     phase: state.phase,
-    preselection: state.preselection,
+    preselection: blind ? false : state.preselection,
     winner: state.winner,
     ending: state.ending,
     // Names and roles are hidden while the game runs; the end screen shows everyone's (#191).
@@ -935,38 +944,40 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
         ? state.players.map(({ id, name, isBot, botKind, character, role, alive }) => ({ id, name: moderateName(name), isBot, ...(botKind && { botKind }), character, role, alive }))
         : null,
     rooms: state.config.rooms,
-    inventory: itemsIn(state, { kind: "player", id: you.id }).map((item) => itemView(item, you)),
+    inventory: blind ? [] : itemsIn(state, { kind: "player", id: you.id }).map((item) => itemView(item, you)),
     inventorySlots: inventorySlots(state, you),
-    roomItems: you.alive ? visibleItemsIn(state, { kind: "room", id: you.room }, you).map((item) => itemView(item, you)) : [],
-    roomEquipment: you.alive ? (state.equipment[you.room] ?? []).map((e) => equipmentView(state, e, you)) : [],
+    roomItems: !blind && you.alive ? visibleItemsIn(state, { kind: "room", id: you.room }, you).map((item) => itemView(item, you)) : [],
+    roomEquipment: !blind && you.alive ? (state.equipment[you.room] ?? []).map((e) => equipmentView(state, e, you)) : [],
     // Your room's doors (#330): a door's state reaches only the living on either side of it.
-    doors: you.alive ? doorsOf(state, you.room) : [],
-    roomOnFire: you.alive && isOnFire(state, you.room),
-    roomCeasefire: you.alive ? (state.ceasefires[you.room] ?? null) : null,
+    doors: !blind && you.alive ? doorsOf(state, you.room) : [],
+    roomOnFire: !blind && you.alive && isOnFire(state, you.room),
+    roomCeasefire: !blind && you.alive ? (state.ceasefires[you.room] ?? null) : null,
     // Reported fires, by players or Fire detectors (#444); an unreported fire's room reaches nobody.
-    burningRooms: you.alive ? state.fires.filter((room) => fireReported(state, room)) : [],
+    burningRooms: !blind && you.alive ? state.fires.filter((room) => fireReported(state, room)) : [],
     // Broken doors aboard, only once Defective piston sensors is complete (#330).
-    brokenDoors: you.alive && doorsDetected(state) ? brokenDoors(state) : [],
+    brokenDoors: !blind && you.alive && doorsDetected(state) ? brokenDoors(state) : [],
     // Rooms booby-trapped with a spore (#473): living Mush only; humans and the dead never see them.
-    trappedRooms: you.alive && you.role === "mush" ? [...state.trappedRooms] : [],
-    alerts: you.alive ? alertsFor(state) : { fires: 0, broken: 0, reports: [], gravity: null },
+    trappedRooms: !blind && you.alive && you.role === "mush" ? [...state.trappedRooms] : [],
+    alerts: !blind && you.alive ? alertsFor(state) : { fires: 0, broken: 0, reports: [], gravity: null },
     // `seesLine` (log.ts) says which lines are yours; room lines, private ones included, only within your window (#365).
     // A private line names only you in the view: no one learns who else saw it (`leaked` marks a secret line others saw).
     // `kind` and `leaked` go with every line you see (#366). A crew move's direction only with Tracker (`moveLineFor`).
     // `maskedActor` and `defaced` are for all-seeing replays only (#486) and are always stripped here.
-    log: state.log
-      .filter((e) => seesLine(e, you) && inLogWindow(state, e, logWindow))
-      .map((e) => {
-        const { maskedActor: _maskedActor, defaced: _defaced, ...visible } = e;
-        return moveLineFor(visible.visibleTo === "all" ? visible : { ...visible, visibleTo: [you.id] }, you);
-      }),
+    log: blind
+      ? []
+      : state.log
+          .filter((e) => seesLine(state, e, you) && inLogWindow(state, e, logWindow))
+          .map((e) => {
+            const { maskedActor: _maskedActor, defaced: _defaced, ...visible } = e;
+            return moveLineFor(visible.visibleTo === "all" ? visible : { ...visible, visibleTo: [you.id] }, you);
+          }),
     logSeen: you.logSeen,
     chat: state.chat.filter((m) => channels.includes(m.channel) && heardBy(you, m)).map((m) => messageView(m, state.chatMarks)),
     chatCounts: Object.fromEntries(channels.flatMap((c) => (state.chatSeq[c] ? [[c, state.chatSeq[c]]] : []))),
     ...unheardView(you, channels),
     chatChannels: chatChannels(state, you),
     readChannels: channels,
-    privateChannels: state.channels.filter((c) => c.members.includes(playerId)).map((c) => ({ ...c, members: [...c.members] })),
+    privateChannels: blind ? [] : state.channels.filter((c) => c.members.includes(playerId)).map((c) => ({ ...c, members: [...c.members] })),
     plans: plansView(state, channels),
     threads: channels.includes("global") ? threadsView(state) : [],
     sharedPlanets: channels.includes("astrophysics") ? sharedPlanetsView(state) : [],
@@ -975,10 +986,12 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     sharedPilgred: channels.includes("pilgred") ? sharedPilgredView(state) : null,
     channelLimit: channelLimit(state, you),
     movement: movementRules(state, you),
-    bonds: {
-      to: [...(state.bonds[playerId] ?? [])],
-      from: state.players.filter((o) => state.bonds[o.id]?.includes(playerId)).map((o) => o.id),
-    },
+    bonds: blind
+      ? { to: [], from: [] }
+      : {
+          to: [...(state.bonds[playerId] ?? [])],
+          from: state.players.filter((o) => state.bonds[o.id]?.includes(playerId)).map((o) => o.id),
+        },
     config: { heavyMpPenalty: state.config.heavy.mpPenalty, actionQueueCap: state.config.action.queueCap, sharedSpots: state.config.sharedSpots, setupId: state.config.setupId, returnToSolAp: state.config.pilgred.returnCost.ap, edenAp: state.config.pilgred.edenCost.ap, turnAp: state.config.navigation.turn.cost.ap, travelAp: state.config.navigation.travel.cost.ap, leaveOrbitAp: state.config.navigation.leaveOrbit.cost.ap, xylophAp: state.config.comms.xyloph.cost.ap, merchantDealAp: state.config.merchants.deal.cost.ap, missionApGranted: state.config.commanderMission.apGranted,
       researchAp: state.config.research.cost.ap, projectAp: state.config.project.cost.ap, pilgredAp: state.config.pilgred.cost.ap,
       hullRepairAp: state.config.hullRepair.cost.ap, turretAp: state.config.turrets.cost.ap,
@@ -995,77 +1008,88 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     maxMorale: you.maxMorale,
     caps: capBreakdown(state, you),
     // While the BIOS has the shield off, it shows as 0 (Claude's default, 2026-10-24); its points are kept.
-    ship: shipView(state),
+    ship: blind ? null : shipView(state),
     // How many, to everyone; each hunter's hp and every turret's charges, to the living in a turret room (owner, 2026-10-24);
     // the hunters' hp also to a living pilot in flight (owner, 2026-10-28).
-    hunters: {
-      count: state.hunters.list.length,
-      // Each hunter's kind and an asteroid's countdown along with its hp (owner, 2026-11-12, #388).
-      list: gunner ? state.hunters.list.map(({ id, type, hp, countdown }) => ({ id, type, hp, countdown })) : null,
-      // The merchants in space, as targets, to the same viewers (owner, 2026-11-21): kind, name and hp. Their kind is
-      // public already (NERON announces each arrival); nothing of their hail or deals.
-      merchants: gunner ? merchantsInSpace(state).map((m) => ({ id: m.id, kind: m.merchant!.kind, name: signalName(m), hp: m.merchant!.hp })) : null,
-      turrets: you.alive && turretsHere(state, you).length > 0 ? Object.fromEntries(allTurrets(state).map((t) => [t.id, turretCharges(state, t.id)])) : null,
-    },
-    ...relayView(state, you),
-    researchNeeds: you.alive && equipmentHere(state, you, "RESEARCH_LAB").length > 0 ? researchNeedsView(state, you.room) : null,
-    pilgredRepaired: isPilgredRepaired(state),
-    edenComputed: state.eden.computed,
-    humanTankFull: hasMushDied(state),
-    comms: { linked: state.comms.linked, terminal: you.alive && comTerminalsHere(state, you).length > 0 ? commsTerminalView(state, you) : null },
-    bios: you.alive && biosTerminalsHere(state, you).length > 0 ? { ...state.bios } : null,
-    cpuPriority: you.alive ? state.bios.cpu_priority : null,
+    hunters: blind
+      ? { count: 0, list: null, merchants: null, turrets: null }
+      : {
+          count: state.hunters.list.length,
+          // Each hunter's kind and an asteroid's countdown along with its hp (owner, 2026-11-12, #388).
+          list: gunner ? state.hunters.list.map(({ id, type, hp, countdown }) => ({ id, type, hp, countdown })) : null,
+          // The merchants in space, as targets, to the same viewers (owner, 2026-11-21): kind, name and hp. Their kind is
+          // public already (NERON announces each arrival); nothing of their hail or deals.
+          merchants: gunner ? merchantsInSpace(state).map((m) => ({ id: m.id, kind: m.merchant!.kind, name: signalName(m), hp: m.merchant!.hp })) : null,
+          turrets: you.alive && turretsHere(state, you).length > 0 ? Object.fromEntries(allTurrets(state).map((t) => [t.id, turretCharges(state, t.id)])) : null,
+        },
+    ...(blind
+      ? { research: {}, projects: {}, pilgred: null, relay: { research: {}, projects: {}, pilgred: null }, yourTokens: { research: {}, pilgred: 0 } }
+      : relayView(state, you)),
+    researchNeeds: !blind && you.alive && equipmentHere(state, you, "RESEARCH_LAB").length > 0 ? researchNeedsView(state, you.room) : null,
+    pilgredRepaired: !blind && isPilgredRepaired(state),
+    edenComputed: !blind && state.eden.computed,
+    humanTankFull: !blind && hasMushDied(state),
+    comms: blind ? { linked: false, terminal: null } : { linked: state.comms.linked, terminal: you.alive && comTerminalsHere(state, you).length > 0 ? commsTerminalView(state, you) : null },
+    bios: !blind && you.alive && biosTerminalsHere(state, you).length > 0 ? { ...state.bios } : null,
+    cpuPriority: !blind && you.alive ? state.bios.cpu_priority : null,
     // Only the crew sees a report (owner, 2026-10-31), and only while alive, like their private log lines.
-    expeditions: you.alive
-      ? state.expeditions
-          .filter((r) => r.members.includes(you.id))
-          .map(({ members: _members, lostAt, ...report }): ExpeditionReportView => {
-            const shared = state.sharedReports.find((s) => s.report === report.id)?.id;
-            // A member who got lost sees the report up to that line (owner, 2026-11-08, #357), and no more of it.
-            const cut = lostAt?.[you.id];
-            const events = cut === undefined ? report.events : report.events.slice(0, cut);
-            const away = state.expedition?.report === report.id && cut === undefined;
-            return { ...clone({ ...report, events }), ...(away && { away: true as const }), ...(shared && { shared }) };
-          })
-      : [],
-    expedition: expeditionView(state, you, channels.includes("astrophysics")),
-    icarusSeats: maxCrew(state),
+    expeditions:
+      !blind && you.alive
+        ? state.expeditions
+            .filter((r) => r.members.includes(you.id))
+            .map(({ members: _members, lostAt, ...report }): ExpeditionReportView => {
+              const shared = state.sharedReports.find((s) => s.report === report.id)?.id;
+              // A member who got lost sees the report up to that line (owner, 2026-11-08, #357), and no more of it.
+              const cut = lostAt?.[you.id];
+              const events = cut === undefined ? report.events : report.events.slice(0, cut);
+              const away = state.expedition?.report === report.id && cut === undefined;
+              return { ...clone({ ...report, events }), ...(away && { away: true as const }), ...(shared && { shared }) };
+            })
+        : [],
+    expedition: blind ? null : expeditionView(state, you, channels.includes("astrophysics")),
+    icarusSeats: blind ? 0 : maxCrew(state),
     // Who is lost, and where: a public alert (owner, 2026-11-08, #357; phase 2 accepted it).
-    lost: lostPlayers(state).map((p) => ({ name: p.character, planet: orbitName(state) ?? "" })),
+    lost: blind ? [] : lostPlayers(state).map((p) => ({ name: p.character, planet: orbitName(state) ?? "" })),
     // Your own planets only, and only the tags an analysis revealed (owner, 2026-10-19).
     maxPlanets: state.config.astro.maxPlanets,
     canSharePlanets: canSharePlanets(state, you),
     canShareReports: canShareReports(state, you),
     canSharePlants: canSharePlants(state, you),
     canSharePilgred: canSharePilgred(state, you),
-    planets: planetsOf(state, playerId).map((p) => ({
-      id: p.id,
-      name: p.name,
-      direction: p.direction,
-      distance: p.distance,
-      sectors: p.sectors.map((s) => (s.known ? s.tag : null)),
-      ...(p.id === state.navigation.orbit && { orbited: true as const }),
-    })),
-    patrolShip: patrolShipView(state, you),
-    navigation: {
-      orbiting: state.navigation.orbit !== null,
-      traveling: state.navigation.arriving !== null,
-      orbitPicture: orbitPicture(state),
-      orbitName: orbitName(state),
-      ...(orbitShared !== undefined && { orbitShared }),
-      heading: you.alive && commandTerminalsHere(state, you).length > 0 ? state.navigation.heading : null,
-      lastTurn: state.navigation.lastTurn,
-    },
-    titles: TITLE_IDS.map((id) => {
-      const holder = state.players.find((p) => p.id === state.titles[id]);
-      return {
-        id,
-        holder: holder?.character ?? null,
-        line: SUCCESSION[id].flatMap((c) => state.players.filter((p) => p.character === c).map((p) => p.character)),
-      };
-    }),
-    launchKeys: you.alive && commandTerminalsHere(state, you).length > 0 ? { ...state.launchKeys } : null,
-    launched: state.launched ? { ...state.launched } : null,
+    planets: blind
+      ? []
+      : planetsOf(state, playerId).map((p) => ({
+          id: p.id,
+          name: p.name,
+          direction: p.direction,
+          distance: p.distance,
+          sectors: p.sectors.map((s) => (s.known ? s.tag : null)),
+          ...(p.id === state.navigation.orbit && { orbited: true as const }),
+        })),
+    patrolShip: blind ? null : patrolShipView(state, you),
+    navigation: blind
+      ? { orbiting: false, traveling: false, orbitPicture: null, orbitName: null, heading: null, lastTurn: null }
+      : {
+          orbiting: state.navigation.orbit !== null,
+          traveling: state.navigation.arriving !== null,
+          orbitPicture: orbitPicture(state),
+          orbitName: orbitName(state),
+          ...(orbitShared !== undefined && { orbitShared }),
+          heading: you.alive && commandTerminalsHere(state, you).length > 0 ? state.navigation.heading : null,
+          lastTurn: state.navigation.lastTurn,
+        },
+    titles: blind
+      ? []
+      : TITLE_IDS.map((id) => {
+          const holder = state.players.find((p) => p.id === state.titles[id]);
+          return {
+            id,
+            holder: holder?.character ?? null,
+            line: SUCCESSION[id].flatMap((c) => state.players.filter((p) => p.character === c).map((p) => p.character)),
+          };
+        }),
+    launchKeys: !blind && you.alive && commandTerminalsHere(state, you).length > 0 ? { ...state.launchKeys } : null,
+    launched: blind ? null : state.launched ? { ...state.launched } : null,
     actions: viewActionOptions(state, you),
   };
 }

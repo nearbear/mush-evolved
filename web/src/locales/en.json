@@ -721,6 +721,10 @@
     "close": "Close",
     "leaveNamed": "Leave {{name}}"
   },
+  "coma": {
+    "title": "You are in a coma.",
+    "body": "The Retro-Fungal Serum has knocked you out. You can't see, act, or hear anything until you wake up."
+  },
   "death": {
     "title": "You are dead.",
     "body": "You can still read global chat and the feature threads, but you can no longer post there. You can talk with the other dead in the Graveyard.",
@@ -965,6 +969,7 @@
     "nimble": "Nimble",
     "ninja": "Ninja",
     "pregnant": "Pregnant",
+    "coma": "Coma",
     "desc": {
       "dirty": "Can't research. Taking a shower removes it.",
       "full_belly": "You can't eat more until you are hungrier.",
@@ -1048,7 +1053,8 @@
       "hopeless": "At 0 morale. Any morale gain ends it. A human still Hopeless when the cycle ends dies.",
       "nimble": "All of your room-level public actions (including movement) become secret. Only you can see this status.",
       "ninja": "All of your actions are anonymous: room logs name you \"Someone\". Only you can see this status.",
-      "pregnant": "Expecting a child. If this crewmate dies, every living crewmate loses 2 morale."
+      "pregnant": "Expecting a child. If this crewmate dies, every living crewmate loses 2 morale.",
+      "coma": "Knocked out by a Retro-Fungal Serum for 2 cycles. Can't see, act, read logs, or use chat."
     }
   },
   "itemAttr": {
