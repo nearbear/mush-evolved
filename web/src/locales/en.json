@@ -1945,7 +1945,7 @@
       "PATULINE_SCRAMBLER": "The infected can no longer communicate on the Mush channel.",
       "FUNGUS_SCRAMBLER": "Hunters have a 20% chance when selecting a new target of targeting one of their own.",
       "PHEROMODEM": "The tracker can now be used to communicate on the Mush channel.",
-      "CONSTIPASPORE_SERUM": "Raises the cost of creating spores by 2.",
+      "CONSTIPASPORE_SERUM": "Raises the cost of creating spores by 1.",
       "MYCO_ALARM": "Produces 5 MycoAlarms.",
       "SPORE_EXTRACTOR": "Produces a spore sucker.",
       "ANTI_MUSH_SERUM": "Produces an anti-Mush serum.",

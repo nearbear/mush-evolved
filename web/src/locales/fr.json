@@ -1879,7 +1879,7 @@
       "PATULINE_SCRAMBLER": "Les infectés ne peuvent plus communiquer sur le canal Mush.",
       "FUNGUS_SCRAMBLER": "Les chasseurs ont 20 % de chance lors du choix d'une nouvelle cible de cibler l'un des leurs.",
       "PHEROMODEM": "Le traqueur permet désormais de communiquer sur le canal Mush.",
-      "CONSTIPASPORE_SERUM": "Augmente de 2 le coût de création des spores.",
+      "CONSTIPASPORE_SERUM": "Augmente de 1 le coût de création des spores.",
       "MYCO_ALARM": "Génère 5 MycoAlarmes.",
       "SPORE_EXTRACTOR": "Génère un extracteur de spores.",
       "ANTI_MUSH_SERUM": "Génère un sérum anti-Mush.",

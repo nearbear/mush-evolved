@@ -395,7 +395,7 @@ export interface GameConfig {
     effect: { spores: number }; // Spores one extraction gives (confirmed 2026-10-13).
     perDay: number; // Spores the whole Mush faction may extract per day, before modifiers (confirmed 2026-10-14).
     max: number; // Spores one Mush may hold; extraction is refused at it (owner, 2026-11-10, balance review decision 8).
-    constipasporeExtraAp: number; // Extra AP added to extract_spore once CONSTIPASPORE_SERUM completes (owner, 2026-11-14).
+    constipasporeExtraAp: number; // Extra AP added to extract_spore once CONSTIPASPORE_SERUM completes (owner, 2026-11-14; changed to 1 to match eMush, 2026-11-23).
     antisporeReduction: number; // Daily spore extraction cap reduction once ANTISPORE_GAZ completes (2026-11-14).
   };
   surgery: {

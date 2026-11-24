@@ -101,7 +101,7 @@ describe("spore extraction", () => {
   });
 
   it("costs constipasporeExtraAp more AP once CONSTIPASPORE_SERUM is complete (after the daily free extraction)", () => {
-    expect(DEFAULT_CONFIG.spores.constipasporeExtraAp).toBe(2);
+    expect(DEFAULT_CONFIG.spores.constipasporeExtraAp).toBe(1);
     const partial = ship();
     player(partial, "p0").fertileToday = true;
     partial.research.CONSTIPASPORE_SERUM = RESEARCH_COMPLETE - 1;

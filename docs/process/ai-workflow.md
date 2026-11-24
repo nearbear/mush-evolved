@@ -5264,3 +5264,13 @@ Owner asked to rotate three Mush skill icons (Slime Trap's to Mass Mouldering, M
 
 - Removed the 120-line tail truncation (`TAIL_LINES`) in `tools/src/dev/verify.ts`, which was hiding root-cause errors and letting passing workspaces' test output push earlier workspace failures out of the tail.
 - Added `tools/src/dev/testFailures.ts` (`formatTestFailures`) to format only failed tests and failed files from each failing workspace's Vitest JSON report, falling back to that workspace's raw output only if the JSON report is missing, unparseable, or records zero failures despite a non-zero exit.
+
+### 2026-11-23: Constipaspore serum (+1 AP to match eMush)
+
+- **Decision (owner):** Lowered `CONSTIPASPORE_SERUM`'s extra AP cost on `extract_spore` from +2 AP to +1 AP (2 AP total; Fertile's first daily extraction still costs 0 AP) to match eMush.
+- **Implementation:** Updated `DEFAULT_CONFIG.spores.constipasporeExtraAp` from `2` to `1` in `shared/src/config.ts`, updated the pinned assertion in `shared/tests/spores.test.ts`, updated the research description in `web/src/locales/{en,fr,es}.json`, removed the now-obsolete entry from `docs/rules/changes-from-emush.md`, and updated `docs/rules/implemented-rules.md` and `docs/rules/rules-design.md`.
+- **What worked:** Config-driven rules and tests meant only one config value, one pinned test assertion, and the locale descriptions needed updating.
+
+### 2026-11-23 — Audited `docs/rules/changes-from-emush.md` and moved its update rule into the `rule` skill
+- **Decision (owner):** Verified disputed claims in `docs/rules/changes-from-emush.md` against upstream eMush (`npm run emush`), fixed inaccuracies (removed Fertile and Traitor as non-differences, corrected RFS having no coma in eMush, removed the claim that unchosen NERON project proposals return to the pool, fixed ship turns being announced by NERON in eMush, removed the inaccurate Trapper shared-door claim, corrected Massive Mushification's eMush name), removed minor/insignificant items (Dalek drone name, Jump Confirmation, Ninja, Lethargy), and stripped all code identifiers, file paths, dates, and issue numbers so the doc is written for non-technical eMush veterans. Moved the update instruction from `CLAUDE.md` into `.claude/skills/rule/SKILL.md` with those editorial rules.
+- **What worked / needed correction:** `npm run emush -- find` and `outline` quickly verified every eMush behavior from its entities and functional test suites without reading `reference/emush` directly; several earlier claims in `changes-from-emush.md` had not been checked against eMush and turned out to be inaccurate.
