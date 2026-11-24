@@ -44,7 +44,7 @@ describe("inactivity", () => {
     expect(status(cycleAt(s, h(inactiveAfterHours)), "p0")).toBe("inactive");
   });
 
-  it("makes a player inactive at the first cycle change 24 hours after they were last seen, with a full AP gauge", () => {
+  it("makes a player inactive at the first cycle change 24 hours after they were last seen", () => {
     const s = ship();
     expect(status(cycleAt(s, h(inactiveAfterHours) - 1), "p0")).toBeNull();
     expect(status(cycleAt(s, h(inactiveAfterHours)), "p0")).toBe("inactive");
@@ -58,13 +58,10 @@ describe("inactivity", () => {
     expect(status(cycleAt(ship(), h(inactiveAfterHours + 5)), "p0")).toBe("inactive");
   });
 
-  it("needs a full AP gauge at the cycle change, checked after the AP gain", () => {
+  it("makes a player inactive at 24 hours regardless of their AP", () => {
     const s = cycleAt(ship(), h(inactiveAfterHours), (id) => (id === "p1" ? 0 : config.maxAp));
     expect(status(s, "p0")).toBe("inactive");
-    expect(status(s, "p1")).toBeNull();
-    // One short of full, then the cycle's gain fills it.
-    const t = cycleAt(ship(), h(inactiveAfterHours), () => config.maxAp - 1);
-    expect(status(t, "p0")).toBe("inactive");
+    expect(status(s, "p1")).toBe("inactive");
   });
 
   it("makes them super inactive at the first cycle change 48 hours after they were last seen", () => {
@@ -76,10 +73,8 @@ describe("inactivity", () => {
     expect(status(s, "p0")).toBe("super_inactive");
   });
 
-  it("goes straight to super inactive when the AP gauge only fills after 48 hours", () => {
-    let s = cycleAt(ship(), h(inactiveAfterHours), () => 0);
-    expect(status(s, "p0")).toBeNull();
-    s = cycleAt(s, h(superAfterHours));
+  it("goes straight to super inactive when the first cycle change happens after 48 hours, even below max AP", () => {
+    const s = cycleAt(must(seen(ship(), h(superAfterHours), "p3")), h(superAfterHours), () => 0);
     expect(status(s, "p0")).toBe("super_inactive");
   });
 

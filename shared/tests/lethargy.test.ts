@@ -107,7 +107,7 @@ describe("lethargy", () => {
     });
   });
 
-  it("the away check counts a Lethargy player as full only at their own cap", () => {
+  it("a Lethargy player goes inactive at 24 hours even when below their higher AP cap", () => {
     const HOUR = 3_600_000;
     const T0 = 1_000_000_000_000;
     const s = must(applyInput(ship(), { type: "seen", players: ["p0", "p1", "p2", "p3"], at: T0 }));
@@ -115,10 +115,7 @@ describe("lethargy", () => {
     const at = T0 + config.inactivity.inactiveAfterHours * HOUR;
     const away = must(applyInput(s, { type: "cycle", at }));
     expect(player(away, "p0").inactivity).toBe("inactive");
-    expect(player(away, "p1").inactivity).toBeUndefined();
-    const full = clone(s);
-    player(full, "p1").ap = player(full, "p1").maxAp;
-    expect(player(must(applyInput(full, { type: "cycle", at })), "p1").inactivity).toBe("inactive");
+    expect(player(away, "p1").inactivity).toBe("inactive");
   });
 
   it("getUp clears the count wherever it is called from", () => {

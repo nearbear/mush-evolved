@@ -1,8 +1,8 @@
-// Inactive and super inactive (#145; owner, 2026-10-31). Measured in real time, not cycles: at a cycle change, a player
-// who hasn't connected for `inactivity.inactiveAfterHours` and whose AP gauge is full goes inactive; once
-// `inactivity.superAfterHours` have passed since they last connected, an inactive player is super inactive. Connecting
-// clears both at once. The rules read no clock: the server says who is connected and when (`seen`), and when each
-// clock cycle begins (the `cycle` input's `at`). Single player has no clock cycles, so nobody there goes inactive.
+// Inactive and super inactive (#145; owner, 2026-10-31; AP-full check dropped 2026-11-23 to match eMush). Measured in real
+// time, not cycles: at a cycle change, a player who hasn't connected for `inactivity.inactiveAfterHours` goes inactive
+// regardless of AP; once `inactivity.superAfterHours` have passed since they last connected, an inactive player is super
+// inactive. Connecting clears both at once. The rules read no clock: the server says who is connected and when (`seen`), and
+// when each clock cycle begins (the `cycle` input's `at`). Single player has no clock cycles, so nobody there goes inactive.
 // Going inactive costs titles (titles.ts) and ends an Outcast's curse. Both statuses are public and never announced.
 
 import { endIfAllInactive } from "./death.ts";
@@ -37,8 +37,8 @@ function goInactive(p: PlayerState, level: Inactivity): void {
 }
 
 /**
- * Called as a clock cycle begins at server time `at`, after the AP gain. A living player (human or Mush, not a bot) not seen for
- * `inactiveAfterHours` whose AP gauge is full goes inactive; an inactive one not seen for `superAfterHours` goes super
+ * Called as a clock cycle begins at server time `at`. A living player (human or Mush, not a bot) not seen for
+ * `inactiveAfterHours` goes inactive regardless of AP; an inactive one not seen for `superAfterHours` goes super
  * inactive. A player the rules haven't seen yet starts counting now. Mutates a state the caller already cloned.
  */
 export function inactivityCycle(state: GameState, at: number): void {
@@ -52,11 +52,11 @@ export function inactivityCycle(state: GameState, at: number): void {
     }
     const away = at - p.lastSeenAt;
     if (p.inactivity === undefined) {
-      if (away < inactiveAfterHours * HOUR_MS || p.ap < p.maxAp) continue;
+      if (away < inactiveAfterHours * HOUR_MS) continue;
       goInactive(p, "inactive");
       changed = true;
     }
-    // Checked straight after, so a gauge that only fills after the longer wait goes straight to super inactive.
+    // Checked straight after, so a long gap between cycles goes straight to super inactive.
     if (p.inactivity === "inactive" && away >= superAfterHours * HOUR_MS) p.inactivity = "super_inactive";
   }
   if (changed) {

@@ -10,7 +10,6 @@ This document summarizes the **implemented** gameplay, mechanical, and UI differ
 | :--- | :--- | :--- |
 | **Action Resolution & Queue** | Instant turn-based actions on click. | Almost all actions (including movement) take **1.5 seconds** of real time and resolve at the end of a cast bar, with a **queue of up to 3 actions**. If a modifier changes a queued action's AP cost before it resolves, it is cancelled at no cost. Roommates see a generic progress bar over the actor's head for actions that leave a visible room log. |
 | **Room Positions & Focused** | Abstract room presence only (accessing a terminal grants Focused). | Adds **tile walking** and **sitting on chairs** (visible to roommates). Opening a terminal physically seats/stands you at it while Focused. |
-| **Inactivity Thresholds & Total Inactivity** | Real-time **24h** (Inactive) / **48h** (Highly Inactive) checked at cycle change regardless of AP; ship continues if all living crew go inactive. | Same 24h/48h real-time thresholds, **only at cycle change when AP is also full**. Once every living player is inactive (outside pre-selection), **NERON destroys the ship (Mush win)** so titles can never be vacant while anyone is alive. |
 | **Single-Player Mode** | None. | **9-seat solo mode** where you are always the sole Mush against 8 AI bots (scripted or LLM-backed with your own API key), with manual cycle advancement and instant expeditions. |
 
 ---
