@@ -224,6 +224,14 @@ export interface MerchantTargetView {
   hp: number;
 }
 
+/** A hostile NPC as a player in its room sees it. Never its AP or MP. */
+export interface HostileView {
+  id: string;
+  kind: string;
+  hp: number;
+  maxHp: number;
+}
+
 export interface PlayerView {
   you: YouView;
   /** Every status you have, public and private, stored and derived (statuses.ts). */
@@ -259,6 +267,8 @@ export interface PlayerView {
   fruitEffects: Record<string, FruitEffect> | null;
   /** Your inventory size, after modifiers. */
   inventorySlots: number;
+  /** Hostile NPCs in the room you are in (hostiles.ts): kind and HP only. Other rooms' are never sent; empty for the dead. */
+  hostiles: HostileView[];
   /** Items stored in the room you are in. Other rooms' items are never sent. */
   roomItems: ItemView[];
   /** Equipment in the room you are in. */

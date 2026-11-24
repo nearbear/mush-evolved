@@ -13,6 +13,7 @@ import { CHEAT_ROOM } from "./cheatRoom.ts";
 import { addDisease, removeDisease } from "./diseases.ts";
 import { cloneState, fail, findPlayer, type ActionResult } from "./helpers.ts";
 import { allDoors, breakDoor } from "./doors.ts";
+import { INTRUDER, spawnHostile } from "./hostiles.ts";
 import { contaminate } from "./infection.ts";
 import { ITEM_TYPES, newItemId, startCharges } from "./items.ts";
 import { becameDirty, enterRoom, enteredRoom } from "./modifiers.ts";
@@ -58,6 +59,9 @@ const arriveAt = (ending: "sol" | "eden", logKey: "returnedToSol" | "returnedToE
     return null;
   },
 });
+
+/** Where the Superkube's `spawnHostile` puts the intruder. */
+export const HOSTILE_SPAWN_ROOM: RoomId = "SPACESHIP_BAY_A";
 
 export const KUBE_OPS = {
   // A disease, disorder or injury of the ship's (`config.diseases`). One you already have is refused.
@@ -112,6 +116,16 @@ export const KUBE_OPS = {
     },
   },
   // One item of the type, on the room's floor, with its start charges.
+  // A hostile NPC (hostiles.ts) in Alpha Bay (owner, 2026-11-23), where it has doors to wander through (the cheat
+  // room has none): the intruder, the only kind so far.
+  spawnHostile: {
+    group: "items",
+    arg: "none",
+    apply: (state) => {
+      spawnHostile(state, INTRUDER, HOSTILE_SPAWN_ROOM);
+      return null;
+    },
+  },
   spawn: {
     group: "items",
     arg: "item",

@@ -260,6 +260,21 @@ export interface GraftConfig {
   maxAttempts: number; // Re-rolls before a pair counts as unfittable (no hybrid, no graft offered).
 }
 
+/**
+ * One hostile NPC kind's numbers (hostiles.ts). HP, AP and MP work like a player's: they start at `start*`, cap at
+ * `max*`, and AP and MP come back by `apPerCycle`/`mpPerCycle` at each cycle change, before its turn.
+ */
+export interface HostileStats {
+  hp: number; // Starting and maximum HP.
+  startAp: number;
+  maxAp: number;
+  apPerCycle: number;
+  startMp: number;
+  maxMp: number;
+  mpPerCycle: number;
+  move: { cost: { ap: number } }; // Walking through an unbroken door to an adjacent room.
+}
+
 export interface GameConfig {
   mushCount: number; // Mush picked at launch. Unused with `preselection`, where the player count decides.
   // Null: everyone is seated at launch and Mush are picked then (tests, single player later).
@@ -443,6 +458,10 @@ export interface GameConfig {
     successChance: number; // Chance a punch lands, 0 to 1 (confirmed 2026-10-15: it misses 40% of the time).
     inactiveTargetSuccessChance: number; // The same on an inactive target (owner, 2026-10-31, eMush: 90%).
     dirtyChance: number; // Chance of getting the dirty status after punching (confirmed 2026-10-13).
+  };
+  /** Hostile NPCs (hostiles.ts): each kind's stats and the cost of its actions. */
+  hostiles: {
+    kinds: Record<string, HostileStats>;
   };
   throwOut: {
     cost: { ap: number; inactiveAp: number }; // AP to throw a roommate into an adjacent room (1 AP less when target is inactive; owner, 2026-11-15).

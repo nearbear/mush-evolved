@@ -2,6 +2,7 @@ import { Action, IN_PRESELECTION, peopleHere, type ActionTag, isString } from ".
 import { changeAP } from "../adjustStats.ts";
 import { breakItem } from "../breakage.ts";
 import { damage } from "../death.ts";
+import { damageHostile, hostileAttacked, hostileHere, hostilesHere } from "../hostiles.ts";
 import { addDisease } from "../diseases.ts";
 import { ITEM_TYPES, afterProtection, dropWeapon, itemsIn, removeItem, removeItemIfPresent, isWorking } from "../items.ts";
 import { logPublic } from "../log.ts";
@@ -21,6 +22,12 @@ export type AttackActionData = { type: "attack"; weapon: string; target: string 
  * outcome's effects go to whom they name: the target only (an instant kill, "2 random wounds"), the splash (every other
  * living person in the room, owner 2026-11-17), or the attacker. Hit or miss, it spends a charge, and a `consumed` weapon
  * is used up. Hits and misses are public room history.
+ *
+ * A hostile NPC in the room (hostiles.ts) can be aimed at too, and an area weapon hits the hostiles in the room as well.
+ * A hostile takes the weapon's `damage` range (never `mushDamage`), has no armor, and dies to an instant kill; the
+ * outcome's other effects on the target (injuries, AP loss) don't apply to it, while those on the attacker and the
+ * splash do. Its hits and misses log with the hostile's kind instead of the outcome's own line. Hit or miss, once the
+ * attack and all its effects are done, it may answer (`hostileAttacked`: the intruder punches back at a melee weapon).
  */
 export class AttackAction extends Action<AttackActionData> {
   override tags: readonly ActionTag[] = ["aggressive"];
@@ -57,7 +64,7 @@ export class AttackAction extends Action<AttackActionData> {
     return usableWeapons(state, player).flatMap((weapon): AttackActionData[] =>
       state.config.weapons.types[weapon.type]!.area
         ? [{ type: "attack", weapon: weapon.id }]
-        : peopleHere(state, player).map((o) => ({ type: "attack", weapon: weapon.id, target: o.id })),
+        : [...peopleHere(state, player), ...hostilesHere(state, player)].map((o) => ({ type: "attack", weapon: weapon.id, target: o.id })),
     );
   }
 
@@ -67,7 +74,7 @@ export class AttackAction extends Action<AttackActionData> {
     if (!weapon) return "no_weapon";
     const area = !!state.config.weapons.types[weapon.type]!.area;
     if (area !== !("target" in target)) return "cant_attack";
-    if ("target" in target && !peopleHere(state, player).some((o) => o.id === target.target)) return "cant_see";
+    if ("target" in target && !peopleHere(state, player).some((o) => o.id === target.target) && !hostileHere(state, player, target.target)) return "cant_see";
     return null;
   }
 
@@ -84,10 +91,16 @@ export class AttackAction extends Action<AttackActionData> {
 
     const splash = peopleHere(state, player);
     let victim: PlayerState | undefined;
+    const hostile = "target" in target ? hostileHere(state, player, target.target) : undefined;
     if (stats.area) {
       logPublic(state, player.room, outcome.log, { name: player.character, item: type });
       const range = adjustedDamageRange(stats.damage, effects);
+      const hostiles = hostilesHere(state, player);
       for (const v of splash) damage(state, v, armored(state, v, roll(state, range)), "assassinated");
+      for (const h of hostiles) damageHostile(state, h, roll(state, range));
+    } else if (hostile) {
+      logPublic(state, player.room, "attackedHostile", { name: player.character, hostile: hostile.kind, item: type });
+      damageHostile(state, hostile, effects?.instantKill === "target" ? hostile.hp : roll(state, adjustedDamageRange(stats.damage, effects)));
     } else {
       victim = state.players.find((o) => o.id === (target as { target: string }).target)!; // checked, so it exists
       const params = { name: player.character, target: victim.character, item: type };
@@ -104,6 +117,7 @@ export class AttackAction extends Action<AttackActionData> {
     }
     if (stats.selfDamage) damage(state, player, roll(state, stats.selfDamage), "assassinated");
     applyOutcomeEffects(state, player, weapon, { target: victim, splash }, effects);
+    if (hostile && player.alive) hostileAttacked(state, hostile.id, player, !!stats.melee);
   }
 
   override fail(state: GameState, player: PlayerState, target: AttackActionData): void {
@@ -116,14 +130,19 @@ export class AttackAction extends Action<AttackActionData> {
     const outcome = stats.missOutcomes[rollWeighted(state, weights)]!;
 
     const splash = peopleHere(state, player);
-    const victim = "target" in target ? state.players.find((o) => o.id === target.target)! : undefined;
-    if (victim) {
+    const hostile = "target" in target ? hostileHere(state, player, target.target) : undefined;
+    const victim = "target" in target && !hostile ? state.players.find((o) => o.id === target.target)! : undefined;
+    if (hostile) {
+      logPublic(state, player.room, "attackMissedHostile", { name: player.character, hostile: hostile.kind, item: type });
+      if (outcome.effects?.instantKill === "target") damageHostile(state, hostile, hostile.hp);
+    } else if (victim) {
       logPublic(state, player.room, outcome.log, { name: player.character, target: victim.character, item: type });
       if (outcome.effects?.instantKill === "target") damage(state, victim, victim.hp, "assassinated");
     } else {
       logPublic(state, player.room, outcome.log, { name: player.character, item: type });
     }
     applyOutcomeEffects(state, player, weapon, { target: victim, splash }, outcome.effects);
+    if (hostile && player.alive) hostileAttacked(state, hostile.id, player, !!stats.melee);
   }
 }
 

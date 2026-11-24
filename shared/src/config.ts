@@ -161,6 +161,21 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   punch: { cost: { ap: 1 }, effect: { damage: [1, 2], sturdyBonusDamage: 1 }, crit: { chance: 0.2, damage: [2, 3] }, successChance: 0.6, inactiveTargetSuccessChance: 0.9, dirtyChance: 0.25 },
   // Owner, 2026-11-15: Wrestler and Solid can throw a roommate into an adjacent room through an unbroken door (2 AP, 1 AP on an inactive target).
   throwOut: { cost: { ap: 2, inactiveAp: 1 } },
+  // Hostile NPCs (hostiles.ts). PLACEHOLDER numbers, not decided: the intruder copies a player's starting stats.
+  hostiles: {
+    kinds: {
+      intruder: {
+        hp: 14,
+        startAp: 8,
+        maxAp: 12,
+        apPerCycle: 1,
+        startMp: 12,
+        maxMp: 12,
+        mpPerCycle: 1,
+        move: { cost: { ap: 1 } },
+      },
+    },
+  },
   // Owner, 2026-10-18: Ian's Pacifist makes aggressive actions in his room cost 2 more AP, his own included.
   pacifist: { aggressiveApSurcharge: 2 },
   // Owner, 2026-11-14: Bodyguard's Protect costs 1 AP and adds 2 AP to aggressive actions targeting the VIP while both are together.
