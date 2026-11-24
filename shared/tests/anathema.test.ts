@@ -13,7 +13,7 @@ const pick = pickSkill;
 
 /** p0 is a Persecutor; p0, p1 and p3 share the sick bay, p2 is in the refectory. */
 function ship(config = base): GameState {
-  const s = createGame(makeSeats(4), config, 3);
+  const s = createGame(makeSeats(4), config, 3, { p0: "human", p1: "human", p3: "human" });
   player(s, "p0").room = player(s, "p1").room = player(s, "p3").room = "SICK_BAY";
   player(s, "p2").room = "REFECTORY";
   return pick(s, "p0", "juge");

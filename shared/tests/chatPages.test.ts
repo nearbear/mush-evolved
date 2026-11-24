@@ -75,7 +75,7 @@ describe("chat pages", () => {
   it("never show a human a gap where the Mush were told of a contamination", () => {
     let state = createGame(seats, DEFAULT_CONFIG, 1);
     const mush = state.players.find((p) => p.role === "mush")!;
-    const human = state.players.find((p) => p.role !== "mush")!;
+    const human = state.players.find((p) => p.role !== "mush" && !p.modifiers.includes("immunity"))!;
     state = post(state, 1);
     const next = clone(state);
     contaminate(next, player(next, human.id));
@@ -233,7 +233,7 @@ describe("asking for a page (phase 3)", () => {
     expect(chatPageSource(dead2, "p0", channel, 0)).toBeNull();
 
     const mush = state.players.find((p) => p.role === "mush")!;
-    const human = state.players.find((p) => p.role !== "mush")!;
+    const human = state.players.find((p) => p.role !== "mush" && !p.modifiers.includes("immunity"))!;
     const mushChat = must(sendChat(state, mush.id, MUSH_CHANNEL, "hello"));
     expect(chatPageView(mushChat, mush.id, MUSH_CHANNEL, 0)).toHaveLength(1);
     expect(chatPageView(mushChat, human.id, MUSH_CHANNEL, 0)).toBeNull();

@@ -8,7 +8,7 @@ import { makeSeats, must, player } from "./support.ts";
 const config = DEFAULT_CONFIG;
 
 function coffeeGame(): GameState {
-  const s = createGame(makeSeats(3, "others"), structuredClone(config), 7);
+  const s = createGame(makeSeats(4, "others"), structuredClone(config), 7, { p0: "human" });
   player(s, "p0").ap = 2;
   player(s, "p0").satiety = 0;
   player(s, "p0").skills = [];
@@ -70,7 +70,7 @@ describe("Guarana cappuccino (GUARANA_CAPUCCINO)", () => {
   });
 
   it("requires coffee in the lab and reveals completion ship-wide in PlayerView.research", () => {
-    const s = createGame(makeSeats(3, "others"), structuredClone(config), 7);
+    const s = createGame(makeSeats(4, "others"), structuredClone(config), 7, { p0: "human" });
     player(s, "p0").room = "LABORATORY";
     player(s, "p1").room = "BRIDGE";
 

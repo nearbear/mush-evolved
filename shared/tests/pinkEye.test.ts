@@ -11,7 +11,7 @@ const config = testConfig();
 const TURRET_ROOM = "LASER_TURRET_A_0";
 
 function ship(): GameState {
-  const s = createGame(makeSeats(3), config, 3);
+  const s = createGame(makeSeats(3), config, 3, { p0: "human" });
   player(s, "p0").room = TURRET_ROOM;
   s.hunters.list.push({ id: "h1", hp: 100, hitChance: s.config.hunters.types.hunter.hitChance, target: null, type: "hunter", countdown: null });
   return s;

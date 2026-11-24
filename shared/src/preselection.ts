@@ -22,6 +22,7 @@ import { rollShuffle } from "./rng.ts";
 import { catArrival } from "./schrodinger.ts";
 import { newPlayer, spawnSelectionItems, startInventory } from "./rules.ts";
 import { MUSH_SEAT_MARGIN } from "./setups.ts";
+import { hasImmunityTrait } from "./statuses.ts";
 import { assignTitles } from "./titles.ts";
 import { endGame } from "./victory.ts";
 import type { GameState, PreselectionRules, Seat } from "./types.ts";
@@ -74,7 +75,7 @@ export function selectMush(state: GameState): void {
   const already = aboard.filter((p) => p.role === "mush").length;
   const order = rollShuffle(
     state,
-    aboard.filter((p) => p.role === "human"),
+    aboard.filter((p) => p.role === "human" && !hasImmunityTrait(p)),
   );
   for (const p of order.slice(0, Math.max(0, wanted - already))) {
     p.role = "mush";

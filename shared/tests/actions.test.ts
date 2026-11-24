@@ -46,7 +46,7 @@ describe("action registry", () => {
   // hydropots on the floor, an iTrackie in hand), so a check that is too loose
   // or too strict shows up here.
   it("offers exactly the legal actions at the start of a game", () => {
-    const state = createGame(seats, { ...DEFAULT_CONFIG, startItems: [{ type: "wrench", room: "LABORATORY" }] }, 1);
+    const state = createGame(seats, { ...DEFAULT_CONFIG, startItems: [{ type: "wrench", room: "LABORATORY" }] }, 1, { p0: "human" });
     const floor = state.items.filter((i) => i.at.kind === "room" && i.at.id === "LABORATORY");
     const mine = state.items.filter((i) => i.at.kind === "player" && i.at.id === "p0");
     const expected: Action[] = [

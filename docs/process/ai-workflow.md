@@ -5257,3 +5257,5 @@ Owner asked to rotate three Mush skill icons (Slime Trap's to Mass Mouldering, M
 
 - **Decision (owner):** Lower Pyromaniac (`ignite`, `shared/src/actions/ignite.ts`, `config.ignite.cost.ap`) from 4 AP to 3 AP.
 - **What worked:** Updated `DEFAULT_CONFIG.ignite.cost.ap`, pinned `3` in `shared/tests/pyromane.test.ts`, updated the en/es/fr skill effect strings in `web/src/locales/*.json`, and recorded the change in `docs/rules/implemented-rules.md`, `docs/rules/changes-from-emush.md`, and `docs/rules/rules-design.md`.
+
+- **2026-11-23 — Exclude Chun (`immunity`) from random Alpha Mush selection** (owner). `selectMush` (`shared/src/preselection.ts`) and `createGame` (`shared/src/rules.ts`) now exclude characters with the `immunity` trait (`hasImmunityTrait` / `config.characterModifiers`) from random Alpha Mush selection, picking fewer Mush rather than falling back to them if too few non-immune humans remain, while `forcedRoles` (single player and tests) can still force them as Mush. Updated `shared/tests/statuses.test.ts` plus existing fixed-seed tests that assumed `p1` (Chun) could be rolled Mush or `p0` was human.

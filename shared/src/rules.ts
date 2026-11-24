@@ -133,7 +133,9 @@ export function createGame(
   const [shuffled, rng] = shuffle(seats, seed);
   const rank = (s: Seat) => (forcedRoles[s.id] === "mush" ? 0 : forcedRoles[s.id] === "human" ? 2 : 1);
   const mushCount = preselection ? 0 : config.mushCount;
-  const mushIds = new Set([...shuffled].sort((a, b) => rank(a) - rank(b)).slice(0, mushCount).map((s) => s.id));
+  const isImmuneSeat = (s: Seat) => (config.characterModifiers[s.character] ?? []).includes("immunity");
+  const eligible = shuffled.filter((s) => forcedRoles[s.id] === "mush" || !isImmuneSeat(s));
+  const mushIds = new Set(eligible.sort((a, b) => rank(a) - rank(b)).slice(0, mushCount).map((s) => s.id));
 
   const players: PlayerState[] = seats.map((s) => newPlayer(s, config, startCycle, mushIds.has(s.id) ? "mush" : "human"));
 

@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
+import { DEFAULT_CONFIG, PRESELECTION } from "../src/config.ts";
 import { overheadStatuses, STATUS_IDS, STATUS_PUBLIC, statusIdsFor } from "../src/statuses.ts";
 import { MODIFIERS } from "../src/modifiers.ts";
 import { contaminate } from "../src/infection.ts";
+import { joinShip, selectMush } from "../src/preselection.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { GameState, PlayerId } from "../src/types.ts";
 import { makeSeats, player, mustApply, nextCycle, offered, noCharacterModifiers, testConfig } from "./support.ts";
@@ -209,5 +210,38 @@ describe("immunity trait", () => {
 
   it("is given to Chun at the start", () => {
     expect(DEFAULT_CONFIG.characterModifiers["chun"]).toEqual(["immunity", "mankind_only_hope"]);
+  });
+
+  it("prevents Chun from being randomly selected as Alpha Mush in preselection and createGame", () => {
+    const chunSeats = makeSeats(4); // p0=jin_su, p1=chun, p2=frieda, p3=kuan_ti
+    for (let seed = 1; seed <= 20; seed++) {
+      const direct = createGame(chunSeats, testConfig({ mushCount: 2 }), seed);
+      expect(player(direct, "p1").role).toBe("human");
+      expect(direct.players.filter((p) => p.role === "mush")).toHaveLength(2);
+
+      let pre = createGame([], testConfig({ preselection: { ...PRESELECTION, seats: 4, mushCount: 2, minPlayers: 2 } }), seed);
+      for (const seat of chunSeats) pre = joinShip(pre, seat).state!;
+      expect(pre.preselection).toBe(false);
+      expect(player(pre, "p1").role).toBe("human");
+      expect(pre.players.filter((p) => p.role === "mush")).toHaveLength(2);
+    }
+  });
+
+  it("picks fewer Mush rather than falling back to Chun, unless forcedRoles forces Mush", () => {
+    const twoSeats = makeSeats(2); // p0=jin_su, p1=chun
+    const fewPre = createGame([], testConfig({ preselection: { ...PRESELECTION, seats: 4, mushCount: 2, minPlayers: 2 } }), 1);
+    let s = joinShip(fewPre, twoSeats[0]!).state!;
+    s = joinShip(s, twoSeats[1]!).state!;
+    selectMush(s);
+    expect(player(s, "p1").role).toBe("human");
+    expect(s.players.filter((p) => p.role === "mush")).toHaveLength(1);
+
+    const fewDirect = createGame(makeSeats(2), testConfig({ mushCount: 1 }), 1);
+    expect(player(fewDirect, "p1").role).toBe("human");
+    expect(player(fewDirect, "p0").role).toBe("mush");
+
+    const forced = createGame(twoSeats, testConfig({ mushCount: 1 }), 1, { p1: "mush" });
+    expect(player(forced, "p1").role).toBe("mush");
+    expect(player(forced, "p1").alpha).toBe(true);
   });
 });

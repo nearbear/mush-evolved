@@ -50,7 +50,7 @@ Both games start characters with 0 skills (3 pickable + 1 book slot) and permane
 
 | Character | Trait | Difference in Mush: Evolved |
 | :--- | :--- | :--- |
-| **Chun** | **Immunity** & **Mankind's Only Hope** | **Can be chosen as Alpha Mush** (excluded in eMush), and her death does not inflict eMush's extra −2 crew morale penalty. |
+| **Chun** | **Immunity** & **Mankind's Only Hope** | Excluded from random Alpha Mush selection like eMush (only `forcedRoles`, e.g. single player, can make her Alpha Mush), and her death does not inflict eMush's extra −2 crew morale penalty. |
 | **Eleesha** | **Chronic Vertigo** | A **permanent, public trait** instead of eMush's curable disorder (no cure, no psychiatrist, no time limit), and it **applies to a Mush Eleesha too**. Same symptom: she can't take off (patrol ship, Pasiphae, Icarus launch) or land a ship on a planet, but can ride the Icarus as a passenger. Take off shows disabled with the reason instead of being hidden (so do the Gastroenteritis and Slight Nausea groundings). |
 | **Terrence** | **Wheelchair** | Replaces eMush's solo AP-to-MP conversion penalty with **Accommodate**: any roommate can offer to push him for 0 AP (offers expire in 5m). While pushed, Terrence moves with and is steered by his pusher for 0 MP until any public action on equipment or another person ends the push. |
 
