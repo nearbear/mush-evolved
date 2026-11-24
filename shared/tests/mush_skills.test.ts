@@ -71,10 +71,41 @@ describe("Mush skills", () => {
     expect(msg("TRANSFERT")).toBeNull();
   });
 
-  it("shows Mush skills only to their owner: not to human roommates, not to the other Mush", () => {
+  it("shows Mush skills to their owner and living Mush in the same room, never to humans, dead Mush, comatose Mush, or Mush elsewhere", () => {
     const state = must(pick(ship(), "p0", "nimble_fingers"));
     expect(viewFor(state, "p0").you.mushSkills).toEqual(["nimble_fingers"]);
-    // The other Mush's own pick menu lists every Mush skill, so look at everything but that.
-    for (const id of ["p1", "p2", "p3"]) expect(JSON.stringify({ ...viewFor(state, id), actions: [] })).not.toContain("nimble_fingers");
+
+    // Living Mush roommate sees p0's Mush skills, and p0 sees p1's (empty array when none picked).
+    expect(viewFor(state, "p1").players.find((p) => p.id === "p0")?.mushSkills).toEqual(["nimble_fingers"]);
+    expect(viewFor(state, "p0").players.find((p) => p.id === "p1")?.mushSkills).toEqual([]);
+
+    // Human roommates never see Mush skills.
+    for (const id of ["p2", "p3"]) {
+      expect(viewFor(state, id).players.find((p) => p.id === "p0")?.mushSkills).toBeUndefined();
+      expect(JSON.stringify(viewFor(state, id))).not.toContain("nimble_fingers");
+    }
+
+    // Another Mush in a different room does not see p0's Mush skills.
+    const apart = structuredClone(state);
+    apart.players[1]!.room = "REFECTORY";
+    expect(viewFor(apart, "p1").players.find((p) => p.id === "p0")?.mushSkills).toBeUndefined();
+    expect(JSON.stringify({ ...viewFor(apart, "p1"), actions: [] })).not.toContain("nimble_fingers");
+
+    // A dead Mush viewer or dead Mush target does not share Mush skills.
+    const deadViewer = structuredClone(state);
+    deadViewer.players[1]!.alive = false;
+    expect(viewFor(deadViewer, "p1").players.find((p) => p.id === "p0")?.mushSkills).toBeUndefined();
+    expect(JSON.stringify({ ...viewFor(deadViewer, "p1"), actions: [] })).not.toContain("nimble_fingers");
+
+    const deadTarget = structuredClone(state);
+    deadTarget.players[0]!.alive = false;
+    expect(viewFor(deadTarget, "p1").players.find((p) => p.id === "p0")?.mushSkills).toBeUndefined();
+    expect(JSON.stringify({ ...viewFor(deadTarget, "p1"), actions: [] })).not.toContain("nimble_fingers");
+
+    // A comatose Mush viewer is blind and does not see p0's Mush skills.
+    const comatose = structuredClone(state);
+    comatose.players[1]!.comaUntil = comatose.cycle + 2;
+    expect(viewFor(comatose, "p1").players).toEqual([]);
+    expect(JSON.stringify({ ...viewFor(comatose, "p1"), actions: [] })).not.toContain("nimble_fingers");
   });
 });

@@ -1621,8 +1621,8 @@
     "mushSlot": "Espacio de habilidad Mush {{n}} (vacío)",
     "pickMush": "Elegir una habilidad Mush para este espacio",
     "mushToggle": "Habilidades Mush",
-    "showMush": "Mostrar tus habilidades Mush",
-    "showHuman": "Mostrar tus habilidades humanas",
+    "showMush": "Mostrar habilidades Mush",
+    "showHuman": "Mostrar habilidades humanas",
     "status": {
       "full": "Totalmente implementada",
       "partial": "Parcialmente implementada",

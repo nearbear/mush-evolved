@@ -1621,8 +1621,8 @@
     "mushSlot": "Emplacement de compétence Mush {{n}} (vide)",
     "pickMush": "Choisir une compétence Mush pour cet emplacement",
     "mushToggle": "Compétences Mush",
-    "showMush": "Afficher vos compétences Mush",
-    "showHuman": "Afficher vos compétences humaines",
+    "showMush": "Afficher les compétences Mush",
+    "showHuman": "Afficher les compétences humaines",
     "status": {
       "full": "Entièrement implémentée",
       "partial": "Partiellement implémentée",

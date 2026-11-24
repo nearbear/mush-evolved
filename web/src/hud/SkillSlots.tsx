@@ -2,8 +2,8 @@
 // to everyone in the room; someone else's empty slots are left out. On your own portrait an empty slot is an amber socket with a gold plus that opens the picker; picks are
 // permanent. The book slot is filled only by reading a skill book (an item action), so it never has a plus.
 // Which skills can be picked comes from view.actions, never computed here.
-// A Mush looking at their own portrait gets a toggle at the top that swaps the stack for their four Mush skill slots.
-// It only changes what is drawn (to save space); both sets stay picked. Mush skills are only ever in your own view.
+// A Mush looking at their own portrait, or another living Mush in their room, gets a toggle at the top that swaps the
+// stack for the four Mush skill slots. It only changes what is drawn (to save space); both sets stay picked.
 // The picker is a FramedDialog, like the settings window. Choosing a skill swaps the list for a confirmation of that
 // one skill in the same window; Back, Escape or a click outside returns to the list.
 
@@ -23,12 +23,14 @@ export function SkillSlots({
   view,
   skills,
   bookSkill,
+  mushSkills,
   isYou,
   onAction,
 }: {
   view: PlayerView;
   skills: readonly string[];
   bookSkill?: string;
+  mushSkills?: readonly string[];
   isYou: boolean;
   onAction: (action: Action) => void;
 }) {
@@ -37,12 +39,14 @@ export function SkillSlots({
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState<string | null>(null);
   const [showMush, setShowMush] = useState(false);
-  const canToggle = isYou && view.you.role === "mush";
+  const canToggle = mushSkills !== undefined;
   const mush = canToggle && showMush;
-  const offered = legalIn(view)
-    .flatMap((a) => (a.type === "pick_skill" && isMushSkill(a.skill) === mush ? [a.skill] : []))
-    .sort((a, b) => String(names.skill(a)).localeCompare(String(names.skill(b)), i18n.language));
-  const slots = mush ? view.you.mushSkills : skills;
+  const offered = isYou
+    ? legalIn(view)
+        .flatMap((a) => (a.type === "pick_skill" && isMushSkill(a.skill) === mush ? [a.skill] : []))
+        .sort((a, b) => String(names.skill(a)).localeCompare(String(names.skill(b)), i18n.language))
+    : [];
+  const slots = mush ? mushSkills : skills;
 
   return (
     <div className={mush ? "skill-slots skill-slots-mush" : "skill-slots"}>
@@ -96,55 +100,57 @@ export function SkillSlots({
           </li>
         )}
       </ul>
-      <Dialog.Root
-        open={open}
-        onOpenChange={(o, details) => {
-          // While confirming, Escape or a click outside steps back to the list instead of closing the picker.
-          if (!o && pending && details.reason !== "close-press") {
-            details.cancel();
-            setPending(null);
-            return;
-          }
-          setOpen(o);
-          if (!o) setPending(null);
-        }}
-      >
-        <FramedDialog className="skill-picker" heading={t(mush ? "skills.mushTitle" : "skills.title")} closeLabel={t("skills.close")}>
-          {pending ? (
-            <div className="skill-confirm">
-              <SkillCard skill={pending} />
-              <p className="confirm-message">{t("skills.confirm", { skill: names.skill(pending) })}</p>
-              <p className="skill-warning">{t("skills.warning")}</p>
-              <div className="skill-confirm-buttons">
-                <button type="button" onClick={() => setPending(null)}>
-                  {t("skills.back")}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    onAction({ type: "pick_skill", skill: pending });
-                    setOpen(false);
-                    setPending(null);
-                  }}
-                >
-                  {t("skills.confirmYes")}
-                </button>
+      {isYou && (
+        <Dialog.Root
+          open={open}
+          onOpenChange={(o, details) => {
+            // While confirming, Escape or a click outside steps back to the list instead of closing the picker.
+            if (!o && pending && details.reason !== "close-press") {
+              details.cancel();
+              setPending(null);
+              return;
+            }
+            setOpen(o);
+            if (!o) setPending(null);
+          }}
+        >
+          <FramedDialog className="skill-picker" heading={t(mush ? "skills.mushTitle" : "skills.title")} closeLabel={t("skills.close")}>
+            {pending ? (
+              <div className="skill-confirm">
+                <SkillCard skill={pending} />
+                <p className="confirm-message">{t("skills.confirm", { skill: names.skill(pending) })}</p>
+                <p className="skill-warning">{t("skills.warning")}</p>
+                <div className="skill-confirm-buttons">
+                  <button type="button" onClick={() => setPending(null)}>
+                    {t("skills.back")}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onAction({ type: "pick_skill", skill: pending });
+                      setOpen(false);
+                      setPending(null);
+                    }}
+                  >
+                    {t("skills.confirmYes")}
+                  </button>
+                </div>
               </div>
-            </div>
-          ) : (
-            <>
-              <p className="skill-warning">{t("skills.warning")}</p>
-              <ul className="skill-list">
-                {offered.map((skill) => (
-                  <li key={skill}>
-                    <SkillCard skill={skill} onSelect={() => setPending(skill)} />
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
-        </FramedDialog>
-      </Dialog.Root>
+            ) : (
+              <>
+                <p className="skill-warning">{t("skills.warning")}</p>
+                <ul className="skill-list">
+                  {offered.map((skill) => (
+                    <li key={skill}>
+                      <SkillCard skill={skill} onSelect={() => setPending(skill)} />
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </FramedDialog>
+        </Dialog.Root>
+      )}
     </div>
   );
 }

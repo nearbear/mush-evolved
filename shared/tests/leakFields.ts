@@ -177,7 +177,7 @@ export const PLAYER_STATE_FIELDS: Record<string, FieldRule> = {
   modifiers: { reach: "own", test: "leaks.test.ts" },
   skills: { reach: "room", test: "leaks.test.ts" },
   bookSkill: { reach: "room", test: "leaks.test.ts" },
-  mushSkills: { reach: "own", test: "leaks.test.ts", note: "Not to roommates, and not to other Mush." },
+  mushSkills: { reach: "room", test: "mush_skills.test.ts", note: "Living Mush in the same room only (never humans, dead Mush, or Mush elsewhere)." },
   alive: { reach: "public", test: "death.test.ts" },
   ready: { reach: "public", test: "rules.test.ts" },
   current: { reach: "own", test: "leaks.test.ts", note: "Roommates get a bar without the action (queue.test.ts)." },

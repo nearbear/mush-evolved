@@ -199,7 +199,7 @@ export interface PlayerState extends Seat {
   bookSkill?: string;
   /**
    * Mush skill ids in the Mush skill slots (MUSH_SKILL_SLOTS), picked for good with `pick_skill` while Mush. Each is a
-   * modifier id too. Private: only in your own view, never to roommates or other Mush.
+   * modifier id too. Visible to yourself (`you.mushSkills`) and to living Mush in the same room (`OtherPlayerView.mushSkills`), never to humans or Mush elsewhere.
    */
   mushSkills: string[];
   alive: boolean;

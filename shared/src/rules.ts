@@ -912,6 +912,8 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
             // Skills are public, but like statuses only to people who can see the player.
             skills: here ? [...o.skills] : [],
             ...(here && o.bookSkill !== undefined ? { bookSkill: o.bookSkill } : {}),
+            // Mush see other living Mush's Mush skills in the same room (owner, 2026-11-23).
+            ...(here && you.role === "mush" && o.role === "mush" ? { mushSkills: [...o.mushSkills] } : {}),
             // Who is in bed, and which bed, is visible to the room (owner, 2026-10-18).
             ...(here && o.lyingIn ? { lying: o.lyingIn } : {}),
             // Who is aboard the docked Icarus is visible to the bay (#469).

@@ -1593,8 +1593,8 @@
     "mushSlot": "Mush skill slot {{n}} (empty)",
     "pickMush": "Pick a Mush skill for this slot",
     "mushToggle": "Mush skills",
-    "showMush": "Show your Mush skills",
-    "showHuman": "Show your human skills",
+    "showMush": "Show Mush skills",
+    "showHuman": "Show human skills",
     "status": {
       "full": "Fully implemented",
       "partial": "Partially implemented",

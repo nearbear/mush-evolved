@@ -116,6 +116,8 @@ export interface OtherPlayerView {
   skills: string[];
   /** The skill in their book slot, learned from a book. Public to anyone in your room (absent for people elsewhere). */
   bookSkill?: string;
+  /** Mush skills they have chosen. Only when you are a living Mush, they are a living Mush, and they are in your room. */
+  mushSkills?: string[];
   /** Their contamination, shown as a status. Only when you are Mush, they are a contaminated human, and they are in your room. */
   contamination?: number;
   /** This player is Mush (alive or dead). Only when you are Mush yourself (owner, 2026-11-21: Mush know each other, and which dead were Mush). */

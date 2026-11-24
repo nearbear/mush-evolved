@@ -175,7 +175,14 @@ function Details({ view, layout, resolved, onAction }: { view: PlayerView; layou
               <img className="inspect-portrait" src={portrait(person.character)} alt="" />
             )}
             {character && <span className="inspect-figure-name">{displayName}</span>}
-            <SkillSlots view={view} skills={person.skills} bookSkill={person.bookSkill} isYou={isYou} onAction={onAction} />
+            <SkillSlots
+              view={view}
+              skills={person.skills}
+              bookSkill={person.bookSkill}
+              mushSkills={isYou ? (view.you.role === "mush" ? view.you.mushSkills : undefined) : person.mushSkills}
+              isYou={isYou}
+              onAction={onAction}
+            />
             <StatusIcons
               statuses={isYou ? view.statuses : person.statuses}
               contamination={"contamination" in person ? person.contamination : undefined}

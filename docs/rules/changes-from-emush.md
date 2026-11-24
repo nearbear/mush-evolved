@@ -83,7 +83,6 @@ Both games start characters with 0 skills (3 pickable + 1 book slot) and permane
 
 | Mechanic | eMush | Mush: Evolved |
 | :--- | :--- | :--- |
-| **Mush Skill Privacy** | Mush see other Mush's Mush skills in the same room. | Mush skills are **strictly private** (never shown to other Mush). |
 | **Mush as Disease Carriers** | Mush are immune to diseases and silently cure existing ones at cycle change. | Mush **catch, carry, and spread diseases** (from alien fruits, spoiled food, incidents, room spread, and comforting/intimate actions) with the same odds and delays as humans, and perform symptom log actions (vomiting, sneezing), but **suffer no stat penalties**. |
 | **Body Transfer** | Deletes the victim's human skills; can target inactive players. | **Preserves the victim's human skills** (no reset trace) and **cannot target inactive players**. (In both games, private logs and private channels stay with the body.) |
 

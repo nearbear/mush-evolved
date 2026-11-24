@@ -5285,3 +5285,12 @@ Owner asked to rotate three Mush skill icons (Slime Trap's to Mass Mouldering, M
 
 - **Decision (owner):** Remove the full-AP requirement from `inactivityCycle` so living non-bot players go Inactive at 24h and Super Inactive at 48h at cycle change regardless of AP, matching eMush. Keep NERON destroying the ship when every living player is inactive (#484).
 - **What worked:** Asking before coding caught that the owner only wanted to drop the AP-full check from the combined `changes-from-emush.md` row, not revert total-inactivity ship destruction (#484).
+
+### 2026-11-23 — Mush see other Mush's Mush skills in the same room
+- **Decision (owner):** Mush now see other living Mush's Mush skills when in the same room, matching eMush, using the existing Mush-icon toggle on `SkillSlots` over the Inspect portrait; removed the "Mush Skill Privacy" difference from `docs/rules/changes-from-emush.md`.
+- **What I did:** added optional `mushSkills?: string[]` to `OtherPlayerView` in `shared/src/types/view.ts` and populated it in `seatViewFor` (`shared/src/rules.ts`) only when `here && you.role === "mush" && o.role === "mush"`. Wired `mushSkills` into `SkillSlots` from `InspectPanel`, gated the picker dialog to `isYou`, generalized the `skills.showMush` / `skills.showHuman` tooltips in en/fr/es, updated `shared/tests/leakFields.ts` and `shared/tests/mush_skills.test.ts`, and updated `docs/rules/implemented-rules.md`, `docs/rules/rules-design.md`, and `docs/rules/changes-from-emush.md`.
+
+### 2026-11-23 — Incremental test cache in `npm run verify`
+
+- **Decision (owner):** Added Gradle-style content-hashed UP-TO-DATE caching to `npm run verify` (`tools/src/dev/verifyCache.ts`, wired into `tools/src/dev/verify.ts`, unit-tested in `tools/tests/dev/verifyCache.test.ts`) so re-running `verify` without source changes runs only previously failed, modified, or newly added test files (with `--full` to bypass).
+- **What worked:** Per-worktree cache files in `os.tmpdir()` keep the repo clean and work inside the sandbox; classifying `docs/` separately invalidates only `tools/tests/docs/docPaths.test.ts`, while non-`*.test.*` helpers like `support.ts` stay in the source hash so they always trigger a full run.
