@@ -30,9 +30,9 @@ import "pixi.js/unsafe-eval";
 import { FX_SHEET } from "../../art/assets.ts";
 import { keyedUrl } from "../../art/keyedSprite.ts";
 import { animId, animStep, type Cutaway, FADE_MS, frameAt, PACE_SPEED, type FrameUpdate, type Scene, type SceneImage, type SceneOutline, type ScenePicture, type SceneSprite, type ShipTurn } from "../scene.ts";
-import { shiftTile, stepTurn, tilePosition, type TurnLimits } from "../skyTurn.ts";
+import { orbitField, type OrbitField, orbitSearchCorners, shiftTile, stepOrbitStar, stepTurn, tilePosition, type TurnLimits } from "../skyTurn.ts";
 import { gridToPx } from "../placement.ts";
-import { ftlStarfield, ftlStarLayer, starfield, starLayer } from "../starfield.ts";
+import { ftlStarfield, ftlStarLayer, STAR_REACH, starfield, starLayer, starPoints, type StarPoint, starStamp } from "../starfield.ts";
 import { CELLS_PER_SECOND } from "../useWalkers.ts";
 import { ESP, espPulse, filterKey, lookOf, selectionPulse } from "./effects.ts";
 import { cutawayFilter, EspFilters, lookFilter } from "./filters.ts";
@@ -100,6 +100,11 @@ const EASE_SECONDS = 3;
  * second) and slowing to a stop at `accel` (radians a second, each second), so a quarter turn takes about 9.5 s.
  */
 const TURN: TurnLimits = { speed: 0.24, accel: 0.08 };
+/**
+ * In orbit the near stars glide slowly counterclockwise along 2D bipolar elliptical streamlines (`skyTurn.ts`) while
+ * the nebula stays undistorted. Signed speed along the equator as a multiple of `STARS_DRIFT` (negative = counterclockwise).
+ */
+const ORBIT_STARS_SPEED = -0.1;
 let skyTexture: Texture | null = null;
 let starsTexture: Texture | null = null;
 let ftlSkyTexture: Texture | null = null;
@@ -129,6 +134,15 @@ function ftlSky(): Texture {
 
 function ftlStars(): Texture {
   return (ftlStarsTexture ??= imageToTexture(ftlStarLayer(STARS_SIZE)));
+}
+
+/** The near stars one by one (`starLayer`'s), and one small texture per kind of star, for the orbit. */
+let nearPoints: StarPoint[] | null = null;
+const stampTextures = new Map<StarPoint["kind"], Texture>();
+function stamp(kind: StarPoint["kind"]): Texture {
+  let t = stampTextures.get(kind);
+  if (!t) stampTextures.set(kind, (t = imageToTexture(starStamp(kind))));
+  return t;
 }
 
 interface Drawn {
@@ -195,6 +209,20 @@ export class PixiRenderer {
   private spin = 0;
   private heading = 0;
   private turnSeen: number | null = null;
+  /**
+   * The orbit streamlines (skyTurn.ts): `orbitBlend` eases smoothly between 0 (flat cruising tile) and 1 (two-pole 2D
+   * elliptical streamlines) over `EASE_SECONDS`. Stars are seeded from `sky[1]`'s exact screen positions on entry so
+   * entering orbit never pops, and cross-fade back when leaving.
+   */
+  private orbiting = false;
+  private orbitBlend = 0;
+  private orbitFrom = 0;
+  private orbitRamp = 1;
+  private orbitPool: { x: number; y: number; kind: StarPoint["kind"]; color: number }[] = [];
+  private orbitSize = { width: 0, height: 0 };
+  /** In orbit the near stars are drawn one by one along their elliptical streamlines, keeping their pixel shape; a pool of sprites. */
+  private readonly orbitStars = new Container();
+  private orbitSprites: Sprite[] = [];
   /** The orbited planet, in the sky behind the ship at the panel's bottom-right; `planetUrl` is the one it should show. */
   private readonly planet = new Sprite(Texture.EMPTY);
   private planetUrl: string | null = null;
@@ -302,7 +330,8 @@ export class PixiRenderer {
     });
     this.sky = [layer(sky(), SKY_SIZE, SKY_PARALLAX, SKY_DRIFT), layer(stars(), STARS_SIZE, STARS_PARALLAX, STARS_DRIFT)];
     this.planet.visible = false;
-    this.app.stage.addChild(...this.sky.map((l) => l.sprite), this.planet, this.world);
+    this.orbitStars.visible = false;
+    this.app.stage.addChild(...this.sky.map((l) => l.sprite), this.orbitStars, this.planet, this.world);
     if (this.backdrop) {
       this.clip = new Graphics();
       this.app.stage.addChild(this.clip);
@@ -368,20 +397,40 @@ export class PixiRenderer {
     const ftl = scene.pace === "ftl";
     if (ftl !== this.ftl) {
       this.ftl = ftl;
+      this.orbitBlend = 0;
+      this.orbitFrom = 0;
+      this.orbitRamp = 1;
       this.sky[0]!.sprite.texture = ftl ? ftlSky() : sky();
       this.sky[1]!.sprite.texture = ftl ? ftlStars() : stars();
       this.placeSky();
     }
     const cruise = this.reducedMotion.matches ? 0 : PACE_SPEED[scene.pace];
+    const orbiting = scene.pace === "orbiting" && !this.reducedMotion.matches;
     if (!this.paceSeen) {
       this.paceSeen = true;
       this.speed = cruise;
-    } else if (cruise !== this.cruise) {
-      this.speedFrom = this.speed;
-      this.ramp = 0;
+      this.orbitBlend = orbiting ? 1 : 0;
+      this.orbitFrom = this.orbitBlend;
+      this.orbitRamp = 1;
+    } else {
+      if (cruise !== this.cruise) {
+        this.speedFrom = this.speed;
+        this.ramp = 0;
+      }
+      if (orbiting !== this.orbiting) {
+        this.orbitFrom = this.orbitBlend;
+        this.orbitRamp = 0;
+      }
     }
     this.cruise = cruise;
-    if (this.speed !== this.cruise) this.requestRender();
+    this.orbiting = orbiting;
+    if (this.reducedMotion.matches && this.orbitBlend !== 0) {
+      this.orbitBlend = 0;
+      this.orbitFrom = 0;
+      this.orbitRamp = 1;
+      this.placeSky();
+    }
+    if (this.speed !== this.cruise || this.orbiting || this.orbitBlend !== 0) this.requestRender();
     this.noteTurn(scene.turn);
     this.setPlanet(scene.planet);
     const seen = new Set<string>();
@@ -491,6 +540,14 @@ export class PixiRenderer {
       const dx = camera.x - this.camera.x;
       const dy = camera.y - this.camera.y;
       this.shiftSky((l) => ({ x: dx * l.parallax, y: dy * l.parallax }));
+      if (this.orbitPool.length) {
+        const ox = dx * STARS_PARALLAX;
+        const oy = dy * STARS_PARALLAX;
+        for (const p of this.orbitPool) {
+          p.x += ox;
+          p.y += oy;
+        }
+      }
     }
     this.camera = camera;
     this.placeWorld();
@@ -564,25 +621,115 @@ export class PixiRenderer {
     return !this.ftl && (this.angle !== this.heading || this.spin !== 0);
   }
 
-  /** Moves each layer by `by(layer)` on screen: turned back into the tile's frame, so it moves that way whatever the angle. */
-  private shiftSky(by: (l: SkyLayer) => { x: number; y: number }) {
+  /** Moves each layer by `by(layer, index)` on screen: turned back into the tile's frame, so it moves that way whatever the turn. */
+  private shiftSky(by: (l: SkyLayer, i: number) => { x: number; y: number }) {
     const angle = this.skyAngle();
-    for (const l of this.sky) l.at = shiftTile(l.at, by(l), angle, l.size);
+    this.sky.forEach((l, i) => {
+      l.at = shiftTile(l.at, by(l, i), angle, l.size);
+    });
   }
 
   /**
    * The layers follow the camera slower than the ship, stream down-right at the ship's speed, and are turned by
-   * `angle` about the panel's centre. In whole pixels unless a turn is under way.
+   * `angle` about the panel's centre. In orbit (`orbitBlend > 0`), the nebula stays undistorted while the near stars
+   * glide counterclockwise along two-pole 2D elliptical streamlines (`skyTurn.ts`).
    */
   private placeSky() {
-    const center = { x: this.panel.x + this.panel.width / 2, y: this.panel.y + this.panel.height / 2 };
     const angle = this.skyAngle();
+    const center = { x: this.panel.x + this.panel.width / 2, y: this.panel.y + this.panel.height / 2 };
     const whole = this.turning() ? (v: number) => v : Math.round;
     for (const l of this.sky) {
       const p = tilePosition(l.at, angle, center);
       l.sprite.tilePosition.set(whole(p.x), whole(p.y));
       l.sprite.tileRotation = angle;
     }
+    const curved = !this.ftl && this.orbitBlend > 0;
+    if (!curved) {
+      this.orbitPool = [];
+      this.sky[1]!.sprite.visible = true;
+      this.sky[1]!.sprite.alpha = 1;
+      this.orbitStars.visible = false;
+      return;
+    }
+    const { width, height } = this.app.screen;
+    const field = orbitField(this.app.screen);
+    if (!this.orbitPool.length || this.orbitSize.width !== width || this.orbitSize.height !== height) {
+      this.seedOrbitPool(angle, center, this.sky[1]!, field);
+    }
+    // Entering/in orbit, `orbitPool` was seeded from `sky[1]`'s exact pixels (zero pop); leaving, cross-fade back.
+    const leaving = !this.orbiting;
+    this.sky[1]!.sprite.visible = leaving;
+    this.sky[1]!.sprite.alpha = leaving ? 1 - this.orbitBlend : 1;
+    this.orbitStars.visible = true;
+    this.orbitStars.alpha = leaving ? this.orbitBlend : 1;
+    this.placeOrbitStars();
+  }
+
+  /** Snapshots `sky[1]`'s near stars in screen space so entering orbit continues from the exact current star pixels. */
+  private seedOrbitPool(angle: number, center: { x: number; y: number }, layer: SkyLayer, field: OrbitField) {
+    const points = (nearPoints ??= starPoints(STARS_SIZE));
+    const o = tilePosition(layer.at, angle, center);
+    const cos = Math.cos(angle);
+    const sin = Math.sin(angle);
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+    for (const c of orbitSearchCorners(field)) {
+      const dx = c.x - o.x;
+      const dy = c.y - o.y;
+      const ux = cos * dx + sin * dy;
+      const uy = -sin * dx + cos * dy;
+      minX = Math.min(minX, ux);
+      maxX = Math.max(maxX, ux);
+      minY = Math.min(minY, uy);
+      maxY = Math.max(maxY, uy);
+    }
+    const size = layer.size;
+    const pool: { x: number; y: number; kind: StarPoint["kind"]; color: number }[] = [];
+    for (let ky = Math.floor(minY / size); ky <= Math.floor(maxY / size); ky++) {
+      for (let kx = Math.floor(minX / size); kx <= Math.floor(maxX / size); kx++) {
+        const ox = kx * size;
+        const oy = ky * size;
+        for (const p of points) {
+          const tx = ox + p.x;
+          const ty = oy + p.y;
+          pool.push({
+            x: o.x + cos * tx - sin * ty,
+            y: o.y + sin * tx + cos * ty,
+            kind: p.kind,
+            color: p.color,
+          });
+        }
+      }
+    }
+    this.orbitPool = pool;
+    this.orbitSize = { width: this.app.screen.width, height: this.app.screen.height };
+  }
+
+  /** Draws the visible stars of `orbitPool` one by one in whole pixels, reusing the sprite pool. */
+  private placeOrbitStars() {
+    const { width, height } = this.app.screen;
+    const reach = 4;
+    let used = 0;
+    for (const p of this.orbitPool) {
+      const sx = Math.round(p.x);
+      const sy = Math.round(p.y);
+      if (sx < -reach || sy < -reach || sx > width + reach || sy > height + reach) continue;
+      let sprite = this.orbitSprites[used];
+      if (!sprite) {
+        sprite = new Sprite(Texture.EMPTY);
+        this.orbitSprites.push(sprite);
+        this.orbitStars.addChild(sprite);
+      }
+      used++;
+      const r = Math.max(STAR_REACH[p.kind].x, STAR_REACH[p.kind].y);
+      sprite.texture = stamp(p.kind);
+      sprite.tint = p.kind === "dot" ? p.color : 0xffffff;
+      sprite.position.set(sx - r, sy - r);
+      sprite.visible = true;
+    }
+    for (let i = used; i < this.orbitSprites.length; i++) this.orbitSprites[i]!.visible = false;
   }
 
   destroy() {
@@ -793,6 +940,13 @@ export class PixiRenderer {
     this.lastTick = now;
     const turning = this.turning();
     if (turning) ({ angle: this.angle, velocity: this.spin } = stepTurn({ angle: this.angle, velocity: this.spin }, this.heading, dt, TURN));
+    const orbitTarget = !this.ftl && this.orbiting ? 1 : 0;
+    const orbitingAnim = this.orbitBlend !== orbitTarget;
+    if (orbitingAnim) {
+      this.orbitRamp = Math.min(1, this.orbitRamp + dt / EASE_SECONDS);
+      const eased = this.orbitRamp * this.orbitRamp * (3 - 2 * this.orbitRamp);
+      this.orbitBlend = this.orbitRamp === 1 ? orbitTarget : this.orbitFrom + (orbitTarget - this.orbitFrom) * eased;
+    }
     const streaming = this.speed !== this.cruise;
     if (this.speed !== 0 || streaming) {
       this.ramp = Math.min(1, this.ramp + dt / EASE_SECONDS);
@@ -801,11 +955,21 @@ export class PixiRenderer {
       const step = this.speed * dt;
       this.shiftSky((l) => ({ x: step * l.rate, y: (step * l.rate) / 2 }));
     }
-    if (turning || this.speed !== 0 || streaming) {
+    const orbitDrift = !this.ftl && this.orbitBlend > 0;
+    if (orbitDrift && dt > 0 && this.orbitPool.length) {
+      const field = orbitField(this.app.screen);
+      const dist = ORBIT_STARS_SPEED * this.orbitBlend * STARS_DRIFT * dt;
+      for (const p of this.orbitPool) {
+        const next = stepOrbitStar(p, field, dist);
+        p.x = next.x;
+        p.y = next.y;
+      }
+    }
+    if (turning || orbitingAnim || this.speed !== 0 || streaming || orbitDrift) {
       this.placeSky();
       this.dirty = true;
     }
-    const streams = this.speed !== 0 || this.speed !== this.cruise || this.turning();
+    const streams = this.speed !== 0 || this.speed !== this.cruise || this.turning() || this.orbitBlend !== orbitTarget || (!this.ftl && this.orbitBlend > 0);
     const particles = this.fire.active || this.smoke.active;
     if (dt > 0 && this.fire.active) {
       this.fire.update(dt, this.reducedMotion.matches);

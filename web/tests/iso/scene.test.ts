@@ -486,7 +486,7 @@ describe("cutaway", () => {
 
 describe("shipPace (#480)", () => {
   it("switches to ftl once launched, faster than normal travel", () => {
-    expect(shipPace({ orbiting: true, traveling: false })).toBe("stopped");
+    expect(shipPace({ orbiting: true, traveling: false })).toBe("orbiting");
     expect(shipPace({ orbiting: false, traveling: false })).toBe("cruising");
     expect(shipPace({ orbiting: false, traveling: true })).toBe("traveling");
     expect(shipPace({ orbiting: true, traveling: false }, true)).toBe("ftl");

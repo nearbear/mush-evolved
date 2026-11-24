@@ -89,33 +89,62 @@ function fields(u: number, v: number, seed: number): { dust: number; teal: numbe
 /** Field samples are this many pixels apart, then interpolated. */
 const STEP = 4;
 
+/** One star of a layer: a lone pixel (`dot`), or a "+" sparkle, big or small, centred on (x, y). */
+export interface StarPoint {
+  x: number;
+  y: number;
+  kind: "dot" | "sparkle" | "small";
+  /** A dot's color; sparkles have their own fixed colors. */
+  color: number;
+}
+
 /** Sparkles: at most one per 128-pixel cell, wrapping at the edges like everything else. */
-function sparkles(size: number, seed: number, put: (x: number, y: number, color: number) => void) {
+function sparklePoints(size: number, seed: number): StarPoint[] {
   const cell = 128;
+  const out: StarPoint[] = [];
   for (let cy = 0; cy < size / cell; cy++) {
     for (let cx = 0; cx < size / cell; cx++) {
       if (hash(cx, cy, seed + 20) > 0.55) continue;
       const x = cx * cell + Math.floor(hash(cx, cy, seed + 21) * cell);
       const y = cy * cell + Math.floor(hash(cx, cy, seed + 22) * cell);
-      if (hash(cx, cy, seed + 23) < 0.7) {
-        put(x, y, SPARKLE.center);
-        for (const s of [-1, 1]) {
-          put(x + s, y, SPARKLE.near);
-          put(x + 2 * s, y, SPARKLE.far);
-          put(x, y + s, SPARKLE.near);
-          put(x, y + 2 * s, SPARKLE.far);
-          put(x, y + 3 * s, SPARKLE.far);
-        }
-      } else {
-        // A small one: a bright pixel with one-pixel arms.
-        put(x, y, STARS[STARS.length - 1]!);
-        for (const s of [-1, 1]) {
-          put(x + s, y, STARS[4]!);
-          put(x, y + s, STARS[4]!);
-        }
-      }
+      out.push({ x, y, kind: hash(cx, cy, seed + 23) < 0.7 ? "sparkle" : "small", color: SPARKLE.center });
     }
   }
+  return out;
+}
+
+/** Draws one star at its (x, y). */
+export function drawStar({ x, y, kind, color }: StarPoint, put: (x: number, y: number, color: number) => void) {
+  if (kind === "dot") {
+    put(x, y, color);
+  } else if (kind === "sparkle") {
+    put(x, y, SPARKLE.center);
+    for (const s of [-1, 1]) {
+      put(x + s, y, SPARKLE.near);
+      put(x + 2 * s, y, SPARKLE.far);
+      put(x, y + s, SPARKLE.near);
+      put(x, y + 2 * s, SPARKLE.far);
+      put(x, y + 3 * s, SPARKLE.far);
+    }
+  } else {
+    // A small one: a bright pixel with one-pixel arms.
+    put(x, y, STARS[STARS.length - 1]!);
+    for (const s of [-1, 1]) {
+      put(x + s, y, STARS[4]!);
+      put(x, y + s, STARS[4]!);
+    }
+  }
+}
+
+/** How far a star of each kind reaches from its centre, across and up/down, in pixels. */
+export const STAR_REACH: Readonly<Record<StarPoint["kind"], { x: number; y: number }>> = {
+  dot: { x: 0, y: 0 },
+  sparkle: { x: 2, y: 3 },
+  small: { x: 1, y: 1 },
+};
+
+function sparkles(size: number, seed: number, put: (x: number, y: number, color: number) => void) {
+  for (const p of sparklePoints(size, seed)) drawStar(p, put);
 }
 
 /** The star field, `size` pixels square (a multiple of 4). */
@@ -172,6 +201,20 @@ export function starfield(size: number, seed = 1): StarfieldImage {
 }
 
 /**
+ * The stars of `starLayer`, lone stars then sparkles (later ones are drawn over earlier ones), so the layer can also
+ * be drawn star by star: in orbit each star circles on its own, keeping its pixel shape (PixiRenderer).
+ */
+export function starPoints(size: number, seed = 2): StarPoint[] {
+  const out: StarPoint[] = [];
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      if (hash(x, y, seed + 30) < 0.0006) out.push({ x, y, kind: "dot", color: STARS[Math.floor(hash(x, y, seed + 31) * STARS.length)]! });
+    }
+  }
+  return out.concat(sparklePoints(size, seed));
+}
+
+/**
  * Stars alone on a transparent ground, the near layer over `starfield`: lone stars and sparkles, so it
  * can drift at its own rate and the two read as different depths. Tiles seamlessly like the sky.
  */
@@ -184,12 +227,22 @@ export function starLayer(size: number, seed = 2): StarfieldImage {
     rgba[i + 2] = color & 0xff;
     rgba[i + 3] = 255;
   };
-  for (let y = 0; y < size; y++) {
-    for (let x = 0; x < size; x++) {
-      if (hash(x, y, seed + 30) < 0.0006) put(x, y, STARS[Math.floor(hash(x, y, seed + 31) * STARS.length)]!);
-    }
-  }
-  sparkles(size, seed, put);
+  for (const p of starPoints(size, seed)) drawStar(p, put);
+  return { size, rgba };
+}
+
+/** One star of `kind` alone on a transparent square just big enough for it, centred; a dot is white, to be tinted. */
+export function starStamp(kind: StarPoint["kind"]): StarfieldImage {
+  const r = Math.max(STAR_REACH[kind].x, STAR_REACH[kind].y);
+  const size = 2 * r + 1;
+  const rgba = new Uint8ClampedArray(size * size * 4);
+  drawStar({ x: r, y: r, kind, color: 0xffffff }, (x, y, color) => {
+    const i = (y * size + x) * 4;
+    rgba[i] = color >> 16;
+    rgba[i + 1] = (color >> 8) & 0xff;
+    rgba[i + 2] = color & 0xff;
+    rgba[i + 3] = 255;
+  });
   return { size, rgba };
 }
 

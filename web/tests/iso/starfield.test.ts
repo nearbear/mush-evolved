@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ftlStarfield, ftlStarLayer, PALETTE, SKY, starfield, starLayer } from "../../src/iso/starfield.ts";
+import { drawStar, ftlStarfield, ftlStarLayer, PALETTE, SKY, starfield, starLayer, starPoints } from "../../src/iso/starfield.ts";
 
 /** Each pixel's alpha and colour; checked in plain loops, since an `expect` per pixel takes seconds over 65k pixels. */
 const pixels = (rgba: Uint8ClampedArray | Uint8Array) =>
@@ -68,5 +68,20 @@ describe("ftlStarLayer (#480)", () => {
     expect(opaque.length).toBeGreaterThan(pixels(starLayer(256).rgba).filter((p) => p.alpha === 255).length);
     expect(opaque.length / all.length).toBeLessThan(0.08);
     expect(opaque.filter((p) => !palette.has(p.color))).toHaveLength(0);
+  });
+});
+
+describe("starPoints", () => {
+  it("draws the same layer as starLayer, star by star", () => {
+    const size = 256;
+    const rgba = new Uint8ClampedArray(size * size * 4);
+    const mod = (a: number) => ((a % size) + size) % size;
+    for (const p of starPoints(size)) {
+      drawStar(p, (x, y, color) => {
+        const i = (mod(y) * size + mod(x)) * 4;
+        rgba.set([color >> 16, (color >> 8) & 0xff, color & 0xff, 255], i);
+      });
+    }
+    expect(rgba).toEqual(starLayer(size).rgba);
   });
 });

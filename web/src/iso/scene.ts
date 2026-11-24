@@ -293,10 +293,10 @@ export interface SceneOutline extends ScenePicture {
 }
 
 /** How the Daedalus is moving: held in orbit, flying between planets, jumping to one, or in intergalactic FTL travel (#480). */
-export type ShipPace = "stopped" | "cruising" | "traveling" | "ftl";
+export type ShipPace = "orbiting" | "cruising" | "traveling" | "ftl";
 
-/** How fast the stars stream at each pace, as a multiple of the cruising rate. */
-export const PACE_SPEED: Readonly<Record<ShipPace, number>> = { stopped: 0, cruising: 1, traveling: 10, ftl: 25 };
+/** How fast the stars stream at each pace, as a multiple of the cruising rate. In orbit the near stars follow elliptical streamlines instead (PixiRenderer). */
+export const PACE_SPEED: Readonly<Record<ShipPace, number>> = { orbiting: 0, cruising: 1, traveling: 10, ftl: 25 };
 
 /**
  * The pace to draw from the view's public navigation and launch state.
@@ -304,7 +304,7 @@ export const PACE_SPEED: Readonly<Record<ShipPace, number>> = { stopped: 0, crui
 export function shipPace(navigation: { orbiting: boolean; traveling: boolean }, launched = false): ShipPace {
   if (launched) return "ftl";
   if (navigation.traveling) return "traveling";
-  return navigation.orbiting ? "stopped" : "cruising";
+  return navigation.orbiting ? "orbiting" : "cruising";
 }
 
 /** The ship's latest quarter turn: `n` counts them, so a renderer turns the stars once for each new one. */
