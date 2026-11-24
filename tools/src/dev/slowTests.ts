@@ -22,9 +22,19 @@ export const SLOW_ALLOWED: Record<string, { file?: number; test?: number; why: s
   "tools/tests/shipLayout/shipLayout.test.ts": { test: 1_600, why: "regenerates ship-art.json to check it is up to date" },
 };
 
-/** The parts of Vitest's JSON reporter output this reads. */
+/** The parts of Vitest's JSON reporter output verify tools read. */
 export interface VitestReport {
-  testResults: { name: string; assertionResults: { fullName: string; duration?: number | null }[] }[];
+  testResults: {
+    name: string;
+    status?: string;
+    message?: string;
+    assertionResults: {
+      fullName: string;
+      status?: string;
+      duration?: number | null;
+      failureMessages?: string[];
+    }[];
+  }[];
 }
 
 /**

@@ -5259,3 +5259,8 @@ Owner asked to rotate three Mush skill icons (Slime Trap's to Mass Mouldering, M
 - **What worked:** Updated `DEFAULT_CONFIG.ignite.cost.ap`, pinned `3` in `shared/tests/pyromane.test.ts`, updated the en/es/fr skill effect strings in `web/src/locales/*.json`, and recorded the change in `docs/rules/implemented-rules.md`, `docs/rules/changes-from-emush.md`, and `docs/rules/rules-design.md`.
 
 - **2026-11-23 — Exclude Chun (`immunity`) from random Alpha Mush selection** (owner). `selectMush` (`shared/src/preselection.ts`) and `createGame` (`shared/src/rules.ts`) now exclude characters with the `immunity` trait (`hasImmunityTrait` / `config.characterModifiers`) from random Alpha Mush selection, picking fewer Mush rather than falling back to them if too few non-immune humans remain, while `forcedRoles` (single player and tests) can still force them as Mush. Updated `shared/tests/statuses.test.ts` plus existing fixed-seed tests that assumed `p1` (Chun) could be rolled Mush or `p0` was human.
+
+## 2026-11-23 — Untruncated `npm run verify` failure output via Vitest JSON reports
+
+- Removed the 120-line tail truncation (`TAIL_LINES`) in `tools/src/dev/verify.ts`, which was hiding root-cause errors and letting passing workspaces' test output push earlier workspace failures out of the tail.
+- Added `tools/src/dev/testFailures.ts` (`formatTestFailures`) to format only failed tests and failed files from each failing workspace's Vitest JSON report, falling back to that workspace's raw output only if the JSON report is missing, unparseable, or records zero failures despite a non-zero exit.
