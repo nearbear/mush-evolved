@@ -3,7 +3,7 @@
 // and its numbers in `config.hostiles.kinds`. They are kept apart from `players`, so victory, crew-size scaling, morale
 // and the views' crew lists never count them. For now only tests and the Superkube make one (no natural spawn).
 
-import { logPublic } from "./log.ts";
+import { logPublic, withoutActor } from "./log.ts";
 import { HOSTILE_ID_PREFIX, type HostileNpc, type HostileState } from "./hostiles/hostile.ts";
 import { INTRUDER, Intruder } from "./hostiles/intruder.ts";
 import type { GameState, PlayerState, RoomId } from "./types.ts";
@@ -47,6 +47,17 @@ export function damageHostile(state: GameState, hostile: HostileState, amount: n
   state.hostiles = state.hostiles.filter((h) => h !== hostile);
   logPublic(state, hostile.room, "hostileDied", { hostile: hostile.kind });
   HOSTILE_KINDS[hostile.kind]?.onDeath(state, hostile);
+}
+
+/**
+ * A player's action against a hostile is resolved, hit or miss: its kind may answer (the intruder punches back at a
+ * melee attack). Nothing if it died of it, or the game ended. Mutates a state the caller already cloned.
+ */
+export function hostileAttacked(state: GameState, id: string, attacker: Readonly<PlayerState>, melee: boolean): void {
+  const hostile = state.hostiles.find((h) => h.id === id);
+  if (!hostile || state.phase !== "playing") return;
+  // Its answer is its own act, not the attacker's: Nimble and Ninja don't hide or rename its lines.
+  withoutActor(() => HOSTILE_KINDS[hostile.kind]?.onAttacked(state, hostile, attacker, melee));
 }
 
 /**
