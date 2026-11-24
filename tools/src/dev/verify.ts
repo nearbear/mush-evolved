@@ -10,6 +10,10 @@
 // The test step runs each workspace on its own with Vitest's JSON reporter
 // as well, and after a pass prints a `slow` line for every test or file over
 // budget (`slowTests.ts`, #383). It warns and never fails: timings are noisy.
+//
+// Results are cached per worktree (`verifyCache.ts`): when non-test inputs are
+// unchanged since the last run, only previously failed, modified, or new test
+// files run. Pass `--full` to bypass the cache.
 
 import { spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
@@ -17,13 +21,15 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { slowLines, type VitestReport } from "./slowTests.ts";
 import { formatTestFailures, stripAnsi } from "./testFailures.ts";
+import { cachePathForRoot, loadVerifyCache, mergeWorkspaceResult, planWorkspaceTests, saveVerifyCache, snapshotRepo } from "./verifyCache.ts";
 
 const ROOT = resolve(import.meta.dirname, "../../..");
 const webOnly = process.argv.includes("--web");
+const forceFull = process.argv.includes("--full");
 /** The root `npm test` runs these, in this order. Kept sequential so timings aren't skewed by contention. */
 const TEST_WORKSPACES = webOnly ? ["web"] : ["shared", "tools", "web", "server"];
 
-const steps: [name: string, run: () => { ok: boolean; output: string; after?: string[] }][] = [
+const steps: [name: string, run: () => { ok: boolean; output: string; summary?: string; after?: string[] }][] = [
   ["typecheck", () => npm(["run", "typecheck"])],
   ["lint", () => npm(["run", "lint"])],
   ["test", runTests],
@@ -33,10 +39,10 @@ const steps: [name: string, run: () => { ok: boolean; output: string; after?: st
 let failed = 0;
 for (const [name, run] of steps) {
   const started = Date.now();
-  const { ok, output, after = [] } = run();
+  const { ok, output, summary: explicitSummary, after = [] } = run();
   const seconds = ((Date.now() - started) / 1000).toFixed(0);
   if (ok) {
-    const summary = name === "test" ? testSummary(output) : "";
+    const summary = explicitSummary ?? (name === "test" ? testSummary(output) : "");
     console.log(`ok    ${name} (${seconds}s)${summary ? `: ${summary}` : ""}`);
     for (const line of after) console.log(line);
     continue;
@@ -53,36 +59,76 @@ function npm(args: string[]): { ok: boolean; output: string } {
   return { ok: run.status === 0, output: stripAnsi(`${run.stdout ?? ""}${run.stderr ?? ""}`) };
 }
 
-/** Every workspace's tests, all run even after a failure; the slow report only after a full pass. */
-function runTests(): { ok: boolean; output: string; after: string[] } {
+/** Every workspace's tests, skipping unchanged passing files when source inputs match the last run. */
+function runTests(): { ok: boolean; output: string; summary?: string; after: string[] } {
+  const snapshot = snapshotRepo(ROOT);
+  const cachePath = cachePathForRoot(ROOT);
+  const cache = loadVerifyCache(cachePath);
   const dir = mkdtempSync(join(tmpdir(), "mush2-verify-"));
   try {
     let ok = true;
     let passedOutput = "";
+    let cachedFiles = 0;
+    const reports: VitestReport[] = [];
     const failures: string[] = [];
+
     for (const ws of TEST_WORKSPACES) {
+      const plan = planWorkspaceTests(ws, snapshot, cache.workspaces[ws], forceFull);
+      if (plan.mode === "incremental") {
+        cachedFiles += plan.cachedCount;
+        if (plan.files.length === 0) {
+          cache.workspaces[ws] = {
+            sourceHash: snapshot.sourceHash,
+            docHash: snapshot.docHash,
+            passed: { ...(snapshot.tests[ws] ?? {}) },
+            failed: [],
+          };
+          continue;
+        }
+      }
+
       const reportPath = join(dir, `${ws}.json`);
-      const run = npm(["run", "test", "-w", ws, "--", "--reporter=default", "--reporter=json", `--outputFile=${reportPath}`]);
+      const wsFiles = plan.mode === "incremental" ? plan.files.map((f) => f.slice(ws.length + 1)) : [];
+      const run = npm(["run", "test", "-w", ws, "--", ...wsFiles, "--reporter=default", "--reporter=json", `--outputFile=${reportPath}`]);
+      const report = readReport(reportPath);
       if (run.ok) {
+        const merged = mergeWorkspaceResult(ws, snapshot, cache.workspaces[ws], plan, report, ROOT);
+        if (merged) cache.workspaces[ws] = merged;
+        else delete cache.workspaces[ws];
         passedOutput += run.output;
+        if (report) reports.push(report);
         continue;
       }
       ok = false;
-      const formatted = readFailureReport(ws, reportPath);
+      const formatted = report ? formatTestFailures(ws, report, ROOT) : null;
+      if (formatted) {
+        const merged = mergeWorkspaceResult(ws, snapshot, cache.workspaces[ws], plan, report, ROOT);
+        if (merged) cache.workspaces[ws] = merged;
+        else delete cache.workspaces[ws];
+      } else {
+        delete cache.workspaces[ws];
+      }
       failures.push(formatted ?? `FAIL  [${ws}] (raw output):\n${run.output.trimEnd()}`);
     }
+
+    saveVerifyCache(cachePath, cache);
     if (!ok) return { ok, output: failures.join("\n\n"), after: [] };
-    const reports = TEST_WORKSPACES.map((ws) => JSON.parse(readFileSync(join(dir, `${ws}.json`), "utf8")) as VitestReport);
-    return { ok, output: passedOutput, after: slowLines(reports, ROOT) };
+
+    const ranSummary = testSummary(passedOutput);
+    const summary = cachedFiles > 0
+      ? ranSummary
+        ? `${ranSummary} (${cachedFiles} cached)`
+        : `up to date (${cachedFiles} cached)`
+      : ranSummary;
+    return { ok, output: passedOutput, summary, after: slowLines(reports, ROOT) };
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
 }
 
-function readFailureReport(ws: string, reportPath: string): string | null {
+function readReport(reportPath: string): VitestReport | null {
   try {
-    const report = JSON.parse(readFileSync(reportPath, "utf8")) as VitestReport;
-    return formatTestFailures(ws, report, ROOT);
+    return JSON.parse(readFileSync(reportPath, "utf8")) as VitestReport;
   } catch {
     return null;
   }
