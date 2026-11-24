@@ -557,8 +557,8 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   fire: { spreadChance: 0.3, maxSpreads: 2, breakChance: 0.3, hullChance: 0.2, hullDamage: [2, 4], damage: 2 },
   // Owner, 2026-11-01 (eMushpedia "Pompier"): a Firefighter's extinguisher never fails; their manual try starts at 50%, x1.25 per
   // miss in a row, and every Firefighter try, manual or not, has a 50% chance of the 2 HP random injury.
-  // Owner, 2026-11-03: the Pyromaniac's secret action (actions/ignite.ts).
-  ignite: { cost: { ap: 4 } },
+  // Owner, 2026-11-23: the Pyromaniac's secret action (actions/ignite.ts; was 4 AP).
+  ignite: { cost: { ap: 3 } },
   // Owner, 2026-11-07: the Mush sabotage action (actions/sabotage.ts).
   sabotage: { cost: { ap: 1 }, defaultChance: 0.12, sapperFactor: 3 },
   // Owner, 2026-11-14 (#330): Doorman's door sabotage (actions/sabotage_door.ts): first use each day is free, later ones cost 2 AP.

@@ -1775,7 +1775,7 @@
       "bodyguard": "Pour 1 PA, vous pouvez Protéger un autre membre de l'équipage. Pendant que vous êtes dans la même pièce, toutes les actions agressives le ciblant coûtent 2 PA supplémentaires.",
       "infantryman": "Double vos chances de toucher aux tourelles.\n+1 Shoot par jour.\nCommence la partie avec un Blaster customisé.",
       "maintenance_agent": "Chaque jour : +1 point de Réparation, +1 point de Jardinage et +1 point de Cuisine.",
-      "pyromane": "Pour 4 PA vous pouvez déclencher un Incendie dans une salle.",
+      "pyromane": "Pour 3 PA vous pouvez déclencher un Incendie dans une salle.",
       "tough": "Chaque coup de poing ou coup d'arme non critique que vous subissez est réduit de 1, sans descendre sous 1. Sans effet en expédition.",
       "fertile": "Chaque jour, vous pouvez générer un spore gratuitement.",
       "ninja": "Débloque l'action Devenir un ninja. Quand vous agissez comme un ninja, toutes vos actions sont anonymes : les logs de la salle vous nomment « Quelqu'un ». Sauf en expédition.",

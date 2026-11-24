@@ -1840,7 +1840,7 @@
       "bodyguard": "For 1 AP, you can Protect another crew member.\nWhile you are in the same room, every aggressive action targeting them costs 2 extra AP.",
       "infantryman": "Doubles your chance to hit with turrets.\n+1 Shoot point per day.\nStarts the game with a customized Blaster.",
       "maintenance_agent": "You gain +1 Repair action point, +1 Gardening action point and +1 Cook action point per day.",
-      "pyromane": "For 4 AP you can start a Fire in a room.",
+      "pyromane": "For 3 AP you can start a Fire in a room.",
       "tough": "Each non-critical punch or weapon hit you take is reduced by 1, but never below 1. Doesn't apply on expeditions.",
       "fertile": "Each day, you can create a spore for free.",
       "ninja": "Unlocks Become a ninja. While a ninja, all of your actions are anonymous: room logs name you \"Someone\". Not on an expedition.",

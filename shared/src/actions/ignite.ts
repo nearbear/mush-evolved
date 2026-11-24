@@ -8,7 +8,7 @@ import type { GameState, PlayerState } from "../types.ts";
 export type IgniteActionData = { type: "ignite" };
 
 /**
- * The Pyromaniac's secret action (owner, 2026-11-03): 4 AP to set the fire that catches in your room at the next
+ * The Pyromaniac's secret action (owner, 2026-11-23; was 4 AP): 3 AP to set the fire that catches in your room at the next
  * cycle change (`GameState.pendingFires`, lit by `ignitePending` in fire.ts), refused in a room already burning or
  * with a fire pending. Secret, so only roommates ever see it happen.
  */
