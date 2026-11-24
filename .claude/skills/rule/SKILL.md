@@ -60,6 +60,7 @@ In `shared/tests/<feature>.test.ts`:
 ## 5. Record it
 
 - `docs/rules/implemented-rules.md`: add or update the rule's bullet; `docs/code-map/<package>.md`: add a line for any new file. In `CLAUDE.md`, update "Open decisions" only if one was settled.
+- `docs/rules/changes-from-emush.md`: update only when a change adds, modifies, or removes a **significant, player-facing** difference from eMush (skip minor/niche details, implementation-only details, and features not yet built). Write for eMush veterans who don't know code — no internal IDs, file paths, config keys, dates, or issue numbers — and verify eMush's actual behavior with `npm run emush` before claiming a difference.
 - `docs/rules/rules-design.md`: add the decision to "Decisions received". Grep for the line and use `Edit`; don't re-read the file.
 - The GitHub issue: handled by the `wrap-up` skill (tick answered questions, close or comment).
 - `docs/process/ai-workflow.md`: a dated entry with the decision, who decided it, what worked, and anything that needed correction. Only ever append with `cat >>`, and never read the file first (it is large); do not rewrite existing entries.
