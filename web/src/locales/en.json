@@ -1835,7 +1835,7 @@
       "antic_perfume": "After each shower, you gain 2 cycles of immunity to Mush infection.",
       "metaliciste": "Action: Snoop- In each storage room, once per day, for free, find scrap, fuel, oxygen, or rations.",
       "space_tactics": "50% chance to reduce each hunter wave by 33%.",
-      "devoted": "You gain 3 more AP when you accept a mission.",
+      "devoted": "You gain 3 more AP when the Commander gives you a mission.",
       "skilful": "You count as a Botanist, Diplomat and Biologist, but do not get their actions and resources.\nYou can read the properties of medicines, alien fruits, and plants.\nYou get 2 extra options when dispensing drugs.\nYou have a +4% bonus on each Laboratory Research.\nTraders will offer additional trades when you are on the Bridge.\nExpedition: Replaces Combat events with Nothing to report.\nExpedition: Replaces the Combat events in the Intelligant Life sector with the New Sector event.\nExpedition: Your team will gain 1 additional fruit during Harvest events.\nYou get a bonus for developing certain NERON Projects.",
       "expert": "Your action successes are improved by 20%, but so are injuries and dirt.",
       "confident": "Once a day, other players can confide in a confident. Doing so reveals to you their last X actions, where X is your amount of morale, and gains them 2 morale.",

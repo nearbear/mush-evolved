@@ -24,6 +24,7 @@ import { computer } from "./modifiers/computer.ts";
 import { cook } from "./modifiers/cook.ts";
 import { creative } from "./modifiers/creative.ts";
 import { designer } from "./modifiers/designer.ts";
+import { devoted } from "./modifiers/devoted.ts";
 import { engineer } from "./modifiers/engineer.ts";
 import { escape } from "./modifiers/escape.ts";
 import { expert } from "./modifiers/expert.ts";
@@ -148,7 +149,8 @@ type FoldHooks = Record<
   | "maxMp"
   | "maxMorale"
   | "maxHp"
-  | "damageTaken",
+  | "damageTaken"
+  | "missionAp",
   FoldHook
 >;
 
@@ -302,6 +304,7 @@ export const MODIFIERS: Record<string, Modifier> = {
   cook,
   creative,
   designer,
+  devoted,
   engineer,
   escape,
   expert,
@@ -841,6 +844,10 @@ export const maxAp = (state: Readonly<GameState>, player: Readonly<PlayerState>,
   fold("maxAp", base, state, player, registry) + noiseReducerBonus(state);
 
 const noiseReducerBonus = (state: Readonly<GameState>): number => (projectDone(state, "NOISE_REDUCER") ? state.config.project.noiseReducer.maxAp : 0);
+
+/** AP a crewmate gains when given a Commander mission: the configured base folded through the recipient's modifiers (for Devotion). */
+export const missionAp = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
+  fold("missionAp", state.config.commanderMission.apGranted, state, player, registry);
 
 /** Max MP */
 export const maxMp = (state: Readonly<GameState>, player: Readonly<PlayerState>, base: number, registry: ModifierRegistry = MODIFIERS) =>

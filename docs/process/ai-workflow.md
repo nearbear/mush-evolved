@@ -5307,3 +5307,8 @@ Owner asked to rotate three Mush skill icons (Slime Trap's to Mass Mouldering, M
 ### 2026-11-23 — Match Trapper visibility to eMush (#473)
 - **Decision (owner, 2026-11-23):** Verified against upstream eMush (`DaedalusWidgetService::getMinimap` and `PlaceNormalizer`) and eMushpedia that traps are shown only in the current room to living Mush, not ship-wide on the minimap. Replaced `PlayerView.trappedRooms` with `PlayerView.roomTrapped` (living, non-blind Mush in that room only), removed trap icons from the minimap, added the trap icon and a `--mush`-colored glow to the bottom-left `.room-corner` card (mirroring the red `.alert` glow for fires), and removed Trapper from `docs/rules/changes-from-emush.md`.
 - **What worked:** `PlayerView.roomTrapped` mirrors `roomOnFire` cleanly, requires no `GameState` or `STATE_VERSION` change, and tightening `leaks.test.ts` ensures no trapped room id ever leaks even to Mush.
+
+## 2026-11-23 — Devotion skill (`devoted`)
+
+- **Decision (owner):** Implement the `devoted` human skill (+3 AP when given a Commander mission, 6 total, capped at `maxAp`) and reword its description in `en`/`fr`/`es` so it does not mention "accepting" a mission (since `issue_mission` has no accept/refuse step in `mush2`).
+- **Implementation:** Added `commanderMission.devotedBonusAp` (3), the `missionAp` fold hook in `shared/src/modifiers.ts`, `shared/src/modifiers/devoted.ts`, and `SKILL_STATUS.devoted = "full"`. `IssueMissionAction.apply` now folds the grant through `missionAp(state, subordinate)`, while the Commander's `missionIssued` log and `view.config.missionApGranted` keep the base grant so `devoted` is not leaked across rooms.

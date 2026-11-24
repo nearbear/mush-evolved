@@ -3,6 +3,7 @@ import { changeAP } from "../adjustStats.ts";
 import { findPlayer } from "../helpers.ts";
 import { isInactive } from "../inactivity.ts";
 import { logPrivate } from "../log.ts";
+import { missionAp } from "../modifiers.ts";
 import type { GameState, PlayerId, PlayerState } from "../types.ts";
 
 export type IssueMissionActionData = { type: "issue_mission"; subordinate: PlayerId };
@@ -46,7 +47,7 @@ export class IssueMissionAction extends Action<IssueMissionActionData> {
   override apply(state: GameState, player: PlayerState, action: IssueMissionActionData): void {
     const subordinate = findPlayer(state, action.subordinate);
     if (!subordinate) return;
-    const amount = state.config.commanderMission.apGranted;
+    const amount = missionAp(state, subordinate);
     changeAP(state, subordinate, amount);
     state.missionIssuedToday = true;
     logPrivate(state, player.id, "missionIssued", { target: subordinate.character });

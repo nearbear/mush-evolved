@@ -29,7 +29,7 @@ const check = (s: GameState, id: string, subordinate: string) =>
 
 describe("Commander: Issue mission (#462)", () => {
   it("pins the confirmed numbers", () => {
-    expect([base.commanderMission.cost.ap, base.commanderMission.apGranted]).toEqual([1, 3]);
+    expect([base.commanderMission.cost.ap, base.commanderMission.apGranted, base.commanderMission.devotedBonusAp]).toEqual([1, 3, 3]);
   });
 
   it("is offered only to the Commander (Mush included), never to freeHacking, hacker kit, former Commander, or during pre-selection", () => {
@@ -172,5 +172,37 @@ describe("Commander: Issue mission (#462)", () => {
     for (const v of [v0, v1, v2, v3]) {
       expect(JSON.stringify(v)).not.toContain("missionIssuedToday");
     }
+  });
+
+  it("grants devotedBonusAp extra AP to a Devoted recipient, capped at maxAp, without leaking to the Commander", () => {
+    let s = ship();
+    s = pickSkill(s, "p2", "devoted");
+    player(s, "p2").ap = 2;
+
+    const next = must(applyAction(s, "p0", mission("p2")));
+    const expected = base.commanderMission.apGranted + base.commanderMission.devotedBonusAp;
+    expect(player(next, "p2").ap).toBe(2 + expected);
+    // Target's private log shows the boosted amount; Commander's private log does not mention any amount.
+    expect(viewFor(next, "p2").log.filter((e) => e.key === "missionReceived")).toEqual([
+      expect.objectContaining({ key: "missionReceived", params: { amount: expected }, kind: "private" }),
+    ]);
+    expect(viewFor(next, "p0").log.filter((e) => e.key === "missionIssued")).toEqual([
+      expect.objectContaining({ key: "missionIssued", params: { target: player(next, "p2").character }, kind: "private" }),
+    ]);
+    // Picker config stays at the base grant so the Commander doesn't learn about Devotion in another room.
+    expect(viewFor(next, "p0").config.missionApGranted).toBe(base.commanderMission.apGranted);
+
+    // Excess over maxAp is wasted.
+    let s2 = ship();
+    s2 = pickSkill(s2, "p2", "devoted");
+    player(s2, "p2").ap = player(s2, "p2").maxAp - 2;
+    const capped = must(applyAction(s2, "p0", mission("p2")));
+    expect(player(capped, "p2").ap).toBe(player(capped, "p2").maxAp);
+
+    // Devoted on the Commander does not boost a non-devoted recipient.
+    let s3 = ship();
+    s3 = pickSkill(s3, "p0", "devoted");
+    const nonDevoted = must(applyAction(s3, "p0", mission("p1")));
+    expect(player(nonDevoted, "p1").ap).toBe(player(s3, "p1").ap + base.commanderMission.apGranted);
   });
 });

@@ -250,6 +250,8 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   rebel: "full",
   // Garden points, seeing plant sickness, fruit lore, grafting, +1 fruit on expedition Harvest events, merchant deal, and NERON project bonuses (botany.ts, fruits.ts, actions/graft.ts, expeditions.ts, merchants.ts, projects.ts).
   botanic: "full",
+  // +3 AP when given a Commander mission, capped at maxAp (owner, 2026-11-23, modifiers/devoted.ts).
+  devoted: "full",
   // Counts as Botanist, Diplomat, and Biologist without their actions or resources: plant sickness (botany.ts), fruit lore (fruits.ts), drug lore / +2 Drug Dispenser options (drugs.ts), +4 research bonus (research.ts), merchant deals (merchants.ts), and Intelligent life Fight cancellation + Harvest +1 fruit on expeditions (expeditions.ts); NERON project bonuses are left out of this count.
   skilful: "full",
   // Mush skill: the one-use reset of the Mush skills (owner, 2026-11-13, actions/reset_skills.ts).
