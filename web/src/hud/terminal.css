@@ -107,7 +107,7 @@
   color: #8a5a00;
 }
 .terminal-popup .skill-status-none {
-  color: #56607a;
+  color: var(--danger);
 }
 
 /* The terminal's icon in the title bar, at its own size (never scaled); terminals without one leave it out. */

@@ -261,7 +261,7 @@
   color: #e8c056;
 }
 .skill-status-none {
-  color: #b0b0b0;
+  color: var(--danger);
 }
 .skill-pick-card img {
   image-rendering: pixelated;

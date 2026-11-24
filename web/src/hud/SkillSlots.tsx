@@ -235,7 +235,7 @@ function SkillCard({ skill, onSelect }: { skill: string; onSelect?: () => void }
         <img src={skillIcon(skill)} alt="" />
         <strong>{names.skill(skill)}</strong>
       </header>
-      <span className={`skill-status skill-status-${status}`}>{t(`skills.status.${status}`)}</span>
+      {status !== "full" && <span className={`skill-status skill-status-${status}`}>{t(`skills.status.${status}`)}</span>}
       {effects.length > 0 && (
         <ul>
           {effects.map((line) => (
