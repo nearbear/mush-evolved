@@ -8,7 +8,7 @@ import { useLayoutEffect, useState, type ReactNode, type RefObject } from "react
 import { Trans, useTranslation } from "react-i18next";
 import { DEFAULT_CONFIG, RESOURCE_IDS, resourceAvailable, type PlayerView } from "@mush2/shared";
 import { AP_SLOT_ICON, RESOURCE_ICONS, SATIETY_ICON, SPORE_ICON } from "../art/assets.ts";
-import { useSatietyLines } from "./SatietyInfo.tsx";
+import { SatietyHelp, useSatietyLines } from "./SatietyInfo.tsx";
 
 /** How many resources show before the "…" (what fits in a row across the desktop ID card). */
 const COMPACT_COUNT = 3;
@@ -42,7 +42,7 @@ function useChips(view: PlayerView): Chip[] {
   const satietyLines = useSatietyLines(view);
   // Only resources this player could use: held, or granted by one of their skills (spores: Mush only).
   return [
-    { key: "satiety", icon: SATIETY_ICON, name: t("stat.satiety"), description: satietyLines.join(" "), count: satiety },
+    { key: "satiety", icon: SATIETY_ICON, name: t("stat.satiety"), description: satietyLines.join(" "), help: <SatietyHelp view={view} />, count: satiety },
     ...(spores > 0 || role === "mush" ? [{ key: "spores", icon: SPORE_ICON, name: t("resources.spores"), description: t("resources.sporesInfo.what"), help: <SporeHelp />, count: spores }] : []),
     ...RESOURCE_IDS.filter((id) => resourceAvailable(id, resources[id], skills, bookSkill)).map((id) => ({
       key: id,

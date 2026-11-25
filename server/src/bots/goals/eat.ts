@@ -12,7 +12,7 @@ export const BOT_EAT_AFTER_CYCLES = 16;
 
 /** Whether the bot should go for food: Hungry already, or 16 cycles at 0 satiety. Never while full. */
 export function needsFood(view: PlayerView): boolean {
-  if (view.statuses.includes("full_belly")) return false;
+  if (view.statuses.includes("full_belly") || view.you.role !== "human") return false;
   if (view.statuses.includes("hungry")) return true;
   const since = view.you.satietyZeroSince;
   return view.you.satiety === 0 && since !== null && view.cycle - since >= BOT_EAT_AFTER_CYCLES;

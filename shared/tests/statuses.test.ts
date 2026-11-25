@@ -99,8 +99,11 @@ describe("satiety", () => {
 
   it("lets Mush eat for no food effects, never get hungry, and fill up", () => {
     let s = eat(ship(), "p0", "coffee");
-    expect(player(s, "p0").satiety).toBe(1);
+    expect([player(s, "p0").satiety, player(s, "p0").satietyZeroSince]).toEqual([1, null]);
     expect(player(s, "p0").hp).toBe(config.startHp);
+    s = nextCycle(s);
+    // The empty stomach is counted for the satiety card, as a human's is.
+    expect([player(s, "p0").satiety, player(s, "p0").satietyZeroSince]).toEqual([0, s.cycle]);
     for (let i = 0; i < 30; i++) s = nextCycle(s);
     expect(viewFor(s, "p0").statuses).toEqual([]);
     expect(player(s, "p0").hp).toBe(config.startHp);

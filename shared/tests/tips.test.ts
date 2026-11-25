@@ -52,11 +52,13 @@ describe("tips", () => {
     expect(tip(ship(), "noMp")).toBeUndefined();
   });
 
-  it("sends the hungry, or long unfed, to the nearest food, but not the full", () => {
-    const unfed = (cycles: number) => ship((s) => Object.assign(player(s, "p0"), { satiety: 0, satietyZeroSince: s.cycle - cycles }));
+  it("sends the hungry, or long unfed, to the nearest food, but not the full nor a Mush", () => {
+    const unfed = (cycles: number, role: "human" | "mush" = "human") => ship((s) => Object.assign(player(s, "p0"), { role, satiety: 0, satietyZeroSince: s.cycle - cycles }));
     expect(tip(unfed(TIP_EAT_AFTER_CYCLES), "eat")!.room).toBeDefined();
     expect(tip(unfed(TIP_EAT_AFTER_CYCLES - 1), "eat")).toBeUndefined();
     expect(tip(ship((s) => (player(s, "p0").satiety = 10)), "eat")).toBeUndefined();
+    // Mush count empty cycles too (for their satiety card) but never get hungry.
+    expect(tip(unfed(TIP_EAT_AFTER_CYCLES, "mush"), "eat")).toBeUndefined();
   });
 
   it("sends the hurt to the Sick Bay, at or under the HP line", () => {

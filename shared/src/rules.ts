@@ -278,8 +278,8 @@ export function newPlayer(s: Seat, config: DeepReadonly<GameConfig>, cycle: numb
     morale: config.startMorale,
     maxMorale: config.maxMorale,
     satiety: 0,
-    // Humans start at 0 satiety, so the hunger count starts with the first cycle.
-    satietyZeroSince: role === "mush" ? null : cycle,
+    // Everyone starts at 0 satiety, so the empty-stomach count starts with the first cycle (only humans get hungry).
+    satietyZeroSince: cycle,
     statuses: [],
     diseaseTrackers: [],
     spores: 0,
@@ -722,8 +722,8 @@ function advanceCycle(state: GameState, at?: number): void {
     if (!p.alive) continue;
     if (p.satiety > 0) {
       p.satiety = Math.max(0, p.satiety - satietyLoss(state, p));
-      // Mush never count toward hunger.
-      if (p.satiety === 0 && p.role === "human") p.satietyZeroSince = state.cycle;
+      // Mush count too, for their satiety card; only humans get hungry (`isHungry`).
+      if (p.satiety === 0) p.satietyZeroSince = state.cycle;
     }
     if (isHungry(state, p)) damage(state, p, state.config.hunger.hpPerCycle, "starvation");
   }

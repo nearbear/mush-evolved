@@ -80,9 +80,9 @@ export function selectMush(state: GameState): void {
   for (const p of order.slice(0, Math.max(0, wanted - already))) {
     p.role = "mush";
     p.alpha = true;
-    // Satiety and hunger are human-only.
+    // Hunger is human-only; the empty-stomach count restarts from now, for the satiety card.
     p.satiety = 0;
-    p.satietyZeroSince = null;
+    p.satietyZeroSince = state.cycle;
     updateMaxValues(state, p); // the folds now skip their diseases (#267)
     logPrivate(state, p.id, "chosenMush");
   }

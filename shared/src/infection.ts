@@ -70,7 +70,7 @@ export function convert(state: GameState, player: PlayerState): void {
   player.role = "mush";
   player.alpha = false;
   player.satiety = 0;
-  player.satietyZeroSince = null;
+  player.satietyZeroSince = state.cycle; // shown on the satiety card; Mush never get hungry
   delete state.contamination[player.id];
   updateMaxValues(state, player);
   logPrivate(state, player.id, "converted");

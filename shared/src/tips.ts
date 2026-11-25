@@ -58,7 +58,7 @@ const TIPS: readonly TipDef[] = [
     id: "eat",
     priority: 70,
     applies(view) {
-      if (view.statuses.includes("full_belly")) return null;
+      if (view.statuses.includes("full_belly") || view.you.role !== "human") return null;
       const since = view.you.satietyZeroSince;
       const hungry = view.statuses.includes("hungry") || (view.you.satiety === 0 && since !== null && view.cycle - since >= TIP_EAT_AFTER_CYCLES);
       return hungry ? place(view, [...roomsWith(view, ["KITCHEN", "COFFEE_DISPENSER"]), view.config.gardenRoom]) : null;

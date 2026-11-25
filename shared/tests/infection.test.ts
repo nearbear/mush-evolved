@@ -60,11 +60,11 @@ describe("conversion", () => {
     for (const id of ["p0", "p2", "p3"]) expect(viewFor(s, id).log.some((e) => e.key === "converted")).toBe(false);
   });
 
-  it("keeps skills, HP, and morale, and drops satiety and hunger", () => {
+  it("keeps skills, HP, and morale, and empties the stomach from now", () => {
     const s0 = ship();
     Object.assign(player(s0, "p1"), { skills: ["creative"], hp: 9, morale: 5, satiety: 4, satietyZeroSince: null });
-    const p1 = player(spikes(s0, 3), "p1");
-    expect(p1).toMatchObject({ skills: ["creative"], hp: 9, morale: 5, satiety: 0, satietyZeroSince: null });
+    const s = spikes(s0, 3);
+    expect(player(s, "p1")).toMatchObject({ skills: ["creative"], hp: 9, morale: 5, satiety: 0, satietyZeroSince: s.cycle });
   });
 
   it("gives Mush actions at once: spore extraction with no cooldown, and skill picks", () => {

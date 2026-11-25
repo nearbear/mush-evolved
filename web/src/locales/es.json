@@ -117,7 +117,20 @@
       "emptyFor_many": "Tu estómago lleva {{count}} ciclos vacío.",
       "emptyFor_other": "Tu estómago lleva {{count}} ciclos vacío.",
       "fed": "Has comido hace poco. La saciedad baja cada ciclo.",
-      "mush": "Los Mush nunca tienen hambre."
+      "mush": "Los Mush nunca tienen hambre.",
+      "hungryIn_one": "Estarás Hambriento en {{count}} ciclo.",
+      "hungryIn_many": "Estarás Hambriento en {{count}} ciclos.",
+      "hungryIn_other": "Estarás Hambriento en {{count}} ciclos.",
+      "hungryAfter_one": "Cuando tu estómago esté vacío, estarás Hambriento tras {{count}} ciclo.",
+      "hungryAfter_many": "Cuando tu estómago esté vacío, estarás Hambriento tras {{count}} ciclos.",
+      "hungryAfter_other": "Cuando tu estómago esté vacío, estarás Hambriento tras {{count}} ciclos.",
+      "help": {
+        "empty": "<b>Estómago vacío:</b> {{cycles}} ciclos después de vaciarse, quedas Hambriento y pierdes {{hp}} PV cada ciclo hasta que comas.",
+        "emptyMush": "<b>Estómago vacío:</b> a un Mush no le hace ningún daño.",
+        "fill": "<b>Comer:</b> la comida llena tu estómago (una ración 4, un café o una fruta 1) y te da PA. Con la barriga llena no puedes comer más.",
+        "fillMush": "<b>Comer:</b> la comida llena tu estómago como el de un humano, pero de sus efectos solo recibes la moral.",
+        "where": "<b>Dónde:</b> las raciones se guardan en el {{refectory}} (cocínalas allí primero: crudas cuestan 1 de moral), la {{coffee}} también está allí, y la fruta crece en el {{garden}}."
+      }
     }
   },
   "settings": {

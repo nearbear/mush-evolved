@@ -117,7 +117,20 @@
       "emptyFor_many": "Votre estomac est vide depuis {{count}} cycles.",
       "emptyFor_other": "Votre estomac est vide depuis {{count}} cycles.",
       "fed": "Vous avez mangé récemment. La satiété baisse à chaque cycle.",
-      "mush": "Les Mush n'ont jamais faim."
+      "mush": "Les Mush n'ont jamais faim.",
+      "hungryIn_one": "Vous serez Affamé dans {{count}} cycle.",
+      "hungryIn_many": "Vous serez Affamé dans {{count}} cycles.",
+      "hungryIn_other": "Vous serez Affamé dans {{count}} cycles.",
+      "hungryAfter_one": "Une fois votre estomac vide, vous serez Affamé au bout de {{count}} cycle.",
+      "hungryAfter_many": "Une fois votre estomac vide, vous serez Affamé au bout de {{count}} cycles.",
+      "hungryAfter_other": "Une fois votre estomac vide, vous serez Affamé au bout de {{count}} cycles.",
+      "help": {
+        "empty": "<b>Estomac vide :</b> {{cycles}} cycles après qu'il s'est vidé, vous devenez Affamé et perdez {{hp}} PV à chaque cycle jusqu'à ce que vous mangiez.",
+        "emptyMush": "<b>Estomac vide :</b> cela ne fait aucun mal à un Mush.",
+        "fill": "<b>Manger :</b> la nourriture remplit votre estomac (une ration de 4, un café ou un fruit de 1) et vous donne des PA. Le ventre plein, vous ne pouvez plus manger.",
+        "fillMush": "<b>Manger :</b> la nourriture remplit votre estomac comme celui d'un humain, mais de ses effets vous ne recevez que le moral.",
+        "where": "<b>Où :</b> les rations sont stockées au {{refectory}} (cuisinez-les d'abord sur place : crues, elles coûtent 1 point de moral), la {{coffee}} s'y trouve aussi, et les fruits poussent au {{garden}}."
+      }
     }
   },
   "settings": {

@@ -114,7 +114,18 @@
       "emptyFor_one": "Your stomach has been empty for {{count}} cycle.",
       "emptyFor_other": "Your stomach has been empty for {{count}} cycles.",
       "fed": "You ate recently. Satiety drops each cycle.",
-      "mush": "Mush never get hungry."
+      "mush": "Mush never get hungry.",
+      "hungryIn_one": "You will be Hungry in {{count}} cycle.",
+      "hungryIn_other": "You will be Hungry in {{count}} cycles.",
+      "hungryAfter_one": "Once your stomach is empty, you will be Hungry after {{count}} cycle.",
+      "hungryAfter_other": "Once your stomach is empty, you will be Hungry after {{count}} cycles.",
+      "help": {
+        "empty": "<b>Empty stomach:</b> {{cycles}} cycles after it empties, you become Hungry and lose {{hp}} HP every cycle until you eat.",
+        "emptyMush": "<b>Empty stomach:</b> it does a Mush no harm.",
+        "fill": "<b>Eating:</b> food fills your stomach (a ration by 4, coffee or fruit by 1) and gives you AP. With a full belly you can't eat more.",
+        "fillMush": "<b>Eating:</b> food fills your stomach as it does a human's, but of its effects you only get its morale.",
+        "where": "<b>Where:</b> rations are stored in the {{refectory}} (cook them there first: eaten uncooked they cost 1 morale), the {{coffee}} is there too, and fruit grows in the {{garden}}."
+      }
     }
   },
   "settings": {

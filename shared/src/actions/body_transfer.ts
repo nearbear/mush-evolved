@@ -63,7 +63,7 @@ export class BodyTransferAction extends Action<BodyTransferActionData> {
     delete state.contamination[player.id];
     player.satiety = 0;
     player.satietyZeroSince = state.cycle;
-    victim.satietyZeroSince = null;
+    victim.satietyZeroSince = victim.satiety === 0 ? state.cycle : null; // the Mush's empty-stomach count restarts (never hunger)
     victim.transferUsed = true;
     player.bodyTakenBy = taker;
     logPrivate(state, victim.id, "bodyTransferred", { name: taker, target: victim.character });
