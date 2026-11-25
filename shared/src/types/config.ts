@@ -385,6 +385,10 @@ export interface GameConfig {
   trapper: {
     cost: { ap: number }; // The Mush skill Trapper (trapper): 1 AP and 1 spore, no cooldown (owner, 2026-11-21, #473).
   };
+  myceliumSpirit: {
+    grow: { ap: number; spores: number }; // Mycelium Spirit's Fairy Ring: 1 AP and 2 spores, once per mind (owner, 2026-11-25).
+    tap: { ap: number; spores: number }; // Drawing from a ring: 1 AP (+ Constipaspore's extra) for 1 spore, once per ring per day (owner, 2026-11-25).
+  };
   nightmare: {
     cost: { ap: number }; // The Mush skill Nightmarish's curse (actions/nightmare.ts): 2 AP, no limit (owner, 2026-11-22).
   };

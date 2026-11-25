@@ -252,6 +252,12 @@ export interface GameCore {
   pendingFires: RoomId[];
   /** Rooms booby-trapped with a spore by a Mush Trapper (traps.ts, #473). Only whether your current room is trapped reaches a living Mush (`PlayerView.roomTrapped`). */
   trappedRooms: RoomId[];
+  /**
+   * Fairy Rings grown by Mush with Mycelium Spirit (fairyRings.ts; owner, 2026-11-25), one per room at most. `owner` is
+   * the creator's mind (`PlayerState.mind`); `tapped` marks the ring drawn from today. Only whether your current room
+   * has one reaches a living Mush (`PlayerView.roomFairyRing`).
+   */
+  fairyRings: FairyRing[];
   /** Rooms a Defacer cleared this cycle (log.ts `deface`): nothing is written there until the cycle ends. Never sent; their `delogged` notice shows it. */
   deloggedRooms: RoomId[];
   /** A Gravity Simulator was repaired this cycle and gravity comes back at the next cycle change (owner, 2026-11-22, `gravity.ts`). Public: the alert bar shows it. */
@@ -308,6 +314,9 @@ export type Report =
   | { kind: "fire"; room: RoomId; by: PlayerId }
   | { kind: "equipment"; equipment: string; by: PlayerId }
   | { kind: "door"; door: DoorId; by: PlayerId };
+
+/** A Fairy Ring (fairyRings.ts): its room, the creator's mind, and whether a Mush drew from it today. */
+export type FairyRing = { room: RoomId; owner: PlayerId; tapped?: true };
 
 export type HunterTarget = { kind: "ship" } | { kind: "patrol"; id: RoomId } | { kind: "hunter"; id: string };
 

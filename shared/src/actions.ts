@@ -126,6 +126,8 @@ import { MassMoulderingAction } from "./actions/mass_mouldering.ts";
 import { DemoralizeAction } from "./actions/demoralize.ts";
 import { GiveDiseaseAction } from "./actions/give_disease.ts";
 import { TrapRoomAction } from "./actions/trap_room.ts";
+import { GrowFairyRingAction } from "./actions/grow_fairy_ring.ts";
+import { TapFairyRingAction } from "./actions/tap_fairy_ring.ts";
 import { NightmareAction } from "./actions/nightmare.ts";
 import { TransferAction } from "./actions/transfer.ts";
 import { WaterAction } from "./actions/water.ts";
@@ -274,6 +276,8 @@ const REGISTRY = {
   demoralize: new DemoralizeAction(),
   give_disease: new GiveDiseaseAction(),
   trap_room: new TrapRoomAction(),
+  grow_fairy_ring: new GrowFairyRingAction(),
+  tap_fairy_ring: new TapFairyRingAction(),
   nightmare: new NightmareAction(),
   lie_down: new LieDownAction(),
   get_up: new GetUpAction(),

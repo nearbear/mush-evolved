@@ -113,7 +113,7 @@ main.game .room-corner.alert {
   --card-rim: var(--danger);
   filter: drop-shadow(0 0 1px var(--danger)) drop-shadow(0 0 4px var(--danger)) drop-shadow(0 1px 3px var(--panel-shadow));
 }
-/* A spore trap in your room (living Mush only): the outline turns the Mush colour with the same resting glow. */
+/* A spore trap or Fairy Ring in your room (living Mush only; the icon tells which): the outline turns the Mush colour with the same resting glow. */
 main.game .room-corner.trapped {
   --card-rim: var(--mush);
   filter: drop-shadow(0 0 1px var(--mush)) drop-shadow(0 0 4px var(--mush)) drop-shadow(0 1px 3px var(--panel-shadow));

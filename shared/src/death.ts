@@ -15,6 +15,7 @@ import { damageTaken } from "./modifiers.ts";
 import { PATROL_SHIPS } from "./patrol.ts";
 import { removeStatus } from "./statuses.ts";
 import { strikeSlots } from "./plans.ts";
+import { pruneFairyRings } from "./fairyRings.ts";
 import { refreshTitles } from "./titles.ts";
 import { allLivingInactive, endGame, mushWinOnDeath } from "./victory.ts";
 import type { ChannelId, GameState, PlayerState } from "./types.ts";
@@ -99,6 +100,7 @@ export function killPlayer(state: GameState, player: PlayerState, cause: DeathCa
   player.queue = [];
   delete player.boardedIcarus; // the body lies in the Icarus Bay (#469)
   delete player.comaUntil;
+  pruneFairyRings(state); // a dead creator's Fairy Ring vanishes (owner, 2026-11-25)
 
   // The iTrackie is destroyed; everything else drops into the room, then the body.
   const mine = { kind: "player", id: player.id } as const;

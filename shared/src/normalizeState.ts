@@ -52,6 +52,7 @@ import type {
   ActiveExpedition,
   ExpeditionEvent,
   ExpeditionReport,
+  FairyRing,
   GameConfig,
   GameCore,
   GameState,
@@ -634,6 +635,7 @@ export function normalizePlayer(raw: Partial<PlayerState>, mode: QueueMode): Pla
     transferUsed: raw.transferUsed,
     epigeneticsUsed: raw.epigeneticsUsed,
     massMoulderingUsed: raw.massMoulderingUsed,
+    fairyRingUsed: raw.fairyRingUsed,
     apprenticeUsed: raw.apprenticeUsed,
     geniusUsed: raw.geniusUsed,
     ceasefireUsed: raw.ceasefireUsed,
@@ -959,6 +961,11 @@ export function normalizeNavigation(raw: Partial<Navigation>): Navigation {
 /** A door's state (doors.ts, #330). */
 export function normalizeDoor(raw: Partial<DoorState>): DoorState {
   return stripUndefined<DoorState>({ broken: raw.broken });
+}
+
+export function normalizeFairyRing(raw: Partial<FairyRing>): FairyRing {
+  const t = "FairyRing";
+  return stripUndefined<FairyRing>({ room: need(raw, "room", t), owner: need(raw, "owner", t), tapped: raw.tapped });
 }
 
 export function normalizeReport(raw: Partial<Report>): Report {
@@ -1362,6 +1369,8 @@ export function normalizeCore(raw: Partial<GameCore>, ctx: NormalizeContext, mod
     pendingFires: copy(need(raw, "pendingFires", t)),
     // Trapper (#473): no rooms trapped in a game stored before it.
     trappedRooms: copy(added(raw, "trappedRooms", [])),
+    // Mycelium Spirit (owner, 2026-11-25): no Fairy Rings in a game stored before it.
+    fairyRings: added(raw, "fairyRings", []).map(normalizeFairyRing),
     // Defacer (owner, 2026-11-22): no room defaced in a game stored before it.
     deloggedRooms: copy(added(raw, "deloggedRooms", [])),
     // Gravity restart (owner, 2026-11-22): a game stored before it restored gravity at once, so nothing is restarting.

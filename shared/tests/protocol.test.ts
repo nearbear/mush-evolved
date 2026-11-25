@@ -771,6 +771,8 @@ describe("actions from a client", () => {
     demoralize: [{ type: "demoralize", target: "p1" }],
     give_disease: [{ type: "give_disease", target: "p1" }],
     trap_room: [{ type: "trap_room" }],
+    grow_fairy_ring: [{ type: "grow_fairy_ring" }],
+    tap_fairy_ring: [{ type: "tap_fairy_ring" }],
     nightmare: [{ type: "nightmare", target: "p1" }],
     lie_down: [{ type: "lie_down", equipment: "e1" }],
     report_fire: [{ type: "report_fire" }],

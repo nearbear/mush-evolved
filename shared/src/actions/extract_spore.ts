@@ -13,6 +13,11 @@ function freeExtraction(player: Readonly<PlayerState>): boolean {
   return hasSkill(player, "fertile") && !player.fertileToday;
 }
 
+/** Constipaspore serum's extra AP on every paid extraction, and on drawing from a Fairy Ring (owner, 2026-11-25). */
+export function extractionExtraAp(state: Readonly<GameState>): number {
+  return (state.research.CONSTIPASPORE_SERUM ?? 0) >= RESEARCH_COMPLETE ? state.config.spores.constipasporeExtraAp : 0;
+}
+
 export class ExtractSporeAction extends Action<ExtractSporeActionData> {
   override visibility: ActionVisibility = "secret";
 
@@ -22,8 +27,7 @@ export class ExtractSporeAction extends Action<ExtractSporeActionData> {
 
   override getCost(state: Readonly<GameState>, player: Readonly<PlayerState>): { ap: number; mp: number } {
     if (freeExtraction(player)) return { ap: 0, mp: 0 };
-    const extra = (state.research.CONSTIPASPORE_SERUM ?? 0) >= RESEARCH_COMPLETE ? state.config.spores.constipasporeExtraAp : 0;
-    return { ap: state.config.spores.cost.ap + extra, mp: 0 };
+    return { ap: state.config.spores.cost.ap + extractionExtraAp(state), mp: 0 };
   }
 
   override getCandidates(): ExtractSporeActionData[] {

@@ -343,6 +343,8 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   doorman: "full",
   // Mush skill (Trapper): 1 AP and 1 spore, covert + spore-tagged, booby-traps the current room so the next player to interact with it is contaminated (owner, 2026-11-21, #473, traps.ts, actions/trap_room.ts).
   trapper: "full",
+  // Mush skill (Mycelium Spirit): grow one Fairy Ring per mind (1 AP, 2 spores); any Mush draws 1 spore a day from it for 1 AP, no dirt, outside the daily cap; both secret + spore-tagged (owner, 2026-11-25, fairyRings.ts). Not eMush's +1 daily spore.
+  mycellium_spirit: "full",
 };
 
 export function skillStatus(skill: string): SkillStatus {

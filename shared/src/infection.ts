@@ -3,6 +3,7 @@
 // contamination reaches capacity converts to Mush at once. The anti-Mush serum cures (`cure`).
 
 import { updateMaxValues } from "./adjustStats.ts";
+import { pruneFairyRings } from "./fairyRings.ts";
 import { pushChat } from "./chat.ts";
 import { logPrivate } from "./log.ts";
 import { contaminated, contaminationCapacity } from "./modifiers.ts";
@@ -86,6 +87,7 @@ export function cure(state: GameState, player: PlayerState): boolean {
     player.alpha = false;
     player.spores = 0;
     player.mushSkills = [];
+    pruneFairyRings(state); // a cured creator's Fairy Ring vanishes (owner, 2026-11-25)
     player.satiety = 0;
     player.satietyZeroSince = state.cycle;
     delete state.spikedOn[player.id];

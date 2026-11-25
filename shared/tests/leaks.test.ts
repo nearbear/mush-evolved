@@ -51,6 +51,7 @@ function ship(): { state: GameState; sentinels: Sentinel[] } {
     p.transferUsed = true;
     p.epigeneticsUsed = true;
     p.massMoulderingUsed = true;
+    p.fairyRingUsed = true;
     p.history = [str(`history-${p.id}`, [])];
     p.bodyTakenBy = str(`bodyTakenBy-${p.id}`, own) as typeof p.character;
     p.ap = num(`ap-${p.id}`, own);
@@ -101,6 +102,7 @@ function ship(): { state: GameState; sentinels: Sentinel[] } {
     s.failureStreaks[p.id] = { scan_planet: num(`failureStreaks-${p.id}`, []) };
     s.pendingFires = [str("pendingFires", [])];
     s.trappedRooms = [str("trappedRooms", [])];
+    s.fairyRings = [{ room: str("fairyRingRoom", []), owner: str(`fairyRingOwner-${p.id}`, []), tapped: true }];
     s.sharedOnDay[p.id] = num(`sharedOnDay-${p.id}`, []);
     s.planets[p.id] = [
       {

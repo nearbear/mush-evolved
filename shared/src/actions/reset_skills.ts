@@ -1,4 +1,5 @@
 import { Action, type ActionVisibility } from "./action.ts";
+import { pruneFairyRings } from "../fairyRings.ts";
 import { hasSkill } from "../skills.ts";
 import { removeStatus } from "../statuses.ts";
 import type { GameState, PlayerState } from "../types.ts";
@@ -32,8 +33,9 @@ export class ResetSkillsAction extends Action<ResetSkillsActionData> {
     return null;
   }
 
-  override apply(_state: GameState, player: PlayerState): void {
+  override apply(state: GameState, player: PlayerState): void {
     player.mushSkills = player.mushSkills.filter((s) => s === "epigenetics");
+    pruneFairyRings(state); // losing Mycelium Spirit removes your Fairy Ring (owner, 2026-11-25)
     removeStatus(player, "nimble");
     removeStatus(player, "ninja");
     player.epigeneticsUsed = true;

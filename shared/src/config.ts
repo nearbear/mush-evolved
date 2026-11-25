@@ -103,6 +103,9 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   giveDisease: { cost: { ap: 1 } },
   // Owner, 2026-11-21 (#473): Trapper's trap_room, 1 AP and 1 spore, no cooldown.
   trapper: { cost: { ap: 1 } },
+  // Owner, 2026-11-25: Mycelium Spirit grows a Fairy Ring for 1 AP and 2 spores, once per mind; drawing from it costs
+  // 1 AP (plus Constipaspore's extra, like extraction) for 1 spore, no dirt, outside the faction's daily cap.
+  myceliumSpirit: { grow: { ap: 1, spores: 2 }, tap: { ap: 1, spores: 1 } },
   // Owner, 2026-11-22: Nightmarish's curse costs 2 AP and gives Bad Luck (`bad_luck_curse`).
   nightmare: { cost: { ap: 2 } },
   // Owner, 2026-11-22: Bad Luck multiplies an action's random injury and dirt chances by 4.

@@ -55,6 +55,8 @@ export interface PlayerState extends Seat {
   epigeneticsUsed?: true;
   /** The Mush in this mind has used Mass Mouldering (one use per game); moves with the mind. Never sent. */
   massMoulderingUsed?: true;
+  /** The Mush in this mind has grown its Fairy Ring (Mycelium Spirit, one per mind); moves with the mind. Never sent. */
+  fairyRingUsed?: true;
   /** This body used Apprenticeship (the copy replaced Apprentice), so Apprentice can't be picked again. Your own view only; stays with the body. */
   apprenticeUsed?: true;
   /** This body used Eureka moment (become_genius), once per game. Your own view only; stays with the body. */

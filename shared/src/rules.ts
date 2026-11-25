@@ -61,6 +61,7 @@ import { activitySeen, endDefacing, inLogWindow, logPrivate, logWindowOf, moveLi
 import { recordAction } from "./history.ts";
 import { ringMycoAlarms } from "./mycoalarm.ts";
 import { isRoomTrapped, triggerRoomTrap, willTriggerRoomTrap } from "./traps.ts";
+import { fairyRingIn } from "./fairyRings.ts";
 import { planetsOf } from "./planets.ts";
 import { canSharePlanets } from "./sharedPlanets.ts";
 import { canSharePlants, sharedPlantsView } from "./sharedPlants.ts";
@@ -220,6 +221,7 @@ export function createGame(
     reports: [],
     pendingFires: [],
     trappedRooms: [],
+    fairyRings: [],
     deloggedRooms: [],
     gravityRestarting: false,
     eden: { computed: false },
@@ -690,6 +692,7 @@ function advanceCycle(state: GameState, at?: number): void {
   if (state.config.drugDispenser.resetCycles.includes(((state.cycle - 1) % cyclesPerDay) + 1) && hasDrugDispenser(state)) resetDrugDispenser(state);
   if (newDay) {
     state.sporesToday = 0;
+    for (const ring of state.fairyRings) delete ring.tapped;
     state.missionIssuedToday = false;
     for (const p of state.players) {
       delete p.boringToday;
@@ -864,6 +867,7 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     transferUsed: _transferUsed,
     epigeneticsUsed: _epigeneticsUsed,
     massMoulderingUsed: _massMoulderingUsed,
+    fairyRingUsed: _fairyRingUsed,
     history: _history,
     lastSeenAt: _lastSeenAt,
     inactivity: _inactivity,
@@ -970,6 +974,8 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     roomCeasefire: !blind && you.alive ? (state.ceasefires[you.room] ?? null) : null,
     // Whether your current room is booby-trapped (#473): living Mush in that room only; other rooms, humans, and the dead never see it.
     roomTrapped: !blind && you.alive && you.role === "mush" && isRoomTrapped(state, you.room),
+    // Whether your current room has a Fairy Ring (Mycelium Spirit): living Mush in that room only, like a trap.
+    roomFairyRing: !blind && you.alive && you.role === "mush" && fairyRingIn(state, you.room) !== undefined,
     // Reported fires, by players or Fire detectors (#444); an unreported fire's room reaches nobody.
     burningRooms: !blind && you.alive ? state.fires.filter((room) => fireReported(state, room)) : [],
     // Broken doors aboard, only once Defective piston sensors is complete (#330).

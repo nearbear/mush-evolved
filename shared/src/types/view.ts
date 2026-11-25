@@ -201,6 +201,7 @@ export type YouView = Omit<
   | "transferUsed"
   | "epigeneticsUsed"
   | "massMoulderingUsed"
+  | "fairyRingUsed"
   | "history"
   | "current"
   | "queue"
@@ -287,6 +288,8 @@ export interface PlayerView {
   roomCeasefire: number | null;
   /** Whether the room you are in is booby-trapped with a spore (traps.ts, #473). Only to living Mush in that room; always false for humans, the dead, and blind players. */
   roomTrapped: boolean;
+  /** Whether the room you are in has a Fairy Ring (fairyRings.ts). Only to living Mush in that room; always false for humans, the dead, and blind players. */
+  roomFairyRing: boolean;
   /** Burning rooms reported ship-wide, by a player or by Fire detectors (reports.ts, #444). Only to the living. */
   burningRooms: RoomId[];
   /** Broken doors aboard, only once Defective piston sensors (`DOOR_SENSOR`) is complete (reports.ts, #330). Empty before then and for the dead. */
