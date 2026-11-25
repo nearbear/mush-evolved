@@ -241,7 +241,8 @@ export function destroyPatrolShip(state: GameState, ship: PatrolShip, key: "patr
   logPublic(state, undefined, key, { room: ship.id }, "warning");
   for (const p of state.players) if (p.alive && p.room === ship.id) killPlayer(state, p, key === "patrolLost" ? "abandoned" : "space_battle");
   const wreck = { kind: "room", id: ship.id } as const;
-  for (const { at: _at, hiddenBy: _hiddenBy, ...item } of state.items.filter((i) => sameContainer(i.at, wreck))) state.space.push(item);
+  // A private item never floats off for someone else to collect (nothing can be dropped in flight, so this is a guard).
+  for (const { at: _at, hiddenBy: _hiddenBy, privateTo, ...item } of state.items.filter((i) => sameContainer(i.at, wreck))) if (privateTo === undefined) state.space.push(item);
   state.items = state.items.filter((i) => !sameContainer(i.at, wreck));
 }
 

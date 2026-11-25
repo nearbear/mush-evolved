@@ -102,9 +102,10 @@ export function killPlayer(state: GameState, player: PlayerState, cause: DeathCa
   delete player.comaUntil;
   pruneFairyRings(state); // a dead creator's Fairy Ring vanishes (owner, 2026-11-25)
 
-  // The iTrackie is destroyed; everything else drops into the room, then the body.
+  // The iTrackie is destroyed, and so is any private item of theirs lying anywhere (nobody else could ever see it);
+  // everything else drops into the room, then the body.
   const mine = { kind: "player", id: player.id } as const;
-  state.items = state.items.filter((i) => !(sameContainer(i.at, mine) && i.type === ITRACKIE_ITEM));
+  state.items = state.items.filter((i) => !((sameContainer(i.at, mine) && i.type === ITRACKIE_ITEM) || i.privateTo === player.id));
   for (const item of state.items) if (sameContainer(item.at, mine)) item.at = { kind: "room", id: player.room };
   const traded = cause === "traded";
   if (!traded) spawnInRoom(state, player.room, CORPSE_ITEM, 1, { of: player.id });

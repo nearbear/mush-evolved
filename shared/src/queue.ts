@@ -12,7 +12,7 @@
 // The rules have no clock: the server stamps each action input with `at` and
 // sends a `tick` input when the earliest bar runs out (`nextDue`).
 
-import { ACTIONS, actionVisibility, type ActionDef } from "./actions.ts";
+import { ACTIONS, actionItemType, actionVisibility, type ActionDef } from "./actions.ts";
 import { expeditionStep } from "./expeditions.ts";
 import { endAccommodationToAct, expireOffers } from "./actions/accommodate.ts";
 import { nextWheelchairHelpAt } from "./modifiers/wheelchair.ts";
@@ -39,7 +39,7 @@ export function queueAction(state: GameState, playerId: PlayerId, action: Action
   const next = cloneState(state);
   const actor = findPlayer(next, playerId)!;
   if (action.type !== "lie_down") getUp(actor);
-  const visibility = actionVisibility(action.type, actor);
+  const visibility = actionVisibility(action.type, actor, actionItemType(next.items, action));
   standUp(actor, { visibility });
   endAccommodationToAct(next, actor, action, visibility);
   // Priced against things as they are now, like the button the player pressed.
@@ -56,7 +56,7 @@ export function actNow(state: GameState, playerId: PlayerId, action: Action): Ac
   const done = applyAction(state, playerId, action);
   if (done.ok) {
     const actor = findPlayer(done.state, playerId)!;
-    const visibility = actionVisibility(action.type, actor);
+    const visibility = actionVisibility(action.type, actor, actionItemType(done.state.items, action));
     standUp(actor, { visibility });
     endAccommodationToAct(done.state, actor, action, visibility);
   }

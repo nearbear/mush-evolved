@@ -5,7 +5,7 @@ import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
 import type { CSSProperties, ReactNode } from "react";
-import { actionVisibility, CHARACTERS, ITEM_TYPES, PROJECT_COMPLETE, characterGivenName, characterName, SUPER_CALC_EQUIPMENT, SUPERKUBE, type Action, type ActionOption, type EquipmentView, type PlayerView, type ShipLayout, type Target } from "@mush2/shared";
+import { actionItemType, actionVisibility, CHARACTERS, ITEM_TYPES, PROJECT_COMPLETE, characterGivenName, characterName, SUPER_CALC_EQUIPMENT, SUPERKUBE, type Action, type ActionOption, type EquipmentView, type PlayerView, type ShipLayout, type Target } from "@mush2/shared";
 import { BROKEN_ICON, characterImage, hostileSprite, portrait } from "../art/assets.ts";
 import { useMobile } from "../useMobile.ts";
 import { atlasUrl } from "../iso/shipLayout.ts";
@@ -66,7 +66,7 @@ export function InspectPanel({
         : action.type === "upgrade_drone"
           ? t("actions.upgradeDroneWith", { upgrade: names.droneUpgrade(action.upgrade) })
           : names.action(action.type);
-    return <ActionLabel text={text} cost={cost} chance={chance} visibility={actionVisibility(action.type, view)} />;
+    return <ActionLabel text={text} cost={cost} chance={chance} visibility={actionVisibility(action.type, view, actionItemType([...view.inventory, ...view.roomItems], action))} />;
   };
   const [throwingOut, setThrowingOut] = useState(false);
   const [picking, setPicking] = useState<PickerAction | null>(null);

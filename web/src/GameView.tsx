@@ -150,7 +150,7 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
   }, [mobile]);
 
   // You walk up to whatever your action is on, when it starts (cosmetic; see useActingOn).
-  const { actingOn, sentCount, sent } = useActingOn(view.you, view.statuses);
+  const { actingOn, sentCount, sent } = useActingOn(view.you, view.statuses, [...view.inventory, ...view.roomItems]);
   // Acting shows its result in the iTrackie's Room log tab; the phone's bottom nav stays where it is.
   const act = (action: Action) => {
     if (readOnly) return;

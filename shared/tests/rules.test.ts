@@ -385,12 +385,12 @@ describe("iTrackie and feature threads", () => {
     expect(JSON.stringify(view)).not.toContain("hello");
   });
 
-  it("opens the full history to whoever picks an iTrackie up", () => {
+  it("opens the full history again when you pick your iTrackie back up; nobody else can take it (private item)", () => {
     let state = mustChat(newGame(), "p1", "research", "old news");
-    const dropped = myITrackie(state, "p0");
-    state = mustApply(state, "p0", { type: "drop", item: dropped });
-    state = mustApply(state, "p2", { type: "drop", item: myITrackie(state, "p2") });
+    const dropped = myITrackie(state, "p2");
+    state = mustApply(state, "p2", { type: "drop", item: dropped });
     expect(viewFor(state, "p2").chat).toEqual([]);
+    expect(applyAction(state, "p0", { type: "take", item: dropped }).ok).toBe(false);
     state = mustApply(state, "p2", { type: "take", item: dropped });
     expect(viewFor(state, "p2").chat.map((m) => m.text)).toEqual(["old news"]);
   });

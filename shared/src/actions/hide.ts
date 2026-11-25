@@ -1,5 +1,7 @@
 import { Action, IN_PRESELECTION, type ActionVisibility, isString } from "./action.ts";
 import { ITEM_TYPES } from "../items.ts";
+import { patrolShip } from "../patrol.ts";
+import { IN_PATROL_SHIP } from "./transfer.ts";
 import { logSecret } from "../log.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
@@ -27,6 +29,8 @@ export class HideAction extends Action<HideActionData> {
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: HideActionData): string | null {
     if (state.preselection) return IN_PRESELECTION;
+    // Hiding leaves the item in the room, like a drop, which a patrol ship refuses (owner, 2026-11-25).
+    if (patrolShip(player.room) !== undefined) return IN_PATROL_SHIP;
     return hideable(state, player).some((i) => i.id === target.item) ? null : "cant_hide";
   }
 

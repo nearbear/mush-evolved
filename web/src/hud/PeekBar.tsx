@@ -5,7 +5,7 @@
 import { type ReactNode, useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
-import { actionVisibility, ITEM_TYPES, SUPERKUBE, type Action, type ActionOption, type PlayerView, type RoomId, type Target } from "@mush2/shared";
+import { actionItemType, actionVisibility, ITEM_TYPES, SUPERKUBE, type Action, type ActionOption, type PlayerView, type RoomId, type Target } from "@mush2/shared";
 import { ActionLabel } from "./ActionLabel.tsx";
 import { ActionButton } from "./ActionButton.tsx";
 import { collapsePickers, CrewPickerDialog, isPickerAction, type PickerAction } from "./CrewPickerDialog.tsx";
@@ -48,7 +48,7 @@ export function PeekBar({
         : action.type === "upgrade_drone"
           ? t("actions.upgradeDroneWith", { upgrade: names.droneUpgrade(action.upgrade) })
           : names.action(action.type);
-    return <ActionLabel text={text} cost={cost} chance={chance} visibility={actionVisibility(action.type, view)} />;
+    return <ActionLabel text={text} cost={cost} chance={chance} visibility={actionVisibility(action.type, view, actionItemType([...view.inventory, ...view.roomItems], action))} />;
   };
   const [throwingOut, setThrowingOut] = useState(false);
   const [picking, setPicking] = useState<PickerAction | null>(null);

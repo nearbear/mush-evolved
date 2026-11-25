@@ -25,6 +25,7 @@
 
 import { resolveConfig } from "./config.ts";
 import { clone } from "./helpers.ts";
+import { ITRACKIE_ITEM } from "./itemIds.ts";
 import { newNpcState, type NpcState } from "./npcs.ts";
 import { HOSTILE_ID_PREFIX, type HostileState } from "./hostiles/hostile.ts";
 import { type LostAnalysisState, rollLostAnalysis } from "./lostAnalysis.ts";
@@ -532,7 +533,10 @@ function nextHostileIdOf(list: readonly Partial<HostileState>[]): number {
 
 export function normalizeItem(raw: Partial<ItemState>): ItemState {
   const t = "ItemState";
-  return stripUndefined<ItemState>({ ...itemFields(raw, t), at: normalizeContainer(need(raw, "at", t)), hiddenBy: raw.hiddenBy });
+  const at = normalizeContainer(need(raw, "at", t));
+  // Private items (2026-11-18): an iTrackie stored before them belongs to whoever carries it; one on a floor stays public.
+  const privateTo = raw.privateTo !== undefined ? raw.privateTo : need(raw, "type", t) === ITRACKIE_ITEM && at.kind === "player" ? at.id : undefined;
+  return stripUndefined<ItemState>({ ...itemFields(raw, t), at, hiddenBy: raw.hiddenBy, privateTo });
 }
 
 export function normalizeDrug(raw: Partial<DrugEffect>): DrugEffect {

@@ -22,7 +22,7 @@ import type { Plan } from "./plan.ts";
 import type { PlayerState } from "./player.ts";
 
 /** An item floating in space: an item without a container (and no one's hiding place). */
-export type SpaceDebris = Omit<ItemState, "at" | "hiddenBy">;
+export type SpaceDebris = Omit<ItemState, "at" | "hiddenBy" | "privateTo">;
 
 /** The side that won the game (victory.ts). */
 export type Winner = "mush" | "humans";

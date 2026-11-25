@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { ITEM_TYPES } from "../src/items.ts";
 import { ACTIONS } from "../src/actions.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { RESEARCH_IDS } from "../src/research.ts";
@@ -53,7 +54,8 @@ describe("action registry", () => {
       ...DEFAULT_CONFIG.rooms.LABORATORY!.map((to): Action => ({ type: "move", to })),
       ...floor.map((i): Action => ({ type: "take", item: i.id })),
       ...mine.map((i): Action => ({ type: "drop", item: i.id })),
-      ...mine.map((i): Action => ({ type: "hide", item: i.id })),
+      // The iTrackie is private, so it can't be hidden (owner, 2026-11-18).
+      ...mine.filter((i) => ITEM_TYPES[i.type]?.canHide !== false).map((i): Action => ({ type: "hide", item: i.id })),
       { type: "search" },
       // Anyone can guard (1 AP); stop_guarding only follows once they do.
       { type: "guard" },

@@ -10,7 +10,7 @@ import { gravityCycle } from "./gravity.ts";
 import { expirePlans, plansView, strikeSlots } from "./plans.ts";
 import { bindPerformAction } from "./actions/summon.ts";
 import { applyCheats, makeHuman, shipInvincible, type Cheat, type RoleCheat } from "./cheats.ts";
-import { ACTIONS, type ActionCost, actionVisibility, type ActionDef } from "./actions.ts";
+import { ACTIONS, type ActionCost, actionItemType, actionVisibility, type ActionDef } from "./actions.ts";
 import { ARACK_AROUND, AT_CAPACITY, BROKEN, COOLDOWN, DIRTY, EXPLORED, ICARUS_LOST, IN_PRESELECTION, NO_DEBRIS, NO_SPACE, PASIPHAE_INTACT, REACTOR_BROKEN, RING_TAPPED, SPORES_FULL, TRAVEL_UNDERWAY } from "./actions/action.ts";
 import { getUp } from "./actions/lie_down.ts";
 import { ANTISOCIAL } from "./actions/bond.ts";
@@ -39,7 +39,7 @@ import { newLostAnalysis, rollAtSelection } from "./lostAnalysis.ts";
 import { newTheList, recordSelection } from "./theList.ts";
 import { hopelessCycle } from "./morale.ts";
 import { relayView } from "./relayView.ts";
-import { itemsIn, newItemId, rechargeMicrowaves, rechargeScooters, startCharges, visibleItemsIn } from "./items.ts";
+import { ITEM_TYPES, itemsIn, newItemId, rechargeMicrowaves, rechargeScooters, startCharges, visibleItemsIn } from "./items.ts";
 import { actionDone, actionFailed, apRefill, capBreakdown, mpGain, carePointsGain, channelLimit, computerPointsCap, computerPointsGain, cookPointsGain, shootPointsGain, cycleChanged, designerPointsGain, engineerPointsGain, gardenPointsGain, dailyMoraleLoss, inventorySlots, movementRules, pilgredPointsGain, satietyLoss } from "./modifiers.ts";
 import { contaminationSeenBy, convert } from "./infection.ts";
 import { curseStatusesSeenBy, isComatose, isHungry, publicStatusesOf, statusesOf } from "./statuses.ts";
@@ -300,7 +300,7 @@ export function newPlayer(s: Seat, config: DeepReadonly<GameConfig>, cycle: numb
 
 /** What a player carries when they wake up, not yet given ids. */
 export function startInventory(config: DeepReadonly<GameConfig>, id: PlayerId): Omit<ItemState, "id">[] {
-  return config.startInventory.map((type) => ({ type, at: { kind: "player", id } }));
+  return config.startInventory.map((type) => ({ type, at: { kind: "player", id }, ...(ITEM_TYPES[type]?.private && { privateTo: id }) }));
 }
 
 function resolveStartItems(
@@ -943,7 +943,7 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
             ...(you.role === "mush" && o.role === "mush" ? { mush: true as const } : {}),
             // A busy bar, never the action: only when its log entry could reach you, and never on a ninja, whose lines
             // say "Someone" (owner, 2026-11-22): the bar ending as the line appears would name them.
-            ...(here && o.current && !isNinja(o) && activitySeen(state, room, actionVisibility(o.current.action.type, o), o)
+            ...(here && o.current && !isNinja(o) && activitySeen(state, room, actionVisibility(o.current.action.type, o, actionItemType(state.items, o.current.action)), o)
               ? { busy: { since: o.current.since, until: o.current.until } }
               : {}),
           };

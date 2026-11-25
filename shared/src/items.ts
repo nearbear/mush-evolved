@@ -49,6 +49,11 @@ export interface ItemType {
   canBreakOnCycleChange?: boolean;
   /** False: it can't be hidden (actions/hide.ts). Anything that can be dropped can be hidden otherwise. */
   canHide?: boolean;
+  /**
+   * A private item (owner, 2026-11-18: the iTrackie): each one is created with `privateTo`, the only player who ever sees
+   * or touches it. Taking and dropping it are private actions.
+   */
+  private?: boolean;
   /** An electrical overload (incidents.ts) breaks it when it lies on the floor of the room hit (owner, 2026-11-11: drones). */
   breaksInOverload?: boolean;
   /** True while the item has no gameplay effects yet; the UI shows a "Not implemented" caption. */
@@ -173,7 +178,8 @@ export function afterProtection(state: Readonly<GameState>, target: Readonly<Pla
 
 export const ITEM_TYPES: Record<string, ItemType> = {
   ...Object.fromEntries(DRUG_ITEMS.map((id) => [id, { consume: { ap: 0, satiety: 0 }, drug: true, canBreak: true, isDestroyedWhenBroken: true }])),
-  [ITRACKIE_ITEM]: {},
+  // Private (owner, 2026-11-18): only its owner sees it, so it can't be hidden and nothing can break it.
+  [ITRACKIE_ITEM]: { private: true, canHide: false },
   wrench: {},
   // Owner, 2026-10-25, eMushpedia "Extincteur": puts out a fire (actions/extinguish.ts); dismantled for metal scraps.
   extinguisher: { dismantle: { metal: 1, plastic: 0, chance: 0.25 }, canBreak: true, canBeSabotaged: true, repairChance: 0.25 },
@@ -339,14 +345,18 @@ export function canReach(state: Readonly<GameState>, player: Readonly<PlayerStat
   return container.kind === "player" ? container.id === player.id : container.id === player.room;
 }
 
-/** Whether a player can see and use this item: its container is within reach, and it isn't hidden from them (actions/hide.ts). */
+/** Whether this item exists for a player at all: not hidden by someone else (actions/hide.ts), not someone else's private item. */
+export const seesItem = (item: Readonly<ItemState>, viewer: Readonly<PlayerState>): boolean =>
+  (item.hiddenBy === undefined || item.hiddenBy === viewer.id) && (item.privateTo === undefined || item.privateTo === viewer.id);
+
+/** Whether a player can see and use this item: its container is within reach, and it isn't hidden from them or someone else's. */
 export function canReachItem(state: Readonly<GameState>, player: Readonly<PlayerState>, item: Readonly<ItemState>): boolean {
-  return canReach(state, player, item.at) && (item.hiddenBy === undefined || item.hiddenBy === player.id);
+  return canReach(state, player, item.at) && seesItem(item, player);
 }
 
-/** The items in a container that this player can see: a room's storage minus what others hid. */
+/** The items in a container that this player can see: a room's storage minus what others hid and others' private items. */
 export function visibleItemsIn(state: Readonly<GameState>, container: Container, viewer: Readonly<PlayerState>): ItemState[] {
-  return itemsIn(state, container).filter((i) => i.hiddenBy === undefined || i.hiddenBy === viewer.id);
+  return itemsIn(state, container).filter((i) => seesItem(i, viewer));
 }
 
 /** Whether a player may move an item to a container. Doesn't check whose turn it is. */

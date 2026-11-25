@@ -6,7 +6,7 @@
 // walking up to what a private, secret or covert action is on would give it away.
 
 import { useEffect, useRef, useState } from "react";
-import { actionTarget, actionVisibility, endsAccommodation, type Action, type PlayerView, type RoomId, type Target } from "@mush2/shared";
+import { actionItemType, actionTarget, actionVisibility, endsAccommodation, type Action, type PlayerView, type RoomId, type Target } from "@mush2/shared";
 
 /**
  * A walk request: up to a target, or to the door of a room you're moving to. `n` changes on every
@@ -36,14 +36,19 @@ export function begun(prev: Queue, next: Queue): Action | undefined {
   return undefined;
 }
 
-export function useActingOn(you: PlayerView["you"] | undefined, statuses?: readonly string[]): { actingOn: ActingOn | null; sentCount: number; sent: (action: Action) => void } {
+export function useActingOn(
+  you: PlayerView["you"] | undefined,
+  statuses?: readonly string[],
+  /** The items you can see, so taking or dropping a private one (your iTrackie) doesn't walk you there for all to see. */
+  items: readonly { readonly id: string; readonly type: string }[] = [],
+): { actingOn: ActingOn | null; sentCount: number; sent: (action: Action) => void } {
   const [actingOn, setActingOn] = useState<ActingOn | null>(null);
   /** Actions sent so far, queued or not: sending any of them gets you up from a chair (IsoRoom). */
   const [sentCount, setSentCount] = useState(0);
   const walkFor = (action: Action | undefined) => {
     const target = action?.type === "move" ? { kind: "door" as const, to: action.to } : action && actionTarget(action);
     if (!action || !target) return;
-    const visibility = actionVisibility(action.type, statuses ? { statuses } : undefined);
+    const visibility = actionVisibility(action.type, statuses ? { statuses } : undefined, actionItemType(items, action));
     const endsPush = !!you && endsAccommodation(action, you.id, visibility);
     setActingOn((a) => ({ target, n: (a?.n ?? 0) + 1, share: visibility === "public", endsPush, ...(action.type === "access" && { seats: true }) }));
   };

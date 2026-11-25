@@ -16,6 +16,7 @@ import { DismantleAction } from "./actions/dismantle.ts";
 import { AccessAction } from "./actions/access.ts";
 import { HackAction } from "./actions/hack.ts";
 import type { ActionCost, ActionTag, ActionVisibility } from "./actions/action.ts";
+import { ITEM_TYPES } from "./items.ts";
 import { DispenseAction } from "./actions/dispense.ts";
 import { PlayArcadeAction } from "./actions/play_arcade.ts";
 import { ListenJukeboxAction } from "./actions/listen_jukebox.ts";
@@ -338,9 +339,16 @@ export const actionInTerminal = (type: ActionType): boolean => ACTIONS[type].ter
 
 const SHIP_WIDE_ACTIONS: ReadonlySet<ActionType> = new Set(["travel", "leave_orbit", "return_to_sol", "travel_to_eden"]);
 
-/** Whether an action type is public, private, secret or covert. In Nimble mode, room-level public actions become secret. */
-export const actionVisibility = (type: ActionType, view?: { readonly statuses: readonly string[] }): ActionVisibility => {
-  const base = ACTIONS[type].visibility;
+/** The type of the item an action names in its `item` field, looked up in `items` (the state's, or a view's inventory and room items). */
+export const actionItemType = (items: readonly { readonly id: string; readonly type: string }[], action: Action): string | undefined =>
+  "item" in action && typeof action.item === "string" ? items.find((i) => i.id === action.item)?.type : undefined;
+
+/**
+ * Whether an action type is public, private, secret or covert. In Nimble mode, room-level public actions become secret.
+ * Taking or dropping a private item (the iTrackie, owner 2026-11-18) is private: pass the item's type (`actionItemType`).
+ */
+export const actionVisibility = (type: ActionType, view?: { readonly statuses: readonly string[] }, itemType?: string): ActionVisibility => {
+  const base = (type === "take" || type === "drop") && itemType !== undefined && ITEM_TYPES[itemType]?.private ? "private" : ACTIONS[type].visibility;
   if (base === "public" && view?.statuses.includes(NIMBLE) && !SHIP_WIDE_ACTIONS.has(type)) return "secret";
   return base;
 };

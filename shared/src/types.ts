@@ -102,6 +102,11 @@ export interface ItemState {
   spores?: number;
   /** For an item hidden in its room (actions/hide.ts): who hid it. Only they can see or use it, until someone searches the room. */
   hiddenBy?: PlayerId;
+  /**
+   * For a private item (`ItemType.private`, the iTrackie): the body it belongs to (a player id, which stays with the
+   * body in a Transfer). Only they see it or touch it, wherever it lies; to everyone else it isn't there. Never sent.
+   */
+  privateTo?: PlayerId;
   /** For a hydropot with something growing in it (botany.ts). An empty pot has none. */
   plant?: PlantState;
   /** Broken (breakage.ts `breakItem`): it can't be used until repaired. It can still be carried, dropped, given, examined and dismantled. */

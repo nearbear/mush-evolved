@@ -3,11 +3,14 @@ import { onExpedition } from "../expeditions.ts";
 import { contaminate } from "../infection.ts";
 import { CAT_ITEM, ITEM_TYPES, canTransfer } from "../items.ts";
 import { preferSpikedInRoom } from "../itemView.ts";
-import { isLostPlace } from "../patrol.ts";
-import { logPublic } from "../log.ts";
+import { isLostPlace, patrolShip } from "../patrol.ts";
+import { logPrivate, logPublic } from "../log.ts";
 import { cantCarryHeavy } from "../modifiers.ts";
 import { heldCat } from "../modifiers/cat_allergy_disease.ts";
 import type { Container, GameState, ItemState, PlayerState } from "../types.ts";
+
+/** Why nothing can be dropped (or hidden) here: you are flying a patrol ship. */
+export const IN_PATROL_SHIP = "in_patrol_ship";
 
 export type TransferActionData = { type: "take"; item: string } | { type: "drop"; item: string };
 
@@ -38,6 +41,8 @@ export class TransferAction<T extends "take" | "drop" = "take" | "drop"> extends
     // Nothing can be dropped on an expedition (owner, 2026-11-08 and 2026-11-09, #359): aboard its craft or lost on the
     // planet. Aboard the docked Icarus you are in the bay and may drop there (owner, 2026-11-21, #469).
     if (this.type === "drop" && (onExpedition(state, player) || isLostPlace(player.room))) return "on_expedition";
+    // Nothing can be dropped in a patrol ship either (owner, 2026-11-25), so a wreck never scatters anyone's iTrackie.
+    if (this.type === "drop" && patrolShip(player.room) !== undefined) return IN_PATROL_SHIP;
     const destination: Container = this.type === "take" ? { kind: "player", id: player.id } : { kind: "room", id: player.room };
     return canTransfer(state, player, item, destination) ? null : "cant_transfer";
   }
@@ -57,7 +62,10 @@ export class TransferAction<T extends "take" | "drop" = "take" | "drop"> extends
     delete item.hiddenBy;
     item.at = this.type === "take" ? { kind: "player", id: player.id } : { kind: "room", id: player.room };
     state.items.push(item);
-    logPublic(state, player.room, this.type === "take" ? "pickedUp" : "dropped", { name: player.character, item: item.type });
+    const line = [this.type === "take" ? "pickedUp" : "dropped", { name: player.character, item: item.type }] as const;
+    // Your own private item (the iTrackie, owner 2026-11-18): nobody else sees it, so nobody sees you take or drop it.
+    if (item.privateTo !== undefined) logPrivate(state, player.id, ...line);
+    else logPublic(state, player.room, ...line);
     // Cat Allergy (owner, 2026-11-21): picking Schrödinger up gives Quincke's Oedema, injured or not.
     if (this.type === "take" && item.type === CAT_ITEM) heldCat(state, player);
   }
