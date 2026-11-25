@@ -7,7 +7,7 @@
 import { Dialog } from "@base-ui/react/dialog";
 import { Popover } from "@base-ui/react/popover";
 import { Tabs } from "@base-ui/react/tabs";
-import React, { useEffect, useId, useRef, useState, type CSSProperties } from "react";
+import React, { useEffect, useId, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import {
   DEFAULT_CONFIG,
   hasSkill,
@@ -33,6 +33,7 @@ import {
   type PlayerView,
   type RelayTargetView,
   type SharedPlantRow,
+  type Target,
 } from "@mush2/shared";
 import { useTranslation } from "react-i18next";
 import { CHECK_ICON, itemIcon, PILGRED_CARD, PROJECT_CARDS, RESEARCH_CARDS, skillIcon, UNCHECK_ICON } from "../art/assets.ts";
@@ -41,6 +42,8 @@ import { useMobile } from "../useMobile.ts";
 import { ActionLabel } from "./ActionLabel.tsx";
 import { ActionButton } from "./ActionButton.tsx";
 import { ConsumeEffects } from "./ConsumeEffects.tsx";
+import { InventoryPanel } from "./InventoryPanel.tsx";
+import { InventoryToggle } from "./InventoryOverlay.tsx";
 import { gainHint, RelayDetails, withGain } from "./RelayDetails.tsx";
 import { BiosTerminal } from "./BiosTerminal.tsx";
 import { CommsCenter } from "./CommsCenter.tsx";
@@ -60,6 +63,9 @@ interface Props {
   view: PlayerView;
   onAction: (action: Action) => void;
   onClose: () => void;
+  /** The inventory opened from the terminal: what is selected, and selecting a tile (as in the room view's). */
+  selected?: Target;
+  onSelect?: (target: Target) => void;
   /** Shares a planet in the Astrophysics feature, from the Astro terminal. */
   onSharePlanet?: (planet: string, sectors: (PlanetTag | null)[], text: string) => void;
   /** Shares the greenhouse plant status in the Botany feature, from the Hydroponics center. */
@@ -68,11 +74,51 @@ interface Props {
   onSharePilgred?: (percent: number, text: string) => void;
 }
 
-export function TerminalDialog({ terminal, view, onAction, onClose, onSharePlanet, onSharePlants, onSharePilgred }: Props) {
+export function TerminalDialog({ terminal, view, onAction, onClose, selected, onSelect, onSharePlanet, onSharePlants, onSharePilgred }: Props) {
+  const { t } = useTranslation();
   const names = useNames();
+  const mobile = useMobile();
   const titleId = useId();
+  const inventoryId = useId();
+  // The inventory stays usable from a terminal (owner, 2026-11-25): its sack is on the title row on a phone, and over
+  // the backdrop where the room view has it on desktop; it opens over the terminal's body. Shut for each terminal.
+  const [inventoryOpen, setInventoryOpen] = useState(false);
+  const [openFor, setOpenFor] = useState(terminal?.id);
+  if (openFor !== terminal?.id) {
+    setOpenFor(terminal?.id);
+    setInventoryOpen(false);
+  }
+  const sackRef = useRef<HTMLButtonElement>(null);
+  const inventoryRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (inventoryOpen) inventoryRef.current?.focus({ preventScroll: true });
+  }, [inventoryOpen]);
+  const sackSpot = useRoomSackSpot(terminal !== null && !mobile && view.you.alive);
+  const canInventory = view.you.alive && selected !== undefined && onSelect !== undefined;
+  const sack = canInventory && (
+    <InventoryToggle
+      ref={sackRef}
+      view={view}
+      open={inventoryOpen}
+      glow={!inventoryOpen && selected.kind === "item"}
+      controls={inventoryOpen ? inventoryId : undefined}
+      onClick={() => setInventoryOpen((o) => !o)}
+    />
+  );
   return (
-    <Dialog.Root open={terminal !== null} onOpenChange={(open) => !open && onClose()}>
+    <Dialog.Root
+      open={terminal !== null}
+      onOpenChange={(open, details) => {
+        if (open) return;
+        // Escape shuts the inventory first, then the terminal.
+        if (inventoryOpen && details.reason === "escape-key") {
+          setInventoryOpen(false);
+          sackRef.current?.focus({ preventScroll: true });
+          return;
+        }
+        onClose();
+      }}
+    >
       <Dialog.Portal>
         <Dialog.Backdrop className="settings-backdrop" />
         <Dialog.Popup className="settings-popup terminal-popup kit-panel" aria-labelledby={titleId}>
@@ -84,14 +130,47 @@ export function TerminalDialog({ terminal, view, onAction, onClose, onSharePlane
               login={terminalLogin(terminal.type, view, terminal.id)}
               onClose={onClose}
               titleId={titleId}
+              actions={mobile ? sack : undefined}
+              overlay={
+                canInventory && inventoryOpen ? (
+                  <section ref={inventoryRef} id={inventoryId} tabIndex={-1} className="panel inventory-popup" aria-label={t("inventory.button")}>
+                    <InventoryPanel view={view} selected={selected} onAction={onAction} onSelect={onSelect} />
+                  </section>
+                ) : undefined
+              }
             >
               <TerminalBody terminal={terminal} view={view} onAction={onAction} onSharePlanet={onSharePlanet} onSharePlants={onSharePlants} onSharePilgred={onSharePilgred} />
             </TerminalFrame>
+          )}
+          {!mobile && sack && sackSpot && (
+            <div className="terminal-sack" style={sackSpot}>
+              {sack}
+            </div>
           )}
         </Dialog.Popup>
       </Dialog.Portal>
     </Dialog.Root>
   );
+}
+
+/**
+ * Desktop: where the room view's sack is on screen, so the terminal can draw its own over the backdrop at the same spot.
+ * The page doesn't scroll under a modal, so it moves only when the window resizes.
+ */
+function useRoomSackSpot(active: boolean): CSSProperties | undefined {
+  const [spot, setSpot] = useState<{ left: number; top: number }>();
+  useLayoutEffect(() => {
+    if (!active) return;
+    const measure = () => {
+      const sack = document.querySelector(".room-view .inventory-toggle");
+      const box = sack && sack.getClientRects().length > 0 ? sack.getBoundingClientRect() : null;
+      setSpot((old) => (box ? (old?.left === box.left && old.top === box.top ? old : { left: box.left, top: box.top }) : undefined));
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, [active]);
+  return active ? spot : undefined;
 }
 
 type ListProps = Omit<Props, "onClose"> & { terminal: EquipmentView };

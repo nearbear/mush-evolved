@@ -4,7 +4,7 @@
 // Open, the panel spans the room view's width in the band between your ID card and the minimap (owner,
 // 2026-11-21), on both layouts; useBand measures that band.
 
-import { type CSSProperties, type RefObject, useCallback, useId, useLayoutEffect, useRef, useState } from "react";
+import { type CSSProperties, type Ref, type RefObject, useCallback, useId, useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { Action, PlayerView, Target } from "@mush2/shared";
 import { TAB_ICONS } from "../art/assets.ts";
@@ -103,9 +103,6 @@ export function InventoryOverlay({
     onOpenChange?.(next);
   };
 
-  const roomCount = view.roomItems.length;
-  const label = roomCount > 0 ? t("inventory.buttonCount", { count: roomCount }) : t("inventory.button");
-
   return (
     <div className="inventory-overlay" ref={rootRef}>
       {open && (
@@ -127,26 +124,46 @@ export function InventoryOverlay({
             );
           })}
         </div>
-        <Hint label={label}>
-          <button
-            type="button"
-            className="inventory-toggle"
-            // An item has no sprite in the room to glow, so while one is selected and the sack is shut, the sack glows.
-            data-selection={!open && selected.kind === "item" ? "" : undefined}
-            aria-label={label}
-            aria-expanded={open}
-            aria-controls={open ? panelId : undefined}
-            onClick={toggle}
-          >
-            <img src={TAB_ICONS.inventory} alt="" />
-            {roomCount > 0 && (
-              <span className="inventory-badge" aria-hidden="true">
-                {roomCount}
-              </span>
-            )}
-          </button>
-        </Hint>
+        <InventoryToggle view={view} open={open} glow={!open && selected.kind === "item"} controls={open ? panelId : undefined} onClick={toggle} />
       </div>
     </div>
+  );
+}
+
+/**
+ * The sack: opens your inventory and the room's items, with a badge counting the room's items. Shared by the room view's
+ * corner and an open terminal (TerminalDialog), which keeps it usable over its backdrop.
+ */
+export function InventoryToggle({
+  view,
+  open,
+  glow,
+  controls,
+  onClick,
+  ref,
+}: {
+  view: Pick<PlayerView, "roomItems">;
+  open: boolean;
+  /** An item has no sprite in the room to glow, so while one is selected and the sack is shut, the sack glows. */
+  glow: boolean;
+  /** The open panel's id. */
+  controls?: string;
+  onClick: () => void;
+  ref?: Ref<HTMLButtonElement>;
+}) {
+  const { t } = useTranslation();
+  const roomCount = view.roomItems.length;
+  const label = roomCount > 0 ? t("inventory.buttonCount", { count: roomCount }) : t("inventory.button");
+  return (
+    <Hint label={label}>
+      <button ref={ref} type="button" className="inventory-toggle" data-selection={glow ? "" : undefined} aria-label={label} aria-expanded={open} aria-controls={controls} onClick={onClick}>
+        <img src={TAB_ICONS.inventory} alt="" />
+        {roomCount > 0 && (
+          <span className="inventory-badge" aria-hidden="true">
+            {roomCount}
+          </span>
+        )}
+      </button>
+    </Hint>
   );
 }

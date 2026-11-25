@@ -234,6 +234,8 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
           view={view}
           onAction={act}
           onClose={() => setTerminalId(null)}
+          selected={target}
+          onSelect={select}
           onSharePlanet={(planet, sectors, text) => post({ type: "sharePlanet", planet, sectors, text })}
           onSharePlants={(plants, text) => post({ type: "sharePlants", plants, text })}
           onSharePilgred={(percent, text) => post({ type: "sharePilgred", percent, text })}
