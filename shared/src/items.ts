@@ -98,6 +98,10 @@ export const STEROIDS_ITEM = "steroids";
 export const STEROIDS_YIELD = 4;
 export const STEROIDS_MP = 8;
 
+/** Produced by completing the NCC_LENS research (owner, 2026-11-24); carried, boosts shooting accuracy. */
+export const NCC_LENS_ITEM = "ncc_lens";
+export const NCC_LENS_YIELD = 2;
+
 /** The customized blaster spawned by picking the `infantryman` skill (modifiers/infantryman.ts). */
 export const CUSTOMIZED_BLASTER_ITEM = "customized_blaster";
 
@@ -246,6 +250,7 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   // Owner, 2026-10-28: eMush's Wavoscope. Carried, it doubles the odds of hull repair and renovation (modifiers.ts, actionSuccessRate); heavy.
   // Icon wavoscope (web/src/art/assets.ts).
   oscilloscope: { heavy: true, dismantle: { metal: 2, plastic: 0, chance: 0.06 }, canBreak: true, canBeSabotaged: true, repairChance: 0.06 },
+  [NCC_LENS_ITEM]: {},
   apron: { canBreak: true, canBeSabotaged: true, repairChance: 0.25 },
   protection_gloves: { canBreak: true, canBeSabotaged: true, repairChance: 0.25 },
   [HACKER_KIT_ITEM]: { canBreak: true, canBeSabotaged: true, repairChance: 0.06, breaksInOverload: true },

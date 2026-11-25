@@ -551,6 +551,7 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   spaceCapsule: { cost: { ap: 1 }, dirtyChance: 0.25, injuryChance: 0.01, contents: ["metal_scraps", "plastic_scraps", "oxy_capsule", "fuel_capsule"] },
   hullRepair: { cost: { ap: 1 }, chance: 0.25, injuryChance: 0.05, amount: 5 },
   oscilloscope: { repairFactor: 2 },
+  nccLens: { spaceAccuracyFactor: 1.1, crewAccuracyFactor: 1.33 },
   // Owner, 2026-11-22 (#241): eMush's activity overload threshold, 7 AP a seat a day.
   difficulty: { apPerSeat: 7 },
   // Owner, 2026-10-25 (#184), eMushpedia "Embûches": budget, roll and catalog (cost, weight).

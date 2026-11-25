@@ -3,12 +3,12 @@ import { ACTIONS } from "../src/actions.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { EQUIPMENT_TYPES } from "../src/equipment.ts";
-import { ITEM_TYPES, STEROIDS_ITEM, STEROIDS_MP, STEROIDS_YIELD } from "../src/items.ts";
+import { ITEM_TYPES, NCC_LENS_ITEM, NCC_LENS_YIELD, STEROIDS_ITEM, STEROIDS_MP, STEROIDS_YIELD } from "../src/items.ts";
 import { ANY_CONSUMABLE, RESEARCH_COMPLETE, RESEARCH_EFFICIENCY, RESEARCH_IDS, RESEARCH_REQUIRES, RESEARCH_SKILLS, RESEARCH_STATUS, researchEfficiency } from "../src/research.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { addStatus } from "../src/statuses.ts";
 import type { Action } from "../src/types.ts";
-import { makeSeats, mustApply, nextDay, offered, pickSkill, setProgress, stockLab, testConfig } from "./support.ts";
+import { makeSeats, mustApply, nextDay, offered, option, pickSkill, setProgress, stockLab, testConfig } from "./support.ts";
 
 const seats = makeSeats(3, "others");
 const work = (research: string): Action => ({ type: "research", equipment: "LABORATORY:RESEARCH_LAB", research });
@@ -382,6 +382,55 @@ describe("research", () => {
     const done = mustApply(s, "p0", work("STEROIDS"));
     const floorSteroids = done.items.filter((i) => i.type === STEROIDS_ITEM && i.at.kind === "room" && i.at.id === "LABORATORY");
     expect(floorSteroids).toHaveLength(STEROIDS_YIELD);
+  });
+
+  it("completing NCC_LENS spawns 2 pairs of NCC lenses on the lab floor, marks status full, and boosts shooting accuracy", () => {
+    expect([DEFAULT_CONFIG.nccLens.spaceAccuracyFactor, DEFAULT_CONFIG.nccLens.crewAccuracyFactor, NCC_LENS_YIELD]).toEqual([1.1, 1.33, 2]);
+    expect(RESEARCH_STATUS.NCC_LENS).toBe("full");
+    expect(ITEM_TYPES[NCC_LENS_ITEM]).toEqual({});
+
+    const s = game();
+    stockLab(s, "LABORATORY", "NCC_LENS");
+    setProgress(s, { research: "NCC_LENS" }, RESEARCH_COMPLETE - 1);
+    s.rng = CLEAN;
+    const done = mustApply(s, "p0", work("NCC_LENS"));
+    expect(done.items.filter((i) => i.type === NCC_LENS_ITEM && i.at.kind === "room" && i.at.id === "LABORATORY")).toHaveLength(NCC_LENS_YIELD);
+    expect(done.items.some((i) => i.type === "body_cat")).toBe(true);
+
+    // Turret and patrol ship shots: x1.1 when carried; gun attack: x1.33 when carried; melee and floor lenses: no change; carrying two applies once.
+    const shotState = createGame(seats, testConfig(), 7);
+    shotState.preselection = false;
+    shotState.hunters.list = [{ id: "h1", hp: 3, hitChance: 0.5, target: null }];
+    shotState.players[0]!.room = "LASER_TURRET_A_0";
+    shotState.players[1]!.room = "PATROL_SHIP_A_0";
+    shotState.patrolShips.PATROL_SHIP_A_0 = { armor: 10, charges: 10, out: true, destroyed: false, onPlanet: null };
+    shotState.players[2]!.room = "LASER_TURRET_A_0";
+    shotState.items.push(
+      { id: "blaster-1", type: "blaster", charges: 5, at: { kind: "player", id: "p0" } },
+      { id: "knife-1", type: "knife", at: { kind: "player", id: "p0" } },
+      { id: "lens-floor", type: NCC_LENS_ITEM, at: { kind: "room", id: "LASER_TURRET_A_0" } },
+    );
+
+    const turretShot = { type: "turret_attack" } as const;
+    const patrolShot = { type: "patrol_attack" } as const;
+    const gunAttack = { type: "attack", weapon: "blaster-1" } as const;
+    const knifeAttack = { type: "attack", weapon: "knife-1" } as const;
+
+    const baseTurret = option(shotState, "p0", turretShot)!.chance!;
+    const basePatrol = option(shotState, "p1", patrolShot)!.chance!;
+    const baseGun = option(shotState, "p0", gunAttack)!.chance!;
+    const baseKnife = option(shotState, "p0", knifeAttack)!.chance!;
+
+    // Lying in the room does nothing.
+    shotState.items.push(
+      { id: "lens-1", type: NCC_LENS_ITEM, at: { kind: "player", id: "p0" } },
+      { id: "lens-2", type: NCC_LENS_ITEM, at: { kind: "player", id: "p0" } },
+      { id: "lens-3", type: NCC_LENS_ITEM, at: { kind: "player", id: "p1" } },
+    );
+    expect(option(shotState, "p0", turretShot)!.chance).toBeCloseTo(baseTurret * shotState.config.nccLens.spaceAccuracyFactor);
+    expect(option(shotState, "p1", patrolShot)!.chance).toBeCloseTo(basePatrol * shotState.config.nccLens.spaceAccuracyFactor);
+    expect(option(shotState, "p0", gunAttack)!.chance).toBeCloseTo(baseGun * shotState.config.nccLens.crewAccuracyFactor);
+    expect(option(shotState, "p0", knifeAttack)!.chance).toBe(baseKnife);
   });
 
   it("completing SPORE_EXTRACTOR leaves one Spore Sucker on the laboratory floor (owner, 2026-11-20)", () => {

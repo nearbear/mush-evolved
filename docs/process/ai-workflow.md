@@ -5360,6 +5360,7 @@ Owner asked to rotate three Mush skill icons (Slime Trap's to Mass Mouldering, M
 - Added `notInPlanRoom` to `ActionOption["lacks"]` (`shared/src/rules.ts` / `shared/src/types/view.ts`) and `planSlotsPerPlan` / `planExpiryDays` to `PublicConfig` so the client renders Go disabled away from the plan's room and enforces the composer's cap and expiry header strictly from the view without computing legality.
 - Added `plans.*`, `actions.lacksNotInPlanRoom`, and `errors.plan_*` translations across `en`, `fr`, and `es`, and unit tests in `web/tests/hud/plans.test.tsx` and `shared/tests/plans.test.ts`.
 
+- **2026-11-24 — NCC lens research (`NCC_LENS`):** Owner decided: completing `NCC_LENS` spawns 2 `ncc_lens` items on the laboratory floor; unbreakable and non-dismantlable; carrying at least one pair multiplies shooting accuracy once (no stacking) by `x1.1` on `turret_attack` / `patrol_attack` and `x1.33` on non-melee gun `attack` (per eMushpedia). Existing item icon (`ncc_lens.jpg`) and research locale entries were already in place, so wiring took only `items.ts`, `actions/research.ts`, `modifiers.ts`, `config.ts`, `research.ts`, and `names.*.json`.
 
 ### 2026-11-24: UI scale setting instead of an automatic 2K media query (#485 Step 3A)
 

@@ -10,7 +10,7 @@
 
 import { spreadAtCycle, spreadOnEncounter } from "./diseases.ts";
 import { isBrokenIn } from "./equipment.ts";
-import { activeScooter, carriesHeavy, isWorking } from "./items.ts";
+import { activeScooter, carriesHeavy, isWorking, NCC_LENS_ITEM } from "./items.ts";
 import { gravityBroken, noGravity } from "./gravity.ts";
 import { projectDone } from "./projects.ts";
 import { RESEARCH_COMPLETE } from "./research.ts";
@@ -540,6 +540,13 @@ export function actionSuccessRate(base: number, ctx: CostContext, registry: Modi
   // Heuristic targeting (owner, 2026-11-14): x1.25 aim on turret and patrol ship shots for everyone on the crew.
   if ((ctx.action.type === "turret_attack" || ctx.action.type === "patrol_attack") && projectDone(ctx.state, "NERON_TARGETING_ASSIST")) {
     chance *= ctx.state.config.project.neronTargetingAssist.accuracyFactor;
+  }
+  // Carrying NCC lenses (owner, 2026-11-24): x1.1 on turret/patrol shots, x1.33 on gun attacks; once however many are carried.
+  const carriesNccLens = () => ctx.state.items.some((i) => i.type === NCC_LENS_ITEM && i.at.kind === "player" && i.at.id === ctx.actor.id);
+  if ((ctx.action.type === "turret_attack" || ctx.action.type === "patrol_attack") && carriesNccLens()) {
+    chance *= ctx.state.config.nccLens.spaceAccuracyFactor;
+  } else if (ctx.action.type === "attack" && !ctx.tags.includes("melee") && carriesNccLens()) {
+    chance *= ctx.state.config.nccLens.crewAccuracyFactor;
   }
   // Hooks can't make a price negative. A move's MP is a net change and can already be negative (a conversion
   // gives more than the move spends), so the floor is 0 or the base, whichever is lower.

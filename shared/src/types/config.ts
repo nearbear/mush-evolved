@@ -931,6 +931,8 @@ export interface GameConfig {
   repair: { cost: { ap: number }; chance: Record<string, number>; wrenchFactor: number; engineerFactor: number; oxygenLeak: number };
   // Owner, 2026-10-28: carrying the oscilloscope (eMush's Wavoscope) multiplies the odds of a hull repair and a patrol-ship renovation.
   oscilloscope: { repairFactor: number };
+  // Owner, 2026-11-24: carrying NCC lenses (ncc_lens) multiplies shooting accuracy once: x1.1 on turrets/patrols, x1.33 on gun attacks.
+  nccLens: { spaceAccuracyFactor: number; crewAccuracyFactor: number };
   hunger: {
     satietyPerCycle: number; // Satiety a human loses each cycle, before modifiers (confirmed 2026-10-14).
     fullBellyAt: number; // Satiety at which a human has the full belly status and can't eat (confirmed 2026-10-14).
