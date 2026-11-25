@@ -71,4 +71,22 @@ describe("ShipResources compactTitles", () => {
     expect(out).toContain("janice");
     expect(out).toContain("paola");
   });
+
+  it("places the titles icon to the right of the crew bar", () => {
+    const out = renderToStaticMarkup(
+      <ShipResources
+        ship={ship}
+        hunters={0}
+        titles={titles}
+        compactTitles
+        lost={[]}
+        alerts={alerts}
+        crew={{ players: [], youCharacter: "jinsu", youRole: "human", youAlive: true, seats: 16 }}
+      />,
+    );
+    const crewIndex = out.indexOf('class="crew-item"');
+    const titlesIndex = out.indexOf('class="ship-title"');
+    expect(crewIndex).toBeGreaterThan(-1);
+    expect(titlesIndex).toBeGreaterThan(crewIndex);
+  });
 });

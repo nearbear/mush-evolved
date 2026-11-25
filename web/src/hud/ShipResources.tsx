@@ -39,7 +39,7 @@ export function ShipResources({
   alertsApart?: boolean;
   lost: PlayerView["lost"];
   alerts: PlayerView["alerts"];
-  /** Who is aboard, as the crew bar (CrewBar.tsx) draws it, after the titles. */
+  /** Who is aboard, as the crew bar (CrewBar.tsx) draws it, before the titles. */
   crew?: CrewProps | undefined;
 }) {
   const { t } = useTranslation();
@@ -52,6 +52,11 @@ export function ShipResources({
       {lost.map((l) => (
         <LostAlert key={l.name} entry={l} />
       ))}
+      {crew && (
+        <li className="crew-item">
+          <CrewBar {...crew} />
+        </li>
+      )}
       {compactTitles
         ? titles.length > 0 && (
             <li className="ship-title">
@@ -63,11 +68,6 @@ export function ShipResources({
               <TitleChip entry={title} preselection={preselection} />
             </li>
           ))}
-      {crew && (
-        <li className="crew-item">
-          <CrewBar {...crew} />
-        </li>
-      )}
     </ul>
   );
 }
