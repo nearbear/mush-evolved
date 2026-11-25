@@ -39,7 +39,7 @@ Shared baseline: both games use the same four visibility tiers (Public, Secret, 
 
 | Mechanic | eMush | Mush: Evolved |
 | :--- | :--- | :--- |
-| **Hopeless (0 Morale) & Death Morale** | 0-morale status is named Suicidal (humans at 0 morale at cycle change die of depression); almost any crew death costs living humans −1 morale (−3 if Chun dies). | Suicidal is renamed to **Hopeless** at **0 morale** (living humans still at 0 morale when any cycle ends die of depression). Only a **Hopeless (depression) death** (−1 morale) or a **Pregnant crewmate's death** when not traded (−2 morale) deducts crew morale; other deaths do not deduct crew morale. |
+| **Hopeless (0 Morale) & Death Morale** | 0-morale status is named Suicidal (humans at 0 morale at cycle change die of depression); almost any crew death costs living humans −1 morale (−3 if Chun dies). | Suicidal is renamed to **Hopeless** at **0 morale** (living humans still at 0 morale when any cycle ends die of depression). Every non-traded crew death (human or Mush) costs every living player **−1 morale** (**−2** if Chun dies), and a **Pregnant crewmate's death** (when not traded) adds an extra **−2 morale**. |
 | **Pregnancy (Do the Thing)** | Only opposite-gender pairs (when neither partner is already pregnant) roll 8% for the female partner to become Pregnant (no extra spore or death morale penalty in eMush). | **All characters (human or Mush)** are eligible on Do the Thing: each living non-pregnant partner rolls **8% independently** to gain the permanent public **Pregnant** status. Becoming pregnant from a Mush partner inflicts **+1 extra contamination** (+2 total), and a pregnant crewmate's death (when not traded) costs every living player **−2 morale**. |
 | **Title Succession** | Titles pass along fixed succession lines on death or inactivity, and **revert** to a higher-priority character at cycle change when they return from inactivity. | Same succession lines on death or inactivity, but titles **do not revert** when an inactive holder returns. |
 
@@ -49,7 +49,7 @@ Both games start characters with 0 skills (3 pickable + 1 book slot) and permane
 
 | Character | Trait | Difference in Mush: Evolved |
 | :--- | :--- | :--- |
-| **Chun** | **Mankind's Only Hope** | Her death does not inflict eMush's extra −2 crew morale penalty. |
+| **Chun** | **Mankind's Only Hope** | Her death inflicts **−2** total crew morale (rather than eMush's −3). |
 | **Eleesha** | **Chronic Vertigo** | A **permanent, public trait** instead of eMush's curable disorder (no cure, no psychiatrist, no time limit), and it **applies to a Mush Eleesha too**. Same symptom: she can't take off (patrol ship, Pasiphae, Icarus launch) or land a ship on a planet, but can ride the Icarus as a passenger. Take off shows disabled with the reason instead of being hidden (so do the Gastroenteritis and Slight Nausea groundings). |
 | **Terrence** | **Wheelchair** | Replaces eMush's solo AP-to-MP conversion penalty with **Accommodate**: any roommate can offer to push him for 0 AP (offers expire in 5 minutes). While pushed, Terrence moves with and is steered by his pusher for 0 MP until any public action on equipment or another person ends the push. |
 
@@ -76,7 +76,7 @@ Both games start characters with 0 skills (3 pickable + 1 book slot) and permane
 > [!IMPORTANT]
 > **Major Change — Mush Have Real, Tracked Morale:** In eMush, Mush morale is permanently locked at 14 and unaffected by food, traits, or penalties (allowing "what's your morale?" arithmetic checks). In **Mush: Evolved**, **Mush track real morale** so a Mush's morale naturally mirrors a human's:
 >
-> - Mush keep their current morale on conversion and gain or lose morale from **every source**: consumables (food, alien fruits, and drugs apply their morale delta to Mush even though Mush still gain 0 AP/HP/MP/buffs from them, while still adding satiety), daily morale loss, innate character traits (Raluca's **Antisocial**, Finola's **Germaphobe**), Hopeless (−1) and Pregnant (−2) crew deaths, incidents, speeches, Comfort, and Demoralizer.
+> - Mush keep their current morale on conversion and gain or lose morale from **every source**: consumables (food, alien fruits, and drugs apply their morale delta to Mush even though Mush still gain 0 AP/HP/MP/buffs from them, while still adding satiety), daily morale loss, innate character traits (Raluca's **Antisocial**, Finola's **Germaphobe**), crew deaths (−1, or −2 for Chun, plus −2 if Pregnant), incidents, speeches, Comfort, and Demoralizer.
 > - At **0 morale**, Mush receive the private **Hopeless** status just like humans, but **never die from it**.
 
 *(Spore extraction, Fertile's free first daily extraction, personal/daily spore caps, covert spiking with 4-cycle cooldown, same-room spore badges for Mush, Epigenetics, and Schrödinger infection work the same as in eMush.)*

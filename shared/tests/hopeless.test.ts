@@ -7,7 +7,8 @@ import type { GameState } from "../src/types.ts";
 import { makeSeats, mustApply, nextCycle, player, testConfig } from "./support.ts";
 
 // Morale at 0 (owner, 2026-11-11): Hopeless, private, ended by any morale gain; a human still Hopeless when a cycle
-// ends dies, a Mush never does, and each such death costs every living player `hopeless.deathMorale`.
+// ends dies, a Mush never does, and each death costs every living player `death.moraleLoss` (or `death.chunMoraleLoss`
+// for Chun) via `killPlayer` (owner, 2026-11-24).
 // Seats: p0 human, p1 (Chun) human, p2 Mush. No incidents: a panic attack would move morale under the tests.
 const config = testConfig();
 function ship(): GameState {
@@ -25,8 +26,14 @@ const give = (s: GameState, id: string, type: string): string => {
 };
 
 describe("Hopeless", () => {
-  it("costs 1 morale per death", () => {
-    expect(config.hopeless.deathMorale).toBe(1);
+  it("uses the global death morale loss (1 normal, 2 for Chun) without double-charging", () => {
+    expect([config.death.moraleLoss, config.death.chunMoraleLoss]).toEqual([1, 2]);
+    const s0 = ship();
+    player(s0, "p1").morale = 0; // Chun dies Hopeless
+    const mushBefore = player(s0, "p2").morale;
+    const s1 = nextCycle(s0);
+    expect(player(s1, "p1").alive).toBe(false);
+    expect(player(s1, "p2").morale).toBe(mushBefore - config.death.chunMoraleLoss);
   });
 
   it("is the status of a living player at 0 morale, Mush included, and any gain ends it", () => {
@@ -93,7 +100,7 @@ describe("Hopeless", () => {
     const mushBefore = player(s0, "p2").morale;
     const s1 = nextCycle(s0);
     expect(s1.players.filter((p) => !p.alive).map((p) => p.id)).toEqual(["p0", "p3"]);
-    const cost = 2 * config.hopeless.deathMorale;
+    const cost = 2 * config.death.moraleLoss;
     expect(player(s1, "p2").morale).toBe(mushBefore - cost);
     expect(player(s1, "p1")).toMatchObject({ alive: true, morale: 0 });
     expect(player(nextCycle(s1), "p1").alive).toBe(false);

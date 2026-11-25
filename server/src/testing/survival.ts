@@ -293,7 +293,9 @@ const addInto = (into: Record<string, number>, from: Record<string, number>): vo
 function moraleDeltas(before: GameState, after: GameState, fresh: GameState["log"], changed: boolean, source: string): { up: Record<string, number>; down: Record<string, number> } {
   const up: Record<string, number> = {};
   const down: Record<string, number> = {};
-  const depression = fresh.filter((e) => e.key === "died" && e.params?.cause === "depression").length;
+  const deathMorale = fresh
+    .filter((e) => e.key === "died" && e.params?.cause !== "daedalus_destroyed")
+    .reduce((sum, e) => sum + (e.params?.name === "chun" ? after.config.death.chunMoraleLoss : after.config.death.moraleLoss), 0);
   const dayEnded = changed && dayOfCycle(after, after.cycle) !== dayOfCycle(before, before.cycle);
   const dayLoss = dayEnded ? dailyMoraleLoss(before) : 0;
   for (const p of after.players) {
@@ -320,7 +322,7 @@ function moraleDeltas(before: GameState, after: GameState, fresh: GameState["log
     };
     const panics = fresh.filter((e) => e.key === "panicAttack" && Array.isArray(e.visibleTo) && e.visibleTo.includes(p.id)).length;
     take("panicAttack", panics * after.config.incidents.panicAttack.morale);
-    take("hopelessDeath", depression * after.config.hopeless.deathMorale);
+    take("hopelessDeath", deathMorale);
     take("dayEnd", dayLoss);
     take("changeOther", left);
   }

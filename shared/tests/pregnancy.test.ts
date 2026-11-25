@@ -103,16 +103,17 @@ describe("pregnancy", () => {
 
   it("costs every living crewmate morale when a pregnant crewmate dies (but not when traded)", () => {
     const s = ship({ share: { pregnancy: { chance: 1 } } });
-    const loss = s.config.share.pregnancy.deathMoraleLoss;
+    const pregLoss = s.config.share.pregnancy.deathMoraleLoss;
+    const deathLoss = s.config.death.moraleLoss;
     player(s, "p0").statuses.push("pregnant");
     const before = Object.fromEntries(s.players.map((p) => [p.id, p.morale]));
 
     killPlayer(s, player(s, "p0"), "assassinated");
     expect(player(s, "p0").alive).toBe(false);
-    // Every living crewmate (human and Mush alike) loses deathMoraleLoss morale.
+    // Every living crewmate (human and Mush alike) loses death.moraleLoss + pregnancy.deathMoraleLoss morale.
     for (const id of ["p1", "p2", "p3"]) {
-      expect(player(s, id).morale).toBe(Math.max(0, before[id]! - loss));
-      expect(viewFor(s, id).log).toContainEqual(expect.objectContaining({ key: "pregnantDeathMoraleLoss", params: { amount: loss } }));
+      expect(player(s, id).morale).toBe(Math.max(0, before[id]! - deathLoss - pregLoss));
+      expect(viewFor(s, id).log).toContainEqual(expect.objectContaining({ key: "pregnantDeathMoraleLoss", params: { amount: pregLoss } }));
     }
 
     // Traded away does not trigger the death morale penalty.

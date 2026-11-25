@@ -1027,7 +1027,10 @@ export interface GameConfig {
   startSkills: string[]; // Skills every player starts with (none since 2026-10-15; players pick their own).
   characterModifiers: Record<string, string[]>; // Modifiers a character starts with, by character id (traits: Ian pacifist, owner 2026-10-18; Chun immunity and mankind_only_hope, owner 2026-10-18; Terrence wheelchair, owner 2026-10-19; Chao hyperactive, owner 2026-11-08; Raluca antisocial, owner 2026-11-19; Finola germaphobe, owner 2026-11-21; Eleesha chronic_vertigo, owner 2026-11-22).
   mankindOnlyHope: { moraleLossCut: number }; // How much less morale the crew loses each day while a holder (Chun) is alive (owner, 2026-10-18).
-  hopeless: { deathMorale: number }; // Morale every living player loses for each human who dies Hopeless at a cycle's end (owner, 2026-11-11).
+  death: {
+    moraleLoss: number; // Morale every living player (human or Mush) loses when a crewmate dies (not traded or ship destroyed) (owner, 2026-11-24).
+    chunMoraleLoss: number; // Morale every living player loses instead when Chun dies (owner, 2026-11-24).
+  };
   /** Items placed in rooms at the start of the game (fixed room, or random from `storage` / `daedalus` pool, optionally with weighted blueprint/book draws; `atSelection` waits until Mush selection). */
   startItems: ({ type: string; builds?: string; buildsWeights?: Record<string, number>; teaches?: string; teachesWeights?: Record<string, number>; plant?: PlantState; atSelection?: boolean } & ({ room: RoomId } | { pool: "storage" | "daedalus" }))[];
   startInventory: string[]; // Item types every player starts carrying (one of each).

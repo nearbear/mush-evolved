@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { DEFAULT_CONFIG } from "../src/config.ts";
 import { createChannel, inviteToChannel, sendChat, toggleCheckbox } from "../src/chat.ts";
 import { damage, hasMushDied, heal, killPlayer } from "../src/death.ts";
 import { hopelessCycle } from "../src/morale.ts";
@@ -331,7 +332,7 @@ describe("private HP change logs", () => {
     const before = s.log.length;
     damage(s, p1, 5, "injury");
     expect(p1.alive).toBe(false);
-    expect(s.log.slice(before).map((e) => [e.key, e.params])).toEqual([
+    expect(s.log.slice(before, before + 2).map((e) => [e.key, e.params])).toEqual([
       ["loseHp", { amount: 2 }],
       ["died", { name: "chun", cause: "injury" }],
     ]);
@@ -355,5 +356,70 @@ describe("private HP change logs", () => {
     expect(viewFor(s, "p1").log.some((e) => e.key === "gainHp")).toBe(true);
     expect(viewFor(s, "p0").log.some((e) => e.key === "gainHp")).toBe(false);
     expect(viewFor(s, "p2").log.some((e) => e.key === "gainHp")).toBe(false);
+  });
+
+  it("pins default death morale losses (1 normal, 2 for Chun)", () => {
+    expect([DEFAULT_CONFIG.death.moraleLoss, DEFAULT_CONFIG.death.chunMoraleLoss]).toEqual([1, 2]);
+  });
+
+  it("costs every living player morale when a human or Mush dies, and more when Chun dies", () => {
+    // Non-Chun human dies (p2): every living player (human and Mush) loses death.moraleLoss with a private loseMorale line.
+    const sHuman = ship();
+    const beforeHuman = Object.fromEntries(sHuman.players.map((p) => [p.id, p.morale]));
+    killPlayer(sHuman, player(sHuman, "p2"), "injury");
+    for (const id of ["p0", "p1", "p3"]) {
+      expect(player(sHuman, id).morale).toBe(beforeHuman[id]! - sHuman.config.death.moraleLoss);
+      expect(viewFor(sHuman, id).log).toContainEqual(expect.objectContaining({ key: "loseMorale", params: { amount: sHuman.config.death.moraleLoss } }));
+    }
+
+    // Non-Chun Mush dies (p0): same morale loss for every living player.
+    const sMush = ship();
+    const beforeMush = Object.fromEntries(sMush.players.map((p) => [p.id, p.morale]));
+    killPlayer(sMush, player(sMush, "p0"), "assassinated");
+    for (const id of ["p1", "p2", "p3"]) {
+      expect(player(sMush, id).morale).toBe(beforeMush[id]! - sMush.config.death.moraleLoss);
+      expect(viewFor(sMush, id).log).toContainEqual(expect.objectContaining({ key: "loseMorale", params: { amount: sMush.config.death.moraleLoss } }));
+    }
+
+    // Chun dies (p1, human): every living player loses death.chunMoraleLoss.
+    const sChun = ship();
+    const beforeChun = Object.fromEntries(sChun.players.map((p) => [p.id, p.morale]));
+    killPlayer(sChun, player(sChun, "p1"), "assassinated");
+    for (const id of ["p0", "p2", "p3"]) {
+      expect(player(sChun, id).morale).toBe(beforeChun[id]! - sChun.config.death.chunMoraleLoss);
+      expect(viewFor(sChun, id).log).toContainEqual(expect.objectContaining({ key: "loseMorale", params: { amount: sChun.config.death.chunMoraleLoss } }));
+    }
+
+    // Chun dies as Mush too: still death.chunMoraleLoss.
+    const sChunMush = ship();
+    player(sChunMush, "p1").role = "mush";
+    const beforeChunMush = Object.fromEntries(sChunMush.players.map((p) => [p.id, p.morale]));
+    killPlayer(sChunMush, player(sChunMush, "p1"), "injury");
+    for (const id of ["p0", "p2", "p3"]) {
+      expect(player(sChunMush, id).morale).toBe(beforeChunMush[id]! - sChunMush.config.death.chunMoraleLoss);
+    }
+
+    // Private log isolation: p0's loseMorale entry is not visible to p2.
+    const p0Lose = sChun.log.find((e) => e.key === "loseMorale" && Array.isArray(e.visibleTo) && e.visibleTo.includes("p0"))!;
+    expect(p0Lose.visibleTo).toEqual(["p0"]);
+  });
+
+  it("skips death morale loss when traded or when the ship is destroyed, and stacks with pregnancy", () => {
+    const sTraded = ship();
+    const beforeTraded = player(sTraded, "p0").morale;
+    killPlayer(sTraded, player(sTraded, "p1"), "traded");
+    expect(player(sTraded, "p0").morale).toBe(beforeTraded);
+
+    const sDestroyed = ship();
+    const beforeDestroyed = player(sDestroyed, "p0").morale;
+    killPlayer(sDestroyed, player(sDestroyed, "p1"), "daedalus_destroyed");
+    expect(player(sDestroyed, "p0").morale).toBe(beforeDestroyed);
+
+    // Pregnant Chun dying stacks chunMoraleLoss + pregnancy.deathMoraleLoss.
+    const sPreg = ship();
+    player(sPreg, "p1").statuses.push("pregnant");
+    const beforePreg = player(sPreg, "p0").morale;
+    killPlayer(sPreg, player(sPreg, "p1"), "assassinated");
+    expect(player(sPreg, "p0").morale).toBe(beforePreg - sPreg.config.death.chunMoraleLoss - sPreg.config.share.pregnancy.deathMoraleLoss);
   });
 });

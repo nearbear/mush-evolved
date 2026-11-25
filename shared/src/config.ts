@@ -721,9 +721,9 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   startSkills: [],
   characterModifiers: { ian: ["pacifist"], chun: ["immunity", "mankind_only_hope"], terrence: ["wheelchair"], chao: ["hyperactive"], raluca: ["antisocial"], finola: ["germaphobe"], eleesha: ["chronic_vertigo"] },
   mankindOnlyHope: { moraleLossCut: 1 },
-  // Owner, 2026-11-11: a human still at 0 morale (Hopeless) when a cycle ends dies, and each such death costs every
-  // living player, Mush included, 1 morale.
-  hopeless: { deathMorale: 1 },
+  // Owner, 2026-11-24: every non-traded crewmate death (human or Mush) costs every living player 1 morale, or 2 when
+  // Chun dies. Replaces the old Hopeless-only loss and stacks with pregnant death loss.
+  death: { moraleLoss: 1, chunMoraleLoss: 2 },
   creative: { refundOdds: 0.5 },
   anticPerfume: { immuneCycles: 2 },
   strongSkin: { resistOdds: 0.5 },

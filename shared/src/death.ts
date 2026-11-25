@@ -133,6 +133,17 @@ export function killPlayer(state: GameState, player: PlayerState, cause: DeathCa
   if (!traded && state.bios.death_announcements && !isDefaced(state, player.room)) {
     systemMessage(state, "global", player.role === "mush" ? "diedMush" : "diedHuman", { name: player.character, cause });
   }
+  // Owner, 2026-11-24: every non-traded death (human or Mush) costs every living crewmember morale
+  // (`death.moraleLoss`, or `death.chunMoraleLoss` when Chun dies). Replaces the old Hopeless-only loss and
+  // stacks with the pregnant death loss below.
+  if (!traded && cause !== "daedalus_destroyed") {
+    const loss = player.character === "chun" ? state.config.death.chunMoraleLoss : state.config.death.moraleLoss;
+    if (loss > 0) {
+      for (const other of state.players) {
+        if (other.alive) gainMorale(state, other, -loss);
+      }
+    }
+  }
   // Owner, 2026-11-21: if a pregnant crewmember dies, every living crewmember (human or Mush) loses morale.
   if (!traded && player.statuses.includes("pregnant") && state.config.share.pregnancy.deathMoraleLoss > 0) {
     for (const other of state.players) {
