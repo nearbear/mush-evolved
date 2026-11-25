@@ -394,6 +394,7 @@
   "actions": {
     "dirtChance": "Dirty {{percent}}%",
     "injuryChance": "Injury {{percent}}%",
+    "triggersMycoAlarm": "Triggers any MycoAlarm on the floor",
     "claimSlot": "Claim",
     "withdrawSlot": "Withdraw",
     "markDone": "Mark done",

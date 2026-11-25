@@ -408,6 +408,7 @@
   "actions": {
     "dirtChance": "Sucio {{percent}} %",
     "injuryChance": "Herida {{percent}} %",
+    "triggersMycoAlarm": "Activa las Micoalarmas del suelo",
     "claimSlot": "Apuntarse",
     "withdrawSlot": "Retirarse",
     "markDone": "Marcar como hecho",

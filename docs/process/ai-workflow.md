@@ -5453,3 +5453,8 @@ Investigated why the action duration progress bar stayed empty/static in replays
 - **Done:** `SatietyInfo.tsx` adds "Hungry in N cycles" (or "after N cycles once empty" while fed; tapeworm shortens it) and a `SatietyHelp` caption (empty stomach → Hungry and HP loss, or harmless for Mush; what food gives; Refectory rations and coffee machine, Hydroponic Garden fruit), en/fr/es.
 - **Needed a state change:** Mush had `satietyZeroSince = null` everywhere, so "empty for N cycles" couldn't be shown for them. It is now kept for Mush too (start, conversion, Transfer, a Mush meal clears it); hunger stays human-only in `isHungry`, and the eat tip and the bot `eat` goal now check the role explicitly, since both had relied on the null.
 - **Correction:** a full `verify` turned up a hardcoded-text ratchet failure in `ResourceChips.tsx` (`i > visible` read as JSX text); it already fails on the committed HEAD from the spores-card commit, so it was left for that work.
+
+### 2026-11-25: Myco alarm note on spore action cards
+
+- Action cards (`web/src/hud/ActionButton.tsx`) now add a line under the dirt/injury odds for any `spore`-tagged option, with the myco alarm icon: "Rings any myco alarm on the floor" (en/fr/es). It reads `option.tags`, which the view already carried, so no shared or server change. Worked first time; the note is static rather than "an alarm is here", since a hidden alarm isn't in the player's view and the card mustn't imply there's none.
+- Owner follow-up: the line uses the plain `mush.png` UI icon (`MUSH_ICON`) instead of the item art, and reads "Triggers any MycoAlarm on the floor" (fr "Déclenche les Mycoalarmes au sol", es "Activa las Micoalarmas del suelo").

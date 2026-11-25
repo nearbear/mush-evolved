@@ -408,6 +408,7 @@
   "actions": {
     "dirtChance": "Sale {{percent}} %",
     "injuryChance": "Blessure {{percent}} %",
+    "triggersMycoAlarm": "Déclenche les Mycoalarmes au sol",
     "claimSlot": "Prendre",
     "withdrawSlot": "Se retirer",
     "markDone": "Marquer comme fait",

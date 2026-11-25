@@ -6,7 +6,7 @@ import { Popover } from "@base-ui/react/popover";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { ConsumeEffects } from "./ConsumeEffects.tsx";
-import { HP_ICON, STATUS_ICONS } from "../art/assets.ts";
+import { HP_ICON, MUSH_ICON, STATUS_ICONS } from "../art/assets.ts";
 import { SINGLE_PRESS_ACTIONS, useDoublePress } from "./DoublePress.tsx";
 import { affordable, blurredVision, type Action, type ActionOption, type PlayerView } from "@mush2/shared";
 
@@ -104,7 +104,8 @@ function EnabledActionButton({
 /**
  * The card under an action button: its description (once `actionDescriptions.<type>` has one), the hint its caller
  * passes, and for food what eating it does; then, below a rule so they aren't read as eating's effects, its odds of
- * making you dirty or hurting you, each only when it isn't zero. `above` is anything the caller shows first (a reason).
+ * making you dirty or hurting you, each only when it isn't zero, and for a `spore`-tagged action that it triggers any
+ * MycoAlarm on the floor (mycoalarm.ts), so a Mush knows which abilities give them away. `above` is anything the caller shows first (a reason).
  */
 function ActionDetails({ view, option, hint, above }: { view: PlayerView; option: ActionOption; hint?: string | undefined; above?: ReactNode }) {
   const { t, i18n } = useTranslation();
@@ -113,7 +114,8 @@ function ActionDetails({ view, option, hint, above }: { view: PlayerView; option
   const description = i18n.exists(key) ? t(key as never) : undefined;
   const dirt = Math.round(option.dirt * 100);
   const injury = Math.round(option.injury * 100);
-  const risky = dirt > 0 || injury > 0;
+  const alarm = option.tags.includes("spore");
+  const risky = dirt > 0 || injury > 0 || alarm;
   const body = above !== undefined || description !== undefined || hint !== undefined || type !== undefined;
   return (
     <>
@@ -136,6 +138,12 @@ function ActionDetails({ view, option, hint, above }: { view: PlayerView; option
               <span>{t("actions.injuryChance", { percent: injury })}</span>
             </li>
           )}
+          {alarm && (
+            <li>
+              <img src={MUSH_ICON} alt="" />
+              <span>{t("actions.triggersMycoAlarm")}</span>
+            </li>
+          )}
         </ul>
       )}
     </>
@@ -144,7 +152,7 @@ function ActionDetails({ view, option, hint, above }: { view: PlayerView; option
 
 /** Whether `ActionDetails` would show anything for an enabled button, so one with nothing to say gets no card. */
 function hasDetails(view: PlayerView, option: ActionOption, hint: string | undefined, hasDescription: boolean): boolean {
-  return hasDescription || hint !== undefined || consumedType(view, option) !== undefined || option.dirt > 0 || option.injury > 0;
+  return hasDescription || hint !== undefined || consumedType(view, option) !== undefined || option.dirt > 0 || option.injury > 0 || option.tags.includes("spore");
 }
 
 /** The type of the item a consume action eats, so its button can say what it does. */
