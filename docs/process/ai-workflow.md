@@ -5463,3 +5463,8 @@ Investigated why the action duration progress bar stayed empty/static in replays
 
 Filled the research lab's empty "Research basics" collapsible with five beginner paragraphs (what research is, how to contribute and getting dirty, teamwork/relay penalty and skills, Blocked-tab requirements, pending samples and assays including Mush spoiling), en/fr/es, matching the botany and travel primers. Text was checked against `implemented-rules.md` (2 AP, 15% dirty, 12% ≈ 1 in 8 spoil, assay marks 25/50/75/100) rather than written from memory. fr/es are drafts for native review.
 Correction (owner): dropped the fifth paragraph (pending samples, assays, Mush spoiling) as too much information for a primer; four paragraphs remain.
+
+### 2026-11-25: Research progress bar split at the assay marks
+
+- Owner asked for the research bar to be four bars (one per 25%) with a hairline gap, to show where assays happen. `ProgressBar` in `web/src/hud/TerminalDialog.tsx` takes optional `segments`; research passes `DEFAULT_CONFIG.research.assayMarks` (the marks aren't in the view, and the default config is what every ship uses), and each segment gets its own `--value`/`--pending`, so the striped pending samples still sit right after the fill and can span segments. The outer element stays the single `progressbar` (and popover trigger). Projects and PILGRED keep one bar.
+- Tradeoff noted: if a ship ever ran non-default assay marks, the bar would need `assayMarks` added to `view.config`.

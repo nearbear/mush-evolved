@@ -382,7 +382,8 @@ li.research-item .research-title {
   display: block;
 }
 .research-progress progress,
-.research-progress .kit-progress {
+.research-progress > .kit-progress,
+.research-progress .progress-segments {
   flex: 1 1 0;
   min-width: 2rem;
 }
@@ -439,8 +440,17 @@ li.research-item .research-title {
     repeating-linear-gradient(-45deg, #a8ea40 0 3px, transparent 3px 6px) left / 3px 100% no-repeat,
     #213578;
 }
+/* Research's bar split at its assay marks (each quarter its own bar), with a hairline gap between them. */
+.progress-segments {
+  display: flex;
+  gap: 2px;
+}
+.progress-segments > .kit-progress {
+  flex: 1 1 0;
+  min-width: 0;
+}
 /* A bar with pending samples opens a tooltip saying how much is pending. */
-.research-progress .kit-progress.has-pending {
+.research-progress .has-pending {
   cursor: help;
 }
 

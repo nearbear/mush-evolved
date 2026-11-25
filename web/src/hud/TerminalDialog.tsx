@@ -9,6 +9,7 @@ import { Popover } from "@base-ui/react/popover";
 import { Tabs } from "@base-ui/react/tabs";
 import React, { useEffect, useId, useRef, useState, type CSSProperties } from "react";
 import {
+  DEFAULT_CONFIG,
   hasSkill,
   MAX_SHARED_PILGRED_TEXT_LENGTH,
   PILGRED_COMPLETE,
@@ -167,6 +168,7 @@ function ResearchList({ terminal, view, onAction }: ListProps) {
       progress={view.research}
       relay={view.relay.research}
       complete={RESEARCH_COMPLETE}
+      marks={DEFAULT_CONFIG.research.assayMarks}
       cards={RESEARCH_CARDS}
       name={names.research}
       desc={(id) => t(`research.desc.${id}`, { defaultValue: "" }) || undefined}
@@ -433,6 +435,8 @@ interface ProgressListProps {
   /** Each target's relay pool, from the view (only in its room). */
   relay: Record<string, RelayTargetView>;
   complete: number;
+  /** Where the bar splits into segments (research: its assay marks, so each quarter is its own bar). */
+  marks?: readonly number[];
   cards: Record<string, string>;
   name: (id: string) => string;
   /** The description shown on hover, if the entry has one. */
@@ -482,11 +486,48 @@ export function EntryTip({ name, desc, trigger, children }: { name: string; desc
 }
 
 /**
- * A research or project's progress bar. With samples pending their assay, the bar is the trigger for a tooltip saying how
- * much is pending (hover, focus or tap), so the percent beside it stays short and never wraps.
+ * Each segment's share of a bar split at `marks` (research's assay marks): how much of it is filled (`--value`) and how
+ * much of it is pending samples (`--pending`, drawn right after the fill), each 0 to 1 of that segment.
  */
-function ProgressBar({ label, percent, complete, pending, style }: { label: string; percent: number; complete: number; pending: string | undefined; style: CSSProperties }) {
-  if (!pending) return <div className="kit-progress neron" role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={complete} aria-valuenow={percent} style={style} />;
+function segmentStyles(marks: readonly number[], percent: number, pending: number): CSSProperties[] {
+  const clamp = (x: number) => Math.max(0, Math.min(1, x));
+  return marks.map((hi, i) => {
+    const lo = i === 0 ? 0 : marks[i - 1]!;
+    const span = hi - lo;
+    const value = clamp((percent - lo) / span);
+    const pend = clamp((Math.min(percent + pending, hi) - Math.max(percent, lo)) / span);
+    return { "--value": value, "--pending": pend } as CSSProperties;
+  });
+}
+
+/**
+ * A research or project's progress bar. With samples pending their assay, the bar is the trigger for a tooltip saying how
+ * much is pending (hover, focus or tap), so the percent beside it stays short and never wraps. With `segments` it is a row
+ * of separate bars with a hairline gap between them (research: one per assay mark), still one progressbar to assistive tech.
+ */
+function ProgressBar({
+  label,
+  percent,
+  complete,
+  pending,
+  style,
+  segments,
+}: {
+  label: string;
+  percent: number;
+  complete: number;
+  pending: string | undefined;
+  style: CSSProperties;
+  segments?: CSSProperties[] | undefined;
+}) {
+  const className = segments ? "progress-segments" : "kit-progress neron";
+  const children = segments?.map((segment, i) => <div key={i} className="kit-progress neron" style={segment} />);
+  if (!pending)
+    return (
+      <div className={className} role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={complete} aria-valuenow={percent} style={segments ? undefined : style}>
+        {children}
+      </div>
+    );
   return (
     <Popover.Root>
       {/* Base UI makes a non-native trigger focusable itself, so keyboard users can open it too. */}
@@ -495,15 +536,17 @@ function ProgressBar({ label, percent, complete, pending, style }: { label: stri
         delay={200}
         nativeButton={false}
         render={<div />}
-        className="kit-progress neron has-pending"
+        className={`${className} has-pending`}
         role="progressbar"
         aria-label={label}
         aria-valuemin={0}
         aria-valuemax={complete}
         aria-valuenow={percent}
         aria-valuetext={pending}
-        style={style}
-      />
+        style={segments ? undefined : style}
+      >
+        {children}
+      </Popover.Trigger>
       <Popover.Portal>
         <Popover.Positioner sideOffset={6}>
           <Popover.Popup className="tooltip">{pending}</Popover.Popup>
@@ -523,7 +566,7 @@ const PROGRESS_TABS: readonly ProgressTab[] = ["active", "blocked", "done", "dis
  * Unimplemented tab holding the entries the rules don't implement, which then appear in no other tab; on the phone
  * layout they are hidden. Within a tab the order is the list's own. Empty tabs other than Active are left out.
  */
-function ProgressList({ label, intro, ids, progress, relay, complete, cards, name, desc, unimplemented, unimplementedLabel, discarded, discardedLabel, describeFinished = false, needs, option: optionFor, work, more, view, onAction }: ProgressListProps) {
+function ProgressList({ label, intro, ids, progress, relay, complete, marks, cards, name, desc, unimplemented, unimplementedLabel, discarded, discardedLabel, describeFinished = false, needs, option: optionFor, work, more, view, onAction }: ProgressListProps) {
   const { t } = useTranslation();
   const mobile = useMobile();
   const [tab, setTab] = useState<ProgressTab>("active");
@@ -591,6 +634,7 @@ function ProgressList({ label, intro, ids, progress, relay, complete, cards, nam
                             complete={complete}
                             pending={pendingOf(id) ? t("research.withPending", { percent, pending: pendingOf(id) }) : undefined}
                             style={{ "--value": Math.min(1, percent / complete), "--pending": Math.min(1, pendingOf(id) / complete) } as CSSProperties}
+                            segments={marks && segmentStyles(marks, percent, pendingOf(id))}
                           />
                         </div>
                       )}
