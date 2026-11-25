@@ -459,8 +459,8 @@ describe("viewFor (hidden information)", () => {
       return state;
     };
 
-    it("starts on and tells everyone where everyone is", () => {
-      expect(newGame().bios.actopi).toBe(true);
+    it("starts off; while on, tells everyone where everyone is", () => {
+      expect(newGame().bios.actopi).toBe(false);
       const state = spread(true);
       const view = viewFor(state, "p0");
       expect(view.unidentified).toEqual([]);

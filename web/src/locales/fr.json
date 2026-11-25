@@ -1849,6 +1849,7 @@
     },
     "names": {
       "DRUG_DISPENSER": "Distillateur de stupéfiant",
+      "WHOS_WHO": "Protocole ACTOPI",
       "STEROIDS": "Anabolisant",
       "MYCOSCAN": "Création du Mycoscan",
       "PATULINE_SCRAMBLER": "Brouilleur à patuline",
@@ -1875,6 +1876,7 @@
     },
     "desc": {
       "DRUG_DISPENSER": "Le distillateur peut être utilisé une fois par jour pour créer un médicament.",
+      "WHOS_WHO": "Active ACTOPI pour que tout le monde voie qui est dans chaque pièce, et débloque son interrupteur BIOS.",
       "STEROIDS": "Génère 4 anabolisants.",
       "MYCOSCAN": "Permet de détecter la présence de spores sur un membre d'équipage sain.",
       "PATULINE_SCRAMBLER": "Les infectés ne peuvent plus communiquer sur le canal Mush.",

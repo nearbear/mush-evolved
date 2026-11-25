@@ -1915,6 +1915,7 @@
     },
     "names": {
       "DRUG_DISPENSER": "Drug distiller",
+      "WHOS_WHO": "ACTOPI protocol",
       "STEROIDS": "Anabolic steroids",
       "MYCOSCAN": "Mycoscan creation",
       "PATULINE_SCRAMBLER": "Patulin scrambler",
@@ -1941,6 +1942,7 @@
     },
     "desc": {
       "DRUG_DISPENSER": "The distiller can be used once a day to make a drug.",
+      "WHOS_WHO": "Turns ACTOPI on so everyone sees who is in each room, and unlocks its BIOS switch.",
       "STEROIDS": "Produces 4 anabolic steroids.",
       "MYCOSCAN": "Detects spores on a healthy crew member.",
       "PATULINE_SCRAMBLER": "The infected can no longer communicate on the Mush channel.",

@@ -643,7 +643,13 @@ describe("hasQueues", () => {
   });
 
   it("is true with an action under way or queued, and dropQueues then gives what normalizeGame gives (decision 2)", () => {
-    const { game, overrides } = played();
+    const { game: base, overrides } = played();
+    // Ensure at least one player has an active or queued action regardless of how the seeded random play lands.
+    const game = structuredClone(base);
+    if (!game.players.some((p) => p.current !== null || p.queue.length > 0)) {
+      const p = game.players.find((x) => x.alive)!;
+      p.current = { action: { type: "search" }, adjustment: { ap: 0, mp: 0 }, since: game.now, until: game.now + 1000 };
+    }
     expect(game.players.some((p) => p.current !== null || p.queue.length > 0)).toBe(true);
     expect(hasQueues(stored(game))).toBe(true);
     const result = dropQueues(game);

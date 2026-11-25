@@ -3,6 +3,7 @@
 // them. Options from the original's `neronAdmin` table: ACTOPI, NERON's death announcements, and the plasma shield
 // (owner, 2026-10-24).
 
+import { RESEARCH_COMPLETE } from "./research.ts";
 import { hasTitleAccess } from "./titles.ts";
 import type { GameState, PlayerState } from "./types.ts";
 
@@ -19,7 +20,8 @@ export type CrewLock = (typeof CREW_LOCKS)[number];
 export const isCrewLock = (value: unknown): value is CrewLock => CREW_LOCKS.some((l) => l === value);
 
 /**
- * - `actopi`: while on, everyone sees who is in which room; while off, only how many people are in each other room.
+ * - `actopi`: starts off (owner, 2026-11-24). Completing the `WHOS_WHO` research switches it on and unlocks the BIOS
+ *   toggle. While on, everyone sees who is in which room; while off, only how many people are in each other room.
  * - `death_announcements`: while on, a death is announced in global chat with the dead player's role. The room's
  *   own log line is written either way (death.ts).
  * - `plasma_shield`: starts off (owner, 2026-11-23). While off or while the `PLASMA_SHIELD` equipment is broken, the
@@ -34,14 +36,17 @@ export type BiosState = Record<BiosOption, boolean> & {
   crew_lock: CrewLock;
 };
 
-/** ACTOPI and death announcements start on, plasma shield starts off (owner, 2026-11-23), CPU priority none, crew lock piloting. */
+/** Death announcements start on; ACTOPI (until WHOS_WHO research completes; owner, 2026-11-24) and plasma shield (owner, 2026-11-23) start off; CPU priority none, crew lock piloting. */
 export const newBios = (): BiosState => ({
-  actopi: true,
+  actopi: false,
   death_announcements: true,
   plasma_shield: false,
   cpu_priority: "none",
   crew_lock: "piloting",
 });
+
+/** Whether the ACTOPI BIOS switch is unlocked (the `WHOS_WHO` research has completed; owner, 2026-11-24). */
+export const actopiUnlocked = (state: Readonly<GameState>): boolean => (state.research.WHOS_WHO ?? 0) >= RESEARCH_COMPLETE;
 
 /** BIOS terminals in the player's room. */
 export function biosTerminalsHere(state: Readonly<GameState>, player: Readonly<PlayerState>) {

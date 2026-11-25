@@ -211,15 +211,18 @@ const design = urls(
   import.meta.glob<string>("../../../Mush/www/img/design/{pa1,pa2,lifebar,lifebar2,bdd,bdd_off,neron_chat}.png", { eager: true, query: "?url", import: "default" }),
 );
 
-/** Research cards, keyed by the lowercase research id (the file name). */
-export const RESEARCH_CARDS = urls(
-  import.meta.glob<string>("../../../Mush/www/img/cards/research/*.png", { eager: true, query: "?url", import: "default" }),
-);
-
 /** NERON project cards, keyed by the lowercase project id (the file name). */
 export const PROJECT_CARDS = urls(
   import.meta.glob<string>("../../../Mush/www/img/cards/projects/*.png", { eager: true, query: "?url", import: "default" }),
 );
+
+/** Research cards, keyed by the lowercase research id (the file name; WHOS_WHO reuses its former project card). */
+export const RESEARCH_CARDS: Record<string, string> = {
+  ...urls(
+    import.meta.glob<string>("../../../Mush/www/img/cards/research/*.png", { eager: true, query: "?url", import: "default" }),
+  ),
+  whos_who: PROJECT_CARDS["whos_who"]!,
+};
 
 /** PILGRED's card, shown in its terminal window. */
 export const PILGRED_CARD: string = urls(

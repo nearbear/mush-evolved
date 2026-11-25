@@ -1849,6 +1849,7 @@
     },
     "names": {
       "DRUG_DISPENSER": "Destilador de estupefacientes",
+      "WHOS_WHO": "Protocolo ACTOPI",
       "STEROIDS": "Anabolizantes",
       "MYCOSCAN": "Creación del Micoescáner",
       "PATULINE_SCRAMBLER": "Inhibidor de patulina",
@@ -1875,6 +1876,7 @@
     },
     "desc": {
       "DRUG_DISPENSER": "El destilador puede usarse una vez al día para fabricar un medicamento.",
+      "WHOS_WHO": "Activa ACTOPI para que todos vean quién está en cada sala, y desbloquea su interruptor en la BIOS.",
       "STEROIDS": "Genera 4 anabolizantes.",
       "MYCOSCAN": "Permite detectar esporas en un tripulante sano.",
       "PATULINE_SCRAMBLER": "Los infectados ya no pueden comunicarse por el canal Mush.",

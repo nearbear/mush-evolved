@@ -1055,6 +1055,7 @@ describe("selfCare (#452)", () => {
       p.room = shrinkRoom;
     });
     for (const p of game.players) if (p.id !== id && p.id !== shrink) p.skills = p.skills.filter((s) => s !== "shrink");
+    game.bios.actopi = true;
     const m = memory();
     m.shrinks.add(shrink);
     return { game, id, shrink, m };
@@ -1136,6 +1137,7 @@ describe("Morale: low and the Shrink's comfort (#452)", () => {
       p.room = "BEDROOM_A";
       p.morale = 4;
     });
+    game.bios.actopi = true;
     const said = applyInput(game, { type: "chat", channel: "global", text: MORALE_LOW_LINE, by: asker });
     expect(said.ok).toBe(true);
     if (!said.ok) return;
@@ -1195,6 +1197,7 @@ describe("rest around a Shrink (#452)", () => {
       p.ap = 3;
     });
     for (const p of game.players.filter((q) => q.id !== id).slice(0, 2)) game = edit(game, p.id, (q) => (q.room = busy));
+    game.bios.actopi = true;
     const [goal] = rest.options(viewFor(game, id), memory());
     expect(goal!.key).toBe(`rest:${busy}`);
     const { game: after, taken } = await oneCycle(game, id, new GoalBot(1, 2, [rest]));
@@ -1290,6 +1293,7 @@ describe("rest around a Shrink (#452)", () => {
     expect(rest.options(blind(low), m)[0]!.key).toBe("rest:BEDROOM_B");
     // Seen elsewhere: forgotten.
     const moved = edit(said.state, shrink, (p) => (p.room = "BRIDGE"));
+    moved.bios.actopi = true;
     observeBedAsks(viewFor(moved, id), m);
     expect(m.beds.shrinkRooms.size).toBe(0);
   });
@@ -1310,6 +1314,7 @@ describe("rest around a Shrink (#452)", () => {
     });
     const m = memory();
     m.shrinks.add(shrink);
+    game.bios.actopi = true;
     expect(rest.options(viewFor(game, id), m)[0]!.key).not.toBe(`rest:${first}`);
     const low = edit(game, id, (p) => (p.morale = LEAVE_SHRINK_BEDS_MORALE - 1));
     expect(rest.options(viewFor(low, id), m)[0]!.key).toBe(`rest:${first}`);

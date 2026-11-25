@@ -7,7 +7,7 @@ import { offeredProjects } from "../src/projectEffects.ts";
 import { PROJECT_COMPLETE, projectProgressConfig } from "../src/projects.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { tokenBase } from "../src/relay.ts";
-import { RESEARCH_IDS, RESEARCH_REQUIRES, RESEARCH_SKILLS } from "../src/research.ts";
+import { RESEARCH_COMPLETE, RESEARCH_IDS, RESEARCH_REQUIRES, RESEARCH_SKILLS } from "../src/research.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { BiosOption, CpuPriority, CrewLock } from "../src/bios.ts";
 import type { Action, GameState } from "../src/types.ts";
@@ -29,16 +29,16 @@ function ship(): GameState {
 const biosOffers = (s: GameState, id: string) => offered(s, id).filter((a) => a.type === "set_bios");
 
 describe("NERON's BIOS", () => {
-  it("starts with ACTOPI and death announcements on, plasma shield off, CPU priority none, crew lock piloting, and changing is free and private", () => {
+  it("starts with death announcements on, ACTOPI and plasma shield off, CPU priority none, crew lock piloting, and changing is free and private", () => {
     const s = ship();
     expect(s.bios).toEqual({
-      actopi: true,
+      actopi: false,
       death_announcements: true,
       plasma_shield: false,
       cpu_priority: "none",
       crew_lock: "piloting",
     });
-    expect(costOf(s, "p0", set("actopi", false))).toEqual({ ap: 0, mp: 0 });
+    expect(costOf(s, "p0", set("death_announcements", false))).toEqual({ ap: 0, mp: 0 });
     expect(costOf(s, "p0", setCpu("projects"))).toEqual({ ap: 0, mp: 0 });
     expect(costOf(s, "p0", setLock("research"))).toEqual({ ap: 0, mp: 0 });
     expect(actionVisibility("set_bios")).toBe("private");
@@ -62,8 +62,25 @@ describe("NERON's BIOS", () => {
     expect(parseGameMessage(JSON.stringify({ type: "action", action: { type: "set_bios", equipment: TERMINAL, option: "crew_lock", value: "none" } }))).toBeNull();
   });
 
-  it("offers the NERON Admin the opposite of each switch and the other values of CPU priority and crew lock", () => {
+  it("offers the NERON Admin the opposite of each unlocked switch and the other values of CPU priority and crew lock", () => {
     const s = ship();
+    // ACTOPI is locked until WHOS_WHO research completes (owner, 2026-11-24).
+    expect(biosOffers(s, "p0")).toEqual([
+      set("death_announcements", false),
+      set("plasma_shield", true),
+      setCpu("astronavigation"),
+      setCpu("projects"),
+      setCpu("research"),
+      setLock("projects"),
+      setLock("research"),
+    ]);
+    const before = clone(s);
+    expect(applyAction(s, "p0", set("actopi", true))).toEqual({ ok: false, error: "illegal_action" });
+    expect(s).toEqual(before);
+
+    // Once WHOS_WHO is complete, ACTOPI is offered and can be toggled.
+    s.research.WHOS_WHO = RESEARCH_COMPLETE;
+    s.bios.actopi = true;
     expect(biosOffers(s, "p0")).toEqual([
       set("actopi", false),
       set("death_announcements", false),
@@ -91,6 +108,8 @@ describe("NERON's BIOS", () => {
 
   it("only the NERON Admin can switch, Mush included; a vacant title locks it", () => {
     const s = ship();
+    s.research.WHOS_WHO = RESEARCH_COMPLETE;
+    s.bios.actopi = true;
     expect(biosOffers(s, "p1")).toEqual([]);
     expect(applyAction(s, "p1", set("actopi", false)).ok).toBe(false);
     expect(applyAction(s, "p1", setCpu("projects")).ok).toBe(false);
@@ -180,6 +199,8 @@ describe("NERON's BIOS", () => {
 
   it("switching ACTOPI off hides who is in the other rooms", () => {
     const s = ship();
+    s.research.WHOS_WHO = RESEARCH_COMPLETE;
+    s.bios.actopi = true;
     player(s, "p2").room = "REFECTORY";
     expect(viewFor(s, "p1").unidentified).toEqual([]);
     const off = must(applyAction(s, "p0", set("actopi", false)));
@@ -200,7 +221,7 @@ describe("NERON's BIOS", () => {
   it("sends full bios only to the living at a BIOS terminal, cpuPriority to all living players, and cpuPriorityChangedToday only to its owner", () => {
     const s = must(applyAction(ship(), "p0", setCpu("projects")));
     expect(viewFor(s, "p1").bios).toEqual({
-      actopi: true,
+      actopi: false,
       death_announcements: true,
       plasma_shield: false,
       cpu_priority: "projects",

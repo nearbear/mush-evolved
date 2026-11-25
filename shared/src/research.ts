@@ -3,9 +3,10 @@
 // What a research needs before it can be worked on is in RESEARCH_REQUIRES. The original's other fields (difficulty,
 // prerequisites, effects) are not used yet.
 
-/** The researches that have card art in `Mush/www/img/cards/research/` (the file is the lowercase id). */
+/** The researches (card art in `Mush/www/img/cards/research/`, or `projects/whos_who.png` for `WHOS_WHO`). */
 export const RESEARCH_IDS = [
   "DRUG_DISPENSER",
+  "WHOS_WHO",
   "STEROIDS",
   "MYCOSCAN",
   "PATULINE_SCRAMBLER",
@@ -103,7 +104,7 @@ export type ResearchStatus = "full" | "partial" | "none";
  * Implementation status shown in the terminal's research list. Update it when a research gains effects. Progress
  * itself works for all of them; only researches with completion effects are listed.
  */
-export const RESEARCH_STATUS: Readonly<Partial<Record<ResearchId, ResearchStatus>>> = { ANTI_MUSH_SERUM: "full", ANTISPORE_GAZ: "full", CONSTIPASPORE_SERUM: "full", DRUG_DISPENSER: "full", FUNGUS_SCRAMBLER: "full", GUARANA_CAPUCCINO: "full", HEALING_OINTMANT: "full", MUSHOPHAGE_BACTERIA: "full", MYCO_ALARM: "full", MYCOSCAN: "full", SPORE_EXTRACTOR: "full", STEROIDS: "full", SUPER_CALC: "partial" };
+export const RESEARCH_STATUS: Readonly<Partial<Record<ResearchId, ResearchStatus>>> = { ANTI_MUSH_SERUM: "full", ANTISPORE_GAZ: "full", CONSTIPASPORE_SERUM: "full", DRUG_DISPENSER: "full", FUNGUS_SCRAMBLER: "full", GUARANA_CAPUCCINO: "full", HEALING_OINTMANT: "full", MUSHOPHAGE_BACTERIA: "full", MYCO_ALARM: "full", MYCOSCAN: "full", SPORE_EXTRACTOR: "full", STEROIDS: "full", SUPER_CALC: "partial", WHOS_WHO: "full" };
 
 export function researchStatus(research: string): ResearchStatus {
   return RESEARCH_STATUS[research as ResearchId] ?? "none";

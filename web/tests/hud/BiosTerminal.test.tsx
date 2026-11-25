@@ -34,6 +34,7 @@ describe("BiosTerminal", () => {
   it("renders on/off options as toggle switches that toggle on a single click for the NERON Admin", () => {
     const { s, terminal } = makeBiosState();
     s.titles.neron_admin = "p0";
+    s.research.WHOS_WHO = 100;
     s.bios.actopi = true;
     s.bios.death_announcements = false;
     s.bios.plasma_shield = true;
@@ -107,5 +108,23 @@ describe("BiosTerminal", () => {
     expect(astro.getAttribute("aria-checked")).toBe("true");
     expect(piloting.getAttribute("aria-checked")).toBe("false");
     expect(piloting.disabled).toBe(true);
+  });
+
+  it("disables the ACTOPI toggle even for the NERON Admin until WHOS_WHO research completes", () => {
+    const { s, terminal } = makeBiosState();
+    s.titles.neron_admin = "p0";
+    delete s.research.WHOS_WHO;
+    s.bios.actopi = false;
+    render(
+      <I18nextProvider i18n={i18n}>
+        <BiosTerminal terminal={terminal} view={viewFor(s, "p0")} onAction={() => {}} />
+      </I18nextProvider>,
+    );
+
+    const actopi = screen.getByRole("switch", { name: "ACTOPI" }) as HTMLButtonElement;
+    const deaths = screen.getByRole("switch", { name: "Death announcements" }) as HTMLButtonElement;
+    expect(actopi.getAttribute("aria-checked")).toBe("false");
+    expect(actopi.disabled).toBe(true);
+    expect(deaths.disabled).toBe(false);
   });
 });

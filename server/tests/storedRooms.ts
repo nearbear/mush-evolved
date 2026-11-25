@@ -48,9 +48,12 @@ function travel(state: GameState): GameState {
   s.titles.commander = id;
   const ready = (g: GameState) => {
     const c = g.players.find((p) => p.id === id)!;
-    Object.assign(c, { room: "COMMAND_CENTER", ap: 30, current: null, queue: [] });
-    for (const key of ["spot", "lyingIn", "lyingSince", "enteredFrom"] as const) delete c[key];
+    Object.assign(c, { room: "COMMAND_CENTER", ap: 30, alive: true, ready: false, current: null, queue: [] });
+    for (const key of ["spot", "lyingIn", "lyingSince", "enteredFrom", "comaUntil"] as const) delete c[key];
     c.statuses = c.statuses.filter((status) => status !== "dirty");
+    for (const e of g.equipment.COMMAND_CENTER ?? []) delete e.broken;
+    g.navigation.orbit = null;
+    g.navigation.arriving = null;
     return g;
   };
   const find = (g: GameState, type: string): Action => {

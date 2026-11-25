@@ -179,6 +179,7 @@ describe("in flight", () => {
 
   it("with ACTOPI on, the crew sees the pilot in the ship's room; with it off, a room-only dot there", () => {
     const s = mustApply(ship(), "p0", takeoff());
+    s.bios.actopi = true;
     expect(viewFor(s, "p2").players.find((p) => p.id === "p0")?.room).toBe(LONGANE.id);
     s.bios.actopi = false;
     const view = viewFor(s, "p2");

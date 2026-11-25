@@ -1,5 +1,6 @@
 import { Action, AT_CAPACITY, type ActionVisibility, isBoolean, isString } from "./action.ts";
 import {
+  actopiUnlocked,
   biosTerminalsHere,
   BIOS_OPTIONS,
   canChangeBios,
@@ -59,7 +60,7 @@ export class SetBiosAction extends Action<SetBiosActionData> {
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): SetBiosActionData[] {
     if (!canChangeBios(state, player)) return [];
     return biosTerminalsHere(state, player).flatMap((terminal): SetBiosActionData[] => [
-      ...BIOS_OPTIONS.map((option): SetBiosActionData => ({ type: "set_bios", equipment: terminal.id, option, value: !state.bios[option] })),
+      ...BIOS_OPTIONS.filter((option) => option !== "actopi" || actopiUnlocked(state)).map((option): SetBiosActionData => ({ type: "set_bios", equipment: terminal.id, option, value: !state.bios[option] })),
       ...CPU_PRIORITIES.filter((value) => value !== state.bios.cpu_priority).map(
         (value): SetBiosActionData => ({ type: "set_bios", equipment: terminal.id, option: "cpu_priority", value }),
       ),
@@ -72,6 +73,7 @@ export class SetBiosAction extends Action<SetBiosActionData> {
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: SetBiosActionData): string | null {
     if (!biosTerminalsHere(state, player).some((terminal) => terminal.id === target.equipment)) return "cant_use_bios";
     if (!canChangeBios(state, player)) return "not_neron_admin";
+    if (target.option === "actopi" && !actopiUnlocked(state)) return "actopi_locked";
     if (state.bios[target.option] === target.value) return "bios_unchanged";
     if (target.option === "cpu_priority" && player.cpuPriorityChangedToday) return AT_CAPACITY;
     return null;

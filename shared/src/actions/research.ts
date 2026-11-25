@@ -142,6 +142,8 @@ function completeResearch(state: GameState, room: RoomId, research: ResearchId):
     if (!equipment.some((e) => e.id === id)) equipment.push({ id, type: DRUG_DISPENSER_EQUIPMENT });
     resetDrugDispenser(state);
   }
+  // Owner, 2026-11-24: completing WHOS_WHO switches ACTOPI on and unlocks its BIOS toggle (standard researchCompleted line only).
+  if (research === "WHOS_WHO") state.bios.actopi = true;
   // Owner, 2026-11-02 (eMushpedia "Super Calculateur", Data/research.json): completing it adds the Super Calculator to the Nexus for good.
   if (research === "SUPER_CALC") {
     const nexus = "NEXUS_ROOM";

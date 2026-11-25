@@ -63,7 +63,7 @@ describe("research", () => {
   it("starts with nothing done and every research offered whose needs the lab meets", () => {
     const s = game();
     expect(s.research).toEqual({});
-    expect(RESEARCH_IDS).toHaveLength(24);
+    expect(RESEARCH_IDS).toHaveLength(25);
     // p1 is Chun and pre-selection is off; the lab has none of the needed items and no Mush is dead at the start.
     const free = RESEARCH_IDS.filter((id) => !RESEARCH_REQUIRES[id]?.items && !RESEARCH_REQUIRES[id]?.deadMush);
     expect(researches(s, "p0").sort()).toEqual([...free].sort());
@@ -390,6 +390,31 @@ describe("research", () => {
   it("parses from the wire, and rejects a missing research", () => {
     expect(parseGameMessage(JSON.stringify({ type: "action", action: work("STEROIDS") }))).toEqual({ type: "action", action: work("STEROIDS") });
     expect(parseGameMessage(JSON.stringify({ type: "action", action: { type: "research", equipment: "x" } }))).toBeNull();
+  });
+
+  it("completing WHOS_WHO switches ACTOPI on and unlocks its BIOS toggle (owner, 2026-11-24)", () => {
+    expect(RESEARCH_STATUS.WHOS_WHO).toBe("full");
+    expect(RESEARCH_REQUIRES.WHOS_WHO).toBeUndefined();
+    const s = game();
+    s.players[2]!.room = "REFECTORY";
+    expect(s.bios.actopi).toBe(false);
+    expect(viewFor(s, "p0").unidentified).toEqual(["REFECTORY"]);
+    expect(viewFor(s, "p0").players.find((p) => p.id === "p2")).not.toHaveProperty("room");
+
+    setProgress(s, { research: "WHOS_WHO" }, RESEARCH_COMPLETE - 1);
+    s.rng = CLEAN;
+    const done = mustApply(s, "p0", work("WHOS_WHO"));
+    expect(done.research.WHOS_WHO).toBe(RESEARCH_COMPLETE);
+    expect(done.bios.actopi).toBe(true);
+    expect(done.log.at(-1)).toMatchObject({ key: "researchCompleted", params: { research: "WHOS_WHO" }, room: "LABORATORY", visibleTo: "all" });
+    expect(viewFor(done, "p0").unidentified).toEqual([]);
+    expect(viewFor(done, "p0").players.find((p) => p.id === "p2")?.room).toBe("REFECTORY");
+
+    // NERON Admin can now switch ACTOPI off in the BIOS.
+    done.titles.neron_admin = "p0";
+    done.players[0]!.room = "NEXUS_ROOM";
+    const off = mustApply(done, "p0", { type: "set_bios", equipment: "NEXUS_ROOM:NERON_BIOS_TERM", option: "actopi", value: false });
+    expect(off.bios.actopi).toBe(false);
   });
 });
 
