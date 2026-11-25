@@ -38,6 +38,10 @@ const keys = (s: GameState, id: PlayerId) => viewFor(s, id).log.map((e) => e.key
 const sample = (by: PlayerId, contaminatedBy?: PlayerId): Sample => ({ by, base: 6, roll: 0, ...(contaminatedBy && { contaminatedBy }) });
 
 describe("research assays", () => {
+  it("uses the configured 12% base spoil chance", () => {
+    expect(R.spoilChance).toBe(0.12);
+  });
+
   it("keeps samples pending until the striped total reaches the next mark, then verifies them all", () => {
     let s = game(0);
     const order: PlayerId[] = ["p0", "p1", "p2", "p3"];

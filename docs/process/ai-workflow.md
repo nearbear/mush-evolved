@@ -5378,6 +5378,10 @@ Owner asked to rotate three Mush skill icons (Slime Trap's to Mass Mouldering, M
 
 Investigated why the action duration progress bar stayed empty/static in replays (skip mode jumps past action starts, and with skip off the frozen clock pauses the bar at `elapsed ≈ 0`). Extended `ServerClock` with an optional `step: { to, durationMs }` window while `ReplayPage` is playing, parameterized `@keyframes action-bar-fill` with `--bar-from` / `--bar-to`, and updated `ActionBar` so bars fill from their current step fraction to the next stop's fraction over `playInterval(speed, skip)` (staying paused when playback is paused or the bar is already full). Added unit tests in `web/tests/hud/serverClock.test.tsx`; verified with `npm run verify:web`.
 
+### 2026-11-25 — Research assay base spoil chance raised to 12%
+- **Decision (owner):** Raised `config.research.spoilChance` from `0.05` (5%) to `0.12` (12%).
+- **What worked:** Single config knob in `shared/src/config.ts` with tests deriving from `DEFAULT_CONFIG.research.spoilChance`; pinned the new `0.12` value in `shared/tests/assay.test.ts` and updated `docs/rules/implemented-rules.md`, `docs/rules/changes-from-emush.md`, and `docs/rules/rules-design.md`.
+
 ## 2026-11-25: research terminal Unimplemented tab
 
 - **What:** The research lab's list (`ProgressList` in `web/src/hud/TerminalDialog.tsx`) moves researches that are `"none"` in `RESEARCH_STATUS` out of Active/Blocked/Done into a last Unimplemented tab, and research rows drop the implementation-status badge. The tab is left out on the phone layout (`useMobile`), so those researches are hidden there. The research window is 34rem wide on desktop (`settings.css`, via `:has(.research-tab-list)`) to fit four tabs. NERON projects share `ProgressList` and keep their status badges (the new `unimplemented` prop is opt-in; `status` is now optional).
