@@ -46,6 +46,7 @@ import { CommsCenter } from "./CommsCenter.tsx";
 import { TerminalFrame } from "./TerminalFrame.tsx";
 import { terminalLogin } from "./terminalUsername.ts";
 import { PlanetList } from "./PlanetList.tsx";
+import { SkillPopover } from "./SkillSlots.tsx";
 import { PlantTerminal } from "./PlantTerminal.tsx";
 import { CommandTerminal } from "./CommandTerminal.tsx";
 import { TurretPanel } from "./TurretPanel.tsx";
@@ -181,7 +182,8 @@ function ResearchList({ terminal, view, onAction }: ListProps) {
 function ProjectList({ terminal, view, onAction }: ListProps) {
   const { t } = useTranslation();
   const names = useNames();
-  const ids = PROJECT_IDS.filter((id) => (view.projects[id] ?? 0) >= PROJECT_COMPLETE || id in view.relay.projects);
+  const discarded = new Set(view.discardedProjects);
+  const ids = PROJECT_IDS.filter((id) => (view.projects[id] ?? 0) >= PROJECT_COMPLETE || id in view.relay.projects || discarded.has(id));
   return (
     <ProgressList
       label={t("projects.title")}
@@ -192,11 +194,15 @@ function ProjectList({ terminal, view, onAction }: ListProps) {
       cards={PROJECT_CARDS}
       name={names.project}
       desc={(id) => t(`projects.desc.${id}`, { defaultValue: "" }) || undefined}
-      status={projectStatus}
+      unimplemented={(id) => projectStatus(id) === "none"}
+      unimplementedLabel={t("projects.unimplemented")}
+      discarded={(id) => discarded.has(id)}
+      discardedLabel={t("projects.discarded")}
+      describeFinished
       needs={(id) => {
         const skills = PROJECTS.find((p) => p.id === id)?.skills ?? [];
         // Only the worker's own skills speed up their work (relay.ts), so yours are the ones checked.
-        return skills.length ? { items: skills.map((skill) => ({ label: names.skill(skill), met: hasSkill(view.you, skill), icon: skillIcon(skill), className: "skill-name" })) } : null;
+        return skills.length ? { items: skills.map((skill) => ({ label: names.skill(skill), met: hasSkill(view.you, skill), skill })) } : null;
       }}
       option={(id) => view.actions.find(({ action: a }) => a.type === "project" && a.equipment === terminal.id && a.project === id)}
       view={view}
@@ -387,8 +393,8 @@ function DrugDispenser({ terminal, view, onAction }: ListProps) {
 }
 
 interface Checklist {
-  /** `icon` is an extra picture after the box (a project's skills show their skill icon). */
-  items: { label: string; met: boolean; icon?: string; className?: string }[];
+  /** With `skill` (a project's skills), the entry is the box and the skill's icon, its name and description in the skill popover, with no text. */
+  items: { label: string; met: boolean; skill?: string }[];
 }
 
 interface ProgressListProps {
@@ -402,10 +408,15 @@ interface ProgressListProps {
   name: (id: string) => string;
   /** The description shown on hover, if the entry has one. */
   desc?: (id: string) => string | undefined;
-  /** The implementation status shown beside each name (projects); research leaves it out and uses `unimplemented` instead. */
-  status?: (id: string) => "full" | "partial" | "none";
   /** Entries the rules don't implement, moved out of the other tabs into a last Unimplemented tab, shown only on desktop. */
   unimplemented?: (id: string) => boolean;
+  /** That tab's name, when the research one doesn't fit (French and Spanish agree it with the noun). */
+  unimplementedLabel?: string;
+  /** Entries that will never be available again (projects the view lists as discarded), in a Discarded tab after Done. */
+  discarded?: (id: string) => boolean;
+  discardedLabel?: string;
+  /** Done and discarded rows show the entry's description as a caption instead of "Complete" (projects). */
+  describeFinished?: boolean;
   /** The view's offer to work on this entry, if any. */
   /** A checklist under an item: for research what must be in the lab before it can be worked on, for projects the skills that speed it up (the button itself comes from `view.actions`). */
   needs?: (id: string) => Checklist | null;
@@ -469,37 +480,41 @@ function ProgressBar({ label, percent, complete, pending, style }: { label: stri
   );
 }
 
-type ProgressTab = "active" | "blocked" | "done" | "unimplemented";
-const PROGRESS_TABS: readonly ProgressTab[] = ["active", "blocked", "done", "unimplemented"];
+type ProgressTab = "active" | "blocked" | "done" | "discarded" | "unimplemented";
+const PROGRESS_TABS: readonly ProgressTab[] = ["active", "blocked", "done", "discarded", "unimplemented"];
 
 /**
  * Every research or project with its progress (only in its room until complete), its relay tokens and, when the view offers it, a button to work on it, in three
  * tabs: Active (in progress, then available), Blocked (not offered by the view, so for research the lab misses a need)
- * and Done, plus (research, desktop only) a last Unimplemented tab holding the entries the rules don't implement, which
- * then appear in no other tab; on the phone layout they are hidden. Within a tab the order is the list's own. Empty
- * Blocked, Done or Unimplemented tabs are left out.
+ * and Done, then (projects) Discarded, the ones that will never be available again, plus (desktop only) a last
+ * Unimplemented tab holding the entries the rules don't implement, which then appear in no other tab; on the phone
+ * layout they are hidden. Within a tab the order is the list's own. Empty tabs other than Active are left out.
  */
-function ProgressList({ label, ids, progress, relay, complete, cards, name, desc, status, unimplemented, needs, option: optionFor, more, view, showRelayHelp = false, onAction }: ProgressListProps) {
+function ProgressList({ label, ids, progress, relay, complete, cards, name, desc, unimplemented, unimplementedLabel, discarded, discardedLabel, describeFinished = false, needs, option: optionFor, more, view, showRelayHelp = false, onAction }: ProgressListProps) {
   const { t } = useTranslation();
   const mobile = useMobile();
   const [tab, setTab] = useState<ProgressTab>("active");
-  const allRows = ids.map((id) => ({ id, percent: progress[id] ?? 0, option: optionFor(id) }));
+  const allRows = ids.map((id) => ({ id, percent: progress[id] ?? 0, option: optionFor(id), discarded: discarded?.(id) ?? false }));
   const rows = unimplemented ? allRows.filter((r) => !unimplemented(r.id)) : allRows;
+  const open = rows.filter((r) => !r.discarded);
   const pendingOf = (id: string) => relay[id]?.pending ?? 0;
   const groups: Record<ProgressTab, typeof rows> = {
-    active: [...rows.filter((r) => r.percent > 0 && r.percent < complete && r.option), ...rows.filter((r) => r.percent === 0 && r.option)],
-    blocked: rows.filter((r) => r.percent < complete && !r.option),
-    done: rows.filter((r) => r.percent >= complete),
+    active: [...open.filter((r) => r.percent > 0 && r.percent < complete && r.option), ...open.filter((r) => r.percent === 0 && r.option)],
+    blocked: open.filter((r) => r.percent < complete && !r.option),
+    done: open.filter((r) => r.percent >= complete),
+    discarded: rows.filter((r) => r.discarded),
     unimplemented: unimplemented && !mobile ? allRows.filter((r) => unimplemented(r.id)) : [],
   };
   const shown = PROGRESS_TABS.filter((key) => key === "active" || groups[key].length > 0);
   const current = shown.includes(tab) ? tab : "active";
+  const tabLabel = (key: ProgressTab) =>
+    key === "discarded" ? (discardedLabel ?? "") : (key === "unimplemented" && unimplementedLabel) || t(`research.tabs.${key}`);
   return (
     <Tabs.Root className="settings-tabs" value={current} onValueChange={(value) => setTab(value as ProgressTab)}>
-      <Tabs.List className={unimplemented ? "settings-tab-list progress-tab-list research-tab-list" : "settings-tab-list progress-tab-list"} aria-label={label}>
+      <Tabs.List className={unimplemented ? "settings-tab-list progress-tab-list unimplemented-tab-list" : "settings-tab-list progress-tab-list"} aria-label={label}>
         {shown.map((key) => (
           <Tabs.Tab key={key} className="settings-tab" value={key}>
-            {t(`research.tabs.${key}`)}
+            {tabLabel(key)}
           </Tabs.Tab>
         ))}
       </Tabs.List>
@@ -508,26 +523,30 @@ function ProgressList({ label, ids, progress, relay, complete, cards, name, desc
           {groups[key].length === 0 ? (
             <p>{t("research.none")}</p>
           ) : (
-            <ul className="research-list" aria-label={t(`research.tabs.${key}`)}>
-              {groups[key].map(({ id, percent, option }) => {
+            <ul className="research-list" aria-label={tabLabel(key)}>
+              {groups[key].map(({ id, percent, option, discarded: gone }) => {
                 const card = cards[id.toLowerCase()];
-                // The Unimplemented tab mixes all three, so each row takes its look from its own state.
-                const kind = percent >= complete ? "done" : option ? "active" : "blocked";
-                const needed = kind !== "done" ? needs?.(id) : null;
-                const state = status?.(id);
-                const extras = kind !== "done" ? (more?.(id) ?? []) : [];
+                // The Unimplemented tab mixes them all, so each row takes its look from its own state.
+                const kind = gone ? "discarded" : percent >= complete ? "done" : option ? "active" : "blocked";
+                const finished = kind === "done" || kind === "discarded";
+                const needed = !finished ? needs?.(id) : null;
+                const extras = !finished ? (more?.(id) ?? []) : [];
+                const caption = describeFinished ? desc?.(id) : undefined;
                 return (
                   <li key={id} className={`research-item research-item-${kind}`}>
                     {card && <EntryTip name={name(id)} desc={desc?.(id)} trigger={<img className="research-card" src={card} alt="" />} />}
                     <div className="research-title">
                       <EntryTip name={name(id)} desc={desc?.(id)} trigger={<strong />}>{name(id)}</EntryTip>
-                      {state && <span className={`skill-status skill-status-${state}`}>{t(`research.status.${state}`)}</span>}
                     </div>
                     {/* The percent at the title row's right edge. */}
-                    {kind !== "done" && <span className="research-percent">{t("research.percent", { percent })}</span>}
+                    {!finished && <span className="research-percent">{t("research.percent", { percent })}</span>}
                     <div className="research-body">
-                      {kind === "done" ? (
-                        <span>{t("research.done")}</span>
+                      {finished ? (
+                        caption ? (
+                          <p className="sub research-caption">{caption}</p>
+                        ) : (
+                          kind === "done" && <span>{t("research.done")}</span>
+                        )
                       ) : (
                         <div className="research-progress">
                           {/* Research: solid for verified progress, striped for pending samples not yet assayed (docs/plans/archive/research-sabotage.md). */}
@@ -544,22 +563,27 @@ function ProgressList({ label, ids, progress, relay, complete, cards, name, desc
                     </div>
                     {/* Under the bar: what the entry needs (its checklist) on the left, then the work button (and spoil, Contaminate) at the right,
                       wrapping as the row needs; what a button adds and its odds are in its tooltip. */}
-                    {(needed || (kind !== "done" && (option || extras.length > 0))) && (
+                    {(needed || (!finished && (option || extras.length > 0))) && (
                       <div className="research-footer">
                         {needed && (
                           <div className="research-needs">
                             <ul>
-                              {needed.items.map(({ label, met, icon, className }) => (
-                                <li key={label} className={[met && "research-need-met", className].filter(Boolean).join(" ") || undefined}>
+                              {needed.items.map(({ label, met, skill }) => (
+                                <li key={label} className={met ? "research-need-met" : undefined}>
                                   <img src={met ? CHECK_ICON : UNCHECK_ICON} alt={met ? t("research.met") : t("research.unmet")} />
-                                  {icon && <img src={icon} alt="" />}
-                                  {label}
+                                  {skill ? (
+                                    <SkillPopover skill={skill} className="research-need-skill" aria-label={label}>
+                                      <img src={skillIcon(skill)} alt="" />
+                                    </SkillPopover>
+                                  ) : (
+                                    label
+                                  )}
                                 </li>
                               ))}
                             </ul>
                           </div>
                         )}
-                        {kind !== "done" && (option || extras.length > 0) && (
+                        {!finished && (option || extras.length > 0) && (
                           <span className="research-actions">
                             {option && (
                               <ActionButton view={view} option={option} onAction={onAction} hint={gainHint(t, relay[id]?.gain, option.chance, showRelayHelp ? t("relay.help") : undefined)}>

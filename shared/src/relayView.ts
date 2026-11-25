@@ -7,7 +7,7 @@ import { canWorkProject, canWorkResearch, cpuPriorityBonus } from "./bios.ts";
 import { equipmentHere } from "./equipment.ts";
 import { PILGRED_COMPLETE, PILGRED_SKILLS, pilgredTerminalsHere } from "./pilgred.ts";
 import { offeredProjects } from "./projectEffects.ts";
-import { PROJECT_COMPLETE, projectProgressConfig, projectSkills } from "./projects.ts";
+import { PROJECT_COMPLETE, PROJECT_IDS, projectDone, projectProgressConfig, projectSkills } from "./projects.ts";
 import { researchProgress } from "./assay.ts";
 import { contributionGain, poolProgress, relayGainRange, type RelayPool, type RelayProgressConfig, type RelayStreak, type ResearchPool } from "./relay.ts";
 import { RESEARCH_COMPLETE, RESEARCH_IDS, RESEARCH_SKILLS, researchProgressConfig } from "./research.ts";
@@ -60,6 +60,9 @@ export function relayView(state: Readonly<GameState>, you: Readonly<PlayerState>
   return {
     research: progressView(state.research, inLab, RESEARCH_COMPLETE),
     projects: Object.fromEntries(Object.entries(state.projects).filter(([id, percent]) => percent >= PROJECT_COMPLETE || (atCore && offeredSet.has(id)))),
+    // Unfinished projects out of the proposal deck for good (a completed project's batch-mates, or taken by a merchant),
+    // to the same viewers as the offered ones; ids only, so a retired project's partial progress stays hidden.
+    discardedProjects: atCore ? PROJECT_IDS.filter((id) => !projectDone(state, id) && !offeredSet.has(id) && !state.projectDeck.includes(id)) : [],
     pilgred: atPilgred ? state.pilgred.progress : null,
     relay: {
       research: inLab ? Object.fromEntries(RESEARCH_IDS.map((id) => [id, researchView(state.relay.research[id], researchProgressConfig(research, id), you, researchBonus)])) : {},

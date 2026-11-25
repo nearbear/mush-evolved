@@ -65,7 +65,7 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 - `singlePlayer.ts`: single player (#59): `singlePlayerGame` (seats, config, the human forced Mush), `NEVER_BOTS`, `SINGLE_PLAYER_SEATS`.
 - `preselection.ts`: pre-selection (`config.preselection`, `GameState.preselection`): `joinShip` (the server's `join` input), `preselectionDeadline`, `preselectionCycle` (called as each cycle begins), and `selectMush` (Mush, titles, the first rebel call, and the under-3-players stopgap).
 - `victory.ts`: the game end: `winnerOnArrival` (the decided win rule on reaching Sol; Eden is always a human win), `mushWinOnDeath`, and `endGame` (`phase` "ended", `winner`, `ending`).
-- `projects.ts`: `PROJECT_IDS` (the original's 41 live NERON projects), `PROJECT_COMPLETE`, `projectDone`, `newProjectDeck` (shuffled proposal deck) and `PROJECT_STATUS`.
+- `projects.ts`: `PROJECT_IDS` (the original's 41 live NERON projects), `PROJECT_COMPLETE`, `projectDone`, `newProjectDeck` (shuffled proposal deck) and `PROJECT_STATUS` (unimplemented projects go in the NERON core's desktop-only Unimplemented tab).
 - `projectEffects.ts`: `offeredProjects` (the current 3-project offer from `projectDeck`, or all unfinished with `freeHacking`) and `onProjectCompleted`, run when a project reaches 100% by work or by a NERON update (the Noise Reducer refreshes every AP cap).
 - `jukebox.ts`: `songAt` (whose song the jukebox plays a given number of cycles from now: living players, seeded by `jukeboxSeed` and the cycle; #477).
 - `mind.ts`: minds and bodies: `bodyOf` (the body a seat plays; the server resolves every token through it), `swapMinds` (a Transfer), `acknowledgeTransfer` (the victim's pop-up input).

@@ -1951,11 +1951,6 @@
     "done": "Terminée",
     "work": "Progresser",
     "empty": "Rien à rechercher.",
-    "status": {
-      "full": "Entièrement implémentée",
-      "partial": "Partiellement implémentée",
-      "none": "Non implémentée"
-    },
     "names": {
       "DRUG_DISPENSER": "Distillateur de stupéfiant",
       "WHOS_WHO": "Protocole ACTOPI",
@@ -2084,6 +2079,8 @@
     "sharePosition": "Position : {{direction}}, {{distance}} de carburant"
   },
   "projects": {
+    "discarded": "Abandonnés",
+    "unimplemented": "Non implémentés",
     "title": "Projets NERON",
     "names": {
       "PATROL_SHIP_LAUNCHER": "Propulseur de décollage",
@@ -2561,11 +2558,11 @@
     "equipment_count_many": "{{count}} équipements",
     "exits_count_one": "{{count}} sortie",
     "exits_count_other": "{{count}} sorties",
-    "fairyRing": "Un rond de sorcière pousse ici.",
     "exits_count_many": "{{count}} sorties",
     "brokenEquipment": "{{equipment}} (en panne)",
     "onFire": "Cette pièce est en feu !",
     "trapped": "Cette pièce est piégée !",
+    "fairyRing": "Un rond de sorcière pousse ici.",
     "ceasefire_one": "Cessez-le-feu actif ({{count}} cycle restant)",
     "ceasefire_other": "Cessez-le-feu actif ({{count}} cycles restants)",
     "ceasefire_many": "Cessez-le-feu actif ({{count}} cycles restants)",

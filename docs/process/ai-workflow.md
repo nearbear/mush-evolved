@@ -5400,8 +5400,20 @@ Investigated why the action duration progress bar stayed empty/static in replays
 
 - **What:** Desktop now matches the phone: title with the percent at its right, the bar, then a `.research-footer` flex row (wrapping) with the checklist (`.research-needs`, moved out of `.research-body`) on the left and the work buttons on the right (`margin-left: auto`). The duplicate percent beside the bar is gone; the phone layout differs only in the title row spanning the card (`responsive.css`).
 
+## 2026-11-25: NERON project list mirrors the research terminal's rework
+
+- The shared `ProgressList` already gave projects the new row layout (percent beside the title, footer with checklist and buttons, gain in the tooltip) in 977a51a. What was left: projects now use the desktop-only Unimplemented tab from `PROJECT_STATUS` instead of a status pill, so the `status` prop, the pill, its CSS and the `research.status` strings are gone. The wide-window rule keys on a generic `unimplemented-tab-list` class.
+- Needed correction: the tab name was reused from research at first, but French and Spanish agree it with the noun ("Non implémentées" for recherches, "Non implémentés" for projets), so projects get their own `projects.unimplemented`.
+- Owner follow-up: a project's skill checklist shows no skill-name text, just the box and the skill icon, which opens the existing `SkillPopover` (name, description, effects) on hover, focus or tap.
+- PILGRED's repair button still shows its gain in the button text (`withGain`); left unchanged.
+
 ## 2026-11-25: Mycelium Spirit reworked as the Fairy Ring
 
 - **Decision (owner):** Mycelium Spirit no longer gives eMush's +1 daily spore. It grows one Fairy Ring per mind (1 AP, 2 spores, secret, rings Myco-alarms) that any Mush can draw 1 spore from once a day (1 AP, +1 after Constipaspore; no dirt; outside the faction's daily cap, inside the holding limit; secret, rings Myco-alarms). Invisible to humans; Mush see it in their current room only. It vanishes when its creator dies, is cured or loses the skill; a Transfer keeps it. The owner picked "Fairy Ring" from the names Claude proposed in place of "wellspring".
 - **What worked:** the owner asked for a balance discussion before any code, and it changed the design. Claude's first verdict was that a free, clean, invisible, cap-free spore had no counterplay, got around both anti-spore researches, and with Phagocytosis put a Mush ahead of a fed human on AP. The owner answered with alarms on drawing (a repeating room tell), the ring vanishing with its creator, one draw per ring per day, and a 1 AP draw that Constipaspore raises. Copying Trapper's shape (state list, current-room view flag, `.room-corner` glow) kept the change small. A single `pruneFairyRings` invariant, called from death, cure and skill reset, replaced per-case cleanup.
 - **Needed correction:** the owner's answer "make tapping cost 1 AP just like extraction" was ambiguous (always 1 AP, or free until Constipaspore); Claude asked, got "build it" with no answer, and went with 1 AP plus Constipaspore's extra, saying so. A test first used a non-existent off-ship room id. Another session was editing the same checkout (locales, code map), so only this task's hunks were committed.
+
+## 2026-11-25: NERON core Discarded tab and description captions
+
+- New `PlayerView.discardedProjects` (`relayView.ts`): unfinished projects no longer in the proposal deck (a completed project's batch-mates, or taken by a merchant), ids only, to the living at NERON's core like the offered ones. The project terminal gets a Discarded tab after Done; done and discarded rows show the project's description as a caption instead of "Complete". Tests in `shared/tests/projects.test.ts` and a DOM test in `web/tests/hud/projectList.test.tsx`.
+- The leak check (forked skill) found no leak; it noted a player at the core can now tell the remaining deck's set (not its order) and that a NERON update can still complete a discarded project, since it picks from every unfinished one.

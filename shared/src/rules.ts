@@ -1047,7 +1047,7 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
           turrets: you.alive && turretsHere(state, you).length > 0 ? Object.fromEntries(allTurrets(state).map((t) => [t.id, turretCharges(state, t.id)])) : null,
         },
     ...(blind
-      ? { research: {}, projects: {}, pilgred: null, relay: { research: {}, projects: {}, pilgred: null }, yourTokens: { research: {}, pilgred: 0 } }
+      ? { research: {}, projects: {}, discardedProjects: [], pilgred: null, relay: { research: {}, projects: {}, pilgred: null }, yourTokens: { research: {}, pilgred: 0 } }
       : relayView(state, you)),
     researchNeeds: !blind && you.alive && canWorkResearch(state, you) && equipmentHere(state, you, "RESEARCH_LAB").length > 0 ? researchNeedsView(state, you.room) : null,
     pilgredRepaired: !blind && isPilgredRepaired(state),

@@ -390,6 +390,11 @@ export interface PlayerView {
   researchNeeds: Record<string, boolean[]> | null;
   /** Percent done of each NERON project: currently offered ones while you are alive at NERON's core (all unfinished with unrestricted terminals), plus completed ones everywhere. */
   projects: Record<string, number>;
+  /**
+   * NERON projects that will never be offered again though unfinished: the other offered ones when one completes, and
+   * those a merchant took. Ids only (no progress), in project order, to the same viewers as the offered ones; otherwise empty.
+   */
+  discardedProjects: string[];
   /** PILGRED's repair, percent done, only while you are alive in a room with its terminal (owner, 2026-10-21); otherwise null. */
   pilgred: number | null;
   /**

@@ -1951,11 +1951,6 @@
     "done": "Completada",
     "work": "Progresar",
     "empty": "Nada que investigar.",
-    "status": {
-      "full": "Totalmente implementada",
-      "partial": "Parcialmente implementada",
-      "none": "No implementada"
-    },
     "names": {
       "DRUG_DISPENSER": "Destilador de estupefacientes",
       "WHOS_WHO": "Protocolo ACTOPI",
@@ -2084,6 +2079,8 @@
     "sharePosition": "Posición: {{direction}}, {{distance}} de combustible"
   },
   "projects": {
+    "discarded": "Descartados",
+    "unimplemented": "No implementados",
     "title": "Proyectos de NERON",
     "names": {
       "PATROL_SHIP_LAUNCHER": "Propulsor de despegue",
@@ -2561,11 +2558,11 @@
     "equipment_count_many": "{{count}} equipos",
     "exits_count_one": "{{count}} salida",
     "exits_count_other": "{{count}} salidas",
-    "fairyRing": "Aquí crece un corro de brujas.",
     "exits_count_many": "{{count}} salidas",
     "brokenEquipment": "{{equipment}} (averiado)",
     "onFire": "¡Esta sala está en llamas!",
     "trapped": "¡Esta sala tiene una trampa!",
+    "fairyRing": "Aquí crece un corro de brujas.",
     "ceasefire_one": "Alto el fuego activo ({{count}} ciclo restante)",
     "ceasefire_other": "Alto el fuego activo ({{count}} ciclos restantes)",
     "ceasefire_many": "Alto el fuego activo ({{count}} ciclos restantes)",

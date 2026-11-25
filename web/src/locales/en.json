@@ -2017,11 +2017,6 @@
     "done": "Complete",
     "work": "Progress",
     "empty": "Nothing to research.",
-    "status": {
-      "full": "Fully implemented",
-      "partial": "Partially implemented",
-      "none": "Not implemented"
-    },
     "names": {
       "DRUG_DISPENSER": "Drug distiller",
       "WHOS_WHO": "ACTOPI protocol",
@@ -2150,6 +2145,8 @@
     "sharePosition": "Position: {{direction}}, {{distance}} fuel"
   },
   "projects": {
+    "discarded": "Discarded",
+    "unimplemented": "Unimplemented",
     "title": "NERON projects",
     "names": {
       "PATROL_SHIP_LAUNCHER": "Takeoff thruster",
@@ -2614,11 +2611,11 @@
     "equipment_count_one": "{{count}} piece of equipment",
     "equipment_count_other": "{{count}} pieces of equipment",
     "exits_count_one": "{{count}} exit",
-    "fairyRing": "A Fairy Ring grows here.",
     "exits_count_other": "{{count}} exits",
     "brokenEquipment": "{{equipment}} (broken)",
     "onFire": "This room is on fire!",
     "trapped": "This room is booby-trapped!",
+    "fairyRing": "A Fairy Ring grows here.",
     "ceasefire_one": "Ceasefire active ({{count}} cycle left)",
     "ceasefire_other": "Ceasefire active ({{count}} cycles left)",
     "broken": "Broken"

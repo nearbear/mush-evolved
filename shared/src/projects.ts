@@ -103,7 +103,7 @@ export function newProjectDeck(seed: number): ProjectId[] {
 /** How much of a project's effects the rules implement, like `ResearchStatus`. */
 export type ProjectStatus = "full" | "partial" | "none";
 
-/** Implementation status shown in the NERON core's project list. Update it when a project gains effects. */
+/** Implementation status: projects that are "none" go in the NERON core's Unimplemented tab (desktop only). Update it when a project gains effects. */
 export const PROJECT_STATUS: Readonly<Partial<Record<ProjectId, ProjectStatus>>> = {
   // Every attack on the Daedalus (damageShip) is reduced by 1 before the shield, floor 0 (owner, 2026-11-14; ship.ts).
   ARMOUR_CORRIDOR: "full",

@@ -3,7 +3,7 @@ import { ACTIONS } from "../src/actions.ts";
 import { advanceNeron } from "../src/comms.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import projets from "@mush2/assets/derived/data/Data/projets.json";
-import { offeredProjects } from "../src/projectEffects.ts";
+import { loseProject, offeredProjects } from "../src/projectEffects.ts";
 import { PROJECT_COMPLETE, PROJECT_IDS, PROJECT_STATUS, PROJECTS, projectEfficiency, projectSkills } from "../src/projects.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, setCheat, viewFor } from "../src/rules.ts";
@@ -194,6 +194,11 @@ describe("NERON projects", () => {
     expect(coreView.projects).toEqual({ [chosen]: PROJECT_COMPLETE });
     expect(coreView.projects[retiredA]).toBeUndefined();
     expect(Object.keys(coreView.relay.projects)).toEqual(secondBatch);
+    // The retired ones are listed as discarded at the core (ids only, in project order), and nowhere else.
+    expect(coreView.discardedProjects).toEqual(PROJECT_IDS.filter((id) => id === retiredA || id === retiredB));
+    s.players[2]!.room = "REFECTORY";
+    expect(viewFor(s, "p2").discardedProjects).toEqual([]);
+    s.players[2]!.room = s.players[0]!.room;
     // Exhausting all remaining batches never draws retiredA or retiredB again.
     const seen = new Set<string>(firstBatch);
     while (offeredProjects(s).length > 0) {
@@ -207,6 +212,14 @@ describe("NERON projects", () => {
     expect(s.projectDeck).toEqual([]);
     expect(s.projects[retiredA]).toBe(15);
     expect(s.projects[retiredB]).toBeUndefined();
+  });
+
+  it("lists a project a merchant took as discarded at the core", () => {
+    const s = game();
+    s.projects.PLASMA_SHIELD = PROJECT_COMPLETE;
+    loseProject(s, "PLASMA_SHIELD");
+    expect(viewFor(s, "p0").discardedProjects).toEqual(["PLASMA_SHIELD"]);
+    expect(viewFor(s, "p0").projects.PLASMA_SHIELD).toBeUndefined();
   });
 
   it("NERON update picks any unfinished project and only replaces an offered slot if one of the 3 was picked", () => {

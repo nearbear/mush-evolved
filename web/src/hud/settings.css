@@ -262,7 +262,7 @@ button.bios-switch:focus-visible {
 
 /* A list row: the card on the left; beside it the title row with the percent at its right edge, then the bar, then the
    footer (checklist left, work buttons right). On a phone (responsive.css) the title row spans the card too, so a title
-   isn't squeezed into the space left by the card and pill. */
+   isn't squeezed into the space left by the card and percent. */
 li.research-item {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
@@ -327,7 +327,7 @@ li.research-item .research-title {
   min-width: 0;
 }
 
-/* Title and status pill always share a line (a long title wraps inside itself), as do the bar, its percent and the button
+/* The title and anything beside it always share a line (a long title wraps inside itself), as do the bar, its percent and the button
    (the bar shrinks to make room on a phone). */
 .research-title,
 .research-progress {
@@ -343,18 +343,16 @@ li.research-item .research-title {
 .research-title strong {
   flex: 0 1 auto;
   min-width: 0;
-  /* At 360px a single long word can be wider than the room beside the pill; break it rather than run under the pill. */
+  /* At 360px a single long word can be wider than the row; break it rather than overflow. */
   overflow-wrap: anywhere;
 }
-.research-title .skill-status,
 .research-title > button,
 .research-progress > :not(progress) {
   flex: none;
   margin: 0;
   white-space: nowrap;
 }
-/* The pill or action button sits at the row's right edge. */
-.research-title .skill-status,
+/* An action button in the title row sits at its right edge. */
 .research-title > button {
   margin-left: auto;
 }
@@ -472,6 +470,35 @@ li.research-item .research-title {
 }
 .research-need-met {
   opacity: 0.6;
+}
+/* A done or discarded project's description, in place of "Complete". */
+.research-caption {
+  margin: 0;
+}
+/* A project's skill: just its icon, a popover trigger (SkillPopover) for the name and description, without the Mush
+   button look. */
+button.research-need-skill {
+  display: inline-grid;
+  place-items: center;
+  box-sizing: border-box;
+  width: auto;
+  height: auto;
+  min-height: 0;
+  margin: 0;
+  padding: 0.1rem;
+  border: 0;
+  border-radius: 0.15rem;
+  background: none;
+  cursor: help;
+}
+@media (hover: hover) {
+  button.research-need-skill:hover {
+    background: rgb(0 0 0 / 0.08);
+  }
+}
+button.research-need-skill:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 0;
 }
 
 /* Your planets (PlanetList): in the Astro terminal window. */
@@ -666,16 +693,18 @@ li.research-item .research-title {
 
 /* A blocked research or project row: greyed like the tracker's pending cards (itrackie.css), with its checklist left
    legible so you can see what's missing. */
-li.research-item-blocked .research-card {
+li.research-item-blocked .research-card,
+li.research-item-discarded .research-card {
   filter: grayscale(1);
   opacity: 0.45;
 }
+li.research-item-discarded .research-title,
 li.research-item-blocked .research-title,
 li.research-item-blocked .research-progress {
   opacity: 0.6;
 }
 
-/* The terminal's Active / Blocked / Done tabs: tighter, so all three fit on one line at 360px. */
+/* The terminal's Active / Blocked / Done / Discarded tabs: tighter, so they fit on one line at 360px. */
 .progress-tab-list .settings-tab {
   padding-inline: 12px;
 }
@@ -1184,10 +1213,10 @@ li.signal-next {
   opacity: 0.95;
 }
 
-/* The research lab has a fourth tab, Unimplemented, on desktop only (it is left out below 1024px), so its window is
-   wider there to keep all four on one line in every language. */
+/* The research lab and NERON core have a fourth tab, Unimplemented, on desktop only (it is left out below 1024px), so
+   their window is wider there to keep all four on one line in every language. */
 @media (min-width: 1024px) {
-  .settings-popup.terminal-popup:has(.research-tab-list) {
+  .settings-popup.terminal-popup:has(.unimplemented-tab-list) {
     width: min(34rem, calc(100vw - 2rem));
   }
 }
