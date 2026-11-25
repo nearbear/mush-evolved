@@ -118,6 +118,7 @@ describe("findHardcodedUi", () => {
   it("is not fooled by generics, comparisons, arrows or comments", () => {
     expect(ui(`const [a, b] = useState<string | null>(null); const c = new Map<string, Set<string>>();`)).toEqual([]);
     expect(ui(`const hit = items.filter((i) => i.id < max && count > min);`)).toEqual([]);
+    expect(ui(`const el = i > visible ? (<span />) : (<div />);`)).toEqual([]);
     expect(ui(`// <p>Hello there</p> and "Some Sentence"\n/* "Another Sentence" */ const glob = "./**/*.tsx";`)).toEqual([]);
   });
 

@@ -84,7 +84,7 @@ export function findHardcodedUi(src: string, { jsx }: { jsx: boolean }): Finding
   if (jsx) {
     for (const m of code.matchAll(/(?<![=-])>([^<>{}]+)</g)) {
       const text = m[1]!.trim();
-      if (!/^[A-Za-zÀ-ɏ"“¿¡]/.test(text) || /&&|\|\||=>|;/.test(text) || !LETTERS.test(text)) continue;
+      if (!/^[A-Za-zÀ-ɏ"“¿¡]/.test(text) || /&&|\|\||=>|;|\?\s*\($/.test(text) || !LETTERS.test(text)) continue;
       hits.set(m.index!, text);
     }
   }
