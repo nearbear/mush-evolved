@@ -2,7 +2,8 @@ import { Action, type ActionVisibility, isString } from "./action.ts";
 import { changeMP, gainMorale } from "../adjustStats.ts";
 import { damage, heal } from "../death.ts";
 import { EQUIPMENT_TYPES } from "../equipment.ts";
-import { itemsIn, isWorking } from "../items.ts";
+import { removeContamination } from "../infection.ts";
+import { itemsIn, isWorking, SUPER_SOAP_ITEM } from "../items.ts";
 import { logPrivate } from "../log.ts";
 import { showered } from "../modifiers.ts";
 import { projectDone } from "../projects.ts";
@@ -47,6 +48,9 @@ export class ShowerAction extends Action<ShowerActionData> {
       damage(state, player, state.config.shower.effect.mushDamage, "injury");
       return;
     }
+    if (hasSoap(state, player, SUPER_SOAP_ITEM)) {
+      removeContamination(state, player);
+    }
     if (player.alive && player.role !== "mush" && projectDone(state, "THALASSO")) {
       const { chance, hp, morale, mp } = state.config.project.thalasso;
       if (rollFloat(state) < chance) {
@@ -64,8 +68,11 @@ export class ShowerAction extends Action<ShowerActionData> {
   }
 
   showerCost(state: Readonly<GameState>, player: Readonly<PlayerState>): number {
-  const soap = itemsIn(state, { kind: "player", id: player.id }).some((item) => item.type === "soap" && isWorking(item));
-  const cost = Math.max(0, state.config.shower.cost.ap - (soap ? state.config.shower.cost.soapDiscountAp : 0));
-  return hasSkill(player, "water_resistant") ? Math.min(cost, state.config.shower.cost.waterResistantAp) : cost;
+    const soap = hasSoap(state, player, "soap") || hasSoap(state, player, SUPER_SOAP_ITEM);
+    const cost = Math.max(0, state.config.shower.cost.ap - (soap ? state.config.shower.cost.soapDiscountAp : 0));
+    return hasSkill(player, "water_resistant") ? Math.min(cost, state.config.shower.cost.waterResistantAp) : cost;
+  }
 }
-}
+
+const hasSoap = (state: Readonly<GameState>, player: Readonly<PlayerState>, type: string): boolean =>
+  itemsIn(state, { kind: "player", id: player.id }).some((item) => item.type === type && isWorking(item));

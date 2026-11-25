@@ -91,6 +91,8 @@ export const OXYGEN_CAPSULE_ITEM = "oxy_capsule";
 /** Debris from a destroyed hunter (owner, 2026-10-24, patrol plan answer 6): opening it turns it into a random item (actions/open_capsule.ts). */
 export const SPACE_CAPSULE_ITEM = "space_capsule";
 
+/** Produced by completing the MUSHICIDE_SOAP research (owner, 2026-11-24): like soap, and showering with one removes 1 contamination from a human. Reusable. */
+export const SUPER_SOAP_ITEM = "super_soap";
 /** Produced by completing the STEROIDS research (owner, 2026-11-01); consuming gives 8 MP and resets starvation. */
 /** The Spore Sucker (eMush's spore extractor, named after its icon): the completed SPORE_EXTRACTOR research leaves one in the lab. */
 export const SPORE_SUCKER_ITEM = "spore_extractor";
@@ -202,6 +204,7 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   camera: { canDrop: false, dismantle: { metal: 1, plastic: 0, chance: 0.25 }, canBreak: true, canBeSabotaged: true, repairChance: 0.25 },
   // Showering with soap in your inventory costs 1 less AP (confirmed 2026-10-14). Reusable.
   soap: {canBreak: true, isDestroyedWhenBroken: true},
+  [SUPER_SOAP_ITEM]: { canBreak: true, isDestroyedWhenBroken: true },
   // Owner, 2026-10-25: the completed ANTI_MUSH_SERUM research yields one; single use (actions/vaccinate.ts). Named after its icon.
   anti_mush_serum: {},
   // Owner, 2026-11-20: the Spore Sucker; the completed SPORE_EXTRACTOR research yields one. Reusable (actions/remove_spore.ts). Named after its icon.

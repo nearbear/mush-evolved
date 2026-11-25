@@ -5,7 +5,7 @@ import { logPrivate, logPublic } from "../log.ts";
 import { hasMushDied } from "../death.ts";
 import { resetDrugDispenser } from "../drugs.ts";
 import { DRUG_DISPENSER_EQUIPMENT, equipmentHere, SUPER_CALC_EQUIPMENT } from "../equipment.ts";
-import { ITEM_TYPES, NCC_LENS_ITEM, NCC_LENS_YIELD, removeItem, spawnInRoom, SPORE_SUCKER_ITEM, STEROIDS_ITEM, STEROIDS_YIELD } from "../items.ts";
+import { ITEM_TYPES, NCC_LENS_ITEM, NCC_LENS_YIELD, removeItem, spawnInRoom, SPORE_SUCKER_ITEM, STEROIDS_ITEM, STEROIDS_YIELD, SUPER_SOAP_ITEM } from "../items.ts";
 import { xylophFound } from "../comms.ts";
 import { makeToken, type ResearchPool } from "../relay.ts";
 import { assayDue, researchProgress, runAssay, type SampleCounts } from "../assay.ts";
@@ -127,6 +127,13 @@ function completeResearch(state: GameState, room: RoomId, research: ResearchId):
   // Owner, 2026-11-24: completing NCC_LENS spawns 2 pairs of NCC lenses on the lab floor (no extra log line).
   if (research === "STEROIDS") spawnInRoom(state, room, STEROIDS_ITEM, STEROIDS_YIELD);
   if (research === "NCC_LENS") spawnInRoom(state, room, NCC_LENS_ITEM, NCC_LENS_YIELD);
+  // Owner, 2026-11-24: completing MUSHICIDE_SOAP spawns 1 Super Soap on the lab floor and converts any remaining soaps on the ship into Super Soap (no extra log line).
+  if (research === "MUSHICIDE_SOAP") {
+    for (const item of state.items) {
+      if (item.type === "soap") item.type = SUPER_SOAP_ITEM;
+    }
+    spawnInRoom(state, room, SUPER_SOAP_ITEM);
+  }
   // Owner, 2026-11-10: completing it adds the Drug Dispenser (DRUG_DISP) to the Medlab for good.
   if (research === "DRUG_DISPENSER") {
     const medlab = "SICK_BAY";

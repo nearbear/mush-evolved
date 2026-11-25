@@ -3,7 +3,7 @@ import { ACTIONS } from "../src/actions.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { EQUIPMENT_TYPES } from "../src/equipment.ts";
-import { ITEM_TYPES, NCC_LENS_ITEM, NCC_LENS_YIELD, STEROIDS_ITEM, STEROIDS_MP, STEROIDS_YIELD } from "../src/items.ts";
+import { ITEM_TYPES, NCC_LENS_ITEM, NCC_LENS_YIELD, STEROIDS_ITEM, STEROIDS_MP, STEROIDS_YIELD, SUPER_SOAP_ITEM } from "../src/items.ts";
 import { ANY_CONSUMABLE, RESEARCH_COMPLETE, RESEARCH_EFFICIENCY, RESEARCH_IDS, RESEARCH_REQUIRES, RESEARCH_SKILLS, RESEARCH_STATUS, researchEfficiency } from "../src/research.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { addStatus } from "../src/statuses.ts";
@@ -665,5 +665,24 @@ describe("BIOS research crew lock", () => {
       expect(offered(unlocked, "p1").some((a) => a.type === "spoil_research" && a.research === "STEROIDS")).toBe(true);
       expect(applyAction(unlocked, "p1", spoil).ok).toBe(true);
     }
+  });
+
+  it("completing MUSHICIDE_SOAP consumes one soap, spawns Super Soap in the lab, converts other soaps, and marks status full", () => {
+    expect(RESEARCH_STATUS.MUSHICIDE_SOAP).toBe("full");
+    expect(ITEM_TYPES[SUPER_SOAP_ITEM]).toEqual({ canBreak: true, isDestroyedWhenBroken: true });
+    const s = game();
+    s.items = s.items.filter((i) => i.type !== "soap");
+    stockLab(s, "LABORATORY", "MUSHICIDE_SOAP");
+    s.items.push(
+      { id: "soap-other-room", type: "soap", at: { kind: "room", id: "ALPHA_DORM" } },
+      { id: "soap-carried", type: "soap", at: { kind: "player", id: "p1" } },
+    );
+    setProgress(s, { research: "MUSHICIDE_SOAP" }, RESEARCH_COMPLETE - 1);
+    s.rng = CLEAN;
+    const done = mustApply(s, "p0", work("MUSHICIDE_SOAP"));
+    expect(done.items.some((i) => i.type === "soap")).toBe(false);
+    expect(done.items.filter((i) => i.type === SUPER_SOAP_ITEM && i.at.kind === "room" && i.at.id === "LABORATORY")).toHaveLength(1);
+    expect(done.items.find((i) => i.id === "soap-other-room")?.type).toBe(SUPER_SOAP_ITEM);
+    expect(done.items.find((i) => i.id === "soap-carried")?.type).toBe(SUPER_SOAP_ITEM);
   });
 });

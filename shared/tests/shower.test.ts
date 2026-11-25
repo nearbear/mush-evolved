@@ -100,4 +100,44 @@ describe("shower", () => {
     expect(s.items.some((i) => i.type === "soap" && i.at.kind === "room" && DEFAULT_CONFIG.snoop.rooms.includes(i.at.id))).toBe(true);
     expect(parseGameMessage(JSON.stringify({ type: "action", action: shower }))).toEqual({ type: "action", action: shower });
   });
+
+  it("discounts AP and removes 1 contamination from humans with Super Soap, keeping it private and reusable", () => {
+    const s = ship();
+    s.items.push({ id: "super-1", type: "super_soap", at: { kind: "player", id: "p1" } });
+    s.contamination.p1 = 2;
+    const r = applyAction(s, "p1", shower);
+    if (!r.ok) throw new Error(r.error);
+    expect(player(r.state, "p1").ap).toBe(config.startAp - cost.ap + cost.soapDiscountAp);
+    expect(r.state.contamination.p1).toBe(1);
+    expect(r.state.items.some((i) => i.id === "super-1" && i.type === "super_soap")).toBe(true);
+    expect(viewFor(r.state, "p1").log.some((e) => e.key === "showered")).toBe(true);
+    expect(viewFor(r.state, "p2").log.some((e) => e.key === "showered")).toBe(false);
+
+    // Removes last contamination cleanly, and logs the same when already at 0.
+    const r2 = applyAction(r.state, "p1", shower);
+    if (!r2.ok) throw new Error(r2.error);
+    expect(r2.state.contamination.p1).toBeUndefined();
+    const r3 = applyAction(r2.state, "p1", shower);
+    if (!r3.ok) throw new Error(r3.error);
+    expect(r3.state.contamination.p1).toBeUndefined();
+    expect(viewFor(r3.state, "p1").log.filter((e) => e.key === "showered")).toHaveLength(3);
+  });
+
+  it("does not remove contamination when Super Soap is only on the floor, and does not remove Mush spores", () => {
+    const s = ship();
+    s.items.push({ id: "super-floor", type: "super_soap", at: { kind: "room", id: "BEDROOM_A" } });
+    s.contamination.p1 = 1;
+    const r = applyAction(s, "p1", shower);
+    if (!r.ok) throw new Error(r.error);
+    expect(player(r.state, "p1").ap).toBe(config.startAp - cost.ap);
+    expect(r.state.contamination.p1).toBe(1);
+
+    const mushShip = ship();
+    mushShip.items.push({ id: "super-mush", type: "super_soap", at: { kind: "player", id: "p0" } });
+    player(mushShip, "p0").spores = 2;
+    const rm = applyAction(mushShip, "p0", shower);
+    if (!rm.ok) throw new Error(rm.error);
+    expect(player(rm.state, "p0").hp).toBe(config.startHp - effect.mushDamage);
+    expect(player(rm.state, "p0").spores).toBe(2);
+  });
 });
