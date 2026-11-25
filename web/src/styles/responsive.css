@@ -9,6 +9,8 @@
     display: flex;
     flex-direction: column;
     height: 100dvh;
+    /* Edge-to-edge up to a 16:9 2K monitor while capping ultrawides; px (not rem) keeps it decoupled from root font scaling. */
+    max-width: 2560px;
     margin-top: 0;
     margin-bottom: 0;
     padding-top: var(--space-2);

@@ -11,7 +11,7 @@ import { ComaNotice } from "./hud/ComaNotice.tsx";
 import { DeathNotice } from "./hud/DeathNotice.tsx";
 import { RoomList } from "./hud/RoomList.tsx";
 import { InspectPanel } from "./hud/InspectPanel.tsx";
-import { InventoryOverlay, stepZoom } from "./hud/InventoryOverlay.tsx";
+import { defaultRoomZoom, InventoryOverlay, stepZoom } from "./hud/InventoryOverlay.tsx";
 import { ShipOverlay } from "./hud/ShipOverlay.tsx";
 import { Announcer } from "./hud/Announcer.tsx";
 import { ITrackie } from "./hud/ITrackie.tsx";
@@ -84,7 +84,7 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
   const readOnly = !send;
   const view = useMemo(() => (readOnly ? { ...given, actions: [], chatChannels: [] } : given), [given, readOnly]);
   const post = (msg: GameClientMessage) => send?.(msg);
-  const [zoom, setZoom] = useState(1);
+  const [zoom, setZoom] = useState(defaultRoomZoom);
   const [inventoryOpen, setInventoryOpen] = useState(false);
   const names = useNames();
   const layout = useCheatRoom(useShipLayout(), view.you.room === CHEAT_ROOM);
