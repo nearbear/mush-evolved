@@ -17,10 +17,9 @@ This document summarizes the **implemented** gameplay, mechanical, and UI differ
 
 ---
 
-## TL;DR: What Will Trip Up an eMush Veteran
+## Most significant changes summarized
 
 > [!CAUTION]
-> **Unlearn these six eMush habits before your first game:**
 >
 > 1. **Eden is ALWAYS a Human win** — even if Mush are alive aboard. Passive Mush lose by default, and crews have a real reason to push Eden instead of stalling.
 > 2. **No solo Commander launches** — returning to Sol or jumping to Eden requires **all three title holders' Launch Keys** inserted at the Command terminal, and the launch resolves at the next cycle change.
@@ -52,14 +51,14 @@ This document summarizes the **implemented** gameplay, mechanical, and UI differ
 
 | Impact | Mechanic | eMush | Mush: Evolved |
 | :--- | :--- | :--- | :--- |
-| 🟠 | **Hostile NPCs Aboard Ship** | Creatures exist only on planetary expeditions. | Hostile creatures can board and roam the Daedalus with HP, AP, and MP like players, taking a turn at each cycle change (Move or Punch; Pacifist, Bodyguard, Elusive, Ceasefire, and guardians apply to them as to players). Targetable by Punch, Attack, and Throw Out. Currently spawned only by the **Superkube**. |
+| 🟠 | **Hostile NPCs Aboard Ship** | Creatures exist only on planetary expeditions. | Hostile creatures can board and roam the Daedalus with HP, AP, and MP like players, taking a turn at each cycle change (Move or Punch; Pacifist, Bodyguard, Elusive, Ceasefire, and guardians apply to them as to players). Targetable by Punch, Attack, and Throw Out. Planned, but not yet implemented. |
 
 ---
 
 ## 2. Mush Identity, Deduction & Anti-Testing
 
 > [!IMPORTANT]
-> 🔴 **Core Design Pillar — No Incidental Proof of Humanity:** In Mush: Evolved, mechanics that accidentally clear humans in eMush have been closed so deduction comes from clues and detective work rather than mechanical checklists.
+> 🔴 **Core Design Pillar — No Incidental Proof of Humanity:** In Mush: Evolved, mechanics that accidentally clear humans in eMush have been closed so deduction comes from clues and detective work rather than mechanical proofs.
 
 ### Real Mush Morale & Disease Carrying
 
