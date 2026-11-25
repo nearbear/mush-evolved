@@ -4,7 +4,7 @@ import { DEFAULT_CONFIG } from "../src/config.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { EQUIPMENT_TYPES } from "../src/equipment.ts";
 import { ITEM_TYPES, STEROIDS_ITEM, STEROIDS_MP, STEROIDS_YIELD } from "../src/items.ts";
-import { ANY_CONSUMABLE, RESEARCH_COMPLETE, RESEARCH_IDS, RESEARCH_REQUIRES, RESEARCH_SKILLS, RESEARCH_STATUS } from "../src/research.ts";
+import { ANY_CONSUMABLE, RESEARCH_COMPLETE, RESEARCH_EFFICIENCY, RESEARCH_IDS, RESEARCH_REQUIRES, RESEARCH_SKILLS, RESEARCH_STATUS, researchEfficiency } from "../src/research.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { addStatus } from "../src/statuses.ts";
 import type { Action } from "../src/types.ts";
@@ -76,7 +76,7 @@ describe("research", () => {
     s.rng = CLEAN;
     const ap = s.players[1]!.ap;
     const range = viewFor(s, "p1").relay.research.STEROIDS!.gain;
-    expect(range).toEqual({ min: 6, max: 9 });
+    expect(range).toEqual({ min: 12, max: 18 });
     const r = mustApply(s, "p1", work("STEROIDS"));
     // Below the first assay mark, it stays pending: the striped segment, not verified progress.
     const first = viewFor(r, "p1").relay.research.STEROIDS!.pending!;
@@ -84,8 +84,54 @@ describe("research", () => {
     expect(first).toBeLessThanOrEqual(range.max);
     expect(r.research.STEROIDS ?? 0).toBe(0);
     expect(r.players[1]!.ap).toBe(ap - AP);
-    expect(r.relay.research.STEROIDS!.pending).toMatchObject([{ by: "p1", base: 6 }]);
+    expect(r.relay.research.STEROIDS!.pending).toMatchObject([{ by: "p1", base: 12 }]);
     expect(r.relay.research.STEROIDS!.tokens).toEqual([]);
+  });
+
+  it("pins eMush's per-research base efficiencies (1-18) and applies them in relayView and samples", () => {
+    expect(RESEARCH_EFFICIENCY).toEqual({
+      DRUG_DISPENSER: 6,
+      WHOS_WHO: 18,
+      STEROIDS: 12,
+      MYCOSCAN: 4,
+      PATULINE_SCRAMBLER: 6,
+      FUNGUS_SCRAMBLER: 3,
+      PHEROMODEM: 3,
+      CONSTIPASPORE_SERUM: 6,
+      MYCO_ALARM: 6,
+      SPORE_EXTRACTOR: 4,
+      MYCO_DIALECT: 6,
+      MUSH_BREEDING_SYSTEM: 18,
+      MUSH_BREEDS: 6,
+      MUSH_PREDATOR: 6,
+      ANTI_MUSH_SERUM: 1,
+      HEALING_OINTMANT: 6,
+      NCC_LENS: 12,
+      NATAMY_GUN: 6,
+      TESLA_SUP2X: 12,
+      INFINITE_WATER: 6,
+      GUARANA_CAPUCCINO: 6,
+      MUSHICIDE_SOAP: 3,
+      MUSHOPHAGE_BACTERIA: 3,
+      ANTISPORE_GAZ: 6,
+      SUPER_CALC: 3,
+    });
+    expect(researchEfficiency("UNKNOWN_RESEARCH")).toBe(6);
+
+    const s = game();
+    for (const id of RESEARCH_IDS) stockLab(s, "LABORATORY", id);
+    const v = viewFor(s, "p0").relay.research;
+    expect(v.ANTI_MUSH_SERUM!.gain).toEqual({ min: 1, max: 1 });
+    expect(v.SUPER_CALC!.gain).toEqual({ min: 3, max: 4 });
+    expect(v.MYCOSCAN!.gain).toEqual({ min: 4, max: 6 });
+    expect(v.DRUG_DISPENSER!.gain).toEqual({ min: 6, max: 9 });
+    expect(v.STEROIDS!.gain).toEqual({ min: 12, max: 18 });
+    expect(v.WHOS_WHO!.gain).toEqual({ min: 18, max: 27 });
+
+    // Stamped sample base uses the research's efficiency plus skill boost.
+    s.players[0]!.skills = ["biologist"];
+    const after = mustApply(s, "p0", work("ANTI_MUSH_SERUM"));
+    expect(after.relay.research.ANTI_MUSH_SERUM!.pending[0]!.base).toBe(1 + DEFAULT_CONFIG.research.progress.skillBoost);
   });
 
   it("completes at 100% and then is no longer offered or accepted", () => {
@@ -126,7 +172,7 @@ describe("research", () => {
   it("follows the relay formula: skills add, and only a player with more tokens than everyone else plus one is penalized", () => {
     const cfg = DEFAULT_CONFIG.research.progress;
     let s = game();
-    const gain = (t: typeof s, id: string, research = "STEROIDS") => viewFor(t, id).relay.research[research]!.gain;
+    const gain = (t: typeof s, id: string, research = "DRUG_DISPENSER") => viewFor(t, id).relay.research[research]!.gain;
     const you = s.players[0]!;
     expect(gain(s, "p0")).toEqual({ min: 6, max: 9 });
     you.skills = ["biologist"];
@@ -140,19 +186,19 @@ describe("research", () => {
     for (let i = 0; i < 2; i++) {
       s.rng = CLEAN;
       s.players[0]!.ap = 12;
-      s = mustApply(s, "p0", work("STEROIDS"));
+      s = mustApply(s, "p0", work("DRUG_DISPENSER"));
     }
     expect(gain(s, "p0").min).toBe(6 - 2 * cfg.relayPenalty);
-    expect(viewFor(s, "p0").relay.research.STEROIDS!.waiting).toBeGreaterThan(0);
-    // Pools are per research.
-    expect(gain(s, "p0", "DRUG_DISPENSER")).toEqual({ min: 6, max: 9 });
+    expect(viewFor(s, "p0").relay.research.DRUG_DISPENSER!.waiting).toBeGreaterThan(0);
+    // Pools are per research (and STEROIDS has efficiency 12).
+    expect(gain(s, "p0", "STEROIDS")).toEqual({ min: 12, max: 18 });
     // p1's token, made later, still breaks up p0's run.
     s.rng = CLEAN;
     s.players[1]!.statuses = [];
-    s = mustApply(s, "p1", work("STEROIDS"));
-    expect(viewFor(s, "p0").relay.research.STEROIDS!.waiting).toBe(0);
-    expect(viewFor(s, "p0").yourTokens.research).toEqual({ STEROIDS: 2 });
-    expect(viewFor(s, "p1").yourTokens.research).toEqual({ STEROIDS: 1 });
+    s = mustApply(s, "p1", work("DRUG_DISPENSER"));
+    expect(viewFor(s, "p0").relay.research.DRUG_DISPENSER!.waiting).toBe(0);
+    expect(viewFor(s, "p0").yourTokens.research).toEqual({ DRUG_DISPENSER: 2 });
+    expect(viewFor(s, "p1").yourTokens.research).toEqual({ DRUG_DISPENSER: 1 });
   });
 
   it("is seen only in the lab until complete, with a private line; completion goes in the room's history (owner, 2026-10-30/31)", () => {

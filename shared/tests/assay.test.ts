@@ -261,7 +261,7 @@ describe("Saboteur's Contaminate", () => {
   it("makes the contaminated sample spoil at the assay", () => {
     let s = sapper(MARKS);
     // Low enough that p1's sample can't reach the mark even with the best roll (relay.ts gives rolls to slots).
-    setProgress(s, { research: "STEROIDS" }, MARKS[0]! - 14);
+    setProgress(s, { research: "STEROIDS" }, MARKS[0]! - 20);
     s = act(s, "p1", research());
     s = act(s, "p0", contam());
     s = act(s, "p2", research());

@@ -10,7 +10,7 @@ import { offeredProjects } from "./projectEffects.ts";
 import { PROJECT_COMPLETE, projectProgressConfig, projectSkills } from "./projects.ts";
 import { researchProgress } from "./assay.ts";
 import { contributionGain, poolProgress, relayGainRange, type RelayPool, type RelayProgressConfig, type RelayStreak, type ResearchPool } from "./relay.ts";
-import { RESEARCH_COMPLETE, RESEARCH_IDS, RESEARCH_SKILLS } from "./research.ts";
+import { RESEARCH_COMPLETE, RESEARCH_IDS, RESEARCH_SKILLS, researchProgressConfig } from "./research.ts";
 import type { SkillId } from "./skills.ts";
 import type { GameState, PlayerState, RelayTargetView } from "./types.ts";
 
@@ -62,7 +62,7 @@ export function relayView(state: Readonly<GameState>, you: Readonly<PlayerState>
     projects: Object.fromEntries(Object.entries(state.projects).filter(([id, percent]) => percent >= PROJECT_COMPLETE || (atCore && offeredSet.has(id)))),
     pilgred: atPilgred ? state.pilgred.progress : null,
     relay: {
-      research: inLab ? Object.fromEntries(RESEARCH_IDS.map((id) => [id, researchView(state.relay.research[id], research, you, researchBonus)])) : {},
+      research: inLab ? Object.fromEntries(RESEARCH_IDS.map((id) => [id, researchView(state.relay.research[id], researchProgressConfig(research, id), you, researchBonus)])) : {},
       projects: atCore ? Object.fromEntries(offered.map((id) => [id, streakEntry(state.relay.projects[id], projectProgressConfig(project, id), you, projectSkills(id), projectBonus)])) : {},
       pilgred: atPilgred ? targetView(state.pilgred.pool, state.config.pilgred.progress, you, PILGRED_SKILLS, PILGRED_COMPLETE, 0) : null,
     },

@@ -7,7 +7,7 @@ import { offeredProjects } from "../src/projectEffects.ts";
 import { PROJECT_COMPLETE, projectProgressConfig } from "../src/projects.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { tokenBase } from "../src/relay.ts";
-import { RESEARCH_COMPLETE, RESEARCH_IDS, RESEARCH_REQUIRES, RESEARCH_SKILLS } from "../src/research.ts";
+import { RESEARCH_COMPLETE, RESEARCH_IDS, RESEARCH_REQUIRES, RESEARCH_SKILLS, researchProgressConfig } from "../src/research.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { BiosOption, CpuPriority, CrewLock } from "../src/bios.ts";
 import type { Action, GameState } from "../src/types.ts";
@@ -364,8 +364,9 @@ describe("NERON's BIOS", () => {
       p0.skills = [];
       p1.skills = ["biologist"];
 
-      const unskilledBase = tokenBase(s.config.research.progress, p0, RESEARCH_SKILLS);
-      const skilledBase = tokenBase(s.config.research.progress, p1, RESEARCH_SKILLS);
+      const progressCfg = researchProgressConfig(s.config.research.progress, research);
+      const unskilledBase = tokenBase(progressCfg, p0, RESEARCH_SKILLS);
+      const skilledBase = tokenBase(progressCfg, p1, RESEARCH_SKILLS);
       const bonus = s.config.bios.cpuPriorityBonus;
 
       // Non-matching priorities give no boost.

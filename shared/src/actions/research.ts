@@ -1,6 +1,6 @@
 import { Action, type ActionCost, type ActionVisibility, DIRTY, isString } from "./action.ts";
 import { canWorkResearch, cpuPriorityBonus } from "../bios.ts";
-import { ANY_CONSUMABLE, RESEARCH_COMPLETE, RESEARCH_IDS, RESEARCH_REQUIRES, RESEARCH_SKILLS, type ResearchId, researchNeedOrder } from "../research.ts";
+import { ANY_CONSUMABLE, RESEARCH_COMPLETE, RESEARCH_IDS, RESEARCH_REQUIRES, RESEARCH_SKILLS, type ResearchId, researchNeedOrder, researchProgressConfig } from "../research.ts";
 import { logPrivate, logPublic } from "../log.ts";
 import { hasMushDied } from "../death.ts";
 import { resetDrugDispenser } from "../drugs.ts";
@@ -70,14 +70,15 @@ function countsParam(state: Readonly<GameState>, counts: SampleCounts): string {
  */
 export function addSample(state: GameState, player: Readonly<PlayerState>, research: ResearchId, spoiled: boolean): void {
   const config = state.config.research;
+  const progress = researchProgressConfig(config.progress, research);
   const pool = researchPool(state, research);
-  pool.pending.push({ ...makeToken(state, config.progress, player, RESEARCH_SKILLS, cpuPriorityBonus(state, "research")), ...(spoiled && { contaminatedBy: player.id }) });
-  const before = researchProgress(pool, config.progress, RESEARCH_COMPLETE);
+  pool.pending.push({ ...makeToken(state, progress, player, RESEARCH_SKILLS, cpuPriorityBonus(state, "research")), ...(spoiled && { contaminatedBy: player.id }) });
+  const before = researchProgress(pool, progress, RESEARCH_COMPLETE);
   // Owner, 2026-10-30: research is private; the sample list and the assay lines are the record of who worked.
   logPrivate(state, player.id, "researched", { name: player.character, research, percent: before.verified + before.pending });
-  if (!assayDue(pool, config.progress, config.assayMarks, RESEARCH_COMPLETE)) return;
+  if (!assayDue(pool, progress, config.assayMarks, RESEARCH_COMPLETE)) return;
   const { tested, spoiled: lost } = runAssay(state, pool, config.spoilChance);
-  const verified = researchProgress(pool, config.progress, RESEARCH_COMPLETE).verified;
+  const verified = researchProgress(pool, progress, RESEARCH_COMPLETE).verified;
   state.research[research] = verified;
   // Owner, 2026-10-31: the line names everyone tested and whose samples spoiled, never why.
   const testedCount = tested.reduce((n, [, c]) => n + c, 0);

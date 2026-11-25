@@ -1,7 +1,9 @@
-// Researches done at the laboratory's research terminal. Only the ids live here (the names are translated in the
-// client). Progress is state (`GameState.research`, percent), and the whole list is public (decided 2026-10-16).
-// What a research needs before it can be worked on is in RESEARCH_REQUIRES. The original's other fields (difficulty,
-// prerequisites, effects) are not used yet.
+// Researches done at the laboratory's research terminal. Only the ids, requirements and per-research base efficiencies
+// live here (the names are translated in the client). Progress is state (`GameState.research`, percent), and the whole
+// list is public (decided 2026-10-16). What a research needs before it can be worked on is in RESEARCH_REQUIRES, and its
+// base progress efficiency (1–18, mirrored from eMush; owner, 2026-11-24) is in RESEARCH_EFFICIENCY.
+
+import type { RelayProgressConfig } from "./relay.ts";
 
 /** The researches (card art in `Mush/www/img/cards/research/`, or `projects/whos_who.png` for `WHOS_WHO`). */
 export const RESEARCH_IDS = [
@@ -38,6 +40,49 @@ export const RESEARCH_COMPLETE = 100;
 export const RESEARCH_SKILLS = ["biologist", "medic", "skilful"] as const;
 
 export type ResearchId = (typeof RESEARCH_IDS)[number];
+
+/**
+ * Each research's base progress efficiency (1–18, mirrored from eMush's `ProjectConfigData.php`; owner, 2026-11-24),
+ * overriding `config.research.progress.rate` before skill boosts, BIOS priority, Migraine and relay penalties.
+ * `WHOS_WHO` (ACTOPI Protocol) keeps its eMush NERON project efficiency of 18.
+ */
+export const RESEARCH_EFFICIENCY: Readonly<Record<ResearchId, number>> = {
+  DRUG_DISPENSER: 6,
+  WHOS_WHO: 18,
+  STEROIDS: 12,
+  MYCOSCAN: 4,
+  PATULINE_SCRAMBLER: 6,
+  FUNGUS_SCRAMBLER: 3,
+  PHEROMODEM: 3,
+  CONSTIPASPORE_SERUM: 6,
+  MYCO_ALARM: 6,
+  SPORE_EXTRACTOR: 4,
+  MYCO_DIALECT: 6,
+  MUSH_BREEDING_SYSTEM: 18,
+  MUSH_BREEDS: 6,
+  MUSH_PREDATOR: 6,
+  ANTI_MUSH_SERUM: 1,
+  HEALING_OINTMANT: 6,
+  NCC_LENS: 12,
+  NATAMY_GUN: 6,
+  TESLA_SUP2X: 12,
+  INFINITE_WATER: 6,
+  GUARANA_CAPUCCINO: 6,
+  MUSHICIDE_SOAP: 3,
+  MUSHOPHAGE_BACTERIA: 3,
+  ANTISPORE_GAZ: 6,
+  SUPER_CALC: 3,
+};
+
+/** A research's base progress efficiency (1–18, mirrored from eMush; owner, 2026-11-24), or `fallback` for an unknown id. */
+export function researchEfficiency(research: string, fallback = 6): number {
+  return RESEARCH_EFFICIENCY[research as ResearchId] ?? fallback;
+}
+
+/** The `RelayProgressConfig` for a specific research, applying its per-research efficiency as `rate`. */
+export function researchProgressConfig(config: Readonly<RelayProgressConfig>, research: string): RelayProgressConfig {
+  return { ...config, rate: researchEfficiency(research, config.rate) };
+}
 
 /** Stands for any food, drink or drug (an item type with `consume`) in `ResearchRequirement.items`. */
 export const ANY_CONSUMABLE = "consumable";
