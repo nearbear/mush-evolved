@@ -4,8 +4,14 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 
-/** Live: the server's clock minus ours (ms). Frozen: a fixed server time (ms), for a replay. */
-export type ServerClock = { offset: number } | { frozen: number };
+/** A replay step advancing to `to` (server ms) over `durationMs` (wall-clock ms). */
+export interface ReplayStep {
+  to: number;
+  durationMs: number;
+}
+
+/** Live: the server's clock minus ours (ms). Frozen: a fixed server time (ms), for a replay (with `step` while playing). */
+export type ServerClock = { offset: number } | { frozen: number; step?: ReplayStep };
 
 export const ServerClockContext = createContext<ServerClock>({ offset: 0 });
 

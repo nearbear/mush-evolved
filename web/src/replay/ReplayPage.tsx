@@ -13,9 +13,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router";
 import { GameView } from "../GameView.tsx";
+import type { ServerClock } from "../hud/serverClock.ts";
 import { useMobile } from "../useMobile.ts";
 import { ReplayNotice } from "./ReplayNotice.tsx";
-import { lastSeq, type Step } from "./replayState.ts";
+import { chunkOf, lastSeq, type Step, stepAt } from "./replayState.ts";
 import { Transport, type TransportProps } from "./Transport.tsx";
 import {
   marksOf,
@@ -122,7 +123,16 @@ export default function ReplayPage() {
   const home = replay.summary?.singlePlayer ? "/" : "/games";
   const leave = useCallback(() => navigate(home), [navigate, home]);
   const frozenAt = step?.at ?? 0;
-  const clock = useMemo(() => ({ frozen: frozenAt }), [frozenAt]);
+  const stepMs = playInterval(speed, skip);
+  // While playing, tell action bars when the next stop falls so they fill across the step at playback speed.
+  const nextAt =
+    playing && !stale && index && targets.stepForward !== null
+      ? (stepAt(index, replay.chunks, targets.stepForward)?.at ?? index.chunks[chunkOf(index, targets.stepForward)]?.from ?? null)
+      : null;
+  const clock = useMemo<ServerClock>(
+    () => (nextAt !== null && nextAt > frozenAt ? { frozen: frozenAt, step: { to: nextAt, durationMs: stepMs } } : { frozen: frozenAt }),
+    [frozenAt, nextAt, stepMs],
+  );
 
   if (status !== "ready" || !index || !step || replay.cyclesPerDay === null) {
     return (

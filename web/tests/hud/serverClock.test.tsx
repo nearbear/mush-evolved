@@ -50,6 +50,24 @@ describe("ActionBar", () => {
     expect(out).toContain("--bar-delay:-4000ms");
     expect(out).toContain("animation-play-state:paused");
   });
+  it("fills across a playing replay step at step speed", () => {
+    vi.useFakeTimers({ now: LOCAL });
+    // 0.2 -> 0.7 over 250ms maps to a 500ms 0 -> 1 animation starting at -100ms.
+    const out = withClock({ frozen: 12_000, step: { to: 17_000, durationMs: 250 } }, <ActionBar bar={bar} label="Working" />);
+    expect(out).toContain("--bar-ms:500ms");
+    expect(out).toContain("--bar-delay:-100ms");
+    expect(out).not.toContain("paused");
+  });
+  it("caps a playing replay step at full when the next stop is past the bar's end", () => {
+    const out = withClock({ frozen: 10_000, step: { to: 25_000, durationMs: 125 } }, <ActionBar bar={bar} label="Working" />);
+    expect(out).toContain("--bar-ms:125ms");
+    expect(out).toContain("--bar-delay:0ms");
+  });
+  it("stays paused if the bar is already full during a playing replay step", () => {
+    const out = withClock({ frozen: 20_000, step: { to: 25_000, durationMs: 250 } }, <ActionBar bar={bar} label="Working" />);
+    expect(out).toContain("--bar-delay:-10000ms");
+    expect(out).toContain("animation-play-state:paused");
+  });
   it("runs from our clock plus the offset when live", () => {
     vi.useFakeTimers({ now: 13_000 });
     const out = withClock({ offset: 1_000 }, <ActionBar bar={bar} label="Working" />);
