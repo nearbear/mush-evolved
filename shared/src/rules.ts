@@ -386,7 +386,8 @@ const isUnaffordableReason = (action: Action, refused: string | null): refused i
     (action.type === "caress" && refused === GERMAPHOBE) ||
     (action.type === "compute_eden" && refused === FEW_FRAGMENTS) ||
     (ICARUS_ACTIONS.has(action.type) && (refused === EXPLORED || refused === ICARUS_LOST)) ||
-    (action.type === "print_list" && (refused === MUSH_NOT_SELECTED || refused === LIST_PRINTED || refused === BROKEN)));
+    (action.type === "print_list" && (refused === MUSH_NOT_SELECTED || refused === LIST_PRINTED || refused === BROKEN)) ||
+    (action.type === "summon" && refused === "not_in_plan_room"));
 
 /** The player as they know themselves: without their curses, which only their odds would otherwise show. */
 const unaware = (p: PlayerState): PlayerState => (p.modifiers.some(isCurseId) ? { ...p, modifiers: withoutCurses(p.modifiers) } : p);
@@ -426,6 +427,7 @@ function unaffordableOption(state: GameState, p: PlayerState, def: ActionDef<Act
     ...(refused === LISTENED_TODAY ? (["listenedToday"] as const) : []),
     ...(refused === FEW_FRAGMENTS ? (["fragments"] as const) : []),
     ...(refused === TRAVEL_UNDERWAY ? (["travelUnderway"] as const) : []),
+    ...(refused === "not_in_plan_room" ? (["notInPlanRoom"] as const) : []),
     ...(refused === DIRTY ? (["clean"] as const) : []),
     ...(refused === NO_SPACE ? (["space"] as const) : []),
     ...(refused === COOLDOWN ? (["cooldown"] as const) : []),
@@ -1015,7 +1017,9 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
       analyzeAp: state.config.astro.analyze.cost.ap, orbitAnalyzeAp: state.config.astro.analyze.orbitCost.ap,
       contactSolAp: state.config.comms.sol.cost.ap, rebelAp: state.config.comms.rebel.cost.ap, neronAp: state.config.comms.neron.cost.ap,
       gardenRoom: state.config.botany.gardenRoom, cyclesPerDay: state.config.cyclesPerDay,
-      seats: state.config.preselection?.seats ?? state.players.length },
+      seats: state.config.preselection?.seats ?? state.players.length,
+      planSlotsPerPlan: state.config.plans.slotsPerPlan,
+      planExpiryDays: state.config.plans.expiryDays },
     maxAp: you.maxAp,
     maxMp: you.maxMp,
     maxHp: you.maxHp,

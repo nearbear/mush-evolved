@@ -505,6 +505,7 @@
     "lacksListPrinted": "Ces informations ont déjà été perforées : LA liste ne s'imprime qu'une fois par partie.",
     "lacksFragments": "Il n'y a pas assez de fragments de carte stellaire au sol ici.",
     "lacksTravelUnderway": "Le voyage intergalactique est déjà en cours.",
+    "lacksNotInPlanRoom": "Allez dans la pièce pour appeler.",
     "lacksBroken": "En panne : une réparation est nécessaire.",
     "lacksGermaphobe": "Germaphobe : vous ne pouvez pas caresser Schrödinger.",
     "lacksNotYourSong": "Cette chanson ne vous fait pas vibrer.",
@@ -610,7 +611,15 @@
     "report_not_found": "Vous n'étiez pas de cette expédition.",
     "not_in_cheat_room": "Vous devez être dans la salle de triche.",
     "already_has": "Vous l'avez déjà.",
-    "cannot_contaminate": "Vous ne pouvez pas être contaminé."
+    "cannot_contaminate": "Vous ne pouvez pas être contaminé.",
+    "plan_forbidden": "Vous ne pouvez pas publier de plan dans ce canal.",
+    "plan_exists": "Ce canal a déjà un plan ouvert.",
+    "plan_room_invalid": "Choisissez une pièce du Daedalus.",
+    "plan_invalid": "Ce plan n'est pas valide.",
+    "plan_empty": "Ajoutez au moins une place au plan.",
+    "plan_too_many_slots": "Trop de places dans ce plan.",
+    "plan_reserved_invalid": "L'une des places réservées ne peut pas être prise par ce membre.",
+    "plan_task_invalid": "L'une des tâches n'est plus valide."
   },
   "terminal": {
     "close": "Fermer",
@@ -733,6 +742,94 @@
     "membersLabel": "Membres de départ",
     "close": "Fermer",
     "leaveNamed": "Quitter {{name}}"
+  },
+  "plans": {
+    "heading": "Plan",
+    "messagesTab": "Messages",
+    "planTab": "Plan",
+    "viewSwitch": "Vue du canal",
+    "newPlan": "Nouveau plan",
+    "noPlan": "Aucun plan pour l'instant.",
+    "by": "Par {{name}}",
+    "expires": "Expire fin du jour {{day}}",
+    "go": "Appeler",
+    "goToRoom": "Allez dans {{room}} pour appeler.",
+    "cancel": "Annuler",
+    "claim": "Prendre",
+    "withdraw": "Se retirer",
+    "markDone": "Fait",
+    "done": "Fait",
+    "unclaimed": "Libre",
+    "reservedFor": "Réservé à {{name}}",
+    "onCall": "En attente",
+    "purposes": {
+      "expedition": "Expédition",
+      "meal": "Repas",
+      "healing": "Soins",
+      "speech": "Discours",
+      "sharing": "Partage",
+      "work": "Travail",
+      "other": "Autre"
+    },
+    "status": {
+      "open": "Ouvert",
+      "called": "Appelé",
+      "cancelled": "Annulé",
+      "expired": "Expiré"
+    },
+    "outcome": {
+      "arrived": "Arrivé",
+      "stopped": "N'est pas arrivé",
+      "unclaimed": "Non pris"
+    },
+    "struck": {
+      "target_died": "Cible décédée",
+      "already_done": "Déjà terminé"
+    },
+    "task": {
+      "research": "Recherche : {{name}}",
+      "project": "Projet : {{name}}",
+      "repair_pilgred": "Réparer PILGRED",
+      "heal": "Soigner {{name}}",
+      "comfort": "Réconforter {{name}}",
+      "stt": "STT avec {{name}}",
+      "fiery_speech": "Discours enflammé",
+      "boring_speech": "Discours barbant",
+      "bring": "Apporter : {{item}}"
+    },
+    "taskType": {
+      "research": "Recherche",
+      "project": "Projet NERON",
+      "repair_pilgred": "Réparer PILGRED",
+      "heal": "Soigner",
+      "comfort": "Réconforter",
+      "stt": "STT",
+      "fiery_speech": "Discours enflammé",
+      "boring_speech": "Discours barbant",
+      "bring": "Apporter un objet"
+    },
+    "composer": {
+      "title": "Nouveau plan",
+      "close": "Fermer",
+      "roomLabel": "Pièce",
+      "purposeLabel": "Objectif",
+      "slotsLabel": "Places ({{count}}/{{max}})",
+      "addOnCall": "+ En attente",
+      "addTask": "+ Tâche",
+      "removeSlot": "Retirer la place {{index}}",
+      "reservedForLabel": "Réservé à",
+      "anyone": "N'importe qui",
+      "taskTypeLabel": "Tâche",
+      "researchLabel": "Recherche",
+      "projectLabel": "Projet",
+      "targetLabel": "Cible",
+      "itemLabel": "Objet",
+      "channelMembers": "Membres du canal",
+      "otherCrew": "Autre équipage",
+      "emptyReason": "Ajoutez au moins une place pour publier.",
+      "overCapReason": "Trop de places (maximum {{max}}).",
+      "post": "Publier le plan"
+    }
   },
   "coma": {
     "title": "Vous êtes dans le coma.",

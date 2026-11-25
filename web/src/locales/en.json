@@ -492,6 +492,7 @@
     "lacksListPrinted": "THE List has already been punched out: it can be printed only once per game.",
     "lacksFragments": "There aren't enough star map fragments on the floor here.",
     "lacksTravelUnderway": "Intergalactic travel is already underway.",
+    "lacksNotInPlanRoom": "Go to the room to call.",
     "lacksBroken": "Broken: it must be repaired first.",
     "lacksGermaphobe": "Germaphobe: you can't caress Schrödinger.",
     "lacksNotYourSong": "This song isn't your vibe.",
@@ -597,7 +598,15 @@
     "report_not_found": "You weren't on that expedition.",
     "not_in_cheat_room": "You need to be in the cheat room.",
     "already_has": "You already have that.",
-    "cannot_contaminate": "You can't be contaminated."
+    "cannot_contaminate": "You can't be contaminated.",
+    "plan_forbidden": "You can't post a plan in this channel.",
+    "plan_exists": "This channel already has an open plan.",
+    "plan_room_invalid": "Pick a room on the Daedalus.",
+    "plan_invalid": "That plan isn't valid.",
+    "plan_empty": "Add at least one slot to the plan.",
+    "plan_too_many_slots": "Too many slots in this plan.",
+    "plan_reserved_invalid": "One of the reserved slots can't be claimed by that member.",
+    "plan_task_invalid": "One of the tasks is no longer valid."
   },
   "terminal": {
     "close": "Close",
@@ -719,6 +728,94 @@
     "membersLabel": "Initial members",
     "close": "Close",
     "leaveNamed": "Leave {{name}}"
+  },
+  "plans": {
+    "heading": "Plan",
+    "messagesTab": "Messages",
+    "planTab": "Plan",
+    "viewSwitch": "Channel view",
+    "newPlan": "New plan",
+    "noPlan": "No plan yet.",
+    "by": "By {{name}}",
+    "expires": "Expires end of day {{day}}",
+    "go": "Go",
+    "goToRoom": "Go to {{room}} to call.",
+    "cancel": "Cancel",
+    "claim": "Claim",
+    "withdraw": "Withdraw",
+    "markDone": "Done",
+    "done": "Done",
+    "unclaimed": "Unclaimed",
+    "reservedFor": "Reserved for {{name}}",
+    "onCall": "On call",
+    "purposes": {
+      "expedition": "Expedition",
+      "meal": "Meal",
+      "healing": "Healing",
+      "speech": "Speech",
+      "sharing": "Sharing",
+      "work": "Work",
+      "other": "Other"
+    },
+    "status": {
+      "open": "Open",
+      "called": "Called",
+      "cancelled": "Cancelled",
+      "expired": "Expired"
+    },
+    "outcome": {
+      "arrived": "Arrived",
+      "stopped": "Didn't arrive",
+      "unclaimed": "Unclaimed"
+    },
+    "struck": {
+      "target_died": "Target died",
+      "already_done": "Already done"
+    },
+    "task": {
+      "research": "Research: {{name}}",
+      "project": "Project: {{name}}",
+      "repair_pilgred": "Repair PILGRED",
+      "heal": "Heal {{name}}",
+      "comfort": "Comfort {{name}}",
+      "stt": "STT with {{name}}",
+      "fiery_speech": "Fiery speech",
+      "boring_speech": "Boring speech",
+      "bring": "Bring {{item}}"
+    },
+    "taskType": {
+      "research": "Research",
+      "project": "NERON project",
+      "repair_pilgred": "Repair PILGRED",
+      "heal": "Heal",
+      "comfort": "Comfort",
+      "stt": "STT",
+      "fiery_speech": "Fiery speech",
+      "boring_speech": "Boring speech",
+      "bring": "Bring item"
+    },
+    "composer": {
+      "title": "New plan",
+      "close": "Close",
+      "roomLabel": "Room",
+      "purposeLabel": "Purpose",
+      "slotsLabel": "Slots ({{count}}/{{max}})",
+      "addOnCall": "+ On call",
+      "addTask": "+ Task",
+      "removeSlot": "Remove slot {{index}}",
+      "reservedForLabel": "Reserved for",
+      "anyone": "Anyone",
+      "taskTypeLabel": "Task",
+      "researchLabel": "Research",
+      "projectLabel": "Project",
+      "targetLabel": "Target",
+      "itemLabel": "Item",
+      "channelMembers": "Channel members",
+      "otherCrew": "Other crew",
+      "emptyReason": "Add at least one slot to post.",
+      "overCapReason": "Too many slots (maximum {{max}}).",
+      "post": "Post plan"
+    }
   },
   "coma": {
     "title": "You are in a coma.",

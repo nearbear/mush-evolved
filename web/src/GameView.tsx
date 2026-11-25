@@ -441,6 +441,9 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
                   onCreate: (name, members) => post({ type: "createChannel", name, members }),
                   onInvite: (channel, player) => post({ type: "invite", channel, player }),
                   onLeave: (channel) => post({ type: "leaveChannel", channel }),
+                  onPostPlan: (plan) => post({ type: "postPlan", plan }),
+                  // Plan actions stay on the Private tab (no room-log switch or character walk-up).
+                  onPlanAction: (action) => post({ type: "action", action }),
                 }
           }
         />

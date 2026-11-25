@@ -5349,3 +5349,9 @@ Owner asked to rotate three Mush skill icons (Slime Trap's to Mass Mouldering, M
 ### 2026-11-24 — Wide-monitor layout Pass 1 (#485)
 - **Decision (owner):** Implemented Pass 1 of #485: raised desktop `main.game` `max-width` to `2560px` (`web/src/styles/responsive.css`, in `px` so it stays decoupled from any future root `font-size` scaling) and added `defaultRoomZoom()` in `web/src/hud/InventoryOverlay.tsx` (matching `(min-width: 2000px) and (min-height: 900px)` for `2×`, otherwise `1×`) to initialize `GameView`'s room zoom state while preserving `+`/`−` stepping.
 - **What worked:** Guarding `typeof window.matchMedia === "function"` in `defaultRoomZoom()` kept the helper safe in both Node and jsdom test environments, and `web/tests/hud/roomZoom.test.ts` covers the wide/narrow/no-window cases alongside `stepZoom`.
+
+### 2026-11-24 — Channel plans card and composer UI (#315)
+
+- Implemented step 4 of `docs/plans/on-call.md`: `PlanCard` above private channels on desktop and behind a `Messages | Plan` switch on phones (`PrivateChannels.tsx`), plus `PlanComposer` as a `FramedDialog` on desktop and a full-screen sheet on phones (`responsive.css`).
+- Added `notInPlanRoom` to `ActionOption["lacks"]` (`shared/src/rules.ts` / `shared/src/types/view.ts`) and `planSlotsPerPlan` / `planExpiryDays` to `PublicConfig` so the client renders Go disabled away from the plan's room and enforces the composer's cap and expiry header strictly from the view without computing legality.
+- Added `plans.*`, `actions.lacksNotInPlanRoom`, and `errors.plan_*` translations across `en`, `fr`, and `es`, and unit tests in `web/tests/hud/plans.test.tsx` and `shared/tests/plans.test.ts`.

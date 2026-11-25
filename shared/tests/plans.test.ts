@@ -330,6 +330,8 @@ describe("the summons", () => {
     const away = clone(s);
     player(away, "p0").room = LAB;
     expect(offered(away, "p0")).not.toContainEqual({ type: "summon", plan });
+    // Still reaches `view.actions` with `lacks: ["notInPlanRoom"]` so the UI shows Go greyed out without computing legality.
+    expect(viewFor(away, "p0").actions).toContainEqual(expect.objectContaining({ action: { type: "summon", plan }, lacks: ["notInPlanRoom"] }));
     expect(applyAction(away, "p0", { type: "summon", plan }).ok).toBe(false);
   });
 

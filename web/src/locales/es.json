@@ -505,6 +505,7 @@
     "lacksListPrinted": "LA lista ya se perforó: solo se puede imprimir una vez por partida.",
     "lacksFragments": "No hay suficientes fragmentos de mapa estelar en el suelo aquí.",
     "lacksTravelUnderway": "El viaje intergaláctico ya está en curso.",
+    "lacksNotInPlanRoom": "Ve a la sala para convocar.",
     "lacksBroken": "Averiado: hace falta una reparación.",
     "lacksGermaphobe": "Germáfoba: no puedes acariciar a Schrödinger.",
     "lacksNotYourSong": "Esta canción no va contigo.",
@@ -610,7 +611,15 @@
     "report_not_found": "No estabas en esa expedición.",
     "not_in_cheat_room": "Tienes que estar en la sala de trucos.",
     "already_has": "Ya lo tienes.",
-    "cannot_contaminate": "No puedes ser contaminado."
+    "cannot_contaminate": "No puedes ser contaminado.",
+    "plan_forbidden": "No puedes publicar un plan en este canal.",
+    "plan_exists": "Este canal ya tiene un plan abierto.",
+    "plan_room_invalid": "Elige una sala del Daedalus.",
+    "plan_invalid": "Ese plan no es válido.",
+    "plan_empty": "Añade al menos un puesto al plan.",
+    "plan_too_many_slots": "Demasiados puestos en este plan.",
+    "plan_reserved_invalid": "Uno de los puestos reservados no puede ser ocupado por ese miembro.",
+    "plan_task_invalid": "Una de las tareas ya no es válida."
   },
   "terminal": {
     "close": "Cerrar",
@@ -733,6 +742,94 @@
     "membersLabel": "Miembros iniciales",
     "close": "Cerrar",
     "leaveNamed": "Salir de {{name}}"
+  },
+  "plans": {
+    "heading": "Plan",
+    "messagesTab": "Mensajes",
+    "planTab": "Plan",
+    "viewSwitch": "Vista del canal",
+    "newPlan": "Nuevo plan",
+    "noPlan": "Aún no hay ningún plan.",
+    "by": "Por {{name}}",
+    "expires": "Expira al final del día {{day}}",
+    "go": "Convocar",
+    "goToRoom": "Ve a {{room}} para convocar.",
+    "cancel": "Cancelar",
+    "claim": "Apuntarse",
+    "withdraw": "Retirarse",
+    "markDone": "Hecho",
+    "done": "Hecho",
+    "unclaimed": "Libre",
+    "reservedFor": "Reservado para {{name}}",
+    "onCall": "En espera",
+    "purposes": {
+      "expedition": "Expedición",
+      "meal": "Comida",
+      "healing": "Curación",
+      "speech": "Discurso",
+      "sharing": "Intercambio",
+      "work": "Trabajo",
+      "other": "Otro"
+    },
+    "status": {
+      "open": "Abierto",
+      "called": "Convocado",
+      "cancelled": "Cancelado",
+      "expired": "Expirado"
+    },
+    "outcome": {
+      "arrived": "Llegó",
+      "stopped": "No llegó",
+      "unclaimed": "Sin ocupar"
+    },
+    "struck": {
+      "target_died": "Objetivo fallecido",
+      "already_done": "Ya completado"
+    },
+    "task": {
+      "research": "Investigación: {{name}}",
+      "project": "Proyecto: {{name}}",
+      "repair_pilgred": "Reparar PILGRED",
+      "heal": "Curar a {{name}}",
+      "comfort": "Consolar a {{name}}",
+      "stt": "STT con {{name}}",
+      "fiery_speech": "Discurso enardecido",
+      "boring_speech": "Discurso aburrido",
+      "bring": "Traer {{item}}"
+    },
+    "taskType": {
+      "research": "Investigación",
+      "project": "Proyecto NERON",
+      "repair_pilgred": "Reparar PILGRED",
+      "heal": "Curar",
+      "comfort": "Consolar",
+      "stt": "STT",
+      "fiery_speech": "Discurso enardecido",
+      "boring_speech": "Discurso aburrido",
+      "bring": "Traer un objeto"
+    },
+    "composer": {
+      "title": "Nuevo plan",
+      "close": "Cerrar",
+      "roomLabel": "Sala",
+      "purposeLabel": "Propósito",
+      "slotsLabel": "Puestos ({{count}}/{{max}})",
+      "addOnCall": "+ En espera",
+      "addTask": "+ Tarea",
+      "removeSlot": "Quitar puesto {{index}}",
+      "reservedForLabel": "Reservado para",
+      "anyone": "Cualquiera",
+      "taskTypeLabel": "Tarea",
+      "researchLabel": "Investigación",
+      "projectLabel": "Proyecto",
+      "targetLabel": "Objetivo",
+      "itemLabel": "Objeto",
+      "channelMembers": "Miembros del canal",
+      "otherCrew": "Resto de la tripulación",
+      "emptyReason": "Añade al menos un puesto para publicar.",
+      "overCapReason": "Demasiados puestos (máximo {{max}}).",
+      "post": "Publicar plan"
+    }
   },
   "coma": {
     "title": "Estás en coma.",

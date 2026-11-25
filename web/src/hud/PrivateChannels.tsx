@@ -2,17 +2,22 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Dialog } from "@base-ui/react/dialog";
 import { useNames } from "../i18n/names.ts";
-import type { ChannelId, PlayerId, PlayerView, PrivateChannelId } from "@mush2/shared";
+import type { Action, ChannelId, Plan, PlanDraft, PlayerId, PlayerView, PrivateChannel, PrivateChannelId } from "@mush2/shared";
 import { FramedDialog } from "./FramedDialog.tsx";
 import { IconButton } from "./IconButton.tsx";
+import { PlanCard } from "./PlanCard.tsx";
+import { PlanComposer } from "./PlanComposer.tsx";
 import { Thread } from "./Thread.tsx";
 import { UnreadChip } from "./UnreadChip.tsx";
 import { TAB_ICONS, standingSprite } from "../art/assets.ts";
+import { useMobile } from "../useMobile.ts";
 
 export interface ChannelHandlers {
   onCreate: (name: string, members: PlayerId[]) => void;
   onInvite: (channel: PrivateChannelId, player: string) => void;
   onLeave: (channel: PrivateChannelId) => void;
+  onPostPlan?: (plan: PlanDraft) => void;
+  onPlanAction?: (action: Action) => void;
 }
 
 /**
@@ -29,15 +34,20 @@ export function PrivateChannels({
   onCreate,
   onInvite,
   onLeave,
+  onPostPlan,
+  onPlanAction,
 }: {
   view: PlayerView;
   /** The Private tab is on screen: the picked channel places its "New messages" divider (#400). */
   active?: boolean;
   onChat: (channel: ChannelId, text: string) => void; onToggle: (channel: ChannelId, seq: number, line: number) => void } & Partial<ChannelHandlers>) {
   const { t, i18n } = useTranslation();
+  const mobile = useMobile();
   const [picked, setPicked] = useState<PrivateChannelId | "">("");
+  const [mobilePane, setMobilePane] = useState<"messages" | "plan">("messages");
   const [inviting, setInviting] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [composing, setComposing] = useState(false);
   // Channel ids that existed when you last created one, so the new one can be picked once the server's view has it.
   const pendingPick = useRef<Set<PrivateChannelId> | null>(null);
   // Falls back to the first channel when none is picked or the picked one is gone (left, or deleted).
@@ -48,6 +58,18 @@ export function PrivateChannels({
   const invitable = current ? view.players.filter((p) => p.alive && !current.members.includes(p.id)) : [];
   // A modifier can lower the limit below the channels you're already in; those still get a row.
   const slots = Math.max(view.channelLimit, view.privateChannels.length);
+  const planFor = (channelId: PrivateChannelId): Plan | undefined => {
+    const list = view.plans.filter((p) => p.channel === channelId);
+    return list.find((p) => p.status === "open") ?? list.at(-1);
+  };
+  const canPostPlan = (c: PrivateChannel, plan: Plan | undefined): boolean =>
+    !!onPostPlan &&
+    view.you.id === c.createdBy &&
+    !c.planningClosed &&
+    plan?.status !== "open" &&
+    view.chatChannels.includes(c.id) &&
+    view.phase === "playing" &&
+    !view.preselection;
 
   useEffect(() => {
     const before = pendingPick.current;
@@ -88,18 +110,60 @@ export function PrivateChannels({
             {t("channels.members", { names: new Intl.ListFormat(i18n.language, { type: "conjunction" }).format(current.members.map(nameOf)) })}
           </p>
           {/* One block per channel, hidden with CSS, so each keeps its own draft. */}
-          {view.privateChannels.map((c) => (
-            <div key={c.id} className="feature" hidden={c.id !== current.id}>
+          {view.privateChannels.map((c) => {
+            const plan = planFor(c.id);
+            const canPost = canPostPlan(c, plan);
+            const hasPlanUi = !!plan || canPost;
+            const pane = hasPlanUi ? mobilePane : "messages";
+            const thread = (
               <Thread
                 view={view}
                 channel={c.id}
                 placeholder={t("channels.messagePlaceholder", { name: label(c) })}
                 onSend={(text) => onChat(c.id, text)}
                 onToggle={onToggle}
-                active={active && c.id === current.id}
+                active={active && c.id === current.id && (!mobile || pane === "messages")}
               />
-            </div>
-          ))}
+            );
+            const planContent = plan ? (
+              <PlanCard view={view} plan={plan} onAction={onPlanAction} onNewPlan={canPost ? () => setComposing(true) : undefined} />
+            ) : canPost ? (
+              <div className="plan-bar">
+                {mobile && <p className="sub">{t("plans.noPlan")}</p>}
+                <button type="button" onClick={() => setComposing(true)}>
+                  {t("plans.newPlan")}
+                </button>
+              </div>
+            ) : null;
+
+            return (
+              <div key={c.id} className="feature" hidden={c.id !== current.id}>
+                {mobile && hasPlanUi ? (
+                  <>
+                    <div className="plan-switch" role="tablist" aria-label={t("plans.viewSwitch")}>
+                      <button type="button" role="tab" aria-selected={pane === "messages"} onClick={() => setMobilePane("messages")}>
+                        {t("plans.messagesTab")}
+                      </button>
+                      <button type="button" role="tab" aria-selected={pane === "plan"} onClick={() => setMobilePane("plan")}>
+                        {t("plans.planTab")}
+                      </button>
+                    </div>
+                    <div className="plan-pane" hidden={pane !== "plan"}>
+                      {planContent}
+                    </div>
+                    <div className="plan-messages-pane" hidden={pane !== "messages"}>
+                      {thread}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {planContent}
+                    {thread}
+                  </>
+                )}
+              </div>
+            );
+          })}
           {onInvite && invitable.length > 0 && (
             <button type="button" className="channel-invite" onClick={() => setInviting(true)}>
               <span aria-hidden="true">📨</span> {t("channels.invite")}
@@ -132,6 +196,18 @@ export function PrivateChannels({
           setCreating(false);
         }}
       />
+      {current && onPostPlan && (
+        <PlanComposer
+          view={view}
+          channel={current}
+          open={composing}
+          onOpenChange={setComposing}
+          onPost={(draft) => {
+            onPostPlan(draft);
+            if (mobile) setMobilePane("plan");
+          }}
+        />
+      )}
     </>
   );
 }

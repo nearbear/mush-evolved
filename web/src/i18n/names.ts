@@ -197,8 +197,8 @@ export function useNames() {
   const hostile = (kind: string) => t(`hostiles.kinds.${kind}` as never, { defaultValue: kind });
   /** A hostile NPC's kind as a name on its own, for a heading: "Intruder". */
   const hostileName = (kind: string) => t(`hostiles.names.${kind}` as never, { defaultValue: kind });
-  const research = (id: string) => t(`research.names.${id}` as never, { defaultValue: id });
-  const project = (id: string) => t(`projects.names.${id}` as never, { defaultValue: id });
+  const research = (id: string): string => t(`research.names.${id}` as never, { defaultValue: id });
+  const project = (id: string): string => t(`projects.names.${id}` as never, { defaultValue: id });
   const title = (id: string) => t(`titles.names.${id}` as never, { defaultValue: id });
   const rebelBase = (id: string) => t(`comms.rebels.${id}.name` as never, { defaultValue: id });
   const action = (type: string) => {

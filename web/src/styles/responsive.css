@@ -275,6 +275,17 @@
   main.game:has(.chat-input :is(input, textarea):focus) :is(.bottom-nav, .peek-bar) {
     display: none;
   }
+
+  /* Plan composer: full-screen sheet on phones (docs/plans/on-call.md, #315). */
+  .plan-composer-dialog {
+    top: 0;
+    left: 0;
+    transform: none;
+    width: 100vw;
+    max-width: none;
+    height: 100dvh;
+    border-radius: 0;
+  }
 }
 
 /* Phone on its side: about 390px tall, so the ID card gets one compact row. */
