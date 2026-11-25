@@ -90,4 +90,25 @@ describe("ItemAttrIcons", () => {
     expect(slot).not.toBeNull();
     expect(slot!.querySelector('ul.status-icons button.status-icon[aria-label="Heavy"]')).not.toBeNull();
   });
+
+  it("shows the owner's head bust icon, custom name subtitle, and Rename button for owned items in InspectPanel", () => {
+    const state = giveItems(sampleState(), ["support_drone"]);
+    const drone = state.items[state.items.length - 1]!;
+    drone.owner = SAMPLE_SEAT;
+    drone.customName = "Sparky";
+    const view = viewFor(state, SAMPLE_SEAT);
+    const { container, getByRole } = render(
+      <InspectPanel
+        view={view}
+        target={{ kind: "item", id: drone.id }}
+        onAction={() => {}}
+        onDeselect={() => {}}
+        onRenameItem={() => {}}
+      />,
+    );
+    const ownerBtn = container.querySelector('ul.status-icons button.status-icon[aria-label^="Owner:"]');
+    expect(ownerBtn).not.toBeNull();
+    expect(container.querySelector(".inspect-drone")?.textContent).toBe("Sparky");
+    expect(getByRole("button", { name: "Rename" })).toBeTruthy();
+  });
 });

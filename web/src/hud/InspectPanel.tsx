@@ -5,7 +5,7 @@ import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
 import type { CSSProperties, ReactNode } from "react";
-import { actionItemType, actionVisibility, CHARACTERS, ITEM_TYPES, PROJECT_COMPLETE, characterGivenName, characterName, SUPER_CALC_EQUIPMENT, SUPERKUBE, type Action, type ActionOption, type EquipmentView, type PlayerView, type ShipLayout, type Target } from "@mush2/shared";
+import { actionItemType, actionVisibility, CHARACTERS, ITEM_TYPES, PROJECT_COMPLETE, characterGivenName, characterName, SUPER_CALC_EQUIPMENT, SUPERKUBE, type Action, type ActionOption, type CharacterId, type EquipmentView, type ItemId, type PlayerView, type ShipLayout, type Target } from "@mush2/shared";
 import { BROKEN_ICON, characterImage, hostileSprite, portrait } from "../art/assets.ts";
 import { useMobile } from "../useMobile.ts";
 import { atlasUrl } from "../iso/shipLayout.ts";
@@ -23,6 +23,7 @@ import { StatusIcon, StatusIcons } from "./StatusIcons.tsx";
 import { ActionButton } from "./ActionButton.tsx";
 import { collapsePickers, CrewPickerDialog, isPickerAction, type PickerAction } from "./CrewPickerDialog.tsx";
 import { collapseThrowOut, ThrowOutDialog } from "./ThrowOutDialog.tsx";
+import { RenameItemDialog } from "./RenameItemDialog.tsx";
 import { useKeepFocus } from "./useKeepFocus.ts";
 import { attackWeapon, graftFruit, optionsOn, resolveTarget, type Resolved } from "./targets.ts";
 
@@ -33,6 +34,7 @@ export function InspectPanel({
   onAction,
   onDeselect,
   onKube,
+  onRenameItem,
 }: {
   view: PlayerView;
   /** For equipment sprites; without it equipment shows as text only. */
@@ -44,6 +46,8 @@ export function InspectPanel({
   onDeselect?: () => void;
   /** Sends a Superkube option (#170); given only while cheats are allowed, so only then does the Superkube open. */
   onKube?: SendKube | undefined;
+  /** Renames an owned item (friendly NPC, plant, or customized blaster). */
+  onRenameItem?: ((item: ItemId, name: string) => void) | undefined;
 }) {
   const { t } = useTranslation();
   const names = useNames();
@@ -69,6 +73,7 @@ export function InspectPanel({
     return <ActionLabel text={text} cost={cost} chance={chance} visibility={actionVisibility(action.type, view, actionItemType([...view.inventory, ...view.roomItems], action))} />;
   };
   const [throwingOut, setThrowingOut] = useState(false);
+  const [renaming, setRenaming] = useState(false);
   const [picking, setPicking] = useState<PickerAction | null>(null);
   const resolved = resolveTarget(view, target);
   const { options: afterThrowOut, throwOut } = collapseThrowOut(optionsOn(view, target));
@@ -77,6 +82,13 @@ export function InspectPanel({
   const doc = resolved?.kind === "item" ? resolved.item.document : undefined;
   // The Superkube's Open (#170) is a cheat, not an action, so it isn't one of the options either.
   const kube = onKube && resolved?.kind === "equipment" && resolved.equipment.type === SUPERKUBE ? onKube : undefined;
+  const canRename =
+    onRenameItem !== undefined &&
+    resolved?.kind === "item" &&
+    resolved.item.owner === view.you.id &&
+    view.phase === "playing" &&
+    view.you.alive &&
+    !view.statuses.includes("coma");
   const root = useRef<HTMLElement>(null);
   useKeepFocus(root);
   const targetName =
@@ -103,11 +115,16 @@ export function InspectPanel({
           <Details view={view} layout={layout} resolved={resolved} onAction={onAction} />
         </div>
       )}
-      {(options.length > 0 || doc || kube || deselect) && (
+      {(options.length > 0 || doc || kube || canRename || deselect) && (
         <div className="inspect-actions" role="group" aria-label={targetName}>
           {deselect}
           {doc && <DocumentReader document={doc} />}
           {kube && <SuperkubeOpener view={view} onKube={kube} />}
+          {canRename && (
+            <button type="button" onClick={() => setRenaming(true)}>
+              {t("rename.button")}
+            </button>
+          )}
           {options.map((o) => (
             <ActionButton
               key={JSON.stringify(o.action)}
@@ -133,6 +150,15 @@ export function InspectPanel({
           options={throwOut}
           onClose={() => setThrowingOut(false)}
           onAction={onAction}
+        />
+      )}
+      {canRename && resolved?.kind === "item" && targetName && (
+        <RenameItemDialog
+          open={renaming}
+          itemName={targetName}
+          currentName={resolved.item.customName}
+          onClose={() => setRenaming(false)}
+          onRename={(name) => onRenameItem(resolved.item.id, name)}
         />
       )}
       <CrewPickerDialog
@@ -212,18 +238,28 @@ function Details({ view, layout, resolved, onAction }: { view: PlayerView; layou
           </div>
         </>
       );
-    case "item":
+    case "item": {
+      const ownerId = resolved.item.owner;
+      const ownerCharacter: CharacterId | undefined =
+        ownerId === undefined
+          ? undefined
+          : ownerId === view.you.id
+            ? view.you.character
+            : view.players.find((p) => p.id === ownerId)?.character;
+      const subtitle = resolved.item.drone
+        ? (resolved.item.customName ?? names.drone(resolved.item.drone.name, resolved.item.drone.serial))
+        : resolved.item.customName;
       return (
         <>
           <div className="inspect-item">
             <ItemFace label={names.itemLabel(resolved.item)}>
               <ItemIcon className="item-icon" item={resolved.item} view={view} />
             </ItemFace>
-            <ItemAttrIcons item={resolved.item} mpPenalty={view.config.heavyMpPenalty} />
+            <ItemAttrIcons item={resolved.item} mpPenalty={view.config.heavyMpPenalty} ownerCharacter={ownerCharacter} />
           </div>
           <div className="inspect-name inspect-item-name">
             <strong>{names.itemOf(resolved.item)}</strong>
-            {resolved.item.drone && <div className="sub inspect-drone">{names.drone(resolved.item.drone.name, resolved.item.drone.serial)}</div>}
+            {subtitle && <div className="sub inspect-drone">{subtitle}</div>}
             {ITEM_TYPES[resolved.item.type]?.notImplemented && <div className="sub">{t("itemAttr.notImplemented")}</div>}
           </div>
           {resolved.item.broken && (
@@ -235,6 +271,7 @@ function Details({ view, layout, resolved, onAction }: { view: PlayerView; layou
           {resolved.item.drone && <DroneUpgrades upgrades={resolved.item.drone.upgrades} />}
         </>
       );
+    }
     case "hostile": {
       const { hostile } = resolved;
       const sprite = hostileSprite(hostile.kind, 3);

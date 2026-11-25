@@ -18,7 +18,7 @@ const droneView = ({ name, serial, upgrades }: Readonly<DroneState>): NonNullabl
 
 /** An item as `viewer` sees it; a plant's sickness only for the Botanist role (`plantView`). */
 export function itemView(
-  { id, type, of, builds, charges, teaches, plant, spores, hiddenBy, broken, jelly, shield, drone, document, spoil, mush }: Readonly<ItemState>,
+  { id, type, of, builds, charges, teaches, plant, spores, hiddenBy, broken, jelly, shield, drone, document, spoil, owner, customName, mush }: Readonly<ItemState>,
   viewer: Readonly<PlayerState>,
 ): ItemView {
   return {
@@ -38,6 +38,8 @@ export function itemView(
     ...(plant && { plant: plantView(plant, viewer) }),
     ...(drone && { drone: droneView(drone) }),
     ...(document && { document: copyDocument(document) }),
+    ...(owner !== undefined && { owner }),
+    ...(customName !== undefined && { customName }),
   };
 }
 

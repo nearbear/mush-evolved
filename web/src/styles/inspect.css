@@ -87,6 +87,24 @@
   height: 1.875rem;
   font-size: calc(0.8rem + 4px);
 }
+.rename-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.rename-input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid rgb(255 255 255 / 0.35);
+  border-radius: 4px;
+  background: rgb(0 0 0 / 0.35);
+  color: #fff;
+  font: inherit;
+}
+.rename-hint {
+  margin: 0;
+}
 
 .status-icons {
   display: flex;

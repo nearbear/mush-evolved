@@ -39,8 +39,9 @@ export const hasUpgrade = (item: Readonly<ItemState>, upgrade: DroneUpgrade): bo
 /** Fire never breaks a Firefighter drone (fire.ts). */
 export const isFireproof = (item: Readonly<ItemState>): boolean => hasUpgrade(item, "firefighter");
 
-/** A drone in a log line: `drone` (its name) and `serial`, which the client puts together. */
-export const droneParams = (drone: Readonly<DroneState>): LogParams => ({ drone: drone.name, serial: drone.serial });
+/** A drone in a log line: its custom name alone when renamed, else `drone` + `serial`, which the client puts together. */
+export const droneParams = (item: Readonly<ItemState>, drone: Readonly<DroneState>): LogParams =>
+  item.customName ? { drone: item.customName } : { drone: drone.name, serial: drone.serial };
 
 /** A drone task's chance: the base x `failureMultiplier` per failure in a row, capped at `maxChance`. */
 export function droneChance(state: Readonly<GameState>, base: number, failures: number): number {
@@ -65,7 +66,7 @@ export function droneRepairTarget(state: Readonly<GameState>, room: RoomId): Rep
 }
 
 /** One repair try, if there is something to repair: one seeded roll, Repair's effect on a success. Returns whether it tried. */
-function repair(state: GameState, drone: DroneState, room: RoomId): boolean {
+function repair(state: GameState, item: ItemState, drone: DroneState, room: RoomId): boolean {
   const target = droneRepairTarget(state, room);
   if (!target) return false;
   const success = rollFloat(state) < droneChance(state, target.chance, drone.failures.repair);
@@ -74,7 +75,7 @@ function repair(state: GameState, drone: DroneState, room: RoomId): boolean {
   if ("door" in target) {
     if (success) repairDoor(state, target.door);
     logPublic(state, room, success ? "droneRepairedDoor" : "droneRepairFailedDoor", {
-      ...droneParams(drone),
+      ...droneParams(item, drone),
       room: doorOtherRoom(target.door, room)!,
     });
     return true;
@@ -86,7 +87,7 @@ function repair(state: GameState, drone: DroneState, room: RoomId): boolean {
     if ("equipment" in target) repairEquipment(state, target.equipment);
     else delete target.item.broken;
   }
-  logPublic(state, room, key, { ...droneParams(drone), ...what });
+  logPublic(state, room, key, { ...droneParams(item, drone), ...what });
   return true;
 }
 
@@ -99,7 +100,7 @@ function extinguish(state: GameState, item: ItemState, drone: DroneState, room: 
   const success = rollFloat(state) < droneChance(state, state.config.extinguish.chance, drone.failures.extinguish);
   drone.failures.extinguish = success ? 0 : drone.failures.extinguish + 1;
   if (success) state.fires = state.fires.filter((r) => r !== room);
-  logPublic(state, room, success ? "droneExtinguished" : "droneExtinguishFailed", droneParams(drone));
+  logPublic(state, room, success ? "droneExtinguished" : "droneExtinguishFailed", droneParams(item, drone));
   return true;
 }
 
@@ -126,14 +127,14 @@ function wander(state: GameState, item: ItemState, drone: DroneState, room: Room
   if (neighbours.length === 0) return room;
   const to = (hasUpgrade(item, "sensor") && sensorStep(state, item, room)) || neighbours[rollInt(state, neighbours.length)]!;
   item.at = { kind: "room", id: to };
-  logPublic(state, room, "droneLeft", { ...droneParams(drone), room: to });
-  logPublic(state, to, "droneEntered", { ...droneParams(drone), room });
+  logPublic(state, room, "droneLeft", { ...droneParams(item, drone), room: to });
+  logPublic(state, to, "droneEntered", { ...droneParams(item, drone), room });
   return to;
 }
 
 /** One turn: put out a fire (Firefighter), else repair, else wander. Returns the room it ends the turn in. */
 function turn(state: GameState, item: ItemState, drone: DroneState, room: RoomId): RoomId {
-  if (extinguish(state, item, drone, room) || repair(state, drone, room)) return room;
+  if (extinguish(state, item, drone, room) || repair(state, item, drone, room)) return room;
   return wander(state, item, drone, room);
 }
 

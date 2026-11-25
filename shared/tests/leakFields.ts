@@ -206,6 +206,7 @@ export const ITEM_STATE_FIELDS: Record<string, FieldRule> = {
   broken: { reach: "filtered", test: "broken_items.test.ts", note: "Goes with the item to whoever can see it, like its type." },
   document: { reach: "filtered", test: "lostAnalysis.test.ts", note: "A printed document's rows (characters and marks), to whoever can see the item (#394)." },
   drone: { reach: "filtered", test: "drones.test.ts", note: "Name, serial and upgrades go with the item to whoever can see it; the failure counts never leave the server (#411)." },
-  owner: { reach: "never", test: "infantryman.test.ts", note: "The player who created this customized blaster; only gates who can fire it, never sent." },
+  owner: { reach: "filtered", test: "ownership.test.ts", note: "The player who owns this friendly NPC, plant, or customized blaster; goes with the item to whoever can see it." },
+  customName: { reach: "filtered", test: "ownership.test.ts", note: "Custom name set by the item's owner; goes with the item to whoever can see it." },
   mush: { reach: "filtered", test: "schrodinger.test.ts", note: "Mush only (living): whether Schrödinger has been infected." },
 };

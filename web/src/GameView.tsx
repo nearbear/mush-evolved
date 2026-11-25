@@ -267,7 +267,15 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
       ) : (
         <div className="three-panel" data-panel={panel}>
         <div className="left-column">
-          <InspectPanel view={view} layout={layout} target={target} onAction={act} onDeselect={selected && target === selected ? () => select(null) : undefined} onKube={kube} />
+          <InspectPanel
+            view={view}
+            layout={layout}
+            target={target}
+            onAction={act}
+            onDeselect={selected && target === selected ? () => select(null) : undefined}
+            onKube={kube}
+            onRenameItem={(item, name) => post({ type: "renameItem", item, name })}
+          />
         </div>
 
         <div className="world">
@@ -428,6 +436,7 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
                 onMove={move}
                 onMore={() => setPanel("inspect")}
                 onKube={kube}
+                onRenameItem={(item, name) => post({ type: "renameItem", item, name })}
               />
             )}
           </div>

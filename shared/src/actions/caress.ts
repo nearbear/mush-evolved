@@ -41,8 +41,9 @@ export class CaressAction extends Action<CaressActionData> {
     return null;
   }
 
-  override apply(state: GameState, player: PlayerState, _target: CaressActionData): void {
-    logPublic(state, player.room, "caressedCat", { name: player.character });
+  override apply(state: GameState, player: PlayerState, target: CaressActionData): void {
+    const item = state.items.find((i) => i.id === target.item);
+    logPublic(state, player.room, "caressedCat", { name: player.character, ...(item?.customName && { cat: item.customName }) });
     if (!player.caressedCat) {
       player.caressedCat = true;
       gainMorale(state, player, state.config.schrodinger.caress.morale);

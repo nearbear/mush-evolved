@@ -72,6 +72,10 @@ export interface ItemView {
   drone?: { name: string; serial: number; upgrades: string[] };
   /** For a document (#394): its kind and rows (characters and marks), public to whoever can see it. */
   document?: DocumentState;
+  /** For an owned friendly NPC, plant, or customized blaster: the owning player's id, public to whoever can see the item. */
+  owner?: PlayerId;
+  /** Custom name set by the owner (`rename.ts`), public to whoever can see the item. */
+  customName?: string;
   /** For Schrödinger: infected by a Mush (actions/mush_caress.ts). Sent to living Mush only. */
   mush?: true;
 }

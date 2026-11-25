@@ -15,6 +15,7 @@ export * from "./log.ts";
 export * from "./modifiers.ts";
 export * from "./items.ts";
 export * from "./itemView.ts";
+export * from "./rename.ts";
 export * from "./fruits.ts";
 export * from "./protocol.ts";
 export * from "./moderation.ts";

@@ -10,6 +10,7 @@ import { MAX_CHAT_READ_ENTRIES, type ChatRead } from "./chatRead.ts";
 import { isRecord } from "./helpers.ts";
 import { parsePlanDraft } from "./plans.ts";
 import { PLANET_TAGS, type PlanetTag } from "./planets.ts";
+import { MAX_ITEM_NAME_LENGTH } from "./rename.ts";
 import { MAX_SHARED_PLANET_LENGTH } from "./sharedPlanets.ts";
 import { MAX_SHARED_PLANT_EFFECTS_LENGTH, MAX_SHARED_PLANT_TEXT_LENGTH, MAX_SHARED_PLANTS, parseSharedPlantRow } from "./sharedPlants.ts";
 import { MAX_SHARED_PILGRED_TEXT_LENGTH, parseSharedPilgredPercent } from "./sharedPilgred.ts";
@@ -22,6 +23,7 @@ import {
   type ChannelId,
   type ChatLine,
   type ChatMark,
+  type ItemId,
   type PlanDraft,
   type PlayerId,
   type PlayerView,
@@ -118,6 +120,8 @@ export type GameClientMessage =
   | { type: "sharePilgred"; percent: number; text: string }
   | { type: "invite"; channel: PrivateChannelId; player: PlayerId }
   | { type: "leaveChannel"; channel: PrivateChannelId }
+  // Renames an owned friendly NPC, plant, or customized blaster (rename.ts). Free, instant, silent; moderated by the server.
+  | { type: "renameItem"; item: ItemId; name: string }
   // The channel's creator posts its plan (plans.ts, docs/plans/on-call.md). Chat-like, since a draft can't be
   // enumerated as an action; claiming, withdrawing, Done, cancelling and Go are ordinary actions. No free text.
   | { type: "postPlan"; plan: PlanDraft }
@@ -244,6 +248,10 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
   if (msg?.type === "leaveChannel") {
     const channel = privateChannelId(msg.channel);
     return channel ? { type: "leaveChannel", channel } : null;
+  }
+  if (msg?.type === "renameItem") {
+    if (typeof msg.item !== "string" || !msg.item || msg.item.length > 64 || typeof msg.name !== "string" || msg.name.length > MAX_ITEM_NAME_LENGTH * 4) return null;
+    return { type: "renameItem", item: msg.item, name: msg.name };
   }
   if (msg?.type === "postPlan") {
     const plan = parsePlanDraft(msg.plan);

@@ -143,7 +143,7 @@ export function createGame(
   const startRng = { rng: streamFor(seed, "start-items") };
   const starts: Omit<ItemState, "id">[] = [
     ...resolveStartItems(config.startItems.filter((it) => !it.atSelection), config, startRng),
-    ...players.flatMap((p) => [...startInventory(config, p.id), ...catArrival(config, p.character)]),
+    ...players.flatMap((p) => [...startInventory(config, p.id), ...catArrival(config, p.character, p.id)]),
   ];
   const items: ItemState[] = starts.map((it, i) => ({ id: `item-${i + 1}`, ...it }));
 

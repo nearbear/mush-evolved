@@ -101,15 +101,18 @@ export function botanyDay(state: GameState): void {
     const room = potRoom(state, pot);
     if (plant.age !== null && plant.age >= growCyclesFor(state, plant.species)) {
       plant.age = null;
-      logPublic(state, room, "plantMatured", { item: plant.species });
+      if (pot.customName) logPublic(state, room, "namedPlantMatured", { plant: pot.customName });
+      else logPublic(state, room, "plantMatured", { item: plant.species });
     }
     if (plant.age === null && plant.thirst === 0 && !plant.sick) {
       state.ship.oxygen = Math.min(ship.oxygen.max, state.ship.oxygen + botany.oxygenPerPlant);
       produceFruit(state, pot);
-      logPublic(state, room, "plantProduced", { item: plant.species });
+      if (pot.customName) logPublic(state, room, "namedPlantProduced", { plant: pot.customName });
+      else logPublic(state, room, "plantProduced", { item: plant.species });
       if (heatLamp && room === botany.gardenRoom && rollFloat(state) < project.heatLamp.extraFruitChance) {
         produceFruit(state, pot);
-        logPublic(state, room, "plantExtraFruit", { item: plant.species });
+        if (pot.customName) logPublic(state, room, "namedPlantExtraFruit", { plant: pot.customName });
+        else logPublic(state, room, "plantExtraFruit", { item: plant.species });
       }
     }
     plant.thirst = Math.min(2, plant.thirst + 1) as PlantState["thirst"];

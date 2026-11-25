@@ -236,6 +236,8 @@ export function useNames() {
     // A drone's `drone` (its name) and `serial` (shared/src/drones.ts) come together as one name.
     if (typeof params.drone === "string" && typeof params.serial === "number") resolved.drone = drone(params.drone, params.serial);
     if (typeof params.upgrade === "string") resolved.upgrade = droneUpgrade(params.upgrade);
+    // Schrödinger's name defaults to the localized item name unless renamed (`params.cat`).
+    if (typeof params.cat !== "string") resolved.cat = lookup("items", "body_cat");
     // A hostile NPC's kind (shared/src/hostiles.ts), with its article: "the intruder".
     if (typeof params.hostile === "string") resolved.hostile = hostile(params.hostile);
     if (typeof params.entry === "string") resolved.entry = t(`comms.xyloph.${params.entry}` as never, { defaultValue: params.entry });

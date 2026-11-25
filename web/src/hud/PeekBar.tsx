@@ -5,11 +5,12 @@
 import { type ReactNode, useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
-import { actionItemType, actionVisibility, ITEM_TYPES, SUPERKUBE, type Action, type ActionOption, type PlayerView, type RoomId, type Target } from "@mush2/shared";
+import { actionItemType, actionVisibility, ITEM_TYPES, SUPERKUBE, type Action, type ActionOption, type ItemId, type PlayerView, type RoomId, type Target } from "@mush2/shared";
 import { ActionLabel } from "./ActionLabel.tsx";
 import { ActionButton } from "./ActionButton.tsx";
 import { collapsePickers, CrewPickerDialog, isPickerAction, type PickerAction } from "./CrewPickerDialog.tsx";
 import { collapseThrowOut, ThrowOutDialog } from "./ThrowOutDialog.tsx";
+import { RenameItemDialog } from "./RenameItemDialog.tsx";
 import { DoublePressButton } from "./DoublePress.tsx";
 import { SuperkubeOpener, type SendKube } from "./Superkube.tsx";
 import { useKeepFocus } from "./useKeepFocus.ts";
@@ -23,6 +24,7 @@ export function PeekBar({
   onMove,
   onMore,
   onKube,
+  onRenameItem,
 }: {
   view: PlayerView;
   /** Already resolved by the caller; yourself when nothing else is selected, so the bar never goes away. */
@@ -33,6 +35,8 @@ export function PeekBar({
   onMore: () => void;
   /** Sends a Superkube option (#170); given only while cheats are allowed. */
   onKube?: SendKube | undefined;
+  /** Renames an owned item (friendly NPC, plant, or customized blaster). */
+  onRenameItem?: ((item: ItemId, name: string) => void) | undefined;
 }) {
   const { t } = useTranslation();
   const names = useNames();
@@ -51,6 +55,7 @@ export function PeekBar({
     return <ActionLabel text={text} cost={cost} chance={chance} visibility={actionVisibility(action.type, view, actionItemType([...view.inventory, ...view.roomItems], action))} />;
   };
   const [throwingOut, setThrowingOut] = useState(false);
+  const [renaming, setRenaming] = useState(false);
   const [picking, setPicking] = useState<PickerAction | null>(null);
   const resolved = resolveTarget(view, target);
   if (!resolved) return null;
@@ -87,6 +92,13 @@ export function PeekBar({
     optionsOn(view, target).filter((o) => o.action.type !== "examine"),
   );
   const { options: peekOptions, picks } = collapsePickers(afterThrowOut);
+  const canRename =
+    onRenameItem !== undefined &&
+    resolved.kind === "item" &&
+    resolved.item.owner === view.you.id &&
+    view.phase === "playing" &&
+    view.you.alive &&
+    !view.statuses.includes("coma");
   return (
     <>
       <Bar
@@ -94,14 +106,21 @@ export function PeekBar({
         sub={
           resolved.kind === "item" && ITEM_TYPES[resolved.item.type]?.notImplemented
             ? t("itemAttr.notImplemented")
-            : resolved.kind === "hostile"
-              ? t("hostiles.hp", { hp: resolved.hostile.hp, max: resolved.hostile.maxHp })
-              : undefined
+            : resolved.kind === "item" && resolved.item.customName
+              ? resolved.item.customName
+              : resolved.kind === "hostile"
+                ? t("hostiles.hp", { hp: resolved.hostile.hp, max: resolved.hostile.maxHp })
+                : undefined
         }
         isBot={isBot}
         onMore={onMore}
       >
         {onKube && resolved.kind === "equipment" && resolved.equipment.type === SUPERKUBE && <SuperkubeOpener view={view} onKube={onKube} />}
+        {canRename && (
+          <button type="button" onClick={() => setRenaming(true)}>
+            {t("rename.button")}
+          </button>
+        )}
         {peekOptions.map((o) => (
           <ActionButton
             key={JSON.stringify(o.action)}
@@ -126,6 +145,15 @@ export function PeekBar({
         onClose={() => setThrowingOut(false)}
         onAction={onAction}
       />
+      {canRename && resolved.kind === "item" && (
+        <RenameItemDialog
+          open={renaming}
+          itemName={name}
+          currentName={resolved.item.customName}
+          onClose={() => setRenaming(false)}
+          onRename={(newName) => onRenameItem(resolved.item.id, newName)}
+        />
+      )}
       <CrewPickerDialog
         kind={picking}
         view={view}

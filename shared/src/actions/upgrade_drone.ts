@@ -54,8 +54,9 @@ export class UpgradeDroneAction extends Action<UpgradeDroneActionData> {
     const item = state.items.find((i) => i.id === target.item)!; // checked, so it exists
     // A drone made before drones had state (a game started before #411 landed) gets it now.
     const drone = (item.drone ??= newDrone(state));
+    if (item.owner === undefined) item.owner = player.id;
     drone.upgrades.push(target.upgrade);
-    logPublic(state, player.room, "droneUpgraded", { name: player.character, ...droneParams(drone), upgrade: target.upgrade });
+    logPublic(state, player.room, "droneUpgraded", { name: player.character, ...droneParams(item, drone), upgrade: target.upgrade });
   }
 }
 

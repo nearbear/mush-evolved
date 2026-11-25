@@ -109,11 +109,16 @@ describe("Infantryman", () => {
     expect(res.ok).toBe(false);
   });
 
-  it("never leaks the owner field in any player's view", () => {
-    const s = pickSkill(ship(), "p0", "infantryman");
-    for (const p of s.players) {
-      expect(JSON.stringify(viewFor(s, p.id))).not.toContain('"owner"');
-    }
+  it("exposes owner only to whoever can see the customized blaster", () => {
+    let s = pickSkill(ship(), "p0", "infantryman");
+    const blaster = itemsIn(s, { kind: "player", id: "p0" }).find((i) => i.type === CUSTOMIZED_BLASTER_ITEM)!;
+    // Carried by p0: p0 sees owner, p1 in the same room does not see p0's inventory.
+    expect(viewFor(s, "p0").inventory.find((i) => i.id === blaster.id)?.owner).toBe("p0");
+    expect(JSON.stringify(viewFor(s, "p1"))).not.toContain('"owner"');
+    // Dropped on floor: roommate p1 sees owner, p2 in another room does not.
+    s = mustApply(s, "p0", { type: "drop", item: blaster.id });
+    expect(viewFor(s, "p1").roomItems.find((i) => i.id === blaster.id)?.owner).toBe("p0");
+    expect(JSON.stringify(viewFor(s, "p2"))).not.toContain('"owner"');
   });
 
   it("gives +1 expedition power over the regular blaster (even when carried by someone else) and counts for Shooter and Centauri", () => {

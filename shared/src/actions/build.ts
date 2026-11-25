@@ -1,6 +1,6 @@
 import { Action, isString } from "./action.ts";
 import { BLUEPRINTS, BLUEPRINT_ITEM } from "../blueprints.ts";
-import { canReachItem, itemsIn, produceItem, visibleItemsIn, isWorking } from "../items.ts";
+import { canReachItem, itemsIn, produceItem, SUPPORT_DRONE_ITEM, visibleItemsIn, isWorking } from "../items.ts";
 import { logPublic } from "../log.ts";
 import { initNpc } from "../npcs.ts";
 import { offShip } from "../patrol.ts";
@@ -71,7 +71,9 @@ export class BuildAction extends Action<BuildActionData> {
       (state.equipment[player.room] ??= []).push({ id: `${player.room}:${makes.equipment}:${state.nextItemId++}`, type: makes.equipment });
       logPublic(state, player.room, "built", { name: player.character, equipment: makes.equipment });
     } else {
-      initNpc(state, produceItem(state, player, makes.item).item);
+      const built = produceItem(state, player, makes.item).item;
+      initNpc(state, built);
+      if (built.type === SUPPORT_DRONE_ITEM) built.owner = player.id;
       logPublic(state, player.room, "builtItem", { name: player.character, item: makes.item });
     }
   }

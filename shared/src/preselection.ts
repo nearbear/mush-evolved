@@ -38,7 +38,7 @@ export function joinShip(state: GameState, seat: Seat): ActionResult {
   next.players.push(player);
   updateMaxValues(next, player); // `newPlayer` stores the configured caps; fold in starting skills and modifiers (#267)
   startLogSeen(next, player);
-  for (const item of [...startInventory(next.config, seat.id), ...catArrival(next.config, seat.character)]) next.items.push({ id: newItemId(next), ...item });
+  for (const item of [...startInventory(next.config, seat.id), ...catArrival(next.config, seat.character, seat.id)]) next.items.push({ id: newItemId(next), ...item });
   if (next.players.length >= rules.seats) selectMush(next);
   return { ok: true, state: next };
 }

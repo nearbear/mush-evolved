@@ -121,8 +121,10 @@ export interface ItemState {
   drone?: DroneState;
   /** For a document (`DOCUMENT_ITEM`, lostAnalysis.ts): what is printed on it. Public to whoever can see the item. */
   document?: DocumentState;
-  /** For a customized blaster (modifiers/infantryman.ts): the player who created it and is the only one who can fire it. */
+  /** For a friendly NPC (drone, Schrödinger), planted pot, or customized blaster: the body that owns it. Public to whoever can see the item. */
   owner?: PlayerId;
+  /** Custom name given by the item's owner (`rename.ts`). Public to whoever can see the item. */
+  customName?: string;
   /** For Schrödinger (`CAT_ITEM`, actions/mush_caress.ts): infected by a Mush. Mush-only in views. */
   mush?: true;
 }

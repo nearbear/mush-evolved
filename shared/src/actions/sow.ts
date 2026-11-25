@@ -53,6 +53,8 @@ export class SowAction extends Action<SowActionData> {
     const pot = findEmptyPot(state, player)!;
     const species = removeItem(state, target.item).type;
     pot.plant = { species, age: 0, thirst: 0, sick: false };
+    pot.owner = player.id;
+    delete pot.customName;
     logPublic(state, player.room, "sowedPlant", { name: player.character, item: species });
   }
 }

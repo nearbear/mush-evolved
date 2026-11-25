@@ -6,6 +6,7 @@ import { Server, type Connection, type ConnectionContext, type WSMessage } from 
 import {
   applyInput,
   moderateChat,
+  MAX_ITEM_NAME_LENGTH,
   MAX_SHARED_PLANET_LENGTH,
   MAX_SHARED_PLANET_LINES,
   MAX_SHARED_PLANT_EFFECTS_LENGTH,
@@ -1065,6 +1066,16 @@ export class GameRoom extends Server<Env> {
       }
       const rawCombined = changed ? [msg.text, ...msg.plants.map((r) => r.effects)].filter(Boolean).join("\n---\n") : undefined;
       return this.act({ type: "sharePlants", by, plants, text }, rawCombined);
+    }
+    if (msg.type === "renameItem") {
+      if (!msg.name.trim()) return this.act({ type: "renameItem", by, item: msg.item, name: "" });
+      const mod = moderateChat(msg.name.replace(/\s+/g, " "), undefined, { length: MAX_ITEM_NAME_LENGTH, lines: 1 });
+      if (!mod.ok) {
+        const blocked: BlockedText = { at: Date.now(), by: playerId, type: msg.type, raw: msg.name, reason: mod.reason };
+        await this.ctx.storage.put(`blocked:${String(this.blocked++).padStart(9, "0")}`, blocked);
+        return "item_name_invalid";
+      }
+      return this.act({ type: "renameItem", by, item: msg.item, name: mod.text }, mod.text === msg.name ? undefined : msg.name);
     }
     if (msg.type === "sharePilgred") {
       let text = "";

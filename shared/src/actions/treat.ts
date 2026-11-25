@@ -45,7 +45,8 @@ export class TreatAction extends Action<TreatActionData> {
       pot.plant.sick = false;
       delete pot.plant.sickCycles;
     }
-    logPublic(state, player.room, "treatedPlant", { name: player.character, item: pot.plant!.species });
+    if (pot.customName) logPublic(state, player.room, "treatedNamedPlant", { name: player.character, plant: pot.customName });
+    else logPublic(state, player.room, "treatedPlant", { name: player.character, item: pot.plant!.species });
   }
 }
 

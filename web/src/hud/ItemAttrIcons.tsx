@@ -2,8 +2,8 @@
 
 import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
-import { CUSTOMIZED_BLASTER_ITEM, ITEM_TYPES, type ItemView } from "@mush2/shared";
-import { CHARGES_ICON, CONTAMINATED_ICON, ITEM_ATTR_ICONS, JELLY_ICON, PLANT_ICONS, SHIELD_ICON, SPOIL_ICONS, skillIcon } from "../art/assets.ts";
+import { characterName, CUSTOMIZED_BLASTER_ITEM, ITEM_TYPES, type CharacterId, type ItemView } from "@mush2/shared";
+import { bustIcon, CHARGES_ICON, CONTAMINATED_ICON, ITEM_ATTR_ICONS, JELLY_ICON, PLANT_ICONS, SHIELD_ICON, SPOIL_ICONS, skillIcon } from "../art/assets.ts";
 import { plantStateIds } from "./PlantStates.tsx";
 import { StatusIcon } from "./StatusIcons.tsx";
 
@@ -53,7 +53,7 @@ export function thingMarkIcons(
 
 export type ItemAttrSource = Pick<ItemView, "type" | "charges" | "plant" | "spores" | "jelly" | "shield" | "spoil" | "mush">;
 
-export function ItemAttrIcons({ item, mpPenalty }: { item: ItemAttrSource; mpPenalty: number }) {
+export function ItemAttrIcons({ item, mpPenalty, ownerCharacter }: { item: ItemAttrSource; mpPenalty: number; ownerCharacter?: CharacterId | undefined }) {
   const { t } = useTranslation();
   const heavy = ITEM_TYPES[item.type]?.heavy === true;
   const customized = item.type === CUSTOMIZED_BLASTER_ITEM;
@@ -62,9 +62,18 @@ export function ItemAttrIcons({ item, mpPenalty }: { item: ItemAttrSource; mpPen
   const marks = thingMarkIcons(item, t);
   const spoil = item.spoil;
   const mush = item.mush === true;
-  if (!heavy && !customized && !hasCharges && plantStates.length === 0 && spoil === undefined && !mush && marks.length === 0) return null;
+  if (!ownerCharacter && !heavy && !customized && !hasCharges && plantStates.length === 0 && spoil === undefined && !mush && marks.length === 0) return null;
   return (
     <ul className="status-icons" aria-label={t("itemAttr.label")}>
+      {ownerCharacter && (
+        <li key="owner">
+          <StatusIcon
+            icon={bustIcon(ownerCharacter)}
+            name={t("itemAttr.owner", { name: characterName(ownerCharacter) })}
+            description={t("itemAttr.ownerDesc", { name: characterName(ownerCharacter) })}
+          />
+        </li>
+      )}
       {heavy && (
         <li key="heavy">
           <StatusIcon icon={ITEM_ATTR_ICONS.heavy} name={t("itemAttr.heavy")} description={t("itemAttr.heavyDesc", { mp: mpPenalty })} />

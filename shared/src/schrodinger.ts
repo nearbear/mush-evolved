@@ -20,11 +20,13 @@ import { openDoors } from "./doors.ts";
 import { shortestPath } from "./paths.ts";
 import { offShip } from "./patrol.ts";
 import { rollFloat, rollInt } from "./rng.ts";
-import type { DeepReadonly, GameConfig, GameState, ItemState, RoomId } from "./types.ts";
+import type { DeepReadonly, GameConfig, GameState, ItemState, LogParams, PlayerId, RoomId } from "./types.ts";
 
 /** Where Schrödinger appears when his owner boards, or nothing if `character` isn't his owner. */
-export function catArrival(config: DeepReadonly<GameConfig>, character: string): Omit<ItemState, "id">[] {
-  return character === config.schrodinger.owner ? [{ type: CAT_ITEM, at: { kind: "room", id: config.schrodinger.room } }] : [];
+export function catArrival(config: DeepReadonly<GameConfig>, character: string, ownerId?: PlayerId): Omit<ItemState, "id">[] {
+  return character === config.schrodinger.owner
+    ? [{ type: CAT_ITEM, at: { kind: "room", id: config.schrodinger.room }, ...(ownerId !== undefined && { owner: ownerId }) }]
+    : [];
 }
 
 const livingIn = (state: Readonly<GameState>, room: RoomId): boolean => state.players.some((p) => p.alive && p.room === room);
@@ -61,8 +63,9 @@ export const schrodinger: Npc = {
     const to = destination(state, room);
     if (to === undefined) return;
     item.at = { kind: "room", id: to };
-    logPublic(state, room, "catLeft", { room: to });
-    logPublic(state, to, "catEntered", { room });
+    const cat: LogParams = item.customName ? { cat: item.customName } : {};
+    logPublic(state, room, "catLeft", { ...cat, room: to });
+    logPublic(state, to, "catEntered", { ...cat, room });
     // Cat Allergy (owner, 2026-11-21): carriers in the room he walks into react.
     catCameIn(state, to);
   },

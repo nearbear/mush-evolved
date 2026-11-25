@@ -37,7 +37,8 @@ export class WaterAction extends Action<WaterActionData> {
   override apply(state: GameState, player: PlayerState, target: WaterActionData): void {
     const pot = state.items.find((i) => i.id === target.item)!;
     if (isPlanted(pot)) pot.plant.thirst = 0;
-    logPublic(state, player.room, "wateredPlant", { name: player.character, item: pot.plant!.species });
+    if (pot.customName) logPublic(state, player.room, "wateredNamedPlant", { name: player.character, plant: pot.customName });
+    else logPublic(state, player.room, "wateredPlant", { name: player.character, item: pot.plant!.species });
   }
 }
 

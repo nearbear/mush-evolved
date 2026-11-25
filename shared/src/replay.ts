@@ -16,6 +16,7 @@ import { sharePlants } from "./sharedPlants.ts";
 import { sharePilgred } from "./sharedPilgred.ts";
 import { shareReport } from "./sharedReports.ts";
 import { postPlan } from "./plans.ts";
+import { renameItem } from "./rename.ts";
 import { pruneReports } from "./reports.ts";
 import { inactivate, seen } from "./inactivity.ts";
 import type { ConfigOverrides, GameConfig, GameState, PlayerId, Role, Seat } from "./types.ts";
@@ -136,6 +137,8 @@ function applyInputOnly(state: GameState, input: Input): ActionResult {
       return leaveChannel(state, input.by, input.channel);
     case "postPlan":
       return postPlan(state, input.by, input.plan);
+    case "renameItem":
+      return renameItem(state, input.by, input.item, input.name);
     case "cheat":
       return setCheat(state, input.by, input.cheat, input.on);
     case "walk":

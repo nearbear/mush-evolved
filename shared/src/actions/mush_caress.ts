@@ -2,7 +2,7 @@ import { Action, IN_PRESELECTION, type ActionTag, type ActionVisibility, isStrin
 import { pushChat } from "../chat.ts";
 import { CAT_ITEM } from "../items.ts";
 import { logCovert } from "../log.ts";
-import { MUSH_CHANNEL, type GameState, type PlayerState } from "../types.ts";
+import { MUSH_CHANNEL, type GameState, type LogParams, type PlayerState } from "../types.ts";
 
 export type MushCaressActionData = { type: "mush_caress"; item: string };
 
@@ -44,7 +44,8 @@ export class MushCaressAction extends Action<MushCaressActionData> {
     const item = state.items.find((i) => i.id === target.item)!;
     player.spores -= 1;
     item.mush = true;
-    logCovert(state, player.id, "mushCaressedCat", { name: player.character });
-    pushChat(state, MUSH_CHANNEL, { from: null, isBot: false, text: "", system: { key: "mushConvertedCat", params: { name: player.character } } });
+    const cat: LogParams = item.customName ? { cat: item.customName } : {};
+    logCovert(state, player.id, "mushCaressedCat", { name: player.character, ...cat });
+    pushChat(state, MUSH_CHANNEL, { from: null, isBot: false, text: "", system: { key: "mushConvertedCat", params: { name: player.character, ...cat } } });
   }
 }

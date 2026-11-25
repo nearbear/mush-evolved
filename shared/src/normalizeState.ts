@@ -441,6 +441,7 @@ function itemFields(raw: Partial<SpaceDebris>, t: string): AllKeys<SpaceDebris> 
     drone: opt(raw.drone, normalizeDrone),
     document: opt(raw.document, normalizeDocument),
     owner: raw.owner,
+    customName: raw.customName,
     mush: raw.mush,
   };
 }

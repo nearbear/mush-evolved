@@ -77,12 +77,16 @@ export class GraftAction extends Action<GraftActionData> {
     if (player.statuses.includes("dirty") || plant.thirst > 0 || plant.sick) {
       // "Something must have contaminated the operation": the fruit and the plant are lost, the pot stays.
       delete pot.plant;
+      delete pot.owner;
+      delete pot.customName;
       logPublic(state, player.room, "graftFailed", { name: player.character, item: plant.species });
       return;
     }
     state.fruits[hybrid] ??= clone(state.hybrids[hybrid]!);
     const age = hasSkill(player, "green_thumb") ? Math.floor(growCyclesFor(state, hybrid) * state.config.greenThumb.graftHeadStart) : 0;
     pot.plant = { species: hybrid, age, thirst: 0, sick: false };
+    pot.owner = player.id;
+    delete pot.customName;
     logPublic(state, player.room, "graftedPlant", { name: player.character, item: hybrid });
   }
 }
