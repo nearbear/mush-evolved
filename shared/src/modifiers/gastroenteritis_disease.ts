@@ -19,7 +19,7 @@ export const gastroenteritis_disease: Modifier = {
     if (!diseaseAffects(player)) return;
     changeMP(next, player, -1);
     if (rollFloat(next) < CYCLE_DAMAGE_CHANCE) damage(next, player, 1, "injury");
-    soil(next, player);
+    soil(next, player, { superDirty: true });
   },
   maxMorale: (value) => (value - 2 < 0 ? 1 : value - 2),
   onPick: (next, player) => {

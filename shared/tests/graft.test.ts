@@ -104,7 +104,7 @@ const GARDEN = "HYDROPONIC_CENTER";
 
 /** Three humans in the garden, p0 a Botanist, no random sickness. */
 function ship(): GameState {
-  const s = createGame(makeSeats(3), testConfig({ mushCount: 0, startItems: DEFAULT_CONFIG.startItems, botany: { sickChancePerCycle: 0 } }), 3, {});
+  const s = createGame(makeSeats(3), testConfig({ mushCount: 0, startItems: DEFAULT_CONFIG.startItems, botany: { sickChancePerCycle: 0, graft: { dirtyChance: 0 } } }), 3, {});
   for (const p of s.players) {
     p.room = GARDEN;
     p.skills = [];

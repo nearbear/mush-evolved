@@ -100,6 +100,16 @@ describe("surgery", () => {
     expect(option(ship(), "p0", surgery("p1"))!.dirt).toBe(base.surgery.dirtyChance);
   });
 
+  it("always soils a surgeon operating on themself, as ordinary dirt an apron still blocks (owner, 2026-11-25)", () => {
+    expect(DEFAULT_CONFIG.surgery.selfDirtyChance).toBe(1);
+    expect(option(ship(), "p1", surgery("p1"))!.dirt).toBe(base.surgery.selfDirtyChance);
+    const config = testConfig({ surgery: { successChance: 1 } });
+    expect(player(must(applyAction(ship(config), "p1", surgery("p1"))), "p1").statuses).toContain("dirty");
+    const aproned = ship(config);
+    aproned.items.push({ id: "apron1", type: "apron", at: { kind: "player", id: "p1" }, broken: false });
+    expect(player(must(applyAction(aproned, "p1", surgery("p1"))), "p1").statuses).not.toContain("dirty");
+  });
+
   it("gives the patient sepsis on a failure, which costs 6 health at once", () => {
     const s = ship(odds(0));
     const hp = player(s, "p1").hp;

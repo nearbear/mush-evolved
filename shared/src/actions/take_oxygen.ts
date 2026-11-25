@@ -8,7 +8,7 @@ export type TakeOxygenActionData = { type: "take_oxygen"; equipment: string };
 
 /**
  * Take an oxygen capsule from an oxygen tank (the two central storages), like a fuel capsule (owner, 2026-10-24): 0 AP,
- * a dirt chance, secret, one slot, never dropped. It takes one oxygen from the ship's stock; return_oxygen puts it back.
+ * no injury chance (owner, 2026-11-25: eMush's; putting it back keeps one), secret, one slot, never dropped. It takes one oxygen from the ship's stock; return_oxygen puts it back.
  */
 export class TakeOxygenAction extends Action<TakeOxygenActionData> {
   override visibility: ActionVisibility = "secret";
@@ -29,10 +29,6 @@ export class TakeOxygenAction extends Action<TakeOxygenActionData> {
 
   override getCost(state: Readonly<GameState>): { ap: number; mp: number } {
     return { ap: state.config.oxygenCapsule.cost.ap, mp: 0 };
-  }
-
-  override injuryChance(state: Readonly<GameState>): number {
-    return state.config.oxygenCapsule.injuryChance;
   }
 
   override apply(state: GameState, player: PlayerState, _target: TakeOxygenActionData): void {

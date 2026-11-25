@@ -30,16 +30,16 @@ describe("Floor heating (FLOOR_HEATING)", () => {
   it("is fully implemented with a 0.5 injury multiplier", () => {
     expect(projectStatus("FLOOR_HEATING")).toBe("full");
     expect(config.project.floorHeating.injuryFactor).toBe(0.5);
-    expect(config.extinguish.firefighterInjuryChance).toBe(0.5);
+    expect(config.extinguish.manual.injuryChance).toBe(0.5);
   });
 
   it("does not reduce action injury chance until complete", () => {
     const s = game();
-    expect(manualFireInjury(s, "p0")).toBeCloseTo(config.extinguish.firefighterInjuryChance);
+    expect(manualFireInjury(s, "p0")).toBeCloseTo(config.extinguish.manual.injuryChance);
 
     const almost = game();
     almost.projects.FLOOR_HEATING = PROJECT_COMPLETE - 1;
-    expect(manualFireInjury(almost, "p0")).toBeCloseTo(config.extinguish.firefighterInjuryChance);
+    expect(manualFireInjury(almost, "p0")).toBeCloseTo(config.extinguish.manual.injuryChance);
   });
 
   it("halves action injury chance for everyone (humans and Mush) and stacks with Expert", () => {
@@ -47,9 +47,9 @@ describe("Floor heating (FLOOR_HEATING)", () => {
     const factor = config.project.floorHeating.injuryFactor;
 
     s.projects.FLOOR_HEATING = PROJECT_COMPLETE;
-    expect(manualFireInjury(s, "p0")).toBeCloseTo(config.extinguish.firefighterInjuryChance * factor);
-    expect(manualFireInjury(s, "p2")).toBeCloseTo(config.extinguish.firefighterInjuryChance * factor);
-    expect(manualFireInjury(s, "p1")).toBeCloseTo(config.extinguish.firefighterInjuryChance * 1.2 * factor);
+    expect(manualFireInjury(s, "p0")).toBeCloseTo(config.extinguish.manual.injuryChance * factor);
+    expect(manualFireInjury(s, "p2")).toBeCloseTo(config.extinguish.manual.injuryChance * factor);
+    expect(manualFireInjury(s, "p1")).toBeCloseTo(config.extinguish.manual.injuryChance * 1.2 * factor);
   });
 
   it("leaves zero-injury actions at zero", () => {
@@ -88,12 +88,12 @@ describe("Floor heating (FLOOR_HEATING)", () => {
 
     const done = mustApply(s, "p0", workCore("FLOOR_HEATING"));
     expect(done.projects.FLOOR_HEATING).toBe(PROJECT_COMPLETE);
-    expect(manualFireInjury(done, "p0")).toBeCloseTo(config.extinguish.firefighterInjuryChance * config.project.floorHeating.injuryFactor);
+    expect(manualFireInjury(done, "p0")).toBeCloseTo(config.extinguish.manual.injuryChance * config.project.floorHeating.injuryFactor);
 
     const commsGame = game();
     for (const id of PROJECT_IDS) if (id !== "FLOOR_HEATING") commsGame.projects[id] = PROJECT_COMPLETE;
     commsGame.comms.neron.progress = 0;
     expect(advanceNeron(commsGame, 100)).toBe("FLOOR_HEATING");
-    expect(manualFireInjury(commsGame, "p0")).toBeCloseTo(config.extinguish.firefighterInjuryChance * config.project.floorHeating.injuryFactor);
+    expect(manualFireInjury(commsGame, "p0")).toBeCloseTo(config.extinguish.manual.injuryChance * config.project.floorHeating.injuryFactor);
   });
 });

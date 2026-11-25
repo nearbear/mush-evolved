@@ -11,7 +11,7 @@ export type ExtinguishManuallyActionData = { type: "extinguish_manually" };
 /**
  * A Firefighter puts out the fire in their room without an extinguisher (owner, 2026-11-01, eMushpedia "Pompier"): 1 AP,
  * 50% x1.25 for each miss in a row (reset by a success), and a 50% chance of the random injury on every try, even a
- * miss (the base action's `injuryChance`). A success is public, a failure private. Not offered while an extinguisher is
+ * miss (the base action's `injuryChance`), and 25% dirt (owner, 2026-11-25: eMush's). A success is public, a failure private. Not offered while an extinguisher is
  * within reach, since that never fails.
  */
 export class ExtinguishManuallyAction extends Action<ExtinguishManuallyActionData> {
@@ -32,7 +32,7 @@ export class ExtinguishManuallyAction extends Action<ExtinguishManuallyActionDat
   }
 
   override injuryChance(state: Readonly<GameState>): number {
-    return state.config.extinguish.firefighterInjuryChance;
+    return state.config.extinguish.manual.injuryChance;
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): ExtinguishManuallyActionData[] {
@@ -45,6 +45,10 @@ export class ExtinguishManuallyAction extends Action<ExtinguishManuallyActionDat
     if (!isOnFire(state, player.room)) return "no_fire";
     if (state.items.some((item) => item.type === EXTINGUISHER_ITEM && isWorking(item) && canReachItem(state, player, item))) return "has_extinguisher";
     return null;
+  }
+
+  override dirtChance(state: Readonly<GameState>): number {
+    return state.config.extinguish.manual.dirtyChance;
   }
 
   override apply(state: GameState, player: PlayerState): void {

@@ -54,6 +54,14 @@ export class ReinforceAction extends Action<ReinforceActionData> {
     return findScrap(state, player) ? null : "no_scrap";
   }
 
+  override dirtChance(state: Readonly<GameState>): number {
+    return state.config.reinforce.dirtyChance;
+  }
+
+  override injuryChance(state: Readonly<GameState>): number {
+    return state.config.reinforce.injuryChance;
+  }
+
   override apply(state: GameState, player: PlayerState, target: ReinforceActionData): void {
     const { gain, max } = state.config.reinforce;
     const thing = "item" in target ? state.items.find((i) => i.id === target.item)! : state.equipment[player.room]!.find((e) => e.id === target.equipment)!; // checked, so it exists

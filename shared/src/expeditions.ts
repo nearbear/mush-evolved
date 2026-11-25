@@ -316,7 +316,7 @@ function returnExpedition(state: GameState): void {
   if (ship) {
     const pilot = state.players.find((p) => p.id === report.members[0])!;
     if (pilot.alive && pilot.room === craft) {
-      if (rollFloat(state) < rules.dirtyChance) soil(state, pilot);
+      if (rollFloat(state) < rules.dirtyChance) soil(state, pilot, { superDirty: true });
       dock(state, pilot, ship);
     }
   } else {
@@ -326,8 +326,8 @@ function returnExpedition(state: GameState): void {
     const p = state.players.find((q) => q.id === id)!;
     if (!ship && p.alive && p.room === craft) {
       board(state, p, rules.room);
-      // A ship with ICARUS_LAVATORY keeps its crew clean.
-      if (!projectDone(state, "ICARUS_LAVATORY") && rollFloat(state) < rules.dirtyChance) soil(state, p);
+      // A ship with ICARUS_LAVATORY keeps its crew clean; otherwise the dirt gets past an apron or Stickler.
+      if (!projectDone(state, "ICARUS_LAVATORY") && rollFloat(state) < rules.dirtyChance) soil(state, p, { superDirty: true });
     }
     // A lost member isn't back: they stay on the planet (owner, 2026-11-08).
     if (!(p.alive && isLostPlace(p.room))) logPrivate(state, p.id, "expeditionReturned", { planet: report.planet, report: report.id });

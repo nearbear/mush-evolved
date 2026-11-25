@@ -48,6 +48,10 @@ export class IcarusTakeoffAction extends Action<IcarusTakeoffActionData> {
     return null;
   }
 
+  override injuryChance(state: Readonly<GameState>): number {
+    return state.config.expedition.injuryChance;
+  }
+
   override apply(state: GameState, player: PlayerState): void {
     runExpedition(state, player);
   }

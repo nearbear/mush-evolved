@@ -51,7 +51,8 @@ export class TransferAction<T extends "take" | "drop" = "take" | "drop"> extends
     if (this.type === "take" && state.items.find((i) => i.id === target.item)?.type === CAT_ITEM) {
       return state.config.schrodinger.take.injuryChance;
     }
-    return state.config.transfer.injuryChance;
+    // Dropping never injures (owner, 2026-11-25: eMush's).
+    return this.type === "take" ? state.config.transfer.injuryChance : 0;
   }
 
   override apply(state: GameState, player: PlayerState, target: { type: T; item: string }): void {

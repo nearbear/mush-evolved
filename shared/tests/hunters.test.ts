@@ -241,7 +241,7 @@ describe("repairing the hull", () => {
     s = must(applyAction(s, "p2", repair("hand")));
     expect(s.ship.hull).toBe(95);
     expect(s.items.some((i) => i.id === "hand")).toBe(false);
-    expect(s.log.at(-1)).toMatchObject({ key: "hullRepaired", room: "LABORATORY", visibleTo: "all" });
+    expect(s.log.find((e) => e.key === "hullRepaired")).toMatchObject({ room: "LABORATORY", visibleTo: "all" });
     s.ship.hull = 98;
     s = must(applyAction(s, "p2", repair("floor")));
     expect(s.ship.hull).toBe(100);
@@ -252,7 +252,7 @@ describe("repairing the hull", () => {
     s = must(applyAction(s, "p2", repair("hand")));
     expect(s.ship.hull).toBe(90);
     expect(s.items.some((i) => i.id === "hand")).toBe(true);
-    expect(s.log.at(-1)).toMatchObject({ key: "hullRepairFailed", visibleTo: ["p2"] });
+    expect(s.log.find((e) => e.key === "hullRepairFailed")).toMatchObject({ visibleTo: ["p2"] });
   });
 
   it("is refused for another room's scrap or a non-scrap", () => {

@@ -12,7 +12,8 @@ export const EXTINGUISHER_ITEM = "extinguisher";
 /**
  * Put out the fire in your room with an extinguisher you can reach, carried or on the floor (owner, 2026-10-25,
  * eMushpedia "Extincteur"): 1 AP, 50%. The extinguisher isn't used up. A success is public in the room, a failure
- * private. A Firefighter never fails with one (owner, 2026-11-01), but risks the random injury on every try (the owner chose this over the wiki, where only the manual try hurts).
+ * private. A Firefighter never fails with one (owner, 2026-11-01). Every try, a Firefighter's too, risks dirt and the
+ * random injury at eMush's odds (owner, 2026-11-25: `extinguish.dirtyChance`, `extinguish.injuryChance`).
  */
 export class ExtinguishAction extends Action<ExtinguishActionData> {
   constructor() {
@@ -27,8 +28,12 @@ export class ExtinguishAction extends Action<ExtinguishActionData> {
     return hasSkill(player, "fireman") ? 1 : state.config.extinguish.chance;
   }
 
-  override injuryChance(state: Readonly<GameState>, player: Readonly<PlayerState>): number {
-    return hasSkill(player, "fireman") ? state.config.extinguish.firefighterInjuryChance : 0;
+  override dirtChance(state: Readonly<GameState>): number {
+    return state.config.extinguish.dirtyChance;
+  }
+
+  override injuryChance(state: Readonly<GameState>): number {
+    return state.config.extinguish.injuryChance;
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): ExtinguishActionData[] {

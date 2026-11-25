@@ -131,7 +131,7 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   },
   // Owner, 2026-11-17: surgery removes one injury. In the Sick Bay with a working Surgery Pod, or as a medic holding a medikit;
   // 2 AP on someone else, 4 on yourself, or one care point. 50% (x1.5 medic, x1.25 nurse); a failure gives the patient sepsis.
-  surgery: { cost: { apOther: 2, apSelf: 4 }, successChance: 0.5, medicFactor: 1.5, nurseFactor: 1.25, dirtyChance: 0.25 },
+  surgery: { cost: { apOther: 2, apSelf: 4 }, successChance: 0.5, medicFactor: 1.5, nurseFactor: 1.25, dirtyChance: 0.25, selfDirtyChance: 1 },
   // Owner, 2026-10-25 (wiki): hiding an item and searching the room each cost 1 AP.
   hide: { cost: { ap: 1 } },
   search: { cost: { ap: 1 } },
@@ -141,7 +141,7 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   checkSpores: { cost: { ap: 0 } },
   // Compute Eden (#478; owner, 2026-11-22, eMush): 2 AP or 1 Computer point, 33% per try, 3 star map fragments on the floor.
   eden: { compute: { cost: { ap: 2 }, successChance: 0.33, fragments: 3, fragmentItem: "super_map" } },
-  jukebox: { cost: { ap: 0 }, morale: 3 },
+  jukebox: { cost: { ap: 0 }, morale: 3, checkInjuryChance: 0.01 },
   // Owner, 2026-11-01 (eMushpedia "Métalo"): the Scrapper's Snoop, free, once a day per storage room. What it finds
   // (owner, 2026-11-01, eMushpedia "Recycleur" weights): metal scraps 4, plastic scraps 3, a standard (uncooked)
   // ration 1, a fuel capsule 1, an oxygen capsule 1. Owner, 2026-11-01: 50% to get dirty (eMushpedia "Saleté") and a 10%
@@ -156,7 +156,7 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   // Owner, 2026-10-25 (wiki): vaccinating with the anti-Mush serum costs 1 AP; 2026-11-23 (#489): 2-cycle coma.
   vaccine: { cost: { ap: 1 }, comaCycles: 2 },
   // Owner, 2026-11-07 (#397): a bandage heals yourself or a living person in your room 2 HP for 1 AP, and is used up.
-  bandage: { cost: { ap: 1 }, effect: { hp: 2 } },
+  bandage: { cost: { ap: 1 }, effect: { hp: 2 }, dirtyChance: 0.05 },
   // Owner, 2026-11-20: the Spore Sucker (actions/remove_spore.ts): 1 AP, 3 damage, 25% dirty.
   sporeSucker: { cost: { ap: 1 }, effect: { damage: 3 }, dirtyChance: 0.25 },
   // Confirmed 2026-10-15: punch costs 1 AP, misses 40% of the time. Owner, 2026-10-24: damage is a uniform 1 to 2 (the wiki).
@@ -248,7 +248,7 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
     // Owner, 2026-11-21 (#438): Graft costs 2 AP (or a garden point in the garden). Each hybrid takes each AP, morale
     // and HP slot from a parent at random, keeps each parent buff and disease at 50% (up to 3 each), and is re-rolled
     // until worth 4–9; 4 cycles per point of grow time, capped at 32.
-    graft: { cost: { ap: 2 }, valueRange: [4, 9], maxGrowCycles: 32, keepChance: 0.5, maxBuffs: 3, maxDiseases: 3, maxAttempts: 1000 },
+    graft: { cost: { ap: 2 }, dirtyChance: 0.3, valueRange: [4, 9], maxGrowCycles: 32, keepChance: 0.5, maxBuffs: 3, maxDiseases: 3, maxAttempts: 1000 },
     sickChancePerCycle: 0.05,
     oxygenPerPlant: 1,
     gardenRoom: "HYDROPONIC_CENTER",
@@ -257,7 +257,7 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   },
   // Confirmed 2026-10-16: cooking an uncooked ration costs 1 AP, only in the refectory.
   // Owner, 2026-11-14: Cook points cap at 8.
-  cook: { cost: { ap: 1 }, rooms: ["REFECTORY"], dirtyChance: 0.25, injuryChance: 0.01, capPoints: 8, pointsPerDay: 4, pointsOnPick: 4 },
+  cook: { cost: { ap: 1 }, rooms: ["REFECTORY"], dirtyChance: 0.25, injuryChance: 0.02, capPoints: 8, pointsPerDay: 4, pointsOnPick: 4 },
   // Owner, 2026-10-19: express cook is free, anywhere you can reach a microwave, and spends one of its 4 charges;
   // it regains one each day. Consequences for using it come later.
   expressCook: { cost: { ap: 0 }, charges: { start: 4, max: 4, perDay: 1 }, dirtyChance: 0.05 },
@@ -551,8 +551,8 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   // Owner, 2026-10-24 (patrol plan, answer 6): 1 AP to open, 25% each.
   // Lunchbox (owner, 2026-11-21; eMush): opening it is free and gives 1 standard ration, 3 charges, gone when empty.
   lunchbox: { cost: { ap: 0 }, charges: 3 },
-  spaceCapsule: { cost: { ap: 1 }, dirtyChance: 0.25, injuryChance: 0.01, contents: ["metal_scraps", "plastic_scraps", "oxy_capsule", "fuel_capsule"] },
-  hullRepair: { cost: { ap: 1 }, chance: 0.25, injuryChance: 0.05, amount: 5 },
+  spaceCapsule: { cost: { ap: 1 }, dirtyChance: 0, injuryChance: 0.01, contents: ["metal_scraps", "plastic_scraps", "oxy_capsule", "fuel_capsule"] },
+  hullRepair: { cost: { ap: 1 }, chance: 0.25, dirtyChance: 0.25, injuryChance: 0.05, amount: 5 },
   oscilloscope: { repairFactor: 2 },
   nccLens: { spaceAccuracyFactor: 1.1, crewAccuracyFactor: 1.33 },
   // Owner, 2026-11-22 (#241): eMush's activity overload threshold, 7 AP a seat a day.
@@ -585,17 +585,19 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   // Owner, 2026-11-24: the Pyromaniac's secret action (actions/ignite.ts; reverted from 3 AP to 4 AP).
   ignite: { cost: { ap: 4 } },
   // Owner, 2026-11-07: the Mush sabotage action (actions/sabotage.ts).
-  sabotage: { cost: { ap: 1 }, defaultChance: 0.12, sapperFactor: 3 },
+  sabotage: { cost: { ap: 1 }, defaultChance: 0.12, sapperFactor: 3, dirtyChance: 0.25 },
   // Owner, 2026-11-14 (#330): Doorman's door sabotage (actions/sabotage_door.ts): first use each day is free, later ones cost 2 AP.
-  doorman: { cost: { ap: 2 } },
+  doorman: { cost: { ap: 2 }, dirtyChance: 0.25 },
   // Owner, 2026-11-07: Green Jelly (actions/green_jelly.ts) breaks its target after 1 to `maxCycles` cycle changes.
   greenJelly: { cost: { ap: 1 }, maxCycles: 4 },
   // Owner, 2026-11-07: Reinforce (actions/reinforce.ts): 1 AP, 35%, one scrap for 10 (metal) or 5 (plastic) shielding, at most 50; at 25 or more it can't be sabotaged or dismantled.
-  reinforce: { cost: { ap: 1 }, chance: 0.35, max: 50, fortifiedAt: 25, gain: { metal_scraps: 10, plastic_scraps: 5 } },
-  extinguish: { cost: { ap: 1 }, chance: 0.5, manual: { chance: 0.5, failureMultiplier: 1.25 }, firefighterInjuryChance: 0.5 },
+  reinforce: { cost: { ap: 1 }, chance: 0.35, max: 50, fortifiedAt: 25, gain: { metal_scraps: 10, plastic_scraps: 5 }, dirtyChance: 0.5, injuryChance: 0.2 },
+  extinguish: { cost: { ap: 1 }, chance: 0.5, dirtyChance: 0.15, injuryChance: 0.01, manual: { chance: 0.5, failureMultiplier: 1.25, dirtyChance: 0.25, injuryChance: 0.5 } },
   // Owner, 2026-10-25/11-01: equipment with a repair chance on its eMushpedia page breaks; the rest never does.
   repair: {
     cost: { ap: 1 },
+    dirtyChance: 0.25,
+    injuryChance: 0.05,
     chance: {
       DOOR: 0.25,
       CAMERA: 0.25, OXYGEN_TANK: 0.25, FUEL_TANK: 0.25, SHOWER: 0.25,
@@ -619,10 +621,11 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
     craft: ICARUS_CRAFT,
     stepMs: 10 * 60 * 1000,
     dirtyChance: 0.1,
+    injuryChance: 0.02,
     maxCrew: 4,
     // Phase 5 (owner, 2026-11-09, #359): the hold extension holds 6; a patrol ship lands for 2 AP and explores half as far.
     largerBayCrew: 6,
-    patrol: { cost: { ap: 2 }, sectorDivisor: 2 },
+    patrol: { cost: { ap: 2 }, sectorDivisor: 2, injuryChance: 0.05 },
     sectors: 9,
     deadKeepItems: true,
     fatigue: 2,

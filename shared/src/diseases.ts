@@ -247,19 +247,20 @@ export function rumble(state: GameState, player: PlayerState): void {
 
 /**
  * Logs that the player vomits, when they can have special logs. Alone, they throw up on themselves; otherwise a random
- * other living player in the room is the target. Whoever is hit gets dirty (soil: an apron or Stickler can block it).
+ * other living player in the room is the target. Whoever is hit gets dirty, past an apron or Stickler (a symptom is
+ * super-dirty, as in eMush).
  */
 export function vomit(state: GameState, player: PlayerState): void {
   if (!canHaveSpecialLogs(player)) return;
   const others = state.players.filter((p) => p.alive && p.id !== player.id && p.room === player.room);
   if (others.length === 0) {
     logPublic(state, player.room, "vomitSelf", { name: player.character });
-    soil(state, player);
+    soil(state, player, { superDirty: true });
     return;
   }
   const other = others[rollInt(state, others.length)]!;
   logPublic(state, player.room, "vomitOther", { name: player.character, target: other.character });
-  soil(state, other);
+  soil(state, other, { superDirty: true });
 }
 
 /**

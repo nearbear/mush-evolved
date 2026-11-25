@@ -57,6 +57,10 @@ export class SabotageAction extends Action<SabotageActionData> {
     return found ? null : "cant_sabotage";
   }
 
+  override dirtChance(state: Readonly<GameState>): number {
+    return state.config.sabotage.dirtyChance;
+  }
+
   override apply(state: GameState, player: PlayerState, target: SabotageActionData): void {
     if ("item" in target) {
       const item = state.items.find((i) => i.id === target.item)!; // checked, so it exists

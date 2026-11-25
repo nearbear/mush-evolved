@@ -37,6 +37,10 @@ export class SabotageDoorAction extends Action<SabotageDoorActionData> {
     return null;
   }
 
+  override dirtChance(state: Readonly<GameState>): number {
+    return state.config.doorman.dirtyChance;
+  }
+
   override apply(state: GameState, player: PlayerState, target: SabotageDoorActionData): void {
     if (!player.doormanToday) player.doormanToday = true;
     breakDoor(state, target.door);

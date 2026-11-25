@@ -34,6 +34,10 @@ export class UseBandageAction extends Action<UseBandageActionData> {
     return { ap: state.config.bandage.cost.ap, mp: 0 };
   }
 
+  override dirtChance(state: Readonly<GameState>): number {
+    return state.config.bandage.dirtyChance;
+  }
+
   override apply(state: GameState, player: PlayerState, target: UseBandageActionData): void {
     const patient = state.players.find((o) => o.id === target.target)!; // checked, so it exists
     removeItem(state, bandageOf(state, player)!.id);

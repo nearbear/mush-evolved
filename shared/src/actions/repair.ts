@@ -70,6 +70,14 @@ export class RepairAction extends Action<RepairActionData> {
     return brokenHere(state, player).some((e) => e.id === target.equipment) ? null : "cant_repair";
   }
 
+  override dirtChance(state: Readonly<GameState>): number {
+    return state.config.repair.dirtyChance;
+  }
+
+  override injuryChance(state: Readonly<GameState>): number {
+    return state.config.repair.injuryChance;
+  }
+
   override apply(state: GameState, player: PlayerState, target: RepairActionData): void {
     if ("item" in target) {
       const item = state.items.find((i) => i.id === target.item)!; // checked, so it exists

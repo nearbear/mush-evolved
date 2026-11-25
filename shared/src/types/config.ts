@@ -252,6 +252,7 @@ export interface FruitsConfig {
 
 export interface GraftConfig {
   cost: { ap: number }; // AP spent to graft, unless a garden point pays in the garden (owner, 2026-11-21: 2).
+  dirtyChance: number; // Chance the Botanist gets dirty grafting (owner, 2026-11-25: eMush's 30%).
   valueRange: [number, number]; // Inclusive value budget [min, max] a hybrid is re-rolled into (4–9).
   maxGrowCycles: number; // Grow time cap: 4 cycles per point of value, never above this (32).
   keepChance: number; // Chance each parent buff or disease is kept by the hybrid (0.5).
@@ -412,7 +413,8 @@ export interface GameConfig {
     successChance: number; // Base chance to remove an injury (owner, 2026-11-17).
     medicFactor: number; // Success multiplier for the medic skill (owner, 2026-11-17).
     nurseFactor: number; // Success multiplier for the nurse skill, `first_aid` (owner, 2026-11-17).
-    dirtyChance: number; // Chance the surgeon gets dirty (owner, 2026-11-17).
+    dirtyChance: number; // Chance the surgeon gets dirty operating on someone else (owner, 2026-11-17).
+    selfDirtyChance: number; // Chance of getting dirty operating on yourself (owner, 2026-11-25: eMush's) 100%; not super-dirty).
   };
   heal: {
     cost: {
@@ -439,7 +441,8 @@ export interface GameConfig {
   // try with the usual failure streak, with at least `fragments` star map fragments (`fragmentItem`) on the room's floor, unhidden.
   eden: { compute: { cost: { ap: number }; successChance: number; fragments: number; fragmentItem: string } };
   // The jukebox (owner, 2026-11-22): Listen costs `cost.ap` and gives +`morale` once a day while your own song plays; Check playlist is free.
-  jukebox: { cost: { ap: number }; morale: number };
+  // `checkInjuryChance`: the random injury on Check playlist (owner, 2026-11-25: eMush's 1%).
+  jukebox: { cost: { ap: number }; morale: number; checkInjuryChance: number };
   snoop: { cost: { ap: number }; dirtyChance: number; injuryChance: number; rooms: string[]; items: Record<string, number> }; // The Scrapper's Snoop: cost, its dirt and injury odds, the storage rooms it works in, the items it makes by weight (owner, 2026-11-01).
   sporeSucker: {
     cost: { ap: number }; // AP using the Spore Sucker costs (owner, 2026-11-20).
@@ -449,6 +452,7 @@ export interface GameConfig {
   bandage: {
     cost: { ap: number }; // AP using a bandage costs, on anyone (owner, 2026-11-07, #397).
     effect: { hp: number }; // HP a bandage restores before `healAmount` modifiers (owner, 2026-11-07).
+    dirtyChance: number; // Chance the user gets dirty (owner, 2026-11-25: eMush's 5%).
   };
   vaccine: {
     cost: { ap: number }; // AP the anti-Mush serum costs to use (owner, 2026-10-25, from the wiki).
@@ -512,7 +516,7 @@ export interface GameConfig {
     cost: { ap: number }; // AP spent to cook an uncooked ration (confirmed 2026-10-16).
     rooms: RoomId[]; // Rooms where food can be cooked (confirmed 2026-10-16).
     dirtyChance: number; // Chance of getting the dirty status after cooking.
-    injuryChance: number; // Chance of getting the injured status after cooking (owner, 2026-10-16: 25%).
+    injuryChance: number; // Chance of the random injury after cooking (owner, 2026-11-25: eMush's 2%).
     capPoints: number; // Most Cook points (`resources.cook`) a player can hold (owner, 2026-11-14: 8).
     pointsPerDay: number; // Cook points the `cook` (Chef) skill grants at the start of each day (owner, 2026-11-14: 4).
     pointsOnPick: number; // Cook points it grants when picked (owner, 2026-11-14: 4).
@@ -552,7 +556,7 @@ export interface GameConfig {
   consume: { dirtyChance: number }; // Chance of getting the dirty status after consuming an item.
   // Spoilage (spoilage.ts): the chance that eating food at each spoil stage gives `disease`.
   spoilage: { sickChance: { unstable: number; hazardous: number; decomposing: number }; disease: string };
-  oxygenCapsule: { cost: { ap: number }; injuryChance: number }; // Taking an oxygen capsule from a tank and putting it back (owner, 2026-10-24: as fuel).
+  oxygenCapsule: { cost: { ap: number }; injuryChance: number }; // Taking an oxygen capsule from a tank and putting it back (owner, 2026-10-24: as fuel); `injuryChance` is putting it back's only (owner, 2026-11-25: eMush's).
   fuel: { cost: { ap: number }; dirtyChance: number, injuryChance: number }; // Taking a capsule from a tank, loading it into the chamber, unloading it back.
   dispense: {
     dirtyChance: number; // Chance of getting the dirty status after dispensing an item.
@@ -847,7 +851,7 @@ export interface GameConfig {
     injuryChance: number; // Chance of getting injured after showering.
   };
   transfer: {
-    injuryChance: number; // Chance of getting injured when taking or dropping an item.
+    injuryChance: number; // Chance of getting injured when taking an item; dropping one never injures (owner, 2026-11-25: eMush's).
   };
   ship: {
     oxygen: { start: number; max: number; perCycle: number }; // Oxygen the ship burns each cycle; at 0 one random living crew member dies per cycle (owner, 2026-10-19).
@@ -898,7 +902,8 @@ export interface GameConfig {
   lunchbox: { cost: { ap: number }; charges: number }; // Open lunchbox's AP (owner, 2026-11-21: 0, as in eMush) and the rations a lunchbox holds (3).
   spaceCapsule: { cost: { ap: number }; dirtyChance: number; injuryChance: number; contents: string[] };
   // Hull repair (owner, 2026-10-24, the wiki's Armure et Bouclier): 1 AP, 25%, +5 hull, a metal scrap used up on a success.
-  hullRepair: { cost: { ap: number }; chance: number; injuryChance: number; amount: number };
+  // Its dirt chance per try is eMush's (owner, 2026-11-25).
+  hullRepair: { cost: { ap: number }; chance: number; dirtyChance: number; injuryChance: number; amount: number };
   // Activity overload (owner, 2026-11-22, #241; eMush): hunter and incident points scale with the crew; difficulty.ts.
   difficulty: { apPerSeat: number };
   // Incident points (owner, 2026-10-25, #184; eMushpedia "Embûches"): incidents.ts. Each cycle change adds
@@ -919,20 +924,31 @@ export interface GameConfig {
   // `hullDamage` with `hullChance`, and everyone present loses `damage` HP.
   fire: { spreadChance: number; maxSpreads: number; breakChance: number; hullChance: number; hullDamage: [number, number]; damage: number };
   // Extinguish (owner, 2026-10-25, eMushpedia "Extincteur"): 1 AP, 50%, with an extinguisher you can reach.
-  // Firefighter (owner, 2026-11-01): the manual try's odds and its per-miss multiplier; `firefighterInjuryChance` is the chance of a random injury on any try.
+  // Firefighter (owner, 2026-11-01): the manual try's odds and its per-miss multiplier. Dirt and injury odds per try,
+  // with an extinguisher and by hand (owner, 2026-11-25: eMush's): the extinguisher's apply to everyone, a Firefighter included.
   ignite: { cost: { ap: number } };
   // Owner, 2026-11-07: a Mush breaks equipment or an item (actions/sabotage.ts), at the target's repair chance or `defaultChance` for an item without one.
-  sabotage: { cost: { ap: number }; defaultChance: number; sapperFactor: number };
-  // Owner, 2026-11-14 (#330): Doorman's door sabotage (actions/sabotage_door.ts): first use each day is free, later ones cost `cost.ap`.
-  doorman: { cost: { ap: number } };
+  // `dirtyChance` per try (owner, 2026-11-25: eMush's).
+  sabotage: { cost: { ap: number }; defaultChance: number; sapperFactor: number; dirtyChance: number };
+  // Owner, 2026-11-14 (#330): Doorman's door sabotage (actions/sabotage_door.ts): first use each day is free, later ones cost `cost.ap`;
+  // `dirtyChance` per use (owner, 2026-11-25: eMush's).
+  doorman: { cost: { ap: number }; dirtyChance: number };
   greenJelly: { cost: { ap: number }; maxCycles: number };
-  // Owner, 2026-11-07: an Engineer reinforces equipment or an item (actions/reinforce.ts) with one scrap, `gain` by scrap type, up to `max`.
-  reinforce: { cost: { ap: number }; chance: number; max: number; fortifiedAt: number; gain: Record<string, number> };
-  extinguish: { cost: { ap: number }; chance: number; manual: { chance: number; failureMultiplier: number }; firefighterInjuryChance: number };
+  // Owner, 2026-11-07: an Engineer reinforces equipment or an item (actions/reinforce.ts) with one scrap, `gain` by scrap type, up to `max`;
+  // `dirtyChance` and `injuryChance` per try (owner, 2026-11-25: eMush's).
+  reinforce: { cost: { ap: number }; chance: number; max: number; fortifiedAt: number; gain: Record<string, number>; dirtyChance: number; injuryChance: number };
+  extinguish: {
+    cost: { ap: number };
+    chance: number;
+    dirtyChance: number;
+    injuryChance: number;
+    manual: { chance: number; failureMultiplier: number; dirtyChance: number; injuryChance: number };
+  };
   // Breakage and Repair (owner, 2026-10-25): breakage.ts. `chance` is each breakable equipment type's base repair chance
   // (eMushpedia's `réparer=`); a type without one never breaks. A wrench multiplies it by `wrenchFactor`, the Technician
   // skill (`engineer`) by `engineerFactor`. A broken oxygen tank leaks `oxygenLeak` oxygen at each cycle change.
-  repair: { cost: { ap: number }; chance: Record<string, number>; wrenchFactor: number; engineerFactor: number; oxygenLeak: number };
+  // `dirtyChance` and `injuryChance`: each try's odds (owner, 2026-11-25: eMush's).
+  repair: { cost: { ap: number }; dirtyChance: number; injuryChance: number; chance: Record<string, number>; wrenchFactor: number; engineerFactor: number; oxygenLeak: number };
   // Owner, 2026-10-28: carrying the oscilloscope (eMush's Wavoscope) multiplies the odds of a hull repair and a patrol-ship renovation.
   oscilloscope: { repairFactor: number };
   // Owner, 2026-11-24: carrying NCC lenses (ncc_lens) multiplies shooting accuracy once: x1.1 on turrets/patrols, x1.33 on gun attacks.
@@ -957,11 +973,13 @@ export interface GameConfig {
     craft: RoomId; // The Icarus itself while away: a door-less room off the map, like a patrol ship's (phase 2).
     stepMs: number; // Server time between steps: the landing, then each sector (owner, 2026-11-07: 10 real minutes in every game).
     dirtyChance: number; // Chance each living member comes back dirty (owner, 2026-11-07: 10%, a placeholder).
+    injuryChance: number; // The launcher's random injury at takeoff (owner, 2026-11-25: eMush's 2%).
     maxCrew: number; // Most people aboard; the launcher always goes, the others are picked at random.
     largerBayCrew: number; // `maxCrew` once the Icarus hold extension (ICARUS_LARGER_BAY) is done (owner, 2026-11-09, #359).
     // A pilot's solo landing in a patrol ship (owner, 2026-11-09, #359): AP to land from flight, and the Icarus's sector
-    // count (Sprinters included) is divided by `sectorDivisor`, rounded down.
-    patrol: { cost: { ap: number }; sectorDivisor: number };
+    // count (Sprinters included) is divided by `sectorDivisor`, rounded down. `injuryChance`: the pilot's random injury on
+    // landing (owner, 2026-11-25: eMush's 5%).
+    patrol: { cost: { ap: number }; sectorDivisor: number; injuryChance: number };
     sectors: number; // Most sectors explored after the landing, each one unexplored, drawn by its tag's `explo` weight.
     deadKeepItems: boolean; // Whether a member who dies brings their items back with the body (owner, 2026-10-31; the original: false).
     fatigue: number; // HP every living member loses.

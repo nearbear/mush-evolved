@@ -2703,6 +2703,8 @@ describe("item sharing (itemShare.ts) and walking to scrap", () => {
     expect(repairHull.options(viewFor(start, id), m)).toEqual([]);
     // End to end: told by a line in chat, the bot walks there and tries until the AP reserve.
     start.ship.hull = 40;
+    // No dirt roll, so the seeded repair rolls stay the ones this test was written against.
+    start.config = { ...start.config, hullRepair: { ...start.config.hullRepair, dirtyChance: 0 } };
     const told = applyInput(start, { type: "chat", channel: "global", text: formatItemLine({ type: "metal_scraps", room: scrapRoom, present: true }), by: id });
     expect(told.ok).toBe(true);
     if (!told.ok) return;
@@ -2818,6 +2820,8 @@ describe("fires (fireShare.ts, extinguish goal, #429)", () => {
     }
     // Someone reported the fire; the extinguisher in CORRIDOR_A it sees itself.
     game.reports.push({ kind: "fire", room: fire, by: game.players.find((p) => p.id !== id)!.id });
+    // No dirt or injury rolls, so the seeded extinguish rolls stay the ones this test was written against.
+    game.config = { ...game.config, extinguish: { ...game.config.extinguish, dirtyChance: 0, injuryChance: 0 } };
     const bot = new GoalBot(3, 2, [extinguish]);
     const { game: end, taken } = await play(game, id, bot, 40);
     expect(taken.some((a) => a.type === "take")).toBe(true);
@@ -2922,7 +2926,7 @@ describe("oxygen tanks (tankShare.ts, repairOxygen goal, #443)", () => {
   it("claims a tank, walks there, reports it and repairs it", async () => {
     const { game: start, id } = at("CORRIDOR_A", 12);
     const game = breakTank(start, FRONT);
-    game.config = { ...game.config, repair: { ...game.config.repair, chance: { ...game.config.repair.chance, OXYGEN_TANK: 1 } } };
+    game.config = { ...game.config, repair: { ...game.config.repair, dirtyChance: 0, injuryChance: 0, chance: { ...game.config.repair.chance, OXYGEN_TANK: 1 } } };
     const bot = new GoalBot(1, 2, [repairOxygen]);
     const { game: end, taken } = await play(game, id, bot, 20);
     expect(end.equipment[FRONT]!.find((e) => e.type === "OXYGEN_TANK")!.broken).toBeUndefined();

@@ -55,6 +55,10 @@ export class LandOnPlanetAction extends Action<LandOnPlanetActionData> {
    * the AP spent, and the ship heads back to dock in its bay, with a private line saying why. The Icarus checks at
    * boarding and takeoff instead (owner, 2026-11-17).
    */
+  override injuryChance(state: Readonly<GameState>): number {
+    return state.config.expedition.patrol.injuryChance;
+  }
+
   override apply(state: GameState, player: PlayerState): void {
     const ship = shipAboard(player)!;
     const planet = orbitedPlanet(state)!;

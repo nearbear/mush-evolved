@@ -20,7 +20,7 @@ export const skin_inflammation_disease: Modifier = {
   },
   onCycle(next, player) {
     if (!diseaseAffects(player)) return;
-    if (rollFloat(next) < CYCLE_DIRT_CHANCE) soil(next, player);
+    if (rollFloat(next) < CYCLE_DIRT_CHANCE) soil(next, player, { superDirty: true });
   },
   onShower(next, player) {
     if (!diseaseAffects(player)) return;

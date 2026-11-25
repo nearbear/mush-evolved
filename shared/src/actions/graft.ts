@@ -65,6 +65,10 @@ export class GraftAction extends Action<GraftActionData> {
     return paidWithGardenPoint(state, player, pot) ? { ap: 0, mp: 0, paidBy: "garden" } : { ap: state.config.botany.graft.cost.ap, mp: 0 };
   }
 
+  override dirtChance(state: Readonly<GameState>): number {
+    return state.config.botany.graft.dirtyChance;
+  }
+
   override apply(state: GameState, player: PlayerState, target: GraftActionData): void {
     const pot = state.items.find((i) => i.id === target.item)!;
     const plant = pot.plant!;

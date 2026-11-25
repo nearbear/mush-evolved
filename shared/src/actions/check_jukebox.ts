@@ -25,6 +25,10 @@ export class CheckJukeboxAction extends Action<CheckJukeboxActionData> {
     return equipmentHere(state, player, JUKEBOX_EQUIPMENT).some((e) => e.id === target.equipment) ? null : "cant_check_jukebox";
   }
 
+  override injuryChance(state: Readonly<GameState>): number {
+    return state.config.jukebox.checkInjuryChance;
+  }
+
   override apply(state: GameState, player: PlayerState): void {
     // The actor is alive, so each of the next cycles has a song.
     const [song1, song2, song3] = [1, 2, 3].map((offset) => songAt(state, offset)!.character);

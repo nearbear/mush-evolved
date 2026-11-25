@@ -17,7 +17,8 @@ export const SEPSIS_DISEASE = "sepsis_disease";
  * operate on yourself or a living person in your room who has an injury. Costs `surgery.cost.apOther` on someone else,
  * `apSelf` on yourself, or nothing while you have a care point (`resources.heal`, like heal). Succeeds at
  * `surgery.successChance` (the medic and nurse modifiers multiply it) and removes one of the patient's injuries at
- * random; a failure gives the patient sepsis. 25% dirty. Public room history either way.
+ * random; a failure gives the patient sepsis. 25% dirty on someone else, 100% on yourself (`selfDirtyChance`, owner,
+ * 2026-11-25: eMush's; ordinary dirt, so an apron still keeps it off). Public room history either way.
  *
  * Offered only on an injured patient, so a surgeon can tell who is injured although injuries are private statuses: the
  * owner accepted that leak (2026-11-17).
@@ -48,8 +49,8 @@ export class SurgeryAction extends Action<SurgeryActionData> {
     return state.config.surgery.successChance;
   }
 
-  override dirtChance(state: Readonly<GameState>): number {
-    return state.config.surgery.dirtyChance;
+  override dirtChance(state: Readonly<GameState>, player: Readonly<PlayerState>, target: SurgeryActionData): number {
+    return target.target === player.id ? state.config.surgery.selfDirtyChance : state.config.surgery.dirtyChance;
   }
 
   override apply(state: GameState, player: PlayerState, target: SurgeryActionData): void {

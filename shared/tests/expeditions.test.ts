@@ -958,6 +958,16 @@ describe("expeditions, phase 2: time away", () => {
     for (const id of crewIds) expect(player(never, id).statuses).not.toContain("dirty");
   });
 
+  it("return dirt gets past an apron and Stickler (super-dirty, owner 2026-11-25)", () => {
+    const s = timed({ tags: ["FOREST"], config: { dirtyChance: 1 } });
+    const [aproned, stickler] = crewIds;
+    s.items.push({ id: "apron1", type: "apron", at: { kind: "player", id: aproned! }, broken: false });
+    player(s, stickler!).skills.push("stickler");
+    const back = runOut(go(s));
+    for (const id of [aproned!, stickler!]) expect(player(back, id).statuses).toContain("dirty");
+    expect(back.log.some((e) => e.key === "apronBlockedDirty" || e.key === "sticklerBlockedDirty")).toBe(false);
+  });
+
   describe("stranded when the ship jumps", () => {
     const TERMINAL = "COMMAND_CENTER:PILOT_MODULE";
     const leave: Action = { type: "leave_orbit", equipment: TERMINAL };
@@ -1896,6 +1906,13 @@ describe("expeditions, phase 5: hold extension, patrol-ship landings, no droppin
     // Back aboard, dropping works again.
     const back = runOut(away);
     expect(offered(back, "p1")).toContainEqual(drop);
+  });
+
+  it("a patrol-ship pilot's return dirt gets past an apron", () => {
+    const solo = flying({ tags: ["FOREST"], config: { dirtyChance: 1 }, events: only({ kind: "nothing", weight: 1 }) });
+    solo.items.push({ id: "apron1", type: "apron", at: { kind: "player", id: "p0" }, broken: false });
+    const landed = runOut(must(applyAction(solo, "p0", landOn)));
+    expect(player(landed, "p0").statuses).toContain("dirty");
   });
 
   it("ICARUS_LAVATORY keeps Icarus crews clean on return silently, not patrol-ship solo landings", () => {

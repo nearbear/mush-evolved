@@ -46,6 +46,10 @@ export class RepairHullAction extends Action<RepairHullActionData> {
     return null;
   }
 
+  override dirtChance(state: Readonly<GameState>): number {
+    return state.config.hullRepair.dirtyChance;
+  }
+
   override apply(state: GameState, player: PlayerState, target: RepairHullActionData): void {
     removeItem(state, target.item);
     removeStatus(player, "genius");

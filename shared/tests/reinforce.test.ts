@@ -42,7 +42,7 @@ const scraps = (s: GameState, type: string) => s.items.filter((i) => i.type === 
 describe("reinforce", () => {
   it("pins the confirmed numbers", () => {
     const s = createGame(makeSeats(3), config, 3);
-    expect(s.config.reinforce).toEqual({ cost: { ap: 1 }, chance: 0.35, max: 50, fortifiedAt: 25, gain: { metal_scraps: 10, plastic_scraps: 5 } });
+    expect(s.config.reinforce).toEqual({ cost: { ap: 1 }, chance: 0.35, max: 50, fortifiedAt: 25, gain: { metal_scraps: 10, plastic_scraps: 5 }, dirtyChance: 0.5, injuryChance: 0.2 });
   });
 
   it("is offered to an Engineer once per sabotageable or dismantlable target, whatever the scrap", () => {

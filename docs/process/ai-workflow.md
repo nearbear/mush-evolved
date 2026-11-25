@@ -5469,11 +5469,22 @@ Correction (owner): dropped the fifth paragraph (pending samples, assays, Mush s
 - Owner asked for the research bar to be four bars (one per 25%) with a hairline gap, to show where assays happen. `ProgressBar` in `web/src/hud/TerminalDialog.tsx` takes optional `segments`; research passes `DEFAULT_CONFIG.research.assayMarks` (the marks aren't in the view, and the default config is what every ship uses), and each segment gets its own `--value`/`--pending`, so the striped pending samples still sit right after the fill and can span segments. The outer element stays the single `progressbar` (and popover trigger). Projects and PILGRED keep one bar.
 - Tradeoff noted: if a ship ever ran non-default assay marks, the bar would need `assayMarks` added to `view.config`.
 
-## Drug names (2026-11-25)
+## 2026-11-25: per-action dirt and injury odds matched to eMush
 
-- **Asked:** give the 12 drugs their real names instead of "Drug 0".."Drug 11".
-- **What worked:** the original's icons are only numbered (`drug_N.jpg`) and its name list (`Text.drug_name`) isn't in the archive, so the number-to-name mapping came from matching SHA-1s: every `Mush/www/img/icons/items/drug_N.jpg` is byte-identical to one eMushpedia `Item-<name>.jpg` (and the French wiki's `Objet-<name>.jpg`), 12 of 12. Names per language came from `npm run emush -- translations items <lang>` (a subcommand not listed in the usage text; `find` wasted several guesses first).
-- **Decision:** kept the `drug_N` ids (they match the icon files) and changed only `names.{en,fr,es}.json`; the mapping is in a comment on `DRUG_ITEMS`. eMush's Spanish file names Newke "Japiyú" (a copy of Bacta's); its short name and the Spanish wiki say "Nuke", so that was used.
+- **Decision (owner):** every action's dirt and injury chance now matches upstream eMush. The owner also chose eMush's two follow-ons:
+  - extinguisher use costs everyone, a Firefighter included, 15% dirt and 1% injury (this replaces the 2026-11-01 Firefighter-only 50% injury);
+  - disease-symptom dirt and expedition-return dirt are "super-dirty": the apron and Stickler don't block them.
+- **How:** first a read-only audit by three subagents (eMush dirt table, eMush injury table, our values), then two implementing subagents working on separate files (per-action numbers; the `soil(..., { superDirty })` seam).
+- **What worked:**
+  - `npm run emush -- find` accepts a regex but stops at 30 matches. Partitioning the regex by value and matching the name and value line numbers rebuilt all 211 ActionData blocks without reading the upstream source.
+  - The implementing subagent confirmed each uncertain pairing with eMush before changing anything:
+    - open_capsule = OPEN;
+    - icarus_takeoff = TAKEOFF_TO_PLANET (2%);
+    - land_on_planet = TAKEOFF_TO_PLANET_PATROL_SHIP (5%).
+- **What needed correction:**
+  - The extra rolls shift the seeded RNG sequence, so three seeded bot tests in `server/tests/goals.test.ts` drifted, and two tests that expected the action's own line to be the last log entry broke.
+  - Three implemented-rules claims turned out to be wrong: graft has no dirt, take_oxygen has 15% dirt, and the capsule's injury is not built.
+  - A stale cook comment that said "owner: 25%" injury was fixed.
 
 ### 2026-11-25: The iTrackie as a private item
 
@@ -5481,3 +5492,9 @@ Correction (owner): dropped the fifth paragraph (pending samples, assays, Mush s
 - **Edge cases asked (owner, same day):** a wrecked patrol ship would have scattered a dropped iTrackie as debris anyone could collect; the owner answered by banning all drops (and hides) in a patrol ship in flight. The expedition lost-item event may still take an iTrackie.
 - **Needed correction:** I first named the field `owner`, but the Infantryman's customized blaster already used `ItemState.owner` with another meaning (visible to all, only the owner fires it). The typecheck caught the duplicate key; reusing it would have hidden those blasters from everyone else. Renamed to `privateTo`. Lesson: grep the type for a field name before adding one.
 - **What worked:** the visibility of take/drop is per type, so the busy bar, sitting and the iso walk would have shown a private pickup publicly; `actionVisibility` now takes the named item's type (`actionItemType`) on both server and client.
+
+## Drug names (2026-11-25)
+
+- **Asked:** give the 12 drugs their real names instead of "Drug 0".."Drug 11".
+- **What worked:** the original's icons are only numbered (`drug_N.jpg`) and its name list (`Text.drug_name`) isn't in the archive, so the number-to-name mapping came from matching SHA-1s: every `Mush/www/img/icons/items/drug_N.jpg` is byte-identical to one eMushpedia `Item-<name>.jpg` (and the French wiki's `Objet-<name>.jpg`), 12 of 12. Names per language came from `npm run emush -- translations items <lang>` (a subcommand not listed in the usage text; `find` wasted several guesses first).
+- **Decision:** kept the `drug_N` ids (they match the icon files) and changed only `names.{en,fr,es}.json`; the mapping is in a comment on `DRUG_ITEMS`. eMush's Spanish file names Newke "Japiyú" (a copy of Bacta's); its short name and the Spanish wiki say "Nuke", so that was used.

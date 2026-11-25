@@ -82,7 +82,7 @@ describe("sabotage", () => {
     expect(option(s, "p0", sabotage({ equipment: SHOWER }))).toMatchObject({ chance: s.config.repair.chance.SHOWER, cost: { ap: 1 } });
     expect(option(s, "p0", sabotage({ item: "knife" }))?.chance).toBe(0.5);
     expect(option(s, "p0", sabotage({ item: "wrench" }))?.chance).toBe(s.config.sabotage.defaultChance);
-    expect(s.config.sabotage).toEqual({ cost: { ap: 1 }, defaultChance: 0.12, sapperFactor: 3 });
+    expect(s.config.sabotage).toEqual({ cost: { ap: 1 }, defaultChance: 0.12, sapperFactor: 3, dirtyChance: 0.25 });
   });
 
   it("breaks equipment, and spends the AP", () => {

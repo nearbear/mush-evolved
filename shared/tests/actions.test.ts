@@ -40,7 +40,56 @@ describe("action registry", () => {
       ACTIONS.shower.injuryChance?.(state, actor, { type: "shower", equipment: "" }),
       ACTIONS.take.injuryChance?.(state, actor, { type: "take", item: "" }),
       ACTIONS.drop.injuryChance?.(state, actor, { type: "drop", item: "" }),
-    ]).toEqual([0.05, 0.05, 0.02, 0.05, 0.02, 0.01, 0.01]);
+    ]).toEqual([0.05, 0.05, 0.02, 0.05, 0.02, 0.01, 0]);
+  });
+
+  // Owner, 2026-11-25: these actions' dirt and injury odds are eMush's (ActionData's percentageDirtiness / percentageInjury).
+  it("uses eMush's dirt and injury odds per action", () => {
+    const state = createGame(seats, DEFAULT_CONFIG, 1);
+    const actor = state.players[0]!;
+    const odds = <T,>(def: { dirtChance(s: typeof state, p: typeof actor, t: T): number; injuryChance(s: typeof state, p: typeof actor, t: T): number }, t: T) => [
+      def.dirtChance(state, actor, t),
+      def.injuryChance(state, actor, t),
+    ];
+    expect({
+      repair: odds(ACTIONS.repair, { type: "repair", equipment: "" }),
+      sabotage: odds(ACTIONS.sabotage, { type: "sabotage", equipment: "" }),
+      sabotage_door: odds(ACTIONS.sabotage_door, { type: "sabotage_door", door: "" }),
+      repair_hull: odds(ACTIONS.repair_hull, { type: "repair_hull", item: "" }),
+      extinguish: odds(ACTIONS.extinguish, { type: "extinguish", item: "" }),
+      extinguish_manually: odds(ACTIONS.extinguish_manually, { type: "extinguish_manually" }),
+      surgery_other: odds(ACTIONS.surgery, { type: "surgery", target: "p1" }),
+      surgery_self: odds(ACTIONS.surgery, { type: "surgery", target: actor.id }),
+      cook: odds(ACTIONS.cook, { type: "cook", item: "" }),
+      take_oxygen: odds(ACTIONS.take_oxygen, { type: "take_oxygen", equipment: "" }),
+      return_oxygen: odds(ACTIONS.return_oxygen, { type: "return_oxygen", equipment: "" }),
+      graft: odds(ACTIONS.graft, { type: "graft", item: "", fruit: "" }),
+      use_bandage: odds(ACTIONS.use_bandage, { type: "use_bandage", target: "" }),
+      check_jukebox: odds(ACTIONS.check_jukebox, { type: "check_jukebox", equipment: "" }),
+      reinforce: odds(ACTIONS.reinforce, { type: "reinforce", equipment: "" }),
+      open_capsule: odds(ACTIONS.open_capsule, { type: "open_capsule", item: "" }),
+      icarus_takeoff: odds(ACTIONS.icarus_takeoff, { type: "icarus_takeoff" }),
+      land_on_planet: odds(ACTIONS.land_on_planet, { type: "land_on_planet", equipment: "" }),
+    }).toEqual({
+      repair: [0.25, 0.05],
+      sabotage: [0.25, 0],
+      sabotage_door: [0.25, 0],
+      repair_hull: [0.25, 0.05],
+      extinguish: [0.15, 0.01],
+      extinguish_manually: [0.25, 0.5],
+      surgery_other: [0.25, 0],
+      surgery_self: [1, 0],
+      cook: [0.25, 0.02],
+      take_oxygen: [0, 0],
+      return_oxygen: [0, 0.01],
+      graft: [0.3, 0],
+      use_bandage: [0.05, 0],
+      check_jukebox: [0, 0.01],
+      reinforce: [0.5, 0.2],
+      open_capsule: [0, 0.01],
+      icarus_takeoff: [0, 0.02],
+      land_on_planet: [0, 0.05],
+    });
   });
 
   // Pins the full legal set for p0 at the start (Laboratory: a wrench and

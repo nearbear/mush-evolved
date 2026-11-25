@@ -380,7 +380,7 @@ describe("broken equipment", () => {
     const sure = ship(testConfig({ repair: { chance: { COFFEE_DISPENSER: 1 } } }));
     const fixed = mustApply(broke(sure, COFFEE), "p0", { type: "repair", equipment: COFFEE });
     expect(equipment(fixed, COFFEE).broken).toBeUndefined();
-    expect(fixed.log.at(-1)).toMatchObject({ key: "repaired", room: HERE, visibleTo: "all" });
+    expect(fixed.log.find((e) => e.key === "repaired")).toMatchObject({ room: HERE, visibleTo: "all" });
 
     const never = ship(testConfig({ repair: { chance: { COFFEE_DISPENSER: 0.0001 } } }));
     const failed = mustApply(broke(never, COFFEE), "p0", { type: "repair", equipment: COFFEE });
@@ -580,7 +580,7 @@ describe("fire", () => {
     const out = mustApply(sure, "p0", { type: "extinguish", item: "x" });
     expect(out.fires).toEqual([]);
     expect(out.items.some((i) => i.id === "x")).toBe(true);
-    expect(out.log.at(-1)).toMatchObject({ key: "fireExtinguished", room: HERE, visibleTo: "all" });
+    expect(out.log.find((e) => e.key === "fireExtinguished")).toMatchObject({ room: HERE, visibleTo: "all" });
 
     const never = { ...s, config: { ...s.config, extinguish: { ...s.config.extinguish, chance: 0.0001 } } };
     const failed = mustApply(never, "p0", { type: "extinguish", item: "x" });
