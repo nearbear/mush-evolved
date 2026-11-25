@@ -3,7 +3,7 @@ import { DEFAULT_CONFIG } from "../src/config.ts";
 import { ITEM_TYPES } from "../src/items.ts";
 import { applyAction, createGame, legalActions, viewFor } from "../src/rules.ts";
 import type { GameState } from "../src/types.ts";
-import { makeSeats, must, mustApply, player, testConfig } from "./support.ts";
+import { makeSeats, must, mustApply, option, player, testConfig } from "./support.ts";
 
 /** p0 Mush with Fungal cuisine and spores, p1 Mush, p2 and p3 human; a banana on the floor of everyone's room. */
 function ship(): GameState {
@@ -83,5 +83,23 @@ describe("Fungal cuisine", () => {
     expect([seen("p0"), seen("p1"), seen("p2"), seen("p3")]).toEqual([1, 1, undefined, undefined]);
     expect(viewFor(state, "p0").log.some((e) => e.key === "fungalCooked")).toBe(true);
     for (const id of ["p1", "p2", "p3"]) expect(viewFor(state, id).log.some((e) => e.key === "fungalCooked")).toBe(false);
+  });
+
+  it("spends Cook points for 0 AP even at 0 AP, then falls back to AP", () => {
+    const state = ship();
+    const p0 = player(state, "p0");
+    p0.ap = 0;
+    p0.resources.cook = 1;
+    const action = { type: "fungal_cuisine", item: "i-banana" } as const;
+
+    expect(option(state, "p0", action)).toMatchObject({ cost: { ap: 0, mp: 0, paidBy: "cook" } });
+    const after = must(applyAction(state, "p0", action));
+    expect(player(after, "p0").ap).toBe(0);
+    expect(player(after, "p0").resources.cook).toBe(0);
+    expect(player(after, "p0").spores).toBe(2);
+    expect(item(after)?.spores).toBe(1);
+
+    expect(option(after, "p0", action)).toMatchObject({ cost: { ap: DEFAULT_CONFIG.fungalCuisine.cost.ap, mp: 0 } });
+    expect(applyAction(after, "p0", action)).toEqual({ ok: false, error: "illegal_action" });
   });
 });

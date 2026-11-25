@@ -262,8 +262,8 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   transfert: "full",
   // 50% chance to resist Mush contamination and physical diseases, humans only (owner, 2026-11-14, infection.ts, diseases.ts).
   strong_skin: "full",
-  // Mush skill: spores into food (owner, 2026-10-24, fungal_cuisine.ts); no Cook-point interaction or hyperfreezing.
-  fungus_cook: "partial",
+  // Mush skill: spores into food (owner, 2026-10-24, fungal_cuisine.ts; Cook-point interaction 2026-11-25).
+  fungus_cook: "full",
   // Mush skill: eat a spore for 4 HP and 4 AP (owner, 2026-11-04, actions/consume_spore.ts).
   phagocytosis: "full",
   // Innate Mush skill: every Mush gets one free spore extraction a day without using a slot (owner, 2026-10-27, 2026-11-11, 2026-11-21, actions/extract_spore.ts).

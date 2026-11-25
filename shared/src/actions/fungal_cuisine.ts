@@ -1,4 +1,4 @@
-import { Action, IN_PRESELECTION, type ActionTag, type ActionVisibility, isString } from "./action.ts";
+import { Action, IN_PRESELECTION, type ActionCost, type ActionTag, type ActionVisibility, isString } from "./action.ts";
 import { ITEM_TYPES, canReachItem } from "../items.ts";
 import { logPrivate } from "../log.ts";
 import { hasSkill } from "../skills.ts";
@@ -21,8 +21,9 @@ export class FungalCuisineAction extends Action<FungalCuisineActionData> {
     super("fungal_cuisine", { item: isString });
   }
 
-  override getCost(state: Readonly<GameState>): { ap: number; mp: number } {
-    return { ap: state.config.fungalCuisine.cost.ap, mp: 0 };
+  /** A Cook point (`resources.cook`) makes one use free, like Cook. */
+  override getCost(state: Readonly<GameState>, player: Readonly<PlayerState>): ActionCost {
+    return player.resources.cook > 0 ? { ap: 0, mp: 0, paidBy: "cook" } : { ap: state.config.fungalCuisine.cost.ap, mp: 0 };
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): FungalCuisineActionData[] {
