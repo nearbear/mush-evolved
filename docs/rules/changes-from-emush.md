@@ -20,7 +20,6 @@ This document summarizes the **implemented** gameplay, mechanical, and UI differ
 
 Shared baseline: both games use the same four visibility tiers (Public, Secret, Covert, Private), 8-cycle room log window (16 with Tracker), Tracker-only movement direction in logs, and never let cameras reveal camera sabotage or green jellying.
 
-- **Persistent Tier Badges & Leaked Indicator:** eMush overwrites revealed Secret/Covert logs as Revealed. Mush: Evolved preserves the original tier badge (Private, Secret, Covert) and adds a **leaked** warning indicator when a secret or covert action is witnessed or caught on camera (highlighting leaked covert lines in red).
 - **Observant Rolls Per Holder:** eMush makes one 25% roll if any Observant is in the room. Mush: Evolved rolls **25% independently per living Observant** in the room.
 - **2D Doorway Spot Hidden Without Tracker:** In addition to hiding room-log movement direction, non-Trackers do not see a roommate's doorway entry/exit spot in the 2D room view (roommates fade in/out in place; Drones and Schrödinger still show direction to everyone).
 
@@ -63,7 +62,6 @@ Both games start characters with 0 skills (3 pickable + 1 book slot) and permane
 | **Politician (Coup)** | Once per game at NERON's Core. | **Unlimited uses** (3 AP, 50% dirty, secret, at any working NERON Core); takes effect at the next cycle change if still alive and active. |
 | **Technician & Reinforce** | Reinforce works on unbroken targets only, uses metal scraps only (consumed on failure), and grants a binary Reinforced status. | Engineer points and Technician-only Dismantle match eMush. **Reinforce** (1 AP, 35%) works on **working or broken** targets and auto-picks scrap (+10% metal / +5% plastic, cap 50%, **consumed only on success**): gives percentage resistance to single-pick breakdown incidents, and **25% or more shielding blocks Dismantle and Sabotage**. |
 | **Genius** | Instant Research or Project completion once per game. | Free action granting private Genius status: completes the next **Research** (skipping assay) or **NERON Project** at once, **or** guarantees the next **equipment repair or hull repair** succeeds (excluding PILGRED). |
-| **Bodyguard** | +2 AP on targeted aggressive actions while together; −1 AP discount on Guard. | Reprices queued aggressive actions on the VIP; omits the −1 AP discount on Guard. |
 
 ---
 

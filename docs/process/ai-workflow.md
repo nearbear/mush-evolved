@@ -5316,3 +5316,7 @@ Owner asked to rotate three Mush skill icons (Slime Trap's to Mass Mouldering, M
 ### 2026-11-24 — Global death morale loss (owner)
 - **Decision:** Every non-traded crewmate death (human or Mush, excluding `daedalus_destroyed`) costs every living crewmate (human or Mush) `config.death.moraleLoss` = 1 morale, or `config.death.chunMoraleLoss` = 2 morale when Chun dies (human or Mush), using the standard private `loseMorale` log line (so it doesn't leak deaths when BIOS death announcements are off or a room is defaced). Replaces `config.hopeless.deathMorale` (Hopeless deaths no longer double-charge) and stacks with `share.pregnancy.deathMoraleLoss` (−3 total, or −4 for pregnant Chun).
 - **What worked:** Clarifying the three interactions upfront (Hopeless/pregnancy stacking, `traded`, and private log line) kept the change clean and self-contained in `killPlayer`, `morale.ts`, config, survival telemetry, tests, and docs (`npm run verify`: 4767 tests passed).
+
+### 2026-11-24 — Bodyguard Guard −1 AP discount
+- **Decision (owner):** Added eMush's −1 AP discount on `guard` (free, floored at 0) to the `bodyguard` skill (`config.bodyguard.guardApDiscount = 1`, `actionCost` hook in `shared/src/modifiers/bodyguard.ts`), updated the en/fr/es skill descriptions, and removed Bodyguard from `docs/rules/changes-from-emush.md`.
+- **Notes:** Verified eMush's `Protect.php` and eMushpedia's *Garde du corps* first to confirm Bodyguard only taxes targeted aggressive actions on the VIP and discounts Guard by 1 AP.

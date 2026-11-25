@@ -1851,7 +1851,7 @@
       "mycologist": "Your heal actions remove 1 spore.",
       "frugivore": "You gain 2 extra AP when you eat alien fruit\nYou gain 1 extra AP when eat a banana.",
       "opportunist": "+5 AP the first time you gain each title.",
-      "bodyguard": "For 1 AP, you can Protect another crew member.\nWhile you are in the same room, every aggressive action targeting them costs 2 extra AP.",
+      "bodyguard": "For 1 AP, you can Protect another crew member.\nWhile you are in the same room, every aggressive action targeting them costs 2 extra AP.\nYou can Guard rooms for free.",
       "infantryman": "Doubles your chance to hit with turrets.\n+1 Shoot point per day.\nStarts the game with a customized Blaster.",
       "maintenance_agent": "You gain +1 Repair action point, +1 Gardening action point and +1 Cook action point per day.",
       "pyromane": "For 3 AP you can start a Fire in a room.",

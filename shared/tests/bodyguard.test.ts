@@ -21,6 +21,26 @@ describe("Bodyguard skill and Protect action", () => {
   it("pins the config numbers", () => {
     expect(DEFAULT_CONFIG.bodyguard.cost.ap).toBe(1);
     expect(DEFAULT_CONFIG.bodyguard.aggressiveApSurcharge).toBe(2);
+    expect(DEFAULT_CONFIG.bodyguard.guardApDiscount).toBe(1);
+  });
+
+  it("discounts Guard by 1 AP (free) for a Bodyguard and stacks with Pacifist", () => {
+    const s = ship();
+    const discounted = Math.max(0, base.guard.cost.ap - base.bodyguard.guardApDiscount);
+    expect(costOf(s, "p0", { type: "guard" })!.ap).toBe(discounted);
+    expect(costOf(s, "p1", { type: "guard" })!.ap).toBe(base.guard.cost.ap);
+
+    // Bodyguard can Guard even at 0 AP and spends 0 AP.
+    player(s, "p0").ap = 0;
+    const guarded = mustApply(s, "p0", { type: "guard" });
+    expect(player(guarded, "p0").ap).toBe(0);
+    expect(player(guarded, "p0").statuses).toContain("guardian");
+
+    // Stacks with Pacifist in the room (discounted guard + Pacifist surcharge).
+    const withPacifist = ship();
+    player(withPacifist, "p3").modifiers.push("pacifist");
+    expect(costOf(withPacifist, "p0", { type: "guard" })!.ap).toBe(discounted + base.pacifist.aggressiveApSurcharge);
+    expect(costOf(withPacifist, "p1", { type: "guard" })!.ap).toBe(base.guard.cost.ap + base.pacifist.aggressiveApSurcharge);
   });
 
   it("is offered only to a Bodyguard, for unprotected living roommates, never in preselection", () => {

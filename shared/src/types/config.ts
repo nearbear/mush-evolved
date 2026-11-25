@@ -474,6 +474,7 @@ export interface GameConfig {
   bodyguard: {
     cost: { ap: number }; // AP to Protect a crewmate (owner, 2026-11-14).
     aggressiveApSurcharge: number; // Extra AP for each aggressive action targeting the VIP while both are alive in the same room, theirs too (owner, 2026-11-14).
+    guardApDiscount: number; // AP discount on Guard for a Bodyguard (owner, 2026-11-24).
   };
   ceasefire: {
     cost: { ap: number }; // AP cost of Diplomat's Ceasefire (owner, 2026-11-17).

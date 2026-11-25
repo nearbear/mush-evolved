@@ -331,7 +331,7 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   maintenance_agent: "full",
   // Expedition: -1 damage per hit, +1 Alien Steak on Provision events, and chosen last on Kill events (expeditions.ts).
   survival: "full",
-  // Protect a crewmate for 1 AP; aggressive actions targeting them in the same room cost +2 AP (owner, 2026-11-14, actions/protect.ts, modifiers/bodyguard.ts).
+  // Protect a crewmate for 1 AP; aggressive actions targeting them in the same room cost +2 AP; Guard costs -1 AP (owner, 2026-11-14 & 2026-11-24, actions/protect.ts, modifiers/bodyguard.ts).
   bodyguard: "full",
   // +1 AP on eating a banana and +2 AP on eating an alien fruit, humans only (owner, 2026-11-14, modifiers/frugivore.ts).
   frugivore: "full",

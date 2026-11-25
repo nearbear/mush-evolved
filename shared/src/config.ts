@@ -178,8 +178,8 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   },
   // Owner, 2026-10-18: Ian's Pacifist makes aggressive actions in his room cost 2 more AP, his own included.
   pacifist: { aggressiveApSurcharge: 2 },
-  // Owner, 2026-11-14: Bodyguard's Protect costs 1 AP and adds 2 AP to aggressive actions targeting the VIP while both are together.
-  bodyguard: { cost: { ap: 1 }, aggressiveApSurcharge: 2 },
+  // Owner, 2026-11-14 & 2026-11-24: Bodyguard's Protect costs 1 AP, adds 2 AP to aggressive actions targeting the VIP while both are together, and discounts Guard by 1 AP (free).
+  bodyguard: { cost: { ap: 1 }, aggressiveApSurcharge: 2, guardApDiscount: 1 },
   // Owner, 2026-11-17: Diplomat's Ceasefire costs 1 AP, once per game, blocks aggressive actions in the room for 3 cycles.
   ceasefire: { cost: { ap: 1 }, durationCycles: 3 },
   // Owner, 2026-11-08: while the Stellar antenna is broken, contacting Sol, decoding a rebel base, contacting Xyloph and updating NERON cost this much more AP.
