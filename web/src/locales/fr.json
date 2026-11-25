@@ -338,6 +338,11 @@
     "otherSummary": "Autres ressources : {{list}}",
     "amount": "{{name}} {{count}}",
     "spores": "Spores",
+    "sporesInfo": {
+      "what": "Les spores permettent aux Mush de propager leur infection parmi les humains.",
+      "gain": "<b>Obtention :</b> extrayez-en une de votre propre corps pour {{extractAp}} <ap/>. C'est salissant : vous voilà sale. À eux tous, les Mush peuvent en extraire {{perDay}} par jour, et vous pouvez en porter {{max}} à la fois.",
+      "spend": "<b>Utilisation :</b> contaminez un humain pour {{spikeAp}} <ap/> et 1 spore. Chaque contamination le rapproche de la conversion ; assez de spores, et il rejoint les Mush. Certaines compétences Mush utilisent aussi des spores."
+    },
     "eng": {
       "name": "Points d'Ingénierie",
       "desc": "Les points d'Ingénierie vous donnent des actions gratuites dans les réparations techniques"

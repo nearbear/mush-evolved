@@ -338,6 +338,11 @@
     "otherSummary": "Otros recursos: {{list}}",
     "amount": "{{name}} {{count}}",
     "spores": "Esporas",
+    "sporesInfo": {
+      "what": "Las esporas son la forma en que los Mush propagan su infección entre los humanos.",
+      "gain": "<b>Se obtienen:</b> extrae una de tu propio cuerpo por {{extractAp}} <ap/>. Es un trabajo engorroso y te deja sucio. Entre todos, los Mush pueden extraer {{perDay}} al día, y puedes llevar {{max}} a la vez.",
+      "spend": "<b>Se gastan:</b> contagia a un humano por {{spikeAp}} <ap/> y 1 espora. Cada contagio lo acerca a la conversión; con suficientes, se une a los Mush. Algunas habilidades Mush también usan esporas."
+    },
     "eng": {
       "name": "Puntos de Ingeniería",
       "desc": "Los puntos de Ingeniería te dan acciones gratuitas en las reparaciones técnicas."

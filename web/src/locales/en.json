@@ -326,6 +326,11 @@
     "otherSummary": "Other resources: {{list}}",
     "amount": "{{name}} {{count}}",
     "spores": "Spores",
+    "sporesInfo": {
+      "what": "Spores are how the Mush spread their infection to the humans.",
+      "gain": "<b>Gained:</b> extract one from your own body for {{extractAp}} <ap/>. It's messy work and leaves you dirty. Together, the Mush can extract {{perDay}} a day, and you can carry {{max}} at a time.",
+      "spend": "<b>Spent:</b> spike a human for {{spikeAp}} <ap/> and 1 spore. Each spike brings them closer to turning; enough of them and they join the Mush. Some Mush skills use spores too."
+    },
     "eng": {
       "name": "Engineering points",
       "desc": "Engineering points give you free actions on technical repairs."

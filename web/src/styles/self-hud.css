@@ -15,6 +15,11 @@
 .resource-card p {
   margin: var(--space-1) 0 0;
 }
+/* A stat's gem in a line of help text ("1 [AP gem]"), at its own pixel size, sitting on the text's baseline. */
+.inline-stat-icon {
+  vertical-align: -2px;
+  image-rendering: pixelated;
+}
 .resource img {
   image-rendering: pixelated;
 }
@@ -315,7 +320,7 @@
   font-size: 0.75rem;
   text-shadow: none;
 }
-/* Nothing to open when every resource shows (CompactResourceChips): a plain row. */
+/* When every resource shows (CompactResourceChips) the row itself opens nothing: each chip opens its own card. */
 .id-points > .resource-stack[role="group"] {
   cursor: default;
 }
