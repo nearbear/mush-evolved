@@ -867,6 +867,7 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     inactivity: _inactivity,
     lyingSince: _lyingSince,
     enteredFrom: _enteredFrom,
+    enteredRoomAt: _enteredRoomAt,
     treatDiseaseUntil: _treatDiseaseUntil,
     energizeUntil: _energizeUntil,
     perceptionUntil: _perceptionUntil,

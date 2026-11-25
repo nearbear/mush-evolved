@@ -198,7 +198,7 @@ export function runExpedition(state: GameState, launcher: PlayerState, ship?: Pa
   } else {
     logPublic(state, rules.room, "icarusTakeoff", { name: launcher.character, planet: planet.name });
     // The boarded crew waited in the bay (#469); now they are in the Icarus.
-    for (const p of crew) board(p, rules.craft);
+    for (const p of crew) board(state, p, rules.craft);
   }
 
   const report: ExpeditionReport = {
@@ -325,7 +325,7 @@ function returnExpedition(state: GameState): void {
   for (const id of report.members) {
     const p = state.players.find((q) => q.id === id)!;
     if (!ship && p.alive && p.room === craft) {
-      board(p, rules.room);
+      board(state, p, rules.room);
       // A ship with ICARUS_LAVATORY keeps its crew clean.
       if (!projectDone(state, "ICARUS_LAVATORY") && rollFloat(state) < rules.dirtyChance) soil(state, p);
     }
@@ -665,7 +665,7 @@ function getLost(ctx: Ctx, event: ExpeditionEvent, pool: PlayerState[]): void {
   }
   const p = pool[rollInt(state, pool.length)]!;
   event.who = p.character;
-  board(p, lostPlace(p.id));
+  board(state, p, lostPlace(p.id));
   (report.lostAt ??= {})[p.id] = report.events.length + 1;
   planet.sectors.push({ tag: "LOST", known: true });
   ctx.redraw = true;
@@ -695,7 +695,7 @@ function find(ctx: Ctx, event: ExpeditionEvent): void {
   if (!p.alive && !state.config.expedition.deadKeepItems) state.items = state.items.filter((i) => !left(i) || i.type === CORPSE_ITEM);
   for (const item of state.items) if (left(item)) item.at = { kind: "room", id: craft };
   if (!p.alive) return;
-  board(p, craft);
+  board(state, p, craft);
   recoverShip(state, p);
   if (!report.members.includes(p.id)) {
     report.members.push(p.id);

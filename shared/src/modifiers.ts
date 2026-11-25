@@ -57,7 +57,7 @@ import { chronic_vertigo } from "./modifiers/chronic_vertigo.ts";
 import { immunity } from "./modifiers/immunity.ts";
 import { mankind_only_hope } from "./modifiers/mankind_only_hope.ts";
 import { pacifist } from "./modifiers/pacifist.ts";
-import { wheelchair } from "./modifiers/wheelchair.ts";
+import { wheelchair, wheelchairHelpers } from "./modifiers/wheelchair.ts";
 import { lying_down } from "./modifiers/lying_down.ts";
 import { cold_disease } from "./modifiers/cold_disease.ts";
 import { extreme_tinnitus_disease } from "./modifiers/extreme_tinnitus_disease.ts";
@@ -689,6 +689,8 @@ export function movementRules(
   // Broken or restarting (gravity.ts): conversions give less, and a heavy item weighs nothing (owner, 2026-11-22, eMush's Burdened).
   if (noGravity(state)) rules.mpPerConversion = Math.max(0, rules.mpPerConversion - state.config.gravitySimulator.brokenMpPenalty);
   else if (carriesHeavy(state, player)) rules.mpPerMove += fold("heavyMpPenalty", state.config.heavy.mpPenalty, state, player, registry);
+  // Terrence's wheelchair (owner, 2026-11-24): leaving a room with a qualifying helper is free (0 MP), waiving heavy/injury MP costs too.
+  if (wheelchairHelpers(state, player).length > 0) rules.mpPerMove = 0;
   return rules;
 }
 

@@ -129,6 +129,7 @@ export const PLAYER_STATE_FIELDS: Record<string, FieldRule> = {
   boardedIcarus: { reach: "room", test: "expeditions.test.ts", note: "As `OtherPlayerView.boarded`, to the bay (#469)." },
   lyingSince: { reach: "never", test: "leaks.test.ts", note: "Lethargy's count; only its AP reaches the owner." },
   enteredFrom: { reach: "never", test: "guard.test.ts", note: "Only the server reads it, to block doors while a guardian is in the room; the allowed moves already reflect it." },
+  enteredRoomAt: { reach: "never", test: "leaks.test.ts", note: "Server ms when the body entered its current room, for Terrence's 30s wheelchair helper timer." },
   spot: { reach: "room", test: "leaks.test.ts", note: "A door spot (the door they came in by) only to a Tracker in the room (owner, 2026-11-21; logWindow.test.ts)." },
   pushedBy: { reach: "room", test: "leaks.test.ts", note: "Also as the public `accommodated` status." },
   accommodationOffers: { reach: "own", test: "leaks.test.ts", note: "The offers themselves are public room log lines." },

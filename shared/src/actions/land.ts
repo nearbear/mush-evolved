@@ -56,7 +56,7 @@ export class LandAction extends Action<LandActionData> {
  * silently. Mutates a cloned state.
  */
 export function dock(state: GameState, player: PlayerState | null, ship: PatrolShip): void {
-  if (player) board(player, ship.bay);
+  if (player) board(state, player, ship.bay);
   const shipState = state.patrolShips[ship.id]!;
   shipState.out = false;
   shipState.onPlanet = null;
@@ -79,6 +79,6 @@ export function pullShipsAboard(state: GameState): void {
   for (const ship of shipsInFlight(state)) {
     const [pilot, ...others] = state.players.filter((p) => p.alive && p.room === ship.id);
     dock(state, pilot ?? null, ship);
-    for (const p of others) board(p, ship.bay);
+    for (const p of others) board(state, p, ship.bay);
   }
 }

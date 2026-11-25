@@ -5320,3 +5320,12 @@ Owner asked to rotate three Mush skill icons (Slime Trap's to Mass Mouldering, M
 ### 2026-11-24 — Bodyguard Guard −1 AP discount
 - **Decision (owner):** Added eMush's −1 AP discount on `guard` (free, floored at 0) to the `bodyguard` skill (`config.bodyguard.guardApDiscount = 1`, `actionCost` hook in `shared/src/modifiers/bodyguard.ts`), updated the en/fr/es skill descriptions, and removed Bodyguard from `docs/rules/changes-from-emush.md`.
 - **Notes:** Verified eMush's `Protect.php` and eMushpedia's *Garde du corps* first to confirm Bodyguard only taxes targeted aggressive actions on the VIP and discounts Guard by 1 AP.
+
+## 2026-11-24 — Pyromaniac AP cost (reverted to 4 AP)
+
+- **Decision (owner):** Revert Pyromaniac (`ignite`, `shared/src/actions/ignite.ts`, `config.ignite.cost.ap`) from 3 AP back to 4 AP, matching eMush.
+- **Process:** Updated config, test, and docs (`rules-design.md`, `implemented-rules.md`, removed the entry from `changes-from-emush.md`).
+
+### 2026-11-24: Terrence's Wheelchair passive updated to match eMush
+- **Decision (owner):** Added eMush's -2 MP solo AP-to-MP conversion penalty and free exit (0 MP, waiving heavy items and Broken Ribs, with a public room log naming a helper) when an awake, active, non-comatose living roommate has stood in the room for at least 30 seconds (preventing infinite pursuer evasion). Applies to Mush Terrence too; Accommodate stays for players who don't want to wait 30s.
+- **What worked:** Tracking `PlayerState.enteredRoomAt` (server-only, unset at launch, set in `arrive`/`board`) and hooking `nextWheelchairHelpAt` into `nextDue`/`tick` kept the rules pure and automatically wakes the server at the 30s mark.

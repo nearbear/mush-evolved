@@ -1,5 +1,4 @@
 import { Action, type ActionCost, isString } from "./action.ts";
-import { leaveAccommodation } from "../accommodation.ts";
 import { wheelAlong } from "./accommodate.ts";
 import { logPublic } from "../log.ts";
 import { isBlocked } from "./guard.ts";
@@ -7,6 +6,7 @@ import { attackWithHeldWeapon } from "./attack.ts";
 import { arrive } from "../spot.ts";
 import { isDoorBroken } from "../doors.ts";
 import { enterRoom, enteredRoom, moveCost, movementRules } from "../modifiers.ts";
+import { wheelchairHelpers } from "../modifiers/wheelchair.ts";
 import { activeScooter } from "../items.ts";
 import { hasSkill } from "../skills.ts";
 import type { GameState, PlayerState } from "../types.ts";
@@ -53,11 +53,11 @@ export class MoveAction extends Action<MoveActionData> {
       if (scooter) scooter.charges = scooter.charges! - 1;
     }
     const from = player.room;
-    player.room = target.to;
-    arrive(player, from);
+    const helper = wheelchairHelpers(state, player)[0];
+    arrive(state, player, target.to, from);
+    if (helper) logPublic(state, from, "wheelchairHelped", { name: helper.character, target: player.character });
     logPublic(state, from, "left", { name: player.character, room: target.to });
     logPublic(state, target.to, "entered", { name: player.character, room: from });
-    leaveAccommodation(state, player);
     wheelAlong(state, player, from);
     enteredRoom(state, player, { attackWithHeldWeapon });
     enterRoom(state, player);

@@ -15,6 +15,7 @@
 import { ACTIONS, actionVisibility, type ActionDef } from "./actions.ts";
 import { expeditionStep } from "./expeditions.ts";
 import { endAccommodationToAct, expireOffers } from "./actions/accommodate.ts";
+import { nextWheelchairHelpAt } from "./modifiers/wheelchair.ts";
 import { cloneState, fail, findPlayer, type ActionResult } from "./helpers.ts";
 import { logPrivate } from "./log.ts";
 import { dropped, emptyQueue } from "./queueCore.ts";
@@ -96,6 +97,8 @@ export function dropQueues(state: GameState): ActionResult {
 export function nextDue(state: Readonly<GameState>): number | null {
   const due = state.players.flatMap((p) => [...(p.current ? [p.current.until] : []), ...(p.accommodationOffers ?? []).map((o) => o.until)]);
   if (state.expedition && state.phase === "playing") due.push(state.expedition.nextAt);
+  const wheelchairHelp = nextWheelchairHelpAt(state);
+  if (wheelchairHelp !== null) due.push(wheelchairHelp);
   return due.length > 0 ? Math.min(...due) : null;
 }
 
@@ -112,7 +115,9 @@ export function tick(state: GameState, at: number): ActionResult {
     .sort((a, b) => a.current!.until - b.current!.until)
     .map((p) => p.id);
   const lapsing = state.players.some((p) => p.accommodationOffers?.some((o) => o.until <= at));
-  if (due.length === 0 && !lapsing && !stepDue(state)) return fail("nothing_due");
+  const helpAt = nextWheelchairHelpAt(state);
+  const helping = helpAt !== null && helpAt <= at;
+  if (due.length === 0 && !lapsing && !helping && !stepDue(state)) return fail("nothing_due");
   const next = cloneState(state);
   next.now = at;
   expireOffers(next);

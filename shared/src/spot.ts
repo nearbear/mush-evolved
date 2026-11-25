@@ -9,7 +9,9 @@
 // an `occupancy` spot, set here so "free" is the server's to say. Closing the window gets you up: the client sends a
 // walk, as it does for any walk, and moving rooms does too. Roommates see it as the Focused status.
 
+import { leaveAccommodation } from "./accommodation.ts";
 import type { ActionDef } from "./actions.ts";
+import { getUp } from "./bed.ts";
 import { SHIP_ROOMS } from "./config.ts";
 import { isComatose, removeStatus } from "./statuses.ts";
 import { cloneState, fail, findPlayer, type ActionResult } from "./helpers.ts";
@@ -51,13 +53,26 @@ export function standUp(p: PlayerState, action: Pick<ActionDef<Action>, "visibil
   if (action.visibility === "public" && p.spot?.kind === "cell") delete p.spot.sitting;
 }
 
-/** You came into your room through the door from `from`: you stand in front of it until you walk off. Mutates a cloned state. */
-export function arrive(p: PlayerState, from: RoomId): void {
-  p.spot = { kind: "door", door: from } satisfies Spot;
-  p.enteredFrom = from;
+/**
+ * Moves `p` into `room` and clears room-local state (bed, accommodation offers, guarding, hacked terminals, boarded
+ * Icarus), stamping `enteredRoomAt` from `state.now`. Both `arrive` (door moves) and `board` (non-door moves) go
+ * through this.
+ */
+export function setRoom(state: GameState, p: PlayerState, room: RoomId): void {
+  getUp(p);
+  leaveAccommodation(state, p);
+  p.room = room;
+  p.enteredRoomAt = state.now;
   removeStatus(p, "guardian"); // changing room ends guarding (guard.ts)
   delete p.hackedEquipment;
   delete p.boardedIcarus; // leaving the Icarus Bay gets you off the docked Icarus (#469)
+}
+
+/** You came into `to` through the door from `from`: you stand in front of it until you walk off. Mutates a cloned state. */
+export function arrive(state: GameState, p: PlayerState, to: RoomId, from: RoomId): void {
+  setRoom(state, p, to);
+  p.spot = { kind: "door", door: from } satisfies Spot;
+  p.enteredFrom = from;
 }
 
 /** The cells of the chairs at a terminal, from the map (`ShipRoom` equipment's `chairs`); none for most equipment. */

@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { endsAccommodation } from "../src/actionTarget.ts";
 import { killPlayer } from "../src/death.ts";
+import { movementRules } from "../src/modifiers.ts";
 import { nextDue, queueAction, tick } from "../src/queue.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { overheadStatuses } from "../src/statuses.ts";
 import type { Action, GameState } from "../src/types.ts";
-import { clone, makeSeats, must, mustApply, offered, player, testConfig } from "./support.ts";
+import { clone, costOf, makeSeats, must, mustApply, offered, player, testConfig } from "./support.ts";
 
 // p0 is Terrence; p1 and p2 are not. Everyone starts in the laboratory.
 const HERE = "LABORATORY";
@@ -201,5 +202,119 @@ describe("the wheelchair trait", () => {
     const s = ship();
     expect(viewFor(s, "p1").players.find((p) => p.id === "p0")!.statuses).toContain("wheelchair");
     expect(overheadStatuses(["wheelchair", "accommodated"])).toEqual(["accommodated"]);
+  });
+
+  it("pins the configured wheelchair numbers (-2 MP conversion, 30s helper delay)", () => {
+    expect([config.wheelchair.conversionMpPenalty, config.wheelchair.helpDelayMs]).toEqual([2, 30_000]);
+  });
+
+  it("reduces solo AP-to-MP conversion by 2 MP (and restores with Sprinter)", () => {
+    const s = ship();
+    player(s, "p1").room = NEXT;
+    player(s, "p2").room = NEXT;
+    const base = config.movement.mpPerConversion;
+    const pen = config.wheelchair.conversionMpPenalty;
+    expect(movementRules(s, player(s, "p0")).mpPerConversion).toBe(base - pen);
+    const t0 = player(s, "p0");
+    const moved = mustApply(s, "p0", move);
+    expect(player(moved, "p0").ap).toBe(t0.ap - config.movement.apPerConversion);
+    expect(player(moved, "p0").mp).toBe(base - pen - config.movement.mpPerMove);
+
+    player(s, "p0").skills.push("sprint");
+    expect(movementRules(s, player(s, "p0")).mpPerConversion).toBe(base + config.sprinter.extraMpPerConversion - pen);
+  });
+
+  it("blocks solo AP-to-MP conversion when gravity is broken, but still allows a free exit with a helper", () => {
+    const s = ship();
+    const sim = Object.values(s.equipment).flat().find((e) => e.type === "GRAVITY_SIMULATOR")!;
+    sim.broken = true;
+    // With a qualifying helper (started in the same room), moving is free even with 0 AP and 0 MP.
+    player(s, "p0").ap = 0;
+    player(s, "p0").mp = 0;
+    expect(costOf(s, "p0", move)).toEqual({ ap: 0, mp: 0 });
+    expect(applyAction(s, "p0", move).ok).toBe(true);
+
+    // Alone, conversion yields 0 MP so he cannot move.
+    player(s, "p1").room = NEXT;
+    player(s, "p2").room = NEXT;
+    player(s, "p0").ap = 5;
+    expect(movementRules(s, player(s, "p0")).mpPerConversion).toBe(0);
+    expect(applyAction(s, "p0", move).ok).toBe(false);
+  });
+
+  it("waits 30s after a roommate enters before unlocking a free move, and schedules nextDue / tick for it", () => {
+    const { durationMs } = config.action;
+    const delay = config.wheelchair.helpDelayMs;
+    const T0 = 1_000_000;
+    const s0 = ship();
+    // Terrence is alone in HERE; p1 is in NEXT and walks in.
+    player(s0, "p1").room = NEXT;
+    player(s0, "p2").room = NEXT;
+    const enterHere: Action = { type: "move", to: HERE };
+    let s = must(queueAction(s0, "p1", enterHere, T0));
+    const arrivedAt = T0 + durationMs;
+    s = must(tick(s, arrivedAt));
+    expect(player(s, "p1").room).toBe(HERE);
+    expect(player(s, "p1").enteredRoomAt).toBe(arrivedAt);
+
+    // Right after p1 arrives, Terrence does NOT get a free move (prevents evading pursuers).
+    expect(movementRules(s, player(s, "p0")).mpPerMove).toBe(config.movement.mpPerMove);
+    expect(costOf(s, "p0", move)).toEqual({ ap: config.movement.apPerConversion, mp: 0 });
+
+    // nextDue wakes at arrivedAt + 30s.
+    const readyAt = arrivedAt + delay;
+    expect(nextDue(s)).toBe(readyAt);
+    expect(tick(s, readyAt - 1).ok).toBe(false);
+
+    // Once 30s have elapsed, tick succeeds, moving is free, and nextDue clears.
+    const ready = must(tick(s, readyAt));
+    expect(movementRules(ready, player(ready, "p0")).mpPerMove).toBe(0);
+    expect(costOf(ready, "p0", move)).toEqual({ ap: 0, mp: 0 });
+    expect(nextDue(ready)).toBeNull();
+
+    // Leaving for free spends 0 AP and 0 MP and writes a public wheelchairHelped log naming the helper.
+    player(ready, "p0").ap = 0;
+    player(ready, "p0").mp = 0;
+    const left = mustApply(ready, "p0", move);
+    expect(player(left, "p0").room).toBe(NEXT);
+    expect([player(left, "p0").ap, player(left, "p0").mp]).toEqual([0, 0]);
+    const helped = left.log.find((e) => e.key === "wheelchairHelped");
+    expect(helped).toBeDefined();
+    expect(helped?.room).toBe(HERE);
+    expect(helped?.visibleTo).toBe("all");
+    expect(helped?.params).toEqual({ name: player(ready, "p1").character, target: "terrence" });
+  });
+
+  it("ignores roommates who are lying down, comatose, inactive, or dead", () => {
+    const base = ship();
+    player(base, "p2").room = NEXT;
+    const cases: Array<[string, (s: GameState) => void]> = [
+      ["lying down", (s) => { player(s, "p1").modifiers.push("lying_down"); player(s, "p1").lyingIn = "BED"; }],
+      ["comatose", (s) => { player(s, "p1").comaUntil = s.cycle + 2; }],
+      ["inactive", (s) => { player(s, "p1").inactivity = "inactive"; }],
+      ["super_inactive", (s) => { player(s, "p1").inactivity = "super_inactive"; }],
+      ["dead", (s) => { killPlayer(s, player(s, "p1"), "injury"); }],
+    ];
+    for (const [label, mutate] of cases) {
+      const s = clone(base);
+      player(s, "p1").enteredRoomAt = 100;
+      mutate(s);
+      expect(movementRules(s, player(s, "p0")).mpPerMove, label).toBe(config.movement.mpPerMove);
+      expect(nextDue(s), label).toBeNull();
+    }
+  });
+
+  it("waives heavy-item and Broken Ribs MP costs when helped, and still applies to a Mush Terrence", () => {
+    const s = ship();
+    player(s, "p0").role = "mush";
+    player(s, "p0").modifiers.push("broken_ribs_injury");
+    s.items.push({ id: "heavy-1", type: "spacesuit", at: { kind: "player", id: "p0" } });
+    // With a qualifying helper: 0 MP despite heavy item + Broken Ribs + Mush role.
+    expect(movementRules(s, player(s, "p0")).mpPerMove).toBe(0);
+    // Alone as Mush: still gets the -2 MP conversion penalty.
+    player(s, "p1").room = NEXT;
+    player(s, "p2").room = NEXT;
+    expect(movementRules(s, player(s, "p0")).mpPerConversion).toBe(config.movement.mpPerConversion - config.wheelchair.conversionMpPenalty);
+    expect(movementRules(s, player(s, "p0")).mpPerMove).toBeGreaterThan(config.movement.mpPerMove);
   });
 });

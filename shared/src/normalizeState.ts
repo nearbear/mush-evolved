@@ -644,6 +644,7 @@ export function normalizePlayer(raw: Partial<PlayerState>, mode: QueueMode): Pla
     room: need(raw, "room", t),
     spot: opt(raw.spot, normalizeSpot),
     enteredFrom: raw.enteredFrom,
+    enteredRoomAt: raw.enteredRoomAt,
     ap: need(raw, "ap", t),
     maxAp: need(raw, "maxAp", t),
     lyingIn: raw.lyingIn,

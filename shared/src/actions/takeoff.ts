@@ -7,7 +7,7 @@ import { isTraveling } from "../navigation.ts";
 import { cleanManoeuvreChance } from "../modifiers.ts";
 import { canFly, canTakeoff, dockedHere, groundedBy, interfaceId, PATROL_SHIPS, type PatrolShip } from "../patrol.ts";
 import { roll, rollFloat } from "../rng.ts";
-import { removeStatus } from "../statuses.ts";
+import { setRoom } from "../spot.ts";
 import type { GameState, PlayerState, RoomId } from "../types.ts";
 
 export type TakeoffActionData = { type: "takeoff"; equipment: string };
@@ -52,19 +52,16 @@ export class TakeoffAction extends Action<TakeoffActionData> {
     endPushToLeave(state, player);
     logSecret(state, player.id, "patrolTakeoff", { name: player.character, room: ship.id });
     state.patrolShips[ship.id]!.out = true;
-    board(player, ship.id);
+    board(state, player, ship.id);
     manoeuvre(state, player, ship);
   }
 }
 
 /** Into the ship's room (takeoff) or back to the bay (landing). Nobody stands at a door: a ship has none. */
-export function board(player: PlayerState, room: RoomId): void {
-  player.room = room;
+export function board(state: GameState, player: PlayerState, room: RoomId): void {
+  setRoom(state, player, room);
   delete player.spot;
   delete player.enteredFrom;
-  removeStatus(player, "guardian"); // changing room ends guarding (guard.ts)
-  delete player.hackedEquipment;
-  delete player.boardedIcarus; // changing room gets you off the docked Icarus (#469)
 }
 
 /**

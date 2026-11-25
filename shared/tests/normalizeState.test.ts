@@ -68,6 +68,7 @@ function handFilled() {
     bodyTakenBy: b.character,
     spot: { kind: "door", door: "BRIDGE" },
     enteredFrom: "BRIDGE",
+    enteredRoomAt: 1234,
     lyingIn: "BED",
     lyingSince: 2,
     pushedBy: b.id,

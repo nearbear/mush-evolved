@@ -21,7 +21,7 @@ This document summarizes the **implemented** gameplay, mechanical, and UI differ
 Shared baseline: both games use the same four visibility tiers (Public, Secret, Covert, Private), 8-cycle room log window (16 with Tracker), Tracker-only movement direction in logs, and never let cameras reveal camera sabotage or green jellying.
 
 - **Observant Rolls Per Holder:** eMush makes one 25% roll if any Observant is in the room. Mush: Evolved rolls **25% independently per living Observant** in the room.
-- **2D Doorway Spot Hidden Without Tracker:** In addition to hiding room-log movement direction, non-Trackers do not see a roommate's doorway entry/exit spot in the 2D room view (roommates fade in/out in place; Drones and Schrödinger still show direction to everyone).
+- **NPC Movement Direction Visible to Everyone:** Drones, Schrödinger, and hostile NPCs always show their movement direction in room logs without needing Tracker.
 
 ### Chat, Channels, and Signals
 
@@ -50,7 +50,7 @@ Both games start characters with 0 skills (3 pickable + 1 book slot) and permane
 | :--- | :--- | :--- |
 | **Chun** | **Mankind's Only Hope** | Her death inflicts **−2** total crew morale (rather than eMush's −3). |
 | **Eleesha** | **Chronic Vertigo** | A **permanent, public trait** instead of eMush's curable disorder (no cure, no psychiatrist, no time limit), and it **applies to a Mush Eleesha too**. Same symptom: she can't take off (patrol ship, Pasiphae, Icarus launch) or land a ship on a planet, but can ride the Icarus as a passenger. Take off shows disabled with the reason instead of being hidden (so do the Gastroenteritis and Slight Nausea groundings). |
-| **Terrence** | **Wheelchair** | Replaces eMush's solo AP-to-MP conversion penalty with **Accommodate**: any roommate can offer to push him for 0 AP (offers expire in 5 minutes). While pushed, Terrence moves with and is steered by his pusher for 0 MP until any public action on equipment or another person ends the push. |
+| **Terrence** | **Wheelchair** | Keeps eMush's **−2 MP** AP-to-MP conversion penalty and free exit with a roommate (public log naming a helper, waiving all MP including heavy items and Broken Ribs), but requires an **awake, active, non-comatose** roommate to have stood in the room for at least **30 seconds** (so Terrence can't infinitely evade pursuers), and adds **Accommodate** (any roommate can offer to push him for 0 AP without waiting 30 seconds; offers expire in 5 minutes; while pushed he moves with and is steered by his pusher for 0 MP until any public action on equipment or another person ends the push). |
 
 ### Reworked Human Skills & Actions
 
@@ -93,7 +93,6 @@ Both games start characters with 0 skills (3 pickable + 1 book slot) and permane
 | **Doorman** | Once per day (0 AP) on a **random** working door in the room. | Lets the Mush **choose which working door** in the room to break, with **no daily limit** (**first use each day is 0 AP**, subsequent uses cost **2 AP**). |
 | **Nimble Fingers** | Grants secret camera install/remove actions only. | **0 AP instant toggle** (enter/exit Nimble mode, private status). While active, all room-level **Public** actions (including movement) become **Secret** when unwitnessed and unfilmed (staying plain Public if witnessed/filmed so Nimble mode doesn't leak). |
 | **Hard-boiled** | Takes 1 off each non-critical combat hit (not expeditions), stacking with Plastenite Armor; a 1-damage hit is fully absorbed (0 damage). | Same reduction and stacking, but armor and Hard-boiled together **never reduce a hit below 1 damage**: a 1-damage hit goes through whole and no punch or weapon hit is fully absorbed. Plastenite Armor alone has the same floor of 1, including in expedition fights. |
-| **Pyromaniac** | Costs **4 AP** to start a fire. | Costs **3 AP**. |
 
 ---
 

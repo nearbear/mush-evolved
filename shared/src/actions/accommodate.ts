@@ -1,6 +1,5 @@
 import { leaveTerminal } from "../spot.ts";
 import { Action, peopleHere, isString } from "./action.ts";
-import { getUp } from "./lie_down.ts";
 import { endsAccommodation } from "../actionTarget.ts";
 import { logPublic, withoutActor } from "../log.ts";
 import { arrive } from "../spot.ts";
@@ -65,9 +64,7 @@ export function endPushToLeave(state: GameState, p: PlayerState): void {
 export function wheelAlong(state: GameState, pusher: PlayerState, from: string): void {
   const pushed = pushing(state, pusher);
   if (!pushed) return;
-  getUp(pushed);
-  pushed.room = pusher.room;
-  arrive(pushed, from);
+  arrive(state, pushed, pusher.room, from);
   withoutActor(() => {
     logPublic(state, from, "left", { name: pushed.character, room: pusher.room });
     logPublic(state, pusher.room, "entered", { name: pushed.character, room: from });

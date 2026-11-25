@@ -1,7 +1,6 @@
 import { Action, IN_PRESELECTION, isString, peopleHere, type ActionTag } from "./action.ts";
 import { attackWithHeldWeapon } from "./attack.ts";
-import { getUp } from "./lie_down.ts";
-import { leaveAccommodation, pushing } from "../accommodation.ts";
+import { pushing } from "../accommodation.ts";
 import { isDoorBroken } from "../doors.ts";
 import { hostileHere, hostilesHere } from "../hostiles.ts";
 import { isInactive } from "../inactivity.ts";
@@ -68,14 +67,11 @@ export class ThrowOutAction extends Action<ThrowOutActionData> {
     const from = player.room;
     victim.current = null;
     victim.queue = [];
-    if (victim.modifiers.includes("lying_down")) getUp(victim);
     delete victim.pushedBy;
     const pushed = pushing(state, victim);
     if (pushed) delete pushed.pushedBy;
-    leaveAccommodation(state, victim);
 
-    victim.room = target.to;
-    arrive(victim, from);
+    arrive(state, victim, target.to, from);
     logPublic(state, from, "threwOut", { name: player.character, target: victim.character, room: target.to });
     logPublic(state, target.to, "thrownIn", { target: victim.character, room: from });
     enteredRoom(state, victim, { attackWithHeldWeapon });

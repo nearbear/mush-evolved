@@ -3,8 +3,7 @@
 // are allowed and the sender is a human in the cheat room; `applyKube` checks the last two again. Test tooling, not a
 // game rule. Adding an option is one entry in `KUBE_OPS` plus its translations.
 
-import { leaveAccommodation, pushing } from "./accommodation.ts";
-import { getUp } from "./actions/lie_down.ts";
+import { pushing } from "./accommodation.ts";
 import { warpToNewPlanet } from "./actions/warp_to_planet.ts";
 import { board } from "./actions/takeoff.ts";
 import { updateMaxValues } from "./adjustStats.ts";
@@ -241,9 +240,7 @@ export function teleportBlocked(state: Readonly<GameState>, p: Readonly<PlayerSt
  * a cloned state; the caller checked `teleportBlocked`.
  */
 export function teleport(state: GameState, me: PlayerState, room: RoomId): void {
-  getUp(me);
-  leaveAccommodation(state, me);
-  board(me, room);
+  board(state, me, room);
   enteredRoom(state, me);
   enterRoom(state, me);
 }

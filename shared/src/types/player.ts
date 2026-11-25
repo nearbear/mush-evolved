@@ -76,6 +76,8 @@ export interface PlayerState extends Seat {
   spot?: Spot;
   /** The room whose door you came in by (spot.ts `arrive`); unset if you came another way. Only a guardian in your room reads it (guard.ts). Never sent. */
   enteredFrom?: RoomId;
+  /** Server time (ms) when this body entered its current room; unset until its first room change (wheelchair.ts). Never sent. */
+  enteredRoomAt?: number;
   ap: number;
   maxAp: number;
   /** The bed (equipment id) you are lying in, while you have the `lying_down` modifier. Public to your room (`OtherPlayerView.lying`). */
