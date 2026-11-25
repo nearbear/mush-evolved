@@ -42,11 +42,14 @@ export function ActionLabel({
   cost,
   chance = 1,
   visibility = "public",
+  showChance = false,
 }: {
   text: string;
   cost: ActionCost;
   chance?: number;
   visibility?: ActionVisibility;
+  /** Show the chance even at 100% (the research lab's Progress button, which flips to a sure spoil). */
+  showChance?: boolean;
 }) {
   const { t } = useTranslation();
   const ref = useFitText(`${text}|${cost.ap}|${cost.paidBy}|${chance}|${visibility}`);
@@ -62,7 +65,7 @@ export function ActionLabel({
       {text}
       {cost.ap > 0 && <span className="sr-only">{`, ${cost.ap} ${t("stat.ap")}`}</span>}
       {cost.paidBy && <span className="sr-only">{t("actions.paidBy", { resource: t(`resources.${cost.paidBy}.name`) })}</span>}
-      {chance < 1 && <span className="action-chance">{t("actions.chance", { percent: Math.round(chance * 100) })}</span>}
+      {(chance < 1 || showChance) && <span className="action-chance">{t("actions.chance", { percent: Math.round(chance * 100) })}</span>}
       {visibility !== "public" && <img src={VISIBILITY_ICONS[visibility]} alt={t(`actions.visibility.${visibility}`)} />}
     </span>
   );

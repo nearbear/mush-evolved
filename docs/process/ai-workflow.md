@@ -5418,6 +5418,13 @@ Investigated why the action duration progress bar stayed empty/static in replays
 - New `PlayerView.discardedProjects` (`relayView.ts`): unfinished projects no longer in the proposal deck (a completed project's batch-mates, or taken by a merchant), ids only, to the living at NERON's core like the offered ones. The project terminal gets a Discarded tab after Done; done and discarded rows show the project's description as a caption instead of "Complete". Tests in `shared/tests/projects.test.ts` and a DOM test in `web/tests/hud/projectList.test.tsx`.
 - The leak check (forked skill) found no leak; it noted a player at the core can now tell the remaining deck's set (not its order) and that a NERON update can still complete a discarded project, since it picks from every unfinished one.
 
+## 2026-11-25: Research lab spoil toggle and Progress odds (client only)
+
+- Replaced the per-research "Spoil a sample" buttons with one toggle under the tab line; while on, every Progress button sends that research's `spoil_research` and shows 0%. Off, Progress shows the sample's odds of surviving its assay (1 − `research.spoilChance`, read from `DEFAULT_CONFIG` since the view doesn't carry it). The toggle is component state, so it resets whenever the terminal closes. No backend change.
+- Added an empty "Research basics" `TerminalCollapsible` for the owner to fill later, and dropped the verbose relay tooltip (`relay.help`) from Progress (PILGRED still uses it).
+- Needed correction: I first showed 100% while spoiling (owner meant 0%, the sample's chance), and first put the collapsible before the Tabs.Root, which sits in the terminal's header; moved it into the top of each tab panel, as in the Hydroponics center.
+- Follow-up (owner's suggestion): the spoil chance now goes out in the view's `PublicConfig` (`researchSpoilChance`, public by design), so Progress shows the ship's real odds instead of the default config's.
+
 ## 2026-11-25: Compact project skill checklist on phones
 
 - At 360px a project row's two skill checkboxes and its work button wrapped to two lines (the owner saw it fit at 370px). A temporary Playwright measurement of the NERON core found the 206px footer 12px short in English and 24px short in French ("Progresser", the longest label). Tightening only the skill checklist (pair gap, checkbox-to-icon gap, icon padding) saved about 18px, enough for English but not French, so the phone work button's side padding also went from 12px to 8px. French now fits with 5px spare; research checklists (text labels) keep their spacing.

@@ -43,6 +43,7 @@ import { ConsumeEffects } from "./ConsumeEffects.tsx";
 import { gainHint, RelayDetails, withGain } from "./RelayDetails.tsx";
 import { BiosTerminal } from "./BiosTerminal.tsx";
 import { CommsCenter } from "./CommsCenter.tsx";
+import { TerminalCollapsible } from "./TerminalCollapsible.tsx";
 import { TerminalFrame } from "./TerminalFrame.tsx";
 import { terminalLogin } from "./terminalUsername.ts";
 import { PlanetList } from "./PlanetList.tsx";
@@ -129,11 +130,33 @@ function SuperCalc({ terminal, view, onAction }: ListProps) {
   );
 }
 
+/**
+ * The research lab: under the tab line, an (empty for now) basics section, then, for a Mush offered a spoil, one toggle
+ * that turns every Progress button into that research's spoil, showing 0% (client-only; it starts off each time the
+ * terminal opens).
+ */
 function ResearchList({ terminal, view, onAction }: ListProps) {
   const { t } = useTranslation();
   const names = useNames();
+  const [spoiling, setSpoiling] = useState(false);
+  const spoilFor = (id: string) => view.actions.find(({ action: a }) => a.type === "spoil_research" && a.equipment === terminal.id && a.research === id);
+  const canSpoil = view.actions.some(({ action: a }) => a.type === "spoil_research" && a.equipment === terminal.id);
+  const spoilOn = spoiling && canSpoil;
   return (
     <ProgressList
+      intro={
+        <>
+          <TerminalCollapsible heading={t("research.basics")}>{null}</TerminalCollapsible>
+          {canSpoil && (
+            <div className="research-toolbar">
+              <button type="button" className="research-spoil-toggle" aria-pressed={spoilOn} onClick={() => setSpoiling(!spoilOn)}>
+                <img src={spoilOn ? CHECK_ICON : UNCHECK_ICON} alt="" />
+                {t("research.spoil")}
+              </button>
+            </div>
+          )}
+        </>
+      }
       label={t("research.title")}
       ids={RESEARCH_IDS}
       progress={view.research}
@@ -160,20 +183,19 @@ function ResearchList({ terminal, view, onAction }: ListProps) {
         return { items: researchNeedOrder(req).map((need, i) => ({ label: label(need), met: met[i] ?? false })) };
       }}
       option={(id) => view.actions.find(({ action: a }) => a.type === "research" && a.equipment === terminal.id && a.research === id)}
-      more={(id) =>
-        // A Mush's own spoil and Saboteur's Contaminate, beside Participate when the view offers them (docs/plans/archive/research-sabotage.md).
-        (["spoil_research", "contaminate"] as const).flatMap((type) => {
-          const option = view.actions.find(({ action: a }) => a.type === type && a.equipment === terminal.id && a.research === id);
-          if (!option) return [];
-          return [
-            type === "spoil_research"
-              ? { option, label: t("research.spoil"), hint: gainHint(t, view.relay.research[id]?.gain, option.chance) }
-              : { option, label: t("research.contaminate"), hint: gainHint(t, undefined, option.chance) },
-          ];
-        })
-      }
+      work={(id, option) => {
+        // With the toggle on, Progress sends a Mush's own spoil, a sample sure to fail its assay, so 0% (docs/plans/archive/research-sabotage.md).
+        // Off, the odds the sample survives its assay.
+        if (!spoilOn) return { option, chance: 1 - view.config.researchSpoilChance };
+        const spoil = spoilFor(id);
+        return spoil ? { option: spoil, chance: 0 } : null;
+      }}
+      more={(id) => {
+        // Saboteur's Contaminate, beside Progress when the view offers it.
+        const option = view.actions.find(({ action: a }) => a.type === "contaminate" && a.equipment === terminal.id && a.research === id);
+        return option ? [{ option, label: t("research.contaminate"), hint: gainHint(t, undefined, option.chance) }] : [];
+      }}
       view={view}
-      showRelayHelp
       onAction={onAction}
     />
   );
@@ -399,6 +421,8 @@ interface Checklist {
 
 interface ProgressListProps {
   label: string;
+  /** Shown at the top of every tab's panel, scrolling with the list (research: basics and the spoil toggle). */
+  intro?: React.ReactNode;
   ids: readonly string[];
   progress: Record<string, number>;
   /** Each target's relay pool, from the view (only in its room). */
@@ -421,10 +445,14 @@ interface ProgressListProps {
   /** A checklist under an item: for research what must be in the lab before it can be worked on, for projects the skills that speed it up (the button itself comes from `view.actions`). */
   needs?: (id: string) => Checklist | null;
   option: (id: string) => ActionOption | undefined;
-  /** Other buttons beside the work button, from the view's offers (research: own spoil, Contaminate), with their tooltip text. */
+  /**
+   * What the work button sends and the success chance it always shows (research: Progress, or the spoil while the toggle
+   * is on, at 0%; null hides the button). Without it the button sends `option` and shows its chance only when it can fail.
+   */
+  work?: (id: string, option: ActionOption) => { option: ActionOption; chance: number } | null;
+  /** Other buttons beside the work button, from the view's offers (research: Contaminate), with their tooltip text. */
   more?: (id: string) => { option: ActionOption; label: string; hint?: string | undefined }[];
   view: PlayerView;
-  showRelayHelp?: boolean;
   onAction: (action: Action) => void;
 }
 
@@ -490,7 +518,7 @@ const PROGRESS_TABS: readonly ProgressTab[] = ["active", "blocked", "done", "dis
  * Unimplemented tab holding the entries the rules don't implement, which then appear in no other tab; on the phone
  * layout they are hidden. Within a tab the order is the list's own. Empty tabs other than Active are left out.
  */
-function ProgressList({ label, ids, progress, relay, complete, cards, name, desc, unimplemented, unimplementedLabel, discarded, discardedLabel, describeFinished = false, needs, option: optionFor, more, view, showRelayHelp = false, onAction }: ProgressListProps) {
+function ProgressList({ label, intro, ids, progress, relay, complete, cards, name, desc, unimplemented, unimplementedLabel, discarded, discardedLabel, describeFinished = false, needs, option: optionFor, work, more, view, onAction }: ProgressListProps) {
   const { t } = useTranslation();
   const mobile = useMobile();
   const [tab, setTab] = useState<ProgressTab>("active");
@@ -520,6 +548,7 @@ function ProgressList({ label, ids, progress, relay, complete, cards, name, desc
       </Tabs.List>
       {shown.map((key) => (
         <Tabs.Panel key={key} value={key}>
+          {intro && <div className="progress-intro">{intro}</div>}
           {groups[key].length === 0 ? (
             <p>{t("research.none")}</p>
           ) : (
@@ -532,6 +561,7 @@ function ProgressList({ label, ids, progress, relay, complete, cards, name, desc
                 const needed = !finished ? needs?.(id) : null;
                 const extras = !finished ? (more?.(id) ?? []) : [];
                 const caption = describeFinished ? desc?.(id) : undefined;
+                const button = option && (work ? work(id, option) : { option, chance: option.chance });
                 return (
                   <li key={id} className={`research-item research-item-${kind}`}>
                     {card && <EntryTip name={name(id)} desc={desc?.(id)} trigger={<img className="research-card" src={card} alt="" />} />}
@@ -585,9 +615,9 @@ function ProgressList({ label, ids, progress, relay, complete, cards, name, desc
                         )}
                         {!finished && (option || extras.length > 0) && (
                           <span className="research-actions">
-                            {option && (
-                              <ActionButton view={view} option={option} onAction={onAction} hint={gainHint(t, relay[id]?.gain, option.chance, showRelayHelp ? t("relay.help") : undefined)}>
-                                <ActionLabel text={t("research.work")} cost={option.cost} chance={option.chance} />
+                            {button && (
+                              <ActionButton key={button.option.action.type} view={view} option={button.option} onAction={onAction} hint={gainHint(t, relay[id]?.gain, button.option.chance)}>
+                                <ActionLabel text={t("research.work")} cost={button.option.cost} chance={button.chance} showChance={!!work} />
                               </ActionButton>
                             )}
                             {extras.map(({ option: extra, label: text, hint }) => (

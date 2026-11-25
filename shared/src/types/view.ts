@@ -152,6 +152,8 @@ export interface PublicConfig {
   merchantDealAp: number;
   /** AP the Commander's Issue mission grants its recipient (#462), for the crewmate picker. */
   missionApGranted: number;
+  /** Chance an honest research sample spoils at its assay (`research.spoilChance`), so Progress can show its odds. */
+  researchSpoilChance: number;
   /**
    * Base AP prices of the actions a bot plans to walk to (server/src/bots/goals/), before modifiers and free skill points:
    * a bot sees a real price only for actions in its own room. Never used to work out legality.

@@ -1229,3 +1229,25 @@ li.signal-next {
     width: min(34rem, calc(100vw - 2rem));
   }
 }
+/* At the top of each progress-list tab panel: the research lab's basics section and spoil toggle (spaced as the Hydroponics center's). */
+.progress-intro {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+.research-toolbar {
+  display: flex;
+  justify-content: flex-end;
+}
+.research-spoil-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+}
+.research-spoil-toggle[aria-pressed="true"] {
+  --btn-left: url("../../../Mush/www/img/design/butleft_on.gif");
+  --btn-mid: url("../../../Mush/www/img/design/butbg_on.gif");
+  --btn-right: url("../../../Mush/www/img/design/butright_on.gif");
+}

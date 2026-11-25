@@ -2070,7 +2070,8 @@
       "SUPER_CALC": "Produces a piece of equipment in the Nexus that extracts data from crystallites."
     },
     "notDone": "Not complete",
-    "spoil": "Spoil a sample",
+    "basics": "Research basics",
+    "spoil": "Spoil samples",
     "contaminate": "Contaminate a sample",
     "withPending": "{{percent}}% (+{{pending}}% pending)"
   },

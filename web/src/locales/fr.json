@@ -2004,7 +2004,8 @@
       "SUPER_CALC": "Génère au Nexus un équipement qui permet d'extraire des données des cristallites."
     },
     "notDone": "Non terminée",
-    "spoil": "Gâcher un échantillon",
+    "basics": "Bases de la recherche",
+    "spoil": "Gâcher les échantillons",
     "contaminate": "Contaminer un échantillon",
     "withPending": "{{percent}} % (+{{pending}} % en attente)"
   },

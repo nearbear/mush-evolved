@@ -2004,7 +2004,8 @@
       "SUPER_CALC": "Genera en el Nexus un equipo que permite extraer datos de las cristalitas."
     },
     "notDone": "Sin completar",
-    "spoil": "Estropear una muestra",
+    "basics": "Nociones de investigación",
+    "spoil": "Estropear las muestras",
     "contaminate": "Contaminar una muestra",
     "withPending": "{{percent}} % (+{{pending}} % pendiente)"
   },
