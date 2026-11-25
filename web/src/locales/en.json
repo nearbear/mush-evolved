@@ -288,7 +288,7 @@
     "stackCount": "{{item}} ×{{count}}"
   },
   "crew": {
-    "title": "Crew",
+    "title": "Daedalus crew",
     "label": "Crew: {{summary}}",
     "count": {
       "alive_one": "{{count}} alive",

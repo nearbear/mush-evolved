@@ -117,10 +117,6 @@ button.zoom-button {
   padding: 0;
   border: 0;
 }
-.ship-popup .crew-item {
-  order: 3;
-  flex-basis: 100%;
-}
 /* How many items are on the floor here. */
 .inventory-badge {
   position: absolute;

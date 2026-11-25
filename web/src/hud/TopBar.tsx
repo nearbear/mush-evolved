@@ -7,7 +7,7 @@ import { useNames } from "../i18n/names.ts";
 import { useMobile } from "../useMobile.ts";
 import { BotsPausedTag } from "./BotsPausedTag.tsx";
 import { CycleCountdown } from "./CycleCountdown.tsx";
-import { crewProps } from "./CrewBar.tsx";
+import { CrewBar, crewProps } from "./CrewBar.tsx";
 import { AlertBar, AlertButton, ShipResources } from "./ShipResources.tsx";
 import { ShipStatus } from "./ShipStatus.tsx";
 import { SettingsDialog } from "./SettingsDialog.tsx";
@@ -123,12 +123,13 @@ export function TopBar({
   return (
     <header className="top-bar">
       {/* Desktop zones (UI coherence step 5): time on the left, the ship in the middle, the actions on the right. Phones
-          have one strip: the clock on the left, the alerts and the menu on the right (top-bar.css); the AI-paused tag is
+          have one strip: the clock on the left, the crew button, the alerts and the menu on the right (top-bar.css); the AI-paused tag is
           on the ID card in the room view (GameView). */}
       {strip ? (
         <div className="summary-strip">
           {comatose ? <span /> : clock}
           <span className="summary-strip-end">
+            {!comatose && view.ship && <CrewBar compact {...crewProps(view)} />}
             {!comatose && <AlertButton hunters={view.hunters.count} alerts={view.alerts} />}
             {menu}
           </span>

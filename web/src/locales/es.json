@@ -295,7 +295,7 @@
     "stackCount": "{{item}} ×{{count}}"
   },
   "crew": {
-    "title": "Tripulación",
+    "title": "Tripulación del Daedalus",
     "label": "Tripulación: {{summary}}",
     "count": {
       "alive_one": "{{count}} con vida",

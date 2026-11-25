@@ -295,7 +295,7 @@
     "stackCount": "{{item}} ×{{count}}"
   },
   "crew": {
-    "title": "Équipage",
+    "title": "Équipage du Daedalus",
     "label": "Équipage : {{summary}}",
     "count": {
       "alive_one": "{{count}} en vie",

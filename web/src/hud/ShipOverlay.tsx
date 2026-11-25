@@ -6,7 +6,6 @@ import { useTranslation } from "react-i18next";
 import type { PlayerView } from "@mush2/shared";
 import { SHIP_RESOURCE_ICONS } from "../art/assets.ts";
 import { Hint } from "./IconButton.tsx";
-import { crewProps } from "./CrewBar.tsx";
 import { ShipResources } from "./ShipResources.tsx";
 import { useOverlayDismiss } from "./useOverlayDismiss.ts";
 
@@ -24,7 +23,7 @@ export function ShipOverlay({ view }: { view: PlayerView }) {
     <div className="ship-overlay" ref={rootRef}>
       {open && (
         <section id={panelId} role="dialog" tabIndex={-1} className="ship-popup" aria-label={label}>
-          <ShipResources ship={view.ship} hunters={view.hunters.count} titles={view.titles} preselection={view.preselection} alertsApart lost={view.lost} alerts={view.alerts} crew={crewProps(view)} />
+          <ShipResources ship={view.ship} hunters={view.hunters.count} titles={view.titles} preselection={view.preselection} alertsApart lost={view.lost} alerts={view.alerts} />
         </section>
       )}
       <Hint label={label}>
