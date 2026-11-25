@@ -11,7 +11,7 @@ import { expirePlans, plansView, strikeSlots } from "./plans.ts";
 import { bindPerformAction } from "./actions/summon.ts";
 import { applyCheats, makeHuman, shipInvincible, type Cheat, type RoleCheat } from "./cheats.ts";
 import { ACTIONS, type ActionCost, actionVisibility, type ActionDef } from "./actions.ts";
-import { ARACK_AROUND, AT_CAPACITY, BROKEN, COOLDOWN, DIRTY, EXPLORED, ICARUS_LOST, IN_PRESELECTION, NO_DEBRIS, NO_SPACE, PASIPHAE_INTACT, REACTOR_BROKEN, TRAVEL_UNDERWAY } from "./actions/action.ts";
+import { ARACK_AROUND, AT_CAPACITY, BROKEN, COOLDOWN, DIRTY, EXPLORED, ICARUS_LOST, IN_PRESELECTION, NO_DEBRIS, NO_SPACE, PASIPHAE_INTACT, REACTOR_BROKEN, RING_TAPPED, SPORES_FULL, TRAVEL_UNDERWAY } from "./actions/action.ts";
 import { getUp } from "./actions/lie_down.ts";
 import { ANTISOCIAL } from "./actions/bond.ts";
 import { GERMAPHOBE } from "./actions/caress.ts";
@@ -365,6 +365,8 @@ const UNAFFORDABLE_REASONS = new Set<string>([
   NO_SPACE,
   COOLDOWN,
   AT_CAPACITY,
+  SPORES_FULL,
+  RING_TAPPED,
   DIRTY,
   NO_DEBRIS,
   PASIPHAE_INTACT,
@@ -434,6 +436,8 @@ function unaffordableOption(state: GameState, p: PlayerState, def: ActionDef<Act
     ...(refused === NO_SPACE ? (["space"] as const) : []),
     ...(refused === COOLDOWN ? (["cooldown"] as const) : []),
     ...(refused === AT_CAPACITY ? (["capacity"] as const) : []),
+    ...(refused === SPORES_FULL ? (["sporesFull"] as const) : []),
+    ...(refused === RING_TAPPED ? (["ringTapped"] as const) : []),
     ...(p.ap < cost.ap ? (["ap"] as const) : []),
     ...(p.mp < cost.mp ? (["mp"] as const) : []),
   ];

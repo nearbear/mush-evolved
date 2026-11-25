@@ -212,6 +212,10 @@ export function DisabledActionButton({
       ? t("actions.lacksTravelUnderway")
       : lacks[0] === "notInPlanRoom"
       ? t("actions.lacksNotInPlanRoom")
+      : lacks[0] === "sporesFull"
+      ? t("actions.lacksSporesFull")
+      : lacks[0] === "ringTapped"
+      ? t("actions.lacksRingTapped")
       : lacks[0] === "clean"
       ? t("actions.lacksClean")
       : lacks[0] === "capacity"

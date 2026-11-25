@@ -18,6 +18,12 @@ export const NO_SPACE = "no_space";
 /** The `validate` code for an action whose shared daily limit is used up: shown disabled, not hidden (`unaffordableActions`). */
 export const AT_CAPACITY = "at_capacity";
 
+/** The `validate` code for a spore action refused at the Mush's own holding limit (`spores.max`): shown disabled, not hidden (`unaffordableActions`). */
+export const SPORES_FULL = "spores_full";
+
+/** The `validate` code for drawing from a Fairy Ring someone already drew from today: shown disabled, not hidden (`unaffordableActions`). */
+export const RING_TAPPED = "ring_tapped";
+
 /** The `validate` code for an action that is waiting out a cooldown: shown disabled, with the wait (`unaffordableActions`). */
 export const COOLDOWN = "cooldown";
 

@@ -5422,3 +5422,9 @@ Investigated why the action duration progress bar stayed empty/static in replays
 
 - At 360px a project row's two skill checkboxes and its work button wrapped to two lines (the owner saw it fit at 370px). A temporary Playwright measurement of the NERON core found the 206px footer 12px short in English and 24px short in French ("Progresser", the longest label). Tightening only the skill checklist (pair gap, checkbox-to-icon gap, icon padding) saved about 18px, enough for English but not French, so the phone work button's side padding also went from 12px to 8px. French now fits with 5px spare; research checklists (text labels) keep their spacing.
 - **Needed correction:** `tools/src/play/terminalShots.ts --phone` is broken (the second Access tap and room exits now need a conditional second press); the measurement copy worked around it, and the stock script was left as is.
+
+## 2026-11-25: spore disabled reasons (holding limit, tapped Fairy Ring)
+
+- Extract spore and Draw from the Fairy Ring both returned `at_capacity` at the personal holding limit, so the button said the faction's daily cap was spent. New `spores_full` code (`lacks: "sporesFull"`) names the holding limit; extraction now checks it before the daily cap so a full Mush sees the personal reason.
+- A Fairy Ring already drawn from today returned `already_used`, which isn't a shown-disabled reason, so the button vanished. New `ring_tapped` code (`lacks: "ringTapped"`) keeps it disabled with the reason. Text in en/fr/es; tests in `spores.test.ts` and `fairyRings.test.ts`.
+- What worked: the existing `unaffordableActions` code-to-`lacks` table made this a small table extension. Full `verify` hit unrelated timeouts under load (different tests each run); they pass alone.

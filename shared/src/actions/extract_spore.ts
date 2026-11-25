@@ -1,4 +1,4 @@
-import { Action, AT_CAPACITY, IN_PRESELECTION, type ActionVisibility } from "./action.ts";
+import { Action, AT_CAPACITY, IN_PRESELECTION, SPORES_FULL, type ActionVisibility } from "./action.ts";
 import { logSecret } from "../log.ts";
 import { becameDirty, sporesPerDay } from "../modifiers.ts";
 import { RESEARCH_COMPLETE } from "../research.ts";
@@ -37,8 +37,9 @@ export class ExtractSporeAction extends Action<ExtractSporeActionData> {
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>): string | null {
     if (state.preselection) return IN_PRESELECTION;
     if (player.role !== "mush") return "not_mush";
+    // The personal holding limit (owner, 2026-11-10) is checked first: a full Mush can't extract whatever the faction's cap.
+    if (player.spores >= state.config.spores.max) return SPORES_FULL;
     if (state.sporesToday >= sporesPerDay(state, player)) return AT_CAPACITY;
-    if (player.spores >= state.config.spores.max) return AT_CAPACITY; // holding limit (owner, 2026-11-10)
     return null;
   }
 

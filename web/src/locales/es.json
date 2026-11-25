@@ -517,6 +517,8 @@
     "lacksGermaphobe": "Germáfoba: no puedes acariciar a Schrödinger.",
     "lacksNotYourSong": "Esta canción no va contigo.",
     "lacksListenedToday": "Ya has disfrutado de tu canción hoy: una vez al día.",
+    "lacksSporesFull": "Ya llevas todas las esporas que puedes contener. Usa una para hacer sitio.",
+    "lacksRingTapped": "Alguien ya ha extraído de este corro de brujas hoy. Se recarga al día siguiente.",
     "lacksReactorTurn": "El reactor lateral de este lado está averiado: el Daedalus no puede girar hacia este lado hasta que lo reparen.",
     "lacksPreselection": "No disponible durante la preselección: los títulos no se asignan hasta que se elijan los Mush.",
     "lacksMp": "No tienes suficientes PM: cuesta {{need}} y tienes {{have}}.",

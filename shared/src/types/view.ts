@@ -532,9 +532,9 @@ export interface ActionOption {
   tags: ActionTag[];
   /**
    * Empty when you can do it now; otherwise the points, the inventory space, or the cleanliness ("clean": you are dirty)
-   * you lack, or for Collect scrap, "debris" (none out there) or "pasiphae" (a patrol ship can't while the Pasiphae exists), or for Travel and turns, "reactor" (the reactor it needs is broken), or for Travel and Leave orbit, "arack" (an Arack is around), or for Hack, "preselection" (titles aren't assigned yet), or for Board the Icarus and Take off, "explored" (every sector of the planet is explored) or "icarusLost", or for Listen at the jukebox, "notYourSong" or "listenedToday". See `affordable`.
+   * you lack, or for Collect scrap, "debris" (none out there) or "pasiphae" (a patrol ship can't while the Pasiphae exists), or for Travel and turns, "reactor" (the reactor it needs is broken), or for Travel and Leave orbit, "arack" (an Arack is around), or for Hack, "preselection" (titles aren't assigned yet), or for Board the Icarus and Take off, "explored" (every sector of the planet is explored) or "icarusLost", or for Listen at the jukebox, "notYourSong" or "listenedToday", or for spore actions, "sporesFull" (your own holding limit), or for drawing from a Fairy Ring, "ringTapped" (already drawn today). See `affordable`.
    */
-  lacks: ("ap" | "mp" | "space" | "cooldown" | "capacity" | "clean" | "debris" | "pasiphae" | "reactor" | "arack" | "preselection" | "explored" | "icarusLost" | "vertigo" | "grounded" | "antisocial" | "germaphobe" | "mushNotSelected" | "listPrinted" | "broken" | "notYourSong" | "listenedToday" | "fragments" | "travelUnderway" | "notInPlanRoom")[];
+  lacks: ("ap" | "mp" | "space" | "cooldown" | "capacity" | "clean" | "debris" | "pasiphae" | "reactor" | "arack" | "preselection" | "explored" | "icarusLost" | "vertigo" | "grounded" | "antisocial" | "germaphobe" | "mushNotSelected" | "listPrinted" | "broken" | "notYourSong" | "listenedToday" | "fragments" | "travelUnderway" | "notInPlanRoom" | "sporesFull" | "ringTapped")[];
   /** Cycles until it is ready, when `lacks` has "cooldown". */
   cooldown?: number;
 }

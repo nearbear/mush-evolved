@@ -517,6 +517,8 @@
     "lacksGermaphobe": "Germaphobe : vous ne pouvez pas caresser Schrödinger.",
     "lacksNotYourSong": "Cette chanson ne vous fait pas vibrer.",
     "lacksListenedToday": "Vous avez déjà profité de votre chanson aujourd'hui : une fois par jour.",
+    "lacksSporesFull": "Vous portez déjà autant de spores que vous pouvez en contenir. Utilisez-en une pour faire de la place.",
+    "lacksRingTapped": "Quelqu'un a déjà puisé dans ce rond de sorcière aujourd'hui. Il se recharge au jour suivant.",
     "lacksReactorTurn": "Le réacteur latéral de ce côté est en panne : le Daedalus ne peut pas tourner de ce côté tant qu'il n'est pas réparé.",
     "lacksPreselection": "Indisponible en pré-sélection : les titres ne sont attribués qu'une fois les Mush choisis.",
     "lacksMp": "Pas assez de PM : cela coûte {{need}}, vous en avez {{have}}.",

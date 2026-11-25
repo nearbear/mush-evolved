@@ -82,6 +82,8 @@ describe("Mycelium Spirit: Fairy Rings", () => {
     // Once per ring per day, by anyone (the creator included).
     expect(refused(after, "p1", "tap_fairy_ring")).toBe(true);
     expect(refused(after, "p0", "tap_fairy_ring")).toBe(true);
+    // The button stays, disabled with the reason.
+    expect(viewFor(after, "p0").actions.find((o) => o.action.type === "tap_fairy_ring")).toMatchObject({ lacks: ["ringTapped"] });
     // A new day refills it.
     expect(tap(nextDay(after), "p0").fairyRings[0]!.tapped).toBe(true);
   });
@@ -90,6 +92,7 @@ describe("Mycelium Spirit: Fairy Rings", () => {
     const s = grow(ship());
     player(s, "p1").spores = s.config.spores.max;
     expect(refused(s, "p1", "tap_fairy_ring")).toBe(true);
+    expect(viewFor(s, "p1").actions.find((o) => o.action.type === "tap_fairy_ring")).toMatchObject({ lacks: ["sporesFull"] });
     expect(refused(s, "p2", "tap_fairy_ring")).toBe(true);
     expect(option(s, "p2", { type: "tap_fairy_ring" })).toBeUndefined();
     const elsewhere = clone(s);

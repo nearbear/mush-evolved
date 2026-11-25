@@ -5,7 +5,7 @@ import { parseGameMessage } from "../src/protocol.ts";
 import { RESEARCH_COMPLETE, RESEARCH_STATUS } from "../src/research.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameState } from "../src/types.ts";
-import { costOf, makeSeats, player, mustApply, nextCycle, offered, testConfig } from "./support.ts";
+import { clone, costOf, makeSeats, player, mustApply, nextCycle, offered, testConfig } from "./support.ts";
 
 const seats = makeSeats(6);
 const config = testConfig({ maxAp: 99, startAp: 50 });
@@ -67,10 +67,14 @@ describe("spore extraction", () => {
     let s = ship();
     for (let i = 0; i < config.spores.max; i++) s = mustApply(s, "p0", extract);
     expect(player(s, "p0").spores).toBe(config.spores.max);
-    expect(viewFor(s, "p0").actions.find((o) => o.action.type === "extract_spore")).toMatchObject({ lacks: ["capacity"] });
+    expect(viewFor(s, "p0").actions.find((o) => o.action.type === "extract_spore")).toMatchObject({ lacks: ["sporesFull"] });
     const before = JSON.stringify(s);
     expect(applyAction(s, "p0", extract).ok).toBe(false);
     expect(JSON.stringify(s)).toBe(before);
+    // Full hands are named over the faction's daily cap when both apply.
+    const both = clone(s);
+    both.sporesToday = both.config.spores.perDay;
+    expect(viewFor(both, "p0").actions.find((o) => o.action.type === "extract_spore")).toMatchObject({ lacks: ["sporesFull"] });
     // The cap is per Mush: the other Mush still extracts.
     expect(offered(s, "p1")).toContainEqual(extract);
     player(s, "p0").spores -= 1;

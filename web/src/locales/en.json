@@ -504,6 +504,8 @@
     "lacksGermaphobe": "Germaphobe: you can't caress Schrödinger.",
     "lacksNotYourSong": "This song isn't your vibe.",
     "lacksListenedToday": "You've already enjoyed your song today: once a day.",
+    "lacksSporesFull": "You're carrying as many spores as you can hold. Spend one to make room.",
+    "lacksRingTapped": "Someone has already drawn from this Fairy Ring today. It refills with the next day.",
     "lacksReactorTurn": "The lateral reactor on this side is broken: the ship can't turn this way until it is repaired.",
     "lacksPreselection": "Unavailable during pre-selection: titles aren't assigned until the Mush are chosen.",
     "lacksMp": "Not enough MP: it costs {{need}}, you have {{have}}.",

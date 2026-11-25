@@ -1,4 +1,4 @@
-import { Action, AT_CAPACITY, type ActionTag, type ActionVisibility } from "./action.ts";
+import { Action, RING_TAPPED, SPORES_FULL, type ActionTag, type ActionVisibility } from "./action.ts";
 import { extractionExtraAp } from "./extract_spore.ts";
 import { fairyRingIn } from "../fairyRings.ts";
 import { logSecret } from "../log.ts";
@@ -32,8 +32,8 @@ export class TapFairyRingAction extends Action<TapFairyRingActionData> {
     if (player.role !== "mush") return "not_mush";
     const ring = fairyRingIn(state, player.room);
     if (!ring) return "no_fairy_ring";
-    if (ring.tapped) return "already_used";
-    if (player.spores + state.config.myceliumSpirit.tap.spores > state.config.spores.max) return AT_CAPACITY; // holding limit
+    if (ring.tapped) return RING_TAPPED;
+    if (player.spores + state.config.myceliumSpirit.tap.spores > state.config.spores.max) return SPORES_FULL; // holding limit
     return null;
   }
 
