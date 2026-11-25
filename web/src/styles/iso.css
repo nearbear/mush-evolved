@@ -366,6 +366,15 @@
 }
 .death-notice h2 {
   margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 4vw, 1.85rem);
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  color: #ff5252;
+}
+.death-notice.coma-notice h2 {
+  color: var(--danger);
 }
 .death-notice p {
   margin: 0;

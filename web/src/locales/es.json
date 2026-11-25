@@ -839,13 +839,13 @@
     }
   },
   "coma": {
-    "title": "Estás en coma.",
+    "title": "Estás en coma",
     "body": "El suero retrofúngico te ha dejado inconsciente. No puedes ver, actuar ni oír nada hasta que despiertes."
   },
   "death": {
-    "title": "Has muerto.",
-    "body": "Todavía puedes leer el chat global y los hilos de funciones, pero ya no puedes escribir allí. Puedes hablar con los demás muertos en el Cementerio.",
-    "bodyMush": "Todavía puedes leer el chat global, los hilos de funciones y el canal Mush, pero ya no puedes escribir allí. Puedes hablar con los demás muertos en el Cementerio."
+    "title": "Has muerto",
+    "body": "Aún puedes leer el chat y hablar con los muertos en el Cementerio.",
+    "bodyMush": "Aún puedes leer el chat (incluido Mush) y hablar con los muertos en el Cementerio."
   },
   "deathCause": {
     "assassinated": "asesinado",

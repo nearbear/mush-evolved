@@ -839,13 +839,13 @@
     }
   },
   "coma": {
-    "title": "Vous êtes dans le coma.",
+    "title": "Vous êtes dans le coma",
     "body": "Le sérum rétro-fongique vous a assommé. Vous ne pouvez rien voir, faire ni entendre jusqu'à votre réveil."
   },
   "death": {
-    "title": "Vous avez perdu la vie.",
-    "body": "Vous pouvez encore lire le chat général et les fils des fonctions, mais vous ne pouvez plus y écrire. Vous pouvez parler avec les autres morts dans le Cimetière.",
-    "bodyMush": "Vous pouvez encore lire le chat général, les fils des fonctions et le canal Mush, mais vous ne pouvez plus y écrire. Vous pouvez parler avec les autres morts dans le Cimetière."
+    "title": "Vous avez perdu la vie",
+    "body": "Vous pouvez encore lire le chat et parler avec les morts dans le Cimetière.",
+    "bodyMush": "Vous pouvez encore lire le chat (y compris Mush) et parler avec les morts dans le Cimetière."
   },
   "deathCause": {
     "assassinated": "assassiné",

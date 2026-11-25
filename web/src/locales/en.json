@@ -825,13 +825,13 @@
     }
   },
   "coma": {
-    "title": "You are in a coma.",
+    "title": "You are in a coma",
     "body": "The Retro-Fungal Serum has knocked you out. You can't see, act, or hear anything until you wake up."
   },
   "death": {
-    "title": "You are dead.",
-    "body": "You can still read global chat and the feature threads, but you can no longer post there. You can talk with the other dead in the Graveyard.",
-    "bodyMush": "You can still read global chat, the feature threads and the Mush channel, but you can no longer post there. You can talk with the other dead in the Graveyard."
+    "title": "You are dead",
+    "body": "You can still read chat, and talk with the dead in the Graveyard.",
+    "bodyMush": "You can still read chat (including Mush), and talk with the dead in the Graveyard."
   },
   "deathCause": {
     "assassinated": "assassinated",
