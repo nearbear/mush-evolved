@@ -2024,6 +2024,10 @@
     },
     "notDone": "Non terminée",
     "basics": "Bases de la recherche",
+    "basicsWhat": "La recherche permet à l'équipage d'inventer de nouveaux outils, médicaments et armes contre les Mush. Chaque recherche a une barre qui se remplit de 0 % à 100 %. À 100 %, la recherche est terminée et son effet s'applique à tout le vaisseau à partir de ce moment.",
+    "basicsWork": "Pour aider, venez au Laboratoire et appuyez sur Progresser sur une recherche. Cela coûte 2 PA et dépose un échantillon qui fait avancer la barre. Le travail en labo est salissant : vous pouvez vous salir, et vous ne pourrez plus faire de recherche avant de vous être douché.",
+    "basicsTeam": "La recherche avance plus vite en équipe. Les échantillons d'une même personne à la suite valent de moins en moins, donc se relayer avec ses équipiers vaut mieux qu'une seule personne qui fait tout. Les Biologistes, Médecins et équipiers Polyvalents apportent beaucoup plus par échantillon. Chaque bouton Progresser indique combien vous ajouteriez maintenant.",
+    "basicsNeeds": "Certaines recherches ont besoin de quelque chose avant qu'on puisse y travailler : un objet dans le labo (au sol ou porté par quelqu'un sur place), Chun dans la pièce, ou un Mush mort. En attendant, elles restent dans l'onglet Bloqué, avec la liste de ce qu'il leur faut.",
     "spoil": "Gâcher les échantillons",
     "contaminate": "Contaminer un échantillon",
     "withPending": "{{percent}} % (+{{pending}} % en attente)"

@@ -2024,6 +2024,10 @@
     },
     "notDone": "Sin completar",
     "basics": "Nociones de investigación",
+    "basicsWhat": "La investigación es la forma en que la tripulación inventa nuevas herramientas, medicinas y armas contra los Mush. Cada investigación tiene una barra que se llena del 0 % al 100 %. Al llegar al 100 %, la investigación se completa y su efecto se aplica a toda la nave desde ese momento.",
+    "basicsWork": "Para ayudar, ve al Laboratorio y pulsa Progresar en una investigación. Cuesta 2 PA y entrega una muestra que hace avanzar la barra. El trabajo de laboratorio ensucia: puedes ensuciarte, y no podrás volver a investigar hasta que te hayas duchado.",
+    "basicsTeam": "La investigación avanza más rápido en equipo. Las muestras seguidas de una misma persona valen cada vez menos, así que turnarse con los compañeros es mejor que una sola persona lo haga todo. Los Biólogos, Médicos y tripulantes Polivalentes aportan mucho más por muestra. Cada botón Progresar muestra cuánto añadirías ahora mismo.",
+    "basicsNeeds": "Algunas investigaciones necesitan algo antes de que se pueda trabajar en ellas: un objeto en el laboratorio (en el suelo o en manos de alguien allí), Chun en la sala o un Mush muerto. Mientras tanto esperan en la pestaña Bloqueado, con lo que necesitan en una lista.",
     "spoil": "Estropear las muestras",
     "contaminate": "Contaminar una muestra",
     "withPending": "{{percent}} % (+{{pending}} % pendiente)"

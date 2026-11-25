@@ -5458,3 +5458,8 @@ Investigated why the action duration progress bar stayed empty/static in replays
 
 - Action cards (`web/src/hud/ActionButton.tsx`) now add a line under the dirt/injury odds for any `spore`-tagged option, with the myco alarm icon: "Rings any myco alarm on the floor" (en/fr/es). It reads `option.tags`, which the view already carried, so no shared or server change. Worked first time; the note is static rather than "an alarm is here", since a hidden alarm isn't in the player's view and the card mustn't imply there's none.
 - Owner follow-up: the line uses the plain `mush.png` UI icon (`MUSH_ICON`) instead of the item art, and reads "Triggers any MycoAlarm on the floor" (fr "Déclenche les Mycoalarmes au sol", es "Activa las Micoalarmas del suelo").
+
+### 2026-11-25: Research basics primer
+
+Filled the research lab's empty "Research basics" collapsible with five beginner paragraphs (what research is, how to contribute and getting dirty, teamwork/relay penalty and skills, Blocked-tab requirements, pending samples and assays including Mush spoiling), en/fr/es, matching the botany and travel primers. Text was checked against `implemented-rules.md` (2 AP, 15% dirty, 12% ≈ 1 in 8 spoil, assay marks 25/50/75/100) rather than written from memory. fr/es are drafts for native review.
+Correction (owner): dropped the fifth paragraph (pending samples, assays, Mush spoiling) as too much information for a primer; four paragraphs remain.

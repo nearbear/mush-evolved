@@ -2088,6 +2088,10 @@
     },
     "notDone": "Not complete",
     "basics": "Research basics",
+    "basicsWhat": "Research is how the crew invents new tools, medicines and weapons against the Mush. Each research has a bar that fills from 0% to 100%. When it reaches 100%, the research is complete and its effect works for the whole ship from then on.",
+    "basicsWork": "To help, come to the Laboratory and press Progress on a research. It costs 2 AP and hands in a sample that moves the bar forward. Lab work is messy: you might get dirty, and you can't research again until you've showered.",
+    "basicsTeam": "Research goes fastest as a team. Samples from the same person in a row are worth less each time, so taking turns with crewmates beats one person doing it all. Biologists, Medics and Polyvant crewmates add a lot more per sample. Each Progress button shows how much you would add right now.",
+    "basicsNeeds": "Some researches need something before anyone can work on them: an item in the lab (on the floor or held by someone there), Chun in the room, or a Mush who has died. Until then they wait in the Blocked tab, with what they need listed.",
     "spoil": "Spoil samples",
     "contaminate": "Contaminate a sample",
     "withPending": "{{percent}}% (+{{pending}}% pending)"

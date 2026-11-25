@@ -131,7 +131,7 @@ function SuperCalc({ terminal, view, onAction }: ListProps) {
 }
 
 /**
- * The research lab: under the tab line, an (empty for now) basics section, then, for a Mush offered a spoil, one toggle
+ * The research lab: under the tab line, a collapsed beginner's primer on research (owner, 2026-11-25), then, for a Mush offered a spoil, one toggle
  * that turns every Progress button into that research's spoil, showing 0% (client-only; it starts off each time the
  * terminal opens).
  */
@@ -146,7 +146,12 @@ function ResearchList({ terminal, view, onAction }: ListProps) {
     <ProgressList
       intro={
         <>
-          <TerminalCollapsible heading={t("research.basics")}>{null}</TerminalCollapsible>
+          <TerminalCollapsible heading={t("research.basics")}>
+            <p>{t("research.basicsWhat")}</p>
+            <p>{t("research.basicsWork")}</p>
+            <p>{t("research.basicsTeam")}</p>
+            <p>{t("research.basicsNeeds")}</p>
+          </TerminalCollapsible>
           {canSpoil && (
             <div className="research-toolbar">
               <button type="button" className="research-spoil-toggle" aria-pressed={spoilOn} onClick={() => setSpoiling(!spoilOn)}>
