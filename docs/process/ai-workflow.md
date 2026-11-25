@@ -5417,3 +5417,8 @@ Investigated why the action duration progress bar stayed empty/static in replays
 
 - New `PlayerView.discardedProjects` (`relayView.ts`): unfinished projects no longer in the proposal deck (a completed project's batch-mates, or taken by a merchant), ids only, to the living at NERON's core like the offered ones. The project terminal gets a Discarded tab after Done; done and discarded rows show the project's description as a caption instead of "Complete". Tests in `shared/tests/projects.test.ts` and a DOM test in `web/tests/hud/projectList.test.tsx`.
 - The leak check (forked skill) found no leak; it noted a player at the core can now tell the remaining deck's set (not its order) and that a NERON update can still complete a discarded project, since it picks from every unfinished one.
+
+## 2026-11-25: Compact project skill checklist on phones
+
+- At 360px a project row's two skill checkboxes and its work button wrapped to two lines (the owner saw it fit at 370px). A temporary Playwright measurement of the NERON core found the 206px footer 12px short in English and 24px short in French ("Progresser", the longest label). Tightening only the skill checklist (pair gap, checkbox-to-icon gap, icon padding) saved about 18px, enough for English but not French, so the phone work button's side padding also went from 12px to 8px. French now fits with 5px spare; research checklists (text labels) keep their spacing.
+- **Needed correction:** `tools/src/play/terminalShots.ts --phone` is broken (the second Access tap and room exits now need a conditional second press); the measurement copy worked around it, and the stock script was left as is.

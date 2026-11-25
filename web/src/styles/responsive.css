@@ -328,6 +328,10 @@
       "card body body"
       "card footer footer";
   }
+  /* Narrower work buttons, so a project's two skills and the button share a line at 360px (settings.css). */
+  li.research-item .research-actions > button {
+    padding-inline: 8px;
+  }
   .inspect-body {
     flex-direction: row;
     gap: var(--space-3);

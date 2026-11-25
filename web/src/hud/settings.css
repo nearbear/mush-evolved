@@ -285,7 +285,7 @@ li.research-item > .research-footer {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.25rem 0.5rem;
+  gap: 0.25rem;
 }
 .research-footer > .research-needs {
   flex: 1 1 auto;
@@ -468,6 +468,15 @@ li.research-item .research-title {
 .research-needs img {
   image-rendering: pixelated;
 }
+/* A project's skills are icons, so they sit tighter than text needs: with two of them, the checklist and the work button
+   share a line at 360px in every language (French "Progresser" is the longest; the phone button's padding is trimmed too,
+   responsive.css). */
+.research-needs ul:has(.research-need-skill) {
+  column-gap: 0.25rem;
+}
+.research-needs li:has(> .research-need-skill) {
+  gap: 0.1rem;
+}
 .research-need-met {
   opacity: 0.6;
 }
@@ -485,7 +494,7 @@ button.research-need-skill {
   height: auto;
   min-height: 0;
   margin: 0;
-  padding: 0.1rem;
+  padding: 0.1rem 0;
   border: 0;
   border-radius: 0.15rem;
   background: none;
