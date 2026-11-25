@@ -110,7 +110,11 @@ export const CUSTOMIZED_BLASTER_ITEM = "customized_blaster";
 /** Hacker kit: lets a player attempt to hack equipment/terminals. */
 export const HACKER_KIT_ITEM = "hacker_kit";
 
-/** The drugs (drugs.ts): their effects are drawn per ship, so each is only a consumable here. */
+/**
+ * The drugs (drugs.ts): their effects are drawn per ship, so each is only a consumable here. Ids follow the original's
+ * icon files (drug_N.jpg); matched by file hash to eMush's named icons: 0 Twinoid, 1 Xenox, 2 Phuxx, 3 Eufurylate,
+ * 4 Soma, 5 Spyce, 6 Newke, 7 Pinq, 8 Bacta, 9 Betapropyl, 10 Pymp, 11 Rosebud (names.*.json has each language's name).
+ */
 export const DRUG_ITEMS: readonly string[] = Array.from({ length: 12 }, (_, i) => `drug_${i}`);
 
 /** The charges an item of this type starts with, or undefined if it has none. Charged weapons start full. */

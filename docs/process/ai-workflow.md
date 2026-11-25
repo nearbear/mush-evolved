@@ -5468,3 +5468,9 @@ Correction (owner): dropped the fifth paragraph (pending samples, assays, Mush s
 
 - Owner asked for the research bar to be four bars (one per 25%) with a hairline gap, to show where assays happen. `ProgressBar` in `web/src/hud/TerminalDialog.tsx` takes optional `segments`; research passes `DEFAULT_CONFIG.research.assayMarks` (the marks aren't in the view, and the default config is what every ship uses), and each segment gets its own `--value`/`--pending`, so the striped pending samples still sit right after the fill and can span segments. The outer element stays the single `progressbar` (and popover trigger). Projects and PILGRED keep one bar.
 - Tradeoff noted: if a ship ever ran non-default assay marks, the bar would need `assayMarks` added to `view.config`.
+
+## Drug names (2026-11-25)
+
+- **Asked:** give the 12 drugs their real names instead of "Drug 0".."Drug 11".
+- **What worked:** the original's icons are only numbered (`drug_N.jpg`) and its name list (`Text.drug_name`) isn't in the archive, so the number-to-name mapping came from matching SHA-1s: every `Mush/www/img/icons/items/drug_N.jpg` is byte-identical to one eMushpedia `Item-<name>.jpg` (and the French wiki's `Objet-<name>.jpg`), 12 of 12. Names per language came from `npm run emush -- translations items <lang>` (a subcommand not listed in the usage text; `find` wasted several guesses first).
+- **Decision:** kept the `drug_N` ids (they match the icon files) and changed only `names.{en,fr,es}.json`; the mapping is in a comment on `DRUG_ITEMS`. eMush's Spanish file names Newke "Japiyú" (a copy of Bacta's); its short name and the Spanish wiki say "Nuke", so that was used.
