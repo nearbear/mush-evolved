@@ -1,5 +1,27 @@
 /* Page, typography, and small shared bits. */
 
+/* UI scale (#485, web/src/uiScale.ts): almost every panel width, spacing token and font size is in rem, so the root
+   font size scales the whole HUD, dialogs and text without touching pixel art, the room, coordinate spaces or 100dvh.
+   With no data-ui-scale ("Auto"), large viewports (in CSS pixels, so after OS display scaling) get 125%.
+   --ui-zoom is the same factor, for icons drawn at their art's own size (`zoom: var(--ui-zoom)`), whose sizes differ. */
+:root {
+  --ui-zoom: 1;
+}
+@media (min-width: 2200px) and (min-height: 1100px) {
+  html:not([data-ui-scale]) {
+    font-size: 125%;
+    --ui-zoom: 1.25;
+  }
+}
+html[data-ui-scale="125"] {
+  font-size: 125%;
+  --ui-zoom: 1.25;
+}
+html[data-ui-scale="150"] {
+  font-size: 150%;
+  --ui-zoom: 1.5;
+}
+
 /* Page backgrounds from the original site: bg_start behind the lobby, bg in game. */
 body {
   font-family: var(--font-body);
@@ -31,6 +53,15 @@ main {
 /* Form controls don't inherit font-family from body by default; :where keeps zero specificity so monospace inputs win. */
 :where(button, input, select, textarea) {
   font-family: inherit;
+}
+/* Native checkboxes and radios are a fixed 13px; in rem (the same at 100%) they follow the UI scale. */
+:where(input[type="checkbox"], input[type="radio"]) {
+  width: 0.8125rem;
+  height: 0.8125rem;
+}
+/* Browsers size select text at a fixed 13.33px; in rem (the same size at 100%) it follows the UI scale (uiScale.ts). */
+:where(select) {
+  font-size: 0.8333rem;
 }
 
 /* Text fields take their surface's --field-* tokens (tokens.css; cut-card.css on the light card). :where keeps this at

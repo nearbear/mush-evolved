@@ -61,7 +61,7 @@
  * .id-card). The card is light card stock, like the iTrackie: light surfaces are your own things, dark ones the ship. The scene around it stays usable.
  */
 .room-view {
-  --hud-card: 56px; /* the bottom row's height (the inventory button, the minimap's location plate), which the tip card clears (tips.css) */
+  --hud-card: 3.5rem; /* the bottom row's height (the inventory button, the minimap's location plate), which the tip card clears (tips.css) */
 }
 .self-hud-top {
   position: absolute;
@@ -77,7 +77,7 @@
  * (HP and morale).
  */
 .id-card {
-  --band: 15px;
+  --band: 0.9375rem;
   --id-faction: var(--human);
   --cut-tr: 12px;
   --card-rim: var(--gold-edge);
@@ -138,7 +138,7 @@
   padding-right: var(--space-3); /* clear of the cut corner */
   overflow: hidden;
   color: var(--gold-edge);
-  font-size: 9px;
+  font-size: 0.5625rem;
   font-weight: bold;
   line-height: 1;
   letter-spacing: 0.14em;
@@ -170,16 +170,16 @@
   position: relative;
   align-self: start;
   box-sizing: border-box;
-  width: 44px;
-  height: 44px;
+  width: 2.75rem;
+  height: 2.75rem;
   display: grid;
   place-items: center;
   background: var(--terminal-header-bg); /* a terminal's title bar (terminal.css) */
   border: 1px solid var(--terminal-rule);
 }
 .id-card .avatar {
-  width: 32px;
-  height: 32px;
+  width: 2rem;
+  height: 2rem;
   image-rendering: pixelated;
 }
 /* The name under a tiny muted caption, then any titles you hold (nothing when you hold none). */
@@ -190,7 +190,7 @@
 }
 .id-caption {
   color: var(--muted);
-  font-size: 8px;
+  font-size: 0.5rem;
   font-weight: bold;
   line-height: 1.2;
   letter-spacing: 0.12em;
@@ -268,15 +268,15 @@
     linear-gradient(var(--gold-edge), var(--gold-edge)) center / 100% 3px no-repeat;
 }
 .id-card .pip-bar {
-  --s: 1px;
+  --s: 0.0625rem; /* 1px per sprite px at 100% UI scale */
   gap: 2px;
-  min-height: 13px; /* the heart and face's height, so the two columns' rows line up */
+  min-height: 0.8125rem; /* the heart and face's height, so the two columns' rows line up */
 }
 .id-card .pip-icon {
   margin-right: 1px;
 }
 .id-card .pip-icon.big {
-  height: 13px; /* 1x the 11x13 heart and face */
+  height: 0.8125rem; /* 1x the 11x13 heart and face */
   width: auto;
 }
 .id-card .pip-label {

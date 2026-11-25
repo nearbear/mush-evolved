@@ -47,14 +47,15 @@
 button.inventory-toggle {
   position: relative;
   flex: none;
-  width: 40px;
-  height: 36px;
+  width: 2.5rem;
+  height: 2.25rem;
   margin: 0;
   padding: 0;
   display: grid;
   place-items: center;
 }
 .inventory-toggle img {
+  zoom: var(--ui-zoom); /* the art's own size, times the UI scale (base.css) */
   image-rendering: pixelated;
 }
 /* A selected item (InventoryOverlay): the scene's pulsing selection glow (iso.css's .fx-selected) on the sack. */
@@ -76,8 +77,8 @@ button.inventory-toggle {
   gap: 0.125rem;
 }
 button.zoom-button {
-  width: 20px;
-  height: 18px;
+  width: 1.25rem;
+  height: 1.125rem;
   margin: 0;
   padding: 0;
   font-size: 0.8rem;
@@ -86,11 +87,11 @@ button.zoom-button {
 /* Phones: the ship button in the lower-right corner, just left of the sack (40px wide), its card opening above it. The lower-left corner is the action queue's. */
 .ship-overlay {
   position: absolute;
-  right: calc(0.5rem + 40px + 0.5rem);
+  right: calc(0.5rem + 2.5rem + 0.5rem);
   bottom: calc(0.5rem + var(--peek-clear, 0px));
   /* Above the inventory overlay, so the open card covers the zoom buttons. */
   z-index: 4;
-  max-width: calc(100% - 1rem - 40px - 0.5rem);
+  max-width: calc(100% - 1rem - 2.5rem - 0.5rem);
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -123,19 +124,19 @@ button.zoom-button {
 /* How many items are on the floor here. */
 .inventory-badge {
   position: absolute;
-  top: -6px;
-  right: -6px;
-  min-width: 16px;
-  height: 16px;
+  top: -0.375rem;
+  right: -0.375rem;
+  min-width: 1rem;
+  height: 1rem;
   padding: 0 3px;
   box-sizing: border-box;
-  border-radius: 8px;
+  border-radius: 0.5rem;
   background: var(--badge);
   border: 1px solid var(--glow-rim);
   color: #fff;
   font-size: 0.65rem;
   font-weight: bold;
-  line-height: 14px;
+  line-height: 0.875rem;
   text-align: center;
 }
 
@@ -175,27 +176,27 @@ button.zoom-button {
   min-height: 0;
   overflow-y: auto;
   align-content: start;
-  grid-auto-rows: var(--tile, 76px);
+  grid-auto-rows: var(--tile, 4.75rem);
 }
 .self-cards .item-zone[data-zone="inventory"] .item-grid {
   grid-auto-flow: column;
   grid-template-columns: none;
-  grid-template-rows: repeat(3, var(--tile, 76px));
-  grid-auto-columns: var(--tile, 76px);
+  grid-template-rows: repeat(3, var(--tile, 4.75rem));
+  grid-auto-columns: var(--tile, 4.75rem);
 }
 
 /* Phone: the two zones sit side by side; tiles stay at a finger's size (no smaller tiles), and the room zone scrolls
    past the rows that fit. */
 @media (max-width: 1023px) {
   .inventory-overlay {
-    --tile: 56px;
+    --tile: 3.5rem;
   }
   .self-cards {
     flex-direction: row;
   }
   .self-cards .item-grid,
   .self-cards .item-grid[data-compact] {
-    --tile: 56px;
+    --tile: 3.5rem;
   }
 }
 

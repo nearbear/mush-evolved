@@ -14,6 +14,7 @@ import { parseVerbosity, setVerbosity, useVerbosity } from "../announce.ts";
 import { parseFogDepth, setFogDepth, useFogDepth } from "../fogDepth.ts";
 import { LanguageSwitcher } from "../i18n/LanguageSwitcher.tsx";
 import { resetTips, setTipsOn, useTipPrefs } from "../tips.ts";
+import { parseUiScale, setUiScale, UI_SCALES, useUiScale } from "../uiScale.ts";
 import "./settings.css";
 import "./terminal.css";
 
@@ -55,6 +56,7 @@ export function SettingsDialog({
 }) {
   const { t } = useTranslation();
   const fogDepth = useFogDepth();
+  const uiScale = useUiScale();
   const verbosity = useVerbosity();
   const tips = useTipPrefs();
   const allOn = CHEATS.every((c) => activeCheats.includes(c));
@@ -79,6 +81,14 @@ export function SettingsDialog({
           <span>{t("language.label")}</span>
           <LanguageSwitcher inline />
         </div>
+        <label className="settings-row">
+          <span>{t("settings.uiScale.label")}</span>
+          <select value={uiScale} onChange={(e) => setUiScale(parseUiScale(e.target.value))}>
+            {UI_SCALES.map((s) => (
+              <option key={s} value={s}>{t(`settings.uiScale.${s}`)}</option>
+            ))}
+          </select>
+        </label>
         <label className="settings-row">
           <span>{t("settings.fogDepth.label")}</span>
           <select value={fogDepth} onChange={(e) => setFogDepth(parseFogDepth(e.target.value))}>

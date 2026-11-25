@@ -103,9 +103,9 @@
   .top-bar-actions {
     display: contents;
   }
-  /* The location plate (room name and minimap) keeps clear of the ship button and the sack in the lower-right corner (40px each). */
+  /* The location plate (room name and minimap) keeps clear of the ship button and the sack in the lower-right corner (2.5rem each). */
   .room-corner {
-    max-width: calc(100% - 1rem - 2 * (40px + 0.5rem));
+    max-width: calc(100% - 1rem - 2 * (2.5rem + 0.5rem));
   }
 
   .three-panel {
@@ -265,7 +265,7 @@
   }
   /* The iTrackie tabs' rounded top corners, rounded on all four since nothing abuts it (colours in itrackie.css). */
   .bottom-nav-button {
-    height: 26px;
+    height: 1.625rem;
     padding-block: 0;
     font-size: 0.85rem;
     border-radius: 6px;
@@ -392,7 +392,7 @@
     margin: 0 auto;
   }
   .inspect-target .inspect-item {
-    --tile: min(100px, 100cqw);
+    --tile: min(6.25rem, 100cqw);
     margin: 0 auto;
   }
   .inspect-body > .inspect-actions {

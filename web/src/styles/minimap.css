@@ -11,13 +11,13 @@
 }
 /* Placed by .room-corner (iso.css), under your room's name in the same card. */
 .minimap {
-  --cell: 2px;
+  --cell: 0.125rem; /* 2px at 100% UI scale */
   width: calc(var(--cols) * var(--cell));
   max-width: 100%;
   transition: width 0.15s ease-out;
 }
 .minimap.expanded {
-  --cell: 5px;
+  --cell: 0.3125rem;
 }
 .minimap svg {
   display: block;

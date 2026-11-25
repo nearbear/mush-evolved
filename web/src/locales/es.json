@@ -157,6 +157,13 @@
         "human": "Convertirse en humano"
       }
     },
+    "uiScale": {
+      "label": "Tamaño de la interfaz",
+      "auto": "Auto",
+      "100": "100%",
+      "125": "125%",
+      "150": "150%"
+    },
     "fogDepth": {
       "label": "Salas con niebla",
       "one": "1 sala alrededor",

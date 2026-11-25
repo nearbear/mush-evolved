@@ -7,8 +7,8 @@
   margin: var(--space-3) 0;
 }
 .inspect-portrait {
-  width: 48px;
-  height: 48px;
+  width: 3rem;
+  height: 3rem;
   image-rendering: pixelated;
   background: rgb(0 0 0 / 0.3);
   border-radius: 4px;
@@ -54,8 +54,17 @@
   display: block;
   box-sizing: border-box;
   width: 100%;
-  max-width: 210px;
+  max-width: 13.125rem; /* 210px at 100% UI scale */
   margin: var(--space-3) auto var(--space-2);
+}
+/* Desktop: a character's portrait fills the Inspect panel's width at any UI scale. */
+@media (min-width: 1024px) {
+  .inspect-figure:has(.inspect-figure-art .inspect-art) {
+    width: 100%;
+  }
+  .inspect-figure-art .inspect-art {
+    max-width: 100%;
+  }
 }
 /* A character's portrait gets the iTrackie's gold outline (edge, gold, edge from the inside out); inset shadows would draw under the image, so the border, outline and a spread shadow make the three lines. */
 .inspect-figure-art .inspect-art {
@@ -75,7 +84,7 @@
 .inspect-actions button {
   margin: 0;
   width: 100%;
-  height: 30px;
+  height: 1.875rem;
   font-size: calc(0.8rem + 4px);
 }
 
@@ -89,8 +98,8 @@
 }
 .status-icons img {
   display: block;
-  width: 32px;
-  height: 32px;
+  width: 2rem;
+  height: 2rem;
   image-rendering: pixelated;
 }
 /* A status with a number (contamination, Mush-only): the count sits on the icon's corner. */
@@ -101,14 +110,14 @@
   position: absolute;
   right: -2px;
   bottom: -2px;
-  min-width: 14px;
+  min-width: 0.875rem;
   padding: 0 2px;
-  border-radius: 7px;
+  border-radius: 0.4375rem;
   background: #000c;
   color: #fff;
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: bold;
-  line-height: 14px;
+  line-height: 0.875rem;
   text-align: center;
 }
 
@@ -151,18 +160,21 @@
   display: grid;
   place-items: center;
   box-sizing: border-box;
-  width: 36px;
-  height: 36px;
+  width: 2.25rem;
+  height: 2.25rem;
   margin: 0;
   padding: 0;
   background: rgb(10 20 45 / 0.8);
   border: 1px solid rgb(255 255 255 / 0.35);
   border-radius: 6px;
 }
+/* The art's own size (25px skills, the smaller plus) times the UI scale (base.css), still fitting the slot: zoom scales
+   the max too, so it is divided back out. */
 .skill-slot img {
   display: block;
-  max-width: 28px;
-  max-height: 28px;
+  zoom: var(--ui-zoom);
+  max-width: calc(1.75rem / var(--ui-zoom));
+  max-height: calc(1.75rem / var(--ui-zoom));
 }
 /* Your own empty slot: an amber socket (the gold outline, inset) around the plus that opens the picker. On the Mush
    stack the red edge stays outside it. Disabled (nothing to pick) it fades like any disabled button. */

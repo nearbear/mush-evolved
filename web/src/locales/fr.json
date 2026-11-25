@@ -157,6 +157,13 @@
         "human": "Devenir humain"
       }
     },
+    "uiScale": {
+      "label": "Taille de l'interface",
+      "auto": "Auto",
+      "100": "100%",
+      "125": "125%",
+      "150": "150%"
+    },
     "fogDepth": {
       "label": "Salles dans le brouillard",
       "one": "1 salle autour",

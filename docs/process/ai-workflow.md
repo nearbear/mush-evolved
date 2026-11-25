@@ -5350,8 +5350,21 @@ Owner asked to rotate three Mush skill icons (Slime Trap's to Mass Mouldering, M
 - **Decision (owner):** Implemented Pass 1 of #485: raised desktop `main.game` `max-width` to `2560px` (`web/src/styles/responsive.css`, in `px` so it stays decoupled from any future root `font-size` scaling) and added `defaultRoomZoom()` in `web/src/hud/InventoryOverlay.tsx` (matching `(min-width: 2000px) and (min-height: 900px)` for `2×`, otherwise `1×`) to initialize `GameView`'s room zoom state while preserving `+`/`−` stepping.
 - **What worked:** Guarding `typeof window.matchMedia === "function"` in `defaultRoomZoom()` kept the helper safe in both Node and jsdom test environments, and `web/tests/hud/roomZoom.test.ts` covers the wide/narrow/no-window cases alongside `stepZoom`.
 
+### 2026-11-24 — Wide-monitor layout Step 3A (#485)
+- **Decision (owner):** Adopted Step 3A of #485: added `@media (min-width: 2200px) and (min-height: 1100px) { html { font-size: 125%; } }` in `web/src/styles/base.css` to scale `rem`-based HUD panels, spacing, and typography on 2K+ displays without scaling pixel art or coordinate spaces, and converted the 3-slice button heights in `web/src/styles/buttons.css` (`1.3125rem`) and `web/src/styles/inspect.css` (`1.875rem`) from `px` to `rem` so they scale vertically with their labels.
+- **What worked:** Verified `TabOutline.tsx`, `ActionLabel.tsx`, and `InventoryOverlay.tsx` all measure layout via `getBoundingClientRect` / computed pixel values and `ResizeObserver`, and `itrackie.css` keeps `--pad`/`--cut` in `px`, so root `font-size` scaling requires no JS changes.
+
 ### 2026-11-24 — Channel plans card and composer UI (#315)
 
 - Implemented step 4 of `docs/plans/on-call.md`: `PlanCard` above private channels on desktop and behind a `Messages | Plan` switch on phones (`PrivateChannels.tsx`), plus `PlanComposer` as a `FramedDialog` on desktop and a full-screen sheet on phones (`responsive.css`).
 - Added `notInPlanRoom` to `ActionOption["lacks"]` (`shared/src/rules.ts` / `shared/src/types/view.ts`) and `planSlotsPerPlan` / `planExpiryDays` to `PublicConfig` so the client renders Go disabled away from the plan's room and enforces the composer's cap and expiry header strictly from the view without computing legality.
 - Added `plans.*`, `actions.lacksNotInPlanRoom`, and `errors.plan_*` translations across `en`, `fr`, and `es`, and unit tests in `web/tests/hud/plans.test.tsx` and `shared/tests/plans.test.ts`.
+
+
+### 2026-11-24: UI scale setting instead of an automatic 2K media query (#485 Step 3A)
+
+- Step 3A (root `font-size: 125%` behind `(min-width: 2200px) and (min-height: 1100px)`) never applied on the owner's 2560×1440 monitor: Windows display scaling at 125% gives the browser a 2048×1018 CSS viewport. Media queries measure CSS pixels, so "is this a big monitor" can't be told from inside the page reliably.
+- The owner found the edge-to-edge layout lopsided but rejected bringing back a width cap ("that's how it used to look"). Decided instead: a per-device **UI scale** setting (Auto / 100% / 125% / 150%) in Settings > General, scaling the whole rem-based UI (panels, top bar, dialogs, overlays, lobby). `web/src/uiScale.ts` stores it in localStorage and sets `data-ui-scale` on `<html>` (no inline styles under the CSP); `base.css` maps it to a font size. Auto keeps the 3A media query.
+- What worked: checking the computed root font size headless at the owner's likely viewport before theorizing. What needed correction: the original plan assumed monitor pixels equal CSS pixels.
+- Follow-up after the owner tried 150%: the iTrackie tabs (px padding and icon height) and the Settings selects (the browser's fixed 13.33px) didn't scale; both moved to rem with the same size at 100%. Things sized in px stay put at any UI scale, so each px holdout is found by looking, not by grepping.
+- Second round after the owner's 150% look: action-button icons, chat crew sprites/NERON eye/log "i" icons (and the 38px marker column) take `zoom: var(--ui-zoom)`; item tiles' `--tile` moved to rem, so `InventoryPanel.tsx`'s compact-grid check now reads the root font size instead of a hardcoded 76px; native checkboxes/radios sized in rem in `base.css`. Phones stay at 100% unless the player picks a preset.

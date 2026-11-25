@@ -79,7 +79,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  height: 22px;
+  height: 1.375rem; /* 22px at 100% UI scale */
   margin: 0;
   padding: 0 var(--space-3);
   list-style: none;
@@ -96,6 +96,7 @@
 }
 .alert-button img {
   display: block;
+  zoom: var(--ui-zoom);
   image-rendering: pixelated;
 }
 .alert-button.empty img {
@@ -120,7 +121,7 @@
   --l: url("../../../Mush/www/img/design/alarm_on_left.gif");
   --m: url("../../../Mush/www/img/design/alarm_on_bg.gif");
   --r: url("../../../Mush/www/img/design/alarm_on_right.gif");
-  height: 26px;
+  height: 1.625rem;
 }
 .alert-bar > li {
   display: flex;
@@ -208,8 +209,8 @@
   --id-faction: var(--mush);
 }
 .nameplate .id-portrait {
-  width: 40px;
-  height: 40px;
+  width: 2.5rem;
+  height: 2.5rem;
 }
 /* Tap your portrait to inspect yourself (the Inspect panel), as the desktop ID card's .id-open does (self-hud.css). */
 .nameplate .id-open {
@@ -253,7 +254,7 @@
   flex: 1 1 0;
   min-width: 0;
   box-sizing: content-box;
-  height: 26px;
+  height: 1.625rem; /* 26px at 100% UI scale */
   /* On top of the screen: clear of the notch (the page is viewport-fit=cover), and of a side one in landscape. */
   padding: max(var(--space-1), env(safe-area-inset-top)) max(var(--space-2), env(safe-area-inset-right)) var(--space-1)
     max(var(--space-2), env(safe-area-inset-left));
@@ -315,7 +316,7 @@
 }
 /* AP / MP / HP / morale bars: a sideways slotted frame drawn in SVG from the sprite's pixels (see PipBar.tsx). */
 .pip-bar {
-  --s: 2px; /* screen px per sprite px */
+  --s: 0.125rem; /* screen px per sprite px: 2 at 100% UI scale */
   display: flex;
   align-items: center;
   gap: 2px;
@@ -337,12 +338,12 @@
   justify-content: center;
 }
 .pip-label img {
-  height: 10px; /* 2x the 5px sprites, whole pixels */
+  height: 0.625rem; /* 2x the 5px sprites, whole pixels */
   width: auto;
   image-rendering: pixelated;
 }
 .pip-label img.big {
-  height: 26px; /* 2x the 11x13 sprite, whole pixels */
+  height: 1.625rem; /* 2x the 11x13 sprite, whole pixels */
 }
 .pip-bar .sub {
   margin-left: var(--space-2);
@@ -397,13 +398,13 @@
   font-variant-numeric: tabular-nums;
 }
 .stat-chip img {
-  height: 10px; /* 2x the 5px sprites, whole pixels */
+  height: 0.625rem; /* 2x the 5px sprites, whole pixels */
   width: auto;
   image-rendering: pixelated;
 }
 /* The heart and face are 11x13 sprites, already readable at 1x. */
 .stat-chip img.big {
-  height: 13px;
+  height: 0.8125rem;
 }
 /* A dark column the card's full height, top edge to bottom edge, ruled off from the stock by the card's outline. */
 .resource-grid {
@@ -428,13 +429,13 @@
   gap: var(--space-1);
   font-size: 0.75rem;
   font-weight: bold;
-  line-height: 16px;
+  line-height: 1rem;
   font-variant-numeric: tabular-nums;
 }
 /* Every icon gets a 16x16 box at 1x (overriding .stat-chip img's 10px): smaller sprites sit centred in it at their own size, larger ones shrink to fit. */
 .resource-cell img {
-  width: 16px;
-  height: 16px;
+  width: 1rem;
+  height: 1rem;
   object-fit: scale-down;
   image-rendering: pixelated;
 }
@@ -490,8 +491,8 @@
   gap: var(--space-1);
 }
 .stat-cap li img {
-  width: 16px;
-  height: 16px;
+  width: 1rem;
+  height: 1rem;
   flex: none;
   image-rendering: pixelated;
 }
@@ -607,6 +608,7 @@
 }
 .ship-titles-button img {
   display: block;
+  zoom: var(--ui-zoom);
   image-rendering: pixelated;
 }
 .ship-titles-button:hover img,
@@ -624,6 +626,7 @@
 }
 .ship-resource img {
   display: block;
+  zoom: var(--ui-zoom); /* the art's own size, times the UI scale (base.css) */
   image-rendering: pixelated;
 }
 /* Light current value, muted maximum; tabular figures in a fixed-width slot (its width is set inline). */
@@ -743,6 +746,7 @@
 }
 .crew-bar img {
   display: block;
+  zoom: var(--ui-zoom); /* 1x at 100% UI scale (base.css) */
   image-rendering: pixelated;
 }
 .crew-card .crew-group {

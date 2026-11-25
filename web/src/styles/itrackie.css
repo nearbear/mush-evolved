@@ -113,8 +113,9 @@
   z-index: 0;
   overflow: hidden;
   /* Idle tabs run 3px under the card (which is above them) so its rim stays whole; the extra height keeps the icon clear of the gold rim. */
-  min-height: 31px;
-  padding: 6px 8px 9px;
+  /* rem, so the tabs grow with the UI scale (uiScale.ts); 31px and 6px 8px 9px at 100%. */
+  min-height: 1.9375rem;
+  padding: 0.375rem 0.5rem 0.5625rem;
   margin: 0;
   border: 0;
   border-radius: 8px 8px 0 0;
@@ -131,7 +132,7 @@
   background: #2c4698;
 }
 .tab-icon {
-  height: 18px;
+  height: 1.125rem; /* 18px at 100% UI scale */
   image-rendering: pixelated;
   vertical-align: middle;
   opacity: 0.8;
@@ -508,14 +509,14 @@
   position: absolute;
   top: 1px;
   right: 1px;
-  min-width: 14px;
+  min-width: 0.875rem;
   padding: 0 3px;
-  border-radius: 7px;
+  border-radius: 0.4375rem;
   background: #d8332f;
   color: #fff;
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: bold;
-  line-height: 14px;
+  line-height: 0.875rem;
   text-align: center;
 }
 
@@ -524,14 +525,14 @@
 .unread-chip {
   flex: none;
   margin-left: auto;
-  min-width: 14px;
+  min-width: 0.875rem;
   padding: 0 3px;
-  border-radius: 7px;
+  border-radius: 0.4375rem;
   background: #d8332f;
   color: #fff;
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: bold;
-  line-height: 14px;
+  line-height: 0.875rem;
   text-align: center;
 }
 

@@ -10,7 +10,7 @@ button {
   --btn-mid: url("../../../Mush/www/img/design/butbg.png");
   --btn-right: url("../../../Mush/www/img/design/butright.png");
   margin: var(--space-1);
-  height: 21px;
+  height: 1.3125rem;
   background:
     var(--btn-left) left / 5px 100% no-repeat,
     var(--btn-right) right / 5px 100% no-repeat,
@@ -70,7 +70,7 @@ button.big[data-armed] {
   --btn-right: url("../../../Mush/www/img/design/but2rightover.png");
 }
 
-/* Action button content: bold cost, action icon, label. Icon drawn at 1x. */
+/* Action button content: bold cost, action icon, label. Icons drawn at their art's size times the UI scale. */
 .action-label {
   display: inline-flex;
   align-items: center;
@@ -81,4 +81,5 @@ button.big[data-armed] {
 }
 .action-label img {
   image-rendering: pixelated;
+  zoom: var(--ui-zoom);
 }

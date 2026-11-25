@@ -19,8 +19,8 @@ import { useKeepFocus } from "./useKeepFocus.ts";
 
 type Zone = "room" | "inventory";
 
-// Keep in sync with --tile's default and the grid gap in styles/items.css.
-const TILE = 76;
+// Keep in sync with --tile's default (4.75rem) and the grid gap in styles/items.css.
+const TILE_REM = 4.75;
 const GAP = 6;
 
 /**
@@ -40,7 +40,9 @@ function useOverflowsSpace(count: number) {
     measure();
     return () => ro.disconnect();
   }, [hasGrid]);
-  const fit = (px: number) => Math.max(1, Math.floor((px + GAP) / (TILE + GAP)));
+  // The tile is in rem, so it follows the UI scale (uiScale.ts): measure the root font size.
+  const tile = TILE_REM * (typeof document === "undefined" ? 16 : parseFloat(getComputedStyle(document.documentElement).fontSize) || 16);
+  const fit = (px: number) => Math.max(1, Math.floor((px + GAP) / (tile + GAP)));
   return { ref, compact: count > fit(size.width) * fit(size.height) };
 }
 

@@ -154,6 +154,13 @@
         "human": "Become human"
       }
     },
+    "uiScale": {
+      "label": "UI scale",
+      "auto": "Auto",
+      "100": "100%",
+      "125": "125%",
+      "150": "150%"
+    },
     "fogDepth": {
       "label": "Fogged rooms shown",
       "one": "1 room out",

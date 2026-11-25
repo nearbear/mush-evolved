@@ -6,6 +6,7 @@ import { App } from "./App.tsx";
 import { ToastProvider } from "./Toasts.tsx";
 import "./i18n/index.ts";
 import "./styles.css";
+import "./uiScale.ts";
 
 // Client-side routes (React Router, declarative mode). The Worker serves index.html for any unknown path
 // (`not_found_handling` in server/wrangler.jsonc) and Vite does the same in dev, so a reload on any route works.
