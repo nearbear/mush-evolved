@@ -260,16 +260,39 @@ button.bios-switch:focus-visible {
   }
 }
 
-/* A list row: the card on the left, the title row beside it, then the progress and checklist. On a phone the title row
-   spans the card too (responsive.css), so a title isn't squeezed into the space left by the card and pill. */
+/* A list row: the card on the left; beside it the title row with the percent at its right edge, then the bar, then the
+   footer (checklist left, work buttons right). On a phone (responsive.css) the title row spans the card too, so a title
+   isn't squeezed into the space left by the card and pill. */
 li.research-item {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: auto minmax(0, 1fr) auto;
   grid-template-areas:
-    "card title"
-    "card body";
+    "card title pct"
+    "card body body"
+    "card footer footer";
   column-gap: 0.5rem;
   row-gap: 0.25rem;
+}
+li.research-item > .research-percent {
+  grid-area: pct;
+  align-self: center;
+  white-space: nowrap;
+}
+/* The checklist and the buttons share a line while they fit, the buttons at its right; otherwise they wrap, and the
+   checklist wraps inside itself. */
+li.research-item > .research-footer {
+  grid-area: footer;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.5rem;
+}
+.research-footer > .research-needs {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.research-footer > .research-actions {
+  margin-left: auto;
 }
 li.research-item .research-card {
   grid-area: card;
@@ -293,6 +316,7 @@ li.research-item .research-title {
   width: 50px;
   height: 75px;
   image-rendering: pixelated;
+  zoom: var(--ui-zoom); /* the art's own size, times the UI scale (base.css) */
 }
 
 .research-body {
@@ -333,6 +357,18 @@ li.research-item .research-title {
 .research-title .skill-status,
 .research-title > button {
   margin-left: auto;
+}
+/* A research or project's work button (and spoil, Contaminate), right-aligned; several wrap onto more lines when narrow. */
+.research-actions {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+.research-actions > button {
+  margin: 0;
+  white-space: nowrap;
 }
 .research-title > img {
   image-rendering: pixelated;
@@ -1146,4 +1182,12 @@ li.signal-next {
 
 .kube-minimap .minimap-room:hover {
   opacity: 0.95;
+}
+
+/* The research lab has a fourth tab, Unimplemented, on desktop only (it is left out below 1024px), so its window is
+   wider there to keep all four on one line in every language. */
+@media (min-width: 1024px) {
+  .settings-popup.terminal-popup:has(.research-tab-list) {
+    width: min(34rem, calc(100vw - 2rem));
+  }
 }

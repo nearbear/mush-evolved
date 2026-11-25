@@ -5377,3 +5377,21 @@ Owner asked to rotate three Mush skill icons (Slime Trap's to Mass Mouldering, M
 ### 2026-11-24 — Replay action bar progress at playback step speed
 
 Investigated why the action duration progress bar stayed empty/static in replays (skip mode jumps past action starts, and with skip off the frozen clock pauses the bar at `elapsed ≈ 0`). Extended `ServerClock` with an optional `step: { to, durationMs }` window while `ReplayPage` is playing, parameterized `@keyframes action-bar-fill` with `--bar-from` / `--bar-to`, and updated `ActionBar` so bars fill from their current step fraction to the next stop's fraction over `playInterval(speed, skip)` (staying paused when playback is paused or the bar is already full). Added unit tests in `web/tests/hud/serverClock.test.tsx`; verified with `npm run verify:web`.
+
+## 2026-11-25: research terminal Unimplemented tab
+
+- **What:** The research lab's list (`ProgressList` in `web/src/hud/TerminalDialog.tsx`) moves researches that are `"none"` in `RESEARCH_STATUS` out of Active/Blocked/Done into a last Unimplemented tab, and research rows drop the implementation-status badge. The tab is left out on the phone layout (`useMobile`), so those researches are hidden there. The research window is 34rem wide on desktop (`settings.css`, via `:has(.research-tab-list)`) to fit four tabs. NERON projects share `ProgressList` and keep their status badges (the new `unimplemented` prop is opt-in; `status` is now optional).
+- **Worked:** Classing each row by its own state (done/active/blocked) instead of by tab, so the mixed Unimplemented tab greys blocked rows as before.
+
+## 2026-11-25: research/project work buttons on the title row, gain in the tooltip, cards follow UI scale
+
+- **What:** In the research and project terminals (`ProgressList`, `TerminalDialog.tsx`) the work button (and spoil, Contaminate) moved from the progress row to the right end of the title row (`.research-actions`, settings.css). The gain left the button text and went into the button's tooltip with the failure chance when it can fail (`gainHint` in `RelayDetails.tsx`, new `relay.gainHint` / `relay.failChance` in en/fr/es); the dirty chance was already in that card. The terminal cards (`.research-card`) and the iTrackie research tracker cards now take `zoom: var(--ui-zoom)` so they grow with the UI scale. PILGRED's repair button still shows its gain in the text.
+- **Interpretation to confirm:** research's Participate never fails as such; its only risk is the 15% dirty chance, already shown in the tooltip. The new failure line appears only for actions with `chance < 1`.
+
+## 2026-11-25: research/project rows stacked on the phone
+
+- **What:** The work buttons (`.research-actions`) and a second percent (`.research-percent`) are now direct children of the row (`ProgressList`, `TerminalDialog.tsx`), placed by grid areas: on desktop `"card title actions" / "card body body"` (percent beside the bar as before); below 1024px `"title title pct" / "card body body" / "card actions actions"`, so the phone stacks title (percent at its right), bar, then buttons, and hides the bar's own percent. One DOM, two layouts, by CSS only; the percent is rendered twice (one hidden) rather than moving it with JS.
+
+## 2026-11-25: research/project rows: one layout, footer with checklist and buttons
+
+- **What:** Desktop now matches the phone: title with the percent at its right, the bar, then a `.research-footer` flex row (wrapping) with the checklist (`.research-needs`, moved out of `.research-body`) on the left and the work buttons on the right (`margin-left: auto`). The duplicate percent beside the bar is gone; the phone layout differs only in the title row spanning the card (`responsive.css`).

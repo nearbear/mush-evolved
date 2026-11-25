@@ -12,6 +12,19 @@ export function withGain(t: TFunction, action: string, gain: RelayTargetView["ga
 }
 
 /**
+ * A work button's tooltip text: the progress it adds (from the view's `gain`) and, when the action can fail, its chance
+ * of failing; then `extra` (a caller's own note). Undefined when there is nothing to say.
+ */
+export function gainHint(t: TFunction, gain: RelayTargetView["gain"] | undefined, chance: number, extra?: string): string | undefined {
+  const lines = [
+    gain && t("relay.gainHint", { gain: gain.min === gain.max ? t("relay.gainOne", { min: gain.min }) : t("relay.gain", { min: gain.min, max: gain.max }) }),
+    chance < 1 && t("relay.failChance", { percent: Math.round((1 - chance) * 100) }),
+    extra,
+  ].filter((line): line is string => typeof line === "string" && line !== "");
+  return lines.length ? lines.join(" ") : undefined;
+}
+
+/**
  * Under a target's progress bar: the work held back only for lack of other contributors, and its tokens (who made each
  * and what it is worth now, as a floppy-disk chip with their bust), in the order they were made. Only the view's own numbers; nothing is computed here.
  */

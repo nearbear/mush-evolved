@@ -1932,7 +1932,8 @@
     "tabs": {
       "active": "À faire",
       "blocked": "Bloqué",
-      "done": "Fait"
+      "done": "Fait",
+      "unimplemented": "Non implémentées"
     },
     "none": "Rien ici.",
     "percent": "{{percent}} %",
@@ -2015,6 +2016,8 @@
     "token": "{{name}} : {{percent}} %",
     "unknown": "Quelqu'un",
     "withGain": "{{action}} {{gain}}",
+    "gainHint": "Ajoute {{gain}} de progression.",
+    "failChance": "Risque d’échec : {{percent}} %.",
     "samples": "Échantillons",
     "tokenPending": "{{name}} : {{percent}} %, en attente"
   },

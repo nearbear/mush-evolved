@@ -276,6 +276,7 @@
   width: 50px;
   height: 75px;
   image-rendering: pixelated;
+  zoom: var(--ui-zoom); /* the art's own size, times the UI scale (base.css) */
 }
 .research-tracker-card.pending img {
   filter: grayscale(1);

@@ -1998,7 +1998,8 @@
     "tabs": {
       "active": "Active",
       "blocked": "Blocked",
-      "done": "Done"
+      "done": "Done",
+      "unimplemented": "Unimplemented"
     },
     "none": "Nothing here.",
     "percent": "{{percent}}%",
@@ -2081,6 +2082,8 @@
     "token": "{{name}}: {{percent}}%",
     "unknown": "Someone",
     "withGain": "{{action}} {{gain}}",
+    "gainHint": "Adds {{gain}} progress.",
+    "failChance": "Failure chance: {{percent}}%.",
     "samples": "Samples",
     "tokenPending": "{{name}}: {{percent}}%, pending"
   },

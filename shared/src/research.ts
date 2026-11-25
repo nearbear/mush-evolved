@@ -146,7 +146,7 @@ export const RESEARCH_REQUIRES: Readonly<Partial<Record<ResearchId, ResearchRequ
 export type ResearchStatus = "full" | "partial" | "none";
 
 /**
- * Implementation status shown in the terminal's research list. Update it when a research gains effects. Progress
+ * Implementation status: researches that are "none" go in the research terminal's Unimplemented tab (desktop only). Update it when a research gains effects. Progress
  * itself works for all of them; only researches with completion effects are listed.
  */
 export const RESEARCH_STATUS: Readonly<Partial<Record<ResearchId, ResearchStatus>>> = { ANTI_MUSH_SERUM: "full", ANTISPORE_GAZ: "full", CONSTIPASPORE_SERUM: "full", DRUG_DISPENSER: "full", FUNGUS_SCRAMBLER: "full", GUARANA_CAPUCCINO: "full", HEALING_OINTMANT: "full", MUSHICIDE_SOAP: "full", MUSHOPHAGE_BACTERIA: "full", MYCO_ALARM: "full", MYCOSCAN: "full", NCC_LENS: "full", SPORE_EXTRACTOR: "full", STEROIDS: "full", SUPER_CALC: "partial", WHOS_WHO: "full" };

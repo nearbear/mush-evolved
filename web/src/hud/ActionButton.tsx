@@ -17,7 +17,7 @@ export function ActionButton(props: {
   onAction: (action: Action) => void;
   children?: ReactNode;
   className?: string;
-  hint?: string;
+  hint?: string | undefined;
   singlePress?: boolean;
   switchProps?: { checked: boolean; label: string };
   radioProps?: { checked: boolean };
@@ -167,7 +167,7 @@ export function DisabledActionButton({
   blocked: ActionOption;
   children?: ReactNode;
   className?: string;
-  hint?: string;
+  hint?: string | undefined;
   switchProps?: { checked: boolean; label: string } | undefined;
   radioProps?: { checked: boolean } | undefined;
 }) {
