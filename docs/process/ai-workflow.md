@@ -5329,3 +5329,7 @@ Owner asked to rotate three Mush skill icons (Slime Trap's to Mass Mouldering, M
 ### 2026-11-24: Terrence's Wheelchair passive updated to match eMush
 - **Decision (owner):** Added eMush's -2 MP solo AP-to-MP conversion penalty and free exit (0 MP, waiving heavy items and Broken Ribs, with a public room log naming a helper) when an awake, active, non-comatose living roommate has stood in the room for at least 30 seconds (preventing infinite pursuer evasion). Applies to Mush Terrence too; Accommodate stays for players who don't want to wait 30s.
 - **What worked:** Tracking `PlayerState.enteredRoomAt` (server-only, unset at launch, set in `arrive`/`board`) and hooking `nextWheelchairHelpAt` into `nextDue`/`tick` kept the rules pure and automatically wakes the server at the 30s mark.
+
+### 2026-11-24 — Terrence's wheelchair free movement no longer requires an awake roommate
+- **Decision (owner):** Removed the awake (`lyingIn === undefined`) requirement for `wheelchairHelpers`; only non-inactive and non-comatose (and living in the room for 30s) are required.
+- **What worked:** `isEligibleHelper` in `shared/src/modifiers/wheelchair.ts` was the single place checking roommate eligibility, so removing `other.lyingIn === undefined` updated `wheelchairHelpers` and `nextWheelchairHelpAt` together.

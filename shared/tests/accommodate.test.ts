@@ -285,11 +285,10 @@ describe("the wheelchair trait", () => {
     expect(helped?.params).toEqual({ name: player(ready, "p1").character, target: "terrence" });
   });
 
-  it("ignores roommates who are lying down, comatose, inactive, or dead", () => {
+  it("ignores roommates who are comatose, inactive, or dead, but still counts roommates lying in bed", () => {
     const base = ship();
     player(base, "p2").room = NEXT;
     const cases: Array<[string, (s: GameState) => void]> = [
-      ["lying down", (s) => { player(s, "p1").modifiers.push("lying_down"); player(s, "p1").lyingIn = "BED"; }],
       ["comatose", (s) => { player(s, "p1").comaUntil = s.cycle + 2; }],
       ["inactive", (s) => { player(s, "p1").inactivity = "inactive"; }],
       ["super_inactive", (s) => { player(s, "p1").inactivity = "super_inactive"; }],
@@ -302,6 +301,14 @@ describe("the wheelchair trait", () => {
       expect(movementRules(s, player(s, "p0")).mpPerMove, label).toBe(config.movement.mpPerMove);
       expect(nextDue(s), label).toBeNull();
     }
+
+    // Lying down in bed does NOT disqualify a roommate (only non-inactive and non-comatose are required).
+    const lying = clone(base);
+    lying.now = 100 + config.wheelchair.helpDelayMs;
+    player(lying, "p1").enteredRoomAt = 100;
+    player(lying, "p1").modifiers.push("lying_down");
+    player(lying, "p1").lyingIn = "BED";
+    expect(movementRules(lying, player(lying, "p0")).mpPerMove).toBe(0);
   });
 
   it("waives heavy-item and Broken Ribs MP costs when helped, and still applies to a Mush Terrence", () => {

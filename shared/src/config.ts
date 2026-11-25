@@ -485,7 +485,7 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   // Confirmed 2026-10-17: lying down in a bed is free (the +1 AP per cycle is the lying_down modifier).
   accommodate: { cost: { ap: 0 }, offerMs: 5 * 60_000 },
   // Owner, 2026-11-24: Terrence's wheelchair passive matches eMush (-2 MP per AP-to-MP conversion; free move out of a
-  // room with an awake, active, non-comatose roommate who has stood there for at least 30s).
+  // room with an active, non-comatose roommate who has stood there for at least 30s).
   wheelchair: { conversionMpPenalty: 2, helpDelayMs: 30_000 },
   plans: { expiryDays: 1, slotsPerPlan: 12, finishedKept: 1 },
   lieDown: { cost: { ap: 0 } },

@@ -5,7 +5,7 @@ import type { GameState, PlayerState } from "../types.ts";
 
 // Terrence's wheelchair (owner, 2026-10-19; updated 2026-11-24 to match eMush while keeping Accommodate):
 // - Solo AP-to-MP conversions yield `wheelchair.conversionMpPenalty` (2) fewer MP (clamped at 0).
-// - Leaving a room is free (0 MP, waiving heavy items and Broken Ribs) while at least one awake, active, non-comatose
+// - Leaving a room is free (0 MP, waiving heavy items and Broken Ribs) while at least one active, non-comatose
 //   living roommate has stood in the room for at least `wheelchair.helpDelayMs` (30s). Leaving for free logs a public
 //   room line naming a qualifying roommate (`wheelchairHelped`, actions/move.ts).
 // - Applies to a Mush Terrence too, like all other character traits.
@@ -18,12 +18,11 @@ export const wheelchair: Modifier = {
   }),
 };
 
-/** Whether `other` can help a wheelchair user leave their room right now (living, awake, non-comatose, active roommate). */
+/** Whether `other` can help a wheelchair user leave their room right now (living, non-comatose, active roommate). */
 const isEligibleHelper = (state: Readonly<GameState>, player: Readonly<PlayerState>, other: Readonly<PlayerState>): boolean =>
   other.id !== player.id &&
   other.alive &&
   other.room === player.room &&
-  other.lyingIn === undefined &&
   !isComatose(state, other) &&
   !isInactive(other);
 
@@ -32,7 +31,7 @@ const hasWaitedEnough = (state: Readonly<GameState>, other: Readonly<PlayerState
   other.enteredRoomAt === undefined || state.now - other.enteredRoomAt >= state.config.wheelchair.helpDelayMs;
 
 /**
- * Living, awake, non-comatose, active roommates who have been in the room for at least `config.wheelchair.helpDelayMs`.
+ * Living, non-comatose, active roommates who have been in the room for at least `config.wheelchair.helpDelayMs`.
  * In seat order, so picking the first for the public log is deterministic without touching `state.rng`.
  */
 export function wheelchairHelpers(state: Readonly<GameState>, player: Readonly<PlayerState>): PlayerState[] {

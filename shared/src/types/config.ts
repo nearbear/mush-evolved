@@ -822,7 +822,7 @@ export interface GameConfig {
   };
   accommodate: { cost: { ap: number }; offerMs: number }; // AP spent to offer to push someone's wheelchair, and how long (server ms) the offer waits to be accepted (owner, 2026-10-19: free, 5 minutes).
   // Terrence's wheelchair passive (owner, 2026-11-24, matching eMush): -2 MP on solo AP-to-MP conversions, and free
-  // moves out of a room when an awake, active, non-comatose roommate has stood there for at least `helpDelayMs` (30s).
+  // moves out of a room when an active, non-comatose roommate has stood there for at least `helpDelayMs` (30s).
   wheelchair: { conversionMpPenalty: number; helpDelayMs: number };
   // Channel plans (docs/plans/on-call.md, owner 2026-10-30). A plan posted on day N expires at the end of day
   // N + `expiryDays` if still open; at most `slotsPerPlan` slots; each channel keeps its `finishedKept` latest finished plans.
