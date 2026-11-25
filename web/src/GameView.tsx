@@ -216,7 +216,10 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
   // The Superkube's options (#170): a cheat input, so only while cheats are allowed, and never in a replay.
   const kube = cheatsAllowed && !readOnly ? (op: KubeOpId, arg?: string | number) => post(arg === undefined ? { type: "kube", op } : { type: "kube", op, arg }) : undefined;
 
-  const terminal = terminalId ? view.roomEquipment.find((e) => e.id === terminalId) ?? null : null;
+  const terminal =
+    terminalId && view.actions.some((o) => o.action.type === "access" && o.action.equipment === terminalId)
+      ? view.roomEquipment.find((e) => e.id === terminalId) ?? null
+      : null;
 
   return (
     <ServerClockContext.Provider value={clock}>

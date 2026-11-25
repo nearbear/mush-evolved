@@ -197,6 +197,22 @@ describe("NERON's BIOS", () => {
     expect(s3.log.at(-1)).toMatchObject({ key: "biosLockPiloting", visibleTo: ["p0"] });
   });
 
+  it("evicts unqualified occupants from locked terminals when crew lock changes", () => {
+    const s = ship();
+    // p0 at BIOS, p1 (non-Designer) at NERON_CORE, p2 (Designer) at NERON_CORE.
+    player(s, "p2").skills = ["designer"];
+    let cur = must(applyAction(s, "p0", { type: "access", equipment: TERMINAL }));
+    cur = must(applyAction(cur, "p1", { type: "access", equipment: "NEXUS_ROOM:NERON_CORE" }));
+    cur = must(applyAction(cur, "p2", { type: "access", equipment: "NEXUS_ROOM:NERON_CORE" }));
+    expect(player(cur, "p1").spot?.kind).toBe("occupancy");
+    expect(player(cur, "p2").spot?.kind).toBe("occupancy");
+
+    const locked = must(applyAction(cur, "p0", setLock("projects")));
+    expect(player(locked, "p0").spot?.kind).toBe("occupancy");
+    expect(player(locked, "p1").spot).toBeUndefined();
+    expect(player(locked, "p2").spot?.kind).toBe("occupancy");
+  });
+
   it("switching ACTOPI off hides who is in the other rooms", () => {
     const s = ship();
     s.research.WHOS_WHO = RESEARCH_COMPLETE;

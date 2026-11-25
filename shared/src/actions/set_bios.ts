@@ -3,6 +3,7 @@ import {
   actopiUnlocked,
   biosTerminalsHere,
   BIOS_OPTIONS,
+  canAccessTerminal,
   canChangeBios,
   CPU_PRIORITIES,
   CREW_LOCKS,
@@ -14,6 +15,7 @@ import {
   type CrewLock,
 } from "../bios.ts";
 import { logPrivate } from "../log.ts";
+import { leaveTerminal } from "../spot.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
 export type SetBiosActionData =
@@ -88,6 +90,12 @@ export class SetBiosAction extends Action<SetBiosActionData> {
     }
     if (target.option === "crew_lock") {
       state.bios.crew_lock = target.value;
+      for (const p of state.players) {
+        const spot = p.spot;
+        if (spot?.kind !== "occupancy") continue;
+        const eq = state.equipment[p.room]?.find((e) => e.id === spot.equipment);
+        if (eq && !canAccessTerminal(state, p, eq)) leaveTerminal(p);
+      }
       logPrivate(state, player.id, CREW_LOCK_LOG_KEYS[target.value]);
       return;
     }

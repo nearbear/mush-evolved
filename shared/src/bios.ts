@@ -4,8 +4,9 @@
 // (owner, 2026-10-24).
 
 import { RESEARCH_COMPLETE } from "./research.ts";
+import { hasSkill } from "./skills.ts";
 import { hasTitleAccess } from "./titles.ts";
-import type { GameState, PlayerState } from "./types.ts";
+import type { Equipment, GameState, PlayerState } from "./types.ts";
 
 export const BIOS_OPTIONS = ["actopi", "death_announcements", "plasma_shield"] as const;
 export type BiosOption = (typeof BIOS_OPTIONS)[number];
@@ -58,3 +59,33 @@ export const canChangeBios = (state: Readonly<GameState>, player: Readonly<Playe
 /** Bonus added to `tokenBase` when BIOS CPU priority matches `"projects"` or `"research"` (owner, 2026-11-21). */
 export const cpuPriorityBonus = (state: Readonly<GameState>, target: "projects" | "research"): number =>
   state.bios.cpu_priority === target ? state.config.bios.cpuPriorityBonus : 0;
+
+/**
+ * Whether `player` may access and work at NERON's core (including auxiliary terminals) under the current BIOS crew lock
+ * (owner, 2026-11-21, 2026-11-24): anyone unless the lock is on projects, in which case only Designers (or `freeHacking`).
+ */
+export const canWorkProject = (state: Readonly<GameState>, player: Readonly<PlayerState>): boolean =>
+  state.bios.crew_lock !== "projects" || hasSkill(player, "designer") || player.cheats.includes("freeHacking");
+
+/**
+ * Whether `player` may access and work at the research lab terminal under the current BIOS crew lock (owner, 2026-11-21,
+ * 2026-11-24): anyone unless the lock is on research, in which case only Biologists, Medics, Polyvalent (`skilful`), or
+ * `freeHacking`.
+ */
+export const canWorkResearch = (state: Readonly<GameState>, player: Readonly<PlayerState>): boolean =>
+  state.bios.crew_lock !== "research" ||
+  hasSkill(player, "biologist") ||
+  hasSkill(player, "medic") ||
+  hasSkill(player, "skilful") ||
+  player.cheats.includes("freeHacking");
+
+/** Whether `player` is allowed past NERON's crew lock to open `equipment`'s terminal window (matches eMush; owner, 2026-11-24). */
+export const canAccessTerminal = (
+  state: Readonly<GameState>,
+  player: Readonly<PlayerState>,
+  equipment: Readonly<Pick<Equipment, "type">>,
+): boolean => {
+  if (equipment.type === "NERON_CORE") return canWorkProject(state, player);
+  if (equipment.type === "RESEARCH_LAB") return canWorkResearch(state, player);
+  return true;
+};

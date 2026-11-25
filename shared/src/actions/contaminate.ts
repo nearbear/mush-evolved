@@ -1,6 +1,7 @@
 import { Action, type ActionCost, type ActionVisibility, isString } from "./action.ts";
 import { researchPool } from "./research.ts";
 import { contaminate } from "../assay.ts";
+import { canWorkResearch } from "../bios.ts";
 import { equipmentHere } from "../equipment.ts";
 import { logPrivate } from "../log.ts";
 import { RESEARCH_COMPLETE, RESEARCH_IDS } from "../research.ts";
@@ -37,7 +38,7 @@ export class ContaminateAction extends Action<ContaminateActionData> {
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): ContaminateActionData[] {
-    if (!hasSkill(player, "sapper")) return [];
+    if (!hasSkill(player, "sapper") || !canWorkResearch(state, player)) return [];
     return equipmentHere(state, player, "RESEARCH_LAB").flatMap((lab) =>
       RESEARCH_IDS.filter((id) => (state.research[id] ?? 0) < RESEARCH_COMPLETE && othersPending(state, player, id)).map((research): ContaminateActionData => ({ type: "contaminate", equipment: lab.id, research })),
     );
@@ -46,6 +47,7 @@ export class ContaminateAction extends Action<ContaminateActionData> {
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: ContaminateActionData): string | null {
     if (!hasSkill(player, "sapper")) return "no_skill";
     if (!equipmentHere(state, player, "RESEARCH_LAB").some((lab) => lab.id === target.equipment)) return "cant_research";
+    if (!canWorkResearch(state, player)) return "crew_lock";
     if (!(RESEARCH_IDS as readonly string[]).includes(target.research)) return "no_such_research";
     if ((state.research[target.research] ?? 0) >= RESEARCH_COMPLETE) return "research_done";
     if (!othersPending(state, player, target.research)) return "nothing_to_contaminate";

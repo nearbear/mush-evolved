@@ -3,7 +3,7 @@
 // ranges (projects use no tokens). All progress, `waiting`, gains and tokens go only to the living in the target's room until
 // complete; completion reaches every room (owner, 2026-10-31). Rolls and contamination never go out.
 
-import { cpuPriorityBonus } from "./bios.ts";
+import { canWorkProject, canWorkResearch, cpuPriorityBonus } from "./bios.ts";
 import { equipmentHere } from "./equipment.ts";
 import { PILGRED_COMPLETE, PILGRED_SKILLS, pilgredTerminalsHere } from "./pilgred.ts";
 import { offeredProjects } from "./projectEffects.ts";
@@ -46,8 +46,8 @@ function progressView(progress: Readonly<Record<string, number>>, here: boolean,
 
 /** The view's research, project and PILGRED fields for `you`. */
 export function relayView(state: Readonly<GameState>, you: Readonly<PlayerState>) {
-  const inLab = you.alive && equipmentHere(state, you, "RESEARCH_LAB").length > 0;
-  const atCore = you.alive && equipmentHere(state, you, "NERON_CORE").length > 0;
+  const inLab = you.alive && canWorkResearch(state, you) && equipmentHere(state, you, "RESEARCH_LAB").length > 0;
+  const atCore = you.alive && canWorkProject(state, you) && equipmentHere(state, you, "NERON_CORE").length > 0;
   const atPilgred = you.alive && pilgredTerminalsHere(state, you).length > 0;
   const research = state.config.research.progress;
   const project = state.config.project.progress;

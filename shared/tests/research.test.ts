@@ -482,15 +482,28 @@ describe("computer scientist skill (computer)", () => {
 });
 
 describe("BIOS research crew lock", () => {
-  it("blocks non-Biologist/Medic/Polyvalent from research and spoil_research, allows qualified crew and freeHacking, and leaves contaminate unaffected", () => {
+  it("blocks non-Biologist/Medic/Polyvalent from accessing the research lab, hides in-progress lab data, and gates research, spoil_research, and contaminate", () => {
     const s = game();
+    s.research.STEROIDS = 20;
+    s.research.WHOS_WHO = RESEARCH_COMPLETE;
     s.bios.crew_lock = "research";
     s.players[0]!.role = "human";
     s.players[0]!.skills = [];
     s.players[1]!.role = "mush";
     s.players[1]!.skills = [];
+    const openLab: Action = { type: "access", equipment: "LABORATORY:RESEARCH_LAB" };
 
-    // Unqualified human and Mush are blocked from research and spoil_research.
+    // Unqualified human and Mush are blocked from accessing the lab, research, and spoil_research,
+    // and their view hides in-progress research, relay pools, and lab needs (completed research stays visible).
+    expect(offered(s, "p0").some((a) => a.type === "access" && a.equipment === "LABORATORY:RESEARCH_LAB")).toBe(false);
+    expect(ACTIONS.access.check(s, s.players[0]!, openLab)).toBe("crew_lock");
+    expect(applyAction(s, "p0", openLab).ok).toBe(false);
+    const lockedView = viewFor(s, "p0");
+    expect(lockedView.research.STEROIDS).toBeUndefined();
+    expect(lockedView.research.WHOS_WHO).toBe(RESEARCH_COMPLETE);
+    expect(lockedView.relay.research).toEqual({});
+    expect(lockedView.researchNeeds).toBeNull();
+
     expect(offered(s, "p0").some((a) => a.type === "research")).toBe(false);
     expect(ACTIONS.research.check(s, s.players[0]!, work("STEROIDS"))).toBe("crew_lock");
     expect(applyAction(s, "p0", work("STEROIDS")).ok).toBe(false);
@@ -499,14 +512,19 @@ describe("BIOS research crew lock", () => {
     expect(ACTIONS.spoil_research.check(s, s.players[1]!, spoil)).toBe("crew_lock");
     expect(applyAction(s, "p1", spoil).ok).toBe(false);
 
-    // Biologist, Medic, and Polyvalent (skilful) are allowed for both research and spoil_research.
+    // Biologist, Medic, and Polyvalent (skilful) are allowed to access, inspect, research, and spoil_research.
     for (const skill of ["biologist", "medic", "skilful"] as const) {
       const qualified = game();
+      qualified.research.STEROIDS = 20;
       qualified.bios.crew_lock = "research";
       qualified.rng = CLEAN;
       qualified.players[0]!.skills = [skill];
       qualified.players[1]!.role = "mush";
       qualified.players[1]!.skills = [skill];
+      expect(offered(qualified, "p0").some((a) => a.type === "access" && a.equipment === "LABORATORY:RESEARCH_LAB")).toBe(true);
+      expect(applyAction(qualified, "p0", openLab).ok).toBe(true);
+      expect(viewFor(qualified, "p0").research.STEROIDS).toBe(20);
+      expect(viewFor(qualified, "p0").researchNeeds).not.toBeNull();
       expect(offered(qualified, "p0").some((a) => a.type === "research" && a.research === "STEROIDS")).toBe(true);
       expect(applyAction(qualified, "p0", work("STEROIDS")).ok).toBe(true);
       expect(offered(qualified, "p1").some((a) => a.type === "spoil_research" && a.research === "STEROIDS")).toBe(true);
@@ -518,10 +536,13 @@ describe("BIOS research crew lock", () => {
     hacked.bios.crew_lock = "research";
     hacked.rng = CLEAN;
     hacked.players[0]!.cheats.push("freeHacking");
+    expect(offered(hacked, "p0").some((a) => a.type === "access" && a.equipment === "LABORATORY:RESEARCH_LAB")).toBe(true);
+    expect(applyAction(hacked, "p0", openLab).ok).toBe(true);
     expect(offered(hacked, "p0").some((a) => a.type === "research" && a.research === "STEROIDS")).toBe(true);
     expect(applyAction(hacked, "p0", work("STEROIDS")).ok).toBe(true);
 
-    // contaminate is unaffected for a Saboteur without Biologist/Medic/Polyvalent.
+    // contaminate is a lab terminal action, so a Saboteur without Biologist/Medic/Polyvalent is locked out too,
+    // while a Saboteur who also has a qualifying skill can contaminate.
     const contam = game();
     contam.bios.crew_lock = "research";
     contam.rng = CLEAN;
@@ -529,8 +550,13 @@ describe("BIOS research crew lock", () => {
     const afterWork = mustApply(contam, "p0", work("STEROIDS"));
     afterWork.players[1]!.role = "mush";
     afterWork.players[1]!.skills = ["sapper"];
+    const contamAct: Action = { type: "contaminate", equipment: "LABORATORY:RESEARCH_LAB", research: "STEROIDS" };
+    expect(offered(afterWork, "p1").some((a) => a.type === "contaminate")).toBe(false);
+    expect(ACTIONS.contaminate.check(afterWork, afterWork.players[1]!, contamAct)).toBe("crew_lock");
+    expect(applyAction(afterWork, "p1", contamAct).ok).toBe(false);
+    afterWork.players[1]!.skills = ["sapper", "biologist"];
     expect(offered(afterWork, "p1").some((a) => a.type === "contaminate" && a.research === "STEROIDS")).toBe(true);
-    expect(applyAction(afterWork, "p1", { type: "contaminate", equipment: "LABORATORY:RESEARCH_LAB", research: "STEROIDS" }).ok).toBe(true);
+    expect(applyAction(afterWork, "p1", contamAct).ok).toBe(true);
 
     // Non-research locks allow everyone.
     for (const lock of ["piloting", "projects"] as const) {
@@ -538,6 +564,7 @@ describe("BIOS research crew lock", () => {
       unlocked.bios.crew_lock = lock;
       unlocked.rng = CLEAN;
       unlocked.players[1]!.role = "mush";
+      expect(offered(unlocked, "p0").some((a) => a.type === "access" && a.equipment === "LABORATORY:RESEARCH_LAB")).toBe(true);
       expect(offered(unlocked, "p0").some((a) => a.type === "research" && a.research === "STEROIDS")).toBe(true);
       expect(applyAction(unlocked, "p0", work("STEROIDS")).ok).toBe(true);
       expect(offered(unlocked, "p1").some((a) => a.type === "spoil_research" && a.research === "STEROIDS")).toBe(true);

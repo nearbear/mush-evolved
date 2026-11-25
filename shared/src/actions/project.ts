@@ -1,22 +1,15 @@
 import { Action, type ActionCost, isString } from "./action.ts";
-import { cpuPriorityBonus } from "../bios.ts";
+import { canWorkProject, cpuPriorityBonus } from "../bios.ts";
 import { equipmentHere } from "../equipment.ts";
 import { PROJECT_COMPLETE, PROJECT_IDS, projectDone, projectProgressConfig, projectSkills, type ProjectId } from "../projects.ts";
 import { relayGainRange, rollRelayGain, touchRelay } from "../relay.ts";
 import { logPublic } from "../log.ts";
-import { hasSkill } from "../skills.ts";
 import { removeStatus } from "../statuses.ts";
 import { completeProject, offeredProjects } from "../projectEffects.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
+export { canWorkProject };
 export type ProjectActionData = { type: "project"; equipment: string; project: string };
-
-/**
- * Whether `player` may work on NERON projects under the current BIOS crew lock (owner, 2026-11-21): anyone unless the
- * lock is on projects, in which case only Designers (or `freeHacking`).
- */
-export const canWorkProject = (state: Readonly<GameState>, player: Readonly<PlayerState>): boolean =>
-  state.bios.crew_lock !== "projects" || hasSkill(player, "designer") || player.cheats.includes("freeHacking");
 
 /**
  * Work on a NERON project at NERON's core (2 AP; free with a Designer or Computer point, which is spent; the Designer

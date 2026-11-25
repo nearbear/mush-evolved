@@ -407,24 +407,43 @@ describe("NERON participation (NERON_PROJECT_THREAD)", () => {
 });
 
 describe("BIOS projects crew lock", () => {
-  it("blocks non-Designers from project and allows Designers and freeHacking, leaving coup and become_genius unaffected", () => {
+  it("blocks non-Designers from accessing NERON's core and working projects, hides in-progress project data, allows Designers and freeHacking, and leaves coup and become_genius unaffected", () => {
     const s = game();
+    const [first, second] = offeredProjects(s);
+    s.projects[first!] = 25;
+    s.projects[second!] = PROJECT_COMPLETE;
     s.bios.crew_lock = "projects";
-    const [first] = offeredProjects(s);
     const act = work(first!);
+    const openCore: Action = { type: "access", equipment: "NEXUS_ROOM:NERON_CORE" };
 
-    // Non-Designer is blocked: not offered and refused with "crew_lock".
+    // Non-Designer is blocked from both access and project (not offered, refused with "crew_lock"),
+    // and their view hides in-progress projects and relay data (completed projects remain visible).
+    // Other terminals in the room (BIOS) remain accessible.
+    expect(offered(s, "p0").some((a) => a.type === "access" && a.equipment === "NEXUS_ROOM:NERON_CORE")).toBe(false);
+    expect(offered(s, "p0").some((a) => a.type === "access" && a.equipment === "NEXUS_ROOM:NERON_BIOS_TERM")).toBe(true);
+    expect(ACTIONS.access.check(s, s.players[0]!, openCore)).toBe("crew_lock");
+    expect(applyAction(s, "p0", openCore).ok).toBe(false);
     expect(offered(s, "p0").some((a) => a.type === "project")).toBe(false);
     expect(ACTIONS.project.check(s, s.players[0]!, act)).toBe("crew_lock");
     expect(applyAction(s, "p0", act).ok).toBe(false);
+    const lockedView = viewFor(s, "p0");
+    expect(lockedView.projects[first!]).toBeUndefined();
+    expect(lockedView.projects[second!]).toBe(PROJECT_COMPLETE);
+    expect(lockedView.relay.projects).toEqual({});
 
-    // Designer is allowed.
+    // Designer is allowed to access, see progress, and work.
     s.players[0]!.skills = ["designer"];
+    expect(offered(s, "p0").some((a) => a.type === "access" && a.equipment === "NEXUS_ROOM:NERON_CORE")).toBe(true);
+    expect(applyAction(s, "p0", openCore).ok).toBe(true);
+    expect(viewFor(s, "p0").projects[first!]).toBe(25);
+    expect(first! in viewFor(s, "p0").relay.projects).toBe(true);
     expect(offered(s, "p0").some((a) => a.type === "project" && a.project === first)).toBe(true);
     expect(applyAction(s, "p0", act).ok).toBe(true);
 
     // freeHacking bypasses the lock.
     const hacked = must(setCheat(s, "p1", "freeHacking", true));
+    expect(offered(hacked, "p1").some((a) => a.type === "access" && a.equipment === "NEXUS_ROOM:NERON_CORE")).toBe(true);
+    expect(applyAction(hacked, "p1", openCore).ok).toBe(true);
     expect(offered(hacked, "p1").some((a) => a.type === "project" && a.project === first)).toBe(true);
     expect(applyAction(hacked, "p1", act).ok).toBe(true);
 
@@ -440,6 +459,7 @@ describe("BIOS projects crew lock", () => {
     for (const lock of ["piloting", "research"] as const) {
       const unlocked = game();
       unlocked.bios.crew_lock = lock;
+      expect(offered(unlocked, "p1").some((a) => a.type === "access" && a.equipment === "NEXUS_ROOM:NERON_CORE")).toBe(true);
       expect(offered(unlocked, "p1").some((a) => a.type === "project")).toBe(true);
       expect(applyAction(unlocked, "p1", act).ok).toBe(true);
     }

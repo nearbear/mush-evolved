@@ -1,5 +1,5 @@
 import { Action, type ActionCost, type ActionVisibility, DIRTY, isString } from "./action.ts";
-import { cpuPriorityBonus } from "../bios.ts";
+import { canWorkResearch, cpuPriorityBonus } from "../bios.ts";
 import { ANY_CONSUMABLE, RESEARCH_COMPLETE, RESEARCH_IDS, RESEARCH_REQUIRES, RESEARCH_SKILLS, type ResearchId, researchNeedOrder } from "../research.ts";
 import { logPrivate, logPublic } from "../log.ts";
 import { hasMushDied } from "../death.ts";
@@ -9,12 +9,13 @@ import { ITEM_TYPES, removeItem, spawnInRoom, SPORE_SUCKER_ITEM, STEROIDS_ITEM, 
 import { xylophFound } from "../comms.ts";
 import { makeToken, type ResearchPool } from "../relay.ts";
 import { assayDue, researchProgress, runAssay, type SampleCounts } from "../assay.ts";
-import { hasSkill } from "../skills.ts";
 import { removeStatus } from "../statuses.ts";
 import { dropMycoAlarms } from "../mycoalarm.ts";
 import { ANTI_MUSH_SERUM_ITEM } from "./vaccinate.ts";
 import { MYCOSCAN_EQUIPMENT } from "./check_spores.ts";
 import type { GameState, ItemState, PlayerState, RoomId } from "../types.ts";
+
+export { canWorkResearch };
 
 /** Items in the room, on the floor or carried by someone alive there: what counts as "in the lab" for a research's items. */
 function labItems(state: Readonly<GameState>, room: RoomId): ItemState[] {
@@ -50,17 +51,6 @@ export function researchAllowed(state: Readonly<GameState>, room: RoomId, resear
   if (player?.cheats.includes("freeHacking")) return true;
   return researchNeedsMet(state, room, research).every(Boolean);
 }
-
-/**
- * Whether `player` may work on lab research (or Mush own-spoil) under the current BIOS crew lock (owner, 2026-11-21):
- * anyone unless the lock is on research, in which case only Biologists, Medics, Polyvalent (`skilful`), or `freeHacking`.
- */
-export const canWorkResearch = (state: Readonly<GameState>, player: Readonly<PlayerState>): boolean =>
-  state.bios.crew_lock !== "research" ||
-  hasSkill(player, "biologist") ||
-  hasSkill(player, "medic") ||
-  hasSkill(player, "skilful") ||
-  player.cheats.includes("freeHacking");
 
 export type ResearchActionData = { type: "research"; equipment: string; research: string };
 

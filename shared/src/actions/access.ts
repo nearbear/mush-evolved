@@ -1,4 +1,5 @@
 import { Action, isString } from "./action.ts";
+import { canAccessTerminal } from "../bios.ts";
 import { EQUIPMENT_TYPES, isEquipmentEnabled } from "../equipment.ts";
 import { occupy } from "../spot.ts";
 import type { GameState, PlayerState } from "../types.ts";
@@ -6,8 +7,9 @@ import type { GameState, PlayerState } from "../types.ts";
 export type AccessActionData = { type: "access"; equipment: string };
 
 /**
- * Access a terminal in your room (2026-10-16). Free, no restrictions yet, and it changes no state: the
- * client opens the terminal's window when the action goes through. The terminal's own actions come later.
+ * Access a terminal in your room (2026-10-16). Free; gated by NERON's crew lock on `NERON_CORE` (projects) and
+ * `RESEARCH_LAB` (research) to match eMush (owner, 2026-11-24). The client opens the terminal's window when the action
+ * goes through.
  */
 export class AccessAction extends Action<AccessActionData> {
   // Only opens the terminal's window, which the client does at once; the terminal's own actions are timed.
@@ -22,7 +24,7 @@ export class AccessAction extends Action<AccessActionData> {
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): AccessActionData[] {
     return (state.equipment[player.room] ?? [])
-      .filter((equipment) => EQUIPMENT_TYPES[equipment.type]?.terminal && isEquipmentEnabled(state, equipment))
+      .filter((equipment) => EQUIPMENT_TYPES[equipment.type]?.terminal && isEquipmentEnabled(state, equipment) && canAccessTerminal(state, player, equipment))
       .map((equipment) => ({ type: "access", equipment: equipment.id }));
   }
 
@@ -33,6 +35,8 @@ export class AccessAction extends Action<AccessActionData> {
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: AccessActionData): string | null {
     const equip = state.equipment[player.room]?.find((eq) => eq.id === target.equipment);
-    return equip && EQUIPMENT_TYPES[equip.type]?.terminal && isEquipmentEnabled(state, equip) ? null : "cant_access";
+    if (!equip || !EQUIPMENT_TYPES[equip.type]?.terminal || !isEquipmentEnabled(state, equip)) return "cant_access";
+    if (!canAccessTerminal(state, player, equip)) return "crew_lock";
+    return null;
   }
 }

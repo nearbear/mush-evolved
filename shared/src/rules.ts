@@ -68,7 +68,7 @@ import { canSharePilgred, sharedPilgredView } from "./sharedPilgred.ts";
 import { canShareReports } from "./sharedReports.ts";
 import { arriveShip, orbitName, orbitPicture } from "./navigation.ts";
 import { commandTerminalsHere, isPilgredRepaired } from "./pilgred.ts";
-import { biosTerminalsHere, newBios } from "./bios.ts";
+import { biosTerminalsHere, canWorkResearch, newBios } from "./bios.ts";
 import { callNextRebel, commsCycle, commsTerminalView, comTerminalsHere, newComms } from "./comms.ts";
 import { botanyCycle, botanyDay } from "./botany.ts";
 import { itemView, seesShield } from "./itemView.ts";
@@ -1039,7 +1039,7 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     ...(blind
       ? { research: {}, projects: {}, pilgred: null, relay: { research: {}, projects: {}, pilgred: null }, yourTokens: { research: {}, pilgred: 0 } }
       : relayView(state, you)),
-    researchNeeds: !blind && you.alive && equipmentHere(state, you, "RESEARCH_LAB").length > 0 ? researchNeedsView(state, you.room) : null,
+    researchNeeds: !blind && you.alive && canWorkResearch(state, you) && equipmentHere(state, you, "RESEARCH_LAB").length > 0 ? researchNeedsView(state, you.room) : null,
     pilgredRepaired: !blind && isPilgredRepaired(state),
     edenComputed: !blind && state.eden.computed,
     humanTankFull: !blind && hasMushDied(state),
