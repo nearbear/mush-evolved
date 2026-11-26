@@ -53,6 +53,7 @@ import { retargetNow } from "./hunters.ts";
 import { canFly, canTakeoff, isLostPlace, lostPlace, PATROL_SHIPS, patrolShip, type PatrolShip } from "./patrol.ts";
 import { PLANET_TAGS, type PlanetTag } from "./planets.ts";
 import { projectDone } from "./projects.ts";
+import { itemLost } from "./modifiers.ts";
 import { roll, rollFloat, rollInt, rollWeighted } from "./rng.ts";
 import { shipMax } from "./ship.ts";
 import { hasSkill } from "./skills.ts";
@@ -576,7 +577,11 @@ function resolve(ctx: Ctx, sector: PlanetTag | typeof LANDING, table: readonly E
         event.kind = "nothing";
         break;
       }
-      event.item = removeItem(state, carried[rollInt(state, carried.length)]!.id).type;
+      const lost = removeItem(state, carried[rollInt(state, carried.length)]!.id);
+      event.item = lost.type;
+      // Kleptophobia (owner, 2026-11-26): its holder loses morale.
+      const holder = state.players.find((p) => p.id === lost.at.id);
+      if (holder) itemLost(state, holder, lost);
       break;
     }
     case "kill": {
