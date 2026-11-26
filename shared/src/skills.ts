@@ -158,8 +158,18 @@ export function isInnateMushSkill(value: unknown): value is (typeof INNATE_MUSH_
   return typeof value === "string" && (INNATE_MUSH_SKILLS as readonly string[]).includes(value);
 }
 
-/** Mush skills offered in the Mush skill picker (excludes innate Mush skills). */
-export const PICKABLE_MUSH_SKILLS: readonly MushSkillId[] = MUSH_SKILLS.filter((s) => !isInnateMushSkill(s));
+/**
+ * Mush skills that stay defined (removing an id would bump the game version) but can't be picked and aren't
+ * offered in the picker (owner, 2026-11-26): Slime Trap and Infector.
+ */
+export const DISABLED_MUSH_SKILLS = ["slimetrap", "infectious_agent"] as const satisfies readonly MushSkillId[];
+
+export function isDisabledMushSkill(value: unknown): boolean {
+  return typeof value === "string" && (DISABLED_MUSH_SKILLS as readonly string[]).includes(value);
+}
+
+/** Mush skills offered in the Mush skill picker (excludes innate and disabled Mush skills). */
+export const PICKABLE_MUSH_SKILLS: readonly MushSkillId[] = MUSH_SKILLS.filter((s) => !isInnateMushSkill(s) && !isDisabledMushSkill(s));
 
 /** Mush skill slots per Mush player (owner, 2026-10-24), separate from the human ones. */
 export const MUSH_SKILL_SLOTS = 4;

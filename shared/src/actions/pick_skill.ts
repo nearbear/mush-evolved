@@ -7,6 +7,7 @@ import {
   SKILLS,
   SKILL_SLOTS,
   hasSkill,
+  isDisabledMushSkill,
   isInnateMushSkill,
   isMushSkill,
   isSkill,
@@ -44,6 +45,7 @@ export class PickSkillAction extends Action<PickSkillActionData> {
     if (isMushSkill(target.skill)) {
       if (player.role !== "mush") return "not_mush";
       if (isInnateMushSkill(target.skill) || hasSkill(player, target.skill)) return "have_skill";
+      if (isDisabledMushSkill(target.skill)) return "skill_disabled";
       return player.mushSkills.filter((s) => !isInnateMushSkill(s)).length < MUSH_SKILL_SLOTS ? null : "no_free_slot";
     }
     if (!isSkill(target.skill)) return "no_such_skill";

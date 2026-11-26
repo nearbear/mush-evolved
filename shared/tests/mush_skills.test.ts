@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, legalActions, viewFor } from "../src/rules.ts";
-import { CHARACTER_SKILLS, MUSH_SKILLS, MUSH_SKILL_SLOTS, PICKABLE_MUSH_SKILLS, SKILLS, SKILL_SLOTS, skillStatus } from "../src/skills.ts";
+import { CHARACTER_SKILLS, DISABLED_MUSH_SKILLS, MUSH_SKILLS, MUSH_SKILL_SLOTS, PICKABLE_MUSH_SKILLS, SKILLS, SKILL_SLOTS, skillStatus } from "../src/skills.ts";
 import type { GameState } from "../src/types.ts";
 import { makeSeats, must, testConfig } from "./support.ts";
 
@@ -56,6 +56,18 @@ describe("Mush skills", () => {
     const before = JSON.stringify(state);
     expect(pick(state, "p2", "ninja").ok).toBe(false);
     expect(pick(state, "p0", "ninja").ok).toBe(false);
+    expect(JSON.stringify(state)).toBe(before);
+  });
+
+  it("never offers or accepts the disabled Mush skills (Slime Trap, Infector), leaving state unchanged", () => {
+    const state = ship();
+    expect([...DISABLED_MUSH_SKILLS]).toEqual(["slimetrap", "infectious_agent"]);
+    const before = JSON.stringify(state);
+    for (const skill of DISABLED_MUSH_SKILLS) {
+      expect(offered(state, "p0")).not.toContain(skill);
+      expect(PICKABLE_MUSH_SKILLS).not.toContain(skill);
+      expect(pick(state, "p0", skill).ok).toBe(false);
+    }
     expect(JSON.stringify(state)).toBe(before);
   });
 
