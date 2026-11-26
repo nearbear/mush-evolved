@@ -1,8 +1,8 @@
 import { Action, isString } from "./action.ts";
 import { canReachItem, removeItem } from "../items.ts";
-import { DOCUMENT_ITEM } from "../lostAnalysis.ts";
 import { logPublic } from "../log.ts";
 import type { GameState, PlayerState } from "../types.ts";
+import { DOCUMENT_ITEM } from "../itemIds.ts";
 
 export type TearActionData = { type: "tear"; item: string };
 

@@ -4,10 +4,9 @@ import { canReachItem } from "../items.ts";
 import { logPrivate, logPublic } from "../log.ts";
 import { hasSkill } from "../skills.ts";
 import type { GameState, PlayerState } from "../types.ts";
+import { EXTINGUISHER_ITEM } from "../itemIds.ts";
 
 export type ExtinguishActionData = { type: "extinguish"; item: string };
-
-export const EXTINGUISHER_ITEM = "extinguisher";
 
 /**
  * Put out the fire in your room with an extinguisher you can reach, carried or on the floor (owner, 2026-10-25,

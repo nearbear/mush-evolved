@@ -3,12 +3,11 @@
 // modifiers.ts for the Noise Reducer); this only refreshes what is stored.
 
 import { updateMaxValues } from "./adjustStats.ts";
-import { BLUEPRINT_ITEM } from "./blueprints.ts";
 import { DYNARCADE_EQUIPMENT, JUKEBOX_EQUIPMENT } from "./equipment.ts";
 import { logPublic } from "./log.ts";
 import { PATROL_SHIPS, patrolMaxCharges } from "./patrol.ts";
 import { availableProjects, PROJECT_COMPLETE, PROJECT_IDS, projectDone, type ProjectId } from "./projects.ts";
-import { BOOK_ITEM, SUPPORT_DRONE_ITEM, TREE_POT_ITEM } from "./itemIds.ts";
+import { BLUEPRINT_ITEM, BOOK_ITEM, SUPPORT_DRONE_ITEM, TREE_POT_ITEM } from "./itemIds.ts";
 import { spawnInRoom } from "./items.ts";
 import { newDrone } from "./droneIdentity.ts";
 import { rollInt, rollShuffle } from "./rng.ts";

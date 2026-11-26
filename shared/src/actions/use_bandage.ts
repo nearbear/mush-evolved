@@ -4,10 +4,9 @@ import { itemsIn, removeItem, isWorking } from "../items.ts";
 import { logPublic } from "../log.ts";
 import { bandageHealAmount, healed } from "../modifiers.ts";
 import type { GameState, ItemState, PlayerState } from "../types.ts";
+import { BANDAGE_ITEM } from "../itemIds.ts";
 
 export type UseBandageActionData = { type: "use_bandage"; target: string };
-
-export const BANDAGE_ITEM = "bandage";
 
 /**
  * Use bandage (owner, 2026-11-07, #397): carrying a bandage, spend `bandage.cost.ap` AP on yourself or any living

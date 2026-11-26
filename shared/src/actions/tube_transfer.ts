@@ -4,11 +4,9 @@ import { canReachItem, isWorking } from "../items.ts";
 import { logPublic } from "../log.ts";
 import { rollInt } from "../rng.ts";
 import type { GameState, ItemState, PlayerState } from "../types.ts";
+import { INPUT_TUBE_ITEM, OUTPUT_TUBE_ITEM } from "../itemIds.ts";
 
 export type TubeTransferActionData = { type: "tube_transfer"; item: string };
-
-export const INPUT_TUBE_ITEM = "input_tube";
-export const OUTPUT_TUBE_ITEM = "output_tube";
 
 /** Whether an input tube lies on the floor of this room. A carried tube does nothing. */
 const hasInputTube = (state: Readonly<GameState>, room: string): boolean =>

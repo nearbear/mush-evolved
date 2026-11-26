@@ -5,10 +5,9 @@ import { hullRepairAmount } from "../modifiers.ts";
 import { removeStatus } from "../statuses.ts";
 import type { GameState, PlayerState } from "../types.ts";
 import { rubellaBlocks } from "../diseases.ts";
+import { HULL_REPAIR_ITEM } from "../itemIds.ts";
 
 export type RepairHullActionData = { type: "repair_hull"; item: string };
-
-export const HULL_REPAIR_ITEM = "metal_scraps";
 
 /**
  * Patch the hull with a metal scrap (owner, 2026-10-24, the wiki's Armure et Bouclier and eMush's StrengthenHull):

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { actionVisibility } from "../src/actions.ts";
-import { applyXyloph, advanceNeron, drawXyloph, GENOME_DISK_ITEM, MUSH_SAMPLE_ITEM, REBEL_BASES, rebelCalls, rollRebelGain, solChance, XYLOPH_ENTRIES, XYLOPH_IDS } from "../src/comms.ts";
+import { applyXyloph, advanceNeron, drawXyloph, REBEL_BASES, rebelCalls, rollRebelGain, solChance, XYLOPH_ENTRIES, XYLOPH_IDS } from "../src/comms.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { ITEM_TYPES } from "../src/itemTypes.ts";
 import { PROJECT_COMPLETE, PROJECT_IDS } from "../src/projects.ts";
@@ -10,6 +10,7 @@ import { chatChannels } from "../src/chat.ts";
 import { addStatus } from "../src/statuses.ts";
 import type { Action, GameState } from "../src/types.ts";
 import { clone, costOf, makeSeats, must, nextCycle, offered, option, player, rebelCallAt, testConfig } from "./support.ts";
+import { GENOME_DISK_ITEM, MUSH_SAMPLE_ITEM } from "../src/itemIds.ts";
 
 const TERMINAL = "COMMAND_CENTER:COM_CENTER";
 const cfg = DEFAULT_CONFIG.comms;

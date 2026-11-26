@@ -4,7 +4,7 @@ import { canReachItem, isWorking } from "../items.ts";
 import { logPrivate, logPublic } from "../log.ts";
 import { hasSkill } from "../skills.ts";
 import type { GameState, PlayerState } from "../types.ts";
-import { EXTINGUISHER_ITEM } from "./extinguish.ts";
+import { EXTINGUISHER_ITEM } from "../itemIds.ts";
 
 export type ExtinguishManuallyActionData = { type: "extinguish_manually" };
 

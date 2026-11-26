@@ -9,11 +9,10 @@
 // message comes through and the signal is `reached`.
 
 import { gainMorale } from "./adjustStats.ts";
-import { BLUEPRINT_ITEM, BLUEPRINTS } from "./blueprints.ts";
+import { BLUEPRINTS } from "./blueprints.ts";
 import { pushChat } from "./chat.ts";
-import { BOOK_ITEM } from "./itemIds.ts";
+import { BLUEPRINT_ITEM, BOOK_ITEM, DOCUMENT_ITEM, GENOME_DISK_ITEM, MUSH_SAMPLE_ITEM } from "./itemIds.ts";
 import { spawnInRoom } from "./items.ts";
-import { DOCUMENT_ITEM } from "./lostAnalysis.ts";
 import { availableProjects, projectDone } from "./projects.ts";
 import { completeProject } from "./projectEffects.ts";
 import { roll, rollInt } from "./rng.ts";
@@ -52,10 +51,6 @@ export const NERON_UPDATE_COMPLETE = 100;
 
 /** Where Xyloph's items appear: the bridge, as in the original (`COMMAND_CENTER`). */
 export const XYLOPH_DROP_ROOM: RoomId = "COMMAND_CENTER";
-
-/** The Mush genome disk and the Mush test strain (Xyloph rewards; no effect yet). Named after their icons. */
-export const GENOME_DISK_ITEM = "mush_floppy_disk";
-export const MUSH_SAMPLE_ITEM = "mush_sample";
 
 export interface CommsState {
   /** Whether the link with Sol is up. Public: every view has it. */

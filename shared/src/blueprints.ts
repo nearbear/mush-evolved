@@ -34,6 +34,3 @@ export const BLUEPRINTS: Record<string, Blueprint> = {
   GRENADE: { needs: ["oxy_capsule", "fuel_capsule"], makes: { item: "grenade" } },
   SNIPER_HELMET: { needs: ["metal_scraps", "plastic_scraps"], makes: { item: "sniper_helmet" } },
 };
-
-/** The item type that carries a recipe. Named after its icon, blueprint.jpg. */
-export const BLUEPRINT_ITEM = "blueprint";

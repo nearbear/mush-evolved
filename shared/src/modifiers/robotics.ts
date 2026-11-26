@@ -1,6 +1,6 @@
-import { BLUEPRINT_ITEM } from "../blueprints.ts";
 import { produceItem } from "../items.ts";
 import type { Modifier } from "../modifiers.ts";
+import { BLUEPRINT_ITEM } from "../itemIds.ts";
 
 // Skill "robotics" (the original's Robotics Expert; #411, phase 1 of #410): when picked, a support drone blueprint
 // (`SUPPORT_DRONE`), into the inventory, or on the room floor if the inventory is full, like `green_thumb`. Picking it

@@ -1,7 +1,7 @@
 import { Action, isString } from "./action.ts";
-import { BLUEPRINTS, BLUEPRINT_ITEM } from "../blueprints.ts";
+import { BLUEPRINTS } from "../blueprints.ts";
 import { canReachItem, itemsIn, produceItem, visibleItemsIn, isWorking } from "../items.ts";
-import { SUPPORT_DRONE_ITEM } from "../itemIds.ts";
+import { BLUEPRINT_ITEM, SUPPORT_DRONE_ITEM } from "../itemIds.ts";
 import { logPublic } from "../log.ts";
 import { initNpc } from "../npcs.ts";
 import { offShip } from "../patrol.ts";

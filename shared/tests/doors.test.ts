@@ -2,13 +2,12 @@
 // one else learns its state.
 import { describe, expect, it } from "vitest";
 import { walk } from "../src/actions/summon.ts";
-import { WRENCH_ITEM } from "../src/actions/repair.ts";
 import { actionTarget, endsAccommodation } from "../src/actionTarget.ts";
 import { CHEAT_ROOM } from "../src/cheatRoom.ts";
 import { DEFAULT_CONFIG, resolveConfig } from "../src/config.ts";
 import { allDoors, breakDoor, doorId, doorRooms, doorsOf, isDoor, isDoorBroken, repairDoor } from "../src/doors.ts";
 import { startFire } from "../src/fire.ts";
-import { SUPPORT_DRONE_ITEM } from "../src/itemIds.ts";
+import { SUPPORT_DRONE_ITEM, WRENCH_ITEM } from "../src/itemIds.ts";
 import { normalizeGame, overridesOf } from "../src/normalizeState.ts";
 import { shortestPath } from "../src/paths.ts";
 import { PROJECT_COMPLETE } from "../src/projects.ts";

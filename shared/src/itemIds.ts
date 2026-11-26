@@ -105,3 +105,35 @@ export const HACKER_KIT_ITEM = "hacker_kit";
  * 4 Soma, 5 Spyce, 6 Newke, 7 Pinq, 8 Bacta, 9 Betapropyl, 10 Pymp, 11 Rosebud (names.*.json has each language's name).
  */
 export const DRUG_ITEMS: readonly string[] = Array.from({ length: 12 }, (_, i) => `drug_${i}`);
+
+/** The item that makes a repair `config.repair.wrenchFactor` times as likely, carried. */
+export const WRENCH_ITEM = "wrench";
+
+/** Heals, single use (actions/use_bandage.ts). */
+export const BANDAGE_ITEM = "bandage";
+
+/** Puts out a fire (actions/extinguish.ts). */
+export const EXTINGUISHER_ITEM = "extinguisher";
+
+/** The completed ANTI_MUSH_SERUM research yields one (actions/vaccinate.ts). */
+export const ANTI_MUSH_SERUM_ITEM = "anti_mush_serum";
+
+/** Spent by hull repair and renovation (actions/repair_hull.ts, actions/renovate.ts). */
+export const HULL_REPAIR_ITEM = "metal_scraps";
+
+/** The pneumatic tube pair (actions/tube_transfer.ts). */
+export const INPUT_TUBE_ITEM = "input_tube";
+export const OUTPUT_TUBE_ITEM = "output_tube";
+
+/** The item type that carries a recipe (blueprints.ts). Named after its icon, blueprint.jpg. */
+export const BLUEPRINT_ITEM = "blueprint";
+
+/** The generic document item (`ItemState.document`): Finola's lost analysis (lostAnalysis.ts), and THE List (#266, actions/print_list.ts). Named after its icon. */
+export const DOCUMENT_ITEM = "document";
+
+/** Rings in its room when a Mush acts there (mycoalarm.ts). */
+export const MYCO_ALARM_ITEM = "myco_alarm";
+
+/** The Mush genome disk and the Mush test strain (Xyloph rewards, comms.ts; no effect yet). Named after their icons. */
+export const GENOME_DISK_ITEM = "mush_floppy_disk";
+export const MUSH_SAMPLE_ITEM = "mush_sample";

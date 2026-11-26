@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { ACTIONS, type ActionTag } from "../src/actions.ts";
-import { MYCO_ALARM_ITEM, MYCO_ALARM_YIELD } from "../src/mycoalarm.ts";
+import { MYCO_ALARM_YIELD } from "../src/mycoalarm.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameState, PlayerId } from "../src/types.ts";
 import { forceDismantleOdds, makeSeats, must, stockLab, setProgress, testConfig } from "./support.ts";
+import { MYCO_ALARM_ITEM } from "../src/itemIds.ts";
 
 const seats = makeSeats(4);
 forceDismantleOdds(1); // items and equipment have their own odds; these tests need the dismantle to succeed
