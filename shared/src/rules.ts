@@ -82,7 +82,7 @@ import { ICARUS_EQUIPMENT } from "./actions/icarus_takeoff.ts";
 import { canScavenge, CANT_FLY, CHRONIC_VERTIGO, interfaceId, isLostPlace, newPatrolShips, offShip, PATROL_INTERFACE, PATROL_SHIPS, shipAboard } from "./patrol.ts";
 import { preselectionCycle } from "./preselection.ts";
 import { neronParticipationCycle } from "./projectEffects.ts";
-import { SUCCESSION, TITLE_IDS, assignTitles, noLaunchKeys, noTitles } from "./titles.ts";
+import { TITLE_IDS, assignTitles, successionLine, noLaunchKeys, noTitles } from "./titles.ts";
 import { endGame, winnerOnArrival } from "./victory.ts";
 import type {
   Action,
@@ -1113,7 +1113,7 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
           return {
             id,
             holder: holder?.character ?? null,
-            line: SUCCESSION[id].flatMap((c) => state.players.filter((p) => p.character === c).map((p) => p.character)),
+            line: successionLine(state, id).flatMap((c) => state.players.filter((p) => p.character === c).map((p) => p.character)),
           };
         }),
     launchKeys: !blind && you.alive && commandTerminalsHere(state, you).length > 0 ? { ...state.launchKeys } : null,

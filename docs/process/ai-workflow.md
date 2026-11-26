@@ -5511,6 +5511,12 @@ Correction (owner): dropped the fifth paragraph (pending samples, assays, Mush s
 - **What worked:** Reusing `ItemState.owner` (already present for customized blaster), `bustIcon` in `ItemAttrIcons`, and the existing server-side moderation path in `GameRoom.social` kept the change small and consistent across desktop, mobile (`PeekBar`), replays, and hidden-info checks.
 - **Corrections:** Updated `infantryman.test.ts` and `leakFields.ts` to reflect `owner` now being visible to whoever can see the item (while still hidden from other rooms and private inventories), and added `"renameItem"` to `BlockedText["type"]` and explicit `LogParams` typing for optional `cat` log params.
 
+### 2026-11-25: Persecutor's Outcast drops to the bottom of the title lines
+
+- **Decision (owner):** as the Politician's opposite, the Persecutor's Outcast sits at the bottom of every line of succession while cursed and loses held titles at once (kept only if nobody else is eligible); the curse ending restores their place without returning titles; a Coup still works for an Outcast. Built as `successionLine` in `titles.ts` (derived from `outcastBy`, so no new stored field) and `refreshTitles(state, displaced)` called from Anathema.
+- **What worked:** the request said "the person"; asking who (the Persecutor or the Outcast) before coding avoided building the wrong thing, since the Politician's skill doesn't actually reorder lines.
+- **Needed a second question:** the lines are public ship-wide while the Outcast status is room-only, so the reorder leaks who is an Outcast. Raised it as a hidden-information choice; the owner chose to show the real order to everyone.
+
 ### 2026-11-25: trait cards get a "This can't be removed." caption
 
 Trait descriptions (en/fr/es) no longer end with "It can't be removed."; `StatusIcon` takes a `caption` and `StatusIcons` passes `status.permanent` ("This can't be removed.") for `TRAIT_STATUS_IDS`, shown as a small italic line under the description, styled like the visibility caption. Worked first try; no correction needed.

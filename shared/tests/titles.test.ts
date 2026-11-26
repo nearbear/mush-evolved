@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest";
 import { CHARACTERS, type CharacterId } from "../src/characters.ts";
 import { killPlayer } from "../src/death.ts";
 import { createGame, viewFor } from "../src/rules.ts";
-import { SUCCESSION, TITLE_IDS, successor } from "../src/titles.ts";
+import { SUCCESSION, TITLE_IDS, refreshTitles, successionLine, successor } from "../src/titles.ts";
 import type { GameState, Seat } from "../src/types.ts";
-import { player, testConfig } from "./support.ts";
+import { mustApply, pickSkill, player, testConfig } from "./support.ts";
 
 const config = testConfig({ manualCycles: true });
 
@@ -113,5 +113,58 @@ describe("successor", () => {
   it("is vacant when nobody is eligible, and goes to the first eligible once someone is", () => {
     expect(successor(line, people, "p-a", eligibleExcept("a", "b", "c"))).toBeNull();
     expect(successor(line, people, null, eligibleExcept("a"))).toBe("p-b");
+  });
+});
+
+describe("an Outcast in the lines of succession (owner, 2026-11-25)", () => {
+  /** The whole crew; Chun is a Persecutor in the sick bay with Jin Su and Chao. */
+  function cursing(): GameState {
+    const s = everyone();
+    for (const c of ["chun", "jinsu", "chao"]) player(s, `p-${c}`).room = "SICK_BAY";
+    return pickSkill(s, "p-chun", "juge");
+  }
+  const curse = (s: GameState, target: string) => mustApply(s, "p-chun", { type: "anathema", target });
+  const lineSeenBy = (s: GameState, viewer: string) => viewFor(s, viewer).titles.find((t) => t.id === "commander")!.line;
+
+  it("drops the Outcast to the bottom of every line, as everyone's title panel shows", () => {
+    const s = curse(cursing(), "p-jinsu");
+    for (const id of TITLE_IDS) {
+      const line = successionLine(s, id);
+      expect(line.at(-1)).toBe("jinsu");
+      expect(line.filter((c) => c !== "jinsu")).toEqual(SUCCESSION[id].filter((c) => c !== "jinsu"));
+    }
+    // The lines are public, so the reorder shows even to someone in another room.
+    expect(lineSeenBy(s, "p-paola").at(-1)).toBe("jinsu");
+  });
+
+  it("takes away a title the Outcast holds at once, announced in crew chat", () => {
+    const s = curse(cursing(), "p-jinsu");
+    expect(s.titles).toEqual({ commander: "p-chao", neron_admin: "p-janice", comms_officer: "p-paola" });
+    expect(systemKeys(s)).toEqual([{ key: "titlePassed", params: { name: "chao", title: "commander" } }]);
+  });
+
+  it("lets the Outcast keep a title nobody else is eligible for", () => {
+    const s = everyone();
+    for (const p of s.players) if (p.character !== "jinsu") p.alive = false;
+    refreshTitles(s);
+    expect(s.titles.neron_admin).toBe("p-jinsu");
+    player(s, "p-jinsu").outcastBy = "p-chun"; // set directly: the Persecutor is dead here, which would end a real curse
+    refreshTitles(s, "p-jinsu");
+    expect(s.titles).toEqual({ commander: "p-jinsu", neron_admin: "p-jinsu", comms_officer: "p-jinsu" });
+  });
+
+  it("puts a former Outcast back in their usual place when the curse moves, without giving a title back", () => {
+    const a = curse(cursing(), "p-jinsu");
+    const b = curse(a, "p-chao");
+    expect(successionLine(b, "commander")).toEqual([...SUCCESSION.commander.filter((c) => c !== "chao"), "chao"]);
+    // Chao, the new Outcast, loses Commander; Jin Su gets it back only by being first in line again.
+    expect(b.titles.commander).toBe("p-jinsu");
+  });
+
+  it("restores the usual order when the curse ends with the Persecutor's death", () => {
+    const s = curse(cursing(), "p-jinsu");
+    killPlayer(s, player(s, "p-chun"), "injury");
+    expect(successionLine(s, "commander")).toEqual(SUCCESSION.commander);
+    expect(s.titles.commander).toBe("p-chao");
   });
 });

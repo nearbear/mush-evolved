@@ -1,6 +1,7 @@
 import { Action, peopleHere, isString } from "./action.ts";
 import { logPublic } from "../log.ts";
 import { hasSkill } from "../skills.ts";
+import { refreshTitles } from "../titles.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
 export type AnathemaActionData = { type: "anathema"; target: string };
@@ -11,7 +12,9 @@ export type AnathemaActionData = { type: "anathema"; target: string };
  * actions that roll succeed at `anathema.successFactor` (x0.8, `actionSuccessRate`), and their covert and secret
  * actions are logged publicly (`logCovert`, `logSecret`, `activitySeen`). One Outcast per Persecutor: a new curse moves
  * it. It ends when either of them dies (`endAnathemaOnDeath`) or the Outcast goes inactive (inactivity.ts). No daily or per-game limit. The `outcast` status is
- * public to the room; the Persecutor's identity is never sent. Public room log.
+ * public to the room; the Persecutor's identity is never sent. Public room log. While cursed, the Outcast sits at the
+ * bottom of every title line (`successionLine`) and loses any title they hold at once (owner, 2026-11-25); a curse moved
+ * off someone puts them back in their usual place without giving back a title.
  */
 export class AnathemaAction extends Action<AnathemaActionData> {
   constructor() {
@@ -42,5 +45,6 @@ export class AnathemaAction extends Action<AnathemaActionData> {
     for (const o of state.players) if (o.outcastBy === player.id) delete o.outcastBy;
     victim.outcastBy = player.id;
     logPublic(state, player.room, "anathema", { name: player.character, target: victim.character });
+    refreshTitles(state, victim.id);
   }
 }
