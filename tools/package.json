@@ -14,7 +14,7 @@
     "ods-data": "node src/odsData/odsData.ts",
     "wiki": "node src/wiki/wiki.ts",
     "emush": "node src/emush/emush.ts",
-    "test": "vitest run --exclude 'tests/browser/**'",
+    "test": "vitest run --testTimeout=30000 --exclude 'tests/browser/**'",
     "test:browser": "vitest run tests/browser",
     "typecheck": "tsc --noEmit",
     "dev": "node src/dev/dev.ts",

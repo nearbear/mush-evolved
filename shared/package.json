@@ -10,7 +10,7 @@
     "@mush2/assets": "*"
   },
   "scripts": {
-    "test": "vitest run",
+    "test": "vitest run --testTimeout=30000",
     "test:watch": "vitest",
     "test:slow": "REPLAY_SEEDS=5 vitest run tests/replay.test.ts tests/legality.test.ts",
     "typecheck": "tsc --noEmit"

@@ -23,11 +23,13 @@ const MIND_FIELDS = ["mind", "name", "isBot", "botKind", "role", "alpha", "mushS
  */
 export function swapMinds(state: GameState, a: PlayerState, b: PlayerState): void {
   swapFields(a, b, MIND_FIELDS);
-  const [sa, sb] = [state.spikedOn[a.id], state.spikedOn[b.id]];
-  delete state.spikedOn[a.id];
-  delete state.spikedOn[b.id];
-  if (sb !== undefined) state.spikedOn[a.id] = sb;
-  if (sa !== undefined) state.spikedOn[b.id] = sa;
+  for (const spikes of [state.spikedOn, state.spikeCount]) {
+    const [sa, sb] = [spikes[a.id], spikes[b.id]];
+    delete spikes[a.id];
+    delete spikes[b.id];
+    if (sb !== undefined) spikes[a.id] = sb;
+    if (sa !== undefined) spikes[b.id] = sa;
+  }
   restartBodies(state, a, b);
 }
 
@@ -53,13 +55,10 @@ function swapFields(a: PlayerState, b: PlayerState, fields: readonly string[]): 
     if (va === undefined) delete record(b)[field];
     else record(b)[field] = va;
   }
-  for (const spikes of [state.spikedOn, state.spikeCount]) {
-    const [sa, sb] = [spikes[a.id], spikes[b.id]];
-    delete spikes[a.id];
-    delete spikes[b.id];
-    if (sb !== undefined) spikes[a.id] = sb;
-    if (sa !== undefined) spikes[b.id] = sa;
-  }
+}
+
+/** A body changing hands: its actions are cancelled, it isn't ready, and the new occupant's unread count starts over. */
+function restartBodies(state: GameState, a: PlayerState, b: PlayerState): void {
   for (const p of [a, b]) {
     p.current = null;
     p.queue = [];

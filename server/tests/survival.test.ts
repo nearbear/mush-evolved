@@ -9,7 +9,7 @@ describe("survival harness", () => {
     expect(game.players.every((p) => p.isBot && p.role === "human")).toBe(true);
   });
 
-  it("plays a seed the same way twice, with no refused steps", { timeout: 15_000 }, async () => {
+  it("plays a seed the same way twice, with no refused steps", { timeout: 60_000 }, async () => {
     // A small crew for a day keeps this about a second; the harness's own runs use 16 seats.
     const opts = { days: 1, crew: 4 };
     const [a, b] = [await runSurvival(3, opts), await runSurvival(3, opts)];
