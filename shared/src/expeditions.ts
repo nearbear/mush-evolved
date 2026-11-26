@@ -808,7 +808,7 @@ export function winChance(crew: number, strength: number): number {
 }
 
 /** A won fight's loot onto the Icarus's floor, grouped by item type. */
-function fightLoot(state: GameState, loot: Readonly<CreatureLoot>): { item: string; count: number }[] {
+function fightLoot(state: GameState, loot: Readonly<CreatureLoot>): { item: ItemTypeId; count: number }[] {
   const rules = state.config.expedition;
   const found = new Map<ItemTypeId, number>();
   const add = (item: ItemTypeId) => found.set(item, (found.get(item) ?? 0) + drop(state, item, 1));

@@ -1,5 +1,6 @@
 import type { BiosState } from "../bios.ts";
 import type { CharacterId } from "../characters.ts";
+import type { ItemTypeId } from "../itemIds.ts";
 import type { CommsState } from "../comms.ts";
 import type { SignalsState } from "../signals.ts";
 import type { DrugDispenserState, DrugEffect } from "../drugs.ts";
@@ -360,11 +361,11 @@ export interface ExpeditionEvent {
   /** Oxygen or fuel the ship gained, items found (on the Icarus Bay's floor), or the creature's strength. */
   amount?: number;
   /** The item type found (harvest, provision, artifact, starmap) or destroyed (lostItem). */
-  item?: string;
+  item?: ItemTypeId;
   /** A fight's creature (`expedition.creatures`). */
   creature?: string;
   /** What a won fight brought back, by item type. */
-  found?: { item: string; count: number }[];
+  found?: { item: ItemTypeId; count: number }[];
   /** A fight: the crew's strength, grenades included, how many grenades were used up, and whether the crew won. */
   fight?: { strength: number; grenades: number; won: boolean };
   /** HP each member lost, after Survival, by character. */
@@ -374,7 +375,7 @@ export interface ExpeditionEvent {
   /** Who got lost (lost), was found alive (found) or dead (foundDead), stayed in the Icarus without a spacesuit (noSpacesuit, old reports only), or turned back (uTurn), by character. */
   who?: CharacterId;
   /** An Accident the victim was spared by an item they carry (a rope), by character and item type. */
-  avoided?: { name: CharacterId; item: string };
+  avoided?: { name: CharacterId; item: ItemTypeId };
 }
 
 /** An expedition's report (expeditions.ts). `members` are body ids; `crew` the same members by character, for display. */

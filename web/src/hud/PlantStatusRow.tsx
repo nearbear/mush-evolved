@@ -7,7 +7,7 @@ import { Popover } from "@base-ui/react/popover";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
-import type { FruitBuffId } from "@mush2/shared";
+import type { FruitBuffId, ItemTypeId } from "@mush2/shared";
 import { itemIcon, PLANT_ICONS } from "../art/assets.ts";
 import { useNames } from "../i18n/names.ts";
 import { StatAmount, type StatDelta } from "./StatAmount.tsx";
@@ -39,7 +39,7 @@ export function PlantStatusRow({
   notes,
   unknown,
 }: {
-  species: string;
+  species: ItemTypeId;
   thirst: 0 | 1 | 2;
   sickCycles: number | null;
   young: boolean;

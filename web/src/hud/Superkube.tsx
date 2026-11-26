@@ -4,7 +4,7 @@
 
 import { Dialog } from "@base-ui/react/dialog";
 import { Tabs } from "@base-ui/react/tabs";
-import { DEFAULT_CONFIG, KUBE_OPS, doorRooms, kubeChoices, type KubeChoiceSource, type KubeGroup, type KubeOpId, type PlayerView, type RoomId } from "@mush2/shared";
+import { DEFAULT_CONFIG, KUBE_OPS, doorRooms, isItemTypeId, kubeChoices, type KubeChoiceSource, type KubeGroup, type KubeOpId, type PlayerView, type RoomId } from "@mush2/shared";
 import { useId, useState, type CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
 import { EMPTY_SLOT_ICON, itemIcon } from "../art/assets.ts";
@@ -123,6 +123,7 @@ function KubeItemPicker({ op, source, onKube }: { op: KubeOpId; source: KubeChoi
   const [picked, setPicked] = useState<string | null>(null);
   // About a hundred items, and the panel is mounted only while its tab is open: cheap enough to build per render.
   const items = kubeChoices(source, "item")
+    .filter(isItemTypeId)
     .map((type) => ({ type, name: names.item(type) }))
     .map((it) => ({ ...it, key: `${fold(it.name)} ${fold(it.type)}` }))
     .sort((a, b) => a.name.localeCompare(b.name, i18n.language));
