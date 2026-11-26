@@ -5,6 +5,7 @@
 
 import { cloneState, fail, findPlayer, type ActionResult } from "./helpers.ts";
 import { ITEM_TYPES } from "./itemTypes.ts";
+import type { ItemTypeId } from "./itemIds.ts";
 import { canReachItem } from "./items.ts";
 import { isComatose } from "./statuses.ts";
 import type { GameState, ItemId, ItemState, PlayerId, PlayerState } from "./types.ts";
@@ -13,7 +14,7 @@ import type { GameState, ItemId, ItemState, PlayerId, PlayerState } from "./type
 export const MAX_ITEM_NAME_LENGTH = 24;
 
 /** Whether items of this type can ever be renamed (`ItemType.canRename`). */
-export function isRenameableType(type: string): boolean {
+export function isRenameableType(type: ItemTypeId): boolean {
   return ITEM_TYPES[type]?.canRename !== false;
 }
 

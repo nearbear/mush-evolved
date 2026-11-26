@@ -18,6 +18,7 @@ import {
   DEFAULT_CONFIG,
   HUNTER_TYPES,
   ITEM_TYPES,
+  isItemTypeId,
   endGame,
   killPlayer,
   PRESELECTION,
@@ -32,6 +33,7 @@ import {
   type CharacterId,
   type Ending,
   type GameState,
+  type ItemTypeId,
   type Planet,
   type PlanetTag,
   type PlayerId,
@@ -95,7 +97,7 @@ export function pickSkills(state: GameState, skills: readonly string[], id: Play
 }
 
 /** `id` gets a new item of each type: in their inventory while it has room, then on their room's floor. */
-export function giveItems(state: GameState, types: readonly string[], id: PlayerId = SAMPLE_SEAT): GameState {
+export function giveItems(state: GameState, types: readonly ItemTypeId[], id: PlayerId = SAMPLE_SEAT): GameState {
   const next = structuredClone(state);
   for (const type of types) produceItem(next, seat(next, id), type);
   return next;
@@ -172,7 +174,7 @@ export function lastChannel(state: GameState): PrivateChannelId {
 export function breakAll(state: GameState, types: readonly string[]): GameState {
   const next = structuredClone(state);
   for (const type of types) {
-    if (!ITEM_TYPES[type]?.canBreak && next.config.repair.chance[type] === undefined) throw new Error(`${type} can't break`);
+    if (!(isItemTypeId(type) && ITEM_TYPES[type].canBreak) && next.config.repair.chance[type] === undefined) throw new Error(`${type} can't break`);
   }
   for (const item of next.items) if (types.includes(item.type)) item.broken = true;
   for (const list of Object.values(next.equipment)) for (const e of list ?? []) if (types.includes(e.type)) e.broken = true;

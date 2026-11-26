@@ -1,7 +1,7 @@
 import { Action, type ActionVisibility, isString } from "./action.ts";
 import { breakEquipment, breakItem, isBreakable } from "../breakage.ts";
 import { EQUIPMENT_TYPES, isEquipmentEnabled } from "../equipment.ts";
-import { ITEM_TYPES } from "../itemTypes.ts";
+import { ITEM_TYPES, itemTypeOf } from "../itemTypes.ts";
 import { canReachItem, isWorking } from "../items.ts";
 import { logSecret } from "../log.ts";
 import { isFortified } from "./reinforce.ts";
@@ -35,8 +35,7 @@ export class SabotageAction extends Action<SabotageActionData> {
 
   override getSuccessChance(state: Readonly<GameState>, player: Readonly<PlayerState>, target: SabotageActionData): number {
     if ("item" in target) {
-      const type = state.items.find((i) => i.id === target.item)?.type ?? "";
-      return ITEM_TYPES[type]?.repairChance ?? state.config.sabotage.defaultChance;
+      return itemTypeOf(state, target.item)?.repairChance ?? state.config.sabotage.defaultChance;
     }
     const type = (state.equipment[player.room] ?? []).find((e) => e.id === target.equipment)?.type ?? "";
     return state.config.repair.chance[type] ?? 0;

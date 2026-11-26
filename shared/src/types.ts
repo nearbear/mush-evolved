@@ -1,5 +1,6 @@
 import type { CharacterId } from "./characters.ts";
 import type { DoorId } from "./types/state.ts";
+import type { ItemTypeId } from "./itemIds.ts";
 
 export * from "./types/chat.ts";
 export * from "./types/config.ts";
@@ -88,7 +89,7 @@ export type Container = { kind: "player"; id: PlayerId } | { kind: "room"; id: R
 export interface ItemState {
   id: ItemId;
   /** Key into ITEM_TYPES (itemTypes.ts). */
-  type: string;
+  type: ItemTypeId;
   at: Container;
   /** For a corpse: whose body it is. */
   of?: PlayerId;
@@ -155,8 +156,8 @@ export interface DroneState {
 
 /** A plant in a hydropot (owner, 2026-10-22; docs/scratchpad/archive/botany-plan.md, Pass 1). */
 export interface PlantState {
-  /** The fruit item type it grows from and produces (only `fruit_banana` for now). */
-  species: string;
+  /** The fruit item type it grows from and produces: `fruit_banana`, an alien species or a hybrid. */
+  species: ItemTypeId;
   /** Cycles since it was sown while young; null once adult. */
   age: number | null;
   /** 0 healthy, 1 thirsty, 2 dried. Public. */

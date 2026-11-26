@@ -40,6 +40,7 @@ import { newTheList, recordSelection } from "./theList.ts";
 import { hopelessCycle } from "./morale.ts";
 import { relayView } from "./relayView.ts";
 import { ITEM_TYPES } from "./itemTypes.ts";
+import type { ItemTypeId } from "./itemIds.ts";
 import { itemsIn, newItemId, visibleItemsIn } from "./items.ts";
 import { rechargeMicrowaves, rechargeScooters, startCharges } from "./charges.ts";
 import { actionDone, actionFailed, apRefill, capBreakdown, mpGain, carePointsGain, channelLimit, computerPointsCap, computerPointsGain, cookPointsGain, shootPointsGain, cycleChanged, designerPointsGain, engineerPointsGain, gardenPointsGain, dailyMoraleLoss, inventorySlots, movementRules, pilgredPointsGain, satietyLoss } from "./modifiers.ts";
@@ -653,7 +654,7 @@ export function newCycle(state: GameState, at?: number): ActionResult {
   return { ok: true, state: next };
 }
 
-function chargesFor(config: DeepReadonly<GameConfig>, type: string): { charges?: number } {
+function chargesFor(config: DeepReadonly<GameConfig>, type: ItemTypeId): { charges?: number } {
   const charges = startCharges(config, type);
   return charges === undefined ? {} : { charges };
 }

@@ -5,6 +5,7 @@ import {
   FRUIT_LORE_SKILLS,
   ITEM_TYPES,
   type FruitBuffId,
+  type ItemTypeId,
   type PlayerView,
 } from "@mush2/shared";
 import { useTranslation } from "react-i18next";
@@ -31,7 +32,7 @@ export function ConsumeEffects({
   type,
   view,
 }: {
-  type: string;
+  type: ItemTypeId;
   view: PlayerView;
 }) {
   const { t } = useTranslation();

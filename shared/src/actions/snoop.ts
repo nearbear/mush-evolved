@@ -1,4 +1,5 @@
 import { Action, type ActionVisibility } from "./action.ts";
+import { isItemTypeId } from "../itemTypes.ts";
 import { produceItem } from "../items.ts";
 import { logPrivate } from "../log.ts";
 import { rollWeighted } from "../rng.ts";
@@ -46,7 +47,7 @@ export class SnoopAction extends Action<SnoopActionData> {
   override apply(state: GameState, player: PlayerState): void {
     player.snoopedToday = [...(player.snoopedToday ?? []), player.room];
     const found = state.config.snoop.items;
-    const kinds = Object.keys(found);
+    const kinds = Object.keys(found).filter(isItemTypeId);
     const kind = kinds[rollWeighted(state, kinds.map((k) => found[k]!))]!;
     const { item, inInventory } = produceItem(state, player, kind);
     logPrivate(state, player.id, inInventory ? "snooped" : "snoopedKnocked", { item: item.type });

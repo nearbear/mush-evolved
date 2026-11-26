@@ -3,7 +3,7 @@
 // unwatered stops at dried, and a sick one stays sick until treated.
 
 import { ITEM_TYPES } from "./itemTypes.ts";
-import { TREE_POT_ITEM } from "./itemIds.ts";
+import { TREE_POT_ITEM, type ItemTypeId } from "./itemIds.ts";
 import { produceItem, spawnInRoom } from "./items.ts";
 import { logPublic } from "./log.ts";
 import { projectDone } from "./projects.ts";
@@ -86,7 +86,7 @@ export function botanyCycle(state: GameState): void {
   }
 }
 
-export function growCyclesFor(state: Readonly<GameState>, species: string): number {
+export function growCyclesFor(state: Readonly<GameState>, species: ItemTypeId): number {
   return state.fruits[species]?.growCycles ?? state.config.botany.growCycles[species] ?? 0;
 }
 

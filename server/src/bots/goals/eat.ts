@@ -18,7 +18,13 @@ export function needsFood(view: PlayerView): boolean {
   return view.you.satiety === 0 && since !== null && view.cycle - since >= BOT_EAT_AFTER_CYCLES;
 }
 
-const consumeOf = (view: PlayerView, o: ActionOption) => (o.action.type === "consume" ? ITEM_TYPES[itemType(view, o.action.item) ?? ""]?.consume : undefined);
+/** The item type definition of the item with this id in the bot's view (carried or in its room). */
+const typeDef = (view: PlayerView, id: string) => {
+  const type = itemType(view, id);
+  return type && ITEM_TYPES[type];
+};
+
+const consumeOf = (view: PlayerView, o: ActionOption) => (o.action.type === "consume" ? typeDef(view, o.action.item)?.consume : undefined);
 
 /**
  * Whether a banana (any fruit) here is kept for sowing (owner, 2026-11-12): while an empty hydropot is on the garden
@@ -31,10 +37,10 @@ const keepFruit = (view: PlayerView): boolean => !view.statuses.includes("hungry
  * coffee, and a cooked ration before an uncooked one. Not fruit kept for sowing (`keepFruit`), nor coffee kept for Gioele.
  */
 function bestFood(view: PlayerView): (ActionOption & { action: { type: "consume"; item: string } }) | undefined {
-  const uncooked = (o: ActionOption) => (o.action.type === "consume" && ITEM_TYPES[itemType(view, o.action.item) ?? ""]?.cook ? 1 : 0);
+  const uncooked = (o: ActionOption) => (o.action.type === "consume" && typeDef(view, o.action.item)?.cook ? 1 : 0);
   return view.actions
     .filter((o): o is ActionOption & { action: { type: "consume"; item: string } } => o.lacks.length === 0 && (consumeOf(view, o)?.satiety ?? 0) > 0)
-    .filter((o) => !(keepFruit(view) && ITEM_TYPES[itemType(view, o.action.item) ?? ""]?.fruit))
+    .filter((o) => !(keepFruit(view) && typeDef(view, o.action.item)?.fruit))
     // Coffee is kept for Gioele while he is alive (owner, 2026-11-18; coffee.ts).
     .filter((o) => !(coffeeReserved(view) && itemType(view, o.action.item) === "coffee"))
     .sort((a, b) => consumeOf(view, b)!.satiety - consumeOf(view, a)!.satiety || uncooked(a) - uncooked(b))[0];

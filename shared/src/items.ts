@@ -5,6 +5,7 @@
 // controls on lockers touches one place.
 
 import { startCharges } from "./charges.ts";
+import type { ItemTypeId } from "./itemIds.ts";
 import { ITEM_TYPES } from "./itemTypes.ts";
 import { inventorySlots } from "./modifiers.ts";
 import type { Container, GameState, ItemState, PlayerState, RoomId } from "./types.ts";
@@ -118,7 +119,7 @@ export function dropWeapon(
   return true;
 }
 
-export function produceItem(next: GameState, player: Readonly<PlayerState>, type: string): { item: ItemState; inInventory: boolean } {
+export function produceItem(next: GameState, player: Readonly<PlayerState>, type: ItemTypeId): { item: ItemState; inInventory: boolean } {
   const mine: Container = { kind: "player", id: player.id };
   const inInventory = hasSpace(next, mine);
   const charges = startCharges(next.config, type);
@@ -135,7 +136,7 @@ export function produceItem(next: GameState, player: Readonly<PlayerState>, type
 export function spawnInRoom(
   state: GameState,
   room: RoomId,
-  type: string,
+  type: ItemTypeId,
   count = 1,
   extra?: Partial<Omit<ItemState, "id" | "type" | "at">> | (() => Partial<Omit<ItemState, "id" | "type" | "at">>),
 ): void {

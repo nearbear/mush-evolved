@@ -63,8 +63,8 @@ function familyEntries<K extends string>(ids: readonly K[], make: () => ItemType
   return Object.fromEntries(ids.map((id) => [id, make()])) as Record<K, ItemType>;
 }
 
-/** The table, checked over `ItemTypeId`: an id without an entry, or an entry without an id, won't compile. */
-const TABLE = {
+/** Every kind of item, by id. Typed over `ItemTypeId`, so an id without an entry, or an entry without an id, won't compile. */
+export const ITEM_TYPES: Readonly<Record<ItemTypeId, ItemType>> = {
   ...familyEntries(DRUG_ITEMS, () => ({ consume: { ap: 0, satiety: 0 }, drug: true, canBreak: true, isDestroyedWhenBroken: true })),
   // Private (owner, 2026-11-18): only its owner sees it, so it can't be hidden and nothing can break it.
   [ITRACKIE_ITEM]: { private: true, canHide: false },
@@ -197,12 +197,15 @@ const TABLE = {
   mad_kube: { notImplemented: true },
   duct_tape: { notImplemented: true },
   block_of_post_it: { notImplemented: true },
-} satisfies Record<ItemTypeId, ItemType>;
-
-/** Every kind of item, by id. */
-export const ITEM_TYPES: Readonly<Record<string, ItemType>> = TABLE;
+};
 
 const ITEM_TYPE_IDS: ReadonlySet<string> = new Set(Object.keys(ITEM_TYPES));
 
 /** Whether `s` names an item type. Narrows strings from outside the rules (intents, cheats, stored states). */
 export const isItemTypeId = (s: string): s is ItemTypeId => ITEM_TYPE_IDS.has(s);
+
+/** The type of the item with this id, or undefined if there is no such item. */
+export const itemTypeOf = (state: { readonly items: readonly { readonly id: string; readonly type: ItemTypeId }[] }, itemId: string): ItemType | undefined => {
+  const item = state.items.find((i) => i.id === itemId);
+  return item && ITEM_TYPES[item.type];
+};

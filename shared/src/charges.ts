@@ -1,10 +1,10 @@
 // Item charges: what each type starts with, and what refills them.
 
-import { LUNCHBOX_ITEM, MICROWAVE_ITEM } from "./itemIds.ts";
+import { type ItemTypeId, LUNCHBOX_ITEM, MICROWAVE_ITEM } from "./itemIds.ts";
 import type { DeepReadonly, GameConfig, GameState } from "./types.ts";
 
 /** The charges an item of this type starts with, or undefined if it has none. Charged weapons start full. */
-export function startCharges(config: DeepReadonly<GameConfig>, type: string): number | undefined {
+export function startCharges(config: DeepReadonly<GameConfig>, type: ItemTypeId): number | undefined {
   if (type === MICROWAVE_ITEM) return config.expressCook.charges.start;
   if (type === LUNCHBOX_ITEM) return config.lunchbox.charges;
   if (type === "scooter") return config.scooter.charges.start;

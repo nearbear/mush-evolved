@@ -13,6 +13,7 @@ import type { Alerts } from "../reports.ts";
 import type { CapBreakdown, CapStat } from "../modifiers.ts";
 import type { Action, BotKind, DocumentState, ItemId, LogEntry, LogLine, LogParams, PlayerId, Role, RoomId, SpoilStage } from "../types.ts";
 import type { ChannelId, ChatLine, ChatMessage, ChatThread, PrivateChannel, SeqRange, SharedPilgredStatus, SharedPlanet, SharedPlanetId, SharedPlantStatus, SharedReport, SharedReportId } from "./chat.ts";
+import type { ItemTypeId } from "../itemIds.ts";
 import type { Plan } from "./plan.ts";
 import type { MovementRules } from "./config.ts";
 import type { ActionInProgress, PlayerState, Spot } from "./player.ts";
@@ -45,7 +46,7 @@ export interface EquipmentView {
 /** An item as a client sees it. */
 export interface ItemView {
   id: ItemId;
-  type: string;
+  type: ItemTypeId;
   /** For a corpse: whose body it is (the dead are public, and the world already draws them). */
   of?: PlayerId;
   /** For a blueprint: which recipe it carries (the blueprint is public to whoever can see the item). */
@@ -67,7 +68,7 @@ export interface ItemView {
   /** For perishable food that has spoiled (spoilage.ts). Sent to living Chefs only. */
   spoil?: SpoilStage;
   /** For a planted hydropot. `sick` and `sickCycles` are there only for the Botanist role; everyone else never gets them. */
-  plant?: { species: string; age: number | null; thirst: 0 | 1 | 2; sick?: boolean; sickCycles?: number };
+  plant?: { species: ItemTypeId; age: number | null; thirst: 0 | 1 | 2; sick?: boolean; sickCycles?: number };
   /** For a support drone (#411): its name, serial and upgrades, public to whoever can see it. Never its failure counts. */
   drone?: { name: string; serial: number; upgrades: string[] };
   /** For a document (#394): its kind and rows (characters and marks), public to whoever can see it. */

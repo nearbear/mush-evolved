@@ -7,7 +7,7 @@ import { DYNARCADE_EQUIPMENT, JUKEBOX_EQUIPMENT } from "./equipment.ts";
 import { logPublic } from "./log.ts";
 import { PATROL_SHIPS, patrolMaxCharges } from "./patrol.ts";
 import { availableProjects, PROJECT_COMPLETE, PROJECT_IDS, projectDone, type ProjectId } from "./projects.ts";
-import { BLUEPRINT_ITEM, BOOK_ITEM, SUPPORT_DRONE_ITEM, TREE_POT_ITEM } from "./itemIds.ts";
+import { BLUEPRINT_ITEM, BOOK_ITEM, type ItemTypeId, SUPPORT_DRONE_ITEM, TREE_POT_ITEM } from "./itemIds.ts";
 import { spawnInRoom } from "./items.ts";
 import { newDrone } from "./droneIdentity.ts";
 import { rollInt, rollShuffle } from "./rng.ts";
@@ -82,7 +82,7 @@ function onProjectCompleted(state: GameState, project: ProjectId): void {
     const { rooms, weaponBlueprints, misc } = state.config.project.trashLoad;
     const order = rollShuffle(state, rooms);
     const pick = <T,>(list: readonly T[]): T => list[rollInt(state, list.length)]!;
-    const items: Array<{ type: string; extra?: Partial<Omit<ItemState, "id" | "type" | "at">> }> = [
+    const items: Array<{ type: ItemTypeId; extra?: Partial<Omit<ItemState, "id" | "type" | "at">> }> = [
       { type: "thick_tube" },
       { type: "plastic_scraps" },
       { type: BOOK_ITEM, extra: { teaches: pick(SKILLS) } },

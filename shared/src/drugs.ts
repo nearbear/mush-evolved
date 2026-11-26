@@ -1,7 +1,7 @@
 // Drugs: 12 item types whose effects are drawn once per ship, at launch (`createGame`), and never change after.
 // Every disease in `config.diseases.allDiseases` is treated by at least one drug.
 
-import { DRUG_ITEMS } from "./itemIds.ts";
+import { DRUG_ITEMS, type ItemTypeId } from "./itemIds.ts";
 import { spawnInRoom } from "./items.ts";
 import { changeAP, changeMP, gainMorale } from "./adjustStats.ts";
 import { treatDisease } from "./diseases.ts";
@@ -95,7 +95,7 @@ export function applyDrug(state: GameState, player: PlayerState, type: string): 
 
 /** The Drug Dispenser's list for this reset (all drug types in a random order) and whether its one drug is taken. */
 export interface DrugDispenserState {
-  list: string[];
+  list: ItemTypeId[];
   used: boolean;
 }
 
@@ -106,7 +106,7 @@ export function drugOptionCount(player: Readonly<PlayerState>): number {
 }
 
 /** The first `drugOptionCount` drugs of the dispenser's list: what this player may choose from. */
-export function drugOptions(state: Readonly<GameState>, player: Readonly<PlayerState>): string[] {
+export function drugOptions(state: Readonly<GameState>, player: Readonly<PlayerState>): ItemTypeId[] {
   return state.drugDispenser.list.slice(0, drugOptionCount(player));
 }
 

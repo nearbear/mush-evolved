@@ -8,7 +8,7 @@ import { useTranslation } from "react-i18next";
 import { ConsumeEffects } from "./ConsumeEffects.tsx";
 import { HP_ICON, MUSH_ICON, STATUS_ICONS } from "../art/assets.ts";
 import { SINGLE_PRESS_ACTIONS, useDoublePress } from "./DoublePress.tsx";
-import { affordable, blurredVision, type Action, type ActionOption, type PlayerView } from "@mush2/shared";
+import { affordable, blurredVision, type Action, type ActionOption, type ItemTypeId, type PlayerView } from "@mush2/shared";
 
 /** A button that does the action on a double press (useDoublePress; one press for SINGLE_PRESS_ACTIONS or `singlePress`), or the disabled one with the reason when you lack the points. */
 export function ActionButton(props: {
@@ -156,7 +156,7 @@ function hasDetails(view: PlayerView, option: ActionOption, hint: string | undef
 }
 
 /** The type of the item a consume action eats, so its button can say what it does. */
-function consumedType(view: PlayerView, option: ActionOption): string | undefined {
+function consumedType(view: PlayerView, option: ActionOption): ItemTypeId | undefined {
   const a = option.action;
   if (a.type !== "consume") return undefined;
   return [...view.inventory, ...view.roomItems].find((i) => i.id === a.item)?.type;

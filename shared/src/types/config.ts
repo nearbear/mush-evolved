@@ -25,7 +25,7 @@ export interface HunterTypeConfig {
 /** Wreckage left in space: weights by piece count (index = count), and by item type for each piece. */
 export interface DebrisTable {
   count: number[];
-  types: Record<string, number>;
+  types: Partial<Record<ItemTypeId, number>>;
 }
 
 /** `T` with every field read-only, all the way down. */
@@ -458,7 +458,7 @@ export interface GameConfig {
   // The jukebox (owner, 2026-11-22): Listen costs `cost.ap` and gives +`morale` once a day while your own song plays; Check playlist is free.
   // `checkInjuryChance`: the random injury on Check playlist (owner, 2026-11-25: eMush's 1%).
   jukebox: { cost: { ap: number }; morale: number; checkInjuryChance: number };
-  snoop: { cost: { ap: number }; dirtyChance: number; injuryChance: number; rooms: string[]; items: Record<string, number> }; // The Scrapper's Snoop: cost, its dirt and injury odds, the storage rooms it works in, the items it makes by weight (owner, 2026-11-01).
+  snoop: { cost: { ap: number }; dirtyChance: number; injuryChance: number; rooms: string[]; items: Partial<Record<ItemTypeId, number>> }; // The Scrapper's Snoop: cost, its dirt and injury odds, the storage rooms it works in, the items it makes by weight (owner, 2026-11-01).
   sporeSucker: {
     cost: { ap: number }; // AP using the Spore Sucker costs (owner, 2026-11-20).
     effect: { damage: number }; // Damage it always deals its user (owner, 2026-11-20).
@@ -518,7 +518,7 @@ export interface GameConfig {
     treat: { cost: { ap: number }, injuryChance: number }; // Treat one plant (clears sickness).
     sow: { cost: { ap: number } }; // Plant a carried fruit in an empty hydropot.
     dirtyChance: number; // Chance of getting dirty after watering, treating or sowing (the original's 15%).
-    growCycles: Record<string, number>; // Cycles a young plant of each species needs before it becomes adult.
+    growCycles: Partial<Record<ItemTypeId, number>>; // Cycles a young plant of each species needs before it becomes adult.
     fruits: FruitsConfig; // Seeded alien fruit rules (fruits.ts, #437).
     graft: GraftConfig; // Graft and its hybrids (actions/graft.ts, fruits.ts, #438).
     sickChancePerCycle: number; // PLACEHOLDER: each healthy plant's chance of falling sick at each cycle change.
@@ -951,7 +951,7 @@ export interface GameConfig {
   greenJelly: { cost: { ap: number }; maxCycles: number };
   // Owner, 2026-11-07: an Engineer reinforces equipment or an item (actions/reinforce.ts) with one scrap, `gain` by scrap type, up to `max`;
   // `dirtyChance` and `injuryChance` per try (owner, 2026-11-25: eMush's).
-  reinforce: { cost: { ap: number }; chance: number; max: number; fortifiedAt: number; gain: Record<string, number>; dirtyChance: number; injuryChance: number };
+  reinforce: { cost: { ap: number }; chance: number; max: number; fortifiedAt: number; gain: Partial<Record<ItemTypeId, number>>; dirtyChance: number; injuryChance: number };
   extinguish: {
     cost: { ap: number };
     chance: number;
@@ -1032,7 +1032,7 @@ export interface GameConfig {
   // Weapons (owner, 2026-10-22, from the English wiki). Using one is the `attack` action.
   weapons: {
     cost: { ap: number }; // AP spent per use, any weapon (the original's SHOOT and ATTACK: 1).
-    types: Record<string, WeaponStats>; // By item type.
+    types: Partial<Record<ItemTypeId, WeaponStats>>; // By item type.
   };
   creative: {
     refundOdds: number; // Chance that the Creative skill refunds 1 AP after a failed action that cost AP (confirmed 2026-10-15).

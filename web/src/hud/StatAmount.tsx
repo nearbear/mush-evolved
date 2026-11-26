@@ -1,7 +1,7 @@
 // A resource gain or loss drawn as its signed amount followed by the resource's icon ("+1" then the AP gem), the one
 // look for food, drug and fruit effects everywhere (consumable tooltips, the Hydroponics center, the Botany card).
 
-import { isAlienFruitType, ITEM_TYPES, type PlayerView } from "@mush2/shared";
+import { isAlienFruitType, ITEM_TYPES, type ItemTypeId, type PlayerView } from "@mush2/shared";
 import { useTranslation } from "react-i18next";
 import { AP_SLOT_ICON, HP_ICON, MORALE_ICON, MP_SLOT_ICON, SATIETY_ICON } from "../art/assets.ts";
 
@@ -31,7 +31,7 @@ export function signedAmount(n: number): string {
  * What eating or drinking `type` gains or loses, in `RESOURCE_STATS` order, zeroes left out. Drug and alien fruit
  * effects are added only when the viewer knows them; the caller decides what to show when they don't.
  */
-export function consumeDeltas(type: string, view: PlayerView): StatDelta[] {
+export function consumeDeltas(type: ItemTypeId, view: PlayerView): StatDelta[] {
   const consume = ITEM_TYPES[type]?.consume;
   if (!consume) return [];
   const drug = ITEM_TYPES[type]?.drug === true ? view.drugEffects?.[type] : undefined;
