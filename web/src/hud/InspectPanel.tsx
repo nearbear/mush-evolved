@@ -5,7 +5,7 @@ import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
 import type { CSSProperties, ReactNode } from "react";
-import { actionItemType, actionVisibility, CHARACTERS, ITEM_TYPES, PROJECT_COMPLETE, characterGivenName, characterName, SUPER_CALC_EQUIPMENT, SUPERKUBE, type Action, type ActionOption, type CharacterId, type EquipmentView, type ItemId, type PlayerView, type ShipLayout, type Target } from "@mush2/shared";
+import { actionItemType, actionVisibility, CHARACTERS, ITEM_TYPES, isRenameableType, PROJECT_COMPLETE, characterGivenName, characterName, SUPER_CALC_EQUIPMENT, SUPERKUBE, type Action, type ActionOption, type CharacterId, type EquipmentView, type ItemId, type PlayerView, type ShipLayout, type Target } from "@mush2/shared";
 import { BROKEN_ICON, characterImage, hostileSprite, portrait } from "../art/assets.ts";
 import { useMobile } from "../useMobile.ts";
 import { atlasUrl } from "../iso/shipLayout.ts";
@@ -86,6 +86,7 @@ export function InspectPanel({
     onRenameItem !== undefined &&
     resolved?.kind === "item" &&
     resolved.item.owner === view.you.id &&
+    isRenameableType(resolved.item.type) &&
     view.phase === "playing" &&
     view.you.alive &&
     !view.statuses.includes("coma");

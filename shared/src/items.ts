@@ -49,6 +49,8 @@ export interface ItemType {
   canBreakOnCycleChange?: boolean;
   /** False: it can't be hidden (actions/hide.ts). Anything that can be dropped can be hidden otherwise. */
   canHide?: boolean;
+  /** False: even its owner can't rename it (rename.ts; owner, 2026-11-26: Schrödinger). Owned items can be renamed otherwise. */
+  canRename?: boolean;
   /**
    * A private item (owner, 2026-11-18: the iTrackie): each one is created with `privateTo`, the only player who ever sees
    * or touches it. Taking and dropping it are private actions.
@@ -276,8 +278,8 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   // Read on the client; Tear destroys it (actions/tear.ts). Named after its icon.
   document: {},
   // Owner, 2026-10-25: items researches need in the lab (research.ts, RESEARCH_REQUIRES). No effect yet. Named after their icons.
-  // Schrödinger, the cat: an NPC (schrodinger.ts) arriving with Raluca (owner, 2026-11-21).
-  [CAT_ITEM]: {},
+  // Schrödinger, the cat: an NPC (schrodinger.ts) arriving with Raluca (owner, 2026-11-21). Never renamed (owner, 2026-11-26).
+  [CAT_ITEM]: { canRename: false },
   // Alien artifacts, found on expeditions (owner, 2026-11-08, #357). Inert for now: their effects are later stories. Named after their icons.
   water_stick: {},
   magellan_liquid_map: {},

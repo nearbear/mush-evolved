@@ -47,9 +47,11 @@ export class TransferAction<T extends "take" | "drop" = "take" | "drop"> extends
     return canTransfer(state, player, item, destination) ? null : "cant_transfer";
   }
 
-  override injuryChance(state: Readonly<GameState>, _player: Readonly<PlayerState>, target: { type: T; item: string }): number {
-    if (this.type === "take" && state.items.find((i) => i.id === target.item)?.type === CAT_ITEM) {
-      return state.config.schrodinger.take.injuryChance;
+  override injuryChance(state: Readonly<GameState>, player: Readonly<PlayerState>, target: { type: T; item: string }): number {
+    const item = state.items.find((i) => i.id === target.item);
+    if (this.type === "take" && item?.type === CAT_ITEM) {
+      // Schrödinger never scratches his owner when she picks him up (owner, 2026-11-26), so she can't be contaminated that way.
+      return item.owner === player.id ? 0 : state.config.schrodinger.take.injuryChance;
     }
     // Dropping never injures (owner, 2026-11-25: eMush's).
     return this.type === "take" ? state.config.transfer.injuryChance : 0;

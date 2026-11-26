@@ -319,8 +319,32 @@ describe("Schrödinger: Take, Caress & scratch contamination", () => {
     const c = cat(s);
     const other: ItemState = { id: `item-${s.nextItemId++}`, type: "metal_scraps", at: { kind: "room", id: LAB } };
     s.items.push(other);
-    expect(option(s, "p0", { type: "take", item: c.id })?.injury).toBe(s.config.schrodinger.take.injuryChance);
-    expect(option(s, "p0", { type: "take", item: other.id })?.injury).toBe(s.config.transfer.injuryChance);
+    expect(option(s, "p1", { type: "take", item: c.id })?.injury).toBe(s.config.schrodinger.take.injuryChance);
+    expect(option(s, "p1", { type: "take", item: other.id })?.injury).toBe(s.config.transfer.injuryChance);
+  });
+
+  it("never scratches his owner when she picks him up, even when Mush (owner, 2026-11-26)", () => {
+    const customSeats: Seat[] = makeSeats(3).map((s, i) => ({ ...s, character: (["raluca", "finola", "kuanti"] as const)[i]! }));
+    const s = createGame(customSeats, testConfig({ schrodinger: { take: { injuryChance: 1 }, caress: { injuryChance: 0 } } }), 7);
+    for (const p of s.players) {
+      p.room = LAB;
+      p.role = iRole(p.id);
+      p.ap = s.config.maxAp;
+    }
+    player(s, "p2").spores = 1;
+    const c = cat(s);
+    expect(c.owner).toBe("p0");
+    c.at = { kind: "player", id: "p2" };
+    const infected = mustApply(s, "p2", { type: "mush_caress", item: c.id });
+    const onFloor = mustApply(infected, "p2", { type: "drop", item: c.id });
+
+    expect(option(onFloor, "p0", { type: "take", item: c.id })?.injury).toBe(0);
+    const hpBefore = player(onFloor, "p0").hp;
+    const taken = mustApply(onFloor, "p0", { type: "take", item: c.id });
+    expect(player(taken, "p0").hp).toBe(hpBefore);
+    expect(taken.contamination["p0"]).toBeUndefined();
+    // Anyone else still risks it.
+    expect(option(onFloor, "p1", { type: "take", item: c.id })?.injury).toBe(1);
   });
 
   it("does not contaminate on Take or Caress when the scratch/injury roll does not trigger", () => {
@@ -336,7 +360,7 @@ describe("Schrödinger: Take, Caress & scratch contamination", () => {
     expect(caressed.contamination["p0"]).toBeUndefined();
   });
 
-  it("contaminates a living human by 1 and deals 2 HP injury when scratched on Take, converting at capacity", () => {
+  it("contaminates a living human (not his owner) by 1 and deals 2 HP injury when scratched on Take, converting at capacity", () => {
     const customSeats: Seat[] = makeSeats(3).map((s, i) => ({ ...s, character: (["raluca", "finola", "kuanti"] as const)[i]! }));
     const s = createGame(customSeats, testConfig({ schrodinger: { take: { injuryChance: 1 }, caress: { injuryChance: 0 } } }), 7);
     for (const p of s.players) {
@@ -350,22 +374,22 @@ describe("Schrödinger: Take, Caress & scratch contamination", () => {
     const infected = mustApply(s, "p2", { type: "mush_caress", item: c.id });
     const onFloor = mustApply(infected, "p2", { type: "drop", item: c.id });
 
-    const hpBefore = player(onFloor, "p0").hp;
-    const taken1 = mustApply(onFloor, "p0", { type: "take", item: c.id });
-    expect(player(taken1, "p0").hp).toBe(hpBefore - 2);
-    expect(taken1.contamination["p0"]).toBe(1);
+    const hpBefore = player(onFloor, "p1").hp;
+    const taken1 = mustApply(onFloor, "p1", { type: "take", item: c.id });
+    expect(player(taken1, "p1").hp).toBe(hpBefore - 2);
+    expect(taken1.contamination["p1"]).toBe(1);
     expect(cat(taken1).mush).toBe(true);
-    expect(viewFor(taken1, "p0").chat.some((m) => m.system?.key === "mushContaminated")).toBe(false);
-    expect(taken1.chat.some((m) => m.channel === MUSH_CHANNEL && m.system?.key === "mushContaminated" && m.system.params?.name === "raluca")).toBe(true);
+    expect(viewFor(taken1, "p1").chat.some((m) => m.system?.key === "mushContaminated")).toBe(false);
+    expect(taken1.chat.some((m) => m.channel === MUSH_CHANNEL && m.system?.key === "mushContaminated" && m.system.params?.name === "finola")).toBe(true);
 
     // Dropping and picking him up again scratches and contaminates again, converting at capacity.
     let cur = taken1;
     for (let i = 1; i < cur.config.infection.capacity; i++) {
-      player(cur, "p0").hp = cur.config.maxHp;
-      cur = mustApply(cur, "p0", { type: "drop", item: c.id });
-      cur = mustApply(cur, "p0", { type: "take", item: c.id });
+      player(cur, "p1").hp = cur.config.maxHp;
+      cur = mustApply(cur, "p1", { type: "drop", item: c.id });
+      cur = mustApply(cur, "p1", { type: "take", item: c.id });
     }
-    expect(player(cur, "p0").role).toBe("mush");
+    expect(player(cur, "p1").role).toBe("mush");
   });
 
   it("contaminates a living human by 1 and deals 2 HP injury when scratched on Caress", () => {
@@ -401,6 +425,7 @@ describe("Schrödinger: Take, Caress & scratch contamination", () => {
     player(s, "p2").spores = 1;
     s.items.push({ id: `item-${s.nextItemId++}`, type: "protection_gloves", at: { kind: "player", id: "p0" } });
     const c = cat(s);
+    delete c.owner; // so the take could scratch her
     c.at = { kind: "player", id: "p2" };
     const infected = mustApply(s, "p2", { type: "mush_caress", item: c.id });
     const onFloor = mustApply(infected, "p2", { type: "drop", item: c.id });

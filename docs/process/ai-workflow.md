@@ -5538,3 +5538,10 @@ Trait descriptions (en/fr/es) no longer end with "It can't be removed."; `Status
 - The owner asked me to fix the tests that broke after the swapCharacter work. Every failure was a timeout, not an assertion error. Even `moduleLoad`, which only imports one file, timed out, and which tests failed changed from run to run. Each failing test passed when run alone. Removing the new action from the registry didn't change the GoalBot test's time, so the new code wasn't the cause.
 - Fix: the `test` scripts in shared, server, web and tools now pass `--testTimeout=30000` (Vitest's default is 5s). `verify` runs those scripts, so it gets the same limit. The explicit limits that failed went from 15–20s to 60s: GoalBot legality, survival, and two GameRoom bot tests. The cost is that a hung test takes longer to report.
 - Raising limits doesn't help when the machine is badly overloaded. While other sessions were running their own suites (load average about 9 on 8 cores), even 60s limits ran out. Once the machine was idle, `verify` passed.
+
+## 2026-11-26: Schrödinger never scratches his owner; unrenameable item types
+
+- **Asked:** Schrödinger never scratches his owner when she picks him up, and he can't be renamed, with room for more unrenameable items later.
+- **Done:** `TransferAction.injuryChance` returns 0 for taking the cat when the taker is `item.owner`, so a Mush cat can't contaminate Raluca by being taken (caress still can). Renaming got a per-type flag, `ItemType.canRename: false`, read through one helper, `isRenameableType`, by `canRenameItem`, `renameItem` (`cant_rename`) and both web rename buttons (`PeekBar`, `InspectPanel`), so the next unrenameable item is a one-line data change. Rename tests that used the cat moved to a drone and a blaster (the replay test picks Infantryman via cheats).
+- **Worked:** the owner flagged extensibility mid-task, before the rename change was written, which steered it from a cat check to a type flag.
+- **Note:** the web rename button duplicated the rules' eligibility check; it now shares the type check but still re-derives the rest client-side.
