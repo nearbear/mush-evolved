@@ -29,14 +29,20 @@ export type AlienFruitItem = (typeof ALIEN_FRUIT_ITEMS)[number];
  * `graft_<lower>_<higher>` (e.g. `graft_fruit01_fruit05`). Their effects are drawn at launch (`state.hybrids`) and join
  * `state.fruits` when first grafted.
  */
-export const HYBRID_FRUIT_ITEMS: readonly string[] = ALIEN_FRUIT_ITEMS.flatMap((a, i) =>
-  ALIEN_FRUIT_ITEMS.slice(i + 1).map((b) => `graft_${a}_${b}`),
+export const HYBRID_FRUIT_ITEMS: readonly HybridFruitItem[] = ALIEN_FRUIT_ITEMS.flatMap((a, i) =>
+  ALIEN_FRUIT_ITEMS.slice(i + 1).map((b) => `graft_${a}_${b}` as const),
 );
+
+/**
+ * A hybrid id. The type admits every ordered pair (`graft_fruit05_fruit01` too), a superset of the 66 real ones in
+ * `HYBRID_FRUIT_ITEMS`; `hybridOf` builds the canonical one and `isItemTypeId` (itemTypes.ts) rejects the rest.
+ */
+export type HybridFruitItem = `graft_${AlienFruitItem}_${AlienFruitItem}`;
 
 const isAlienSpecies = (id: string): id is AlienFruitItem => (ALIEN_FRUIT_ITEMS as readonly string[]).includes(id);
 
 /** The hybrid of two different alien species, the same whichever is the fruit; null for anything else. */
-export function hybridOf(a: string, b: string): string | null {
+export function hybridOf(a: string, b: string): HybridFruitItem | null {
   if (a === b || !isAlienSpecies(a) || !isAlienSpecies(b)) return null;
   return a < b ? `graft_${a}_${b}` : `graft_${b}_${a}`;
 }
@@ -104,7 +110,22 @@ export const HACKER_KIT_ITEM = "hacker_kit";
  * icon files (drug_N.jpg); matched by file hash to eMush's named icons: 0 Twinoid, 1 Xenox, 2 Phuxx, 3 Eufurylate,
  * 4 Soma, 5 Spyce, 6 Newke, 7 Pinq, 8 Bacta, 9 Betapropyl, 10 Pymp, 11 Rosebud (names.*.json has each language's name).
  */
-export const DRUG_ITEMS: readonly string[] = Array.from({ length: 12 }, (_, i) => `drug_${i}`);
+export const DRUG_ITEMS = [
+  "drug_0",
+  "drug_1",
+  "drug_2",
+  "drug_3",
+  "drug_4",
+  "drug_5",
+  "drug_6",
+  "drug_7",
+  "drug_8",
+  "drug_9",
+  "drug_10",
+  "drug_11",
+] as const;
+
+export type DrugItem = (typeof DRUG_ITEMS)[number];
 
 /** The item that makes a repair `config.repair.wrenchFactor` times as likely, carried. */
 export const WRENCH_ITEM = "wrench";
@@ -137,3 +158,94 @@ export const MYCO_ALARM_ITEM = "myco_alarm";
 /** The Mush genome disk and the Mush test strain (Xyloph rewards, comms.ts; no effect yet). Named after their icons. */
 export const GENOME_DISK_ITEM = "mush_floppy_disk";
 export const MUSH_SAMPLE_ITEM = "mush_sample";
+
+/**
+ * Every item id that is not one of the generated families (drugs, alien fruits, hybrids). With them it makes
+ * `ItemTypeId`, which `ITEM_TYPES` (itemTypes.ts) must cover exactly, so a new id goes here and gets its entry there.
+ */
+export const PLAIN_ITEM_IDS = [
+  ITRACKIE_ITEM,
+  BOOK_ITEM,
+  CORPSE_ITEM,
+  SUPPORT_DRONE_ITEM,
+  CAT_ITEM,
+  MICROWAVE_ITEM,
+  FREEZER_ITEM,
+  TABULATOR_ITEM,
+  TREE_POT_ITEM,
+  LUNCHBOX_ITEM,
+  FUEL_CAPSULE_ITEM,
+  OXYGEN_CAPSULE_ITEM,
+  SPACE_CAPSULE_ITEM,
+  SUPER_SOAP_ITEM,
+  SPORE_SUCKER_ITEM,
+  STEROIDS_ITEM,
+  NCC_LENS_ITEM,
+  CUSTOMIZED_BLASTER_ITEM,
+  HACKER_KIT_ITEM,
+  WRENCH_ITEM,
+  BANDAGE_ITEM,
+  EXTINGUISHER_ITEM,
+  ANTI_MUSH_SERUM_ITEM,
+  HULL_REPAIR_ITEM,
+  INPUT_TUBE_ITEM,
+  OUTPUT_TUBE_ITEM,
+  BLUEPRINT_ITEM,
+  DOCUMENT_ITEM,
+  MYCO_ALARM_ITEM,
+  GENOME_DISK_ITEM,
+  MUSH_SAMPLE_ITEM,
+  // Weapons (config.weapons).
+  "knife",
+  "blaster",
+  "natamy_riffle",
+  "sniper_riffle",
+  "machine_gun",
+  "missile_launcher",
+  "grenade",
+  // Food.
+  "coffee",
+  "uncooked_ration",
+  "cooked_ration",
+  "alien_steak",
+  "fruit_banana",
+  // Tools, gear and scrap.
+  "medikit",
+  "camera",
+  "soap",
+  "thick_tube",
+  "plastic_scraps",
+  "oscilloscope",
+  "apron",
+  "protection_gloves",
+  // Alien artifacts.
+  "water_stick",
+  "magellan_liquid_map",
+  "rolling_boulder",
+  "alien_oil",
+  "computer_jelly",
+  "alien_holographic_tv",
+  "insectoid_shell",
+  "alien_can_opener",
+  "super_map",
+  // Expedition gear and armor.
+  "drill",
+  "thermosensor",
+  "quad_compass",
+  "rope",
+  "echo_sounder",
+  "trad_module",
+  "white_flag",
+  "old_shirt",
+  "plastenite_armor",
+  "sniper_helmet",
+  "scooter",
+  "space_suit",
+  // Not implemented yet.
+  "mad_kube",
+  "duct_tape",
+  "block_of_post_it",
+] as const;
+
+/** Every item type's id: `ITEM_TYPES`'s keys. A string from outside (a protocol intent, a stored state) is narrowed with `isItemTypeId`. */
+export type ItemTypeId = (typeof PLAIN_ITEM_IDS)[number] | DrugItem | AlienFruitItem | HybridFruitItem;

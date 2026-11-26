@@ -1,7 +1,7 @@
 // The item table: every kind of item by id, and the flags each one carries. Behavior lives with the actions and
 // systems that read these flags (actions/*.ts, drugs.ts, botany.ts, ...); containers and inventory are items.ts.
 
-import { ALIEN_FRUIT_ITEMS, BOOK_ITEM, CAT_ITEM, CORPSE_ITEM, CUSTOMIZED_BLASTER_ITEM, DRUG_ITEMS, FREEZER_ITEM, FUEL_CAPSULE_ITEM, HACKER_KIT_ITEM, HYBRID_FRUIT_ITEMS, ITRACKIE_ITEM, MICROWAVE_ITEM, NCC_LENS_ITEM, OXYGEN_CAPSULE_ITEM, SPACE_CAPSULE_ITEM, SPORE_SUCKER_ITEM, STEROIDS_ITEM, SUPER_SOAP_ITEM, SUPPORT_DRONE_ITEM, TABULATOR_ITEM, TREE_POT_ITEM } from "./itemIds.ts";
+import { ALIEN_FRUIT_ITEMS, BOOK_ITEM, CAT_ITEM, CORPSE_ITEM, CUSTOMIZED_BLASTER_ITEM, DRUG_ITEMS, FREEZER_ITEM, FUEL_CAPSULE_ITEM, HACKER_KIT_ITEM, HYBRID_FRUIT_ITEMS, ITRACKIE_ITEM, type ItemTypeId, MICROWAVE_ITEM, NCC_LENS_ITEM, OXYGEN_CAPSULE_ITEM, SPACE_CAPSULE_ITEM, SPORE_SUCKER_ITEM, STEROIDS_ITEM, SUPER_SOAP_ITEM, SUPPORT_DRONE_ITEM, TABULATOR_ITEM, TREE_POT_ITEM } from "./itemIds.ts";
 
 export interface ItemType {
   /** Drinking or eating it removes it and does this. */
@@ -57,9 +57,15 @@ export const STEROIDS_YIELD = 4;
 export const STEROIDS_MP = 8;
 export const NCC_LENS_YIELD = 2;
 
-/** Every kind of item, by id. */
-export const ITEM_TYPES: Record<string, ItemType> = {
-  ...Object.fromEntries(DRUG_ITEMS.map((id) => [id, { consume: { ap: 0, satiety: 0 }, drug: true, canBreak: true, isDestroyedWhenBroken: true }])),
+/** One entry per id of a generated family (drugs, alien fruits, hybrids), each a fresh `make()`. */
+function familyEntries<K extends string>(ids: readonly K[], make: () => ItemType): Record<K, ItemType> {
+  // The one cast: Object.fromEntries forgets its keys. `ids` lists exactly K's members, except hybrids (see HybridFruitItem).
+  return Object.fromEntries(ids.map((id) => [id, make()])) as Record<K, ItemType>;
+}
+
+/** The table, checked over `ItemTypeId`: an id without an entry, or an entry without an id, won't compile. */
+const TABLE = {
+  ...familyEntries(DRUG_ITEMS, () => ({ consume: { ap: 0, satiety: 0 }, drug: true, canBreak: true, isDestroyedWhenBroken: true })),
   // Private (owner, 2026-11-18): only its owner sees it, so it can't be hidden and nothing can break it.
   [ITRACKIE_ITEM]: { private: true, canHide: false },
   wrench: {},
@@ -111,9 +117,9 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   // Owner, 2026-10-22: the original's banana (genFruitList): +1 AP, +1 satiety, +1 morale, +1 HP. Named after its icon.
   fruit_banana: { fruit: true, perishable: true, consume: { ap: 1, satiety: 1, morale: 1, hp: 1 } },
   // #437 (owner, 2026-11-14): 12 alien species whose rolled stats live on `state.fruits`.
-  ...Object.fromEntries(ALIEN_FRUIT_ITEMS.map((id) => [id, { fruit: true, perishable: true, consume: { ap: 1, satiety: 1 } }])),
+  ...familyEntries(ALIEN_FRUIT_ITEMS, () => ({ fruit: true, perishable: true, consume: { ap: 1, satiety: 1 } })),
   // #438 (owner, 2026-11-21): the 66 graft hybrids, one per pair of alien species; rolled stats on `state.hybrids`.
-  ...Object.fromEntries(HYBRID_FRUIT_ITEMS.map((id) => [id, { fruit: true, perishable: true, consume: { ap: 1, satiety: 1 } }])),
+  ...familyEntries(HYBRID_FRUIT_ITEMS, () => ({ fruit: true, perishable: true, consume: { ap: 1, satiety: 1 } })),
   // Owner, 2026-10-23, the wiki: one unit of fuel, taken from a tank and loaded into the combustion chamber. One slot
   // each, never dropped (actions/take_fuel.ts). Named after its icon.
   [FUEL_CAPSULE_ITEM]: { canDrop: false },
@@ -191,4 +197,12 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   mad_kube: { notImplemented: true },
   duct_tape: { notImplemented: true },
   block_of_post_it: { notImplemented: true },
-};
+} satisfies Record<ItemTypeId, ItemType>;
+
+/** Every kind of item, by id. */
+export const ITEM_TYPES: Readonly<Record<string, ItemType>> = TABLE;
+
+const ITEM_TYPE_IDS: ReadonlySet<string> = new Set(Object.keys(ITEM_TYPES));
+
+/** Whether `s` names an item type. Narrows strings from outside the rules (intents, cheats, stored states). */
+export const isItemTypeId = (s: string): s is ItemTypeId => ITEM_TYPE_IDS.has(s);
