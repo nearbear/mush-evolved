@@ -58,7 +58,7 @@ export class PunchAction extends Action<PunchActionData> {
     const dealt = crit ? hit : afterProtection(state, victim, hit); // neither Plastenite Armor nor Hard-boiled stops a crit
     const key = crit ? "punchCrit" : hit > 0 && dealt === 0 ? "punchArmor" : "punched";
     logPublic(state, player.room, key, { name: player.character, target: victim.character });
-    damage(state, victim, dealt, "assassinated");
+    damage(state, victim, dealt, "assassinated", player);
   }
 
   override fail(state: GameState, player: PlayerState, target: PunchActionData): void {

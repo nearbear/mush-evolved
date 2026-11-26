@@ -111,6 +111,8 @@
       "hp": "Chacun récupère 1 PV au début de chaque jour. À 0 PV, vous mourez.\nSoigner rend 3 PV : avec un Médikit sur vous, ou à l'Infirmerie sans Médikit (2 PA sur quelqu'un d'autre, 3 PA sur vous-même).\nLes actions de combat font perdre des PV à leur cible.\nLes blessures en construisant, en démontant ou en réparant font perdre des PV.\nUn humain affamé (24 cycles après la fin de son dernier repas) perd 1 PV par cycle jusqu'à ce qu'il mange.\nUn Mush perd 4 PV à chaque douche.",
       "morale": "Tout le monde perd 2 points de moral au début de chaque jour (1 tant que Chun est en vie).\nRéconforter, l'action du Psy, donne 2 points de moral. Être allongé dans une pièce où se trouve un Psy donne 1 point de moral par cycle.\nLe Discours enflammé d'un Leader donne 2 points de moral à tous les autres occupants de la pièce.\nManger une Ration crue coûte 1 point de moral."
     },
+    "sanity": "Santé mentale",
+    "sanityInfo": "Votre état d'esprit. Chaque mort humaine vous en coûte un peu ; en être témoin, ou tuer, bien davantage. Plus elle est basse, plus un trouble est probable après avoir vu une mort, tué quelqu'un, ou quand votre moral est au plus bas.",
     "satiety": "Satiété",
     "satietyInfo": {
       "emptyFor_one": "Votre estomac est vide depuis {{count}} cycle.",
@@ -1040,6 +1042,7 @@
     "mushOnly": "Mush uniquement : la personne maudite n'en sait rien.",
     "permanent": "Ceci ne peut pas être retiré.",
     "calmed": "Apaisé par un Psy : aucun effet pour l'instant.",
+    "agoraphobia_disorder": "Agoraphobie",
     "depression_disorder": "Dépression",
     "label": "Effets de statut",
     "dirty": "Sale",
@@ -1125,6 +1128,7 @@
     "coma": "Coma",
     "contaminated": "Contamination : {{level}}",
     "desc": {
+      "agoraphobia_disorder": "Avec 4 personnes ou plus (équipage ou hostiles, vous compris) dans votre pièce :\nLes actions qui coûtent des PA coûtent 1 PA de plus.\nQuitter la pièce coûte 1 PM de plus.\nVous perdez 1 point de moral à chaque changement de cycle.",
       "depression_disorder": "-2 PA max.\n-2 moral max.\nVous perdez 1 point de moral de plus à la fin de chaque jour.",
       "dirty": "Vous ne pouvez pas faire de recherche. Prendre une douche l'enlève.",
       "full_belly": "Vous ne pouvez plus manger tant que vous n'avez pas plus faim.",
@@ -1293,6 +1297,7 @@
     "summonStoppedPushed": "Vous avez été convoqué(e) : {{room}}, mais n'avez pas pu partir : quelqu'un pousse votre fauteuil roulant.",
     "summonStoppedNoPath": "Vous avez été convoqué(e) : {{room}}, mais aucun chemin n'y mène depuis là où vous êtes.",
     "loseMorale": "Vous avez perdu {{amount}} point de moral.",
+    "agoraphobiaMoraleLoss": "La foule autour de vous vous a coûté {{amount}} point de moral.",
     "antisocialMoraleLoss": "La présence des autres vous a coûté {{amount}} point de moral.",
     "germaphobeMoraleLoss": "Être sale vous a coûté {{amount}} point de moral.",
     "pregnantDeathMoraleLoss": "Un membre enceinte de l'équipage est mort. Vous avez perdu {{amount}} points de moral.",
@@ -1685,6 +1690,7 @@
     "tremorNoGravity": "La salle est soudainement prise de fortes secousses. Les objets volent à travers la salle et heurtent les membres d'équipage présents.",
     "panicAttack": "Vous faites une crise de panique.",
     "incidentDisease": "Vous ne vous sentez pas bien.",
+    "disorderGained": "Vous n'arrivez pas à oublier ce que vous avez vécu : vous développez {{status}}.",
     "disorderCalmed": "En parler vous fait du bien : votre {{status}} s'apaise pour un temps.",
     "metalPlate": "Une plaque de métal tombe sur {{name}} !",
     "electricalOverload": "Une surcharge électrique grille les équipements de la pièce !",

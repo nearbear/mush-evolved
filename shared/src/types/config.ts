@@ -332,6 +332,15 @@ export interface GameConfig {
   antisocial: {
     moraleLoss: number; // Raluca's Antisocial trait: lost at each cycle change spent with another living player in her room (owner, 2026-11-19, #470).
   };
+  /**
+   * Sanity (sanity.ts; owner, 2026-11-25): every player starts at `start`. When a human dies every living player loses
+   * `deathLoss`, those in the room also `witnessLoss`, and the killer also `killLoss`. At the next cycle change a human
+   * witness rolls (100 - sanity)% for a random disorder, a killer (100 - sanity) × `killChanceFactor`%, and every cycle
+   * change a human below `lowMorale` morale rolls (100 - sanity)%; one roll per condition.
+   */
+  /** Agoraphobia (owner, 2026-11-26): crowded at `crowd` living crew and hostile NPCs in the room, the holder included; there AP-costing actions cost `apSurcharge` more, leaving costs `mpSurcharge` more MP, and a cycle change costs `moraleLoss` morale. */
+  agoraphobia: { crowd: number; apSurcharge: number; mpSurcharge: number; moraleLoss: number };
+  sanity: { start: number; deathLoss: number; witnessLoss: number; killLoss: number; killChanceFactor: number; lowMorale: number };
   germaphobe: {
     moraleLoss: number; // Finola's Germaphobe trait: lost at each cycle change while dirty (owner, 2026-11-21).
   };

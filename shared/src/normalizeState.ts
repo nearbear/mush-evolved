@@ -627,7 +627,7 @@ export function normalizeAccommodationOffer(raw: Partial<AccommodationOffer>): A
 export type QueueMode = { queue: "drop" | "keep" };
 
 /** A player, with their `Seat` fields. */
-export function normalizePlayer(raw: Partial<PlayerState>, mode: QueueMode): PlayerState {
+export function normalizePlayer(raw: Partial<PlayerState>, mode: QueueMode, ctx: NormalizeContext): PlayerState {
   const t = "PlayerState";
   const resources = need(raw, "resources", t);
   const r = "PlayerState.resources";
@@ -685,6 +685,9 @@ export function normalizePlayer(raw: Partial<PlayerState>, mode: QueueMode): Pla
     maxHp: need(raw, "maxHp", t),
     morale: need(raw, "morale", t),
     maxMorale: need(raw, "maxMorale", t),
+    sanity: added(raw, "sanity", ctx.config.sanity.start),
+    witnessedDeath: raw.witnessedDeath,
+    killedHuman: raw.killedHuman,
     satiety: need(raw, "satiety", t),
     satietyZeroSince: need(raw, "satietyZeroSince", t),
     statuses: copy(need(raw, "statuses", t)),
@@ -1290,7 +1293,7 @@ export function normalizeCore(raw: Partial<GameCore>, ctx: NormalizeContext, mod
     preselection: need(raw, "preselection", t),
     winner: need(raw, "winner", t),
     ending: need(raw, "ending", t),
-    players: need(raw, "players", t).map((p) => normalizePlayer(p, mode)),
+    players: need(raw, "players", t).map((p) => normalizePlayer(p, mode, ctx)),
     items: need(raw, "items", t).map(normalizeItem),
     nextItemId: need(raw, "nextItemId", t),
     // Hostile NPCs (owner, 2026-11-22): a game stored before them has none, and its counter is rebuilt from the list.

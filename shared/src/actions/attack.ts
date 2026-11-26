@@ -96,7 +96,7 @@ export class AttackAction extends Action<AttackActionData> {
       logPublic(state, player.room, outcome.log, { name: player.character, item: type });
       const range = adjustedDamageRange(stats.damage, effects);
       const hostiles = hostilesHere(state, player);
-      for (const v of splash) damage(state, v, armored(state, v, roll(state, range)), "assassinated");
+      for (const v of splash) damage(state, v, armored(state, v, roll(state, range)), "assassinated", player);
       for (const h of hostiles) damageHostile(state, h, roll(state, range));
     } else if (hostile) {
       logPublic(state, player.room, "attackedHostile", { name: player.character, hostile: hostile.kind, item: type });
@@ -106,13 +106,13 @@ export class AttackAction extends Action<AttackActionData> {
       const params = { name: player.character, target: victim.character, item: type };
       if (effects?.instantKill === "target") {
         logPublic(state, player.room, outcome.log, params);
-        damage(state, victim, victim.hp, "assassinated");
+        damage(state, victim, victim.hp, "assassinated", player);
       } else {
         const baseRange = victim.role === "mush" && stats.mushDamage ? stats.mushDamage : stats.damage;
         const hit = roll(state, adjustedDamageRange(baseRange, effects));
         const dealt = armored(state, victim, hit);
         logPublic(state, player.room, hit > 0 && dealt === 0 ? "attackArmor" : outcome.log, params);
-        damage(state, victim, dealt, "assassinated");
+        damage(state, victim, dealt, "assassinated", player);
       }
     }
     if (stats.selfDamage) damage(state, player, roll(state, stats.selfDamage), "assassinated");
@@ -137,7 +137,7 @@ export class AttackAction extends Action<AttackActionData> {
       if (outcome.effects?.instantKill === "target") damageHostile(state, hostile, hostile.hp);
     } else if (victim) {
       logPublic(state, player.room, outcome.log, { name: player.character, target: victim.character, item: type });
-      if (outcome.effects?.instantKill === "target") damage(state, victim, victim.hp, "assassinated");
+      if (outcome.effects?.instantKill === "target") damage(state, victim, victim.hp, "assassinated", player);
     } else {
       logPublic(state, player.room, outcome.log, { name: player.character, item: type });
     }
@@ -206,7 +206,7 @@ function applyOutcomeEffects(
     who === "attacker" ? [attacker] : who === "splash" ? hit.splash : targets;
   if (effects.instantKill === "attacker") damage(state, attacker, attacker.hp, "assassinated");
   if (effects.splashDamage && rollFloat(state) < (effects.splashDamage.chance ?? 1)) {
-    for (const v of hit.splash) damage(state, v, effects.splashDamage.amount, "assassinated");
+    for (const v of hit.splash) damage(state, v, effects.splashDamage.amount, "assassinated", attacker);
   }
   if (effects.apLoss) {
     for (const p of group(effects.apLoss.who)) changeAP(state, p, -effects.apLoss.amount);

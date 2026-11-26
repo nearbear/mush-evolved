@@ -58,6 +58,7 @@ function ship(): { state: GameState; sentinels: Sentinel[] } {
     p.mp = num(`mp-${p.id}`, own);
     p.hp = num(`hp-${p.id}`, own);
     p.morale = num(`morale-${p.id}`, own);
+    p.sanity = num(`sanity-${p.id}`, own);
     p.maxMorale = num(`maxMorale-${p.id}`, own);
     p.satiety = num(`satiety-${p.id}`, own);
     p.satietyZeroSince = num(`satietyZeroSince-${p.id}`, own);

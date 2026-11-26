@@ -111,6 +111,8 @@
       "hp": "Cada quien recupera 1 PV al inicio de cada día. Con 0 PV mueres.\nCurar devuelve 3 PV: lleva un Botiquín, o usa la Enfermería sin él (2 PA sobre otra persona, 3 PA sobre ti).\nLas acciones de combate quitan PV a su objetivo.\nLas heridas al construir, desmontar o reparar quitan PV.\nUn humano hambriento (24 ciclos después de que se le pase la última comida) pierde 1 PV por ciclo hasta que coma.\nUn Mush pierde 4 PV cada vez que se ducha.",
       "morale": "Todos pierden 2 puntos de moral al comienzo de cada día (1 mientras Chun siga con vida).\nConsolar, la acción del Psicólogo, da 2 puntos de moral. Estar acostado en una sala con un Psicólogo da 1 punto de moral por ciclo.\nEl Discurso enardecido de un Líder da 2 puntos de moral a todos los demás en la sala.\nComer una Ración cruda cuesta 1 punto de moral."
     },
+    "sanity": "Cordura",
+    "sanityInfo": "Tu estado mental. Cada muerte humana te cuesta algo; presenciarla, o matar, mucho más. Cuanto más baja, más probable es un trastorno tras ver una muerte, matar a alguien o con la moral muy baja.",
     "satiety": "Saciedad",
     "satietyInfo": {
       "emptyFor_one": "Tu estómago lleva {{count}} ciclo vacío.",
@@ -1040,6 +1042,7 @@
     "mushOnly": "Solo Mush: la persona maldita no lo sabe.",
     "permanent": "Esto no se puede quitar.",
     "calmed": "Calmado por un Psicólogo: sin efecto por ahora.",
+    "agoraphobia_disorder": "Agorafobia",
     "depression_disorder": "Depresión",
     "label": "Efectos de estado",
     "dirty": "Sucio",
@@ -1125,6 +1128,7 @@
     "pregnant": "Embarazada",
     "coma": "Coma",
     "desc": {
+      "agoraphobia_disorder": "Con 4 personas o más (tripulación u hostiles, tú incluido) en tu sala:\nLas acciones que cuestan PA cuestan 1 PA más.\nSalir de la sala cuesta 1 PM más.\nPierdes 1 punto de moral en cada cambio de ciclo.",
       "depression_disorder": "-2 PA máx.\n-2 moral máx.\nPierdes 1 punto de moral más al final de cada día.",
       "dirty": "No puedes investigar. Darte una ducha lo elimina.",
       "full_belly": "No puedes comer más hasta tener más hambre.",
@@ -1293,6 +1297,7 @@
     "summonStoppedPushed": "Te han convocado a: {{room}}, pero no has podido ir: alguien empuja tu silla de ruedas.",
     "summonStoppedNoPath": "Te han convocado a: {{room}}, pero no hay camino hasta allí desde donde estás.",
     "loseMorale": "Has perdido {{amount}} punto de moral.",
+    "agoraphobiaMoraleLoss": "La multitud a tu alrededor te ha costado {{amount}} punto de moral.",
     "antisocialMoraleLoss": "La presencia de otras personas te ha costado {{amount}} punto de moral.",
     "germaphobeMoraleLoss": "La suciedad te ha costado {{amount}} punto de moral.",
     "pregnantDeathMoraleLoss": "Ha muerto un miembro embarazado de la tripulación. Has perdido {{amount}} puntos de moral.",
@@ -1685,6 +1690,7 @@
     "tremorNoGravity": "La sala empieza a sacudirse. Los objetos vuelan a través de la sala y chocan contra los tripulantes presentes.",
     "panicAttack": "Sufres un ataque de pánico.",
     "incidentDisease": "No te encuentras bien.",
+    "disorderGained": "No puedes quitarte de la cabeza lo que has vivido: desarrollas {{status}}.",
     "disorderCalmed": "Hablarlo te ayuda: tu {{status}} se calma por un tiempo.",
     "metalPlate": "¡Una placa de metal cae sobre {{name}}!",
     "electricalOverload": "¡Una sobrecarga eléctrica quema los equipos de la sala!",
