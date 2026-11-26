@@ -388,6 +388,8 @@ const statusIconFiles = urls(
   import.meta.glob<string>("../../../Mush/www/img/icons/ui/status/{dirty,belly_full,hungry,immune,pacifist,hyperactive,unsociable,germaphobic,guardian,disabled,paria,disease,hurt,sleepy,genius_idea,moduling,demoralized,pregnant,knocked_out,psy_disease}.png", { eager: true, query: "?url", import: "default" }),
 );
 const diseaseStatusIcons = Object.fromEntries(DEFAULT_CONFIG.diseases.allDiseases.map((id) => [id, statusIconFiles["disease"]!]));
+/** Sanity (shared/src/sanity.ts), in the resource chips: the disorder status icon. */
+export const SANITY_ICON = statusIconFiles["psy_disease"]!;
 const disorderStatusIcons = Object.fromEntries(DEFAULT_CONFIG.diseases.allDisorders.map((id) => [id, statusIconFiles["psy_disease"]!]));
 const injuryStatusIcons = Object.fromEntries(DEFAULT_CONFIG.diseases.allInjuries.map((id) => [id, statusIconFiles["hurt"]!]));
 // Mankind's Only Hope has no status icon in the original (it was a skill there), so its skill icon stands in;

@@ -17,6 +17,7 @@ import { removeStatus } from "./statuses.ts";
 import { strikeSlots } from "./plans.ts";
 import { pruneFairyRings } from "./fairyRings.ts";
 import { refreshTitles } from "./titles.ts";
+import { humanDied } from "./sanity.ts";
 import { allLivingInactive, endGame, mushWinOnDeath } from "./victory.ts";
 import type { ChannelId, GameState, PlayerState } from "./types.ts";
 
@@ -53,9 +54,10 @@ export type DeathCause = (typeof DEATH_CAUSES)[number];
 
 /**
  * The one way HP goes down. Floors at 0, and 0 kills, of `cause`. Mutates a state the
- * caller already cloned. The infiniteHp cheat (test tooling) keeps HP full.
+ * caller already cloned. The infiniteHp cheat (test tooling) keeps HP full. `killer`: who dealt the blow (a punch, an
+ * attack or an interrogation), for sanity (sanity.ts).
  */
-export function damage(state: GameState, player: PlayerState, amount: number, cause: DeathCause): void {
+export function damage(state: GameState, player: PlayerState, amount: number, cause: DeathCause, killer?: Readonly<PlayerState>): void {
   if (!player.alive || shipInvincible(state)) return;
   if (player.cheats.includes("infiniteHp")) {
     player.hp = player.maxHp;
@@ -67,7 +69,7 @@ export function damage(state: GameState, player: PlayerState, amount: number, ca
   player.hp = Math.max(0, player.hp - dealt);
   const lost = before - player.hp;
   if (lost > 0) logPrivate(state, player.id, "loseHp", { amount: lost });
-  if (player.hp === 0) killPlayer(state, player, cause);
+  if (player.hp === 0) killPlayer(state, player, cause, killer);
 }
 
 /**
@@ -87,8 +89,8 @@ export function healDaily(state: GameState, player: PlayerState): void {
   heal(state, player, state.config.dailyHeal);
 }
 
-/** Kills a player at once, of `cause` (#177). Mutates a state the caller already cloned. */
-export function killPlayer(state: GameState, player: PlayerState, cause: DeathCause): void {
+/** Kills a player at once, of `cause` (#177), by `killer`'s blow if anyone's (sanity.ts). Mutates a state the caller already cloned. */
+export function killPlayer(state: GameState, player: PlayerState, cause: DeathCause, killer?: Readonly<PlayerState>): void {
   if (!player.alive) return;
   player.alive = false;
   removeStatus(player, "guardian");
@@ -153,6 +155,8 @@ export function killPlayer(state: GameState, player: PlayerState, cause: DeathCa
       if (other.alive) gainMorale(state, other, -state.config.share.pregnancy.deathMoraleLoss, "pregnantDeathMoraleLoss");
     }
   }
+  // Owner, 2026-11-25: a human's death costs the living sanity (sanity.ts); someone killing themself isn't their own killer.
+  if (!traded && cause !== "daedalus_destroyed" && player.role === "human") humanDied(state, player, killer?.id === player.id ? undefined : killer);
   refreshTitles(state);
   if (mushWinOnDeath(state)) endGame(state, "mush", "humans_dead");
   else endIfAllInactive(state);

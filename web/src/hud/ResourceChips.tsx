@@ -1,4 +1,4 @@
-// Your other resources (satiety first, then spores, free IT points, ...) as icons and counts, and a popover with them all:
+// Your other resources (satiety first, then sanity, spores, free IT points, ...) as icons and counts, and a popover with them all:
 // on desktop a row of the first three and "…" at the ID card's foot (SelfHud); on phones a dark column the ID card's full height, two rows
 // deep, with as many columns as fit beside AP/MP and HP/morale, the last cell a "…" when some don't (PlayerSummary). Each chip that
 // shows opens its own card (name, description, and for spores how they are gained and spent, like StatInfo's AP card).
@@ -7,7 +7,7 @@ import { Popover } from "@base-ui/react/popover";
 import { useLayoutEffect, useState, type ReactNode, type RefObject } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { DEFAULT_CONFIG, RESOURCE_IDS, resourceAvailable, type PlayerView } from "@mush2/shared";
-import { AP_SLOT_ICON, RESOURCE_ICONS, SATIETY_ICON, SPORE_ICON } from "../art/assets.ts";
+import { AP_SLOT_ICON, RESOURCE_ICONS, SANITY_ICON, SATIETY_ICON, SPORE_ICON } from "../art/assets.ts";
 import { SatietyHelp, useSatietyLines } from "./SatietyInfo.tsx";
 
 /** How many resources show before the "…" (what fits in a row across the desktop ID card). */
@@ -35,14 +35,15 @@ function SporeHelp() {
   );
 }
 
-/** Satiety leads the list: it has no place of its own on either layout. */
+/** Satiety leads the list, then sanity: neither has a place of its own on either layout. */
 function useChips(view: PlayerView): Chip[] {
   const { t } = useTranslation();
-  const { spores, resources, skills, bookSkill, role, satiety } = view.you;
+  const { spores, resources, skills, bookSkill, role, satiety, sanity } = view.you;
   const satietyLines = useSatietyLines(view);
   // Only resources this player could use: held, or granted by one of their skills (spores: Mush only).
   return [
     { key: "satiety", icon: SATIETY_ICON, name: t("stat.satiety"), description: satietyLines.join(" "), help: <SatietyHelp view={view} />, count: satiety },
+    { key: "sanity", icon: SANITY_ICON, name: t("stat.sanity"), description: t("stat.sanityInfo"), count: sanity },
     ...(spores > 0 || role === "mush" ? [{ key: "spores", icon: SPORE_ICON, name: t("resources.spores"), description: t("resources.sporesInfo.what"), help: <SporeHelp />, count: spores }] : []),
     ...RESOURCE_IDS.filter((id) => resourceAvailable(id, resources[id], skills, bookSkill)).map((id) => ({
       key: id,

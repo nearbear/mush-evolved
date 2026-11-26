@@ -163,6 +163,12 @@ export interface PlayerState extends Seat {
   /** Morale points. Private: only in your own view. Lose `moralePerDay` at the end of each day. */
   morale: number;
   maxMorale: number;
+  /** Sanity (sanity.ts): starts at `config.sanity.start`, never below 0, lost when humans die. Private: only in your own view; stays with the body. */
+  sanity: number;
+  /** Saw a human die in their room since the last cycle change: rolls for a disorder at the next one (sanity.ts). Own view only. */
+  witnessedDeath?: true;
+  /** Dealt a human a fatal blow since the last cycle change: rolls for a disorder at the next one (sanity.ts). Own view only. */
+  killedHuman?: true;
   /** Satiety (humans only; Mush stay at 0 and never get hungry). Never below 0. Private: only in your own view. */
   satiety: number;
   /** The cycle satiety last reached 0 (or the game began at 0); null while satiety is above 0 or for Mush. Counts toward hunger. */

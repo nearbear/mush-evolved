@@ -74,6 +74,7 @@ import { gastroenteritis_disease } from "./modifiers/gastroenteritis_disease.ts"
 import { sinus_storm_disease } from "./modifiers/sinus_storm_disease.ts";
 import { migraine_disease } from "./modifiers/migraine_disease.ts";
 import { depression_disorder } from "./modifiers/depression_disorder.ts";
+import { agoraphobia_disorder } from "./modifiers/agoraphobia_disorder.ts";
 import { slight_nausea_disease } from "./modifiers/slight_nausea_disease.ts";
 import { food_poisoning_disease } from "./modifiers/food_poisoning_disease.ts";
 import { vitamin_deficiency_disease } from "./modifiers/vitamin_deficiency_disease.ts";
@@ -360,6 +361,7 @@ export const MODIFIERS: Record<string, Modifier> = {
   sinus_storm_disease,
   migraine_disease,
   depression_disorder,
+  agoraphobia_disorder,
   slight_nausea_disease,
   food_poisoning_disease,
   vitamin_deficiency_disease,
