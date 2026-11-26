@@ -5532,3 +5532,9 @@ Trait descriptions (en/fr/es) no longer end with "It can't be removed."; `Status
 - **Built:** `spikeCharges` in `actions/spike.ts`, config `spike.infectorCharges`, new hidden field `GameState.spikedBefore` (normalizer default `{}`, no version bump), cleared on cure and swapped on Transfer like `spikedOn`; leak-field and sentinel entries; en/fr/es descriptions rewritten.
 - **Correction:** the first charge test spiked one human three times and converted them; it needed a second target.
 - **Correction (owner, same day):** the per-charge refill (`spikedBefore`, the spike before the last) was more than needed. Reworked to "both charges come back together 4 cycles after the first spike" (owner picked the first spike over the second as the timer start): `spikedOn` is now the cooldown's start and `spikeCount` counts the spikes made during it.
+
+## 2026-11-25: test timeouts under CPU contention
+
+- The owner asked me to fix the tests that broke after the swapCharacter work. Every failure was a timeout, not an assertion error. Even `moduleLoad`, which only imports one file, timed out, and which tests failed changed from run to run. Each failing test passed when run alone. Removing the new action from the registry didn't change the GoalBot test's time, so the new code wasn't the cause.
+- Fix: the `test` scripts in shared, server, web and tools now pass `--testTimeout=30000` (Vitest's default is 5s). `verify` runs those scripts, so it gets the same limit. The explicit limits that failed went from 15–20s to 60s: GoalBot legality, survival, and two GameRoom bot tests. The cost is that a hung test takes longer to report.
+- Raising limits doesn't help when the machine is badly overloaded. While other sessions were running their own suites (load average about 9 on 8 cores), even 60s limits ran out. Once the machine was idle, `verify` passed.
