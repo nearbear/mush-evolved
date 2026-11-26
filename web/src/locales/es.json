@@ -763,7 +763,6 @@
     "back": "Volver"
   },
   "channels": {
-    "tapped": "📻 {{name}}",
     "empty": "Aún no hay canales privados.",
     "nameLabel": "Nombre del nuevo canal",
     "defaultName": "Día {{day}}, Ciclo {{cycle}}",
@@ -2317,8 +2316,6 @@
     "xylophTitle": "Xyloph",
     "xylophUndeciphered": "Aún sin descifrar.",
     "neronTitle": "Actualización de NERON",
-    "radioPiracyTitle": "Piratería de radio",
-    "radioPiracyHint": "Piratea el iTrackie de un compañero al día: lee sus canales desde ahora y escribe en su lugar. Un nuevo pirateo sustituye al anterior.",
     "neronVersion": "NERON versión {{version}}",
     "neronProgress": "{{percent}} % hacia la próxima actualización. Cada actualización termina un proyecto de NERON.",
     "neronUpgrade": "Mejorar",

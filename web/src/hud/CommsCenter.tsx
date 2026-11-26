@@ -13,7 +13,6 @@ import { useNames } from "../i18n/names.ts";
 import { ActionButton } from "./ActionButton.tsx";
 import { ActionLabel } from "./ActionLabel.tsx";
 import { UnavailableButton } from "./CommandTerminal.tsx";
-import { collapsePickers, CrewPickerDialog } from "./CrewPickerDialog.tsx";
 import { Signals } from "./Signals.tsx";
 import { signalStrength, solDb, Spectrogram } from "./Spectrogram.tsx";
 import { terminalLogin } from "./terminalUsername.ts";
@@ -39,10 +38,6 @@ export function CommsCenter({ terminal, view, onAction, initialTab = "overview",
   const contactSol = find("contact_sol");
   const xyloph = find("contact_xyloph");
   const neron = find("update_neron");
-  // Radio Piracy (a Mush skill): one option per crewmate, picked in the crewmate dialog.
-  const { picks } = collapsePickers(view.actions.filter(({ action: a }) => a.type === "radio_piracy" && a.equipment === terminal.id));
-  const piracy = picks.radio_piracy[0];
-  const [picking, setPicking] = useState(false);
   const officer = terminalLogin(terminal.type, view, terminal.id).access !== "limited";
   if (!screen) return null;
   const db = solDb(screen.solChance);
@@ -77,21 +72,6 @@ export function CommsCenter({ terminal, view, onAction, initialTab = "overview",
             />
             {!view.comms.linked ? <span className="sub">{t("comms.linkNeeded")}</span> : !officer && <span className="sub">{t("comms.officerOnly")}</span>}
           </section>
-
-          {piracy && (
-            <section className="research-item" aria-label={t("actions.radioPiracy")}>
-              <div className="research-body">
-                <div className="research-title">
-                  <strong>{t("comms.radioPiracyTitle")}</strong>
-                  <ActionButton view={view} option={piracy} onAction={() => setPicking(true)}>
-                    <ActionLabel text={t("actions.radioPiracy")} cost={piracy.cost} chance={piracy.chance} />
-                  </ActionButton>
-                </div>
-                <span className="sub">{t("comms.radioPiracyHint")}</span>
-              </div>
-              <CrewPickerDialog kind={picking ? "radio_piracy" : null} view={view} picks={picks} onClose={() => setPicking(false)} onAction={onAction} />
-            </section>
-          )}
 
           <section className="research-item" aria-label={t("comms.neronTitle")}>
             <div className="research-body">

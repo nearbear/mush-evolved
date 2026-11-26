@@ -747,7 +747,6 @@
     "back": "Back"
   },
   "channels": {
-    "tapped": "📻 {{name}}",
     "empty": "No private channels yet.",
     "nameLabel": "New channel name",
     "defaultName": "Day {{day}}, Cycle {{cycle}}",
@@ -2381,8 +2380,6 @@
     "xylophTitle": "Xyloph",
     "xylophUndeciphered": "Not yet deciphered.",
     "neronTitle": "NERON update",
-    "radioPiracyTitle": "Radio piracy",
-    "radioPiracyHint": "Hack one crewmate's iTrackie a day: read their channels from now on and post as them. A new hack replaces the last.",
     "neronVersion": "NERON version {{version}}",
     "neronProgress": "{{percent}}% toward the next update. Each update completes a NERON project.",
     "neronUpgrade": "Upgrade",

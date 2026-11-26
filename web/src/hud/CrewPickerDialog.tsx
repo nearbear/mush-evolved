@@ -1,7 +1,7 @@
 // Crewmate picker dialog for actions aimed at any crewmate, wherever they are: the Commander's Issue mission
 // (`issue_mission`, #462), the Premonition skill (`premonition`) and the swapCharacter cheat (`swap_character`). The server offers one option per crewmate; these
 // are collapsed into a single button on your own panel (InspectPanel / PeekBar), which opens this dialog to pick one.
-// The Com center's Radio Piracy hack (`radio_piracy`) opens it from the terminal window instead (CommsCenter.tsx).
+// The Com center's Radio Piracy hack (`radio_piracy`) is on the Com center's panel instead, since it names the terminal.
 
 import { useState } from "react";
 import { Dialog } from "@base-ui/react/dialog";

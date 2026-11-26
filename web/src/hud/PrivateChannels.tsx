@@ -9,7 +9,7 @@ import { PlanCard } from "./PlanCard.tsx";
 import { PlanComposer } from "./PlanComposer.tsx";
 import { Thread } from "./Thread.tsx";
 import { UnreadChip } from "./UnreadChip.tsx";
-import { TAB_ICONS, standingSprite } from "../art/assets.ts";
+import { TAB_ICONS, skillIcon, standingSprite } from "../art/assets.ts";
 import { useMobile } from "../useMobile.ts";
 
 export interface ChannelHandlers {
@@ -109,7 +109,8 @@ export function PrivateChannels({
         {tapped.map((c) => (
           <li key={c.id} className="channel-slot">
             <button type="button" className="channel-slot-pick" aria-pressed={c.id === current?.id} onClick={() => setPicked(c.id)}>
-              {t("channels.tapped", { name: label(c) })}
+              <img className="tab-icon" src={skillIcon("radio_piracy")} alt={t("actions.radioPiracy")} />
+              {label(c)}
               <UnreadChip channel={c.id} total={view.chatCounts[c.id] ?? 0} unheard={view.chatUnheard?.[c.id]} />
             </button>
           </li>

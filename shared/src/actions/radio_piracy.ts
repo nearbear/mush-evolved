@@ -11,11 +11,10 @@ export type RadioPiracyActionData = { type: "radio_piracy"; equipment: string; t
  * Radio Piracy, reworked (owner, 2026-11-18, radioPiracy.ts): `radioPiracy.cost.ap` (3) AP at the Com center terminal,
  * once a day (`PlayerState.radioHackToday`), a Mush with `radio_piracy`. Any other living player, anywhere aboard or
  * not, Mush teammates included. Places a hack on the target's iTrackie, replacing the hacker's last one. No `spore`
- * tag, so myco alarms don't ring. Private: only the hacker gets a line, and the target is never told.
+ * tag, so myco alarms don't ring. Private: only the hacker gets a line, and the target is never told. Offered on the
+ * Com center's own panel (not in its terminal window, owner 2026-11-26), where a crewmate picker chooses the target.
  */
 export class RadioPiracyAction extends Action<RadioPiracyActionData> {
-  override terminal = true;
-
   override visibility: ActionVisibility = "private";
 
   constructor() {
