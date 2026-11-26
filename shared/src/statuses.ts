@@ -58,12 +58,12 @@ const FIXED_STATUS_PUBLIC = {
 export const STATUS_IDS = ["dirty", "full_belly", "hungry", "immune", "immunity", "pacifist", "hyperactive", "antisocial", "germaphobe", "chronic_vertigo", "mankind_only_hope", "wheelchair", "accommodated", "outcast", "protecting", "protected", "guardian", "genius", "inactive", "super_inactive", "focused", "hopeless", "nimble", "ninja", "pregnant", "coma"] as const;
 export type StatusId = string;
 /**
- * The fixed statuses plus the ship's configured diseases and injuries (`config.diseases.allDiseases` and
- * `allInjuries`), and the curses (curses.ts). Those aren't listed above: they are private, since `STATUS_PUBLIC` has no
+ * The fixed statuses plus the ship's configured diseases, disorders and injuries (`config.diseases.allDiseases`,
+ * `allDisorders` and `allInjuries`), and the curses (curses.ts). Those aren't listed above: they are private, since `STATUS_PUBLIC` has no
  * entry for them (a curse is more than private: hidden from its holder, shown only to Mush, `curseStatusesSeenBy`).
  */
-export function statusIdsFor(diseases: readonly string[], injuries: readonly string[] = []): string[] {
-  return [...new Set([...STATUS_IDS, ...diseases, ...injuries, ...CURSE_IDS])];
+export function statusIdsFor(diseases: readonly string[], injuries: readonly string[] = [], disorders: readonly string[] = []): string[] {
+  return [...new Set([...STATUS_IDS, ...diseases, ...disorders, ...injuries, ...CURSE_IDS])];
 }
 
 /** Confirmed 2026-10-14: dirty is public; full belly and hungry are private. */

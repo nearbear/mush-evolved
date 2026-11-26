@@ -49,11 +49,11 @@ describe("Mankind's Only Hope", () => {
 
   it("is absent when Chun is not in the game", () => {
     const s = createGame(seats.filter((x) => x.character !== "chun"), config, 1);
-    expect(dailyMoraleLoss(s)).toBe(config.moralePerDay);
+    expect(dailyMoraleLoss(s, player(s, "p0"))).toBe(config.moralePerDay);
   });
 
   it("never makes the loss negative", () => {
     const s = createGame(seats, { ...config, moralePerDay: 0 }, 7);
-    expect(dailyMoraleLoss(s)).toBe(0);
+    expect(dailyMoraleLoss(s, player(s, "p0"))).toBe(0);
   });
 });

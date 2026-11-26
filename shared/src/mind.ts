@@ -22,19 +22,41 @@ const MIND_FIELDS = ["mind", "name", "isBot", "botKind", "role", "alpha", "mushS
  * the caller. Mutates a state the caller already cloned.
  */
 export function swapMinds(state: GameState, a: PlayerState, b: PlayerState): void {
+  swapFields(a, b, MIND_FIELDS);
+  const [sa, sb] = [state.spikedOn[a.id], state.spikedOn[b.id]];
+  delete state.spikedOn[a.id];
+  delete state.spikedOn[b.id];
+  if (sb !== undefined) state.spikedOn[a.id] = sb;
+  if (sa !== undefined) state.spikedOn[b.id] = sa;
+  restartBodies(state, a, b);
+}
+
+/** What belongs to the seat itself (the account or bot), the least a seat can move with. */
+const SEAT_FIELDS = ["mind", "name", "isBot", "botKind", "cheats", "lastSeenAt"] as const;
+
+/**
+ * Swaps the seats playing bodies `a` and `b` and nothing else (the swapCharacter cheat, actions/swap_character.ts):
+ * each player takes over the other's character whole, role, spores and Mush skills included. Like `swapMinds`, both
+ * bodies' actions are cancelled and their `logSeen` starts over. Mutates a state the caller already cloned.
+ */
+export function swapSeats(state: GameState, a: PlayerState, b: PlayerState): void {
+  swapFields(a, b, SEAT_FIELDS);
+  restartBodies(state, a, b);
+}
+
+function swapFields(a: PlayerState, b: PlayerState, fields: readonly string[]): void {
   const record = (p: PlayerState) => p as unknown as Record<string, unknown>;
-  for (const field of MIND_FIELDS) {
+  for (const field of fields) {
     const [va, vb] = [record(a)[field], record(b)[field]];
     if (vb === undefined) delete record(a)[field];
     else record(a)[field] = vb;
     if (va === undefined) delete record(b)[field];
     else record(b)[field] = va;
   }
-  const [sa, sb] = [state.spikedOn[a.id], state.spikedOn[b.id]];
-  delete state.spikedOn[a.id];
-  delete state.spikedOn[b.id];
-  if (sb !== undefined) state.spikedOn[a.id] = sb;
-  if (sa !== undefined) state.spikedOn[b.id] = sa;
+}
+
+/** A body changing hands: its actions are cancelled, it isn't ready, and the new occupant's unread count starts over. */
+function restartBodies(state: GameState, a: PlayerState, b: PlayerState): void {
   for (const p of [a, b]) {
     p.current = null;
     p.queue = [];

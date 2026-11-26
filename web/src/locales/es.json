@@ -163,6 +163,7 @@
       "easyTravel": "Viaje fácil",
       "invincible": "Nave invencible",
       "fastExpeditions": "Expediciones rápidas",
+      "swapCharacter": "Cambiar de personaje",
       "goToCheatRoom": "Ir a la sala de trucos",
       "leaveShip": "Abandonar la nave",
       "role": {
@@ -479,6 +480,7 @@
     "protect": "Proteger",
     "coup": "Dar un golpe",
     "issueMission": "Dar una misión",
+    "swapCharacter": "Cambiar de personaje",
     "fierySpeech": "Discurso enardecido",
     "boringSpeech": "Discurso aburrido",
     "attack": "Atacar",
@@ -1036,6 +1038,8 @@
     "public": "Público: todos en la sala pueden verlo.",
     "private": "Privado: solo tú puedes verlo.",
     "mushOnly": "Solo Mush: la persona maldita no lo sabe.",
+    "calmed": "Calmado por un Psicólogo: sin efecto por ahora.",
+    "depression_disorder": "Depresión",
     "label": "Efectos de estado",
     "dirty": "Sucio",
     "full_belly": "Barriga llena",
@@ -1120,6 +1124,7 @@
     "pregnant": "Embarazada",
     "coma": "Coma",
     "desc": {
+      "depression_disorder": "-2 PA máx.\n-2 moral máx.\nPierdes 1 punto de moral más al final de cada día.",
       "dirty": "No puedes investigar. Darte una ducha lo elimina.",
       "full_belly": "No puedes comer más hasta tener más hambre.",
       "hungry": "Pierdes salud en cada ciclo hasta que comas algo.",
@@ -1613,6 +1618,8 @@
     "massMouldering": "{{name}} se queda rígido de repente... Unos filamentos amarillos podridos se escapan de su traje y penetran en el casco...",
     "soiledByMassMouldering": "Te sientes mal, una sensación extraña, como si todo estuviera cubierto de podredumbre... Se te revuelve el estómago... Te sientes muy débil... bluuurrrpp.",
     "bodyTransferred": "Te has metido en la piel de {{target}}. {{name}} despierta humano, en tu antiguo cuerpo.",
+    "characterSwapped": "Ahora juegas como {{target}}. Su jugador ha tomado tu antiguo personaje.",
+    "characterSwappedWith": "Una trampa te ha puesto en este cuerpo: ya no juegas como {{target}}.",
     "patrolTakeoff": "{{name}} despegó a bordo de {{room}}.",
     "patrolTakeoffShip": "{{name}} despegó a bordo de una nave.",
     "icarusBoarded": "{{name}} subió al Ícaro.",
@@ -1677,6 +1684,7 @@
     "tremorNoGravity": "La sala empieza a sacudirse. Los objetos vuelan a través de la sala y chocan contra los tripulantes presentes.",
     "panicAttack": "Sufres un ataque de pánico.",
     "incidentDisease": "No te encuentras bien.",
+    "disorderCalmed": "Hablarlo te ayuda: tu {{status}} se calma por un tiempo.",
     "metalPlate": "¡Una placa de metal cae sobre {{name}}!",
     "electricalOverload": "¡Una sobrecarga eléctrica quema los equipos de la sala!",
     "fireBurns": "El fuego quema a todos los que están en la sala.",
@@ -1739,6 +1747,12 @@
     "close": "Cerrar",
     "pick": "Elige un tripulante (+{{amount}} PA):",
     "confirm": "Dar una misión"
+  },
+  "swapCharacterPick": {
+    "title": "Cambiar de personaje",
+    "close": "Cerrar",
+    "pick": "Elige un tripulante para encarnarlo:",
+    "confirm": "Cambiar"
   },
   "premonitionPick": {
     "title": "Presentimiento",

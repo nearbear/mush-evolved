@@ -3,6 +3,7 @@ import { logPublic } from "../log.ts";
 import { hasSkill } from "../skills.ts";
 import type { GameState, PlayerState } from "../types.ts";
 import { gainMorale } from "../adjustStats.ts";
+import { calmDisorder } from "../diseases.ts";
 
 export type ComfortActionData = { type: "comfort"; target: string };
 
@@ -10,7 +11,8 @@ export type ComfortActionData = { type: "comfort"; target: string };
  * Comfort, the Shrink's action (`shrink`; owner, 2026-10-26; eMushpedia Psy): `comfort.cost.ap` (1) AP, a living
  * roommate (human or Mush) gains `comfort.morale` (2), up to their max. No daily limit, and it is offered even when the
  * target's morale is full (the AP is then wasted), since withholding it would tell the Shrink their private morale.
- * Public room history.
+ * Public room history. It also calms one of the target's disorders for a while (`calmDisorder`; owner, 2026-11-25),
+ * first, so the morale gain counts against the raised cap.
  */
 export class ComfortAction extends Action<ComfortActionData> {
   override tags: readonly ActionTag[] = ["talking"];
@@ -34,6 +36,7 @@ export class ComfortAction extends Action<ComfortActionData> {
 
   override apply(state: GameState, player: PlayerState, target: ComfortActionData): void {
     const comforted = state.players.find((o) => o.id === target.target)!; // checked, so it exists
+    calmDisorder(state, comforted);
     gainMorale(state, comforted, state.config.comfort.morale);
     logPublic(state, player.room, "comforted", { name: player.character, target: comforted.character });
   }

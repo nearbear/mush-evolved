@@ -214,6 +214,7 @@ function Details({ view, layout, resolved, onAction }: { view: PlayerView; layou
               contamination={"contamination" in person ? person.contamination : undefined}
               protecting={protectingName}
               protectedBy={protectedByName}
+              calmed={isYou ? view.you.diseaseTrackers.filter((t) => t.disabledFor !== undefined).map((t) => t.name) : []}
             />
           </div>
         </div>

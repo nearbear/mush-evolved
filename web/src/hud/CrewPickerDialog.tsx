@@ -1,5 +1,5 @@
 // Crewmate picker dialog for actions aimed at any crewmate, wherever they are: the Commander's Issue mission
-// (`issue_mission`, #462) and the Premonition skill (`premonition`). The server offers one option per crewmate; these
+// (`issue_mission`, #462), the Premonition skill (`premonition`) and the swapCharacter cheat (`swap_character`). The server offers one option per crewmate; these
 // are collapsed into a single button on your own panel (InspectPanel / PeekBar), which opens this dialog to pick one.
 
 import { useState } from "react";
@@ -11,20 +11,21 @@ import { useNames } from "../i18n/names.ts";
 import { FramedDialog } from "./FramedDialog.tsx";
 
 /** The actions picked this way. */
-export type PickerAction = "issue_mission" | "premonition";
-const PICKER_ACTIONS: readonly PickerAction[] = ["issue_mission", "premonition"];
+export type PickerAction = "issue_mission" | "premonition" | "swap_character";
+const PICKER_ACTIONS: readonly PickerAction[] = ["issue_mission", "premonition", "swap_character"];
 export const isPickerAction = (type: Action["type"]): type is PickerAction => (PICKER_ACTIONS as readonly string[]).includes(type);
 
 /** The crewmate an option is for: each picker action names them in its own field (not `target`, see actionTarget.ts). */
 function crewmateOf(action: Action): PlayerId | undefined {
   if (action.type === "issue_mission") return action.subordinate;
   if (action.type === "premonition") return action.subject;
+  if (action.type === "swap_character") return action.crewmate;
   return undefined;
 }
 
 /** Keeps at most one option per picker action in `options` (for its button) and returns them all, by action, in `picks`. */
 export function collapsePickers(options: ActionOption[]): { options: ActionOption[]; picks: Record<PickerAction, ActionOption[]> } {
-  const picks: Record<PickerAction, ActionOption[]> = { issue_mission: [], premonition: [] };
+  const picks: Record<PickerAction, ActionOption[]> = { issue_mission: [], premonition: [], swap_character: [] };
   const collapsed: ActionOption[] = [];
   for (const o of options) {
     const type = o.action.type;
@@ -66,6 +67,8 @@ export function CrewPickerDialog({
   const texts =
     kind === "premonition"
       ? { title: t("premonitionPick.title"), close: t("premonitionPick.close"), pick: t("premonitionPick.pick"), confirm: t("premonitionPick.confirm") }
+      : kind === "swap_character"
+      ? { title: t("swapCharacterPick.title"), close: t("swapCharacterPick.close"), pick: t("swapCharacterPick.pick"), confirm: t("swapCharacterPick.confirm") }
       : {
           title: t("issueMission.title"),
           close: t("issueMission.close"),

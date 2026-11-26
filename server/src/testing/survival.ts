@@ -297,7 +297,6 @@ function moraleDeltas(before: GameState, after: GameState, fresh: GameState["log
     .filter((e) => e.key === "died" && e.params?.cause !== "daedalus_destroyed")
     .reduce((sum, e) => sum + (e.params?.name === "chun" ? after.config.death.chunMoraleLoss : after.config.death.moraleLoss), 0);
   const dayEnded = changed && dayOfCycle(after, after.cycle) !== dayOfCycle(before, before.cycle);
-  const dayLoss = dayEnded ? dailyMoraleLoss(before) : 0;
   for (const p of after.players) {
     if (!p.alive) continue;
     const was = before.players.find((q) => q.id === p.id)?.morale ?? p.morale;
@@ -323,7 +322,8 @@ function moraleDeltas(before: GameState, after: GameState, fresh: GameState["log
     const panics = fresh.filter((e) => e.key === "panicAttack" && Array.isArray(e.visibleTo) && e.visibleTo.includes(p.id)).length;
     take("panicAttack", panics * after.config.incidents.panicAttack.morale);
     take("hopelessDeath", deathMorale);
-    take("dayEnd", dayLoss);
+    const prior = before.players.find((q) => q.id === p.id);
+    take("dayEnd", dayEnded && prior ? dailyMoraleLoss(before, prior) : 0);
     take("changeOther", left);
   }
   return { up, down };

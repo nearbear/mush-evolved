@@ -102,6 +102,7 @@ import { PrintListAction } from "./actions/print_list.ts";
 import { AnathemaAction } from "./actions/anathema.ts";
 import { CoupAction } from "./actions/coup.ts";
 import { IssueMissionAction } from "./actions/issue_mission.ts";
+import { SwapCharacterAction } from "./actions/swap_character.ts";
 import { BoringSpeechAction, FierySpeechAction } from "./actions/speech.ts";
 import { PunchAction } from "./actions/punch.ts";
 import { ThrowOutAction } from "./actions/throw_out.ts";
@@ -311,6 +312,7 @@ const REGISTRY = {
   anathema: new AnathemaAction(),
   coup: new CoupAction(),
   issue_mission: new IssueMissionAction(),
+  swap_character: new SwapCharacterAction(),
   fiery_speech: new FierySpeechAction(),
   boring_speech: new BoringSpeechAction(),
   attack: new AttackAction(),

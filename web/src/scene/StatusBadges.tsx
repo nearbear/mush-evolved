@@ -7,7 +7,7 @@ import { statusIcon, statusIconClass } from "../art/assets.ts";
 
 export function StatusBadges({ statuses }: { statuses: readonly string[] }) {
   const { t } = useTranslation();
-  const known = statusIdsFor(DEFAULT_CONFIG.diseases.allDiseases, DEFAULT_CONFIG.diseases.allInjuries).filter((id) => overheadStatuses(statuses).includes(id));
+  const known = statusIdsFor(DEFAULT_CONFIG.diseases.allDiseases, DEFAULT_CONFIG.diseases.allInjuries, DEFAULT_CONFIG.diseases.allDisorders).filter((id) => overheadStatuses(statuses).includes(id));
   if (known.length === 0) return null;
   return (
     <div className="status-badges" role="img" aria-label={known.map((id) => t(`status.${id}`, { defaultValue: id })).join(", ")}>

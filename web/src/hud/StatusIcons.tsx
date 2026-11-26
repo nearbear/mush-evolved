@@ -6,30 +6,37 @@ import { useTranslation } from "react-i18next";
 import { DEFAULT_CONFIG, STATUS_PUBLIC, isCurseId, statusIdsFor } from "@mush2/shared";
 import { CONTAMINATED_ICON, statusIcon, statusIconClass } from "../art/assets.ts";
 
-/** `contamination` is set only when the server sent one (a Mush looking at a contaminated human). */
+/**
+ * `contamination` is set only when the server sent one (a Mush looking at a contaminated human). `calmed` lists your
+ * own disorders a Shrink's Comfort has calmed for now, drawn grayed out.
+ */
 export function StatusIcons({
   statuses,
   contamination,
   protecting,
   protectedBy,
+  calmed = [],
 }: {
   statuses: readonly string[];
+  calmed?: readonly string[];
   contamination?: number | undefined;
   protecting?: string | undefined;
   protectedBy?: string | undefined;
 }) {
   const { t } = useTranslation();
-  const known = statusIdsFor(DEFAULT_CONFIG.diseases.allDiseases, DEFAULT_CONFIG.diseases.allInjuries).filter((id) => statuses.includes(id));
+  const known = statusIdsFor(DEFAULT_CONFIG.diseases.allDiseases, DEFAULT_CONFIG.diseases.allInjuries, DEFAULT_CONFIG.diseases.allDisorders).filter((id) => statuses.includes(id));
   if (known.length === 0 && contamination === undefined) return null;
   const descriptionFor = (id: string): string | undefined => {
     if (id === "protecting" && protecting) return t("status.desc.protectingTarget", { name: protecting });
     if (id === "protected" && protectedBy) return t("status.desc.protectedBy", { name: protectedBy });
-    return t(`status.desc.${id}`, { defaultValue: "" }) || undefined;
+    const desc = t(`status.desc.${id}`, { defaultValue: "" });
+    if (calmed.includes(id)) return [t("status.calmed"), desc].filter(Boolean).join("\n");
+    return desc || undefined;
   };
   return (
     <ul className="status-icons" aria-label={t("status.label")}>
       {known.map((id) => (
-        <li key={id}>
+        <li key={id} className={calmed.includes(id) ? "status-calmed" : undefined}>
           <StatusIcon
             icon={statusIcon(id)}
             iconClass={statusIconClass(id)}
