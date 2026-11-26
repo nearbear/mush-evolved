@@ -351,6 +351,7 @@ export interface GameConfig {
   spike: {
     cost: { ap: number }; // Confirmed 2026-10-15.
     cooldownCycles: number; // Cycles a Mush waits between their own spikes, on the global cycle counter (owner, 2026-11-03).
+    infectorCharges: number; // Spikes an Infector can make per cooldown (owner, 2026-11-25).
   };
   fungalCuisine: {
     cost: { ap: number }; // The Mush skill Fungal cuisine: 1 AP and 1 spore (owner, 2026-10-24).

@@ -387,8 +387,9 @@
 .status-card {
   max-width: min(16rem, calc(100vw - 2rem));
 }
-/* Who can see the status: a small italic caption under the name. */
-.status-card .status-visibility {
+/* Who can see the status (under the name) and notes like "This can't be removed" (under the description): small italic captions. */
+.status-card .status-visibility,
+.status-card .status-caption {
   margin: 0;
   font-size: 0.75rem;
   font-style: italic;

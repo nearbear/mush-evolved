@@ -20,6 +20,7 @@ export const DICTS: ReadonlySet<string> = new Set([
   "game.sharedOnDay",
   "game.contamination",
   "game.spikedOn",
+  "game.spikeCount",
   "game.research",
   "game.projects",
   "game.relay.research",

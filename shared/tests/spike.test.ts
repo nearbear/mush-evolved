@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ACTIONS } from "../src/actions.ts";
+import { cure } from "../src/infection.ts";
 import { installCameraIn } from "./cameras.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
@@ -60,6 +61,45 @@ describe("spiking", () => {
     s = nextCycle(nextCycle(s));
     expect(listed()?.lacks).toEqual([]);
     expect(applyAction(s, "p0", spike("p1")).ok).toBe(true);
+  });
+
+  it("gives an Infector 2 charges, both back 4 cycles after the first spike", () => {
+    expect([config.spike.cooldownCycles, config.spike.infectorCharges]).toEqual([4, 2]);
+    let s = ship();
+    player(s, "p0").spores = 5;
+    player(s, "p0").mushSkills = ["infectious_agent"];
+    player(s, "p4").room = "SICK_BAY"; // a third human: p1 converts on their third spike
+    const listed = () => viewFor(s, "p0").actions.find((o) => o.action.type === "spike" && o.action.target === "p1");
+    s = must(applyAction(s, "p0", spike("p1"))); // starts the cooldown
+    s = nextCycle(nextCycle(s));
+    expect(listed()?.lacks).toEqual([]);
+    s = must(applyAction(s, "p0", spike("p1"))); // the second charge, 2 cycles later
+    expect(applyAction(s, "p0", spike("p4"))).toMatchObject({ ok: false });
+    expect(listed()).toMatchObject({ lacks: ["cooldown"], cooldown: 2 }); // counted from the first spike
+    s = nextCycle(nextCycle(s));
+    s = must(applyAction(s, "p0", spike("p4"))); // both are back: a new cooldown starts
+    s = must(applyAction(s, "p0", spike("p4")));
+    expect(viewFor(s, "p0").actions.find((o) => o.action.type === "spike" && o.action.target === "p4")).toMatchObject({ lacks: ["cooldown"], cooldown: 4 });
+  });
+
+  it("refills an Infector's unused charge with the spent one when the cooldown ends", () => {
+    let s = ship();
+    player(s, "p0").spores = 5;
+    player(s, "p0").mushSkills = ["infectious_agent"];
+    s = must(applyAction(s, "p0", spike("p1")));
+    for (let i = 0; i < 4; i++) s = nextCycle(s);
+    s = must(applyAction(s, "p0", spike("p1"))); // a fresh cooldown, so two charges again
+    expect(applyAction(s, "p0", spike("p1")).ok).toBe(true);
+  });
+
+  it("forgets a cured Mush's spikes", () => {
+    let s = ship();
+    player(s, "p0").mushSkills = ["infectious_agent"];
+    s = must(applyAction(s, "p0", spike("p1")));
+    s = must(applyAction(s, "p0", spike("p1")));
+    expect([s.spikedOn.p0, s.spikeCount.p0]).toEqual([s.cycle, 2]);
+    cure(s, player(s, "p0"));
+    expect([s.spikedOn.p0, s.spikeCount.p0]).toEqual([undefined, undefined]);
   });
 
   it("has no cooldown with the infiniteSpores cheat", () => {

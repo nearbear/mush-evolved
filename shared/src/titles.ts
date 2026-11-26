@@ -34,6 +34,17 @@ export const SUCCESSION: Readonly<Record<TitleId, readonly (CharacterId | "andie
   ],
 };
 
+/**
+ * A title's line as it stands now: `SUCCESSION[id]` with every Outcast (anathema.ts) moved to the bottom, keeping their
+ * usual order among themselves (owner, 2026-11-25: the Persecutor's curse as the Politician's opposite). The curse ending
+ * puts them back in their usual place. Public, like the lines themselves.
+ */
+export function successionLine(state: Readonly<Pick<GameState, "players">>, id: TitleId): readonly string[] {
+  const line = SUCCESSION[id] as readonly string[];
+  const outcast = (c: string): boolean => state.players.some((p) => p.character === c && p.outcastBy !== undefined);
+  return [...line.filter((c) => !outcast(c)), ...line.filter(outcast)];
+}
+
 /** Who may hold a title: the living who aren't inactive (inactivity.ts, #145). */
 export function eligibleForTitle(p: Readonly<PlayerState>): boolean {
   return p.alive && p.inactivity === undefined;
@@ -133,13 +144,16 @@ export function assignTitles(players: readonly PlayerState[]): Record<TitleId, P
 /**
  * Passes on each title whose holder is no longer eligible, and gives a vacant one to the first
  * eligible person. Call after anything that changes eligibility (death, inactivity, a Transfer). Each
- * change is announced in crew chat only, not in a room log (owner, 2026-10-20).
+ * change is announced in crew chat only, not in a room log (owner, 2026-10-20). `displaced` (a player just made an
+ * Outcast) gives up whatever titles they hold to the reordered lines (owner, 2026-11-25).
  */
-export function refreshTitles(state: GameState): void {
+export function refreshTitles(state: GameState, displaced?: PlayerId): void {
   if (state.preselection) return; // not issued yet: selectMush does it
   for (const id of TITLE_IDS) {
     const before = state.titles[id];
-    const after = successor(SUCCESSION[id], state.players, before, eligibleForTitle);
+    // A displaced holder (a new Outcast) loses the title to the first eligible person in the reordered line, which is
+    // still them only when nobody else is eligible.
+    const after = successor(successionLine(state, id), state.players, before === displaced ? null : before, eligibleForTitle);
     if (after === before) continue;
     setTitleHolder(state, id, after);
     const holder = state.players.find((p) => p.id === after);

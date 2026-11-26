@@ -5516,3 +5516,19 @@ Correction (owner): dropped the fifth paragraph (pending samples, assays, Mush s
 - Added the `swapCharacter` cheat toggle, which offers a new free, instant, unlimited `swap_character { crewmate }` action (`shared/src/actions/swap_character.ts`). The owner asked for "transfer with unlimited uses, everything swapped", then "make it a new action". I asked what "everything" meant. The owner chose "seat only: you become them": `swapSeats` (in `mind.ts`, next to `swapMinds`, sharing the field swap and body reset) moves only the seat fields (mind, name, isBot, botKind, cheats, lastSeenAt). You take over the target's whole character, role included, and the cheat comes with you.
 - Targeting copies Issue mission, as the owner asked: any other living crewmate in any room, picked in `CrewPickerDialog` from one button on your own panel. The field is `crewmate` rather than `target`, so `actionTarget()` doesn't walk you over to them.
 - What worked: asking before building. "Everything is swapped" could have meant a Transfer with no fixups, which would have been a different feature.
+### 2026-11-25: Persecutor's Outcast drops to the bottom of the title lines
+
+- **Decision (owner):** as the Politician's opposite, the Persecutor's Outcast sits at the bottom of every line of succession while cursed and loses held titles at once (kept only if nobody else is eligible); the curse ending restores their place without returning titles; a Coup still works for an Outcast. Built as `successionLine` in `titles.ts` (derived from `outcastBy`, so no new stored field) and `refreshTitles(state, displaced)` called from Anathema.
+- **What worked:** the request said "the person"; asking who (the Persecutor or the Outcast) before coding avoided building the wrong thing, since the Politician's skill doesn't actually reorder lines.
+- **Needed a second question:** the lines are public ship-wide while the Outcast status is room-only, so the reorder leaks who is an Outcast. Raised it as a hidden-information choice; the owner chose to show the real order to everyone.
+
+### 2026-11-25: trait cards get a "This can't be removed." caption
+
+Trait descriptions (en/fr/es) no longer end with "It can't be removed."; `StatusIcon` takes a `caption` and `StatusIcons` passes `status.permanent` ("This can't be removed.") for `TRAIT_STATUS_IDS`, shown as a small italic line under the description, styled like the visibility caption. Worked first try; no correction needed.
+
+### 2026-11-25: Infector Mush skill
+
+- **Decision (owner):** the skill text ("spike one more time each day") didn't fit spiking's 4-cycle cooldown, so Claude asked before coding. The owner chose 2 spike charges (each back 4 cycles after use) over a shorter cooldown or a daily extra spike, and Spike only.
+- **Built:** `spikeCharges` in `actions/spike.ts`, config `spike.infectorCharges`, new hidden field `GameState.spikedBefore` (normalizer default `{}`, no version bump), cleared on cure and swapped on Transfer like `spikedOn`; leak-field and sentinel entries; en/fr/es descriptions rewritten.
+- **Correction:** the first charge test spiked one human three times and converted them; it needed a second target.
+- **Correction (owner, same day):** the per-charge refill (`spikedBefore`, the spike before the last) was more than needed. Reworked to "both charges come back together 4 cycles after the first spike" (owner picked the first spike over the second as the timer start): `spikedOn` is now the cooldown's start and `spikeCount` counts the spikes made during it.

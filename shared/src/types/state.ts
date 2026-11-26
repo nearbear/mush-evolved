@@ -135,8 +135,10 @@ export interface GameCore {
   sporesToday: number;
   /** Whether the Commander has issued a mission today (issue_mission.ts, #462); reset at each day boundary. Never sent. */
   missionIssuedToday: boolean;
-  /** The cycle each Mush last spiked, for the per-Mush spike cooldown. Hidden from everyone. */
+  /** The cycle each Mush's spike cooldown started (their first spike since the last one ended). Hidden from everyone. */
   spikedOn: Record<PlayerId, number>;
+  /** How many spikes each Mush made since `spikedOn`, for the Infector skill's charges (spike.ts); ignored once the cooldown ends. Hidden from everyone. */
+  spikeCount: Record<PlayerId, number>;
   /** Percent done of each research that has been started (absent = 0), by research id (research.ts): the best arrangement of its verified samples (assay.ts). Only the living in the lab see it until it is complete. */
   research: Record<string, number>;
   /** Percent done of each NERON project that has been started (absent = 0), by project id (projects.ts). Offered ones and completed ones reach NERON's core; elsewhere only completed ones. */

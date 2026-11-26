@@ -92,7 +92,8 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   // Confirmed 2026-10-14: a human converts on reaching 3 contamination (items and skills will raise it).
   infection: { capacity: 3, mushophageBonus: 1 },
   // Confirmed 2026-10-15: spiking costs 1 AP and 1 spore, and raises a human's contamination by 1.
-  spike: { cost: { ap: 1 }, cooldownCycles: 4 },
+  // Owner, 2026-11-25: the Infector Mush skill holds 2 spike charges; the first spike starts the cooldown and both come back when it ends.
+  spike: { cost: { ap: 1 }, cooldownCycles: 4, infectorCharges: 2 },
   bodyTransfer: { cost: { ap: 0 } },
   resetSkills: { cost: { ap: 2 } },
   // Owner, 2026-11-23 (matching eMush): Mass Mushification costs 2 AP and 2 spores, once per game, drains 2 AP from living humans and soils every living player.

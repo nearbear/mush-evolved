@@ -3,7 +3,7 @@
 
 import { Popover } from "@base-ui/react/popover";
 import { useTranslation } from "react-i18next";
-import { DEFAULT_CONFIG, STATUS_PUBLIC, isCurseId, statusIdsFor } from "@mush2/shared";
+import { DEFAULT_CONFIG, STATUS_PUBLIC, TRAIT_STATUS_IDS, isCurseId, statusIdsFor } from "@mush2/shared";
 import { CONTAMINATED_ICON, statusIcon, statusIconClass } from "../art/assets.ts";
 
 /**
@@ -43,6 +43,7 @@ export function StatusIcons({
             name={t(`status.${id}`, { defaultValue: id })}
             description={descriptionFor(id)}
             visibility={isCurseId(id) ? "mushOnly" : STATUS_PUBLIC[id] ? "public" : "private"}
+            caption={TRAIT_STATUS_IDS.includes(id) ? t("status.permanent") : undefined}
           />
         </li>
       ))}
@@ -69,6 +70,7 @@ export function StatusIcon({
   name,
   description,
   visibility,
+  caption,
   children,
 }: {
   icon: string;
@@ -77,6 +79,8 @@ export function StatusIcon({
   name: string;
   description?: string;
   visibility?: "public" | "private" | "mushOnly";
+  /** A small italic note under the description, such as a trait's "This can't be removed." */
+  caption?: string | undefined;
   children?: React.ReactNode;
 }) {
   const { t } = useTranslation();
@@ -101,6 +105,7 @@ export function StatusIcon({
                 ))}
               </ul>
             )}
+            {caption && <p className="status-caption">{caption}</p>}
           </Popover.Popup>
         </Popover.Positioner>
       </Popover.Portal>

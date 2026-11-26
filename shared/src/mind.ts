@@ -53,10 +53,13 @@ function swapFields(a: PlayerState, b: PlayerState, fields: readonly string[]): 
     if (va === undefined) delete record(b)[field];
     else record(b)[field] = va;
   }
-}
-
-/** A body changing hands: its actions are cancelled, it isn't ready, and the new occupant's unread count starts over. */
-function restartBodies(state: GameState, a: PlayerState, b: PlayerState): void {
+  for (const spikes of [state.spikedOn, state.spikeCount]) {
+    const [sa, sb] = [spikes[a.id], spikes[b.id]];
+    delete spikes[a.id];
+    delete spikes[b.id];
+    if (sb !== undefined) spikes[a.id] = sb;
+    if (sa !== undefined) spikes[b.id] = sa;
+  }
   for (const p of [a, b]) {
     p.current = null;
     p.queue = [];
