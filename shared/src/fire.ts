@@ -6,7 +6,8 @@
 import { isPlanted, plantControllerWorking } from "./botany.ts";
 import { breakEquipment, breakItem, workingBreakable } from "./breakage.ts";
 import { isFireproof } from "./drones.ts";
-import { ITEM_TYPES, isWorking, itemsIn } from "./items.ts";
+import { ITEM_TYPES } from "./itemTypes.ts";
+import { isWorking, itemsIn } from "./items.ts";
 import { CHEAT_ROOM } from "./cheatRoom.ts";
 import { shipInvincible } from "./cheats.ts";
 import { pushChat } from "./chat.ts";

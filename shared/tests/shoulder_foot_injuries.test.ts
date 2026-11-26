@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { addDisease, removeDisease } from "../src/diseases.ts";
-import { MICROWAVE_ITEM } from "../src/items.ts";
+import { MICROWAVE_ITEM } from "../src/itemIds.ts";
 import { actionSuccessRate, movementRules } from "../src/modifiers.ts";
 import { applyAction, createGame } from "../src/rules.ts";
 import type { Action, GameState, ItemState } from "../src/types.ts";

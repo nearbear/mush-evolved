@@ -4,7 +4,8 @@
 // Action: free text can't be enumerated in legalActions. Moderation (filtering,
 // rate limits) is the server's job before these run.
 
-import { ITRACKIE_ITEM, itemsIn, isWorking } from "./items.ts";
+import { ITRACKIE_ITEM } from "./itemIds.ts";
+import { itemsIn, isWorking } from "./items.ts";
 import { channelLimit, isDeaf, isMute, spokenText } from "./modifiers.ts";
 import { noITrackieNeeded } from "./comms.ts";
 import { cloneState, fail, dayOf, findPlayer, type ActionResult } from "./helpers.ts";

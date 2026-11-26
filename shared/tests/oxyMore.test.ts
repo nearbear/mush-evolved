@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
-import { ITRACKIE_ITEM } from "../src/items.ts";
+import { ITRACKIE_ITEM } from "../src/itemIds.ts";
 import { PROJECT_COMPLETE, PROJECT_STATUS } from "../src/projects.ts";
 import { applyInput } from "../src/replay.ts";
 import { createGame, viewFor } from "../src/rules.ts";

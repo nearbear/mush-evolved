@@ -1,7 +1,8 @@
 import { Action, type ActionVisibility, isString } from "./action.ts";
 import { breakEquipment, breakItem, isBreakable } from "../breakage.ts";
 import { EQUIPMENT_TYPES, isEquipmentEnabled } from "../equipment.ts";
-import { ITEM_TYPES, canReachItem, isWorking } from "../items.ts";
+import { ITEM_TYPES } from "../itemTypes.ts";
+import { canReachItem, isWorking } from "../items.ts";
 import { logSecret } from "../log.ts";
 import { isFortified } from "./reinforce.ts";
 import type { GameState, PlayerState } from "../types.ts";

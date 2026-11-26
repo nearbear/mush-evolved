@@ -5,7 +5,7 @@
 // (`diseaseAffects`), like a fruit's diseases. Only living Chefs see the stage (eMush's status visibility).
 
 import { addDisease } from "./diseases.ts";
-import { ITEM_TYPES } from "./items.ts";
+import { ITEM_TYPES } from "./itemTypes.ts";
 import { rollFloat } from "./rng.ts";
 import { hasSkill } from "./skills.ts";
 import type { GameState, ItemState, PlayerState, SpoilStage } from "./types.ts";

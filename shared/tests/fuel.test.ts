@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
-import { FUEL_CAPSULE_ITEM, capacity, itemsIn } from "../src/items.ts";
+import { FUEL_CAPSULE_ITEM } from "../src/itemIds.ts";
+import { capacity, itemsIn } from "../src/items.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameState } from "../src/types.ts";

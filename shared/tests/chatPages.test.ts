@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { CHAT_PAGE, chatPageOf, createChannel, leaveChannel, sendChat, takeChatOutbox, toggleCheckbox } from "../src/chat.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { contaminate } from "../src/infection.ts";
-import { ITRACKIE_ITEM } from "../src/items.ts";
+import { ITRACKIE_ITEM } from "../src/itemIds.ts";
 import { mergeStreams, revealFor, streamsOf } from "../src/replayView.ts";
 import { stampEntries } from "../src/replay.ts";
 import { chatPageSource, chatPageView, createGame, viewFor } from "../src/rules.ts";

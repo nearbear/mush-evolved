@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
-import { ITEM_TYPES, produceItem, spawnInRoom } from "../src/items.ts";
+import { ITEM_TYPES } from "../src/itemTypes.ts";
+import { produceItem, spawnInRoom } from "../src/items.ts";
 import { createGame, viewFor } from "../src/rules.ts";
 import { makeSeats, mustApply, nextCycle, player, testConfig } from "./support.ts";
 

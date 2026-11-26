@@ -1,5 +1,6 @@
 import { Action, type ActionCost, isString } from "./action.ts";
-import { ITEM_TYPES, canReachItem } from "../items.ts";
+import { ITEM_TYPES } from "../itemTypes.ts";
+import { canReachItem } from "../items.ts";
 import { logPublic } from "../log.ts";
 import type { GameState, ItemState, PlayerState } from "../types.ts";
 import { rubellaBlocks } from "../diseases.ts";

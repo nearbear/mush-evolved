@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
-import { DRUG_ITEMS } from "../src/items.ts";
+import { DRUG_ITEMS } from "../src/itemIds.ts";
 import { RESEARCH_COMPLETE } from "../src/research.ts";
 import { applyAction, createGame } from "../src/rules.ts";
 import type { Action, GameState, PlayerId } from "../src/types.ts";

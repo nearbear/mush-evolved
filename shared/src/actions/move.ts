@@ -7,7 +7,7 @@ import { arrive } from "../spot.ts";
 import { isDoorBroken } from "../doors.ts";
 import { enterRoom, enteredRoom, moveCost, movementRules } from "../modifiers.ts";
 import { wheelchairHelpers } from "../modifiers/wheelchair.ts";
-import { activeScooter } from "../items.ts";
+import { activeScooter } from "../modifiers.ts";
 import { hasSkill } from "../skills.ts";
 import type { GameState, PlayerState } from "../types.ts";
 

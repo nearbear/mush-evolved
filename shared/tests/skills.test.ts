@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
-import { ITEM_TYPES } from "../src/items.ts";
+import { ITEM_TYPES } from "../src/itemTypes.ts";
 import { actionFailed } from "../src/modifiers.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, legalActions, viewFor } from "../src/rules.ts";

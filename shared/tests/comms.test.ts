@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { actionVisibility } from "../src/actions.ts";
 import { applyXyloph, advanceNeron, drawXyloph, GENOME_DISK_ITEM, MUSH_SAMPLE_ITEM, REBEL_BASES, rebelCalls, rollRebelGain, solChance, XYLOPH_ENTRIES, XYLOPH_IDS } from "../src/comms.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
-import { ITEM_TYPES } from "../src/items.ts";
+import { ITEM_TYPES } from "../src/itemTypes.ts";
 import { PROJECT_COMPLETE, PROJECT_IDS } from "../src/projects.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";

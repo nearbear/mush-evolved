@@ -1,7 +1,8 @@
 import { Action, type ActionVisibility, isString } from "./action.ts";
 import { equipmentHere } from "../equipment.ts";
 import { carriedCapsule, combustionLevel } from "./capsule.ts";
-import { FUEL_CAPSULE_ITEM, removeItem } from "../items.ts";
+import { FUEL_CAPSULE_ITEM } from "../itemIds.ts";
+import { removeItem } from "../items.ts";
 import { logSecret } from "../log.ts";
 import type { GameState, PlayerState } from "../types.ts";
 

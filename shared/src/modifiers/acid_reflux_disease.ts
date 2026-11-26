@@ -1,7 +1,7 @@
 import { changeAP, gainMorale } from "../adjustStats.ts";
 import { damage } from "../death.ts";
 import { diseaseAffects, vomit } from "../diseases.ts";
-import { ITEM_TYPES } from "../items.ts";
+import { ITEM_TYPES } from "../itemTypes.ts";
 import type { Modifier } from "../modifiers.ts";
 
 // Acid Reflux (owner, 2026-11-15): lasts 12-20 cycles (config.ts). After eating food (satiety above 0, so not a drug,

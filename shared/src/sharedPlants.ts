@@ -9,7 +9,7 @@
 import { plantControllerHere } from "./botany.ts";
 import { chatChannels, pushChat } from "./chat.ts";
 import { cloneState, dayOf, fail, findPlayer, isRecord, type ActionResult } from "./helpers.ts";
-import { ITEM_TYPES } from "./items.ts";
+import { ITEM_TYPES } from "./itemTypes.ts";
 import { MAX_SHARED_PLANET_LENGTH, MAX_SHARED_PLANET_LINES } from "./sharedPlanets.ts";
 import type { GameState, PlayerId, PlayerState, SharedPlantRow, SharedPlantStatus } from "./types.ts";
 

@@ -4,7 +4,8 @@
 // before reaching the rules (like chat/threads), not an enumerable Action.
 
 import { cloneState, fail, findPlayer, type ActionResult } from "./helpers.ts";
-import { ITEM_TYPES, canReachItem } from "./items.ts";
+import { ITEM_TYPES } from "./itemTypes.ts";
+import { canReachItem } from "./items.ts";
 import { isComatose } from "./statuses.ts";
 import type { GameState, ItemId, ItemState, PlayerId, PlayerState } from "./types.ts";
 

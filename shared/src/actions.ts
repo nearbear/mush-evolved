@@ -16,7 +16,7 @@ import { DismantleAction } from "./actions/dismantle.ts";
 import { AccessAction } from "./actions/access.ts";
 import { HackAction } from "./actions/hack.ts";
 import type { ActionCost, ActionTag, ActionVisibility } from "./actions/action.ts";
-import { ITEM_TYPES } from "./items.ts";
+import { ITEM_TYPES } from "./itemTypes.ts";
 import { DispenseAction } from "./actions/dispense.ts";
 import { PlayArcadeAction } from "./actions/play_arcade.ts";
 import { ListenJukeboxAction } from "./actions/listen_jukebox.ts";

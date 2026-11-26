@@ -1,7 +1,8 @@
 // Drugs: 12 item types whose effects are drawn once per ship, at launch (`createGame`), and never change after.
 // Every disease in `config.diseases.allDiseases` is treated by at least one drug.
 
-import { DRUG_ITEMS, spawnInRoom } from "./items.ts";
+import { DRUG_ITEMS } from "./itemIds.ts";
+import { spawnInRoom } from "./items.ts";
 import { changeAP, changeMP, gainMorale } from "./adjustStats.ts";
 import { treatDisease } from "./diseases.ts";
 import { skillsOf } from "./skills.ts";

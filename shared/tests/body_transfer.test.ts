@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { createChannel, sendChat } from "../src/chat.ts";
 import { logPrivate, logSecret } from "../src/log.ts";
 import { acknowledgeTransfer, bodyOf } from "../src/mind.ts";
-import { ITRACKIE_ITEM } from "../src/items.ts";
+import { ITRACKIE_ITEM } from "../src/itemIds.ts";
 import { dropMycoAlarms } from "../src/mycoalarm.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyInput } from "../src/replay.ts";

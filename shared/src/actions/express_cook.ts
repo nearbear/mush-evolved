@@ -1,6 +1,7 @@
 import { Action, isString } from "./action.ts";
 import { cookable, cookItem } from "./cook.ts";
-import { MICROWAVE_ITEM, canReachItem, isWorking } from "../items.ts";
+import { MICROWAVE_ITEM } from "../itemIds.ts";
+import { canReachItem, isWorking } from "../items.ts";
 import { logPublic } from "../log.ts";
 import type { GameState, ItemState, PlayerState } from "../types.ts";
 import { rubellaBlocks } from "../diseases.ts";

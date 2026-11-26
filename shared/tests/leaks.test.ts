@@ -5,7 +5,7 @@
 
 import { describe, expect, it } from "vitest";
 import type { CharacterId } from "../src/characters.ts";
-import { ITRACKIE_ITEM } from "../src/items.ts";
+import { ITRACKIE_ITEM } from "../src/itemIds.ts";
 import { createGame, viewFor } from "../src/rules.ts";
 import { type GameState, MUSH_CHANNEL, type PlayerId } from "../src/types.ts";
 import { GAME_STATE_FIELDS, ITEM_STATE_FIELDS, PLAYER_STATE_FIELDS } from "./leakFields.ts";

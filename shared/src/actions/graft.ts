@@ -1,6 +1,7 @@
 import { Action, type ActionCost, isString } from "./action.ts";
 import { growCyclesFor, isPlanted, paidWithGardenPoint } from "../botany.ts";
-import { ALIEN_FRUIT_ITEMS, canReachItem, hybridOf, removeItem } from "../items.ts";
+import { ALIEN_FRUIT_ITEMS, hybridOf } from "../itemIds.ts";
+import { canReachItem, removeItem } from "../items.ts";
 import { logPublic } from "../log.ts";
 import { clone } from "../helpers.ts";
 import { hasSkill } from "../skills.ts";

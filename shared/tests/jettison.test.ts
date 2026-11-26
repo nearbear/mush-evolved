@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { killPlayer } from "../src/death.ts";
-import { CORPSE_ITEM } from "../src/items.ts";
+import { CORPSE_ITEM } from "../src/itemIds.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { installCameraIn } from "./cameras.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";

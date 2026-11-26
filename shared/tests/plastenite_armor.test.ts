@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { ITEM_TYPES, startCharges } from "../src/items.ts";
+import { ITEM_TYPES } from "../src/itemTypes.ts";
+import { startCharges } from "../src/charges.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { WeaponHitOutcome as WeaponOutcome } from "../src/types/config.ts";
 import type { GameConfig, GameState, PlayerId } from "../src/types.ts";

@@ -9,7 +9,7 @@
 // nothing about the seed that picked the Mush (owner, 2026-11-11). Its turns at a cycle change still roll on `rng`.
 
 import { supportDrone } from "./drones.ts";
-import { CAT_ITEM, SUPPORT_DRONE_ITEM } from "./items.ts";
+import { CAT_ITEM, SUPPORT_DRONE_ITEM } from "./itemIds.ts";
 import { schrodinger } from "./schrodinger.ts";
 import { type RngState, streamFor } from "./rng.ts";
 import type { GameState, ItemState, RoomId } from "./types.ts";

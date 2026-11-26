@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { CHAT_PAGE, MAX_CHAT_LENGTH, sendChat } from "../src/chat.ts";
 import { DEFAULT_CONFIG, SHIP_ROOMS } from "../src/config.ts";
 import { deepFreeze } from "../src/helpers.ts";
-import { ITRACKIE_ITEM } from "../src/items.ts";
+import { ITRACKIE_ITEM } from "../src/itemIds.ts";
 import { logCovert, logPrivate, logSecret } from "../src/log.ts";
 import { apGain, mpGain, moveCost, movementRules, MODIFIERS } from "../src/modifiers.ts";
 import { parseGameMessage } from "../src/protocol.ts";

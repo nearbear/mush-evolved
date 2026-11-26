@@ -1,5 +1,6 @@
 import { Action, isString } from "./action.ts";
-import { SPACE_CAPSULE_ITEM, canReachItem } from "../items.ts";
+import { SPACE_CAPSULE_ITEM } from "../itemIds.ts";
+import { canReachItem } from "../items.ts";
 import { logPublic } from "../log.ts";
 import { rollInt } from "../rng.ts";
 import type { GameState, PlayerState } from "../types.ts";

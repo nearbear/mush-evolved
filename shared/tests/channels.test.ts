@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { CHAT_PAGE, chatPageKey, createChannel, inviteToChannel, leaveChannel, sendChat, toggleCheckbox } from "../src/chat.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
-import { ITRACKIE_ITEM } from "../src/items.ts";
+import { ITRACKIE_ITEM } from "../src/itemIds.ts";
 import { channelLimit, MODIFIERS } from "../src/modifiers.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, viewFor, type ActionResult } from "../src/rules.ts";

@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG, PRESELECTION } from "../src/config.ts";
 import { breakDoor, doorId } from "../src/doors.ts";
 import { CAMERA_EQUIPMENT } from "../src/equipment.ts";
-import { CAT_ITEM } from "../src/items.ts";
+import { CAT_ITEM } from "../src/itemIds.ts";
 import { MYCO_ALARM_ITEM } from "../src/mycoalarm.ts";
 import { shortestPath } from "../src/paths.ts";
 import { joinShip } from "../src/preselection.ts";

@@ -1,6 +1,6 @@
 import shipRooms from "@mush2/assets/derived/ship-rooms.json";
 import { ALIEN_FRUIT_ITEMS, ITRACKIE_ITEM } from "./itemIds.ts";
-import { BOOK_ITEM, HACKER_KIT_ITEM, LUNCHBOX_ITEM, MICROWAVE_ITEM, TREE_POT_ITEM } from "./items.ts";
+import { BOOK_ITEM, HACKER_KIT_ITEM, LUNCHBOX_ITEM, MICROWAVE_ITEM, TREE_POT_ITEM } from "./itemIds.ts";
 import { CHEAT_ROOM, cheatRoomEquipment } from "./cheatRoom.ts";
 import { EQUIPMENT_TYPES } from "./equipment.ts";
 import { ICARUS_CRAFT, patrolEquipment, patrolRooms } from "./patrol.ts";

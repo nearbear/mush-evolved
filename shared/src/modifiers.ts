@@ -10,7 +10,8 @@
 
 import { spreadAtCycle, spreadOnEncounter } from "./diseases.ts";
 import { isBrokenIn } from "./equipment.ts";
-import { activeScooter, carriesHeavy, isWorking, NCC_LENS_ITEM } from "./items.ts";
+import { carriesHeavy, isWorking, itemsIn } from "./items.ts";
+import { NCC_LENS_ITEM } from "./itemIds.ts";
 import { gravityBroken, noGravity } from "./gravity.ts";
 import { projectDone } from "./projects.ts";
 import { RESEARCH_COMPLETE } from "./research.ts";
@@ -692,6 +693,11 @@ export function apRefill(next: GameState, player: PlayerState, registry: Modifie
 export function bedBonus(state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS): number {
   const awake = { ...player, modifiers: player.modifiers.filter((m) => m !== "lying_down"), lyingSince: undefined };
   return Math.max(0, apGain(state, player, registry) - apGain(state, awake, registry));
+}
+
+/** The first working, charged Antigrav Scooter the player is carrying, if any. */
+export function activeScooter(state: Readonly<GameState>, player: Readonly<PlayerState>): ItemState | undefined {
+  return itemsIn(state, { kind: "player", id: player.id }).find((i) => i.type === "scooter" && isWorking(i) && (i.charges ?? 0) > 0);
 }
 
 /** Base movement rules folded through the player's modifiers, in list order, plus the heavy-item penalty. */

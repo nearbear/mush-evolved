@@ -1,6 +1,7 @@
 import { Action, IN_PRESELECTION, type ActionCost, type ActionVisibility, isString } from "./action.ts";
 import { EQUIPMENT_TYPES, isEquipmentEnabled } from "../equipment.ts";
-import { HACKER_KIT_ITEM, isWorking, itemsIn } from "../items.ts";
+import { HACKER_KIT_ITEM } from "../itemIds.ts";
+import { isWorking, itemsIn } from "../items.ts";
 import { logPrivate } from "../log.ts";
 import { hasTitleAccess } from "../titles.ts";
 import type { GameState, PlayerState } from "../types.ts";

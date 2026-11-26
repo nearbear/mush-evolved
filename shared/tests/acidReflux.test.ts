@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { addDisease, diseaseStats } from "../src/diseases.ts";
 import { consumed, consumedByMush } from "../src/modifiers.ts";
-import { STEROIDS_ITEM } from "../src/items.ts";
+import { STEROIDS_ITEM } from "../src/itemIds.ts";
 import { createGame } from "../src/rules.ts";
 import { makeSeats, testConfig } from "./support.ts";
 

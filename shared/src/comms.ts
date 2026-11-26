@@ -11,7 +11,8 @@
 import { gainMorale } from "./adjustStats.ts";
 import { BLUEPRINT_ITEM, BLUEPRINTS } from "./blueprints.ts";
 import { pushChat } from "./chat.ts";
-import { BOOK_ITEM, spawnInRoom } from "./items.ts";
+import { BOOK_ITEM } from "./itemIds.ts";
+import { spawnInRoom } from "./items.ts";
 import { DOCUMENT_ITEM } from "./lostAnalysis.ts";
 import { availableProjects, projectDone } from "./projects.ts";
 import { completeProject } from "./projectEffects.ts";

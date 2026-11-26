@@ -1,5 +1,6 @@
 import { updateMaxValues } from "../adjustStats.ts";
-import { ITEM_TYPES, itemsIn } from "../items.ts";
+import { ITEM_TYPES } from "../itemTypes.ts";
+import { itemsIn } from "../items.ts";
 import { logPublic } from "../log.ts";
 import type { Modifier } from "../modifiers.ts";
 import { isShot } from "./shots.ts";

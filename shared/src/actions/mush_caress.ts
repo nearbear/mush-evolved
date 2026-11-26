@@ -1,6 +1,6 @@
 import { Action, IN_PRESELECTION, type ActionTag, type ActionVisibility, isString } from "./action.ts";
 import { pushChat } from "../chat.ts";
-import { CAT_ITEM } from "../items.ts";
+import { CAT_ITEM } from "../itemIds.ts";
 import { logCovert } from "../log.ts";
 import { MUSH_CHANNEL, type GameState, type LogParams, type PlayerState } from "../types.ts";
 

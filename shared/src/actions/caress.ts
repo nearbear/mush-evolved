@@ -1,7 +1,7 @@
 import { Action, isString } from "./action.ts";
 import { gainMorale } from "../adjustStats.ts";
 import { contaminate } from "../infection.ts";
-import { CAT_ITEM } from "../items.ts";
+import { CAT_ITEM } from "../itemIds.ts";
 import { logPublic } from "../log.ts";
 import type { GameState, PlayerState } from "../types.ts";
 

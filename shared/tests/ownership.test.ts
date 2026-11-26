@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { BLUEPRINT_ITEM } from "../src/blueprints.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
-import { CAT_ITEM, CUSTOMIZED_BLASTER_ITEM, SUPPORT_DRONE_ITEM, TREE_POT_ITEM, hybridParents, itemsIn } from "../src/items.ts";
+import { CAT_ITEM, CUSTOMIZED_BLASTER_ITEM, SUPPORT_DRONE_ITEM, TREE_POT_ITEM, hybridParents } from "../src/itemIds.ts";
+import { itemsIn } from "../src/items.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { MAX_ITEM_NAME_LENGTH, canRenameItem, isRenameableType, renameItem } from "../src/rename.ts";
 import { createGame, viewFor } from "../src/rules.ts";

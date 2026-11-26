@@ -1,4 +1,5 @@
-import { CUSTOMIZED_BLASTER_ITEM, produceItem } from "../items.ts";
+import { CUSTOMIZED_BLASTER_ITEM } from "../itemIds.ts";
+import { produceItem } from "../items.ts";
 import type { Modifier } from "../modifiers.ts";
 
 // Skill "infantryman" (Fantassin), per the owner 2026-11-15:

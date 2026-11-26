@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { sendChat } from "../src/chat.ts";
 import { addDisease } from "../src/diseases.ts";
-import { ITRACKIE_ITEM } from "../src/items.ts";
+import { ITRACKIE_ITEM } from "../src/itemIds.ts";
 import { createGame, viewFor } from "../src/rules.ts";
 import type { GameState } from "../src/types.ts";
 import { makeSeats, must, noCharacterModifiers, player, testConfig } from "./support.ts";

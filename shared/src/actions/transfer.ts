@@ -1,7 +1,9 @@
 import { Action, isString } from "./action.ts";
 import { onExpedition } from "../expeditions.ts";
 import { contaminate } from "../infection.ts";
-import { CAT_ITEM, ITEM_TYPES, canTransfer } from "../items.ts";
+import { CAT_ITEM } from "../itemIds.ts";
+import { ITEM_TYPES } from "../itemTypes.ts";
+import { canTransfer } from "../items.ts";
 import { preferSpikedInRoom } from "../itemView.ts";
 import { isLostPlace, patrolShip } from "../patrol.ts";
 import { logPrivate, logPublic } from "../log.ts";

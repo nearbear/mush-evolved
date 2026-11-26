@@ -9,7 +9,7 @@
 
 import { chatChannels, privateChannelId } from "./chat.ts";
 import { clone, cloneState, dayOf, fail, findPlayer, isRecord, type ActionResult } from "./helpers.ts";
-import { ITEM_TYPES } from "./items.ts";
+import { ITEM_TYPES } from "./itemTypes.ts";
 import { isPilgredRepaired } from "./pilgred.ts";
 import { PROJECT_COMPLETE, PROJECT_IDS } from "./projects.ts";
 import { RESEARCH_COMPLETE, RESEARCH_IDS } from "./research.ts";

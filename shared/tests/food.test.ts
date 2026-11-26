@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ITEM_TYPES } from "../src/items.ts";
+import { ITEM_TYPES } from "../src/itemTypes.ts";
 import { createGame } from "../src/rules.ts";
 import type { GameState, PlayerId } from "../src/types.ts";
 import { makeSeats, player, mustApply, noCharacterModifiers, testConfig } from "./support.ts";

@@ -1,6 +1,7 @@
 import { Action, type ActionCost, isString } from "./action.ts";
 import { EQUIPMENT_TYPES } from "../equipment.ts";
-import { ITEM_TYPES, canReachItem, removeItem, spawnInRoom } from "../items.ts";
+import { ITEM_TYPES } from "../itemTypes.ts";
+import { canReachItem, removeItem, spawnInRoom } from "../items.ts";
 import { logPrivate, logPublic } from "../log.ts";
 import { getUp } from "./lie_down.ts";
 import { isFortified } from "./reinforce.ts";

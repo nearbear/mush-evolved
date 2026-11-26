@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { pushChat, sendChat } from "../src/chat.ts";
 import { unreadCount } from "../src/chatRead.ts";
 import { fullViewFor, perspective } from "../src/fullView.ts";
-import { ITRACKIE_ITEM } from "../src/items.ts";
+import { ITRACKIE_ITEM } from "../src/itemIds.ts";
 import { mergeStreams, revealFor, streamsOf } from "../src/replayView.ts";
 import { addDisease, removeDisease } from "../src/diseases.ts";
 import { chatPageView, createGame, viewFor } from "../src/rules.ts";

@@ -1,5 +1,6 @@
 import { Action, isString } from "./action.ts";
-import { ITEM_TYPES, canReachItem, isWorking } from "../items.ts";
+import { ITEM_TYPES } from "../itemTypes.ts";
+import { canReachItem, isWorking } from "../items.ts";
 import { logPublic } from "../log.ts";
 import { rollInt } from "../rng.ts";
 import type { GameState, ItemState, PlayerState } from "../types.ts";

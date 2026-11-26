@@ -1,7 +1,8 @@
 import { Action, type ActionCost, isString } from "./action.ts";
 import { isBreakable } from "../breakage.ts";
 import { doorOtherRoom, doorsOf, repairDoor } from "../doors.ts";
-import { ITEM_TYPES, canReachItem, isWorking, itemsIn } from "../items.ts";
+import { ITEM_TYPES } from "../itemTypes.ts";
+import { canReachItem, isWorking, itemsIn } from "../items.ts";
 import { logPrivate, logPublic } from "../log.ts";
 import { removeStatus } from "../statuses.ts";
 import { repairEquipment } from "../gravity.ts";

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ITEM_TYPES } from "../src/items.ts";
+import { ITEM_TYPES } from "../src/itemTypes.ts";
 import { ACTIONS } from "../src/actions.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { RESEARCH_IDS } from "../src/research.ts";

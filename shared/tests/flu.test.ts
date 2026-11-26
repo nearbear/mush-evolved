@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { addDisease, diseaseStats, spreadByTouch } from "../src/diseases.ts";
-import { ITEM_TYPES } from "../src/items.ts";
+import { ITEM_TYPES } from "../src/itemTypes.ts";
 import { consumed, cycleChanged, enterRoom, enteredRoom } from "../src/modifiers.ts";
 import { createGame } from "../src/rules.ts";
 import type { DiseaseStats, GameState, ItemState } from "../src/types.ts";

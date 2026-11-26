@@ -6,7 +6,7 @@ import { breakDoor, doorId, isDoorBroken } from "../src/doors.ts";
 import { DRONE_MAX_SERIAL, DRONE_NAMES, droneChance, newDrone } from "../src/drones.ts";
 import { fullViewFor } from "../src/fullView.ts";
 import { INCIDENT_IDS } from "../src/incidents.ts";
-import { MICROWAVE_ITEM, SUPPORT_DRONE_ITEM } from "../src/items.ts";
+import { MICROWAVE_ITEM, SUPPORT_DRONE_ITEM } from "../src/itemIds.ts";
 import { startFire } from "../src/fire.ts";
 import { normalizeGame, normalizeItem } from "../src/normalizeState.ts";
 import { createGame, viewFor } from "../src/rules.ts";

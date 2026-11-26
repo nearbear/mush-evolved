@@ -1,5 +1,7 @@
 import { Action, type ActionCost, isString } from "./action.ts";
-import { FREEZER_ITEM, ITEM_TYPES, canReachItem, isWorking } from "../items.ts";
+import { FREEZER_ITEM } from "../itemIds.ts";
+import { ITEM_TYPES } from "../itemTypes.ts";
+import { canReachItem, isWorking } from "../items.ts";
 import { logPublic } from "../log.ts";
 import type { GameState, ItemState, PlayerState } from "../types.ts";
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
-import { TREE_POT_ITEM } from "../src/items.ts";
+import { TREE_POT_ITEM } from "../src/itemIds.ts";
 import { channelLimit, computerPointsCap, weaponOutcomeWeight } from "../src/modifiers.ts";
 import { SKILL_SLOTS, skillStatus } from "../src/skills.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";

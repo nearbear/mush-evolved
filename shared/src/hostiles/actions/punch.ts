@@ -9,7 +9,7 @@ import { HostileAction } from "./action.ts";
 import type { ActionTag } from "../../actions/action.ts";
 import { damage } from "../../death.ts";
 import { isInactive } from "../../inactivity.ts";
-import { afterProtection } from "../../items.ts";
+import { afterProtection } from "../../armor.ts";
 import { logPublic } from "../../log.ts";
 import { roll, rollFloat } from "../../rng.ts";
 import type { GameState, PlayerState } from "../../types.ts";

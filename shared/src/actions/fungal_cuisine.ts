@@ -1,5 +1,6 @@
 import { Action, IN_PRESELECTION, type ActionCost, type ActionTag, type ActionVisibility, isString } from "./action.ts";
-import { ITEM_TYPES, canReachItem } from "../items.ts";
+import { ITEM_TYPES } from "../itemTypes.ts";
+import { canReachItem } from "../items.ts";
 import { logPrivate } from "../log.ts";
 import { hasSkill } from "../skills.ts";
 import type { GameState, PlayerState } from "../types.ts";

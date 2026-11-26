@@ -87,7 +87,7 @@ export type Container = { kind: "player"; id: PlayerId } | { kind: "room"; id: R
 
 export interface ItemState {
   id: ItemId;
-  /** Key into ITEM_TYPES (items.ts). */
+  /** Key into ITEM_TYPES (itemTypes.ts). */
   type: string;
   at: Container;
   /** For a corpse: whose body it is. */

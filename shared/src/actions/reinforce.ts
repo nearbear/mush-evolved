@@ -1,6 +1,7 @@
 import { Action, type ActionCost, type ActionVisibility, isString } from "./action.ts";
 import { EQUIPMENT_TYPES, isEquipmentEnabled } from "../equipment.ts";
-import { ITEM_TYPES, canReachItem, removeItem } from "../items.ts";
+import { ITEM_TYPES } from "../itemTypes.ts";
+import { canReachItem, removeItem } from "../items.ts";
 import { logPrivate } from "../log.ts";
 import { hasSkill } from "../skills.ts";
 import type { GameState, ItemState, PlayerState } from "../types.ts";

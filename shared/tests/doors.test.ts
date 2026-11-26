@@ -8,7 +8,7 @@ import { CHEAT_ROOM } from "../src/cheatRoom.ts";
 import { DEFAULT_CONFIG, resolveConfig } from "../src/config.ts";
 import { allDoors, breakDoor, doorId, doorRooms, doorsOf, isDoor, isDoorBroken, repairDoor } from "../src/doors.ts";
 import { startFire } from "../src/fire.ts";
-import { SUPPORT_DRONE_ITEM } from "../src/items.ts";
+import { SUPPORT_DRONE_ITEM } from "../src/itemIds.ts";
 import { normalizeGame, overridesOf } from "../src/normalizeState.ts";
 import { shortestPath } from "../src/paths.ts";
 import { PROJECT_COMPLETE } from "../src/projects.ts";
