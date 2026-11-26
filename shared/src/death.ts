@@ -4,6 +4,7 @@
 // corpse item in the room. Every HP loss goes through `damage` and every HP gain through `heal`, so no source can
 // leave someone alive at 0 HP (a test enforces it).
 
+import { endHacksOnDeath } from "./radioPiracy.ts";
 import { endAccommodationOnDeath } from "./accommodation.ts";
 import { gainMorale } from "./adjustStats.ts";
 import { shipInvincible } from "./cheats.ts";
@@ -123,6 +124,7 @@ export function killPlayer(state: GameState, player: PlayerState, cause: DeathCa
   delete player.protectedBy;
   for (const other of state.players) if (other.protectedBy === player.id) delete other.protectedBy;
   delete player.hackedEquipment;
+  endHacksOnDeath(state, player); // Radio Piracy: theirs and any on them end (owner, 2026-11-18)
 
   for (const channel of state.channels.filter((c) => c.members.includes(player.id))) {
     if (removeFromChannel(state, channel.id, player.id)) systemMessage(state, channel.id, "leftThisWorld", { name: player.character });

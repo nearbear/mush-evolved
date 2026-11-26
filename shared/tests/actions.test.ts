@@ -1,3 +1,4 @@
+import { ITRACKIE_ITEM } from "../src/itemIds.ts";
 import { describe, expect, it } from "vitest";
 import { ITEM_TYPES } from "../src/itemTypes.ts";
 import { ACTIONS } from "../src/actions.ts";
@@ -105,6 +106,8 @@ describe("action registry", () => {
       ...mine.map((i): Action => ({ type: "drop", item: i.id })),
       // The iTrackie is private, so it can't be hidden (owner, 2026-11-18).
       ...mine.filter((i) => ITEM_TYPES[i.type]?.canHide !== false).map((i): Action => ({ type: "hide", item: i.id })),
+      // Anyone can factory-reset their own iTrackie (Radio Piracy's counterplay).
+      ...mine.filter((i) => i.type === ITRACKIE_ITEM).map((i): Action => ({ type: "factory_reset", item: i.id })),
       { type: "search" },
       // Anyone can guard (1 AP); stop_guarding only follows once they do.
       { type: "guard" },

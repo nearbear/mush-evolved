@@ -53,6 +53,8 @@ function ship(): { state: GameState; sentinels: Sentinel[] } {
     p.massMoulderingUsed = true;
     p.fairyRingUsed = true;
     p.history = [str(`history-${p.id}`, [])];
+    // A hack's counts at placement are never sent, not even to the hacker (the view carries only `radioHack`).
+    p.radioHack = { target: "p1", chatSeq: { global: num(`radioHack-${p.id}`, []) } };
     p.bodyTakenBy = str(`bodyTakenBy-${p.id}`, own) as typeof p.character;
     p.ap = num(`ap-${p.id}`, own);
     p.mp = num(`mp-${p.id}`, own);

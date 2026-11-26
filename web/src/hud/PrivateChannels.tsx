@@ -40,7 +40,7 @@ export function PrivateChannels({
   view: PlayerView;
   /** The Private tab is on screen: the picked channel places its "New messages" divider (#400). */
   active?: boolean;
-  onChat: (channel: ChannelId, text: string) => void; onToggle: (channel: ChannelId, seq: number, line: number) => void } & Partial<ChannelHandlers>) {
+  onChat: (channel: ChannelId, text: string, as?: string) => void; onToggle: (channel: ChannelId, seq: number, line: number) => void } & Partial<ChannelHandlers>) {
   const { t, i18n } = useTranslation();
   const mobile = useMobile();
   const [picked, setPicked] = useState<PrivateChannelId | "">("");
@@ -55,9 +55,12 @@ export function PrivateChannels({
   const names = useNames();
   const label = (c: { name: string; day: number; cycleOfDay: number }) => c.name || t("channels.defaultName", { day: c.day, cycle: c.cycleOfDay });
   const nameOf = (id: string) => names.character((id === view.you.id ? view.you : view.players.find((p) => p.id === id))?.character ?? id);
-  const invitable = current ? view.players.filter((p) => p.alive && !current.members.includes(p.id)) : [];
+  // Channels read through a Radio Piracy hack (`tapped`) take no slot and can't be left or invited to.
+  const mine = view.privateChannels.filter((c) => !c.tapped);
+  const tapped = view.privateChannels.filter((c) => c.tapped);
+  const invitable = current && !current.tapped ? view.players.filter((p) => p.alive && !current.members.includes(p.id)) : [];
   // A modifier can lower the limit below the channels you're already in; those still get a row.
-  const slots = Math.max(view.channelLimit, view.privateChannels.length);
+  const slots = Math.max(view.channelLimit, mine.length);
   const planFor = (channelId: PrivateChannelId): Plan | undefined => {
     const list = view.plans.filter((p) => p.channel === channelId);
     return list.find((p) => p.status === "open") ?? list.at(-1);
@@ -85,7 +88,7 @@ export function PrivateChannels({
     <>
       <ul className="channel-slots" aria-label={t("channels.list")}>
         {Array.from({ length: slots }, (_, i) => {
-          const c = view.privateChannels[i];
+          const c = mine[i];
           return c ? (
             <li key={c.id} className="channel-slot">
               <button type="button" className="channel-slot-pick" aria-pressed={c.id === current?.id} onClick={() => setPicked(c.id)}>
@@ -103,6 +106,14 @@ export function PrivateChannels({
             </li>
           );
         })}
+        {tapped.map((c) => (
+          <li key={c.id} className="channel-slot">
+            <button type="button" className="channel-slot-pick" aria-pressed={c.id === current?.id} onClick={() => setPicked(c.id)}>
+              {t("channels.tapped", { name: label(c) })}
+              <UnreadChip channel={c.id} total={view.chatCounts[c.id] ?? 0} unheard={view.chatUnheard?.[c.id]} />
+            </button>
+          </li>
+        ))}
       </ul>
       {current ? (
         <>
@@ -120,7 +131,7 @@ export function PrivateChannels({
                 view={view}
                 channel={c.id}
                 placeholder={t("channels.messagePlaceholder", { name: label(c) })}
-                onSend={(text) => onChat(c.id, text)}
+                onSend={(text, as) => onChat(c.id, text, as)}
                 onToggle={onToggle}
                 active={active && c.id === current.id && (!mobile || pane === "messages")}
               />

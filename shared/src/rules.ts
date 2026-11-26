@@ -55,6 +55,7 @@ import { soil } from "./dirt.ts";
 import { type HasRng, rollFloat, rollInt, rollWeighted, shuffle, streamFor } from "./rng.ts";
 import { SHIP_ROOMS } from "./config.ts";
 import { chatChannels, chatMarkKey, chatPageOf, heardBy, markedText, readChannels } from "./chat.ts";
+import { activeHack, readableFrom } from "./radioPiracy.ts";
 import { moderateName } from "./moderation.ts";
 import { clone, cloneState, dayOf, fail, findPlayer, type ActionResult } from "./helpers.ts";
 
@@ -100,6 +101,7 @@ import type {
   PlayerId,
   PlayerState,
   PlayerView,
+  SeqRange,
   SeatView,
   ChannelId,
   ChatLine,
@@ -714,6 +716,7 @@ function advanceCycle(state: GameState, at?: number): void {
       delete p.chitchatToday;
       delete p.interrogatedToday;
       delete p.delogToday;
+      delete p.radioHackToday;
       delete p.snoopedToday;
       delete p.mycoscannedToday;
       p.cpuPriorityChangedToday = false;
@@ -793,9 +796,11 @@ export function messageView({ id, seq, cycle, at, channel, from, isBot, text, sy
 export function chatPageSource(state: Readonly<GameState>, playerId: PlayerId, channel: ChannelId, page: number): "state" | "stored" | null {
   const you = findPlayer(state, playerId);
   const count = state.chatSeq[channel] ?? 0;
-  if (!you || count === 0 || !Number.isSafeInteger(page) || page < 0 || !readChannels(state, you).includes(channel)) return null;
+  const from = you && readableFrom(state, you).get(channel);
+  if (!you || count === 0 || !Number.isSafeInteger(page) || page < 0 || from === undefined) return null;
   const last = chatPageOf(count - 1);
-  return page > last ? null : page >= last - 1 ? "state" : "stored";
+  // A channel read through a Radio Piracy hack starts at the hack: earlier pages are refused like any other.
+  return page > last || page < chatPageOf(from) ? null : page >= last - 1 ? "state" : "stored";
 }
 
 /**
@@ -808,17 +813,22 @@ export function chatPageView(state: Readonly<GameState>, playerId: PlayerId, cha
   const messages = source === "state" ? state.chat : source === "stored" ? stored : undefined;
   const you = findPlayer(state, playerId);
   if (!messages || !you) return null;
-  return messages.filter((m) => m.channel === channel && chatPageOf(m.seq) === page && heardBy(you, m)).map((m) => {
+  const from = readableFrom(state, you).get(channel) ?? 0;
+  return messages.filter((m) => m.channel === channel && chatPageOf(m.seq) === page && m.seq >= from && heardBy(you, m)).map((m) => {
     const { id: _id, ...line } = messageView(m, state.chatMarks);
     return line;
   });
 }
 
-/** Your unheard messages in the channels you read now (`PlayerView.chatUnheard`), or nothing when there are none. */
-function unheardView(you: Readonly<PlayerState>, channels: readonly ChannelId[]): Pick<PlayerView, "chatUnheard"> {
-  const entries = channels.flatMap((c) => {
-    const ranges = you.unheard?.[c];
-    return ranges && ranges.length > 0 ? [[c, ranges.map(([a, b]) => [a, b])]] : [];
+/**
+ * Your unheard messages in the channels you read now (`PlayerView.chatUnheard`), or nothing when there are none. A
+ * channel read through a Radio Piracy hack (`from` above 0) counts everything before the hack as unheard, so it never
+ * shows as unread.
+ */
+function unheardView(you: Readonly<PlayerState>, channels: ReadonlyMap<ChannelId, number>): Pick<PlayerView, "chatUnheard"> {
+  const entries = [...channels].flatMap(([c, from]) => {
+    const ranges: SeqRange[] = [...(from > 0 ? [[0, from] as SeqRange] : []), ...(you.unheard?.[c] ?? []).filter(([, b]) => b > from).map(([a, b]): SeqRange => [Math.max(a, from), b])];
+    return ranges.length > 0 ? [[c, ranges]] : [];
   });
   return entries.length > 0 ? { chatUnheard: Object.fromEntries(entries) } : {};
 }
@@ -858,7 +868,11 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
   // Comatose while the game runs (#489): total blindness — room and ship-wide state stripped; end screen still works once ended.
   const blind = state.phase === "playing" && isComatose(state, you);
   const others = state.players.filter((p) => p.id !== playerId);
-  const channels = readChannels(state, you);
+  // Your own channels, and the ones you read only through a Radio Piracy hack, each from its first readable message.
+  const readable = readableFrom(state, you);
+  const channels = [...readable.keys()];
+  const own = readChannels(state, you);
+  const hack = activeHack(state, you);
   // Without ACTOPI, anyone outside your room is a room-only dot: no identity, so no room on their entry.
   const actopi = state.bios.actopi;
   // The dead see nothing that depends on a room (decided 2026-10-16, #45): no
@@ -897,6 +911,7 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     comaUntil: _comaUntil,
     missedLogs: _missedLogs,
     unheard: _unheard,
+    radioHack: _radioHack, // the view's `radioHack` says what the hacker may use
     ...yours
   } = you;
   const orbitShared = !blind && channels.includes("astrophysics") && state.navigation.orbit !== null ? state.sharedPlanets.find((e) => e.planet === state.navigation.orbit)?.id : undefined;
@@ -1010,13 +1025,19 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
             return moveLineFor(visible.visibleTo === "all" ? visible : { ...visible, visibleTo: [you.id] }, you);
           }),
     logSeen: you.logSeen,
-    chat: state.chat.filter((m) => channels.includes(m.channel) && heardBy(you, m)).map((m) => messageView(m, state.chatMarks)),
+    chat: state.chat.filter((m) => m.seq >= (readable.get(m.channel) ?? Infinity) && heardBy(you, m)).map((m) => messageView(m, state.chatMarks)),
     chatCounts: Object.fromEntries(channels.flatMap((c) => (state.chatSeq[c] ? [[c, state.chatSeq[c]]] : []))),
-    ...unheardView(you, channels),
+    ...unheardView(you, readable),
     chatChannels: chatChannels(state, you),
     readChannels: channels,
-    privateChannels: blind ? [] : state.channels.filter((c) => c.members.includes(playerId)).map((c) => ({ ...c, members: [...c.members] })),
-    plans: plansView(state, channels),
+    // A channel read through a hack is listed too, marked `tapped` (its plans stay its members').
+    privateChannels: blind
+      ? []
+      : state.channels
+          .filter((c) => c.members.includes(playerId) || readable.has(c.id))
+          .map((c) => ({ ...c, members: [...c.members], ...(!c.members.includes(playerId) && { tapped: true as const }) })),
+    ...(hack && { radioHack: { target: hack.target.id, channels: hack.channels } }),
+    plans: plansView(state, own),
     threads: channels.includes("global") ? threadsView(state) : [],
     sharedPlanets: channels.includes("astrophysics") ? sharedPlanetsView(state) : [],
     sharedReports: channels.includes("expeditions") ? sharedReportsView(state) : [],

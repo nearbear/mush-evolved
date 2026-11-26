@@ -116,6 +116,8 @@ const ACTION_NAME_KEYS = {
   exit_nimble: "actions.exitNimble",
   become_ninja: "actions.becomeNinja",
   delog: "actions.delog",
+  radio_piracy: "actions.radioPiracy",
+  factory_reset: "actions.factoryReset",
   become_normal: "actions.becomeNormal",
   accommodate: "actions.accommodate",
   accept_accommodation: "actions.acceptAccommodation",

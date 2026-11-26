@@ -99,7 +99,8 @@ export type GameClientMessage =
   // Walk to a cell of your room, sitting if it's a chair (spot.ts). Free; not an action. Pushing a wheelchair, the
   // cell is where it goes, and `behind` where you end up behind it.
   | { type: "walk"; x: number; y: number; sitting: boolean; behind?: { x: number; y: number } }
-  | { type: "chat"; channel: ChannelId; text: string }
+  // `as`: posts as your Radio Piracy target (radioPiracy.ts `spoofChat`); it must be the body your hack is on.
+  | { type: "chat"; channel: ChannelId; text: string; as?: PlayerId }
   // A message is named by its channel and `seq`, never its game-wide id (ChatMessage.id says why).
   | { type: "toggleCheckbox"; channel: ChannelId; seq: number; line: number }
   // One page of a channel (#355), answered with `chatPage`. Read-only: not an input, never recorded.
@@ -182,7 +183,8 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
     // Generous bound here; moderation and the rules enforce the real limit.
     const channel = channelId(msg.channel);
     if (!channel || typeof msg.text !== "string" || msg.text.length > MAX_CHAT_LENGTH * 4) return null;
-    return { type: "chat", channel, text: msg.text };
+    if (msg.as !== undefined && (typeof msg.as !== "string" || msg.as.length > 64)) return null;
+    return { type: "chat", channel, text: msg.text, ...(typeof msg.as === "string" && { as: msg.as }) };
   }
   if (msg?.type === "toggleCheckbox") {
     const { seq, line } = msg;

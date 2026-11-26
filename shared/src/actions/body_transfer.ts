@@ -57,6 +57,7 @@ export class BodyTransferAction extends Action<BodyTransferActionData> {
     removeStatus(victim, "nimble");
     removeStatus(player, "ninja");
     removeStatus(victim, "ninja");
+    delete player.radioHack; // the hacker's Transfer ends their Radio Piracy hack (owner, 2026-11-18)
     swapMinds(state, player, victim);
     // `player` is the old body, now the victim's (human); `victim` is the Mush's new body.
     delete state.contamination[victim.id];

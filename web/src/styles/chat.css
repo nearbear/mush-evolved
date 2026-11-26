@@ -273,6 +273,14 @@
   margin: var(--space-2) 0 0;
   text-align: center;
 }
+/* Radio Piracy's "post as" switch above the input (Thread.tsx `PostAs`); wraps on a phone. */
+.chat-post-as {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin: var(--space-2) 0 0;
+}
 .feed > li.cycle-divider {
   display: flex;
   align-items: center;

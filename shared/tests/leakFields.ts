@@ -164,6 +164,8 @@ export const PLAYER_STATE_FIELDS: Record<string, FieldRule> = {
   unheard: { reach: "own", test: "damaged_ears.test.ts", note: "Damaged/Destroyed Ears' unheard messages; the owner gets their readable channels' as `chatUnheard`." },
   chitchatToday: { reach: "own", test: "history.test.ts", note: "Only gates Chitchat; roommates never see it." },
   delogToday: { reach: "own", test: "defacer.test.ts", note: "Only gates Clear the logs; roommates never see it." },
+  radioHack: { reach: "never", test: "radioPiracy.test.ts", note: "A Radio Piracy hack: its target and each channel's count at the hack. The hacker gets only `PlayerView.radioHack` (target and channels they may post in as them) while they can use it; the target is never told." },
+  radioHackToday: { reach: "own", test: "radioPiracy.test.ts", note: "Only gates the daily hack; nobody else sees it." },
   interrogatedToday: { reach: "own", test: "history.test.ts", note: "Only gates Interrogate; roommates never see it." },
   jukeboxDay: { reach: "own", test: "jukebox.test.ts", note: "Only gates Listen at the jukebox; roommates never see it." },
   mycoscannedToday: { reach: "own", test: "mycoscan.test.ts", note: "Only gates the MycoScan check; roommates never see it." },

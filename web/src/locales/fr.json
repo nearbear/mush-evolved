@@ -463,6 +463,8 @@
     "becomeNinja": "Devenir un ninja",
     "becomeNormal": "Redevenir banal",
     "delog": "Effacer les logs",
+    "radioPiracy": "Pirater un iTrackie",
+    "factoryReset": "Réinitialisation d'usine",
     "accommodate": "Pousser le fauteuil",
     "acceptAccommodation": "Accepter l'aide",
     "stopAccommodation": "Mettre fin à l'aide",
@@ -761,6 +763,7 @@
     "back": "Retour"
   },
   "channels": {
+    "tapped": "📻 {{name}}",
     "empty": "Aucun canal privé pour l'instant.",
     "nameLabel": "Nom du nouveau canal",
     "defaultName": "Jour {{day}}, Cycle {{cycle}}",
@@ -916,6 +919,11 @@
     "markReadIn": "Tout marquer comme lu dans {{name}}",
     "chatNeedsITrackie": "Nécessite un iTrackie",
     "chatMessage": "Message",
+    "postAs": {
+      "label": "Écrire en tant que",
+      "me": "Moi",
+      "only": "Vous écrivez en tant que {{name}} (iTrackie piraté). Ce message ne lui parviendra pas."
+    },
     "send": "Envoyer",
     "researchTracker": "Suivi des recherches",
     "projectTracker": "Suivi des projets NERON",
@@ -1524,6 +1532,9 @@
     "examineEquipment": "Vous examinez : {{equipment}}.",
     "examineItem": "Vous examinez : {{item}}.",
     "bonded": "Vous avez créé un lien avec {{name}}.",
+    "radioHacked": "Vous avez piraté l'iTrackie de {{target}}. Désormais, vous lisez ses canaux et pouvez écrire à sa place.",
+    "radioHackLost": "Votre piratage de l'iTrackie de {{target}} a été perdu.",
+    "factoryReset": "Vous avez rétabli les réglages d'usine de votre iTrackie.",
     "shareDid": "Vous avez fait {{label}} avec {{name}}.",
     "shareDidToYou": "{{name}} a fait {{label}} avec vous.",
     "becamePregnant": "Vous êtes enceinte !",
@@ -1767,6 +1778,12 @@
     "pick": "Choisissez un membre d'équipage pour voir sa dernière action :",
     "confirm": "Utiliser Pressentiment"
   },
+  "radioPiracyPick": {
+    "title": "Piratage radio",
+    "close": "Fermer",
+    "pick": "Choisissez l'iTrackie à pirater :",
+    "confirm": "Pirater"
+  },
   "skills": {
     "title": "Choisir une compétence",
     "confirm": "Choisir {{skill}} ?",
@@ -1960,7 +1977,7 @@
       "doorman": "Chaque jour, vous pouvez Saboter une Porte gratuitement.",
       "neron_access": "Vous pouvez accéder au BIOS de NERON même si vous n'êtes pas Administrateur.",
       "fungus_cook": "Vous pouvez créer une Ration Piégée en mélangeant un Spore et une Ration pour 1 PA.",
-      "radio_piracy": "Pour 3 PA vous pouvez brouiller les communications d'un joueur possédant un Talky-Walky. Ceci casse son Talky-Walky et vous permet d'écrire à sa place jusqu'à ce qu'il ce soit exprimé à nouveau.",
+      "radio_piracy": "Pour 3 PA, une fois par jour au Centre de communication, vous pouvez pirater l'iTrackie d'un autre joueur. Jusqu'à ce qu'il le réinitialise, vous lisez tous ses canaux à partir de ce moment, canaux privés compris, et pouvez écrire à sa place partout où il peut écrire. Il ne voit jamais ces messages.",
       "nightmare": "Pour 2 PA, vous pouvez maudire un humain de votre pièce pour 8 à 16 cycles : ses actions ont 4 fois plus de chances de le blesser ou de le salir, et les plaques de métal et les secousses lui font toujours le maximum de dégâts. Seuls les Mush voient la malédiction.",
       "disheartening_contact": "Pour 2 PA vous pouvez faire perdre 2 PMo à un équipier.",
       "transfert": "Unique : Vous pouvez vous glisser dans la peau d'un autre joueur humain. Celui-ci doit être infecté au moins une fois. Il se retrouvera alors dans votre corps... et risque d'alerter ses congénères.\nLes scores de Triomphe seront échangés.",
@@ -2300,6 +2317,8 @@
     "xylophTitle": "Xyloph",
     "xylophUndeciphered": "Pas encore déchiffrée.",
     "neronTitle": "Mise à jour de NERON",
+    "radioPiracyTitle": "Piratage radio",
+    "radioPiracyHint": "Piratez l'iTrackie d'un équipier par jour : lisez ses canaux à partir de maintenant et écrivez à sa place. Un nouveau piratage remplace le précédent.",
     "neronVersion": "NERON version {{version}}",
     "neronProgress": "{{percent}} % vers la prochaine mise à jour. Chaque mise à jour termine un projet NERON.",
     "neronUpgrade": "Améliorer",

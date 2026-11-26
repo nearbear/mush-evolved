@@ -117,6 +117,8 @@ import { GuardAction, StopGuardingAction } from "./actions/guard.ts";
 import { EnterNimbleAction, ExitNimbleAction, NIMBLE } from "./actions/nimble.ts";
 import { BecomeNinjaAction, BecomeNormalAction } from "./actions/ninja.ts";
 import { DelogAction } from "./actions/delog.ts";
+import { RadioPiracyAction } from "./actions/radio_piracy.ts";
+import { FactoryResetAction } from "./actions/factory_reset.ts";
 import { ProtectAction } from "./actions/protect.ts";
 import { GetUpAction, LieDownAction } from "./actions/lie_down.ts";
 import { ReportDoorAction, ReportEquipmentAction, ReportFireAction } from "./actions/report.ts";
@@ -294,6 +296,8 @@ const REGISTRY = {
   become_ninja: new BecomeNinjaAction(),
   become_normal: new BecomeNormalAction(),
   delog: new DelogAction(),
+  radio_piracy: new RadioPiracyAction(),
+  factory_reset: new FactoryResetAction(),
   protect: new ProtectAction(),
   accommodate: new AccommodateAction(),
   accept_accommodation: new AcceptAccommodationAction(),

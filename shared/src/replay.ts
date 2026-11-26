@@ -10,6 +10,7 @@ import { applyKube } from "./kube.ts";
 import { cheatRoomCheat, createGame, newCycle, setCheat, setRoleCheat, type ActionResult } from "./rules.ts";
 import { clearQueue, dropQueues, queueAction, tick } from "./queue.ts";
 import { walk } from "./spot.ts";
+import { activeHackOn, spoofChat } from "./radioPiracy.ts";
 import { createChannel, createThread, inviteToChannel, leaveChannel, sendChat, takeChatOutbox, toggleCheckbox } from "./chat.ts";
 import { sharePlanet } from "./sharedPlanets.ts";
 import { sharePlants } from "./sharedPlants.ts";
@@ -116,6 +117,7 @@ function applyInputOnly(state: GameState, input: Input): ActionResult {
     case "dropQueues":
       return dropQueues(state);
     case "chat":
+      if (input.as !== undefined) return activeHackOn(state, input.by, input.as) ? spoofChat(state, input.by, input.channel, input.text) : { ok: false, error: "cant_post" };
       return sendChat(state, input.by, input.channel, input.text);
     case "toggleCheckbox":
       return toggleCheckbox(state, input.by, input.channel, input.seq, input.line);

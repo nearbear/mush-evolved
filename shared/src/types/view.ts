@@ -220,6 +220,7 @@ export type YouView = Omit<
   | "pendingDiseases"
   | "comaUntil"
   | "missedLogs"
+  | "radioHack"
 > & { current: ActionInProgress | null; queue: Action[]; protecting?: PlayerId };
 
 /** A hunter as a turret or a patrol ship's cockpit shows it: its kind, hp, and an asteroid's cycle changes to impact (null otherwise). */
@@ -325,16 +326,28 @@ export interface PlayerView {
   /** Messages ever posted in each of `readChannels`, so its pages and its newest `seq`. Missing means none. */
   chatCounts: Partial<Record<ChannelId, number>>;
   /**
-   * Messages in your readable channels you couldn't hear (Damaged or Destroyed Ears, `PlayerState.unheard`): never sent,
-   * and not unread (`unreadCount`). Missing when there are none.
+   * Messages in your readable channels you couldn't hear (Damaged or Destroyed Ears, `PlayerState.unheard`, which also
+   * holds the Radio Piracy spoofs posted as you), and in a channel you read through a hack, everything before it: never
+   * sent, and not unread (`unreadCount`). Missing when there are none.
    */
   chatUnheard?: Partial<Record<ChannelId, SeqRange[]>>;
   /** Channels you may post to right now. */
   chatChannels: ChannelId[];
-  /** Channels you may read: `chatChannels`, or for the dead the public ones (and the Mush channel for a dead Mush). */
+  /**
+   * Channels you may read: `chatChannels`, or for the dead the public ones (and the Mush channel for a dead Mush), plus
+   * the private channels you read through a Radio Piracy hack (from the hack on; what came before is in `chatUnheard`).
+   */
   readChannels: ChannelId[];
-  /** Private channels you belong to. Channels you aren't in are never sent. */
-  privateChannels: PrivateChannel[];
+  /**
+   * Private channels you belong to, and those you read through a Radio Piracy hack (`tapped`). Channels you can't
+   * read are never sent.
+   */
+  privateChannels: (PrivateChannel & { tapped?: true })[];
+  /**
+   * Your Radio Piracy hack while you can use it (radioPiracy.ts): whose iTrackie, and the channels you may post in as
+   * them (`chat` with `as`). Sent to the hacker only; missing otherwise.
+   */
+  radioHack?: { target: PlayerId; channels: ChannelId[] };
   /**
    * Plans of the private channels you belong to (plans.ts): the open one and the latest finished ones. Holders are
    * members, known to members; why a summoned holder stopped is only in that holder's own log.

@@ -120,7 +120,7 @@ export function ITrackie({
   view: PlayerView;
   /** Bumped each time the player acts; switches to the Room tab to show the result. */
   roomLogRequest: number;
-  onChat: (channel: ChannelId, text: string) => void;
+  onChat: (channel: ChannelId, text: string, as?: string) => void;
   /** Start a thread under global chat, from global message `from` or on its own. */
   onCreateThread: (name: string, from?: number) => void;
   /** Tick or untick a checkbox in one of your own messages (`line` is 0-based). */
@@ -259,7 +259,7 @@ export function ITrackie({
           </Tabs.Panel>
 
           <Tabs.Panel className="itrackie-panel" value="global" aria-label={t(TAB_TITLES.global)} keepMounted>
-            <Thread view={view} channel="global" placeholder={t("itrackie.globalPlaceholder")} onSend={(text) => onChat("global", text)} onToggle={onToggle} threadLinks={threadLinks} active={activeTab === "global"} />
+            <Thread view={view} channel="global" placeholder={t("itrackie.globalPlaceholder")} onSend={(text, as) => onChat("global", text, as)} onToggle={onToggle} threadLinks={threadLinks} active={activeTab === "global"} />
           </Tabs.Panel>
 
           <Tabs.Panel className="itrackie-panel" value="threads" aria-label={t(TAB_TITLES.threads)} keepMounted>
@@ -324,7 +324,7 @@ export function ITrackie({
                   view={view}
                   channel={f}
                   placeholder={t("itrackie.featurePlaceholder", { name })}
-                  onSend={(text) => onChat(f, text)}
+                  onSend={(text, as) => onChat(f, text, as)}
                   onToggle={onToggle}
                   active={activeTab === "features" && feature === f}
                 />
@@ -335,13 +335,13 @@ export function ITrackie({
 
           {mush && (
             <Tabs.Panel className="itrackie-panel" value="mush" aria-label={t(TAB_TITLES.mush)} keepMounted>
-              <Thread view={view} channel={MUSH_CHANNEL} placeholder={t("itrackie.mushPlaceholder")} onSend={(text) => onChat(MUSH_CHANNEL, text)} onToggle={onToggle} active={activeTab === "mush"} />
+              <Thread view={view} channel={MUSH_CHANNEL} placeholder={t("itrackie.mushPlaceholder")} onSend={(text, as) => onChat(MUSH_CHANNEL, text, as)} onToggle={onToggle} active={activeTab === "mush"} />
             </Tabs.Panel>
           )}
 
           {graveyard && (
             <Tabs.Panel className="itrackie-panel" value="graveyard" aria-label={t(TAB_TITLES.graveyard)} keepMounted>
-              <Thread view={view} channel={GRAVEYARD_CHANNEL} placeholder={t("itrackie.graveyardPlaceholder")} onSend={(text) => onChat(GRAVEYARD_CHANNEL, text)} onToggle={onToggle} active={activeTab === "graveyard"} />
+              <Thread view={view} channel={GRAVEYARD_CHANNEL} placeholder={t("itrackie.graveyardPlaceholder")} onSend={(text, as) => onChat(GRAVEYARD_CHANNEL, text, as)} onToggle={onToggle} active={activeTab === "graveyard"} />
             </Tabs.Panel>
           )}
 

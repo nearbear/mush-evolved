@@ -449,6 +449,8 @@
     "becomeNinja": "Become a ninja",
     "becomeNormal": "Become normal again",
     "delog": "Clear the logs",
+    "radioPiracy": "Hack an iTrackie",
+    "factoryReset": "Factory reset",
     "accommodate": "Accommodate",
     "acceptAccommodation": "Accept accommodation",
     "stopAccommodation": "End accommodation",
@@ -745,6 +747,7 @@
     "back": "Back"
   },
   "channels": {
+    "tapped": "📻 {{name}}",
     "empty": "No private channels yet.",
     "nameLabel": "New channel name",
     "defaultName": "Day {{day}}, Cycle {{cycle}}",
@@ -899,6 +902,11 @@
     "markReadIn": "Mark all read in {{name}}",
     "chatNeedsITrackie": "Needs an iTrackie",
     "chatMessage": "Chat message",
+    "postAs": {
+      "label": "Post as",
+      "me": "Me",
+      "only": "Posting as {{name}} (hacked iTrackie). They won't see it."
+    },
     "send": "Send",
     "researchTracker": "Research tracker",
     "projectTracker": "NERON projects tracker",
@@ -1499,6 +1507,9 @@
     "examineEquipment": "You examine the {{equipment}}.",
     "examineItem": "You examine the {{item}}.",
     "bonded": "You bonded with {{name}}.",
+    "radioHacked": "You hacked {{target}}'s iTrackie. From now on you read their channels and can post as them.",
+    "radioHackLost": "Your hack on {{target}}'s iTrackie was lost.",
+    "factoryReset": "You restored your iTrackie to its factory settings.",
     "shareDid": "You did {{label}} with {{name}}.",
     "shareDidToYou": "{{name}} did {{label}} with you.",
     "becamePregnant": "You are pregnant!",
@@ -1736,6 +1747,12 @@
     "close": "Close",
     "pick": "Choose a crewmate to see their latest action:",
     "confirm": "Use Premonition"
+  },
+  "radioPiracyPick": {
+    "title": "Radio Piracy",
+    "close": "Close",
+    "pick": "Choose whose iTrackie to hack:",
+    "confirm": "Hack"
   },
   "skills": {
     "title": "Choose a skill",
@@ -2024,7 +2041,7 @@
       "doorman": "Each day, you can Sabotage a Door for free.",
       "neron_access": "You can access NERON's BIOS even if you are not the Administrator.",
       "fungus_cook": "You can make a Trapped Ration by mixing a Spore and a Ration, for 1 AP.",
-      "radio_piracy": "For 3 AP you can jam the communications of a player who has a Walkie-Talkie. This breaks their Walkie-Talkie and lets you write in their place until they speak again.",
+      "radio_piracy": "For 3 AP, once a day at the Communication center, you can hack another player's iTrackie. Until they reset it, you read every channel they read from then on, private channels included, and you can post as them anywhere they can post. They never see those messages.",
       "nightmare": "For 2 AP you can curse a human in your room with bad luck for 8 to 16 cycles: their actions are 4 times as likely to injure them or make them dirty, and falling metal plates and tremors always do their worst. Only the Mush can see the curse.",
       "disheartening_contact": "For 2 AP you can make a crewmate lose 2 Morale Points.",
       "transfert": "Unique: you can slip into the skin of another human player. They must have been infected at least once. They will end up in your body... and may alert their fellows.\nTriumph scores will be swapped.",
@@ -2364,6 +2381,8 @@
     "xylophTitle": "Xyloph",
     "xylophUndeciphered": "Not yet deciphered.",
     "neronTitle": "NERON update",
+    "radioPiracyTitle": "Radio piracy",
+    "radioPiracyHint": "Hack one crewmate's iTrackie a day: read their channels from now on and post as them. A new hack replaces the last.",
     "neronVersion": "NERON version {{version}}",
     "neronProgress": "{{percent}}% toward the next update. Each update completes a NERON project.",
     "neronUpgrade": "Upgrade",

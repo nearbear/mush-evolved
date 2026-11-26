@@ -25,7 +25,7 @@ export function SharedReports({
   onPick: (id: SharedReportId | null) => void;
   /** Opens one of your reports (`view.expeditions`), where it can be shared. */
   onRead: (report: string) => void;
-  onChat: (channel: ChannelId, text: string) => void;
+  onChat: (channel: ChannelId, text: string, as?: string) => void;
   onToggle: (channel: ChannelId, seq: number, line: number) => void;
 }) {
   const { t } = useTranslation();
@@ -79,7 +79,7 @@ export function SharedReports({
       )}
       {/* One block per thread, hidden with CSS, so each keeps its own draft. */}
       <div className="feature" hidden={picked !== null}>
-        <Thread view={view} channel="expeditions" placeholder={t("itrackie.featurePlaceholder", { name })} onSend={(text) => onChat("expeditions", text)} onToggle={onToggle} active={active && picked === null} />
+        <Thread view={view} channel="expeditions" placeholder={t("itrackie.featurePlaceholder", { name })} onSend={(text, as) => onChat("expeditions", text, as)} onToggle={onToggle} active={active && picked === null} />
       </div>
       {view.sharedReports.map((e) => (
         <div key={e.id} className="feature" hidden={e.id !== picked}>
@@ -87,7 +87,7 @@ export function SharedReports({
             view={view}
             channel={e.id}
             placeholder={t("itrackie.sharedReports.placeholder")}
-            onSend={(text) => onChat(e.id, text)}
+            onSend={(text, as) => onChat(e.id, text, as)}
             onToggle={onToggle}
             active={active && e.id === picked}
             headKey={[e, byLine(e)]}

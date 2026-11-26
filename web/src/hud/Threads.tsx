@@ -43,7 +43,7 @@ export function Threads({
   starter: number | null;
   onCancelStarter: () => void;
   onCreate: (name: string, from?: number) => void;
-  onChat: (channel: ChannelId, text: string) => void;
+  onChat: (channel: ChannelId, text: string, as?: string) => void;
   onToggle: (channel: ChannelId, seq: number, line: number) => void;
 }) {
   const { t } = useTranslation();
@@ -141,7 +141,7 @@ export function Threads({
               view={view}
               channel={th.id}
               placeholder={t("itrackie.threads.messagePlaceholder", { name: th.name })}
-              onSend={(text) => onChat(th.id, text)}
+              onSend={(text, as) => onChat(th.id, text, as)}
               onToggle={onToggle}
               active={active && th.id === open}
               headKey={from ?? "loading"}

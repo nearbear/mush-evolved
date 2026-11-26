@@ -785,6 +785,8 @@ describe("actions from a client", () => {
     exit_nimble: [{ type: "exit_nimble" }],
     become_ninja: [{ type: "become_ninja" }],
     delog: [{ type: "delog" }],
+    radio_piracy: [{ type: "radio_piracy", equipment: "e1", target: "p1" }],
+    factory_reset: [{ type: "factory_reset", item: "i1" }],
     become_normal: [{ type: "become_normal" }],
     accommodate: [{ type: "accommodate", target: "p1" }],
     accept_accommodation: [{ type: "accept_accommodation", target: "p1" }],

@@ -1110,7 +1110,8 @@ export class GameRoom extends Server<Env> {
     const error = await this.act(input, moderated.text === raw ? undefined : raw);
     if (!error && msg.type === "chat") {
       // A bots' machine line (machineLines.ts) is for code to parse, not a message to answer: no router call, nobody woken.
-      if (!isMachineLine(moderated.text)) this.wakeBots(playerId, msg.channel, depth);
+      // A Radio Piracy spoof (`as`) wakes nobody: its target must never learn of it, and no bot routing may hint at it.
+      if (!isMachineLine(moderated.text) && msg.as === undefined) this.wakeBots(playerId, msg.channel, depth);
       // Posting reads the channel (#400): your own message is never unread, nor anything before it.
       if (!this.isBotSeat(playerId)) await this.raiseChatRead(playerId, { [msg.channel]: this.game.chatSeq[msg.channel] ?? 0 });
     }

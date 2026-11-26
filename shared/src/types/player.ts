@@ -135,6 +135,15 @@ export interface PlayerState extends Seat {
    * as unread. The owner gets its own, for readable channels, as `PlayerView.chatUnheard`.
    */
   unheard?: Partial<Record<ChannelId, SeqRange[]>>;
+  /**
+   * This hacker's Radio Piracy hack (radioPiracy.ts; owner, 2026-11-18): whose iTrackie it sits on, and each channel's
+   * message count when it was placed (`GameState.chatSeq` then), so the hacker reads only what came after. Ended by the
+   * target's factory reset, the next hack, either one's death, or the hacker's Transfer. Stays with the body (the
+   * Transfer that would move it ends it). Never sent, not even to its owner: the view carries `radioHack` instead.
+   */
+  radioHack?: RadioHack;
+  /** True once this hacker has placed a Radio Piracy hack today; cleared at day start; moves with the mind. Sent to the owner only. */
+  radioHackToday?: boolean;
   /** Equipment ids in the current room hacked with a hacker kit (actions/hack.ts); cleared on leaving the room. Sent to the owner only. */
   hackedEquipment?: string[];
   /**
@@ -227,3 +236,11 @@ export interface PlayerState extends Seat {
   /** Development cheat: overrides ACTOPI for what this player sees only. The game's ACTOPI is unchanged. */
 }
 
+
+/** A Radio Piracy hack (`PlayerState.radioHack`). */
+export interface RadioHack {
+  /** The hacked body. */
+  target: PlayerId;
+  /** Each channel's message count when the hack was placed; a channel missing here had none. */
+  chatSeq: Partial<Record<ChannelId, number>>;
+}

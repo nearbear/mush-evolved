@@ -284,6 +284,8 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   nimble_fingers: "full",
   // Mush skill: become a ninja / become normal for 0 AP; your room lines name you "Someone" (owner, 2026-11-22, actions/ninja.ts).
   ninja: "full",
+  // Mush skill: hack a player's iTrackie at the Com center, read their channels from then on and post as them (owner, 2026-11-18, radioPiracy.ts).
+  radio_piracy: "full",
   // Mush skill: Clear the logs, once a day for 2 AP; the room records nothing until the cycle ends (owner, 2026-11-22, actions/delog.ts).
   defacer: "full",
   //Increases success rate, injury chance, and dirty chance by 20%

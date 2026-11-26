@@ -351,6 +351,8 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   comfort: { cost: { ap: 1 }, morale: 2, disorderPauseCycles: { min: 2, max: 8 } },
   shrink: { lyingMorale: 1 },
   delog: { cost: { ap: 2 } },
+  radioPiracy: { cost: { ap: 3 } },
+  factoryReset: { cost: { ap: 1 } },
   interrogate: { cost: { ap: 1 }, damage: 1, dirtyChance: 0.15, injuryChance: 0.1 },
   // Decided 2026-10-16: working on a research costs 2 AP. Owner, 2026-10-26: its progress follows the original's relay formula.
   // Owner, 2026-11-24: per-research base efficiency (1–18, mirrored from eMush) overrides `progress.rate` via `researchProgressConfig`.

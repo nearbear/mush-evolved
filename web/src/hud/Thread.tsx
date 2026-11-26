@@ -2,7 +2,7 @@ import { Fragment, memo, useCallback, useContext, useLayoutEffect, useRef, useSt
 import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
 import { Menu } from "@base-ui/react/menu";
-import { chatPageOf, countInRanges, jsonEqual, type CharacterId, type ChannelId, type ChatLine, type PlayerView, type SeqRange, type ThreadId } from "@mush2/shared";
+import { chatPageOf, countInRanges, jsonEqual, type CharacterId, type ChannelId, type ChatLine, type PlayerId, type PlayerView, type SeqRange, type ThreadId } from "@mush2/shared";
 import { pageItems, useChatPages } from "../chatPages.tsx";
 import { useMobile } from "../useMobile.ts";
 import { messageKey, useChatReadStore, useReadCount } from "../chatRead.ts";
@@ -26,7 +26,8 @@ interface ThreadProps {
   view: PlayerView;
   channel: ChannelId;
   placeholder: string;
-  onSend: (text: string) => void;
+  /** `as`: post as your Radio Piracy target (`view.radioHack`) instead of yourself. */
+  onSend: (text: string, as?: PlayerId) => void;
   onToggle: (channel: ChannelId, seq: number, line: number) => void;
   /** Global chat only: each message links to its thread, or offers to start one. */
   threadLinks?: ThreadLinks;
@@ -61,6 +62,7 @@ function sameThread(a: ThreadProps, b: ThreadProps): boolean {
     v.chatUnheard === w.chatUnheard &&
     v.readChannels === w.readChannels &&
     v.chatChannels === w.chatChannels &&
+    jsonEqual(v.radioHack, w.radioHack) &&
     v.threads === w.threads &&
     v.players === w.players &&
     v.you.id === w.you.id &&
@@ -73,7 +75,12 @@ export const Thread = memo(function Thread({ view, channel, placeholder, onSend,
   const { t } = useTranslation();
   // The dead can read some channels but post in none.
   const readable = view.readChannels.includes(channel);
-  const enabled = view.chatChannels.includes(channel);
+  const own = view.chatChannels.includes(channel);
+  // Radio Piracy: where your target can post, you may post as them; in their private channels you aren't in, only as them.
+  const hackTarget = view.radioHack?.channels.includes(channel) ? view.radioHack.target : undefined;
+  const [asTarget, setAsTarget] = useState(false);
+  const postAs = hackTarget !== undefined && (asTarget || !own) ? hackTarget : undefined;
+  const enabled = own || hackTarget !== undefined;
   const live = view.chat.filter((m) => m.channel === channel);
   const counts = threadLinks && messageCounts(view);
   const paging = usePaging(view, channel);
@@ -133,6 +140,7 @@ export const Thread = memo(function Thread({ view, channel, placeholder, onSend,
           })}
         </ol>
       </Scroller>
+      {hackTarget !== undefined && <PostAs view={view} target={hackTarget} own={own} asTarget={postAs !== undefined} onChange={setAsTarget} />}
       {readable && !enabled ? (
         <p className="sub chat-read-only">{t("itrackie.readOnly")}</p>
       ) : (
@@ -141,7 +149,7 @@ export const Thread = memo(function Thread({ view, channel, placeholder, onSend,
           placeholder={placeholder}
           onSend={(text) => {
             divider.clear();
-            actions.send(text);
+            actions.send(text, postAs);
           }}
         />
       )}
@@ -485,9 +493,32 @@ export function senderOf(view: PlayerView, m: ChatLine): CharacterId | undefined
   return m.from === view.you.id ? view.you.character : view.players.find((p) => p.id === m.from)?.character;
 }
 
+/**
+ * Radio Piracy's "post as" switch above the input (`view.radioHack`): yourself or your target where you can both post;
+ * only the target in their private channels you read through the hack. A spoof never reaches the target.
+ */
+function PostAs({ view, target, own, asTarget, onChange }: { view: PlayerView; target: PlayerId; own: boolean; asTarget: boolean; onChange: (asTarget: boolean) => void }) {
+  const { t } = useTranslation();
+  const names = useNames();
+  const character = view.players.find((p) => p.id === target)?.character;
+  const name = character ? names.characterGiven(character) : "?";
+  if (!own) return <p className="sub chat-post-as">{t("itrackie.postAs.only", { name })}</p>;
+  return (
+    <div className="chat-post-as" role="group" aria-label={t("itrackie.postAs.label")}>
+      <span className="sub">{t("itrackie.postAs.label")}</span>
+      <button type="button" className="pick-tile" aria-pressed={!asTarget} onClick={() => onChange(false)}>
+        {t("itrackie.postAs.me")}
+      </button>
+      <button type="button" className="pick-tile" aria-pressed={asTarget} onClick={() => onChange(true)}>
+        {name}
+      </button>
+    </div>
+  );
+}
+
 /** What a thread and its rows do on input. Stable for the life of the `Thread`, so it and its rows can skip re-rendering. */
 interface RowActions {
-  send: (text: string) => void;
+  send: (text: string, as?: PlayerId) => void;
   toggle: (m: ChatLine, line: number) => void;
   start: (m: ChatLine) => void;
   open: (id: ThreadId) => void;
@@ -498,7 +529,7 @@ interface RowActions {
  * render).
  */
 function useHandlers(
-  onSend: (text: string) => void,
+  onSend: (text: string, as?: PlayerId) => void,
   onToggle: (channel: ChannelId, seq: number, line: number) => void,
   threadLinks: ThreadLinks | undefined,
 ): RowActions {
@@ -507,7 +538,7 @@ function useHandlers(
     latest.current = { onSend, onToggle, threadLinks };
   });
   const [actions] = useState<RowActions>(() => ({
-    send: (text) => latest.current.onSend(text),
+    send: (text, as) => latest.current.onSend(text, as),
     toggle: (m, line) => latest.current.onToggle(m.channel, m.seq, line),
     start: (m) => latest.current.threadLinks?.start(m),
     open: (id) => latest.current.threadLinks?.open(id),

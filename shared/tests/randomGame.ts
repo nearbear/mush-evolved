@@ -73,6 +73,9 @@ export function randomInput(state: GameState, rng: RngState, at: number): [Input
   const mine = state.chat.findLast((m) => m.from === by);
   if (pick === 8 && mine) return [{ by, type: "toggleCheckbox", channel: mine.channel, seq: mine.seq, line: 1 }, rng];
   if (pick === 9) return [{ by, type: "acknowledgeTransfer" }, rng];
+  // A Radio Piracy spoof, when this player has a hack (radioPiracy.ts).
+  const hack = state.players.find((p) => p.id === by)!.radioHack;
+  if (pick === 12 && hack) return [{ by, type: "chat", channel: CHAT_CHANNELS[0]!, text: "it's me", as: hack.target }, rng];
   // The server reports who is connected; now and then a seat goes inactive at once (a ban).
   if (pick === 10) return [{ type: "seen", players: [by], at }, rng];
   if (pick === 11) {

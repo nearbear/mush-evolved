@@ -43,6 +43,7 @@ import type { RelayPool, RelayStreak, RelayToken, ResearchPool, Sample } from ".
 import type { DiseaseTracker } from "./diseases.ts";
 import type {
   ChatMark,
+  RadioHack,
   ChatMessage,
   ChatOutbox,
   ChatThread,
@@ -619,6 +620,11 @@ export function normalizeDiseaseTracker(raw: Partial<DiseaseTracker>): DiseaseTr
 
 type AccommodationOffer = NonNullable<PlayerState["accommodationOffers"]>[number];
 
+export function normalizeRadioHack(raw: Partial<RadioHack>): RadioHack {
+  const t = "RadioHack";
+  return stripUndefined<RadioHack>({ target: need(raw, "target", t), chatSeq: dict(need(raw, "chatSeq", t)) });
+}
+
 export function normalizeAccommodationOffer(raw: Partial<AccommodationOffer>): AccommodationOffer {
   const t = "AccommodationOffer";
   return stripUndefined<AccommodationOffer>({ by: need(raw, "by", t), until: need(raw, "until", t) });
@@ -683,6 +689,8 @@ export function normalizePlayer(raw: Partial<PlayerState>, mode: QueueMode, ctx:
     cpuPriorityChangedToday: added(raw, "cpuPriorityChangedToday", false),
     hackedEquipment: opt(raw.hackedEquipment, copy),
     unheard: opt(raw.unheard, dict),
+    radioHack: opt(raw.radioHack, normalizeRadioHack),
+    radioHackToday: raw.radioHackToday,
     history: copy(need(raw, "history", t)),
     logSeen: need(raw, "logSeen", t),
     accommodationOffers: opt(raw.accommodationOffers, (offers) => offers.map(normalizeAccommodationOffer)),

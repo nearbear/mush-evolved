@@ -6,7 +6,8 @@
 // why it can't leak how far a body's previous mind had read (the reason `logSeen` restarts in `swapMinds`).
 // docs/plans/archive/chat-pages.md, "Read state (#400)".
 
-import { countInRanges, readChannels } from "./chat.ts";
+import { countInRanges } from "./chat.ts";
+import { readableFrom } from "./radioPiracy.ts";
 import type { ChannelId, GameState, PlayerState, SeqRange } from "./types.ts";
 
 /** Messages read per channel: the count read, so 3 means `seq` 0 to 2. Missing means none. */
@@ -25,7 +26,7 @@ const entriesOf = (read: Readonly<ChatRead>) => Object.entries(read) as [Channel
  * mustn't make all of global chat unread again. `raised` holds the entries that went up (empty when nothing did).
  */
 export function mergeChatRead(state: Readonly<GameState>, body: Readonly<PlayerState>, stored: Readonly<ChatRead>, incoming: Readonly<ChatRead>): { read: ChatRead; raised: ChatRead } {
-  const readable = new Set(readChannels(state, body));
+  const readable = new Set(readableFrom(state, body).keys());
   const read: ChatRead = { ...stored };
   const raised: ChatRead = {};
   for (const [channel, count] of entriesOf(incoming)) {
@@ -41,7 +42,7 @@ export function mergeChatRead(state: Readonly<GameState>, body: Readonly<PlayerS
 /** What the seat in `body` is sent: its counts for the channels `body` reads now, clamped, without zeros. */
 export function chatReadFor(state: Readonly<GameState>, body: Readonly<PlayerState>, read: Readonly<ChatRead>): ChatRead {
   const sent: ChatRead = {};
-  for (const channel of readChannels(state, body)) {
+  for (const channel of readableFrom(state, body).keys()) {
     const count = Math.min(read[channel] ?? 0, state.chatSeq[channel] ?? 0);
     if (count > 0) sent[channel] = count;
   }

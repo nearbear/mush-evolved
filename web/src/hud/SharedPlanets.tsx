@@ -32,7 +32,7 @@ export function SharedPlanets({
   /** Whether the list shows the entries no longer applicable (client-only, off by default). */
   showStale: boolean;
   onShowStale: (show: boolean) => void;
-  onChat: (channel: ChannelId, text: string) => void;
+  onChat: (channel: ChannelId, text: string, as?: string) => void;
   onToggle: (channel: ChannelId, seq: number, line: number) => void;
 }) {
   const { t } = useTranslation();
@@ -78,7 +78,7 @@ export function SharedPlanets({
       )}
       {/* One block per thread, hidden with CSS, so each keeps its own draft. */}
       <div className="feature" hidden={current !== null}>
-        <Thread view={view} channel="astrophysics" placeholder={t("itrackie.featurePlaceholder", { name })} onSend={(text) => onChat("astrophysics", text)} onToggle={onToggle} active={active && current === null} />
+        <Thread view={view} channel="astrophysics" placeholder={t("itrackie.featurePlaceholder", { name })} onSend={(text, as) => onChat("astrophysics", text, as)} onToggle={onToggle} active={active && current === null} />
       </div>
       {view.sharedPlanets.map((e) => (
         <div key={e.id} className="feature" hidden={e.id !== current}>
@@ -86,7 +86,7 @@ export function SharedPlanets({
             view={view}
             channel={e.id}
             placeholder={t("itrackie.sharedPlanets.placeholder")}
-            onSend={(text) => onChat(e.id, text)}
+            onSend={(text, as) => onChat(e.id, text, as)}
             onToggle={onToggle}
             active={active && e.id === current}
             headKey={[e, byLine(e)]}

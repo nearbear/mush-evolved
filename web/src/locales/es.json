@@ -463,6 +463,8 @@
     "becomeNinja": "Convertirte en un ninja",
     "becomeNormal": "Volver a la normalidad",
     "delog": "Borrar el registro",
+    "radioPiracy": "Piratear un iTrackie",
+    "factoryReset": "Restablecer de fábrica",
     "accommodate": "Empujar la silla",
     "acceptAccommodation": "Aceptar ayuda",
     "stopAccommodation": "Terminar la ayuda",
@@ -761,6 +763,7 @@
     "back": "Volver"
   },
   "channels": {
+    "tapped": "📻 {{name}}",
     "empty": "Aún no hay canales privados.",
     "nameLabel": "Nombre del nuevo canal",
     "defaultName": "Día {{day}}, Ciclo {{cycle}}",
@@ -916,6 +919,11 @@
     "markReadIn": "Marcar todo como leído en {{name}}",
     "chatNeedsITrackie": "Requiere un iTrackie",
     "chatMessage": "Mensaje",
+    "postAs": {
+      "label": "Escribir como",
+      "me": "Yo",
+      "only": "Escribes como {{name}} (iTrackie pirateado). Ese mensaje no le llegará."
+    },
     "send": "Enviar",
     "researchTracker": "Seguimiento de investigaciones",
     "projectTracker": "Seguimiento de proyectos de NERON",
@@ -1524,6 +1532,9 @@
     "examineEquipment": "Examinas: {{equipment}}.",
     "examineItem": "Examinas: {{item}}.",
     "bonded": "Creaste un vínculo con {{name}}.",
+    "radioHacked": "Has pirateado el iTrackie de {{target}}. A partir de ahora lees sus canales y puedes escribir en su lugar.",
+    "radioHackLost": "Has perdido tu pirateo del iTrackie de {{target}}.",
+    "factoryReset": "Has restablecido tu iTrackie a su configuración de fábrica.",
     "shareDid": "Hiciste {{label}} con {{name}}.",
     "shareDidToYou": "{{name}} hizo {{label}} contigo.",
     "becamePregnant": "¡Estás esperando un bebé!",
@@ -1767,6 +1778,12 @@
     "pick": "Elige un tripulante para ver su última acción:",
     "confirm": "Usar Presentimiento"
   },
+  "radioPiracyPick": {
+    "title": "Piratería de radio",
+    "close": "Cerrar",
+    "pick": "Elige qué iTrackie piratear:",
+    "confirm": "Piratear"
+  },
   "skills": {
     "title": "Elegir una habilidad",
     "confirm": "¿Elegir {{skill}}?",
@@ -1960,7 +1977,7 @@
       "doorman": "Cada día puedes Sabotear una Puerta gratis.",
       "neron_access": "Puedes acceder a la BIOS de NERON aunque no seas el Administrador.",
       "fungus_cook": "Puedes crear una Ración Trampa mezclando una Espora y una Ración por 1 PA.",
-      "radio_piracy": "Por 3 PA puedes interferir las comunicaciones de un jugador con un Walkie-Talkie. Esto rompe su Walkie-Talkie y te permite escribir en su lugar hasta que vuelva a hablar.",
+      "radio_piracy": "Por 3 PA, una vez al día en el Centro de comunicaciones, puedes piratear el iTrackie de otro jugador. Hasta que lo restablezca, lees todos sus canales a partir de ese momento, canales privados incluidos, y puedes escribir en su lugar en cualquier canal donde pueda escribir. Esos mensajes nunca le llegan.",
       "nightmare": "Por 2 PA puedes maldecir a un humano de tu sala con mala suerte durante 8 a 16 ciclos: sus acciones tienen 4 veces más probabilidad de herirlo o ensuciarlo, y las placas de metal y los temblores siempre le hacen el daño máximo. Solo los Mush ven la maldición.",
       "disheartening_contact": "Por 2 PA puedes hacer perder 2 Puntos de Moral a un compañero.",
       "transfert": "Única: puedes meterte en la piel de otro jugador humano. Debe haber sido infectado al menos una vez. Él acabará en tu cuerpo... y puede alertar a los suyos.\nLas puntuaciones de triunfo se intercambian.",
@@ -2300,6 +2317,8 @@
     "xylophTitle": "Xyloph",
     "xylophUndeciphered": "Aún sin descifrar.",
     "neronTitle": "Actualización de NERON",
+    "radioPiracyTitle": "Piratería de radio",
+    "radioPiracyHint": "Piratea el iTrackie de un compañero al día: lee sus canales desde ahora y escribe en su lugar. Un nuevo pirateo sustituye al anterior.",
     "neronVersion": "NERON versión {{version}}",
     "neronProgress": "{{percent}} % hacia la próxima actualización. Cada actualización termina un proyecto de NERON.",
     "neronUpgrade": "Mejorar",
