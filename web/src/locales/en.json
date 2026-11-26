@@ -2010,7 +2010,7 @@
       "transfert": "Unique: you can slip into the skin of another human player. They must have been infected at least once. They will end up in your body... and may alert their fellows.\nTriumph scores will be swapped.",
       "epigenetics": "Unique: for 2 AP, unselect all your Mush skills except Epigenetics, then choose again.",
       "bacterial_contact": "For 1 AP you can give a crewmate a disease. This is a stealthy action.\n Allows disease special logs to be faked.",
-      "infectious_agent": "Lets you Spike one more time each day.",
+      "infectious_agent": "Lets you Spike twice per cooldown: both spikes come back when it ends.",
       "phagocytosis": "For 0 AP, you can devour a Spore, which gives you 4 AP and 4 HP.",
       "trapper": "For 1 AP, you can trap a Room with a Spore. If anyone handles an item or equipment in the room, they become Infected. If it is a Mush (or you), the spore is lost.",
       "mycellium_spirit": "Once per game, for 1 AP and 2 Spores, you can grow a Fairy Ring in your room, invisible to humans. Once a day, one Mush can draw 1 Spore from it for 1 AP, without getting dirty and outside the daily Spore limit. The ring disappears if you die or are cured.",

@@ -1328,6 +1328,8 @@ export function normalizeCore(raw: Partial<GameCore>, ctx: NormalizeContext, mod
     // Commander's Issue mission (#462): not yet used today in a game stored before it.
     missionIssuedToday: added(raw, "missionIssuedToday", false),
     spikedOn: dict(need(raw, "spikedOn", t)),
+    // Infector (owner, 2026-11-25): a game stored before it has made one spike per running cooldown, which spike.ts assumes for a missing count.
+    spikeCount: dict(added(raw, "spikeCount", {})),
     research: dict(need(raw, "research", t)),
     projects,
     projectDeck: copy(added(raw, "projectDeck", PROJECT_IDS.filter((id) => !(projects[id] !== undefined && projects[id] >= 100)))),

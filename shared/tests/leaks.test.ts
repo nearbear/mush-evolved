@@ -138,6 +138,7 @@ function ship(): { state: GameState; sentinels: Sentinel[] } {
   s.signals.nextId = num("signalsNextId", []);
   s.sporesToday = num("sporesToday", []);
   s.spikedOn.p0 = num("spikedOn-p0", []);
+  s.spikeCount.p0 = num("spikeCount-p0", []);
   s.dispensedOn.anything = num("dispensedOn", []);
   s.nextItemId = num("nextItemId", []);
   s.nextLogId = num("nextLogId", []);

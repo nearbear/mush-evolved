@@ -1,6 +1,7 @@
 import { Action, COOLDOWN, IN_PRESELECTION, peopleHere, type ActionTag, type ActionVisibility, isString } from "./action.ts";
 import { logCovert } from "../log.ts";
 import { contaminate } from "../infection.ts";
+import { hasSkill } from "../skills.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
 export type SpikeActionData = { type: "spike"; target: string };
@@ -11,6 +12,8 @@ export type SpikeActionData = { type: "spike"; target: string };
  * them, see `infection.ts`). Always succeeds. Covert (decided 2026-10-17): only a
  * camera in the room reveals it, to everyone including the victim; bystanders and the
  * victim are not told otherwise. Contamination stays hidden from everyone. Aggressive (owner, 2026-10-18). Each Mush then waits `spike.cooldownCycles` (4) cycles before spiking again (owner, 2026-11-03).
+ * An Infector (Mush skill) holds `spike.infectorCharges` (2) charges instead of 1: the first spike starts the cooldown,
+ * the other charges can be spent during it, and all come back together when it ends (owner, 2026-11-25).
  */
 export class SpikeAction extends Action<SpikeActionData> {
   override visibility: ActionVisibility = "covert";
@@ -40,16 +43,31 @@ export class SpikeAction extends Action<SpikeActionData> {
   }
 
   override cooldownLeft(state: Readonly<GameState>, player: Readonly<PlayerState>, _target: SpikeActionData): number {
-    const last = state.spikedOn[player.id];
-    if (last === undefined || player.cheats.includes("infiniteSpores")) return 0; // the cheat also skips the cooldown
-    return Math.max(0, state.config.spike.cooldownCycles - (state.cycle - last));
+    if (player.cheats.includes("infiniteSpores")) return 0; // the cheat also skips the cooldown
+    const left = cooldownRunning(state, player);
+    return left > 0 && spikesThisCooldown(state, player) >= spikeCharges(player, state) ? left : 0;
   }
 
   override apply(state: GameState, player: PlayerState, target: SpikeActionData): void {
     const victim = state.players.find((o) => o.id === target.target)!; // checked, so it exists
     player.spores -= 1;
-    state.spikedOn[player.id] = state.cycle;
+    if (cooldownRunning(state, player) > 0) state.spikeCount[player.id] = spikesThisCooldown(state, player) + 1;
+    else [state.spikedOn[player.id], state.spikeCount[player.id]] = [state.cycle, 1];
     logCovert(state, player.id, "spiked", { name: player.character, target: victim.character });
     contaminate(state, victim);
   }
 }
+
+/** How many spikes the player can make per cooldown: 1, or `spike.infectorCharges` with Infector. */
+export function spikeCharges(player: Readonly<PlayerState>, state: Readonly<GameState>): number {
+  return hasSkill(player, "infectious_agent") ? state.config.spike.infectorCharges : 1;
+}
+
+/** Cycles left on the cooldown the player's first spike started, or 0 when none is running. */
+function cooldownRunning(state: Readonly<GameState>, player: Readonly<PlayerState>): number {
+  const started = state.spikedOn[player.id];
+  return started === undefined ? 0 : Math.max(0, state.config.spike.cooldownCycles - (state.cycle - started));
+}
+
+/** Spikes made during the running cooldown (a game stored before Infector counts its one spike). */
+const spikesThisCooldown = (state: Readonly<GameState>, player: Readonly<PlayerState>): number => (cooldownRunning(state, player) > 0 ? (state.spikeCount[player.id] ?? 1) : 0);

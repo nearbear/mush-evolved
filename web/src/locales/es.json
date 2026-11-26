@@ -1946,7 +1946,7 @@
       "transfert": "Única: puedes meterte en la piel de otro jugador humano. Debe haber sido infectado al menos una vez. Él acabará en tu cuerpo... y puede alertar a los suyos.\nLas puntuaciones de triunfo se intercambian.",
       "epigenetics": "Única: por 2 PA, deselecciona todas tus habilidades Mush excepto Epigenética y elige de nuevo.",
       "bacterial_contact": "Por 1 PA puedes contagiar una enfermedad a un compañero. Es una acción sigilosa. Permite simular los mensajes especiales de las enfermedades.",
-      "infectious_agent": "Te permite Pinchar una vez más cada día.",
+      "infectious_agent": "Te permite Pinchar dos veces por tiempo de espera: ambos pinchazos vuelven cuando termina.",
       "phagocytosis": "Por 0 PA puedes devorar una Espora, que te da 4 PA y 4 PV.",
       "trapper": "Por 1 PA puedes poner una trampa con una Espora en una Sala. Si alguien manipula un objeto o un equipo de la sala, queda Infectado. Si es un Mush (o tú), la espora se pierde.",
       "mycellium_spirit": "Una vez por partida, por 1 PA y 2 Esporas, puedes hacer crecer un corro de brujas en tu sala, invisible para los humanos. Una vez al día, un Mush puede extraer 1 Espora de él por 1 PA, sin ensuciarse y fuera del límite diario de Esporas. El corro desaparece si mueres o te curan.",

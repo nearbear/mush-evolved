@@ -5520,3 +5520,10 @@ Correction (owner): dropped the fifth paragraph (pending samples, assays, Mush s
 ### 2026-11-25: trait cards get a "This can't be removed." caption
 
 Trait descriptions (en/fr/es) no longer end with "It can't be removed."; `StatusIcon` takes a `caption` and `StatusIcons` passes `status.permanent` ("This can't be removed.") for `TRAIT_STATUS_IDS`, shown as a small italic line under the description, styled like the visibility caption. Worked first try; no correction needed.
+
+### 2026-11-25: Infector Mush skill
+
+- **Decision (owner):** the skill text ("spike one more time each day") didn't fit spiking's 4-cycle cooldown, so Claude asked before coding. The owner chose 2 spike charges (each back 4 cycles after use) over a shorter cooldown or a daily extra spike, and Spike only.
+- **Built:** `spikeCharges` in `actions/spike.ts`, config `spike.infectorCharges`, new hidden field `GameState.spikedBefore` (normalizer default `{}`, no version bump), cleared on cure and swapped on Transfer like `spikedOn`; leak-field and sentinel entries; en/fr/es descriptions rewritten.
+- **Correction:** the first charge test spiked one human three times and converted them; it needed a second target.
+- **Correction (owner, same day):** the per-charge refill (`spikedBefore`, the spike before the last) was more than needed. Reworked to "both charges come back together 4 cycles after the first spike" (owner picked the first spike over the second as the timer start): `spikedOn` is now the cooldown's start and `spikeCount` counts the spikes made during it.

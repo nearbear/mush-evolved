@@ -192,6 +192,7 @@ export function createGame(
     sporesToday: 0,
     missionIssuedToday: false,
     spikedOn: {},
+    spikeCount: {},
     research: {},
     projects: {},
     projectDeck: newProjectDeck(seed),

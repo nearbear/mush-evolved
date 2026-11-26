@@ -30,11 +30,13 @@ export function swapMinds(state: GameState, a: PlayerState, b: PlayerState): voi
     if (va === undefined) delete record(b)[field];
     else record(b)[field] = va;
   }
-  const [sa, sb] = [state.spikedOn[a.id], state.spikedOn[b.id]];
-  delete state.spikedOn[a.id];
-  delete state.spikedOn[b.id];
-  if (sb !== undefined) state.spikedOn[a.id] = sb;
-  if (sa !== undefined) state.spikedOn[b.id] = sa;
+  for (const spikes of [state.spikedOn, state.spikeCount]) {
+    const [sa, sb] = [spikes[a.id], spikes[b.id]];
+    delete spikes[a.id];
+    delete spikes[b.id];
+    if (sb !== undefined) spikes[a.id] = sb;
+    if (sa !== undefined) spikes[b.id] = sa;
+  }
   for (const p of [a, b]) {
     p.current = null;
     p.queue = [];
