@@ -15,6 +15,8 @@ export interface DiseaseTracker {
   resistance: number;
   complete: boolean;
   forever: boolean;
+  /** A disorder calmed by a Shrink's Comfort: cycles left before it acts again. Absent while it acts. */
+  disabledFor?: number;
 }
 
 /**
@@ -107,6 +109,14 @@ export function addDisease(state: GameState, player: PlayerState, name: StatusId
     player.diseaseTrackers.push({ name, duration: 99, resistance: 8, complete: false, forever: true });
     return;
     }
+    if (state.config.diseases.allDisorders.includes(name)) {
+      // Disorders last forever (owner, 2026-11-25); a Shrink's Comfort only calms one for a while (`calmDisorder`).
+      player.modifiers.push(name);
+      addStatus(player, name);
+      player.diseaseTrackers.push({ name, duration: 99, resistance: 8, complete: false, forever: true });
+      updateMaxValues(state, player);
+      return;
+    }
     player.modifiers.push(name);
     skillPicked(state, player, name);
     addStatus(player, name);
@@ -154,11 +164,37 @@ export function treatDisease(state: GameState, player: PlayerState, name: Status
     addStatus(player, treatedStatus(name));
 }
 
+/** Whether the player's disorder `name` is calmed right now (a Shrink's Comfort), so it does nothing. */
+export function disorderCalmed(player: Readonly<PlayerState>, name: string): boolean {
+  return player.diseaseTrackers.some((t) => t.name === name && t.disabledFor !== undefined);
+}
+
+/**
+ * A Shrink's Comfort (owner, 2026-11-25): one random disorder of the player's that still acts is calmed for
+ * `comfort.disorderPauseCycles` cycles; nothing if none acts. The player is told privately.
+ */
+export function calmDisorder(state: GameState, player: PlayerState): void {
+  const active = player.diseaseTrackers.filter((t) => state.config.diseases.allDisorders.includes(t.name) && t.disabledFor === undefined);
+  if (active.length === 0) return;
+  const tracker = active[rollInt(state, active.length)]!;
+  const { min, max } = state.config.comfort.disorderPauseCycles;
+  tracker.disabledFor = roll(state, [min, max]);
+  updateMaxValues(state, player);
+  logPrivate(state, player.id, "disorderCalmed", { status: tracker.name });
+}
+
 /** Runs every onCycle hook of each living player, in seat order. Mutates a state the caller already cloned. */
 export function diseaseTrackerCycleChange(next: GameState): void {
   for (const player of next.players) {
     if (!player.alive) continue;
     for (const tracker of [...player.diseaseTrackers]) {
+      if (tracker.disabledFor !== undefined) {
+        tracker.disabledFor -= 1;
+        if (tracker.disabledFor <= 0) {
+          delete tracker.disabledFor;
+          updateMaxValues(next, player);
+        }
+      }
       tracker.duration -= 1;
       if (player.statuses.includes(treatedStatus(tracker.name))) tracker.duration -= 1;
       if (

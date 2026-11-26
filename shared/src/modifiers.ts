@@ -73,6 +73,7 @@ import { pink_eye_disease } from "./modifiers/pink_eye_disease.ts";
 import { gastroenteritis_disease } from "./modifiers/gastroenteritis_disease.ts";
 import { sinus_storm_disease } from "./modifiers/sinus_storm_disease.ts";
 import { migraine_disease } from "./modifiers/migraine_disease.ts";
+import { depression_disorder } from "./modifiers/depression_disorder.ts";
 import { slight_nausea_disease } from "./modifiers/slight_nausea_disease.ts";
 import { food_poisoning_disease } from "./modifiers/food_poisoning_disease.ts";
 import { vitamin_deficiency_disease } from "./modifiers/vitamin_deficiency_disease.ts";
@@ -150,7 +151,8 @@ type FoldHooks = Record<
   | "maxMorale"
   | "maxHp"
   | "damageTaken"
-  | "missionAp",
+  | "missionAp"
+  | "ownMoraleLoss",
   FoldHook
 >;
 
@@ -357,6 +359,7 @@ export const MODIFIERS: Record<string, Modifier> = {
   pink_eye_disease,
   sinus_storm_disease,
   migraine_disease,
+  depression_disorder,
   slight_nausea_disease,
   food_poisoning_disease,
   vitamin_deficiency_disease,
@@ -407,9 +410,14 @@ export const MODIFIERS: Record<string, Modifier> = {
  * modifiers. A Mush's diseases are left out, so they never change a Mush's numbers (diseases.ts).
  */
 export function modifierIds(player: Readonly<PlayerState>): string[] {
-  const ids = [...skillsOf(player), ...player.modifiers];
+  // A disorder does nothing to a Mush, nor while a Shrink's Comfort has it calmed (owner, 2026-11-25).
+  const all = [...skillsOf(player), ...player.modifiers];
+  const ids = player.modifiers.some(isDisorderId) ? all.filter((id) => !isDisorderId(id) || (player.role !== "mush" && !calmed(player, id))) : all;
   return player.role === "mush" ? ids.filter((id) => !isDiseaseId(id)) : ids;
 }
+
+const isDisorderId = (id: string): boolean => id.endsWith("_disorder");
+const calmed = (player: Readonly<PlayerState>, id: string): boolean => player.diseaseTrackers.some((t) => t.name === id && t.disabledFor !== undefined);
 
 // Curses count as diseases here: like a disease, a curse does nothing to a Mush (owner, 2026-11-22).
 const isDiseaseId = (id: string): boolean => id.endsWith("_disease") || isCurseId(id);
@@ -601,8 +609,16 @@ export function weaponOutcomeWeight(
   return Math.max(0, weight);
 }
 
-/** Morale each living player loses when a day ends: `moralePerDay` through every living player's `crewMoraleLoss` hooks, in seat order; never below 0. */
-export function dailyMoraleLoss(state: Readonly<GameState>, registry: ModifierRegistry = MODIFIERS): number {
+/**
+ * Morale `player` loses when a day ends: `moralePerDay` through every living player's `crewMoraleLoss` hooks, in seat
+ * order, then the player's own `ownMoraleLoss` hooks (Depression); never below 0.
+ */
+export function dailyMoraleLoss(state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS): number {
+  return Math.max(0, fold("ownMoraleLoss", crewMoraleLoss(state, registry), state, player, registry));
+}
+
+/** The crew-wide part of the daily morale loss: `moralePerDay` through every living player's `crewMoraleLoss` hooks. */
+function crewMoraleLoss(state: Readonly<GameState>, registry: ModifierRegistry): number {
   let loss = state.config.moralePerDay;
   for (const holder of state.players) {
     if (!holder.alive) continue;

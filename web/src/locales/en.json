@@ -158,6 +158,7 @@
       "easyTravel": "Easy travel",
       "invincible": "Invincible ship",
       "fastExpeditions": "Fast expeditions",
+      "swapCharacter": "Swap character",
       "goToCheatRoom": "Go to cheat room",
       "leaveShip": "Leave ship",
       "role": {
@@ -465,6 +466,7 @@
     "protect": "Protect",
     "coup": "Stage a coup",
     "issueMission": "Issue mission",
+    "swapCharacter": "Swap character",
     "fierySpeech": "Fiery speech",
     "boringSpeech": "Boring speech",
     "attack": "Attack",
@@ -1015,6 +1017,8 @@
     "private": "Private: only you can see this.",
     "mushOnly": "Mush only: the cursed person doesn't know.",
     "permanent": "This can't be removed.",
+    "calmed": "Calmed by a Shrink: no effect for now.",
+    "depression_disorder": "Depression",
     "label": "Status effects",
     "dirty": "Dirty",
     "full_belly": "Full belly",
@@ -1099,6 +1103,7 @@
     "pregnant": "Pregnant",
     "coma": "Coma",
     "desc": {
+      "depression_disorder": "-2 max AP.\n-2 max morale.\nYou lose 1 more morale at the end of each day.",
       "dirty": "Can't research. Taking a shower removes it.",
       "full_belly": "You can't eat more until you are hungrier.",
       "hungry": "You lose health every cycle until you eat something.",
@@ -1588,6 +1593,8 @@
     "massMouldering": "{{name}} suddenly stiffens... Rotting yellow tendrils wriggle out of their suit and seep into the hull...",
     "soiledByMassMouldering": "You feel sick, a strange sensation, as if everything were covered in rot... Your stomach turns... You feel very weak... bluuurrrpp.",
     "bodyTransferred": "You slipped into {{target}}'s body. {{name}} wakes up human, with your old body.",
+    "characterSwapped": "You now play {{target}}. Their player took over your old character.",
+    "characterSwappedWith": "A cheat swapped you into this body: you no longer play {{target}}.",
     "patrolTakeoff": "{{name}} took off in {{room}}.",
     "patrolTakeoffShip": "{{name}} took off in a ship.",
     "icarusBoarded": "{{name}} boarded the Icarus.",
@@ -1648,6 +1655,7 @@
     "tremorNoGravity": "The room suddenly starts to shake violently. Objects fly across the room and collide with the crew members present.",
     "panicAttack": "You have a panic attack.",
     "incidentDisease": "You feel unwell.",
+    "disorderCalmed": "Talking it through helps: your {{status}} eases for a while.",
     "metalPlate": "A metal plate falls on {{name}}!",
     "electricalOverload": "An electrical overload fries the room's equipment!",
     "fireBurns": "The fire burns everyone in the room.",
@@ -1710,6 +1718,12 @@
     "close": "Close",
     "pick": "Choose a crewmate (+{{amount}} AP):",
     "confirm": "Issue mission"
+  },
+  "swapCharacterPick": {
+    "title": "Swap character",
+    "close": "Close",
+    "pick": "Choose a crewmate to take over:",
+    "confirm": "Swap"
   },
   "premonitionPick": {
     "title": "Premonition",

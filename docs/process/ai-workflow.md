@@ -5511,6 +5511,11 @@ Correction (owner): dropped the fifth paragraph (pending samples, assays, Mush s
 - **What worked:** Reusing `ItemState.owner` (already present for customized blaster), `bustIcon` in `ItemAttrIcons`, and the existing server-side moderation path in `GameRoom.social` kept the change small and consistent across desktop, mobile (`PeekBar`), replays, and hidden-info checks.
 - **Corrections:** Updated `infantryman.test.ts` and `leakFields.ts` to reflect `owner` now being visible to whoever can see the item (while still hidden from other rooms and private inventories), and added `"renameItem"` to `BlockedText["type"]` and explicit `LogParams` typing for optional `cat` log params.
 
+## 2026-11-25: swapCharacter dev cheat
+
+- Added the `swapCharacter` cheat toggle, which offers a new free, instant, unlimited `swap_character { crewmate }` action (`shared/src/actions/swap_character.ts`). The owner asked for "transfer with unlimited uses, everything swapped", then "make it a new action". I asked what "everything" meant. The owner chose "seat only: you become them": `swapSeats` (in `mind.ts`, next to `swapMinds`, sharing the field swap and body reset) moves only the seat fields (mind, name, isBot, botKind, cheats, lastSeenAt). You take over the target's whole character, role included, and the cheat comes with you.
+- Targeting copies Issue mission, as the owner asked: any other living crewmate in any room, picked in `CrewPickerDialog` from one button on your own panel. The field is `crewmate` rather than `target`, so `actionTarget()` doesn't walk you over to them.
+- What worked: asking before building. "Everything is swapped" could have meant a Transfer with no fixups, which would have been a different feature.
 ### 2026-11-25: Persecutor's Outcast drops to the bottom of the title lines
 
 - **Decision (owner):** as the Politician's opposite, the Persecutor's Outcast sits at the bottom of every line of succession while cursed and loses held titles at once (kept only if nobody else is eligible); the curse ending restores their place without returning titles; a Coup still works for an Outcast. Built as `successionLine` in `titles.ts` (derived from `outcastBy`, so no new stored field) and `refreshTitles(state, displaced)` called from Anathema.

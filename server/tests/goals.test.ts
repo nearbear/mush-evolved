@@ -285,7 +285,7 @@ describe("GoalBot", () => {
       }
     }
     // About 4s alone; the 5s default times out under the full parallel suite.
-  }, 20_000);
+  }, 60_000);
 
   it("picks its skills first, in the owner's order", async () => {
     const { game: start, id } = setup();

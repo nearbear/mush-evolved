@@ -710,8 +710,11 @@ function advanceCycle(state: GameState, at?: number): void {
       delete p.mycoscannedToday;
       p.cpuPriorityChangedToday = false;
     }
-    const loss = shipInvincible(state) ? 0 : dailyMoraleLoss(state);
-    for (const p of state.players) if (p.alive) p.morale = Math.max(0, p.morale - loss);
+    const invincible = shipInvincible(state);
+    const losses = state.players.map((p) => (invincible ? 0 : dailyMoraleLoss(state, p)));
+    state.players.forEach((p, i) => {
+      if (p.alive) p.morale = Math.max(0, p.morale - losses[i]!);
+    });
     for (const p of state.players) healDaily(state, p);
     grantCarePoints(state);
     rechargeMicrowaves(state);

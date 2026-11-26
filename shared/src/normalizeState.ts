@@ -605,6 +605,7 @@ export function normalizeDiseaseTracker(raw: Partial<DiseaseTracker>): DiseaseTr
     resistance: need(raw, "resistance", t),
     complete: need(raw, "complete", t),
     forever: need(raw, "forever", t),
+    disabledFor: raw.disabledFor,
   });
 }
 

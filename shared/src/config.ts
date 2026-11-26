@@ -344,7 +344,7 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   // Owner, 2026-11-13 (eMushpedia Pressentiment): Premonition costs 1 morale and no AP, and shows a crewmate's last action.
   premonition: { moraleCost: 1 },
   // Shrink (owner, 2026-10-26, eMushpedia Psy): Comfort costs 1 AP and gives a roommate 2 morale; lying in a bed with a Shrink in the room gives 1 morale a cycle.
-  comfort: { cost: { ap: 1 }, morale: 2 },
+  comfort: { cost: { ap: 1 }, morale: 2, disorderPauseCycles: { min: 2, max: 8 } },
   shrink: { lyingMorale: 1 },
   delog: { cost: { ap: 2 } },
   interrogate: { cost: { ap: 1 }, damage: 1, dirtyChance: 0.15, injuryChance: 0.1 },

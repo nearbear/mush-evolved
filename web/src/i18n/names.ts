@@ -136,6 +136,7 @@ const ACTION_NAME_KEYS = {
   protect: "actions.protect",
   coup: "actions.coup",
   issue_mission: "actions.issueMission",
+  swap_character: "actions.swapCharacter",
   fiery_speech: "actions.fierySpeech",
   boring_speech: "actions.boringSpeech",
   attack: "actions.attack",
@@ -216,7 +217,7 @@ export function useNames() {
       }),
     );
 
-  /** The text of a log entry. `room`, `item`, `research`, `project`, `equipment`, `action`, `title`, `skill`, `base` (a rebel base), `direction` (a heading), `entry` (a Xyloph entry), `cause` (a cause of death) and `song`/`song1`..`song3` (a jukebox song, by character) params are ids and get translated; `drone` and `serial` make a drone's name, and `upgrade` is a drone upgrade, `hostile` a hostile NPC's kind; `name`, `target` and `body` are character ids; `tested` and `spoiledBy` are an assay's counts by character. */
+  /** The text of a log entry. `room`, `item`, `research`, `project`, `equipment`, `action`, `title`, `skill`, `status`, `base` (a rebel base), `direction` (a heading), `entry` (a Xyloph entry), `cause` (a cause of death) and `song`/`song1`..`song3` (a jukebox song, by character) params are ids and get translated; `drone` and `serial` make a drone's name, and `upgrade` is a drone upgrade, `hostile` a hostile NPC's kind; `name`, `target` and `body` are character ids; `tested` and `spoiledBy` are an assay's counts by character. */
   const logLine = ({ key, params = {}, maskedActor }: Pick<LogEntry, "key" | "params" | "maskedActor">): string => {
     if (key === DELOGGED_KEY && maskedActor) {
       return t("logEvent.deloggedRevealed", { name: characterGivenName(maskedActor) });
@@ -230,6 +231,7 @@ export function useNames() {
     if (typeof params.action === "string") resolved.action = action(params.action);
     if (typeof params.title === "string") resolved.title = title(params.title);
     if (typeof params.skill === "string") resolved.skill = skill(params.skill);
+    if (typeof params.status === "string") resolved.status = t(`status.${params.status}` as never, { defaultValue: params.status });
     if (typeof params.base === "string") resolved.base = rebelBase(params.base);
     if (typeof params.merchant === "string") resolved.merchant = t(`comms.merchants.kinds.${params.merchant}` as never, { defaultValue: params.merchant });
     if (typeof params.direction === "string") resolved.direction = t(`astro.directions.${params.direction}` as never, { defaultValue: params.direction });

@@ -6,7 +6,7 @@ import { startCharges } from "./items.ts";
 import { removeStatus } from "./statuses.ts";
 import type { GameState, PlayerState } from "./types.ts";
 
-export const CHEATS = ["infiniteAp", "infiniteMp", "infiniteMorale", "infiniteHp", "infiniteSpores", "infiniteCharges", "instantActions", "noRelayPenalty", "freeHacking", "anySkill", "alwaysClean", "easyTravel", "invincible", "fastExpeditions"] as const;
+export const CHEATS = ["infiniteAp", "infiniteMp", "infiniteMorale", "infiniteHp", "infiniteSpores", "infiniteCharges", "instantActions", "noRelayPenalty", "freeHacking", "anySkill", "alwaysClean", "easyTravel", "invincible", "fastExpeditions", "swapCharacter"] as const;
 export type Cheat = (typeof CHEATS)[number];
 
 /** Instant role switches (one-shot buttons, not toggles). */
@@ -48,6 +48,7 @@ const REFILL: Record<Cheat, (p: PlayerState, state: GameState) => void> = {
   fastExpeditions: (_p, state) => {
     if (state.expedition) state.expedition.nextAt = Math.min(state.expedition.nextAt, state.now + FAST_EXPEDITION_STEP_MS);
   },
+  swapCharacter: () => {}, // actions/swap_character.ts reads the flag
 };
 
 /** The time between expedition steps while anyone has fastExpeditions on. */

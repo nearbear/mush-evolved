@@ -120,6 +120,11 @@
   height: 2rem;
   image-rendering: pixelated;
 }
+/* A disorder a Shrink's Comfort has calmed for now: it does nothing, so it is grayed out. */
+.status-icons .status-calmed img {
+  filter: grayscale(1);
+  opacity: 0.5;
+}
 /* A status with a number (contamination, Mush-only): the count sits on the icon's corner. */
 .status-icons .status-count {
   position: relative;

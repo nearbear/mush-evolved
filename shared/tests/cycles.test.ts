@@ -118,7 +118,7 @@ describe("cycle length (#230)", () => {
       expect(player(s, "p0").morale).toBe(start);
       s = nextCycle(s);
       expect(viewFor(s, "p0")).toMatchObject({ day: 2, cycleOfDay: 1 });
-      expect(player(s, "p0").morale).toBe(start - dailyMoraleLoss(s));
+      expect(player(s, "p0").morale).toBe(start - dailyMoraleLoss(s, player(s, "p0")));
     });
   }
 });

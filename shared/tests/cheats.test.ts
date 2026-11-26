@@ -58,7 +58,7 @@ describe("cheats", () => {
     s = nextCycle(s);
     expect(s.cycle).toBe(cfg.cyclesPerDay + 1);
     expect(player(s, "p0").morale).toBe(cfg.maxMorale);
-    expect(player(s, "p1").morale).toBe(cfg.startMorale - dailyMoraleLoss(s));
+    expect(player(s, "p1").morale).toBe(cfg.startMorale - dailyMoraleLoss(s, player(s, "p1")));
   });
 
   it("are per player and can be switched off", () => {

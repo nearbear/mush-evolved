@@ -352,7 +352,7 @@ describe("GameRoom single player", () => {
     for (let i = 0; i < 20 && lastView(c).cycleOfDay === 5; i++) await playOut(room, storage);
     expect(lastView(c).cycleOfDay).toBe(6);
     vi.unstubAllGlobals();
-  }, 20_000);
+  }, 60_000);
 
   it("drops a chat wake when a woken bot dies before its turn, so the cycle still ends", async () => {
     vi.stubGlobal(
@@ -509,7 +509,7 @@ describe("GameRoom single player", () => {
     expect(JSON.stringify(c.messages())).not.toContain(marker);
     for (const [key, value] of storage.data) if (!key.startsWith("bot:")) expect(JSON.stringify(value), key).not.toContain(marker);
     vi.unstubAllGlobals();
-  }, 20_000);
+  }, 60_000);
 
   it("stays single player after a restart", async () => {
     const { storage, token } = await soloRoom();

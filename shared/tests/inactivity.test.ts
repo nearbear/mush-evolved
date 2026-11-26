@@ -334,7 +334,7 @@ describe("inactivity's effects", () => {
   it("keeps an inactive player's passive effects, and hunger goes on", () => {
     // Seat p1 is Chun, with Mankind's Only Hope.
     let s = must(applyInput(ship(), { type: "inactivate", player: "p1" }));
-    expect(dailyMoraleLoss(s)).toBe(config.moralePerDay - config.mankindOnlyHope.moraleLossCut);
+    expect(dailyMoraleLoss(s, player(s, "p0"))).toBe(config.moralePerDay - config.mankindOnlyHope.moraleLossCut);
     const human = s.players.find((p) => p.role === "human" && p.id !== "p1")!.id;
     s = must(applyInput(s, { type: "inactivate", player: human }));
     player(s, human).satiety = 2;
