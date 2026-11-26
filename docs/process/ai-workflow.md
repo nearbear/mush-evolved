@@ -5555,3 +5555,7 @@ Trait descriptions (en/fr/es) no longer end with "It can't be removed."; `Status
 ## 2026-11-26: Slime Trap and Infector disabled, not removed
 
 Owner asked to make the Slime Trap and Infector Mush skills unpickable without removing them (removing a skill id would force a game-version bump). Added `DISABLED_MUSH_SKILLS` in `shared/src/skills.ts`, filtered out of `PICKABLE_MUSH_SKILLS` (so the picker, which renders `pick_skill` candidates, never shows them, and bots never pick them) and refused in `pick_skill` validation (`skill_disabled`), with a test. Infector's spike rules stay in place for any stored holder. Worked first time; no correction needed.
+
+### Hydroponics center starts broken (2026-11-26)
+- **Decision (owner, 2026-11-26):** Added `"PLANT_CONTROLLER"` to `DEFAULT_CONFIG.startBrokenEquipment` (`shared/src/config.ts`), so the Hydroponics center starts the game broken silently (without a NERON breakdown announcement), counted in the alert bar alongside `PLASMA_SHIELD`.
+- **What worked:** Reusing `config.startBrokenEquipment` kept `QUIET_CONFIG` (`startBrokenEquipment: []`) and existing botany/incident tests untouched; only `shared/tests/ship.test.ts` needed its expected starting `alerts.broken` count updated to `DEFAULT_CONFIG.startBrokenEquipment.length`.

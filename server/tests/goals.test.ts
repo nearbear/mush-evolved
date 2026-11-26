@@ -53,7 +53,7 @@ import { chooseSkill } from "../src/bots/skillChoice.ts";
 import { seats } from "../src/testing/fakes.ts";
 
 // End cycle on, as on the dev server, so a bot with nothing to do ends its cycle instead of waiting for the clock.
-const config = { ...DEFAULT_CONFIG, manualCycles: true };
+const config = { ...DEFAULT_CONFIG, manualCycles: true, startBrokenEquipment: [] };
 const ICARUS_BAY = DEFAULT_CONFIG.expedition.room;
 /** The game with the first spacesuit on the ship moved into `id`'s hands. */
 function suited(game: GameState, id: string): GameState {

@@ -27,7 +27,7 @@ const error = (r: ActionResult): string => {
 
 /** Everyone in the greenhouse, by the Hydroponics center; p0 is a Botanist, p1 is a non-Botanist human, p2 is Mush. */
 function game(): GameState {
-  const s = createGame(seats, structuredClone(DEFAULT_CONFIG), 7);
+  const s = createGame(seats, { ...structuredClone(DEFAULT_CONFIG), startBrokenEquipment: [] }, 7);
   for (const p of s.players) {
     p.room = GARDEN;
     p.role = "human";

@@ -843,8 +843,8 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   ],
   // Confirmed 2026-10-13: every player starts with an iTrackie.
   startInventory: [ITRACKIE_ITEM],
-  // Owner, 2026-11-23: the plasma shield emitter starts the game broken, silently without a NERON breakdown announcement.
-  startBrokenEquipment: ["PLASMA_SHIELD"],
+  // Owner, 2026-11-23 / 2026-11-26: the plasma shield emitter and the hydroponics center start the game broken, silently without a NERON breakdown announcement.
+  startBrokenEquipment: ["PLASMA_SHIELD", "PLANT_CONTROLLER"],
   // The patrol ships' rooms have no doors and sit off the map (patrol.ts, docs/plans/archive/patrol.md answer 1).
   // So does the Icarus while away (expeditions.ts, docs/plans/archive/expedition.md phase 2).
   rooms: { ...(Object.fromEntries(SHIP_ROOMS.map((r) => [r.id, r.doors])) as Record<RoomId, RoomId[]>), ...patrolRooms(), [ICARUS_CRAFT]: [] },
