@@ -76,6 +76,7 @@ import { sinus_storm_disease } from "./modifiers/sinus_storm_disease.ts";
 import { migraine_disease } from "./modifiers/migraine_disease.ts";
 import { depression_disorder } from "./modifiers/depression_disorder.ts";
 import { agoraphobia_disorder } from "./modifiers/agoraphobia_disorder.ts";
+import { kleptophobia_disorder } from "./modifiers/kleptophobia_disorder.ts";
 import { slight_nausea_disease } from "./modifiers/slight_nausea_disease.ts";
 import { food_poisoning_disease } from "./modifiers/food_poisoning_disease.ts";
 import { vitamin_deficiency_disease } from "./modifiers/vitamin_deficiency_disease.ts";
@@ -154,7 +155,8 @@ type FoldHooks = Record<
   | "maxHp"
   | "damageTaken"
   | "missionAp"
-  | "ownMoraleLoss",
+  | "ownMoraleLoss"
+  | "dropAp",
   FoldHook
 >;
 
@@ -263,6 +265,11 @@ export interface Modifier extends Partial<FoldHooks> {
   /** Runs for each living player at a cycle change, after the AP refill. Mutates a state the caller already cloned. */
   /** (A disease hook also reaches a Mush: it guards its own stat effects with `diseaseAffects`, diseases.ts.) */
   onCycle?: (next: GameState, player: PlayerState) => void;
+  /**
+   * Runs after an item the player carried was lost (an expedition's lost-item event), once it is gone. Mutates a state
+   * the caller already cloned.
+   */
+  onItemLost?: (next: GameState, player: PlayerState, item: ItemState) => void;
   /** Runs after the player showers. Mutates a state the caller already cloned. */
   onShower?: (next: GameState, player: PlayerState) => void;
   /** Runs after the player consumes an item, once its own AP and satiety are applied. Mutates a state the caller already cloned. */
@@ -363,6 +370,7 @@ export const MODIFIERS: Record<string, Modifier> = {
   migraine_disease,
   depression_disorder,
   agoraphobia_disorder,
+  kleptophobia_disorder,
   slight_nausea_disease,
   food_poisoning_disease,
   vitamin_deficiency_disease,
@@ -614,7 +622,7 @@ export function weaponOutcomeWeight(
 
 /**
  * Morale `player` loses when a day ends: `moralePerDay` through every living player's `crewMoraleLoss` hooks, in seat
- * order, then the player's own `ownMoraleLoss` hooks (Depression); never below 0.
+ * order, then the player's own `ownMoraleLoss` hooks (none yet); never below 0.
  */
 export function dailyMoraleLoss(state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS): number {
   return Math.max(0, fold("ownMoraleLoss", crewMoraleLoss(state, registry), state, player, registry));
@@ -949,6 +957,19 @@ export const turretDamage = (state: Readonly<GameState>, player: Readonly<Player
 /** Hull a successful repair restores: the base folded through the repairer's modifiers (for the Vaguoscope; none yet). */
 export const hullRepairAmount = (state: Readonly<GameState>, player: Readonly<PlayerState>, base: number, registry: ModifierRegistry = MODIFIERS) =>
   fold("hullRepairAmount", base, state, player, registry);
+
+/**
+ * The base AP of the player's drop, before the `actionCost` surcharges: 0 folded through the `dropAp` hooks
+ * (Kleptophobia). In the base price so surcharges on AP-costing actions (Agoraphobia, Burnt Hand) add to it whatever
+ * the modifiers' order.
+ */
+export const dropAp = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
+  fold("dropAp", 0, state, player, registry);
+
+/** Runs every onItemLost hook of the player's modifiers. Mutates a state the caller already cloned. */
+export function itemLost(next: GameState, player: PlayerState, item: ItemState, registry: ModifierRegistry = MODIFIERS): void {
+  for (const id of modifierIds(player)) registry[id]?.onItemLost?.(next, player, item);
+}
 
 /** Runs every onShower hook of the player's modifiers. Mutates a state the caller already cloned. */
 export function showered(next: GameState, player: PlayerState, registry: ModifierRegistry = MODIFIERS): void {

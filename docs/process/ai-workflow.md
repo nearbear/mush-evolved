@@ -5572,6 +5572,11 @@ Owner asked to make the Slime Trap and Infector Mush skills unpickable without r
 - **What worked:** the modifier registry absorbed it in one file (`actionCost`, `movement` and `onCycle` hooks); Mush and Shrink-calmed immunity came free from `modifierIds`; it joined `allDisorders`, so the sanity rolls can now draw it.
 - **Needed correction:** importing `hostiles.ts` from the modifier made an import cycle through the modifier registry that broke dozens of test files at load (`moduleLoad.test.ts` caught it). The fix counts `state.hostiles` directly. Two sanity tests that expected Depression by name now check for exactly one disorder.
 
+## 2026-11-26: Kleptophobia disorder; Depression loses its extra daily morale loss
+
+- **Decision (owner):** a new disorder, Kleptophobia. Dropping an item costs 2 AP, and the holder loses 4 morale when an item they carry is "stolen". The game has no steal action, so the AI asked; the owner said stolen means lost on an expedition (the lost-item event). It stacks with Agoraphobia: a drop in a crowded room costs 3 AP. Later in the same task the owner removed Depression's +1 daily morale loss (the `ownMoraleLoss` fold hook stays, unused).
+- **What worked:** the drop's AP goes through a new `dropAp` fold read by the drop's base price (`getCost`), not an `actionCost` hook. Agoraphobia and Burnt Hand only charge actions that already cost AP, and `actionCost` hooks run in the order the player gained their modifiers, so an `actionCost` hook would have given 2 or 3 AP depending on which disorder came first. A test covers both orders. The morale loss is a new `onItemLost` event hook, called from the expedition's `lostItem` case.
+- **Needed correction:** the AI's first reading of "stolen" (a theft mechanic that doesn't exist) was wrong. Asking before building avoided dead code or an invented steal action.
 ## 2026-11-26: Split items.ts instead of one file per item
 
 - Asked whether to put each item in its own file. Recommended against it: `ITEM_TYPES` is about 130 lines of one-line flag records, and the rules are split by action (`actions/*.ts`) and by system (drugs, botany, the cat), so per-item files would give ~90 near-empty files and spread out data that's useful to compare (repair odds, scrap yields).
