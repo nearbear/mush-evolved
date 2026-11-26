@@ -19,6 +19,7 @@ export const SLOW_ALLOWED: Record<string, { file?: number; test?: number; why: s
   "server/tests/GameRoom.bots.test.ts": { file: 9_500, test: 2_000, why: "single player and model bots drive a real room with bots on fake timers" },
   "shared/tests/replayView.test.ts": { file: 7_000, test: 5_000, why: "one shared 4,000-step recorded 16-seat game" },
   "server/tests/goals.test.ts": { file: 5_000, test: 4_500, why: "long seeded GoalBot runs for every character" },
+  "shared/tests/invariants.test.ts": { test: 1_600, why: "each test is one random game long enough to cross a day, checked at every step (#112)" },
   "tools/tests/shipLayout/shipLayout.test.ts": { test: 1_600, why: "regenerates ship-art.json to check it is up to date" },
 };
 

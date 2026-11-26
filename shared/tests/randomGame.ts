@@ -1,4 +1,5 @@
-// A random game played the way the server plays one, for the replay tests (replay.test.ts, replayView.test.ts).
+// A random game played the way the server plays one, for the replay tests (replay.test.ts, replayView.test.ts) and the
+// invariant checks (invariants.test.ts).
 
 import { CHARACTERS } from "../src/characters.ts";
 import { DEFAULT_CONFIG, PRESELECTION } from "../src/config.ts";
@@ -96,7 +97,12 @@ export function randomInput(state: GameState, rng: RngState, at: number): [Input
 }
 
 /** Plays like the server does: keeps the inputs that were accepted, each with its server time. */
-export function play(steps: number, rng: RngState, from = setup, onStep?: (state: GameState) => void): { state: GameState; record: RecordedInput[] } {
+export function play(
+  steps: number,
+  rng: RngState,
+  from = setup,
+  onStep?: (state: GameState, input: Input, step: number) => void,
+): { state: GameState; record: RecordedInput[] } {
   let state = startGame(from);
   const record: RecordedInput[] = [];
   let now = 0;
@@ -112,7 +118,7 @@ export function play(steps: number, rng: RngState, from = setup, onStep?: (state
     // As the server does: sealed chat pages go to storage, not the state.
     takeChatOutbox(state);
     record.push({ at: now, input });
-    onStep?.(state);
+    onStep?.(state, input, i);
   }
   return { state, record };
 }
