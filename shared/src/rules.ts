@@ -39,9 +39,12 @@ import { newLostAnalysis, rollAtSelection } from "./lostAnalysis.ts";
 import { newTheList, recordSelection } from "./theList.ts";
 import { hopelessCycle } from "./morale.ts";
 import { relayView } from "./relayView.ts";
-import { ITEM_TYPES, itemsIn, newItemId, rechargeMicrowaves, rechargeScooters, startCharges, visibleItemsIn } from "./items.ts";
+import { ITEM_TYPES } from "./itemTypes.ts";
+import type { ItemTypeId } from "./itemIds.ts";
+import { itemsIn, newItemId, visibleItemsIn } from "./items.ts";
+import { rechargeMicrowaves, rechargeScooters, startCharges } from "./charges.ts";
 import { actionDone, actionFailed, apRefill, capBreakdown, mpGain, carePointsGain, channelLimit, computerPointsCap, computerPointsGain, cookPointsGain, shootPointsGain, cycleChanged, designerPointsGain, engineerPointsGain, gardenPointsGain, dailyMoraleLoss, inventorySlots, movementRules, pilgredPointsGain, satietyLoss } from "./modifiers.ts";
-import { contaminationSeenBy, convert } from "./infection.ts";
+import { contaminateAtSelection, contaminationSeenBy, convert } from "./infection.ts";
 import { curseStatusesSeenBy, isComatose, isHungry, publicStatusesOf, statusesOf } from "./statuses.ts";
 import { isCurseId, withoutCurses } from "./curses.ts";
 import { coupCycle } from "./coup.ts";
@@ -244,6 +247,7 @@ export function createGame(
   }
   // Mush selection: the first rebel base calls now (owner, 2026-10-21); in pre-selection, `selectMush` does it.
   if (!preselection) {
+    contaminateAtSelection(state, { rng: streamFor(seed, "starting-contamination") });
     callNextRebel(state);
     rollAtSelection(state);
     recordSelection(state);
@@ -650,7 +654,7 @@ export function newCycle(state: GameState, at?: number): ActionResult {
   return { ok: true, state: next };
 }
 
-function chargesFor(config: DeepReadonly<GameConfig>, type: string): { charges?: number } {
+function chargesFor(config: DeepReadonly<GameConfig>, type: ItemTypeId): { charges?: number } {
   const charges = startCharges(config, type);
   return charges === undefined ? {} : { charges };
 }

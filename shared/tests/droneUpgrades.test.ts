@@ -4,7 +4,7 @@ import { ACTIONS } from "../src/actions.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { DRONE_UPGRADES, droneChance } from "../src/drones.ts";
 import { startFire } from "../src/fire.ts";
-import { MICROWAVE_ITEM, SUPPORT_DRONE_ITEM } from "../src/items.ts";
+import { MICROWAVE_ITEM, SUPPORT_DRONE_ITEM } from "../src/itemIds.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { GameConfig, GameState, ItemState } from "../src/types.ts";
 import { clone, costOf, makeSeats, mustApply, nextCycle, offered, pickSkill, player, testConfig } from "./support.ts";

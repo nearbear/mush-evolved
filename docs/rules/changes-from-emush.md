@@ -87,6 +87,7 @@ Shared baseline: both games use the same four visibility tiers (Public, Secret, 
 | :--- | :--- | :--- | :--- |
 | 🟠 | **Observant Rolls Per Holder** | One 25% roll if any Observant is in the room. | Rolls **25% independently per living Observant** in the room. |
 | 🟡 | **NPC Movement Direction** | Hidden without Tracker. | Drones, Schrödinger, and hostile NPCs **always show their movement direction** in room logs without needing Tracker. |
+| 🟡 | **Schrödinger Never Scratches His Owner** | Taking the cat has the same scratch chance for everyone. | **Raluca is never scratched** taking him (0% injury), so a Mush cat can't contaminate her that way; caressing him still can (owner, 2026-11-26). |
 
 ---
 
@@ -163,7 +164,7 @@ Both games start characters with 0 skills (3 pickable + 1 book slot) and permane
 | :--- | :--- | :--- |
 | 🟠 | **Value-Budgeted Alien Fruits** | Replaces eMush's independent per-trait rolls. Each of the 12 alien species is generated within a **3–6 point value budget** with a grow time of **4 cycles per point (12–24 cycles, always faster than bananas' 36 cycles)**. Base **+1 AP and +1 satiety** for humans, plus budgeted extra AP (+1/+2), morale (+1/+2/+3/−2), HP (+1/+2), **0–3 timed buffs** (**Treat Disease**, **Energize**, **Resistance**, **Perception**), and **0–3 delayed diseases** (30–80% odds, arriving **2–16 cycles** after eating). |
 | 🟠 | **Graft Hybrids** | Instead of swapping the plant for the fruit's species, Graft creates a **hybrid** of the two species: one fixed per unordered pair of the 12 alien species for the whole ship (66 possible), drawn at launch from both parents' effects (AP, morale, and HP from a parent at random; each parent buff and disease kept at 50%, up to 3 each) and fitted to a **4–9 value budget**, with a grow time of 4 cycles per point capped at **32**. A pair that can't fit has no graft. Bananas and hybrids can't be grafted. A hybrid's effects are hidden like an alien species' (lore holders only) and unknown to everyone until first grafted. **Green Thumb** grafts start at **25%** of their grow time. |
-| 🟡 | **Hydroponics Terminal** | New equipment starting in the **Hydroponic Garden** (not in eMush): while working, it protects plants in the Garden from fire; it can break, be sabotaged, and be repaired (12%). |
+| 🟡 | **Hydroponics Terminal** | New equipment starting in the **Hydroponic Garden** (not in eMush): starts **broken** at launch; while working, it protects plants in the Garden from fire; it can break, be sabotaged, and be repaired (12%). |
 | 🟡 | **Spacesuits Starting Location** | The **6 spacesuits** start in the **Icarus Bay** (instead of the ship-wide random pool). |
 | 🟡 | **Hyperfreeze** | Targets **cooked rations and alien steaks only** (never fruits) and **preserves their current spoilage stage** in place when turning them into non-perishable uncooked rations (eMush freezes fruits with a Frozen status and resets ration spoilage). |
 

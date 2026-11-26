@@ -2,7 +2,7 @@
 // maximum. Test tooling, not a game rule: the server refuses the `cheat` input
 // unless ALLOW_CHEATS is set, and the flags only ever appear in your own view.
 
-import { startCharges } from "./items.ts";
+import { startCharges } from "./charges.ts";
 import { removeStatus } from "./statuses.ts";
 import type { GameState, PlayerState } from "./types.ts";
 

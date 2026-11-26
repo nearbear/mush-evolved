@@ -1,5 +1,6 @@
 import { Action, type ActionVisibility, isString } from "./action.ts";
-import { CORPSE_ITEM, removeItem, itemsIn } from "../items.ts";
+import { CORPSE_ITEM } from "../itemIds.ts";
+import { removeItem, itemsIn } from "../items.ts";
 import { logSecret } from "../log.ts";
 import type { GameState, ItemState, PlayerState } from "../types.ts";
 

@@ -5,7 +5,7 @@
 import { type ReactNode, useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
-import { actionItemType, actionVisibility, ITEM_TYPES, SUPERKUBE, type Action, type ActionOption, type ItemId, type PlayerView, type RoomId, type Target } from "@mush2/shared";
+import { actionItemType, actionVisibility, ITEM_TYPES, isRenameableType, SUPERKUBE, type Action, type ActionOption, type ItemId, type PlayerView, type RoomId, type Target } from "@mush2/shared";
 import { ActionLabel } from "./ActionLabel.tsx";
 import { ActionButton } from "./ActionButton.tsx";
 import { collapsePickers, CrewPickerDialog, isPickerAction, type PickerAction } from "./CrewPickerDialog.tsx";
@@ -96,6 +96,7 @@ export function PeekBar({
     onRenameItem !== undefined &&
     resolved.kind === "item" &&
     resolved.item.owner === view.you.id &&
+    isRenameableType(resolved.item.type) &&
     view.phase === "playing" &&
     view.you.alive &&
     !view.statuses.includes("coma");

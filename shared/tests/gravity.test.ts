@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { breakEquipment } from "../src/breakage.ts";
 import { GRAVITY_SIMULATOR, noGravity } from "../src/gravity.ts";
 import { INCIDENT_IDS, type IncidentId } from "../src/incidents.ts";
-import { MICROWAVE_ITEM, SUPPORT_DRONE_ITEM } from "../src/items.ts";
+import { MICROWAVE_ITEM, SUPPORT_DRONE_ITEM } from "../src/itemIds.ts";
 import { mpGain, movementRules } from "../src/modifiers.ts";
 import { normalizeGame } from "../src/normalizeState.ts";
 import { PROJECT_COMPLETE } from "../src/projects.ts";

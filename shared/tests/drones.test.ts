@@ -1,12 +1,11 @@
 // Support drones (#411): an NPC item that repairs what is broken in its room at each cycle change, else wanders.
 import { describe, expect, it } from "vitest";
-import { BLUEPRINT_ITEM } from "../src/blueprints.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { breakDoor, doorId, isDoorBroken } from "../src/doors.ts";
 import { DRONE_MAX_SERIAL, DRONE_NAMES, droneChance, newDrone } from "../src/drones.ts";
 import { fullViewFor } from "../src/fullView.ts";
 import { INCIDENT_IDS } from "../src/incidents.ts";
-import { MICROWAVE_ITEM, SUPPORT_DRONE_ITEM } from "../src/items.ts";
+import { BLUEPRINT_ITEM, MICROWAVE_ITEM, SUPPORT_DRONE_ITEM } from "../src/itemIds.ts";
 import { startFire } from "../src/fire.ts";
 import { normalizeGame, normalizeItem } from "../src/normalizeState.ts";
 import { createGame, viewFor } from "../src/rules.ts";

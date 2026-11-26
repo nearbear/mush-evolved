@@ -1,6 +1,6 @@
 import { gainMorale } from "../adjustStats.ts";
 import { addDisease, diseaseAffects, sneeze } from "../diseases.ts";
-import { CAT_ITEM } from "../items.ts";
+import { CAT_ITEM } from "../itemIds.ts";
 import type { Modifier } from "../modifiers.ts";
 import type { GameState, PlayerState, RoomId } from "../types.ts";
 

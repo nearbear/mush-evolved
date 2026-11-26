@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { dayOf } from "../src/helpers.ts";
-import { ITRACKIE_ITEM, TREE_POT_ITEM } from "../src/items.ts";
+import { ITRACKIE_ITEM, TREE_POT_ITEM } from "../src/itemIds.ts";
 import { normalizePlant } from "../src/normalizeState.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyInput } from "../src/replay.ts";
@@ -27,7 +27,7 @@ const error = (r: ActionResult): string => {
 
 /** Everyone in the greenhouse, by the Hydroponics center; p0 is a Botanist, p1 is a non-Botanist human, p2 is Mush. */
 function game(): GameState {
-  const s = createGame(seats, structuredClone(DEFAULT_CONFIG), 7);
+  const s = createGame(seats, { ...structuredClone(DEFAULT_CONFIG), startBrokenEquipment: [] }, 7);
   for (const p of s.players) {
     p.room = GARDEN;
     p.role = "human";

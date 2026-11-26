@@ -3,7 +3,7 @@ import { actionVisibility, ACTIONS } from "../src/actions.ts";
 import { killPlayer } from "../src/death.ts";
 import { cure } from "../src/infection.ts";
 import { CAMERA_EQUIPMENT } from "../src/equipment.ts";
-import { ITRACKIE_ITEM } from "../src/items.ts";
+import { ITRACKIE_ITEM } from "../src/itemIds.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { queueAction } from "../src/queue.ts";
 import { createChannel } from "../src/chat.ts";

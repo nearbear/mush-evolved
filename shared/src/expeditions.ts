@@ -44,7 +44,9 @@ import { soil } from "./dirt.ts";
 import { rebelContacted } from "./comms.ts";
 import { contaminate } from "./infection.ts";
 import { addDisease } from "./diseases.ts";
-import { CORPSE_ITEM, afterArmor, isWorking, itemsIn, removeItem, sameContainer, spawnInRoom } from "./items.ts";
+import { CORPSE_ITEM, type ItemTypeId } from "./itemIds.ts";
+import { afterArmor } from "./armor.ts";
+import { isWorking, itemsIn, removeItem, sameContainer, spawnInRoom } from "./items.ts";
 import { logPrivate, logPublic } from "./log.ts";
 import { isTraveling } from "./navigation.ts";
 import { retargetNow } from "./hunters.ts";
@@ -541,24 +543,27 @@ function resolve(ctx: Ctx, sector: PlanetTag | typeof LANDING, table: readonly E
     case "harvest": {
       // Polymath and Skilful count as a Botanist here (owner, 2026-11-08, #358; 2026-11-18).
       const bonus = living().some((p) => hasSkill(p, "botanic") || hasSkill(p, "polymath") || hasSkill(p, "skilful")) ? rules.botanistBonus : 0;
-      event.item = harvestFruit(state);
-      event.amount = drop(state, event.item, amount + bonus);
+      const item = harvestFruit(state);
+      event.item = item;
+      event.amount = drop(state, item, amount + bonus);
       break;
     }
     case "provision": {
       // Survival: one more steak per living holder (owner, 2026-11-08).
       const bonus = living().filter((p) => hasSkill(p, "survival")).length * rules.survivalProvision;
       event.item = rules.loot.provision;
-      event.amount = drop(state, event.item, amount + bonus);
+      event.amount = drop(state, rules.loot.provision, amount + bonus);
       break;
     }
-    case "artifact":
-      event.item = artifact(state);
-      event.amount = drop(state, event.item, 1);
+    case "artifact": {
+      const item = artifact(state);
+      event.item = item;
+      event.amount = drop(state, item, 1);
       break;
+    }
     case "starmap":
       event.item = rules.loot.starmap;
-      event.amount = drop(state, event.item, 1);
+      event.amount = drop(state, rules.loot.starmap, 1);
       break;
     case "fight":
       fight(ctx, event, rule.creature!);
@@ -727,13 +732,13 @@ function recoverShip(state: GameState, pilot: Readonly<PlayerState>): void {
 }
 
 /** An alien fruit species picked uniformly for a Harvest event (#437). */
-const harvestFruit = (state: GameState): string => {
+const harvestFruit = (state: GameState): ItemTypeId => {
   const list = state.config.expedition.loot.harvest;
   return list[rollInt(state, list.length)]!;
 };
 
 /** An artifact picked uniformly among the original's 9. */
-const artifact = (state: GameState): string => {
+const artifact = (state: GameState): ItemTypeId => {
   const list = state.config.expedition.loot.artifacts;
   return list[rollInt(state, list.length)]!;
 };
@@ -808,10 +813,10 @@ export function winChance(crew: number, strength: number): number {
 }
 
 /** A won fight's loot onto the Icarus's floor, grouped by item type. */
-function fightLoot(state: GameState, loot: Readonly<CreatureLoot>): { item: string; count: number }[] {
+function fightLoot(state: GameState, loot: Readonly<CreatureLoot>): { item: ItemTypeId; count: number }[] {
   const rules = state.config.expedition;
-  const found = new Map<string, number>();
-  const add = (item: string) => found.set(item, (found.get(item) ?? 0) + drop(state, item, 1));
+  const found = new Map<ItemTypeId, number>();
+  const add = (item: ItemTypeId) => found.set(item, (found.get(item) ?? 0) + drop(state, item, 1));
   for (let i = 0; i < (loot.provision ?? 0); i++) add(rules.loot.provision);
   for (let i = 0; i < (loot.artifact ?? 0); i++) add(artifact(state));
   for (let i = 0; i < (loot.starmap ?? 0); i++) add(rules.loot.starmap);
@@ -857,7 +862,7 @@ function died(ctx: Ctx, event: ExpeditionEvent, p: PlayerState): void {
 }
 
 /** `count` items of `type` on the floor of the craft, which unloads them in the bay on its return. Returns how many. */
-function drop(state: GameState, type: string, count: number): number {
+function drop(state: GameState, type: ItemTypeId, count: number): number {
   spawnInRoom(state, expeditionCraft(state), type, count);
   return count;
 }

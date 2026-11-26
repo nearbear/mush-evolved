@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { drawFruits, drawHybrid, drawHybrids, FRUIT_BUFF_IDS, type FruitEffect, fruitValue } from "../src/fruits.ts";
-import { ALIEN_FRUIT_ITEMS, HYBRID_FRUIT_ITEMS, hybridOf, hybridParents, ITEM_TYPES } from "../src/items.ts";
+import { ALIEN_FRUIT_ITEMS, HYBRID_FRUIT_ITEMS, hybridOf, hybridParents } from "../src/itemIds.ts";
+import { ITEM_TYPES } from "../src/itemTypes.ts";
 import { normalizeGame } from "../src/normalizeState.ts";
 import { growCyclesFor } from "../src/botany.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";

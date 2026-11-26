@@ -14,7 +14,9 @@ import { cloneState, fail, findPlayer, type ActionResult } from "./helpers.ts";
 import { allDoors, breakDoor } from "./doors.ts";
 import { INTRUDER, spawnHostile } from "./hostiles.ts";
 import { contaminate } from "./infection.ts";
-import { ITEM_TYPES, newItemId, startCharges } from "./items.ts";
+import { ITEM_TYPES, isItemTypeId } from "./itemTypes.ts";
+import { newItemId } from "./items.ts";
+import { startCharges } from "./charges.ts";
 import { becameDirty, enterRoom, enteredRoom } from "./modifiers.ts";
 import { logPublic } from "./log.ts";
 import { PLANET_TAG_IDS, type PlanetTag } from "./planets.ts";
@@ -129,7 +131,8 @@ export const KUBE_OPS = {
     group: "items",
     arg: "item",
     apply: (state, me, arg) => {
-      const type = arg as string;
+      if (typeof arg !== "string" || !isItemTypeId(arg)) return "bad_argument";
+      const type = arg;
       const charges = startCharges(state.config, type);
       state.items.push({ ...cheatItem(type, me.room), id: newItemId(state), ...(charges !== undefined && { charges }) });
       return null;

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { addDisease, diseaseStats } from "../src/diseases.ts";
-import { CAT_ITEM } from "../src/items.ts";
+import { CAT_ITEM } from "../src/itemIds.ts";
 import { schrodinger } from "../src/schrodinger.ts";
 import { createGame } from "../src/rules.ts";
 import type { GameState, ItemState, RoomId } from "../src/types.ts";

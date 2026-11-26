@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { ITEM_TYPES, TABULATOR_ITEM } from "../src/items.ts";
+import { ITEM_TYPES } from "../src/itemTypes.ts";
+import { DOCUMENT_ITEM, TABULATOR_ITEM } from "../src/itemIds.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
-import { DOCUMENT_ITEM } from "../src/lostAnalysis.ts";
 import type { Action, GameState, ItemState } from "../src/types.ts";
 import { DEFAULT_CONFIG, PRESELECTION } from "../src/config.ts";
 import type { CharacterId } from "../src/characters.ts";

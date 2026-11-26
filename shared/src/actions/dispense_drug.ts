@@ -1,11 +1,13 @@
 import { Action, isString } from "./action.ts";
 import { drugOptions } from "../drugs.ts";
 import { EQUIPMENT_TYPES } from "../equipment.ts";
+import type { ItemTypeId } from "../itemIds.ts";
+import { isItemTypeId } from "../itemTypes.ts";
 import { produceItem } from "../items.ts";
 import { logPublic } from "../log.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
-export type DispenseDrugActionData = { type: "dispense_drug"; equipment: string; drug: string };
+export type DispenseDrugActionData = { type: "dispense_drug"; equipment: string; drug: ItemTypeId };
 
 /**
  * Take a drug from the Drug Dispenser's terminal (owner, 2026-11-11). Its list of every drug type, in a random order the same for
@@ -16,7 +18,7 @@ export class DispenseDrugAction extends Action<DispenseDrugActionData> {
   override terminal = true;
 
   constructor() {
-    super("dispense_drug", { equipment: isString, drug: isString });
+    super("dispense_drug", { equipment: isString, drug: (v) => isString(v) && isItemTypeId(v) });
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): DispenseDrugActionData[] {

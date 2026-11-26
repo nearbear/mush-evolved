@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG, PRESELECTION, resolveConfig } from "../src/config.ts";
-import { BOOK_ITEM, ITRACKIE_ITEM } from "../src/items.ts";
+import { BOOK_ITEM, ITRACKIE_ITEM } from "../src/itemIds.ts";
 import { joinShip, preselectionDeadline } from "../src/preselection.ts";
 import { applyInput, type Input } from "../src/replay.ts";
 import { createGame, viewFor } from "../src/rules.ts";

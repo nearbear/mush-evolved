@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
-import { TREE_POT_ITEM } from "../src/items.ts";
+import { TREE_POT_ITEM } from "../src/itemIds.ts";
 import { PROJECT_COMPLETE } from "../src/projects.ts";
 import { createGame } from "../src/rules.ts";
 import type { GameState } from "../src/types.ts";

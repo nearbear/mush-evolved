@@ -12,7 +12,7 @@
 // he acts from his carrier's room, and a move takes him out of their hands, as a drone's (owner, 2026-11-21). He
 // rolls on `state.rng`, like every NPC turn. Each move gets public lines in both rooms, like a drone's.
 
-import { CAT_ITEM } from "./items.ts";
+import { CAT_ITEM } from "./itemIds.ts";
 import { catCameIn } from "./modifiers/cat_allergy_disease.ts";
 import { logPublic } from "./log.ts";
 import type { Npc } from "./npcs.ts";

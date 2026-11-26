@@ -1,7 +1,7 @@
 // Maps game ids to Motion Twin art in Mush/ (CC BY-NC-SA 4.0, see
 // Mush/ATTRIBUTION.md). Vite bundles only the files matched here.
 
-import { CURSE_IDS, DEFAULT_CONFIG, REBEL_BASES, hybridParents, type CharacterId, type RebelBaseId, type Ending, type ItemView, type MerchantTargetView, type ResourceId, type SpoilStage, type TitleId } from "@mush2/shared";
+import { CURSE_IDS, DEFAULT_CONFIG, REBEL_BASES, hybridParents, type CharacterId, type RebelBaseId, type Ending, type ItemTypeId, type ItemView, type MerchantTargetView, type ResourceId, type SpoilStage, type TitleId } from "@mush2/shared";
 
 type UrlMap = Record<string, string>;
 const urls = (map: UrlMap) =>
@@ -171,17 +171,17 @@ Object.assign(
 export const ITEM_ICONS: Readonly<Record<string, string>> = itemIcons;
 
 /** Item types whose icon file has a different name. ration_0 is the plain unopened box; ration_1 is the cooked one; ration_7 is a cup of coffee. */
-const ICON_FILE: Readonly<Record<string, string>> = { input_tube: "thick_tube", output_tube: "thick_tube", uncooked_ration: "ration_0", alien_steak: "ration_5", coffee: "ration_7", oscilloscope: "wavoscope", steroids: "ration_6", anabolics: "ration_6", drill: "driller", thermosensor: "heat_seeker", support_drone: "help_drone", customized_blaster: "blaster", duct_tape: "duck_tape", block_of_post_it: "postit_bloc", scooter: "antigrav_scooter", sniper_helmet: "aiming_helmet", tabulator: "printer" };
+const ICON_FILE: Readonly<Partial<Record<ItemTypeId, string>>> = { input_tube: "thick_tube", output_tube: "thick_tube", uncooked_ration: "ration_0", alien_steak: "ration_5", coffee: "ration_7", oscilloscope: "wavoscope", steroids: "ration_6", drill: "driller", thermosensor: "heat_seeker", support_drone: "help_drone", customized_blaster: "blaster", duct_tape: "duck_tape", block_of_post_it: "postit_bloc", scooter: "antigrav_scooter", sniper_helmet: "aiming_helmet", tabulator: "printer" };
 
 /** Icon for an item type. Item type ids are named after their icon files unless ICON_FILE says otherwise; undefined if there's none. */
-export function itemIcon(type: string): string | undefined {
+export function itemIcon(type: ItemTypeId): string | undefined {
   // A graft hybrid (#438) has no art of its own: it shows its lower-numbered parent's fruit.
   const species = hybridParents(type)?.[0] ?? type;
   return itemIcons[ICON_FILE[species] ?? species];
 }
 
 /** A planted hydropot's icon, by species (its fruit's item type): the original's tree_* / fruit_tree* icons. */
-const PLANT_ICON_FILE: Readonly<Record<string, string>> = {
+const PLANT_ICON_FILE: Readonly<Partial<Record<ItemTypeId, string>>> = {
   fruit_banana: "tree_banana",
   fruit01: "fruit_tree01",
   fruit02: "fruit_tree02",

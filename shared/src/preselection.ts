@@ -15,10 +15,11 @@ import { endIfAllInactive, killPlayer } from "./death.ts";
 import { cloneState, fail, type ActionResult } from "./helpers.ts";
 import { logPrivate, startLogSeen } from "./log.ts";
 import { callNextRebel } from "./comms.ts";
+import { contaminateAtSelection } from "./infection.ts";
 import { rollAtSelection } from "./lostAnalysis.ts";
 import { recordSelection } from "./theList.ts";
 import { startHunters } from "./hunters.ts";
-import { rollShuffle } from "./rng.ts";
+import { rollShuffle, streamFor } from "./rng.ts";
 import { catArrival } from "./schrodinger.ts";
 import { newPlayer, spawnSelectionItems, startInventory } from "./rules.ts";
 import { MUSH_SEAT_MARGIN } from "./setups.ts";
@@ -86,6 +87,8 @@ export function selectMush(state: GameState): void {
     updateMaxValues(state, p); // the folds now skip their diseases (#267)
     logPrivate(state, p.id, "chosenMush");
   }
+  // Its own stream, derived from the current one without moving it, so later rolls stay where they were.
+  contaminateAtSelection(state, { rng: streamFor(state.rng, "starting-contamination") });
   pushChat(state, "global", { from: null, isBot: false, text: "", system: { key: "mushChosen" } });
   state.titles = assignTitles(state.players);
   callNextRebel(state);

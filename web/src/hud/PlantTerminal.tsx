@@ -10,6 +10,7 @@ import {
   TREE_POT_ITEM,
   type EquipmentView,
   type FruitBuffId,
+  type ItemTypeId,
   type ItemView,
   type PlayerView,
   type SharedPlantRow,
@@ -38,7 +39,7 @@ interface Props {
 }
 
 /** Effects of a plant's fruit as plain localized lines (one per line), used to prefill the Share form. */
-function prefillEffects(species: string, view: PlayerView, t: TFunction): string {
+function prefillEffects(species: ItemTypeId, view: PlayerView, t: TFunction): string {
   const consume = ITEM_TYPES[species]?.consume;
   if (!consume) return "";
   const isAlien = isAlienFruitType(species);
@@ -60,7 +61,7 @@ function prefillEffects(species: string, view: PlayerView, t: TFunction): string
 }
 
 /** What a live plant's fruit does, as `PlantStatusRow` reads it, respecting the viewer's fruit lore. */
-function liveEffects(species: string, view: PlayerView, t: TFunction): { resources: StatDelta[]; notes: PlantNote[]; unknown: boolean } {
+function liveEffects(species: ItemTypeId, view: PlayerView, t: TFunction): { resources: StatDelta[]; notes: PlantNote[]; unknown: boolean } {
   const isAlien = isAlienFruitType(species);
   const fruit = isAlien ? view.fruitEffects?.[species] : undefined;
   if (isAlien && !fruit) return { resources: [], notes: [], unknown: true };

@@ -14,6 +14,7 @@
 import { killPlayer } from "./death.ts";
 import { scaleByActivity } from "./difficulty.ts";
 import { newItemId, sameContainer } from "./items.ts";
+import { isItemTypeId } from "./itemTypes.ts";
 import { logPublic } from "./log.ts";
 import { followingHuntersShare, hunterPointsPerCycle, waveShrinkChance } from "./modifiers.ts";
 import { type PatrolShip, patrolShip, rechargePatrolShips, shipsInFlight } from "./patrol.ts";
@@ -87,7 +88,7 @@ export function damageHunter(state: GameState, id: string, amount: number): bool
  */
 export function dropDebris(state: GameState, table: DeepReadonly<DebrisTable>): void {
   const { count, types } = table;
-  const kinds = Object.keys(types);
+  const kinds = Object.keys(types).filter(isItemTypeId);
   const weights = kinds.map((kind) => types[kind]!);
   for (let i = rollWeighted(state, count); i > 0; i--) state.space.push({ id: newItemId(state), type: kinds[rollWeighted(state, weights)]! });
 }

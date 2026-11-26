@@ -129,7 +129,7 @@ function handFilled() {
     crew: [a.character, b.character],
     planet: "Zed",
     events: [
-      { sector: "LANDING", kind: "fight", amount: 4, item: "i", fight: { strength: 3, grenades: 1, won: true }, hurt: [{ name: a.character, hp: 2 }], died: [b.character] },
+      { sector: "LANDING", kind: "fight", amount: 4, item: "metal_scraps", fight: { strength: 3, grenades: 1, won: true }, hurt: [{ name: a.character, hp: 2 }], died: [b.character] },
       { sector: "FOREST", kind: "lost", who: a.character },
     ],
     lostAt: { [a.id]: 2 },
@@ -258,6 +258,13 @@ describe("normalizeGame", () => {
     expect(missing((raw) => delete raw.rng)).toThrow(new NormalizeError("GameState.rng missing"));
     // An undefined-valued key is as missing as an absent one.
     expect(missing((raw) => (raw.ship.hull = undefined))).toThrow(new NormalizeError("ShipResources.hull missing"));
+  });
+
+  it("throws on an item type ITEM_TYPES doesn't know (a rename without an upgrade step)", () => {
+    const { game, overrides } = fresh();
+    const raw = stored(game);
+    raw.items[0].type = "old_kit";
+    expect(() => normalizeGame(raw, overrides)).toThrow(new NormalizeError('ItemState.type unknown: "old_kit"'));
   });
 });
 
@@ -602,7 +609,7 @@ describe("upgrade", () => {
     const { game, overrides } = fresh();
     const raw = stored(game);
     raw.players[0].room = "ICARUS_CRAFT";
-    raw.items.push({ id: "item-test-craft", type: "ration", at: { kind: "room", id: "ICARUS_CRAFT" } });
+    raw.items.push({ id: "item-test-craft", type: "cooked_ration", at: { kind: "room", id: "ICARUS_CRAFT" } });
     upgrade({ game: raw, overrides }, 122);
     const g = normalizeGame(raw, overrides);
     expect([g.players[0]!.room, g.players[0]!.boardedIcarus]).toEqual(["ICARUS", true]);

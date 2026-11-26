@@ -1,5 +1,6 @@
 import { Action, type ActionCost, isString } from "./action.ts";
-import { canReachItem, isWorking, LUNCHBOX_ITEM, produceItem, removeItem } from "../items.ts";
+import { canReachItem, isWorking, produceItem, removeItem } from "../items.ts";
+import { LUNCHBOX_ITEM } from "../itemIds.ts";
 import { logPrivate } from "../log.ts";
 import type { GameState, ItemState, PlayerState } from "../types.ts";
 

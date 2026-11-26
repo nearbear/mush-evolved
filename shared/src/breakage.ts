@@ -10,7 +10,8 @@ import { pushChat } from "./chat.ts";
 import { loseLink } from "./comms.ts";
 import { GRAVITY_SIMULATOR, gravityLost } from "./gravity.ts";
 import { isEquipmentEnabled } from "./equipment.ts";
-import { ITEM_TYPES, removeItem } from "./items.ts";
+import { ITEM_TYPES } from "./itemTypes.ts";
+import { removeItem } from "./items.ts";
 import { PLASMA_SHIELD } from "./ship.ts";
 import type { Equipment, GameState, ItemState, RoomId } from "./types.ts";
 

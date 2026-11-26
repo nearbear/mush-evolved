@@ -6,8 +6,7 @@
 import { logPublic } from "./log.ts";
 import { isWorking, spawnInRoom } from "./items.ts";
 import type { GameState, RoomId } from "./types.ts";
-
-export const MYCO_ALARM_ITEM = "myco_alarm";
+import { MYCO_ALARM_ITEM } from "./itemIds.ts";
 
 /** What the completed MYCO_ALARM research yields, placed in the lab's room (owner, 2026-10-17). */
 export const MYCO_ALARM_YIELD = 3;

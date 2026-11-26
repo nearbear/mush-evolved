@@ -9,7 +9,8 @@
 import { plantControllerHere } from "./botany.ts";
 import { chatChannels, pushChat } from "./chat.ts";
 import { cloneState, dayOf, fail, findPlayer, isRecord, type ActionResult } from "./helpers.ts";
-import { ITEM_TYPES } from "./items.ts";
+import { ITEM_TYPES, isItemTypeId } from "./itemTypes.ts";
+import type { ItemTypeId } from "./itemIds.ts";
 import { MAX_SHARED_PLANET_LENGTH, MAX_SHARED_PLANET_LINES } from "./sharedPlanets.ts";
 import type { GameState, PlayerId, PlayerState, SharedPlantRow, SharedPlantStatus } from "./types.ts";
 
@@ -32,8 +33,8 @@ export const MAX_SHARED_PLANT_TEXT_LINES = MAX_SHARED_PLANET_LINES;
 export const MAX_SHARED_PLANT_SICK_CYCLES = 999;
 
 /** Whether `id` is a valid fruit/plant species id (`fruit_banana`, alien species, or graft hybrid). */
-export const isValidPlantSpecies = (id: unknown): id is string =>
-  typeof id === "string" && Object.hasOwn(ITEM_TYPES, id) && ITEM_TYPES[id]?.fruit === true;
+export const isValidPlantSpecies = (id: unknown): id is ItemTypeId =>
+  typeof id === "string" && isItemTypeId(id) && ITEM_TYPES[id].fruit === true;
 
 /** Whether `value` is a valid shared plant row (for wire parsing and rules validation). */
 export function parseSharedPlantRow(value: unknown, maxEffectsLength = MAX_SHARED_PLANT_EFFECTS_LENGTH): SharedPlantRow | null {

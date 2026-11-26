@@ -1,14 +1,16 @@
 // Blueprints: a `blueprint` item carries the key of one of these recipes in `ItemState.builds`.
 // Building (actions/build.ts) consumes the blueprint and the ingredients and produces the result.
 
+import type { ItemTypeId } from "./itemIds.ts";
+
 export interface Blueprint {
   /** Item types consumed, one entry per unit. They may be carried or lying in the room. */
-  needs: string[];
+  needs: ItemTypeId[];
   /**
    * The result: a piece of room equipment (type from EQUIPMENT_TYPES) added to the builder's room, or an item
    * (type from ITEM_TYPES) handed to the builder (inventory if there is room, else the floor).
    */
-  makes: { equipment: string } | { item: string };
+  makes: { equipment: string } | { item: ItemTypeId };
 }
 
 /**
@@ -34,6 +36,3 @@ export const BLUEPRINTS: Record<string, Blueprint> = {
   GRENADE: { needs: ["oxy_capsule", "fuel_capsule"], makes: { item: "grenade" } },
   SNIPER_HELMET: { needs: ["metal_scraps", "plastic_scraps"], makes: { item: "sniper_helmet" } },
 };
-
-/** The item type that carries a recipe. Named after its icon, blueprint.jpg. */
-export const BLUEPRINT_ITEM = "blueprint";

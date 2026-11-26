@@ -25,7 +25,8 @@
 
 import { resolveConfig } from "./config.ts";
 import { clone } from "./helpers.ts";
-import { ITRACKIE_ITEM } from "./itemIds.ts";
+import { ITRACKIE_ITEM, type ItemTypeId } from "./itemIds.ts";
+import { isItemTypeId } from "./itemTypes.ts";
 import { newNpcState, type NpcState } from "./npcs.ts";
 import { HOSTILE_ID_PREFIX, type HostileState } from "./hostiles/hostile.ts";
 import { type LostAnalysisState, rollLostAnalysis } from "./lostAnalysis.ts";
@@ -392,6 +393,12 @@ function unknownVariant(type: string, key: string, value: unknown): NormalizeErr
   return new NormalizeError(value === undefined ? `${type}.${key} missing` : `${type}.${key} unknown: ${JSON.stringify(value)}`);
 }
 
+/** A stored item type id. One `ITEM_TYPES` doesn't know (renamed or removed without an upgrade step) throws instead of loading. */
+function knownItemType(value: string | undefined, type: string, key: string): ItemTypeId {
+  if (value === undefined || !isItemTypeId(value)) throw unknownVariant(type, key, value);
+  return value;
+}
+
 const opt = <A, B>(value: A | undefined, fn: (value: A) => B): B | undefined => (value === undefined ? undefined : fn(value));
 const orNull = <A, B>(value: A | null, fn: (value: A) => B): B | null => (value === null ? null : fn(value));
 const copy = <T>(list: readonly T[]): T[] => [...list];
@@ -414,7 +421,7 @@ export function normalizePlant(raw: Partial<PlantState>): PlantState {
   const t = "PlantState";
   const sick = need(raw, "sick", t);
   return stripUndefined<PlantState>({
-    species: need(raw, "species", t),
+    species: knownItemType(raw.species, t, "species"),
     age: need(raw, "age", t),
     thirst: need(raw, "thirst", t),
     sick,
@@ -427,7 +434,7 @@ export function normalizePlant(raw: Partial<PlantState>): PlantState {
 function itemFields(raw: Partial<SpaceDebris>, t: string): AllKeys<SpaceDebris> {
   return {
     id: need(raw, "id", t),
-    type: need(raw, "type", t),
+    type: knownItemType(raw.type, t, "type"),
     of: raw.of,
     builds: raw.builds,
     charges: raw.charges,
@@ -569,7 +576,7 @@ export function normalizePendingDisease(raw: Partial<PendingDisease>): PendingDi
 
 export function normalizeDrugDispenser(raw: Partial<DrugDispenserState>): DrugDispenserState {
   const t = "DrugDispenserState";
-  return { list: [...need(raw, "list", t)], used: need(raw, "used", t) };
+  return { list: need(raw, "list", t).map((type) => knownItemType(type, t, "list")), used: need(raw, "used", t) };
 }
 
 export function normalizeDebris(raw: Partial<SpaceDebris>): SpaceDebris {
@@ -799,7 +806,7 @@ export function normalizeSharedReport(raw: Partial<SharedReportState>): SharedRe
 export function normalizeSharedPlantRow(raw: Partial<SharedPlantRow>): SharedPlantRow {
   const t = "SharedPlantRow";
   return stripUndefined<SharedPlantRow>({
-    species: need(raw, "species", t),
+    species: knownItemType(raw.species, t, "species"),
     effects: need(raw, "effects", t),
     thirst: need(raw, "thirst", t),
     sickCycles: need(raw, "sickCycles", t),
@@ -1195,19 +1202,19 @@ export function normalizeExpeditionEvent(raw: Partial<ExpeditionEvent>): Expedit
   const fight = (f: Partial<Fight>) =>
     stripUndefined<Fight>({ strength: need(f, "strength", `${t}.fight`), grenades: need(f, "grenades", `${t}.fight`), won: need(f, "won", `${t}.fight`) });
   const hurt = (h: Partial<Hurt>) => stripUndefined<Hurt>({ name: need(h, "name", `${t}.hurt`), hp: need(h, "hp", `${t}.hurt`) });
-  const found = (f: Partial<Found>) => stripUndefined<Found>({ item: need(f, "item", `${t}.found`), count: need(f, "count", `${t}.found`) });
+  const found = (f: Partial<Found>) => stripUndefined<Found>({ item: knownItemType(f.item, `${t}.found`, "item"), count: need(f, "count", `${t}.found`) });
   return stripUndefined<ExpeditionEvent>({
     sector: need(raw, "sector", t),
     kind: need(raw, "kind", t),
     amount: raw.amount,
-    item: raw.item,
+    item: opt(raw.item, (item) => knownItemType(item, t, "item")),
     creature: raw.creature,
     found: opt(raw.found, (list) => list.map(found)),
     fight: opt(raw.fight, fight),
     hurt: opt(raw.hurt, (list) => list.map(hurt)),
     died: opt(raw.died, copy),
     who: raw.who,
-    avoided: opt(raw.avoided, (a) => ({ name: need(a, "name", `${t}.avoided`), item: need(a, "item", `${t}.avoided`) })),
+    avoided: opt(raw.avoided, (a) => ({ name: need(a, "name", `${t}.avoided`), item: knownItemType(a.item, `${t}.avoided`, "item") })),
   });
 }
 

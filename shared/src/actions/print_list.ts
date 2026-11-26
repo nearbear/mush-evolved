@@ -1,6 +1,6 @@
 import { Action, isString } from "./action.ts";
-import { canReachItem, produceItem, TABULATOR_ITEM } from "../items.ts";
-import { DOCUMENT_ITEM } from "../lostAnalysis.ts";
+import { canReachItem, produceItem } from "../items.ts";
+import { DOCUMENT_ITEM, TABULATOR_ITEM } from "../itemIds.ts";
 import { logPublic } from "../log.ts";
 import { hasSkill } from "../skills.ts";
 import { rollList } from "../theList.ts";

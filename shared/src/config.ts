@@ -1,6 +1,6 @@
 import shipRooms from "@mush2/assets/derived/ship-rooms.json";
 import { ALIEN_FRUIT_ITEMS, ITRACKIE_ITEM } from "./itemIds.ts";
-import { BOOK_ITEM, HACKER_KIT_ITEM, LUNCHBOX_ITEM, MICROWAVE_ITEM, TREE_POT_ITEM } from "./items.ts";
+import { BOOK_ITEM, HACKER_KIT_ITEM, LUNCHBOX_ITEM, MICROWAVE_ITEM, TREE_POT_ITEM } from "./itemIds.ts";
 import { CHEAT_ROOM, cheatRoomEquipment } from "./cheatRoom.ts";
 import { EQUIPMENT_TYPES } from "./equipment.ts";
 import { ICARUS_CRAFT, patrolEquipment, patrolRooms } from "./patrol.ts";
@@ -96,7 +96,7 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   sanity: { start: 100, deathLoss: 1, witnessLoss: 4, killLoss: 10, killChanceFactor: 2, lowMorale: 5 },
   share: { cost: { ap: 1 }, effect: { morale: 2 }, pregnancy: { chance: 0.08, deathMoraleLoss: 2, mushExtraSpore: 1 } },
   // Confirmed 2026-10-14: a human converts on reaching 3 contamination (items and skills will raise it).
-  infection: { capacity: 3, mushophageBonus: 1 },
+  infection: { capacity: 3, mushophageBonus: 1, startingContaminated: 2, startingLevel: 1 },
   // Confirmed 2026-10-15: spiking costs 1 AP and 1 spore, and raises a human's contamination by 1.
   // Owner, 2026-11-25: the Infector Mush skill holds 2 spike charges; the first spike starts the cooldown and both come back when it ends.
   spike: { cost: { ap: 1 }, cooldownCycles: 4, infectorCharges: 2 },
@@ -762,7 +762,7 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
     { type: "bandage", room: "SICK_BAY" },
     { type: "bandage", room: "SICK_BAY" },
     // Refectory (`REFECTORY`): 32 standard rations, microwave, freezer, mad kube.
-    ...Array.from({ length: 32 }, () => ({ type: "uncooked_ration", room: "REFECTORY" as RoomId })),
+    ...Array.from({ length: 32 }, () => ({ type: "uncooked_ration" as const, room: "REFECTORY" as RoomId })),
     { type: "microwave", room: "REFECTORY" },
     { type: "freezer", room: "REFECTORY" },
     { type: "mad_kube", room: "REFECTORY" },
@@ -775,13 +775,13 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
     // Front Storage (`STORAGE_FRONT`): the tabulator, for THE List (owner, 2026-11-21, #266; the bridge in the original and eMush).
     { type: "tabulator", room: "STORAGE_FRONT" },
     // Icarus Bay (`ICARUS`): 6 spacesuits (moved from `daedalus_default`, 2026-11-20).
-    ...Array.from({ length: 6 }, () => ({ type: "space_suit", room: "ICARUS" as RoomId })),
+    ...Array.from({ length: 6 }, () => ({ type: "space_suit" as const, room: "ICARUS" as RoomId })),
     // `storage_default` (24 items across the 5 storages):
-    ...Array.from({ length: 3 }, () => ({ type: "camera", pool: "storage" as const })),
-    ...Array.from({ length: 2 }, () => ({ type: "extinguisher", pool: "storage" as const })),
-    ...Array.from({ length: 2 }, () => ({ type: "tree_pot", pool: "storage" as const })),
-    ...Array.from({ length: 2 }, () => ({ type: "blaster", pool: "storage" as const })),
-    ...Array.from({ length: 2 }, () => ({ type: "rope", pool: "storage" as const })),
+    ...Array.from({ length: 3 }, () => ({ type: "camera" as const, pool: "storage" as const })),
+    ...Array.from({ length: 2 }, () => ({ type: "extinguisher" as const, pool: "storage" as const })),
+    ...Array.from({ length: 2 }, () => ({ type: "tree_pot" as const, pool: "storage" as const })),
+    ...Array.from({ length: 2 }, () => ({ type: "blaster" as const, pool: "storage" as const })),
+    ...Array.from({ length: 2 }, () => ({ type: "rope" as const, pool: "storage" as const })),
     { type: "plastenite_armor", pool: "storage" },
     { type: "wrench", pool: "storage" },
     { type: "knife", pool: "storage" },
@@ -826,7 +826,7 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
     { type: "old_shirt", pool: "daedalus" },
     // `randomBlueprints` (4 weighted draws across all 27 rooms):
     ...Array.from({ length: 4 }, () => ({
-      type: "blueprint",
+      type: "blueprint" as const,
       pool: "daedalus" as const,
       buildsWeights: {
         ECHO_SOUNDER: 8,
@@ -849,8 +849,8 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   ],
   // Confirmed 2026-10-13: every player starts with an iTrackie.
   startInventory: [ITRACKIE_ITEM],
-  // Owner, 2026-11-23: the plasma shield emitter starts the game broken, silently without a NERON breakdown announcement.
-  startBrokenEquipment: ["PLASMA_SHIELD"],
+  // Owner, 2026-11-23 / 2026-11-26: the plasma shield emitter and the hydroponics center start the game broken, silently without a NERON breakdown announcement.
+  startBrokenEquipment: ["PLASMA_SHIELD", "PLANT_CONTROLLER"],
   // The patrol ships' rooms have no doors and sit off the map (patrol.ts, docs/plans/archive/patrol.md answer 1).
   // So does the Icarus while away (expeditions.ts, docs/plans/archive/expedition.md phase 2).
   rooms: { ...(Object.fromEntries(SHIP_ROOMS.map((r) => [r.id, r.doors])) as Record<RoomId, RoomId[]>), ...patrolRooms(), [ICARUS_CRAFT]: [] },

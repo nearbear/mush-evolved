@@ -1,6 +1,7 @@
 import { Action, type ActionCost, isString } from "./action.ts";
 import { DRONE_UPGRADES, type DroneUpgrade, droneParams, isDroneUpgrade, newDrone } from "../drones.ts";
-import { SUPPORT_DRONE_ITEM, canReachItem, removeItem } from "../items.ts";
+import { SUPPORT_DRONE_ITEM } from "../itemIds.ts";
+import { canReachItem, removeItem } from "../items.ts";
 import { logPublic } from "../log.ts";
 import { hasSkill } from "../skills.ts";
 import type { GameState, ItemState, PlayerState } from "../types.ts";

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { breakItem } from "../src/breakage.ts";
-import { ITEM_TYPES } from "../src/items.ts";
+import { ITEM_TYPES } from "../src/itemTypes.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameState } from "../src/types.ts";
 import { forceDismantleOdds, makeSeats, must, offered, option, player, testConfig } from "./support.ts";

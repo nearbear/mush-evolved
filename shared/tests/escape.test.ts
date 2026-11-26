@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { startCharges } from "../src/items.ts";
+import { startCharges } from "../src/charges.ts";
 import { createGame } from "../src/rules.ts";
 import type { GameState } from "../src/types.ts";
 import { makeSeats, option, player, testConfig } from "./support.ts";

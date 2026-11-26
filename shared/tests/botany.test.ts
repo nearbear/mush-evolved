@@ -47,6 +47,13 @@ describe("botany: the decided numbers and the start", () => {
     expect(pots(s)).toHaveLength(5);
   });
 
+  it("starts with the Hydroponics center (PLANT_CONTROLLER) broken silently", () => {
+    const s = createGame(makeSeats(3), DEFAULT_CONFIG, 1);
+    const controller = (s.equipment[GARDEN] ?? []).find((e) => e.type === "PLANT_CONTROLLER")!;
+    expect(controller.broken).toBe(true);
+    expect(s.chat.some((m) => m.system?.key === "equipmentBroken")).toBe(false);
+  });
+
   it("a banana gives +1 AP, satiety, morale and HP when eaten", () => {
     const s = ship();
     const p = player(s, "p0");

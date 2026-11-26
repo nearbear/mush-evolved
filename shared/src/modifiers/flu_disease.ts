@@ -2,7 +2,7 @@ import { changeMP, updateMaxValues } from "../adjustStats.ts";
 import { damage } from "../death.ts";
 import { soil } from "../dirt.ts";
 import { diseaseAffects, vomit } from "../diseases.ts";
-import { ITEM_TYPES } from "../items.ts";
+import { ITEM_TYPES } from "../itemTypes.ts";
 import type { Modifier } from "../modifiers.ts";
 import { rollFloat } from "../rng.ts";
 

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { dayOf } from "../src/helpers.ts";
-import { ITRACKIE_ITEM } from "../src/items.ts";
+import { ITRACKIE_ITEM } from "../src/itemIds.ts";
 import { PILGRED_COMPLETE } from "../src/pilgred.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyInput } from "../src/replay.ts";

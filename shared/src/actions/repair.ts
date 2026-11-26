@@ -1,20 +1,19 @@
 import { Action, type ActionCost, isString } from "./action.ts";
 import { isBreakable } from "../breakage.ts";
 import { doorOtherRoom, doorsOf, repairDoor } from "../doors.ts";
-import { ITEM_TYPES, canReachItem, isWorking, itemsIn } from "../items.ts";
+import { ITEM_TYPES } from "../itemTypes.ts";
+import { canReachItem, isWorking, itemsIn } from "../items.ts";
 import { logPrivate, logPublic } from "../log.ts";
 import { removeStatus } from "../statuses.ts";
 import { repairEquipment } from "../gravity.ts";
 import type { DoorId, GameState, PlayerState } from "../types.ts";
 import { rubellaBlocks } from "../diseases.ts";
+import { WRENCH_ITEM } from "../itemIds.ts";
 
 export type RepairActionData =
   | { type: "repair"; equipment: string }
   | { type: "repair"; item: string }
   | { type: "repair"; door: DoorId };
-
-/** The item that makes a repair `config.repair.wrenchFactor` times as likely, carried. */
-export const WRENCH_ITEM = "wrench";
 
 /**
  * Repair broken equipment in your room (owner, 2026-10-25, eMushpedia "Pannes"): 1 AP, at the equipment type's base

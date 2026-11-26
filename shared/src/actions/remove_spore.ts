@@ -2,7 +2,8 @@ import { Action, type ActionCost, type ActionVisibility, COOLDOWN, isString } fr
 import { addDisease } from "../diseases.ts";
 import { damage } from "../death.ts";
 import { removeContamination } from "../infection.ts";
-import { canReachItem, isWorking, SPORE_SUCKER_ITEM } from "../items.ts";
+import { canReachItem, isWorking } from "../items.ts";
+import { SPORE_SUCKER_ITEM } from "../itemIds.ts";
 import { logPrivate } from "../log.ts";
 import type { GameState, ItemState, PlayerState } from "../types.ts";
 

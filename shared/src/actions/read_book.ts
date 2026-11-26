@@ -1,5 +1,6 @@
 import { Action, isString } from "./action.ts";
-import { BOOK_ITEM, canReachItem, removeItem } from "../items.ts";
+import { BOOK_ITEM } from "../itemIds.ts";
+import { canReachItem, removeItem } from "../items.ts";
 import { logPublic } from "../log.ts";
 import { skillPicked } from "../modifiers.ts";
 import { hasSkill, isSkill } from "../skills.ts";

@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { createChannel, inviteToChannel, leaveChannel, sendChat } from "../src/chat.ts";
 import { chatReadFor, mergeChatRead, pruneChatRead, unreadCount, type ChatRead } from "../src/chatRead.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
-import { ITRACKIE_ITEM } from "../src/items.ts";
+import { ITRACKIE_ITEM } from "../src/itemIds.ts";
 import { bodyOf, swapMinds } from "../src/mind.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { GRAVEYARD_CHANNEL, MUSH_CHANNEL, type ChannelId, type GameState, type PlayerId } from "../src/types.ts";

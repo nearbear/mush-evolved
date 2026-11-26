@@ -104,7 +104,7 @@ describe("ship resources", () => {
     expect(s.ship.plasmaShield).toBe(0);
     expect(EQUIPMENT_TYPES.PLASMA_SHIELD?.canBeSabotaged).toBe(true);
     expect(s.chat.some((m) => m.system?.key === "equipmentBroken")).toBe(false);
-    expect(viewFor(s, "p0").alerts.broken).toBe(1);
+    expect(viewFor(s, "p0").alerts.broken).toBe(DEFAULT_CONFIG.startBrokenEquipment.length);
 
     // Turning BIOS on while broken leaves shield inactive and unregenerating.
     s.bios.plasma_shield = true;

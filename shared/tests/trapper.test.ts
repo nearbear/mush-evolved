@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { doorId } from "../src/doors.ts";
-import { MYCO_ALARM_ITEM } from "../src/mycoalarm.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { GameState, RoomId } from "../src/types.ts";
 import { clone, makeSeats, mustApply, noCharacterModifiers, offered, option, player, testConfig } from "./support.ts";
+import { MYCO_ALARM_ITEM } from "../src/itemIds.ts";
 
 const ROOM: RoomId = "LABORATORY";
 

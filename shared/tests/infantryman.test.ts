@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
-import { CUSTOMIZED_BLASTER_ITEM, capacity, itemsIn } from "../src/items.ts";
+import { CUSTOMIZED_BLASTER_ITEM } from "../src/itemIds.ts";
+import { capacity, itemsIn } from "../src/items.ts";
 import { resourceAvailable } from "../src/resources.ts";
 import { applyAction, applyInput, createGame, viewFor } from "../src/rules.ts";
 import { CHARACTER_SKILLS, skillStatus } from "../src/skills.ts";

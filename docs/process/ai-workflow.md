@@ -5539,6 +5539,26 @@ Trait descriptions (en/fr/es) no longer end with "It can't be removed."; `Status
 - Fix: the `test` scripts in shared, server, web and tools now pass `--testTimeout=30000` (Vitest's default is 5s). `verify` runs those scripts, so it gets the same limit. The explicit limits that failed went from 15–20s to 60s: GoalBot legality, survival, and two GameRoom bot tests. The cost is that a hung test takes longer to report.
 - Raising limits doesn't help when the machine is badly overloaded. While other sessions were running their own suites (load average about 9 on 8 cores), even 60s limits ran out. Once the machine was idle, `verify` passed.
 
+## 2026-11-26: Schrödinger never scratches his owner; unrenameable item types
+
+- **Asked:** Schrödinger never scratches his owner when she picks him up, and he can't be renamed, with room for more unrenameable items later.
+- **Done:** `TransferAction.injuryChance` returns 0 for taking the cat when the taker is `item.owner`, so a Mush cat can't contaminate Raluca by being taken (caress still can). Renaming got a per-type flag, `ItemType.canRename: false`, read through one helper, `isRenameableType`, by `canRenameItem`, `renameItem` (`cant_rename`) and both web rename buttons (`PeekBar`, `InspectPanel`), so the next unrenameable item is a one-line data change. Rename tests that used the cat moved to a drone and a blaster (the replay test picks Infantryman via cheats).
+- **Worked:** the owner flagged extensibility mid-task, before the rename change was written, which steered it from a cat check to a type flag.
+- **Note:** the web rename button duplicated the rules' eligibility check; it now shares the type check but still re-derives the rest client-side.
+
+## 2026-11-26: Starting contamination at Mush selection
+
+- **Decision (owner):** when the Mush are chosen (end of pre-selection, or at launch without it), 2 random humans without the Immunity trait start at contamination 1. Owner picked, from Claude's options: set directly and silently (no Hygienist roll, no Mush-channel message), both game kinds, "non-immune" means the permanent trait only, and nobody at all if fewer than 2 are eligible.
+- **What worked:** `contaminateAtSelection` (`infection.ts`) draws on its own RNG stream (`streamFor`, derived from the seed in `createGame` and from the current `state.rng` in `selectMush`), so no other roll moved; a test checks the whole state equals the knob-off game apart from `contamination`, and that every human's view is byte-identical.
+- **Needed correction:** turning it on by default broke 34 contamination tests (spikes converting a turn early, etc.). Fixed by switching it off in `QUIET_CONFIG`, the tests' quiet baseline that already disables hunters and incidents, rather than touching each test.
+
+## 2026-11-26: Slime Trap and Infector disabled, not removed
+
+Owner asked to make the Slime Trap and Infector Mush skills unpickable without removing them (removing a skill id would force a game-version bump). Added `DISABLED_MUSH_SKILLS` in `shared/src/skills.ts`, filtered out of `PICKABLE_MUSH_SKILLS` (so the picker, which renders `pick_skill` candidates, never shows them, and bots never pick them) and refused in `pick_skill` validation (`skill_disabled`), with a test. Infector's spike rules stay in place for any stored holder. Worked first time; no correction needed.
+
+### Hydroponics center starts broken (2026-11-26)
+- **Decision (owner, 2026-11-26):** Added `"PLANT_CONTROLLER"` to `DEFAULT_CONFIG.startBrokenEquipment` (`shared/src/config.ts`), so the Hydroponics center starts the game broken silently (without a NERON breakdown announcement), counted in the alert bar alongside `PLASMA_SHIELD`.
+- **What worked:** Reusing `config.startBrokenEquipment` kept `QUIET_CONFIG` (`startBrokenEquipment: []`) and existing botany/incident tests untouched; only `shared/tests/ship.test.ts` needed its expected starting `alerts.broken` count updated to `DEFAULT_CONFIG.startBrokenEquipment.length`.
 ## 2026-11-26: Sanity and disorders from deaths
 
 - **Decision (owner):** every player has a private sanity starting at 100. A human's death costs every living player 1, witnesses (same room) 4 more, the killer 10 more (the killer is also a witness). At the next cycle change a witness rolls (100 − sanity)% for a random disorder, a killer (100 − sanity) × 2%, and anyone under 5 morale rolls (100 − sanity)% every cycle change; one roll per condition. Mush never roll. Claude asked four questions first (who is the killer, witness/killer stacking, how long the marks last, how rolls stack) and the owner picked: fatal blow of a punch/attack/interrogation, killer also a witness, next cycle change only, one roll per condition.
@@ -5557,3 +5577,22 @@ Trait descriptions (en/fr/es) no longer end with "It can't be removed."; `Status
 - **Decision (owner):** a new disorder, Kleptophobia. Dropping an item costs 2 AP, and the holder loses 4 morale when an item they carry is "stolen". The game has no steal action, so the AI asked; the owner said stolen means lost on an expedition (the lost-item event). It stacks with Agoraphobia: a drop in a crowded room costs 3 AP. Later in the same task the owner removed Depression's +1 daily morale loss (the `ownMoraleLoss` fold hook stays, unused).
 - **What worked:** the drop's AP goes through a new `dropAp` fold read by the drop's base price (`getCost`), not an `actionCost` hook. Agoraphobia and Burnt Hand only charge actions that already cost AP, and `actionCost` hooks run in the order the player gained their modifiers, so an `actionCost` hook would have given 2 or 3 AP depending on which disorder came first. A test covers both orders. The morale loss is a new `onItemLost` event hook, called from the expedition's `lostItem` case.
 - **Needed correction:** the AI's first reading of "stolen" (a theft mechanic that doesn't exist) was wrong. Asking before building avoided dead code or an invented steal action.
+## 2026-11-26: Split items.ts instead of one file per item
+
+- Asked whether to put each item in its own file. Recommended against it: `ITEM_TYPES` is about 130 lines of one-line flag records, and the rules are split by action (`actions/*.ts`) and by system (drugs, botany, the cat), so per-item files would give ~90 near-empty files and spread out data that's useful to compare (repair odds, scrap yields).
+- Did the smaller cleanup instead: the item table moved to `itemTypes.ts`, every `*_ITEM` constant from `items.ts` moved to `itemIds.ts`, `startCharges`/`rechargeMicrowaves`/`rechargeScooters` moved to `charges.ts`, `afterArmor`/`afterProtection` to `armor.ts`, and `activeScooter` to `modifiers.ts`. `items.ts` now holds only containers and inventory. A Python script rewrote 135 import sites (no re-export from `items.ts`, so each name has one home). The one surprise: the script pointed `modifiers.ts`'s own `activeScooter` import at itself, which typecheck caught right away.
+- Typed item ids (`ItemTypeId` instead of `string`) were left for a separate, planned change.
+
+## 2026-11-26: Typed item ids (`ItemTypeId`)
+
+- Item type ids are now a string-literal union, `ItemTypeId` (`itemIds.ts`), and `ITEM_TYPES` is a `Record<ItemTypeId, ItemType>`. Item, plant, blueprint, dispenser, dismantle and expedition-report fields, the config's item fields, and the web icon tables carry it. No behavior change, no game-version bump, no `as` casts except one in `familyEntries`. Done over two sessions, with a handoff note in between.
+- Boundaries: action inputs (`dispense_drug.drug`, the Kube spawn) and stored states check ids with `isItemTypeId`. `normalizeState.ts` now throws `NormalizeError` on an unknown stored item type (`knownItemType`), like an unknown union variant. Before this, an unknown id loaded and was quietly skipped by the `ITEM_TYPES[t]?.` lookups.
+- What the types found: no typos in `config.ts`, but a dead `anabolics` key in the web icon table (the item is `steroids`), and two test fixtures that used made-up ids (`"ration"`, `"i"`). A new web test checks every plain item type has an icon and an English name; it found that `corpse` has no inventory icon (the room draws it as the character lying down), which is listed as a known exception.
+- Needed correction: the first version of that test checked `hybridParents(id) === undefined`, but it returns `null`, so the test passed while checking nothing. A `length > 90` floor now guards against that.
+- Left as `string`: `names.item()`, because log params and other callers pass plain strings and narrowing them all wasn't worth it for this change.
+
+### 2026-11-26: Spend alerts and caps (#128)
+
+- The owner configured the three Cloudflare dashboard items by hand: account budget alerts ($5/$15/$30), the Durable Objects spend limit (alerts at $25/$40, hard cap $50) and the Workers spend limit (alerts at $10/$16, hard cap $20).
+- The assistant wrote the last item, a "Spend alerts and caps" section in `docs/ops/observability.md`: the thresholds, where to edit them, what a tripped cap does and what to check when an alert fires. The cap-trip behavior (HTTP 1103, rejected DO calls and alarms) is from Cloudflare's docs and is marked as not tried.
+- The DevOps epic (#51) had no Stories checklist; the assistant added one from its sub-issues.

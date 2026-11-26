@@ -3,7 +3,7 @@ import { applyXyloph, XYLOPH_DROP_ROOM } from "../src/comms.ts";
 import { DEFAULT_CONFIG, PRESELECTION } from "../src/config.ts";
 import { killPlayer } from "../src/death.ts";
 import { convert, cure } from "../src/infection.ts";
-import { DOCUMENT_ITEM, rollAtSelection, rollLostAnalysis } from "../src/lostAnalysis.ts";
+import { rollAtSelection, rollLostAnalysis } from "../src/lostAnalysis.ts";
 import { swapMinds } from "../src/mind.ts";
 import { normalizeGame } from "../src/normalizeState.ts";
 import { joinShip, preselectionDeadline } from "../src/preselection.ts";
@@ -11,6 +11,7 @@ import { streamFor } from "../src/rng.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { GameConfig, GameState, ItemState } from "../src/types.ts";
 import { clone, makeSeats, must, nextCycle, noHunters, noIncidents, offered, player } from "./support.ts";
+import { DOCUMENT_ITEM } from "../src/itemIds.ts";
 
 const config: GameConfig = noIncidents(noHunters(DEFAULT_CONFIG));
 const perMush = DEFAULT_CONFIG.comms.xyloph.lostAnalysisPerMush;

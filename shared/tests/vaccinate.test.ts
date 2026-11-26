@@ -1,8 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { ANTI_MUSH_SERUM_ITEM } from "../src/actions/vaccinate.ts";
 import { createChannel, createThread, inviteToChannel, leaveChannel, pushChat, sendChat, toggleCheckbox } from "../src/chat.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
-import { ITRACKIE_ITEM } from "../src/items.ts";
+import { ANTI_MUSH_SERUM_ITEM, ITRACKIE_ITEM } from "../src/itemIds.ts";
 import { logPrivate, logPublic } from "../src/log.ts";
 import { postPlan } from "../src/plans.ts";
 import { queueAction } from "../src/queue.ts";

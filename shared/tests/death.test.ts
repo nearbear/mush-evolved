@@ -4,7 +4,9 @@ import { createChannel, inviteToChannel, sendChat, toggleCheckbox } from "../src
 import { damage, hasMushDied, heal, killPlayer } from "../src/death.ts";
 import { hopelessCycle } from "../src/morale.ts";
 import { burnOxygen } from "../src/ship.ts";
-import { CORPSE_ITEM, ITEM_TYPES, ITRACKIE_ITEM, itemsIn } from "../src/items.ts";
+import { CORPSE_ITEM, ITRACKIE_ITEM } from "../src/itemIds.ts";
+import { ITEM_TYPES } from "../src/itemTypes.ts";
+import { itemsIn } from "../src/items.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { CHAT_CHANNELS, GRAVEYARD_CHANNEL, MUSH_CHANNEL, type Action, type GameState, type PlayerId } from "../src/types.ts";
 import { makeSeats, player, must, nextCycle, offered, testConfig, withoutDrugs } from "./support.ts";

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
-import { ITEM_TYPES, ALIEN_FRUIT_ITEMS } from "../src/items.ts";
+import { ITEM_TYPES } from "../src/itemTypes.ts";
+import { ALIEN_FRUIT_ITEMS } from "../src/itemIds.ts";
 import { createGame, viewFor } from "../src/rules.ts";
 import { nextSpoilStage, spoilFood } from "../src/spoilage.ts";
 import type { GameState, PlayerId, SpoilStage } from "../src/types.ts";

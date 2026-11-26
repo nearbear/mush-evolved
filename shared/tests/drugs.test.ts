@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { createGame, viewFor } from "../src/rules.ts";
 import { makeSeats } from "./support.ts";
 import { drawDrugs, MAX_TREATED, START_DRUG_EXTRAS, START_DRUG_TYPES } from "../src/drugs.ts";
-import { DRUG_ITEMS } from "../src/items.ts";
+import { DRUG_ITEMS } from "../src/itemIds.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 
 describe("drawDrugs", () => {

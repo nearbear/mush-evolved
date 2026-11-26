@@ -3,8 +3,8 @@ import { canReachItem, removeItem } from "../items.ts";
 import { logPrivate, logPublic } from "../log.ts";
 import { interfaceId, PATROL_SHIPS, type PatrolShip } from "../patrol.ts";
 import type { GameState, ItemState, PlayerState } from "../types.ts";
-import { HULL_REPAIR_ITEM } from "./repair_hull.ts";
 import { rubellaBlocks } from "../diseases.ts";
+import { HULL_REPAIR_ITEM } from "../itemIds.ts";
 
 export type RenovateActionData = { type: "renovate"; equipment: string };
 

@@ -3,7 +3,7 @@ import { damage } from "../death.ts";
 import { damageHostile, hostileAttacked, hostileHere, hostilesHere } from "../hostiles.ts";
 import { isInactive } from "../inactivity.ts";
 import { logPublic } from "../log.ts";
-import { afterProtection } from "../items.ts";
+import { afterProtection } from "../armor.ts";
 import { punchDamage } from "../modifiers.ts";
 import { roll, rollFloat } from "../rng.ts";
 import type { GameState, PlayerState } from "../types.ts";

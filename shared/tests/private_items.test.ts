@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { actionItemType, actionVisibility } from "../src/actions.ts";
 import { killPlayer } from "../src/death.ts";
-import { ITRACKIE_ITEM } from "../src/items.ts";
+import { ITRACKIE_ITEM } from "../src/itemIds.ts";
 import { normalizeItem } from "../src/normalizeState.ts";
 import { PATROL_SHIPS } from "../src/patrol.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";

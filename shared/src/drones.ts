@@ -13,7 +13,8 @@
 import { repairEquipment } from "./gravity.ts";
 import { isBreakable } from "./breakage.ts";
 import { isOnFire } from "./fire.ts";
-import { ITEM_TYPES, itemsIn } from "./items.ts";
+import { ITEM_TYPES } from "./itemTypes.ts";
+import { itemsIn } from "./items.ts";
 import { logPublic } from "./log.ts";
 import { newDrone } from "./droneIdentity.ts";
 import type { Npc } from "./npcs.ts";

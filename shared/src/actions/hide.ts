@@ -1,5 +1,5 @@
 import { Action, IN_PRESELECTION, type ActionVisibility, isString } from "./action.ts";
-import { ITEM_TYPES } from "../items.ts";
+import { ITEM_TYPES } from "../itemTypes.ts";
 import { patrolShip } from "../patrol.ts";
 import { IN_PATROL_SHIP } from "./transfer.ts";
 import { logSecret } from "../log.ts";

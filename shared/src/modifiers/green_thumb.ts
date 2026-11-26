@@ -1,4 +1,5 @@
-import { TREE_POT_ITEM, produceItem } from "../items.ts";
+import { TREE_POT_ITEM } from "../itemIds.ts";
+import { produceItem } from "../items.ts";
 import type { Modifier } from "../modifiers.ts";
 
 // Its graft head start (`config.greenThumb.graftHeadStart`, #438) is applied in actions/graft.ts.

@@ -8,10 +8,9 @@ import { emptyQueue } from "../queueCore.ts";
 import { leaveTerminal } from "../spot.ts";
 import { removeStatus } from "../statuses.ts";
 import type { GameState, ItemState, PlayerState } from "../types.ts";
+import { ANTI_MUSH_SERUM_ITEM } from "../itemIds.ts";
 
 export type VaccinateActionData = { type: "vaccinate"; target: string };
-
-export const ANTI_MUSH_SERUM_ITEM = "anti_mush_serum";
 
 /**
  * Vaccinate (owner, 2026-10-25, from the wiki): carrying an anti-Mush serum, spend `vaccine.cost.ap` AP on a living

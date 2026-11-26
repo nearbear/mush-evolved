@@ -1,6 +1,7 @@
 import { Action, isString } from "./action.ts";
 import { heal as healHp } from "../death.ts";
-import { ITEM_TYPES, canReachItem, removeItem } from "../items.ts";
+import { ITEM_TYPES } from "../itemTypes.ts";
+import { canReachItem, removeItem } from "../items.ts";
 import { preferSpikedInRoom } from "../itemView.ts";
 import { logSecret } from "../log.ts";
 import { consumed, consumedByMush, mealApGain } from "../modifiers.ts";

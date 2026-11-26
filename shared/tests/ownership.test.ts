@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { BLUEPRINT_ITEM } from "../src/blueprints.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
-import { CAT_ITEM, CUSTOMIZED_BLASTER_ITEM, SUPPORT_DRONE_ITEM, TREE_POT_ITEM, hybridParents, itemsIn } from "../src/items.ts";
+import { BLUEPRINT_ITEM, CAT_ITEM, CUSTOMIZED_BLASTER_ITEM, hybridParents, SUPPORT_DRONE_ITEM, TREE_POT_ITEM } from "../src/itemIds.ts";
+import { itemsIn } from "../src/items.ts";
 import { parseGameMessage } from "../src/protocol.ts";
-import { MAX_ITEM_NAME_LENGTH, canRenameItem, renameItem } from "../src/rename.ts";
+import { MAX_ITEM_NAME_LENGTH, canRenameItem, isRenameableType, renameItem } from "../src/rename.ts";
 import { createGame, viewFor } from "../src/rules.ts";
 import { joinShip } from "../src/preselection.ts";
 import { applyInput, replayGame, type GameSetup, type Input } from "../src/replay.ts";
@@ -130,29 +130,41 @@ describe("renaming owned items", () => {
 
   it("refuses illegal renames without mutating state", () => {
     const s = ship();
-    const cat = s.items.find((i) => i.type === CAT_ITEM)!; // owned by p0, in LABORATORY
-    const drone = s.items.find((i) => i.type === SUPPORT_DRONE_ITEM)!; // unowned, in CORRIDOR_A
+    const drone = s.items.find((i) => i.type === SUPPORT_DRONE_ITEM)!; // in CORRIDOR_A, with everyone
 
     // Unowned item.
     expect(renameItem(s, "p0", drone.id, "Beeper")).toEqual({ ok: false, error: "not_owner" });
+    drone.owner = "p0";
     // Non-owner.
-    player(s, "p1").room = "LABORATORY";
-    expect(renameItem(s, "p1", cat.id, "Mittens")).toEqual({ ok: false, error: "not_owner" });
-    // Owner out of reach (p0 is in CORRIDOR_A, cat is in LABORATORY).
-    expect(renameItem(s, "p0", cat.id, "Mittens")).toEqual({ ok: false, error: "cant_rename" });
-    // Too long.
+    expect(renameItem(s, "p1", drone.id, "Beeper")).toEqual({ ok: false, error: "not_owner" });
+    // Owner out of reach.
     player(s, "p0").room = "LABORATORY";
-    expect(renameItem(s, "p0", cat.id, "x".repeat(MAX_ITEM_NAME_LENGTH + 1))).toEqual({ ok: false, error: "item_name_invalid" });
+    expect(renameItem(s, "p0", drone.id, "Beeper")).toEqual({ ok: false, error: "cant_rename" });
+    // Too long.
+    player(s, "p0").room = "CORRIDOR_A";
+    expect(renameItem(s, "p0", drone.id, "x".repeat(MAX_ITEM_NAME_LENGTH + 1))).toEqual({ ok: false, error: "item_name_invalid" });
     // Dead or comatose owner.
     player(s, "p0").comaUntil = s.cycle + 2;
-    expect(renameItem(s, "p0", cat.id, "Mittens")).toEqual({ ok: false, error: "comatose" });
+    expect(renameItem(s, "p0", drone.id, "Beeper")).toEqual({ ok: false, error: "comatose" });
     delete player(s, "p0").comaUntil;
     player(s, "p0").alive = false;
-    expect(renameItem(s, "p0", cat.id, "Mittens")).toEqual({ ok: false, error: "dead" });
+    expect(renameItem(s, "p0", drone.id, "Beeper")).toEqual({ ok: false, error: "dead" });
+    expect(drone.customName).toBeUndefined();
+  });
+
+  it("never renames Schrödinger, even for his owner within reach (owner, 2026-11-26)", () => {
+    const s = ship();
+    const cat = s.items.find((i) => i.type === CAT_ITEM)!;
+    expect(cat.owner).toBe("p0");
+    player(s, "p0").room = "LABORATORY";
+    expect(canRenameItem(s, player(s, "p0"), cat)).toBe(false);
+    expect(renameItem(s, "p0", cat.id, "Mittens")).toEqual({ ok: false, error: "cant_rename" });
+    expect(isRenameableType(CAT_ITEM)).toBe(false);
+    expect(isRenameableType(SUPPORT_DRONE_ITEM)).toBe(true);
     expect(cat.customName).toBeUndefined();
   });
 
-  it("uses custom names in drone, cat, and plant logs", () => {
+  it("uses custom names in drone and plant logs", () => {
     // Drone log: custom name without serial.
     let s = ship();
     const drone = s.items.find((i) => i.type === SUPPORT_DRONE_ITEM)!;
@@ -164,21 +176,6 @@ describe("renaming owned items", () => {
     const upgradeLog = s.log.find((e) => e.key === "droneUpgraded")!;
     expect(upgradeLog.params?.drone).toBe("Sparky");
     expect(upgradeLog.params?.serial).toBeUndefined();
-
-    // Schrödinger log: passes cat custom name.
-    const cat = s.items.find((i) => i.type === CAT_ITEM)!;
-    player(s, "p0").room = "LABORATORY";
-    s = must(renameItem(s, "p0", cat.id, "Mittens"));
-    s = mustApply(s, "p0", { type: "take", item: cat.id });
-    s = mustApply(s, "p0", { type: "caress", item: cat.id });
-    expect(s.log.find((e) => e.key === "caressedCat")!.params?.cat).toBe("Mittens");
-
-    // Mush caress on renamed cat.
-    player(s, "p0").role = "mush";
-    player(s, "p0").spores = 1;
-    s = mustApply(s, "p0", { type: "mush_caress", item: cat.id });
-    expect(s.log.find((e) => e.key === "mushCaressedCat")!.params?.cat).toBe("Mittens");
-    expect(s.chat.find((m) => m.channel === MUSH_CHANNEL && m.system?.key === "mushConvertedCat")!.system!.params?.cat).toBe("Mittens");
 
     // Plant logs: wateredNamedPlant, treatedNamedPlant, namedPlantMatured, namedPlantProduced.
     let ps = ship({ startRoom: "HYDROPONIC_CENTER" });
@@ -206,25 +203,26 @@ describe("renaming owned items", () => {
 
   it("hides owner and customName from players who cannot see the item", () => {
     let s = ship();
-    const cat = s.items.find((i) => i.type === CAT_ITEM)!;
+    const drone = s.items.find((i) => i.type === SUPPORT_DRONE_ITEM)!;
+    drone.owner = "p0";
+    drone.at = { kind: "room", id: "LABORATORY" };
     player(s, "p0").room = "LABORATORY";
     player(s, "p1").room = "LABORATORY";
     player(s, "p2").room = "CORRIDOR_A";
-    s = must(renameItem(s, "p0", cat.id, "SecretCat"));
+    s = must(renameItem(s, "p0", drone.id, "SecretBot"));
 
     // Floor item in LABORATORY: p0 and p1 see owner & customName; p2 in CORRIDOR_A does not.
-    expect(viewFor(s, "p0").roomItems.find((i) => i.id === cat.id)).toMatchObject({ owner: "p0", customName: "SecretCat" });
-    expect(viewFor(s, "p1").roomItems.find((i) => i.id === cat.id)).toMatchObject({ owner: "p0", customName: "SecretCat" });
+    expect(viewFor(s, "p0").roomItems.find((i) => i.id === drone.id)).toMatchObject({ owner: "p0", customName: "SecretBot" });
+    expect(viewFor(s, "p1").roomItems.find((i) => i.id === drone.id)).toMatchObject({ owner: "p0", customName: "SecretBot" });
     const p2Json = JSON.stringify(viewFor(s, "p2"));
-    expect(p2Json).not.toContain("SecretCat");
-    expect(p2Json).not.toContain('"owner"');
+    expect(p2Json).not.toContain("SecretBot");
+    expect(p2Json).not.toMatch(/"owner":"p0"/);
 
     // Carried by p0: p1 in the same room no longer sees it.
-    s = mustApply(s, "p0", { type: "take", item: cat.id });
-    expect(viewFor(s, "p0").inventory.find((i) => i.id === cat.id)).toMatchObject({ owner: "p0", customName: "SecretCat" });
-    const p1Json = JSON.stringify(viewFor(s, "p1"));
-    expect(p1Json).not.toContain("SecretCat");
-    expect(p1Json).not.toContain('"owner"');
+    s = mustApply(s, "p0", { type: "take", item: drone.id });
+    expect(viewFor(s, "p0").inventory.find((i) => i.id === drone.id)).toMatchObject({ owner: "p0", customName: "SecretBot" });
+    expect(JSON.stringify(viewFor(s, "p1"))).not.toContain("SecretBot");
+    expect(viewFor(s, "p1").roomItems.some((i) => i.id === drone.id)).toBe(false);
   });
 
   it("parses renameItem wire messages and replays deterministically", () => {
@@ -236,18 +234,24 @@ describe("renaming owned items", () => {
     expect(parseGameMessage(JSON.stringify({ type: "renameItem", item: "", name: "Bolt" }))).toBeNull();
     expect(parseGameMessage(JSON.stringify({ type: "renameItem", item: "item-1", name: "x".repeat(MAX_ITEM_NAME_LENGTH * 4 + 1) }))).toBeNull();
 
+    // Chao picks Infantryman (with the anySkill and instantActions cheats) for an owned blaster, then renames it.
     const seats = makeSeats(4);
-    seats[0]!.character = "raluca";
+    seats[0]!.character = "chao";
     const setup: GameSetup = {
       seats,
       config: testConfig({ startRoom: "LABORATORY" }),
       seed: 12,
       rulesVersion: "test",
     };
-    const start = createGame(setup.seats, setup.config, setup.seed);
-    const cat = start.items.find((i) => i.type === CAT_ITEM)!;
-    const inputs: Input[] = [{ type: "renameItem", by: "p0", item: cat.id, name: "Quantum" }];
-    const replayed = replayGame(setup, inputs);
-    expect(replayed.items.find((i) => i.id === cat.id)!.customName).toBe("Quantum");
+    const prefix: Input[] = [
+      { type: "cheat", by: "p0", cheat: "anySkill", on: true },
+      { type: "cheat", by: "p0", cheat: "instantActions", on: true },
+      { type: "action", by: "p0", action: { type: "pick_skill", skill: "infantryman" }, at: 1000 },
+    ];
+    let forward = createGame(setup.seats, setup.config, setup.seed);
+    for (const input of prefix) forward = must(applyInput(forward, input));
+    const blaster = itemsIn(forward, { kind: "player", id: "p0" }).find((i) => i.type === CUSTOMIZED_BLASTER_ITEM)!;
+    const replayed = replayGame(setup, [...prefix, { type: "renameItem", by: "p0", item: blaster.id, name: "Quantum" }]);
+    expect(replayed.items.find((i) => i.id === blaster.id)!.customName).toBe("Quantum");
   });
 });

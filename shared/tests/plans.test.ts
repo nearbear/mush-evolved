@@ -3,7 +3,7 @@
 
 import { describe, expect, it } from "vitest";
 import { createChannel, inviteToChannel, leaveChannel } from "../src/chat.ts";
-import { ITRACKIE_ITEM } from "../src/items.ts";
+import { ITRACKIE_ITEM } from "../src/itemIds.ts";
 import { killPlayer } from "../src/death.ts";
 import { postPlan } from "../src/plans.ts";
 import { clearQueue, queueAction } from "../src/queue.ts";

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
-import { ITEM_TYPES } from "../src/items.ts";
+import { ITEM_TYPES } from "../src/itemTypes.ts";
 import { applyAction, createGame, legalActions, viewFor } from "../src/rules.ts";
 import type { GameState } from "../src/types.ts";
 import { makeSeats, must, mustApply, option, player, testConfig } from "./support.ts";

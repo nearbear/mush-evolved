@@ -1,3 +1,4 @@
+import type { ItemTypeId } from "../itemIds.ts";
 import type { PlanetTag } from "../planets.ts";
 import type { LogParams, PlayerId } from "../types.ts";
 
@@ -69,7 +70,7 @@ export interface SharedReport {
 /** One plant row in a greenhouse status shared from the Hydroponics center (`PLANT_CONTROLLER`, sharedPlants.ts). */
 export interface SharedPlantRow {
   /** Fruit species id (`fruit_banana`, `fruit01`–`fruit12`, or `graft_fruitXX_fruitYY`). */
-  species: string;
+  species: ItemTypeId;
   /** Effects claimed by the sharer, newline-separated (moderated free text, editable so players can lie). */
   effects: string;
   /** Thirst claimed by the sharer: 0 none, 1 thirsty, 2 dried out. */

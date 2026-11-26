@@ -1,10 +1,12 @@
 import { Action, type ActionCost, isString } from "./action.ts";
 import { EQUIPMENT_TYPES } from "../equipment.ts";
-import { ITEM_TYPES, canReachItem, removeItem, spawnInRoom } from "../items.ts";
+import { ITEM_TYPES, itemTypeOf } from "../itemTypes.ts";
+import { canReachItem, removeItem, spawnInRoom } from "../items.ts";
 import { logPrivate, logPublic } from "../log.ts";
 import { getUp } from "./lie_down.ts";
 import { isFortified } from "./reinforce.ts";
 import { hasSkill } from "../skills.ts";
+import type { ItemTypeId } from "../itemIds.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
 /**
@@ -35,7 +37,7 @@ export class DismantleAction extends Action<DismantleActionData> {
   /** The usual odds, unless the item or equipment type has its own in `ItemType.dismantle.chance` (knife and blaster, owner 2026-10-22). */
   override getSuccessChance(state: Readonly<GameState>, player: Readonly<PlayerState>, target: DismantleActionData): number {
     const own = "item" in target
-      ? ITEM_TYPES[state.items.find((i) => i.id === target.item)?.type ?? ""]?.dismantle?.chance
+      ? itemTypeOf(state, target.item)?.dismantle?.chance
       : EQUIPMENT_TYPES[state.equipment[player.room]?.find((e) => e.id === target.equipment)?.type ?? ""]?.dismantle?.chance;
     return own ?? state.config.dismantle.successChance;
   }
@@ -76,7 +78,7 @@ export class DismantleAction extends Action<DismantleActionData> {
   }
 
   override apply(state: GameState, player: PlayerState, target: DismantleActionData): void {
-    let scraps: { metal: number; plastic: number; extra?: string[] };
+    let scraps: { metal: number; plastic: number; extra?: readonly ItemTypeId[] };
     if ("equipment" in target) {
       const list = state.equipment[player.room]!; // checked, so it exists
       const { type } = list.splice(list.findIndex((e) => e.id === target.equipment), 1)[0]!;

@@ -4,11 +4,11 @@ import { DEFAULT_CONFIG } from "../src/config.ts";
 import { killPlayer } from "../src/death.ts";
 import { cure } from "../src/infection.ts";
 import { swapMinds } from "../src/mind.ts";
-import { MYCO_ALARM_ITEM } from "../src/mycoalarm.ts";
 import { RESEARCH_COMPLETE } from "../src/research.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { GameState, RoomId } from "../src/types.ts";
 import { clone, costOf, makeSeats, mustApply, nextDay, noCharacterModifiers, offered, option, player, testConfig } from "./support.ts";
+import { MYCO_ALARM_ITEM } from "../src/itemIds.ts";
 
 const ROOM: RoomId = "LABORATORY";
 

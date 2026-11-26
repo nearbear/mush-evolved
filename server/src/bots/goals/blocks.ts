@@ -9,6 +9,7 @@ import {
   viewPath,
   type Action,
   type ActionOption,
+  type ItemTypeId,
   type PlayerView,
   type RoomId,
 } from "@mush2/shared";
@@ -98,4 +99,4 @@ export function doorsAway(view: PlayerView, room: RoomId): string {
 export const where = (view: PlayerView, room: RoomId): string => (room === view.you.room ? "here" : `in ${room} ${doorsAway(view, room)}`);
 
 /** The item type behind an item id, if the bot can see that item (carried or in its room). */
-export const itemType = (view: PlayerView, id: string): string | undefined => [...view.inventory, ...view.roomItems].find((i) => i.id === id)?.type;
+export const itemType = (view: PlayerView, id: string): ItemTypeId | undefined => [...view.inventory, ...view.roomItems].find((i) => i.id === id)?.type;

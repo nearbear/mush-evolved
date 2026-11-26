@@ -1,5 +1,5 @@
 import { rumble } from "../diseases.ts";
-import { ITEM_TYPES } from "../items.ts";
+import { ITEM_TYPES } from "../itemTypes.ts";
 import type { Modifier } from "../modifiers.ts";
 
 /** Extra satiety lost each cycle, on top of the base loss. */

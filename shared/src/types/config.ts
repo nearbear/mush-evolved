@@ -4,6 +4,7 @@ import type { PlanetDirection } from "../planets.ts";
 import type { PlantState, RoomId } from "../types.ts";
 import type { StatusId } from "../statuses.ts";
 import type { HunterType } from "./state.ts";
+import type { ItemTypeId } from "../itemIds.ts";
 
 /** One kind of hunter (owner, 2026-11-12, #388; eMush's `HunterConfigData`). */
 export interface HunterTypeConfig {
@@ -24,7 +25,7 @@ export interface HunterTypeConfig {
 /** Wreckage left in space: weights by piece count (index = count), and by item type for each piece. */
 export interface DebrisTable {
   count: number[];
-  types: Record<string, number>;
+  types: Partial<Record<ItemTypeId, number>>;
 }
 
 /** `T` with every field read-only, all the way down. */
@@ -358,6 +359,10 @@ export interface GameConfig {
   infection: {
     capacity: number; // Contamination a human reaches before converting to Mush, before modifiers (confirmed 2026-10-14).
     mushophageBonus: number; // Capacity the completed MUSHOPHAGE_BACTERIA research adds for every human (decided 2026-10-17).
+    // At Mush selection, this many random humans without the Immunity trait start at contamination `startingLevel`,
+    // silently; if fewer are eligible, nobody is (owner, 2026-11-26).
+    startingContaminated: number;
+    startingLevel: number;
   };
   spike: {
     cost: { ap: number }; // Confirmed 2026-10-15.
@@ -451,11 +456,11 @@ export interface GameConfig {
   checkSpores: { cost: { ap: number } }; // The MycoScan's spore check (owner, 2026-11-01).
   // Compute Eden at the Super Calculator (#478; owner, 2026-11-22, eMush's numbers): `cost.ap` (or 1 Computer point), `successChance` per
   // try with the usual failure streak, with at least `fragments` star map fragments (`fragmentItem`) on the room's floor, unhidden.
-  eden: { compute: { cost: { ap: number }; successChance: number; fragments: number; fragmentItem: string } };
+  eden: { compute: { cost: { ap: number }; successChance: number; fragments: number; fragmentItem: ItemTypeId } };
   // The jukebox (owner, 2026-11-22): Listen costs `cost.ap` and gives +`morale` once a day while your own song plays; Check playlist is free.
   // `checkInjuryChance`: the random injury on Check playlist (owner, 2026-11-25: eMush's 1%).
   jukebox: { cost: { ap: number }; morale: number; checkInjuryChance: number };
-  snoop: { cost: { ap: number }; dirtyChance: number; injuryChance: number; rooms: string[]; items: Record<string, number> }; // The Scrapper's Snoop: cost, its dirt and injury odds, the storage rooms it works in, the items it makes by weight (owner, 2026-11-01).
+  snoop: { cost: { ap: number }; dirtyChance: number; injuryChance: number; rooms: string[]; items: Partial<Record<ItemTypeId, number>> }; // The Scrapper's Snoop: cost, its dirt and injury odds, the storage rooms it works in, the items it makes by weight (owner, 2026-11-01).
   sporeSucker: {
     cost: { ap: number }; // AP using the Spore Sucker costs (owner, 2026-11-20).
     effect: { damage: number }; // Damage it always deals its user (owner, 2026-11-20).
@@ -515,7 +520,7 @@ export interface GameConfig {
     treat: { cost: { ap: number }, injuryChance: number }; // Treat one plant (clears sickness).
     sow: { cost: { ap: number } }; // Plant a carried fruit in an empty hydropot.
     dirtyChance: number; // Chance of getting dirty after watering, treating or sowing (the original's 15%).
-    growCycles: Record<string, number>; // Cycles a young plant of each species needs before it becomes adult.
+    growCycles: Partial<Record<ItemTypeId, number>>; // Cycles a young plant of each species needs before it becomes adult.
     fruits: FruitsConfig; // Seeded alien fruit rules (fruits.ts, #437).
     graft: GraftConfig; // Graft and its hybrids (actions/graft.ts, fruits.ts, #438).
     sickChancePerCycle: number; // PLACEHOLDER: each healthy plant's chance of falling sick at each cycle change.
@@ -602,7 +607,7 @@ export interface GameConfig {
   };
   // Schrödinger the cat (owner, 2026-11-21; schrodinger.ts): he appears in `room` when `owner` (a character id) boards,
   // each cycle change takes his favoured move (toward his owner; away from people once she's dead) with `favoredChance`,
-  // and supports Caress, Infectious Caress, and taking with a scratch/injury chance.
+  // and supports Caress, Infectious Caress, and taking with a scratch/injury chance (never for his owner, 2026-11-26).
   schrodinger: {
     owner: string;
     room: RoomId;
@@ -705,7 +710,7 @@ export interface GameConfig {
     noiseReducer: { maxAp: number };
     bricBroc: { preventChance: number };
     // Owner, 2026-11-04: completing it puts these item types on the floor of `room` (one item per list entry).
-    foodRetailer: { room: RoomId; items: readonly string[] };
+    foodRetailer: { room: RoomId; items: readonly ItemTypeId[] };
     // Quantum Sensors (owner, 2026-11-01, updated 2026-11-21; eMushpedia *Détecteur à ondes de probabilité*): while the Motor Room planet scanner is unbroken, +scanChanceBonus (30%) scan chance and +extraSectors (1) analysis sector.
     quantumSensors: { scanChanceBonus: number; extraSectors: number };
     // CPU Overclocking (owner, 2026-11-01; eMushpedia *Accélération du processeur*): Scan for planets costs -scanApDiscount AP.
@@ -751,7 +756,7 @@ export interface GameConfig {
     // Dismantling (DISMANTLING; owner, 2026-11-15): completing it puts `count` metal scraps on the floor of `room` (the engine room).
     dismantling: { room: RoomId; count: number };
     // Scrap heap (TRASH_LOAD; owner, 2026-11-16): completing it spawns one item per pool across `rooms` in shuffled order (wrapping).
-    trashLoad: { rooms: readonly RoomId[]; weaponBlueprints: readonly string[]; misc: readonly string[] };
+    trashLoad: { rooms: readonly RoomId[]; weaponBlueprints: readonly string[]; misc: readonly ItemTypeId[] };
   };
   pilgred: {
     cost: { ap: number }; // AP spent to take part in repairing PILGRED (owner, 2026-10-21; the original's REPAIR_PILGRED, 2).
@@ -912,7 +917,7 @@ export interface GameConfig {
   };
   // The space capsule: opening it turns it into one of `contents`, each equally likely.
   lunchbox: { cost: { ap: number }; charges: number }; // Open lunchbox's AP (owner, 2026-11-21: 0, as in eMush) and the rations a lunchbox holds (3).
-  spaceCapsule: { cost: { ap: number }; dirtyChance: number; injuryChance: number; contents: string[] };
+  spaceCapsule: { cost: { ap: number }; dirtyChance: number; injuryChance: number; contents: ItemTypeId[] };
   // Hull repair (owner, 2026-10-24, the wiki's Armure et Bouclier): 1 AP, 25%, +5 hull, a metal scrap used up on a success.
   // Its dirt chance per try is eMush's (owner, 2026-11-25).
   hullRepair: { cost: { ap: number }; chance: number; dirtyChance: number; injuryChance: number; amount: number };
@@ -948,7 +953,7 @@ export interface GameConfig {
   greenJelly: { cost: { ap: number }; maxCycles: number };
   // Owner, 2026-11-07: an Engineer reinforces equipment or an item (actions/reinforce.ts) with one scrap, `gain` by scrap type, up to `max`;
   // `dirtyChance` and `injuryChance` per try (owner, 2026-11-25: eMush's).
-  reinforce: { cost: { ap: number }; chance: number; max: number; fortifiedAt: number; gain: Record<string, number>; dirtyChance: number; injuryChance: number };
+  reinforce: { cost: { ap: number }; chance: number; max: number; fortifiedAt: number; gain: Partial<Record<ItemTypeId, number>>; dirtyChance: number; injuryChance: number };
   extinguish: {
     cost: { ap: number };
     chance: number;
@@ -1001,7 +1006,7 @@ export interface GameConfig {
     botanistBonus: number; // Extra fruit per harvest with a living Botanist in the crew.
     // Item types found: alien fruits (picked uniformly by Harvest) and alien steaks (`alien_steak`), a starmap fragment, and the
     // artifacts an Artifact event or a fight's loot picks among, uniformly.
-    loot: { harvest: string[]; provision: string; starmap: string; artifacts: string[] };
+    loot: { harvest: ItemTypeId[]; provision: ItemTypeId; starmap: ItemTypeId; artifacts: ItemTypeId[] };
     survivalProvision: number; // Extra steaks per Provision for each living Survival holder in the crew.
     mushTrapChance: number; // Chance each human member gains a spore in a Mush trap.
     combatDiseaseChance: number; // Chance each surviving member catches one of `diseases.expeditionCombatDiseases` after a lost fight.
@@ -1012,24 +1017,24 @@ export interface GameConfig {
     // Gear (owner, 2026-11-08, #357), by item type. One working copy carried by a member who explores counts; copies
     // don't stack; nothing is used up.
     gear: {
-      spacesuit: string; // Needed to explore a planet with no Oxygen sector; never taken by Lost item.
-      compass: string; // Cancels Again; its bearer can't get lost (Lost is cancelled when everyone has one).
-      rope: { item: string; tags: string[] }; // Its bearer is spared an Accident in these sectors.
-      drill: { item: string; fuelFactor: number }; // Multiplies the fuel from fuel events.
-      finders: { item: string; tags: string[]; factor: number }[]; // Sectors with these tags are `factor` times as likely to be picked.
-      babel: { item: string; tag: string; artifactFactor: number }; // Artifact is `artifactFactor` times as likely in this sector.
-      whiteFlag: { item: string; tag: string }; // Cancels Fight in this sector.
+      spacesuit: ItemTypeId; // Needed to explore a planet with no Oxygen sector; never taken by Lost item.
+      compass: ItemTypeId; // Cancels Again; its bearer can't get lost (Lost is cancelled when everyone has one).
+      rope: { item: ItemTypeId; tags: string[] }; // Its bearer is spared an Accident in these sectors.
+      drill: { item: ItemTypeId; fuelFactor: number }; // Multiplies the fuel from fuel events.
+      finders: { item: ItemTypeId; tags: string[]; factor: number }[]; // Sectors with these tags are `factor` times as likely to be picked.
+      babel: { item: ItemTypeId; tag: string; artifactFactor: number }; // Artifact is `artifactFactor` times as likely in this sector.
+      whiteFlag: { item: ItemTypeId; tag: string }; // Cancels Fight in this sector.
     };
     // Skills (owner, 2026-11-08, #358). Diplomat and Polymath cancel Fight in `gear.whiteFlag.tag`, as the white flag.
     shooterBonus: number; // Strength each Shooter carrying a working gun adds, once each.
     sprinterSectors: number; // Extra sectors per Sprinter who explores, counted at takeoff.
-    centauri: { item: string; bonus: number }; // With the Centauri rebel base contacted, each working copy adds `bonus` strength.
+    centauri: { item: ItemTypeId; bonus: number }; // With the Centauri rebel base contacted, each working copy adds `bonus` strength.
     uTurn: { cost: { ap: number } }; // The U-turn skill's action: end the expedition at once.
   };
   // Weapons (owner, 2026-10-22, from the English wiki). Using one is the `attack` action.
   weapons: {
     cost: { ap: number }; // AP spent per use, any weapon (the original's SHOOT and ATTACK: 1).
-    types: Record<string, WeaponStats>; // By item type.
+    types: Partial<Record<ItemTypeId, WeaponStats>>; // By item type.
   };
   creative: {
     refundOdds: number; // Chance that the Creative skill refunds 1 AP after a failed action that cost AP (confirmed 2026-10-15).
@@ -1072,8 +1077,8 @@ export interface GameConfig {
     chunMoraleLoss: number; // Morale every living player loses instead when Chun dies (owner, 2026-11-24).
   };
   /** Items placed in rooms at the start of the game (fixed room, or random from `storage` / `daedalus` pool, optionally with weighted blueprint/book draws; `atSelection` waits until Mush selection). */
-  startItems: ({ type: string; builds?: string; buildsWeights?: Record<string, number>; teaches?: string; teachesWeights?: Record<string, number>; plant?: PlantState; atSelection?: boolean } & ({ room: RoomId } | { pool: "storage" | "daedalus" }))[];
-  startInventory: string[]; // Item types every player starts carrying (one of each).
+  startItems: ({ type: ItemTypeId; builds?: string; buildsWeights?: Record<string, number>; teaches?: string; teachesWeights?: Record<string, number>; plant?: PlantState; atSelection?: boolean } & ({ room: RoomId } | { pool: "storage" | "daedalus" }))[];
+  startInventory: ItemTypeId[]; // Item types every player starts carrying (one of each).
   startBrokenEquipment: string[]; // Equipment types that start the game broken (`createGame`), silently without a NERON chat line.
   rooms: Record<RoomId, RoomId[]>; // Adjacency list. Movement is only allowed along these edges.
   equipment: Record<RoomId, Equipment[]>; // Equipment in each room at launch, copied into `GameState.equipment`. Types come from EQUIPMENT_TYPES in equipment.ts.

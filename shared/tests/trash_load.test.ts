@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { BLUEPRINTS, BLUEPRINT_ITEM } from "../src/blueprints.ts";
+import { BLUEPRINTS } from "../src/blueprints.ts";
 import { advanceNeron } from "../src/comms.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
-import { BOOK_ITEM, TREE_POT_ITEM } from "../src/items.ts";
+import { BLUEPRINT_ITEM, BOOK_ITEM, TREE_POT_ITEM } from "../src/itemIds.ts";
 import { PROJECT_COMPLETE, PROJECT_IDS, projectStatus } from "../src/projects.ts";
 import { createGame } from "../src/rules.ts";
 import { SKILLS } from "../src/skills.ts";

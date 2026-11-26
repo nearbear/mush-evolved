@@ -477,7 +477,7 @@ export async function runSurvival(seed: number, opts: SurvivalOptions): Promise<
         const food = before.items.find((i) => i.id === action.item)?.type;
         const junkie = eater.skills.includes("caffeinomaniac");
         if (food === "coffee") row[junkie ? "coffeeJunkie" : "coffeeOthers"]!++;
-        else if (junkie && (ITEM_TYPES[food ?? ""]?.consume?.satiety ?? 0) > 0) row.junkieMeals!++;
+        else if (junkie && food !== undefined && (ITEM_TYPES[food].consume?.satiety ?? 0) > 0) row.junkieMeals!++;
       }
       if (action.type === "repair" && "equipment" in action && Object.values(before.equipment).flat().some((e) => e.id === action.equipment && e.type === "OXYGEN_TANK")) row.tankRepairTries!++;
       if (before.hunters.list.length > 0 && apCost > 0) {

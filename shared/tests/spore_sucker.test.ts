@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
-import { SPORE_SUCKER_ITEM } from "../src/items.ts";
+import { SPORE_SUCKER_ITEM } from "../src/itemIds.ts";
 import { addDisease } from "../src/diseases.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { GameConfig, GameState } from "../src/types.ts";
