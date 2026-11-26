@@ -340,6 +340,8 @@ export interface GameConfig {
    */
   /** Agoraphobia (owner, 2026-11-26): crowded at `crowd` living crew and hostile NPCs in the room, the holder included; there AP-costing actions cost `apSurcharge` more, leaving costs `mpSurcharge` more MP, and a cycle change costs `moraleLoss` morale. */
   agoraphobia: { crowd: number; apSurcharge: number; mpSurcharge: number; moraleLoss: number };
+  /** Kleptophobia (owner, 2026-11-26): the holder's drop costs `dropAp` AP (before other surcharges), and an item of theirs lost on an expedition costs them `moraleLoss` morale. */
+  kleptophobia: { dropAp: number; moraleLoss: number };
   sanity: { start: number; deathLoss: number; witnessLoss: number; killLoss: number; killChanceFactor: number; lowMorale: number };
   germaphobe: {
     moraleLoss: number; // Finola's Germaphobe trait: lost at each cycle change while dirty (owner, 2026-11-21).

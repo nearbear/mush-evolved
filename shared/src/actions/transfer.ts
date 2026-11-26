@@ -5,7 +5,7 @@ import { CAT_ITEM, ITEM_TYPES, canTransfer } from "../items.ts";
 import { preferSpikedInRoom } from "../itemView.ts";
 import { isLostPlace, patrolShip } from "../patrol.ts";
 import { logPrivate, logPublic } from "../log.ts";
-import { cantCarryHeavy } from "../modifiers.ts";
+import { cantCarryHeavy, dropAp } from "../modifiers.ts";
 import { heldCat } from "../modifiers/cat_allergy_disease.ts";
 import type { Container, GameState, ItemState, PlayerState } from "../types.ts";
 
@@ -45,6 +45,11 @@ export class TransferAction<T extends "take" | "drop" = "take" | "drop"> extends
     if (this.type === "drop" && patrolShip(player.room) !== undefined) return IN_PATROL_SHIP;
     const destination: Container = this.type === "take" ? { kind: "player", id: player.id } : { kind: "room", id: player.room };
     return canTransfer(state, player, item, destination) ? null : "cant_transfer";
+  }
+
+  // Kleptophobia (owner, 2026-11-26) gives a drop its AP; taking stays free.
+  override getCost(state: Readonly<GameState>, player: Readonly<PlayerState>): { ap: number; mp: number } {
+    return { ap: this.type === "drop" ? dropAp(state, player) : 0, mp: 0 };
   }
 
   override injuryChance(state: Readonly<GameState>, _player: Readonly<PlayerState>, target: { type: T; item: string }): number {

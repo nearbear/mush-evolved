@@ -653,6 +653,19 @@ describe("expeditions, phases 3 and 4, slice A: events and fights", () => {
     expect(event(go(empty)).kind).toBe("nothing");
   });
 
+  it("Kleptophobia: losing a carried item costs its holder 4 morale, privately (owner, 2026-11-26)", () => {
+    const s = game({ tags: ["STRONG_WIND"], events: only({ kind: "lostItem", weight: 1 }) });
+    s.items = s.items.filter((i) => i.at.kind !== "player" || i.type === "space_suit");
+    give(s, "p2", "knife");
+    for (const id of ["p1", "p2"]) addDisease(s, player(s, id), "kleptophobia_disorder");
+    const next = go(s);
+    expect(event(next)).toMatchObject({ kind: "lostItem", item: "knife" });
+    // p1 has the disorder too but lost nothing.
+    expect(player(next, "p1").morale - player(next, "p2").morale).toBe(next.config.kleptophobia.moraleLoss);
+    expect(viewFor(next, "p2").log.some((l) => l.key === "kleptophobiaMoraleLoss")).toBe(true);
+    for (const id of ["p0", "p1", "p3", "p4"]) expect(viewFor(next, id).log.some((l) => l.key === "kleptophobiaMoraleLoss")).toBe(false);
+  });
+
   it("Kill takes one member, Survival holders last; Kill all takes everyone", () => {
     const s = game({ tags: ["MANKAROG"], events: only({ kind: "kill", weight: 1 }) });
     for (const id of ["p0", "p1", "p2"]) player(s, id).skills.push("survival");

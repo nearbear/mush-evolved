@@ -5,7 +5,7 @@ import { createGame, viewFor } from "../src/rules.ts";
 import type { GameState, PlayerId } from "../src/types.ts";
 import { makeSeats, mustApply, noCharacterModifiers, nextCycle, nextDay, pickSkill, player, testConfig } from "./support.ts";
 
-// Depression (owner, 2026-11-25): a disorder, forever; -2 max AP, -2 max morale, +1 daily morale loss. A Shrink's
+// Depression (owner, 2026-11-25): a disorder, forever; -2 max AP, -2 max morale (its +1 daily morale loss was removed, owner 2026-11-26). A Shrink's
 // Comfort calms one random active disorder for 2-8 cycles. Nothing to a Mush. Private.
 const config = noCharacterModifiers(testConfig({ mushCount: 0 }));
 const DEPRESSION = "depression_disorder";
@@ -34,7 +34,6 @@ describe("Depression disorder", () => {
     const s = ship();
     const p1 = player(s, "p1");
     expect([config.maxAp - p1.maxAp, config.maxMorale - p1.maxMorale]).toEqual([2, 2]);
-    expect(dailyMoraleLoss(s, p1) - dailyMoraleLoss(s, player(s, "p2"))).toBe(1);
   });
 
   it("lowers the caps at once, clamping current values", () => {
@@ -55,11 +54,11 @@ describe("Depression disorder", () => {
     expect(player(s, "p1").maxAp).toBe(config.maxAp - 2);
   });
 
-  it("costs 1 more morale at the end of a day", () => {
+  it("costs no extra morale at the end of a day", () => {
     let s = ship();
     s = nextDay(s);
     expect(5 - player(s, "p2").morale).toBe(config.moralePerDay);
-    expect(5 - player(s, "p1").morale).toBe(config.moralePerDay + 1);
+    expect(5 - player(s, "p1").morale).toBe(config.moralePerDay);
   });
 
   it("does nothing to a Mush", () => {
