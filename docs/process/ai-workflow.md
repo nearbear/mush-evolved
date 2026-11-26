@@ -5559,3 +5559,15 @@ Owner asked to make the Slime Trap and Infector Mush skills unpickable without r
 ### Hydroponics center starts broken (2026-11-26)
 - **Decision (owner, 2026-11-26):** Added `"PLANT_CONTROLLER"` to `DEFAULT_CONFIG.startBrokenEquipment` (`shared/src/config.ts`), so the Hydroponics center starts the game broken silently (without a NERON breakdown announcement), counted in the alert bar alongside `PLASMA_SHIELD`.
 - **What worked:** Reusing `config.startBrokenEquipment` kept `QUIET_CONFIG` (`startBrokenEquipment: []`) and existing botany/incident tests untouched; only `shared/tests/ship.test.ts` needed its expected starting `alerts.broken` count updated to `DEFAULT_CONFIG.startBrokenEquipment.length`.
+## 2026-11-26: Sanity and disorders from deaths
+
+- **Decision (owner):** every player has a private sanity starting at 100. A human's death costs every living player 1, witnesses (same room) 4 more, the killer 10 more (the killer is also a witness). At the next cycle change a witness rolls (100 − sanity)% for a random disorder, a killer (100 − sanity) × 2%, and anyone under 5 morale rolls (100 − sanity)% every cycle change; one roll per condition. Mush never roll. Claude asked four questions first (who is the killer, witness/killer stacking, how long the marks last, how rolls stack) and the owner picked: fatal blow of a punch/attack/interrogation, killer also a witness, next cycle change only, one roll per condition.
+- **What worked:** threading an optional `killer` through `damage` → `killPlayer` touched only the three action files that deal blows; the new `sanity.ts` keeps the losses and the cycle rolls together; sanity reaches your own view through the existing `you` spread, with sentinels in `leaks.test.ts`.
+- **Needed correction:** Claude first made `addDisease` refuse every disorder for a Mush, which broke the earlier decision that a Mush can hold Depression with no effect (`depression.test.ts`). The Mush exclusion now sits only in the sanity rolls.
+- `replayView.test.ts` "stepMarks …16-seat game" times out (about 29s against a 15s limit) with or without this change, so it is a machine-speed problem and unrelated to sanity.
+
+## 2026-11-26: Agoraphobia disorder
+
+- **Decision (owner):** Agoraphobia, a disorder: with 4 or more crew members or hostile NPCs in the room, actions cost 1 more AP and movement 1 more MP; each cycle change in such a room costs 1 morale. Claude asked three questions; the owner chose: the holder counts toward the 4, only actions that already cost AP get the +1, and for movement the room being left counts.
+- **What worked:** the modifier registry absorbed it in one file (`actionCost`, `movement` and `onCycle` hooks); Mush and Shrink-calmed immunity came free from `modifierIds`; it joined `allDisorders`, so the sanity rolls can now draw it.
+- **Needed correction:** importing `hostiles.ts` from the modifier made an import cycle through the modifier registry that broke dozens of test files at load (`moduleLoad.test.ts` caught it). The fix counts `state.hostiles` directly. Two sanity tests that expected Depression by name now check for exactly one disorder.

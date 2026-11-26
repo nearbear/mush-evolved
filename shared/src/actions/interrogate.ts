@@ -42,7 +42,7 @@ export class InterrogateAction extends Action<InterrogateActionData> {
     const victim = state.players.find((o) => o.id === target.target)!; // checked, so it exists
     player.interrogatedToday = true;
     logPublic(state, player.room, "interrogated", { name: player.character, target: victim.character });
-    damage(state, victim, state.config.interrogate.damage, "assassinated");
+    damage(state, victim, state.config.interrogate.damage, "assassinated", player);
     revealHistory(state, player, victim, state.config.maxHp - victim.hp);
   }
 

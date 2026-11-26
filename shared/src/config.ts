@@ -88,6 +88,10 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   bond: { cost: { ap: 1 } },
   antisocial: { moraleLoss: 1 },
   germaphobe: { moraleLoss: 1 },
+  // Owner, 2026-11-25: sanity, its losses on a human's death and the disorder rolls it drives (sanity.ts).
+  // Owner, 2026-11-26: Agoraphobia (modifiers/agoraphobia_disorder.ts): a room is crowded at `crowd` crew and hostiles, the holder included.
+  agoraphobia: { crowd: 4, apSurcharge: 1, mpSurcharge: 1, moraleLoss: 1 },
+  sanity: { start: 100, deathLoss: 1, witnessLoss: 4, killLoss: 10, killChanceFactor: 2, lowMorale: 5 },
   share: { cost: { ap: 1 }, effect: { morale: 2 }, pregnancy: { chance: 0.08, deathMoraleLoss: 2, mushExtraSpore: 1 } },
   // Confirmed 2026-10-14: a human converts on reaching 3 contamination (items and skills will raise it).
   infection: { capacity: 3, mushophageBonus: 1, startingContaminated: 2, startingLevel: 1 },
@@ -883,7 +887,7 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
     expeditionDiseases: ["migraine_disease", "skin_inflammation_disease", "fungal_infection_disease", "gastroenteritis_disease", "flu_disease", "rubella_disease", "syphilis_disease", "rejuvenation_disease", "mush_allergy_disease", "pink_eye_disease", "slight_nausea_disease"],
     expeditionCombatDiseases: ["space_rabies_disease", "flu_disease", "syphilis_disease", "rejuvenation_disease", "cat_allergy_disease", "black_bite_disease"],
     mushSkillDiseases: ["space_rabies_disease", "fungal_infection_disease", "cold_disease", "extreme_tinnitus_disease"],
-    allDisorders: ["depression_disorder"],
+    allDisorders: ["depression_disorder", "agoraphobia_disorder"],
     allInjuries: [
       "broken_nose_injury",
       "damaged_ears_injury",

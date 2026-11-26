@@ -81,6 +81,7 @@ import { expeditionReturnAt, knockOffIcarus, lostPlayers, maxCrew, nextSectorFor
 import { ICARUS_EQUIPMENT } from "./actions/icarus_takeoff.ts";
 import { canScavenge, CANT_FLY, CHRONIC_VERTIGO, interfaceId, isLostPlace, newPatrolShips, offShip, PATROL_INTERFACE, PATROL_SHIPS, shipAboard } from "./patrol.ts";
 import { preselectionCycle } from "./preselection.ts";
+import { sanityCycle } from "./sanity.ts";
 import { neronParticipationCycle } from "./projectEffects.ts";
 import { TITLE_IDS, assignTitles, successionLine, noLaunchKeys, noTitles } from "./titles.ts";
 import { endGame, winnerOnArrival } from "./victory.ts";
@@ -279,6 +280,7 @@ export function newPlayer(s: Seat, config: DeepReadonly<GameConfig>, cycle: numb
     maxHp: config.maxHp,
     morale: config.startMorale,
     maxMorale: config.maxMorale,
+    sanity: config.sanity.start,
     satiety: 0,
     // Everyone starts at 0 satiety, so the empty-stomach count starts with the first cycle (only humans get hungry).
     satietyZeroSince: cycle,
@@ -686,6 +688,8 @@ function advanceCycle(state: GameState, at?: number): void {
   }
   diseaseTrackerCycleChange(state);
   cycleChanged(state);
+  // Disorders from witnessing or dealing a human's death since the last cycle change, or from low morale (sanity.ts).
+  sanityCycle(state);
   // A repaired Gravity Simulator is back, before incidents, so this cycle change's tremors have gravity.
   gravityCycle(state);
   const oxygenSaved = rollOxygenSaved(state);

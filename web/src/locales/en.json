@@ -109,6 +109,8 @@
       "hp": "Everyone heals 1 HP at the start of each day. At 0 HP you die.\nHeal restores 3 HP: carry a Medikit, or use the Medlab without one (2 AP on someone else, 3 AP on yourself).\nCombat actions deplete the target's HP.\nInjuries while building, dismantling or repairing cost HP.\nA hungry human (24 cycles after their last meal wears off) loses 1 HP each cycle until they eat.\nA Mush loses 4 HP each time they shower.",
       "morale": "Everyone loses 2 morale at the start of each day (1 while Chun is alive).\nA Shrink's Comfort gives 2 morale. Lying down in a room with a Shrink gives 1 morale each cycle.\nA Leader's Fiery speech gives everyone else in the room 2 morale.\nEating an Uncooked ration costs 1 morale."
     },
+    "sanity": "Sanity",
+    "sanityInfo": "Your state of mind. Every human death costs you some; seeing one, or killing one, costs far more. The lower it is, the likelier a disorder after seeing a death, killing someone, or while your morale is very low.",
     "satiety": "Satiety",
     "satietyInfo": {
       "emptyFor_one": "Your stomach has been empty for {{count}} cycle.",
@@ -1018,6 +1020,7 @@
     "mushOnly": "Mush only: the cursed person doesn't know.",
     "permanent": "This can't be removed.",
     "calmed": "Calmed by a Shrink: no effect for now.",
+    "agoraphobia_disorder": "Agoraphobia",
     "depression_disorder": "Depression",
     "label": "Status effects",
     "dirty": "Dirty",
@@ -1103,6 +1106,7 @@
     "pregnant": "Pregnant",
     "coma": "Coma",
     "desc": {
+      "agoraphobia_disorder": "With 4 or more people (crew or hostiles, you included) in your room:\nActions that cost AP cost 1 more AP.\nLeaving the room costs 1 more MP.\nYou lose 1 morale at each cycle change.",
       "depression_disorder": "-2 max AP.\n-2 max morale.\nYou lose 1 more morale at the end of each day.",
       "dirty": "Can't research. Taking a shower removes it.",
       "full_belly": "You can't eat more until you are hungrier.",
@@ -1268,6 +1272,7 @@
     "summonStoppedPushed": "You were summoned to: {{room}}, but couldn't go: someone is pushing your wheelchair.",
     "summonStoppedNoPath": "You were summoned to: {{room}}, but there is no way there from where you are.",
     "loseMorale": "You have lost {{amount}} morale.",
+    "agoraphobiaMoraleLoss": "The crowd around you has cost you {{amount}} morale.",
     "antisocialMoraleLoss": "Being around other people has cost you {{amount}} morale.",
     "germaphobeMoraleLoss": "Being dirty has cost you {{amount}} morale.",
     "pregnantDeathMoraleLoss": "A pregnant crewmate has died. You have lost {{amount}} morale.",
@@ -1655,6 +1660,7 @@
     "tremorNoGravity": "The room suddenly starts to shake violently. Objects fly across the room and collide with the crew members present.",
     "panicAttack": "You have a panic attack.",
     "incidentDisease": "You feel unwell.",
+    "disorderGained": "You can't shake what you've been through: you develop {{status}}.",
     "disorderCalmed": "Talking it through helps: your {{status}} eases for a while.",
     "metalPlate": "A metal plate falls on {{name}}!",
     "electricalOverload": "An electrical overload fries the room's equipment!",
