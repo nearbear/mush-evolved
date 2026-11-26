@@ -90,7 +90,7 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   germaphobe: { moraleLoss: 1 },
   share: { cost: { ap: 1 }, effect: { morale: 2 }, pregnancy: { chance: 0.08, deathMoraleLoss: 2, mushExtraSpore: 1 } },
   // Confirmed 2026-10-14: a human converts on reaching 3 contamination (items and skills will raise it).
-  infection: { capacity: 3, mushophageBonus: 1 },
+  infection: { capacity: 3, mushophageBonus: 1, startingContaminated: 2, startingLevel: 1 },
   // Confirmed 2026-10-15: spiking costs 1 AP and 1 spore, and raises a human's contamination by 1.
   // Owner, 2026-11-25: the Infector Mush skill holds 2 spike charges; the first spike starts the cooldown and both come back when it ends.
   spike: { cost: { ap: 1 }, cooldownCycles: 4, infectorCharges: 2 },

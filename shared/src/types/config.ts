@@ -347,6 +347,10 @@ export interface GameConfig {
   infection: {
     capacity: number; // Contamination a human reaches before converting to Mush, before modifiers (confirmed 2026-10-14).
     mushophageBonus: number; // Capacity the completed MUSHOPHAGE_BACTERIA research adds for every human (decided 2026-10-17).
+    // At Mush selection, this many random humans without the Immunity trait start at contamination `startingLevel`,
+    // silently; if fewer are eligible, nobody is (owner, 2026-11-26).
+    startingContaminated: number;
+    startingLevel: number;
   };
   spike: {
     cost: { ap: number }; // Confirmed 2026-10-15.

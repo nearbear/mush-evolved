@@ -7,9 +7,9 @@ import { pruneFairyRings } from "./fairyRings.ts";
 import { pushChat } from "./chat.ts";
 import { logPrivate } from "./log.ts";
 import { contaminated, contaminationCapacity } from "./modifiers.ts";
-import { rollFloat } from "./rng.ts";
+import { rollFloat, rollShuffle, type HasRng } from "./rng.ts";
 import { hasSkill } from "./skills.ts";
-import { isImmune, removeStatus } from "./statuses.ts";
+import { hasImmunityTrait, isImmune, removeStatus } from "./statuses.ts";
 import { MUSH_CHANNEL, type GameState, type PlayerState } from "./types.ts";
 
 /**
@@ -29,6 +29,20 @@ export function contaminate(state: GameState, human: PlayerState, amount = 1): v
     tellMush(state, "mushContaminated", { name: human.character, level, capacity });
   }
   contaminated(state, human, amount);
+}
+
+/**
+ * At Mush selection (owner, 2026-11-26): `infection.startingContaminated` random living humans without the Immunity
+ * trait start at contamination `infection.startingLevel`. Set directly, not through `contaminate`: no Strong Skin
+ * roll, no Mush-channel message, no log line. If fewer humans are eligible than wanted, nobody is contaminated.
+ * `rng` is the caller's own stream, so this never moves `state.rng`. Mutates a state the caller already cloned.
+ */
+export function contaminateAtSelection(state: GameState, rng: HasRng): void {
+  const { startingContaminated: wanted, startingLevel: level } = state.config.infection;
+  if (wanted <= 0 || level <= 0) return;
+  const eligible = state.players.filter((p) => p.alive && p.role === "human" && !hasImmunityTrait(p));
+  if (eligible.length < wanted) return;
+  for (const p of rollShuffle(rng, eligible).slice(0, wanted)) state.contamination[p.id] = level;
 }
 
 /**
