@@ -21,6 +21,7 @@ import { isInactive } from "./inactivity.ts";
 import { spawnInRoom } from "./items.ts";
 import { type HasRng, roll, rollFloat, rollInt, rollShuffle, rollWeighted } from "./rng.ts";
 import type { CharacterId } from "./characters.ts";
+import type { ItemTypeId } from "./itemIds.ts";
 import { isPilgredRepaired, PILGRED_COMPLETE } from "./pilgred.ts";
 import { completeProject, loseProject, tradableProjects } from "./projectEffects.ts";
 import { availableProjects, type ProjectId } from "./projects.ts";
@@ -45,14 +46,14 @@ export type QtyRange = readonly [number, number];
 export type GiveTemplate =
   | { kind: "crew"; count: QtyRange }
   | { kind: "character"; character: CharacterId }
-  | { kind: "item"; item: string; count: QtyRange }
+  | { kind: "item"; item: ItemTypeId; count: QtyRange }
   | { kind: "oxygen" | "fuel"; count: QtyRange }
   | { kind: "project"; count: QtyRange };
 /**
  * What the ship gets: items on the Front Storage floor (owner, 2026-11-15); `project`: random unfinished projects,
  * finished at once; `pilgred`: PILGRED repaired. Later phases add escorts.
  */
-export type ReceiveTemplate = { kind: "item"; item: string; count: QtyRange } | { kind: "project"; count: QtyRange } | { kind: "pilgred" };
+export type ReceiveTemplate = { kind: "item"; item: ItemTypeId; count: QtyRange } | { kind: "project"; count: QtyRange } | { kind: "pilgred" };
 
 /** One answer of a hail. `skill`: only offered when someone alive in the officer's room has it (eMush; not yet confirmed). */
 export interface DealTemplate {
@@ -65,10 +66,10 @@ export interface DealTemplate {
 export type GiveAsset =
   | { kind: "crew"; count: number }
   | { kind: "character"; character: CharacterId; count: 1 }
-  | { kind: "item"; item: string; count: number }
+  | { kind: "item"; item: ItemTypeId; count: number }
   | { kind: "oxygen" | "fuel"; count: number }
   | { kind: "project"; count: number };
-export type ReceiveAsset = { kind: "item"; item: string; count: number } | { kind: "project"; count: number } | { kind: "pilgred"; count: 1 };
+export type ReceiveAsset = { kind: "item"; item: ItemTypeId; count: number } | { kind: "project"; count: number } | { kind: "pilgred"; count: 1 };
 
 export interface MerchantDeal {
   give: GiveAsset[];

@@ -760,7 +760,7 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
     { type: "bandage", room: "SICK_BAY" },
     { type: "bandage", room: "SICK_BAY" },
     // Refectory (`REFECTORY`): 32 standard rations, microwave, freezer, mad kube.
-    ...Array.from({ length: 32 }, () => ({ type: "uncooked_ration", room: "REFECTORY" as RoomId })),
+    ...Array.from({ length: 32 }, () => ({ type: "uncooked_ration" as const, room: "REFECTORY" as RoomId })),
     { type: "microwave", room: "REFECTORY" },
     { type: "freezer", room: "REFECTORY" },
     { type: "mad_kube", room: "REFECTORY" },
@@ -773,13 +773,13 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
     // Front Storage (`STORAGE_FRONT`): the tabulator, for THE List (owner, 2026-11-21, #266; the bridge in the original and eMush).
     { type: "tabulator", room: "STORAGE_FRONT" },
     // Icarus Bay (`ICARUS`): 6 spacesuits (moved from `daedalus_default`, 2026-11-20).
-    ...Array.from({ length: 6 }, () => ({ type: "space_suit", room: "ICARUS" as RoomId })),
+    ...Array.from({ length: 6 }, () => ({ type: "space_suit" as const, room: "ICARUS" as RoomId })),
     // `storage_default` (24 items across the 5 storages):
-    ...Array.from({ length: 3 }, () => ({ type: "camera", pool: "storage" as const })),
-    ...Array.from({ length: 2 }, () => ({ type: "extinguisher", pool: "storage" as const })),
-    ...Array.from({ length: 2 }, () => ({ type: "tree_pot", pool: "storage" as const })),
-    ...Array.from({ length: 2 }, () => ({ type: "blaster", pool: "storage" as const })),
-    ...Array.from({ length: 2 }, () => ({ type: "rope", pool: "storage" as const })),
+    ...Array.from({ length: 3 }, () => ({ type: "camera" as const, pool: "storage" as const })),
+    ...Array.from({ length: 2 }, () => ({ type: "extinguisher" as const, pool: "storage" as const })),
+    ...Array.from({ length: 2 }, () => ({ type: "tree_pot" as const, pool: "storage" as const })),
+    ...Array.from({ length: 2 }, () => ({ type: "blaster" as const, pool: "storage" as const })),
+    ...Array.from({ length: 2 }, () => ({ type: "rope" as const, pool: "storage" as const })),
     { type: "plastenite_armor", pool: "storage" },
     { type: "wrench", pool: "storage" },
     { type: "knife", pool: "storage" },
@@ -824,7 +824,7 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
     { type: "old_shirt", pool: "daedalus" },
     // `randomBlueprints` (4 weighted draws across all 27 rooms):
     ...Array.from({ length: 4 }, () => ({
-      type: "blueprint",
+      type: "blueprint" as const,
       pool: "daedalus" as const,
       buildsWeights: {
         ECHO_SOUNDER: 8,

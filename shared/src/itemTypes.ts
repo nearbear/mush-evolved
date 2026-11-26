@@ -19,16 +19,16 @@ export interface ItemType {
   /** A drug (drugs.ts): consuming it applies the effects drawn for this ship, and full belly does not stop it. */
   drug?: boolean;
   /** Cooking it (in a cook room) turns it into this item type. */
-  cook?: { into: string };
+  cook?: { into: ItemTypeId };
   /** Hyperfreezing it (with a reachable working freezer) turns it into this item type. */
-  hyperfreeze?: { into: string };
+  hyperfreeze?: { into: ItemTypeId };
   /** Carrying one makes every room-to-room move cost `heavyMpPenalty` more MP, once however many you carry (confirmed 2026-10-16). Skills may cancel it. */
   heavy?: boolean;
   /** False: it can't be picked up (`take`) or sent by tube, so it stays where it was placed (the tabulator). */
   canTake?: boolean;
   canDrop?: boolean;
   /** What dismantling it leaves in the room: scraps, plus `extra` item types (the Lizaro Jungle's thick tube). `chance` replaces `config.dismantle.successChance` for this type. */
-  dismantle?: { metal: number; plastic: number; extra?: string[]; chance?: number };
+  dismantle?: { metal: number; plastic: number; extra?: ItemTypeId[]; chance?: number };
   /** Can break (`breakItem`). A broken item can't be used; carrying, dropping, giving, examining and dismantling it still work. */
   canBreak?: boolean;
   /** Breaking it destroys it instead of leaving it broken. Only read for `canBreak` types. */
