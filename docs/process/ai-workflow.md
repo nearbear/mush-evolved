@@ -5585,3 +5585,9 @@ Owner asked to make the Slime Trap and Infector Mush skills unpickable without r
 - What the types found: no typos in `config.ts`, but a dead `anabolics` key in the web icon table (the item is `steroids`), and two test fixtures that used made-up ids (`"ration"`, `"i"`). A new web test checks every plain item type has an icon and an English name; it found that `corpse` has no inventory icon (the room draws it as the character lying down), which is listed as a known exception.
 - Needed correction: the first version of that test checked `hybridParents(id) === undefined`, but it returns `null`, so the test passed while checking nothing. A `length > 90` floor now guards against that.
 - Left as `string`: `names.item()`, because log params and other callers pass plain strings and narrowing them all wasn't worth it for this change.
+
+### 2026-11-26: Spend alerts and caps (#128)
+
+- The owner configured the three Cloudflare dashboard items by hand: account budget alerts ($5/$15/$30), the Durable Objects spend limit (alerts at $25/$40, hard cap $50) and the Workers spend limit (alerts at $10/$16, hard cap $20).
+- The assistant wrote the last item, a "Spend alerts and caps" section in `docs/ops/observability.md`: the thresholds, where to edit them, what a tripped cap does and what to check when an alert fires. The cap-trip behavior (HTTP 1103, rejected DO calls and alarms) is from Cloudflare's docs and is marked as not tried.
+- The DevOps epic (#51) had no Stories checklist; the assistant added one from its sub-issues.

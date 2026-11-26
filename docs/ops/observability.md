@@ -48,3 +48,26 @@ Prints the running ships per language and mode, each with its room ID, signed-in
 - **Aboard counts signed-in players**: exact for multiplayer, which needs an account. Single player never boards, so it shows `-`.
 - **A ship can be missing for a while** if its launch write failed: it appears once the room's retry succeeds.
 - No cycle or phase yet (#434); a room ID is what to search for in the logs (`roomId`).
+
+## Spend alerts and caps (#128)
+
+Configured by the owner in the Cloudflare dashboard (2026-11-26). They cover the whole account, so `production`, `staging` and `test` share them. All amounts are on top of the $5/month Workers Paid base.
+
+| What | Where to edit | Alerts | Hard cap |
+| --- | --- | --- | --- |
+| Budget alerts, every product (incl. D1, R2, Workers Logs) | Manage Account > Billing > Billable Usage > Create budget alert | $5, $15, $30 | none (email only) |
+| Durable Objects | Manage Account > Billing > Spend limits | 50% ($25), 80% ($40) | $50 |
+| Workers | Manage Account > Billing > Spend limits | 50% ($10), 80% ($16) | $20 |
+
+Worst case with the caps: $5 + $50 + $20 = $75/month, as long as D1, R2 and Logs stay in their included allowances (they have no cap, only the budget alerts).
+
+### When a hard cap trips
+
+Not tried; this is what Cloudflare documents. Every environment stops together, since the caps are account-wide.
+
+- **Workers cap**: requests fail with HTTP `1103`, so the site and the game sockets are down.
+- **Durable Objects cap**: calls into rooms and the matchmaker are rejected and alarms stop, so ships stop ticking until the cap is raised or the month resets.
+
+### When an alert fires
+
+Open Billable Usage and find which product grew, then which environment: Workers requests and CPU, Durable Objects requests and duration, D1 rows read and written, R2 operations, Workers Logs events. Check the logs (above) for a loop or a burst of errors, and `npm run ships` for an unexpected number of running ships. No bot model spend is billed to the account: model bots are bring-your-own-key only.
