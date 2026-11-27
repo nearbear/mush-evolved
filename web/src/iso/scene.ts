@@ -338,7 +338,7 @@ export interface Scene {
   turn: ShipTurn | null;
   /** The room being viewed. */
   room: RoomId;
-  /** The burning room's floor cells, each with its place in the paint order; empty when it isn't on fire. */
+  /** The burning floor cells (this room's, and reported fires' next door), each with its place in the paint order; empty when none burn. */
   fire: readonly SceneFireCell[];
   /** Broken doors and broken equipment in this room, and reported broken equipment next door, each with its place in the paint order. */
   smoke: readonly SceneSmokeSource[];
@@ -349,8 +349,10 @@ const CELL_CENTER_Y = 8;
 
 /** One floor cell of a room on fire: what burns there is drawn just before `sprites[at]` (after them all when `at` is their count). */
 export interface SceneFireCell {
-  /** The cell on the room's grid, for a renderer that spreads the fire over the floor. */
+  /** The cell on the scene's grid, for a renderer that spreads the fire over the floor. */
   cell: { x: number; y: number };
+  /** The neighbouring room burning there; absent for this room's own floor. */
+  room?: string;
   /** The cell's centre in the scene. */
   x: number;
   y: number;
@@ -436,7 +438,7 @@ export interface SceneInput {
   planet?: string | null;
   /** The ship's latest turn (`Scene.turn`); none when not given. */
   turn?: ShipTurn | null;
-  /** The room is on fire: its floor cells' places in the paint order (`placeWithSlots`, orders into `placed`). */
+  /** Burning floor cells (this room's, and reported fires' next door): their places in the paint order (`placeWithSlots`, orders into `placed`). */
   fireSlots?: readonly CellSlot[];
 }
 
@@ -707,7 +709,7 @@ export function describeScene(input: SceneInput): Scene {
     sprites.push({ ...tile(), anim, role: "tile", ...(effect && { effect }), kind: s.kind, slice: s.slice });
   }
   // `placed` is in paint order and keeps its orders when some are left out, so each slot goes before the first sprite at or past it.
-  const fire = (input.fireSlots ?? []).map(({ cell, order }) => {
+  const fire = (input.fireSlots ?? []).map(({ cell, order, room: burning }) => {
     const anchor = gridToPx(cell.x, cell.y);
     let at = 0, hi = placed.length;
     while (at < hi) {
@@ -715,7 +717,7 @@ export function describeScene(input: SceneInput): Scene {
       if (placed[mid]!.order < order) at = mid + 1;
       else hi = mid;
     }
-    return { cell, x: anchor.x - box.minX, y: anchor.y - box.minY + CELL_CENTER_Y, at: firstSprite[at] ?? sprites.length };
+    return { cell, ...(burning && { room: burning }), x: anchor.x - box.minX, y: anchor.y - box.minY + CELL_CENTER_Y, at: firstSprite[at] ?? sprites.length };
   });
   return {
     width: box.width,

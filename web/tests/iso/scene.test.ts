@@ -271,6 +271,16 @@ describe("describeScene", () => {
     expect(s.sprites.map((p) => p.key)).toEqual(["t0", "a:drone:d1|shadow", "a:drone:d1", "t2"]);
     expect(s.fire[0]!.at).toBe(3);
   });
+
+  it("keeps the room of a neighbour's burning cell, and none for this room's own", () => {
+    const s = scene([placed({ order: 0 })], {
+      fireSlots: [
+        { cell: { x: 0, y: 0 }, order: 1 },
+        { cell: { x: 5, y: 0 }, order: 1, room: NEXT },
+      ],
+    });
+    expect(s.fire.map((c) => c.room)).toEqual([undefined, NEXT]);
+  });
 });
 
 describe("roomLooks and ambient animations", () => {

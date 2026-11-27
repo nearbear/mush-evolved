@@ -242,12 +242,22 @@ export function placeActors(prepared: PreparedScene, actors: readonly (readonly 
 }
 
 /**
- * Where something drawn on one floor cell of the first room (fire) goes in the paint order: before
+ * Where something drawn on one floor cell (fire) goes in the paint order: before
  * the sprite whose `order` is `order` (after everything when it equals the sprite count).
  */
 export interface CellSlot {
   cell: { x: number; y: number };
   order: number;
+  /** The room burning there, when the cell was given one (a neighbour's fire, say). */
+  room?: string;
+}
+
+/** A floor cell to find a slot for, on the scene's grid: `scene` is the index of its room in the scene (0, the first, by default). */
+export interface SlotCell {
+  x: number;
+  y: number;
+  scene?: number;
+  room?: string;
 }
 
 /**
@@ -257,14 +267,14 @@ export interface CellSlot {
 const SLOT_BOX = { dx: -24, dy: -40, width: 48, height: 56 } as const;
 
 /**
- * `placeActors`, plus a slot in the paint order for each of `cells` (floor cells of the first room,
- * on its own grid). Each is sorted after the sprites are, as a one-cell thing on the floor would be
+ * `placeActors`, plus a slot in the paint order for each of `cells` (floor cells on the scene's grid,
+ * of the first room unless a cell says otherwise). Each is sorted after the sprites are, as a one-cell thing on the floor would be
  * against what overlaps it on screen, so it moves nothing else: it goes right after the last sprite
  * that must be behind it. Someone standing on the cell is drawn over it. If what must be behind
  * and what must be in front cross (sprites the sort didn't have to order), it goes before the first
  * that must be in front, so walls and furniture cover it rather than it covering them.
  */
-export function placeWithSlots(prepared: PreparedScene, actors: readonly (readonly Actor[])[], cells: readonly { x: number; y: number }[]): { sprites: PlacedSprite[]; slots: CellSlot[] } {
+export function placeWithSlots(prepared: PreparedScene, actors: readonly (readonly Actor[])[], cells: readonly SlotCell[]): { sprites: PlacedSprite[]; slots: CellSlot[] } {
   const { layout, rooms, statics, plain, edges, byLeft, maxWidth } = prepared;
   const people = rooms.flatMap((r, scene) => actorSortables(layout, r, scene, actors[scene] ?? [])).sort(baseOrder);
   // Merge the two sorted lists. A static wins a tie: it came first in the original's stable sort.
@@ -301,11 +311,11 @@ function cellSlots(
   byLeft: readonly number[],
   lefts: readonly number[],
   maxWidth: number,
-  cells: readonly { x: number; y: number }[],
+  cells: readonly SlotCell[],
 ): CellSlot[] {
   const at = new Map<PlacedSprite & Sortable, number>();
   for (const [i, s] of ordered.entries()) at.set(s, i);
-  return cells.map(({ x, y }) => {
+  return cells.map(({ x, y, scene = 0, room }) => {
     const anchor = gridToPx(x, y);
     const v: PlacedSprite & Sortable = {
       key: "",
@@ -328,7 +338,7 @@ function cellSlots(
       prio: PRIO.entity,
       stage: 0,
       screenX: anchor.x,
-      scene: 0,
+      scene,
       box: { x0: x, x1: x, y0: y, y1: y },
       shape: "solid",
     };
@@ -344,7 +354,7 @@ function cellSlots(
     };
     for (let q = lowerBound(lefts, v.left - maxWidth); q < lefts.length && lefts[q]! < v.left + v.width; q++) against(statics[byLeft[q]!]!);
     for (const p of people) against(p);
-    return { cell: { x, y }, order: lo <= hi ? lo : hi };
+    return { cell: { x, y }, order: lo <= hi ? lo : hi, ...(room && { room }) };
   });
 }
 

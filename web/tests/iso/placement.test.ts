@@ -190,6 +190,17 @@ describe("placeWithSlots", () => {
   it("puts every slot after its cell's floor", () => {
     for (const s of slots) expect(s.order).toBeGreaterThan(order((p) => p.kind === "ground" && p.cell.x === s.cell.x && p.cell.y === s.cell.y));
   });
+  it("places a neighbour's burning cell in its own room's order, keeping its room", () => {
+    const next = { ...floor, id: "NEXT" };
+    const both = prepareScene(layout, [{ room: floor, dx: 0, dy: 0 }, { room: next, dx: 4, dy: 0 }]);
+    const placed = placeWithSlots(both, [[], []], [{ x: 5, y: 2, scene: 1, room: "NEXT" }]);
+    const [s] = placed.slots;
+    expect(s).toMatchObject({ cell: { x: 5, y: 2 }, room: "NEXT" });
+    const nextTable = placed.sprites.find((p) => p.room === "NEXT" && p.slice === "table")!.order;
+    const nextFloor = placed.sprites.find((p) => p.room === "NEXT" && p.kind === "ground" && p.cell.x === 5 && p.cell.y === 2)!.order;
+    expect(s!.order).toBeGreaterThan(nextTable);
+    expect(s!.order).toBeGreaterThan(nextFloor);
+  });
 });
 
 describe("walkableCells / spreadActors", () => {

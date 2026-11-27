@@ -5758,3 +5758,14 @@ The owner rewrote the en Shrink description: lying-down morale, and Comfort givi
 ## 2026-11-27: README and CLAUDE.md no longer call the project a vertical slice
 
 Checked the README for stale wording against the code: game endings (now Sol/Eden launch, all humans dead, ship destroyed), the moved browser lobby test (`npm run test:browser`, not part of `npm test`), per-worktree dev ports, and `verify` in the commands table and contributing steps. The owner then reframed the project as a complete game heading into a private beta, so "vertical slice" wording came out of the README and CLAUDE.md. Needed correction: I first read single player as shipped because it is in the lobby; the owner is about to hide it, so the docs keep calling it planned.
+
+### 2026-11-27: Fire visible in neighbouring rooms once reported
+
+- The iso view now burns the floor of any neighbouring room in `PlayerView.burningRooms` (fires reported by a player or the Fire detector), alongside the room you stand in. No server or view change: `burningRooms` already held only reported fires, so nothing new reaches the client.
+- `placeWithSlots` cells take a scene index (so a neighbour's cell sorts against its own room's walls and furniture) and carry their room through `Scene.fire` to `RoomFire`, which gives each burning room its own noise and emitter count so a neighbour's fire doesn't thin out the local one.
+- Correction: my first particle test advanced 0.03 s, under one 30 Hz tick, and saw no flames; a full tick fixed it.
+
+### 2026-11-27: A flame budget for neighbouring fires
+
+- With reported neighbouring fires drawn, whole-ship fog with several fires could reach 20-25k live particles (estimated from the spawn rate and lifetimes, not profiled). `RoomFire` now keeps one fire per burning room, each with its own picker; your room burns at the original's rate and the neighbours share at most `NEIGHBOR_EMITTERS` (30, one large room's worth) by floor size (`emitterBudget`). Fractional shares carry over between ticks, so a neighbour on a small share still burns. Worst case is now about two large rooms' worth (~9k sprites).
+- Found on the way: the first version picked flame cells across all rooms by combined weight, so per-room emitter counts didn't actually steer where flames went; a per-room picker fixed that.

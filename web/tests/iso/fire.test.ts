@@ -1,6 +1,6 @@
 import { Container, Texture } from "pixi.js";
 import { describe, expect, it } from "vitest";
-import { emitterCount, fireWeights, PartPool, RoomFire } from "../../src/iso/pixi/fire.ts";
+import { emitterBudget, emitterCount, fireWeights, NEIGHBOR_EMITTERS, PartPool, RoomFire } from "../../src/iso/pixi/fire.ts";
 
 // Dummy textures for frames 0..5.
 const dummyTextures = Array.from({ length: 6 }, () => new Texture());
@@ -19,6 +19,20 @@ describe("emitterCount", () => {
     expect(emitterCount(20)).toBe(8);
     expect(emitterCount(100)).toBe(20);
     expect(emitterCount(200)).toBe(30);
+  });
+});
+
+describe("emitterBudget", () => {
+  it("burns this room at the original's rate, and neighbours too while they fit", () => {
+    expect(NEIGHBOR_EMITTERS).toBe(30);
+    expect(emitterBudget([{ own: true, cells: 200 }, { own: false, cells: 100 }])).toEqual([30, 20]);
+  });
+
+  it("shares the neighbours' budget by floor size once they don't fit, never touching this room's", () => {
+    const rates = emitterBudget([{ own: true, cells: 100 }, { own: false, cells: 200 }, { own: false, cells: 200 }, { own: false, cells: 100 }]);
+    expect(rates[0]).toBe(20);
+    expect(rates.slice(1).reduce((a, b) => a + b, 0)).toBeCloseTo(NEIGHBOR_EMITTERS);
+    expect(rates[1]).toBeCloseTo(rates[3]! * 1.5);
   });
 });
 
@@ -152,6 +166,36 @@ describe("RoomFire", () => {
     expect(alive(calm, cells)).toBeLessThanOrEqual(80);
     fire.destroy();
     calm.destroy();
+  });
+
+  it("burns a neighbouring room as its own fire, without thinning this room's", () => {
+    const here = floor(10, 10);
+    const next = floor(10, 10).map((c) => ({ ...c, cell: { x: c.cell.x + 20, y: c.cell.y }, room: "NEXT" }));
+    const fire = new RoomFire();
+    fire.setTextures(dummyTextures);
+    fire.setFire("LABORATORY", [...here, ...next]);
+    for (const c of next) expect(fire.layerFor(c.cell)).toBeDefined();
+    fire.update(1 / 30, false);
+    // 20 emitters for each 100-cell floor: twice one room's fire.
+    expect(alive(fire, [...here, ...next])).toBeGreaterThanOrEqual(200);
+    expect(alive(fire, [...here, ...next])).toBeLessThanOrEqual(320);
+    fire.destroy();
+  });
+
+  it("keeps many burning neighbours to the budget, a small share still burning", () => {
+    const here = floor(10, 10);
+    // Eight 100-cell neighbours want 160 emitters; they get 30 between them, 3.75 each.
+    const next = Array.from({ length: 8 }, (_, r) => floor(10, 10).map((c) => ({ ...c, cell: { x: c.cell.x + 20 * (r + 1), y: c.cell.y }, room: `N${r}` }))).flat();
+    const fire = new RoomFire();
+    fire.setTextures(dummyTextures);
+    fire.setFire("LABORATORY", [...here, ...next]);
+    fire.update(1 / 30, false);
+    // (20 + 8 * 3) emitters, 5 to 8 flames each.
+    expect(alive(fire, [...here, ...next])).toBeGreaterThanOrEqual(220);
+    expect(alive(fire, [...here, ...next])).toBeLessThanOrEqual(352);
+    expect(alive(fire, here)).toBeGreaterThanOrEqual(100);
+    for (let r = 0; r < 8; r++) expect(alive(fire, next.filter((c) => c.room === `N${r}`))).toBeGreaterThan(0);
+    fire.destroy();
   });
 
   it("puts out the fire, removing its layers", () => {

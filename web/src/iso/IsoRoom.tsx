@@ -76,6 +76,7 @@ import {
   walkPath,
   type DoorStep,
   type PlacedSprite,
+  type SlotCell,
 } from "./placement.ts";
 
 /** What can draw the scene. Pixi is loaded only when picked, so it stays out of the main bundle. */
@@ -194,6 +195,7 @@ export function IsoRoom({
   reachable,
   brokenDoors,
   reportedBroken,
+  burningNeighbors,
   selected,
   selectedDoor,
   actingOn,
@@ -250,6 +252,8 @@ export function IsoRoom({
   brokenDoors?: ReadonlySet<RoomId>;
   /** Ids of broken equipment on the alert bar (reported, or found by the Anomaly detector): smoking in the rooms next door too. */
   reportedBroken?: ReadonlySet<string>;
+  /** Rooms with a reported fire (PlayerView.burningRooms): the ones next door burn in view too. */
+  burningNeighbors?: ReadonlySet<RoomId>;
   selected: Target | null;
   /** The door whose target is shown in the peek bar, if any. */
   selectedDoor: RoomId | null;
@@ -587,7 +591,12 @@ export function IsoRoom({
     });
     const floorCells = new Set(roomLayout.tiles.filter((t) => t.kind === "ground").map((t) => `${t.x},${t.y}`));
     // A room on fire burns all over its floor, each cell at its own place in the paint order.
-    const burning = onFire ? [...floorCells].map((c) => c.split(",").map(Number)).map(([x, y]) => ({ x: x!, y: y! })) : [];
+    const burning: SlotCell[] = onFire ? [...floorCells].map((c) => c.split(",").map(Number)).map(([x, y]) => ({ x: x!, y: y! })) : [];
+    // So does a neighbour with a reported fire, on its own floor (its scene is its index after this room).
+    prepared.rooms.forEach(({ room: n, dx, dy }, i) => {
+      if (!burningNeighbors?.has(n.id as RoomId)) return;
+      for (const t of n.tiles) if (t.kind === "ground") burning.push({ x: t.x + dx, y: t.y + dy, scene: i + 1, room: n.id });
+    });
     const placed = placeWithSlots(prepared.scene, [actors, ...neighbors.map((n) => n.actors)], burning);
     const scene = placed.sprites
       .filter((s) => !CAMERA_SLICES.has(s.slice) || (hasCamera && s.room === room))
@@ -608,8 +617,8 @@ export function IsoRoom({
       const [x, y] = c.split(",").map(Number) as [number, number];
       for (const [ax, ay] of [[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]] as const) ownCells.add(`${ax},${ay}`);
     }
-    return { scene, sprites, neighborSprites, neighbors, box: bounds(sprites), ownCells, fireSlots: onFire ? placed.slots : undefined };
-  }, [prepared, spots, walkersKey, occupantKey, corpseKey, droneKey, hostileKey, nearbyKey, hasCamera, dynarcadeDone, flownKey, leavers, onFire]);
+    return { scene, sprites, neighborSprites, neighbors, box: bounds(sprites), ownCells, fireSlots: burning.length ? placed.slots : undefined };
+  }, [prepared, spots, walkersKey, occupantKey, corpseKey, droneKey, hostileKey, nearbyKey, hasCamera, dynarcadeDone, flownKey, leavers, onFire, burningNeighbors]);
 
   // Sprites draw at exactly one screen pixel per source pixel, so art stays crisp.
   // The camera always keeps you centred, even near a room's edges (the neighbours fill the space

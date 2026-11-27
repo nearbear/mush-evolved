@@ -131,6 +131,9 @@ Loaded when working on the isometric view. The UI rules in `web/CLAUDE.md` still
   anywhere on the floor, as hard as a seeded value-noise field says (`fireWeights`: patches, calm floor
   between), at the original's rate (`emitterCount` emitters' worth, 5-8 each per 30 Hz tick), and age
   yellow, orange, red, smoke (`FX_FIRE_X`/`FX_FIRE_X2` in `fx.png`). A flame stays in its cell's layer.
+  A neighbouring room in `PlayerView.burningRooms` (a reported fire) burns too, its cells slotted in its own
+  room's order (`SlotCell.scene`), as its own fire. Your room burns at the full rate; the neighbours share at most
+  one large room's worth (`emitterBudget`, `NEIGHBOR_EMITTERS`), so many fires at whole-ship fog stay cheap.
   The slots cost up to about 2.6 ms per re-placement (the engine room, 382 cells), only while burning.
   The DOM renderer draws no fire.
 

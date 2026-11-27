@@ -19,9 +19,10 @@ export interface Offset {
   y: number;
 }
 
-/** A burning cell as the renderer is given it: its grid cell and its centre in the scene. */
+/** A burning cell as the renderer is given it: its grid cell and its centre in the scene, and the neighbouring room it is in (none for the room viewed). */
 export interface FireCell {
   cell: { x: number; y: number };
+  room?: string;
   x: number;
   y: number;
 }
@@ -226,16 +227,40 @@ function pointInCell(): Offset {
   return { x: (u - v) * 16, y: (u + v) * 8 };
 }
 
+/** One burning room's fire: its burning cells' layers, how hard each burns summed (to pick where a flame starts), and its emitters a tick. */
+interface Fire {
+  burning: CellLayer[];
+  cumulative: number[];
+  /** Emitters a tick; a fraction for a neighbour on a share of the budget. */
+  perTick: number;
+  /** The fraction of an emitter not spent yet. */
+  carry: number;
+}
+
+/** Emitters a tick the burning neighbours share between them at most: one of the largest rooms' worth. */
+export const NEIGHBOR_EMITTERS = emitterCount(Number.POSITIVE_INFINITY);
+
+/**
+ * Emitters a tick for each burning room (`own` is the room viewed): that one burns at the original's
+ * rate (`emitterCount`); the neighbours do too while they fit in `NEIGHBOR_EMITTERS` together, and
+ * otherwise share it by floor size. However many rooms burn, the flames stay under two large rooms' worth.
+ */
+export function emitterBudget(rooms: readonly { own: boolean; cells: number }[]): number[] {
+  const wanted = rooms.reduce((n, r) => (r.own ? n : n + emitterCount(r.cells)), 0);
+  const scale = wanted > NEIGHBOR_EMITTERS ? NEIGHBOR_EMITTERS / wanted : 1;
+  return rooms.map((r) => (r.own ? emitterCount(r.cells) : emitterCount(r.cells) * scale));
+}
+
 /**
  * The fire in the room being viewed: a layer per floor cell (`layerFor`, for the renderer to put in
  * the paint order), and the flames spawned into them on the original's 30 Hz tick.
  */
 export class RoomFire {
   private readonly layers = new Map<string, CellLayer>();
-  /** The burning cells' layers and how hard each burns, summed, to pick where each flame starts. */
+  /** Each burning room's fire (this room's first, if it burns). */
+  private fires: Fire[] = [];
+  /** Every burning cell's layer, across the fires, to age their flames. */
   private burning: CellLayer[] = [];
-  private cumulative: number[] = [];
-  private perTick = 0;
   private spawnTimer = 0;
   private textures: Texture[] = [];
   private room: string | null = null;
@@ -247,8 +272,9 @@ export class RoomFire {
   }
 
   /**
-   * The room's floor cells while it is on fire. A new room, or new cells, lights a new fire (a new
-   * noise seed); the same ones only move the layers, should the scene's origin have moved.
+   * The burning floor cells: the room's while it is on fire, and its neighbours' with a reported fire.
+   * A new room, or new cells, lights a new fire (a new noise seed); the same ones only move the layers,
+   * should the scene's origin have moved.
    */
   setFire(room: string, cells: readonly FireCell[]): void {
     const key = cells.map((c) => cellKey(c.cell)).join(";");
@@ -256,21 +282,30 @@ export class RoomFire {
       this.unsetFire();
       this.room = room;
       this.cellsKey = key;
-      const weights = fireWeights(
-        cells.map((c) => c.cell),
-        Math.floor(Math.random() * 2 ** 31),
-      );
-      let sum = 0;
-      cells.forEach((c, i) => {
-        const container = new Container();
-        const layer = { container, pool: new PartPool(container) };
-        this.layers.set(cellKey(c.cell), layer);
-        if (weights[i]! <= 0) return;
-        sum += weights[i]!;
-        this.burning.push(layer);
-        this.cumulative.push(sum);
+      // Each burning room (this one, reported ones next door) is its own fire: its own patches, and its own flames.
+      const rooms = new Map<string, FireCell[]>();
+      for (const c of cells) rooms.set(c.room ?? "", [...(rooms.get(c.room ?? "") ?? []), c]);
+      const seed = Math.floor(Math.random() * 2 ** 31);
+      const rates = emitterBudget([...rooms].map(([room, roomCells]) => ({ own: room === "", cells: roomCells.length })));
+      [...rooms.values()].forEach((roomCells, r) => {
+        const weights = fireWeights(
+          roomCells.map((c) => c.cell),
+          seed,
+        );
+        const fire: Fire = { burning: [], cumulative: [], perTick: rates[r]!, carry: 0 };
+        let sum = 0;
+        roomCells.forEach((c, i) => {
+          const container = new Container();
+          const layer = { container, pool: new PartPool(container) };
+          this.layers.set(cellKey(c.cell), layer);
+          if (weights[i]! <= 0) return;
+          sum += weights[i]!;
+          fire.burning.push(layer);
+          fire.cumulative.push(sum);
+          this.burning.push(layer);
+        });
+        if (fire.burning.length) this.fires.push(fire);
       });
-      this.perTick = emitterCount(cells.length);
       this.active = this.burning.length > 0;
     }
     for (const c of cells) this.layers.get(cellKey(c.cell))!.container.position.set(Math.round(c.x), Math.round(c.y));
@@ -287,26 +322,25 @@ export class RoomFire {
       container.destroy({ children: true });
     }
     this.layers.clear();
+    this.fires = [];
     this.burning = [];
-    this.cumulative = [];
-    this.perTick = 0;
     this.spawnTimer = 0;
     this.room = null;
     this.cellsKey = "";
     this.active = false;
   }
 
-  /** A burning cell, picked by how hard it burns. */
-  private pick(): CellLayer {
-    const total = this.cumulative[this.cumulative.length - 1]!;
-    const r = Math.random() * total;
-    let lo = 0, hi = this.cumulative.length - 1;
+  /** A burning cell of `fire`, picked by how hard it burns. */
+  private static pick(fire: Fire): CellLayer {
+    const { cumulative, burning } = fire;
+    const r = Math.random() * cumulative[cumulative.length - 1]!;
+    let lo = 0, hi = cumulative.length - 1;
     while (lo < hi) {
       const mid = (lo + hi) >> 1;
-      if (this.cumulative[mid]! <= r) lo = mid + 1;
+      if (cumulative[mid]! <= r) lo = mid + 1;
       else hi = mid;
     }
-    return this.burning[lo]!;
+    return burning[lo]!;
   }
 
   update(dt: number, reducedMotion: boolean): void {
@@ -316,10 +350,14 @@ export class RoomFire {
       // Spawns on a 30 Hz tick, as the original did: 5 to 8 flames per emitter it would have had.
       while (this.spawnTimer >= 1 / 30) {
         this.spawnTimer -= 1 / 30;
-        for (let e = 0; e < this.perTick; e++) {
-          let count = 5 + Math.floor(Math.random() * 4); // Dice.roll(5, 8)
-          if (reducedMotion) count >>= 1;
-          for (let i = 0; i < count; i++) this.pick().pool.obtain(pointInCell(), this.textures);
+        for (const fire of this.fires) {
+          // A share of an emitter carries over, so a neighbour on a small share still burns, just less often.
+          fire.carry += fire.perTick;
+          for (; fire.carry >= 1; fire.carry--) {
+            let count = 5 + Math.floor(Math.random() * 4); // Dice.roll(5, 8)
+            if (reducedMotion) count >>= 1;
+            for (let i = 0; i < count; i++) RoomFire.pick(fire).pool.obtain(pointInCell(), this.textures);
+          }
         }
       }
     }
