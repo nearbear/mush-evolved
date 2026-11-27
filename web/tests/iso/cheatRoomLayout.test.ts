@@ -1,13 +1,13 @@
 // The cheat room's layout (#170): Mush/derived/cheat-room.json, added to the ship's only once you're in it.
 import { describe, expect, it } from "vitest";
 import { CHEAT_ROOM, placedEquipment, resolveConfig, type RoomLayout, type ShipLayout } from "@mush2/shared";
-import shipArtJson from "../../../Mush/derived/ship-art.json?raw";
+import { shipArt } from "./shipArt.ts";
 import shipMapJson from "../../../Mush/derived/ship-map.json?raw";
 import cheatRoomJson from "../../../Mush/derived/cheat-room.json";
 import { neighborRooms, walkableCells } from "../../src/iso/placement.ts";
 import { addCheatRoom, atlasUrl } from "../../src/iso/shipLayout.ts";
 
-const ship = { ...JSON.parse(shipArtJson), ...JSON.parse(shipMapJson) } as ShipLayout;
+const ship = { ...shipArt(), ...JSON.parse(shipMapJson) } as ShipLayout;
 const room = cheatRoomJson as RoomLayout;
 const layout = addCheatRoom(ship, room);
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { RoomId, ShipArt, ShipLayout, SliceInfo } from "@mush2/shared";
-import shipArtJson from "../../../Mush/derived/ship-art.json?raw";
+import { shipArt } from "./shipArt.ts";
 import { roomLooks } from "../../src/iso/IsoRoom.tsx";
 import type { PlacedSprite } from "../../src/iso/placement.ts";
 import { animFrame, animStep, describeScene, doorAnim, doorOpenMs, frameAt, imageOf, PACE_SPEED, shipPace, type Occupant, type SceneInput } from "../../src/iso/scene.ts";
@@ -274,7 +274,7 @@ describe("describeScene", () => {
 });
 
 describe("roomLooks and ambient animations", () => {
-  const realArt = JSON.parse(shipArtJson) as ShipArt;
+  const realArt = shipArt();
   const realLayout = {
     ...realArt,
     slices: { ...realArt.slices, human_tank_full: HUMAN_TANK_FULL_SLICE },

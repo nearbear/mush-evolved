@@ -48,6 +48,11 @@ icons). They are adaptations and are also licensed CC BY-NC-SA 4.0. Each file:
 
 - `super_kube.jpg`: drawn on the blue slot tile (`www/img/icons/items/empty.jpg`).
 
+`derived/gfx/turrets.png` holds laser turret sprites edited by hand for this
+project from the turrets in `clients/iso/gfx/BigFill.png`, each with an alcove
+on the side facing into the ship (Front Bravo, Center Bravo and Rear Alpha, with
+their upgrade variants), placed by `derived/ship-art-extra.json`. It is an adaptation and is also licensed CC BY-NC-SA 4.0.
+
 `derived/webp/*.webp` are lossless WebP re-encodings of the 7 largest PNG sprite
 sheets (`derived/pages/BigFill-0.png`, `derived/pages/BigFill2-0.png`,
 `www/img/art/char.png`, and `clients/iso/gfx/{gfx_01,MidFill,MidFill2,fx}.png`),

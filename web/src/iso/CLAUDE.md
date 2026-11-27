@@ -226,6 +226,10 @@ cells. The map puts floor in front of walls, not behind them, on both axes alike
   only regenerates the sprites (`ship-art.json`, from `tiles.xml`) and the rules' room graph
   (`ship-rooms.json`, from the map). Edit it with a short script through `readMap`/`writeMap`
   (`tools/src/shipLayout/shipMap.ts`), which keeps the format; `npm run layout-query` to search it.
+- **Hand-made sprites go in `Mush/derived/ship-art-extra.json`** (sheets and slices, edited by hand; so far the
+  owner's turret alcoves from `derived/gfx/turrets.png`), since `npm run ship-layout` overwrites ship-art.json.
+  Everything that reads the art merges it with `withExtraArt` (shared): `readArt` in tools, `loadShip` in web,
+  and `web/tests/iso/shipArt.ts` for tests. Its image also needs adding to the `atlases` glob in `shipLayout.ts`.
 - **The ship map editor** (`web/src/editor/`, dev builds only): `npm run dev`, then `/editor`. It
   draws the whole ship as fog depth "all" does, or what the game draws from one room at fog depth 1
   or 2 (where seams between rooms show), with pan, zoom, layer toggles, a grid and room outlines on

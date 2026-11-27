@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import { deflateSync } from "node:zlib";
 import { describe, expect, it } from "vitest";
 import type { ShipArt, ShipMap, ShipPlan, ShipRoom } from "@mush2/shared";
-import { formatShipMap } from "../../src/shipLayout/shipMap.ts";
+import { formatShipMap, readArt } from "../../src/shipLayout/shipMap.ts";
 import { convert, formatArt, formatRooms, ROOM_IDS, roomGraph } from "../../src/shipLayout/convert.ts";
 import { unserialize } from "../../src/shipLayout/haxe.ts";
 import { decodePng, encodePng as writePng, pngSize } from "../../src/shipLayout/png.ts";
@@ -137,7 +137,7 @@ describe("generated ship-art.json", () => {
 
 describe("ship-map.json", () => {
   const map = JSON.parse(readFileSync(resolve(MUSH, "derived/ship-map.json"), "utf8")) as ShipMap;
-  const art = JSON.parse(readFileSync(resolve(MUSH, "derived/ship-art.json"), "utf8")) as ShipArt;
+  const art = readArt();
 
   it("is written in its one-tile-per-line format", () => {
     expect(formatShipMap(map)).toBe(readFileSync(resolve(MUSH, "derived/ship-map.json"), "utf8"));

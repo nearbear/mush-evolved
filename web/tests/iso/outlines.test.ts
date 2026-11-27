@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type { ShipLayout } from "@mush2/shared";
-import shipArtJson from "../../../Mush/derived/ship-art.json?raw";
+import { shipArt } from "./shipArt.ts";
 import shipMapJson from "../../../Mush/derived/ship-map.json?raw";
 import { SLICE_OUTLINES, insideOutline } from "../../src/iso/outlines.ts";
 
-const layout = { ...JSON.parse(shipArtJson), ...JSON.parse(shipMapJson) } as ShipLayout;
+const layout = { ...shipArt(), ...JSON.parse(shipMapJson) } as ShipLayout;
 
 describe("slice outlines", () => {
   it("fit inside their slice and outline equipment the map binds to it", () => {

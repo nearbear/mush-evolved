@@ -1,4 +1,4 @@
-// Loads the ship: Mush/derived/ship-art.json (the sprites) and ship-map.json (the rooms and their
+// Loads the ship: Mush/derived/ship-art.json (the sprites, with the hand-made ones in ship-art-extra.json) and ship-map.json (the rooms and their
 // tiles), both CC BY-NC-SA (see Mush/ATTRIBUTION.md), and the atlas images they reference.
 // Fetched rather than imported so the 700 KB of JSON stays out of the JS bundle and out of type
 // inference.
@@ -6,7 +6,8 @@
 // repacked pages in derived/pages/ instead (tools/src/shipLayout/pages.ts).
 
 import { useEffect, useState } from "react";
-import type { RoomLayout, ShipArt, ShipLayout, ShipMap, SliceInfo } from "@mush2/shared";
+import { withExtraArt, type ExtraArt, type RoomLayout, type ShipArt, type ShipLayout, type ShipMap, type SliceInfo } from "@mush2/shared";
+import extraArt from "@mush2/assets/derived/ship-art-extra.json";
 import artUrl from "../../../Mush/derived/ship-art.json?url";
 import mapUrl from "../../../Mush/derived/ship-map.json?url";
 import { withoutBuiltOnly } from "./equipmentTiles.ts";
@@ -18,6 +19,7 @@ const atlases = import.meta.glob<string>(
     "../../../Mush/clients/iso/gfx/{SmallFill,dev,Masks}.png",
     "../../../Mush/derived/webp/{BigFill-0,BigFill2-0,gfx_01,MidFill,MidFill2,fx}.webp",
     "../../../Mush/derived/items/super_kube.jpg",
+    "../../../Mush/derived/gfx/turrets.png",
   ],
   { eager: true, query: "?url", import: "default" },
 );
@@ -134,7 +136,8 @@ export function addCheatRoom(layout: ShipLayout, room: RoomLayout): ShipLayout {
 
 /** The art and the map as they are in the files, without the game's changes (the ship map editor draws this). */
 export async function loadShip(): Promise<ShipLayout> {
-  const [art, map] = await Promise.all([fetchJson<ShipArt>(artUrl), fetchJson<ShipMap>(mapUrl)]);
+  const [fetched, map] = await Promise.all([fetchJson<ShipArt>(artUrl), fetchJson<ShipMap>(mapUrl)]);
+  const art = withExtraArt(fetched, extraArt as unknown as ExtraArt);
   return {
     ...art,
     ...map,
