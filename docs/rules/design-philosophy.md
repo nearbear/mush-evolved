@@ -162,7 +162,7 @@ TODO
 
 I by no means expect to keep everything that I've changed so far. I plan to move fast and change in response to player feedback while we are in a beta phase.
 
-- Eden as a human win is just one of multiple ways for me to accomplish my goal of forcing the mush to act. If it proves impossible, then I will not go through with this change.
+*- Eden as a human win is just one of multiple ways for me to accomplish my goal of forcing the mush to act. If it proves impossible, then I will not go through with this change.
 
 <!--
 TODO: What's an expiriment and what's not

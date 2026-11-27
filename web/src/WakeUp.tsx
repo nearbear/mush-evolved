@@ -4,11 +4,14 @@ import "./wakeUp.css";
 /** Longest the overlay can stay up, in case animationend never fires (e.g. animations disabled). */
 const FALLBACK_MS = 3000;
 
+/** `wake`: the full cryo wake-up, for boarding after picking a character. `fade`: a plain fade in from dark, for any other way in. */
+export type Intro = "wake" | "fade";
+
 /**
- * Waking from cryo sleep, played over the game the first time you join a ship:
- * the eye blinks open while a cold blur clears. Purely visual; it never blocks input.
+ * Played over the game on the way in. `wake` is waking from cryo sleep (the first time you join a ship):
+ * the eye blinks open while a cold blur clears. `fade` just fades in from dark. Purely visual; it never blocks input.
  */
-export function WakeUp({ onDone }: { onDone: () => void }) {
+export function WakeUp({ kind = "wake", onDone }: { kind?: Intro; onDone: () => void }) {
   useEffect(() => {
     const timer = setTimeout(onDone, FALLBACK_MS);
     return () => clearTimeout(timer);
@@ -16,13 +19,13 @@ export function WakeUp({ onDone }: { onDone: () => void }) {
 
   return (
     <div
-      className="wake"
+      className={kind === "fade" ? "wake wake-fade-only" : "wake"}
       aria-hidden="true"
       onAnimationEnd={(e) => {
         if (e.target === e.currentTarget) onDone();
       }}
     >
-      <div className="wake-eye" />
+      {kind === "wake" && <div className="wake-eye" />}
     </div>
   );
 }

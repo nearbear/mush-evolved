@@ -12,6 +12,7 @@ import { matchmakerSocket, type SeatTicket } from "../net.ts";
 import logoUrl from "../../../Mush/www/img/design/logo_welcome.png?url";
 import "./lobby.css";
 import { hasWebGL2 } from "./webgl.ts";
+import type { Intro } from "../WakeUp.tsx";
 import { showSuccess, showWarning } from "../Toasts.tsx";
 
 /** One row per language, each its own matchmaker queue. Ship names are the language's own name and are not translated. */
@@ -82,7 +83,7 @@ function nextGuestName(): string {
   return `Guest ${n + 1}`; // i18n-ignore: a player name, stored by the server
 }
 
-export function Lobby({ onMatched, onPrefetch }: { onMatched: (ticket: SeatTicket) => void; onPrefetch?: () => void }) {
+export function Lobby({ onMatched, onPrefetch }: { onMatched: (ticket: SeatTicket, intro: Intro) => void; onPrefetch?: () => void }) {
   const { t, i18n } = useTranslation();
   const [name, setName] = useState<string | null>(null);
   const [ship, setShip] = useState<Choice | null>(null);
@@ -121,11 +122,11 @@ export function Lobby({ onMatched, onPrefetch }: { onMatched: (ticket: SeatTicke
     [refresh, t],
   );
 
-  /** Fades the pod out first, so the game's wake-up starts from dark. Returns the timer to clear on unmount. */
+  /** Fades the pod out first, so the game's intro starts from dark. Returns the timer to clear on unmount. */
   const enterShip = useCallback(
-    (ticket: SeatTicket) => {
+    (ticket: SeatTicket, intro: Intro) => {
       setSleeping(true);
-      return setTimeout(() => onMatched(ticket), SLEEP_MS);
+      return setTimeout(() => onMatched(ticket, intro), SLEEP_MS);
     },
     [onMatched],
   );
@@ -143,7 +144,8 @@ export function Lobby({ onMatched, onPrefetch }: { onMatched: (ticket: SeatTicke
     socket.addEventListener("message", (e: MessageEvent<string>) => {
       const msg = JSON.parse(e.data) as MatchmakerServerMessage;
       if (msg.type === "queued") setQueue({ waiting: msg.waiting, seats: msg.seats });
-      if (msg.type === "matched") timer = enterShip({ roomId: msg.roomId, token: msg.token });
+      // Boarding after picking a character is the first time aboard: the full wake-up.
+      if (msg.type === "matched") timer = enterShip({ roomId: msg.roomId, token: msg.token }, "wake");
       if (msg.type === "characterTaken") {
         // Back to the picker to choose again.
         setError(t("lobby.characterTaken"));
@@ -170,7 +172,8 @@ export function Lobby({ onMatched, onPrefetch }: { onMatched: (ticket: SeatTicke
     socket.addEventListener("open", () => socket.send(JSON.stringify({ type: "resume" })));
     socket.addEventListener("message", (e: MessageEvent<string>) => {
       const msg = JSON.parse(e.data) as MatchmakerServerMessage;
-      if (msg.type === "matched") timer = enterShip({ roomId: msg.roomId, token: msg.token });
+      // Already woke on this ship: just fade back in.
+      if (msg.type === "matched") timer = enterShip({ roomId: msg.roomId, token: msg.token }, "fade");
       // `not_aboard`: the ship ended or the character left it, so `/api/me` now says not aboard and the ships show.
       if (msg.type === "error" && msg.message === "not_aboard") {
         backToShips("lobby.notAboard");

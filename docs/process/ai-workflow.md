@@ -5811,6 +5811,11 @@ The owner asked for the cryopod window on the phone character picker to be about
 - Needed correction: the first draft styled the Reload button with its own colours; `web/CLAUDE.md` requires the global Mush button style, so only layout is set. Three server tests assumed the view is the first message on connect and were updated.
 - Deliberately left for later (owner's call): an old client is only told to reload, not refused, so a deploy that changes `PlayerView`'s shape can still break an open tab before the player reloads.
 
+### 2026-11-27: Wake-up intro only on first boarding
+
+- The cryo wake-up (eye blink + blur) played on every join from the lobby, including Resume. Now `Lobby.onMatched` passes an `Intro` (`"wake" | "fade"`): boarding after the character picker is `wake`, Resume is `fade`, and a reload stays instant. `fade` reuses the reduced-motion `wake-fade` keyframes, so no new animation.
+- Needed correction: the first pass also faded in on reloads; the owner wanted the fade only on Resume.
+
 ### 2026-11-27: Spore Sucker blocked for the Immunity trait
 
 Owner asked that characters with the Immunity trait (Chun) can't use the Spore Sucker, shown disabled with a reason. `remove_spore` now refuses with `IMMUNE`, mapped to a new `lacks: "immune"` and an `actions.lacksImmune` string (en/fr/es, matching each locale's existing name for the item). Only the permanent trait counts, not temporary immunity (perfume, fruit). This reverses the earlier "Chun allowed" difference from eMush; rules docs updated. The trait is public, so no leak.

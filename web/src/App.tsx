@@ -2,7 +2,7 @@ import { lazy, Suspense, useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Navigate, Route, Routes, useNavigate } from "react-router";
 import { Lobby } from "./lobby/Lobby.tsx";
-import { WakeUp } from "./WakeUp.tsx";
+import { type Intro, WakeUp } from "./WakeUp.tsx";
 import { loadTicket, saveTicket, type SeatTicket } from "./net.ts";
 
 // Loaded only for /play (or prefetched from the lobby on hover / queue join) so `/` doesn't pull in the game UI.
@@ -33,17 +33,18 @@ export function App() {
   }, []);
   // Leaving drops the ticket; `/play` then redirects to `/` with a replace, so Back doesn't land on the left game.
   const leave = useCallback(() => changeTicket(null), [changeTicket]);
-  // Only a fresh join from the lobby plays the wake-up; a reload restores the ticket and skips it.
-  const [waking, setWaking] = useState(false);
+  // Boarding after picking a character plays the wake-up and Resume just fades in; a reload restores the ticket and skips both.
+  const [intro, setIntro] = useState<Intro | null>(null);
   const join = useCallback(
-    (t: SeatTicket) => {
+    (t: SeatTicket, kind: Intro) => {
       changeTicket(t);
-      setWaking(true);
+      setIntro(kind);
       void navigate("/play");
     },
     [changeTicket, navigate],
   );
-  const woke = useCallback(() => setWaking(false), []);
+  const woke = useCallback(() => setIntro(null), []);
+  const waking = intro !== null;
 
   return (
     <Routes>
@@ -55,7 +56,7 @@ export function App() {
               <Suspense fallback={<main className="connecting loading">{t("common.connecting")}</main>}>
                 <GameScreen ticket={ticket} onLeave={leave} waking={waking} />
               </Suspense>
-              {waking && <WakeUp onDone={woke} />}
+              {intro && <WakeUp kind={intro} onDone={woke} />}
             </>
           ) : (
             <Navigate to="/" replace />
