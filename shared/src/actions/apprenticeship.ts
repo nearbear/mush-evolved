@@ -23,12 +23,12 @@ export class ApprenticeshipAction extends Action<ApprenticeshipActionData> {
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): ApprenticeshipActionData[] {
-    if (!player.skills.includes("apprentice")) return [];
+    if (!hasSkill(player, "apprentice")) return [];
     return copyable(state, player).map(({ teacher, skill }) => ({ type: "apprenticeship", target: teacher, skill }));
   }
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: ApprenticeshipActionData): string | null {
-    if (!player.skills.includes("apprentice")) return "no_skill";
+    if (!hasSkill(player, "apprentice")) return "no_skill";
     if (!isSkill(target.skill)) return "no_such_skill";
     if (hasSkill(player, target.skill)) return "have_skill";
     const teacher = peopleHere(state, player).find((o) => o.id === target.target);
@@ -37,7 +37,10 @@ export class ApprenticeshipAction extends Action<ApprenticeshipActionData> {
   }
 
   override apply(state: GameState, player: PlayerState, target: ApprenticeshipActionData): void {
-    player.skills[player.skills.indexOf("apprentice")] = target.skill as SkillId;
+    // Apprentice may be a picked skill or the book slot's (owner, 2026-11-26: `hasSkill`); the copy takes that place.
+    const slot = player.skills.indexOf("apprentice");
+    if (slot >= 0) player.skills[slot] = target.skill as SkillId;
+    else player.bookSkill = target.skill as SkillId;
     player.apprenticeUsed = true;
     skillPicked(state, player, target.skill);
   }

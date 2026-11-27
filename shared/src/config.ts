@@ -168,7 +168,7 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   sporeSucker: { cost: { ap: 1 }, effect: { damage: 3 }, dirtyChance: 0.25 },
   // Confirmed 2026-10-15: punch costs 1 AP, misses 40% of the time. Owner, 2026-10-24: damage is a uniform 1 to 2 (the wiki).
   // Confirmed 2026-10-16: the sturdy (Solid) skill adds 1 to punch damage.
-  punch: { cost: { ap: 1 }, effect: { damage: [1, 2], sturdyBonusDamage: 1 }, crit: { chance: 0.2, damage: [2, 3] }, successChance: 0.6, inactiveTargetSuccessChance: 0.9, dirtyChance: 0.25 },
+  punch: { cost: { ap: 1 }, effect: { damage: [1, 2], sturdyBonusDamage: 1, wrestlerBonusDamage: 2 }, crit: { chance: 0.2, damage: [2, 3] }, successChance: 0.6, inactiveTargetSuccessChance: 0.9, dirtyChance: 0.25 },
   // Owner, 2026-11-15: Wrestler and Solid can throw a roommate into an adjacent room through an unbroken door (2 AP, 1 AP on an inactive target).
   throwOut: { cost: { ap: 2, inactiveAp: 1 } },
   // Hostile NPCs (hostiles.ts). PLACEHOLDER numbers, not decided: the intruder copies a player's starting stats.
@@ -643,6 +643,7 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
     survivalReduction: 1,
     botanistBonus: 1,
     newSectorTags: ["WRECK", "RUINS", "HYDROCARBON", "CRISTAL_FIELD"],
+    diplomacyTags: ["WRECK", "RUINS", "INSECT", "RUMINANT", "PREDATOR", "MANKAROG", "CRISTAL_FIELD"],
     loot: {
       harvest: [...ALIEN_FRUIT_ITEMS],
       provision: "alien_steak",

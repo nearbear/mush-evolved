@@ -3110,6 +3110,7 @@ describe("expeditionPrep: priority claiming, gear rules, drop iTrackie, and ICAR
     const { game, botA } = prepSetup(["INTELLIGENT"]);
     expect(isPriorityExpeditionClaimant(viewFor(edit(game, botA, (p) => (p.skills = ["diplomacy"])), botA), ["INTELLIGENT"])).toBe(true);
     expect(isPriorityExpeditionClaimant(viewFor(edit(game, botA, (p) => (p.skills = ["diplomacy"])), botA), ["FOREST"])).toBe(false);
+    expect(isPriorityExpeditionClaimant(viewFor(edit(game, botA, (p) => (p.skills = ["diplomacy"])), botA), ["PREDATOR"])).toBe(true);
     expect(isPriorityExpeditionClaimant(viewFor(edit(game, botA, (p) => (p.skills = ["sprint"])), botA), ["FOREST"])).toBe(true);
     expect(isPriorityExpeditionClaimant(viewFor(edit(game, botA, (p) => (p.skills = ["survival"])), botA), ["FOREST"])).toBe(true);
     expect(isPriorityExpeditionClaimant(viewFor(edit(game, botA, (p) => (p.skills = ["botanic"])), botA), ["FOREST"])).toBe(true);

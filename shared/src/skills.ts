@@ -217,7 +217,7 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   pilot: "full",
   // Heavy-item penalty, +1 punch damage, and Throw Out (owner, 2026-10-16, 2026-11-15).
   sturdy: "full",
-  // +2 punch damage and Throw Out (owner, 2026-11-15, actions/throw_out.ts).
+  // +2 punch damage, not stacking with Solid (owner, 2026-11-26, modifiers/wrestler.ts) and Throw Out (owner, 2026-11-15, actions/throw_out.ts).
   wrestler: "full",
   // Free heal points (2/day) and reads drug properties and gets +1 Drug Dispenser option (owner, 2026-11-13).
   first_aid: "full",
@@ -265,7 +265,7 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   botanic: "full",
   // +3 AP when given a Commander mission, capped at maxAp (owner, 2026-11-23, modifiers/devoted.ts).
   devoted: "full",
-  // Counts as Botanist, Diplomat, and Biologist without their actions or resources: plant sickness (botany.ts), fruit lore (fruits.ts), drug lore / +2 Drug Dispenser options (drugs.ts), +4 research bonus (research.ts), merchant deals (merchants.ts), and Intelligent life Fight cancellation + Harvest +1 fruit on expeditions (expeditions.ts); NERON project bonuses are left out of this count.
+  // Counts as Botanist, Diplomat, and Biologist without their actions or resources: plant sickness (botany.ts), fruit lore (fruits.ts), drug lore / +2 Drug Dispenser options (drugs.ts), +4 research bonus (research.ts), merchant deals (merchants.ts), the Diplomat's expedition Fight replacements + Harvest +1 fruit (expeditions.ts), and NERON project boosts on Botanist and Biologist projects (projects.ts `projectSkillsFor`).
   skilful: "full",
   // Mush skill: the one-use reset of the Mush skills (owner, 2026-11-13, actions/reset_skills.ts).
   epigenetics: "full",
@@ -319,13 +319,13 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   fireman: "full",
   // Snoop: once a day per storage room, free, finds one item by the wiki's weights; 50% dirt, 10% injury (owner, 2026-11-01, actions/snoop.ts).
   metaliciste: "full",
-  // A faster-growing streak on turret shots and astro scans (owner, 2026-10-25).
+  // A faster-growing failure streak (x1.5 a miss) on every action with odds (owner, 2026-10-25, 2026-11-26; actions/action.ts `chance`).
   persistent: "full",
   // 50% of hunter waves come 33% smaller (owner, 2026-10-25).
   space_tactics: "full",
-  // Two more channels and Computer points (owner, 2026-10-25); the Diplomat's and Botanist's expedition effects (owner, 2026-11-08, #358).
+  // Two more channels and Computer points (owner, 2026-10-25); no expedition bonus (owner, 2026-11-26).
   polymath: "full",
-  // Ceasefire (actions/ceasefire.ts), cancels Fight in Intelligent life on expeditions (owner, 2026-11-08, #358), and unlocks Diplomat merchant deals (merchants.ts).
+  // Ceasefire (actions/ceasefire.ts); on expeditions, Fight becomes New Sector in Intelligent life and Nothing in `expedition.diplomacyTags` (owner, 2026-11-26, expeditions.ts `pacified`); unlocks Diplomat merchant deals (merchants.ts).
   diplomacy: "full",
   // End an expedition for 2 AP (owner, 2026-11-08, #358, actions/u_turn.ts); sees the next sector (owner, 2026-11-17).
   fast_backward: "full",

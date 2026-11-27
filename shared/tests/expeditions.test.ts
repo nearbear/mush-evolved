@@ -1473,7 +1473,7 @@ describe("expeditions, phase 4, slice D: skills", () => {
     });
   });
 
-  it("a Diplomat or Polyvant turns Fight in Intelligent life only into New Sector, and a Polymath does not", () => {
+  it("a Diplomat or Polyvant turns Fight into New Sector in Intelligent life and Nothing in the diplomacy sectors; a Polymath doesn't", () => {
     const fight = rule("fight", { creature: "CORTIC" });
     const polymath = game({ tags: ["INTELLIGENT"], events: { INTELLIGENT: [fight] } });
     player(polymath, "p2").skills.push("polymath");
@@ -1485,8 +1485,16 @@ describe("expeditions, phase 4, slice D: skills", () => {
         return go(s).expeditions[0]!.events.find((e) => e.sector === tag)!.kind;
       };
       expect(kindIn("INTELLIGENT")).toBe("newSector");
-      expect(kindIn("PREDATOR")).toBe("fight");
+      expect(kindIn("PREDATOR")).toBe("nothing");
     }
+    for (const tag of expedition.diplomacyTags) {
+      const s = game({ tags: [tag], events: { [tag]: [fight] } });
+      player(s, "p2").skills.push("diplomacy");
+      expect(go(s).expeditions[0]!.events.find((e) => e.sector === tag)!.kind).toBe("nothing");
+    }
+    const cave = game({ tags: ["CAVE"], events: { CAVE: [fight] } });
+    player(cave, "p2").skills.push("diplomacy");
+    expect(go(cave).expeditions[0]!.events.find((e) => e.sector === "CAVE")!.kind).toBe("fight");
   });
 
   it("New Sector adds a hidden Wreckage, Ruins, Hydrocarbon or Crystalite sector, past the caps, that this crew may explore", () => {

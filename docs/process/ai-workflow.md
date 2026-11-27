@@ -5669,3 +5669,11 @@ The owner rewrote the en Shrink description: lying-down morale, and Comfort givi
 - **Decision (owner):** Polymath gives nothing on expeditions. Its last one, the Botanist's +1 fruit on Harvest, is removed (`expeditions.ts`); Skilful keeps it.
 - **Also:** the expedition-prep bot goal (`server/src/bots/goals/expeditionPrep.ts`) treated Polymath as a Diplomat (skipping the white flag, claiming Intelligent Life seats) and a Botanist. It now checks Skilful, which really has those bonuses. Tests in `expeditions.test.ts` and `goals.test.ts` updated.
 - **What worked:** a repo-wide grep for `polymath` found the bot copy of the old rule, which the rules change alone would have left behind.
+
+### 2026-11-26 — Skill description audit and fixes
+
+- **Audit:** all 92 skill descriptions were checked against the rules (modifier files, `hasSkill` uses, config numbers). Main mismatches: Wrestler's +2 had no code, Torturer's X is missing HP, Pyromaniac costs 4 AP, Gunner is x2 not +50%, the Diplomat's "Nothing to report" wasn't built, triumph doesn't exist, nine human skills have no rules (picker shows "none"), and many fr/es texts had drifted (fr/es Persecutor even swapped Covert/Secret).
+- **Decisions (owner):** Wrestler and Solid are punches only, Wrestler +2 (`modifiers/wrestler.ts`, Solid adds nothing on top). Torturer text says missing HP. Pyro stays 4 AP. Genius/Apprentice/Ceasefire use `hasSkill` (book-slot Apprentice is replaced in the book slot). Diplomat/Skilful turn Fight into Nothing in `expedition.diplomacyTags`. Persistent for all actions. fr/es rewritten to match English (41 fr, 38 es entries). Out-of-date comments and `SKILL_STATUS` notes fixed. Engineer typo fixed.
+- **What worked:** Persistent already reached every action through `Action.chance` (only notes said otherwise), so it got a test rather than new code. Dumping description, modifier and references per skill into one file made the audit a reading task.
+- **Needs review:** the fr/es text is a draft for a native speaker. Gunner's English still says +50% while the code doubles it; it wasn't in the owner's list.
+- **Follow-up (owner):** Gunner's description now says it doubles the turret hit chance, worded like Infantryman's (en/fr/es), matching `gunner.accuracyFactor` (2).
