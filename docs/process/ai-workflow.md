@@ -5819,3 +5819,14 @@ The owner asked for the cryopod window on the phone character picker to be about
 ### 2026-11-27: Spore Sucker blocked for the Immunity trait
 
 Owner asked that characters with the Immunity trait (Chun) can't use the Spore Sucker, shown disabled with a reason. `remove_spore` now refuses with `IMMUNE`, mapped to a new `lacks: "immune"` and an `actions.lacksImmune` string (en/fr/es, matching each locale's existing name for the item). Only the permanent trait counts, not temporary immunity (perfume, fruit). This reverses the earlier "Chun allowed" difference from eMush; rules docs updated. The trait is public, so no leak.
+
+### 2026-11-27: Auto UI scale for the phone layout on tablets (#485)
+- **Decision (owner):** Instead of sizing the bottom nav in viewport units, extend the rem-based UI scale's "Auto" to the phone layout on tablet-sized screens: `@media (min-width: 600px) and (max-width: 1023px) and (min-height: 800px)` gives 125% in `web/src/styles/base.css`. Phones (under ~450 CSS px wide) and phones on their side stay at 100%.
+- Converted the remaining fixed px in the phone CSS (`styles/responsive.css`: the peek bar's 32px row and `--peek-clear`, the More badge, the landscape ID portrait, the coarse-pointer button height, skill slots, work-button padding) to rem so they follow the scale.
+- **What worked:** the desktop #485 work had already put almost all of the mobile CSS in rem, so the fix took one media query and about ten values, with no per-element rework. Viewport-unit nav sizing was rejected: it would grow the bar but not its text, and it shifts with the browser chrome and keyboard.
+
+## 2026-11-27: Schrödinger never scratches Raluca on Caress either (eMush parity)
+
+- The owner doubted that Schrödinger could scratch Raluca in eMush. The clean-room tool (`npm run emush`) showed eMush's hidden `cat_owner` status gives her a "can't hurt" modifier covering `take_cat`, `pet_cat` and `cure_cat`. We had exempted her only on Take (2026-11-26), and `changes-from-emush.md` had wrongly listed that as our own change, saying eMush scratches everyone.
+- Owner decided to match eMush: Caress now gives Raluca a 0% injury chance (`CaressAction.injuryChance`, same `item.owner` check as Take). Removed the wrong changes-from-eMush row and updated `implemented-rules.md`. Tests: an owner-caress test, and the Caress contamination test now uses a non-owner.
+- Lesson: an owner exemption in the source can sit in a status modifier's tag list rather than in the action. Search by the status name (`cat_owner`), not only by the action.

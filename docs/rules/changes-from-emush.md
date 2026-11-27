@@ -88,7 +88,6 @@ Shared baseline: both games use the same four visibility tiers (Public, Secret, 
 | :--- | :--- | :--- | :--- |
 | 🟠 | **Observant Rolls Per Holder** | One 25% roll if any Observant is in the room. | Rolls **25% independently per living Observant** in the room. |
 | 🟡 | **NPC Movement Direction** | Hidden without Tracker. | Drones, Schrödinger, and hostile NPCs **always show their movement direction** in room logs without needing Tracker. |
-| 🟡 | **Schrödinger Never Scratches His Owner** | Taking the cat has the same scratch chance for everyone. | **Raluca is never scratched** taking him (0% injury), so a Mush cat can't contaminate her that way; caressing him still can (owner, 2026-11-26). |
 
 ---
 

@@ -14,6 +14,7 @@ export type CaressActionData = { type: "caress"; item: string };
  * Caress Schrödinger (owner, 2026-11-21; eMush PetCat): 1 AP, 10% injury chance, public room log,
  * must be carried in inventory. Grants +3 morale once per player per game (still repeatable after
  * for 0 morale). Blocked for Germaphobe (Finola). If Schrödinger is Mush and scratches, contaminates by 1.
+ * He never scratches his owner (owner, 2026-11-27; eMush's cat_owner status).
  */
 export class CaressAction extends Action<CaressActionData> {
   constructor() {
@@ -24,8 +25,9 @@ export class CaressAction extends Action<CaressActionData> {
     return { ap: state.config.schrodinger.caress.cost.ap, mp: 0 };
   }
 
-  override injuryChance(state: Readonly<GameState>): number {
-    return state.config.schrodinger.caress.injuryChance;
+  override injuryChance(state: Readonly<GameState>, player: Readonly<PlayerState>, target: CaressActionData): number {
+    const item = state.items.find((i) => i.id === target.item);
+    return item?.owner === player.id ? 0 : state.config.schrodinger.caress.injuryChance;
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): CaressActionData[] {

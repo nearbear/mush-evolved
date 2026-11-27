@@ -613,7 +613,7 @@ export interface GameConfig {
   };
   // Schrödinger the cat (owner, 2026-11-21; schrodinger.ts): he appears in `room` when `owner` (a character id) boards,
   // each cycle change takes his favoured move (toward his owner; away from people once she's dead) with `favoredChance`,
-  // and supports Caress, Infectious Caress, and taking with a scratch/injury chance (never for his owner, 2026-11-26).
+  // and supports Caress, Infectious Caress, and taking with a scratch/injury chance (never for his owner on either, 2026-11-26/27).
   schrodinger: {
     owner: string;
     room: RoomId;
