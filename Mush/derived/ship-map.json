@@ -2298,7 +2298,8 @@
         {"kind":"wall","layer":0,"slice":"BIG_WALL_R","frame":1,"x":12,"y":21},
         {"kind":"wall","layer":0,"slice":"BIG_WALL_R","frame":1,"x":13,"y":21},
         {"kind":"wall","layer":0,"slice":"BIG_WALL_R","frame":1,"x":17,"y":15},
-        {"x":16,"y":16,"kind":"entity","layer":2,"slice":"sofaReverse","frame":0}
+        {"x":16,"y":16,"kind":"entity","layer":2,"slice":"sofaReverse","frame":0},
+        {"x":11,"y":21,"kind":"wall","layer":0,"slice":"BIG_WALL_L","frame":1}
       ]
     },
     {
