@@ -5,6 +5,7 @@ import { DRUG_ITEMS, type ItemTypeId } from "./itemIds.ts";
 import { spawnInRoom } from "./items.ts";
 import { changeAP, changeMP, gainMorale } from "./adjustStats.ts";
 import { treatDisease } from "./diseases.ts";
+import { drugTaken } from "./modifiers.ts";
 import { skillsOf } from "./skills.ts";
 import { type HasRng, rollInt, rollShuffle } from "./rng.ts";
 import type { GameState, PlayerState } from "./types.ts";
@@ -87,6 +88,7 @@ export function drugEffectsSeenBy(state: Readonly<GameState>, player: Readonly<P
 export function applyDrug(state: GameState, player: PlayerState, type: string): void {
   const drug = state.drugs[type];
   if (!drug) return;
+  drugTaken(state, player);
   changeAP(state, player, drug.ap);
   changeMP(state, player, drug.mp);
   gainMorale(state, player, drug.morale);

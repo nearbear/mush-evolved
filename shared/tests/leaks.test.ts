@@ -52,6 +52,7 @@ function ship(): { state: GameState; sentinels: Sentinel[] } {
     p.epigeneticsUsed = true;
     p.massMoulderingUsed = true;
     p.fairyRingUsed = true;
+    p.compulsionGrace = num(`compulsionGrace-${p.id}`, []);
     p.history = [str(`history-${p.id}`, [])];
     // A hack's counts at placement are never sent, not even to the hacker (the view carries only `radioHack`).
     p.radioHack = { target: "p1", chatSeq: { global: num(`radioHack-${p.id}`, []) } };

@@ -1,5 +1,5 @@
 import { logPrivate } from "./log.ts";
-import { maxAp, maxMp, maxMorale, maxHp } from "./modifiers.ts";
+import { maxAp, maxMp, maxMorale, maxHp, moraleLoss } from "./modifiers.ts";
 import type { GameState, PlayerState } from "./types.ts";
 import { killPlayer } from "./death.ts";
 import { shipInvincible } from "./cheats.ts";
@@ -8,6 +8,8 @@ import { shipInvincible } from "./cheats.ts";
 /** `lossKey` names the private log line for a loss, when a more specific one than `loseMorale` says why. */
 export function gainMorale(state: GameState, player: PlayerState, amount: number, lossKey = "loseMorale"): void {
   if (!player.alive || (amount < 0 && shipInvincible(state))) return;
+  // Every loss goes through the holder's `moraleLoss` hooks (Addiction: one more).
+  if (amount < 0) amount = -moraleLoss(state, player, -amount);
   player.morale = Math.min(player.maxMorale, player.morale + amount); 
   player.morale = Math.max(0, player.morale);
   if(amount > 0){

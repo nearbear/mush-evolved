@@ -6,7 +6,7 @@ import { removeContamination } from "../infection.ts";
 import { itemsIn, isWorking } from "../items.ts";
 import { SUPER_SOAP_ITEM } from "../itemIds.ts";
 import { logPrivate } from "../log.ts";
-import { showered } from "../modifiers.ts";
+import { oneShowerADay, showered } from "../modifiers.ts";
 import { projectDone } from "../projects.ts";
 import { rollFloat } from "../rng.ts";
 import { hasSkill } from "../skills.ts";
@@ -29,6 +29,8 @@ export class ShowerAction extends Action<ShowerActionData> {
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: ShowerActionData): string | null {
     const equip = state.equipment[player.room]?.find((eq) => eq.id === target.equipment);
     if (!equip || !EQUIPMENT_TYPES[equip.type]?.shower) return "cant_shower";
+    // Aquaphobia (owner, 2026-11-27): one shower a day, whichever came first that day.
+    if (player.showeredToday && oneShowerADay(player)) return "daily_cap";
     return null;
   }
 
@@ -42,6 +44,7 @@ export class ShowerAction extends Action<ShowerActionData> {
 
   override apply(state: GameState, player: PlayerState, target: ShowerActionData): void {
     removeStatus(player, "dirty");
+    player.showeredToday = true;
     const burns = player.role === "mush" && !hasSkill(player, "water_resistant");
     logPrivate(state, player.id, burns ? "showeredMush" : "showered");
     showered(state, player);
