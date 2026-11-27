@@ -183,7 +183,7 @@ export function DisabledActionButton({
   const { cost, lacks } = blocked;
   const reason =
     lacks[0] === "preselection"
-      ? t("actions.lacksPreselection")
+      ? t(blocked.action.type === "take_oxygen" ? "actions.lacksPreselectionOxygen" : "actions.lacksPreselection")
       : lacks[0] === "debris"
       ? t("patrol.noDebris")
       : lacks[0] === "pasiphae"

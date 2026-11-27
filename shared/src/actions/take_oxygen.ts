@@ -1,4 +1,4 @@
-import { Action, NO_SPACE, type ActionVisibility, isString } from "./action.ts";
+import { Action, IN_PRESELECTION, NO_SPACE, type ActionVisibility, isString } from "./action.ts";
 import { equipmentHere } from "../equipment.ts";
 import { OXYGEN_CAPSULE_ITEM } from "../itemIds.ts";
 import { hasSpace, produceItem } from "../items.ts";
@@ -10,6 +10,7 @@ export type TakeOxygenActionData = { type: "take_oxygen"; equipment: string };
 /**
  * Take an oxygen capsule from an oxygen tank (the two central storages), like a fuel capsule (owner, 2026-10-24): 0 AP,
  * no injury chance (owner, 2026-11-25: eMush's; putting it back keeps one), secret, one slot, never dropped. It takes one oxygen from the ship's stock; return_oxygen puts it back.
+ * Refused, shown disabled, during pre-selection, when oxygen can't drop (owner, 2026-11-27, as eMush).
  */
 export class TakeOxygenAction extends Action<TakeOxygenActionData> {
   override visibility: ActionVisibility = "secret";
@@ -24,6 +25,7 @@ export class TakeOxygenAction extends Action<TakeOxygenActionData> {
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: TakeOxygenActionData): string | null {
     if (!equipmentHere(state, player, "OXYGEN_TANK").some((tank) => tank.id === target.equipment)) return "cant_take_oxygen";
+    if (state.preselection) return IN_PRESELECTION;
     if (state.ship.oxygen < 1) return "empty";
     return hasSpace(state, { kind: "player", id: player.id }) ? null : NO_SPACE;
   }

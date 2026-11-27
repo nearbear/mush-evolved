@@ -12,7 +12,7 @@ import { GRAVITY_SIMULATOR, gravityLost } from "./gravity.ts";
 import { isEquipmentEnabled } from "./equipment.ts";
 import { ITEM_TYPES } from "./itemTypes.ts";
 import { removeItem } from "./items.ts";
-import { PLASMA_SHIELD } from "./ship.ts";
+import { loseOxygen, PLASMA_SHIELD } from "./ship.ts";
 import type { Equipment, GameState, ItemState, RoomId } from "./types.ts";
 
 /** Whether equipment of this type can break: only types with a repair chance in `config.repair.chance`. */
@@ -80,5 +80,5 @@ export function jellyCycle(state: GameState): void {
 export function leakOxygen(state: GameState, oxygenSaved = false): void {
   if (oxygenSaved) return;
   const leaking = Object.values(state.equipment).flat().filter((e) => e.type === "OXYGEN_TANK" && e.broken).length;
-  state.ship.oxygen = Math.max(0, state.ship.oxygen - leaking * state.config.repair.oxygenLeak);
+  loseOxygen(state, leaking * state.config.repair.oxygenLeak);
 }

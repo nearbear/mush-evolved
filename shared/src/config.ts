@@ -520,8 +520,9 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   // Confirmed 2026-10-14: humans lose 1 satiety per cycle (some things will make it more); at 3 they are full and can't
   // eat; hungry starts 24 cycles after satiety reaches 0 and costs 1 HP per cycle.
   // Decided 2026-11-17 (matching eMush): oxygen 20 of 32, -1 per cycle, nobody survives it at 0; fuel 20 of 32; hull 100. Owner, 2026-10-24 & 2026-11-23: the plasma
+  // Owner, 2026-11-27 (matching eMush): during pre-selection oxygen never drops below `preselectionFloor` (20).
   // shield starts at 0 of 100 (equipment starts broken, BIOS off), +5 a cycle while working & on, absorbing 33% of each hit, 67% with the Plasma Shield project.
-  ship: { oxygen: { start: 20, max: 32, perCycle: 1 }, fuel: { start: 20, max: 32 }, combustion: { start: 0, max: 9 }, hull: { start: 100, max: 100 }, plasmaShield: { start: 0, max: 100, absorbPercent: 33, projectAbsorbPercent: 67, regen: 5 } },
+  ship: { oxygen: { start: 20, max: 32, perCycle: 1, preselectionFloor: 20 }, fuel: { start: 20, max: 32 }, combustion: { start: 0, max: 9 }, hull: { start: 100, max: 100 }, plasmaShield: { start: 0, max: 100, absorbPercent: 33, projectAbsorbPercent: 67, regen: 5 } },
   // Owner, 2026-10-24 (#208): eMush's hunter numbers, the wiki's turret and hull repair.
   hunters: {
     points: { start: 40, perCycle: 6, hardFromDay: 5, hardBonus: 1, veryHardFromDay: 10, veryHardBonus: 2 },

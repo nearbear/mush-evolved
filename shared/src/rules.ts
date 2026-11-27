@@ -394,7 +394,7 @@ const ICARUS_ACTIONS = new Set<Action["type"]>(["board_icarus", "icarus_takeoff"
 const isUnaffordableReason = (action: Action, refused: string | null): refused is string =>
   refused !== null &&
   (UNAFFORDABLE_REASONS.has(refused) ||
-    (action.type === "hack" && refused === IN_PRESELECTION) ||
+    ((action.type === "hack" || action.type === "take_oxygen") && refused === IN_PRESELECTION) ||
     (action.type === "bond" && refused === ANTISOCIAL) ||
     (action.type === "listen_jukebox" && (refused === NOT_YOUR_SONG || refused === LISTENED_TODAY)) ||
     (action.type === "caress" && refused === GERMAPHOBE) ||

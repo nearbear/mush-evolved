@@ -67,8 +67,17 @@ export function burnOxygen(state: GameState, oxygenSaved = false): void {
     }
   }
   if (!oxygenSaved) {
-    state.ship.oxygen = Math.max(0, state.ship.oxygen - state.config.ship.oxygen.perCycle);
+    loseOxygen(state, state.config.ship.oxygen.perCycle);
   }
+}
+
+/**
+ * Take `amount` oxygen from the ship, never below 0, nor below `config.ship.oxygen.preselectionFloor` during
+ * pre-selection (owner, 2026-11-27, as eMush). A loss never raises oxygen that is already under the floor.
+ */
+export function loseOxygen(state: GameState, amount: number): void {
+  const floor = state.preselection ? Math.min(state.config.ship.oxygen.preselectionFloor, state.ship.oxygen) : 0;
+  state.ship.oxygen = Math.max(floor, state.ship.oxygen - amount);
 }
 
 /** The percent of a hit the shield takes: none while BIOS has it off or the emitter is broken, more once the Plasma Shield project is done. */

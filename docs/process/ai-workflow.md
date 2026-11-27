@@ -5836,3 +5836,9 @@ Owner asked that characters with the Immunity trait (Chun) can't use the Spore S
 ### 2026-11-27: Sector name tooltips
 
 Asked for tooltips naming planet sectors. Your own planets' sectors already had StatusIcon popovers, so the gap was shared planets (`SharedSectors`, in Astrophysics and the ship status) and the share form's slots. Added `SectorTip` (a hover/tap popover like StatusIcon, so it works on phones) for the shared rows, and wrapped the share-form slot buttons in `Hint`. The expedition timeline and report already print the sector name under each icon, so they were left alone.
+
+## 2026-11-27: Oxygen floor of 20 during pre-selection
+
+- Owner asked that oxygen can't drop below 20 in pre-selection, believing eMush does the same. Confirmed with `npm run emush`: `DaedalusService::changeVariable` clamps oxygen at 20 while the ship is `STARTING`, and its test `shouldNotDecreaseOxygenPreSelection` checks it. The first `spec` summary said consumption was "paused" outright, which was wrong. `find` on `GameStatusEnum::STARTING` showed the real check. Lesson: when a spec summary and a test's asserted number disagree, find the source line.
+- The same search showed eMush also refuses `RetrieveOxygen` in pre-Mush. Since mush2 starts at 20 oxygen, taking a capsule would break the floor or create free oxygen, so mush2 does the same: `take_oxygen` is refused with `IN_PRESELECTION`, shown disabled with its own reason (en/fr/es).
+- Built as one `loseOxygen` helper (`ship.ts`) used by the cycle burn and tank leaks, with `config.ship.oxygen.preselectionFloor`. It never raises oxygen already under the floor. Tests are in `oxygen.test.ts`.

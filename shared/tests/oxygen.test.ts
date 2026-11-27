@@ -5,7 +5,7 @@ import { capacity, itemsIn } from "../src/items.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame } from "../src/rules.ts";
 import type { Action, GameState } from "../src/types.ts";
-import { makeSeats, must, offered } from "./support.ts";
+import { makeSeats, must, nextCycle, noIncidents, offered, option } from "./support.ts";
 
 const TANK = "STORAGE_A_0:OXYGEN_TANK";
 const take: Action = { type: "take_oxygen", equipment: TANK };
@@ -75,5 +75,46 @@ describe("oxygen capsules", () => {
 
   it("parses from the wire", () => {
     for (const action of [take, back]) expect(parseGameMessage(JSON.stringify({ type: "action", action }))).toEqual({ type: "action", action });
+  });
+});
+
+describe("oxygen during pre-selection", () => {
+  // A started game marked as in pre-selection, so each test sees only the floor.
+  function preselection(oxygen: number): GameState {
+    const s = createGame(makeSeats(3), noIncidents(structuredClone(DEFAULT_CONFIG)), 3);
+    for (const p of s.players) p.room = "STORAGE_A_0";
+    s.preselection = true;
+    s.ship.oxygen = oxygen;
+    return s;
+  }
+  const floor = ship.oxygen.preselectionFloor;
+
+  it("the floor is 20, as eMush", () => {
+    expect(floor).toBe(20);
+  });
+
+  it("the cycle's burn stops at the floor, and resumes once the Mush are chosen", () => {
+    let s = preselection(floor + 1);
+    for (let i = 0; i < 3; i++) s = nextCycle(s);
+    expect(s.ship.oxygen).toBe(floor);
+    s.preselection = false;
+    expect(nextCycle(s).ship.oxygen).toBe(floor - ship.oxygen.perCycle);
+  });
+
+  it("broken tanks don't leak it below the floor either", () => {
+    let s = preselection(floor);
+    for (const e of Object.values(s.equipment).flat()) if (e.type === "OXYGEN_TANK") e.broken = true;
+    s = nextCycle(s);
+    expect(s.ship.oxygen).toBe(floor);
+  });
+
+  it("a loss never raises oxygen already under the floor", () => {
+    expect(nextCycle(preselection(floor - 5)).ship.oxygen).toBe(floor - 5);
+  });
+
+  it("taking a capsule is shown disabled with the reason", () => {
+    const s = preselection(ship.oxygen.max);
+    expect(option(s, "p0", take)?.lacks).toEqual(["preselection"]);
+    expect(applyAction(s, "p0", take)).toMatchObject({ ok: false });
   });
 });

@@ -540,6 +540,7 @@
     "lacksRingTapped": "Someone has already drawn from this Fairy Ring today. It refills with the next day.",
     "lacksReactorTurn": "The lateral reactor on this side is broken: the ship can't turn this way until it is repaired.",
     "lacksPreselection": "Unavailable during pre-selection: titles aren't assigned until the Mush are chosen.",
+    "lacksPreselectionOxygen": "Unavailable during pre-selection: oxygen can't drop until the Mush are chosen.",
     "lacksMp": "Not enough MP: it costs {{need}}, you have {{have}}.",
     "lacksBoth": "Not enough AP or MP: it costs {{needAp}} AP and {{needMp}} MP, you have {{haveAp}} AP and {{haveMp}} MP.",
     "returnToSol": "Return to Sol",

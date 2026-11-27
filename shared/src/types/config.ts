@@ -879,7 +879,7 @@ export interface GameConfig {
     injuryChance: number; // Chance of getting injured when taking an item; dropping one never injures (owner, 2026-11-25: eMush's).
   };
   ship: {
-    oxygen: { start: number; max: number; perCycle: number }; // Oxygen the ship burns each cycle; at 0 one random living crew member dies per cycle (owner, 2026-10-19).
+    oxygen: { start: number; max: number; perCycle: number; preselectionFloor: number }; // Oxygen the ship burns each cycle; at 0 one random living crew member dies per cycle (owner, 2026-10-19). Losses stop at `preselectionFloor` during pre-selection.
     fuel: { start: number; max: number }; // The tanks' stock; only capsules carried to the combustion chamber are burned (owner, 2026-10-23).
     combustion: { start: number; max: number }; // The combustion chamber (owner, 2026-10-23, the wiki): starts empty, holds 9. Travel and leaving orbit burn from it.
     hull: { start: number; max: number }; // Only hunters damage it, through `damageShip`; at 0 the ship explodes (owner, 2026-10-24).
