@@ -1,5 +1,20 @@
 # Why Mush: Evolved
 
+This is entire document is written by me, nearbear, with no AI assistance. In it, I will try to explain the decisions behind everything I've done so far.
+
+## Table of Contents
+
+* [FAQ](#faq)
+* [How it started](#how-it-started)
+* [Thanks](#thanks)
+* [Mush: Evolved, eMush, and Mush: Respored](#mush-evolved-emush-and-mush-respored)
+* [Part 1: Foundations](#part-1-foundations)
+* [Part 2: Design changes](#part-2-design-changes)
+* [What might be wrong](#what-might-be-wrong)
+* [How decisions get made](#how-decisions-get-made)
+* [Where this is going](#where-this-is-going)
+* [Closing words](#closing-words)
+
 ## FAQ
 
 Here are some questions I assume most will have, let's get them out of the way first:
@@ -42,13 +57,13 @@ I do not know how the future of our three games will interact - that hinges on t
 
 ## Part 1: Foundations
 
-- Leak-proof hidden information: You can't have a social deduction game without secrets. Any potential for a secret to get leaked is bad news, so the server sends all view information through a single chokepoint, which is easier to lock down than if it could be sent from many places.
-- Historical replays: This was essential to write the foundations for before I started any substantial work on game rule code. I had to revise the snapshot, game state accessors, and game versioning that I initially wrote to make replays work for all of time, regardless of whether one would destructively change the game state's shape or not.
-- Real-time gameplay: Websockets enable actions, messages, and everything else to be sent to the user without the need for them to refresh a page.
-- Fully rendered ship: Glueing the rooms of the Daedalus required a lot of derived assets from the original game. This was one of the most painful parts (and continues to be), but it was worth it.
-- Mobile first: Mush Evolved follows the philosophy that you should always prioritize the look of a UI component on mobile before desktop, as mobile is more difficult to get right.
-- Internationalization: I incorporated a string substitution for i18n of various languages very early on. Even if many strings are lackluster, they will be easy to replace later with simple JSON modification.
-- Licensing: I had never heard of AGPL before I saw eMush's source code, and I agree with the philosophy of keeping online games open sourced to prevent their deaths should their maintainers stop maintaining it.
+* Leak-proof hidden information: You can't have a social deduction game without secrets. Any potential for a secret to get leaked is bad news, so the server sends all view information through a single chokepoint, which is easier to lock down than if it could be sent from many places.
+* Historical replays: This was essential to write the foundations for before I started any substantial work on game rule code. I had to revise the snapshot, game state accessors, and game versioning that I initially wrote to make replays work for all of time, regardless of whether one would destructively change the game state's shape or not.
+* Real-time gameplay: Websockets enable actions, messages, and everything else to be sent to the user without the need for them to refresh a page.
+* Fully rendered ship: Glueing the rooms of the Daedalus required a lot of derived assets from the original game. This was one of the most painful parts (and continues to be), but it was worth it.
+* Mobile first: Mush Evolved follows the philosophy that you should always prioritize the look of a UI component on mobile before desktop, as mobile is more difficult to get right.
+* Internationalization: I incorporated a string substitution for i18n of various languages very early on. Even if many strings are lackluster, they will be easy to replace later with simple JSON modification.
+* Licensing: I had never heard of AGPL before I saw eMush's source code, and I agree with the philosophy of keeping online games open sourced to prevent their deaths should their maintainers stop maintaining it.
 
 ### Real-time play
 
@@ -56,15 +71,15 @@ In eMush, the need for your action's webserver HTTP request to complete before e
 
 ### 2D view changes
 
-- Viewing more than one room at a time is a much more immersive experience.
-- Seeing others move around the room at the same time as you makes the game feel alive.
-- Make sure to be online when the commander turns the Daedalus!
+* Viewing more than one room at a time is a much more immersive experience.
+* Seeing others move around the room at the same time as you makes the game feel alive.
+* Make sure to be online when the commander turns the Daedalus!
 
 ### Replays and history
 
-- Learn from past mistakes
-- Revisit old memories
-- Simpler moderation
+* Learn from past mistakes
+* Revisit old memories
+* Simpler moderation
 
 ### Interface, chat, and mobile
 
@@ -104,18 +119,18 @@ The only time Mush players get tripped up by this is if they are new. In Mush Ev
 
 Every single day, the Mush ought to always have a reason to act. If they don't, then there is a lack of mutual tension and the game stops being about social deduction. Most asymmetric games have an answer to this kind of problem in the form of a "clock" of sorts that causes the aggressor to lose the game if they schmooze around:
 
-- Counter Strike: The bad guys lose if they don't plant the device by the time that the clock runs out.
-- Classic Mafia: The mafiosos lose if the town gathers enough information for process of elimination. Every day that a cop lives narrows down the "worlds" of possibilities.
-- Dead by Daylight: The killer loses if the generators all get repaired and the survivors leave through a gate.
+* Counter Strike: The bad guys lose if they don't plant the device by the time that the clock runs out.
+* Classic Mafia: The mafiosos lose if the town gathers enough information for process of elimination. Every day that a cop lives narrows down the "worlds" of possibilities.
+* Dead by Daylight: The killer loses if the generators all get repaired and the survivors leave through a gate.
 
 Imagine any of those games if they lost their clock. In CS, the bad guys could sit in their spawn, hoping that the good guys got impatient and left their fortified positions - there would be no consequence for such a play. If there is no cop/detective in mafia, then the mafiosos can just randomly point the finger at someone and hope it works out, because that's what everyone else is doing. A cop/detective forces mafiosos to craft a specific narrative (usually involving a counter claim) and try to win around it. If repairing a generator didn't accomplish anything in DBD, a killer could kill all but two players at their own pace, then optimize their win chances by herding the players to be closer together before killing one and allowing the trapdoor to appear. The current version of Mush is in the same caliber of unbalanced-ness as these imagined half-games, and adding *anything* to the lategame that causes passive Mush to lose will allow the previously mentioned incidental proofs to be removed.
 
 In Mush Evolved, my initial vision is:
 
-- Humans reaching "True" Eden is the condition that serves as the ultimate "time's up, you lose" for the Mush, no matter how many of them live. If this doesn't work out then I will keep trying other solutions.
-- Eleesha's list and Xyloph's list continue to serve as informational focal points, but with information that will never be fully useless.
-- Starmap Fragments serve as our version of DBD's generators.
-- "False" Eden will be added to take the place of the old Mush Eden ending to give the Mush an option for a similarly rare late game victory. The more Mush that are alive at the end of the game, the easier that False Eden will be to achieve.
+* Humans reaching "True" Eden is the condition that serves as the ultimate "time's up, you lose" for the Mush, no matter how many of them live. If this doesn't work out then I will keep trying other solutions.
+* Eleesha's list and Xyloph's list continue to serve as informational focal points, but with information that will never be fully useless.
+* Starmap Fragments serve as our version of DBD's generators.
+* "False" Eden will be added to take the place of the old Mush Eden ending to give the Mush an option for a similarly rare late game victory. The more Mush that are alive at the end of the game, the easier that False Eden will be to achieve.
 
 ### Principle: No single player or pair of players can unilaterally end the game
 
@@ -135,8 +150,8 @@ TODO
 
 This is a minor one, but it's the reasoning behind:
 
-- Moving of all spacesuits to Icarus Bay at the start of the game
-- Desiring to add a sharable report to most "features" similar to how astrophysics and projects already work on eMush
+* Moving of all spacesuits to Icarus Bay at the start of the game
+* Desiring to add a sharable report to most "features" similar to how astrophysics and projects already work on eMush
 
 <!--
 TODO: 
