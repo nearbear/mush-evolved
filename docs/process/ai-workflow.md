@@ -5697,6 +5697,16 @@ The owner rewrote the en Shrink description: lying-down morale, and Comfort givi
 - **Also:** the expedition-prep bot goal (`server/src/bots/goals/expeditionPrep.ts`) treated Polymath as a Diplomat (skipping the white flag, claiming Intelligent Life seats) and a Botanist. It now checks Skilful, which really has those bonuses. Tests in `expeditions.test.ts` and `goals.test.ts` updated.
 - **What worked:** a repo-wide grep for `polymath` found the bot copy of the old rule, which the rules change alone would have left behind.
 
+### 2026-11-26: Master blueprint cheat item
+
+- Added `master_blueprint`, a development-only item that only the Superkube's spawn makes (nothing on the ship draws it, since random blueprint draws read `BLUEPRINTS` and ship stock lists types by name). `build` gained an optional `recipe` field, accepted only for the master blueprint: one candidate per recipe, no ingredients, the item is kept, and the normal 3 AP still applies. Buttons read "Build (Sofa)" etc.
+- What worked: following the attack action's optional-field pattern (a union type plus a `parse` override) kept protocol validation strict; `Object.hasOwn` guards the recipe key against `toString`-style lookups.
+
+### 2026-11-26: Ship editor draws the picked room alone
+
+- Owner asked for a view showing only the selected room, replacing the View menu's "From a room" list of every room. The View menu is now Whole ship / Picked room only / Picked room at fog depth 1 or 2, and the room views follow the room picked in the hierarchy or scene (`ShipView` gained depth 0 in `shipScene.ts`; the remembered place accepts it). The unused `Sub` menu helper went with the list.
+- Tradeoff: following the pick means clicking a tile in a neighbouring room at fog depth 1 or 2 re-roots the view on that room. A check problem that only shows from one room now picks that room to draw from it.
+- Needed correction: a narrowing on `view.from && view.depth === 0` didn't satisfy tsc; split into a `depth` local.
 ### 2026-11-26 — Skill description audit and fixes
 
 - **Audit:** all 92 skill descriptions were checked against the rules (modifier files, `hasSkill` uses, config numbers). Main mismatches: Wrestler's +2 had no code, Torturer's X is missing HP, Pyromaniac costs 4 AP, Gunner is x2 not +50%, the Diplomat's "Nothing to report" wasn't built, triumph doesn't exist, nine human skills have no rules (picker shows "none"), and many fr/es texts had drifted (fr/es Persecutor even swapped Covert/Secret).
@@ -5704,6 +5714,22 @@ The owner rewrote the en Shrink description: lying-down morale, and Comfort givi
 - **What worked:** Persistent already reached every action through `Action.chance` (only notes said otherwise), so it got a test rather than new code. Dumping description, modifier and references per skill into one file made the audit a reading task.
 - **Needs review:** the fr/es text is a draft for a native speaker. Gunner's English still says +50% while the code doubles it; it wasn't in the owner's list.
 - **Follow-up (owner):** Gunner's description now says it doubles the turret hit chance, worded like Infantryman's (en/fr/es), matching `gunner.accuracyFactor` (2).
+
+### 2026-11-26: Misaligned sofas
+
+- Owner reported built sofas drawn about a cell off their spot, while sleepers on them were right. The rotated sofa (`sofaReverse`, 3x1) is a mirror of `sofa` (1x3) that the original never placed, so tiles.xml left its offset at an untuned `0,0`. The footprint maths (R = 16) gives the mirrored offset `-14,-16`; fixed as `OFFSET_FIXES` in `tools/src/shipLayout/convert.ts` and regenerated `ship-art.json`. Checked with before/after `ship-render` crops read by the visual-check agent.
+- Worked: reading the slice numbers before looking at pictures; the bug was visible in two lines of data.
+
+## 2026-11-26: Radio Piracy in the same room
+
+- **Decision (owner):** a Mush with Radio Piracy can place the same iTrackie hack for 2 AP on a player in their own room (`radio_piracy_room`), as well as the 3 AP Com center version. Owner's answers: it shares the once-a-day limit, it's private, and players see the same name for both.
+- **What worked:** a separate one-field action (`{ target }`) reused `placeHack` and the `radioHacked` line, and the client's `namedTarget` routing put it on the target's panel (Inspect and phone peek bar) with no UI code. The only web change was a name key and the skill description in en/fr/es.
+- **Needed correction:** nothing. `verify` failed only in the ship-layout door test, which this task didn't touch.
+
+### 2026-11-27: Walks prefer walkways on ties
+
+- The owner asked for walking to take a walkway when that is as short as a way off it. `walkableCells` now tags walkway cells (`isWalkway`: `GROUND` frames 1-5, the milky blue strip and its marked pieces; `GROUND_DECK` frames 8 and up, the dark dashed paths; deck frames 0-7 are plates). Claude worked out the frames by dumping rooms as ASCII grids of slice and frame. `walkPath` is still breadth first, so walks are never longer. When two routes to a cell are equally short, it keeps the one over more walkway cells. FIFO order means a cell's count is settled before it is expanded. `doorPassage`'s shift keeps the tag. Display only; the server doesn't see it.
+- Two iso tests (built sofa spots in SPACESHIP_BAY_AA, Alpha Bay 2's bay window paint order) failed before this change too, apparently from map edits made in another session.
 
 ## 2026-11-27: Addiction disorder (`sud_disorder`)
 
@@ -5722,4 +5748,4 @@ The owner rewrote the en Shrink description: lying-down morale, and Comfort givi
 
 - **Decision (owner):** Pyromania, a disorder in the random pool: -2 max morale, extinguish x0.5, a 10% roll each cycle change to be compelled for 4 cycles, during which the Pyromaniac's Ignite is offered at 2 AP (owner's own answer, not one of the offered options); igniting ends it, running out costs 6 morale; either way a hidden 2-cycle grace with no roll (also the owner's addition); a calmed compulsion pauses.
 - **What worked:** reused the existing Ignite action (one validate/cost branch through `compelledToBurn`) instead of a second fire action. The pause while calmed came free from `modifierIds` filtering calmed disorders out of onCycle and of `compelledToBurn`. The grace counter is reach "never" in `leakFields.ts`, stripped in `viewFor`, with a sentinel in `leaks.test.ts`.
-- **Needed care:** asking the four open points paid off: two answers changed the design (2 AP, hidden grace). The full-suite replay timeouts (`replayView` stepMarks) also happen on unmodified HEAD, so they aren't from these disorders.
+- **Needed care:** asking t
