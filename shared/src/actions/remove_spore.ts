@@ -5,18 +5,22 @@ import { removeContamination } from "../infection.ts";
 import { canReachItem, isWorking } from "../items.ts";
 import { SPORE_SUCKER_ITEM } from "../itemIds.ts";
 import { logPrivate } from "../log.ts";
+import { hasImmunityTrait } from "../statuses.ts";
 import type { GameState, ItemState, PlayerState } from "../types.ts";
 
 export type RemoveSporeActionData = { type: "remove_spore"; item: string };
 
 const STIFF_NECK = "stiff_neck_injury";
+/** Refusal for a player with the Immunity trait (Chun): shown disabled with the reason (owner, 2026-11-27). */
+export const IMMUNE = "immune";
 
 /**
  * Remove a spore with the Spore Sucker (owner, 2026-11-20): with a working one you can reach (carried or on the floor),
  * spend `sporeSucker.cost.ap` AP on yourself. A human loses 1 contamination if they have any; a Mush's spores are
  * untouched. Either way you take `sporeSucker.effect.damage` damage (it can kill: cause `injury`) and get Stiff Neck,
  * which also blocks this action until it wears off (shown disabled, with the wait). Reusable. Private: the log line is
- * the same whether or not a spore came out, so it never tells you whether you were contaminated.
+ * the same whether or not a spore came out, so it never tells you whether you were contaminated. Not for a player with
+ * the Immunity trait (owner, 2026-11-27): shown disabled with the reason. The trait is public, so this tells nobody anything.
  */
 export class RemoveSporeAction extends Action<RemoveSporeActionData> {
   override visibility: ActionVisibility = "private";
@@ -31,6 +35,7 @@ export class RemoveSporeAction extends Action<RemoveSporeActionData> {
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: RemoveSporeActionData): string | null {
     if (!suckersFor(state, player).some((i) => i.id === target.item)) return "cant_reach";
+    if (hasImmunityTrait(player)) return IMMUNE;
     if (this.cooldownLeft(state, player, target) > 0) return COOLDOWN;
     return null;
   }

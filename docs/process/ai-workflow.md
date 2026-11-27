@@ -5810,3 +5810,7 @@ The owner asked for the cryopod window on the phone character picker to be about
 - What worked: both sides were already stamped with the same commit (for replay badges, #369), and a Worker deploy drops every socket, so the reconnect is the moment to compare; no polling or new endpoint was needed.
 - Needed correction: the first draft styled the Reload button with its own colours; `web/CLAUDE.md` requires the global Mush button style, so only layout is set. Three server tests assumed the view is the first message on connect and were updated.
 - Deliberately left for later (owner's call): an old client is only told to reload, not refused, so a deploy that changes `PlayerView`'s shape can still break an open tab before the player reloads.
+
+### 2026-11-27: Spore Sucker blocked for the Immunity trait
+
+Owner asked that characters with the Immunity trait (Chun) can't use the Spore Sucker, shown disabled with a reason. `remove_spore` now refuses with `IMMUNE`, mapped to a new `lacks: "immune"` and an `actions.lacksImmune` string (en/fr/es, matching each locale's existing name for the item). Only the permanent trait counts, not temporary immunity (perfume, fruit). This reverses the earlier "Chun allowed" difference from eMush; rules docs updated. The trait is public, so no leak.

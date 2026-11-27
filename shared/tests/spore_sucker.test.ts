@@ -89,6 +89,16 @@ describe("spore sucker", () => {
     expect(offered(s, "p0")).toContainEqual(use);
   });
 
+  it("is shown disabled, with the reason, to a player with the Immunity trait, and refused", () => {
+    const s = ship();
+    player(s, "p0").modifiers.push("immunity");
+    expect(offered(s, "p0")).not.toContainEqual(use);
+    expect(option(s, "p0", use)?.lacks).toEqual(["immune"]);
+    const before = JSON.stringify(s);
+    expect(applyAction(s, "p0", use).ok).toBe(false);
+    expect(JSON.stringify(s)).toBe(before);
+  });
+
   it("is not offered without a reachable sucker", () => {
     const s = ship();
     s.items = s.items.filter((i) => i.id !== "sucker");
