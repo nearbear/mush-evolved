@@ -464,6 +464,14 @@ describe("smoke", () => {
       { key: `${NEXT}/d1`, x: 16 - -100, y: 24 - -50, footprint: [1, 1], at: 2 },
     ]);
   });
+  it("emits smoke for a neighbour's equipment only once it is reported broken", () => {
+    const floor = placed({ key: "f0", kind: "ground" });
+    const reported = placed({ key: `${NEXT}/t4`, room: NEXT, kind: "entity", slice: "rotational_reactor", cell: { x: 4, y: 2 } });
+    const unreported = placed({ key: `${NEXT}/t5`, room: NEXT, kind: "entity", slice: "server", cell: { x: 3, y: 2 } });
+    expect(scene([floor, reported, unreported]).smoke).toEqual([]);
+    const s = scene([floor, reported, unreported], { smokingNeighbors: new Set([`${NEXT}/t4`]) });
+    expect(s.smoke).toEqual([{ key: `${NEXT}/t4`, x: 32 - -100, y: 48 - -50, footprint: [1, 1], at: 2 }]);
+  });
 });
 
 describe("cutaway", () => {

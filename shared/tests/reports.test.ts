@@ -92,7 +92,7 @@ describe("reporting a breakdown", () => {
     expect(offered(s, "p0").filter((a) => a.type === "report_equipment")).toEqual([{ type: "report_equipment", equipment: COFFEE }]);
     const after = mustApply(s, "p0", { type: "report_equipment", equipment: COFFEE });
     expect(globalSystem(after).at(-1)).toEqual({ key: "equipmentReported", params: { name: player(s, "p0").character, room: HERE, equipment: "COFFEE_DISPENSER" } });
-    expect(viewFor(after, "p2").alerts).toEqual({ fires: 0, broken: 2, reports: [{ kind: "equipment", room: HERE, equipment: "COFFEE_DISPENSER", by: player(s, "p0").character }], gravity: null });
+    expect(viewFor(after, "p2").alerts).toEqual({ fires: 0, broken: 2, reports: [{ kind: "equipment", room: HERE, equipment: "COFFEE_DISPENSER", id: COFFEE, by: player(s, "p0").character }], gravity: null });
     expect(offered(after, "p1").some((a) => a.type === "report_equipment")).toBe(false);
   });
 
@@ -176,8 +176,8 @@ describe("detectors", () => {
     expect(reports).toHaveLength(2);
     expect(reports).toEqual(
       expect.arrayContaining([
-        { kind: "equipment", room: HERE, equipment: "COFFEE_DISPENSER", by: "EQUIPMENT_SENSOR" },
-        { kind: "equipment", room: ELSEWHERE, equipment: lab.type, by: "EQUIPMENT_SENSOR" },
+        { kind: "equipment", room: HERE, equipment: "COFFEE_DISPENSER", id: COFFEE, by: "EQUIPMENT_SENSOR" },
+        { kind: "equipment", room: ELSEWHERE, equipment: lab.type, id: lab.id, by: "EQUIPMENT_SENSOR" },
       ]),
     );
     // Breakdowns never light the minimap.

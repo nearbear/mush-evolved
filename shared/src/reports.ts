@@ -15,10 +15,10 @@ import type { DoorId, Equipment, GameState, Report, RoomId } from "./types.ts";
 /** Who reported a problem: a crew member, or the detector that covers its kind. */
 export type ReportSource = CharacterId | "FIRE_SENSOR" | "EQUIPMENT_SENSOR" | "DOOR_SENSOR";
 
-/** One located problem on the alert bar. */
+/** One located problem on the alert bar. `id` is the broken equipment's, so the room view can smoke it from next door. */
 export type AlertReport =
   | { kind: "fire"; room: RoomId; by: ReportSource }
-  | { kind: "equipment"; room: RoomId; equipment: string; by: ReportSource }
+  | { kind: "equipment"; room: RoomId; equipment: string; id: string; by: ReportSource }
   | { kind: "door"; door: DoorId; by: ReportSource };
 
 /** The alert bar (`PlayerView.alerts`): every fire, broken equipment and broken door counted, the reported ones located. */
@@ -105,12 +105,12 @@ export function alertsFor(state: Readonly<GameState>): Alerts {
     : state.reports.flatMap((r): AlertReport[] => (r.kind === "fire" && state.fires.includes(r.room) ? [{ kind: "fire", room: r.room, by: reporter(r.by) }] : []));
   const equipmentReports: AlertReport[] = breakdownsDetected(state)
     ? broken.flatMap(({ room, equipment }): AlertReport[] =>
-        selfReported(equipment) ? [] : [{ kind: "equipment", room, equipment: equipment.type, by: "EQUIPMENT_SENSOR" }],
+        selfReported(equipment) ? [] : [{ kind: "equipment", room, equipment: equipment.type, id: equipment.id, by: "EQUIPMENT_SENSOR" }],
       )
     : state.reports.flatMap((r): AlertReport[] => {
         if (r.kind !== "equipment") return [];
         const found = broken.find((b) => b.equipment.id === r.equipment);
-        return found ? [{ kind: "equipment", room: found.room, equipment: found.equipment.type, by: reporter(r.by) }] : [];
+        return found ? [{ kind: "equipment", room: found.room, equipment: found.equipment.type, id: found.equipment.id, by: reporter(r.by) }] : [];
       });
   const doorReports: AlertReport[] = doorsDetected(state)
     ? doors.map((door) => ({ kind: "door", door, by: "DOOR_SENSOR" }))

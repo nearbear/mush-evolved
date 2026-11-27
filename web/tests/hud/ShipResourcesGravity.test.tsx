@@ -23,7 +23,7 @@ const alerts = (broken: number, gravity: PlayerView["alerts"]["gravity"], report
   reports,
   gravity,
 });
-const tankReport = { kind: "equipment", room: "front_storage", equipment: "OXYGEN_TANK", by: "chun" } as PlayerView["alerts"]["reports"][number];
+const tankReport = { kind: "equipment", room: "front_storage", equipment: "OXYGEN_TANK", id: "front_storage:OXYGEN_TANK", by: "chun" } as PlayerView["alerts"]["reports"][number];
 
 describe("alerts counter with the Gravity Simulator", () => {
   it("counts a broken simulator once, through broken", () => {

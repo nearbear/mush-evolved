@@ -21,7 +21,7 @@
 import { Suspense, lazy, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ComponentType, type MouseEvent, type PointerEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { createPortal } from "react-dom";
-import { CAMERA_EQUIPMENT, CORPSE_ITEM, DYNARCADE_EQUIPMENT, EQUIPMENT_TYPES, PROJECT_COMPLETE, RESEARCH_COMPLETE, SUPPORT_DRONE_ITEM, SUPER_CALC_EQUIPMENT, doorOtherRoom, type EquipmentView, type RoomId, type RoomLayout, type ShipLayout, type Spot, type Target } from "@mush2/shared";
+import { CAMERA_EQUIPMENT, CORPSE_ITEM, DYNARCADE_EQUIPMENT, EQUIPMENT_TYPES, PROJECT_COMPLETE, RESEARCH_COMPLETE, SUPPORT_DRONE_ITEM, SUPER_CALC_EQUIPMENT, doorOtherRoom, placedEquipment, type EquipmentView, type RoomId, type RoomLayout, type ShipLayout, type Spot, type Target } from "@mush2/shared";
 import type { Bubble } from "../scene/useSpeechBubbles.ts";
 import { useNames } from "../i18n/names.ts";
 import { CAMERA_SLICES, LOCKER_HOVER_KEY, equipmentByTileKey, isLockerSlice, roomAsBuilt } from "./equipmentTiles.ts";
@@ -193,6 +193,7 @@ export function IsoRoom({
   equipment,
   reachable,
   brokenDoors,
+  reportedBroken,
   selected,
   selectedDoor,
   actingOn,
@@ -247,6 +248,8 @@ export function IsoRoom({
   reachable: Set<RoomId>;
   /** Rooms whose door from this room is broken (drawn shut and marked). */
   brokenDoors?: ReadonlySet<RoomId>;
+  /** Ids of broken equipment on the alert bar (reported, or found by the Anomaly detector): smoking in the rooms next door too. */
+  reportedBroken?: ReadonlySet<string>;
   selected: Target | null;
   /** The door whose target is shown in the peek bar, if any. */
   selectedDoor: RoomId | null;
@@ -347,6 +350,16 @@ export function IsoRoom({
     const rooms = neighborRooms(layout, roomLayout, fogDepth).map((n) => ({ ...n, cells: walkableCells(layout, n.room) }));
     return { rooms, scene: prepareScene(layout, [{ room: roomLayout, dx: 0, dy: 0 }, ...rooms]) };
   }, [layout, roomLayout, fogDepth]);
+
+  // Neighbours' equipment reported broken smokes as it would in its own room (sprite keys as `tileSortables` names them).
+  const smokingNeighbors = useMemo(() => {
+    const keys = new Set<string>();
+    if (!prepared || !reportedBroken?.size) return keys;
+    for (const { room: n } of prepared.rooms) {
+      for (const p of placedEquipment(n)) if (reportedBroken.has(p.id)) keys.add(`${n.id}/t${p.tile}`);
+    }
+    return keys;
+  }, [prepared, reportedBroken]);
 
   // The walk through each door, worked out once per scene.
   const passages = useMemo(() => {
@@ -744,6 +757,7 @@ export function IsoRoom({
         equipment: equipmentByKey,
         reachable,
         brokenDoors,
+        smokingNeighbors,
         selected,
         selectedDoor,
         inventoryOpen,
@@ -755,7 +769,7 @@ export function IsoRoom({
         turn,
         fireSlots,
       }),
-    [scene, box, walkersKey, walkersLook, doorsKey, seatsKey, fadingKey, occupants, nearby, corpses, drones, hostiles, equipmentByKey, reachable, brokenDoors, selected, selectedDoor, inventoryOpen, hoverKey, ownCells, looks, pace, planet, turn, fireSlots],
+    [scene, box, walkersKey, walkersLook, doorsKey, seatsKey, fadingKey, occupants, nearby, corpses, drones, hostiles, equipmentByKey, reachable, brokenDoors, smokingNeighbors, selected, selectedDoor, inventoryOpen, hoverKey, ownCells, looks, pace, planet, turn, fireSlots],
   );
   // Badges and bubbles go over the people in this room.
   const anchors = drawn.sprites.flatMap((s): Anchor[] => {

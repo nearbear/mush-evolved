@@ -212,6 +212,9 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
   const target: Target = selected && resolveTarget(view, selected) ? selected : { kind: "player", id: you.id };
   const selectedDoor = target.kind === "door" ? doorOtherRoom(target.id, you.room) ?? null : null;
   const brokenDoors = useMemo(() => new Set(view.doors.filter((d) => d.broken).map((d) => d.to)), [view.doors]);
+  // Keyed by the ids themselves, so the set (and the room's scene) only changes when a report comes or goes.
+  const reportedKey = view.alerts.reports.flatMap((r) => (r.kind === "equipment" ? [r.id] : [])).join(",");
+  const reportedBroken = useMemo(() => new Set(reportedKey ? reportedKey.split(",") : []), [reportedKey]);
 
   // The Superkube's options (#170): a cheat input, so only while cheats are allowed, and never in a replay.
   const kube = cheatsAllowed && !readOnly ? (op: KubeOpId, arg?: string | number) => post(arg === undefined ? { type: "kube", op } : { type: "kube", op, arg }) : undefined;
@@ -317,6 +320,7 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
                 equipment={view.roomEquipment}
                 reachable={reachable}
                 brokenDoors={brokenDoors}
+                reportedBroken={reportedBroken}
                 selected={target}
                 selectedDoor={selectedDoor}
                 actingOn={actingOn}

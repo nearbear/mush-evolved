@@ -340,7 +340,7 @@ export interface Scene {
   room: RoomId;
   /** The burning room's floor cells, each with its place in the paint order; empty when it isn't on fire. */
   fire: readonly SceneFireCell[];
-  /** Broken doors and broken equipment in this room, each with its place in the paint order. */
+  /** Broken doors and broken equipment in this room, and reported broken equipment next door, each with its place in the paint order. */
   smoke: readonly SceneSmokeSource[];
 }
 
@@ -418,6 +418,8 @@ export interface SceneInput {
   reachable: ReadonlySet<RoomId>;
   /** Rooms whose door from this room is broken (drawn shut and marked). */
   brokenDoors?: ReadonlySet<RoomId>;
+  /** Sprite keys of neighbours' equipment reported broken (on the alert bar): they smoke, fogged or not. */
+  smokingNeighbors?: ReadonlySet<string>;
   selected: Target | null;
   selectedDoor: RoomId | null;
   /** The inventory overlay is open: the room's shelf/locker is highlighted as active. */
@@ -634,6 +636,7 @@ export function describeScene(input: SceneInput): Scene {
           : { ...tile(), role: "tile", effect, ...(cutaway && { cutaway }), kind: s.kind, slice: s.slice },
       );
       if (s.door?.target === room && brokenDoors?.has(n)) addSmoke(s, s.slice);
+      else if (input.smokingNeighbors?.has(s.key)) addSmoke(s, looks?.get(s.slice) ?? s.slice);
       continue;
     }
     const hover = s.key === hoverKey;
