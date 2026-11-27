@@ -5632,3 +5632,15 @@ Lesson: check the rule code before rewording a description, and don't describe a
 ## 2026-11-26: Shrink marked fully implemented; description translated
 
 The owner rewrote the en Shrink description: lying-down morale, and Comfort giving 2 morale and calming psychological illnesses for 2-8 cycles. Claude translated it to fr/es and changed `shrink` in `shared/src/skills.ts` from "partial" to "full". It also updated `implemented-rules.md`, dropping the "Not built: curing psychological illnesses" note, since the new text no longer promises a cure.
+
+### 2026-11-26 — Witnessed Nimble mode actions show as revealed secret actions
+
+- **Decision (owner):** a room-level action done in Nimble mode that a living witness or working camera sees is now a revealed secret line (`kind: "secret"`, `leaked: true`, warning level), like any other leaked secret action. This reverses the 2026-11-14 "witnessed Nimble logs stay plain public" decision; unwitnessed lines stay hidden as before.
+- **How:** `logPublic` in `shared/src/log.ts` now routes every room-level line under a Nimble actor through `logSecretIn`, which already decides hidden vs leaked; the `nimbleWitnessed` pre-check was removed. `shared/tests/nimble.test.ts` assertions flipped to secret/leaked; `implemented-rules.md` and `rules-design.md` updated.
+- **What worked:** the existing `logSecretIn` covered witnesses, cameras and Outcasts, so the change was a one-line deletion.
+
+### 2026-11-26 — Skill descriptions show each action's privacy level
+
+- **Decision (owner):** skill effect descriptions name the action's privacy level in parentheses after the action name, e.g. "Action: Coup (Secret) - ...". Public actions get no label.
+- **How:** levels read from each action's `visibility` in `shared/src/actions.ts`, labels reused from `actions.visibility` (en/fr/es). Descriptions that never named their action ("Action: For 3 AP, ...") gained the action's button name so there is a name to follow. Skipped: NERON's Depression (no action yet), Slime Trap and Infector (disabled), and the fr/es Traitor text, which doesn't describe the sabotage action.
+- **Needs watching:** the labels are hand-written into locale prose, so a change to an action's `visibility` won't update them automatically.
