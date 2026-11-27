@@ -261,5 +261,5 @@ export function useNames() {
     return Object.values(params).includes(SOMEONE) || typeof params.hostile === "string" ? line.charAt(0).toLocaleUpperCase() + line.slice(1) : line;
   };
 
-  return { room, equipment, item, itemOf, itemLabel, drone, droneUpgrade, hostile, hostileName, jukeboxSong, research, project, skill, title, rebelBase, action, character: characterName, characterGiven: characterGivenName, logLine };
+  return { room, equipment, item, built, itemOf, itemLabel, drone, droneUpgrade, hostile, hostileName, jukeboxSong, research, project, skill, title, rebelBase, action, character: characterName, characterGiven: characterGivenName, logLine };
 }

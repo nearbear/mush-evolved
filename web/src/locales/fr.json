@@ -489,6 +489,7 @@
     "boringSpeech": "Discours barbant",
     "attack": "Attaquer",
     "graftWith": "Greffer ({{fruit}})",
+    "buildThing": "Assembler ({{thing}})",
     "attackWith": "Attaquer ({{weapon}})",
     "spike": "Contaminer",
     "demoralize": "Démoraliser",

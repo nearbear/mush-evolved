@@ -104,6 +104,7 @@
     "missile_launcher": "Lanzamisiles",
     "blueprint": "Plano",
     "blueprintOf": "Plano: {{thing}}",
+    "master_blueprint": "Plano maestro",
     "book": "Libro de habilidad",
     "bookOf": "Libro de habilidad: {{skill}}",
     "hybridOf": "{{a}}–{{b}}",

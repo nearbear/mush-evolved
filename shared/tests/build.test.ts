@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { BLUEPRINTS } from "../src/blueprints.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, legalActions, viewFor } from "../src/rules.ts";
@@ -104,5 +105,50 @@ describe("build", () => {
 
   it("parses a build message", () => {
     expect(parseGameMessage(JSON.stringify({ type: "action", action: { type: "build", item: "bp" } }))).toEqual({ type: "action", action: { type: "build", item: "bp" } });
+  });
+
+  describe("master blueprint (Superkube cheat)", () => {
+    /** p0 in the front corridor with only a master blueprint (mb) on the floor: no ingredients anywhere. */
+    function masterShip(): GameState {
+      const s = createGame(seats, { ...base, equipment: {} }, 3);
+      player(s, "p0").room = "CORRIDOR_A";
+      s.items.push({ id: "mb", type: "master_blueprint", at: room("CORRIDOR_A") });
+      return s;
+    }
+
+    it("offers every recipe with no ingredients", () => {
+      const builds = legalActions(masterShip(), "p0").filter((a) => a.type === "build");
+      expect(builds).toEqual(Object.keys(BLUEPRINTS).map((recipe) => ({ type: "build", item: "mb", recipe })));
+    });
+
+    it("builds equipment and items for AP only, and is never used up", () => {
+      const r = applyAction(masterShip(), "p0", { type: "build", item: "mb", recipe: "SOFA" });
+      if (!r.ok) throw new Error(r.error);
+      expect(r.state.equipment.CORRIDOR_A).toMatchObject([{ type: "SOFA" }]);
+      expect(r.state.items.some((i) => i.id === "mb")).toBe(true);
+      expect(player(r.state, "p0").ap).toBe(base.startAp - base.build.cost.ap);
+      const r2 = applyAction(r.state, "p0", { type: "build", item: "mb", recipe: "GRENADE" });
+      if (!r2.ok) throw new Error(r2.error);
+      expect(r2.state.items.some((i) => i.type === "grenade")).toBe(true);
+      expect(r2.state.items.some((i) => i.id === "mb")).toBe(true);
+    });
+
+    it("refuses an unknown or missing recipe, and a recipe on an ordinary blueprint", () => {
+      const s = masterShip();
+      expect(applyAction(s, "p0", { type: "build", item: "mb", recipe: "NOPE" }).ok).toBe(false);
+      expect(applyAction(s, "p0", { type: "build", item: "mb", recipe: "toString" }).ok).toBe(false);
+      expect(applyAction(s, "p0", build("mb")).ok).toBe(false);
+      expect(applyAction(ship(), "p0", { type: "build", item: "bp", recipe: "GRENADE" }).ok).toBe(false);
+    });
+
+    it("parses a build message with a recipe, and refuses a non-string one", () => {
+      const action = { type: "build", item: "mb", recipe: "SOFA" };
+      expect(parseGameMessage(JSON.stringify({ type: "action", action }))).toEqual({ type: "action", action });
+      expect(parseGameMessage(JSON.stringify({ type: "action", action: { ...action, recipe: 3 } }))).toBeNull();
+    });
+
+    it("is never on the ship at the start", () => {
+      for (const seed of [1, 2, 3]) expect(createGame(seats, DEFAULT_CONFIG, seed).items.some((i) => i.type === "master_blueprint")).toBe(false);
+    });
   });
 });

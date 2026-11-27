@@ -489,6 +489,7 @@
     "boringSpeech": "Discurso aburrido",
     "attack": "Atacar",
     "graftWith": "Injertar ({{fruit}})",
+    "buildThing": "Montar ({{thing}})",
     "attackWith": "Atacar ({{weapon}})",
     "spike": "Contagiar",
     "demoralize": "Desmoralizar",

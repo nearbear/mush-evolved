@@ -475,6 +475,7 @@
     "boringSpeech": "Boring speech",
     "attack": "Attack",
     "graftWith": "Graft ({{fruit}})",
+    "buildThing": "Build ({{thing}})",
     "attackWith": "Attack ({{weapon}})",
     "spike": "Spike",
     "demoralize": "Demoralize",

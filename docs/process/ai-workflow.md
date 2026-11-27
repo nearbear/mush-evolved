@@ -5697,6 +5697,11 @@ The owner rewrote the en Shrink description: lying-down morale, and Comfort givi
 - **Also:** the expedition-prep bot goal (`server/src/bots/goals/expeditionPrep.ts`) treated Polymath as a Diplomat (skipping the white flag, claiming Intelligent Life seats) and a Botanist. It now checks Skilful, which really has those bonuses. Tests in `expeditions.test.ts` and `goals.test.ts` updated.
 - **What worked:** a repo-wide grep for `polymath` found the bot copy of the old rule, which the rules change alone would have left behind.
 
+### 2026-11-26: Master blueprint cheat item
+
+- Added `master_blueprint`, a development-only item that only the Superkube's spawn makes (nothing on the ship draws it, since random blueprint draws read `BLUEPRINTS` and ship stock lists types by name). `build` gained an optional `recipe` field, accepted only for the master blueprint: one candidate per recipe, no ingredients, the item is kept, and the normal 3 AP still applies. Buttons read "Build (Sofa)" etc.
+- What worked: following the attack action's optional-field pattern (a union type plus a `parse` override) kept protocol validation strict; `Object.hasOwn` guards the recipe key against `toString`-style lookups.
+
 ### 2026-11-26: Ship editor draws the picked room alone
 
 - Owner asked for a view showing only the selected room, replacing the View menu's "From a room" list of every room. The View menu is now Whole ship / Picked room only / Picked room at fog depth 1 or 2, and the room views follow the room picked in the hierarchy or scene (`ShipView` gained depth 0 in `shipScene.ts`; the remembered place accepts it). The unused `Sub` menu helper went with the list.

@@ -104,6 +104,7 @@
     "missile_launcher": "Rocket launcher",
     "blueprint": "Blueprint",
     "blueprintOf": "Blueprint: {{thing}}",
+    "master_blueprint": "Master blueprint",
     "book": "Skill book",
     "bookOf": "Skill book: {{skill}}",
     "hybridOf": "{{a}}–{{b}}",

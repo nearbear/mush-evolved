@@ -47,6 +47,8 @@ export function PeekBar({
       ? t("actions.attackWith", { weapon: names.itemOf(weapon) })
       : fruit
         ? t("actions.graftWith", { fruit: names.itemOf(fruit) })
+      : action.type === "build" && "recipe" in action
+        ? t("actions.buildThing", { thing: names.built(action.recipe) })
       : action.type === "apprenticeship"
         ? t("actions.apprenticeshipOf", { skill: names.skill(action.skill) })
         : action.type === "upgrade_drone"
