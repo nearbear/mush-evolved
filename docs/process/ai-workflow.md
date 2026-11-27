@@ -5644,3 +5644,22 @@ The owner rewrote the en Shrink description: lying-down morale, and Comfort givi
 - **Decision (owner):** skill effect descriptions name the action's privacy level in parentheses after the action name, e.g. "Action: Coup (Secret) - ...". Public actions get no label.
 - **How:** levels read from each action's `visibility` in `shared/src/actions.ts`, labels reused from `actions.visibility` (en/fr/es). Descriptions that never named their action ("Action: For 3 AP, ...") gained the action's button name so there is a name to follow. Skipped: NERON's Depression (no action yet), Slime Trap and Infector (disabled), and the fr/es Traitor text, which doesn't describe the sabotage action.
 - **Needs watching:** the labels are hand-written into locale prose, so a change to an action's `visibility` won't update them automatically.
+
+### 2026-11-26 — Skill descriptions give the number of NERON Projects each skill boosts
+
+- **Decision (owner):** "You get a bonus for developing certain NERON Projects." becomes "... X NERON Projects." with X the count of projects tagged with that skill in `shared/src/projects.ts`; skills with none drop the line (en/fr/es).
+- **How:** a one-off script counted the `skills` tags and rewrote the locale lines. It also added the line to Astrophysicist (2) and Creative (1), which have tagged projects but never said so, and removed it from Skilful's English text, since project progress (`relay.ts`) checks `hasSkill` and Skilful doesn't count as a Botanist there.
+- **Needs watching:** the numbers are hard-coded in the locale text, so retagging a project means updating them by hand.
+
+### 2026-11-26 — Skilful boosts Botanist, Diplomat and Biologist NERON projects
+
+- **Decision (owner):** Skilful gives the project skill boost on any project tagged Botanist, Diplomat or Biologist (5 today: 3 Botanist, 2 Biologist, none Diplomat). Its description now says "You get a bonus for developing 5 NERON Projects." (en/fr/es).
+- **How:** `projectSkillsFor(project, player)` in `projects.ts` adds `skilful` to a project's tags when it carries one of `SKILFUL_ROLES` (moved from `merchants.ts` to `skills.ts` and shared) and the worker has none of those tags, so `tokenBase` needs no change and the boost doesn't stack. Used by `actions/project.ts` and the gain preview in `relayView.ts`. Research is left alone, because `RESEARCH_SKILLS` already lists `skilful` and a generic "counts as" in `tokenBase` would have double-boosted it.
+- **Tests:** `projects.test.ts`: one boost on HEAT_LAMP and OXY_MORE, none on PLASMA_SHIELD, and still one for a Skilful Botanist.
+
+### 2026-11-26 — Polymath stops pacifying fights; a pacified Fight becomes New Sector
+
+- **Decision (owner):** Polymath no longer cancels Fight in Intelligent life. When a white flag, Diplomat or Skilful does, the Fight becomes eMush's New Sector event. Owner's answers on the open points: New Sector takes Fight's weight (the other events keep their odds), the type is equally likely among Wreckage/Ruins/Hydrocarbon/Crystalite, the per-planet caps are ignored, and the sector is added hidden but explorable by the same crew.
+- **How:** `cancelled`'s Fight case became `pacified` in `expeditions.ts`; `resolve` keeps a pacified Fight's weight and draws it as `newSector` (a new `ExpeditionEventKind`), which pushes `{ tag, known: false }` from `config.expedition.newSectorTags` and sets `ctx.redraw`, as Lost does. The report line ("makes peace … a new sector") doesn't name the type, so nothing an analysis would reveal leaks. Under a Traitor's sabotage it still can't be drawn, as before.
+- **Needed correction:** the first tests assumed a two-sector planet still explored PREDATOR; the redraw keeps the step count, so the new sector can take its place. The tests now check each sector in its own game, and give the added types quiet event tables.
+- **Not done, flagged:** eMushpedia says Diplomacy turns Combat into Nothing to report in Wreckage, Ruins, Insects, Ruminants, Predators, Mankarog and Crystalite, and the English Diplomat/Skilful descriptions already claim it, but it isn't built. Since eMush v0.31 Diplomacy also no longer protects against a Traitor's sabotage; here a sabotaged step can't draw the pacified Fight at all, as before.

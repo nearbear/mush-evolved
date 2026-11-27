@@ -1409,7 +1409,7 @@ describe("expeditions, phase 3, slice C: gear and spacesuits", () => {
     expect(pick(["INSECT", "FOREST"], "echo_sounder")).toBeLessThan(0.6);
   });
 
-  it("a Babel module doubles Artifact's odds in Intelligent life; a white flag cancels Fight there only", () => {
+  it("a Babel module doubles Artifact's odds in Intelligent life; a white flag turns Fight there only into New Sector", () => {
     const babel = (item?: string) => {
       const s = game({ tags: ["INTELLIGENT"], events: { INTELLIGENT: [rule("artifact"), rule("nothing")] } });
       if (item) give(s, "p1", item);
@@ -1420,11 +1420,14 @@ describe("expeditions, phase 3, slice C: gear and spacesuits", () => {
     expect(babel("trad_module")).toBeGreaterThan(0.6);
 
     const fight: ExpeditionEventRule = { kind: "fight", weight: 1, creature: "CORTIC" };
-    const flag = game({ tags: ["INTELLIGENT", "PREDATOR"], events: { INTELLIGENT: [fight], PREDATOR: [fight] } });
-    give(flag, "p1", "white_flag");
-    const events = go(flag).expeditions[0]!.events;
-    expect(events.find((e) => e.sector === "INTELLIGENT")!.kind).toBe("nothing");
-    expect(events.find((e) => e.sector === "PREDATOR")!.kind).toBe("fight");
+    // The planet's two steps are drawn again once New Sector adds a sector, so each sector is checked on its own.
+    const flagged = (tag: "INTELLIGENT" | "PREDATOR") => {
+      const s = game({ tags: [tag], events: { INTELLIGENT: [fight], PREDATOR: [fight] } });
+      give(s, "p1", "white_flag");
+      return go(s).expeditions[0]!.events.find((e) => e.sector === tag)!.kind;
+    };
+    expect(flagged("INTELLIGENT")).toBe("newSector");
+    expect(flagged("PREDATOR")).toBe("fight");
   });
 });
 
@@ -1470,15 +1473,53 @@ describe("expeditions, phase 4, slice D: skills", () => {
     });
   });
 
-  it("a Diplomat, Polymath or Polyvant cancels Fight in Intelligent life only", () => {
+  it("a Diplomat or Polyvant turns Fight in Intelligent life only into New Sector, and a Polymath does not", () => {
     const fight = rule("fight", { creature: "CORTIC" });
-    for (const skill of ["diplomacy", "polymath", "skilful"] as const) {
-      const s = game({ tags: ["INTELLIGENT", "PREDATOR"], events: { INTELLIGENT: [fight], PREDATOR: [fight] } });
-      player(s, "p2").skills.push(skill);
-      const events = go(s).expeditions[0]!.events;
-      expect(events.find((e) => e.sector === "INTELLIGENT")!.kind).toBe("nothing");
-      expect(events.find((e) => e.sector === "PREDATOR")!.kind).toBe("fight");
+    const polymath = game({ tags: ["INTELLIGENT"], events: { INTELLIGENT: [fight] } });
+    player(polymath, "p2").skills.push("polymath");
+    expect(go(polymath).expeditions[0]!.events.find((e) => e.sector === "INTELLIGENT")!.kind).toBe("fight");
+    for (const skill of ["diplomacy", "skilful"] as const) {
+      const kindIn = (tag: "INTELLIGENT" | "PREDATOR") => {
+        const s = game({ tags: [tag], events: { INTELLIGENT: [fight], PREDATOR: [fight] } });
+        player(s, "p2").skills.push(skill);
+        return go(s).expeditions[0]!.events.find((e) => e.sector === tag)!.kind;
+      };
+      expect(kindIn("INTELLIGENT")).toBe("newSector");
+      expect(kindIn("PREDATOR")).toBe("fight");
     }
+  });
+
+  it("New Sector adds a hidden Wreckage, Ruins, Hydrocarbon or Crystalite sector, past the caps, that this crew may explore", () => {
+    const fight = rule("fight", { creature: "CORTIC" });
+    const added = new Set<string>();
+    let exploredNew = false;
+    for (let seed = 0; seed < 60; seed++) {
+      const quiet = [rule("nothing")];
+      const s = game({
+        tags: ["INTELLIGENT", "CRISTAL_FIELD", "HYDROCARBON", "HYDROCARBON"],
+        events: { INTELLIGENT: [fight, rule("provision", { weight: 3 })], WRECK: quiet, RUINS: quiet, HYDROCARBON: quiet, CRISTAL_FIELD: quiet },
+      });
+      s.rng = seed;
+      player(s, "p2").skills.push("diplomacy");
+      const after = go(s);
+      const events = after.expeditions[0]!.events;
+      const sectors = after.planets.p5![0]!.sectors;
+      expect(events.some((e) => e.sector === "INTELLIGENT" && e.kind === "fight")).toBe(false);
+      if (!events.some((e) => e.kind === "newSector")) {
+        expect(sectors).toHaveLength(4);
+        continue;
+      }
+      expect(sectors).toHaveLength(5);
+      const extra = sectors[4]!;
+      expect(extra.known).toBe(false);
+      expect(["WRECK", "RUINS", "HYDROCARBON", "CRISTAL_FIELD"]).toContain(extra.tag);
+      added.add(extra.tag);
+      if (extra.explored) exploredNew = true;
+      // The report names no sector type for it.
+      expect(events.find((e) => e.kind === "newSector")!.item).toBeUndefined();
+    }
+    expect(added.size).toBe(4);
+    expect(exploredNew).toBe(true);
   });
 
   it("a Polymath or Polyvant (skilful) harvests as a Botanist: one more fruit, not stacking", () => {

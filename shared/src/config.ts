@@ -642,6 +642,7 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
     catastrophe: [3, 5],
     survivalReduction: 1,
     botanistBonus: 1,
+    newSectorTags: ["WRECK", "RUINS", "HYDROCARBON", "CRISTAL_FIELD"],
     loot: {
       harvest: [...ALIEN_FRUIT_ITEMS],
       provision: "alien_steak",

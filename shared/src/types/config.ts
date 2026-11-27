@@ -1,6 +1,6 @@
 import type { IncidentId } from "../incidents.ts";
 import type { DealTemplate, MerchantKind } from "../merchants.ts";
-import type { PlanetDirection } from "../planets.ts";
+import type { PlanetDirection, PlanetTag } from "../planets.ts";
 import type { PlantState, RoomId } from "../types.ts";
 import type { StatusId } from "../statuses.ts";
 import type { HunterType } from "./state.ts";
@@ -174,7 +174,9 @@ export type ExpeditionEventKind =
   | "noSpacesuit"
   | "grounded"
   // Phase 4, slice D (owner, 2026-11-08, #358): never drawn. A U-turn holder ended the expedition (`who`).
-  | "uTurn";
+  | "uTurn"
+  // Owner, 2026-11-26: never in a table. A pacified Fight in Intelligent life (expeditions.ts `pacified`) adds a hidden sector.
+  | "newSector";
 
 /**
  * One line of a sector's event table: drawn by `weight`. `amount` is the oxygen or fuel gained, or the fruits or
@@ -1006,6 +1008,7 @@ export interface GameConfig {
     catastrophe: [min: number, max: number]; // HP every living member loses, rolled for each.
     survivalReduction: number; // Taken off each damage a member with the Survival skill takes.
     botanistBonus: number; // Extra fruit per harvest with a living Botanist in the crew.
+    newSectorTags: PlanetTag[]; // New Sector adds a hidden sector of one of these, uniformly (owner, 2026-11-26).
     // Item types found: alien fruits (picked uniformly by Harvest) and alien steaks (`alien_steak`), a starmap fragment, and the
     // artifacts an Artifact event or a fight's loot picks among, uniformly.
     loot: { harvest: ItemTypeId[]; provision: ItemTypeId; starmap: ItemTypeId; artifacts: ItemTypeId[] };
@@ -1025,9 +1028,9 @@ export interface GameConfig {
       drill: { item: ItemTypeId; fuelFactor: number }; // Multiplies the fuel from fuel events.
       finders: { item: ItemTypeId; tags: string[]; factor: number }[]; // Sectors with these tags are `factor` times as likely to be picked.
       babel: { item: ItemTypeId; tag: string; artifactFactor: number }; // Artifact is `artifactFactor` times as likely in this sector.
-      whiteFlag: { item: ItemTypeId; tag: string }; // Cancels Fight in this sector.
+      whiteFlag: { item: ItemTypeId; tag: string }; // Turns Fight into New Sector in this sector.
     };
-    // Skills (owner, 2026-11-08, #358). Diplomat and Polymath cancel Fight in `gear.whiteFlag.tag`, as the white flag.
+    // Skills (owner, 2026-11-08, #358). Diplomat and Skilful turn Fight into New Sector in `gear.whiteFlag.tag`, as the white flag.
     shooterBonus: number; // Strength each Shooter carrying a working gun adds, once each.
     sprinterSectors: number; // Extra sectors per Sprinter who explores, counted at takeoff.
     centauri: { item: ItemTypeId; bonus: number }; // With the Centauri rebel base contacted, each working copy adds `bonus` strength.
