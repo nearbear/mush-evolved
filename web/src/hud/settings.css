@@ -372,7 +372,9 @@ li.research-item .research-title {
   image-rendering: pixelated;
 }
 /* A rebel base's art in its conversation's header (SignalConversation.tsx), the effect in its tooltip. */
+/* height: auto drops the global button height (buttons.css, responsive.css), so the button wraps its art. */
 .rebel-icon-button {
+  height: auto;
   padding: 0;
   border: 0;
   background: none;
@@ -849,6 +851,7 @@ li.signal-next {
 }
 .signal-head {
   display: flex;
+  flex: none;
   align-items: flex-start;
   justify-content: space-between;
   gap: 0.5rem;
