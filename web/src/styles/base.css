@@ -2,12 +2,27 @@
 
 /* UI scale (#485, web/src/uiScale.ts): almost every panel width, spacing token and font size is in rem, so the root
    font size scales the whole HUD, dialogs and text without touching pixel art, the room, coordinate spaces or 100dvh.
-   With no data-ui-scale ("Auto"), large viewports (in CSS pixels, so after OS display scaling) get 125%.
+   With no data-ui-scale ("Auto"), large viewports (in CSS pixels, so after OS display scaling) get 125%: 2K+ desktops,
+   and the phone layout on screens past phone width (480px+ wide, 800px+ tall; phones in portrait are 430px or less).
    --ui-zoom is the same factor, for icons drawn at their art's own size (`zoom: var(--ui-zoom)`), whose sizes differ. */
 :root {
   --ui-zoom: 1;
 }
 @media (min-width: 2200px) and (min-height: 1100px) {
+  html:not([data-ui-scale]) {
+    font-size: 125%;
+    --ui-zoom: 1.25;
+  }
+}
+/* Larger phones in portrait (412px Pixels, 430px iPhone Pro Max): 112.5%, which still leaves 366px of layout, over the
+   360px minimum. Phones on their side stay at 100%: they are short. */
+@media (min-width: 405px) and (max-width: 1023px) and (min-height: 700px) {
+  html:not([data-ui-scale]) {
+    font-size: 112.5%;
+    --ui-zoom: 1.125;
+  }
+}
+@media (min-width: 480px) and (max-width: 1023px) and (min-height: 800px) {
   html:not([data-ui-scale]) {
     font-size: 125%;
     --ui-zoom: 1.25;

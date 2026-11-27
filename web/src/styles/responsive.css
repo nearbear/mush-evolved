@@ -181,7 +181,7 @@
    * In the game it is the bottom of the room view's panel (GameView), over the scene's bottom edge (the scene has no
    * frame), ruled off from it by its own line and inner glow, and translucent so the room shows through. The overlays in
    * the room's bottom corners (the location plate, the sack, the ship button, the tip card) stand on it: --peek-clear is
-   * its height, one 32px row of buttons, its padding and the divider.
+   * its height, one 2rem (32px at 100%) row of buttons, its padding and the divider.
    */
   .room-view > .peek-bar {
     position: absolute;
@@ -197,7 +197,7 @@
       0 -2px 6px rgb(60 110 255 / 0.35);
   }
   .room-view:has(> .peek-bar) {
-    --peek-clear: calc(32px + 2 * var(--space-2) + 1px);
+    --peek-clear: calc(2rem + 2 * var(--space-2) + 1px);
   }
   /* No name (the selection pulses in the room): only the AI tag, or why a door can't be used. */
   .peek-note {
@@ -225,13 +225,13 @@
     justify-content: flex-start;
     gap: var(--space-2);
     min-width: 0;
-    height: 32px;
+    height: 2rem;
     overflow: clip;
-    overflow-clip-margin: 4px;
+    overflow-clip-margin: 0.25rem;
   }
   .peek-bar button {
     flex: none;
-    height: 32px;
+    height: 2rem;
     margin: 0;
   }
   /* How many actions the row clipped: the --badge blue, informational (red badges are for unread). Count is in the label. */
@@ -240,21 +240,21 @@
   }
   .peek-more-badge {
     position: absolute;
-    top: -6px;
-    right: -6px;
-    min-width: 14px;
-    padding: 0 3px;
-    border-radius: 7px;
+    top: -0.375rem;
+    right: -0.375rem;
+    min-width: 0.875rem;
+    padding: 0 0.1875rem;
+    border-radius: 0.4375rem;
     background: var(--badge);
     color: #fff;
-    font-size: 10px;
+    font-size: 0.625rem;
     font-weight: bold;
-    line-height: 14px;
+    line-height: 0.875rem;
     text-align: center;
     pointer-events: none;
   }
 
-  /* As tall as the top bar's strip (top-bar.css): a 26px row with 4px above and below, the rim counted in the top. */
+  /* As tall as the top bar's strip (top-bar.css): a 2.5rem row with 4px above and below, the rim counted in the top. */
   .bottom-nav {
     flex: none;
     display: flex;
@@ -265,9 +265,9 @@
   }
   /* The iTrackie tabs' rounded top corners, rounded on all four since nothing abuts it (colours in itrackie.css). */
   .bottom-nav-button {
-    height: 1.625rem;
+    height: 2.5rem;
     padding-block: 0;
-    font-size: 0.85rem;
+    font-size: 0.95rem;
     border-radius: 6px;
   }
 
@@ -291,8 +291,8 @@
 /* Phone on its side: about 390px tall, so the ID card gets one compact row. */
 @media (max-width: 1023px) and (orientation: landscape) and (max-height: 500px) {
   .nameplate .id-portrait {
-    width: 26px;
-    height: 26px;
+    width: 1.625rem;
+    height: 1.625rem;
   }
   .nameplate .who {
     flex-direction: row;
@@ -314,7 +314,7 @@
  */
 @media (pointer: coarse) {
   button {
-    height: 32px;
+    height: 2rem;
   }
 }
 
@@ -330,7 +330,7 @@
   }
   /* Narrower work buttons, so a project's two skills and the button share a line at 360px (settings.css). */
   li.research-item .research-actions > button {
-    padding-inline: 8px;
+    padding-inline: 0.5rem;
   }
   .inspect-body {
     flex-direction: row;
@@ -358,7 +358,7 @@
   /* The portrait is too short here for the skill stack (105x150 at 360px), so the slots leave it for a row under the
      name chip: the three picked slots, then the book slot, then a Mush's toggle, wrapping as the column allows (three
      to a row at 360). The art is the grid's one cell, so the absolutely placed chip and status icons keep it, not
-     the whole figure, as their box. Slots shrink to 31px, which still holds the 25px skill icons at 1x. */
+     the whole figure, as their box. Slots shrink to 31px (at 100%), which still holds the 25px skill icons at 1x. */
   .inspect-figure-art {
     display: grid;
     /* Explicit, so the absolutely placed children's grid-area resolves (implicit lines don't count for them). */
@@ -375,7 +375,7 @@
     position: static;
     flex-flow: row wrap;
     align-items: flex-start;
-    gap: 4px;
+    gap: 0.25rem;
     /* Clear the half of the name chip that hangs below the art. */
     margin-top: calc(0.85rem + var(--space-2));
   }
@@ -387,8 +387,8 @@
     margin-bottom: 0;
   }
   .skill-slot {
-    width: 31px;
-    height: 31px;
+    width: 1.9375rem;
+    height: 1.9375rem;
   }
   .skill-slot-book {
     margin-top: 0;

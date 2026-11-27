@@ -2,7 +2,8 @@
 // (almost every size in the stylesheets is in rem). Pixel art drawn in px, and the room itself, keep their size.
 // A per-device preference kept in localStorage, like `fogDepth.ts`; it sets `data-ui-scale` on <html>, which
 // base.css turns into a font size (the CSP allows no inline styles). "auto" leaves the attribute off, so base.css's
-// media query decides: 125% on viewports of at least 2200x1100 CSS pixels, 100% elsewhere.
+// media queries decide: 125% on viewports of at least 2200x1100 CSS pixels, and on the phone layout when at least
+// 480x800 (past any phone in portrait); 112.5% on larger phones (at least 405x700); 100% elsewhere.
 
 import { useSyncExternalStore } from "react";
 

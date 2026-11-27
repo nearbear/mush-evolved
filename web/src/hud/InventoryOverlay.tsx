@@ -18,11 +18,12 @@ export const ZOOM_STEPS = [1 / 2, 1, 2];
 /** The magnification one step in (1) or out (-1) from `zoom`, or undefined at the end. */
 export const stepZoom = (zoom: number, dir: 1 | -1): number | undefined => ZOOM_STEPS[ZOOM_STEPS.indexOf(zoom) + dir];
 
-const WIDE_ROOM_QUERY = "(min-width: 2000px) and (min-height: 900px)";
+/** Wide desktop monitors (e.g. 2K/4K), or the phone layout held upright (where 1x art is tiny on a dense screen). */
+export const BIG_ROOM_QUERY = "(min-width: 2000px) and (min-height: 900px), (max-width: 1023px) and (orientation: portrait)";
 
-/** Starts the room at 2x on wide desktop monitors (e.g. 2K/4K), 1x elsewhere. */
+/** Starts the room at 2x on wide desktop monitors and on phones and tablets held upright, 1x elsewhere. */
 export const defaultRoomZoom = (): number =>
-  typeof window !== "undefined" && typeof window.matchMedia === "function" && window.matchMedia(WIDE_ROOM_QUERY).matches ? 2 : 1;
+  typeof window !== "undefined" && typeof window.matchMedia === "function" && window.matchMedia(BIG_ROOM_QUERY).matches ? 2 : 1;
 
 /** Your ID card: the desktop's (SelfHud) or the phone's (PlayerSummary in .room-top-left). */
 const ID_CARD = ".self-hud-top, .room-top-left > .nameplate";

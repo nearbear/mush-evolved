@@ -242,8 +242,8 @@
 }
 /*
  * Phones: the whole top bar, one strip the full width of the screen: the clock plate on the left, the alerts and the
- * menu on the right. The row is the flashing alarm's height (26px, its art's), and the flex row stretches all three to
- * it, so they line up and nothing moves when the alarm goes off (the quiet alarm's 22px art stretches with it). The
+ * menu on the right. The row is 2.5rem (40px at 100%), tall enough for a thumb, and the flex row stretches all three to
+ * it, so they line up and nothing moves when the alarm goes off (both alarms' 22px and 26px art stretch with it). The
  * bottom nav is as tall (responsive.css).
  */
 .summary-strip {
@@ -254,7 +254,7 @@
   flex: 1 1 0;
   min-width: 0;
   box-sizing: content-box;
-  height: 1.625rem; /* 26px at 100% UI scale */
+  height: 2.5rem; /* 40px at 100% UI scale */
   /* On top of the screen: clear of the notch (the page is viewport-fit=cover), and of a side one in landscape. */
   padding: max(var(--space-1), env(safe-area-inset-top)) max(var(--space-2), env(safe-area-inset-right)) var(--space-1)
     max(var(--space-2), env(safe-area-inset-left));
