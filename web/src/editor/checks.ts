@@ -27,13 +27,7 @@ export function doorCells(slices: Record<string, SliceInfo>, door: Pick<TilePlac
  * fails when this list and the map disagree: fix one, then take it off).
  */
 export const KNOWN_MISALIGNED: readonly string[] = [
-  "MOTOR_ROOM -> SPACESHIP_BAY_AA -2,0",
-  "LASER_TURRET_A_1 -> SPACESHIP_BAY_A 0,1",
-  "LASER_TURRET_A_1 -> STORAGE_FRONT -1,0",
-  "LASER_TURRET_A_2 -> MOTOR_ROOM 2,0",
   "LASER_TURRET_B_1 -> SICK_BAY -1,0",
-  "LASER_TURRET_B_1 -> SPACESHIP_BAY_B 0,-1",
-  "ICARUS -> MOTOR_ROOM 1,0",
 ];
 
 /**

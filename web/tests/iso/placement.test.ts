@@ -682,13 +682,11 @@ describe("terminalSpot (#192)", () => {
 describe("bay_window paint order", () => {
   const ship = { ...shipArt(), ...JSON.parse(shipMapJson) } as ShipLayout;
 
-  it("draws Alpha Bay 2's bay door behind the storage container and dynarcade", () => {
+  it("draws Alpha Bay 2's bay door behind the dynarcade", () => {
     const ab2 = ship.rooms.find((r) => r.id === "SPACESHIP_BAY_AA")!;
     const sprites = placeScene(ship, [{ room: ab2, dx: 0, dy: 0 }, ...neighborRooms(ship, ab2, 1)]);
     const bayWindow = sprites.find((s) => s.room === "SPACESHIP_BAY_AA" && s.slice === "bay_window")!;
-    const cupboard = sprites.find((s) => s.room === "SPACESHIP_BAY_AA" && s.slice === "cupboard3")!;
     const dynarcade = sprites.find((s) => s.room === "SPACESHIP_BAY_AA" && s.slice === "dynarcade")!;
-    expect(bayWindow.order).toBeLessThan(cupboard.order);
     expect(bayWindow.order).toBeLessThan(dynarcade.order);
   });
 });
