@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 import type { ShipLayout } from "@mush2/shared";
-import shipArtJson from "../../../Mush/derived/ship-art.json?raw";
+import { shipArt } from "../iso/shipArt.ts";
 import shipMapJson from "../../../Mush/derived/ship-map.json?raw";
 import { gridToPx, lyingPose, neighborRooms, placeScene } from "../../src/iso/placement.ts";
 import { cellAt, footprint, layerOf, roomOutlines, shipCells, shipScene, sleeperOf, tileOf } from "../../src/editor/shipScene.ts";
 
-const ship = { ...JSON.parse(shipArtJson), ...JSON.parse(shipMapJson) } as ShipLayout;
+const ship = { ...shipArt(), ...JSON.parse(shipMapJson) } as ShipLayout;
 
 describe("shipScene", () => {
   const scene = shipScene(ship);

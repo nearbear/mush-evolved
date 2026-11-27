@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { placedEquipment, type RoomLayout, type ShipLayout, type SliceInfo } from "@mush2/shared";
-import shipArtJson from "../../../Mush/derived/ship-art.json?raw";
+import { shipArt } from "./shipArt.ts";
 import shipMapJson from "../../../Mush/derived/ship-map.json?raw";
 import { withoutBuiltOnly } from "../../src/iso/equipmentTiles.ts";
 import {
@@ -216,7 +216,7 @@ describe("walkableCells / spreadActors", () => {
 });
 
 describe("the real ship", () => {
-  const ship = withoutBuiltOnly({ ...JSON.parse(shipArtJson), ...JSON.parse(shipMapJson) } as ShipLayout);
+  const ship = withoutBuiltOnly({ ...shipArt(), ...JSON.parse(shipMapJson) } as ShipLayout);
 
   it("places every door of every room with its target", () => {
     for (const r of ship.rooms) {
@@ -310,10 +310,11 @@ describe("the real ship", () => {
   });
 
   it("puts no wall on the cells a turret's dome leaves without floor", () => {
-    // Each Beta dome leaves two cells empty between floor; its art fills them.
-    for (const id of ["LASER_TURRET_B_0", "LASER_TURRET_B_1", "LASER_TURRET_B_2"]) {
+    // Each Beta dome leaves two cells empty between floor; its art fills them. Front and Center Bravo have the
+    // owner's alcove art and layout (2026-11-26), with the turret against a back wall, so only Rear Bravo is left.
+    for (const id of ["LASER_TURRET_B_2"]) {
       const room = ship.rooms.find((r) => r.id === id)!;
-      const dome = room.tiles.find((t) => t.slice === "turret_beta")!;
+      const dome = room.tiles[placedEquipment(room).find((p) => p.type === "TURRET_COMMAND")!.tile]!;
       const scene = placeScene(ship, [{ room, dx: 0, dy: 0, actors: [] }]);
       const walls = scene.filter((s) => s.kind === "wall" && dome.x - s.cell.x <= 2 && dome.x >= s.cell.x && dome.y - s.cell.y <= 2 && dome.y >= s.cell.y);
       expect(walls.map((s) => `${s.slice} ${s.cell.x},${s.cell.y}`), id).toEqual([]);
@@ -486,7 +487,7 @@ describe("facingFor", () => {
 });
 
 describe("neighborRooms", () => {
-  const ship = withoutBuiltOnly({ ...JSON.parse(shipArtJson), ...JSON.parse(shipMapJson) } as ShipLayout);
+  const ship = withoutBuiltOnly({ ...shipArt(), ...JSON.parse(shipMapJson) } as ShipLayout);
   const room = (id: string) => ship.rooms.find((r) => r.id === id)!;
 
   it("puts every room where the ship plan does, whichever room you stand in", () => {
@@ -544,7 +545,7 @@ describe("neighborRooms", () => {
 });
 
 describe("doorPassage on the real ship", () => {
-  const ship = withoutBuiltOnly({ ...JSON.parse(shipArtJson), ...JSON.parse(shipMapJson) } as ShipLayout);
+  const ship = withoutBuiltOnly({ ...shipArt(), ...JSON.parse(shipMapJson) } as ShipLayout);
   const scenes = new Map<string, ReturnType<typeof prepareScene>>();
   const scene = (r: RoomLayout) => {
     let cached = scenes.get(r.id);
@@ -591,7 +592,7 @@ describe("doorPassage on the real ship", () => {
 });
 
 describe("lyingPose", () => {
-  const ship = withoutBuiltOnly({ ...JSON.parse(shipArtJson), ...JSON.parse(shipMapJson) } as ShipLayout);
+  const ship = withoutBuiltOnly({ ...shipArt(), ...JSON.parse(shipMapJson) } as ShipLayout);
   const bedTile = (roomId: string) => {
     const room = ship.rooms.find((r) => r.id === roomId)!;
     return { room, tile: placedEquipment(room).find((e) => e.type === "BED")!.tile };
@@ -614,7 +615,7 @@ describe("lyingPose", () => {
 });
 
 describe("terminalSpot (#192)", () => {
-  const ship = withoutBuiltOnly({ ...JSON.parse(shipArtJson), ...JSON.parse(shipMapJson) } as ShipLayout);
+  const ship = withoutBuiltOnly({ ...shipArt(), ...JSON.parse(shipMapJson) } as ShipLayout);
 
   it("every terminal chair in the map is a chair someone can sit on, on the floor or climbed into from it", () => {
     const chairs: string[] = [];
@@ -632,7 +633,8 @@ describe("terminalSpot (#192)", () => {
         });
       }
     }
-    expect(chairs).toHaveLength(10);
+    // Rear Alpha's turret has no chair since the owner's alcove layout (2026-11-26).
+    expect(chairs).toHaveLength(9);
     expect(notSeated).toEqual([]);
   });
 
@@ -657,7 +659,7 @@ describe("terminalSpot (#192)", () => {
 });
 
 describe("bay_window paint order", () => {
-  const ship = { ...JSON.parse(shipArtJson), ...JSON.parse(shipMapJson) } as ShipLayout;
+  const ship = { ...shipArt(), ...JSON.parse(shipMapJson) } as ShipLayout;
 
   it("draws Alpha Bay 2's bay door behind the storage container and dynarcade", () => {
     const ab2 = ship.rooms.find((r) => r.id === "SPACESHIP_BAY_AA")!;

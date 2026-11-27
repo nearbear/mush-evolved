@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type { ShipLayout } from "@mush2/shared";
-import shipArtJson from "../../../Mush/derived/ship-art.json?raw";
+import { shipArt } from "./shipArt.ts";
 import { FX_SHEET, lyingSprite } from "../../src/art/assets.ts";
 import { atlasUrl } from "../../src/iso/shipLayout.ts";
 
-const layout = { ...JSON.parse(shipArtJson), rooms: [] } as ShipLayout;
+const layout = { ...shipArt(), rooms: [] } as ShipLayout;
 const WEBP_SHEETS = new Set(["BmpBigFill.p0", "BmpBigFill2.p0", "BmpGfx2", "BmpMidFill", "BmpMidFill2", "BmpGfxFx"]);
 
 describe("atlasUrl and WebP spritesheets", () => {

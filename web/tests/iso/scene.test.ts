@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { RoomId, ShipArt, ShipLayout, SliceInfo } from "@mush2/shared";
-import shipArtJson from "../../../Mush/derived/ship-art.json?raw";
+import { shipArt } from "./shipArt.ts";
 import { roomLooks } from "../../src/iso/IsoRoom.tsx";
 import type { PlacedSprite } from "../../src/iso/placement.ts";
 import { animFrame, animStep, describeScene, doorAnim, doorOpenMs, frameAt, imageOf, PACE_SPEED, shipPace, type Occupant, type SceneInput } from "../../src/iso/scene.ts";
@@ -274,7 +274,7 @@ describe("describeScene", () => {
 });
 
 describe("roomLooks and ambient animations", () => {
-  const realArt = JSON.parse(shipArtJson) as ShipArt;
+  const realArt = shipArt();
   const realLayout = {
     ...realArt,
     slices: { ...realArt.slices, human_tank_full: HUMAN_TANK_FULL_SLICE },
@@ -360,6 +360,14 @@ describe("roomLooks and ambient animations", () => {
     const neronB = realScene("auxiliary_terminal_neron", roomLooks(false, false, false, true, false, false, false, false, false, false, false, true));
     expect(neronB.image.frame.sy).toBe(realLayout.slices.auxiliary_terminal_neron_upgrade_b!.y);
     expect(neronB.anim).toMatchObject({ frames: [0, 1, 2, 3, 4, 5, 6, 7], frameMs: Array(8).fill(4 * tick), loops: "forever" });
+  });
+
+  it("animates the Communications Center's command terminal, floor circle, wall panel and com center", () => {
+    expect(realScene("pilot_module").anim).toMatchObject({ frames: [0, 1, 2, 3, 4], frameMs: Array(5).fill(30 * tick), loops: "forever" });
+    expect(realScene("pilot_floor_circle").anim).toMatchObject({ frames: [0, 1], frameMs: [tick, tick], loops: "forever" });
+    expect(realScene("pilot_wall").anim).toMatchObject({ frames: [0, 1, 2, 3], frameMs: Array(4).fill(14 * tick), loops: "forever" });
+    expect(realScene("com_center_left").anim).toMatchObject({ frames: [0, 1, 2, 3, 4, 5, 6, 7], frameMs: Array(8).fill(2 * tick), loops: "forever" });
+    expect(realScene("com_center_right").anim).toMatchObject({ frames: [0, 1, 2, 3, 4, 5], frameMs: Array(6).fill(3 * tick), loops: "forever" });
   });
 
   it("applies AMBIENT_SPEED multipliers to tuned ambient animations", () => {
