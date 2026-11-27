@@ -183,6 +183,18 @@ export function calmDisorder(state: GameState, player: PlayerState): void {
   logPrivate(state, player.id, "disorderCalmed", { status: tracker.name });
 }
 
+/**
+ * Calms the player's disorder `name` for `cycles` cycles, if they have it and it still acts (Addiction's drug; owner,
+ * 2026-11-27). The player is told privately, as for a Shrink's Comfort.
+ */
+export function calmDisorderFor(state: GameState, player: PlayerState, name: string, cycles: number): void {
+  const tracker = player.diseaseTrackers.find((t) => t.name === name && t.disabledFor === undefined);
+  if (!tracker) return;
+  tracker.disabledFor = cycles;
+  updateMaxValues(state, player);
+  logPrivate(state, player.id, "disorderCalmed", { status: tracker.name });
+}
+
 /** Runs every onCycle hook of each living player, in seat order. Mutates a state the caller already cloned. */
 export function diseaseTrackerCycleChange(next: GameState): void {
   for (const player of next.players) {

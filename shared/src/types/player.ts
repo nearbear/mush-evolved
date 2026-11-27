@@ -117,6 +117,12 @@ export interface PlayerState extends Seat {
   doormanToday?: boolean;
   /** True once this player has chitchatted with a Confident today (chitchat.ts); cleared at day start. Never sent. */
   chitchatToday?: boolean;
+  /** True once this player has showered today (shower.ts); only Aquaphobia reads it. Cleared at day start. Never sent to others. */
+  showeredToday?: boolean;
+  /** Pyromania: cycle changes left in the compulsion to start a fire (modifiers/pyromania_disorder.ts). Own view only. */
+  compelledCycles?: number;
+  /** Pyromania: cycle changes left in the hidden grace after a compulsion, with no roll. Never sent, not even to the owner. */
+  compulsionGrace?: number;
   /** True once the Torturer has interrogated someone today (interrogate.ts); cleared at day start. Never sent. */
   interrogatedToday?: boolean;
   /** True once this Defacer has cleared a room's logs today (actions/delog.ts); cleared at day start; moves with the mind in a Transfer. Sent to the owner only. */

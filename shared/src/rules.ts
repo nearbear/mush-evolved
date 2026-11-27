@@ -714,6 +714,7 @@ function advanceCycle(state: GameState, at?: number): void {
       delete p.fertileToday;
       delete p.doormanToday;
       delete p.chitchatToday;
+      delete p.showeredToday;
       delete p.interrogatedToday;
       delete p.delogToday;
       delete p.radioHackToday;
@@ -912,6 +913,7 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     missedLogs: _missedLogs,
     unheard: _unheard,
     radioHack: _radioHack, // the view's `radioHack` says what the hacker may use
+    compulsionGrace: _compulsionGrace, // Pyromania's grace is hidden even from its owner
     ...yours
   } = you;
   const orbitShared = !blind && channels.includes("astrophysics") && state.navigation.orbit !== null ? state.sharedPlanets.find((e) => e.planet === state.navigation.orbit)?.id : undefined;

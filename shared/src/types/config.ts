@@ -345,6 +345,9 @@ export interface GameConfig {
   agoraphobia: { crowd: number; apSurcharge: number; mpSurcharge: number; moraleLoss: number };
   /** Kleptophobia (owner, 2026-11-26): the holder's drop costs `dropAp` AP (before other surcharges), and an item of theirs lost on an expedition costs them `moraleLoss` morale. */
   kleptophobia: { dropAp: number; moraleLoss: number };
+  pyromania: { maxMoraleLoss: number; extinguishFactor: number; compelChance: number; compelledCycles: number; igniteAp: number; moraleLoss: number; graceCycles: number }; // Pyromania (modifiers/pyromania_disorder.ts, owner 2026-11-27).
+  aquaphobia: { apSurcharge: number; moraleLoss: number }; // Aquaphobia (modifiers/aquaphobia_disorder.ts, owner 2026-11-27).
+  sud: { maxMoraleLoss: number; successFactor: number; injuryFactor: number; dirtFactor: number; extraMoraleLoss: number; drugPauseCycles: number }; // Addiction (modifiers/sud_disorder.ts, owner 2026-11-27).
   sanity: { start: number; deathLoss: number; witnessLoss: number; killLoss: number; killChanceFactor: number; lowMorale: number };
   germaphobe: {
     moraleLoss: number; // Finola's Germaphobe trait: lost at each cycle change while dirty (owner, 2026-11-21).

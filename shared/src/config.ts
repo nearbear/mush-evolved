@@ -93,6 +93,12 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   agoraphobia: { crowd: 4, apSurcharge: 1, mpSurcharge: 1, moraleLoss: 1 },
   // Owner, 2026-11-26: Kleptophobia (modifiers/kleptophobia_disorder.ts): a drop costs `dropAp` AP, and an item lost on an expedition costs its holder `moraleLoss` morale.
   kleptophobia: { dropAp: 2, moraleLoss: 4 },
+  // Owner, 2026-11-27: Addiction, id sud_disorder (modifiers/sud_disorder.ts): -2 max morale, success x0.75, injury and dirt x1.5, every morale loss +1; a drug calms it for 3 cycles.
+  // Owner, 2026-11-27: Aquaphobia (modifiers/aquaphobia_disorder.ts): a shower costs `apSurcharge` more AP and `moraleLoss` morale, once a day.
+  // Owner, 2026-11-27: Pyromania (modifiers/pyromania_disorder.ts): -2 max morale, extinguishing x0.5, a 10% roll each cycle change to be compelled for 4 cycles (Ignite at 2 AP), -6 morale if it runs out, then a hidden 2-cycle grace.
+  pyromania: { maxMoraleLoss: 2, extinguishFactor: 0.5, compelChance: 0.1, compelledCycles: 4, igniteAp: 2, moraleLoss: 6, graceCycles: 2 },
+  aquaphobia: { apSurcharge: 2, moraleLoss: 3 },
+  sud: { maxMoraleLoss: 2, successFactor: 0.75, injuryFactor: 1.5, dirtFactor: 1.5, extraMoraleLoss: 1, drugPauseCycles: 3 },
   sanity: { start: 100, deathLoss: 1, witnessLoss: 4, killLoss: 10, killChanceFactor: 2, lowMorale: 5 },
   share: { cost: { ap: 1 }, effect: { morale: 2 }, pregnancy: { chance: 0.08, deathMoraleLoss: 2, mushExtraSpore: 1 } },
   // Confirmed 2026-10-14: a human converts on reaching 3 contamination (items and skills will raise it).
@@ -893,7 +899,7 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
     expeditionDiseases: ["migraine_disease", "skin_inflammation_disease", "fungal_infection_disease", "gastroenteritis_disease", "flu_disease", "rubella_disease", "syphilis_disease", "rejuvenation_disease", "mush_allergy_disease", "pink_eye_disease", "slight_nausea_disease"],
     expeditionCombatDiseases: ["space_rabies_disease", "flu_disease", "syphilis_disease", "rejuvenation_disease", "cat_allergy_disease", "black_bite_disease"],
     mushSkillDiseases: ["space_rabies_disease", "fungal_infection_disease", "cold_disease", "extreme_tinnitus_disease"],
-    allDisorders: ["depression_disorder", "agoraphobia_disorder", "kleptophobia_disorder"],
+    allDisorders: ["depression_disorder", "agoraphobia_disorder", "kleptophobia_disorder", "sud_disorder", "aquaphobia_disorder", "pyromania_disorder"],
     allInjuries: [
       "broken_nose_injury",
       "damaged_ears_injury",

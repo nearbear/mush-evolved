@@ -5677,3 +5677,22 @@ The owner rewrote the en Shrink description: lying-down morale, and Comfort givi
 - **What worked:** Persistent already reached every action through `Action.chance` (only notes said otherwise), so it got a test rather than new code. Dumping description, modifier and references per skill into one file made the audit a reading task.
 - **Needs review:** the fr/es text is a draft for a native speaker. Gunner's English still says +50% while the code doubles it; it wasn't in the owner's list.
 - **Follow-up (owner):** Gunner's description now says it doubles the turret hit chance, worded like Infantryman's (en/fr/es), matching `gunner.accuracyFactor` (2).
+
+## 2026-11-27: Addiction disorder (`sud_disorder`)
+
+- **Decision (owner):** new disorder Addiction, id `sud_disorder`, in the random disorder pool: -2 max morale, success x0.75, injury and dirt x1.5 (relative, not flat points), every morale loss +1 (all losses, not only the daily one), and consuming a drug calms it for 3 cycles (owner corrected the first ask of 2 to 3 mid-task); a drug while it is already calmed does nothing.
+- **What worked:** the existing hooks (`maxMorale`, `actionSucessRate`, `actionInjuryRate`, `actionDirtRate`, `onConsume`) and the calmed-disorder filter in `modifierIds` covered almost everything; "no effect while calmed" came for free because onConsume only runs for acting modifiers. One new fold, `moraleLoss`, applied in `gainMorale`, gives "+1 on every loss" in one place.
+- **Needed care:** the odds-math, loss-scope and calmed-drug questions were genuinely ambiguous and were asked up front. A bad drug's own morale loss lands before the calm, so it still gets the +1 (noted in implemented-rules).
+- **Follow-up (owner, same day):** the drug calms Addiction *before* its own effects, so a bad drug's morale loss isn't raised. Moved the calm from `onConsume` to a new `onDrug` hook run at the start of `applyDrug`.
+
+## 2026-11-27: Aquaphobia disorder
+
+- **Decision (owner):** Aquaphobia, a disorder in the random pool: a shower costs 2 more AP and 3 morale, one shower a day; any shower that day counts (even before the disorder or while calmed).
+- **What worked:** cost and morale fit existing hooks (`actionCost`, `onShower`); the daily limit followed the `chitchatToday` pattern (a `showeredToday` flag cleared at day start, listed in `leakFields.ts` as own-only) plus a `oneShowerADay` modifier flag checked in the shower's `validate`, like `mute`/`noHeavy`.
+- **Needed care:** asked which showers count toward the limit and whether it joins the random pool. `applyAction` reports any refusal as `illegal_action`, so the test checks the refusal, not the reason code.
+
+## 2026-11-27: Pyromania disorder
+
+- **Decision (owner):** Pyromania, a disorder in the random pool: -2 max morale, extinguish x0.5, a 10% roll each cycle change to be compelled for 4 cycles, during which the Pyromaniac's Ignite is offered at 2 AP (owner's own answer, not one of the offered options); igniting ends it, running out costs 6 morale; either way a hidden 2-cycle grace with no roll (also the owner's addition); a calmed compulsion pauses.
+- **What worked:** reused the existing Ignite action (one validate/cost branch through `compelledToBurn`) instead of a second fire action. The pause while calmed came free from `modifierIds` filtering calmed disorders out of onCycle and of `compelledToBurn`. The grace counter is reach "never" in `leakFields.ts`, stripped in `viewFor`, with a sentinel in `leaks.test.ts`.
+- **Needed care:** asking the four open points paid off: two answers changed the design (2 AP, hidden grace). The full-suite replay timeouts (`replayView` stepMarks) also happen on unmodified HEAD, so they aren't from these disorders.

@@ -78,6 +78,9 @@ import { migraine_disease } from "./modifiers/migraine_disease.ts";
 import { depression_disorder } from "./modifiers/depression_disorder.ts";
 import { agoraphobia_disorder } from "./modifiers/agoraphobia_disorder.ts";
 import { kleptophobia_disorder } from "./modifiers/kleptophobia_disorder.ts";
+import { sud_disorder } from "./modifiers/sud_disorder.ts";
+import { aquaphobia_disorder } from "./modifiers/aquaphobia_disorder.ts";
+import { pyromania_disorder } from "./modifiers/pyromania_disorder.ts";
 import { slight_nausea_disease } from "./modifiers/slight_nausea_disease.ts";
 import { food_poisoning_disease } from "./modifiers/food_poisoning_disease.ts";
 import { vitamin_deficiency_disease } from "./modifiers/vitamin_deficiency_disease.ts";
@@ -157,6 +160,7 @@ type FoldHooks = Record<
   | "damageTaken"
   | "missionAp"
   | "ownMoraleLoss"
+  | "moraleLoss"
   | "dropAp",
   FoldHook
 >;
@@ -275,6 +279,8 @@ export interface Modifier extends Partial<FoldHooks> {
   onShower?: (next: GameState, player: PlayerState) => void;
   /** Runs after the player consumes an item, once its own AP and satiety are applied. Mutates a state the caller already cloned. */
   onConsume?: (next: GameState, player: PlayerState, item: ItemState) => void;
+  /** Runs when the player takes a drug, before its effects (Addiction calms first, so the drug's morale loss isn't raised). Mutates a state the caller already cloned. */
+  onDrug?: (next: GameState, player: PlayerState) => void;
   /** Runs after the player heals someone (heal or use_bandage), once HP is restored. Mutates a state the caller already cloned. */
   onHeal?: (next: GameState, player: PlayerState, patient: PlayerState) => void;
   /**
@@ -293,6 +299,8 @@ export interface Modifier extends Partial<FoldHooks> {
   speech?: (text: string) => string;
   /** Bad Luck: the Metal Plate and Tremor incidents always deal the top of their damage range (`incidentDamage`). */
   worstDamage?: boolean;
+  /** Aquaphobia: no second shower in a day (`PlayerState.showeredToday`, actions/shower.ts). */
+  oneShowerADay?: boolean;
   /** Broken Shoulder: can't take a heavy item (TransferAction), and drops any held when it starts. */
   noHeavy?: boolean;
   /** Runs whenever the ship moves */
@@ -373,6 +381,9 @@ export const MODIFIERS: Record<string, Modifier> = {
   depression_disorder,
   agoraphobia_disorder,
   kleptophobia_disorder,
+  sud_disorder,
+  aquaphobia_disorder,
+  pyromania_disorder,
   slight_nausea_disease,
   food_poisoning_disease,
   vitamin_deficiency_disease,
@@ -628,6 +639,11 @@ export function weaponOutcomeWeight(
  */
 export function dailyMoraleLoss(state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS): number {
   return Math.max(0, fold("ownMoraleLoss", crewMoraleLoss(state, registry), state, player, registry));
+}
+
+/** The morale `player` actually loses when something takes `loss` (above 0) from them: through their `moraleLoss` hooks (Addiction); never below 0. */
+export function moraleLoss(state: Readonly<GameState>, player: Readonly<PlayerState>, loss: number, registry: ModifierRegistry = MODIFIERS): number {
+  return Math.max(0, fold("moraleLoss", loss, state, player, registry));
 }
 
 /** The crew-wide part of the daily morale loss: `moralePerDay` through every living player's `crewMoraleLoss` hooks. */
@@ -986,6 +1002,11 @@ export function consumedByMush(next: GameState, player: PlayerState, item: ItemS
   for (const id of mushDiseaseIds(player)) registry[id]?.onConsume?.(next, player, item);
 }
 
+/** Runs every onDrug hook of the player's modifiers, before the drug's effects (`applyDrug`). Mutates a state the caller already cloned. */
+export function drugTaken(next: GameState, player: PlayerState, registry: ModifierRegistry = MODIFIERS): void {
+  for (const id of modifierIds(player)) registry[id]?.onDrug?.(next, player);
+}
+
 /** Runs every onConsume hook of the player's modifiers. Mutates a state the caller already cloned. */
 export function consumed(next: GameState, player: PlayerState, item: ItemState, registry: ModifierRegistry = MODIFIERS): void {
   for (const id of modifierIds(player)) registry[id]?.onConsume?.(next, player, item);
@@ -1002,6 +1023,16 @@ export function skillPicked(next: GameState, player: PlayerState, skill: string,
 }
 
 /** Whether the player can't speak right now (a `mute` modifier: Torn Tongue, Punctured Lung): no `talking` action, no chat post. */
+/** Whether the player may shower only once a day (Aquaphobia). */
+export function oneShowerADay(player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS): boolean {
+  return modifierIds(player).some((id) => registry[id]?.oneShowerADay === true);
+}
+
+/** Whether the player is compelled to start a fire right now: Pyromania acts and its compulsion is running (actions/ignite.ts). */
+export function compelledToBurn(player: Readonly<PlayerState>): boolean {
+  return player.compelledCycles !== undefined && modifierIds(player).includes("pyromania_disorder");
+}
+
 export function isMute(player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS): boolean {
   return modifierIds(player).some((id) => registry[id]?.mute === true);
 }
