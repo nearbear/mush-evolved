@@ -72,7 +72,7 @@ Chat is slightly restructured to give players a global chat that is fully sequen
 
 ## Part 2: Design changes
 
-Here is a list of changes from eMush: [Changes from eMush](docs/rules/changes-from-emush.md)
+Here is a list of changes from eMush: [Changes from eMush](changes-from-emush.md)
 
 The justifications and rationale are below.
 
