@@ -5696,3 +5696,9 @@ The owner rewrote the en Shrink description: lying-down morale, and Comfort givi
 - **Decision (owner):** Polymath gives nothing on expeditions. Its last one, the Botanist's +1 fruit on Harvest, is removed (`expeditions.ts`); Skilful keeps it.
 - **Also:** the expedition-prep bot goal (`server/src/bots/goals/expeditionPrep.ts`) treated Polymath as a Diplomat (skipping the white flag, claiming Intelligent Life seats) and a Botanist. It now checks Skilful, which really has those bonuses. Tests in `expeditions.test.ts` and `goals.test.ts` updated.
 - **What worked:** a repo-wide grep for `polymath` found the bot copy of the old rule, which the rules change alone would have left behind.
+
+### 2026-11-26: Ship editor draws the picked room alone
+
+- Owner asked for a view showing only the selected room, replacing the View menu's "From a room" list of every room. The View menu is now Whole ship / Picked room only / Picked room at fog depth 1 or 2, and the room views follow the room picked in the hierarchy or scene (`ShipView` gained depth 0 in `shipScene.ts`; the remembered place accepts it). The unused `Sub` menu helper went with the list.
+- Tradeoff: following the pick means clicking a tile in a neighbouring room at fog depth 1 or 2 re-roots the view on that room. A check problem that only shows from one room now picks that room to draw from it.
+- Needed correction: a narrowing on `view.from && view.depth === 0` didn't satisfy tsc; split into a `depth` local.

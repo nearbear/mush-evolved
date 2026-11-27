@@ -118,7 +118,7 @@ export function decodePlace(text: string | null, map: ShipMap, maxZoom: number):
     const out: Partial<EditorPlace> = {};
     if (Number.isInteger(p.zoom) && p.zoom! >= 1 && p.zoom! <= maxZoom) out.zoom = p.zoom;
     if (p.cam && Number.isFinite(p.cam.x) && Number.isFinite(p.cam.y)) out.cam = { x: p.cam.x, y: p.cam.y };
-    if (p.view && (p.view.from === null || (room(p.view.from) && "depth" in p.view && (p.view.depth === 1 || p.view.depth === 2)))) out.view = p.view;
+    if (p.view && (p.view.from === null || (room(p.view.from) && "depth" in p.view && (p.view.depth === 0 || p.view.depth === 1 || p.view.depth === 2)))) out.view = p.view;
     const sel = p.selected;
     if (sel && room(sel.room) && Number.isInteger(sel.index) && map.rooms.find((r) => r.id === sel.room)!.tiles[sel.index]) {
       out.selected = { room: sel.room, index: sel.index };

@@ -55,23 +55,6 @@ export function Radios<T>({ value, onChange, options }: { value: T; onChange: (v
   );
 }
 
-export function Sub({ label, children }: { label: ReactNode; children: ReactNode }) {
-  return (
-    <Menu.SubmenuRoot>
-      <Menu.SubmenuTrigger className="editor-menu-item">
-        <span className="mark" />
-        <span>{label}</span>
-        <span className="more">▸</span>
-      </Menu.SubmenuTrigger>
-      <Menu.Portal>
-        <Menu.Positioner className="editor-menu-positioner" alignOffset={-4}>
-          <Menu.Popup className="editor-menu scroll">{children}</Menu.Popup>
-        </Menu.Positioner>
-      </Menu.Portal>
-    </Menu.SubmenuRoot>
-  );
-}
-
 export function Heading({ children }: { children: ReactNode }) {
   return <div className="editor-menu-heading">{children}</div>;
 }

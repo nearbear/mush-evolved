@@ -20,6 +20,14 @@ describe("shipScene", () => {
     expect(scene.map((s) => `${s.key} ${s.left},${s.top}`)).toEqual(game.map((s) => `${s.key} ${s.left},${s.top}`));
   });
 
+  it("draws only the picked room at depth 0, and it plus its neighbours at depth 1", () => {
+    const alone = shipScene(ship, { from: "CORRIDOR_A", depth: 0 });
+    expect(alone.length).toBeGreaterThan(0);
+    expect(new Set(alone.map((s) => s.room))).toEqual(new Set(["CORRIDOR_A"]));
+    const fogged = new Set(shipScene(ship, { from: "CORRIDOR_A", depth: 1 }).map((s) => s.room));
+    expect(fogged.size).toBeGreaterThan(1);
+  });
+
   it("names each sprite's map tile, and puts it on the ship cell its room's position gives", () => {
     for (const s of scene.filter((_, i) => i % 97 === 0)) {
       const ref = tileOf(ship, s)!;
