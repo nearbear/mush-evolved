@@ -5797,3 +5797,9 @@ The owner asked for the cryopod window on the phone character picker to be about
 
 - `optionsOn` (web/src/hud/targets.ts) no longer filters out `take`/`drop`, so they show on the item's Inspect panel (double press, like any action) and, as a side effect, on the phone peek bar for a tapped item. `ready` stays excluded.
 - The inventory panel's Take/Drop button on a selected tile is now a plain one-press button regardless of the "single press" setting: selecting the tile already is the first press (owner's call). Noted in web/CLAUDE.md beside `SINGLE_PRESS_ACTIONS`.
+
+## 2026-11-27: Bed state out of sync between phone and desktop
+
+- Asked to sync "sleeping" (lying in bed) across two devices on one seat. Reading the code showed the bed state is already server state (`lyingIn`), sent in every connection's view, and drawn only from the view, so no fix belonged there. The likely cause is a phone dropping a backgrounded tab's websocket without either end noticing: the socket still looks open and the screen stays stale. `GameScreen` now reconnects when the tab is shown after 10+ s hidden, or when the browser comes back online (the server sends a fresh view on every connect).
+- What needed correction: the first pass hunted for a bed-specific bug; the problem was generic (no heartbeat), and the real repro was never run (the `play` skill is user-only).
+- Found on the way, not fixed: your own position on a second device comes from that device's clicks, not the view's `spot` (`IsoRoom` prefers its local walk and the entry door), and chair sitting is local too.

@@ -17,6 +17,8 @@ import { ChatReadProvider, chatReadKey, createChatReadStore } from "./chatRead.t
 
 /** How slow-render warnings name this screen (dev console only). */
 const WATCH_ID = "GameView"; // i18n-ignore: dev console only
+/** Hidden at least this long, the tab reconnects when shown again, in case the connection died unnoticed meanwhile. */
+const RECONNECT_AFTER_HIDDEN_MS = 10_000;
 
 export default function GameScreen({ ticket, onLeave, waking = false }: { ticket: SeatTicket; onLeave: () => void; waking?: boolean }) {
   const { t } = useTranslation();
@@ -60,15 +62,28 @@ export default function GameScreen({ ticket, onLeave, waking = false }: { ticket
     // Counts read go to the server at most every few seconds; send what's pending when the socket (re)opens and before
     // the page is hidden or closed, so little reading is lost.
     const flush = () => chatRead.flush();
+    // A phone that locks or backgrounds the tab can drop the connection without either end hearing of it, so the
+    // socket still looks open and the screen goes on showing what it last got (you still standing, after lying down on
+    // your computer). Coming back after a while, connect again: the server sends the current view on every connect.
+    let hiddenAt: number | null = null;
     const onVisibility = () => {
-      if (document.visibilityState === "hidden") flush();
+      if (document.visibilityState === "hidden") {
+        hiddenAt = Date.now();
+        flush();
+      } else if (hiddenAt !== null && Date.now() - hiddenAt >= RECONNECT_AFTER_HIDDEN_MS) {
+        hiddenAt = null;
+        socket.reconnect();
+      } else hiddenAt = null;
     };
+    const onOnline = () => socket.reconnect();
     socket.addEventListener("open", flush);
     document.addEventListener("visibilitychange", onVisibility);
     window.addEventListener("pagehide", flush);
+    window.addEventListener("online", onOnline);
     return () => {
       document.removeEventListener("visibilitychange", onVisibility);
       window.removeEventListener("pagehide", flush);
+      window.removeEventListener("online", onOnline);
       chatRead.dispose();
       socket.close();
     };
