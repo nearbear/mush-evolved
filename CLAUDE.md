@@ -6,14 +6,14 @@ Project context for Claude Code. This file summarizes decisions made during plan
 
 **Mush: Evolved** (name decided 2026-11-22, [#43](https://github.com/nearbear/mush2/issues/43)) is a turn-based, browser-based social deduction game inspired by **eMush**, the open-source remake (by the nonprofit Eternaltwin) of **Mush** by Motion Twin. In the original, players wake up on a spaceship (the Daedalus), a small number of them are infected "Mush," and the humans have to survive and unmask them. The original runs 16 players with 2 Mush, as asynchronous games lasting a few days.
 
-This is a **vertical slice**, not a full clone. The goals are:
+It is a complete, playable game heading into a private beta, not a full clone of the original. The goals are:
 
-1. A playable end-to-end slice, public on the internet, with a plain per-language queue into a ship in its pre-selection phase (decided 2026-10-13, see `docs/rules/rules-design.md`).
+1. A complete game, public on the internet, with a plain per-language queue into a ship in its pre-selection phase (decided 2026-10-13, see `docs/rules/rules-design.md`).
    - **Bots (2026-10-13):** multiplayer has no bots. AI-controlled bots exist only in a single-player mode (stage not decided) and as test tooling.
 2. Demonstrate solid full-stack engineering and an AI-assisted development workflow (keep notes on what worked and what didn't; see "Working agreements").
-3. Leave room to grow it into a real game later, including animated characters.
+3. Keep growing it after the beta, including animated characters.
 
-**Proposed slice scope:** 16 seats with 2 Mush (1 when 8 or fewer players are in the room; decided in `docs/rules/rules-design.md`; built; a ship's seat count is `config.preselection.seats`, 16 by default in `PRESELECTION`), the 27-room Daedalus, the action-point loop and infection. Do not try to implement the full Mush ruleset.
+**Scope:** 16 seats with 2 Mush (1 when 8 or fewer players are in the room; decided in `docs/rules/rules-design.md`; built; a ship's seat count is `config.preselection.seats`, 16 by default in `PRESELECTION`), the 27-room Daedalus, the action-point loop and infection. Do not try to implement the full Mush ruleset.
 
 ## Stack
 
@@ -65,7 +65,7 @@ These are non-negotiable unless I say otherwise.
 - Write tests for rules logic. Run `npm run verify` before saying something is done.
 - Do not invent game rules. If a rule is ambiguous, ask me.
 - Ask before adding dependencies.
-- Prefer the simplest thing that works for the vertical slice, and flag scope creep.
+- Prefer the simplest thing that works, and flag scope creep.
 - The databases are currently empty, so it's OK if something bumps the game version for now.
 - Keep a short log in `docs/process/ai-workflow.md` of significant decisions made with AI assistance, including what worked and what needed correction. I plan to write this up. Only ever append to it with `cat >>`; never read or rewrite the whole file (it is large).
 - **Checks and the log happen once, at the very end of a task.** While iterating, run only the tests you need (`npm test -w shared -- rules.test.ts -t "name"`), not the full suite, typecheck or lint after each step. When the whole task is done, run `npm run verify` once (plus `npm run build` if `web` changed) — or `npm run verify:web` for a `web`-only UI change — and append one `docs/process/ai-workflow.md` entry for the whole task, not one per sub-step. Rerun `verify` only if you edit code after it passed.

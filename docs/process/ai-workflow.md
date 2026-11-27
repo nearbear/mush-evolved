@@ -5754,3 +5754,7 @@ The owner rewrote the en Shrink description: lying-down morale, and Comfort givi
 - Broken equipment in a neighbouring room (drawn fogged in the iso view) now smokes once it is on the alert bar (reported by a player, or found by the Anomaly detector); unreported breakdowns next door still don't.
 - The equipment `AlertReport` gained the equipment's `id` so the client can find the exact tile (`placedEquipment`) instead of guessing by type when a room has several of a kind. No leak: map equipment ids are static, and built ones only add the item counter, which `roomItems` ids already show.
 - `GameView` builds `reportedBroken` from the alerts (memoised on the ids joined, so the scene only rebuilds when a report comes or goes); `IsoRoom` turns it into neighbour sprite keys; `describeScene` adds smoke for them. Test in `scene.test.ts`.
+
+## 2026-11-27: README and CLAUDE.md no longer call the project a vertical slice
+
+Checked the README for stale wording against the code: game endings (now Sol/Eden launch, all humans dead, ship destroyed), the moved browser lobby test (`npm run test:browser`, not part of `npm test`), per-worktree dev ports, and `verify` in the commands table and contributing steps. The owner then reframed the project as a complete game heading into a private beta, so "vertical slice" wording came out of the README and CLAUDE.md. Needed correction: I first read single player as shipped because it is in the lobby; the owner is about to hide it, so the docs keep calling it planned.
