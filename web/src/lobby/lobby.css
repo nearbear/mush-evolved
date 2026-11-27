@@ -675,7 +675,8 @@ button.pod-skill:focus-visible {
     padding-bottom: 5rem;
   }
   .pod-window {
-    height: min(30rem, calc(100dvh - 7rem));
+    /* Taller than desktop's (30rem), so the character picker's tabs and two rows of podiums have room. */
+    height: min(36rem, calc(100dvh - 7rem));
   }
   .pod-footer {
     bottom: max(0.5rem, env(safe-area-inset-bottom));
