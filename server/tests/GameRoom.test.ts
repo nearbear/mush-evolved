@@ -86,11 +86,18 @@ describe("GameRoom connections and seat tokens", () => {
   });
 });
 
+describe("GameRoom build", () => {
+  it("tells a connecting seat the server's build first, for the client's reload notice", async () => {
+    const c = connect((await newRoom(3, new FakeStorage(), { RULES_VERSION: "abc123" })).room, "tok0");
+    expect(c.messages<GameServerMessage>()[0]).toEqual({ type: "build", version: "abc123" });
+  });
+});
+
 describe("GameRoom views never leak", () => {
   it("sends other seats as OtherPlayerView only, and never the RNG state", async () => {
     const { room } = await newRoom(3);
     const c = connect(room, "tok0");
-    const payload = JSON.parse(c.sent[0]!);
+    const payload = JSON.parse(c.sent[1]!); // [0] is the build
     const view = payload.view;
     expect(JSON.stringify(payload)).not.toContain('"rng"');
     expect(view.players.length).toBeGreaterThan(0);
@@ -238,8 +245,8 @@ describe("GameRoom cheats", () => {
   it("tells the client whether cheats are allowed", async () => {
     const off = connect((await newRoom(3)).room, "tok0");
     const on = connect((await newRoom(3, new FakeStorage(), { ALLOW_CHEATS: "true" })).room, "tok0");
-    expect((off.messages<{ cheatsAllowed: boolean }>()[0])!.cheatsAllowed).toBe(false);
-    expect((on.messages<{ cheatsAllowed: boolean }>()[0])!.cheatsAllowed).toBe(true);
+    expect((off.messages<{ cheatsAllowed: boolean }>()[1])!.cheatsAllowed).toBe(false);
+    expect((on.messages<{ cheatsAllowed: boolean }>()[1])!.cheatsAllowed).toBe(true);
   });
 
   it("applies them for the sender only when allowed, and keeps them out of other views", async () => {

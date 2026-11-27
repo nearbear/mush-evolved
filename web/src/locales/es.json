@@ -217,6 +217,10 @@
   "wake": {
     "ready": "Te despiertas. Día {{day}}, ciclo {{cycle}}. Estás en: {{room}}."
   },
+  "update": {
+    "available": "Hay una nueva versión del juego disponible.",
+    "reload": "Recargar"
+  },
   "common": {
     "go": "Ir",
     "ai": "IA",

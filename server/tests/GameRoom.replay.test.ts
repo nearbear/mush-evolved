@@ -296,7 +296,7 @@ describe("GameRoom chat read state (#400)", () => {
   it("sends a connecting seat its counts after the view, as loaded on a restart and clamped to the channel", async () => {
     const { room, storage } = await newRoom();
     const a = connect(room, "tok0");
-    expect(a.messages<GameServerMessage>().map((m) => m.type)).toEqual(["view", "chatRead"]);
+    expect(a.messages<GameServerMessage>().map((m) => m.type)).toEqual(["build", "view", "chatRead"]);
     expect(reads(a)).toEqual([{ type: "chatRead", read: {} }]);
     await say(room, a, global);
     await storage.put("chatRead:p0", { [global]: 5 });

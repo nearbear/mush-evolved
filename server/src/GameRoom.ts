@@ -888,6 +888,7 @@ export class GameRoom extends Server<Env> {
       return;
     }
     connection.setState({ playerId, token: token! });
+    this.send(connection, { type: "build", version: this.env.RULES_VERSION ?? "dev" });
     this.sendView(connection, playerId);
     this.sendChatRead(connection, playerId);
     // Connecting is what counts as activity (inactivity.ts, #145).

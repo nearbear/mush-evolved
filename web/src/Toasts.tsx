@@ -15,18 +15,27 @@ export const showError = (message: string): void => show(message, "error");
 export const showSuccess = (message: string): void => show(message, "success");
 export const showWarning = (message: string): void => show(message, "warning");
 
+/**
+ * A notice that stays until acted on, with one button (web/src/buildCheck.ts). The transient toasts above only ever
+ * close their own, so one of them can show beside this without replacing it.
+ */
+export function showUpdateAvailable(message: string, actionLabel: string, onAction: () => void): void {
+  toastManager.add({ description: message, type: "update", timeout: 0, priority: "high", actionProps: { children: actionLabel, onClick: onAction } });
+}
+
 function ToastList() {
   const { toasts } = Toast.useToastManager();
   return toasts.map((toast) => (
     <Toast.Root key={toast.id} toast={toast} className="toast" data-type={toast.type}>
       <Toast.Description className="toast-text" />
+      <Toast.Action className="toast-action" />
     </Toast.Root>
   ));
 }
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
-    <Toast.Provider toastManager={toastManager} limit={1}>
+    <Toast.Provider toastManager={toastManager} limit={2}>
       {children}
       <Toast.Portal>
         <Toast.Viewport className="toast-viewport">

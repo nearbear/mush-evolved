@@ -210,6 +210,10 @@
   "wake": {
     "ready": "You wake up. Day {{day}}, cycle {{cycle}}. You are in: {{room}}."
   },
+  "update": {
+    "available": "A new version of the game is available.",
+    "reload": "Reload"
+  },
   "common": {
     "go": "Go",
     "ai": "AI",

@@ -1,5 +1,6 @@
 import PartySocket from "partysocket";
 import type { LobbyLanguage } from "@mush2/shared";
+import { watchBuild } from "./buildCheck.ts";
 
 // host:port of the server: the page's own origin unless overridden. Production
 // builds are served by the same Worker as the server (static assets), and in dev
@@ -7,11 +8,11 @@ import type { LobbyLanguage } from "@mush2/shared";
 export const PARTY_HOST: string = import.meta.env.VITE_PARTY_HOST ?? location.host;
 
 export function matchmakerSocket(language: LobbyLanguage): PartySocket {
-  return new PartySocket({ host: PARTY_HOST, party: "matchmaker", room: language });
+  return watchBuild(new PartySocket({ host: PARTY_HOST, party: "matchmaker", room: language }));
 }
 
 export function gameSocket(roomId: string, token: string): PartySocket {
-  return new PartySocket({ host: PARTY_HOST, party: "game-room", room: roomId, query: { token } });
+  return watchBuild(new PartySocket({ host: PARTY_HOST, party: "game-room", room: roomId, query: { token } }));
 }
 
 /** Seat stored per tab so a refresh rejoins the same game. */

@@ -73,6 +73,7 @@ export type MatchmakerServerMessage =
   | { type: "voteRefused"; reason: VoteRefusal }
   | { type: "characterTaken" }
   | { type: "matched"; roomId: string; token: string }
+  | BuildMessage
   | { type: "error"; message: string };
 
 /**
@@ -141,6 +142,12 @@ export type GameClientMessage =
   // Development only, like the cheats: frees the sender's account from this ship at once, so the lobby offers other
   // ships. Not an input: the rules never see it, and the character stays aboard unplayed.
   | { type: "leaveShip" };
+/**
+ * The server's build (`RULES_VERSION`, the deployed commit), sent first on every connect by the game rooms and the
+ * matchmakers. A deploy drops every socket, so an open tab hears this on its reconnect and, if it is an older build,
+ * offers a reload (web/src/buildCheck.ts). Not game state, the same for everyone.
+ */
+export type BuildMessage = { type: "build"; version: string };
 export type GameServerMessage =
   // `cheatsAllowed` is the server's dev flag, so the client knows whether to offer cheats. It is not game state.
   // `now` is the server's clock when sent, so the client can draw action bars (server ms) against its own clock.
@@ -157,6 +164,7 @@ export type GameServerMessage =
   // The seat's read counts for the channels its body reads now (#400, `chatReadFor`): on connect after the view, and to
   // the seat's other connections when they rise. Only ever to that seat.
   | { type: "chatRead"; read: ChatRead }
+  | BuildMessage
   | { type: "error"; message: string };
 
 export function parseMatchmakerMessage(raw: string): MatchmakerClientMessage | null {

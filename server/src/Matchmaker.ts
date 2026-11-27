@@ -141,6 +141,7 @@ export class Matchmaker extends Server<Env> {
       connection.close(1008, "unknown_lobby");
       return;
     }
+    this.send(connection, { type: "build", version: this.env.RULES_VERSION ?? "dev" });
     const cookie = sessionCookie(ctx.request, this.env);
     this.sessionKeys.set(connection.id, cookie ? sha256Hex(cookie) : Promise.resolve(null));
     await this.closeIfExpired();

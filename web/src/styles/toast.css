@@ -31,3 +31,21 @@
   opacity: 0;
   transform: translateY(-0.5rem);
 }
+/* The update notice (showUpdateAvailable): stays until Reload, so it reads as information, not an error. */
+.toast[data-type="update"] {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border-color: var(--chrome-line);
+  background: var(--ink);
+  color: var(--text);
+}
+.toast + .toast {
+  margin-top: var(--space-2);
+}
+/* Layout only: the button takes the global Mush style (styles/buttons.css). */
+.toast-action {
+  flex: none;
+}
