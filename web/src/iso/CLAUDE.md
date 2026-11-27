@@ -111,7 +111,8 @@ Loaded when working on the isometric view. The UI rules in `web/CLAUDE.md` still
 - Scenery that loops on its own all the time is listed in `AMBIENT_SLICES` (`scene.ts`): the engine
   room's three reactors, PILGRED's core once repaired, the placed MidFill/MidFill2 equipment with an
   `auto` anim (gravity simulator, surgery pod, NERON, BIOS, tanks, bridge LEDs and astro console, antenna,
-  human tank), the NERON core auxiliary terminals, the bridge's `planets` hologram, the bay lights, the
+  human tank), the Communications Center's BigFill pieces (command terminal `pilot_module`, its floor
+  circle, the `pilot_wall` panel, `com_center_left`/`_right`), the NERON core auxiliary terminals, the bridge's `planets` hologram, the bay lights, the
   bay doors (normal and Bay Door XXL), and the Plasma Shield coils once complete. Tuned speed multipliers
   live in `AMBIENT_SPEED`. Like ones are kept out of step
   (`spreadAmbient`: each starts at a different frame, spread evenly around the loop). Only the slices listed there move; most

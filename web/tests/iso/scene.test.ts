@@ -362,6 +362,14 @@ describe("roomLooks and ambient animations", () => {
     expect(neronB.anim).toMatchObject({ frames: [0, 1, 2, 3, 4, 5, 6, 7], frameMs: Array(8).fill(4 * tick), loops: "forever" });
   });
 
+  it("animates the Communications Center's command terminal, floor circle, wall panel and com center", () => {
+    expect(realScene("pilot_module").anim).toMatchObject({ frames: [0, 1, 2, 3, 4], frameMs: Array(5).fill(30 * tick), loops: "forever" });
+    expect(realScene("pilot_floor_circle").anim).toMatchObject({ frames: [0, 1], frameMs: [tick, tick], loops: "forever" });
+    expect(realScene("pilot_wall").anim).toMatchObject({ frames: [0, 1, 2, 3], frameMs: Array(4).fill(14 * tick), loops: "forever" });
+    expect(realScene("com_center_left").anim).toMatchObject({ frames: [0, 1, 2, 3, 4, 5, 6, 7], frameMs: Array(8).fill(2 * tick), loops: "forever" });
+    expect(realScene("com_center_right").anim).toMatchObject({ frames: [0, 1, 2, 3, 4, 5], frameMs: Array(6).fill(3 * tick), loops: "forever" });
+  });
+
   it("applies AMBIENT_SPEED multipliers to tuned ambient animations", () => {
     const ms = (slice: string, looks?: ReadonlyMap<string, string>) => realScene(slice, looks).anim!.frameMs as number[];
     expect(ms("radar_trans_void")).toEqual(Array(4).fill(2 * tick));
