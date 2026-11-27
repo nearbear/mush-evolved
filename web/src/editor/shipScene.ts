@@ -11,8 +11,8 @@ export type Layer = (typeof LAYERS)[number];
 
 export const layerOf = (kind: PlacedSprite["kind"]): Layer | undefined => (kind === "actor" ? undefined : kind);
 
-/** Which rooms the editor draws: the whole ship, or what the game draws from one room at a fog depth. */
-export type ShipView = { from: null } | { from: string; depth: 1 | 2 };
+/** The whole ship, or the ship as the game draws it from one room: that room alone (depth 0) or with fog depth 1 or 2. */
+export type ShipView = { from: null } | { from: string; depth: 0 | 1 | 2 };
 
 /**
  * The rooms on the ship plan in one scene, on ship cells. The whole ship is drawn as the game draws fog
@@ -24,7 +24,9 @@ export function shipScene(layout: ShipLayout, view: ShipView = { from: null }, s
   const placed = layout.rooms.filter((r): r is RoomLayout & { at: { x: number; y: number } } => !!r.at);
   const root = placed.find((r) => r.id === (view.from ?? "CORRIDOR_A")) ?? placed[0];
   if (!root) return [];
-  const order: RoomLayout[] = [root, ...neighborRooms(layout, root, view.from ? view.depth : "all").map((n) => n.room)];
+  const depth = view.from ? view.depth : "all";
+  const near = depth === 0 ? [] : neighborRooms(layout, root, depth);
+  const order: RoomLayout[] = [root, ...near.map((n) => n.room)];
   if (!view.from) for (const r of placed) if (!order.includes(r)) order.push(r);
   return placeScene(layout, order.map((room) => ({ room, dx: room.at!.x, dy: room.at!.y, actors: sleeperSize ? sleepers(layout, room, sleeperSize) : [] })));
 }

@@ -133,6 +133,8 @@ export const ITEM_TYPES: Readonly<Record<ItemTypeId, ItemType>> = {
   output_tube: {dismantle: { metal: 1, plastic: 0, chance: 0.5 }},
   // Decided 2026-10-16: carries a recipe in `ItemState.builds`; consumed by building.
   blueprint: {},
+  // Development cheat (owner, 2026-11-26): the Superkube's master blueprint, any recipe, free and kept (actions/build.ts).
+  master_blueprint: {},
   plastic_scraps: {},
   // Confirmed 2026-10-16: spawns in the refectory at the start; heavy. Used by Hyperfreeze (actions/hyperfreeze.ts).
   [FREEZER_ITEM]: { heavy: true, dismantle: { metal: 2, plastic: 0, chance: 0.25 }, canBreak: true, canBeSabotaged: true, repairChance: 0.25 },

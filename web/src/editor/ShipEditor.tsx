@@ -3,9 +3,9 @@
 // editor-only exception to the room view's 1x, no-panning rules, owner 2026-10-21), and edits it: select
 // a tile (Tab cycles through what's stacked under the click), move it a cell at a time, delete,
 // duplicate, change its frame or its room, place new tiles from the palette, undo and redo, and save
-// back to the file (tools/src/editor/vitePlugin.ts). It can also show the ship as the game draws it from
-// one room at fog depth 1 or 2, where seams between rooms show. A room can be moved whole on the plan, and
-// the map is checked as you edit (Checks.tsx): each problem found takes you to where it is.
+// back to the file (tools/src/editor/vitePlugin.ts). It can also show the room picked (in the hierarchy
+// or the scene) alone, or the ship as the game draws it from that room at fog depth 1 or 2, where seams
+// between rooms show. A room can be moved whole on the plan, and the map is checked as you edit (Checks.tsx): each problem found takes you to where it is.
 //
 // Laid out like a game engine's scene editor: a menu bar (File, Edit, View), a hierarchy of rooms and
 // tiles with an inspector under it on the left (the split and the column's width can be dragged), the
@@ -41,7 +41,7 @@ import {
   tileAt,
 } from "./edits.ts";
 import type { Problem } from "./checks.ts";
-import { Check, EditorMenu, Heading, Item, PopoverPanel, Radios, Separator, Sub } from "./EditorMenus.tsx";
+import { Check, EditorMenu, Heading, Item, PopoverPanel, Radios, Separator } from "./EditorMenus.tsx";
 import { checkCounts, Checks, useChecks } from "./Checks.tsx";
 import { Hierarchy, hideKey, LAYER_NAMES } from "./Hierarchy.tsx";
 import { Inspector, isSofa } from "./Inspector.tsx";
@@ -109,6 +109,8 @@ function restoredDraft(disk: ShipMap): Restored | undefined {
   );
   return keep ? { map: draft.map, saved: disk, past: draft.past, future: draft.future } : undefined;
 }
+
+const VIEW_NAMES = { ship: "whole ship", 0: "picked room only", 1: "picked room, fog 1", 2: "picked room, fog 2" } as const;
 
 export default function ShipEditor() {
   const [ship, setShip] = useState<{ art: ShipArt; map: ShipMap; restored?: Restored; place: Partial<EditorPlace> }>();
@@ -222,7 +224,14 @@ function Editor({ art, initial, restored, place: start }: { art: ShipArt; initia
   }, [dirty]);
 
   const layout: ShipLayout = useMemo(() => ({ ...art, ...map }), [art, map]);
-  const [view, setView] = useState<ShipView>(start.view ?? { from: null });
+  // What's drawn: the whole ship, or the picked room alone or at a fog depth. The room views follow the
+  // picked room, so picking another (in the hierarchy or the scene) redraws from it; with none picked, or
+  // one off the plan, the whole ship shows.
+  const [viewMode, setViewMode] = useState<"ship" | 0 | 1 | 2>(start.view?.from ? start.view.depth : "ship");
+  const view: ShipView = useMemo(
+    () => (viewMode !== "ship" && roomSel && map.rooms.find((r) => r.id === roomSel)?.at ? { from: roomSel, depth: viewMode } : { from: null }),
+    [viewMode, roomSel, map],
+  );
   // Sleepers lie mirrored where their bed says so, as in the game (IsoRoom); hit-testing mirrors with them.
   const placed = useMemo(
     () =>
@@ -462,12 +471,16 @@ function Editor({ art, initial, restored, place: start }: { art: ShipArt; initia
   /** Takes you to a problem: its view if it only shows in one, its tile or room selected, its first cell in the middle. */
   const jump = (p: Problem) => {
     setPicked(p);
-    if (p.view) setView(p.view);
     if (p.tile) {
       setSelected(p.tile);
       stack.current = { keys: [], at: 0 };
     }
     if (p.room) setRoomSel(p.room);
+    // A problem that shows from one room only: draw from it, which picks that room.
+    if (p.view) {
+      setViewMode(p.view.from ? p.view.depth : "ship");
+      if (p.view.from) setRoomSel(p.view.from);
+    }
     const cell = p.cells[0];
     if (cell) centreOn(cell[0], cell[1]);
   };
@@ -551,7 +564,7 @@ function Editor({ art, initial, restored, place: start }: { art: ShipArt; initia
   const saveLabel = save.state === "saving" ? "Saving…" : save.state === "failed" ? "Not saved" : dirty ? "Unsaved changes" : "Saved";
 
   const counts = checkCounts(checks.problems);
-  const viewName = view.from ? `from ${view.from}, fog ${view.depth}` : "whole ship";
+  const viewName = VIEW_NAMES[viewMode] + (viewMode !== "ship" && !view.from ? " (none picked)" : "");
   const selectTile = (at: TileAt) => {
     stack.current = { keys: [], at: 0 };
     setSelected(at);
@@ -705,24 +718,16 @@ function Editor({ art, initial, restored, place: start }: { art: ShipArt; initia
           <div className="editor-scene-toolbar" role="toolbar" aria-label="Scene">
             <EditorMenu label={`View: ${viewName} ▾`}>
               <Radios
-                value={view.from ?? ""}
-                onChange={(from) => setView(from ? { from, depth: view.from ? view.depth : 1 } : { from: null })}
-                options={[{ value: "", label: "Whole ship" }]}
+                value={viewMode}
+                onChange={setViewMode}
+                options={[
+                  { value: "ship", label: "Whole ship" },
+                  { value: 0, label: "Picked room only" },
+                  { value: 1, label: "Picked room, fog depth 1" },
+                  { value: 2, label: "Picked room, fog depth 2" },
+                ]}
               />
-              <Sub label="From a room">
-                <Radios
-                  value={view.from ?? ""}
-                  onChange={(from) => setView({ from, depth: view.from ? view.depth : 1 })}
-                  options={planRooms.map((id) => ({ value: id, label: id }))}
-                />
-              </Sub>
-              <Separator />
-              <Heading>Fog depth</Heading>
-              <Radios
-                value={view.from ? view.depth : 0}
-                onChange={(depth) => view.from && setView({ from: view.from, depth: depth as 1 | 2 })}
-                options={[1, 2].map((d) => ({ value: d, label: String(d), disabled: !view.from }))}
-              />
+              {viewMode !== "ship" && !view.from && <Heading>Pick a room on the plan to draw from it</Heading>}
             </EditorMenu>
             <EditorMenu label="Show ▾">
               <Heading>Layers</Heading>

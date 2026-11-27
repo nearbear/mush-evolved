@@ -104,6 +104,7 @@
     "missile_launcher": "Lance-missiles",
     "blueprint": "Plan",
     "blueprintOf": "Plan : {{thing}}",
+    "master_blueprint": "Plan universel",
     "book": "Apprentron",
     "bookOf": "Apprentron : {{skill}}",
     "hybridOf": "{{a}}–{{b}}",

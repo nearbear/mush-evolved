@@ -149,6 +149,12 @@ export const OUTPUT_TUBE_ITEM = "output_tube";
 /** The item type that carries a recipe (blueprints.ts). Named after its icon, blueprint.jpg. */
 export const BLUEPRINT_ITEM = "blueprint";
 
+/**
+ * Development cheat (owner, 2026-11-26): every recipe in one, no ingredients, never used up (actions/build.ts). Only
+ * the Superkube's spawn makes one; nothing on the ship draws it. Shows blueprint.jpg.
+ */
+export const MASTER_BLUEPRINT_ITEM = "master_blueprint";
+
 /** The generic document item (`ItemState.document`): Finola's lost analysis (lostAnalysis.ts), and THE List (#266, actions/print_list.ts). Named after its icon. */
 export const DOCUMENT_ITEM = "document";
 
@@ -191,6 +197,7 @@ export const PLAIN_ITEM_IDS = [
   INPUT_TUBE_ITEM,
   OUTPUT_TUBE_ITEM,
   BLUEPRINT_ITEM,
+  MASTER_BLUEPRINT_ITEM,
   DOCUMENT_ITEM,
   MYCO_ALARM_ITEM,
   GENOME_DISK_ITEM,

@@ -117,6 +117,7 @@ const ACTION_NAME_KEYS = {
   become_ninja: "actions.becomeNinja",
   delog: "actions.delog",
   radio_piracy: "actions.radioPiracy",
+  radio_piracy_room: "actions.radioPiracy",
   factory_reset: "actions.factoryReset",
   become_normal: "actions.becomeNormal",
   accommodate: "actions.accommodate",
@@ -261,5 +262,5 @@ export function useNames() {
     return Object.values(params).includes(SOMEONE) || typeof params.hostile === "string" ? line.charAt(0).toLocaleUpperCase() + line.slice(1) : line;
   };
 
-  return { room, equipment, item, itemOf, itemLabel, drone, droneUpgrade, hostile, hostileName, jukeboxSong, research, project, skill, title, rebelBase, action, character: characterName, characterGiven: characterGivenName, logLine };
+  return { room, equipment, item, built, itemOf, itemLabel, drone, droneUpgrade, hostile, hostileName, jukeboxSong, research, project, skill, title, rebelBase, action, character: characterName, characterGiven: characterGivenName, logLine };
 }

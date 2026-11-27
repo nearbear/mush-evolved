@@ -3464,7 +3464,7 @@
       "flipX": true,
       "flipY": false,
       "rot": 0,
-      "offset": [0,0],
+      "offset": [-14,-16],
       "flags": ["blocker"],
       "footprint": [3,1],
       "frames": [

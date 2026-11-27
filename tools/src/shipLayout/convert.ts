@@ -96,6 +96,13 @@ export function convert(tilesXml: string, sheetSize: (file: string) => { width: 
   return { sheets, slices, autoBind };
 }
 
+/**
+ * Offsets tiles.xml gets wrong, by slice. The original only ever placed `sofa` (one turret room), so its mirror
+ * `sofaReverse` kept an untuned `ofs="0,0"`, which drew it about a cell down-right of its footprint. Mirrored: the
+ * footprint's middle is at -16 px of the anchor instead of +16, so the art goes where `sofa`'s does, mirrored.
+ */
+const OFFSET_FIXES: Readonly<Record<string, [number, number]>> = { sofaReverse: [-14, -16] };
+
 function parseSlice(sheet: string, s: XmlElement): SliceInfo {
   const p = s.attrs.params!.split(",").map((v) => Number.parseInt(v.trim(), 10));
   // Data.addToStore defaults: missing or unparsable frame counts become 1.
@@ -116,7 +123,7 @@ function parseSlice(sheet: string, s: XmlElement): SliceInfo {
     flipX: s.attrs.flipX === "true",
     flipY: s.attrs.flipY === "true",
     rot: s.attrs.rot ? int(s.attrs.rot) : 0,
-    offset: [ofs[0] || 0, ofs[1] || 0],
+    offset: OFFSET_FIXES[s.attrs.id!] ?? [ofs[0] || 0, ofs[1] || 0],
     flags: (s.attrs.data ?? "")
       .split(",")
       .map((f) => f.trim().toLowerCase().replace(/^_/, ""))

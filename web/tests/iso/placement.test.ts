@@ -459,6 +459,27 @@ describe("walkPath", () => {
     expect(walkPath(cells, { x: 0, y: 0 }, { x: 2, y: 0 })).toBeUndefined();
     expect(walkPath(cells.filter((c) => c.x !== 2), { x: 0, y: 0 }, { x: 4, y: 0 })).toBeUndefined();
   });
+  it("takes the walkway when it is as short as the way off it", () => {
+    // A 4x4 open floor with a walkway down x = 3 then along y = 3: every staircase from corner to corner is as short.
+    const floor: { x: number; y: number; walkway?: boolean }[] = [];
+    for (let y = 0; y < 4; y++) for (let x = 0; x < 4; x++) floor.push({ x, y, ...((x === 3 || y === 3) && { walkway: true }) });
+    const path = walkPath(floor, { x: 0, y: 0 }, { x: 3, y: 3 })!;
+    expect(path).toHaveLength(7);
+    expect(path.filter((c) => c.x === 3 || c.y === 3)).toHaveLength(4); // straight to the walkway, then along it
+    expect(walkPath(floor, { x: 3, y: 0 }, { x: 0, y: 3 })).toEqual([{ x: 3, y: 0 }, { x: 3, y: 1 }, { x: 3, y: 2 }, { x: 3, y: 3 }, { x: 2, y: 3 }, { x: 1, y: 3 }, { x: 0, y: 3 }]);
+  });
+  it("never takes a longer way to stay on a walkway", () => {
+    // Floor 0..4 along x at y = 0, with a walkway detour below it.
+    const floor: { x: number; y: number; walkway?: boolean }[] = [];
+    for (let x = 0; x < 5; x++) floor.push({ x, y: 0 }, { x, y: 1, walkway: true });
+    expect(walkPath(floor, { x: 0, y: 0 }, { x: 4, y: 0 })).toHaveLength(5);
+  });
+  it("finds walkways on the ship's floor", () => {
+    const ship = { ...shipArt(), ...JSON.parse(shipMapJson) } as ShipLayout;
+    const cells = walkableCells(ship, ship.rooms.find((r) => r.id === "BEDROOM_A")!);
+    expect(cells.some((c) => c.walkway)).toBe(true);
+    expect(cells.some((c) => !c.walkway)).toBe(true);
+  });
 });
 
 describe("doorSpot", () => {

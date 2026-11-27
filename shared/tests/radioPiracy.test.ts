@@ -190,3 +190,61 @@ describe("radio piracy", () => {
     expect(parseGameMessage(JSON.stringify({ type: "chat", channel: "global", text: "hi", as: 3 }))).toBeNull();
   });
 });
+
+describe("radio piracy in the same room", () => {
+  const near = (target: PlayerId): Action => ({ type: "radio_piracy_room", target });
+  /** p0 (the hacker) and p1 share the Laboratory; p2 and p3 are elsewhere. */
+  function roomShip(): GameState {
+    const s = ship();
+    player(s, "p0").room = "LABORATORY";
+    for (const id of ["p2", "p3"]) player(s, id).room = "REFECTORY";
+    return s;
+  }
+
+  it("costs 2 AP, is private, never rings myco alarms, and places the same hack", () => {
+    expect(base.radioPiracy.inRoomCost.ap).toBe(2);
+    expect(ACTIONS.radio_piracy_room.visibility).toBe("private");
+    expect(ACTIONS.radio_piracy_room.tags).not.toContain("spore");
+    const before = roomShip();
+    expect(option(before, "p0", near("p1"))!.cost).toEqual({ ap: base.radioPiracy.inRoomCost.ap, mp: 0 });
+    const s = mustApply(before, "p0", near("p1"));
+    expect(player(s, "p0").ap).toBe(player(before, "p0").ap - base.radioPiracy.inRoomCost.ap);
+    expect(player(s, "p0").radioHack?.target).toBe("p1");
+    expect(s.log.at(-1)).toMatchObject({ key: "radioHacked", visibleTo: ["p0"] });
+    expect(viewFor(s, "p0").radioHack?.target).toBe("p1");
+    for (const id of ["p1", "p2", "p3"]) expect(JSON.stringify(viewFor(s, id))).not.toContain("radio");
+  });
+
+  it("targets only living others in the hacker's room; only a Mush with the skill", () => {
+    const s = roomShip();
+    const targets = offered(s, "p0")
+      .filter((a) => a.type === "radio_piracy_room")
+      .map((a) => (a as { target: string }).target);
+    expect(targets).toEqual(["p1"]);
+    expect(applyAction(s, "p0", near("p2")).ok).toBe(false);
+    expect(applyAction(s, "p0", near("p0")).ok).toBe(false);
+    const human = roomShip();
+    player(human, "p0").role = "human";
+    expect(option(human, "p0", near("p1"))).toBeUndefined();
+    expect(applyAction(human, "p0", near("p1")).ok).toBe(false);
+    const noSkill = roomShip();
+    player(noSkill, "p0").mushSkills = [];
+    expect(applyAction(noSkill, "p0", near("p1")).ok).toBe(false);
+    const dead = roomShip();
+    killPlayer(dead, player(dead, "p1"), "assassinated");
+    expect(applyAction(dead, "p0", near("p1")).ok).toBe(false);
+  });
+
+  it("shares the once-a-day limit with the Com center hack, both ways", () => {
+    const s = roomShip();
+    player(s, "p2").room = "LABORATORY";
+    const once = mustApply(s, "p0", near("p1"));
+    expect(applyAction(once, "p0", near("p2")).ok).toBe(false);
+    expect(option(once, "p0", near("p2"))).toBeUndefined();
+    expect(option(nextDay(once), "p0", near("p2"))).toBeDefined();
+    // A Com center hack today blocks the in-room one.
+    const atTerminal = hack(ship());
+    player(atTerminal, "p0").room = "LABORATORY";
+    expect(applyAction(atTerminal, "p0", near("p1")).ok).toBe(false);
+  });
+});

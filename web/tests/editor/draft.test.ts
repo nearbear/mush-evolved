@@ -66,6 +66,8 @@ describe("decodePlace", () => {
     expect(decodePlace(text, disk, 4)).toEqual({ zoom: 3, cam: { x: 4, y: 5 }, view: { from: "a", depth: 2 }, selected: { room: "b", index: 0 }, roomSel: "b" });
     const gone = JSON.stringify({ zoom: 9, view: { from: "zz", depth: 1 }, selected: { room: "b", index: 3 }, roomSel: "zz" });
     expect(decodePlace(gone, disk, 4)).toEqual({});
+    expect(decodePlace(JSON.stringify({ view: { from: "a", depth: 0 } }), disk, 4)).toEqual({ view: { from: "a", depth: 0 } });
+    expect(decodePlace(JSON.stringify({ view: { from: "a", depth: 3 } }), disk, 4)).toEqual({});
     expect(decodePlace("nope", disk, 4)).toEqual({});
   });
 });
