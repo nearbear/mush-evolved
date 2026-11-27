@@ -72,16 +72,9 @@ Chat is slightly restructured to give players a global chat that is fully sequen
 
 ## Part 2: Design changes
 
-<!--
-Intro: these are the changes people will disagree with. Say so plainly.
-For each principle below, try this shape:
-  1. The problem you saw in eMush (a specific situation, not a generalization).
-  2. The principle you took from it.
-  3. The changes that follow from it (link to the change in changes-from-emush.md).
-  4. What would convince you it's wrong.
-The headings below are only a suggested grouping of your changes. Rename,
-merge, or replace them; the principles should be yours.
--->
+Here is a list of changes from eMush: [Changes from eMush](docs/rules/changes-from-emush.md)
+
+The justifications and rationale are below.
 
 ### Principle: No mechanical proofs except where specifically designed for it
 
@@ -129,12 +122,14 @@ In Mush Evolved, my initial vision is:
 <!--
 TODO: talk about launch keys and PILGRED
 -->
+TODO
 
 ### Principle: Sabotage should be plausibly deniable
 
 <!--
 TODO: talk about research, "false" eden, etc.
 -->
+TODO
 
 ### Principle: Prefer removing busywork if it doesn't result in socialization
 
@@ -146,32 +141,36 @@ This is a minor one, but it's the reasoning behind:
 <!--
 TODO: 
 -->
+TODO
 
 ## What might be wrong
 
 I by no means expect to keep everything that I've changed so far. I plan to move fast and change in response to player feedback while we are in a beta phase.
 
 - Eden as a human win is just one of multiple ways for me to accomplish my goal of forcing the mush to act. If it proves impossible, then I will not go through with this change.
-- TODO
 
 <!--
 TODO: What's an expiriment and what's not
 -->
+TODO
 
 ## How decisions get made
 
 <!--
 TODO: the decision chain, how players give feedback, how disagreement is handled
 -->
+TODO
 
 ## Where this is going
 
 <!--
 TODO: What's next and long term goals
 -->
+TODO
 
 ## Closing words
 
 <!--
 TODO
 -->
+TODO
