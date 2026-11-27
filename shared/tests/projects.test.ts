@@ -161,6 +161,25 @@ describe("NERON projects", () => {
     expect(mustApply(s, "p0", work("BRIC_BROC")).projects.BRIC_BROC).toBeGreaterThanOrEqual(projectEfficiency("BRIC_BROC") + cfg.skillBoost);
   });
 
+  it("gives a Skilful worker one boost on a Botanist or Biologist project, never stacking with those skills", () => {
+    const cfg = DEFAULT_CONFIG.project.progress;
+    const s = game();
+    s.rng = 7;
+    setProgress(s, { project: "HEAT_LAMP" }, 0); // engineer, botanic
+    setProgress(s, { project: "OXY_MORE" }, 0); // engineer, biologist
+    setProgress(s, { project: "PLASMA_SHIELD" }, 0); // engineer, physicist
+    const you = s.players[0]!;
+    const min = (id: "HEAT_LAMP" | "OXY_MORE" | "PLASMA_SHIELD") => viewFor(s, "p0").relay.projects[id]!.gain.min;
+    you.skills = ["skilful"];
+    expect(min("HEAT_LAMP")).toBe(projectEfficiency("HEAT_LAMP") + cfg.skillBoost);
+    expect(min("OXY_MORE")).toBe(projectEfficiency("OXY_MORE") + cfg.skillBoost);
+    expect(min("PLASMA_SHIELD")).toBe(projectEfficiency("PLASMA_SHIELD"));
+    you.skills = ["skilful", "botanic"];
+    expect(min("HEAT_LAMP")).toBe(projectEfficiency("HEAT_LAMP") + cfg.skillBoost);
+    const r = mustApply(s, "p0", work("HEAT_LAMP"));
+    expect(r.projects.HEAT_LAMP).toBeLessThanOrEqual(projectEfficiency("HEAT_LAMP") + cfg.skillBoost + ((projectEfficiency("HEAT_LAMP") + cfg.skillBoost) >> 1));
+  });
+
   it("does not make project work dirty", () => {
     const s = game();
     s.rng = 7;

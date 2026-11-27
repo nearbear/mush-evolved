@@ -3099,9 +3099,11 @@ describe("expeditionPrep: priority claiming, gear rules, drop iTrackie, and ICAR
     // With OXYGEN, no space_suit; with only 1 rope tag, no rope; with diplomacy, no white_flag.
     const diplomat = viewFor(edit(game, botA, (p) => (p.skills = ["diplomacy"])), botA);
     expect(requiredExpeditionGear(["OXYGEN", "CAVE", "INTELLIGENT"], diplomat)).toEqual(["quad_compass"]);
-    // Polymath also covers INTELLIGENT without white_flag.
+    // Skilful also covers INTELLIGENT without white_flag; Polymath doesn't.
+    const skilful = viewFor(edit(game, botA, (p) => (p.skills = ["skilful"])), botA);
+    expect(requiredExpeditionGear(["OXYGEN", "INTELLIGENT"], skilful)).toEqual([]);
     const polymath = viewFor(edit(game, botA, (p) => (p.skills = ["polymath"])), botA);
-    expect(requiredExpeditionGear(["OXYGEN", "INTELLIGENT"], polymath)).toEqual([]);
+    expect(requiredExpeditionGear(["OXYGEN", "INTELLIGENT"], polymath)).toEqual(["white_flag"]);
   });
 
   it("identifies priority claimants and unfit bots accurately", () => {
@@ -3111,7 +3113,8 @@ describe("expeditionPrep: priority claiming, gear rules, drop iTrackie, and ICAR
     expect(isPriorityExpeditionClaimant(viewFor(edit(game, botA, (p) => (p.skills = ["sprint"])), botA), ["FOREST"])).toBe(true);
     expect(isPriorityExpeditionClaimant(viewFor(edit(game, botA, (p) => (p.skills = ["survival"])), botA), ["FOREST"])).toBe(true);
     expect(isPriorityExpeditionClaimant(viewFor(edit(game, botA, (p) => (p.skills = ["botanic"])), botA), ["FOREST"])).toBe(true);
-    expect(isPriorityExpeditionClaimant(viewFor(edit(game, botA, (p) => (p.skills = ["polymath"])), botA), ["FOREST"])).toBe(true);
+    expect(isPriorityExpeditionClaimant(viewFor(edit(game, botA, (p) => (p.skills = ["skilful"])), botA), ["FOREST"])).toBe(true);
+    expect(isPriorityExpeditionClaimant(viewFor(edit(game, botA, (p) => (p.skills = ["polymath"])), botA), ["INTELLIGENT"])).toBe(false);
 
     // Gunman only counts as priority when carrying a working gun.
     const gunmanNoGun = viewFor(edit(game, botA, (p) => (p.skills = ["gunman"])), botA);

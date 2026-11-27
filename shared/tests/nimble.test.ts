@@ -85,16 +85,16 @@ describe("nimble fingers", () => {
     player(dropped, "p1").room = ROOM_A;
     expect(viewFor(dropped, "p1").log.some((l) => l.key === "dropped")).toBe(false);
 
-    // With a witness present, the drop stays plain public (no secret badge that would give the Mush away).
+    // With a witness present, the drop is a revealed secret action.
     player(s, "p1").room = ROOM_A;
     const witnessed = mustApply(s, "p0", { type: "drop", item: "test-item-1" });
     const p1Log = viewFor(witnessed, "p1").log.at(-1)!;
     expect(p1Log.key).toBe("dropped");
-    expect(p1Log.kind).toBeUndefined();
-    expect(p1Log.leaked).toBeUndefined();
+    expect(p1Log.kind).toBe("secret");
+    expect(p1Log.leaked).toBe(true);
   });
 
-  it("hides movement between empty rooms without cameras, and stays public when entering or leaving a room with a player or camera", () => {
+  it("hides movement between empty rooms without cameras, and reveals it as secret when entering or leaving a room with a player or camera", () => {
     const baseNimble = mustApply(ship(), "p0", { type: "enter_nimble" });
 
     // Empty ROOM_A -> empty ROOM_B (no cameras): both left and entered are hidden.
@@ -105,25 +105,25 @@ describe("nimble fingers", () => {
     player(quiet, "p1").room = ROOM_B;
     expect(viewFor(quiet, "p1").log.some((l) => l.key === "enteredRoom")).toBe(false);
 
-    // Camera in ROOM_A -> empty ROOM_B: left looks public in ROOM_A, entered is hidden in ROOM_B.
+    // Camera in ROOM_A -> empty ROOM_B: left is a revealed secret in ROOM_A, entered is hidden in ROOM_B.
     const camLeave = mustApply(ship(), "p0", { type: "enter_nimble" });
     camLeave.equipment[ROOM_A] = [{ id: "cam-a", type: CAMERA_EQUIPMENT }];
     const leftCam = mustApply(camLeave, "p0", { type: "move", to: ROOM_B });
     player(leftCam, "p1").room = ROOM_A;
     const leftEntry = viewFor(leftCam, "p1").log.find((l) => l.key === "leftRoom");
     expect(leftEntry).toBeDefined();
-    expect(leftEntry?.kind).toBeUndefined();
-    expect(leftEntry?.leaked).toBeUndefined();
+    expect(leftEntry?.kind).toBe("secret");
+    expect(leftEntry?.leaked).toBe(true);
     player(leftCam, "p1").room = ROOM_B;
     expect(viewFor(leftCam, "p1").log.some((l) => l.key === "enteredRoom")).toBe(false);
 
-    // Empty ROOM_A -> ROOM_C with p1: left is hidden in ROOM_A, entered looks public in ROOM_C.
+    // Empty ROOM_A -> ROOM_C with p1: left is hidden in ROOM_A, entered is a revealed secret in ROOM_C.
     const intoWitness = mustApply(ship(), "p0", { type: "enter_nimble" });
     const enteredWitness = mustApply(intoWitness, "p0", { type: "move", to: ROOM_C });
     const enteredEntry = viewFor(enteredWitness, "p1").log.find((l) => l.key === "enteredRoom");
     expect(enteredEntry).toBeDefined();
-    expect(enteredEntry?.kind).toBeUndefined();
-    expect(enteredEntry?.leaked).toBeUndefined();
+    expect(enteredEntry?.kind).toBe("secret");
+    expect(enteredEntry?.leaked).toBe(true);
     player(enteredWitness, "p1").room = ROOM_A;
     expect(viewFor(enteredWitness, "p1").log.some((l) => l.key === "leftRoom")).toBe(false);
   });

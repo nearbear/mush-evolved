@@ -1,7 +1,7 @@
 import { Action, type ActionCost, isString } from "./action.ts";
 import { canWorkProject, cpuPriorityBonus } from "../bios.ts";
 import { equipmentHere } from "../equipment.ts";
-import { PROJECT_COMPLETE, PROJECT_IDS, projectDone, projectProgressConfig, projectSkills, type ProjectId } from "../projects.ts";
+import { PROJECT_COMPLETE, PROJECT_IDS, projectDone, projectProgressConfig, projectSkillsFor, type ProjectId } from "../projects.ts";
 import { relayGainRange, rollRelayGain, touchRelay } from "../relay.ts";
 import { logPublic } from "../log.ts";
 import { removeStatus } from "../statuses.ts";
@@ -64,7 +64,7 @@ export class ProjectAction extends Action<ProjectActionData> {
           relayGainRange(
             projectProgressConfig(state.config.project.progress, project),
             player,
-            projectSkills(project),
+            projectSkillsFor(project, player),
             state.relay.projects[project],
             cpuPriorityBonus(state, "projects"),
           ),

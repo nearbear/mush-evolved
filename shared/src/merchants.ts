@@ -26,7 +26,7 @@ import { isPilgredRepaired, PILGRED_COMPLETE } from "./pilgred.ts";
 import { completeProject, loseProject, tradableProjects } from "./projectEffects.ts";
 import { availableProjects, type ProjectId } from "./projects.ts";
 import { logPublic } from "./log.ts";
-import { hasSkill, type SkillId } from "./skills.ts";
+import { hasSkill, SKILFUL_ROLES, type SkillId } from "./skills.ts";
 import { addSignal, closeSignal, findSignal, loseSignal, officerSays, type Signal, say } from "./signals.ts";
 import type { DeepReadonly, GameState, ItemState, PlayerState, RoomId } from "./types.ts";
 
@@ -249,8 +249,6 @@ export function validProjectPick(state: Readonly<GameState>, deal: DeepReadonly<
   const tradable: readonly string[] = tradableProjects(state);
   return projects.length === dealProjectCount(deal) && new Set(projects).size === projects.length && projects.every((p) => tradable.includes(p));
 }
-
-const SKILFUL_ROLES: readonly SkillId[] = ["botanic", "diplomacy", "biologist"];
 
 const hasDealSkill = (player: Readonly<PlayerState>, skill: SkillId): boolean =>
   hasSkill(player, skill) || (SKILFUL_ROLES.includes(skill) && hasSkill(player, "skilful"));

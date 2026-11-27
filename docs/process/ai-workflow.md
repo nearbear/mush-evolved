@@ -5640,3 +5640,59 @@ The create/invite dialog's character tiles were 4.5rem wide with an 8px gap, muc
 - **Request (owner):** fix the cross-axis T junctions the way the main-axis ones were fixed on 2026-11-14.
 - **Fix:** one `BIG_WALL_L` (frame 1) appended to LASER_TURRET_A_0 at room cell (11, 21), plan (-35, 18). The turret's side wall now reaches the corner where its front wall starts (plan corner -34, 19), in line with the bridge's consoles, so its end cap no longer shows above them. Checked from the whole ship and from both rooms at fog depth 1 with `ship-render`.
 - **What needed correction:** I scanned for T junctions by wall data and found every cross-axis one already joined by `markTees`, and asked the owner where it looked wrong instead of guessing. Their editor screenshot pointed at this one. It isn't a T between walls: the "bar" is the bridge's consoles (equipment) plus the turret's own front wall. On 2026-11-14 its `KNOWN_WALL_ENDS` entry was dropped as fixed, but the end was still loose. `wallEnds` misses it because it only reports an end that stops short of another room's wall, and the wall closing this gap belongs to the same room. #436 (the editor check) should cover that case too.
+## 2026-11-26: Standardized skill effect line order (en/fr/es)
+
+Reordered every `skills.effects` entry in en, fr and es into the owner's order: special AP pools, passives, new actions, expedition passives, expedition actions, NERON project bonus. Each sentence is now on its own line, and unlabeled actions now start with "Action:", "Action :" or "Acción:". Before editing, Claude asked three questions: whether fr/es were included (yes), whether general AP gains such as Coffee count as AP pools (no, only typed daily pools do), and how to treat unlabeled Mush actions (as actions, with the prefix added). A keyword classifier with per-line overrides did the sorting, and Claude checked its output by eye before writing. That check caught a French "Bonus" case miss and the plural "points d'action". Follow-on sentences stay right after their action line (e.g. Juge, Transfert).
+
+## 2026-11-26: Standardized disease/disorder/injury description order (en/fr/es)
+
+Reordered every `status.desc` entry ending in `_disease`, `_disorder` or `_injury`, in en, fr and es, into the owner's order: on appearing, max HP, max morale, max AP, max MP, cycle change, passive, disabled actions. A keyword classifier did the sorting, and Claude reviewed its output before writing. Judgment calls: Agoraphobia's condition line ("With 4 or more people…:") stays first. Satiety-per-cycle lines count as cycle change. Head Trauma and Open-Air Brain mention cycle change only as one trigger among several, so they count as passive. "Can't hear" on the iTrackie is passive, not a disabled action. Two broken fungal-infection lines were fixed along the way: es "l cambiar" → "Al cambiar", and fr "Tu deviens" → "vous devenez".
+
+## 2026-11-26: Standardized wording across skill and disease/disorder/injury descriptions (en/fr/es)
+
+Claude listed every place where two descriptions said the same thing in different words, and the owner approved fixing them. Each language now uses its most common existing form for health and max-stat lines, the cycle-change opener, lying down, vomiting, foaming, typed and event AP gains, crewmate terms, "once a day", "for free", morale units, the comma after an action cost and action-label dashes. Two mismatches were found and corrected:
+- Gastroenteritis (en) said eating "gives" 1 AP. The owner said the AP is lost after eating, and the code (`gastroenteritis_disease.ts` onConsume) agrees.
+- The first rewrite said eating "costs" AP. The owner corrected it: eating is still free and the AP is lost afterwards. So Gastroenteritis, Acid Reflux and Liver Dysfunction now read "After consuming/eating …, you lose N AP".
+
+Lesson: check the rule code before rewording a description, and don't describe an after-effect as a cost.
+
+## 2026-11-26: Shrink marked fully implemented; description translated
+
+The owner rewrote the en Shrink description: lying-down morale, and Comfort giving 2 morale and calming psychological illnesses for 2-8 cycles. Claude translated it to fr/es and changed `shrink` in `shared/src/skills.ts` from "partial" to "full". It also updated `implemented-rules.md`, dropping the "Not built: curing psychological illnesses" note, since the new text no longer promises a cure.
+
+### 2026-11-26 — Witnessed Nimble mode actions show as revealed secret actions
+
+- **Decision (owner):** a room-level action done in Nimble mode that a living witness or working camera sees is now a revealed secret line (`kind: "secret"`, `leaked: true`, warning level), like any other leaked secret action. This reverses the 2026-11-14 "witnessed Nimble logs stay plain public" decision; unwitnessed lines stay hidden as before.
+- **How:** `logPublic` in `shared/src/log.ts` now routes every room-level line under a Nimble actor through `logSecretIn`, which already decides hidden vs leaked; the `nimbleWitnessed` pre-check was removed. `shared/tests/nimble.test.ts` assertions flipped to secret/leaked; `implemented-rules.md` and `rules-design.md` updated.
+- **What worked:** the existing `logSecretIn` covered witnesses, cameras and Outcasts, so the change was a one-line deletion.
+
+### 2026-11-26 — Skill descriptions show each action's privacy level
+
+- **Decision (owner):** skill effect descriptions name the action's privacy level in parentheses after the action name, e.g. "Action: Coup (Secret) - ...". Public actions get no label.
+- **How:** levels read from each action's `visibility` in `shared/src/actions.ts`, labels reused from `actions.visibility` (en/fr/es). Descriptions that never named their action ("Action: For 3 AP, ...") gained the action's button name so there is a name to follow. Skipped: NERON's Depression (no action yet), Slime Trap and Infector (disabled), and the fr/es Traitor text, which doesn't describe the sabotage action.
+- **Needs watching:** the labels are hand-written into locale prose, so a change to an action's `visibility` won't update them automatically.
+
+### 2026-11-26 — Skill descriptions give the number of NERON Projects each skill boosts
+
+- **Decision (owner):** "You get a bonus for developing certain NERON Projects." becomes "... X NERON Projects." with X the count of projects tagged with that skill in `shared/src/projects.ts`; skills with none drop the line (en/fr/es).
+- **How:** a one-off script counted the `skills` tags and rewrote the locale lines. It also added the line to Astrophysicist (2) and Creative (1), which have tagged projects but never said so, and removed it from Skilful's English text, since project progress (`relay.ts`) checks `hasSkill` and Skilful doesn't count as a Botanist there.
+- **Needs watching:** the numbers are hard-coded in the locale text, so retagging a project means updating them by hand.
+
+### 2026-11-26 — Skilful boosts Botanist, Diplomat and Biologist NERON projects
+
+- **Decision (owner):** Skilful gives the project skill boost on any project tagged Botanist, Diplomat or Biologist (5 today: 3 Botanist, 2 Biologist, none Diplomat). Its description now says "You get a bonus for developing 5 NERON Projects." (en/fr/es).
+- **How:** `projectSkillsFor(project, player)` in `projects.ts` adds `skilful` to a project's tags when it carries one of `SKILFUL_ROLES` (moved from `merchants.ts` to `skills.ts` and shared) and the worker has none of those tags, so `tokenBase` needs no change and the boost doesn't stack. Used by `actions/project.ts` and the gain preview in `relayView.ts`. Research is left alone, because `RESEARCH_SKILLS` already lists `skilful` and a generic "counts as" in `tokenBase` would have double-boosted it.
+- **Tests:** `projects.test.ts`: one boost on HEAT_LAMP and OXY_MORE, none on PLASMA_SHIELD, and still one for a Skilful Botanist.
+
+### 2026-11-26 — Polymath stops pacifying fights; a pacified Fight becomes New Sector
+
+- **Decision (owner):** Polymath no longer cancels Fight in Intelligent life. When a white flag, Diplomat or Skilful does, the Fight becomes eMush's New Sector event. Owner's answers on the open points: New Sector takes Fight's weight (the other events keep their odds), the type is equally likely among Wreckage/Ruins/Hydrocarbon/Crystalite, the per-planet caps are ignored, and the sector is added hidden but explorable by the same crew.
+- **How:** `cancelled`'s Fight case became `pacified` in `expeditions.ts`; `resolve` keeps a pacified Fight's weight and draws it as `newSector` (a new `ExpeditionEventKind`), which pushes `{ tag, known: false }` from `config.expedition.newSectorTags` and sets `ctx.redraw`, as Lost does. The report line ("makes peace … a new sector") doesn't name the type, so nothing an analysis would reveal leaks. Under a Traitor's sabotage it still can't be drawn, as before.
+- **Needed correction:** the first tests assumed a two-sector planet still explored PREDATOR; the redraw keeps the step count, so the new sector can take its place. The tests now check each sector in its own game, and give the added types quiet event tables.
+- **Not done, flagged:** eMushpedia says Diplomacy turns Combat into Nothing to report in Wreckage, Ruins, Insects, Ruminants, Predators, Mankarog and Crystalite, and the English Diplomat/Skilful descriptions already claim it, but it isn't built. Since eMush v0.31 Diplomacy also no longer protects against a Traitor's sabotage; here a sabotaged step can't draw the pacified Fight at all, as before.
+
+### 2026-11-26 — Polymath has no expedition bonuses
+
+- **Decision (owner):** Polymath gives nothing on expeditions. Its last one, the Botanist's +1 fruit on Harvest, is removed (`expeditions.ts`); Skilful keeps it.
+- **Also:** the expedition-prep bot goal (`server/src/bots/goals/expeditionPrep.ts`) treated Polymath as a Diplomat (skipping the white flag, claiming Intelligent Life seats) and a Botanist. It now checks Skilful, which really has those bonuses. Tests in `expeditions.test.ts` and `goals.test.ts` updated.
+- **What worked:** a repo-wide grep for `polymath` found the bot copy of the old rule, which the rules change alone would have left behind.

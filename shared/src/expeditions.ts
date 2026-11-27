@@ -15,7 +15,7 @@
 // crew" is alive and in the Icarus (`withCrew`): the lost and the dead take no part in events. Slice C: gear. A
 // planet with no Oxygen sector needs a spacesuit (boarding, below). The other gear changes which sectors are
 // picked (`pickSectors`), which events can happen (`cancelled`, `eventWeight`) or what they do. Phase 4, slice D
-// (#358): skills. Diplomat and Polymath cancel Fight in Intelligent life; Polymath also harvests as a Botanist; Shooter
+// (#358): skills. Diplomat, Skilful and the white flag turn Fight in Intelligent life into New Sector (2026-11-26); Skilful also harvests as a Botanist; Shooter
 // and Centauri add strength (`fight`); each Sprinter adds a sector; a U-turn holder ends the expedition (`turnBack`);
 // a Traitor's secret Sabotage (`sabotage`) leaves only negative events in the next sector; holders of either see
 // the next sector (`nextSectorFor`).
@@ -497,10 +497,13 @@ function resolve(ctx: Ctx, sector: PlanetTag | typeof LANDING, table: readonly E
   // A cancelled event can't be drawn: the sector rolls among its others, or is Nothing if none is left (owner, 2026-11-08).
   // Sabotaged by a Traitor: only the negative events can be drawn, in the next sector only (owner, 2026-11-08, #358; 2026-11-17).
   const sabotaged = state.expedition?.sabotageNext ?? false;
-  const weights = table.map((e) => (cancelled(ctx, sector, e) || (sabotaged && !e.negative) ? 0 : eventWeight(ctx, sector, e)));
+  // A pacified Fight isn't cancelled: New Sector takes its place, at its weight (owner, 2026-11-26).
+  const weights = table.map((e) =>
+    cancelled(ctx, sector, e) || (sabotaged && (pacified(ctx, sector, e) || !e.negative)) ? 0 : eventWeight(ctx, sector, e),
+  );
   if (weights.every((w) => w === 0)) return { sector, kind: "nothing" };
   const rule = table[rollWeighted(state, weights)]!;
-  const kind = rule.kind;
+  const kind = pacified(ctx, sector, rule) ? "newSector" : rule.kind;
   const event: ExpeditionEvent = { sector, kind };
   const rules = state.config.expedition;
   const living = () => ctx.crew.filter((p) => withCrew(state, p));
@@ -541,8 +544,8 @@ function resolve(ctx: Ctx, sector: PlanetTag | typeof LANDING, table: readonly E
       break;
     }
     case "harvest": {
-      // Polymath and Skilful count as a Botanist here (owner, 2026-11-08, #358; 2026-11-18).
-      const bonus = living().some((p) => hasSkill(p, "botanic") || hasSkill(p, "polymath") || hasSkill(p, "skilful")) ? rules.botanistBonus : 0;
+      // Skilful counts as a Botanist here (owner, 2026-11-08, #358; 2026-11-18). Polymath has no expedition bonus (owner, 2026-11-26).
+      const bonus = living().some((p) => hasSkill(p, "botanic") || hasSkill(p, "skilful")) ? rules.botanistBonus : 0;
       const item = harvestFruit(state);
       event.item = item;
       event.amount = drop(state, item, amount + bonus);
@@ -568,6 +571,18 @@ function resolve(ctx: Ctx, sector: PlanetTag | typeof LANDING, table: readonly E
     case "fight":
       fight(ctx, event, rule.creature!);
       break;
+    case "newSector": {
+      // The planet gains a hidden sector, of an equally likely type, past the usual caps; the steps left are drawn
+      // again, so this crew may explore it (owner, 2026-11-26). The report doesn't name it: an analysis reveals it.
+      if (!ctx.planet) {
+        event.kind = "nothing";
+        break;
+      }
+      const tags = rules.newSectorTags;
+      ctx.planet.sectors.push({ tag: tags[rollInt(state, tags.length)]!, known: false });
+      ctx.redraw = true;
+      break;
+    }
     case "lostItem": {
       // One item carried by a member still with the crew, never a spacesuit, is destroyed.
       const carried = living()
@@ -635,8 +650,7 @@ function sicken(ctx: Ctx, event: ExpeditionEvent, pool: PlayerState[]): void {
 
 /**
  * Whether an event is cancelled for this crew (owner, 2026-11-08, #357, #358): a Tracker cancels Found dead; a compass
- * cancels Again, and Lost when every member who explores carries one; a white flag, a Diplomat or a Polymath cancels
- * Fight in the white flag's sector (Intelligent life) only.
+ * cancels Again, and Lost when every member who explores carries one. Fight is never cancelled here: see `pacified`.
  */
 function cancelled(ctx: Ctx, sector: string, rule: ExpeditionEventRule): boolean {
   const { state } = ctx;
@@ -649,11 +663,22 @@ function cancelled(ctx: Ctx, sector: string, rule: ExpeditionEventRule): boolean
       return crewCarries(state, gear.compass);
     case "lost":
       return explorers.length > 0 && explorers.every((p) => carries(state, p, gear.compass));
-    case "fight":
-      return sector === gear.whiteFlag.tag && (crewCarries(state, gear.whiteFlag.item) || explorers.some((p) => hasSkill(p, "diplomacy") || hasSkill(p, "polymath") || hasSkill(p, "skilful")));
     default:
       return false;
   }
+}
+
+/**
+ * Whether a Fight is avoided (owner, 2026-11-08, #358; 2026-11-26): in the white flag's sector (Intelligent life) only,
+ * when the crew carries a white flag or a member still with it is a Diplomat or Skilful. It becomes New Sector.
+ * A Polymath doesn't (owner, 2026-11-26).
+ */
+function pacified(ctx: Ctx, sector: string, rule: ExpeditionEventRule): boolean {
+  if (rule.kind !== "fight") return false;
+  const { state } = ctx;
+  const { whiteFlag } = state.config.expedition.gear;
+  if (sector !== whiteFlag.tag) return false;
+  return crewCarries(state, whiteFlag.item) || ctx.crew.some((p) => withCrew(state, p) && (hasSkill(p, "diplomacy") || hasSkill(p, "skilful")));
 }
 
 /** An event's weight for this crew: the Babel module makes Artifact more likely in its sector (owner, 2026-11-08). */

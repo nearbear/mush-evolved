@@ -189,8 +189,8 @@ function ninjaMasked(state: Readonly<GameState>, entry: Omit<LogEntry, "id" | "c
 /**
  * Runs `fn` with `actor` marked as acting in Nimble mode (or `null` to suspend Nimble mode for a nested action or
  * non-actor event): any room-level `logPublic` call (`room !== undefined`) becomes `logSecretIn` for `actor` in that
- * room only when no living witness or working camera in `room` sees it. Witnessed or filmed actions stay plain
- * public so Nimble mode never leaks via a secret badge. Ship-wide announcements (`room === undefined`) stay public.
+ * room: hidden when no living witness or working camera in `room` sees it, and a revealed (leaked) secret line when
+ * one does (owner, 2026-11-26). Ship-wide announcements (`room === undefined`) stay public.
  */
 export function withNimbleActor<T>(actor: PlayerId | null, fn: () => T): T {
   const prev = nimbleActorId;
@@ -202,13 +202,9 @@ export function withNimbleActor<T>(actor: PlayerId | null, fn: () => T): T {
   }
 }
 
-function nimbleWitnessed(state: Readonly<GameState>, actor: PlayerId, room: RoomId, params?: LogParams): boolean {
-  return cameraSees(state, room, params) || state.players.some((o) => o.id !== actor && o.alive && o.room === room);
-}
-
 /** Mutates a state that the caller already cloned. */
 export function logPublic(state: GameState, room: RoomId | undefined, key: string, params?: LogParams, level?: LogLevel): void {
-  if (room !== undefined && nimbleActorId !== null && !nimbleWitnessed(state, nimbleActorId, room, params)) {
+  if (room !== undefined && nimbleActorId !== null) {
     logSecretIn(state, nimbleActorId, room, key, params);
     return;
   }
