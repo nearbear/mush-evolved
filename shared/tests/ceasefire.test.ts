@@ -15,6 +15,13 @@ function ship(room = "LABORATORY"): GameState {
 }
 
 describe("Diplomat's Ceasefire", () => {
+  it("works from the book slot too", () => {
+    const s = ship();
+    player(s, "p0").skills = [];
+    player(s, "p0").bookSkill = "diplomacy";
+    expect(applyAction(s, "p0", ceasefire).ok).toBe(true);
+  });
+
   it("pins the config numbers", () => {
     expect([DEFAULT_CONFIG.ceasefire.cost.ap, DEFAULT_CONFIG.ceasefire.durationCycles]).toEqual([1, 3]);
   });

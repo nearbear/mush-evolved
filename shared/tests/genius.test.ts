@@ -20,6 +20,13 @@ function ship(room: string): GameState {
 }
 
 describe("Genius skill", () => {
+  it("works from the book slot too", () => {
+    const s = ship("LABORATORY");
+    player(s, "p0").skills = [];
+    player(s, "p0").bookSkill = "genius";
+    expect(player(must(applyAction(s, "p0", eureka)), "p0").statuses).toContain("genius");
+  });
+
   it("offers Eureka moment only to a Genius, for free, once per game", () => {
     const s = ship("LABORATORY");
     expect(offered(s, "p0")).toContainEqual(eureka);

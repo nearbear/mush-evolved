@@ -15,7 +15,8 @@
 // crew" is alive and in the Icarus (`withCrew`): the lost and the dead take no part in events. Slice C: gear. A
 // planet with no Oxygen sector needs a spacesuit (boarding, below). The other gear changes which sectors are
 // picked (`pickSectors`), which events can happen (`cancelled`, `eventWeight`) or what they do. Phase 4, slice D
-// (#358): skills. Diplomat, Skilful and the white flag turn Fight in Intelligent life into New Sector (2026-11-26); Skilful also harvests as a Botanist; Shooter
+// (#358): skills. Diplomat, Skilful and the white flag turn Fight in Intelligent life into New Sector, and Diplomat and
+// Skilful turn it into Nothing in the `diplomacyTags` sectors (2026-11-26); Skilful also harvests as a Botanist; Shooter
 // and Centauri add strength (`fight`); each Sprinter adds a sector; a U-turn holder ends the expedition (`turnBack`);
 // a Traitor's secret Sabotage (`sabotage`) leaves only negative events in the next sector; holders of either see
 // the next sector (`nextSectorFor`).
@@ -497,13 +498,13 @@ function resolve(ctx: Ctx, sector: PlanetTag | typeof LANDING, table: readonly E
   // A cancelled event can't be drawn: the sector rolls among its others, or is Nothing if none is left (owner, 2026-11-08).
   // Sabotaged by a Traitor: only the negative events can be drawn, in the next sector only (owner, 2026-11-08, #358; 2026-11-17).
   const sabotaged = state.expedition?.sabotageNext ?? false;
-  // A pacified Fight isn't cancelled: New Sector takes its place, at its weight (owner, 2026-11-26).
+  // A pacified Fight isn't cancelled: its replacement takes its place, at its weight (owner, 2026-11-26).
   const weights = table.map((e) =>
-    cancelled(ctx, sector, e) || (sabotaged && (pacified(ctx, sector, e) || !e.negative)) ? 0 : eventWeight(ctx, sector, e),
+    cancelled(ctx, sector, e) || (sabotaged && (pacified(ctx, sector, e) !== null || !e.negative)) ? 0 : eventWeight(ctx, sector, e),
   );
   if (weights.every((w) => w === 0)) return { sector, kind: "nothing" };
   const rule = table[rollWeighted(state, weights)]!;
-  const kind = pacified(ctx, sector, rule) ? "newSector" : rule.kind;
+  const kind = pacified(ctx, sector, rule) ?? rule.kind;
   const event: ExpeditionEvent = { sector, kind };
   const rules = state.config.expedition;
   const living = () => ctx.crew.filter((p) => withCrew(state, p));
@@ -669,16 +670,18 @@ function cancelled(ctx: Ctx, sector: string, rule: ExpeditionEventRule): boolean
 }
 
 /**
- * Whether a Fight is avoided (owner, 2026-11-08, #358; 2026-11-26): in the white flag's sector (Intelligent life) only,
- * when the crew carries a white flag or a member still with it is a Diplomat or Skilful. It becomes New Sector.
- * A Polymath doesn't (owner, 2026-11-26).
+ * What an avoided Fight becomes, or `null` when it happens (owner, 2026-11-08, #358; 2026-11-26, from eMushpedia's
+ * Diplomatie): in the white flag's sector (Intelligent life), New Sector, with a white flag or a Diplomat or Skilful
+ * member still with the crew; in `expedition.diplomacyTags` (Wreckage, Ruins, Insects, Ruminants, Predators, Mankarog,
+ * Crystalite), Nothing to report, with a Diplomat or Skilful member only. A Polymath doesn't count.
  */
-function pacified(ctx: Ctx, sector: string, rule: ExpeditionEventRule): boolean {
-  if (rule.kind !== "fight") return false;
+function pacified(ctx: Ctx, sector: string, rule: ExpeditionEventRule): "newSector" | "nothing" | null {
+  if (rule.kind !== "fight") return null;
   const { state } = ctx;
-  const { whiteFlag } = state.config.expedition.gear;
-  if (sector !== whiteFlag.tag) return false;
-  return crewCarries(state, whiteFlag.item) || ctx.crew.some((p) => withCrew(state, p) && (hasSkill(p, "diplomacy") || hasSkill(p, "skilful")));
+  const { gear, diplomacyTags } = state.config.expedition;
+  const diplomat = ctx.crew.some((p) => withCrew(state, p) && (hasSkill(p, "diplomacy") || hasSkill(p, "skilful")));
+  if (sector === gear.whiteFlag.tag) return diplomat || crewCarries(state, gear.whiteFlag.item) ? "newSector" : null;
+  return diplomat && (diplomacyTags as readonly string[]).includes(sector) ? "nothing" : null;
 }
 
 /** An event's weight for this crew: the Babel module makes Artifact more likely in its sector (owner, 2026-11-08). */

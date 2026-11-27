@@ -19,6 +19,15 @@ function ship(): GameState {
 }
 
 describe("Apprentice skill", () => {
+  it("works from the book slot too, and the copy takes that slot", () => {
+    const s = ship();
+    player(s, "p0").skills = [];
+    player(s, "p0").bookSkill = "apprentice";
+    const after = must(applyAction(s, "p0", learn("p1", "cook")));
+    expect(player(after, "p0").bookSkill).toBe("cook");
+    expect(player(after, "p0").skills).toEqual([]);
+  });
+
   it("offers each skill of a roommate, and costs the configured AP", () => {
     const s = ship();
     expect(offered(s, "p0").filter((a) => a.type === "apprenticeship")).toEqual([learn("p1", "cook"), learn("p1", "sturdy")]);
