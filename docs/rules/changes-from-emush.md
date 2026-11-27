@@ -6,7 +6,7 @@ This document summarizes the **implemented** gameplay, mechanical, and UI differ
 🔴 **Meta-Changing** (win conditions, deduction rules, core loop) · 🟠 **High Impact** (skills, sabotage, health, botany) · 🟡 **Medium Impact** (space, projects, ship upkeep) · 🔵 **QoL & Modes** (UI, chat, solo play)
 
 **Jump to:**
-[Quick Warning](#tldr-what-will-trip-up-an-emush-veteran) ·
+[Quick Warning](#most-significant-changes-summarized) ·
 [1. Win Conditions & Endgame](#1-win-conditions--endgame) ·
 [2. Deduction & Anti-Testing](#2-mush-identity-deduction--anti-testing) ·
 [3. Action Loop & Research Sabotage](#3-real-time-action-loop--research-sabotage) ·
@@ -75,6 +75,7 @@ This document summarizes the **implemented** gameplay, mechanical, and UI differ
 | 🔴 | **Retro-Fungal Serum Coma** | **No coma:** cures a Mush and removes their human skills immediately (no coma on humans or Mush). | Vaccinating **any** target (human or Mush, cured or not) puts them into a **2-cycle coma** with **total blindness** (room and ship-wide view hidden until it ends), blocking all actions except marking ready, keeping inventory and bed AP gain, clearing active stances/queue, resetting inactivity, and **permanently omitting** all logs and chat (including system messages) written during the coma. |
 | 🔴 | **THE List (Tabulator)** | Bridge equipment; prints non-starting-Mush count minus 1 every 12h; guarantees a living **starting** Mush only. | Fixed item in **Front Storage** (cannot be taken, dropped, hidden, dismantled, or sent by tube; can break at cycle change, be sabotaged, and repairs at 12%). Printing (0 AP, Tracker, once per game, never again once torn) gives **8 names minus 1 per whole day since Mush selection** (minimum 1). Guarantees a living starting Mush if any, else **a converted Mush**, else **Chun**; filler is living crew other than Chun; still prints with no Mush left, saying none remain aboard. |
 | 🟠 | **Spore Sucker** | Blocks Chun; different log for Mush; applies a 4-cycle cooldown status (not curable by surgery). | **1 AP**, reusable: removes 1 contamination from a human (**Chun allowed**; neutral private log), deals **3 HP damage**, and inflicts a **4-cycle Stiff Neck injury** (prevents lying down, gets you out of bed, acts as cooldown, and **is curable by surgery**). |
+| 🟠 | **Starting Contamination** | Off by default: an optional game setting gives 2–4 random non-immune humans 1 spore each when the ship fills. | **Always on:** when the Mush are chosen, **2 random humans** without the Immunity trait start at **contamination 1**, silently (no Hygienist roll, no Mush-channel message, no log line; Mush learn it only from the status they see on humans in their room). If fewer than 2 humans are eligible, nobody is contaminated. |
 | 🟠 | **Finola's Lost Analysis** | Always marks Chun negative. | **Chun is rolled like any other non-Mush character** (2.5 × starting Mush, rounded down, non-Mush bodies marked negative at Mush selection). |
 
 Unchanged from eMush: spore extraction, Fertile's free first daily extraction, personal/daily spore caps, covert spiking with 4-cycle cooldown, same-room spore badges for Mush, Epigenetics, and Schrödinger infection.
@@ -114,7 +115,7 @@ Shared baseline: both games use the same four visibility tiers (Public, Secret, 
 | Impact | Mush Skill | eMush | Mush: Evolved |
 | :--- | :--- | :--- | :--- |
 | 🟠 | **Nightmarish (Bad Luck Curse)** | 0 AP; gives nightmares to a sleeping player, costing sleep bonuses. | **2 AP covert** action on any living human roommate (in bed or not) applying the curse **Bad Luck** for **8–16 cycles** (recursing rerolls it): the victim's action **injury and dirt chances are multiplied by 4**, and Metal Plate / Tremor incidents always deal **maximum** damage. **Curses** are a new ailment type **hidden from the holder** (even their action odds hide it); Mush see it on roommates as a Mush-only status, never overhead. |
-| 🟠 | **Nimble Fingers** | Grants secret camera install/remove actions only. | **0 AP instant toggle** (enter/exit Nimble mode, private status). While active, all room-level **Public** actions (including movement) become **Secret** when unwitnessed and unfilmed (staying plain Public if witnessed/filmed so Nimble mode doesn't leak). |
+| 🟠 | **Nimble Fingers** | Grants secret camera install/remove actions only. | **0 AP instant toggle** (enter/exit Nimble mode, private status). While active, all room-level **Public** actions (including movement) become **Secret**: hidden when unwitnessed and unfilmed, and shown as revealed secret lines when a living roommate or a working camera sees them. |
 | 🟠 | **Doorman** | Once per day (0 AP) on a **random** working door in the room. | Lets the Mush **choose which working door** in the room to break, with **no daily limit** (**first use each day is 0 AP**, subsequent uses cost **2 AP**). |
 | 🟠 | **Mycelium Spirit (Fairy Ring)** | While the holder lives, the Mush can make 1 more spore per day. | Once per game, **1 AP and 2 spores** grow a **Fairy Ring** in your room, invisible to humans (Mush in the room see it). Once a day, **one Mush** can draw **1 spore** from it for **1 AP** (2 after Constipaspore serum), **without getting dirty** and **outside the daily spore limit** (the holding limit of 2 still applies). Growing and drawing are secret and ring Myco-alarms. The ring disappears if its creator dies, is cured, or loses the skill. |
 | 🔴 | **Radio Pirate** | 3 AP: breaks the target's iTrackie and lets the Mush write in their place until they speak again. | **Once a day, private: 3 AP at the Communication center** on any other living player anywhere (Mush included), **or 2 AP on a player in the same room**. Nothing breaks and nobody is told: from then on the Mush reads every channel the target reads, **private channels included (new messages only, never history)**, and can **post as the target** anywhere the target can post; those messages reach everyone **except the target**. It lasts until the target uses the new **Factory reset** on their iTrackie (1 AP, which never says whether there was a hack; the Mush is told the hack was lost), the Mush's next hack, either one's death, or the Mush's Transfer. It never rings Myco-alarms. |
@@ -158,6 +159,17 @@ Both games start characters with 0 skills (3 pickable + 1 book slot) and permane
 | 🟡 | **Burnt Hand** | +1 AP on actions (exempting Move, Consume, Surgery, and Admin/immune actions). | **+1 AP surcharge applies only to actions that already cost more than 0 AP** (free actions, skill-point actions, and moves are unaffected). |
 | 🟡 | **Third-Degree Burn (50%)** | +1 AP on actions; +10% chance to fall ill at cycle change. | +1 AP only on actions that already cost AP (moves unaffected); a **3% chance** at each cycle change to catch one of the incident diseases. |
 | 🟡 | **Third-Degree Burn (90%)** | −4 max HP; +10% chance to fall ill; die of sepsis if you act, at cycle change, or if you get dirty. | −4 max HP, +1 AP on actions that cost AP, 3% incident-disease chance per cycle; **only getting dirty** kills by sepsis. |
+
+### New Disorders
+
+Disorders last forever, do nothing to a Mush, and are paused for 2–8 cycles by a Shrink's Comfort (as Depression).
+
+| Impact | Disorder | Effect in Mush: Evolved (none of these exist in eMush) |
+| :--- | :--- | :--- |
+| 🟡 | **Addiction** | −2 max morale; every action's success chance ×0.75 and injury/dirt chances ×1.5; every morale loss is 1 bigger. Consuming any drug calms it for 3 cycles (a drug while already calmed does nothing). |
+| 🟡 | **Aquaphobia** | A shower costs **2 more AP** and **3 morale**, and only **one shower a day** is allowed (any shower that day counts). |
+| 🟡 | **Kleptophobia** | Dropping an item costs **2 AP** (3 in a crowded room with Agoraphobia); losing a carried item to an expedition's lost-item event costs **4 morale**. |
+| 🟡 | **Pyromania** | −2 max morale; extinguishing succeeds ×0.5. Each cycle change, a 10% chance to become **compelled** for 4 cycles, gaining a secret **Ignite** for 2 AP. Igniting ends it; not igniting costs **6 morale**. A hidden 2-cycle grace with no roll follows either way. |
 
 ### Botany, Starting Items & Hyperfreeze
 
