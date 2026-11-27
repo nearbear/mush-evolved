@@ -5612,3 +5612,23 @@ Owner asked to make the Slime Trap and Infector Mush skills unpickable without r
 - What needed correction: the first sizing (25 games of 300 inputs plus a 1,500-input game) took 11s. Most of that is the driver itself (~230ms a game), not the checks. A config with two cycles a day lets 400-input games cross a day boundary, so the long game went. It still runs 8s under `verify`'s load, so it is allowlisted in `SLOW_ALLOWED`, like `replay.test.ts`.
 - The #101 sentinel leak test can't run per step: it needs a planted value in every hidden field, which a random game doesn't have.
 - Follow-up (owner's choice): cut to stay inside the test budget instead of allowlisting the whole file. Each game is now its own test. `verify` plays 1 pre-selection ship of 150 inputs and 2 short-day games of 400, and tries 1 action a step. `test:slow` plays the full set and tries 3. 350 inputs left two slow-run seeds short of day 2, so 400 stays. About 1.05s a game under load is the driver's floor, so only the per-test limit is allowlisted (1.6s). The file is ~3s, back inside its budget.
+
+## 2026-11-26: Standardized skill effect line order (en/fr/es)
+
+Reordered every `skills.effects` entry in en, fr and es into the owner's order: special AP pools, passives, new actions, expedition passives, expedition actions, NERON project bonus. Each sentence is now on its own line, and unlabeled actions now start with "Action:", "Action :" or "Acción:". Before editing, Claude asked three questions: whether fr/es were included (yes), whether general AP gains such as Coffee count as AP pools (no, only typed daily pools do), and how to treat unlabeled Mush actions (as actions, with the prefix added). A keyword classifier with per-line overrides did the sorting, and Claude checked its output by eye before writing. That check caught a French "Bonus" case miss and the plural "points d'action". Follow-on sentences stay right after their action line (e.g. Juge, Transfert).
+
+## 2026-11-26: Standardized disease/disorder/injury description order (en/fr/es)
+
+Reordered every `status.desc` entry ending in `_disease`, `_disorder` or `_injury`, in en, fr and es, into the owner's order: on appearing, max HP, max morale, max AP, max MP, cycle change, passive, disabled actions. A keyword classifier did the sorting, and Claude reviewed its output before writing. Judgment calls: Agoraphobia's condition line ("With 4 or more people…:") stays first. Satiety-per-cycle lines count as cycle change. Head Trauma and Open-Air Brain mention cycle change only as one trigger among several, so they count as passive. "Can't hear" on the iTrackie is passive, not a disabled action. Two broken fungal-infection lines were fixed along the way: es "l cambiar" → "Al cambiar", and fr "Tu deviens" → "vous devenez".
+
+## 2026-11-26: Standardized wording across skill and disease/disorder/injury descriptions (en/fr/es)
+
+Claude listed every place where two descriptions said the same thing in different words, and the owner approved fixing them. Each language now uses its most common existing form for health and max-stat lines, the cycle-change opener, lying down, vomiting, foaming, typed and event AP gains, crewmate terms, "once a day", "for free", morale units, the comma after an action cost and action-label dashes. Two mismatches were found and corrected:
+- Gastroenteritis (en) said eating "gives" 1 AP. The owner said the AP is lost after eating, and the code (`gastroenteritis_disease.ts` onConsume) agrees.
+- The first rewrite said eating "costs" AP. The owner corrected it: eating is still free and the AP is lost afterwards. So Gastroenteritis, Acid Reflux and Liver Dysfunction now read "After consuming/eating …, you lose N AP".
+
+Lesson: check the rule code before rewording a description, and don't describe an after-effect as a cost.
+
+## 2026-11-26: Shrink marked fully implemented; description translated
+
+The owner rewrote the en Shrink description: lying-down morale, and Comfort giving 2 morale and calming psychological illnesses for 2-8 cycles. Claude translated it to fr/es and changed `shrink` in `shared/src/skills.ts` from "partial" to "full". It also updated `implemented-rules.md`, dropping the "Not built: curing psychological illnesses" note, since the new text no longer promises a cure.

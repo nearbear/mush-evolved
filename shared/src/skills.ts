@@ -252,8 +252,8 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   torturer: "full",
   // Others can Chitchat with you, revealing their recent actions (owner, 2026-10-24, chitchat.ts).
   confident: "full",
-  // Comfort and +1 morale a cycle to roommates lying down (owner, 2026-10-26); no psychological illness cures.
-  shrink: "partial",
+  // Comfort (which also calms a disorder for 2-8 cycles) and +1 morale a cycle to roommates lying down (owner, 2026-10-26).
+  shrink: "full",
   // Doubled odds of the link with Sol, x1.5 for roommates (owner, 2026-10-21, comms.ts).
   radio_expert: "full",
   // +100% rebel decoding (owner, 2026-10-21, comms.ts).
