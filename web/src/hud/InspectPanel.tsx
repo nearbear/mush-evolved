@@ -15,6 +15,7 @@ import { ItemFace } from "./ItemFace.tsx";
 import { ItemAttrIcons, thingMarkIcons } from "./ItemAttrIcons.tsx";
 import { PlantStates } from "./PlantStates.tsx";
 import { ItemIcon } from "./ItemIcon.tsx";
+import { Hint } from "./IconButton.tsx";
 import { DocumentReader } from "./DocumentDialog.tsx";
 import { SuperkubeOpener, type SendKube } from "./Superkube.tsx";
 import { ActionLabel } from "./ActionLabel.tsx";
@@ -35,6 +36,7 @@ export function InspectPanel({
   onDeselect,
   onKube,
   onRenameItem,
+  onSelect,
 }: {
   view: PlayerView;
   /** For equipment sprites; without it equipment shows as text only. */
@@ -48,6 +50,8 @@ export function InspectPanel({
   onKube?: SendKube | undefined;
   /** Renames an owned item (friendly NPC, plant, or customized blaster). */
   onRenameItem?: ((item: ItemId, name: string) => void) | undefined;
+  /** Selects a carried item from the inventory row; without it the row is display-only. */
+  onSelect?: ((target: Target) => void) | undefined;
 }) {
   const { t } = useTranslation();
   const names = useNames();
@@ -172,6 +176,7 @@ export function InspectPanel({
         onAction={onAction}
       />
       </div>
+      <CarriedRow view={view} target={target} onSelect={onSelect} />
     </aside>
   );
 }
@@ -304,6 +309,53 @@ function Details({ view, layout, resolved, onAction }: { view: PlayerView; layou
         </>
       );
   }
+}
+
+/**
+ * Your carried items (a second view of the inventory panel's), always one row under a divider at the panel's bottom:
+ * one column per slot, so the tiles shrink rather than wrap. Tapping one inspects it.
+ */
+function CarriedRow({ view, target, onSelect }: { view: PlayerView; target: Target; onSelect?: ((target: Target) => void) | undefined }) {
+  const { t, i18n } = useTranslation();
+  const names = useNames();
+  const items = [...view.inventory].sort((a, b) => names.itemOf(a).localeCompare(names.itemOf(b), i18n.language));
+  const empty = Math.max(0, view.inventorySlots - items.length);
+  const columns = items.length + empty;
+  if (columns === 0) return null;
+  return (
+    <ul className="inspect-carried" aria-label={t("inventory.title")} style={{ "--slots": columns } as CSSProperties}>
+      {items.map((item) => {
+        const selected = target.kind === "item" && target.id === item.id;
+        const label = names.itemOf(item);
+        return (
+          <li key={item.id} className="inspect-carried-slot">
+            <Hint label={label}>
+              <button
+                type="button"
+                aria-label={label}
+                aria-pressed={selected}
+                className={`item-tile${selected ? " selected" : ""}`}
+                onClick={() => onSelect?.({ kind: "item", id: item.id })}
+              >
+                <ItemFace label={names.itemLabel(item)}>
+                  <ItemIcon className="item-icon" item={item} view={view} />
+                </ItemFace>
+              </button>
+            </Hint>
+          </li>
+        );
+      })}
+      {Array.from({ length: empty }, (_, i) => (
+        <li key={`empty-${i}`} className="inspect-carried-slot">
+          <span className="item-tile empty">
+            <ItemFace>
+              <span className="kit-slot big" />
+            </ItemFace>
+          </span>
+        </li>
+      ))}
+    </ul>
+  );
 }
 
 /** A drone's upgrades (#412), public to anyone who examines it, or "No upgrades". */

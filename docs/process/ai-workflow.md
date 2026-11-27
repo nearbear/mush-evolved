@@ -5786,3 +5786,9 @@ The owner asked for the cryopod window on the phone character picker to be about
 - Needed correction: importing the app's `i18n/index.ts` into `DoublePress.tsx` broke a node-environment test (that module touches `document` at load); importing the global `i18next` instance instead fixed it.
 - Revised (owner): 3 lapsed presses, reset by any successful action, and shown as a `doublePress` tip in the existing tip card rather than a toast. Added `CLIENT_TIPS` to `shared/src/tips.ts` for tips the client raises from input rather than from the view; `TipCard` puts it first when `pressMode.ts` says it applies, so dismiss, "don't show again" and "Show tips" all cover it.
 - Follow-up (owner): an armed button now keeps a white outline (`button[data-armed]` in buttons.css; the outline the owner saw was likely the browser's focus ring, which isn't in our CSS or the art), and "Show all tips again" also resets the double-press count. Debugging note: the owner didn't see the tip at first because their browser had already counted more than 5 double presses; a jsdom test of the real hook (fake timers, `act`) proved the logic before anyone touched storage.
+
+### 2026-11-27: Carried items row at the bottom of the Inspect panel
+
+- Added `CarriedRow` to `web/src/hud/InspectPanel.tsx`: your inventory slots (items plus empty slots) as one row under a divider at the bottom of the panel, shown whatever is being inspected. Tapping an item selects it (the new `onSelect` prop, wired to `select` in `GameView`).
+- One grid column per slot capped at the full tile size (`minmax(0, 4.75rem)`), each slot a size container with `--tile: 100cqw`, so tiles shrink instead of wrapping at any width.
+- Correction: the first ask was "only when inspecting yourself"; the owner changed it to always shown before it was built.

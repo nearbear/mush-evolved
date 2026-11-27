@@ -280,6 +280,7 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
             onDeselect={selected && target === selected ? () => select(null) : undefined}
             onKube={kube}
             onRenameItem={(item, name) => post({ type: "renameItem", item, name })}
+            onSelect={select}
           />
         </div>
 

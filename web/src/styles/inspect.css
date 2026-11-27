@@ -581,3 +581,25 @@
   opacity: 0.4;
   margin: 6px 0 4px;
 }
+
+/* Your carried items, always at the panel's bottom under a divider (InspectPanel's CarriedRow). One column per slot,
+   each at most a full tile: narrow panels shrink the tiles rather than wrap them. Each slot is a size container, so
+   its face (sized off --tile) follows the column's width. */
+.inspect-carried {
+  flex: none;
+  list-style: none;
+  margin: var(--space-2) 0 0;
+  padding: var(--space-2) 2px 2px;
+  border-top: 1px solid var(--panel-rim);
+  display: grid;
+  grid-template-columns: repeat(var(--slots), minmax(0, 4.75rem));
+  gap: 6px;
+}
+.inspect-carried-slot {
+  container-type: inline-size;
+  aspect-ratio: 1;
+}
+.inspect-carried-slot .item-tile {
+  --tile: 100cqw;
+  cursor: pointer;
+}
