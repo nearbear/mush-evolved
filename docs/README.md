@@ -7,6 +7,7 @@ One line per document. Paths in docs and code are written from the repo root (`d
 - `rules/rules-design.md`: answered rule decisions and the design for rules not built yet.
 - `rules/implemented-rules.md`: what the rules code does today, one bullet per rule.
 - `rules/changes-from-emush.md`: implemented changes in Mush: Evolved compared to eMush.
+- `rules/design-philosophy.md`: why Mush: Evolved differs from eMush, written by nearbear (fully hand written without AI).
 
 ## Plans
 
