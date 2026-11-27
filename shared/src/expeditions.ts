@@ -15,7 +15,7 @@
 // crew" is alive and in the Icarus (`withCrew`): the lost and the dead take no part in events. Slice C: gear. A
 // planet with no Oxygen sector needs a spacesuit (boarding, below). The other gear changes which sectors are
 // picked (`pickSectors`), which events can happen (`cancelled`, `eventWeight`) or what they do. Phase 4, slice D
-// (#358): skills. Diplomat, Skilful and the white flag turn Fight in Intelligent life into New Sector (2026-11-26); Polymath also harvests as a Botanist; Shooter
+// (#358): skills. Diplomat, Skilful and the white flag turn Fight in Intelligent life into New Sector (2026-11-26); Skilful also harvests as a Botanist; Shooter
 // and Centauri add strength (`fight`); each Sprinter adds a sector; a U-turn holder ends the expedition (`turnBack`);
 // a Traitor's secret Sabotage (`sabotage`) leaves only negative events in the next sector; holders of either see
 // the next sector (`nextSectorFor`).
@@ -544,8 +544,8 @@ function resolve(ctx: Ctx, sector: PlanetTag | typeof LANDING, table: readonly E
       break;
     }
     case "harvest": {
-      // Polymath and Skilful count as a Botanist here (owner, 2026-11-08, #358; 2026-11-18).
-      const bonus = living().some((p) => hasSkill(p, "botanic") || hasSkill(p, "polymath") || hasSkill(p, "skilful")) ? rules.botanistBonus : 0;
+      // Skilful counts as a Botanist here (owner, 2026-11-08, #358; 2026-11-18). Polymath has no expedition bonus (owner, 2026-11-26).
+      const bonus = living().some((p) => hasSkill(p, "botanic") || hasSkill(p, "skilful")) ? rules.botanistBonus : 0;
       const item = harvestFruit(state);
       event.item = item;
       event.amount = drop(state, item, amount + bonus);

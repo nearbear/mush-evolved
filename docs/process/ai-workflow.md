@@ -5663,3 +5663,9 @@ The owner rewrote the en Shrink description: lying-down morale, and Comfort givi
 - **How:** `cancelled`'s Fight case became `pacified` in `expeditions.ts`; `resolve` keeps a pacified Fight's weight and draws it as `newSector` (a new `ExpeditionEventKind`), which pushes `{ tag, known: false }` from `config.expedition.newSectorTags` and sets `ctx.redraw`, as Lost does. The report line ("makes peace … a new sector") doesn't name the type, so nothing an analysis would reveal leaks. Under a Traitor's sabotage it still can't be drawn, as before.
 - **Needed correction:** the first tests assumed a two-sector planet still explored PREDATOR; the redraw keeps the step count, so the new sector can take its place. The tests now check each sector in its own game, and give the added types quiet event tables.
 - **Not done, flagged:** eMushpedia says Diplomacy turns Combat into Nothing to report in Wreckage, Ruins, Insects, Ruminants, Predators, Mankarog and Crystalite, and the English Diplomat/Skilful descriptions already claim it, but it isn't built. Since eMush v0.31 Diplomacy also no longer protects against a Traitor's sabotage; here a sabotaged step can't draw the pacified Fight at all, as before.
+
+### 2026-11-26 — Polymath has no expedition bonuses
+
+- **Decision (owner):** Polymath gives nothing on expeditions. Its last one, the Botanist's +1 fruit on Harvest, is removed (`expeditions.ts`); Skilful keeps it.
+- **Also:** the expedition-prep bot goal (`server/src/bots/goals/expeditionPrep.ts`) treated Polymath as a Diplomat (skipping the white flag, claiming Intelligent Life seats) and a Botanist. It now checks Skilful, which really has those bonuses. Tests in `expeditions.test.ts` and `goals.test.ts` updated.
+- **What worked:** a repo-wide grep for `polymath` found the bot copy of the old rule, which the rules change alone would have left behind.

@@ -33,11 +33,11 @@ export function isFitForExpedition(view: PlayerView): boolean {
 
 /** Whether the bot has an expedition-helpful skill for the target planet's sectors. */
 export function isPriorityExpeditionClaimant(view: PlayerView, sectors: readonly (string | null)[]): boolean {
-  if (sectors.includes("INTELLIGENT") && (hasBotSkill(view, "diplomacy") || hasBotSkill(view, "polymath"))) return true;
+  if (sectors.includes("INTELLIGENT") && (hasBotSkill(view, "diplomacy") || hasBotSkill(view, "skilful"))) return true;
   if (hasBotSkill(view, "sprint")) return true;
   if (hasBotSkill(view, "gunman") && hasWorkingGun(view)) return true;
   if (hasBotSkill(view, "survival")) return true;
-  if (hasBotSkill(view, "botanic") || hasBotSkill(view, "polymath")) return true;
+  if (hasBotSkill(view, "botanic") || hasBotSkill(view, "skilful")) return true;
   return false;
 }
 
@@ -50,9 +50,9 @@ export function requiredExpeditionGear(sectors: readonly (string | null)[], view
   if (sectors.includes("INTELLIGENT")) {
     const hasDiplomatHere =
       hasBotSkill(view, "diplomacy") ||
-      hasBotSkill(view, "polymath") ||
+      hasBotSkill(view, "skilful") ||
       view.players.some(
-        (p) => p.alive && p.room === view.you.room && (p.skills.includes("diplomacy") || p.skills.includes("polymath") || p.bookSkill === "diplomacy" || p.bookSkill === "polymath"),
+        (p) => p.alive && p.room === view.you.room && (p.skills.includes("diplomacy") || p.skills.includes("skilful") || p.bookSkill === "diplomacy" || p.bookSkill === "skilful"),
       );
     if (!hasDiplomatHere) gear.push("white_flag");
   }

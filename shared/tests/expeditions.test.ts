@@ -1522,7 +1522,7 @@ describe("expeditions, phase 4, slice D: skills", () => {
     expect(exploredNew).toBe(true);
   });
 
-  it("a Polymath or Polyvant (skilful) harvests as a Botanist: one more fruit, not stacking", () => {
+  it("a Polyvant (skilful) harvests as a Botanist: one more fruit, not stacking; a Polymath doesn't", () => {
     const harvest = (skills: ("botanic" | "polymath" | "skilful")[]) => {
       const s = game({ tags: ["FRUIT_TREES"], events: { FRUIT_TREES: [rule("harvest", { amount: 2 })] } });
       skills.forEach((skill, i) => player(s, `p${i + 1}`).skills.push(skill));
@@ -1530,7 +1530,7 @@ describe("expeditions, phase 4, slice D: skills", () => {
     };
     expect([harvest([]), harvest(["polymath"]), harvest(["skilful"]), harvest(["botanic", "polymath"]), harvest(["botanic", "skilful"])]).toEqual([
       2,
-      2 + expedition.botanistBonus,
+      2,
       2 + expedition.botanistBonus,
       2 + expedition.botanistBonus,
       2 + expedition.botanistBonus,
