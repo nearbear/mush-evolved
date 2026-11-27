@@ -765,7 +765,7 @@ function groundOffsetAt(layout: ShipLayout, room: RoomLayout, x: number, y: numb
  * walls where rooms meet). Footprints extend from the anchor toward -x/-y
  * (Ship.buildRoomBmp mkDep/mkDoor).
  */
-export function walkableCells(layout: ShipLayout, room: RoomLayout): { x: number; y: number }[] {
+export function walkableCells(layout: ShipLayout, room: RoomLayout): { x: number; y: number; walkway?: true }[] {
   const blocked = new Set<string>();
   for (const t of room.tiles) {
     const slice = layout.slices[t.slice]!;
@@ -775,9 +775,19 @@ export function walkableCells(layout: ShipLayout, room: RoomLayout): { x: number
     const [w, h] = slice.footprint ?? [1, 1];
     for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) blocked.add(`${t.x - i},${t.y - j}`);
   }
+  const walkways = new Set(room.tiles.filter((t) => t.kind === "ground" && isWalkway(t.slice, t.frame)).map((t) => `${t.x},${t.y}`));
   return room.tiles
     .filter((t) => t.kind === "ground" && !blocked.has(`${t.x},${t.y}`))
-    .map((t) => ({ x: t.x, y: t.y }));
+    .map((t) => (walkways.has(`${t.x},${t.y}`) ? { x: t.x, y: t.y, walkway: true as const } : { x: t.x, y: t.y }));
+}
+
+/**
+ * Floor art that is a walkway: the plain floor's milky blue strip (`GROUND` frame 1, with its few
+ * marked pieces, 2-5) and the deck floor's dark paths with cyan dashes (`GROUND_DECK` from frame 8;
+ * 0-7 are its grey plates). `walkPath` prefers them when routes tie.
+ */
+export function isWalkway(slice: string, frame: number): boolean {
+  return (slice === "GROUND" && frame >= 1 && frame <= 5) || (slice === "GROUND_DECK" && frame >= 8);
 }
 
 /**
@@ -928,11 +938,12 @@ export function stepsOnto(from: { x: number; y: number }, to: { x: number; y: nu
 /**
  * The shortest walk from `from` to `to` over walkable cells, both ends included, stepping along the
  * grid axes only: a stylistic choice, like the original's staircase walks (`diagonal` allows
- * diagonal steps too). Undefined when either end is off the floor or there is no way through.
- * Display only, like walking itself.
+ * diagonal steps too). Of the equally short walks, it takes one over the most walkway cells
+ * (`walkway`, from `walkableCells`). Undefined when either end is off the floor or there is no way
+ * through. Display only, like walking itself.
  */
 export function walkPath(
-  cells: readonly { x: number; y: number }[],
+  cells: readonly { x: number; y: number; walkway?: boolean }[],
   from: { x: number; y: number },
   to: { x: number; y: number },
   diagonal = false,
@@ -940,7 +951,13 @@ export function walkPath(
   const key = (c: { x: number; y: number }) => `${c.x},${c.y}`;
   const walkable = new Set(cells.map(key));
   if (!walkable.has(key(from)) || !walkable.has(key(to))) return undefined;
+  const walkway = new Set(cells.filter((c) => c.walkway).map(key));
   const cameFrom = new Map<string, { x: number; y: number } | null>([[key(from), null]]);
+  // Breadth first, so every cell at one distance is done before the next: a cell's distance and
+  // its walkway count are settled before it is taken from the queue, and a later cell the same
+  // distance away that would reach a neighbour over more walkway takes it over.
+  const dist = new Map<string, number>([[key(from), 0]]);
+  const score = new Map<string, number>([[key(from), walkway.has(key(from)) ? 1 : 0]]);
   const queue = [from];
   for (let i = 0; i < queue.length; i++) {
     const c = queue[i]!;
@@ -951,10 +968,19 @@ export function walkPath(
     }
     const steps = [{ x: c.x + 1, y: c.y }, { x: c.x - 1, y: c.y }, { x: c.x, y: c.y + 1 }, { x: c.x, y: c.y - 1 }];
     if (diagonal) steps.push({ x: c.x + 1, y: c.y + 1 }, { x: c.x + 1, y: c.y - 1 }, { x: c.x - 1, y: c.y + 1 }, { x: c.x - 1, y: c.y - 1 });
+    const d = dist.get(key(c))! + 1, sc = score.get(key(c))!;
     for (const n of steps) {
-      if (walkable.has(key(n)) && !cameFrom.has(key(n))) {
-        cameFrom.set(key(n), c);
+      const k = key(n);
+      if (!walkable.has(k)) continue;
+      const through = sc + (walkway.has(k) ? 1 : 0);
+      if (!cameFrom.has(k)) {
+        cameFrom.set(k, c);
+        dist.set(k, d);
+        score.set(k, through);
         queue.push(n);
+      } else if (dist.get(k) === d && through > score.get(k)!) {
+        cameFrom.set(k, c);
+        score.set(k, through);
       }
     }
   }
@@ -995,7 +1021,7 @@ export function doorPassage(prepared: PreparedScene, cells: readonly { x: number
   const { layout, rooms, statics } = prepared;
   const here = rooms[0]?.room, there = rooms.find((r) => r.room.id === to), farRoom = layout.rooms.find((r) => r.id === to);
   if (!here || !there || !farRoom) return undefined;
-  const shift = (c: { x: number; y: number }) => ({ x: c.x + there.dx, y: c.y + there.dy });
+  const shift = <C extends { x: number; y: number }>(c: C): C => ({ ...c, x: c.x + there.dx, y: c.y + there.dy });
   const farCells = walkableCells(layout, farRoom);
   const near = doorSpot(layout, here, to, cells);
   const farSpot = doorSpot(layout, farRoom, here.id, farCells);

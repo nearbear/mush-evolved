@@ -5725,3 +5725,8 @@ The owner rewrote the en Shrink description: lying-down morale, and Comfort givi
 - **Decision (owner):** a Mush with Radio Piracy can place the same iTrackie hack for 2 AP on a player in their own room (`radio_piracy_room`), as well as the 3 AP Com center version. Owner's answers: it shares the once-a-day limit, it's private, and players see the same name for both.
 - **What worked:** a separate one-field action (`{ target }`) reused `placeHack` and the `radioHacked` line, and the client's `namedTarget` routing put it on the target's panel (Inspect and phone peek bar) with no UI code. The only web change was a name key and the skill description in en/fr/es.
 - **Needed correction:** nothing. `verify` failed only in the ship-layout door test, which this task didn't touch.
+
+### 2026-11-27: Walks prefer walkways on ties
+
+- The owner asked for walking to take a walkway when that is as short as a way off it. `walkableCells` now tags walkway cells (`isWalkway`: `GROUND` frames 1-5, the milky blue strip and its marked pieces; `GROUND_DECK` frames 8 and up, the dark dashed paths; deck frames 0-7 are plates). Claude worked out the frames by dumping rooms as ASCII grids of slice and frame. `walkPath` is still breadth first, so walks are never longer. When two routes to a cell are equally short, it keeps the one over more walkway cells. FIFO order means a cell's count is settled before it is expanded. `doorPassage`'s shift keeps the tag. Display only; the server doesn't see it.
+- Two iso tests (built sofa spots in SPACESHIP_BAY_AA, Alpha Bay 2's bay window paint order) failed before this change too, apparently from map edits made in another session.
