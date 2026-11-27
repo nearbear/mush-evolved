@@ -5619,6 +5619,10 @@ Owner asked to make the Slime Trap and Infector Mush skills unpickable without r
 - Wired web-only as `withTurretAlcoves` (`web/src/iso/turretAlcoves.ts`), run after `withoutBuiltOnly`: a slice per room on a new sheet, the turret's `TURRET_COMMAND` binding moved to it so clicks still work. `ship-map.json` and the editor's raw `loadShip` are untouched. The two cross-model sprites are centred where the old sprite's pixels were, an estimate the owner is checking in the browser; offsets are one table. Upgrade rows aren't used (the game draws no turret upgrades yet).
 - Worked: measuring with `decodePng` instead of eyeballing caught the label mix-up before any code was written.
 
+### 2026-11-26: Compact private-channel character picker
+
+The create/invite dialog's character tiles were 4.5rem wide with an 8px gap, much looser than the crew bar's card. Matched the crew bar's spacing: 54px tiles (32px sprite plus the 2px pressed edge), 2px column gap, tighter padding, and names cut with an ellipsis, then centred the tiles and the fieldset legend. CSS plus two class names; not checked in a browser. Correction: the first pass put a `title` on the name span for the full name, which `web/CLAUDE.md` forbids (invisible on touch); removed. A cut-off name is still read in full by screen readers.
+
 ### 2026-11-26: Signals tab rebel base icon overlapping the audio wave
 
 - The rebel base art sits in a `<button>` (for its tooltip), and the global `button { height: 1.3125rem }` (32px on touch) capped it, so the image spilled out and the header was only as tall as its text; the wave drew over the art. Fix: `.rebel-icon-button { height: auto }` and `.signal-head { flex: none }` so the header can't shrink in the conversation's column either.

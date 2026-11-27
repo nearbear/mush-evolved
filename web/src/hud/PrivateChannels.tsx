@@ -279,7 +279,7 @@ function ChannelDialog({
               <input value={name} onChange={(e) => setName(e.target.value)} maxLength={24} placeholder={t("channels.namePlaceholder")} />
             </label>
           )}
-          <fieldset className="field">
+          <fieldset className="field channel-picker-field">
             <legend className="field-label">{t(creating ? "channels.membersLabel" : "channels.inviteLabel")}</legend>
             {choices.length === 0 && <p className="sub">{t("channels.noOne")}</p>}
             <div className="channel-picker">
@@ -294,7 +294,7 @@ function ChannelDialog({
                     onClick={() => setMembers((ms) => (on ? ms.filter((m) => m !== p.id) : [...ms, p.id]))}
                   >
                     <span style={standingSprite(p.character, 1)} aria-hidden="true" />
-                    <span>{names.characterGiven(p.character)}</span>
+                    <span className="channel-pick-name">{names.characterGiven(p.character)}</span>
                   </button>
                 );
               })}
