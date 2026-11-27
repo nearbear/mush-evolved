@@ -117,6 +117,7 @@ const ACTION_NAME_KEYS = {
   become_ninja: "actions.becomeNinja",
   delog: "actions.delog",
   radio_piracy: "actions.radioPiracy",
+  radio_piracy_room: "actions.radioPiracy",
   factory_reset: "actions.factoryReset",
   become_normal: "actions.becomeNormal",
   accommodate: "actions.accommodate",

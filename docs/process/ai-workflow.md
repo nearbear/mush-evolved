@@ -5719,3 +5719,9 @@ The owner rewrote the en Shrink description: lying-down morale, and Comfort givi
 
 - Owner reported built sofas drawn about a cell off their spot, while sleepers on them were right. The rotated sofa (`sofaReverse`, 3x1) is a mirror of `sofa` (1x3) that the original never placed, so tiles.xml left its offset at an untuned `0,0`. The footprint maths (R = 16) gives the mirrored offset `-14,-16`; fixed as `OFFSET_FIXES` in `tools/src/shipLayout/convert.ts` and regenerated `ship-art.json`. Checked with before/after `ship-render` crops read by the visual-check agent.
 - Worked: reading the slice numbers before looking at pictures; the bug was visible in two lines of data.
+
+## 2026-11-26: Radio Piracy in the same room
+
+- **Decision (owner):** a Mush with Radio Piracy can place the same iTrackie hack for 2 AP on a player in their own room (`radio_piracy_room`), as well as the 3 AP Com center version. Owner's answers: it shares the once-a-day limit, it's private, and players see the same name for both.
+- **What worked:** a separate one-field action (`{ target }`) reused `placeHack` and the `radioHacked` line, and the client's `namedTarget` routing put it on the target's panel (Inspect and phone peek bar) with no UI code. The only web change was a name key and the skill description in en/fr/es.
+- **Needed correction:** nothing. `verify` failed only in the ship-layout door test, which this task didn't touch.
