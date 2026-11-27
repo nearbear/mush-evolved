@@ -2048,7 +2048,7 @@
       "disheartening_contact": "Action: Demoralize (Covert) - For 2 AP, you can make a crewmate lose 2 morale.",
       "transfert": "Action: Transfer (Private) - Unique: you can slip into the skin of another human player.\nThey must have been infected at least once.\nThey will end up in your body... and may alert their fellows.\nTriumph scores will be swapped.",
       "epigenetics": "Action: Reset Mush skills (Private) - Unique: for 2 AP, unselect all your Mush skills except Epigenetics, then choose again.",
-      "bacterial_contact": "Action: Give a disease (Covert) - For 1 AP, you can give a crewmate a disease.\nThis is a stealthy action.\nAllows disease special logs to be faked.",
+      "bacterial_contact": "Action: Give a disease (Covert) - For 1 AP, you can give a crewmate a disease.\nAllows disease special logs to be faked.",
       "infectious_agent": "Lets you Spike twice per cooldown: both spikes come back when it ends.",
       "phagocytosis": "Action: Devour a spore (Secret) - For free, you can devour a Spore, which gives you 4 AP and 4 health.",
       "trapper": "Action: Trap room (Covert) - For 1 AP, you can trap a Room with a Spore.\nIf anyone handles an item or equipment in the room, they become Infected.\nIf it is a Mush (or you), the spore is lost.",
