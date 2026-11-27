@@ -321,6 +321,8 @@ export function Lobby({ onMatched, onPrefetch }: { onMatched: (ticket: SeatTicke
                 </li>
                 );
               })}
+              {/* Single player only where the server has cheats on (`ALLOW_CHEATS`): dev and the test deployment. */}
+              {me?.singlePlayer && (
               <li>
                 <button type="button"
                   className="big pod-ship"
@@ -337,6 +339,7 @@ export function Lobby({ onMatched, onPrefetch }: { onMatched: (ticket: SeatTicke
                   <span className="pod-ship-crew" />
                 </button>
               </li>
+              )}
             </ul>
             <Link className="pod-games-link" to="/games">
               {t("games.lobbyLink")}

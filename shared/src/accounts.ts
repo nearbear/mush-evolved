@@ -34,7 +34,7 @@ export function isAuthProvider(value: string): value is AuthProvider {
  * yet (`POST /api/signup`); `suggestedName` is the provider's name when it is
  * valid and free, else null (the field starts empty).
  */
-export type MeResponse =
+export type MeResponse = (
   | { status: "signed_out" }
   | { status: "signup"; suggestedName: string | null }
   | {
@@ -53,7 +53,11 @@ export type MeResponse =
          */
         aboard: boolean;
       };
-    };
+    }
+) & {
+  /** Whether this server offers single player: only where cheats are on (`ALLOW_CHEATS`), so the lobby hides it elsewhere. */
+  singlePlayer: boolean;
+};
 
 /** `POST /api/signup` with `{ name }`. */
 export type SignupResponse = { ok: true } | { ok: false; reason: DisplayNameError | "name_taken" | "no_signup" | "rate_limited" };

@@ -86,7 +86,9 @@ export const MeResponseSchema = named(
         aboard: z.boolean().meta({ description: "Whether the account is aboard a multiplayer ship (the ship itself isn't named). It may have ended since." }),
       }),
     }),
-  ]),
+  ]).and(
+    z.object({ singlePlayer: z.boolean().meta({ description: "Whether this server offers single player (only where cheats are on); the lobby hides it otherwise." }) }),
+  ),
 );
 
 export const SignupResponseSchema = named(

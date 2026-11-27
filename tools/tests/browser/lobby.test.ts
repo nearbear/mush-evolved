@@ -71,6 +71,7 @@ async function openAboardLobby(options: object, locale: string): Promise<Page> {
           renameAllowedAt: null,
           aboard: true,
         },
+        singlePlayer: true,
       }),
     }),
   );

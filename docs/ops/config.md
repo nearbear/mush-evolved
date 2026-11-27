@@ -9,7 +9,7 @@ Every variable the server reads. Secrets never go in the repo. Locally they live
 | `MODEL_API_KEY` | Secret | `.dev.vars` only, **never a deployment** | Dev key for model-backed bots with `DEV_SERVER`. Players bring their own key in single player (#216). |
 | `MODEL_BASE_URL`, `MODEL_NAME`, `MODEL_BOTS` | Dev setting | `.dev.vars` only | OpenAI-compatible base URL, model name, and how many bots are model bots. |
 | `DEV_SERVER` | Dev flag | Passed by `npm run dev`; never a deployment | Bot fill, looser rate limits, the dev model key. |
-| `ALLOW_CHEATS` | Var | `wrangler.jsonc`: test and local dev only | Cheats, End cycle, `/api/docs`. |
+| `ALLOW_CHEATS` | Var | `wrangler.jsonc`: test and local dev only | Cheats, End cycle, `/api/docs`, single player (the lobby hides it otherwise, via `/api/me`). |
 | `ADMIN_TOKEN` | Secret | Only where you want `/admin/` routes (set by `npm run retire-ships -- --env <env> --init`; `.dev.vars` for dev) | Bearer token for `POST /admin/retire-ships`. Unset: no `/admin/` routes (404). |
 | `CYCLE_SECONDS` | Var | Optional, dev | Overrides the cycle length (`server/src/cycleClock.ts`). |
 | `RULES_VERSION` | Var | `wrangler.jsonc`; deploy scripts set the commit hash | Stored in each game's replay record. |

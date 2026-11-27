@@ -66,10 +66,10 @@ export function useMe(): { me: MeResponse | null; rateLimited: boolean; refresh:
         return;
       }
       setRateLimited(false);
-      setMe(response.ok ? await response.json() : { status: "signed_out" });
+      setMe(response.ok ? await response.json() : { status: "signed_out", singlePlayer: false });
     } catch {
       setRateLimited(false);
-      setMe({ status: "signed_out" });
+      setMe({ status: "signed_out", singlePlayer: false });
     }
   }, []);
   useEffect(() => {

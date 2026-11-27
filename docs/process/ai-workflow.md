@@ -5769,3 +5769,8 @@ Checked the README for stale wording against the code: game endings (now Sol/Ede
 
 - With reported neighbouring fires drawn, whole-ship fog with several fires could reach 20-25k live particles (estimated from the spawn rate and lifetimes, not profiled). `RoomFire` now keeps one fire per burning room, each with its own picker; your room burns at the original's rate and the neighbours share at most `NEIGHBOR_EMITTERS` (30, one large room's worth) by floor size (`emitterBudget`). Fractional shares carry over between ticks, so a neighbour on a small share still burns. Worst case is now about two large rooms' worth (~9k sprites).
 - Found on the way: the first version picked flame cells across all rooms by combined weight, so per-room emitter counts didn't actually steer where flames went; a per-room picker fixed that.
+
+## 2026-11-27: Single player hidden without ALLOW_CHEATS
+
+- Asked to hide the lobby's single-player button on servers without `ALLOW_CHEATS`. The lobby had no way to know the server's vars, so `/api/me` now carries a top-level `singlePlayer` flag (`env.ALLOW_CHEATS === "true"`) on every variant, and the lobby renders the button only when it's true. Chose `/api/me` over a new endpoint because the lobby already fetches it, including while aboard and signed out.
+- Hiding only: the matchmaker still accepts a `singlePlayer` message from any client. Flagged to the owner rather than enforced.

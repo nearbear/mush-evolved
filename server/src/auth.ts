@@ -444,6 +444,7 @@ async function me(request: Request, env: Env, deps: AuthDeps): Promise<JsonRespo
   const session = await currentSession(request, env, deps.store, deps.now);
   const cookies = session?.renewedCookie ? [session.renewedCookie] : [];
   const account = session && (await deps.store.getAccount(session.accountId));
+  const singlePlayer = env.ALLOW_CHEATS === "true";
   if (account) {
     const providers = (await deps.store.identities(account.id)).map((i) => i.provider).filter(isAuthProvider);
     const allowedAt = account.renamedAt === null ? null : account.renamedAt + RENAME_INTERVAL_MS;
@@ -457,6 +458,7 @@ async function me(request: Request, env: Env, deps: AuthDeps): Promise<JsonRespo
         // The player's own information; the room ID stays server-side (#320).
         aboard: (await deps.store.currentShip(account.id)) !== null,
       },
+      singlePlayer,
     };
     return json(body, 200, cookies);
   }
@@ -465,10 +467,10 @@ async function me(request: Request, env: Env, deps: AuthDeps): Promise<JsonRespo
   if (pending) {
     // The suggestion may have been taken since the callback; then the field starts empty.
     const free = pending.suggestedName !== null && !(await deps.store.nameTaken(pending.suggestedName));
-    const body: MeResponse = { status: "signup", suggestedName: free ? pending.suggestedName : null };
+    const body: MeResponse = { status: "signup", suggestedName: free ? pending.suggestedName : null, singlePlayer };
     return json(body, 200, cookies);
   }
-  const body: MeResponse = { status: "signed_out" };
+  const body: MeResponse = { status: "signed_out", singlePlayer };
   return json(body, 200, cookies);
 }
 

@@ -199,7 +199,7 @@ describe("sign-up", () => {
   it("waits for the name to be confirmed before creating the account", async () => {
     const browser = new Browser();
     expect(await browser.signInWith("google", "g-1", "Chun")).toBe("/?auth=signup");
-    expect(await browser.me()).toEqual({ status: "signup", suggestedName: "Chun" });
+    expect(await browser.me()).toEqual({ status: "signup", suggestedName: "Chun", singlePlayer: false });
     expect(await store.findAccountByIdentity("google", "g-1")).toBeNull();
 
     expect(await (await browser.post("/api/signup", { name: "  Chun  Lee " })).json()).toEqual({ ok: true });
@@ -207,8 +207,14 @@ describe("sign-up", () => {
     expect(me).toEqual({
       status: "signed_in",
       account: { id: expect.any(String), displayName: "Chun Lee", providers: ["google"], renameAllowedAt: null, aboard: false },
+      singlePlayer: false,
     });
     expect([...browser.cookies.keys()]).toEqual(["__Host-mush2_session"]);
+  });
+
+  it("offers single player only where cheats are on", async () => {
+    expect((await new Browser().me()).singlePlayer).toBe(false);
+    expect((await new Browser({ ...ENV, ALLOW_CHEATS: "true" } as Env).me()).singlePlayer).toBe(true);
   });
 
   it("says whether the account is aboard a ship, without naming it (#320)", async () => {
@@ -228,17 +234,17 @@ describe("sign-up", () => {
   it("uses Discord's global name, falling back to the username", async () => {
     const browser = new Browser();
     await browser.signInWith("discord", "d-1", null);
-    expect(await browser.me()).toEqual({ status: "signup", suggestedName: "fallback_user" });
+    expect(await browser.me()).toEqual({ status: "signup", suggestedName: "fallback_user", singlePlayer: false });
   });
 
   it("starts with an empty field when the provider's name fails the check or was taken", async () => {
     await new Browser().signUp("google", "g-1", "Chun");
     const rejected = new Browser();
     await rejected.signInWith("google", "g-2", "shit happens");
-    expect(await rejected.me()).toEqual({ status: "signup", suggestedName: null });
+    expect(await rejected.me()).toEqual({ status: "signup", suggestedName: null, singlePlayer: false });
     const taken = new Browser();
     await taken.signInWith("google", "g-3", "CHUN");
-    expect(await taken.me()).toEqual({ status: "signup", suggestedName: null });
+    expect(await taken.me()).toEqual({ status: "signup", suggestedName: null, singlePlayer: false });
   });
 
   it("refuses a taken (ignoring case), rejected or empty name, and keeps the sign-up open", async () => {
@@ -257,7 +263,7 @@ describe("sign-up", () => {
     const browser = new Browser();
     await browser.signInWith("google", "g-1", "Chun");
     now += SIGNUP_MS;
-    expect(await browser.me()).toEqual({ status: "signed_out" });
+    expect(await browser.me()).toEqual({ status: "signed_out", singlePlayer: false });
     expect(await (await browser.post("/api/signup", { name: "Chun" })).json()).toEqual({ ok: false, reason: "no_signup" });
   });
 
@@ -279,7 +285,7 @@ describe("sign-up", () => {
     await browser.signInWith("google", "g-1", "Chun");
     const signupCookie = browser.cookies.get("__Host-mush2_signup") ?? "";
     await browser.post("/auth/logout");
-    expect(await browser.me()).toEqual({ status: "signed_out" });
+    expect(await browser.me()).toEqual({ status: "signed_out", singlePlayer: false });
     expect(await (await browser.post("/api/signup", { name: "Someone" })).json()).toEqual({ ok: false, reason: "no_signup" });
     // The row is gone too, not just the cookie.
     expect(await store.getSignup(signupCookie, now)).toBeNull();
@@ -289,7 +295,7 @@ describe("sign-up", () => {
     const browser = new Browser();
     const first = await browser.signUp("google", "g-1", "Chun");
     expect(await browser.signInWith("discord", "d-1", "Kuan Ti")).toBe("/?auth=signup");
-    expect(await browser.me()).toEqual({ status: "signup", suggestedName: "Kuan Ti" });
+    expect(await browser.me()).toEqual({ status: "signup", suggestedName: "Kuan Ti", singlePlayer: false });
     expect(await (await browser.post("/api/signup", { name: "Kuan Ti" })).json()).toEqual({ ok: true });
     const me = await browser.me();
     expect(me.status === "signed_in" && me.account.id).not.toBe(first);
@@ -345,7 +351,7 @@ describe("sign-in and sessions", () => {
     const desktop = new Browser();
     await desktop.signInWith("google", "g-1", null);
     await phone.post("/auth/logout");
-    expect(await phone.me()).toEqual({ status: "signed_out" });
+    expect(await phone.me()).toEqual({ status: "signed_out", singlePlayer: false });
     expect((await desktop.me()).status).toBe("signed_in");
   });
 
@@ -369,7 +375,7 @@ describe("sign-in and sessions", () => {
     now += SESSION_MS - 1;
     expect((await browser.me()).status).toBe("signed_in");
     now += SESSION_MS;
-    expect(await browser.me()).toEqual({ status: "signed_out" });
+    expect(await browser.me()).toEqual({ status: "signed_out", singlePlayer: false });
   });
 
   it("the cron deletes expired sessions and sign-ups", async () => {
@@ -545,13 +551,13 @@ describe("dev sign-in (#287)", () => {
   it("is refused without DEV_SERVER, even with cheats on (the test deployment)", async () => {
     const browser = new Browser({ ...ENV, ALLOW_CHEATS: "true" } as Env, LOCAL);
     expect((await browser.request("/auth/dev?name=Tester")).status).toBe(404);
-    expect(await browser.me()).toEqual({ status: "signed_out" });
+    expect(await browser.me()).toEqual({ status: "signed_out", singlePlayer: true });
   });
 
   it("is refused on a host that isn't localhost, even with DEV_SERVER on", async () => {
     const browser = new Browser(DEV, "https://mush2-server-test.example.workers.dev");
     expect((await browser.request("/auth/dev?name=Tester")).status).toBe(404);
-    expect(await browser.me()).toEqual({ status: "signed_out" });
+    expect(await browser.me()).toEqual({ status: "signed_out", singlePlayer: true });
   });
 
   it("never reaches an account through a Google or Discord identity", async () => {
@@ -560,7 +566,7 @@ describe("dev sign-in (#287)", () => {
     // The real account's name: refused, not signed in to it.
     const response = await browser.request("/auth/dev?name=alice");
     expect(response.status).toBe(409);
-    expect(await browser.me()).toEqual({ status: "signed_out" });
+    expect(await browser.me()).toEqual({ status: "signed_out", singlePlayer: true });
     // A dev name equal to the real provider user ID doesn't reach it either.
     await browser.request("/auth/dev?name=g-1");
     const me = await browser.me();
