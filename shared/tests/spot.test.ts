@@ -157,7 +157,9 @@ describe("sitting at a terminal (#192)", () => {
   it("the map names the chairs at the bridge's, the lab's and the turrets' terminals, and none elsewhere", () => {
     expect(terminalChairs("LABORATORY", LAB)).toHaveLength(1);
     for (const t of ["ASTRO_MODULE", "COM_CENTER", "PILOT_MODULE"]) expect(terminalChairs("COMMAND_CENTER", `COMMAND_CENTER:${t}`)).toHaveLength(1);
-    for (const r of ["A_0", "A_1", "A_2", "B_0", "B_1", "B_2"]) expect(terminalChairs(`LASER_TURRET_${r}`, `LASER_TURRET_${r}:TURRET_COMMAND`)).toHaveLength(1);
+    for (const r of ["A_0", "A_1", "B_0", "B_1", "B_2"]) expect(terminalChairs(`LASER_TURRET_${r}`, `LASER_TURRET_${r}:TURRET_COMMAND`)).toHaveLength(1);
+    // Rear Alpha's turret has no chair since the owner's alcove layout (2026-11-26).
+    expect(terminalChairs("LASER_TURRET_A_2", "LASER_TURRET_A_2:TURRET_COMMAND")).toEqual([]);
     expect(terminalChairs("NEXUS_ROOM", "NEXUS_ROOM:NERON_CORE")).toEqual([]);
   });
 

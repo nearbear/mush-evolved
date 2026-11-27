@@ -1,0 +1,118 @@
+{
+  "sheets": {
+    "TurretAlcoves": {
+      "image": "derived/gfx/turrets.png",
+      "width": 445,
+      "height": 328
+    }
+  },
+  "slices": {
+    "turret_alcove_a_2": {
+      "sheet": "TurretAlcoves",
+      "x": 320,
+      "y": 0,
+      "width": 125,
+      "height": 63,
+      "framesX": 1,
+      "framesY": 1,
+      "flipX": false,
+      "flipY": false,
+      "rot": 0,
+      "offset": [
+        13.5,
+        -5.5
+      ],
+      "flags": [
+        "equipment",
+        "target"
+      ],
+      "footprint": [
+        3,
+        3
+      ],
+      "frames": [
+        {
+          "color": "00cc99"
+        }
+      ],
+      "anims": [],
+      "engine": "tile",
+      "modulePad": [
+        0,
+        0
+      ]
+    },
+    "turret_alcove_b_0": {
+      "sheet": "TurretAlcoves",
+      "x": 0,
+      "y": 0,
+      "width": 123,
+      "height": 61,
+      "framesX": 1,
+      "framesY": 1,
+      "flipX": false,
+      "flipY": false,
+      "rot": 0,
+      "offset": [
+        -12.5,
+        11.5
+      ],
+      "flags": [
+        "equipment",
+        "target"
+      ],
+      "footprint": [
+        3,
+        3
+      ],
+      "frames": [
+        {
+          "color": "50cf96",
+          "groundOffsetY": -15
+        }
+      ],
+      "anims": [],
+      "engine": "tile",
+      "modulePad": [
+        0,
+        0
+      ]
+    },
+    "turret_alcove_b_1": {
+      "sheet": "TurretAlcoves",
+      "x": 160,
+      "y": 0,
+      "width": 122,
+      "height": 64,
+      "framesX": 1,
+      "framesY": 1,
+      "flipX": false,
+      "flipY": false,
+      "rot": 0,
+      "offset": [
+        -13,
+        10
+      ],
+      "flags": [
+        "equipment",
+        "target"
+      ],
+      "footprint": [
+        3,
+        3
+      ],
+      "frames": [
+        {
+          "color": "478a6c",
+          "groundOffsetY": -20
+        }
+      ],
+      "anims": [],
+      "engine": "tile",
+      "modulePad": [
+        0,
+        0
+      ]
+    }
+  }
+}

@@ -403,15 +403,30 @@
   align-self: flex-start;
   margin: var(--space-2) 0 0;
 }
-/* Character picker: pick-tiles (primitives.css) in a wrapping row. */
+/* Character picker: pick-tiles (primitives.css) in a wrapping row, spaced as tightly as the crew bar's card
+   (top-bar.css .crew-figures): narrow columns, 2px between them, names cut with an ellipsis. The tiles and the
+   fieldset's legend are centred. */
+.channel-picker-field > .field-label {
+  margin-inline: auto;
+  text-align: center;
+}
 .channel-picker {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
+  justify-content: center;
+  gap: var(--space-1) 2px;
 }
-/* Wide enough for the longest given name (Terrence) on one line. */
+/* The 32px sprite plus room for most given names; the 2px pressed edge sits inside this width. */
 .channel-pick {
-  width: 4.5rem;
+  width: 54px;
+  padding: 2px 0;
+  gap: 2px;
+}
+.channel-pick-name {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* The Mush tab appears only for Mush, in the faction pink, pushed to the far right. */

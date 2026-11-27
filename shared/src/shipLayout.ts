@@ -133,6 +133,18 @@ export interface ShipArt {
 }
 
 /**
+ * Mush/derived/ship-art-extra.json: sprites made by hand for this project (the owner's turret alcoves), edited by hand.
+ * `npm run ship-layout` regenerates ship-art.json from tiles.xml, so they live in their own file; every reader of the
+ * art merges them in with `withExtraArt`.
+ */
+export type ExtraArt = Pick<ShipArt, "sheets" | "slices">;
+
+/** The art with the hand-made sprites added. */
+export function withExtraArt(art: ShipArt, extra: ExtraArt): ShipArt {
+  return { ...art, sheets: { ...art.sheets, ...extra.sheets }, slices: { ...art.slices, ...extra.slices } };
+}
+
+/**
  * Mush/derived/ship-map.json: every room and every tile drawn in it, edited by hand. It began as the
  * original's ShipMap.png, converted with our changes to it (wider corridors, walkways, deck floors,
  * doors moved to meet, walls and floor joining rooms where they meet) and frozen on 2026-10-21.

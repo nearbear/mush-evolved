@@ -2,7 +2,8 @@
 
 import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
-import type { RoomLayout, ShipArt, ShipLayout, ShipMap } from "@mush2/shared";
+import type { ExtraArt, RoomLayout, ShipArt, ShipLayout, ShipMap } from "@mush2/shared";
+import { withExtraArt } from "@mush2/shared/src/shipLayout.ts";
 
 export const DERIVED = resolve(import.meta.dirname, "../../../Mush/derived");
 
@@ -10,7 +11,8 @@ const read = (file: string) => JSON.parse(readFileSync(resolve(DERIVED, file), "
 
 export const readMap = (): ShipMap => read("ship-map.json");
 
-export const readArt = (): ShipArt => read("ship-art.json");
+/** ship-art.json with the hand-made sprites of ship-art-extra.json. */
+export const readArt = (): ShipArt => withExtraArt(read("ship-art.json"), read("ship-art-extra.json") as ExtraArt);
 
 /** The art and the map together, as the client loads them. */
 export const readShip = (): ShipLayout => ({ ...readArt(), ...readMap() });
