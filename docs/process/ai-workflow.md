@@ -5792,3 +5792,8 @@ The owner asked for the cryopod window on the phone character picker to be about
 - Added `CarriedRow` to `web/src/hud/InspectPanel.tsx`: your inventory slots (items plus empty slots) as one row under a divider at the bottom of the panel, shown whatever is being inspected. Tapping an item selects it (the new `onSelect` prop, wired to `select` in `GameView`).
 - One grid column per slot capped at the full tile size (`minmax(0, 4.75rem)`), each slot a size container with `--tile: 100cqw`, so tiles shrink instead of wrapping at any width.
 - Correction: the first ask was "only when inspecting yourself"; the owner changed it to always shown before it was built.
+
+## 2026-11-27: Take/Drop on the item's Inspect panel; single-press Take/Drop in the inventory
+
+- `optionsOn` (web/src/hud/targets.ts) no longer filters out `take`/`drop`, so they show on the item's Inspect panel (double press, like any action) and, as a side effect, on the phone peek bar for a tapped item. `ready` stays excluded.
+- The inventory panel's Take/Drop button on a selected tile is now a plain one-press button regardless of the "single press" setting: selecting the tile already is the first press (owner's call). Noted in web/CLAUDE.md beside `SINGLE_PRESS_ACTIONS`.

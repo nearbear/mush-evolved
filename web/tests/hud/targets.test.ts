@@ -155,14 +155,12 @@ describe("optionsOn", () => {
     expect(optionsOn(view, { kind: "player", id: "p0" })).toEqual([]);
   });
 
-  it("excludes take, drop, and ready actions", () => {
-    const actions: ActionOption[] = [
-      option({ type: "take", item: "wrench-1" }),
-      option({ type: "drop", item: "wrench-1" }),
-      option({ type: "ready" } as unknown as Action),
-    ];
+  it("puts take and drop on the item, and excludes ready", () => {
+    const take = option({ type: "take", item: "wrench-1" });
+    const drop = option({ type: "drop", item: "wrench-1" });
+    const actions: ActionOption[] = [take, drop, option({ type: "ready" } as unknown as Action)];
     const view = mockView({ actions });
-    expect(optionsOn(view, { kind: "item", id: "wrench-1" })).toEqual([]);
+    expect(optionsOn(view, { kind: "item", id: "wrench-1" })).toEqual([take, drop]);
     expect(optionsOn(view, { kind: "player", id: "p0" })).toEqual([]);
   });
 

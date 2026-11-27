@@ -53,8 +53,8 @@ export function optionsOn(view: PlayerView, target: Target): ActionOption[] {
  * panel, the pusher from his). An action that names nothing (search, a speech, getting up) is on yourself.
  */
 function aimedAt(view: PlayerView, a: Action, target: Target): boolean {
-  // Terminal actions are in the terminal's window, and the inventory panel takes and drops.
-  if (actionInTerminal(a.type) || a.type === "take" || a.type === "drop" || a.type === "ready") return false;
+  // Terminal actions are in the terminal's window. Take and drop are on the item's panel as well as the inventory's.
+  if (actionInTerminal(a.type) || a.type === "ready") return false;
   // Issue mission, Premonition and the swap-character cheat name a crewmate anywhere aboard: one button on your own panel opens a picker.
   if (a.type === "issue_mission" || a.type === "premonition" || a.type === "swap_character" || Object.keys(a).length === 1) return target.kind === "player" && target.id === view.you.id;
   return sameTarget(namedTarget(a), target);

@@ -2,7 +2,8 @@
 // full name is a tooltip (and the peek bar on touch), and only skill books carry a label, their
 // skill. Drag a tile between the two zones to take or drop it; the zones light up only when the server listed that action as legal. Tapping a tile inspects it and, for touch
 // (which has no reliable drag), shows a Take/Drop button on the selected tile. Shift-click on a
-// tile takes or drops it directly.
+// tile takes or drops it directly. That button fires on one press whatever the "single press" setting: selecting the
+// tile first already makes it a two-step action (owner, 2026-11-27).
 
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -10,7 +11,6 @@ import { useNames } from "../i18n/names.ts";
 import { legalIn, stackItemViews, type Action, type ItemView, type PlayerView, type Target } from "@mush2/shared";
 import { Hint } from "./IconButton.tsx";
 import { ConsumeEffects } from "./ConsumeEffects.tsx";
-import { DoublePressButton } from "./DoublePress.tsx";
 import { ItemAttrIcons } from "./ItemAttrIcons.tsx";
 import { ItemFace } from "./ItemFace.tsx";
 import { ItemIcon } from "./ItemIcon.tsx";
@@ -150,9 +150,9 @@ export function InventoryPanel({
         </Hint>
         <ItemAttrIcons item={item} mpPenalty={view.config.heavyMpPenalty} />
         {isSelected && legal(type, item) && (
-          <DoublePressButton className="item-action" aria-label={`${zone === "room" ? t("actions.take") : t("actions.drop")} ${names.itemOf(item)}`} onPress={() => onAction({ type, item: item.id })}>
+          <button type="button" className="item-action" aria-label={`${zone === "room" ? t("actions.take") : t("actions.drop")} ${names.itemOf(item)}`} onClick={() => onAction({ type, item: item.id })}>
             {zone === "room" ? t("actions.take") : t("actions.drop")}
-          </DoublePressButton>
+          </button>
         )}
       </li>
     );
