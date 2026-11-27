@@ -166,7 +166,7 @@
         {"x":18,"y":12,"kind":"ground","layer":0,"slice":"GROUND","frame":1},
         {"x":17,"y":12,"kind":"ground","layer":0,"slice":"GROUND","frame":1},
         {"x":14,"y":12,"kind":"ground","layer":0,"slice":"GROUND_DECK","frame":1},
-        {"x":16,"y":13,"kind":"entity","layer":2,"slice":"sofaReverse","frame":0},
+        {"x":15,"y":13,"kind":"entity","layer":2,"slice":"sofaReverse","frame":0},
         {"x":20,"y":12,"kind":"wall","layer":0,"slice":"BIG_WALL_R","frame":0}
       ]
     },
@@ -1016,8 +1016,9 @@
         {"x":5,"y":17,"kind":"entity","layer":3,"slice":"camera","frame":0},
         {"x":5,"y":19,"kind":"ground","layer":0,"slice":"GROUND_DECK","frame":8},
         {"x":5,"y":18,"kind":"ground","layer":0,"slice":"GROUND_DECK","frame":8},
-        {"x":6,"y":18,"kind":"entity","layer":2,"slice":"sofa","frame":0},
-        {"x":5,"y":21,"kind":"wall","layer":0,"slice":"WALL_L_DECK","frame":0}
+        {"x":6,"y":17,"kind":"entity","layer":2,"slice":"sofa","frame":0},
+        {"x":5,"y":21,"kind":"wall","layer":0,"slice":"WALL_L_DECK","frame":0},
+        {"x":6,"y":14,"kind":"ground","layer":0,"slice":"GROUND_DECK","frame":2}
       ]
     },
     {
@@ -1547,7 +1548,7 @@
         {"kind":"wall","layer":0,"slice":"BIG_WALL_L","frame":1,"x":10,"y":21},
         {"kind":"wall","layer":0,"slice":"BIG_WALL_L","frame":1,"x":21,"y":12},
         {"kind":"wall","layer":0,"slice":"COLUMN","frame":0,"x":21,"y":10},
-        {"x":15,"y":15,"kind":"entity","layer":2,"slice":"sofaReverse","frame":0},
+        {"x":16,"y":15,"kind":"entity","layer":2,"slice":"sofaReverse","frame":0},
         {"x":11,"y":13,"kind":"entity","layer":3,"slice":"beat_box","frame":0},
         {"x":20,"y":17,"kind":"ground","layer":0,"slice":"GROUND","frame":0},
         {"x":20,"y":16,"kind":"ground","layer":0,"slice":"GROUND","frame":0},
@@ -2269,7 +2270,7 @@
         {"x":8,"y":26,"kind":"ground","layer":0,"slice":"GROUND","frame":1},
         {"x":8,"y":25,"kind":"ground","layer":0,"slice":"GROUND","frame":1},
         {"kind":"wall","layer":0,"slice":"COLUMN","frame":0,"x":8,"y":22},
-        {"x":24,"y":4,"kind":"entity","layer":2,"slice":"sofaReverse","frame":0},
+        {"x":22,"y":4,"kind":"entity","layer":2,"slice":"sofaReverse","frame":0},
         {"x":8,"y":28,"kind":"wall","layer":0,"slice":"BIG_WALL_L","frame":1}
       ]
     },
@@ -3244,7 +3245,7 @@
         {"x":15,"y":14,"kind":"ground","layer":0,"slice":"GROUND","frame":6},
         {"x":15,"y":29,"kind":"ground","layer":0,"slice":"GROUND_DECK","frame":9},
         {"kind":"wall","layer":0,"slice":"BIG_WALL_R","frame":0,"x":20,"y":2},
-        {"x":16,"y":21,"kind":"entity","layer":2,"slice":"sofa","frame":0},
+        {"x":16,"y":20,"kind":"entity","layer":2,"slice":"sofa","frame":0},
         {"x":16,"y":29,"kind":"ground","layer":0,"slice":"GROUND_DECK","frame":9},
         {"x":16,"y":15,"kind":"ground","layer":0,"slice":"GROUND_DECK","frame":8},
         {"x":16,"y":14,"kind":"ground","layer":0,"slice":"GROUND_DECK","frame":9},
@@ -4156,7 +4157,7 @@
       "at": {"x":15,"y":19},
       "equipment": [
         {"id":"FUEL_TANK","tile":"tank_fuel_left_back","dir":"down","module":true},
-        {"id":"SOFA","tile":"sofa"}
+        {"id":"SOFA","tile":"sofaReverse"}
       ],
       "tiles": [
         {"x":11,"y":12,"kind":"wall","layer":0,"slice":"COLUMN","frame":0},
@@ -4239,7 +4240,7 @@
         {"x":11,"y":16,"kind":"ground","layer":0,"slice":"GROUND_DECK","frame":3},
         {"x":11,"y":15,"kind":"ground","layer":0,"slice":"GROUND_DECK","frame":3},
         {"kind":"wall","layer":0,"slice":"BIG_WALL_R","frame":1,"x":23,"y":12},
-        {"x":12,"y":16,"kind":"entity","layer":2,"slice":"sofa","frame":0}
+        {"x":15,"y":14,"kind":"entity","layer":2,"slice":"sofaReverse","frame":0}
       ]
     },
     {

@@ -5714,3 +5714,8 @@ The owner rewrote the en Shrink description: lying-down morale, and Comfort givi
 - **What worked:** Persistent already reached every action through `Action.chance` (only notes said otherwise), so it got a test rather than new code. Dumping description, modifier and references per skill into one file made the audit a reading task.
 - **Needs review:** the fr/es text is a draft for a native speaker. Gunner's English still says +50% while the code doubles it; it wasn't in the owner's list.
 - **Follow-up (owner):** Gunner's description now says it doubles the turret hit chance, worded like Infantryman's (en/fr/es), matching `gunner.accuracyFactor` (2).
+
+### 2026-11-26: Misaligned sofas
+
+- Owner reported built sofas drawn about a cell off their spot, while sleepers on them were right. The rotated sofa (`sofaReverse`, 3x1) is a mirror of `sofa` (1x3) that the original never placed, so tiles.xml left its offset at an untuned `0,0`. The footprint maths (R = 16) gives the mirrored offset `-14,-16`; fixed as `OFFSET_FIXES` in `tools/src/shipLayout/convert.ts` and regenerated `ship-art.json`. Checked with before/after `ship-render` crops read by the visual-check agent.
+- Worked: reading the slice numbers before looking at pictures; the bug was visible in two lines of data.
