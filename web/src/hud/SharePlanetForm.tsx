@@ -51,17 +51,19 @@ export function SharePlanetForm({ planet, onPost, onBack }: { planet: PlanetView
         <ul>
           {sectors.map((tag, i) => (
             <li key={i}>
-              <button
-                ref={i === 0 ? firstSlot : undefined}
-                type="button"
-                className="share-planet-slot"
-                aria-label={t("astro.shareSlot", { n: i + 1, sector: sectorName(tag) })}
-                aria-expanded={editing === i}
-                aria-controls={editing === i ? pickerId : undefined}
-                onClick={() => setEditing(editing === i ? null : i)}
-              >
-                <SectorIcon sector={tag} />
-              </button>
+              <Hint label={sectorName(tag)}>
+                <button
+                  ref={i === 0 ? firstSlot : undefined}
+                  type="button"
+                  className="share-planet-slot"
+                  aria-label={t("astro.shareSlot", { n: i + 1, sector: sectorName(tag) })}
+                  aria-expanded={editing === i}
+                  aria-controls={editing === i ? pickerId : undefined}
+                  onClick={() => setEditing(editing === i ? null : i)}
+                >
+                  <SectorIcon sector={tag} />
+                </button>
+              </Hint>
             </li>
           ))}
         </ul>
