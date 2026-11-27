@@ -1,5 +1,6 @@
 import { Action, IN_PRESELECTION, type ActionCost } from "./action.ts";
 import { logPublic } from "../log.ts";
+import { hasSkill } from "../skills.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
 export type CeasefireActionData = { type: "ceasefire" };
@@ -16,14 +17,14 @@ export class CeasefireAction extends Action<CeasefireActionData> {
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): CeasefireActionData[] {
     if (state.preselection) return [];
-    if (!player.skills.includes("diplomacy")) return [];
+    if (!hasSkill(player, "diplomacy")) return [];
     if (player.ceasefireUsed) return [];
     return [{ type: "ceasefire" }];
   }
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>): string | null {
     if (state.preselection) return IN_PRESELECTION;
-    if (!player.skills.includes("diplomacy")) return "no_skill";
+    if (!hasSkill(player, "diplomacy")) return "no_skill";
     if (player.ceasefireUsed) return "ceasefire_used";
     if ((state.ceasefires[player.room] ?? 0) > 0) return "already_ceasefire";
     return null;

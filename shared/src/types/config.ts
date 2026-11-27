@@ -482,6 +482,7 @@ export interface GameConfig {
     effect: {
       damage: [number, number]; // Inclusive HP range a landing punch removes, rolled uniformly (owner, 2026-10-24, eMushpedia "Mains nues": 1 to 2).
       sturdyBonusDamage: number; // Extra punch damage from the sturdy skill (confirmed 2026-10-16).
+      wrestlerBonusDamage: number; // Extra punch damage from the wrestler skill, not stacking with sturdy (owner, 2026-11-26).
     };
     crit: { chance: number; damage: [number, number] }; // A landing punch is critical with this chance and then rolls this range instead (owner, 2026-10-24, eMushpedia: 5 of 25 hit weight, 2 to 3; the wiki's broken-nose injury waits for #238).
     successChance: number; // Chance a punch lands, 0 to 1 (confirmed 2026-10-15: it misses 40% of the time).
@@ -1009,6 +1010,7 @@ export interface GameConfig {
     survivalReduction: number; // Taken off each damage a member with the Survival skill takes.
     botanistBonus: number; // Extra fruit per harvest with a living Botanist in the crew.
     newSectorTags: PlanetTag[]; // New Sector adds a hidden sector of one of these, uniformly (owner, 2026-11-26).
+    diplomacyTags: PlanetTag[]; // A Diplomat or Skilful member turns Fight in these sectors into Nothing to report (owner, 2026-11-26).
     // Item types found: alien fruits (picked uniformly by Harvest) and alien steaks (`alien_steak`), a starmap fragment, and the
     // artifacts an Artifact event or a fight's loot picks among, uniformly.
     loot: { harvest: ItemTypeId[]; provision: ItemTypeId; starmap: ItemTypeId; artifacts: ItemTypeId[] };

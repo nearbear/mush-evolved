@@ -15,6 +15,8 @@ const ICARUS = DEFAULT_CONFIG.expedition.room;
 export const ICARUS_BOARD_WAIT_CYCLES = 3;
 const ROPE_TAGS: ReadonlySet<string> = new Set(["CAVE", "MOUNTAIN", "SISMIC_ACTIVITY"]);
 const COMPASS_TAGS: ReadonlySet<string> = new Set(["FOREST", "DESERT", "CAVE"]);
+/** Sectors where a Diplomat or Skilful member keeps a Fight from happening (Intelligent life and `diplomacyTags`). */
+const DIPLOMACY_TAGS: ReadonlySet<string> = new Set([DEFAULT_CONFIG.expedition.gear.whiteFlag.tag, ...DEFAULT_CONFIG.expedition.diplomacyTags]);
 
 /** Whether the bot carries at least one unbroken gun with ammo left. */
 export function hasWorkingGun(view: PlayerView): boolean {
@@ -33,7 +35,7 @@ export function isFitForExpedition(view: PlayerView): boolean {
 
 /** Whether the bot has an expedition-helpful skill for the target planet's sectors. */
 export function isPriorityExpeditionClaimant(view: PlayerView, sectors: readonly (string | null)[]): boolean {
-  if (sectors.includes("INTELLIGENT") && (hasBotSkill(view, "diplomacy") || hasBotSkill(view, "skilful"))) return true;
+  if (sectors.some((s) => s !== null && DIPLOMACY_TAGS.has(s)) && (hasBotSkill(view, "diplomacy") || hasBotSkill(view, "skilful"))) return true;
   if (hasBotSkill(view, "sprint")) return true;
   if (hasBotSkill(view, "gunman") && hasWorkingGun(view)) return true;
   if (hasBotSkill(view, "survival")) return true;

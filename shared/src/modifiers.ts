@@ -51,6 +51,7 @@ import { sapper } from "./modifiers/sapper.ts";
 import { space_tactics } from "./modifiers/space_tactics.ts";
 import { sprint } from "./modifiers/sprint.ts";
 import { sturdy } from "./modifiers/sturdy.ts";
+import { wrestler } from "./modifiers/wrestler.ts";
 import { hyperactive } from "./modifiers/hyperactive.ts";
 import { antisocial } from "./modifiers/antisocial.ts";
 import { germaphobe } from "./modifiers/germaphobe.ts";
@@ -341,6 +342,7 @@ export const MODIFIERS: Record<string, Modifier> = {
   space_tactics,
   sprint,
   sturdy,
+  wrestler,
   bodyguard,
   // Character traits
   hyperactive,
@@ -832,7 +834,7 @@ export const shootPointsGain = (state: Readonly<GameState>, player: Readonly<Pla
 export const computerPointsCap = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
   fold("computerPointsCap", state.config.computer.capPoints, state, player, registry);
 
-/** The per-miss multiplier of a failure streak (turret shots, astro scans): `base` folded through the player's modifiers (for Persistent). */
+/** The per-miss multiplier of an action's failure streak: `base` folded through the player's modifiers (for Persistent). */
 export const failureStreakMultiplier = (state: Readonly<GameState>, player: Readonly<PlayerState>, base: number, registry: ModifierRegistry = MODIFIERS) =>
   fold("failureStreakMultiplier", base, state, player, registry);
 

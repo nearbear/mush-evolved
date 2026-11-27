@@ -77,4 +77,8 @@ describe("sturdy punch", () => {
     expect(hp([])).toBe(2);
     expect(hp(["sturdy"])).toBe(3);
   });
+  it("Wrestler adds 2 damage, not stacking with Solid", () => {
+    expect(hp(["wrestler"])).toBe(4);
+    expect(hp(["wrestler", "sturdy"])).toBe(4);
+  });
 });

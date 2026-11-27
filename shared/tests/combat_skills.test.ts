@@ -177,6 +177,18 @@ describe("Persistent", () => {
     expect(option(s, "p0", scan)!.chance).toBeCloseTo(Math.min(1, chance * 1.5));
     expect(option(s, "p1", scan)!.chance).toBeCloseTo(Math.min(1, chance * failureMultiplier));
   });
+
+  it("does the same for any action with odds, such as a punch", () => {
+    const s = createGame(makeSeats(3), structuredClone(DEFAULT_CONFIG), 7);
+    for (const p of s.players) p.room = "LABORATORY";
+    const punch = { type: "punch", target: "p2" } as const;
+    const { successChance } = s.config.punch;
+    s.failureStreaks.p0 = { punch: 1 };
+    s.failureStreaks.p1 = { punch: 1 };
+    give(s, "p0", "persistent");
+    expect(option(s, "p0", punch)!.chance).toBeCloseTo(Math.min(1, successChance * 1.5));
+    expect(option(s, "p1", punch)!.chance).toBeCloseTo(Math.min(1, successChance * s.config.failureMultiplier));
+  });
 });
 
 describe("Space Tactics", () => {

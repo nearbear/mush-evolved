@@ -1,4 +1,5 @@
 import { Action, type ActionVisibility } from "./action.ts";
+import { hasSkill } from "../skills.ts";
 import { addStatus } from "../statuses.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
@@ -21,7 +22,7 @@ export class BecomeGeniusAction extends Action<BecomeGeniusActionData> {
   }
 
   override validate(_state: Readonly<GameState>, player: Readonly<PlayerState>): string | null {
-    if (!player.skills.includes("genius")) return "no_skill";
+    if (!hasSkill(player, "genius")) return "no_skill";
     return player.geniusUsed ? "genius_used" : null;
   }
 
