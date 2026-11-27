@@ -6,8 +6,8 @@
 
 import type { RelayProgressConfig } from "./relay.ts";
 import { rollShuffle, streamFor } from "./rng.ts";
-import type { SkillId } from "./skills.ts";
-import type { GameState } from "./types.ts";
+import { hasSkill, SKILFUL_ROLES, type SkillId } from "./skills.ts";
+import type { GameState, PlayerState } from "./types.ts";
 
 /**
  * Every project in the original's live list (`projets.json`, above `$EOF`), each with card art in `Mush/www/img/cards/projects/`
@@ -65,6 +65,17 @@ export const PROJECT_IDS: readonly ProjectId[] = PROJECTS.map((p) => p.id);
 /** The skills that speed up work on a project (none for an unknown id). */
 export function projectSkills(project: string): readonly SkillId[] {
   return PROJECTS.find((p) => p.id === project)?.skills ?? [];
+}
+
+/**
+ * The skills that speed up `player`'s work on a project: its tags, plus `skilful` when the project is tagged with a role a
+ * Skilful player counts as (`SKILFUL_ROLES`) and the player has none of those tags themselves, so the boost never stacks
+ * (owner, 2026-11-26). `tokenBase` then counts `skilful` like any other matching tag.
+ */
+export function projectSkillsFor(project: string, player: Readonly<PlayerState>): readonly SkillId[] {
+  const skills = projectSkills(project);
+  const roles = skills.filter((s) => SKILFUL_ROLES.includes(s));
+  return roles.length > 0 && !roles.some((s) => hasSkill(player, s)) ? [...skills, "skilful"] : skills;
 }
 
 /** A project's base progress efficiency (1–18, mirrored from eMush; owner, 2026-11-23), or `fallback` for an unknown id. */

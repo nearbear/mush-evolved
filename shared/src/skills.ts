@@ -185,6 +185,9 @@ export function skillsOf(player: Readonly<SkillHolder>): string[] {
   return [...player.skills, ...(player.bookSkill === undefined ? [] : [player.bookSkill]), ...player.mushSkills, ...innate];
 }
 
+/** The skills a Skilful (`skilful`) player counts as having for merchants' deals and NERON projects (owner, 2026-11-26). */
+export const SKILFUL_ROLES: readonly SkillId[] = ["botanic", "diplomacy", "biologist"];
+
 export function hasSkill(player: Readonly<SkillHolder>, skill: string): boolean {
   return (
     player.skills.includes(skill) ||
