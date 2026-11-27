@@ -13,6 +13,7 @@ import { SETTINGS_ICON } from "../art/assets.ts";
 import { parseVerbosity, setVerbosity, useVerbosity } from "../announce.ts";
 import { parseFogDepth, setFogDepth, useFogDepth } from "../fogDepth.ts";
 import { LanguageSwitcher } from "../i18n/LanguageSwitcher.tsx";
+import { resetDoublePressCount, setSinglePress, useDoublePressesDone, useSinglePress } from "../pressMode.ts";
 import { resetTips, setTipsOn, useTipPrefs } from "../tips.ts";
 import { parseUiScale, setUiScale, UI_SCALES, useUiScale } from "../uiScale.ts";
 import "./settings.css";
@@ -59,6 +60,8 @@ export function SettingsDialog({
   const uiScale = useUiScale();
   const verbosity = useVerbosity();
   const tips = useTipPrefs();
+  const singlePress = useSinglePress();
+  const pressesDone = useDoublePressesDone();
   const allOn = CHEATS.every((c) => activeCheats.includes(c));
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
@@ -107,9 +110,22 @@ export function SettingsDialog({
         </label>
         <div className="settings-row">
           <label>
+            <input type="checkbox" checked={singlePress} onChange={(e) => setSinglePress(e.target.checked)} /> {t("settings.singlePress.label")}
+          </label>
+        </div>
+        <div className="settings-row">
+          <label>
             <input type="checkbox" checked={tips.on} onChange={(e) => setTipsOn(e.target.checked)} /> {t("settings.tips.show")}
           </label>
-          <button type="button" onClick={resetTips} disabled={tips.muted.length === 0 && tips.snoozed.length === 0}>
+          {/* Also restarts the count behind the "press twice" tip (pressMode.ts), so it can show again. */}
+          <button
+            type="button"
+            onClick={() => {
+              resetTips();
+              resetDoublePressCount();
+            }}
+            disabled={tips.muted.length === 0 && tips.snoozed.length === 0 && pressesDone === 0}
+          >
             {t("settings.tips.reset")}
           </button>
         </div>

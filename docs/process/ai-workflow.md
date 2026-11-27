@@ -5774,3 +5774,15 @@ Checked the README for stale wording against the code: game endings (now Sol/Ede
 
 - Asked to hide the lobby's single-player button on servers without `ALLOW_CHEATS`. The lobby had no way to know the server's vars, so `/api/me` now carries a top-level `singlePlayer` flag (`env.ALLOW_CHEATS === "true"`) on every variant, and the lobby renders the button only when it's true. Chose `/api/me` over a new endpoint because the lobby already fetches it, including while aboard and signed out.
 - Hiding only: the matchmaker still accepts a `singlePlayer` message from any client. Flagged to the owner rather than enforced.
+
+### 2026-11-27: Taller lobby window on phones
+
+The owner asked for the cryopod window on the phone character picker to be about 20% taller. The phone override in `web/src/lobby/lobby.css` went from `min(30rem, 100dvh - 7rem)` to `min(36rem, ...)`. It applies to every lobby step, not just the picker, so the window doesn't change size between steps. Worked first try; no corrections.
+
+## 2026-11-27: Single-press setting and a "press twice" hint
+
+- Added a per-device "Act on a single press" checkbox in Settings > General (`web/src/pressMode.ts`, localStorage like `fogDepth.ts`); `useDoublePress` fires on the first press when it's on, so every action/move button behaves like `SINGLE_PRESS_ACTIONS`.
+- Hint: until a player has done more than 5 double-press actions (counted per device), two lone presses in a row that arm a button and lapse show a warning toast saying to press twice and pointing at the setting. Thresholds (`HINT_UNTIL_DONE`, `HINT_AFTER_LAPSES`) are constants; "two lapses" was the AI's pick.
+- Needed correction: importing the app's `i18n/index.ts` into `DoublePress.tsx` broke a node-environment test (that module touches `document` at load); importing the global `i18next` instance instead fixed it.
+- Revised (owner): 3 lapsed presses, reset by any successful action, and shown as a `doublePress` tip in the existing tip card rather than a toast. Added `CLIENT_TIPS` to `shared/src/tips.ts` for tips the client raises from input rather than from the view; `TipCard` puts it first when `pressMode.ts` says it applies, so dismiss, "don't show again" and "Show tips" all cover it.
+- Follow-up (owner): an armed button now keeps a white outline (`button[data-armed]` in buttons.css; the outline the owner saw was likely the browser's focus ring, which isn't in our CSS or the art), and "Show all tips again" also resets the double-press count. Debugging note: the owner didn't see the tip at first because their browser had already counted more than 5 double presses; a jsdom test of the real hook (fake timers, `act`) proved the logic before anyone touched storage.

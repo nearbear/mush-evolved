@@ -195,6 +195,9 @@
     "tips": {
       "show": "Mostrar consejos",
       "reset": "Volver a mostrar todos los consejos"
+    },
+    "singlePress": {
+      "label": "Actuar con una sola pulsación"
     }
   },
   "announce": {
@@ -2739,6 +2742,10 @@
       "there_one": "Lo más cercano: {{room}}, a {{count}} puerta.",
       "there_many": "Lo más cercano: {{room}}, a {{count}} puertas.",
       "there_other": "Lo más cercano: {{room}}, a {{count}} puertas."
+    },
+    "doublePress": {
+      "title": "Pulsa dos veces",
+      "body": "Pulsa dos veces una acción para hacerla, así un toque accidental nunca gasta puntos. Para actuar con una sola pulsación, activa «Actuar con una sola pulsación» en los ajustes."
     },
     "hunters": {
       "title": "Los hunters atacan",

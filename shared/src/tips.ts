@@ -6,7 +6,12 @@
 import { nearest, roomsWith, doorCount } from "./situation.ts";
 import type { PlayerView, RoomId } from "./types.ts";
 
-export const TIP_IDS = ["hunters", "hurt", "eat", "dirty", "rest", "noMp", "welcome"] as const;
+export const TIP_IDS = ["doublePress", "hunters", "hurt", "eat", "dirty", "rest", "noMp", "welcome"] as const;
+/**
+ * Tips the client raises from how the player is using it rather than from the view, so `tipsFor` never returns them:
+ * `doublePress` (web/src/pressMode.ts) when a new player's presses keep arming buttons without firing them.
+ */
+export const CLIENT_TIPS: ReadonlySet<TipId> = new Set<TipId>(["doublePress"]);
 export type TipId = (typeof TIP_IDS)[number];
 
 /** A tip that applies now, with what its text needs. `room` and `doors` name the nearest place to go (0 doors: here). */

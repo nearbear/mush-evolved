@@ -3,9 +3,12 @@
 // `touch-action: manipulation`, so the second tap isn't eaten as a zoom), and two Enter or Space presses.
 // The first press arms the button (`data-armed`, drawn pressed in buttons.css); a second one in time fires.
 // Actions in `SINGLE_PRESS_ACTIONS` are the exception: they cost nothing and are easy to undo, so one press does them.
+// A player can also turn on "single press for actions" in the settings (pressMode.ts), which makes every one fire at once;
+// until then, a new player whose presses keep lapsing gets the `doublePress` tip saying to press twice.
 
 import { type MouseEvent, type ReactNode, useEffect, useRef, useState } from "react";
 import type { Action } from "@mush2/shared";
+import { noteFired, noteLapse, useSinglePress } from "../pressMode.ts";
 
 /**
  * Action types too inconsequential to need the second press (owner, 2026-11-14): free, and undone by closing a window.
@@ -21,21 +24,27 @@ export const DOUBLE_PRESS_KEY_MS = 1500;
 /**
  * `onClick` for a button that fires `fire` on its second press in quick succession, and whether it's armed.
  * With `single`, the first press fires (for `SINGLE_PRESS_ACTIONS`); it's a flag rather than a separate hook so a
- * button can switch between the two without breaking the rules of hooks.
+ * button can switch between the two without breaking the rules of hooks. The "single press" setting makes every
+ * button act as if `single` were set.
  */
 export function useDoublePress(fire: () => void, single = false): { onClick: (e: MouseEvent) => void; armed: boolean } {
   const [armed, setArmed] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const singleSetting = useSinglePress();
   useEffect(() => () => clearTimeout(timer.current), []);
   const onClick = (e: MouseEvent) => {
     clearTimeout(timer.current);
-    if (armed || single) {
+    if (armed || single || singleSetting) {
+      noteFired(armed);
       setArmed(false);
       fire();
       return;
     }
     setArmed(true);
-    timer.current = setTimeout(() => setArmed(false), e.detail === 0 ? DOUBLE_PRESS_KEY_MS : DOUBLE_PRESS_MS);
+    timer.current = setTimeout(() => {
+      setArmed(false);
+      noteLapse();
+    }, e.detail === 0 ? DOUBLE_PRESS_KEY_MS : DOUBLE_PRESS_MS);
   };
   return { onClick, armed };
 }

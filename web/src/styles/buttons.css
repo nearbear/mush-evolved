@@ -39,6 +39,11 @@ button[data-armed] {
   --btn-mid: url("../../../Mush/www/img/design/butbg_on.gif");
   --btn-right: url("../../../Mush/www/img/design/butright_on.gif");
 }
+/* A button waiting for its second press (useDoublePress) also gets a white outline, which hover can't hide. */
+button[data-armed] {
+  outline: 1px solid #fff;
+  outline-offset: 1px;
+}
 button:disabled,
 button.action-disabled {
   cursor: default;

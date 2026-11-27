@@ -190,6 +190,9 @@
     "tips": {
       "show": "Show tips",
       "reset": "Show all tips again"
+    },
+    "singlePress": {
+      "label": "Act on a single press"
     }
   },
   "announce": {
@@ -2787,6 +2790,10 @@
       "here": "It's in this room.",
       "there_one": "Nearest: {{room}}, {{count}} door away.",
       "there_other": "Nearest: {{room}}, {{count}} doors away."
+    },
+    "doublePress": {
+      "title": "Press twice",
+      "body": "Press an action twice to do it, so a stray tap never spends points. To act on one press instead, turn on \"Act on a single press\" in the settings."
     },
     "hunters": {
       "title": "Hunters are attacking",

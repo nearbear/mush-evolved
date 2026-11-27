@@ -195,6 +195,9 @@
     "tips": {
       "show": "Afficher les astuces",
       "reset": "Réafficher toutes les astuces"
+    },
+    "singlePress": {
+      "label": "Agir d'un seul appui"
     }
   },
   "announce": {
@@ -2739,6 +2742,10 @@
       "there_one": "Le plus proche : {{room}}, à {{count}} porte.",
       "there_many": "Le plus proche : {{room}}, à {{count}} portes.",
       "there_other": "Le plus proche : {{room}}, à {{count}} portes."
+    },
+    "doublePress": {
+      "title": "Appuyez deux fois",
+      "body": "Appuyez deux fois sur une action pour la faire : un appui accidentel ne coûte ainsi aucun point. Pour agir d'un seul appui, activez « Agir d'un seul appui » dans les paramètres."
     },
     "hunters": {
       "title": "Des hunters attaquent",

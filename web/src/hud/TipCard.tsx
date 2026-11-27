@@ -1,11 +1,13 @@
 // One tip at a time over the room (#351): what the shared catalog says applies (`tipsFor`), minus what the viewer
-// dismissed or muted (`web/src/tips.ts`). Advice only: it reads the view and sends nothing to the server.
+// dismissed or muted (`web/src/tips.ts`), with the client's own `doublePress` tip (`web/src/pressMode.ts`) first when it
+// applies. Advice only: it reads the view and sends nothing to the server.
 
 import { ONCE_TIPS, tipsFor, type PlayerView, type Tip } from "@mush2/shared";
 import { useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { announce, useVerbosity } from "../announce.ts";
 import { useNames } from "../i18n/names.ts";
+import { useDoublePressTip } from "../pressMode.ts";
 import { dismissTip, muteTip, shownTip, syncTips, useTipPrefs } from "../tips.ts";
 import "./tips.css";
 
@@ -14,7 +16,8 @@ export function TipCard({ view }: { view: PlayerView }) {
   const names = useNames();
   const prefs = useTipPrefs();
   const verbosity = useVerbosity();
-  const tips = useMemo(() => tipsFor(view), [view]);
+  const doublePress = useDoublePressTip();
+  const tips = useMemo(() => (doublePress ? [{ id: "doublePress" as const }, ...tipsFor(view)] : tipsFor(view)), [view, doublePress]);
   const tip = shownTip(tips, prefs);
   const ids = tips.map((x) => x.id).join(",");
 
