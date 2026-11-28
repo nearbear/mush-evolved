@@ -1361,6 +1361,7 @@
     "logisticsGave": "You give 1 AP to {{target}}.",
     "logisticsGot": "{{name}}'s logistics gives you 1 AP.",
     "dismantled": "{{name}} dismantled the {{item}} and recovered scrap.",
+    "accessedTerminal": "{{name}} accessed the {{equipment}}.",
     "dismantledEquipment": "{{name}} dismantled the {{equipment}} and recovered scrap.",
     "dismantleEquipmentFailed": "You failed to dismantle the {{equipment}}.",
     "tookFrom": "{{name}} took a {{item}} from the {{equipment}}.",

@@ -3,7 +3,7 @@ import { DEFAULT_CONFIG } from "../src/config.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action } from "../src/types.ts";
-import { costOf, makeSeats, offered } from "./support.ts";
+import { costOf, makeSeats, must, offered } from "./support.ts";
 
 const seats = makeSeats(3, "others");
 const ASTRO: Action = { type: "access", equipment: "COMMAND_CENTER:ASTRO_MODULE" };
@@ -22,13 +22,25 @@ describe("accessing a terminal", () => {
     expect(costOf(s, "p0", ASTRO)).toEqual({ ap: 0, mp: 0 });
   });
 
-  it("changes nothing but where you are (you sit at it, spot.ts), and is left out of the action history (history.ts)", () => {
+  it("changes nothing but where you are (you sit at it, spot.ts) and the log, and is left out of the action history (history.ts)", () => {
     const s = game("COMMAND_CENTER");
     const r = applyAction(s, "p0", ASTRO);
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     r.state.players[0]!.spot = s.players[0]!.spot;
-    expect(r.state).toEqual(s);
+    r.state.players.forEach((p, i) => (p.logSeen = s.players[i]!.logSeen));
+    expect({ ...r.state, log: s.log, nextLogId: s.nextLogId }).toEqual(s);
+  });
+
+  it("logs every access in the room's public history, naming the terminal", () => {
+    const s = game("COMMAND_CENTER");
+    s.players[2]!.room = "LABORATORY";
+    const once = must(applyAction(s, "p0", ASTRO));
+    const twice = must(applyAction(once, "p0", ASTRO));
+    const lines = (id: string) => viewFor(twice, id).log.filter((e) => e.key === "accessedTerminal");
+    expect(lines("p1")).toHaveLength(2);
+    expect(lines("p1")[0]!.params).toMatchObject({ name: s.players[0]!.character, equipment: "ASTRO_MODULE" });
+    expect(lines("p2")).toHaveLength(0);
   });
 
   it("is refused from another room or for a non-terminal", () => {

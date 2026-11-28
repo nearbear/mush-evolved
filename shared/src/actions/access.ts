@@ -1,6 +1,7 @@
 import { Action, isString } from "./action.ts";
 import { canAccessTerminal } from "../bios.ts";
 import { EQUIPMENT_TYPES, isEquipmentEnabled } from "../equipment.ts";
+import { logPublic } from "../log.ts";
 import { occupy } from "../spot.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
@@ -28,8 +29,11 @@ export class AccessAction extends Action<AccessActionData> {
       .map((equipment) => ({ type: "access", equipment: equipment.id }));
   }
 
-  // Sits you at it, on a free chair if there is one, until you close its window (#192, spot.ts).
+  // Sits you at it, on a free chair if there is one, until you close its window (#192, spot.ts). Every access is a public
+  // room log line naming the terminal, reopening one you're already at included (owner, 2026-11-27).
   override apply(next: GameState, player: PlayerState, target: AccessActionData): void {
+    const equip = next.equipment[player.room]?.find((eq) => eq.id === target.equipment);
+    if (equip) logPublic(next, player.room, "accessedTerminal", { name: player.character, equipment: equip.type });
     occupy(next, player, target.equipment);
   }
 

@@ -5879,3 +5879,7 @@ Step 1 of #502. Added `gender` (`male | female | neutral`) to `CHARACTERS`, take
 
 - Asked: the iTrackie's Features tab shouldn't reset to Botany; client only.
 - Done: `web/src/featureTab.ts` stores the picked feature per device in localStorage (key `mush2.featureTab`, like `pressMode.ts`), validated against `FEATURE_CHANNELS` falling back to the first feature in the list (`FEATURE_CHANNELS[0]`, owner's follow-up: not hard-coded Botany); `ITrackie` loads it as its initial state and saves on change. One small edit, no correction needed.
+
+## 2026-11-27: Terminal access logged
+
+- Owner asked for a log event whenever someone accesses a terminal. Claude asked three questions; owner chose a public room line (`accessedTerminal`), naming the terminal, written on every access (reopening included). Implemented in `AccessAction.apply` with en/fr/es lines; the existing "access changes nothing" test was loosened to ignore the log and every player's `logSeen`, which the new line bumps. Worked: the `rule` skill's ask-first step caught the visibility choice, which eMush's clean-room tool couldn't settle.

@@ -1386,6 +1386,7 @@
     "logisticsGave": "Vous donnez 1 PA à {{target}}.",
     "logisticsGot": "La logistique de {{name}} vous donne 1 PA.",
     "dismantled": "{{name}} a démonté : {{item}} et récupéré des débris.",
+    "accessedTerminal": "{{name}} a accédé à : {{equipment}}.",
     "dismantledEquipment": "{{name}} a démonté : {{equipment}} et récupéré des débris.",
     "dismantleEquipmentFailed": "Vous n'avez pas réussi à démonter : {{equipment}}.",
     "tookFrom": "{{name}} a pris : {{item}} ({{equipment}}).",
