@@ -17,7 +17,7 @@ export type SwapCharacterActionData = { type: "swap_character"; crewmate: Player
  */
 export class SwapCharacterAction extends Action<SwapCharacterActionData> {
   override visibility: ActionVisibility = "private";
-  override timed = false;
+  override instant = true;
 
   constructor() {
     super("swap_character", { crewmate: isString });

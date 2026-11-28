@@ -16,7 +16,7 @@ export type ReportDoorActionData = { type: "report_door"; door: DoorId };
 
 /** Report the fire in your room. */
 export class ReportFireAction extends Action<ReportFireActionData> {
-  override timed = false;
+  override instant = true;
 
   constructor() {
     super("report_fire");
@@ -44,7 +44,7 @@ export class ReportFireAction extends Action<ReportFireActionData> {
 
 /** Report a broken piece of equipment in your room. Items can't be reported. */
 export class ReportEquipmentAction extends Action<ReportEquipmentActionData> {
-  override timed = false;
+  override instant = true;
   // It names broken equipment, which only `onBroken` actions may.
   override onBroken = true;
 
@@ -84,7 +84,7 @@ export class ReportEquipmentAction extends Action<ReportEquipmentActionData> {
 
 /** Report a broken door of your room. */
 export class ReportDoorAction extends Action<ReportDoorActionData> {
-  override timed = false;
+  override instant = true;
 
   constructor() {
     super("report_door", { door: isString });

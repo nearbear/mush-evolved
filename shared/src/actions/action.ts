@@ -100,8 +100,15 @@ export class Action<T extends { type: string }> {
   tagsFor(_state: Readonly<GameState>, _action: T): readonly ActionTag[] {
     return this.tags;
   }
-  /** Takes `config.action.durationMs` and waits its turn in the queue (queue.ts). False only for only a few actions. */
-  timed: boolean = true;
+  /** Happens at once instead of being timed. Set on the few such actions; terminal actions are always instant (see `timed`). */
+  instant: boolean = false;
+  /**
+   * Takes `config.action.durationMs` and waits its turn in the queue (queue.ts). False for `instant` actions and for
+   * every terminal action (owner, 2026-11-27). A getter, since a subclass's `terminal` is set after this constructor runs.
+   */
+  get timed(): boolean {
+    return !this.instant && !this.terminal;
+  }
   /** Kept in the actor's action history (history.ts), which Interrogate and Chitchat reveal. False for the few eMush leaves out, and for moving. */
   recorded: boolean = true;
   /** Done in a terminal's window (web TerminalDialog), so the inspect panel leaves it out. Fixed per type, like visibility. */

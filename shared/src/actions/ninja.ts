@@ -20,7 +20,7 @@ export const isNinja = (p: Readonly<PlayerState>): boolean => p.role === "mush" 
  */
 export class BecomeNinjaAction extends Action<BecomeNinjaActionData> {
   override visibility: ActionVisibility = "private";
-  override timed = false;
+  override instant = true;
   override recorded = false;
 
   constructor() {
@@ -50,7 +50,7 @@ export class BecomeNinjaAction extends Action<BecomeNinjaActionData> {
 /** Become normal again (owner, 2026-11-22). 0 AP, instant, private, not recorded; allowed anywhere. */
 export class BecomeNormalAction extends Action<BecomeNormalActionData> {
   override visibility: ActionVisibility = "private";
-  override timed = false;
+  override instant = true;
   override recorded = false;
 
   constructor() {

@@ -9,7 +9,6 @@ export class DeletePlanetAction extends Action<DeletePlanetActionData> {
   override terminal = true;
 
   override visibility = "private" as const;
-  override timed = false;
 
   constructor() {
     super("delete_planet", { equipment: isString, planet: isString });

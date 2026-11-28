@@ -16,7 +16,7 @@ type SlotTarget = { plan: string; slot: number };
 
 /** The free, untimed, unrecorded base of the plan actions. */
 export abstract class PlanAction<T extends { type: string }> extends Action<T> {
-  override timed = false;
+  override instant = true;
   override recorded = false;
   override visibility = "private" as const;
 }

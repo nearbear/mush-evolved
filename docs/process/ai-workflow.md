@@ -5924,3 +5924,9 @@ the row, and the bar stops at the row's padding instead of running its full heig
 - Problem: the local dev ship sat in pre-selection for days with two humans and no bots. The dev bot fill was a one-shot in-memory `setTimeout` armed only on the first join; a `wrangler dev` reload (any server edit) inside those 8 s dropped it, and later joins never re-armed it.
 - Fix (owner picked the simple option over a Durable Object alarm): `GameRoom.join` re-arms the fill on every join while the ship is in pre-selection on a dev server, replacing any pending timer so only one fill runs. Test simulates the lost timer with `vi.clearAllTimers()`.
 - What worked: `npm run dev-state` showed the stuck state (cycle 20, pre-selection, two human seats) at once, which pointed straight at the timer.
+
+## 2026-11-27: Terminal actions are instant
+
+- **Decision (owner):** every terminal action (`terminal = true`) is untimed: no duration bar, no queue wait.
+- **What needed correction:** I first added `override timed = false` to each of the 25 terminal action files. The owner asked for the `terminal` flag to imply it instead. Because subclass field initializers run after the base constructor, `Action.timed` became a getter (`!instant && !terminal`), and the 11 existing `override timed = false` lines became `override instant = true` (TypeScript won't let a field override an accessor). One rule, and a new terminal action can't forget it.
+- **What worked:** a registry-wide test (every `terminal` def has `timed === false`) pins it without listing actions.

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { ACTIONS } from "../src/actions.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { clearQueue, nextDue, queueAction, tick } from "../src/queue.ts";
 import { applyInput } from "../src/replay.ts";
@@ -115,6 +116,12 @@ describe("timed actions", () => {
     s = must(queueAction(s, "p0", { type: "ready" }, 0));
     expect(player(s, "p0").ready).toBe(true);
     expect(player(s, "p0").queue).toEqual([]);
+  });
+
+  it("every terminal action is instant (owner, 2026-11-27)", () => {
+    const terminal = Object.values(ACTIONS).filter((def) => def.terminal);
+    expect(terminal.length).toBeGreaterThan(0);
+    expect(terminal.filter((def) => def.timed)).toEqual([]);
   });
 
   it("an action queued before End cycle still happens, but nothing new can be queued once ready", () => {

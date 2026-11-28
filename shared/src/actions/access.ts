@@ -14,7 +14,7 @@ export type AccessActionData = { type: "access"; equipment: string };
  */
 export class AccessAction extends Action<AccessActionData> {
   // Only opens the terminal's window, which the client does at once; the terminal's own actions are timed.
-  override timed = false;
+  override instant = true;
 
   // Left out of the action history (owner, 2026-10-24).
   override recorded = false;

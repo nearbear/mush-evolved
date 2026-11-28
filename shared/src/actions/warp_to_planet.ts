@@ -14,7 +14,6 @@ export type WarpToPlanetActionData = { type: "warp_to_planet"; equipment: string
  */
 export class WarpToPlanetAction extends Action<WarpToPlanetActionData> {
   override terminal = true;
-  override timed = false;
   override recorded = false;
 
   constructor() {

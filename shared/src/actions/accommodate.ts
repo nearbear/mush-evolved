@@ -128,7 +128,7 @@ export class AcceptAccommodationAction extends Action<AcceptAccommodationActionD
 
 export class StopAccommodationAction extends Action<StopAccommodationActionData> {
   // Happens at once, skipping the queue (owner, 2026-10-19).
-  override timed = false;
+  override instant = true;
 
   constructor() {
     super("stop_accommodation", { target: isString });

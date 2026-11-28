@@ -19,7 +19,7 @@ export const isNimble = (p: Readonly<PlayerState>): boolean =>
  */
 export class EnterNimbleAction extends Action<EnterNimbleActionData> {
   override visibility: ActionVisibility = "private";
-  override timed = false;
+  override instant = true;
 
   constructor() {
     super("enter_nimble");
@@ -47,7 +47,7 @@ export class EnterNimbleAction extends Action<EnterNimbleActionData> {
 /** Exit Nimble mode (owner, 2026-11-14). 0 AP, instant, private. */
 export class ExitNimbleAction extends Action<ExitNimbleActionData> {
   override visibility: ActionVisibility = "private";
-  override timed = false;
+  override instant = true;
 
   constructor() {
     super("exit_nimble");
