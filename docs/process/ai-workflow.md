@@ -5965,3 +5965,7 @@ Removed repeated code in `server/src/GameRoom.ts`: `allow(limiter, seat)` (rate 
 ## 2026-11-27: Unblock real words in moderation
 
 The owner asked why "shit" was still masked; it had never been removed (it was in `BLOCKED_WORDS` since the list was added). At the owner's request no real words are blocked now. The list holds one made-up word, "zorblaxt", so the existing tests (chat, names, setups, replay moderation, social moderation) still check masking end to end without mocking the module. All test fixtures that used swear words now use it.
+
+## 2026-11-27: Update notice stuck on staging after a deploy
+
+A staging tab kept showing "A new version of the game is available" through hard reloads. Client, ship and matchmakers all reported the current build; the owner found the ship's socket dropping (1006) and PartySocket's reconnect reaching the previous deploy's Durable Object for a few minutes, whose build message tripped the one-shot notice. I first proposed hiding the toast again on a later matching build (inside `Toasts.tsx`); the owner redirected to a cleaner design: wait 5 s after a mismatch and show only if no socket reported the matching build meanwhile, keeping the toast unaware of builds. Now `buildWatcher` in `web/src/buildCheck.ts`, tested with fake timers. Correction worth noting: I misread deploy timestamps (UTC vs local) and first claimed the old code had lingered two hours; it was minutes.
