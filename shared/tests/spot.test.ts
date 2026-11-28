@@ -245,6 +245,26 @@ describe("sitting at a terminal (#192)", () => {
     expect(spotOf(access(s, "p1", "NEXUS_ROOM:NERON_CORE"), "p1")).toEqual({ kind: "occupancy", equipment: "NEXUS_ROOM:NERON_CORE" });
   });
 
+  it("people standing at a terminal each get a place of their own, the first free one", () => {
+    const CORE = "NEXUS_ROOM:NERON_CORE";
+    const s = ship();
+    s.players.forEach((p) => (p.room = "NEXUS_ROOM"));
+    const all = ["p0", "p1", "p2", "p3"].reduce((st, id) => access(st, id, CORE), s);
+    expect(["p0", "p1", "p2", "p3"].map((id) => spotOf(all, id))).toEqual([
+      { kind: "occupancy", equipment: CORE },
+      { kind: "occupancy", equipment: CORE, stand: 1 },
+      { kind: "occupancy", equipment: CORE, stand: 2 },
+      { kind: "occupancy", equipment: CORE, stand: 3 },
+    ]);
+    // Opening it again keeps your place; one freed up goes to the next to come.
+    expect(spotOf(access(all, "p2", CORE), "p2")).toEqual({ kind: "occupancy", equipment: CORE, stand: 2 });
+    const left = must(walk(must(walk(all, "p1", 1, 1, false)), "p3", 2, 2, false));
+    expect(spotOf(access(left, "p3", CORE), "p3")).toEqual({ kind: "occupancy", equipment: CORE, stand: 1 });
+    // Places at another terminal, or in another room, don't count.
+    const lab = access(access(ship(), "p0"), "p1");
+    expect(spotOf(lab, "p1")).toEqual({ kind: "occupancy", equipment: LAB });
+  });
+
   it("every chair is taken in turn on the bridge, one per terminal", () => {
     const s = ship();
     s.players.forEach((p) => (p.room = "COMMAND_CENTER"));
@@ -258,6 +278,7 @@ describe("sitting at a terminal (#192)", () => {
     const spot = { kind: "occupancy", equipment: LAB, chair: 0 } as const;
     expect(normalizeSpot({ ...spot, extra: 1 } as never)).toEqual(spot);
     expect(normalizeSpot({ kind: "occupancy", equipment: LAB })).toEqual({ kind: "occupancy", equipment: LAB });
+    expect(normalizeSpot({ kind: "occupancy", equipment: LAB, stand: 2 })).toEqual({ kind: "occupancy", equipment: LAB, stand: 2 });
     const r = applyInput(ship(), { type: "action", by: "p1", at: 1000, action: { type: "access", equipment: LAB } } as never);
     expect(r.ok && player(r.state, "p1").spot).toEqual(spot);
   });

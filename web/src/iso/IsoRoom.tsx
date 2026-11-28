@@ -474,7 +474,7 @@ export function IsoRoom({
   // that isn't this room's floor (an old or tampered spot) counts as no spot.
   const floorKeys = useMemo(() => new Set(cells.map((c) => `${c.x},${c.y}`)), [cells]);
   // At a terminal (#192): its chair, or its standing spot.
-  const atTerminalOf = (spot: Spot | undefined) => (spot?.kind === "occupancy" && roomLayout ? terminalSpot(layout, roomLayout, spot.equipment, spot.chair, cells) : undefined);
+  const atTerminalOf = (spot: Spot | undefined) => (spot?.kind === "occupancy" && roomLayout ? terminalSpot(layout, roomLayout, spot.equipment, spot.chair, cells, spot.stand) : undefined);
   const spotCell = (spot: Spot | undefined) =>
     !spot || !roomLayout
       ? undefined
@@ -701,7 +701,7 @@ export function IsoRoom({
   // you were already seated when this view loaded, after a reload), you get up and step to its standing spot, which
   // ends it for your roommates too. Seated from another tab (the game open twice), where the window is, you stay put:
   // a walk from here would end the seat under that window.
-  const occupancyKey = mySpot?.kind === "occupancy" ? `${mySpot.equipment}:${mySpot.chair ?? ""}` : "";
+  const occupancyKey = mySpot?.kind === "occupancy" ? `${mySpot.equipment}:${mySpot.chair ?? ""}:${mySpot.stand ?? 0}` : "";
   /** This tab may get you up: it opened a terminal window since you last got up here, or loaded with you seated. */
   const mayGetUp = useRef<boolean | undefined>(undefined);
   // biome-ignore lint/correctness/useExhaustiveDependencies: only a new seat, or the window closing, moves you.
@@ -716,7 +716,8 @@ export function IsoRoom({
     }
     mayGetUp.current = false;
     const key = mySpot?.kind === "occupancy" ? [...equipmentByKey].find(([, e]) => e.id === mySpot.equipment)?.[0] : undefined;
-    const stand = key ? standSpot(layout, roomLayout, Number(key.slice(1)), cells) : undefined;
+    // Standing at it, you stay on your own standing cell rather than step onto someone else's.
+    const stand = key && at.chair !== undefined ? standSpot(layout, roomLayout, Number(key.slice(1)), cells) : undefined;
     walkTo(stand ?? at.cell);
   }, [occupancyKey, atTerminal]);
 

@@ -82,8 +82,9 @@ export function terminalChairs(room: RoomId, equipment: string): readonly { x: n
 
 /**
  * Sit at the terminal `equipment` in your room (its window opened): on the first of its chairs nobody else in the room
- * has, by a terminal or by sitting down on it, or standing at it if they're all taken or it has none. Staying where
- * you are if you're already at it. Not while you can't walk (in bed, in or pushing a wheelchair). Mutates a cloned state.
+ * has, by a terminal or by sitting down on it, or standing at it if they're all taken or it has none: at the first of
+ * its standing places nobody else at it has, so several people at one terminal (NERON's core) each get their own.
+ * Staying where you are if you're already at it. Not while you can't walk (in bed, in or pushing a wheelchair). Mutates a cloned state.
  */
 export function occupy(state: GameState, p: PlayerState, equipment: string): void {
   if (!state.config.sharedSpots || !p.alive || p.lyingIn !== undefined || p.pushedBy !== undefined) return;
@@ -97,7 +98,15 @@ export function occupy(state: GameState, p: PlayerState, equipment: string): voi
         : spot?.kind === "cell" && spot.sitting === true && spot.x === cell.x && spot.y === cell.y,
     );
   const chair = terminalChairs(p.room, equipment).findIndex((cell, i) => !taken(cell, i));
-  p.spot = { kind: "occupancy", equipment, ...(chair >= 0 && { chair }) };
+  if (chair >= 0) {
+    p.spot = { kind: "occupancy", equipment, chair };
+    return;
+  }
+  // Standing: the first place at it nobody else stands at (the client draws place n on the terminal's nth standing cell).
+  const standing = new Set(others.flatMap(({ spot }) => (spot?.kind === "occupancy" && spot.equipment === equipment && spot.chair === undefined ? [spot.stand ?? 0] : [])));
+  let stand = 0;
+  while (standing.has(stand)) stand++;
+  p.spot = { kind: "occupancy", equipment, ...(stand > 0 && { stand }) };
 }
 
 /** Lying down or a wheelchair push takes you away from a terminal (its window can't stay open): no spot, as before you walked. Mutates a cloned state. */

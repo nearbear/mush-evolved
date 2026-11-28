@@ -18,6 +18,7 @@ import {
   prepareScene,
   spreadActors,
   standSpot,
+  standSpots,
   offFloorStep,
   stepsOnto,
   terminalSpot,
@@ -678,6 +679,18 @@ describe("terminalSpot (#192)", () => {
     expect(terminalSpot(ship, room, lab.id, undefined, cells)).toEqual({ cell: stand });
     expect(terminalSpot(ship, room, lab.id, 5, cells)).toEqual({ cell: stand });
     expect(terminalSpot(ship, room, "LABORATORY:NOTHING", 0, cells)).toBeUndefined();
+  });
+
+  it("people standing at NERON's core each get a cell of their own, sharing them in turn once all are taken", () => {
+    const room = ship.rooms.find((r) => r.id === "NEXUS_ROOM")!;
+    const cells = walkableCells(ship, room);
+    const core = placedEquipment(room).find((e) => e.id === "NEXUS_ROOM:NERON_CORE")!;
+    const spots = standSpots(ship, room, core.tile, cells);
+    expect(spots.length).toBeGreaterThanOrEqual(4);
+    expect(spots[0]).toEqual(standSpot(ship, room, core.tile, cells));
+    const placed = [0, 1, 2, 3].map((n) => terminalSpot(ship, room, core.id, undefined, cells, n)?.cell);
+    expect(new Set(placed.map((c) => `${c?.x},${c?.y}`)).size).toBe(4);
+    expect(terminalSpot(ship, room, core.id, undefined, cells, spots.length)).toEqual({ cell: spots[0] });
   });
 
   it("offFloorStep: the nearest floor cell to one off the floor, nothing for one on it", () => {

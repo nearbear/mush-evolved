@@ -5949,6 +5949,12 @@ Removed repeated code in `server/src/GameRoom.ts`: `allow(limiter, seat)` (rate 
 - Added `itrackie.features.dirtyness` translations in `web/src/locales/{en,fr,es}.json` (`"Dirtyness"`, `"Saleté"`, `"Suciedad"`).
   - Renamed `"dirtyness"` / `"Dirtyness"` to `"dirtiness"` / `"Dirtiness"` per owner correction.
 
+## 2026-11-27: Separate standing places at a terminal (NERON's core)
+
+- Asked: several people at the Nexus's NERON core terminal should each stand on a different cell, not overlap. The server already gave out distinct chairs, but NERON_CORE has none, so everyone fell back to the one standing cell.
+- Done: `occupy` (shared/src/spot.ts) now gives someone standing at a terminal the first standing place no one else there has, as `stand` on the `occupancy` spot (left out when 0, so old states and tests keep their shape). The client's `standSpots` (web/src/iso/placement.ts) lists a terminal's walkable standing cells in `standSpot`'s order, and `terminalSpot` puts place n on the nth, wrapping round when there are more people than cells. Closing the window leaves a standing person on their own cell instead of stepping to the first one.
+- Worked: the server, not the client, says which places are free, as it already did for chairs, so two clients can't pick the same one. The server doesn't know cells, so the index stays abstract and the client maps it.
+
 ### 2026-11-27: Table dispatch for GameRoom messages
 
 - Message types are now grouped once in `shared/src/protocol.ts` (`ROOM_MESSAGE_TYPES`, `DIRECT_INPUT_TYPES`, `SOCIAL_TYPES`, `CHEAT_TYPES`), with a compile-time check that every `GameClientMessage` type is in exactly one group. `social()`'s 15-member `Exclude` became `SocialMessage`, and `Input` in `replay.ts` uses `RoomMessageType`.

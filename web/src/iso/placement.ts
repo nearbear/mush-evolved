@@ -852,20 +852,21 @@ export function cellAtPoint(
 const FLOOR_CENTER_Y = 6;
 
 /**
- * Where to stand to use the thing drawn by `room.tiles[tile]`: the middle of
+ * The cells to stand on to use the thing drawn by `room.tiles[tile]`, best first: the middle of
  * its wider edge (the x-run if at least as wide as deep, else the y-run),
- * camera-facing side first. Falls back outward along that edge, then the far
- * side of the same edge, then the narrow edges, then the nearest walkable cell. Footprints extend from the anchor toward
- * -x/-y (see walkableCells). Display only; where people stand isn't game state.
+ * camera-facing side first, then outward along that edge, then the far
+ * side of the same edge, then the narrow edges; only walkable ones. With none, the nearest walkable cell alone.
+ * Footprints extend from the anchor toward -x/-y (see walkableCells). People standing at a terminal take one each
+ * (the `stand` of an `occupancy` spot). Display only; empty for a room with no floor.
  */
-export function standSpot(
+export function standSpots(
   layout: ShipLayout,
   room: RoomLayout,
   tile: number,
   cells: readonly { x: number; y: number }[],
-): { x: number; y: number } | undefined {
+): { x: number; y: number }[] {
   const t = room.tiles[tile];
-  if (!t || cells.length === 0) return undefined;
+  if (!t || cells.length === 0) return [];
   const [w, h] = layout.slices[t.slice]!.footprint ?? [1, 1];
   const x0 = t.x - w + 1, y0 = t.y - h + 1;
   /** Cells of one edge, middle first (for an even edge, the lower-index middle cell first). */
@@ -879,16 +880,29 @@ export function standSpot(
   const backX = edge(h, (j) => ({ x: x0 - 1, y: y0 + j }));
   const order = w >= h ? [...frontY, ...backY, ...frontX, ...backX] : [...frontX, ...backX, ...frontY, ...backY];
   const walkable = new Set(cells.map((c) => `${c.x},${c.y}`));
-  const found = order.find((c) => walkable.has(`${c.x},${c.y}`));
-  if (found) return found;
+  const found = order.filter((c) => walkable.has(`${c.x},${c.y}`));
+  if (found.length > 0) return found;
   const cx = (x0 + t.x) / 2, cy = (y0 + t.y) / 2;
-  return [...cells].sort((a, b) => Math.hypot(a.x - cx, a.y - cy) - Math.hypot(b.x - cx, b.y - cy))[0];
+  return [[...cells].sort((a, b) => Math.hypot(a.x - cx, a.y - cy) - Math.hypot(b.x - cx, b.y - cy))[0]!];
+}
+
+/**
+ * Where to stand to use the thing drawn by `room.tiles[tile]`: the first of its standing cells (`standSpots`).
+ * Display only; where people stand isn't game state.
+ */
+export function standSpot(
+  layout: ShipLayout,
+  room: RoomLayout,
+  tile: number,
+  cells: readonly { x: number; y: number }[],
+): { x: number; y: number } | undefined {
+  return standSpots(layout, room, tile, cells)[0];
 }
 
 /**
  * Where someone at the terminal `equipment` (an `occupancy` spot, #192) is drawn: on its chair number `chair` if
- * the map has that chair (`chairs` on its binding), with the chair's direction ("" for a stool), or else at its
- * standing spot. A chair's cell may be off the floor, under the console or turret it belongs to (`offFloorStep`
+ * the map has that chair (`chairs` on its binding), with the chair's direction ("" for a stool), or else on its
+ * standing cell number `stand` (`standSpots`). A chair's cell may be off the floor, under the console or turret it belongs to (`offFloorStep`
  * gets you onto it). Undefined if the room doesn't draw that equipment. Display only.
  */
 export function terminalSpot(
@@ -897,13 +911,16 @@ export function terminalSpot(
   equipment: string,
   chair: number | undefined,
   cells: readonly { x: number; y: number }[],
+  stand = 0,
 ): { cell: { x: number; y: number }; chair?: string } | undefined {
   const placed = placedEquipment(room).find((e) => e.id === equipment);
   if (!placed) return undefined;
   const seat = chair === undefined ? undefined : placed.chairs?.[chair];
   const t = seat && room.tiles.find((t) => t.kind === "entity" && t.x === seat.x && t.y === seat.y && layout.slices[t.slice]?.flags.includes("chair"));
   if (seat && t && cells.length > 0) return { cell: { x: seat.x, y: seat.y }, chair: layout.slices[t.slice]?.dir ?? "" };
-  const cell = standSpot(layout, room, placed.tile, cells);
+  // More people than standing cells share them, in turn.
+  const spots = standSpots(layout, room, placed.tile, cells);
+  const cell = spots[stand % Math.max(spots.length, 1)];
   return cell && { cell };
 }
 

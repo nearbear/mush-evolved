@@ -34,13 +34,14 @@ export interface QueuedAction {
  * Where someone stands in their room (spot.ts): a floor cell of the room's layout (sitting on the chair there, if
  * `sitting`), in front of the door from the room `door` (they came in by it and haven't walked off), or at the
  * terminal `equipment` while its window is open (#192): on its chair number `chair` (`ShipRoom` equipment's `chairs`),
- * or standing at it when every chair is taken or it has none. `kind` tells them apart, as every union in the stored
+ * or standing at it when every chair is taken or it has none, at its standing place `stand` (0 when left out; the
+ * client maps it to one of the cells around the terminal, so people standing at one don't overlap). `kind` tells them apart, as every union in the stored
  * state has a discriminant (#384).
  */
 export type Spot =
   | { kind: "cell"; x: number; y: number; sitting?: true }
   | { kind: "door"; door: RoomId }
-  | { kind: "occupancy"; equipment: string; chair?: number };
+  | { kind: "occupancy"; equipment: string; chair?: number; stand?: number };
 
 export interface PlayerState extends Seat {
   /**
