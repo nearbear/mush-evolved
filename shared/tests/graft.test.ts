@@ -17,7 +17,7 @@ describe("graft hybrids: ids", () => {
     expect(HYBRID_FRUIT_ITEMS).toHaveLength(66);
     expect(new Set(HYBRID_FRUIT_ITEMS).size).toBe(66);
     for (const id of HYBRID_FRUIT_ITEMS) {
-      expect(ITEM_TYPES[id]).toEqual({ fruit: true, perishable: true, consume: { ap: 1, satiety: 1 } });
+      expect(ITEM_TYPES[id]).toEqual({ fruit: true, perishable: true, consume: { ap: 1, satiety: 1 }, canBreak: true, isDestroyedWhenBroken: true });
       const [a, b] = hybridParents(id)!;
       expect(a < b).toBe(true);
       expect(hybridOf(a, b)).toBe(id);

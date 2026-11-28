@@ -6005,3 +6005,7 @@ A staging tab kept showing "A new version of the game is available" through hard
 - **Decision (owner):** a new disorder, Scopophobia, with a sanity threshold of 100: while a camera or another crewmate is in the room, success is 10% lower. Asked with three questions; the owner took the recommended answers: relative (×0.9, like Addiction's ×0.75), a working installed camera only (the same one the log uses), and any other living player, Mush included, so the penalty never hints at a role.
 - **What worked:** the existing `actionSucessRate` hook was enough (one hook, no change to actions), and `actionSuccessRate` already keeps a 100% action certain. Leak check: everyone in the room already sees its equipment and whether it is broken, so the lower odds reveal nothing new.
 - **Needed correction:** none in the code. Verify went past the 10-minute limit under machine load and was rerun in the background.
+
+### 2026-11-28: Fruit and hybrid tests after fire-breakable items
+
+- **What happened:** the owner's commit `b211a095` made blueprints, books, bandages, documents and fruit breakable and destroyed when broken, so fire can burn them on the floor. Two tests still pinned the old banana and hybrid item entries (`fruits.test.ts`, `graft.test.ts`); Claude updated both to the new flags, so they now also pin that fruit burns. Nothing else needed changing.
