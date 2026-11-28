@@ -680,10 +680,10 @@ describe("GameRoom storage reclamation (#339)", () => {
     });
     expect((noDb.storage.data.get("game") as { reclaimAt?: number }).reclaimAt).toBeUndefined();
     vi.advanceTimersByTime(RECLAIM_DELAY_MS + 1000);
-    const innerNoDb = noDb.room as unknown as { reclaimAt: number | null; reclaimStorage(): Promise<void> };
-    innerNoDb.reclaimAt = Date.now() - 1;
+    const innerNoDb = noDb.room as unknown as { reclaim: { dueAt: number | null }; reclaimStorage(): Promise<void> };
+    innerNoDb.reclaim.dueAt = Date.now() - 1;
     await innerNoDb.reclaimStorage();
-    expect(innerNoDb.reclaimAt).toBeNull();
+    expect(innerNoDb.reclaim.dueAt).toBeNull();
     expect(noDb.storage.data.size).toBeGreaterThan(0);
 
     // Case 2: listed is true, replayReady is false (no R2) -> no reclaimAt scheduled, nothing deleted even after 48h.

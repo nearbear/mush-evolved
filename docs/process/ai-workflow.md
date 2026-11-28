@@ -5925,8 +5925,19 @@ the row, and the bar stops at the row's padding instead of running its full heig
 - Fix (owner picked the simple option over a Durable Object alarm): `GameRoom.join` re-arms the fill on every join while the ship is in pre-selection on a dev server, replacing any pending timer so only one fill runs. Test simulates the lost timer with `vi.clearAllTimers()`.
 - What worked: `npm run dev-state` showed the stuck state (cycle 20, pre-selection, two human seats) at once, which pointed straight at the timer.
 
+### 2026-11-27: GameRoom helper refactor
+
+Removed repeated code in `server/src/GameRoom.ts`: `allow(limiter, seat)` (rate limit plus rejection count, 6 sites), `recordBlocked` and `blockedKey` (5 copies of the blocked-text write), `seatConnections`/`sendToSeat` (the "this seat's other connections" loop, also used by `leaveShip`, `onClose` and `connectLogRead`), a `Backoff` class (`server/src/backoff.ts`) for the ship/list/replay/reclaim and model retries (8 fields gone; `scheduleTick` takes the earliest of `retries()`), and `bodyState(seat)` in place of hand-written player lookups. Mechanical edits were done by a script that asserted each pattern's match count, which caught two miscounts. `revokeSession` keeps its own loop: it closes by session token across seats, not by seat. One small behavior change: a success now also resets a backoff's wait (before, only the model retry did); each job succeeds at most once, so it never shows. A test that poked `reclaimAt` now pokes `reclaim.dueAt`.
+
 ## 2026-11-27: Terminal actions are instant
 
 - **Decision (owner):** every terminal action (`terminal = true`) is untimed: no duration bar, no queue wait.
 - **What needed correction:** I first added `override timed = false` to each of the 25 terminal action files. The owner asked for the `terminal` flag to imply it instead. Because subclass field initializers run after the base constructor, `Action.timed` became a getter (`!instant && !terminal`), and the 11 existing `override timed = false` lines became `override instant = true` (TypeScript won't let a field override an accessor). One rule, and a new terminal action can't forget it.
 - **What worked:** a registry-wide test (every `terminal` def has `timed === false`) pins it without listing actions.
+
+### 2026-11-27: Share log lines and French "un spore" (#506)
+
+- STT/DTT were shown by their acronyms everywhere and the log passed a hard-coded uppercase id. Owner: name them "Spend time together" / "Do the thing" (eMush's names: "Passer du temps ensemble"/"Le faire", "Pasar tiempo en compañía"/"Hacerlo", checked in eMush's translations via `npm run emush -- find`). STT logs "You spent time with X" to each partner; DTT logs one line naming both, copied from eMush (the French matches the original's `Mush/` data), kept private (owner) although eMush's is a public room log.
+- French "ils"/"elles" for a pair: added `PAIR_AGREEMENT_KEYS` to `logContext.ts` so an all-female pair gets `_female` (owner approved).
+- French spore gender: `Mush/` text uses "un spore" almost everywhere while eMush mostly uses "une spore"; standardized on the original's masculine (8 strings, including an "elle" that referred to the spore).
+- What worked: grepping the original's derived data settled the gender question with evidence instead of guessing. What needed correction: my first plan only routed the acronym through translation; the owner pointed out the names themselves were wrong. `emush find` truncates long lines, so full log text came from `emush spec` and the French wiki.

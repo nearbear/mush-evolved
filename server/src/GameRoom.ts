@@ -94,6 +94,7 @@ import { shipRow, shipStoreFor } from "./shipStore.ts";
 import { clockCycle, clockCycleStart, cycleMs, cycleOfDay } from "./cycleClock.ts";
 import { devModelCredentials, ModelGate, playerModelCredentials } from "./model.ts";
 import { RateLimiter } from "./rateLimit.ts";
+import { Backoff } from "./backoff.ts";
 import { copyReplay, verifyReplay } from "./replayStore.ts";
 import { failure, failureName, logError, logWarn, snapshotFailure } from "./log.ts";
 
@@ -226,6 +227,7 @@ const UNAVAILABLE_CLOSE = 4002;
 
 /** Zero-padded so keys list in order. */
 const inputKey = (seq: number) => `input:${String(seq).padStart(9, "0")}`;
+const blockedKey = (seq: number) => `blocked:${String(seq).padStart(9, "0")}`;
 
 /** The record's seat-to-account entry (#292). */
 const accountKey = (seat: PlayerId) => `account:${seat}`;
@@ -281,22 +283,18 @@ export class GameRoom extends Server<Env> {
   private lastFull: FullView | null = null;
   private listed = false;
   private endedAt: number | null = null;
-  /** When to try writing the finished game's entry again (`recordFinished`), and the wait after the next failure. */
-  private listRetryAt: number | null = null;
-  private listRetryMs = LIST_RETRY_MS;
-  /** The running-ships row (#431, `recordShip`): written, when to try again, the wait after the next failure, and one at a time. */
+  /** When to try writing the finished game's entry again (`recordFinished`). */
+  private listRetry = new Backoff(LIST_RETRY_MS, LIST_RETRY_MAX_MS);
+  /** The running-ships row (#431, `recordShip`): written, when to try again, and one at a time. */
   private shipRecorded = false;
-  private shipRetryAt: number | null = null;
-  private shipRetryMs = LIST_RETRY_MS;
+  private shipRetry = new Backoff(LIST_RETRY_MS, LIST_RETRY_MAX_MS);
   private recordingShip: Promise<void> | null = null;
-  /** The history's copy to R2 (#336): done, when to try it again, the wait after the next failure, and one at a time. */
+  /** The history's copy to R2 (#336): done, when to try it again, and one at a time. */
   private replayReady = false;
-  private replayRetryAt: number | null = null;
-  private replayRetryMs = REPLAY_RETRY_MS;
+  private replayRetry = new Backoff(REPLAY_RETRY_MS, REPLAY_RETRY_MAX_MS);
   private copying: Promise<void> | null = null;
-  /** When to delete room storage after archiving (#339), and the wait after the next failure. */
-  private reclaimAt: number | null = null;
-  private reclaimRetryMs = RECLAIM_RETRY_MS;
+  /** When to delete room storage after archiving (#339): 48 hours out, then backing off after a failure. */
+  private reclaim = new Backoff(RECLAIM_RETRY_MS, RECLAIM_RETRY_MAX_MS);
   private inputs = 0;
   private rateLimited: Record<PlayerId, number> = {};
   private clockCycle = 0;
@@ -320,7 +318,7 @@ export class GameRoom extends Server<Env> {
   private overrides: ConfigOverrides = {};
   /** Asks paused bots again while model calls fail in passing (`retryPausedBots`). */
   private retryTimer: ReturnType<typeof setTimeout> | null = null;
-  private retryMs = MODEL_RETRY_MS;
+  private modelRetry = new Backoff(MODEL_RETRY_MS, MODEL_RETRY_MAX_MS);
   /** Counts key changes (`setModel`), so a bot whose turn spanned one is asked again with the new key. */
   private keyChanges = 0;
   /** The pause last sent to clients, so a change is sent once. */
@@ -432,17 +430,17 @@ export class GameRoom extends Server<Env> {
     this.endedAt = stored.endedAt ?? null;
     this.shipRecorded = stored.shipRecorded ?? false;
     // A running ship whose row wasn't written (or saved as written): try at once. Idempotent.
-    if (this.game.phase === "playing" && !this.shipRecorded) this.shipRetryAt = Date.now();
+    if (this.game.phase === "playing" && !this.shipRecorded) this.shipRetry.dueAt = Date.now();
     // A finished game whose entry wasn't written yet: try at once.
-    if (this.game.phase === "ended" && !this.listed) this.listRetryAt = Date.now();
+    if (this.game.phase === "ended" && !this.listed) this.listRetry.dueAt = Date.now();
     this.replayReady = stored.replayReady;
     // The same for its history's copy, which may have failed partway.
-    if (this.game.phase === "ended" && !this.replayReady) this.replayRetryAt = Date.now();
-    this.reclaimAt =
+    if (this.game.phase === "ended" && !this.replayReady) this.replayRetry.dueAt = Date.now();
+    this.reclaim.dueAt =
       stored.reclaimAt ?? (this.game.phase === "ended" && this.listed && this.replayReady ? Date.now() + RECLAIM_DELAY_MS : null);
     this.blocked = (await this.ctx.storage.list({ prefix: "blocked:" })).size;
     if (dropped) await this.recordDropped();
-    else if (this.reclaimAt !== null && stored.reclaimAt === undefined) await this.persist();
+    else if (this.reclaim.dueAt !== null && stored.reclaimAt === undefined) await this.persist();
     this.initBots(await this.ctx.storage.list({ prefix: BOT_MEMORY_PREFIX }));
     this.scheduleBots();
     await this.scheduleTick();
@@ -599,10 +597,7 @@ export class GameRoom extends Server<Env> {
     this.tokens = {};
     this.aboard = {};
     this.tokenSessions = {};
-    this.shipRetryAt = null;
-    this.listRetryAt = null;
-    this.replayRetryAt = null;
-    this.reclaimAt = null;
+    this.stopRetries();
     this.bots.clear();
     this.pendingBots.clear();
     this.wakes.clear();
@@ -641,9 +636,7 @@ export class GameRoom extends Server<Env> {
     this.notes.delete(seat);
     await this.ctx.storage.delete(notesKey(seat));
     await this.persist();
-    for (const conn of this.getConnections<SeatState>()) {
-      if (conn.state && dropped.has(conn.state.token)) conn.close(4001, "Left the ship");
-    }
+    for (const conn of this.seatConnections(seat)) conn.close(4001, "Left the ship");
   }
 
   /** Logging out (or signing in as someone else) on a device: its seat tokens stop working and its sockets close. The account stays aboard. */
@@ -680,8 +673,7 @@ export class GameRoom extends Server<Env> {
 
   /** A seat whose account is still on this ship: the game runs and the seat's body is alive. */
   private stillAboard(seat: PlayerId): boolean {
-    const by = this.body(seat);
-    return this.game?.phase === "playing" && !!by && !!this.game.players.find((p) => p.id === by)?.alive;
+    return this.game?.phase === "playing" && !!this.bodyState(seat)?.alive;
   }
 
   /**
@@ -722,7 +714,7 @@ export class GameRoom extends Server<Env> {
   /**
    * Once the game has ended, writes its entry to the list of finished games in D1 (#155), once. The write isn't
    * atomic with the room's storage, so it is idempotent; a failure is tried again from the alarm with backoff
-   * (`listRetryAt`), since a finished game takes no more inputs.
+   * (`listRetry`), since a finished game takes no more inputs.
    */
   private async recordFinished(): Promise<void> {
     const game = this.game;
@@ -730,7 +722,7 @@ export class GameRoom extends Server<Env> {
     const endedAt = this.endedAt ?? Date.now();
     // A launch write still under way finishes first, so it can't land after the row is deleted.
     await this.recordingShip;
-    this.shipRetryAt = null;
+    this.shipRetry.succeed();
     try {
       const setup = await this.ctx.storage.get<GameSetup>("setup");
       const entry = finishedEntry(game, {
@@ -747,19 +739,18 @@ export class GameRoom extends Server<Env> {
       if (entry) await gameStoreFor(this.env).recordFinished(entry);
       else await shipStoreFor(this.env).ended(this.name);
       this.listed = true;
-      this.listRetryAt = null;
-      if (this.replayReady) this.reclaimAt ??= Date.now() + RECLAIM_DELAY_MS;
+      this.listRetry.succeed();
+      if (this.replayReady) this.reclaim.dueAt ??= Date.now() + RECLAIM_DELAY_MS;
       await this.persist();
     } catch (e) {
       logWarn("list_finished_failed", { roomId: this.name, ...failure(e) });
-      this.listRetryAt = Date.now() + this.listRetryMs;
-      this.listRetryMs = Math.min(this.listRetryMs * 2, LIST_RETRY_MAX_MS);
+      this.listRetry.fail();
     }
   }
 
   /**
    * Writes the running-ships row (#431) after launch, without the game waiting on it: a failure is tried again from
-   * the alarm with backoff (`shipRetryAt`). Idempotent. A game that has ended by then writes nothing: its row would
+   * the alarm with backoff (`shipRetry`). Idempotent. A game that has ended by then writes nothing: its row would
    * never be deleted.
    */
   private recordShip(): Promise<void> {
@@ -771,7 +762,7 @@ export class GameRoom extends Server<Env> {
     const game = this.game;
     if (this.shipRecorded || !game) return;
     if (game.phase !== "playing") {
-      this.shipRetryAt = null;
+      this.shipRetry.succeed();
       return;
     }
     try {
@@ -780,11 +771,10 @@ export class GameRoom extends Server<Env> {
         shipRow(game, { roomId: this.name, language: this.language, singlePlayer: this.singlePlayer, launchedAt: setup?.launchedAt ?? Date.now() }),
       );
       this.shipRecorded = true;
-      this.shipRetryAt = null;
+      this.shipRetry.succeed();
     } catch (e) {
       logWarn("record_ship_failed", { roomId: this.name, ...failure(e) });
-      this.shipRetryAt = Date.now() + this.shipRetryMs;
-      this.shipRetryMs = Math.min(this.shipRetryMs * 2, LIST_RETRY_MAX_MS);
+      this.shipRetry.fail();
       await this.scheduleTick();
     }
   }
@@ -792,7 +782,7 @@ export class GameRoom extends Server<Env> {
   /**
    * Once the game has ended, copies its history and moderator data to R2 (#336, #339, replayStore.ts). `replayReady`
    * is set only after every chunk, `moderation.json`, and the index are written; a failure is tried again from the
-   * alarm with backoff (`replayRetryAt`), apart from the listing so neither outage holds up the other.
+   * alarm with backoff (`replayRetry`), apart from the listing so neither outage holds up the other.
    */
   private copyReplay(): Promise<void> {
     this.copying ??= this.tryCopyReplay().finally(() => (this.copying = null));
@@ -804,8 +794,8 @@ export class GameRoom extends Server<Env> {
     // A single-player game played without an account is never recorded (#155, #332), so nobody can ever read its replay.
     if (this.singlePlayer && this.accounts[SINGLE_PLAYER_HUMAN] === undefined) {
       this.replayReady = true;
-      this.replayRetryAt = null;
-      if (this.listed) this.reclaimAt ??= Date.now() + RECLAIM_DELAY_MS;
+      this.replayRetry.succeed();
+      if (this.listed) this.reclaim.dueAt ??= Date.now() + RECLAIM_DELAY_MS;
       await this.persist();
       return;
     }
@@ -822,13 +812,12 @@ export class GameRoom extends Server<Env> {
         rateLimited: this.rateLimited,
       });
       this.replayReady = true;
-      this.replayRetryAt = null;
-      if (this.listed) this.reclaimAt ??= Date.now() + RECLAIM_DELAY_MS;
+      this.replayRetry.succeed();
+      if (this.listed) this.reclaim.dueAt ??= Date.now() + RECLAIM_DELAY_MS;
       await this.persist();
     } catch (e) {
       logWarn("replay_copy_failed", { roomId: this.name, ...failure(e) });
-      this.replayRetryAt = Date.now() + this.replayRetryMs;
-      this.replayRetryMs = Math.min(this.replayRetryMs * 2, REPLAY_RETRY_MAX_MS);
+      this.replayRetry.fail();
     }
   }
 
@@ -839,7 +828,7 @@ export class GameRoom extends Server<Env> {
    */
   private async reclaimStorage(): Promise<void> {
     if (this.game?.phase !== "ended" || !this.listed || !this.replayReady) {
-      this.reclaimAt = null;
+      this.reclaim.succeed();
       return;
     }
     await this.releaseAccounts();
@@ -862,10 +851,7 @@ export class GameRoom extends Server<Env> {
       this.accounts = {};
       this.aboard = {};
       this.tokenSessions = {};
-      this.shipRetryAt = null;
-      this.listRetryAt = null;
-      this.replayRetryAt = null;
-      this.reclaimAt = null;
+      this.stopRetries();
       this.bots.clear();
       this.wakes.clear();
       this.modelGate = null;
@@ -876,8 +862,7 @@ export class GameRoom extends Server<Env> {
       for (const conn of this.getConnections<SeatState>()) conn.close(4001, "Invalid seat token");
     } catch (e) {
       logWarn("reclaim_failed", { roomId: this.name, ...failure(e) });
-      this.reclaimAt = Date.now() + this.reclaimRetryMs;
-      this.reclaimRetryMs = Math.min(this.reclaimRetryMs * 2, RECLAIM_RETRY_MAX_MS);
+      this.reclaim.fail();
     }
   }
 
@@ -972,9 +957,9 @@ export class GameRoom extends Server<Env> {
     if (!game) return;
     const cycleStart = this.singlePlayer ? Number.POSITIVE_INFINITY : clockCycleStart(this.clockCycle, cycleMs(this.env, game.config.cycleHours));
     const news = (p: PlayerState) => p.inactivity !== undefined || (p.lastSeenAt !== undefined && p.lastSeenAt < cycleStart);
-    const players = [...new Set(seats.map((seat) => this.body(seat)))]
-      .map((id) => game.players.find((p) => p.id === id))
-      .filter((p): p is PlayerState => p !== undefined && (!onlyIfNews || news(p)));
+    const players = [...new Set(seats.map((seat) => this.bodyState(seat)))].filter(
+      (p): p is PlayerState => p !== undefined && (!onlyIfNews || news(p)),
+    );
     if (players.length === 0) return;
     // Only ending an inactivity changes a view (a status, maybe titles). Otherwise send nothing, so a push doesn't
     // tell everyone that somebody just came online.
@@ -986,8 +971,7 @@ export class GameRoom extends Server<Env> {
     const playerId = connection.state?.playerId;
     const by = playerId && this.body(playerId);
     if (!playerId || !by || !this.game) return;
-    if (!this.limiter.allow(playerId, Date.now(), this.devServer ? DEV_RATE_SCALE : 1)) {
-      this.countRateLimited(playerId);
+    if (!this.allow(this.limiter, playerId)) {
       this.send(connection, { type: "error", message: "slow_down" });
       return;
     }
@@ -1005,7 +989,7 @@ export class GameRoom extends Server<Env> {
       return;
     }
     // The Superkube (#170): a human's, from the cheat room only. applyKube checks both again.
-    if (msg.type === "kube" && (this.isBotSeat(playerId) || this.game.players.find((p) => p.id === by)?.room !== CHEAT_ROOM)) {
+    if (msg.type === "kube" && (this.isBotSeat(playerId) || this.bodyState(playerId)?.room !== CHEAT_ROOM)) {
       this.send(connection, { type: "error", message: "not_in_cheat_room" });
       return;
     }
@@ -1020,14 +1004,12 @@ export class GameRoom extends Server<Env> {
     // Read state (#400): stored per seat, never an input, and never answered, so a refusal, a rate limit and a count
     // that is no news look the same. Bot seats keep none.
     if (msg.type === "chatRead") {
-      if (!this.readLimiter.allow(playerId, Date.now(), this.devServer ? DEV_RATE_SCALE : 1)) this.countRateLimited(playerId);
-      else if (!this.isBotSeat(playerId)) await this.raiseChatRead(playerId, msg.read, connection);
+      if (this.allow(this.readLimiter, playerId) && !this.isBotSeat(playerId)) await this.raiseChatRead(playerId, msg.read, connection);
       return;
     }
     // The room log's read point (#513): the same, under the same limit.
     if (msg.type === "logRead") {
-      if (!this.readLimiter.allow(playerId, Date.now(), this.devServer ? DEV_RATE_SCALE : 1)) this.countRateLimited(playerId);
-      else if (!this.isBotSeat(playerId)) await this.raiseLogRead(playerId, msg.upTo, connection);
+      if (this.allow(this.readLimiter, playerId) && !this.isBotSeat(playerId)) await this.raiseLogRead(playerId, msg.upTo, connection);
       return;
     }
     if (msg.type === "note") {
@@ -1044,7 +1026,7 @@ export class GameRoom extends Server<Env> {
       msg.type === "action"
         ? await this.act({ ...msg, by, at: Date.now() })
         : msg.type === "walk"
-          ? await this.act({ ...msg, by }, undefined, this.game.players.find((p) => p.id === by)?.room)
+          ? await this.act({ ...msg, by }, undefined, this.bodyState(playerId)?.room)
           : msg.type === "clearQueue" || msg.type === "acknowledgeTransfer" || msg.type === "cheat" || msg.type === "roleCheat" || msg.type === "cheatRoom" || msg.type === "kube"
             ? await this.act({ ...msg, by })
             : await this.social(playerId, by, msg);
@@ -1083,10 +1065,10 @@ export class GameRoom extends Server<Env> {
         }
       }
     }
-    if (this.shipRetryAt !== null && this.shipRetryAt <= Date.now()) await this.recordShip();
-    if (this.listRetryAt !== null && this.listRetryAt <= Date.now()) await this.recordFinished();
-    if (this.replayRetryAt !== null && this.replayRetryAt <= Date.now()) await this.copyReplay();
-    if (this.reclaimAt !== null && this.reclaimAt <= Date.now()) await this.reclaimStorage();
+    if (this.shipRetry.due()) await this.recordShip();
+    if (this.listRetry.due()) await this.recordFinished();
+    if (this.replayRetry.due()) await this.copyReplay();
+    if (this.reclaim.due()) await this.reclaimStorage();
     await this.scheduleTick();
   }
 
@@ -1108,8 +1090,7 @@ export class GameRoom extends Server<Env> {
     depth = 0,
   ): Promise<string | null> {
     if (!this.game) return "no_game";
-    if (!this.chatLimiter.allow(playerId, Date.now(), this.devServer ? DEV_RATE_SCALE : 1)) {
-      this.countRateLimited(playerId);
+    if (!this.allow(this.chatLimiter, playerId)) {
       return "too_many_messages";
     }
     if (msg.type === "sharePlants") {
@@ -1119,8 +1100,7 @@ export class GameRoom extends Server<Env> {
       if (msg.text.trim()) {
         const mod = moderateChat(msg.text, undefined, { length: MAX_SHARED_PLANT_TEXT_LENGTH, lines: MAX_SHARED_PLANT_TEXT_LINES });
         if (!mod.ok) {
-          const blocked: BlockedText = { at: Date.now(), by: playerId, type: msg.type, raw: msg.text, reason: mod.reason };
-          await this.ctx.storage.put(`blocked:${String(this.blocked++).padStart(9, "0")}`, blocked);
+          await this.recordBlocked(playerId, msg.type, msg.text, mod.reason);
           return "share_text_invalid";
         }
         text = mod.text;
@@ -1134,8 +1114,7 @@ export class GameRoom extends Server<Env> {
         }
         const mod = moderateChat(row.effects, undefined, { length: MAX_SHARED_PLANT_EFFECTS_LENGTH, lines: MAX_SHARED_PLANT_EFFECTS_LINES });
         if (!mod.ok) {
-          const blocked: BlockedText = { at: Date.now(), by: playerId, type: msg.type, raw: row.effects, reason: mod.reason };
-          await this.ctx.storage.put(`blocked:${String(this.blocked++).padStart(9, "0")}`, blocked);
+          await this.recordBlocked(playerId, msg.type, row.effects, mod.reason);
           return "share_text_invalid";
         }
         if (mod.text !== row.effects) changed = true;
@@ -1148,8 +1127,7 @@ export class GameRoom extends Server<Env> {
       if (!msg.name.trim()) return this.act({ type: "renameItem", by, item: msg.item, name: "" });
       const mod = moderateChat(msg.name.replace(/\s+/g, " "), undefined, { length: MAX_ITEM_NAME_LENGTH, lines: 1 });
       if (!mod.ok) {
-        const blocked: BlockedText = { at: Date.now(), by: playerId, type: msg.type, raw: msg.name, reason: mod.reason };
-        await this.ctx.storage.put(`blocked:${String(this.blocked++).padStart(9, "0")}`, blocked);
+        await this.recordBlocked(playerId, msg.type, msg.name, mod.reason);
         return "item_name_invalid";
       }
       return this.act({ type: "renameItem", by, item: msg.item, name: mod.text }, mod.text === msg.name ? undefined : msg.name);
@@ -1160,8 +1138,7 @@ export class GameRoom extends Server<Env> {
       if (msg.text.trim()) {
         const mod = moderateChat(msg.text, undefined, { length: MAX_SHARED_PILGRED_TEXT_LENGTH, lines: MAX_SHARED_PILGRED_TEXT_LINES });
         if (!mod.ok) {
-          const blocked: BlockedText = { at: Date.now(), by: playerId, type: msg.type, raw: msg.text, reason: mod.reason };
-          await this.ctx.storage.put(`blocked:${String(this.blocked++).padStart(9, "0")}`, blocked);
+          await this.recordBlocked(playerId, msg.type, msg.text, mod.reason);
           return "share_text_invalid";
         }
         text = mod.text;
@@ -1177,8 +1154,7 @@ export class GameRoom extends Server<Env> {
     const sharing = msg.type === "sharePlanet" || msg.type === "shareReport";
     const moderated = sharing ? moderateChat(raw, undefined, { length: MAX_SHARED_PLANET_LENGTH, lines: MAX_SHARED_PLANET_LINES }) : moderateChat(raw);
     if (!moderated.ok) {
-      const blocked: BlockedText = { at: Date.now(), by: playerId, type: msg.type, raw, reason: moderated.reason };
-      await this.ctx.storage.put(`blocked:${String(this.blocked++).padStart(9, "0")}`, blocked);
+      await this.recordBlocked(playerId, msg.type, raw, moderated.reason);
       // The size errors name chat's limits; a shared planet has its own.
       return sharing ? "share_text_invalid" : moderated.reason;
     }
@@ -1212,7 +1188,7 @@ export class GameRoom extends Server<Env> {
     const readers = new Set<PlayerId>();
     for (const [seat, bot] of this.bots) {
       if (seat === author || !bot.listens) continue;
-      const body = this.game.players.find((p) => p.id === this.body(seat));
+      const body = this.bodyState(seat);
       if (!body || !body.alive || body.ready) continue;
       listening.set(body.id, seat);
       if (readChannels(this.game, body).includes(channel)) readers.add(seat);
@@ -1292,9 +1268,20 @@ export class GameRoom extends Server<Env> {
     if (error) logWarn("bot_chat_refused", { roomId: this.name, seat, code: error });
   }
 
-  /** Rejections are counted in memory and saved with the next change, so spam doesn't cost a write each. */
-  private countRateLimited(playerId: PlayerId): void {
-    this.rateLimited[playerId] = (this.rateLimited[playerId] ?? 0) + 1;
+  /**
+   * One message from `seat` under `limiter` (scaled up on a dev server). A rejection is counted in memory and saved with
+   * the next change, so spam doesn't cost a write each. Moderators see the count, never the messages.
+   */
+  private allow(limiter: RateLimiter, seat: PlayerId): boolean {
+    if (limiter.allow(seat, Date.now(), this.devServer ? DEV_RATE_SCALE : 1)) return true;
+    this.rateLimited[seat] = (this.rateLimited[seat] ?? 0) + 1;
+    return false;
+  }
+
+  /** Keeps text moderation refused, for moderators (the record's "blocked:<seq>"). */
+  private async recordBlocked(seat: PlayerId, type: BlockedText["type"], raw: string, reason: BlockedText["reason"]): Promise<void> {
+    const blocked: BlockedText = { at: Date.now(), by: seat, type, raw, reason };
+    await this.ctx.storage.put(blockedKey(this.blocked++), blocked);
   }
 
   /**
@@ -1315,9 +1302,7 @@ export class GameRoom extends Server<Env> {
   override async onClose(connection: Connection<SeatState>): Promise<void> {
     const playerId = connection.state?.playerId;
     if (!playerId) return;
-    for (const conn of this.getConnections<SeatState>()) {
-      if (conn.id !== connection.id && conn.state?.playerId === playerId) return;
-    }
+    if (this.seatConnections(playerId, connection).length > 0) return;
     // The seat's last connection: lines from here on are missed (#513).
     await this.disconnectLogRead(playerId);
     // The key lives only while its player is connected; the client sends it again on reconnect.
@@ -1385,11 +1370,21 @@ export class GameRoom extends Server<Env> {
   }
 
 
+  /** The post-game jobs the alarm retries (and the running-ships row): the alarm is set for the earliest due. */
+  private retries(): Backoff[] {
+    return [this.shipRetry, this.listRetry, this.replayRetry, this.reclaim];
+  }
+
+  /** The room is retired or reclaimed: nothing is retried. */
+  private stopRetries(): void {
+    for (const r of this.retries()) r.succeed();
+  }
+
   /** One alarm, for the earliest action bar to run out, the next cycle, or post-game retries/cleanup. An alarm survives the room being evicted from memory. */
   private async scheduleTick(): Promise<void> {
     const bar = this.game ? nextDue(this.game) : null;
     const cycle = this.game?.phase === "playing" ? this.nextCycleAt() : null;
-    const due = [bar, cycle, this.shipRetryAt, this.listRetryAt, this.replayRetryAt, this.reclaimAt].reduce<number | null>(
+    const due = [bar, cycle, ...this.retries().map((r) => r.dueAt)].reduce<number | null>(
       (a, b) => (a === null ? b : b === null ? a : Math.min(a, b)),
       null,
     );
@@ -1407,8 +1402,7 @@ export class GameRoom extends Server<Env> {
     for (const conn of this.getConnections<SeatState>()) {
       const playerId = conn.state?.playerId;
       if (!playerId) continue;
-      const by = this.body(playerId);
-      if (room === undefined || this.game?.players.find((p) => p.id === by)?.room === room) this.sendView(conn, playerId);
+      if (room === undefined || this.bodyState(playerId)?.room === room) this.sendView(conn, playerId);
     }
   }
 
@@ -1424,7 +1418,7 @@ export class GameRoom extends Server<Env> {
     const msg: GameServerMessage = { type: "chatEdit", channel, seq, mark: { tasks: [...mark.tasks], checked: [...mark.checked] } };
     for (const conn of this.getConnections<SeatState>()) {
       const seat = conn.state?.playerId;
-      const body = seat && game.players.find((p) => p.id === this.body(seat));
+      const body = seat && this.bodyState(seat);
       if (body && readChannels(game, body).includes(channel)) this.send(conn, msg);
     }
   }
@@ -1435,8 +1429,7 @@ export class GameRoom extends Server<Env> {
    * recorded and no view changes.
    */
   private async sendChatPage(conn: Connection, seat: PlayerId, by: PlayerId, channel: ChannelId, page: number): Promise<void> {
-    if (!this.pageLimiter.allow(seat, Date.now(), this.devServer ? DEV_RATE_SCALE : 1)) {
-      this.countRateLimited(seat);
+    if (!this.allow(this.pageLimiter, seat)) {
       this.send(conn, { type: "error", message: "too_many_messages" });
       return;
     }
@@ -1448,6 +1441,16 @@ export class GameRoom extends Server<Env> {
     const body = this.body(seat);
     const messages = this.game && body ? chatPageView(this.game, body, channel, page, stored) : null;
     this.send(conn, messages ? { type: "chatPage", channel, page, messages } : { type: "error", message: CHAT_PAGE_UNAVAILABLE });
+  }
+
+  /** A seat's open connections, except `except`. */
+  private seatConnections(seat: PlayerId, except?: Connection): Connection<SeatState>[] {
+    return [...this.getConnections<SeatState>()].filter((c) => c.state?.playerId === seat && c.id !== except?.id);
+  }
+
+  /** Sends `msg` to every connection of `seat` except `except` (the sender), never to another seat. */
+  private sendToSeat(seat: PlayerId, msg: GameServerMessage, except?: Connection): void {
+    for (const conn of this.seatConnections(seat, except)) this.send(conn, msg);
   }
 
   /** A seat played by a bot (`isBot` is the mind's, so it follows a Transfer). */
@@ -1480,9 +1483,7 @@ export class GameRoom extends Server<Env> {
     if (Object.keys(raised).length === 0) return;
     this.chatRead.set(seat, read);
     const msg: GameServerMessage = { type: "chatRead", read: chatReadFor(this.game, body, read) };
-    for (const conn of this.getConnections<SeatState>()) {
-      if (conn.state?.playerId === seat && conn.id !== except?.id) this.send(conn, msg);
-    }
+    this.sendToSeat(seat, msg, except);
     await this.ctx.storage.put(chatReadKey(seat), read);
   }
 
@@ -1519,7 +1520,7 @@ export class GameRoom extends Server<Env> {
   private async connectLogRead(conn: Connection<SeatState>, seat: PlayerId): Promise<void> {
     const body = this.bodyState(seat);
     if (!body || this.isBotSeat(seat)) return;
-    const others = [...this.getConnections<SeatState>()].some((c) => c.id !== conn.id && c.state?.playerId === seat);
+    const others = this.seatConnections(seat, conn).length > 0;
     if (!others || !this.connectedFrom.has(seat)) this.connectedFrom.set(seat, { body: body.id, from: body.logSeen });
     const current = this.currentLogRead(seat);
     if (!current) return;
@@ -1558,9 +1559,7 @@ export class GameRoom extends Server<Env> {
     const raised = raiseLogRead(current.record, current.body, upTo);
     if (!raised) return;
     const msg: GameServerMessage = { type: "logUnread", from: raised.readUpTo };
-    for (const conn of this.getConnections<SeatState>()) {
-      if (conn.state?.playerId === seat && conn.id !== except.id) this.send(conn, msg);
-    }
+    this.sendToSeat(seat, msg, except);
     await this.storeLogRead(seat, raised);
   }
 
@@ -1571,17 +1570,14 @@ export class GameRoom extends Server<Env> {
    */
   private async writeNote(seat: PlayerId, tab: number, text: string, from: Connection): Promise<string | null> {
     if (this.isBotSeat(seat)) return NOTE_REFUSED;
-    if (!this.noteLimiter.allow(seat, Date.now(), this.devServer ? DEV_RATE_SCALE : 1)) {
-      this.countRateLimited(seat);
+    if (!this.allow(this.noteLimiter, seat)) {
       return "slow_down";
     }
     const notes = applyNoteEdit(this.notes.get(seat) ?? [], tab, text);
     if (!notes) return NOTE_REFUSED;
     this.notes.set(seat, notes);
     const msg: GameServerMessage = { type: "notes", notes };
-    for (const conn of this.getConnections<SeatState>()) {
-      if (conn.state?.playerId === seat && conn.id !== from.id) this.send(conn, msg);
-    }
+    this.sendToSeat(seat, msg, from);
     await this.ctx.storage.put(notesKey(seat), notes);
     return null;
   }
@@ -1590,7 +1586,7 @@ export class GameRoom extends Server<Env> {
   private sendView(conn: Connection, playerId: PlayerId): void {
     const by = this.body(playerId);
     if (!this.game || !by) return;
-    const body = this.game.players.find((p) => p.id === by);
+    const body = this.bodyState(playerId);
     const comatose = this.game.phase === "playing" && body !== undefined && isComatose(this.game, body);
     const msg: GameServerMessage = {
       type: "view",
@@ -1651,15 +1647,14 @@ export class GameRoom extends Server<Env> {
       this.broadcastViews();
     }
     if (pause !== "unavailable") {
-      this.retryMs = MODEL_RETRY_MS;
+      this.modelRetry.succeed();
       return;
     }
     if (this.retryTimer !== null) return;
     this.retryTimer = setTimeout(() => {
       this.retryTimer = null;
       this.scheduleBots();
-    }, this.retryMs);
-    this.retryMs = Math.min(this.retryMs * 2, MODEL_RETRY_MAX_MS);
+    }, this.modelRetry.fail());
   }
 
   /** Post the lines a bot wants to say in global chat, as that bot. */
@@ -1776,7 +1771,7 @@ export class GameRoom extends Server<Env> {
       shipRecorded: this.shipRecorded,
       ...(this.endedAt !== null && { endedAt: this.endedAt }),
       replayReady: this.replayReady,
-      ...(this.reclaimAt !== null && { reclaimAt: this.reclaimAt }),
+      ...(this.reclaim.dueAt !== null && { reclaimAt: this.reclaim.dueAt }),
     };
     const writes: Promise<unknown>[] = [];
     // Storage deletes at most 128 keys a call.
