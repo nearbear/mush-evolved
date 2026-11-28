@@ -101,3 +101,43 @@ Decided with the owner on 2026-11-09:
   drop-down's trigger counts the *other* features, since the one picked is on screen.
 - **Known limitation:** on the latest page, a new message scrolls the feed back to the bottom (`Scroller`), even after
   a jump up to the divider. It affects all chat; not changed here.
+
+## Room log read state (#513)
+
+Decided with the owner on 2026-11-27 (step 1 of [#513](https://github.com/nearbear/mush-evolved/issues/513), the room
+log; step 2 moves chat to the same single-message reads). Not a game rule, so it lives here.
+
+- **What is unread.** Only room log lines that arrived while the seat had **no connection open** on any device. Lines
+  that arrive while connected are read at once, whatever is on screen. Room history seen on walking into a room is
+  never unread; unread lines from a room you left stop counting (the Room tab no longer shows them). The dead have no
+  Room tab and no room log unread.
+- **What reads a line.** One line at a time: a ~400 ms mouse rest (`HOVER_READ_MS` in `web/src/hud/RoomLog.tsx`), a
+  tap or click, or keyboard focus. Never everything up to it. **Mark all read** on the Room tab reads them all.
+  Opening the tab reads nothing.
+- **Server.** Per seat, `logRead:<seat>` in Durable Object storage beside `chatRead:<seat>`, never in the snapshot,
+  record or a view (no `STATE_VERSION` change): `{ body, readUpTo, live }` in `PlayerView.logSeen` positions
+  (`shared/src/logRead.ts`). `live` is saved when the seat's last connection closes and every 60 s while connected
+  (a Durable Object can stop without `onClose`). On a seat's first connection, lines from `live` on are the missed
+  ones. A new body (Transfer, `swapCharacter`) or a seat with no record starts with nothing unread. Messages:
+  `logRead { upTo }` (client, clamped, behind `readLimiter`) and `logUnread { from }` (server, after the view on
+  connect, and to the seat's other connections when the point moves). Bot seats are skipped.
+- **Client** (`web/src/logRead.ts`). Lines read one at a time past the server's point are kept per device in
+  localStorage (`mush2.logRead.*`); live lines go straight into that set. When the oldest unread line is read, the
+  point moves past the run of read lines after it (and past lines the Room tab doesn't show or that left the window),
+  dropping the set entries it passes, and goes to the server batched like `chatRead`.
+- **Shown.** The Room tab's badge and its `itrackie.unreadTab` label; the phone bottom nav adds it to the iTrackie
+  badge; each unread line has the 16 px `recent.png` icon at its top right (`aria-hidden`); a "New messages" divider
+  goes before the first unread line when the tab opens or you change room, and stays put while it is open.
+
+Choices made by the AI and not asked (2026-11-27; open to change):
+
+- **The server reads live lines itself** (`presentLogRead`): while a seat is connected and has nothing missed unread,
+  the server moves its point to the end on its own, so a tab that closes before sending its point doesn't leave lines
+  unread.
+- **Re-matching after the log shifts.** Walking into a room or Defacer changes which line sits at each position. While
+  connected, the client re-finds unread lines by content (identical lines matched newest first) and treats every
+  other position as read.
+- **Rate limit 6 → 12 per 10 s.** `readLimiter` is shared by chat and room log read updates, so a few open tabs fit.
+
+**Known limitation** (from the issue): single-line reads stay on the device until the point catches up, so another
+device can show a line as unread, and badge counts can differ between devices until then.

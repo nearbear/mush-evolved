@@ -45,6 +45,10 @@ import {
   chatReadFor,
   mergeChatRead,
   pruneChatRead,
+  logReadFor,
+  presentLogRead,
+  raiseLogRead,
+  type LogRead,
   applyNoteEdit,
   cleanNotes,
   type Note,
@@ -110,6 +114,11 @@ const CHAT_PAGE_UNAVAILABLE = "chat_page_unavailable";
 /** Where a seat's chat read counts are kept (#400): Durable Object storage, outside the snapshot and the record. */
 const CHAT_READ_PREFIX = "chatRead:";
 const chatReadKey = (seat: PlayerId) => `${CHAT_READ_PREFIX}${seat}`;
+/** Where a seat's room log read state is kept (#513, logRead.ts): beside chat's, outside the snapshot and the record. */
+const LOG_READ_PREFIX = "logRead:";
+const logReadKey = (seat: PlayerId) => `${LOG_READ_PREFIX}${seat}`;
+/** How often, at most, connected seats' room log read state is saved while they stay connected (#513). */
+const LOG_LIVE_SAVE_MS = 60_000;
 /** Where a seat's private notes are kept (#503): the same storage, outside the snapshot, the record and every view. */
 const NOTES_PREFIX = "notes:";
 const notesKey = (seat: PlayerId) => `${NOTES_PREFIX}${seat}`;
@@ -324,13 +333,29 @@ export class GameRoom extends Server<Env> {
   private chatLimiter = new RateLimiter(5, 10_000);
   /** Per seat, chat pages asked for (#355): chat's numbers, but apart from it, so reading back never stops you posting. */
   private pageLimiter = new RateLimiter(5, 10_000);
-  /** Per seat, read count updates (#400). The client sends at most one every 5 s per tab, so this is room for a few tabs. */
-  private readLimiter = new RateLimiter(6, 10_000);
+  /**
+   * Per seat, read updates: chat's counts (#400) and the room log's point (#513). The client sends each at most once
+   * every 5 s per tab, so this is room for a few tabs.
+   */
+  private readLimiter = new RateLimiter(12, 10_000);
   /**
    * Each seat's chat read counts (#400), all loaded in `onStart` and saved under `chatReadKey` as they rise. Keyed by
    * seat (the mind), so they follow a Transfer. Not game state: never in the snapshot, the record or a view.
    */
   private chatRead = new Map<PlayerId, ChatRead>();
+  /**
+   * Each seat's room log read state (#513, logRead.ts), all loaded in `onStart` and saved under `logReadKey`. Keyed by
+   * seat, but each record names the body it counts for and starts over when that changes. Never in the snapshot, the
+   * record or a view.
+   */
+  private logRead = new Map<PlayerId, LogRead>();
+  /**
+   * Per seat with a connection open (#513): its body, and that body's `logSeen` when the seat's first connection
+   * opened. Lines after it were seen live. In memory only: a restart drops every connection.
+   */
+  private connectedFrom = new Map<PlayerId, { body: PlayerId; from: number }>();
+  /** When connected seats' room log read state was last saved (`saveLiveLogReads`). */
+  private liveLogSavedAt = 0;
   /** Per seat, note writes (#503). The client saves a tab a second after typing stops, so this is room for a few tabs. */
   private noteLimiter = new RateLimiter(20, 10_000);
   /**
@@ -359,6 +384,8 @@ export class GameRoom extends Server<Env> {
     const version = stored?.version ?? 0;
     // Every seat's read counts (#400): at most one small entry per seat, so loaded whole, and kept in step after.
     for (const [key, read] of await this.ctx.storage.list<ChatRead>({ prefix: CHAT_READ_PREFIX })) this.chatRead.set(key.slice(CHAT_READ_PREFIX.length), read);
+    // Every seat's room log read state (#513): one small entry per seat, like the chat counts.
+    for (const [key, read] of await this.ctx.storage.list<LogRead>({ prefix: LOG_READ_PREFIX })) this.logRead.set(key.slice(LOG_READ_PREFIX.length), read);
     // Every seat's notes (#503): at most 16 × 4,000 characters per seat, so loaded whole too.
     for (const [key, notes] of await this.ctx.storage.list({ prefix: NOTES_PREFIX })) this.notes.set(key.slice(NOTES_PREFIX.length), cleanNotes(notes));
     if (!stored || version < MIN_STATE_VERSION) {
@@ -598,6 +625,9 @@ export class GameRoom extends Server<Env> {
     }
     this.chatRead.delete(seat);
     await this.ctx.storage.delete(chatReadKey(seat));
+    this.logRead.delete(seat);
+    this.connectedFrom.delete(seat);
+    await this.ctx.storage.delete(logReadKey(seat));
     this.notes.delete(seat);
     await this.ctx.storage.delete(notesKey(seat));
     await this.persist();
@@ -830,6 +860,8 @@ export class GameRoom extends Server<Env> {
       this.wakes.clear();
       this.modelGate = null;
       this.chatRead.clear();
+      this.logRead.clear();
+      this.connectedFrom.clear();
       this.notes.clear();
       for (const conn of this.getConnections<SeatState>()) conn.close(4001, "Invalid seat token");
     } catch (e) {
@@ -911,9 +943,11 @@ export class GameRoom extends Server<Env> {
     this.send(connection, { type: "build", version: this.env.RULES_VERSION ?? "dev" });
     this.sendView(connection, playerId);
     this.sendChatRead(connection, playerId);
+    const logRead = this.connectLogRead(connection, playerId);
     if (!this.isBotSeat(playerId)) this.send(connection, { type: "notes", notes: this.notes.get(playerId) ?? [] });
-    // Connecting is what counts as activity (inactivity.ts, #145).
-    await this.markSeen([playerId], true);
+    // Connecting is what counts as activity (inactivity.ts, #145). Started before the room log read point's save is
+    // awaited, so the `seen` input is recorded as the seat connects.
+    await Promise.all([logRead, this.markSeen([playerId], true)]);
   }
 
   /**
@@ -978,6 +1012,12 @@ export class GameRoom extends Server<Env> {
     if (msg.type === "chatRead") {
       if (!this.readLimiter.allow(playerId, Date.now(), this.devServer ? DEV_RATE_SCALE : 1)) this.countRateLimited(playerId);
       else if (!this.isBotSeat(playerId)) await this.raiseChatRead(playerId, msg.read, connection);
+      return;
+    }
+    // The room log's read point (#513): the same, under the same limit.
+    if (msg.type === "logRead") {
+      if (!this.readLimiter.allow(playerId, Date.now(), this.devServer ? DEV_RATE_SCALE : 1)) this.countRateLimited(playerId);
+      else if (!this.isBotSeat(playerId)) await this.raiseLogRead(playerId, msg.upTo, connection);
       return;
     }
     if (msg.type === "note") {
@@ -1053,7 +1093,7 @@ export class GameRoom extends Server<Env> {
   private async social(
     playerId: PlayerId,
     by: PlayerId,
-    msg: Exclude<GameClientMessage, { type: "action" | "clearQueue" | "acknowledgeTransfer" | "walk" | "cheat" | "roleCheat" | "cheatRoom" | "kube" | "setModel" | "clearModel" | "leaveShip" | "chatPage" | "chatRead" | "note" }>,
+    msg: Exclude<GameClientMessage, { type: "action" | "clearQueue" | "acknowledgeTransfer" | "walk" | "cheat" | "roleCheat" | "cheatRoom" | "kube" | "setModel" | "clearModel" | "leaveShip" | "chatPage" | "chatRead" | "logRead" | "note" }>,
     /** A chat message's reply depth (`BOT_CHAT_CHAIN_DEPTH`): 0 unless a bot is replying to chat. */
     depth = 0,
   ): Promise<string | null> {
@@ -1259,13 +1299,16 @@ export class GameRoom extends Server<Env> {
     return null;
   }
 
-  override onClose(connection: Connection<SeatState>): void {
-    // The key lives only while its player is connected; the client sends it again on reconnect.
+  override async onClose(connection: Connection<SeatState>): Promise<void> {
     const playerId = connection.state?.playerId;
-    if (!this.singlePlayer || playerId !== SINGLE_PLAYER_HUMAN || !this.modelGate) return;
+    if (!playerId) return;
     for (const conn of this.getConnections<SeatState>()) {
       if (conn.id !== connection.id && conn.state?.playerId === playerId) return;
     }
+    // The seat's last connection: lines from here on are missed (#513).
+    await this.disconnectLogRead(playerId);
+    // The key lives only while its player is connected; the client sends it again on reconnect.
+    if (!this.singlePlayer || playerId !== SINGLE_PLAYER_HUMAN || !this.modelGate) return;
     this.modelGate.setCredentials(devModelCredentials(this.env));
     this.keyChanges++;
     this.scheduleBots();
@@ -1304,6 +1347,7 @@ export class GameRoom extends Server<Env> {
     await this.persist(entries, outbox.dropped.flatMap(({ channel, pages }) => Array.from({ length: pages }, (_, page) => chatPageKey(channel, page))));
     if (room !== null) this.broadcastViews(room);
     if (input.type === "toggleCheckbox") this.sendChatEdit(input.channel, input.seq);
+    await this.saveLiveLogReads();
     // Saved with the next input; until then a restart only repeats an idempotent write.
     await this.releaseAccounts();
     await this.recordFinished();
@@ -1427,6 +1471,84 @@ export class GameRoom extends Server<Env> {
       if (conn.state?.playerId === seat && conn.id !== except?.id) this.send(conn, msg);
     }
     await this.ctx.storage.put(chatReadKey(seat), read);
+  }
+
+  /**
+   * A seat's room log read state as it stands (#513): the stored record for its body now (`logReadFor`), brought up to
+   * date while the seat is connected (`presentLogRead`). Null for a bot seat or a seat with no body.
+   */
+  private currentLogRead(seat: PlayerId): { record: LogRead; body: PlayerState } | null {
+    const body = this.bodyState(seat);
+    if (!this.game || !body || this.isBotSeat(seat)) return null;
+    let record = logReadFor(this.logRead.get(seat), body);
+    const since = this.connectedFrom.get(seat);
+    if (since) {
+      // A new body (a Transfer while connected) starts with nothing unread, so everything it sees is live from here.
+      if (since.body !== body.id) this.connectedFrom.set(seat, { body: body.id, from: body.logSeen });
+      record = presentLogRead(record, body, since.body === body.id ? since.from : body.logSeen);
+    }
+    return { record, body };
+  }
+
+  /** Keeps `record` as the seat's and saves it, when it differs from what is stored. */
+  private async storeLogRead(seat: PlayerId, record: LogRead): Promise<void> {
+    const stored = this.logRead.get(seat);
+    if (stored && stored.body === record.body && stored.readUpTo === record.readUpTo && stored.live === record.live) return;
+    this.logRead.set(seat, record);
+    await this.ctx.storage.put(logReadKey(seat), record);
+  }
+
+  /**
+   * A seat connects (#513): with no other connection open, lines from here on are live (`connectedFrom`), and the ones
+   * since its last connection closed are the missed ones. Sends the read point to this connection, after the view.
+   * Synchronous up to the write.
+   */
+  private async connectLogRead(conn: Connection<SeatState>, seat: PlayerId): Promise<void> {
+    const body = this.bodyState(seat);
+    if (!body || this.isBotSeat(seat)) return;
+    const others = [...this.getConnections<SeatState>()].some((c) => c.id !== conn.id && c.state?.playerId === seat);
+    if (!others || !this.connectedFrom.has(seat)) this.connectedFrom.set(seat, { body: body.id, from: body.logSeen });
+    const current = this.currentLogRead(seat);
+    if (!current) return;
+    this.send(conn, { type: "logUnread", from: current.record.readUpTo });
+    await this.storeLogRead(seat, current.record);
+  }
+
+  /** The seat's last connection closed (#513): `live` is now, and later lines are missed until it connects again. */
+  private async disconnectLogRead(seat: PlayerId): Promise<void> {
+    const current = this.currentLogRead(seat);
+    this.connectedFrom.delete(seat);
+    if (current) await this.storeLogRead(seat, current.record);
+  }
+
+  /**
+   * Saves every connected seat's room log read state, at most once a minute (#513), so a room that stops without
+   * closing its connections (a deploy) loses little: lines after the last save count as missed.
+   */
+  private async saveLiveLogReads(): Promise<void> {
+    const now = Date.now();
+    if (now - this.liveLogSavedAt < LOG_LIVE_SAVE_MS) return;
+    this.liveLogSavedAt = now;
+    for (const seat of [...this.connectedFrom.keys()]) {
+      const current = this.currentLogRead(seat);
+      if (current) await this.storeLogRead(seat, current.record);
+    }
+  }
+
+  /**
+   * Raises a seat's room log read point to `upTo` (#513, `raiseLogRead`: clamped to its body's `logSeen`, only up).
+   * When it rose, it is saved and sent to the seat's other connections, never the sender's and never another seat.
+   */
+  private async raiseLogRead(seat: PlayerId, upTo: number, except: Connection): Promise<void> {
+    const current = this.currentLogRead(seat);
+    if (!current) return;
+    const raised = raiseLogRead(current.record, current.body, upTo);
+    if (!raised) return;
+    const msg: GameServerMessage = { type: "logUnread", from: raised.readUpTo };
+    for (const conn of this.getConnections<SeatState>()) {
+      if (conn.state?.playerId === seat && conn.id !== except.id) this.send(conn, msg);
+    }
+    await this.storeLogRead(seat, raised);
   }
 
   /**

@@ -4,11 +4,11 @@
 // renderer (CLAUDE.md).
 
 
-import { Fragment, memo, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
 import { Tabs } from "@base-ui/react/tabs";
-import { blurredVision, FEATURE_CHANNELS, ITRACKIE_ITEM, GRAVEYARD_CHANNEL, MUSH_CHANNEL, jsonEqual, type ChannelId, type LogLine, type FeatureChannel, type PlayerView, type SharedPlanetId, type SharedReportId, type ThreadId } from "@mush2/shared";
+import { blurredVision, FEATURE_CHANNELS, ITRACKIE_ITEM, GRAVEYARD_CHANNEL, MUSH_CHANNEL, type ChannelId, type FeatureChannel, type PlayerView, type SharedPlanetId, type SharedReportId, type ThreadId } from "@mush2/shared";
 import { useChatReadStore, useReadSnapshot } from "../chatRead.ts";
 import { readAllOn, unreadByFeature, unreadByTab, type TabId } from "./chatTabs.ts";
 import { MarkAllContext } from "./unreadDivider.ts";
@@ -17,9 +17,8 @@ import { FeatureSelect } from "./FeatureSelect.tsx";
 import { loadFeatureTab, saveFeatureTab } from "../featureTab.ts";
 import { Hint, IconTab } from "./IconButton.tsx";
 import { TabOutline } from "./TabOutline.tsx";
-import { CycleDivider } from "./CycleDivider.tsx";
-import { FeedEntry, InfoMarker, NeronAvatar, NeronName, WarningMarker, isNeronMessage } from "./FeedEntry.tsx";
-import { DefacedBadge, VisibilityBadge } from "./VisibilityBadge.tsx";
+import { RoomLog } from "./RoomLog.tsx";
+import { unreadPositions, useLogRead, useLogReadStore } from "../logRead.ts";
 import { PrivateChannels, type ChannelHandlers } from "./PrivateChannels.tsx";
 import { Thread, type ThreadLinks } from "./Thread.tsx";
 import { Threads, threadNameFrom } from "./Threads.tsx";
@@ -29,7 +28,6 @@ import { SharedPilgredCard } from "./SharedPilgredCard.tsx";
 import { SharedReports } from "./SharedReports.tsx";
 import { ResearchTracker } from "./ResearchTracker.tsx";
 import { ProjectTracker } from "./ProjectTracker.tsx";
-import { Scroller } from "./Scroller.tsx";
 import { ExpeditionReportDialog } from "./ExpeditionReportDialog.tsx";
 import { TAB_ICONS } from "../art/assets.ts";
 
@@ -56,55 +54,6 @@ function useUnread(view: Pick<PlayerView, "readChannels" | "chatCounts" | "chatU
   const read = useReadSnapshot();
   return read ? { tabs: unreadByTab(view, read), features: unreadByFeature(view, read) } : { tabs: NO_UNREAD, features: {} };
 }
-
-/**
- * A log line's look: a warning (an alarm, or a secret line that leaked) in amber, a covert line that leaked in red
- * (covert actions are usually malicious; owner, 2026-11-05), and a line others didn't see muted. An Outcast's leaked
- * line has no warning level and keeps the plain look (owner, 2026-11-08); its badge still shows.
- */
-function logRowClass(e: LogLine): string | undefined {
-  if (e.level === "danger") return "warning danger";
-  if (e.level === "warning") return e.leaked && e.kind === "covert" ? "warning danger" : "warning";
-  return e.visibleTo === "all" ? undefined : "private";
-}
-
-/**
- * One room log line, memoized by content: the log tab stays mounted, so every new view would otherwise redraw each
- * line and its time popover (web/CLAUDE.md "Render cost"). `onRead` must be stable (a state setter).
- */
-const LogRow = memo(
-  function LogRow({ entry: e, canRead, onRead }: { entry: LogLine; canRead: boolean; onRead: (report: string) => void }) {
-    const { t } = useTranslation();
-    const names = useNames();
-    const neron = !e.kind && e.level !== "warning" && e.level !== "danger" && isNeronMessage(e.key);
-    const marker = neron ? (
-      <NeronAvatar />
-    ) : e.kind ? (
-      <VisibilityBadge kind={e.kind} leaked={e.leaked === true} />
-    ) : e.level === "warning" || e.level === "danger" ? (
-      <WarningMarker />
-    ) : (
-      <InfoMarker />
-    );
-    return (
-      <FeedEntry
-        marker={marker}
-        name={neron ? <NeronName /> : undefined}
-        at={e.at}
-        className={logRowClass(e)}
-      >
-        {e.defaced && <DefacedBadge />}
-        {names.logLine(e)}
-        {canRead && (
-          <button type="button" className="expedition-read" onClick={() => onRead(String(e.params?.report))}>
-            {t("expedition.read")}
-          </button>
-        )}
-      </FeedEntry>
-    );
-  },
-  (a, b) => a.canRead === b.canRead && a.onRead === b.onRead && jsonEqual(a.entry, b.entry),
-);
 
 export function ITrackie({
   view,
@@ -138,9 +87,6 @@ export function ITrackie({
     if (roomLogRequest > 0) setTab("room");
   }, [roomLogRequest]);
   const here = view.you.room;
-  // The server sends this room's public history plus our private entries from
-  // anywhere; the Room tab shows what belongs to the room we're standing in.
-  const roomLog = view.log.filter((e) => e.room === undefined || e.room === here);
   const [feature, setFeatureState] = useState<FeatureChannel>(loadFeatureTab);
   const setFeature = (f: FeatureChannel) => {
     setFeatureState(f);
@@ -153,14 +99,19 @@ export function ITrackie({
   // The dead have no room log and no private channels (#45): those tabs go, and they land on global chat.
   const alive = view.you.alive;
   const activeTab: TabId = !alive && (tab === "room" || tab === "private") ? "global" : (tab === "mush" && !mush) || (tab === "graveyard" && !graveyard) ? "room" : tab;
-  const { tabs: unread, features: featureUnread } = useUnread(view);
+  const { tabs: chatUnread, features: featureUnread } = useUnread(view);
+  // The Room tab counts the room log's unread lines (#513), the other tabs their chat.
+  const logRead = useLogRead();
+  const unread: Record<TabId, number> = { ...chatUnread, room: unreadPositions(view, logRead).length };
   const readStore = useChatReadStore();
+  const logStore = useLogReadStore();
   // Mark all read (#400): every channel read on the active tab, so a grouped tab (threads, features with their shared
-  // planets and reports, private channels) marks them all. The Room tab has no chat. Each bump drops every feed's
-  // "New messages" divider (`MarkAllContext`).
+  // planets and reports, private channels) marks them all; on the Room tab, every room log line (#513). Each bump drops
+  // every feed's "New messages" divider (`MarkAllContext`).
   const [markedAll, setMarkedAll] = useState(0);
   const markAllRead = () => {
-    readStore?.markAll(readAllOn(view, activeTab));
+    if (activeTab === "room") logStore?.markAll();
+    else readStore?.markAll(readAllOn(view, activeTab));
     setMarkedAll((n) => n + 1);
   };
   const tabLabel = (tab: TabId, name: string) => (unread[tab] ? t("itrackie.unreadTab", { name, count: unread[tab] }) : name);
@@ -205,7 +156,7 @@ export function ITrackie({
       <ExpeditionReportDialog report={view.expeditions.find((r) => r.id === report)} onClose={() => setReport(null)} canShare={view.canShareReports} onShare={onShareReport} />
       <Tabs.Root className="itrackie-tabs-root" value={activeTab} onValueChange={(v) => setTab(v as TabId)}>
         <Tabs.List className="itrackie-tabs">
-          {alive && <IconTab value="room" src={TAB_ICONS.roomLog} label={t("itrackie.tabs.room")} />}
+          {alive && <IconTab value="room" src={TAB_ICONS.roomLog} label={tabLabel("room", t("itrackie.tabs.room"))} badge={unread.room} />}
           <IconTab value="global" src={TAB_ICONS.global} label={tabLabel("global", t("itrackie.tabs.global"))} badge={unread.global} />
           <IconTab value="threads" src={TAB_ICONS.threads} label={tabLabel("threads", t("itrackie.tabs.threads"))} badge={unread.threads} />
           <IconTab value="features" src={TAB_ICONS.features} label={tabLabel("features", t("itrackie.tabs.features"))} badge={unread.features} />
@@ -235,7 +186,7 @@ export function ITrackie({
                 </button>
               </Hint>
             )}
-            {readStore && unread[activeTab] > 0 && (
+            {(activeTab === "room" ? logStore : readStore) && unread[activeTab] > 0 && (
               <button type="button" className="mark-read" aria-label={t("itrackie.markReadIn", { name: t(TAB_TITLES[activeTab]) })} onClick={markAllRead}>
                 {t("itrackie.markRead")}
               </button>
@@ -244,23 +195,7 @@ export function ITrackie({
 
           {/* keepMounted: hidden with CSS, so chat drafts survive switching tabs. */}
           <Tabs.Panel className="itrackie-panel" value="room" aria-label={t(TAB_TITLES.room)} keepMounted>
-            <Scroller items={roomLog.length}>
-              {/* aria-live is off here: new entries are spoken by the announcer (announce.ts), so a hidden tab still announces and bursts are batched. */}
-              <div role="log" aria-live="off" aria-label={t(TAB_TITLES.room)}>
-              {roomLog.length === 0 ? (
-                <p className="sub">{t("itrackie.roomEmpty")}</p>
-              ) : (
-                <ol className="feed">
-                  {roomLog.map((e, i) => (
-                    <Fragment key={i}>
-                      {roomLog[i - 1]?.cycle !== e.cycle && <CycleDivider cycle={e.cycle} cyclesPerDay={view.config.cyclesPerDay} />}
-                      <LogRow entry={e} canRead={e.key === "expeditionReturned" && view.expeditions.some((r) => r.id === e.params?.report)} onRead={setReport} />
-                    </Fragment>
-                  ))}
-                </ol>
-              )}
-              </div>
-            </Scroller>
+            <RoomLog view={view} active={activeTab === "room"} onRead={setReport} />
           </Tabs.Panel>
 
           <Tabs.Panel className="itrackie-panel" value="global" aria-label={t(TAB_TITLES.global)} keepMounted>

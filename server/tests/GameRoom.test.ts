@@ -413,8 +413,8 @@ describe("GameRoom persistence", () => {
       const keys = () => [...storage.data.keys()].filter((k) => !k.startsWith("bot:")).length;
       const inputs = keys();
       await send(revived, connect(revived, token), { type: "chat", channel: CHAT_CHANNELS[0], text: "hello" });
-      // The input, and the poster's read count (#400).
-      expect(keys()).toBe(inputs + 2);
+      // The input, the poster's read count (#400) and its room log read point, written on connect (#513).
+      expect(keys()).toBe(inputs + 3);
       expect(stored().overrides).toEqual(overrides);
     } finally {
       vi.useRealTimers();

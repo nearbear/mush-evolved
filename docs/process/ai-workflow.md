@@ -5883,3 +5883,20 @@ Step 1 of #502. Added `gender` (`male | female | neutral`) to `CHARACTERS`, take
 ## 2026-11-27: Terminal access logged
 
 - Owner asked for a log event whenever someone accesses a terminal. Claude asked three questions; owner chose a public room line (`accessedTerminal`), naming the terminal, written on every access (reopening included). Implemented in `AccessAction.apply` with en/fr/es lines; the existing "access changes nothing" test was loosened to ignore the log and every player's `logSeen`, which the new line bumps. Worked: the `rule` skill's ask-first step caught the visibility choice, which eMush's clean-room tool couldn't settle.
+
+## 2026-11-27: Room log unread state, step 1 of #513 (Claude Code, Opus 5.5, two sessions)
+
+- **What:** per-seat room log read point on the server (`logRead:<seat>`, presence-based: only lines missed with no
+  connection open are unread), `logRead`/`logUnread` messages, a client store with a per-device set of single-line
+  reads, and the UI: Room tab badge, phone bottom nav badge, `recent.png` unread icon, "New messages" divider, Mark all
+  read on the Room tab, and marking one line read by a 400 ms mouse rest, a tap or focus. The Room tab moved out of
+  `ITrackie.tsx` into `hud/RoomLog.tsx`.
+- **Handoff worked:** the first session ran out of room halfway and left `docs/scratchpad/handoff-513.md`; the second
+  picked it up from the note alone and finished in order.
+- **AI choices, not asked (recorded in `chat-pages.md` for the owner to confirm):** the server marks live lines read
+  itself; unread lines are re-found by content when the log window shifts; `readLimiter` 6 → 12.
+- **Needed correction:** awaiting the new storage write in `onConnect` delayed the `seen` input and broke two #145
+  tests; the save now runs alongside `markSeen`. A DOM test passed `storage: undefined`, which falls back to jsdom's
+  shared localStorage and leaked state between tests. The leak-check found no leaks and pointed at an untested branch
+  (a Transfer while connected), now tested.
+- **Not done:** screenshots (the play skill runs only on request); step 2 (chat) is separate.

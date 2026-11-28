@@ -8,7 +8,7 @@
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import type { CharacterId } from "@mush2/shared";
-import { INFO_ICON, NERON_CHAT_ICON, WARNING_ICON, spriteStrip } from "../art/assets.ts";
+import { INFO_ICON, NERON_CHAT_ICON, RECENT_ICON, WARNING_ICON, spriteStrip } from "../art/assets.ts";
 import { useKeyedSprite } from "../art/keyedSprite.ts";
 import { RecencyStamp } from "./RecencyStamp.tsx";
 
@@ -19,6 +19,8 @@ export function FeedEntry({
   tools,
   className,
   seq,
+  pos,
+  unread = false,
   children,
 }: {
   marker: ReactNode;
@@ -32,14 +34,23 @@ export function FeedEntry({
    * (`useReadMarking` in Thread.tsx, #400).
    */
   seq?: number | undefined;
+  /**
+   * A room log line's position (`positionOf` in logRead.ts): the row becomes focusable (not a tab stop) and the Room
+   * tab marks it read on hover, tap or focus (RoomLog.tsx, #513).
+   */
+  pos?: number | undefined;
+  /** Shows the unread icon (#513). It is hidden from screen readers: the divider and counts say what is new. */
+  unread?: boolean;
   children: ReactNode;
 }) {
   return (
     <li
-      className={["entry", name === undefined && "entry-inline", className].filter(Boolean).join(" ")}
+      className={["entry", name === undefined && "entry-inline", unread && "unread", className].filter(Boolean).join(" ")}
       data-seq={seq}
-      tabIndex={seq === undefined ? undefined : -1}
+      data-pos={pos}
+      tabIndex={seq === undefined && pos === undefined ? undefined : -1}
     >
+      {unread && <img className="entry-unread" src={RECENT_ICON} width={16} height={16} alt="" aria-hidden="true" />}
       <div className="entry-marker">
         {marker}
         {name === undefined && <RecencyStamp at={at} />}

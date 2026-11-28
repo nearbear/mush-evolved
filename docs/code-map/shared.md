@@ -89,6 +89,7 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 ## Rule areas
 
 - `chat.ts`: chat storage in fixed pages (`CHAT_PAGE`, `pushChat` seals a full page into `chatOutbox` for the server to store as `chatPageKey`, #355), checklist ticks kept beside the chat (`chatMarks`, `taskLines`, `markedText`; `messageView` in `rules.ts` draws them into the text; `chatPageSource`/`chatPageView` there answer a `chatPage` request), channels (`chatChannels` to post, `readChannels` to read), `sendChat`, threads under global chat (`createThread`), private channels, limits.
+- `logRead.ts`: the room log's per-seat read point (#513): `LogRead { body, readUpTo, live }` in `logSeen` positions, `logReadFor` (reset for a new body or no record, clamped), `raiseLogRead` (forward only), `presentLogRead` (while connected), `parseLogPosition`. Never game state: kept by the server beside `chatRead:<seat>`.
 - `notes.ts`: private notes (#503): `Note`, `MAX_NOTE_TABS` (16), `MAX_NOTE_LENGTH` (4,000), `applyNoteEdit` (one tab's new text; null for a gap or a 17th tab), `cleanNotes` (stored data read back leniently) and `toggleNoteTask` (a Preview checkbox, with chat's `taskLines`/`markedText`). Never game state: the server keeps them outside the snapshot, the record (`Input` excludes `note`) and every view.
 - `death.ts`: `damage` (the one way HP goes down) and `killPlayer`, both taking a `DeathCause` (`DEATH_CAUSES`, #177).
 - `infection.ts`: `contaminate` (the one way contamination rises), conversion, `contaminationSeenBy`.

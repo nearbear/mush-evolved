@@ -961,3 +961,14 @@ describe("postPlan (channel plans)", () => {
     bad({ ...plan, slots: [{ kind: "task", task: { type: "toString" } }] });
   });
 });
+
+describe("logRead (#513)", () => {
+  it("parses a position, dropping anything extra", () => {
+    expect(parse({ type: "logRead", upTo: 12, seat: "p1" })).toEqual({ type: "logRead", upTo: 12 });
+    expect(parse({ type: "logRead", upTo: 0 })).toEqual({ type: "logRead", upTo: 0 });
+  });
+
+  it("refuses anything but a safe whole number from 0", () => {
+    for (const upTo of [-1, 1.5, "3", null, undefined, Number.MAX_SAFE_INTEGER + 1, [3]]) expect(parse({ type: "logRead", upTo })).toBeNull();
+  });
+});

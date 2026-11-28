@@ -15,6 +15,7 @@ import { showError } from "./Toasts.tsx";
 import { ChatPagesProvider, useChatPageCache } from "./chatPages.tsx";
 import { ChatReadProvider, chatReadKey, createChatReadStore } from "./chatRead.ts";
 import { createNotesStore, NotesProvider } from "./notes.ts";
+import { LogReadProvider, createLogReadStore, logReadKey } from "./logRead.ts";
 
 /** How slow-render warnings name this screen (dev console only). */
 const WATCH_ID = "GameView"; // i18n-ignore: dev console only
@@ -36,6 +37,8 @@ export default function GameScreen({ ticket, onLeave, waking = false }: { ticket
   const handleChatPages = chatPages.handle;
   // How far this seat has read each channel (#400): one store per seat ticket.
   const chatRead = useMemo(() => createChatReadStore({ key: chatReadKey(ticket.roomId, ticket.token), send }), [ticket, send]);
+  // How far this seat has read the room log (#513): one store per seat ticket.
+  const logRead = useMemo(() => createLogReadStore({ key: logReadKey(ticket.roomId, ticket.token), send }), [ticket, send]);
   // This seat's private notes (#503): one store per seat ticket.
   // biome-ignore lint/correctness/useExhaustiveDependencies: `ticket` is a trigger: a new seat starts a new store.
   const notes = useMemo(() => createNotesStore(send), [ticket, send]);
@@ -48,12 +51,15 @@ export default function GameScreen({ ticket, onLeave, waking = false }: { ticket
       if (msg.type === "view") {
         // Unchanged parts keep their identity, so memoized components skip them (shareView.ts).
         setView((prev) => shareUnchanged(prev, msg.view));
+        logRead.onView(msg.view);
         setCheatsAllowed(msg.cheatsAllowed);
         setClock({ offset: msg.now - Date.now() });
         setNextCycleAt(msg.nextCycleAt);
         setBotsPaused(msg.botsPaused);
       } else if (msg.type === "chatRead") {
         chatRead.fromServer(msg.read);
+      } else if (msg.type === "logUnread") {
+        logRead.fromServer(msg.from);
       } else if (msg.type === "notes") {
         notes.fromServer(msg.notes);
       } else if (handleChatPages(msg)) {
@@ -70,6 +76,7 @@ export default function GameScreen({ ticket, onLeave, waking = false }: { ticket
     // the page is hidden or closed, so little reading is lost.
     const flush = () => {
       chatRead.flush();
+      logRead.flush();
       notes.flush();
     };
     // A phone that locks or backgrounds the tab can drop the connection without either end hearing of it, so the
@@ -86,7 +93,11 @@ export default function GameScreen({ ticket, onLeave, waking = false }: { ticket
       } else hiddenAt = null;
     };
     const onOnline = () => socket.reconnect();
-    socket.addEventListener("open", flush);
+    // A new connection: the next view's new room log lines arrived while away, not live (#513).
+    socket.addEventListener("open", () => {
+      logRead.connected();
+      flush();
+    });
     document.addEventListener("visibilitychange", onVisibility);
     window.addEventListener("pagehide", flush);
     window.addEventListener("online", onOnline);
@@ -95,15 +106,17 @@ export default function GameScreen({ ticket, onLeave, waking = false }: { ticket
       window.removeEventListener("pagehide", flush);
       window.removeEventListener("online", onOnline);
       chatRead.dispose();
+      logRead.dispose();
       notes.dispose();
       socket.close();
     };
-  }, [ticket, onLeave, handleChatPages, chatRead, notes]);
+  }, [ticket, onLeave, handleChatPages, chatRead, logRead, notes]);
 
   if (!view) return <main className="connecting loading">{t("common.connecting")}</main>;
   return (
     <ChatPagesProvider value={chatPages.value}>
     <ChatReadProvider value={chatRead}>
+    <LogReadProvider value={logRead}>
     <NotesProvider value={notes}>
     <RenderWatch id={WATCH_ID}>
     <GameView
@@ -119,6 +132,7 @@ export default function GameScreen({ ticket, onLeave, waking = false }: { ticket
     />
     </RenderWatch>
     </NotesProvider>
+    </LogReadProvider>
     </ChatReadProvider>
     </ChatPagesProvider>
   );

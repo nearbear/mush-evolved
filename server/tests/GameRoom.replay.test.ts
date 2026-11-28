@@ -296,7 +296,7 @@ describe("GameRoom chat read state (#400)", () => {
   it("sends a connecting seat its counts after the view, as loaded on a restart and clamped to the channel", async () => {
     const { room, storage } = await newRoom();
     const a = connect(room, "tok0");
-    expect(a.messages<GameServerMessage>().map((m) => m.type)).toEqual(["build", "view", "chatRead", "notes"]);
+    expect(a.messages<GameServerMessage>().map((m) => m.type)).toEqual(["build", "view", "chatRead", "logUnread", "notes"]);
     expect(reads(a)).toEqual([{ type: "chatRead", read: {} }]);
     await say(room, a, global);
     await storage.put("chatRead:p0", { [global]: 5 });
@@ -329,10 +329,19 @@ describe("GameRoom chat read state (#400)", () => {
     await send(room, a, { type: "chatRead", read: { [MUSH_CHANNEL]: 1 } });
     await send(room, a, { type: "chatRead", read: { [global]: 99 } });
     expect(storage.data.get("chatRead:p0")).toEqual(stored);
-    // Six updates per 10 s: this one is the seventh, and would have raised the count.
+    // Twelve read updates per 10 s, chat's and the room log's together: this one is the thirteenth, and would have
+    // raised the count.
     await say(room, b, global);
-    for (let i = 0; i < 3; i++) await send(room, a, { type: "chatRead", read: {} });
-    await send(room, a, { type: "chatRead", read: { [global]: 2 } });
+    // Spread out, so the per-second limit on every message doesn't step in first.
+    vi.useFakeTimers({ toFake: ["Date"] });
+    const later = async (msg: Parameters<typeof send>[2]) => {
+      vi.setSystemTime(Date.now() + 200);
+      await send(room, a, msg);
+    };
+    for (let i = 0; i < 8; i++) await later({ type: "logRead", upTo: 0 });
+    await later({ type: "chatRead", read: {} });
+    await later({ type: "chatRead", read: { [global]: 2 } });
+    vi.useRealTimers();
     expect(storage.data.get("chatRead:p0")).toEqual(stored);
     expect(a.messages<GameServerMessage>().slice(sent).some((m) => m.type !== "view")).toBe(false);
   });
@@ -401,6 +410,135 @@ describe("GameRoom chat read state (#400)", () => {
   });
 });
 
+describe("GameRoom room log read state (#513)", () => {
+  const unreads = (c: Conn) => c.messages<GameServerMessage>().filter((m) => m.type === "logUnread");
+  /** Closes `c` as partyserver does: gone from the connections, then `onClose`. */
+  const close = async (room: Room, c: Conn) => {
+    (room as unknown as FakeServer).connections.delete(c as never);
+    await room.onClose(c as never);
+  };
+  /** `n` more lines seen by `seat`'s body, as `pushLog` counts them. */
+  const lines = (room: Room, seat: number, n: number) => {
+    gameOf(room).players[seat]!.logSeen += n;
+  };
+  const seen = (room: Room, seat = 0) => gameOf(room).players[seat]!.logSeen;
+
+  it("sends the lines missed while no connection was open, kept across a restart", async () => {
+    const { room, storage } = await newRoom();
+    const start = seen(room);
+    const a = connect(room, "tok0");
+    expect(unreads(a)).toEqual([{ type: "logUnread", from: start }]);
+    lines(room, 0, 2); // seen live
+    await close(room, a);
+    expect(storage.data.get("logRead:p0")).toEqual({ body: "p0", readUpTo: start + 2, live: start + 2 });
+    lines(room, 0, 3); // missed
+    const revived = asRoom(storage);
+    await revived.onStart();
+    gameOf(revived).players[0]!.logSeen = start + 5;
+    expect(unreads(connect(revived, "tok0"))).toEqual([{ type: "logUnread", from: start + 2 }]);
+  });
+
+  it("misses nothing while another connection is open", async () => {
+    const { room } = await newRoom();
+    const a = connect(room, "tok0", "a");
+    const a2 = connect(room, "tok0", "a2");
+    await close(room, a2);
+    lines(room, 0, 3);
+    expect(unreads(connect(room, "tok0", "a3"))).toEqual([{ type: "logUnread", from: seen(room) }]);
+    expect(a.closed).toBeNull();
+  });
+
+  it("keeps older unread across a second offline stretch until it is read", async () => {
+    const { room } = await newRoom();
+    const start = seen(room);
+    await close(room, connect(room, "tok0", "a"));
+    lines(room, 0, 2);
+    await close(room, connect(room, "tok0", "b"));
+    lines(room, 0, 1);
+    expect(unreads(connect(room, "tok0", "c"))).toEqual([{ type: "logUnread", from: start }]);
+  });
+
+  it("raises the point, clamped, and sends it to the seat's other connections only, never answering the sender", async () => {
+    const { room, storage } = await newRoom();
+    const start = seen(room);
+    await close(room, connect(room, "tok0", "a"));
+    lines(room, 0, 4);
+    const [a, a2, b] = [connect(room, "tok0", "a"), connect(room, "tok0", "a2"), connect(room, "tok1", "b")];
+    const [sentA, sentB] = [a.sent.length, b.sent.length];
+    await send(room, a, { type: "logRead", upTo: start + 2 });
+    expect(unreads(a2).at(-1)).toEqual({ type: "logUnread", from: start + 2 });
+    expect(storage.data.get("logRead:p0")).toMatchObject({ readUpTo: start + 2 });
+    await send(room, a, { type: "logRead", upTo: 9999 });
+    expect(unreads(a2).at(-1)).toEqual({ type: "logUnread", from: start + 4 });
+    // Not lowered, and no news is not sent.
+    const before = a2.sent.length;
+    await send(room, a, { type: "logRead", upTo: start });
+    expect(a2.sent.length).toBe(before);
+    expect(storage.data.get("logRead:p0")).toMatchObject({ readUpTo: start + 4 });
+    expect(a.sent.length).toBe(sentA);
+    expect(b.sent.length).toBe(sentB);
+  });
+
+  it("starts over with nothing unread when the seat's body changed (a Transfer)", async () => {
+    const { room, storage } = await newRoom();
+    await storage.put("logRead:p0", { body: "p1", readUpTo: 0, live: 0 });
+    const revived = asRoom(storage);
+    await revived.onStart();
+    expect(unreads(connect(revived, "tok0"))).toEqual([{ type: "logUnread", from: seen(revived) }]);
+    expect(storage.data.get("logRead:p0")).toMatchObject({ body: "p0", readUpTo: seen(revived) });
+  });
+
+  it("starts over for a Transfer while connected: nothing of the new body's past is unread, and the old point is gone", async () => {
+    const { room, storage } = await newRoom(3, new FakeStorage(), {}, { p0: "mush", p1: "human" });
+    const game = gameOf(room);
+    const [mush, victim] = [game.players[0]!, game.players[1]!];
+    mush.mushSkills.push("transfert");
+    mush.room = victim.room = "LABORATORY";
+    for (const o of game.players.slice(2)) o.room = "REFECTORY";
+    game.contamination[victim.id] = 1;
+    // The Mush seat has lines missed while offline, still unread.
+    const start = seen(room);
+    await close(room, connect(room, "tok0", "a"));
+    lines(room, 0, 3);
+    const a = connect(room, "tok0", "b");
+    expect(unreads(a)).toEqual([{ type: "logUnread", from: start }]);
+    await send(room, a, { type: "action", action: { type: "body_transfer", target: victim.id } });
+    const body = gameOf(room).players.find((p) => p.mind === "p0")!;
+    expect(body.id).toBe(victim.id);
+    await close(room, a);
+    expect(storage.data.get("logRead:p0")).toEqual({ body: body.id, readUpTo: body.logSeen, live: body.logSeen });
+    expect(unreads(connect(room, "tok0", "c"))).toEqual([{ type: "logUnread", from: body.logSeen }]);
+  });
+
+  it("starts a seat with no record with nothing unread", async () => {
+    const { room, storage } = await newRoom();
+    lines(room, 0, 3);
+    expect(unreads(connect(room, "tok0"))).toEqual([{ type: "logUnread", from: seen(room) }]);
+    expect(storage.data.get("logRead:p0")).toMatchObject({ readUpTo: seen(room) });
+  });
+
+  it("keeps nothing for a bot seat", async () => {
+    const { room, storage } = await newRoom();
+    gameOf(room).players[1]!.isBot = true;
+    const b = connect(room, "tok1");
+    await send(room, b, { type: "logRead", upTo: 1 });
+    await close(room, b);
+    expect(unreads(b)).toEqual([]);
+    expect(storage.data.has("logRead:p1")).toBe(false);
+  });
+
+  it("Leave ship deletes the seat's state", async () => {
+    const { room, storage } = await newRoom(3, new FakeStorage(), CHEATS);
+    const a = connect(room, "tok0");
+    await close(room, connect(room, "tok0", "x"));
+    await close(room, a);
+    expect(storage.data.has("logRead:p0")).toBe(true);
+    const c = connect(room, "tok0", "again");
+    await send(room, c, { type: "leaveShip" });
+    expect(storage.data.has("logRead:p0")).toBe(false);
+  });
+});
+
 describe("GameRoom private notes (#503)", () => {
   const notesOf = (c: Conn) => c.messages<GameServerMessage>().filter((m) => m.type === "notes");
   const errors = (c: Conn) => c.messages<GameServerMessage>().filter((m) => m.type === "error");
@@ -408,7 +546,7 @@ describe("GameRoom private notes (#503)", () => {
   it("sends a connecting seat its notes after the view, as loaded on a restart", async () => {
     const { room, storage } = await newRoom();
     const a = connect(room, "tok0");
-    expect(a.messages<GameServerMessage>().map((m) => m.type)).toEqual(["build", "view", "chatRead", "notes"]);
+    expect(a.messages<GameServerMessage>().map((m) => m.type)).toEqual(["build", "view", "chatRead", "logUnread", "notes"]);
     expect(notesOf(a)).toEqual([{ type: "notes", notes: [] }]);
     await send(room, a, { type: "note", tab: 0, text: "Kuan Ti is Mush" });
     expect(storage.data.get("notes:p0")).toEqual([{ text: "Kuan Ti is Mush" }]);

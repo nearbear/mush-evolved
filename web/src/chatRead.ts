@@ -78,9 +78,9 @@ export interface ChatReadStore {
 }
 
 /** Storage that may be missing or throw (private windows, blocked site data): every access is guarded. */
-type StorageLike = Pick<Storage, "getItem" | "setItem" | "removeItem" | "key" | "length">;
+export type StorageLike = Pick<Storage, "getItem" | "setItem" | "removeItem" | "key" | "length">;
 
-function defaultStorage(): StorageLike | undefined {
+export function defaultStorage(): StorageLike | undefined {
   try {
     return globalThis.localStorage;
   } catch {
@@ -88,12 +88,12 @@ function defaultStorage(): StorageLike | undefined {
   }
 }
 
-/** Drops every game's entry not touched for `KEEP_MS`. */
-function pruneOld(storage: StorageLike, now: number): void {
+/** Drops every game's entry under `prefix` not touched for `KEEP_MS`. */
+export function pruneOld(storage: StorageLike, now: number, prefix = PREFIX): void {
   const old: string[] = [];
   for (let i = 0; i < storage.length; i++) {
     const k = storage.key(i);
-    if (!k?.startsWith(PREFIX)) continue;
+    if (!k?.startsWith(prefix)) continue;
     try {
       const at = (JSON.parse(storage.getItem(k) ?? "null") as Partial<Stored> | null)?.at;
       if (typeof at !== "number" || now - at > KEEP_MS) old.push(k);

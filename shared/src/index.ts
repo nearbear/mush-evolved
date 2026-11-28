@@ -9,6 +9,7 @@ export * from "./equipment.ts";
 export * from "./rules.ts";
 export * from "./chat.ts";
 export * from "./chatRead.ts";
+export * from "./logRead.ts";
 export * from "./notes.ts";
 export * from "./actions.ts";
 export * from "./actionTarget.ts";

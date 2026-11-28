@@ -557,11 +557,26 @@
   padding: 0 var(--space-2);
 }
 /* A message focused from the keyboard (#400: focusing marks it read). A click focuses it too, without the ring. */
-.feed > li[data-seq]:focus {
+.feed > li[data-seq]:focus,
+.feed > li[data-pos]:focus {
   outline: none;
 }
 .feed:focus-visible,
-.feed > li[data-seq]:focus-visible {
+.feed > li[data-seq]:focus-visible,
+.feed > li[data-pos]:focus-visible {
   outline: 2px solid var(--highlight);
   outline-offset: -2px;
+}
+
+/* An unread message's icon (#513): top right, clear of the markers on the left and the body's text. */
+.feed > li.entry.unread {
+  position: relative;
+  padding-right: 20px;
+}
+.feed > li.entry > .entry-unread {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  image-rendering: pixelated;
+  pointer-events: none;
 }

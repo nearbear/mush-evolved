@@ -6,6 +6,7 @@ import type { PlayerView } from "@mush2/shared";
 import { useTranslation } from "react-i18next";
 import { TAB_ICONS } from "../art/assets.ts";
 import { useReadSnapshot } from "../chatRead.ts";
+import { unreadPositions, useLogRead, type LogViewPart } from "../logRead.ts";
 import { totalUnread } from "./chatTabs.ts";
 
 export type MobilePanel = "inspect" | "room" | "itrackie";
@@ -23,11 +24,12 @@ export function BottomNav({
 }: {
   panel: MobilePanel;
   onChange: (panel: MobilePanel) => void;
-  view: Pick<PlayerView, "readChannels" | "chatCounts" | "chatUnheard">;
+  view: Pick<PlayerView, "readChannels" | "chatCounts" | "chatUnheard"> & LogViewPart;
 }) {
   const { t } = useTranslation();
   const read = useReadSnapshot();
-  const unread = read ? totalUnread(view, read) : 0;
+  // The iTrackie's chat plus its Room tab's unread room log lines (#513).
+  const unread = (read ? totalUnread(view, read) : 0) + unreadPositions(view, useLogRead()).length;
   return (
     <nav className="bottom-nav" aria-label={t("nav.panels")}>
       {BUTTONS.map((b) => {

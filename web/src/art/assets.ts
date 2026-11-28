@@ -329,7 +329,7 @@ export const MORALE_ICON = statIcons["moral"]!;
 // Tab icons (16x16-ish pixel art). Keys are the names the user chose; see docs/assets/tab-icons.md.
 const uiIcons = urls(
   import.meta.glob<string>(
-    "../../../Mush/www/img/icons/ui/{mush,mush_progressive,starter,o2,fuel,plasma,alert,p_alive,survival,awake,comm,learned,stock,microsc,neron,info,infoalert,local,planet,conceptor,talkie,shield,basicplus,goldplus,notebook,pa_cook,pa_garden,plant_youngling,plant_thirsty,plant_dry,plant_diseased,sat,pa_pilgred,pam,pa_heal,pa_eng,pa_exp,pa_comp,pa_core,pa_shoot,hunter,private,search,spore,talk,wall,fav,triumph,heavy,charge,dead,check,uncheck,rebellion,food_unstable,food_hazardous,food_decaying,less,more,vertigo}.{png,gif}",
+    "../../../Mush/www/img/icons/ui/{mush,mush_progressive,starter,o2,fuel,plasma,alert,p_alive,survival,awake,comm,learned,stock,microsc,neron,info,infoalert,local,planet,conceptor,talkie,shield,basicplus,goldplus,notebook,pa_cook,pa_garden,plant_youngling,plant_thirsty,plant_dry,plant_diseased,sat,pa_pilgred,pam,pa_heal,pa_eng,pa_exp,pa_comp,pa_core,pa_shoot,hunter,private,search,spore,talk,wall,fav,triumph,heavy,charge,dead,check,uncheck,rebellion,food_unstable,food_hazardous,food_decaying,less,more,vertigo,recent}.{png,gif}",
     { eager: true, query: "?url", import: "default" },
   ),
 );
@@ -362,6 +362,9 @@ export const EXPAND_ICON = uiIcons["more"]!;
 
 /** The marker beside iTrackie entries that come from the ship rather than a person. */
 export const INFO_ICON = uiIcons["info"]!;
+
+/** Marks an unread message in a feed (#513); decorative, the divider and counts say what is new. */
+export const RECENT_ICON = uiIcons["recent"]!;
 
 /** 16x16 NERON icon, for project entries (e.g. a NERON project that changes a stat cap). */
 export const NERON_ICON = uiIcons["neron"]!;
