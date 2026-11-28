@@ -14,6 +14,7 @@ import { readAllOn, unreadByFeature, unreadByTab, type TabId } from "./chatTabs.
 import { MarkAllContext } from "./unreadDivider.ts";
 import { useAnnouncements } from "./useAnnouncements.ts";
 import { FeatureSelect } from "./FeatureSelect.tsx";
+import { loadFeatureTab, saveFeatureTab } from "../featureTab.ts";
 import { Hint, IconTab } from "./IconButton.tsx";
 import { TabOutline } from "./TabOutline.tsx";
 import { CycleDivider } from "./CycleDivider.tsx";
@@ -140,7 +141,11 @@ export function ITrackie({
   // The server sends this room's public history plus our private entries from
   // anywhere; the Room tab shows what belongs to the room we're standing in.
   const roomLog = view.log.filter((e) => e.room === undefined || e.room === here);
-  const [feature, setFeature] = useState<FeatureChannel>("botany");
+  const [feature, setFeatureState] = useState<FeatureChannel>(loadFeatureTab);
+  const setFeature = (f: FeatureChannel) => {
+    setFeatureState(f);
+    saveFeatureTab(f);
+  };
   // The Mush tab exists only for Mush (the server sends the channel to no one else) and pulses while it has unread.
   const mush = view.readChannels.includes(MUSH_CHANNEL);
   // The Graveyard tab is for the dead alone; the server sends the channel to no one else.

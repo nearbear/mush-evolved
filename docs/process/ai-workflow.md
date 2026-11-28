@@ -5874,3 +5874,8 @@ Asked for a loud warning that stops an accidental deploy which bumps the game ve
 ## 2026-11-27: Gender context for log lines (#505)
 
 Step 1 of #502. Added `gender` (`male | female | neutral`) to `CHARACTERS`, taken from upstream's character enum via the clean-room tool rather than from memory. `useNames().logLine` passes the actor's gender (or the target's, for keys listed in `TARGET_AGREEMENT_KEYS`, empty for now) as i18next `context`; a masked "someone" gets no context so a ninja's gender isn't given away, a detail the issue didn't spell out. `checkCatalog` now treats `_female`/`_male` keys as optional per-language variants that need a plain fallback key with matching placeholders and plural forms. Small slip: the first web test forgot i18next's default HTML escaping (the app turns it off).
+
+## 2026-11-27: iTrackie remembers the open feature
+
+- Asked: the iTrackie's Features tab shouldn't reset to Botany; client only.
+- Done: `web/src/featureTab.ts` stores the picked feature per device in localStorage (key `mush2.featureTab`, like `pressMode.ts`), validated against `FEATURE_CHANNELS` falling back to the first feature in the list (`FEATURE_CHANNELS[0]`, owner's follow-up: not hard-coded Botany); `ITrackie` loads it as its initial state and saves on change. One small edit, no correction needed.
