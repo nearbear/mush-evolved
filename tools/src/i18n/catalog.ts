@@ -1,6 +1,8 @@
 // Checks on translation catalogs (web/src/locales/<lang>.json merged with shared/src/locales/names.<lang>.json, i18next JSON v4).
 // English is the reference; every other language must have the same keys, the
-// same placeholders, and every plural form its language needs.
+// same placeholders, and every plural form its language needs. Gendered variants
+// (`key_female`, `key_male`, #505) are optional per language, but each needs a
+// plain key to fall back to.
 
 export type Catalog = { [key: string]: string | Catalog };
 
@@ -23,6 +25,11 @@ export function flatten(catalog: Catalog, prefix = ""): Record<string, string> {
 }
 
 export const baseKey = (key: string) => key.replace(PLURAL_SUFFIX, "");
+
+/** The gender context i18next puts before any plural suffix: `entered_female`, `crew_male_one`. */
+const GENDER_SUFFIX = /_(male|female)(?=(_(zero|one|two|few|many|other))?$)/;
+/** `entered_female` -> `entered`, `crew_male_one` -> `crew_one`; other keys unchanged. */
+export const withoutGender = (key: string) => key.replace(GENDER_SUFFIX, "");
 const pluralForm = (key: string) => PLURAL_SUFFIX.exec(key)?.[1];
 
 /** Everything a translation must carry over unchanged: placeholders and Trans tags. */
@@ -61,9 +68,36 @@ const union = (group: Group) => {
 /** Problems with `catalog` for `locale`, judged against the `reference` catalog. Empty = fine. */
 export function checkCatalog(reference: Catalog, catalog: Catalog, locale: string): string[] {
   const problems: string[] = [];
-  const ref = groupByBase(flatten(reference));
-  const own = groupByBase(flatten(catalog));
+  const plain = (flat: Record<string, string>) => Object.fromEntries(Object.entries(flat).filter(([k]) => !GENDER_SUFFIX.test(k)));
+  const ownFlat = flatten(catalog);
+  const ref = groupByBase(plain(flatten(reference)));
+  const own = groupByBase(plain(ownFlat));
   const needed = pluralCategories(locale);
+
+  // Gendered variants: a language may have them or not, but each needs a plain key (gender-free
+  // wording) to fall back to, and must carry the same placeholders and plural shape as that key.
+  const gendered = groupByBase(Object.fromEntries(Object.entries(ownFlat).filter(([k]) => GENDER_SUFFIX.test(k))));
+  for (const [variant, group] of gendered) {
+    const base = withoutGender(variant);
+    const plainGroup = own.get(base);
+    if (!plainGroup) {
+      problems.push(`"${variant}" has no plain key "${base}" to fall back to (it must hold gender-free wording)`);
+      continue;
+    }
+    for (const [form, text] of group.forms) if (!text.trim()) problems.push(`empty value for "${variant}"${form ? ` (${form})` : ""}`);
+    const isPlural = !group.forms.has("");
+    if (isPlural !== !plainGroup.forms.has("")) {
+      problems.push(`"${variant}" is ${isPlural ? "plural" : "not plural"} but "${base}" is ${isPlural ? "not " : ""}plural`);
+    } else if (isPlural) {
+      for (const category of needed) if (!group.forms.has(category)) problems.push(`"${variant}" lacks the "${category}" plural form that ${locale} needs`);
+    }
+    const refGroup = ref.get(base);
+    if (refGroup) {
+      const want = union(refGroup).join(" ");
+      const have = union(group).join(" ");
+      if (want !== have) problems.push(`"${variant}" uses [${have}] but the reference uses [${want}]`);
+    }
+  }
 
   for (const base of ref.keys()) if (!own.has(base)) problems.push(`missing key "${base}"`);
 

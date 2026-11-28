@@ -75,6 +75,37 @@ describe("checkCatalog", () => {
   });
 });
 
+describe("checkCatalog: gendered variants (#505)", () => {
+  const en: Catalog = { entered: "{{name}} came in.", crew: { count_one: "{{count}} member", count_other: "{{count}} members" } };
+  const fr: Catalog = {
+    entered: "{{name}} fait son entrée.",
+    entered_female: "{{name}} est entrée.",
+    entered_male: "{{name}} est entré.",
+    crew: { count_one: "{{count}} membre", count_many: "{{count}} de membres", count_other: "{{count}} membres" },
+  };
+
+  it("lets a language add _female / _male variants that English lacks", () => {
+    expect(checkCatalog(en, fr, "fr")).toEqual([]);
+    expect(checkCatalog({ ...en, entered_female: "{{name}} came in." }, { ...en, entered_female: "{{name}} came in." }, "en")).toEqual([]);
+  });
+
+  it("requires a plain, gender-free key for every gendered variant", () => {
+    const { entered: _, ...noPlain } = fr;
+    expect(checkCatalog(en, noPlain, "fr")).toEqual([
+      '"entered_female" has no plain key "entered" to fall back to (it must hold gender-free wording)',
+      '"entered_male" has no plain key "entered" to fall back to (it must hold gender-free wording)',
+      'missing key "entered"',
+    ]);
+  });
+
+  it("checks a variant's placeholders and plural forms against the plain key", () => {
+    expect(checkCatalog(en, { ...fr, entered_male: "Il est entré." }, "fr")).toEqual(['"entered_male" uses [] but the reference uses [{{name}}]']);
+    const crew = { ...(fr.crew as Catalog), count_female_one: "{{count}} membre", count_female_other: "{{count}} membres" };
+    expect(checkCatalog(en, { ...fr, crew }, "fr")).toEqual(['"crew.count_female" lacks the "many" plural form that fr needs']);
+    expect(checkCatalog(en, { ...fr, crew: { ...crew, count_female_many: "{{count}} de membres" } }, "fr")).toEqual([]);
+  });
+});
+
 describe("flatten and usedKeys", () => {
   it("joins nested keys with dots", () => {
     expect(flatten({ a: { b: "x", c: { d: "y" } }, e: "z" })).toEqual({ "a.b": "x", "a.c.d": "y", e: "z" });

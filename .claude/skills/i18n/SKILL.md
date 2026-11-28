@@ -18,6 +18,7 @@ The UI language is a **per-player, client-side choice** (`web/src/i18n/`), indep
 7. **Layout:** French and Spanish run about 20-30% longer. Don't use fixed widths or `white-space: nowrap` on text that is translated, and keep it working at 360px.
 8. **Formatting:** numbers and dates go through `Intl` with the current language, not hand-built strings.
 9. **Bots and moderation:** bot chat and prompts follow the ship's language, not the UI language. The chat word list is English-only and `\b` ignores accented letters (a known gap, `moderation.test.ts`); extend it per language rather than working around it.
+10. **Gendered log lines** (#505): `logEvent.<key>_female` / `_male` are tried before `logEvent.<key>`, by the actor's (`name`) gender from `CHARACTERS` (`web/src/i18n/logContext.ts`). The plain key must hold gender-free wording (French rephrases, "fait son entrée", not "entré·e"), since it's what a neutral character, a masked "someone" and a missing variant get. A line that agrees with the target goes in `TARGET_AGREEMENT_KEYS`; one that agrees with both is rewritten. Variants are per language (English rarely needs them); the tests require the plain key.
 
 ## Workflow
 

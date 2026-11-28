@@ -5870,3 +5870,7 @@ Asked for a loud warning that stops an accidental deploy which bumps the game ve
 - **Decision (owner):** `createChannel` now needs global chat's access (a working iTrackie, or Luyten-Ceti's brain probes, as for chat); invites are unchanged. New error `channel_needs_itrackie` (en/fr/es); the free channel slot shows disabled with "(needs an iTrackie)" so the reason is visible on phones too; the scripted expedition-plan goal skips creating a channel without access.
 - **What worked:** reusing `chatChannels(...).includes("global")` kept the brain-probe exemption and the broken-iTrackie rule in one place, and the client reads the same thing from `view.chatChannels`, so no view change was needed.
 - **Needed correction:** a Transfer test created a channel in a config with no starting inventory; it now gives the body an iTrackie first.
+
+## 2026-11-27: Gender context for log lines (#505)
+
+Step 1 of #502. Added `gender` (`male | female | neutral`) to `CHARACTERS`, taken from upstream's character enum via the clean-room tool rather than from memory. `useNames().logLine` passes the actor's gender (or the target's, for keys listed in `TARGET_AGREEMENT_KEYS`, empty for now) as i18next `context`; a masked "someone" gets no context so a ninja's gender isn't given away, a detail the issue didn't spell out. `checkCatalog` now treats `_female`/`_male` keys as optional per-language variants that need a plain fallback key with matching placeholders and plural forms. Small slip: the first web test forgot i18next's default HTML escaping (the app turns it off).

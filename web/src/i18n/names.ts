@@ -5,6 +5,7 @@
 
 import { BLUEPRINTS, DELOGGED_KEY, LOST_PLACE_NAME, SOMEONE, characterGivenName, characterName, hybridParents, type ActionType, isLostPlace, type ItemView, type LogEntry, type RoomId } from "@mush2/shared";
 import { useTranslation } from "react-i18next";
+import { logGenderContext } from "./logContext.ts";
 
 /** The name of each kind of action, for the action queue and log lines that mention one. Ready never waits in a queue. */
 const ACTION_NAME_KEYS = {
@@ -257,7 +258,8 @@ export function useNames() {
       if (typeof params[who] === "string") resolved[who] = params[who] === SOMEONE ? maskedLabel : characterGivenName(params[who]);
     // An assay's "chun:3,paola:1" lists (shared/src/actions/research.ts): "Chun ×3, Paola ×1".
     for (const list of ["tested", "spoiledBy"] as const) if (typeof params[list] === "string") resolved[list] = sampleCounts(params[list]);
-    const line: string = t(`logEvent.${key}` as never, { ...resolved, defaultValue: key });
+    // Gendered wording (#505): `<key>_female` / `<key>_male` before the plain, gender-free key.
+    const line: string = t(`logEvent.${key}` as never, { ...resolved, context: logGenderContext(key, params), defaultValue: key });
     // A line may start with a lowercase name: "someone", or a hostile's "the intruder".
     return Object.values(params).includes(SOMEONE) || typeof params.hostile === "string" ? line.charAt(0).toLocaleUpperCase() + line.slice(1) : line;
   };
