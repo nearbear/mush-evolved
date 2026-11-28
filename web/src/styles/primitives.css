@@ -63,3 +63,36 @@
   color: var(--muted);
   font-size: 0.8rem;
 }
+
+/* List row: one entry of a list that opens something (a Comms signal, Signals.tsx; an iTrackie thread, Threads.tsx).
+   A band in the cycle dividers' title-bar blue (itrackie.css) edged with the feed's 12% divider (--terminal-rule), the
+   icon, the name, and any count or status on the right. Not a plain button: it drops the button art; hover lightens
+   to the iTrackie card's cyan. */
+.list-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-sizing: border-box;
+  width: 100%;
+  height: auto;
+  min-height: 44px;
+  margin: 0;
+  padding: 0.25rem 0.625rem;
+  border: 1px solid var(--terminal-rule);
+  border-radius: 0;
+  background: var(--terminal-header-bg);
+  color: #171b5c;
+  font: inherit;
+  text-align: start;
+  text-shadow: none;
+}
+@media (hover: hover) {
+  button.list-row:hover {
+    background: var(--terminal-bg);
+  }
+}
+button.list-row:focus-visible {
+  background: var(--terminal-bg);
+  outline: 2px solid #171b5c;
+  outline-offset: 1px;
+}

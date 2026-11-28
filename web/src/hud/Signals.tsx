@@ -73,7 +73,7 @@ function NextRebel({ next, cycle }: { next: NonNullable<CommsTerminalView["nextR
   const { t } = useTranslation();
   const names = useNames();
   return (
-    <li className="signal-entry signal-next">
+    <li className="list-row signal-entry signal-next">
       <SignalIcon kind="rebel" />
       <span className="signal-entry-main">
         <strong className="signal-entry-name">{names.rebelBase(next.base)}</strong>
@@ -96,7 +96,7 @@ function SignalEntry({ signal, cycle, onOpen }: { signal: SignalView; cycle: num
       : undefined
     : t(`signals.status.${signal.status as Exclude<SignalView["status"], "active">}`);
   return (
-    <button type="button" className="signal-entry" data-status={signal.status} aria-label={t("signals.open", { name })} onClick={() => onOpen(signal.id)}>
+    <button type="button" className="list-row signal-entry" data-status={signal.status} aria-label={t("signals.open", { name })} onClick={() => onOpen(signal.id)}>
       <SignalIcon kind={signal.kind} />
       <span className="signal-entry-main">
         <strong className="signal-entry-name">{name}</strong>

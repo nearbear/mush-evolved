@@ -1,4 +1,4 @@
-// The kit's primitives section (#435): styles/primitives.css's field label, pickable tile and muted note, each on the
+// The kit's primitives section (#435): styles/primitives.css's field label, pickable tile, muted note and list row, each on the
 // dark panel and on the light card, so a dark-on-dark (or light-on-light) token bug shows here first.
 
 import { characterGivenName, type CharacterId } from "@mush2/shared";
@@ -39,6 +39,10 @@ function Primitives() {
         </div>
       </fieldset>
       <p className="sub">A muted note: a hint, an empty state or a caption.</p>
+      <button type="button" className="list-row" onClick={noop}>
+        <span style={{ flex: 1 }}>List row: a signal or a thread</span>
+        <span>3</span>
+      </button>
     </div>
   );
 }
@@ -52,7 +56,8 @@ export function PrimitivesSection() {
         <>
           <code>styles/primitives.css</code>: <code>.field</code> with <code>.field-label</code> (a bold label above
           its control, on a <code>label</code> or a <code>fieldset</code>), <code>.pick-tile</code> (a portrait over a
-          name, toggled with <code>aria-pressed</code>) and <code>.sub</code> (a muted note). Each reads surface tokens
+          name, toggled with <code>aria-pressed</code>), <code>.sub</code> (a muted note) and <code>.list-row</code> (a
+          signal or thread row: a fixed light band with a faint divider edge, the same on both surfaces). Each reads surface tokens
           (<code>--text</code>, <code>--muted</code>, <code>--field-*</code>, <code>--pick-*</code>) that{" "}
           <code>tokens.css</code> sets for the dark panels and <code>cut-card.css</code> redefines for the light card.
         </>

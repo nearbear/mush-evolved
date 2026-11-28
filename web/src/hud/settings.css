@@ -759,43 +759,15 @@ li.research-item-blocked .research-progress {
   padding: 0;
   list-style: none;
 }
-/* A list row, not a plain button (like a tab or a pick tile): a band in the cycle dividers' title-bar blue
-   (itrackie.css), the kind's icon, the name with its caption underneath, and the overall status on the right. */
-button.signal-entry {
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  width: 100%;
-  height: auto;
-  min-height: 44px;
-  padding: 0.25rem 0.5rem;
-  border: 1px solid transparent;
-  border-radius: 0;
-  background: var(--terminal-header-bg);
-  color: #171b5c;
-  font: inherit;
-  text-align: start;
-  text-shadow: none;
-  cursor: pointer;
-}
-button.signal-entry:hover,
-button.signal-entry:focus-visible {
-  border-color: #171b5c;
-}
+/* Each row is a .list-row (primitives.css): the kind's icon, the name with its caption underneath, and the overall
+   status on the right. */
 button.signal-entry:not([data-status="active"]) {
   opacity: 0.7;
 }
-/* The next rebel base's call: the same band, but not a button (nothing to open yet), drawn as not here. */
+/* The next rebel base's call: the same row, but not a button (nothing to open yet), drawn as not here: a dashed edge
+   in place of the plain one. */
 li.signal-next {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  min-height: 44px;
-  padding: 0.25rem 0.5rem;
   border: 1px dashed #171b5c;
-  background: var(--terminal-header-bg);
-  color: #171b5c;
   opacity: 0.7;
 }
 .signal-icon {

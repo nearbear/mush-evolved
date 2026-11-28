@@ -474,11 +474,15 @@
   display: none;
 }
 .thread-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
   list-style: none;
   margin: 0;
   padding: 0 var(--space-2) 0 0;
 }
-/* A thread as a row button: icon, name, message count. Also the link under a global message that has one. */
+/* A thread in the list is a .list-row (primitives.css), like a Comms signal: icon, name, message count, unread.
+   The link under a global message that has a thread is a plain button with the same contents. */
 .thread-link {
   display: flex;
   align-items: center;
@@ -488,7 +492,8 @@
   margin: var(--space-1) 0 0;
   text-align: left;
 }
-.thread-link .tab-icon {
+.thread-link .tab-icon,
+.thread-row .tab-icon {
   opacity: 1;
 }
 .thread-name {

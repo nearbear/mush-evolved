@@ -5982,3 +5982,8 @@ A staging tab kept showing "A new version of the game is available" through hard
 - **Built:** `PlayerState.solTriedToday`, set on success and failure, cleared at day start, left out of `MIND_FIELDS` so it stays with the body; the action is hidden once used (MycoScan precedent). The Radio Expert bot duty now tries once a day (`memory.today`) instead of retrying until linked.
 - **What worked:** copying the `mycoscannedToday` pattern end to end (normalizer, leak table, day reset). **Needed correction:** the server bot test assumed unlimited retries and failed in `verify`; caught and updated.
 - **Follow-up (owner):** the inventory panel stays open when the peek bar's Take or Drop is pressed. `ActionButton` tags each button with `data-action` (its action type), and `useOverlayDismiss` takes an optional selector for presses that leave the overlay open; the inventory passes the peek bar's take/drop buttons.
+
+### 2026-11-27: Shared list-row style for Comms signals and iTrackie threads
+
+- Asked to give the iTrackie Threads tab rows the Comms signal rows look, as one shared style. Added `.list-row` to `styles/primitives.css` (title-bar blue band, ink text, cyan on hover/focus); `Signals.tsx` and `Threads.tsx` use it, and the signal rules in `hud/settings.css` shrank to their differences (inactive dimmed, the next rebel call dashed edge). The thread link under a global chat message stays a plain button. Added to the design kit primitives section and `web/CLAUDE.md`.
+- Correction from the owner: I first gave the rows the ID card amber edge (dark/gold/dark) as asked, then a 1px gold one; the owner settled on a plain 1px border in the 12% divider colour (`--terminal-rule`), the usual look for list rows.

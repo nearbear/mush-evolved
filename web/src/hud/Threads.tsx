@@ -88,7 +88,7 @@ export function Threads({
             <ul className="thread-rows" aria-label={t("itrackie.threads.list")}>
               {threads.map((th) => (
                 <li key={th.id}>
-                  <button type="button" className="thread-link" onClick={() => onOpen(th.id)}>
+                  <button type="button" className="list-row thread-row" onClick={() => onOpen(th.id)}>
                     <img className="tab-icon" src={TAB_ICONS.threads} alt="" />
                     <span className="thread-name">{th.name}</span>
                     <span className="thread-count">{t("itrackie.threads.messages", { count: counts.get(th.id) ?? 0 })}</span>
