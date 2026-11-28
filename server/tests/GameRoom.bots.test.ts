@@ -499,7 +499,7 @@ describe("GameRoom single player", () => {
     (storage.data.get("bot:p2") as { version: number }).version = -1; // another version's snapshot
     const revived = asRoom(storage);
     await revived.onStart();
-    const bots = (revived as unknown as { bots: Map<string, { snapshot(): { shrinks: string[]; version: number } }> }).bots;
+    const bots = (revived as unknown as { botDriver: { bots: Map<string, { snapshot(): { shrinks: string[]; version: number } }> } }).botDriver.bots;
     expect(bots.get("p1")!.snapshot().shrinks).toContain(marker);
     expect(bots.get("p2")!.snapshot().shrinks).not.toContain(marker);
     const c = connect(revived, token);
