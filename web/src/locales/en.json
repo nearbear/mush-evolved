@@ -1422,6 +1422,8 @@
     "thrownIn": "{{target}} was thrown in from {{room}}.",
     "guarded": "{{name}} is guarding the room.",
     "ceasefire": "{{name}} declared a ceasefire in the room.",
+    "laidDown": "{{name}} is lying down... It's good to just stop and take a break. Destination: the land of dreams!",
+    "gotUp": "{{name}} wakes up calmly...",
     "stoppedGuarding": "{{name}} stopped guarding the room.",
     "enteredNimble": "You entered Nimble mode.",
     "exitedNimble": "You exited Nimble mode.",

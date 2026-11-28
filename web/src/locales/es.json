@@ -1447,6 +1447,8 @@
     "thrownIn": "{{target}} fue arrojado desde {{room}}.",
     "guarded": "{{name}} vigila la sala.",
     "ceasefire": "{{name}} ha declarado un alto el fuego en la sala.",
+    "laidDown": "{{name}} se recuesta... El descanso le hará bien. ¡Rumbo al país de los sueños!",
+    "gotUp": "{{name}} se levanta lentamente...",
     "stoppedGuarding": "{{name}} dejó de vigilar la sala.",
     "enteredNimble": "Entraste en modo ágil.",
     "exitedNimble": "Saliste del modo ágil.",

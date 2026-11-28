@@ -127,6 +127,17 @@ describe("ninja", () => {
     expect(viewFor(normal, "p1").players.find((o) => o.id === "p0")!.busy).toBeDefined();
   });
 
+  it("lying down and getting up are private to a ninja, as in eMush", () => {
+    const s = ninja();
+    for (const id of ["p0", "p1"]) player(s, id).room = "BEDROOM_A";
+    const bed = s.equipment.BEDROOM_A!.find((e) => e.type === "BED")!.id;
+    const up = mustApply(mustApply(s, "p0", { type: "lie_down", equipment: bed }), "p0", { type: "get_up" });
+    const keys = (id: string) => viewFor(up, id).log.map((e) => e.key);
+    expect(keys("p0")).toEqual(expect.arrayContaining(["laidDown", "gotUp"]));
+    expect(keys("p1")).not.toContain("laidDown");
+    expect(keys("p1")).not.toContain("gotUp");
+  });
+
   it("lasts across cycles and ends on death or cure", () => {
     const s = nextCycle(ninja());
     expect(player(s, "p0").statuses).toContain("ninja");

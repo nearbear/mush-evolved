@@ -1447,6 +1447,8 @@
     "thrownIn": "{{target}} a été jeté depuis {{room}}.",
     "guarded": "{{name}} garde la salle.",
     "ceasefire": "{{name}} a déclaré un cessez-le-feu dans la salle.",
+    "laidDown": "{{name}} s'allonge... Ça fait du bien de s'arrêter. Allez direction le pays des rêves !",
+    "gotUp": "{{name}} se lève doucement...",
     "stoppedGuarding": "{{name}} a cessé de garder la salle.",
     "enteredNimble": "Vous êtes passé en mode agile.",
     "exitedNimble": "Vous avez quitté le mode agile.",
