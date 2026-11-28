@@ -21,8 +21,8 @@
   align-items: flex-end;
   gap: var(--space-2);
 }
-/* Across the room view, between your ID card and the minimap's card (InventoryOverlay's useBand sets top and bottom
-   inline; these are the fallback until it has measured). */
+/* Across the room view, between your ID card and the bottom row of buttons (InventoryOverlay's useBand sets top and
+   bottom inline; these are the fallback until it has measured). */
 .inventory-popup {
   position: absolute;
   top: 0.5rem;
@@ -31,6 +31,8 @@
   right: 0.5rem;
   box-sizing: border-box;
   min-height: 0;
+  /* Over the zoom buttons, which it covers (useBand). */
+  z-index: 1;
   /* The panel art is see-through; over the scene it needs a solid backing to stay readable. */
   background-color: var(--panel-fill);
   display: flex;

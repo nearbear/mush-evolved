@@ -81,7 +81,8 @@
   main.game {
     display: flex;
     flex-direction: column;
-    height: 100dvh;
+    /* Held at its height before the keyboard opened while you type in the room view (useKeyboardOverRoom). */
+    height: var(--game-height, 100dvh);
     max-width: none;
     margin: 0;
     padding: 0;

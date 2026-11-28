@@ -2,8 +2,8 @@
 // over the isometric scene (the same InventoryPanel the old self panel used to hold). It stays open while you
 // take and drop (from the panel or the peek bar), and closes on the button, Escape, or a press elsewhere in the room
 // view. UI-only state.
-// Open, the panel spans the room view's width in the band between your ID card and the minimap (owner,
-// 2026-11-21), on both layouts; useBand measures that band.
+// Open, the panel spans the room view's width in the band between your ID card and the bottom row of buttons, over the
+// minimap's card and the zoom buttons (owner, 2026-11-27), on both layouts; useBand measures that band.
 
 import { type CSSProperties, type Ref, type RefObject, useCallback, useId, useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -28,8 +28,9 @@ export const defaultRoomZoom = (): number =>
 
 /** Your ID card: the desktop's (SelfHud) or the phone's (PlayerSummary in .room-top-left). */
 const ID_CARD = ".self-hud-top, .room-top-left > .nameplate";
-/** What the panel stays above: the location plate with the minimap, the zoom buttons and sack, and the notes button. */
-const BELOW = ".room-corner, .inventory-controls, .notes-controls";
+/** What the panel stays above: the bottom row of buttons (the sack, the phone's ship button, the notes button). It covers
+ * the minimap's card and the zoom buttons, and an expanded minimap draws over it (iso.css). */
+const BELOW = ".inventory-toggle, .notes-controls";
 /** The peek bar's Take and Drop (ActionButton tags each button with its action): the panel stays open for them, so you can
  * keep moving items. */
 const KEEP_OPEN = '.peek-bar [data-action="take"], .peek-bar [data-action="drop"]';
@@ -37,23 +38,32 @@ const KEEP_OPEN = '.peek-bar [data-action="take"], .peek-bar [data-action="drop"
 const MARGIN = 8;
 
 /**
- * While open, the panel's top and bottom offsets inside the room view: under your ID card and over the minimap's card
- * and the sack, or the room view's own edges where one isn't shown (the Icarus, a lost place). Measured on layout and
- * whenever the room view, the cards or the phone's peek bar resize (the minimap grows when expanded).
+ * The panel's top and bottom offsets inside `room` (the room view): under your ID card and over the bottom row of
+ * buttons, or the room view's own edges where one isn't shown (the Icarus, a lost place). Undefined while the room view
+ * is hidden (another phone tab). The terminal's inventory uses it too, to open where the room view's does.
+ */
+export function measureBand(room: Element): { top: number; bottom: number } | undefined {
+  if (room.getClientRects().length === 0) return undefined;
+  const box = room.getBoundingClientRect();
+  // Only what is drawn: the patrol cockpit hides some of the room view's cards with CSS.
+  const shown = (selector: string) => [...room.querySelectorAll(selector)].filter((el) => el.getClientRects().length > 0).map((el) => el.getBoundingClientRect());
+  const card = shown(ID_CARD)[0];
+  const top = (card ? card.bottom - box.top : 0) + MARGIN;
+  const above = Math.min(box.bottom, ...shown(BELOW).map((r) => r.top)) - MARGIN;
+  return { top, bottom: box.bottom - above };
+}
+
+/**
+ * While open, the panel's top and bottom offsets inside the room view (measureBand). Measured on layout and whenever
+ * the room view, the cards or the phone's peek bar resize.
  */
 export function useBand(open: boolean, rootRef: RefObject<HTMLElement | null>): CSSProperties | undefined {
   const [band, setBand] = useState<{ top: number; bottom: number }>();
   const measure = useCallback(() => {
     const room = rootRef.current?.closest(".room-view");
-    if (!room || room.getClientRects().length === 0) return; // a hidden phone tab: measure when it shows
-    const box = room.getBoundingClientRect();
-    // Only what is drawn: the patrol cockpit hides the minimap's card with CSS.
-    const shown = (selector: string) => [...room.querySelectorAll(selector)].filter((el) => el.getClientRects().length > 0).map((el) => el.getBoundingClientRect());
-    const card = shown(ID_CARD)[0];
-    const top = (card ? card.bottom - box.top : 0) + MARGIN;
-    const above = Math.min(box.bottom, ...shown(BELOW).map((r) => r.top)) - MARGIN;
-    const bottom = box.bottom - above;
-    setBand((old) => (old?.top === top && old.bottom === bottom ? old : { top, bottom }));
+    const next = room && measureBand(room);
+    if (!next) return; // a hidden phone tab: measure when it shows
+    setBand((old) => (old?.top === next.top && old.bottom === next.bottom ? old : next));
   }, [rootRef]);
   // After every render too: the cards move without resizing (the peek bar appearing lifts the minimap's card).
   useLayoutEffect(() => {
