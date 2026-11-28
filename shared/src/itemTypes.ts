@@ -115,11 +115,11 @@ export const ITEM_TYPES: Readonly<Record<ItemTypeId, ItemType>> = {
   // grow in it (botany.ts), anywhere, carried too.
   [TREE_POT_ITEM]: {},
   // Owner, 2026-10-22: the original's banana (genFruitList): +1 AP, +1 satiety, +1 morale, +1 HP. Named after its icon.
-  fruit_banana: { fruit: true, perishable: true, consume: { ap: 1, satiety: 1, morale: 1, hp: 1 } },
+  fruit_banana: { fruit: true, perishable: true, consume: { ap: 1, satiety: 1, morale: 1, hp: 1 }, canBreak: true, isDestroyedWhenBroken: true },
   // #437 (owner, 2026-11-14): 12 alien species whose rolled stats live on `state.fruits`.
-  ...familyEntries(ALIEN_FRUIT_ITEMS, () => ({ fruit: true, perishable: true, consume: { ap: 1, satiety: 1 } })),
+  ...familyEntries(ALIEN_FRUIT_ITEMS, () => ({ fruit: true, perishable: true, consume: { ap: 1, satiety: 1 }, canBreak: true, isDestroyedWhenBroken: true })),
   // #438 (owner, 2026-11-21): the 66 graft hybrids, one per pair of alien species; rolled stats on `state.hybrids`.
-  ...familyEntries(HYBRID_FRUIT_ITEMS, () => ({ fruit: true, perishable: true, consume: { ap: 1, satiety: 1 } })),
+  ...familyEntries(HYBRID_FRUIT_ITEMS, () => ({ fruit: true, perishable: true, consume: { ap: 1, satiety: 1 }, canBreak: true, isDestroyedWhenBroken: true })),
   // Owner, 2026-10-23, the wiki: one unit of fuel, taken from a tank and loaded into the combustion chamber. One slot
   // each, never dropped (actions/take_fuel.ts). Named after its icon.
   [FUEL_CAPSULE_ITEM]: { canDrop: false },
@@ -190,7 +190,7 @@ export const ITEM_TYPES: Readonly<Record<ItemTypeId, ItemType>> = {
   trad_module: {},
   white_flag: {},
   // The white flag's ingredient, with the soap (owner, 2026-11-08). No effect.
-  old_shirt: {},
+  old_shirt: {canBreak: true, isDestroyedWhenBroken: true},
   plastenite_armor: { dismantle: { metal: 0, plastic: 1, chance: 0.12 }, canBreak: true, canBeSabotaged: true, repairChance: 0.12 },
   sniper_helmet: { dismantle: { metal: 1, plastic: 1, chance: 0.12 }, canBreak: true, canBeSabotaged: true, repairChance: 0.25, notImplemented: true },
   scooter: { dismantle: { metal: 2, plastic: 1, chance: 0.25 }, canBreak: true, canBeSabotaged: true, repairChance: 0.25 },

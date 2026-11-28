@@ -100,8 +100,19 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   // Owner, 2026-11-27: Pyromania (modifiers/pyromania_disorder.ts): -2 max morale, extinguishing x0.5, a 10% roll each cycle change to be compelled for 4 cycles (Ignite at 2 AP), -6 morale if it runs out, then a hidden 2-cycle grace.
   pyromania: { maxMoraleLoss: 2, extinguishFactor: 0.5, compelChance: 0.1, compelledCycles: 4, igniteAp: 2, moraleLoss: 6, graceCycles: 2 },
   aquaphobia: { apSurcharge: 2, moraleLoss: 3 },
+  // Owner, 2026-11-28: Kinesiophobia (modifiers/kinesiophobia_disorder.ts): each AP-to-MP conversion costs `moraleLoss` morale.
+  kinesiophobia: { moraleLoss: 1 },
+  // Owner, 2026-11-28: Scopophobia (modifiers/scopophobia_disorder.ts): success x`successFactor` with a working camera or another living player in the room.
+  scopophobia: { successFactor: 0.9 },
   sud: { maxMoraleLoss: 2, successFactor: 0.75, injuryFactor: 1.5, dirtFactor: 1.5, extraMoraleLoss: 1, drugPauseCycles: 3 },
-  sanity: { start: 100, deathLoss: 1, witnessLoss: 4, killLoss: 10, killChanceFactor: 2, lowMorale: 5 },
+  // Owner, 2026-11-28: a disorder can only be gained while sanity is below its threshold (sanity.ts).
+  sanity: {
+    start: 100, deathLoss: 1, witnessLoss: 4, killLoss: 10, killChanceFactor: 2, lowMorale: 5,
+    disorderThresholds: {
+      depression_disorder: 100, agoraphobia_disorder: 100, scopophobia_disorder: 100, kleptophobia_disorder: 95,
+      aquaphobia_disorder: 95, kinesiophobia_disorder: 95, pyromania_disorder: 85, sud_disorder: 85,
+    },
+  },
   share: { cost: { ap: 1 }, effect: { morale: 2 }, pregnancy: { chance: 0.08, deathMoraleLoss: 2, mushExtraSpore: 1 } },
   // Confirmed 2026-10-14: a human converts on reaching 3 contamination (items and skills will raise it).
   infection: { capacity: 3, mushophageBonus: 1, startingContaminated: 2, startingLevel: 1 },
@@ -903,7 +914,7 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
     expeditionDiseases: ["migraine_disease", "skin_inflammation_disease", "fungal_infection_disease", "gastroenteritis_disease", "flu_disease", "rubella_disease", "syphilis_disease", "rejuvenation_disease", "mush_allergy_disease", "pink_eye_disease", "slight_nausea_disease"],
     expeditionCombatDiseases: ["space_rabies_disease", "flu_disease", "syphilis_disease", "rejuvenation_disease", "cat_allergy_disease", "black_bite_disease"],
     mushSkillDiseases: ["space_rabies_disease", "fungal_infection_disease", "cold_disease", "extreme_tinnitus_disease"],
-    allDisorders: ["depression_disorder", "agoraphobia_disorder", "kleptophobia_disorder", "sud_disorder", "aquaphobia_disorder", "pyromania_disorder"],
+    allDisorders: ["depression_disorder", "agoraphobia_disorder", "kleptophobia_disorder", "sud_disorder", "aquaphobia_disorder", "pyromania_disorder", "kinesiophobia_disorder", "scopophobia_disorder"],
     allInjuries: [
       "broken_nose_injury",
       "damaged_ears_injury",

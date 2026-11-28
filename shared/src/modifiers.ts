@@ -81,6 +81,8 @@ import { kleptophobia_disorder } from "./modifiers/kleptophobia_disorder.ts";
 import { sud_disorder } from "./modifiers/sud_disorder.ts";
 import { aquaphobia_disorder } from "./modifiers/aquaphobia_disorder.ts";
 import { pyromania_disorder } from "./modifiers/pyromania_disorder.ts";
+import { kinesiophobia_disorder } from "./modifiers/kinesiophobia_disorder.ts";
+import { scopophobia_disorder } from "./modifiers/scopophobia_disorder.ts";
 import { slight_nausea_disease } from "./modifiers/slight_nausea_disease.ts";
 import { food_poisoning_disease } from "./modifiers/food_poisoning_disease.ts";
 import { vitamin_deficiency_disease } from "./modifiers/vitamin_deficiency_disease.ts";
@@ -277,6 +279,8 @@ export interface Modifier extends Partial<FoldHooks> {
   onItemLost?: (next: GameState, player: PlayerState, item: ItemState) => void;
   /** Runs after the player showers. Mutates a state the caller already cloned. */
   onShower?: (next: GameState, player: PlayerState) => void;
+  /** Runs after a move that converted AP into MP (actions/move.ts). Mutates a state the caller already cloned. */
+  onConvert?: (next: GameState, player: PlayerState) => void;
   /** Runs after the player consumes an item, once its own AP and satiety are applied. Mutates a state the caller already cloned. */
   onConsume?: (next: GameState, player: PlayerState, item: ItemState) => void;
   /** Runs when the player takes a drug, before its effects (Addiction calms first, so the drug's morale loss isn't raised). Mutates a state the caller already cloned. */
@@ -384,6 +388,8 @@ export const MODIFIERS: Record<string, Modifier> = {
   sud_disorder,
   aquaphobia_disorder,
   pyromania_disorder,
+  kinesiophobia_disorder,
+  scopophobia_disorder,
   slight_nausea_disease,
   food_poisoning_disease,
   vitamin_deficiency_disease,
@@ -992,6 +998,11 @@ export function itemLost(next: GameState, player: PlayerState, item: ItemState, 
 /** Runs every onShower hook of the player's modifiers. Mutates a state the caller already cloned. */
 export function showered(next: GameState, player: PlayerState, registry: ModifierRegistry = MODIFIERS): void {
   for (const id of modifierIds(player)) registry[id]?.onShower?.(next, player);
+}
+
+/** Runs every onConvert hook of the player's modifiers, after a move that converted AP into MP. Mutates a state the caller already cloned. */
+export function convertedAp(next: GameState, player: PlayerState, registry: ModifierRegistry = MODIFIERS): void {
+  for (const id of modifierIds(player)) registry[id]?.onConvert?.(next, player);
 }
 
 /**

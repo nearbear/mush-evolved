@@ -7,6 +7,7 @@
 //   witnessed a death since the last cycle change: (100 - sanity)%;
 //   killed a human since the last cycle change:    (100 - sanity) × `killChanceFactor`%;
 //   morale below `lowMorale`:                      (100 - sanity)%.
+// Only disorders whose `disorderThresholds` entry is above the player's sanity can be drawn (owner, 2026-11-28).
 // Mush never develop disorders this way (they don't roll), and every mark clears at the cycle change.
 
 import { addDisease } from "./diseases.ts";
@@ -50,13 +51,21 @@ export function disorderChances(state: Readonly<GameState>, player: Readonly<Pla
   ];
 }
 
+/** The disorders `player` could gain now: those they don't have whose threshold is above their sanity. */
+export function availableDisorders(state: Readonly<GameState>, player: Readonly<PlayerState>): string[] {
+  const thresholds = state.config.sanity.disorderThresholds;
+  return state.config.diseases.allDisorders.filter(
+    (d) => !player.modifiers.includes(d) && (thresholds[d] === undefined || thresholds[d] > player.sanity),
+  );
+}
+
 /** The cycle change's disorder rolls (see the header), then every mark clears. Mutates a state the caller already cloned. */
 export function sanityCycle(state: GameState): void {
   for (const p of state.players) {
     if (p.alive && p.role === "human") {
       for (const chance of disorderChances(state, p)) {
         if (chance <= 0 || rollFloat(state) >= chance) continue;
-        const options = state.config.diseases.allDisorders.filter((d) => !p.modifiers.includes(d));
+        const options = availableDisorders(state, p);
         if (options.length === 0) break;
         const disorder = options[rollInt(state, options.length)]!;
         addDisease(state, p, disorder);

@@ -348,8 +348,14 @@ export interface GameConfig {
   kleptophobia: { dropAp: number; moraleLoss: number };
   pyromania: { maxMoraleLoss: number; extinguishFactor: number; compelChance: number; compelledCycles: number; igniteAp: number; moraleLoss: number; graceCycles: number }; // Pyromania (modifiers/pyromania_disorder.ts, owner 2026-11-27).
   aquaphobia: { apSurcharge: number; moraleLoss: number }; // Aquaphobia (modifiers/aquaphobia_disorder.ts, owner 2026-11-27).
+  kinesiophobia: { moraleLoss: number }; // Kinesiophobia (modifiers/kinesiophobia_disorder.ts, owner 2026-11-28).
+  scopophobia: { successFactor: number }; // Scopophobia (modifiers/scopophobia_disorder.ts, owner 2026-11-28).
   sud: { maxMoraleLoss: number; successFactor: number; injuryFactor: number; dirtFactor: number; extraMoraleLoss: number; drugPauseCycles: number }; // Addiction (modifiers/sud_disorder.ts, owner 2026-11-27).
-  sanity: { start: number; deathLoss: number; witnessLoss: number; killLoss: number; killChanceFactor: number; lowMorale: number };
+  sanity: {
+    start: number; deathLoss: number; witnessLoss: number; killLoss: number; killChanceFactor: number; lowMorale: number;
+    /** A disorder can only be gained while sanity is below its threshold (owner, 2026-11-28); one missing here has none. */
+    disorderThresholds: Record<string, number>;
+  };
   germaphobe: {
     moraleLoss: number; // Finola's Germaphobe trait: lost at each cycle change while dirty (owner, 2026-11-21).
   };

@@ -5,7 +5,7 @@ import { isBlocked } from "./guard.ts";
 import { attackWithHeldWeapon } from "./attack.ts";
 import { arrive } from "../spot.ts";
 import { isDoorBroken } from "../doors.ts";
-import { enterRoom, enteredRoom, moveCost, movementRules } from "../modifiers.ts";
+import { convertedAp, enterRoom, enteredRoom, moveCost, movementRules } from "../modifiers.ts";
 import { wheelchairHelpers } from "../modifiers/wheelchair.ts";
 import { activeScooter } from "../modifiers.ts";
 import { hasSkill } from "../skills.ts";
@@ -61,6 +61,8 @@ export class MoveAction extends Action<MoveActionData> {
     wheelAlong(state, player, from);
     enteredRoom(state, player, { attackWithHeldWeapon });
     enterRoom(state, player);
+    // A move only costs AP when it converts AP into MP (getCost; no actionCost hook raises a move's AP).
+    if (cost && cost.ap > 0) convertedAp(state, player);
   }
 }
 

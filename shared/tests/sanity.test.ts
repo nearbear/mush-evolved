@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { killPlayer } from "../src/death.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
-import { disorderChances } from "../src/sanity.ts";
+import { availableDisorders, disorderChances } from "../src/sanity.ts";
 import type { GameConfig, GameState } from "../src/types.ts";
 import { makeSeats, must, nextCycle, noCharacterModifiers, player, testConfig } from "./support.ts";
 
@@ -27,6 +27,43 @@ describe("sanity", () => {
   it("pins the confirmed numbers", () => {
     expect([sanity.start, sanity.deathLoss, sanity.witnessLoss, sanity.killLoss, sanity.killChanceFactor, sanity.lowMorale]).toEqual([100, 1, 4, 10, 2, 5]);
     expect(player(ship(), "p0").sanity).toBe(sanity.start);
+  });
+
+  it("pins the disorder thresholds (owner, 2026-11-28)", () => {
+    expect(sanity.disorderThresholds).toEqual({
+      depression_disorder: 100, agoraphobia_disorder: 100, scopophobia_disorder: 100, kleptophobia_disorder: 95,
+      aquaphobia_disorder: 95, kinesiophobia_disorder: 95, pyromania_disorder: 85, sud_disorder: 85,
+    });
+  });
+
+  it("only disorders whose threshold is above the player's sanity can be gained", () => {
+    const s = ship();
+    const p0 = player(s, "p0");
+    const below = (value: number) => base.diseases.allDisorders.filter((d) => sanity.disorderThresholds[d]! > value).sort();
+    for (const value of [100, 99, 95, 90, 85, 84, 0]) {
+      p0.sanity = value;
+      expect(availableDisorders(s, p0).sort()).toEqual(below(value));
+    }
+    p0.sanity = 95;
+    expect(availableDisorders(s, p0).sort()).toEqual(["agoraphobia_disorder", "depression_disorder", "scopophobia_disorder"]);
+    p0.sanity = 85;
+    expect(availableDisorders(s, p0)).not.toContain("sud_disorder");
+    expect(availableDisorders(s, p0)).not.toContain("pyromania_disorder");
+  });
+
+  it("a successful roll draws only from the disorders the player's sanity allows", () => {
+    let gained = 0;
+    for (let seed = 1; seed <= 20; seed++) {
+      let s = ship(base, seed);
+      const p0 = player(s, "p0");
+      p0.sanity = 90;
+      p0.morale = 1;
+      const allowed = availableDisorders(s, p0);
+      for (let i = 0; i < 10; i++) s = nextCycle(s);
+      gained += disorders(s, "p0").length;
+      for (const d of disorders(s, "p0")) expect(allowed).toContain(d);
+    }
+    expect(gained).toBeGreaterThan(0);
   });
 
   it("a human's death costs everyone 1, witnesses 4 more and the killer 10 more", () => {
