@@ -89,7 +89,7 @@ export const ITEM_TYPES: Readonly<Record<ItemTypeId, ItemType>> = {
   // Owner, 2026-11-21 (#143, FOREST_DEAL): 3 standard rations, one per Open (actions/open_lunchbox.ts); gone when empty.
   lunchbox: {},
   // Owner, 2026-11-07 (#397): heals 2 HP, single use (actions/use_bandage.ts).
-  bandage: {},
+  bandage: {canBreak: true, isDestroyedWhenBroken: true},
   // Confirmed 2026-10-13: +2 AP. Satiety +1 is a placeholder (2026-10-14).
   coffee: { consume: { ap: 2, satiety: 1 }, perishable: true, canBreak: true, isDestroyedWhenBroken: true },
   // Owner, 2026-11-05 (eMushpedia "Ration standard"): +4 AP and +4 satiety, cooked or not; Sirius adds 1 AP (comms.ts).
@@ -132,7 +132,7 @@ export const ITEM_TYPES: Readonly<Record<ItemTypeId, ItemType>> = {
   input_tube: {dismantle: { metal: 1, plastic: 0, chance: 0.5 }},
   output_tube: {dismantle: { metal: 1, plastic: 0, chance: 0.5 }},
   // Decided 2026-10-16: carries a recipe in `ItemState.builds`; consumed by building.
-  blueprint: {},
+  blueprint: {canBreak: true, isDestroyedWhenBroken: true},
   // Development cheat (owner, 2026-11-26): the Superkube's master blueprint, any recipe, free and kept (actions/build.ts).
   master_blueprint: {},
   plastic_scraps: {},
@@ -158,13 +158,13 @@ export const ITEM_TYPES: Readonly<Record<ItemTypeId, ItemType>> = {
   protection_gloves: { canBreak: true, canBeSabotaged: true, repairChance: 0.25 },
   [HACKER_KIT_ITEM]: { canBreak: true, canBeSabotaged: true, repairChance: 0.06, breaksInOverload: true },
   // Owner, 2026-10-21: a skill book (the original's Apprentron) carries its skill in `ItemState.teaches`; destroyed by reading.
-  [BOOK_ITEM]: {},
+  [BOOK_ITEM]: {canBreak: true, isDestroyedWhenBroken: true},
   // Owner, 2026-10-21: Xyloph rewards (comms.ts), dropped on the bridge. No effect yet. Named after their icons.
   mush_floppy_disk: {},
   mush_sample: {},
   // Owner, 2026-11-13 (#394): a printed document carrying `ItemState.document` (Finola's lost analysis; THE List later).
   // Read on the client; Tear destroys it (actions/tear.ts). Named after its icon.
-  document: {},
+  document: {canBreak: true, isDestroyedWhenBroken: true},
   // Owner, 2026-10-25: items researches need in the lab (research.ts, RESEARCH_REQUIRES). No effect yet. Named after their icons.
   // Schrödinger, the cat: an NPC (schrodinger.ts) arriving with Raluca (owner, 2026-11-21). Never renamed (owner, 2026-11-26).
   [CAT_ITEM]: { canRename: false },
