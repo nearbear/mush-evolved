@@ -87,9 +87,16 @@ describe("DTT and STT", () => {
 
   it("log privately to the two of them only", () => {
     const s = mustApply(bondBoth(ship(), "p0", "p1"), "p0", stt("p1"));
-    expect(viewFor(s, "p0").log.at(-1)).toMatchObject({ key: "shareDid", params: { label: "STT", name: "chun" } });
-    expect(viewFor(s, "p1").log.at(-1)).toMatchObject({ key: "shareDidToYou", params: { label: "STT", name: "chao" } });
-    expect(JSON.stringify(viewFor(s, "p3").log)).not.toMatch(/STT/);
+    expect(viewFor(s, "p0").log.at(-1)).toEqual(expect.objectContaining({ key: "shareDid", params: { name: "chun" } }));
+    expect(viewFor(s, "p1").log.at(-1)).toEqual(expect.objectContaining({ key: "shareDidToYou", params: { name: "chao" } }));
+    expect(viewFor(s, "p3").log.map((e) => e.key)).not.toContain("shareDid");
+  });
+
+  it("log DTT as one line naming both, to the two of them only (#506)", () => {
+    const s = mustApply(bondBoth(ship(), "p0", "p1"), "p0", dtt("p1"));
+    for (const who of ["p0", "p1"])
+      expect(viewFor(s, who).log).toContainEqual(expect.objectContaining({ key: "dttDone", params: { name: "chao", target: "chun" } }));
+    expect(viewFor(s, "p3").log.map((e) => e.key)).not.toContain("dttDone");
   });
 
   it("allow one per day for the pair: not twice, not both, and either partner is blocked", () => {

@@ -42,9 +42,13 @@ export class ShareAction<T extends "dtt" | "stt" = "dtt" | "stt"> extends Action
     }
     const human = player.role === "human" ? player : other;
     const contaminating = this.type === "dtt" && player.role !== other.role;
-    const label = this.type.toUpperCase();
-    logPrivate(state, player.id, "shareDid", { label, name: other.character });
-    logPrivate(state, other.id, "shareDidToYou", { label, name: player.character });
+    if (this.type === "stt") {
+      logPrivate(state, player.id, "shareDid", { name: other.character });
+      logPrivate(state, other.id, "shareDidToYou", { name: player.character });
+    } else {
+      // One line for both partners, naming both (#506); private, unlike eMush's public room log (owner, 2026-11-27).
+      for (const who of [player, other]) logPrivate(state, who.id, "dttDone", { name: player.character, target: other.character });
+    }
     if (contaminating) contaminate(state, human);
     // Owner, 2026-11-21: on DTT, each living non-pregnant partner rolls independently for pregnancy (everyone eligible).
     if (this.type === "dtt") {

@@ -15,6 +15,13 @@ describe("logGenderContext (#505)", () => {
     expect(logGenderContext("fireStarted", { room: "bridge" })).toBeUndefined();
   });
 
+  it("gives a pair line the female context only when both are women (#506)", () => {
+    expect(logGenderContext("dttDone", { name: "paola", target: "chun" })).toBe("female");
+    expect(logGenderContext("dttDone", { name: "paola", target: "chao" })).toBeUndefined();
+    expect(logGenderContext("dttDone", { name: "chao", target: "terrence" })).toBeUndefined();
+    expect(logGenderContext("dttDone", { name: "paola", target: "andie" })).toBeUndefined();
+  });
+
   it("falls back to the plain, gender-free key when a variant is missing", async () => {
     const i18n = i18next.createInstance();
     await i18n.init({

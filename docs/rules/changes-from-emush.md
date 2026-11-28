@@ -88,6 +88,7 @@ Shared baseline: both games use the same four visibility tiers (Public, Secret, 
 | :--- | :--- | :--- | :--- |
 | 🟠 | **Observant Rolls Per Holder** | One 25% roll if any Observant is in the room. | Rolls **25% independently per living Observant** in the room. |
 | 🟡 | **NPC Movement Direction** | Hidden without Tracker. | Drones, Schrödinger, and hostile NPCs **always show their movement direction** in room logs without needing Tracker. |
+| 🟡 | **Private Do the Thing / Spend Time Together Logs** | Public room logs naming both partners. | Private: only the two partners see them. Do the Thing keeps eMush's line; Spend Time Together shows each partner "You spent time with X" (#506). |
 
 ---
 
