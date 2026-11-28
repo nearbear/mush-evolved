@@ -5864,3 +5864,9 @@ Asked for a loud warning that stops an accidental deploy which bumps the game ve
 - AI choices the owner later approved: tabs can't be deleted (the issue's default), drafts aren't kept in localStorage (only in memory until the server has them), and a refused write shows a `note_refused` toast.
 - Needed correction: the new `note` client message went into the replay `Input` union on its own, because `Input` is built by excluding types from `GameClientMessage`. Typecheck found it through `applyInput`'s exhaustive switch. Leaving `note` out of `Input` is the right fix, and not only for the types: it is what states in the code that notes never reach the record. They never got there anyway, because `onMessage` returns before `act`. Any new client-only message must be added to that exclusion.
 - The leak-check skill found no leaks. Nobody has looked at the UI in a browser yet.
+
+## 2026-11-27: Opening a private channel needs an iTrackie
+
+- **Decision (owner):** `createChannel` now needs global chat's access (a working iTrackie, or Luyten-Ceti's brain probes, as for chat); invites are unchanged. New error `channel_needs_itrackie` (en/fr/es); the free channel slot shows disabled with "(needs an iTrackie)" so the reason is visible on phones too; the scripted expedition-plan goal skips creating a channel without access.
+- **What worked:** reusing `chatChannels(...).includes("global")` kept the brain-probe exemption and the broken-iTrackie rule in one place, and the client reads the same thing from `view.chatChannels`, so no view change was needed.
+- **Needed correction:** a Transfer test created a channel in a config with no starting inventory; it now gives the body an iTrackie first.

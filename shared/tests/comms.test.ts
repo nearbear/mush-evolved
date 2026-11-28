@@ -6,7 +6,7 @@ import { ITEM_TYPES } from "../src/itemTypes.ts";
 import { PROJECT_COMPLETE, PROJECT_IDS } from "../src/projects.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
-import { chatChannels } from "../src/chat.ts";
+import { chatChannels, createChannel } from "../src/chat.ts";
 import { addStatus } from "../src/statuses.ts";
 import type { Action, GameState } from "../src/types.ts";
 import { clone, costOf, makeSeats, must, nextCycle, offered, option, player, rebelCallAt, testConfig } from "./support.ts";
@@ -251,6 +251,13 @@ describe("communication center", () => {
       s.items = s.items.filter((i) => !(i.at.kind === "player" && i.at.id === "p1"));
       expect(chatChannels(s, player(s, "p1"))).not.toContain("global");
       expect(chatChannels(reach(s, "LUYTEN_CETI"), player(s, "p1"))).toContain("global");
+    });
+
+    it("Luyten-Ceti also lets a player without an iTrackie open a private channel", () => {
+      const s = ship(true);
+      s.items = s.items.filter((i) => !(i.at.kind === "player" && i.at.id === "p1"));
+      expect(createChannel(s, "p1")).toEqual({ ok: false, error: "channel_needs_itrackie" });
+      expect(createChannel(reach(s, "LUYTEN_CETI"), "p1").ok).toBe(true);
     });
   });
 

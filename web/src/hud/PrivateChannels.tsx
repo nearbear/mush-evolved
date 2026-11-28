@@ -59,6 +59,8 @@ export function PrivateChannels({
   const mine = view.privateChannels.filter((c) => !c.tapped);
   const tapped = view.privateChannels.filter((c) => c.tapped);
   const invitable = current && !current.tapped ? view.players.filter((p) => p.alive && !current.members.includes(p.id)) : [];
+  // Opening a channel needs global chat's access: an iTrackie, or Luyten-Ceti's brain probes (createChannel).
+  const canCreate = view.chatChannels.includes("global");
   // A modifier can lower the limit below the channels you're already in; those still get a row.
   const slots = Math.max(view.channelLimit, mine.length);
   const planFor = (channelId: PrivateChannelId): Plan | undefined => {
@@ -99,9 +101,9 @@ export function PrivateChannels({
             </li>
           ) : (
             <li key={`free-${i}`} className="channel-slot">
-              <button type="button" className="channel-slot-new" disabled={!onCreate} onClick={() => setCreating(true)}>
+              <button type="button" className="channel-slot-new" disabled={!onCreate || !canCreate} onClick={() => setCreating(true)}>
                 <img className="tab-icon" src={TAB_ICONS.newChannel} alt="" />
-                {t("channels.newSlot")}
+                {canCreate ? t("channels.newSlot") : t("channels.newSlotNeedsITrackie")}
               </button>
             </li>
           );

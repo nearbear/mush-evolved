@@ -281,7 +281,7 @@ export function createThread(state: GameState, playerId: PlayerId, rawName: stri
 // ---- Private channels ------------------------------------------------------
 // Membership is the only access control (confirmed 2026-10-13): anyone in a
 // channel may invite anyone, from any room, and new members see the history.
-// Reading and posting still need an iTrackie (chatChannels). Joining is
+// Creating one and reading and posting need an iTrackie (chatChannels). Joining is
 // immediate, with no accept step. Dying takes you out of every channel (death.ts). Errors are codes, not sentences (i18n rule 4).
 
 export const MAX_CHANNEL_NAME_LENGTH = 24;
@@ -300,6 +300,9 @@ export function createChannel(state: GameState, playerId: PlayerId, rawName = ""
   if (!p || !p.alive || isComatose(state, p) || state.phase !== "playing") return fail("channel_forbidden");
   // Torn Tongue: no new private channel either (owner, 2026-11-17).
   if (isMute(p)) return fail("cant_speak");
+  // Opening a channel needs an iTrackie, or whatever stands in for one in chat (owner, 2026-11-27): the access to
+  // global chat. Invites don't (the invitee reads once they hold one).
+  if (!chatChannels(state, p).includes("global")) return fail("channel_needs_itrackie");
   const name = rawName.trim();
   if (name.length > MAX_CHANNEL_NAME_LENGTH) return fail("channel_name_invalid");
   if (channelCount(state, playerId) >= channelLimit(state, p)) return fail("channel_limit_reached");

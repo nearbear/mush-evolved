@@ -98,7 +98,8 @@ function setupExpeditionGoal(key: string): Goal {
           },
         };
       }
-      if (otherExpeditionChannel(v) || v.privateChannels.length >= v.channelLimit) return { kind: "done" };
+      // Opening a channel needs global chat's access (an iTrackie; createChannel).
+      if (otherExpeditionChannel(v) || v.privateChannels.length >= v.channelLimit || !v.chatChannels.includes("global")) return { kind: "done" };
       const members = v.players.filter((p) => p.alive && p.id !== v.you.id).map((p) => p.id);
       if (members.length === 0) return { kind: "done" };
       return {

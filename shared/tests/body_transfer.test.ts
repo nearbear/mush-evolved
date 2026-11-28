@@ -89,6 +89,8 @@ describe("Transfer (Mush skill)", () => {
   it("keeps titles and private channels with the body", () => {
     let s = ship();
     s.titles.commander = "p1";
+    // Opening a channel needs an iTrackie.
+    s.items.push({ id: "itrackie-1", type: ITRACKIE_ITEM, at: { kind: "player", id: "p1" } });
     s = must(createChannel(s, "p1", "Plans"));
     const r = swapped(s);
     expect(r.titles.commander).toBe("p1");

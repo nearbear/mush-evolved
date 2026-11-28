@@ -129,6 +129,19 @@ describe("private channels", () => {
     expect(viewFor(state, "p1").chat.map((m) => m.text)).toEqual(["hello"]);
   });
 
+  it("needs a working iTrackie to open a channel, but not to be invited to one", () => {
+    let state = createGame(seats, DEFAULT_CONFIG, 42);
+    const mine = viewFor(state, "p1").inventory.find((i) => i.type === ITRACKIE_ITEM)!.id;
+    state = must(applyAction(state, "p1", { type: "drop", item: mine }));
+    expect(createChannel(state, "p1", "x")).toEqual({ ok: false, error: "channel_needs_itrackie" });
+    state = must(createChannel(state, "p0", "x", ["p1"]));
+    expect(state.channels[0]!.members).toEqual(["p0", "p1"]);
+
+    const broken = clone(createGame(seats, DEFAULT_CONFIG, 42));
+    broken.items.find((i) => i.type === ITRACKIE_ITEM && i.at.kind === "player" && i.at.id === "p2")!.broken = true;
+    expect(createChannel(broken, "p2", "x")).toEqual({ ok: false, error: "channel_needs_itrackie" });
+  });
+
   it("stops dead members reading and posting in private channels", () => {
     const { state, id } = withChannel();
     const dead = deadCopy(state, "p1");
