@@ -5918,3 +5918,9 @@ the row, and the bar stops at the row's padding instead of running its full heig
 - **Decision (owner):** the 9 projects tagged ALL in the original (so they had no skill boost) take eMush's `bonusSkills` from `ProjectConfigData.php`: TRASH_LOAD, CALL_OF_DIRTY, BEAT_BOX, THALASSO, FLOOR_HEATING, NOISE_REDUCER, NERON_TARGETING_ASSIST, PARASITE_ELIM, APERO_KITCHEN. Scrapper maps to `metaliciste`, Nurse to `first_aid`.
 - **What worked:** extracting the list first and confirming it before editing. Pairing names with skills through `npm run emush -- find` by line number kept the clean-room boundary.
 - **Needed correction:** `find` stops at 30 matches, so the first pass silently dropped every project after line ~341; querying skill by skill recovered them.
+
+## 2026-11-27: dev bot fill re-armed on every join
+
+- Problem: the local dev ship sat in pre-selection for days with two humans and no bots. The dev bot fill was a one-shot in-memory `setTimeout` armed only on the first join; a `wrangler dev` reload (any server edit) inside those 8 s dropped it, and later joins never re-armed it.
+- Fix (owner picked the simple option over a Durable Object alarm): `GameRoom.join` re-arms the fill on every join while the ship is in pre-selection on a dev server, replacing any pending timer so only one fill runs. Test simulates the lost timer with `vi.clearAllTimers()`.
+- What worked: `npm run dev-state` showed the stuck state (cycle 20, pre-selection, two human seats) at once, which pointed straight at the timer.

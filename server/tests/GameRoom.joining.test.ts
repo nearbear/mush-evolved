@@ -303,6 +303,25 @@ describe("GameRoom joining (pre-selection)", () => {
     }
   });
 
+  it("re-arms a dev server's bot fill on a later join, so a fill lost to a reload still happens", async () => {
+    vi.useFakeTimers();
+    try {
+      const room = asRoom(new FakeStorage(), DEV);
+      const first = await joinOk(room, "Ann", "chao");
+      // A reload drops the pending fill.
+      vi.clearAllTimers();
+      await vi.advanceTimersByTimeAsync(10_000);
+      expect(lastView(connect(room, first.token)).preselection).toBe(true);
+      await joinOk(room, "Bea", "chun");
+      await vi.advanceTimersByTimeAsync(10_000);
+      const view = lastView(connect(room, first.token));
+      expect(view.preselection).toBe(false);
+      expect(view.players.filter((p) => p.isBot)).toHaveLength(CHARACTERS.length - 2);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("fills a dev server's smaller ship only up to its own seat count", async () => {
     vi.useFakeTimers();
     try {

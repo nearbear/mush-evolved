@@ -327,6 +327,8 @@ export class GameRoom extends Server<Env> {
   private sentPause: BotPause | null = null;
   /** The pre-selection launch `join` started, so a second join waits for it instead of launching again. */
   private launching: Promise<void> | null = null;
+  /** Dev servers only: the pending bot fill, re-armed by every join so one lost to a reload is set again. */
+  private fillTimer: ReturnType<typeof setTimeout> | null = null;
   /** Per seat, so a second device on the seat doesn't double it. */
   private limiter = new RateLimiter(10, 1000);
   /** Per seat, not per connection, so reconnecting doesn't reset it. */
@@ -502,13 +504,21 @@ export class GameRoom extends Server<Env> {
       delete this.tokenSessions[token];
       return { ok: false, error };
     }
-    if (this.devServer && this.game!.players.length === 1) setTimeout(() => void this.fillWithBots(), DEV_FILL_DELAY_MS);
+    // Every join, not just the first: the timer lives in memory, so a reload (wrangler dev restarts on every server
+    // edit) loses it, and the next join must set it again. Re-arming replaces the pending one, so only one fill runs.
+    if (this.devServer && this.game!.preselection) {
+      if (this.fillTimer) clearTimeout(this.fillTimer);
+      this.fillTimer = setTimeout(() => {
+        this.fillTimer = null;
+        void this.fillWithBots();
+      }, DEV_FILL_DELAY_MS);
+    }
     return { ok: true, token, ...this.status() };
   }
 
   /**
    * Dev servers only (never a deployment: multiplayer has no bots): seats a bot in every free seat, with a character
-   * nobody took, `DEV_FILL_DELAY_MS` after the first join. The last one fills the ship, which chooses the Mush. All
+   * nobody took, `DEV_FILL_DELAY_MS` after the latest join. The last one fills the ship, which chooses the Mush. All
    * are log parrots.
    */
   private async fillWithBots(): Promise<void> {
