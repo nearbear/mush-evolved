@@ -209,9 +209,9 @@ describe("GameRoom replay copy to R2 (#336)", () => {
     await room.setup(seats(3), tokensFor(3), { p0: "mush" });
     const [c0, c1] = [connect(room, "tok0"), connect(room, "tok1")];
     // Filtered chat message (`raw` keyed by ChatMessage.id).
-    await send(room, c0, { type: "chat", channel: CHAT_CHANNELS[0], text: "what the fuck" });
+    await send(room, c0, { type: "chat", channel: CHAT_CHANNELS[0], text: "what the zorblaxt" });
     const filteredMsg = lastView(c0).chat.at(-1)!;
-    expect(filteredMsg.text).toBe("what the ****");
+    expect(filteredMsg.text).toBe("what the ********");
     // Filtered non-message input (`rawByInput` keyed by input seq).
     const threadSeq = (storage.data.get("game") as { inputs: number }).inputs;
     await send(room, c0, { type: "createThread", name: "see http://example.com" });
@@ -230,15 +230,15 @@ describe("GameRoom replay copy to R2 (#336)", () => {
 
     const chunkEntries = await bucket.json<ChunkEntry[]>(replayKeys.chunk("test-room", 0));
     const fullAfter = rebuildHistory(chunkEntries.map((e) => e.history)).at(-1)!.view;
-    const replayChatId = fullAfter.chat.find((m) => m.text === "what the ****")!.id;
-    expect(JSON.stringify(chunkEntries)).not.toContain("what the fuck");
+    const replayChatId = fullAfter.chat.find((m) => m.text === "what the ********")!.id;
+    expect(JSON.stringify(chunkEntries)).not.toContain("what the zorblaxt");
     expect(JSON.stringify(chunkEntries)).not.toContain("http://example.com");
 
     const mod = await bucket.json<ReplayModeration>(replayKeys.moderation("test-room"));
     expect(mod).toMatchObject({
       v: HISTORY_VERSION,
       roomId: "test-room",
-      raw: { [replayChatId]: "what the fuck" },
+      raw: { [replayChatId]: "what the zorblaxt" },
       rawByInput: { [threadSeq]: "see http://example.com" },
       rateLimited: { p1: 2 },
     });
@@ -721,7 +721,7 @@ describe("GameRoom storage reclamation (#339)", () => {
   it("reclaims all room storage after 48 hours across restart, keeping D1 summary and R2 replay working", async () => {
     const { room, storage, db, bucket, tokens } = await launchedShip();
     const c0 = connect(room, tokens[0]!);
-    await send(room, c0, { type: "chat", channel: CHAT_CHANNELS[0], text: "what the fuck" });
+    await send(room, c0, { type: "chat", channel: CHAT_CHANNELS[0], text: "what the zorblaxt" });
     await send(room, c0, { type: "chat", channel: CHAT_CHANNELS[0], text: "   " });
     await endViaKube(room, c0);
 
@@ -758,7 +758,7 @@ describe("GameRoom storage reclamation (#339)", () => {
     expect(bucket!.objects.has(replayKeys.index("test-room"))).toBe(true);
     expect(bucket!.objects.has(replayKeys.chunk("test-room", 0))).toBe(true);
     const mod = await bucket!.json<ReplayModeration>(replayKeys.moderation("test-room"));
-    expect(Object.values(mod.raw)).toEqual(["what the fuck"]);
+    expect(Object.values(mod.raw)).toEqual(["what the zorblaxt"]);
     expect(mod.blocked).toHaveLength(1);
   });
 

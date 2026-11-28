@@ -5948,3 +5948,14 @@ Removed repeated code in `server/src/GameRoom.ts`: `allow(limiter, seat)` (rate 
 - Wired `statusIconFiles["dirty"]` (`Mush/www/img/icons/ui/status/dirty.png`) into `TAB_ICONS.dirtyness` (`web/src/art/assets.ts`) and `FEATURE_ICONS.dirtyness` (`web/src/hud/FeatureSelect.tsx`).
 - Added `itrackie.features.dirtyness` translations in `web/src/locales/{en,fr,es}.json` (`"Dirtyness"`, `"Saleté"`, `"Suciedad"`).
   - Renamed `"dirtyness"` / `"Dirtyness"` to `"dirtiness"` / `"Dirtiness"` per owner correction.
+
+### 2026-11-27: Table dispatch for GameRoom messages
+
+- Message types are now grouped once in `shared/src/protocol.ts` (`ROOM_MESSAGE_TYPES`, `DIRECT_INPUT_TYPES`, `SOCIAL_TYPES`, `CHEAT_TYPES`), with a compile-time check that every `GameClientMessage` type is in exactly one group. `social()`'s 15-member `Exclude` became `SocialMessage`, and `Input` in `replay.ts` uses `RoomMessageType`.
+- `GameRoom.onMessage` is now rate limit, parse, cheat gate (`isCheatMessage`, which includes the Warp action), then `social()` or a typed handler map. The kube cheat-room check moved into the kube handler.
+- The moderation branches moved into a pure `server/src/socialModeration.ts` (`moderateSocial` returns the input plus raw text, or the error plus what to record as blocked), with unit tests that need no FakeServer.
+- One snag: TypeScript can't correlate `handlers[msg.type]` with `msg`, so the lookup needs a single cast.
+
+## 2026-11-27: Unblock real words in moderation
+
+The owner asked why "shit" was still masked; it had never been removed (it was in `BLOCKED_WORDS` since the list was added). At the owner's request no real words are blocked now. The list holds one made-up word, "zorblaxt", so the existing tests (chat, names, setups, replay moderation, social moderation) still check masking end to end without mocking the module. All test fixtures that used swear words now use it.

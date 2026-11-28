@@ -148,12 +148,12 @@ describe("validateSetup", () => {
 describe("moderateSetupTexts", () => {
   it("masks the word list in every field whatever its language, and removes links", () => {
     const result = moderateSetupTexts({
-      fr: { name: "Pas de shit", description: "Voir www.example.com" },
-      es: { name: "Bueno", description: "fuck" },
+      fr: { name: "Pas de zorblaxt", description: "Voir www.example.com" },
+      es: { name: "Bueno", description: "zorblaxt" },
     });
     expect(result).toEqual({
       ok: true,
-      text: { fr: { name: "Pas de ****", description: "Voir [link removed]" }, es: { name: "Bueno", description: "****" } },
+      text: { fr: { name: "Pas de ********", description: "Voir [link removed]" }, es: { name: "Bueno", description: "********" } },
     });
   });
 

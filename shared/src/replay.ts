@@ -3,7 +3,7 @@
 // the rules are pure, so running the inputs again rebuilds every state.
 // Every state change must go through applyInput, or it won't be in the record.
 
-import type { GameClientMessage } from "./protocol.ts";
+import type { GameClientMessage, RoomMessageType } from "./protocol.ts";
 import { joinShip } from "./preselection.ts";
 import { acknowledgeTransfer } from "./mind.ts";
 import { applyKube } from "./kube.ts";
@@ -74,7 +74,7 @@ export type Input =
   // Never the model key messages (BYOK): every input is recorded, and a key must never be stored. Nor Leave ship, which
   // only the server handles (it changes who plays a seat, not the game), nor a chat page request (read-only), nor a
   // private note (#503), which lives in the room's storage and never in the record.
-  | (Exclude<GameClientMessage, { type: "action" | "setModel" | "clearModel" | "leaveShip" | "chatPage" | "chatRead" | "logRead" | "note" }> & { by: PlayerId })
+  | (Exclude<GameClientMessage, { type: "action" | RoomMessageType }> & { by: PlayerId })
   | (Extract<GameClientMessage, { type: "action" }> & { by: PlayerId; at: number })
   | { type: "tick"; at: number }
   | { type: "cycle"; at: number }

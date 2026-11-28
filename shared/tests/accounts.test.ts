@@ -22,7 +22,7 @@ describe("checkDisplayName", () => {
   });
 
   it("refuses rather than masks a name moderation would change", () => {
-    expect(checkDisplayName("shit happens")).toEqual({ ok: false, reason: "name_rejected" });
+    expect(checkDisplayName("zorblaxt happens")).toEqual({ ok: false, reason: "name_rejected" });
     expect(checkDisplayName("www.spam.test")).toEqual({ ok: false, reason: "name_rejected" });
     expect(checkDisplayName("Chun​")).toEqual({ ok: false, reason: "name_rejected" });
   });

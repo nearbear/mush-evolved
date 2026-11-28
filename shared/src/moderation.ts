@@ -5,10 +5,11 @@
 import { MAX_CHAT_LENGTH, MAX_CHAT_LINES } from "./chat.ts";
 
 /**
- * Masked case-insensitively as whole words. A starter list only; replace with
- * a maintained list (or a moderation service) before a public launch.
+ * Masked case-insensitively as whole words. No real words are blocked (owner, 2026-11-27); "zorblaxt" is a made-up word that
+ * lets tests check the masking end to end. To block words later, replace it with
+ * a maintained list (or a moderation service).
  */
-export const BLOCKED_WORDS: readonly string[] = ["fuck", "shit", "cunt", "bitch", "asshole"];
+export const BLOCKED_WORDS: readonly string[] = ["zorblaxt"];
 
 /** Error code (not a sentence) for a message with too many lines. */
 export const TOO_MANY_LINES = "too_many_lines";

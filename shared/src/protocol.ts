@@ -150,6 +150,52 @@ export type GameClientMessage =
   // Development only, like the cheats: frees the sender's account from this ship at once, so the lobby offers other
   // ships. Not an input: the rules never see it, and the character stays aboard unplayed.
   | { type: "leaveShip" };
+
+// Every GameClientMessage type is in exactly one of these three groups (checked below), and GameRoom.onMessage
+// dispatches by group. Add a new message type to one of them.
+
+/** Handled by the room itself and never an input (so never recorded): reads, private notes, the model key, Leave ship. */
+export const ROOM_MESSAGE_TYPES = ["setModel", "clearModel", "leaveShip", "chatPage", "chatRead", "logRead", "note"] as const;
+export type RoomMessageType = (typeof ROOM_MESSAGE_TYPES)[number];
+/** Become an input as they are, under the general rate limit only. */
+export const DIRECT_INPUT_TYPES = ["action", "walk", "clearQueue", "acknowledgeTransfer", "cheat", "roleCheat", "cheatRoom", "kube"] as const;
+export type DirectInputType = (typeof DIRECT_INPUT_TYPES)[number];
+/** Chat, channels and shares (`GameRoom.social`): the chat rate limit, then moderation of any free text, then an input. */
+export const SOCIAL_TYPES = [
+  "chat",
+  "toggleCheckbox",
+  "createChannel",
+  "createThread",
+  "sharePlanet",
+  "shareReport",
+  "sharePlants",
+  "sharePilgred",
+  "invite",
+  "leaveChannel",
+  "renameItem",
+  "postPlan",
+] as const;
+export type SocialType = (typeof SOCIAL_TYPES)[number];
+export type SocialMessage = Extract<GameClientMessage, { type: SocialType }>;
+/** Development only: refused unless cheats are enabled (also the Warp action, see `isCheatMessage`). */
+export const CHEAT_TYPES = ["cheat", "roleCheat", "cheatRoom", "kube", "leaveShip"] as const;
+
+// A type missing from the groups, or in two of them, fails here.
+type Unlisted = Exclude<GameClientMessage["type"], RoomMessageType | DirectInputType | SocialType>;
+type Overlap = (RoomMessageType & DirectInputType) | (RoomMessageType & SocialType) | (DirectInputType & SocialType);
+const groupsAreExact: [Unlisted | Overlap] extends [never] ? true : never = true;
+void groupsAreExact;
+
+const includes = <T extends string>(list: readonly T[], type: string): type is T => (list as readonly string[]).includes(type);
+
+export function isSocialMessage(msg: GameClientMessage): msg is SocialMessage {
+  return includes(SOCIAL_TYPES, msg.type);
+}
+
+/** A developer cheat: one of `CHEAT_TYPES`, or the Warp action. */
+export function isCheatMessage(msg: GameClientMessage): boolean {
+  return includes(CHEAT_TYPES, msg.type) || (msg.type === "action" && msg.action.type === "warp_to_planet");
+}
 /**
  * The server's build (`RULES_VERSION`, the deployed commit), sent first on every connect by the game rooms and the
  * matchmakers. A deploy drops every socket, so an open tab hears this on its reconnect and, if it is an older build,

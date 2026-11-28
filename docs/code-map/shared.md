@@ -127,7 +127,7 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 - `types/state.ts`: `GameState` (server-only).
 - `types/view.ts`: `PlayerView`, `OtherPlayerView`, `ItemView`: the only game data a client or bot receives.
 - `config.ts`: `DEFAULT_CONFIG` and `PRESELECTION` (a multiplayer ship's pre-selection rules: 16 seats, day 3). The map comes from `@mush2/assets/derived/ship-rooms.json`.
-- `protocol.ts`: wire message types and `parse*` validators for untrusted client input; actions go through `ACTIONS[type].parse`.
+- `protocol.ts`: wire message types and `parse*` validators for untrusted client input; actions go through `ACTIONS[type].parse`. The message groups (`ROOM_MESSAGE_TYPES`, `DIRECT_INPUT_TYPES`, `SOCIAL_TYPES`, `CHEAT_TYPES`, with a compile-time check that every `GameClientMessage` type is in exactly one of the first three) and `isSocialMessage`/`isCheatMessage`.
 - `moderation.ts`: `moderateChat`, called by the server, not the rules; `moderateName`, called by `viewFor` for the end screen's names.
 - `characters.ts`: cosmetic crew identities, no rules effect.
 - `names.ts`: room, equipment, item and skill display names per ship language (`NAME_CATALOGS`, from `locales/names.{en,fr,es}.json`; `roomName`, `itemName`, ...). Web merges them into its i18next catalogs; the server's bot prompts use them so bots say what players see.

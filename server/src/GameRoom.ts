@@ -5,17 +5,12 @@
 import { Server, type Connection, type ConnectionContext, type WSMessage } from "partyserver";
 import {
   applyInput,
-  moderateChat,
-  MAX_ITEM_NAME_LENGTH,
-  MAX_SHARED_PLANET_LENGTH,
-  MAX_SHARED_PLANET_LINES,
-  MAX_SHARED_PLANT_EFFECTS_LENGTH,
-  MAX_SHARED_PLANT_EFFECTS_LINES,
-  MAX_SHARED_PLANT_TEXT_LENGTH,
-  MAX_SHARED_PLANT_TEXT_LINES,
-  MAX_SHARED_PILGRED_TEXT_LENGTH,
-  MAX_SHARED_PILGRED_TEXT_LINES,
   parseGameMessage,
+  isCheatMessage,
+  isSocialMessage,
+  type SocialMessage,
+  type DirectInputType,
+  type RoomMessageType,
   startGame,
   stampEntries,
   takeChatOutbox,
@@ -94,6 +89,7 @@ import { shipRow, shipStoreFor } from "./shipStore.ts";
 import { clockCycle, clockCycleStart, cycleMs, cycleOfDay } from "./cycleClock.ts";
 import { devModelCredentials, ModelGate, playerModelCredentials } from "./model.ts";
 import { RateLimiter } from "./rateLimit.ts";
+import { moderateSocial } from "./socialModeration.ts";
 import { Backoff } from "./backoff.ts";
 import { copyReplay, verifyReplay } from "./replayStore.ts";
 import { failure, failureName, logError, logWarn, snapshotFailure } from "./log.ts";
@@ -109,6 +105,17 @@ declare global {
 
 /** Error code (not text) for a cheat input on a server that doesn't allow them. */
 const CHEATS_DISABLED = "cheats_disabled";
+
+/** Who sent a message: the connection, its seat, and the body the seat plays. */
+interface Sender {
+  connection: Connection<SeatState>;
+  playerId: PlayerId;
+  by: PlayerId;
+}
+/** One handler per message type that isn't social; each returns an error code for the sender, or nothing. */
+type MessageHandlers = {
+  [T in RoomMessageType | DirectInputType]: (msg: Extract<GameClientMessage, { type: T }>, sender: Sender) => Promise<string | null | void>;
+};
 /** The one refusal for a `chatPage` request (#355), whatever the reason. */
 const CHAT_PAGE_UNAVAILABLE = "chat_page_unavailable";
 
@@ -980,58 +987,48 @@ export class GameRoom extends Server<Env> {
       this.send(connection, { type: "error", message: "malformed_message" });
       return;
     }
-    if (
-      ((msg.type === "cheat" || msg.type === "roleCheat" || msg.type === "cheatRoom" || msg.type === "kube" || msg.type === "leaveShip") ||
-        (msg.type === "action" && msg.action.type === "warp_to_planet")) &&
-      !this.cheatsAllowed
-    ) {
+    if (isCheatMessage(msg) && !this.cheatsAllowed) {
       this.send(connection, { type: "error", message: CHEATS_DISABLED });
       return;
     }
-    // The Superkube (#170): a human's, from the cheat room only. applyKube checks both again.
-    if (msg.type === "kube" && (this.isBotSeat(playerId) || this.bodyState(playerId)?.room !== CHEAT_ROOM)) {
-      this.send(connection, { type: "error", message: "not_in_cheat_room" });
-      return;
-    }
-    if (msg.type === "leaveShip") {
-      await this.leaveShip(playerId);
-      return;
-    }
-    if (msg.type === "chatPage") {
-      await this.sendChatPage(connection, playerId, by, msg.channel, msg.page);
-      return;
-    }
-    // Read state (#400): stored per seat, never an input, and never answered, so a refusal, a rate limit and a count
-    // that is no news look the same. Bot seats keep none.
-    if (msg.type === "chatRead") {
-      if (this.allow(this.readLimiter, playerId) && !this.isBotSeat(playerId)) await this.raiseChatRead(playerId, msg.read, connection);
-      return;
-    }
-    // The room log's read point (#513): the same, under the same limit.
-    if (msg.type === "logRead") {
-      if (this.allow(this.readLimiter, playerId) && !this.isBotSeat(playerId)) await this.raiseLogRead(playerId, msg.upTo, connection);
-      return;
-    }
-    if (msg.type === "note") {
-      const error = await this.writeNote(playerId, msg.tab, msg.text, connection);
-      if (error) this.send(connection, { type: "error", message: error });
-      return;
-    }
-    if (msg.type === "setModel" || msg.type === "clearModel") {
-      const error = this.setModel(playerId, msg);
-      if (error) this.send(connection, { type: "error", message: error });
-      return;
-    }
-    const error =
-      msg.type === "action"
-        ? await this.act({ ...msg, by, at: Date.now() })
-        : msg.type === "walk"
-          ? await this.act({ ...msg, by }, undefined, this.bodyState(playerId)?.room)
-          : msg.type === "clearQueue" || msg.type === "acknowledgeTransfer" || msg.type === "cheat" || msg.type === "roleCheat" || msg.type === "cheatRoom" || msg.type === "kube"
-            ? await this.act({ ...msg, by })
-            : await this.social(playerId, by, msg);
+    const sender: Sender = { connection, playerId, by };
+    // The handler map is keyed by type, but TypeScript can't correlate `handlers[msg.type]` with `msg`'s own type.
+    const error = isSocialMessage(msg)
+      ? await this.social(playerId, by, msg)
+      : await (this.handlers[msg.type] as (msg: GameClientMessage, sender: Sender) => Promise<string | null | void>)(msg, sender);
     if (error) this.send(connection, { type: "error", message: error });
   }
+
+  /**
+   * What each message that isn't social (`SOCIAL_TYPES`) does, after the rate limit and the cheat gate. Each returns an
+   * error code for the sender, or nothing.
+   */
+  private readonly handlers: MessageHandlers = {
+    leaveShip: (_msg, { playerId }) => this.leaveShip(playerId),
+    chatPage: (msg, { connection, playerId, by }) => this.sendChatPage(connection, playerId, by, msg.channel, msg.page),
+    // Read state (#400): stored per seat, never an input, and never answered, so a refusal, a rate limit and a count
+    // that is no news look the same. Bot seats keep none.
+    chatRead: async (msg, { connection, playerId }) => {
+      if (this.allow(this.readLimiter, playerId) && !this.isBotSeat(playerId)) await this.raiseChatRead(playerId, msg.read, connection);
+    },
+    // The room log's read point (#513): the same, under the same limit.
+    logRead: async (msg, { connection, playerId }) => {
+      if (this.allow(this.readLimiter, playerId) && !this.isBotSeat(playerId)) await this.raiseLogRead(playerId, msg.upTo, connection);
+    },
+    note: (msg, { connection, playerId }) => this.writeNote(playerId, msg.tab, msg.text, connection),
+    setModel: async (msg, { playerId }) => this.setModel(playerId, msg),
+    clearModel: async (msg, { playerId }) => this.setModel(playerId, msg),
+    action: (msg, { by }) => this.act({ ...msg, by, at: Date.now() }),
+    walk: (msg, { playerId, by }) => this.act({ ...msg, by }, undefined, this.bodyState(playerId)?.room),
+    clearQueue: (msg, { by }) => this.act({ ...msg, by }),
+    acknowledgeTransfer: (msg, { by }) => this.act({ ...msg, by }),
+    cheat: (msg, { by }) => this.act({ ...msg, by }),
+    roleCheat: (msg, { by }) => this.act({ ...msg, by }),
+    cheatRoom: (msg, { by }) => this.act({ ...msg, by }),
+    // The Superkube (#170): a human's, from the cheat room only. applyKube checks both again.
+    kube: async (msg, { playerId, by }) =>
+      this.isBotSeat(playerId) || this.bodyState(playerId)?.room !== CHEAT_ROOM ? "not_in_cheat_room" : this.act({ ...msg, by }),
+  };
 
   /**
    * An action bar ran out or a cycle boundary passed: tell the rules (queue.ts, `cycle`). Everything due happens in
@@ -1078,14 +1075,13 @@ export class GameRoom extends Server<Env> {
   }
 
   /**
-   * Chat, channel management and plans (`postPlan`), under the per-seat chat rate limit. Untrusted text: rate limit,
-   * then moderate, then let the rules decide; a plan has no free text, so it goes straight to the rules. `playerId` is
-   * the seat, `by` its body.
+   * Chat, channel management, shares and plans (`SOCIAL_TYPES`), under the per-seat chat rate limit. Untrusted text:
+   * rate limit, then moderate (socialModeration.ts), then let the rules decide. `playerId` is the seat, `by` its body.
    */
   private async social(
     playerId: PlayerId,
     by: PlayerId,
-    msg: Exclude<GameClientMessage, { type: "action" | "clearQueue" | "acknowledgeTransfer" | "walk" | "cheat" | "roleCheat" | "cheatRoom" | "kube" | "setModel" | "clearModel" | "leaveShip" | "chatPage" | "chatRead" | "logRead" | "note" }>,
+    msg: SocialMessage,
     /** A chat message's reply depth (`BOT_CHAT_CHAIN_DEPTH`): 0 unless a bot is replying to chat. */
     depth = 0,
   ): Promise<string | null> {
@@ -1093,83 +1089,22 @@ export class GameRoom extends Server<Env> {
     if (!this.allow(this.chatLimiter, playerId)) {
       return "too_many_messages";
     }
-    if (msg.type === "sharePlants") {
-      // Moderate both the optional note and each row's editable effects string.
-      let text = "";
-      let changed = false;
-      if (msg.text.trim()) {
-        const mod = moderateChat(msg.text, undefined, { length: MAX_SHARED_PLANT_TEXT_LENGTH, lines: MAX_SHARED_PLANT_TEXT_LINES });
-        if (!mod.ok) {
-          await this.recordBlocked(playerId, msg.type, msg.text, mod.reason);
-          return "share_text_invalid";
-        }
-        text = mod.text;
-        if (mod.text !== msg.text) changed = true;
-      }
-      const plants = [];
-      for (const row of msg.plants) {
-        if (!row.effects.trim()) {
-          plants.push({ ...row, effects: "" });
-          continue;
-        }
-        const mod = moderateChat(row.effects, undefined, { length: MAX_SHARED_PLANT_EFFECTS_LENGTH, lines: MAX_SHARED_PLANT_EFFECTS_LINES });
-        if (!mod.ok) {
-          await this.recordBlocked(playerId, msg.type, row.effects, mod.reason);
-          return "share_text_invalid";
-        }
-        if (mod.text !== row.effects) changed = true;
-        plants.push({ ...row, effects: mod.text });
-      }
-      const rawCombined = changed ? [msg.text, ...msg.plants.map((r) => r.effects)].filter(Boolean).join("\n---\n") : undefined;
-      return this.act({ type: "sharePlants", by, plants, text }, rawCombined);
-    }
-    if (msg.type === "renameItem") {
-      if (!msg.name.trim()) return this.act({ type: "renameItem", by, item: msg.item, name: "" });
-      const mod = moderateChat(msg.name.replace(/\s+/g, " "), undefined, { length: MAX_ITEM_NAME_LENGTH, lines: 1 });
-      if (!mod.ok) {
-        await this.recordBlocked(playerId, msg.type, msg.name, mod.reason);
-        return "item_name_invalid";
-      }
-      return this.act({ type: "renameItem", by, item: msg.item, name: mod.text }, mod.text === msg.name ? undefined : msg.name);
-    }
-    if (msg.type === "sharePilgred") {
-      let text = "";
-      let rawText: string | undefined;
-      if (msg.text.trim()) {
-        const mod = moderateChat(msg.text, undefined, { length: MAX_SHARED_PILGRED_TEXT_LENGTH, lines: MAX_SHARED_PILGRED_TEXT_LINES });
-        if (!mod.ok) {
-          await this.recordBlocked(playerId, msg.type, msg.text, mod.reason);
-          return "share_text_invalid";
-        }
-        text = mod.text;
-        if (mod.text !== msg.text) rawText = msg.text;
-      }
-      return this.act({ type: "sharePilgred", by, percent: msg.percent, text }, rawText);
-    }
-    if (msg.type !== "chat" && msg.type !== "createChannel" && msg.type !== "createThread" && msg.type !== "sharePlanet" && msg.type !== "shareReport") return this.act({ ...msg, by });
-    const raw = msg.type === "chat" || msg.type === "sharePlanet" || msg.type === "shareReport" ? msg.text : (msg.name ?? "");
-    // A private channel may be created without a name (it shows its day and cycle instead).
-    if (msg.type === "createChannel" && !raw.trim()) return this.act({ ...msg, by, name: "" });
-    // A shared planet's text is longer than a chat message (owner, 2026-10-31); a shared report's takes the same limits.
-    const sharing = msg.type === "sharePlanet" || msg.type === "shareReport";
-    const moderated = sharing ? moderateChat(raw, undefined, { length: MAX_SHARED_PLANET_LENGTH, lines: MAX_SHARED_PLANET_LINES }) : moderateChat(raw);
+    const moderated = moderateSocial(msg, by);
     if (!moderated.ok) {
-      await this.recordBlocked(playerId, msg.type, raw, moderated.reason);
-      // The size errors name chat's limits; a shared planet has its own.
-      return sharing ? "share_text_invalid" : moderated.reason;
+      await this.recordBlocked(playerId, moderated.blocked.type, moderated.blocked.raw, moderated.blocked.reason);
+      return moderated.error;
     }
-    const input: Input =
-      msg.type === "chat" || msg.type === "sharePlanet" || msg.type === "shareReport" ? { ...msg, by, text: moderated.text } : { ...msg, by, name: moderated.text };
-    const error = await this.act(input, moderated.text === raw ? undefined : raw);
-    if (!error && msg.type === "chat") {
+    const { input } = moderated;
+    const error = await this.act(input, moderated.raw);
+    if (!error && input.type === "chat") {
       // A bots' machine line (machineLines.ts) is for code to parse, not a message to answer: no router call, nobody woken.
       // A Radio Piracy spoof (`as`) wakes nobody: its target must never learn of it, and no bot routing may hint at it.
-      if (!isMachineLine(moderated.text) && msg.as === undefined) this.wakeBots(playerId, msg.channel, depth);
+      if (!isMachineLine(input.text) && input.as === undefined) this.wakeBots(playerId, input.channel, depth);
       // Posting reads only your own message (#513): the count moves past it when everything before it was read, and
       // older unread messages stay unread. Otherwise the poster's client keeps it in its local set until the count
       // catches up.
-      const count = this.game.chatSeq[msg.channel] ?? 0;
-      if (!this.isBotSeat(playerId) && (this.chatRead.get(playerId)?.[msg.channel] ?? 0) >= count - 1) await this.raiseChatRead(playerId, { [msg.channel]: count });
+      const count = this.game.chatSeq[input.channel] ?? 0;
+      if (!this.isBotSeat(playerId) && (this.chatRead.get(playerId)?.[input.channel] ?? 0) >= count - 1) await this.raiseChatRead(playerId, { [input.channel]: count });
     }
     return error;
   }

@@ -240,7 +240,7 @@ describe("sign-up", () => {
   it("starts with an empty field when the provider's name fails the check or was taken", async () => {
     await new Browser().signUp("google", "g-1", "Chun");
     const rejected = new Browser();
-    await rejected.signInWith("google", "g-2", "shit happens");
+    await rejected.signInWith("google", "g-2", "zorblaxt happens");
     expect(await rejected.me()).toEqual({ status: "signup", suggestedName: null, singlePlayer: false });
     const taken = new Browser();
     await taken.signInWith("google", "g-3", "CHUN");

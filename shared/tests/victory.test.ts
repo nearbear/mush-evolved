@@ -67,11 +67,11 @@ describe("the end screen reveal", () => {
 
   it("names go through moderation before they are shown", () => {
     const s = ship();
-    player(s, "p1").name = "shit​ head";
+    player(s, "p1").name = "zorblaxt​ head";
     player(s, "p2").name = "​";
     endGame(s, "humans", "sol");
     const crew = viewFor(s, "p0").crew!;
-    expect(crew.find((c) => c.id === "p1")?.name).toBe("**** head");
+    expect(crew.find((c) => c.id === "p1")?.name).toBe("******** head");
     expect(crew.find((c) => c.id === "p2")?.name).toBeNull();
   });
 });

@@ -207,9 +207,9 @@ describe("setup routes", () => {
   it("moderates the text, and refuses malformed bodies and unknown fields", async () => {
     const { headers } = await signedIn("Ann");
     const post = async (body: unknown) => (await request("/api/setups", postBody(body, headers))).json();
-    expect(await post({ text: { fr: { name: "Pas de shit", description: "" } }, knobs: knobs() })).toMatchObject({
+    expect(await post({ text: { fr: { name: "Pas de zorblaxt", description: "" } }, knobs: knobs() })).toMatchObject({
       ok: true,
-      setup: { text: { fr: { name: "Pas de ****", description: "" } } },
+      setup: { text: { fr: { name: "Pas de ********", description: "" } } },
     });
     expect(await post({ text: { es: { name: " ", description: "" } }, knobs: knobs() })).toEqual({ ok: false, reason: "name_empty", lang: "es" });
     expect(await post({ text: {}, knobs: knobs() })).toEqual({ ok: false, reason: "no_text" });
