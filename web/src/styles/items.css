@@ -37,6 +37,10 @@
   overflow: hidden;
   border-radius: 4px;
   cursor: grab;
+  /* A sideways swipe drags the tile (InventoryPanel's touch drag); a vertical one still scrolls the zone. */
+  touch-action: pan-y;
+  -webkit-touch-callout: none;
+  user-select: none;
 }
 .item-tile.empty {
   cursor: default;
@@ -54,6 +58,16 @@
 .item-tile:focus-visible,
 .item-tile.selected {
   outline: 2px solid var(--highlight);
+}
+/* A touch drag's tile under the finger (InventoryPanel), centred on it and lifted above it so the finger doesn't hide it. */
+.item-drag-ghost {
+  --tile: 3.5rem;
+  position: fixed;
+  z-index: 1000;
+  pointer-events: none;
+  transform: translate(-50%, -100%);
+  opacity: 0.85;
+  filter: drop-shadow(0 2px 4px rgb(0 0 0 / 0.6));
 }
 /* The face is sized in em off --tile: the icon fills it and the name text scales with it. */
 .item-face {
@@ -116,15 +130,6 @@
 }
 .item-face-ui > img {
   image-rendering: pixelated;
-}
-.item-action {
-  position: absolute;
-  top: 2px;
-  right: 2px;
-  z-index: 2;
-  margin: 0;
-  padding: 0 var(--space-2);
-  font-size: 0.7rem;
 }
 /* Item attributes along the tile's top edge, at 1x pixel size so they fit compact tiles too. */
 .item-slot .status-icons {

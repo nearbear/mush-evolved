@@ -194,11 +194,11 @@ async function desktopSteps(page: Page, step: Step): Promise<void> {
     // The item zones live in an overlay opened by the sack button in the room view's corner.
     await page.getByRole("button", { name: /^Inventory/ }).click();
     const inventory = page.locator(".item-zone");
-    // Tiles are drag-and-drop; the Take button only appears once a tile is selected.
+    // Tiles are drag-and-drop; a selected tile's Take is on the Inspect panel.
     const mine = inventory.filter({ hasText: "Inventory" }).locator(".item-tile:not(.empty)");
     const before = await mine.count();
     await inventory.filter({ hasText: "In this room" }).locator(".item-tile").first().click();
-    await inventory.getByRole("button", { name: "Take" }).click({ clickCount: 2 });
+    await page.locator(".inspect").getByRole("button", { name: "Take" }).click({ clickCount: 2 }); // actions take a double press
     if ((await mine.count()) <= before) await mine.nth(before).waitFor();
   });
 
@@ -276,12 +276,44 @@ async function mobileSteps(page: Page, step: Step): Promise<void> {
     await nav("Room");
     await page.getByRole("button", { name: /^Inventory/ }).tap();
     const inventory = page.locator(".item-zone");
-    // The Take/Drop button only shows on a selected tile.
     const tiles = inventory.locator(".item-tile:not(.empty)");
     if (!(await tiles.count())) throw new Skip("nothing to take or drop");
     await tiles.first().tap();
-    await inventory.locator(".item-action").first().tap();
-    await inventory.locator(".item-action").first().tap(); // actions take a double tap
+    // The selected tile shows its tooltip on touch (no hover there).
+    await page.locator(".tooltip").filter({ visible: true }).first().waitFor();
+    // The peek bar's Take/Drop leaves the panel open (a press elsewhere in the room view closes it).
+    const peekAction = page.locator(".peek-bar").locator('[data-action="take"], [data-action="drop"]').first();
+    await peekAction.tap();
+    await peekAction.tap(); // actions take a double tap
+    if (!(await page.locator(".inventory-popup").isVisible())) throw new Error("the peek bar's Take/Drop closed the inventory");
+  });
+
+  await step("m05d-drag", async () => {
+    // Touch drag (pointer events, not native drag and drop): a room item swiped onto the inventory is taken, or with
+    // nothing on the floor, a carried one swiped onto the room is dropped.
+    const room = page.locator(".item-zone[data-zone=room]");
+    const carried = page.locator(".item-zone[data-zone=inventory]");
+    const toTake = (await room.locator(".item-tile").count()) > 0;
+    const [source, dest] = toTake ? [room, carried] : [carried, room];
+    const tiles = source.locator(".item-tile:not(.empty)");
+    const before = await tiles.count();
+    if (!before) throw new Skip("no item to drag");
+    const from = await tiles.first().boundingBox();
+    const to = await dest.boundingBox();
+    if (!from || !to) throw new Error("no tile or zone on screen");
+    const cdp = await page.context().newCDPSession(page);
+    const touch = (type: "touchStart" | "touchMove" | "touchEnd", x: number, y: number) =>
+      cdp.send("Input.dispatchTouchEvent", { type, touchPoints: type === "touchEnd" ? [] : [{ x, y }] });
+    const [x0, y0] = [from.x + from.width / 2, from.y + from.height / 2];
+    const [x1, y1] = [to.x + to.width / 2, to.y + to.height / 2];
+    const destTiles = dest.locator(".item-tile:not(.empty)");
+    const had = await destTiles.count();
+    await touch("touchStart", x0, y0);
+    for (let i = 1; i <= 8; i++) await touch("touchMove", x0 + ((x1 - x0) * i) / 8, y0 + ((y1 - y0) * i) / 8);
+    await page.locator(".item-drag-ghost").waitFor();
+    await page.screenshot({ path: resolve(args.out!, "m05d-dragging.png") });
+    await touch("touchEnd", x1, y1);
+    await destTiles.nth(had).waitFor(); // one more there: inventory slots never stack, and the room was empty
   });
 
   await step("m05c-resources", async () => {

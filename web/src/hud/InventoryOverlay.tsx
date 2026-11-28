@@ -1,6 +1,7 @@
 // A sack button in the room view's lower-right corner that opens your inventory and the room's items
 // over the isometric scene (the same InventoryPanel the old self panel used to hold). It stays open while you
-// take and drop, and closes on the button, Escape, or a press elsewhere in the room view. UI-only state.
+// take and drop (from the panel or the peek bar), and closes on the button, Escape, or a press elsewhere in the room
+// view. UI-only state.
 // Open, the panel spans the room view's width in the band between your ID card and the minimap (owner,
 // 2026-11-21), on both layouts; useBand measures that band.
 
@@ -29,6 +30,9 @@ export const defaultRoomZoom = (): number =>
 const ID_CARD = ".self-hud-top, .room-top-left > .nameplate";
 /** What the panel stays above: the location plate with the minimap, the zoom buttons and sack, and the notes button. */
 const BELOW = ".room-corner, .inventory-controls, .notes-controls";
+/** The peek bar's Take and Drop (ActionButton tags each button with its action): the panel stays open for them, so you can
+ * keep moving items. */
+const KEEP_OPEN = '.peek-bar [data-action="take"], .peek-bar [data-action="drop"]';
 /** The panel's distance from the room view's edges and from the cards it sits between, in px (0.5rem). */
 const MARGIN = 8;
 
@@ -95,7 +99,7 @@ export function InventoryOverlay({
     if (controlledOpen === undefined) setLocalOpen(false);
     onOpenChange?.(false);
   }, [controlledOpen, onOpenChange]);
-  useOverlayDismiss(open, close, rootRef);
+  useOverlayDismiss(open, close, rootRef, KEEP_OPEN);
   const band = useBand(open, rootRef);
 
   const toggle = () => {

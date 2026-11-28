@@ -65,6 +65,7 @@ function EnabledActionButton({
       aria-label={switchProps.label}
       className={className}
       data-armed={armed ? "" : undefined}
+      data-action={option.action.type}
       onClick={onClick}
     >
       {children}
@@ -76,12 +77,13 @@ function EnabledActionButton({
       aria-checked={radioProps.checked}
       className={className}
       data-armed={armed ? "" : undefined}
+      data-action={option.action.type}
       onClick={onClick}
     >
       {children}
     </button>
   ) : (
-    <button type="button" className={className} data-armed={armed ? "" : undefined} onClick={onClick}>
+    <button type="button" className={className} data-armed={armed ? "" : undefined} data-action={option.action.type} onClick={onClick}>
       {children}
     </button>
   );
@@ -252,6 +254,7 @@ export function DisabledActionButton({
         delay={200}
         className={className ? `action-disabled ${className}` : "action-disabled"}
         aria-disabled="true"
+        data-action={blocked.action.type}
         render={
           switchProps ? (
             <button type="button" role="switch" aria-checked={switchProps.checked} aria-label={switchProps.label} />

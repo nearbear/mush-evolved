@@ -356,6 +356,13 @@
 :has(> .tooltip) {
   z-index: 50;
 }
+/* Like the tooltip itself, a Base UI positioner (it has data-side) never takes a press: an item tile's tooltip, held open
+   while the tile is selected on touch (InventoryPanel), would otherwise swallow taps and drags on the tile under it.
+   Not every parent: the iso view portals its hover label straight into body, and a body that ignored the pointer
+   would lose the hover that shows the label, flickering it. */
+[data-side]:has(> .tooltip) {
+  pointer-events: none;
+}
 /* Hover tooltips wear the original tooltip art (design/tiptop, tipbg, tipbottom, 247px wide), as .panel does off the
    game screen (layout.css): tipbg is the body, three-sliced sideways with border-image; the two 16px glowing caps are
    ::before and ::after behind the content. The vertical padding keeps a one-line tooltip at least as tall as both caps. */

@@ -4,6 +4,7 @@
 
 import { Tabs } from "@base-ui/react/tabs";
 import { Tooltip } from "@base-ui/react/tooltip";
+import { useState } from "react";
 
 export function IconButton({
   icon,
@@ -67,10 +68,12 @@ export function IconTab({ value, icon, src, label, className, badge }: { value: 
 }
 
 /** Wraps one existing element (a button, a dialog trigger) in a tooltip. The element keeps its own accessible name. */
-export function Hint({ label, children }: { label: React.ReactNode; children: React.ReactElement }) {
+/** `open` forces the tooltip open (a selected item tile on touch, which has no hover); otherwise hover and focus open it. */
+export function Hint({ label, children, open: forced = false }: { label: React.ReactNode; children: React.ReactElement; open?: boolean }) {
+  const [open, setOpen] = useState(false);
   return (
     <Tooltip.Provider delay={300}>
-      <Tooltip.Root>
+      <Tooltip.Root open={forced || open} onOpenChange={setOpen}>
         <Tooltip.Trigger render={children} />
         <Tooltip.Portal>
           <Tooltip.Positioner sideOffset={6}>
