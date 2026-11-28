@@ -975,7 +975,8 @@
       "pilgred": "PILGRED repair",
       "neron": "NERON projects",
       "astrophysics": "Astrophysics",
-      "expeditions": "Expeditions"
+      "expeditions": "Expeditions",
+      "dirtiness": "Dirtiness"
     },
     "messageMenu": {
       "open": "Message options",

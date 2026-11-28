@@ -567,6 +567,7 @@ export const TAB_ICONS = {
   inspect: uiIcons["search"]!,
   room: uiIcons["awake"]!,
   expeditions: uiIcons["survival"]!,
+  dirtiness: statusIconFiles["dirty"]!,
 } as const;
 
 /** The space battle sprite sheet (640x715; lossless WebP of clients/iso/gfx/fx.png). Its slices are in `Mush/clients/iso/xml/tiles.xml` (`<sheet src="BmpGfxFx">`). */

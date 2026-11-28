@@ -6,7 +6,7 @@ import type { LogParams, PlayerId } from "../types.ts";
  * Crew-wide threads, one per ship feature, with the same permissions as global
  * chat (decided 2026-10-13). Order is the order the client lists them in.
  */
-export const FEATURE_CHANNELS = ["botany", "research", "inventory", "space_battle", "comms", "pilgred", "neron", "astrophysics", "expeditions"] as const;
+export const FEATURE_CHANNELS = ["botany", "research", "inventory", "space_battle", "comms", "pilgred", "neron", "astrophysics", "expeditions", "dirtiness"] as const;
 export type FeatureChannel = (typeof FEATURE_CHANNELS)[number];
 export type ChatChannel = "global" | FeatureChannel;
 export const CHAT_CHANNELS: readonly ChatChannel[] = ["global", ...FEATURE_CHANNELS];

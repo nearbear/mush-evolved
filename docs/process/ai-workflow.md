@@ -5941,3 +5941,10 @@ Removed repeated code in `server/src/GameRoom.ts`: `allow(limiter, seat)` (rate 
 - French "ils"/"elles" for a pair: added `PAIR_AGREEMENT_KEYS` to `logContext.ts` so an all-female pair gets `_female` (owner approved).
 - French spore gender: `Mush/` text uses "un spore" almost everywhere while eMush mostly uses "une spore"; standardized on the original's masculine (8 strings, including an "elle" that referred to the spore).
 - What worked: grepping the original's derived data settled the gender question with evidence instead of guessing. What needed correction: my first plan only routed the acronym through translation; the owner pointed out the names themselves were wrong. `emush find` truncates long lines, so full log text came from `emush spec` and the French wiki.
+
+### 2026-11-27: Added `dirtyness` features thread
+
+- Added `"dirtyness"` to `FEATURE_CHANNELS` in `shared/src/types/chat.ts`.
+- Wired `statusIconFiles["dirty"]` (`Mush/www/img/icons/ui/status/dirty.png`) into `TAB_ICONS.dirtyness` (`web/src/art/assets.ts`) and `FEATURE_ICONS.dirtyness` (`web/src/hud/FeatureSelect.tsx`).
+- Added `itrackie.features.dirtyness` translations in `web/src/locales/{en,fr,es}.json` (`"Dirtyness"`, `"Saleté"`, `"Suciedad"`).
+  - Renamed `"dirtyness"` / `"Dirtyness"` to `"dirtiness"` / `"Dirtiness"` per owner correction.

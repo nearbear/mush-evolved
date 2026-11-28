@@ -17,6 +17,7 @@ const FEATURE_ICONS: Record<FeatureChannel, string> = {
   neron: TAB_ICONS.neronProjects,
   astrophysics: TAB_ICONS.astrophysics,
   expeditions: TAB_ICONS.expeditions,
+  dirtiness: TAB_ICONS.dirtiness,
 };
 
 export function FeatureSelect({
