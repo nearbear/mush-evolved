@@ -87,9 +87,18 @@
   text-shadow: none;
 }
 @media (hover: hover) {
-  button.list-row:hover {
-    background: var(--terminal-bg);
+  button.list-row:not(:disabled):hover {
+    background: linear-gradient(color-mix(in srgb, var(--terminal-rule) 70%, transparent) 0 0), var(--terminal-header-bg);
   }
+}
+/* Hover and press as a TerminalCollapsible's trigger has them (terminal.css): its tints over the row's band. */
+button.list-row:active:not(:disabled) {
+  background: linear-gradient(var(--terminal-rule) 0 0), var(--terminal-header-bg);
+}
+/* A row that can't open anything right now (a free channel slot without an iTrackie). */
+button.list-row:disabled {
+  opacity: 0.6;
+  cursor: default;
 }
 button.list-row:focus-visible {
   background: var(--terminal-bg);

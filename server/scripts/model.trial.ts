@@ -132,7 +132,7 @@ const complete: Complete = async (credentials, turns, signal) => {
   replies.push({ reply, options: turns[1]!.content.split("\n").filter((l) => /^\d+\. /.test(l)).length });
   return reply;
 };
-// Matches GameRoom's gate, apart from the budget (the cap here is in dollars).
+// Matches BotDriver's gate, apart from the budget (the cap here is in dollars).
 const gate = new ModelGate({ baseUrl: "https://openrouter.ai/api/v1", model: args.model, apiKey }, { budget: 100_000, maxInFlight: 2, timeoutMs: 20_000, complete });
 
 const seed = Number(args.seed);
@@ -176,7 +176,7 @@ function apply(input: Input): string | null {
   return null;
 }
 
-/** Like GameRoom.wakeBots and botSay, without the rate limit: per bot, the depth of the message that woke it. */
+/** Like BotDriver.wakeBots and botSay, without the rate limit: per bot, the depth of the message that woke it. */
 const wakes = new Map<PlayerId, number>();
 let messages = 0;
 /** Messages a bot wrote unprompted (not woken by chat), the chatter #224 measures. */
@@ -208,7 +208,7 @@ async function say(id: PlayerId, message: BotMessage, depth: number): void {
   });
   if (candidates.length === 0) return;
   let chosen = candidates.map(([other]) => other);
-  // A private channel wakes its members; anywhere else the router decides, as in GameRoom.wakeBots.
+  // A private channel wakes its members; anywhere else the router decides, as in BotDriver.wakeBots.
   if (!game.channels.some((c) => c.id === channel)) {
     const input = routerInput(game, channel!, game.chat.filter((m) => m.channel === channel && m.from === id).at(-1)!, new Set(chosen));
     const before = calls.length;
@@ -312,7 +312,7 @@ for (let c = 0; c < cycles && game.phase === "playing" && spent + spentBefore < 
       apply({ type: "tick", at: now });
       continue;
     }
-    // Like GameRoom.afterBotTurn: while calls fail in passing, wait before asking again, doubling up to a minute.
+    // Like BotDriver.afterTurn: while calls fail in passing, wait before asking again, doubling up to a minute.
     if (gate.pause === "unavailable") {
       await new Promise((r) => setTimeout(r, backoff));
       backoff = Math.min(backoff * 2, 60_000);

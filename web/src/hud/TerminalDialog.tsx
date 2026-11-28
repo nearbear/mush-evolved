@@ -43,7 +43,7 @@ import { ActionLabel } from "./ActionLabel.tsx";
 import { ActionButton } from "./ActionButton.tsx";
 import { ConsumeEffects } from "./ConsumeEffects.tsx";
 import { InventoryPanel } from "./InventoryPanel.tsx";
-import { InventoryToggle } from "./InventoryOverlay.tsx";
+import { InventoryToggle, measureBand } from "./InventoryOverlay.tsx";
 import { gainHint, RelayDetails, withGain } from "./RelayDetails.tsx";
 import { BiosTerminal } from "./BiosTerminal.tsx";
 import { CommsCenter } from "./CommsCenter.tsx";
@@ -95,6 +95,32 @@ export function TerminalDialog({ terminal, view, onAction, onClose, selected, on
   }, [inventoryOpen]);
   const sackSpot = useRoomSackSpot(terminal !== null && !mobile && view.you.alive);
   const canInventory = view.you.alive && selected !== undefined && onSelect !== undefined;
+  // Where the room view's inventory would open, so this one opens the same size in the same place (owner, 2026-11-27);
+  // over the terminal's body only when the room view isn't on screen (a phone's other tabs).
+  const inventorySpot = useRoomInventorySpot(terminal !== null && canInventory && inventoryOpen);
+  // A press on the terminal outside the inventory (and its sack) shuts the inventory and leaves the terminal open.
+  useEffect(() => {
+    if (!inventoryOpen) return;
+    const onPress = (e: PointerEvent) => {
+      const target = e.target instanceof Node ? e.target : null;
+      if (!target || inventoryRef.current?.contains(target) || sackRef.current?.contains(target)) return;
+      if (target instanceof Element ? target.closest(".terminal-popup") : target.parentElement?.closest(".terminal-popup")) setInventoryOpen(false);
+    };
+    document.addEventListener("pointerdown", onPress);
+    return () => document.removeEventListener("pointerdown", onPress);
+  }, [inventoryOpen]);
+  const inventory = canInventory && inventoryOpen && (
+    <section
+      ref={inventoryRef}
+      id={inventoryId}
+      tabIndex={-1}
+      className={inventorySpot ? "panel inventory-popup terminal-inventory" : "panel inventory-popup"}
+      style={inventorySpot}
+      aria-label={t("inventory.button")}
+    >
+      <InventoryPanel view={view} selected={selected} onAction={onAction} onSelect={onSelect} />
+    </section>
+  );
   const sack = canInventory && (
     <InventoryToggle
       ref={sackRef}
@@ -131,17 +157,12 @@ export function TerminalDialog({ terminal, view, onAction, onClose, selected, on
               onClose={onClose}
               titleId={titleId}
               actions={mobile ? sack : undefined}
-              overlay={
-                canInventory && inventoryOpen ? (
-                  <section ref={inventoryRef} id={inventoryId} tabIndex={-1} className="panel inventory-popup" aria-label={t("inventory.button")}>
-                    <InventoryPanel view={view} selected={selected} onAction={onAction} onSelect={onSelect} />
-                  </section>
-                ) : undefined
-              }
+              overlay={inventory && !inventorySpot ? inventory : undefined}
             >
               <TerminalBody terminal={terminal} view={view} onAction={onAction} onSharePlanet={onSharePlanet} onSharePlants={onSharePlants} onSharePilgred={onSharePilgred} />
             </TerminalFrame>
           )}
+          {inventorySpot && inventory}
           {!mobile && sack && sackSpot && (
             <div className="terminal-sack" style={sackSpot}>
               {sack}
@@ -171,6 +192,32 @@ function useRoomSackSpot(active: boolean): CSSProperties | undefined {
     return () => window.removeEventListener("resize", measure);
   }, [active]);
   return active ? spot : undefined;
+}
+
+/**
+ * Where the room view's inventory panel would be on screen (measureBand), as a fixed position, or undefined when the
+ * room view isn't shown. The page doesn't scroll under a modal, so it moves only when the window resizes.
+ */
+function useRoomInventorySpot(active: boolean): CSSProperties | undefined {
+  const [spot, setSpot] = useState<{ top: number; bottom: number; left: number; right: number }>();
+  useLayoutEffect(() => {
+    if (!active) return;
+    const measure = () => {
+      const room = document.querySelector(".room-view");
+      const band = room && measureBand(room);
+      if (!room || !band) return setSpot(undefined);
+      const box = room.getBoundingClientRect();
+      const page = document.documentElement;
+      const next = { top: box.top + band.top, bottom: page.clientHeight - box.bottom + band.bottom, left: box.left, right: page.clientWidth - box.right };
+      setSpot((old) => (old && old.top === next.top && old.bottom === next.bottom && old.left === next.left && old.right === next.right ? old : next));
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, [active]);
+  if (!active || !spot) return undefined;
+  // The room view's own 0.5rem side margins (inventory.css), kept in rem so they follow the UI scale.
+  return { top: spot.top, bottom: spot.bottom, left: `calc(${spot.left}px + 0.5rem)`, right: `calc(${spot.right}px + 0.5rem)` };
 }
 
 type ListProps = Omit<Props, "onClose"> & { terminal: EquipmentView };

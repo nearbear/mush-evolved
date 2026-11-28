@@ -53,6 +53,21 @@ describe("lie down", () => {
     expect(up.players[1]!.modifiers).not.toContain("lying_down");
   });
 
+  it("lying down and getting up are logged publicly in the room; getting up through another action is not", () => {
+    const s = ship();
+    s.players[3]!.room = "LABORATORY";
+    const lying = must(applyAction(s, "p1", { type: "lie_down", equipment: bed(s) }));
+    expect(lying.log.at(-1)).toMatchObject({ key: "laidDown", params: { name: lying.players[1]!.character } });
+    const up = must(applyAction(lying, "p1", { type: "get_up" }));
+    expect(up.log.at(-1)).toMatchObject({ key: "gotUp", params: { name: up.players[1]!.character } });
+    const keys = (st: GameState, id: string) => viewFor(st, id).log.map((e) => e.key);
+    expect(keys(up, "p2")).toEqual(expect.arrayContaining(["laidDown", "gotUp"]));
+    expect(keys(up, "p3")).not.toContain("laidDown");
+    expect(keys(up, "p3")).not.toContain("gotUp");
+    const examined = must(applyAction(lying, "p1", { type: "examine", target: { kind: "equipment", id: bed(s) } }));
+    expect(examined.log.some((e) => e.key === "gotUp")).toBe(false);
+  });
+
   it("another action ends it, but ending your cycle does not", () => {
     const s = ship();
     const lying = must(applyAction(s, "p1", { type: "lie_down", equipment: bed(s) }));

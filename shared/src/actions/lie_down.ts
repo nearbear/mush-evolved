@@ -1,5 +1,7 @@
+import { logPrivate, logPublic } from "../log.ts";
 import { leaveTerminal } from "../spot.ts";
 import { Action, isString } from "./action.ts";
+import { isNinja } from "./ninja.ts";
 import { EQUIPMENT_TYPES } from "../equipment.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
@@ -14,6 +16,12 @@ export type GetUpActionData = { type: "get_up" };
 /** A bed holds one living person at a time (owner, 2026-10-24). */
 function occupied(state: Readonly<GameState>, bed: string): boolean {
   return state.players.some((p) => p.alive && p.lyingIn === bed);
+}
+
+/** Lying down and getting up are public room lines, private to a ninja as in eMush (owner, 2026-11-27; ninja.ts). */
+function logBed(state: GameState, player: Readonly<PlayerState>, key: string): void {
+  if (isNinja(player)) logPrivate(state, player.id, key, { name: player.character });
+  else logPublic(state, player.room, key, { name: player.character });
 }
 
 /** Stiff Neck keeps you out of bed (owner, 2026-11-20; modifiers/stiff_neck_injury.ts). */
@@ -49,6 +57,7 @@ export class LieDownAction extends Action<LieDownActionData> {
     player.lyingIn = target.equipment;
     player.lyingSince = state.cycle;
     leaveTerminal(player);
+    logBed(state, player, "laidDown"); // the original's AC_LAY_DOWN line
   }
 }
 
@@ -68,5 +77,9 @@ export class GetUpAction extends Action<GetUpActionData> {
     return player.modifiers.includes("lying_down") ? null : "not_lying_down";
   }
 
-  // No apply: performAction has already removed the modifier.
+  // performAction has already removed the modifier. Only this action logs (the original's AC_WAKE_UP line, owner
+  // 2026-11-27); getting up because of another action or the bed going away is silent, as in the original.
+  override apply(state: GameState, player: PlayerState): void {
+    logBed(state, player, "gotUp");
+  }
 }

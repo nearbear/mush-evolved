@@ -444,6 +444,12 @@
   flex: 1;
   margin-top: 0.5rem;
 }
+/* The inventory opened from a terminal while the room view is on screen: where the room view's own would open, the same
+   size (TerminalDialog's useRoomInventorySpot sets top, bottom, left and right), over the terminal. */
+.terminal-popup > .inventory-popup.terminal-inventory {
+  position: fixed;
+  z-index: 5;
+}
 /* Desktop: the room view's sack, drawn again over the backdrop at the same spot (TerminalDialog measures it). */
 .terminal-sack {
   position: fixed;
