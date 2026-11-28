@@ -723,6 +723,7 @@ function advanceCycle(state: GameState, at?: number): void {
       delete p.radioHackToday;
       delete p.snoopedToday;
       delete p.mycoscannedToday;
+      delete p.solTriedToday;
       p.cpuPriorityChangedToday = false;
     }
     const invincible = shipInvincible(state);

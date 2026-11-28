@@ -9,7 +9,8 @@ import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { chatChannels, createChannel } from "../src/chat.ts";
 import { addStatus } from "../src/statuses.ts";
 import type { Action, GameState } from "../src/types.ts";
-import { clone, costOf, makeSeats, must, nextCycle, offered, option, player, rebelCallAt, testConfig } from "./support.ts";
+import { clone, costOf, makeSeats, must, nextCycle, nextDay, offered, option, player, rebelCallAt, testConfig } from "./support.ts";
+import { swapMinds } from "../src/mind.ts";
 import { GENOME_DISK_ITEM, MUSH_SAMPLE_ITEM } from "../src/itemIds.ts";
 
 const TERMINAL = "COMMAND_CENTER:COM_CENTER";
@@ -79,6 +80,7 @@ describe("communication center", () => {
       let fails = 0;
       while (!s.comms.linked) {
         player(s, "p1").ap = s.config.maxAp;
+        delete player(s, "p1").solTriedToday; // once a day; tested below
         s = must(applyAction(s, "p1", contactSol));
         if (!s.comms.linked) fails++;
         expect(s.comms.solChance).toBe(cfg.sol.startChance + fails * cfg.sol.chancePerFail);
@@ -88,6 +90,22 @@ describe("communication center", () => {
       // The link is public; the log lines are not.
       expect(viewFor(s, "p2").comms.linked).toBe(true);
       expect(viewFor(s, "p2").log.some((e) => e.key === "solLinked" || e.key === "solFailed")).toBe(false);
+    });
+
+    it("is one attempt a day per character, success or failure, and the limit stays with the body in a Transfer", () => {
+      let s = must(applyAction(ship(), "p1", contactSol));
+      s.comms.linked = false; // whatever the roll gave
+      expect(has(s, "p1", "contact_sol")).toBe(false);
+      expect(applyAction(s, "p1", contactSol).ok).toBe(false);
+      expect(has(s, "p2", "contact_sol")).toBe(true);
+      expect(JSON.stringify(viewFor(s, "p2"))).not.toContain("solTriedToday");
+      const swapped = clone(s);
+      swapMinds(swapped, player(swapped, "p1"), player(swapped, "p2"));
+      expect(player(swapped, "p1").solTriedToday).toBe(true);
+      expect(player(swapped, "p2").solTriedToday).toBeUndefined();
+      s = nextDay(s);
+      s.comms.linked = false;
+      expect(has(s, "p1", "contact_sol")).toBe(true);
     });
 
     it("Radio Expert doubles the actor's chance and gives x1.5 to roommates", () => {

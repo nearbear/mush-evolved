@@ -8,7 +8,8 @@ export type ContactSolActionData = { type: "contact_sol"; equipment: string };
 /**
  * Try to establish the link with Sol at the Com center terminal (owner, 2026-10-19 and 2026-10-21): 2 AP, open to anyone
  * alive and not dirty, Mush included, while the link is down. The ship-wide chance starts at 4% and each failure adds 4%
- * (comms.ts; Radio Expert raises it). Private: only the actor gets a log line; the link status itself is in every view.
+ * (comms.ts; Radio Expert raises it). Once a day per character (`PlayerState.solTriedToday`, owner 2026-11-27; it stays
+ * with the body in a Transfer), success or failure. Private: only the actor gets a log line; the link status itself is in every view.
  */
 export class ContactSolAction extends Action<ContactSolActionData> {
   override terminal = true;
@@ -29,7 +30,7 @@ export class ContactSolAction extends Action<ContactSolActionData> {
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): ContactSolActionData[] {
-    if (state.comms.linked) return [];
+    if (state.comms.linked || player.solTriedToday) return [];
     return comTerminalsHere(state, player).map((terminal): ContactSolActionData => ({ type: "contact_sol", equipment: terminal.id }));
   }
 
@@ -37,15 +38,17 @@ export class ContactSolAction extends Action<ContactSolActionData> {
     if (!comTerminalsHere(state, player).some((terminal) => terminal.id === target.equipment)) return "cant_contact_sol";
     if (state.comms.linked) return "already_linked";
     if (player.statuses.includes("dirty")) return "dirty";
-    return null;
+    return player.solTriedToday ? "daily_cap" : null;
   }
 
   override apply(state: GameState, player: PlayerState, _target: ContactSolActionData): void {
+    player.solTriedToday = true;
     state.comms.linked = true;
     logPrivate(state, player.id, "solLinked");
   }
 
   override fail(state: GameState, player: PlayerState, _target: ContactSolActionData): void {
+    player.solTriedToday = true;
     solFailed(state);
     logPrivate(state, player.id, "solFailed");
   }

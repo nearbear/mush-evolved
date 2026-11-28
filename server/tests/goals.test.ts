@@ -2580,7 +2580,7 @@ describe("travel holds & escape jumps (#421)", () => {
 });
 
 describe("contactSol and commsOfficer (#222)", () => {
-  it("Radio Expert tries contact_sol while the link is down, down to the AP reserve or until linked", async () => {
+  it("Radio Expert tries contact_sol once a day while the link is down", async () => {
     const { game: start, id } = setup();
     expect(contactSol.options(viewFor(edit(start, id, (p) => (p.skills = ["pilot"])), id), memory())).toEqual([]);
     const game = edit(start, id, (p) => {
@@ -2591,8 +2591,7 @@ describe("contactSol and commsOfficer (#222)", () => {
     const bot = new GoalBot(1, 2, [contactSol]);
     const { game: after, taken } = await oneCycle(game, id, bot);
     const tries = taken.filter((a) => a.type === "contact_sol");
-    expect(tries.length).toBeGreaterThanOrEqual(1);
-    expect(after.comms.linked || after.players.find((p) => p.id === id)!.ap === 2).toBe(true);
+    expect(tries).toHaveLength(1);
     after.comms.linked = true;
     expect(contactSol.options(viewFor(after, id), memory())).toEqual([]);
   });

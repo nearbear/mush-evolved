@@ -132,6 +132,8 @@ export interface PlayerState extends Seat {
   snoopedToday?: string[];
   /** True once this character has checked their spores on the MycoScan today (check_spores.ts); cleared at day start; stays with the body. Sent to the owner only. */
   mycoscannedToday?: boolean;
+  /** True once this character has tried to contact Sol today (actions/contact_sol.ts); cleared at day start; stays with the body in a Transfer. Sent to the owner only. */
+  solTriedToday?: boolean;
   /** The day this character last got Listen's morale at the jukebox (actions/listen_jukebox.ts): once a day, so no reset is needed; stays with the body. Sent to the owner only. */
   jukeboxDay?: number;
   /** True once this player has changed NERON's CPU priority today (bios.ts); cleared at day start. Sent to the owner only. */

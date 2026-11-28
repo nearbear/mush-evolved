@@ -171,6 +171,7 @@ export const PLAYER_STATE_FIELDS: Record<string, FieldRule> = {
   radioHackToday: { reach: "own", test: "radioPiracy.test.ts", note: "Only gates the daily hack; nobody else sees it." },
   interrogatedToday: { reach: "own", test: "history.test.ts", note: "Only gates Interrogate; roommates never see it." },
   jukeboxDay: { reach: "own", test: "jukebox.test.ts", note: "Only gates Listen at the jukebox; roommates never see it." },
+  solTriedToday: { reach: "own", test: "comms.test.ts", note: "Only gates the daily Sol attempt; roommates never see it." },
   mycoscannedToday: { reach: "own", test: "mycoscan.test.ts", note: "Only gates the MycoScan check; roommates never see it." },
   cpuPriorityChangedToday: { reach: "own", test: "bios.test.ts", note: "Only gates the once-per-day CPU priority change; roommates never see it." },
   hackedEquipment: { reach: "own", test: "hack.test.ts", note: "Equipment ids you hacked in your current room (cleared on leaving); never sent to others." },

@@ -87,6 +87,7 @@ function handFilled() {
     interrogatedToday: true,
     snoopedToday: ["FRONT_STORAGE"],
     mycoscannedToday: true,
+    solTriedToday: true,
     accommodationOffers: [{ by: b.id, until: 500 }],
     diseaseTrackers: [{ name: "cold", duration: 3, resistance: 1, complete: false, forever: true }],
     immuneUntil: 9,

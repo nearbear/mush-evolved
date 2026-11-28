@@ -8,6 +8,8 @@ The record of answered rule decisions and the design for the rules that are not 
 
 ## Decisions received
 
+- **One Sol attempt a day** (2026-11-27, owner; built the same day): a player can try to contact Sol (`contact_sol`) only once per day, whether it succeeds or fails, with a Computer point or AP. The attempt stays with the body: after a Transfer, the new occupant inherits the body's used attempt. My readings, not asked: like the MycoScan, the action disappears once used and comes back at day start.
+
 - **Terminal actions are instant** (2026-11-27, owner; built): every action done in a terminal's window happens at once, with no duration bar and no wait in the queue, even while another action is under way. Like other instant actions, it doesn't get you out of bed. Accessing the terminal was already instant.
 - **Terminal access is logged** (2026-11-27, owner). Every access to a terminal writes a public room log line naming the terminal ("Kuan Ti accessed the Astro terminal."), including reopening one you're already at.
 - **Opening a private channel needs an iTrackie** (2026-11-27, owner; built): creating a channel needs a working iTrackie in your inventory, or Luyten-Ceti's brain probes once that rebel base is reached (the same access as global chat). Invites are unchanged: any member may still invite any living player, with or without an iTrackie.

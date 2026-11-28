@@ -688,6 +688,7 @@ export function normalizePlayer(raw: Partial<PlayerState>, mode: QueueMode, ctx:
     delogToday: raw.delogToday,
     snoopedToday: opt(raw.snoopedToday, copy),
     mycoscannedToday: raw.mycoscannedToday,
+    solTriedToday: raw.solTriedToday,
     jukeboxDay: raw.jukeboxDay,
     cpuPriorityChangedToday: added(raw, "cpuPriorityChangedToday", false),
     hackedEquipment: opt(raw.hackedEquipment, copy),
