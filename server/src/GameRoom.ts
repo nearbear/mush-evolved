@@ -19,7 +19,6 @@ import {
   chatPageSource,
   chatPageView,
   bodyOf,
-  legalActions,
   CHEAT_ROOM,
   nextDue,
   CHARACTERS,
@@ -50,13 +49,11 @@ import {
   type ChannelId,
   type ChatRead,
   type ChatMessage,
-  MUSH_CHANNEL,
   type FullView,
   type SeatStart,
   type CharacterId,
   type ConfigOverrides,
   type GameClientMessage,
-  type BotPause,
   type GameServerMessage,
   type GameSetup,
   type GameState,
@@ -79,20 +76,18 @@ import {
   type BuildStamp,
 } from "@mush2/shared";
 import { accountStoreFor } from "./accountStore.ts";
-import { buildRouterPrompt, parseRouterReply, routerInput } from "./router.ts";
-import { BOT_CHAT_CHAIN_DEPTH, LogParrotBot, ModelBot, WanderBot, type Bot } from "./bots.ts";
+import { BotDriver } from "./botDriver.ts";
 import { isMachineLine } from "./bots/machineLines.ts";
-import { BOT_MEMORY_PREFIX, botMemoryKey } from "./bots/memoryStore.ts";
-import type { BotMessage } from "./prompt.ts";
+import { BOT_MEMORY_PREFIX } from "./bots/memoryStore.ts";
 import { finishedEntry, gameStoreFor } from "./gameStore.ts";
 import { shipRow, shipStoreFor } from "./shipStore.ts";
 import { clockCycle, clockCycleStart, cycleMs, cycleOfDay } from "./cycleClock.ts";
-import { devModelCredentials, ModelGate, playerModelCredentials } from "./model.ts";
+import { devModelCredentials, playerModelCredentials } from "./model.ts";
 import { RateLimiter } from "./rateLimit.ts";
 import { moderateSocial } from "./socialModeration.ts";
 import { Backoff } from "./backoff.ts";
 import { copyReplay, verifyReplay } from "./replayStore.ts";
-import { failure, failureName, logError, logWarn, snapshotFailure } from "./log.ts";
+import { failure, logError, logWarn, snapshotFailure } from "./log.ts";
 
 declare global {
   interface Env {
@@ -133,25 +128,12 @@ const notesKey = (seat: PlayerId) => `${NOTES_PREFIX}${seat}`;
 /** The one refusal for a `note` the rules of notes.ts don't allow (a gap, a 17th tab). */
 const NOTE_REFUSED = "note_refused";
 
-/** Deliberate pacing so bots don't act instantly. */
-const BOT_DELAY_MS = 50;
-
 /** Dev servers wait this long after the first join before seating bots, so a second window can join as another character. */
 export const DEV_FILL_DELAY_MS = 8000;
 
 /** A dev server (`DEV_SERVER`) allows this many times the usual message rate, so testing and scripted clients don't trip it. */
 export const DEV_RATE_SCALE = 10;
 
-/**
- * Model bots' limits per game (ModelGate). The budget is a backstop against a runaway bug, set high enough not to
- * bind in a normal game; a player will choose their own once they bring their own key.
- */
-const MODEL_CALL_BUDGET = 3000;
-const MODEL_MAX_IN_FLIGHT = 2;
-const MODEL_TIMEOUT_MS = 20_000;
-/** While model calls fail in passing, paused bots are asked again after this, doubling up to the max. */
-const MODEL_RETRY_MS = 2_000;
-const MODEL_RETRY_MAX_MS = 60_000;
 /** A finished game whose entry in the list (#155) couldn't be written is tried again after this, doubling up to the max. */
 const LIST_RETRY_MS = 60_000;
 const LIST_RETRY_MAX_MS = 60 * 60_000;
@@ -306,30 +288,10 @@ export class GameRoom extends Server<Env> {
   private rateLimited: Record<PlayerId, number> = {};
   private clockCycle = 0;
   private blocked = 0;
-  private bots = new Map<PlayerId, Bot>();
-  private pendingBots = new Set<PlayerId>();
-  /**
-   * Per bot seat woken by chat, the depth of the newest message that woke it, so its reply is stamped one deeper. Memory
-   * only: not in game state, a message, a view or the record; after a restart it starts again at 0, which is harmless.
-   */
-  private wakes = new Map<PlayerId, { depth: number }>();
-  /** Chat router calls under way (#341): bots hold back `ready` until they say whom a message wakes. */
-  private routing = 0;
-  /** Made by `initBots` when the game has a model bot. */
-  private modelGate: ModelGate | null = null;
-  /** Restored from storage before `initBots` makes the gate. */
-  private modelCalls = 0;
   /** Cycles end only by End cycle, never on the clock. */
   private singlePlayer = false;
   /** How this game's config differs from `DEFAULT_CONFIG` (`resolveConfig`). */
   private overrides: ConfigOverrides = {};
-  /** Asks paused bots again while model calls fail in passing (`retryPausedBots`). */
-  private retryTimer: ReturnType<typeof setTimeout> | null = null;
-  private modelRetry = new Backoff(MODEL_RETRY_MS, MODEL_RETRY_MAX_MS);
-  /** Counts key changes (`setModel`), so a bot whose turn spanned one is asked again with the new key. */
-  private keyChanges = 0;
-  /** The pause last sent to clients, so a change is sent once. */
-  private sentPause: BotPause | null = null;
   /** The pre-selection launch `join` started, so a second join waits for it instead of launching again. */
   private launching: Promise<void> | null = null;
   /** Dev servers only: the pending bot fill, re-armed by every join so one lost to a reload is set again. */
@@ -370,6 +332,22 @@ export class GameRoom extends Server<Env> {
    * (the mind), so they follow a Transfer. Not game state: never in the snapshot, the record or a view.
    */
   private notes = new Map<PlayerId, Note[]>();
+  /**
+   * Runs the bots (botDriver.ts). It reaches the room only through this host, and a bot gets only `viewFor` of the body
+   * its own seat plays.
+   */
+  private readonly botDriver = new BotDriver({
+    roomId: () => this.name,
+    game: () => this.game,
+    inputs: () => this.inputs,
+    language: () => this.language,
+    defaultCredentials: () => devModelCredentials(this.env),
+    body: (seat) => this.body(seat),
+    viewFor: (body) => viewFor(this.game!, body),
+    act: (input) => this.act(input),
+    social: (seat, by, msg, depth) => this.social(seat, by, msg, depth),
+    broadcastViews: () => this.broadcastViews(),
+  });
 
   /** This build, stamped on every copy of the view in the history (#384). */
   private get build(): BuildStamp {
@@ -426,7 +404,7 @@ export class GameRoom extends Server<Env> {
     this.inputs = stored.inputs;
     this.rateLimited = stored.rateLimited;
     this.clockCycle = stored.clockCycle;
-    this.modelCalls = stored.modelCalls ?? 0;
+    this.botDriver.restoreModelCalls(stored.modelCalls ?? 0);
     this.singlePlayer = stored.singlePlayer ?? false;
     this.accounts = stored.accounts;
     this.aboard = stored.aboard;
@@ -448,8 +426,8 @@ export class GameRoom extends Server<Env> {
     this.blocked = (await this.ctx.storage.list({ prefix: "blocked:" })).size;
     if (dropped) await this.recordDropped();
     else if (this.reclaim.dueAt !== null && stored.reclaimAt === undefined) await this.persist();
-    this.initBots(await this.ctx.storage.list({ prefix: BOT_MEMORY_PREFIX }));
-    this.scheduleBots();
+    this.botDriver.init(await this.ctx.storage.list({ prefix: BOT_MEMORY_PREFIX }));
+    this.botDriver.schedule();
     await this.scheduleTick();
   }
 
@@ -540,8 +518,8 @@ export class GameRoom extends Server<Env> {
       const seat: Seat = { id: `p${this.game!.players.length}`, name: `Bot ${i + 1} (AI)`, isBot: true, botKind: "logParrot", character };
       await this.act({ type: "join", seat });
     }
-    this.initBots();
-    this.scheduleBots();
+    this.botDriver.init();
+    this.botDriver.schedule();
   }
 
   /**
@@ -594,10 +572,7 @@ export class GameRoom extends Server<Env> {
     await accountStoreFor(this.env).endShip(this.name, Date.now());
     await shipStoreFor(this.env).ended(this.name);
     await this.ctx.storage.delete("game");
-    if (this.retryTimer !== null) {
-      clearTimeout(this.retryTimer);
-      this.retryTimer = null;
-    }
+    this.botDriver.stop();
     this.retired = true;
     this.unavailable = false;
     this.game = null;
@@ -605,10 +580,6 @@ export class GameRoom extends Server<Env> {
     this.aboard = {};
     this.tokenSessions = {};
     this.stopRetries();
-    this.bots.clear();
-    this.pendingBots.clear();
-    this.wakes.clear();
-    this.modelGate = null;
     await this.scheduleTick();
     for (const conn of this.getConnections<SeatState>()) conn.close(4001, "Ship retired");
     return true;
@@ -848,10 +819,7 @@ export class GameRoom extends Server<Env> {
       await this.ctx.storage.deleteAll();
       // The one key left: keeps the room retired after eviction, so nothing launches over the archived replay.
       await this.ctx.storage.put(RECLAIMED_KEY, true);
-      if (this.retryTimer !== null) {
-        clearTimeout(this.retryTimer);
-        this.retryTimer = null;
-      }
+      this.botDriver.stop();
       this.retired = true;
       this.game = null;
       this.tokens = {};
@@ -859,9 +827,6 @@ export class GameRoom extends Server<Env> {
       this.aboard = {};
       this.tokenSessions = {};
       this.stopRetries();
-      this.bots.clear();
-      this.wakes.clear();
-      this.modelGate = null;
       this.chatRead.clear();
       this.logRead.clear();
       this.connectedFrom.clear();
@@ -921,8 +886,8 @@ export class GameRoom extends Server<Env> {
     this.noteStarts();
     await this.ctx.storage.put("setup", setup);
     await this.persist();
-    this.initBots();
-    this.scheduleBots();
+    this.botDriver.init();
+    this.botDriver.schedule();
     await this.scheduleTick();
     // Not awaited: the game never waits on D1.
     void this.recordShip();
@@ -1099,7 +1064,7 @@ export class GameRoom extends Server<Env> {
     if (!error && input.type === "chat") {
       // A bots' machine line (machineLines.ts) is for code to parse, not a message to answer: no router call, nobody woken.
       // A Radio Piracy spoof (`as`) wakes nobody: its target must never learn of it, and no bot routing may hint at it.
-      if (!isMachineLine(input.text) && input.as === undefined) this.wakeBots(playerId, input.channel, depth);
+      if (!isMachineLine(input.text) && input.as === undefined) this.botDriver.wakeBots(playerId, input.channel, depth);
       // Posting reads only your own message (#513): the count moves past it when everything before it was read, and
       // older unread messages stay unread. Otherwise the poster's client keeps it in its local set until the count
       // catches up.
@@ -1107,100 +1072,6 @@ export class GameRoom extends Server<Env> {
       if (!this.isBotSeat(playerId) && (this.chatRead.get(playerId)?.[input.channel] ?? 0) >= count - 1) await this.raiseChatRead(playerId, { [input.channel]: count });
     }
     return error;
-  }
-
-  /**
-   * A chat message was posted: the listening bots that read its channel, except its author, are candidates for a turn
-   * to reply (bot-goals.md, "Waking"), unless the message is at the chain depth limit. A private channel wakes its
-   * members outright; anywhere else the chat router (`router.ts`, #341) asks the model which of them, if any, it is
-   * meant for. Only bots that listen (a model with a key) are candidates.
-   */
-  private wakeBots(author: PlayerId, channel: ChannelId, depth: number): void {
-    if (!this.game || depth >= BOT_CHAT_CHAIN_DEPTH) return;
-    /** Listening bots by what is public (alive, not ready): body to seat. */
-    const listening = new Map<PlayerId, PlayerId>();
-    /** The seats among them that really read the channel. */
-    const readers = new Set<PlayerId>();
-    for (const [seat, bot] of this.bots) {
-      if (seat === author || !bot.listens) continue;
-      const body = this.bodyState(seat);
-      if (!body || !body.alive || body.ready) continue;
-      listening.set(body.id, seat);
-      if (readChannels(this.game, body).includes(channel)) readers.add(seat);
-    }
-    const message = this.game.chat.filter((m) => m.channel === channel && m.from === this.body(author)).at(-1);
-    if (this.game.channels.some((c) => c.id === channel) || !message || !this.modelGate) {
-      if (readers.size > 0) this.wake([...readers], depth);
-      return;
-    }
-    // The router is offered every listening bot, not only the readers, and is asked even when none of them reads the
-    // channel: who reads global chat (who carries an iTrackie) is hidden, and the router prompt goes to the player's own
-    // provider. Only the Mush channel's readers are its Mush.
-    const candidates = channel === MUSH_CHANNEL ? new Map([...listening].filter(([, seat]) => readers.has(seat))) : listening;
-    if (candidates.size === 0) return;
-    this.routing++;
-    void this.route(channel, message, candidates, readers, depth);
-  }
-
-  /** Gives `seats` a turn to reply to a message of `depth`. */
-  private wake(seats: readonly PlayerId[], depth: number): void {
-    for (const seat of seats) if (this.bots.get(seat)?.wake?.()) this.wakes.set(seat, { depth });
-    this.scheduleBots();
-  }
-
-  /**
-   * One router call through the game's gate (budget, in-flight limit, timeout). No reply, or one that names nobody it
-   * may wake, wakes nobody: a missed wake only delays a reply to the bot's next choice. Woken bots re-check (pruneWakes).
-   */
-  private async route(
-    channel: ChannelId,
-    message: ChatMessage,
-    candidates: ReadonlyMap<PlayerId, PlayerId>,
-    readers: ReadonlySet<PlayerId>,
-    depth: number,
-  ): Promise<void> {
-    let seats: PlayerId[] = [];
-    try {
-      if (!this.game || !this.modelGate) return;
-      const input = routerInput(this.game, channel, message, new Set(candidates.keys()));
-      const reply = await this.modelGate.ask(buildRouterPrompt(input));
-      // A named bot that can't read the channel isn't woken: it would only see the message it was woken for missing.
-      if (reply !== null) seats = parseRouterReply(reply, input).flatMap((body) => candidates.get(body) ?? []).filter((seat) => readers.has(seat));
-    } catch (e) {
-      logWarn("chat_router_failed", { roomId: this.name, ...failureName(e) });
-    } finally {
-      this.routing--;
-      // Also when it wakes nobody: bots held their ready back while it ran.
-      this.wake(seats, depth);
-    }
-  }
-
-  /**
-   * Posts what a bot's turn wants to say, through the same path as a person's chat (rate limit, moderation, the rules'
-   * checks, `isBot`). "To" someone posts in a private channel the two share alone, opening one if there is none.
-   */
-  private async botSay(seat: PlayerId, by: PlayerId, message: BotMessage, depth: number): Promise<void> {
-    if (!this.game) return;
-    let channel: ChannelId | undefined;
-    if ("channel" in message) channel = message.channel;
-    else {
-      const pair = (c: { members: PlayerId[] }) => c.members.length === 2 && c.members.includes(by) && c.members.includes(message.to);
-      channel = this.game.channels.find(pair)?.id;
-      if (channel === undefined) {
-        const error = await this.social(seat, by, { type: "createChannel", members: [message.to] });
-        if (error) return logWarn("bot_channel_failed", { roomId: this.name, seat, code: error });
-        const opened = this.game.channels.filter((c) => c.createdBy === by).at(-1);
-        if (!opened) return;
-        // The invite was refused (they are in too many channels): leave the empty channel rather than talk to no one.
-        if (!pair(opened)) {
-          await this.social(seat, by, { type: "leaveChannel", channel: opened.id });
-          return logWarn("bot_private_unreachable", { roomId: this.name, seat });
-        }
-        channel = opened.id;
-      }
-    }
-    const error = await this.social(seat, by, { type: "chat", channel, text: message.text }, depth);
-    if (error) logWarn("bot_chat_refused", { roomId: this.name, seat, code: error });
   }
 
   /**
@@ -1226,11 +1097,7 @@ export class GameRoom extends Server<Env> {
    */
   private setModel(playerId: PlayerId, msg: Extract<GameClientMessage, { type: "setModel" | "clearModel" }>): string | null {
     if (!this.singlePlayer || playerId !== SINGLE_PLAYER_HUMAN) return "not_single_player";
-    this.gate().setCredentials(msg.type === "setModel" ? playerModelCredentials(msg.provider, msg.model, msg.apiKey) : devModelCredentials(this.env));
-    this.keyChanges++;
-    // Bots paused on the old key (or playing scripted without one) try the new one.
-    this.scheduleBots();
-    this.afterBotTurn();
+    this.botDriver.setCredentials(msg.type === "setModel" ? playerModelCredentials(msg.provider, msg.model, msg.apiKey) : null);
     return null;
   }
 
@@ -1241,11 +1108,7 @@ export class GameRoom extends Server<Env> {
     // The seat's last connection: lines from here on are missed (#513).
     await this.disconnectLogRead(playerId);
     // The key lives only while its player is connected; the client sends it again on reconnect.
-    if (!this.singlePlayer || playerId !== SINGLE_PLAYER_HUMAN || !this.modelGate) return;
-    this.modelGate.setCredentials(devModelCredentials(this.env));
-    this.keyChanges++;
-    this.scheduleBots();
-    this.afterBotTurn();
+    if (this.singlePlayer && playerId === SINGLE_PLAYER_HUMAN) this.botDriver.dropCredentials();
   }
 
   /**
@@ -1285,7 +1148,7 @@ export class GameRoom extends Server<Env> {
     await this.releaseAccounts();
     await this.recordFinished();
     await this.copyReplay();
-    this.scheduleBots();
+    this.botDriver.schedule();
     await this.scheduleTick();
     return null;
   }
@@ -1529,154 +1392,9 @@ export class GameRoom extends Server<Env> {
       cheatsAllowed: this.cheatsAllowed,
       now: Date.now(),
       nextCycleAt: comatose ? null : this.nextCycleAt(),
-      botsPaused: comatose ? null : this.botsPaused(),
+      botsPaused: comatose ? null : this.botDriver.paused(),
     };
     this.send(conn, msg);
-  }
-
-  /** A bot decides only once its last action is done, so it never fills a queue. Bots are keyed by seat, like connections. */
-  private botIdle(playerId: PlayerId): boolean {
-    const p = this.game?.players.find((pl) => pl.mind === playerId);
-    return !!p && p.current === null && p.queue.length === 0 && legalActions(this.game!, p.id).length > 0;
-  }
-
-  /** Makes a bot for every bot seat without one; `memories` (keys `bot:<seat>`, after a restart) are given back to them (#440). */
-  private initBots(memories: ReadonlyMap<string, unknown> = new Map()): void {
-    for (const p of this.game?.players ?? []) {
-      if (!p.isBot || this.bots.has(p.mind)) continue;
-      const seed = (): number => crypto.getRandomValues(new Uint32Array(1))[0]!;
-      const bot: Bot =
-        p.botKind === "wander" ? new WanderBot(seed()) : p.botKind === "model" ? new ModelBot(this.gate(), seed(), undefined, undefined, this.language ?? undefined) : new LogParrotBot();
-      const stored = memories.get(botMemoryKey(p.mind));
-      // Another version's snapshot is dropped (fresh memory); the next save overwrites it.
-      if (stored !== undefined && bot.restore && !bot.restore(stored)) logWarn("bot_memory_dropped", { roomId: this.name, seat: p.mind });
-      this.bots.set(p.mind, bot);
-    }
-  }
-
-  /** The game's one model gate. No credentials (a deployment has none of its own) and model bots play scripted. */
-  private gate(): ModelGate {
-    this.modelGate ??= new ModelGate(devModelCredentials(this.env), {
-      budget: MODEL_CALL_BUDGET,
-      maxInFlight: MODEL_MAX_IN_FLIGHT,
-      timeoutMs: MODEL_TIMEOUT_MS,
-      used: this.modelCalls,
-    });
-    return this.modelGate;
-  }
-
-  /** Why the model bots are waiting (ModelGate.pause), or null. Only while the game is on. */
-  private botsPaused(): BotPause | null {
-    return this.game?.phase === "playing" ? (this.modelGate?.pause ?? null) : null;
-  }
-
-  /**
-   * After a bot's turn: tells everyone when the pause changes, and while calls fail in passing, asks the paused bots
-   * again after a backoff (owner, 2026-10-24, #114). A refused key or a spent budget waits for a new key or budget
-   * (BYOK, #216 and #221), so it doesn't retry.
-   */
-  private afterBotTurn(): void {
-    const pause = this.botsPaused();
-    if (pause !== this.sentPause) {
-      this.sentPause = pause;
-      this.broadcastViews();
-    }
-    if (pause !== "unavailable") {
-      this.modelRetry.succeed();
-      return;
-    }
-    if (this.retryTimer !== null) return;
-    this.retryTimer = setTimeout(() => {
-      this.retryTimer = null;
-      this.scheduleBots();
-    }, this.modelRetry.fail());
-  }
-
-  /** Post the lines a bot wants to say in global chat, as that bot. */
-  private async botChat(playerId: PlayerId, bot: Bot): Promise<void> {
-    const by = this.body(playerId);
-    if (!this.game || !bot.chatLines || !by) return;
-    for (const text of bot.chatLines(viewFor(this.game, by))) {
-      const error = await this.act({ type: "chat", channel: "global", text, by });
-      if (error) logWarn("bot_chat_refused", { roomId: this.name, seat: playerId, code: error });
-    }
-  }
-
-  /** Drops chat wakes for bots that are dead, have ended their cycle, lost their key, or have no legal actions left. */
-  private pruneWakes(): void {
-    if (!this.game || this.game.phase !== "playing") {
-      this.wakes.clear();
-      return;
-    }
-    for (const seat of this.wakes.keys()) {
-      const p = this.game.players.find((pl) => pl.mind === seat);
-      const bot = this.bots.get(seat);
-      if (!p || !p.alive || p.ready || !bot?.woken || (p.current === null && p.queue.length === 0 && legalActions(this.game, p.id).length === 0)) {
-        this.wakes.delete(seat);
-      }
-    }
-  }
-
-  /** Give every bot that can act a delayed turn. Bots see only their own view. */
-  private scheduleBots(): void {
-    this.pruneWakes();
-    for (const [playerId, bot] of this.bots) {
-      if (this.pendingBots.has(playerId)) continue;
-      if (!this.game) continue;
-      if (!this.botIdle(playerId) && !bot.chatLines) continue;
-      this.pendingBots.add(playerId);
-      setTimeout(async () => {
-        // Still pending while it decides: a model call takes seconds, and the bot must not be asked twice meanwhile.
-        const inputs = this.inputs;
-        const keyChanges = this.keyChanges;
-        const hadWake = this.wakes.has(playerId);
-        try {
-          if (!this.game) return;
-          await this.botChat(playerId, bot);
-          const by = this.body(playerId);
-          if (!this.game || !by || !this.botIdle(playerId)) return;
-          const wake = this.wakes.get(playerId);
-          const action = await bot.decideAction(viewFor(this.game, by));
-          // The wake was answered, unless another came in during the call (it replaced the entry and woke the bot again).
-          if (this.wakes.get(playerId) === wake && !bot.woken) this.wakes.delete(playerId);
-          // The game may have moved on during a slow decision; the rules reject a choice that is no longer legal. A
-          // choice made for a body the bot no longer plays (a Transfer) is dropped, and so is what it wanted to say.
-          const message = bot.takeMessage?.() ?? null;
-          const social = bot.takeSocial?.() ?? null;
-          if (this.body(playerId) !== by) return;
-          // Said before it acts: "I'll heal you", then the walk.
-          if (message) await this.botSay(playerId, by, message, wake ? wake.depth + 1 : 0);
-          // A goal's message that isn't an action (sharing a planet, #417), sent like a player's; its turn has no action.
-          if (social) {
-            const error = await this.social(playerId, by, social);
-            if (error) {
-              logWarn("bot_social_refused", { roomId: this.name, seat: playerId, kind: social.type, code: error });
-              bot.refused?.(social, error);
-            }
-          }
-          if (!action || this.body(playerId) !== by) return;
-          this.pruneWakes();
-          // Waits for pending wakes, and for the router to say whether there are any.
-          if (action.type === "ready" && (this.wakes.size > 0 || this.routing > 0)) return;
-          const error = await this.act({ type: "action", action, by, at: Date.now() });
-          if (error) {
-            // The code only: the action could describe what the bot knows.
-            logWarn("bot_action_illegal", { roomId: this.name, seat: playerId, code: error });
-            bot.refused?.(action, error);
-          }
-        } catch (e) {
-          // A throwing bot must not take the room down (#114); it is asked again after the next change.
-          logWarn("bot_failed", { roomId: this.name, seat: playerId, ...failureName(e) });
-        } finally {
-          this.pendingBots.delete(playerId);
-          this.pruneWakes();
-          // What it did (or anything else accepted meanwhile) rescheduled the others but skipped it, being pending.
-          // So did a new key, if the old one's call left it waiting, or the last chat wake finishing so ready bots can close the cycle.
-          if (this.inputs !== inputs || this.keyChanges !== keyChanges || this.wakes.has(playerId) || (hadWake && this.wakes.size === 0)) this.scheduleBots();
-          this.afterBotTurn();
-        }
-      }, BOT_DELAY_MS);
-    }
   }
 
   /**
@@ -1695,7 +1413,7 @@ export class GameRoom extends Server<Env> {
       inputs: this.inputs,
       rateLimited: this.rateLimited,
       clockCycle: this.clockCycle,
-      modelCalls: this.modelGate?.used ?? this.modelCalls,
+      modelCalls: this.botDriver.modelCalls,
       singlePlayer: this.singlePlayer,
       accounts: this.accounts,
       aboard: this.aboard,
@@ -1712,9 +1430,7 @@ export class GameRoom extends Server<Env> {
     // Storage deletes at most 128 keys a call.
     for (let i = 0; i < deletes.length; i += 128) writes.push(this.ctx.storage.delete(deletes.slice(i, i + 128)));
     // Each bot's memory goes in the same put as the game (#440), so the two can't disagree after a crash.
-    const memories: Record<string, unknown> = {};
-    for (const [seat, bot] of this.bots) if (bot.snapshot) memories[botMemoryKey(seat)] = bot.snapshot();
-    writes.push(this.ctx.storage.put({ ...entries, ...memories, game: stored }));
+    writes.push(this.ctx.storage.put({ ...entries, ...this.botDriver.memories(), game: stored }));
     await Promise.all(writes);
   }
 

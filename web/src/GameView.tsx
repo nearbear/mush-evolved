@@ -25,6 +25,7 @@ import { EndScreen } from "./hud/EndScreen.tsx";
 import { BodyTakenDialog } from "./hud/BodyTakenDialog.tsx";
 import { SelfHud } from "./hud/SelfHud.tsx";
 import { TipCard } from "./hud/TipCard.tsx";
+import { useKeyboardOverRoom } from "./hud/useKeyboardOverRoom.ts";
 import { resolveTarget } from "./hud/targets.ts";
 import { TopBar } from "./hud/TopBar.tsx";
 import { PlayerSummary } from "./hud/PlayerSummary.tsx";
@@ -104,6 +105,8 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
   const [selected, setSelected] = useState<Target | null>(null);
   // Phone layout only: which panel is on screen, and a door tapped in the room.
   const mobile = useMobile();
+  const mainRef = useRef<HTMLElement>(null);
+  useKeyboardOverRoom(mainRef, mobile);
   /** Desktop: the fixed layer the star field fills the screen from (SpaceBackdrop.tsx); null on phones. */
   const [backdrop, setBackdrop] = useState<HTMLDivElement | null>(null);
   const fogDepth = useFogDepth();
@@ -240,7 +243,7 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
   return (
     <ServerClockContext.Provider value={clock}>
     <BackdropContext value={mobile ? null : backdrop}>
-    <main className="game">
+    <main className="game" ref={mainRef}>
       {!mobile && <SpaceBackdrop ref={setBackdrop} ftl={view.launched !== null} />}
       <Announcer />
       {!comatose && <WakeUpAnnouncement waking={waking} text={t("wake.ready", { day: view.day, cycle: view.cycleOfDay, room: names.room(you.room) })} />}

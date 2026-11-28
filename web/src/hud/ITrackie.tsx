@@ -4,11 +4,11 @@
 // renderer (CLAUDE.md).
 
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
 import { Tabs } from "@base-ui/react/tabs";
-import { blurredVision, FEATURE_CHANNELS, ITRACKIE_ITEM, GRAVEYARD_CHANNEL, MUSH_CHANNEL, type ChannelId, type FeatureChannel, type PlayerView, type SharedPlanetId, type SharedReportId, type ThreadId } from "@mush2/shared";
+import { blurredVision, FEATURE_CHANNELS, ITRACKIE_ITEM, GRAVEYARD_CHANNEL, MUSH_CHANNEL, type ChannelId, type FeatureChannel, type PlayerView, type PrivateChannelId, type SharedPlanetId, type SharedReportId, type ThreadId } from "@mush2/shared";
 import { useChatReadStore, useReadSnapshot } from "../chatRead.ts";
 import { readAllOn, unreadByFeature, unreadByTab, type TabId } from "./chatTabs.ts";
 import { MarkAllContext } from "./unreadDivider.ts";
@@ -19,7 +19,7 @@ import { Hint, IconTab } from "./IconButton.tsx";
 import { TabOutline } from "./TabOutline.tsx";
 import { RoomLog } from "./RoomLog.tsx";
 import { unreadPositions, useLogRead, useLogReadStore } from "../logRead.ts";
-import { PrivateChannels, type ChannelHandlers } from "./PrivateChannels.tsx";
+import { ChannelMenu, PrivateChannels, channelLabel, planFor, type ChannelHandlers, type ChannelPane } from "./PrivateChannels.tsx";
 import { Thread, type ThreadLinks } from "./Thread.tsx";
 import { Threads, threadNameFrom } from "./Threads.tsx";
 import { SharedPlanets } from "./SharedPlanets.tsx";
@@ -142,6 +142,17 @@ export function ITrackie({
   const [threadName, setThreadName] = useState("");
   const [starter, setStarter] = useState<number | null>(null);
   const shownThread = view.threads.find((th) => th.id === openThread);
+  // Private tab: the open channel (null for the list). One left or deleted while open falls back to the list.
+  // An open channel shows its messages or its plan; the composer for a new plan can be open over either.
+  const [openChannel, setOpenChannelState] = useState<PrivateChannelId | null>(null);
+  const [channelPane, setChannelPane] = useState<ChannelPane>("messages");
+  const [composingPlan, setComposingPlan] = useState(false);
+  const setOpenChannel = useCallback((id: PrivateChannelId | null) => {
+    setOpenChannelState(id);
+    setChannelPane("messages");
+  }, []);
+  const shownChannel = view.privateChannels.find((c) => c.id === openChannel);
+  const channelPlanShown = !!shownChannel && channelPane === "plan" && !!planFor(view, shownChannel.id);
   // Astrophysics: the shared planet picked (null for the feature's general thread), and whether the list shows the
   // entries no longer applicable (client-only, off by default). A hidden entry falls back to the general thread.
   const [sharedPlanet, setSharedPlanet] = useState<SharedPlanetId | null>(null);
@@ -193,10 +204,11 @@ export function ITrackie({
           {graveyard && <IconTab value="graveyard" src={TAB_ICONS.graveyard} label={tabLabel("graveyard", t("itrackie.tabs.graveyard"))} badge={unread.graveyard} />}
         </Tabs.List>
         <div className="cut-card itrackie-card">
-          {/* An open thread is titled by its own name (the tab already says Threads), with the way back to the list beside it. */}
+          {/* An open thread or private channel is titled by its own name (the tab already says which), with the way back to
+              the list beside it; an open channel's Invite and Leave follow. */}
           <div className="itrackie-title-row">
             <h2 className="itrackie-title">
-              {activeTab === "threads" && shownThread ? shownThread.name : t(TAB_TITLES[activeTab])}
+              {activeTab === "threads" && shownThread ? shownThread.name : activeTab === "private" && shownChannel ? (channelPlanShown ? `${channelLabel(t, shownChannel)} – ${t("plans.planTab")}` : channelLabel(t, shownChannel)) : t(TAB_TITLES[activeTab])}
               {activeTab === "room" && ` – ${names.room(here)}`}
             </h2>
             {activeTab === "threads" && shownThread && (
@@ -206,7 +218,34 @@ export function ITrackie({
                 </button>
               </Hint>
             )}
-            {(activeTab === "room" ? logStore : readStore) && unread[activeTab] > 0 && (
+            {activeTab === "private" && shownChannel && (
+              <>
+                {/* From the plan, back to the channel's messages; from the messages, back to the list. */}
+                <Hint label={t(channelPlanShown ? "channels.backToMessages" : "channels.back")}>
+                  <button
+                    type="button"
+                    className="thread-back"
+                    aria-label={t(channelPlanShown ? "channels.backToMessages" : "channels.back")}
+                    onClick={() => (channelPlanShown ? setChannelPane("messages") : setOpenChannel(null))}
+                  >
+                    ←
+                  </button>
+                </Hint>
+                <ChannelMenu
+                  view={view}
+                  channel={shownChannel}
+                  pane={channelPane}
+                  onPane={setChannelPane}
+                  onCompose={() => setComposingPlan(true)}
+                  canPlan={!!channels?.onPostPlan}
+                  onInvite={channels?.onInvite}
+                  onLeave={channels?.onLeave}
+                  onMarkRead={readStore && unread.private > 0 ? markAllRead : undefined}
+                />
+              </>
+            )}
+            {/* An open channel's Mark all read is in its ⋯ menu. */}
+            {!(activeTab === "private" && shownChannel) && (activeTab === "room" ? logStore : readStore) && unread[activeTab] > 0 && (
               <button type="button" className="mark-read" aria-label={t("itrackie.markReadIn", { name: t(TAB_TITLES[activeTab]) })} onClick={markAllRead}>
                 {t("itrackie.markRead")}
               </button>
@@ -306,7 +345,7 @@ export function ITrackie({
           )}
 
           <Tabs.Panel className="itrackie-panel" value="private" aria-label={t(TAB_TITLES.private)} keepMounted>
-            <PrivateChannels view={view} active={activeTab === "private"} onChat={onChat} onToggle={onToggle} {...channels} />
+            <PrivateChannels view={view} active={activeTab === "private"} open={shownChannel?.id ?? null} onOpen={setOpenChannel} pane={channelPane} onPane={setChannelPane} composing={composingPlan} onComposing={setComposingPlan} onChat={onChat} onToggle={onToggle} {...channels} />
           </Tabs.Panel>
         </div>
         <TabOutline />

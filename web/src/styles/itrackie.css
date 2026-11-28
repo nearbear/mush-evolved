@@ -286,7 +286,8 @@
   opacity: 0.6;
 }
 
-/* Private tab: one row per channel slot (pick + leave, or a free slot that opens the create dialog), then the picked channel's thread. */
+/* Channel slot rows: the Astrophysics and Expeditions pickers. The Private tab's channels and
+   free slots are thread rows (.thread-row), like the Threads tab. */
 .channel-slots {
   flex: none;
   display: flex;
@@ -304,8 +305,7 @@
 .channel-slot button {
   margin: 0;
 }
-.channel-slot-pick,
-.channel-slot-new {
+.channel-slot-pick {
   flex: 1;
   min-width: 0;
   display: flex;
@@ -314,12 +314,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
   text-align: left;
-}
-.channel-slot-new {
-  opacity: 0.85;
-}
-.channel-slot-new .tab-icon {
-  opacity: 1;
 }
 /* The picked channel uses the (static) hover sprite: the pressed *_on.gif sprites are animated and pulsate. */
 .channel-slot-pick[aria-pressed="true"] {
@@ -397,18 +391,32 @@
   bottom: 0;
   border-image: url("../../../Mush/www/img/design/tipbottom.png") 0 10 fill / 0 10px stretch;
 }
+/* An open channel's members: character busts (16px art at 2x, kept crisp), named in a tooltip. */
 .channel-members {
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
   margin: 0 0 var(--space-2);
-  overflow-wrap: anywhere;
+  padding: 0;
+  list-style: none;
+}
+/* Not a plain button: the bust is the whole trigger, without the button art (as the status icons are). */
+.channel-member {
+  display: block;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  background: none;
+}
+.channel-member img {
+  display: block;
+  width: 32px;
+  height: 32px;
+  image-rendering: pixelated;
 }
 .channel-empty {
-  flex: 1;
-  margin: 0;
-}
-.channel-invite {
-  flex: none;
-  align-self: flex-start;
-  margin: var(--space-2) 0 0;
+  margin: 0 0 var(--space-2);
 }
 /* Character picker: pick-tiles (primitives.css) in a wrapping row, spaced as tightly as the crew bar's card
    (top-bar.css .crew-figures): narrow columns, 2px between them, names cut with an ellipsis. The tiles and the
@@ -524,6 +532,13 @@
 .thread-back {
   flex: none;
   margin: 0;
+}
+/* An open private channel's ⋯ menu (ChannelMenu), right of its back button in the title row. */
+.channel-menu-button {
+  flex: none;
+  margin: 0;
+  padding: 0 var(--space-2);
+  line-height: 21px;
 }
 /* The starter message, set apart at the top of an open thread. */
 .feed > li.thread-head {
@@ -943,23 +958,8 @@ button.blurred-vision {
   overflow-wrap: anywhere;
 }
 
-/* Channel plans (PlanCard.tsx, PlanComposer.tsx, #315): pinned card above a private channel's messages on desktop,
-   or in its own Messages | Plan pane on phones. Buttons keep the global Mush sprite; only layout here. */
-.plan-bar {
-  flex: none;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2);
-  margin-bottom: var(--space-2);
-}
-.plan-bar p {
-  margin: 0;
-}
-.plan-bar button {
-  margin: 0;
-}
+/* Channel plans (PlanCard.tsx, PlanComposer.tsx, #315): a private channel's plan pane, opened from its ⋯ menu in
+   place of the messages, on both layouts. Buttons keep the global Mush sprite; only layout here. */
 .plan-card {
   flex: none;
   display: flex;
@@ -1087,23 +1087,6 @@ button.blurred-vision {
   margin: 0;
 }
 
-/* Mobile Messages | Plan switch inside a private channel. */
-.plan-switch {
-  flex: none;
-  display: flex;
-  gap: var(--space-1);
-  margin-bottom: var(--space-2);
-}
-.plan-switch button {
-  flex: 1;
-  margin: 0;
-}
-.plan-switch button[aria-selected="true"] {
-  --btn-left: url("../../../Mush/www/img/design/butleftover.png");
-  --btn-mid: url("../../../Mush/www/img/design/butbgover.png");
-  --btn-right: url("../../../Mush/www/img/design/butrightover.png");
-  font-weight: bold;
-}
 .plan-pane,
 .plan-messages-pane {
   flex: 1;

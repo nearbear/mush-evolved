@@ -27,6 +27,7 @@ For each, check what's sent and to whom:
 | Log | Entries filtered by `visibleTo` and room. New entries use `logPublic`/`logPrivate`/`logSecret`, never `state.log.push`. Check text doesn't embed secrets (e.g. "X infected Y" logged publicly). |
 | Chat | Channels filtered by `chatChannels`. No role-only channel readable by others. |
 | `GameRoom.ts` | Every `send`/`broadcast` sends `viewFor(game, thatConnectionsSeat)`. Nothing sends `GameState`, `this.game`, `tokens`, or another seat's view. Errors don't echo state. |
+| `botDriver.ts` | Every call into a `Bot` (`decideAction`, `chatLines`) gets `host.viewFor(by)` for the body its own seat plays, never `host.game()` or anything built from it. The router gets only `routerInput`. |
 | `Matchmaker.ts` | Seat tokens go only to their owner. Nothing reveals roles (they're assigned in `createGame`, after matchmaking). |
 | `protocol.ts` | Every client message goes through a `parse*` validator; a client can't name another seat or ask for another view. |
 | Bots | `decideAction` receives the bot's own `viewFor`. Prompts are built from the view only. |

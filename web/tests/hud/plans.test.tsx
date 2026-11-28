@@ -1,10 +1,12 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import userEvent from "@testing-library/user-event";
+import { useState } from "react";
 import { I18nextProvider } from "react-i18next";
-import { applyAction, applyInput, createChannel, ITRACKIE_ITEM, leaveChannel, viewFor, type GameState, type PlanDraft, type PrivateChannelId } from "@mush2/shared";
+import { applyAction, applyInput, createChannel, ITRACKIE_ITEM, leaveChannel, viewFor, type Action, type GameState, type PlanDraft, type PlayerView, type PrivateChannelId } from "@mush2/shared";
 
-let isMobile = false;
+const isMobile = false;
 vi.hoisted(() => {
   window.matchMedia = (query: string) =>
     ({
@@ -29,11 +31,10 @@ vi.hoisted(() => {
 
 import "../../src/i18n/index.ts";
 import i18n from "../../src/i18n/index.ts";
-import { PrivateChannels } from "../../src/hud/PrivateChannels.tsx";
+import { ChannelMenu, PrivateChannels, type ChannelPane } from "../../src/hud/PrivateChannels.tsx";
 import { sampleState } from "../../src/designKit/sampleView.ts";
 
 afterEach(() => {
-  isMobile = false;
   cleanup();
 });
 
@@ -56,37 +57,68 @@ function makeChannelShip(): { state: GameState; channel: PrivateChannelId } {
   return { state: withChannel, channel: withChannel.channels[0]!.id };
 }
 
+/** One open channel with its ⋯ menu, wired as the iTrackie wires them (pane and composer state above both). */
+function Channel({ view, channel, onPostPlan = () => {}, onPlanAction = () => {} }: { view: PlayerView; channel: PrivateChannelId; onPostPlan?: (plan: PlanDraft) => void; onPlanAction?: (action: Action) => void }) {
+  const [pane, setPane] = useState<ChannelPane>("messages");
+  const [composing, setComposing] = useState(false);
+  const c = view.privateChannels.find((ch) => ch.id === channel)!;
+  return (
+    <I18nextProvider i18n={i18n}>
+      <button type="button" onClick={() => setPane("messages")}>
+        Back
+      </button>
+      <ChannelMenu view={view} channel={c} pane={pane} onPane={setPane} onCompose={() => setComposing(true)} canPlan onInvite={() => {}} onLeave={() => {}} />
+      <PrivateChannels open={channel} onOpen={() => {}} view={view} pane={pane} onPane={setPane} composing={composing} onComposing={setComposing} onChat={() => {}} onToggle={() => {}} onPostPlan={onPostPlan} onPlanAction={onPlanAction} />
+    </I18nextProvider>
+  );
+}
+
+/** The ⋯ menu's items, by name (opening the menu first). */
+async function menuItems(): Promise<string[]> {
+  await userEvent.setup().click(screen.getByRole("button", { name: "Channel options" }));
+  await screen.findByRole("menu");
+  return screen.getAllByRole("menuitem").map((el) => el.textContent ?? "");
+}
+
+async function pickMenuItem(name: string): Promise<void> {
+  const user = userEvent.setup();
+  await user.click(screen.getByRole("button", { name: "Channel options" }));
+  await user.click(await screen.findByRole("menuitem", { name }));
+}
+
 function doublePress(button: HTMLElement): void {
   fireEvent.click(button);
   fireEvent.click(button);
 }
 
 describe("PrivateChannels plans UI", () => {
-  it("shows New plan only to the creator, and hides planning when the creator is gone", () => {
+  it("offers New plan in the ⋯ menu only to the creator, and no planning once the creator is gone", async () => {
     const { state, channel } = makeChannelShip();
     const { rerender } = render(
       <I18nextProvider i18n={i18n}>
-        <PrivateChannels view={viewFor(state, "p0")} onChat={() => {}} onToggle={() => {}} onPostPlan={() => {}} onPlanAction={() => {}} />
+        <Channel view={viewFor(state, "p0")} channel={channel} />
       </I18nextProvider>,
     );
-    expect(screen.getByRole("button", { name: "New plan" })).toBeTruthy();
+    expect(await menuItems()).toEqual(["New plan", "Invite", "Leave channel"]);
 
-    // Non-creator sees no New plan button.
+    // Non-creator gets no New plan.
     rerender(
       <I18nextProvider i18n={i18n}>
-        <PrivateChannels view={viewFor(state, "p1")} onChat={() => {}} onToggle={() => {}} onPostPlan={() => {}} onPlanAction={() => {}} />
+        <Channel view={viewFor(state, "p1")} channel={channel} />
       </I18nextProvider>,
     );
-    expect(screen.queryByRole("button", { name: "New plan" })).toBeNull();
+    expect(screen.queryByRole("menuitem", { name: "New plan" })).toBeNull();
+    expect(screen.getAllByRole("menuitem").map((el) => el.textContent)).toEqual(["Invite", "Leave channel"]);
 
     // Creator leaves: planningClosed is true and there is no plan, so no planning UI at all.
     const closed = must(leaveChannel(state, "p0", channel));
     rerender(
       <I18nextProvider i18n={i18n}>
-        <PrivateChannels view={viewFor(closed, "p1")} onChat={() => {}} onToggle={() => {}} onPostPlan={() => {}} onPlanAction={() => {}} />
+        <Channel view={viewFor(closed, "p1")} channel={channel} />
       </I18nextProvider>,
     );
-    expect(screen.queryByRole("button", { name: "New plan" })).toBeNull();
+    expect(screen.queryByRole("menuitem", { name: "New plan" })).toBeNull();
+    expect(screen.queryByRole("menuitem", { name: "Plan" })).toBeNull();
     expect(screen.queryByRole("region", { name: "Plan" })).toBeNull();
   });
 
@@ -95,11 +127,11 @@ describe("PrivateChannels plans UI", () => {
     const onPostPlan = vi.fn();
     const { rerender } = render(
       <I18nextProvider i18n={i18n}>
-        <PrivateChannels view={viewFor(state, "p0")} onChat={() => {}} onToggle={() => {}} onPostPlan={onPostPlan} onPlanAction={() => {}} />
+        <Channel view={viewFor(state, "p0")} channel={channel} onPostPlan={onPostPlan} onPlanAction={() => {}} />
       </I18nextProvider>,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "New plan" }));
+    await pickMenuItem("New plan");
     const dialog = screen.getByRole("dialog", { name: "New plan" });
     const postBtn = within(dialog).getByRole("button", { name: "Post plan" }) as HTMLButtonElement;
     expect(postBtn.disabled).toBe(true);
@@ -125,18 +157,18 @@ describe("PrivateChannels plans UI", () => {
     expect(postBtn.disabled).toBe(true);
     expect(within(dialog).getByText("Too many slots (maximum 12).")).toBeTruthy();
 
-    // When the server accepts and sends an open plan, the dialog closes.
+    // When the server accepts and sends an open plan, the dialog closes and the channel shows its plan.
     const posted = must(applyInput(state, { type: "postPlan", by: "p0", plan: submitted }));
     rerender(
       <I18nextProvider i18n={i18n}>
-        <PrivateChannels view={viewFor(posted, "p0")} onChat={() => {}} onToggle={() => {}} onPostPlan={onPostPlan} onPlanAction={() => {}} />
+        <Channel view={viewFor(posted, "p0")} channel={channel} onPostPlan={onPostPlan} onPlanAction={() => {}} />
       </I18nextProvider>,
     );
     await waitFor(() => expect(screen.queryByRole("dialog", { name: "New plan" })).toBeNull());
     expect(screen.getByRole("region", { name: "Plan" })).toBeTruthy();
   });
 
-  it("renders Claim, Withdraw, Done, Cancel, Go (disabled away from room, enabled in room), and outcomes after Go", () => {
+  it("renders Claim, Withdraw, Done, Cancel, Go (disabled away from room, enabled in room), and outcomes after Go", async () => {
     const { state, channel } = makeChannelShip();
     const posted = must(
       applyInput(state, {
@@ -156,9 +188,10 @@ describe("PrivateChannels plans UI", () => {
     const onPlanAction = vi.fn();
     const { rerender } = render(
       <I18nextProvider i18n={i18n}>
-        <PrivateChannels view={viewFor(posted, "p0")} onChat={() => {}} onToggle={() => {}} onPostPlan={() => {}} onPlanAction={onPlanAction} />
+        <Channel view={viewFor(posted, "p0")} channel={channel} onPostPlan={() => {}} onPlanAction={onPlanAction} />
       </I18nextProvider>,
     );
+    await pickMenuItem("Plan");
     const card = screen.getByRole("region", { name: "Plan" });
     expect(within(card).getByText(/Expires end of day 2/)).toBeTruthy();
     const goDisabled = within(card).getByRole("button", { name: "Go" });
@@ -171,7 +204,7 @@ describe("PrivateChannels plans UI", () => {
     onPlanAction.mockClear();
     rerender(
       <I18nextProvider i18n={i18n}>
-        <PrivateChannels view={viewFor(posted, "p1")} onChat={() => {}} onToggle={() => {}} onPostPlan={() => {}} onPlanAction={onPlanAction} />
+        <Channel view={viewFor(posted, "p1")} channel={channel} onPostPlan={() => {}} onPlanAction={onPlanAction} />
       </I18nextProvider>,
     );
     const claimButtons = within(screen.getByRole("region", { name: "Plan" })).getAllByRole("button", { name: "Claim" });
@@ -183,7 +216,7 @@ describe("PrivateChannels plans UI", () => {
     onPlanAction.mockClear();
     rerender(
       <I18nextProvider i18n={i18n}>
-        <PrivateChannels view={viewFor(claimed, "p1")} onChat={() => {}} onToggle={() => {}} onPostPlan={() => {}} onPlanAction={onPlanAction} />
+        <Channel view={viewFor(claimed, "p1")} channel={channel} onPostPlan={() => {}} onPlanAction={onPlanAction} />
       </I18nextProvider>,
     );
     doublePress(within(screen.getByRole("region", { name: "Plan" })).getByRole("button", { name: "Done" }));
@@ -194,7 +227,7 @@ describe("PrivateChannels plans UI", () => {
     onPlanAction.mockClear();
     rerender(
       <I18nextProvider i18n={i18n}>
-        <PrivateChannels view={viewFor(claimed, "p0")} onChat={() => {}} onToggle={() => {}} onPostPlan={() => {}} onPlanAction={onPlanAction} />
+        <Channel view={viewFor(claimed, "p0")} channel={channel} onPostPlan={() => {}} onPlanAction={onPlanAction} />
       </I18nextProvider>,
     );
     const goEnabled = within(screen.getByRole("region", { name: "Plan" })).getByRole("button", { name: "Go" });
@@ -206,7 +239,7 @@ describe("PrivateChannels plans UI", () => {
     const called = must(applyAction(claimed, "p0", { type: "summon", plan: planId }));
     rerender(
       <I18nextProvider i18n={i18n}>
-        <PrivateChannels view={viewFor(called, "p0")} onChat={() => {}} onToggle={() => {}} onPostPlan={() => {}} onPlanAction={onPlanAction} />
+        <Channel view={viewFor(called, "p0")} channel={channel} onPostPlan={() => {}} onPlanAction={onPlanAction} />
       </I18nextProvider>,
     );
     const calledCard = screen.getByRole("region", { name: "Plan" });
@@ -215,22 +248,25 @@ describe("PrivateChannels plans UI", () => {
     expect(within(calledCard).getByText("Unclaimed")).toBeTruthy();
   });
 
-  it("shows a Messages | Plan switch on phones when planning is available", () => {
-    isMobile = true;
-    const { state } = makeChannelShip();
-    render(
-      <I18nextProvider i18n={i18n}>
-        <PrivateChannels view={viewFor(state, "p0")} onChat={() => {}} onToggle={() => {}} onPostPlan={() => {}} onPlanAction={() => {}} />
-      </I18nextProvider>,
+  it("Plan in the ⋯ menu swaps the messages for the plan, and back returns to the messages", async () => {
+    const { state, channel } = makeChannelShip();
+    const posted = must(
+      applyInput(state, { type: "postPlan", by: "p0", plan: { channel, room: "REFECTORY", purpose: "meal", slots: [{ kind: "onCall" }] } }),
     );
-    const switchBar = screen.getByRole("tablist", { name: "Channel view" });
-    const messagesTab = within(switchBar).getByRole("tab", { name: "Messages" });
-    const planTab = within(switchBar).getByRole("tab", { name: "Plan" });
-    expect(messagesTab.getAttribute("aria-selected")).toBe("true");
-    expect(planTab.getAttribute("aria-selected")).toBe("false");
+    render(<Channel view={viewFor(posted, "p1")} channel={channel} />);
+    expect(screen.queryByRole("region", { name: "Plan" })).toBeNull();
+    // The thread stays mounted (keeping its draft); it is hidden with CSS while the plan shows.
+    const messagesHidden = () => screen.getByPlaceholderText("Message Ops…").closest("[hidden]") !== null;
+    expect(messagesHidden()).toBe(false);
 
-    fireEvent.click(planTab);
-    expect(planTab.getAttribute("aria-selected")).toBe("true");
-    expect(screen.getByRole("button", { name: "New plan" })).toBeTruthy();
+    await pickMenuItem("Plan");
+    expect(screen.getByRole("region", { name: "Plan" })).toBeTruthy();
+    expect(messagesHidden()).toBe(true);
+    // Already on the plan: the menu no longer offers it.
+    expect(await menuItems()).toEqual(["Invite", "Leave channel"]);
+
+    fireEvent.click(screen.getByRole("button", { name: "Back", hidden: true }));
+    await waitFor(() => expect(screen.queryByRole("region", { name: "Plan" })).toBeNull());
+    expect(messagesHidden()).toBe(false);
   });
 });
