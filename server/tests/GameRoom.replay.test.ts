@@ -346,13 +346,21 @@ describe("GameRoom chat read state (#400)", () => {
     expect(a.messages<GameServerMessage>().slice(sent).some((m) => m.type !== "view")).toBe(false);
   });
 
-  it("posting raises the poster's count to the channel's count, on every connection the seat has", async () => {
+  it("posting reads only the poster's own message: the count moves past it only when nothing older is unread (#513)", async () => {
     const { room, storage } = await newRoom();
     const [a, b] = [connect(room, "tok0"), connect(room, "tok1")];
     await say(room, b, global);
+    // Message 0 is unread for p0: posting leaves the count alone, so message 0 stays unread.
     await say(room, a, global);
-    expect(storage.data.get("chatRead:p0")).toEqual({ [global]: 2 });
-    expect(reads(a).at(-1)).toEqual({ type: "chatRead", read: { [global]: 2 } });
+    expect(storage.data.has("chatRead:p0")).toBe(false);
+    await send(room, a, { type: "chatRead", read: { [global]: 2 } });
+    await say(room, b, global);
+    await send(room, a, { type: "chatRead", read: { [global]: 3 } });
+    // Everything before it read: the count moves past the new message, on every connection the seat has.
+    await say(room, a, global);
+    expect(storage.data.get("chatRead:p0")).toEqual({ [global]: 4 });
+    expect(reads(a).at(-1)).toEqual({ type: "chatRead", read: { [global]: 4 } });
+    // p1's first post was the channel's first message, so it read it; its second came after p0's unread one.
     expect(storage.data.get("chatRead:p1")).toEqual({ [global]: 1 });
   });
 

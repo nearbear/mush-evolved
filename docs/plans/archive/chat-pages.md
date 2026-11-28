@@ -61,17 +61,16 @@ Decisions into `docs/rules/rules-design.md` and the code map; a headless sim sho
 
 Decided with the owner on 2026-11-08 (no game rule is involved, so they live here, not in `rules-design.md`):
 
-- **Model.** One read count per channel, a high-water mark: reading a message reads everything before it in that
-  channel. Unread = `chatCounts[c] − read[c]`, right past the ~100 messages a view carries.
+- **Model.** One read count per channel, a high-water mark: everything below it is read. Unread =
+  `chatCounts[c] − read[c]`, right past the ~100 messages a view carries. Since #513 a message is read one at a time
+  (below, "Chat part"); the count is only the point everything before has been read up to.
 - **Where it lives.** Both: the client writes `localStorage` at once (keyed by room and a hash of the seat token,
   never the token) and sends batches at most every 5 s and on hide, close and reconnect; on load it takes the higher of
   local and server counts. The server keeps it in Durable Object storage under `chatRead:<seat>`, not in `GameState`:
   not an input, never recorded or replayed, no view changes. It is sent only to that seat's connections, filtered to
   the body's current `readChannels`; refused, rate-limited and nothing-new updates get no reply, alike.
-- **What counts as read.** A message getting focus (keyboard, click or tap), Mark all read (per tab, in the iTrackie
-  title row), and posting (which replaces the old "own messages are never new" check). A message arriving while its
-  channel is on screen on its latest page, in a visible focused window, counts as read (Discord's behaviour). Hover,
-  scrolling and being on screen never mark history.
+- **What counts as read.** Superseded by #513 (below): one message at a time, never everything before it. Mark all
+  read (per tab, in the iTrackie title row) still reads everything.
 - **Keyboard.** One tab stop per feed, with ArrowUp/Down, Home and End between messages.
 - **History that becomes readable** (an iTrackie picked up, an invite, becoming Mush, dying, a Transfer) is unread: a
   channel with no count starts at 0.
@@ -88,9 +87,10 @@ Decided with the owner on 2026-11-08 (no game rule is involved, so they live her
 Decided with the owner on 2026-11-09:
 
 - **Divider.** "New messages" goes before the first message unread when the channel was opened (its tab, thread,
-  feature or entry picked), and stays put as you read; clicking a message below it moves it past that message (2026-11-09). Each opening places it afresh. With none placed, unread that
-  arrives and isn't marked (the window wasn't focused) places one. Never above only your own messages. Posting and
-  Mark all read drop it; posting also marks the channel read on the client, as the server does.
+  feature or entry picked), and stays put as you read (#513: clicking a message no longer moves it). Each opening
+  places it afresh. With none placed, unread that arrives and isn't marked (the window wasn't focused) places one.
+  Never above only your own messages, or messages read one at a time. Mark all read drops it; posting no longer does
+  (#513, owner 2026-11-27), since older unread messages stay unread.
 - **Opening a channel** still lands at the bottom of its latest page, not at the divider.
 - **Unread bar.** While the divider is out of sight (on an earlier page, or scrolled above the feed), a bar between
   the page bar and the feed says how many are new and offers **Jump** only. Jump goes to the divider's page and
@@ -111,7 +111,7 @@ log; step 2 moves chat to the same single-message reads). Not a game rule, so it
   that arrive while connected are read at once, whatever is on screen. Room history seen on walking into a room is
   never unread; unread lines from a room you left stop counting (the Room tab no longer shows them). The dead have no
   Room tab and no room log unread.
-- **What reads a line.** One line at a time: a ~400 ms mouse rest (`HOVER_READ_MS` in `web/src/hud/RoomLog.tsx`), a
+- **What reads a line.** One line at a time: a ~400 ms mouse rest (`HOVER_READ_MS` in `web/src/hud/useFeedReading.ts`), a
   tap or click, or keyboard focus. Never everything up to it. **Mark all read** on the Room tab reads them all.
   Opening the tab reads nothing.
 - **Server.** Per seat, `logRead:<seat>` in Durable Object storage beside `chatRead:<seat>`, never in the snapshot,
@@ -126,7 +126,9 @@ log; step 2 moves chat to the same single-message reads). Not a game rule, so it
   point moves past the run of read lines after it (and past lines the Room tab doesn't show or that left the window),
   dropping the set entries it passes, and goes to the server batched like `chatRead`.
 - **Shown.** The Room tab's badge and its `itrackie.unreadTab` label; the phone bottom nav adds it to the iTrackie
-  badge; each unread line has the 16 px `recent.png` icon at its top right (`aria-hidden`); a "New messages" divider
+  badge; each unread line has a 3 px amber (`--gold-mid`) bar down its right edge with the 16 px `recent.png` icon
+  centred on it (`aria-hidden`; owner, 2026-11-27): the bar spans the row inside its vertical padding, the "⋯" button
+  may cover it while shown, and both hide at once on mouse hover (the line is read after the rest); a "New messages" divider
   goes before the first unread line when the tab opens or you change room, and stays put while it is open.
 
 Choices made by the AI and not asked (2026-11-27; open to change):
@@ -138,6 +140,30 @@ Choices made by the AI and not asked (2026-11-27; open to change):
   connected, the client re-finds unread lines by content (identical lines matched newest first) and treats every
   other position as read.
 - **Rate limit 6 → 12 per 10 s.** `readLimiter` is shared by chat and room log read updates, so a few open tabs fit.
+
+### Chat part (#513 step 2)
+
+Decided with the owner on 2026-11-27:
+
+- **What reads a message.** The same as a room log line, one at a time (`useFeedReading`: hover rest, tap or click,
+  keyboard focus), plus Mark all read. A message arriving while its channel is on screen on its latest page, in a
+  visible focused window, reads only that message, never older unread ones.
+- **Posting reads only your own message.** The server moves the poster's count past it only when everything before it
+  was already read; older unread messages stay unread.
+- **Stored.** As the room log: the server's count (`chatRead:<seat>`, unchanged from #400) plus a per-device set of
+  messages read one at a time past it (`web/src/chatRead.ts`, never sent). Reading the oldest unread message moves the
+  count past the run of read messages after it, dropping the entries it passes. `unreadCount` in `shared/src/chatRead.ts`
+  subtracts the set.
+- **Shown.** Each unread message from someone else has the same bar and icon as an unread room log line; badges,
+  chips, » and the announcer's count subtract the local set.
+
+Choices made by the AI and not asked (2026-11-27; open to change):
+
+- **Your own messages are read wherever they were posted from** (`useOwnMessagesRead` in `ITrackie.tsx`): every own
+  message in the view goes into the local set, so a post from another device is not unread here. A Radio Piracy spoof
+  you post isn't (its `from` is the target).
+- **A thread's opening message shows no unread icon**: it has no `data-seq` in the thread; its read state is global
+  chat's.
 
 **Known limitation** (from the issue): single-line reads stay on the device until the point catches up, so another
 device can show a line as unread, and badge counts can differ between devices until then.

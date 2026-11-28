@@ -4,20 +4,19 @@
 // or all at once by Mark all read. A "New messages" divider goes before the first unread line when the tab opens and
 // stays put while it is open.
 
-import { Fragment, memo, useContext, useEffect, useRef, useState, type FocusEvent, type KeyboardEvent, type MouseEvent, type PointerEvent } from "react";
+import { Fragment, memo, useContext, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { jsonEqual, type LogLine, type PlayerView } from "@mush2/shared";
 import { useNames } from "../i18n/names.ts";
 import { isUnread, positionOf, shownIn, unreadPositions, useLogRead, useLogReadStore } from "../logRead.ts";
 import { CycleDivider } from "./CycleDivider.tsx";
 import { FeedEntry, InfoMarker, NeronAvatar, NeronName, WarningMarker, isNeronMessage } from "./FeedEntry.tsx";
-import { rowAfterKey } from "./feedKeys.ts";
 import { Scroller } from "./Scroller.tsx";
 import { MarkAllContext } from "./unreadDivider.ts";
+import { useFeedReading } from "./useFeedReading.ts";
 import { DefacedBadge, VisibilityBadge } from "./VisibilityBadge.tsx";
 
-/** How long the mouse rests on a line before it counts as read, so sweeping across the feed doesn't read it all. */
-export const HOVER_READ_MS = 400;
+export { HOVER_READ_MS } from "./useFeedReading.ts";
 
 /**
  * A log line's look: a warning (an alarm, or a secret line that leaked) in amber, a covert line that leaked in red
@@ -133,72 +132,15 @@ function useDivider(active: boolean, room: string, firstUnread: number | null): 
   return at;
 }
 
-/** The row an event happened in, as its position, or null outside a row. */
-function rowPos(feed: HTMLElement, target: EventTarget | null): number | null {
-  const row = target instanceof Element ? target.closest<HTMLElement>("[data-pos]") : null;
-  // Popovers are portalled: their events bubble here through React but sit outside the feed in the DOM.
-  if (!row || !feed.contains(row)) return null;
-  const pos = Number(row.dataset.pos);
-  return Number.isSafeInteger(pos) ? pos : null;
-}
-
-/**
- * Marking one line read (#513): a mouse resting on it for `HOVER_READ_MS`, a tap or click on it, or keyboard focus on
- * it. Never everything up to it. Tabbing into the feed focuses its first unread line, else the last.
- */
+/** Marking one line read (#513): see `useFeedReading`. */
 function useHoverTapFocus() {
   const store = useLogReadStore();
-  const hover = useRef<{ pos: number; timer: ReturnType<typeof setTimeout> } | null>(null);
-  const stopHover = () => {
-    if (hover.current) clearTimeout(hover.current.timer);
-    hover.current = null;
-  };
-  // Unmounting drops a pending hover read.
-  useEffect(
-    () => () => {
-      if (hover.current) clearTimeout(hover.current.timer);
-    },
-    [],
-  );
-  const rowsOf = (ol: HTMLElement) => Array.from(ol.querySelectorAll<HTMLElement>(":scope > [data-pos]"));
-  return {
-    onPointerOver: (e: PointerEvent<HTMLOListElement>) => {
-      // Touch and pen read by tapping (a touch also fires pointerover, which would read on every scroll).
-      if (e.pointerType !== "mouse" || !store) return;
-      const pos = rowPos(e.currentTarget, e.target);
-      if (pos === hover.current?.pos) return;
-      stopHover();
-      if (pos === null) return;
-      hover.current = { pos, timer: setTimeout(() => store.markRead(pos), HOVER_READ_MS) };
-    },
-    onPointerLeave: stopHover,
-    onClick: (e: MouseEvent<HTMLOListElement>) => {
-      const pos = rowPos(e.currentTarget, e.target);
-      if (pos !== null) store?.markRead(pos);
-    },
-    onFocus: (e: FocusEvent<HTMLOListElement>) => {
-      if (e.target !== e.currentTarget) {
-        const pos = rowPos(e.currentTarget, e.target);
-        if (pos !== null) store?.markRead(pos);
-        return;
-      }
-      // Only from the keyboard: a click on the feed's blank space isn't reading anything.
-      if (!e.currentTarget.matches(":focus-visible")) return;
-      const rows = rowsOf(e.currentTarget);
+  return useFeedReading(
+    "pos",
+    (pos) => store?.markRead(pos),
+    (pos) => {
       const state = store?.state();
-      const first = state ? rows.findIndex((r) => isUnread(state, Number(r.dataset.pos))) : -1;
-      rows[first < 0 ? rows.length - 1 : first]?.focus();
+      return !!state && isUnread(state, pos);
     },
-    onKeyDown: (e: KeyboardEvent<HTMLOListElement>) => {
-      const ol = e.currentTarget;
-      const target = e.target as HTMLElement;
-      // Keys inside a line's own controls (a badge's popover, a report button) are theirs.
-      if (target !== ol && !(target.parentElement === ol && target.dataset.pos !== undefined)) return;
-      const rows = rowsOf(ol);
-      const to = rowAfterKey(e.key, rows.indexOf(target), rows.length);
-      if (to === null) return;
-      e.preventDefault();
-      rows[to]?.focus();
-    },
-  };
+  );
 }

@@ -87,66 +87,58 @@ const read = (channel: ChannelId = "global") => store.read(channel);
 
 describe("placing the divider", () => {
   it("goes before the first message unread when the channel opens", () => {
-    act(() => store.mark("global", 2));
+    act(() => store.markAll({ global: 2 }));
     renderThread(sampleView(sayMany(sampleState(), 4)));
     expect(divider()?.textContent).toBe("New messages");
     expect(dividerBefore()).toBe("2");
   });
 
   it("is absent when everything is read", () => {
-    act(() => store.mark("global", 4));
+    act(() => store.markAll({ global: 4 }));
     renderThread(sampleView(sayMany(sampleState(), 4)));
     expect(divider()).toBeNull();
   });
 
-  it("stays put as the reader reads", () => {
+  it("stays put however the reader reads: focus, clicks and arrow keys (#513)", () => {
     renderThread(sampleView(sayMany(sampleState(), 4)));
     expect(dividerBefore()).toBe("0");
     act(() => rows()[3]?.focus());
+    expect(store.local("global")).toEqual([3]);
+    act(() => fireEvent.click(rows()[1] as HTMLElement));
+    act(() => fireEvent.keyDown(rows()[1] as HTMLElement, { key: "ArrowDown" }));
+    expect(document.activeElement).toBe(rows()[2]);
+    act(() => rows()[0]?.focus());
     expect(read()).toBe(4);
     expect(dividerBefore()).toBe("0");
   });
 
-  it("moves past a message the reader clicks, never back, and goes after the last", () => {
+  it("goes before the first message not read one at a time when the channel opens", () => {
+    act(() => store.markSeqs("global", [1, 2], 4));
     renderThread(sampleView(sayMany(sampleState(), 4)));
     expect(dividerBefore()).toBe("0");
-    act(() => fireEvent.click(rows()[1] as HTMLElement));
-    expect(read()).toBe(2);
-    expect(dividerBefore()).toBe("2");
-    act(() => fireEvent.click(rows()[0] as HTMLElement));
-    expect(dividerBefore()).toBe("2");
-    act(() => fireEvent.click(rows()[3] as HTMLElement));
-    expect(divider()).toBeNull();
-  });
-
-  it("moves past a message the reader reaches with the arrow keys, but not on tabbing in", () => {
-    renderThread(sampleView(sayMany(sampleState(), 4)));
-    act(() => rows()[0]?.focus());
-    expect(dividerBefore()).toBe("0");
-    act(() => fireEvent.keyDown(rows()[0] as HTMLElement, { key: "ArrowDown" }));
-    expect(document.activeElement).toBe(rows()[1]);
-    expect(dividerBefore()).toBe("2");
-    act(() => fireEvent.keyDown(rows()[1] as HTMLElement, { key: "End" }));
-    expect(divider()).toBeNull();
+    cleanup();
+    act(() => store.markSeqs("global", [0, 3], 5));
+    renderThread(sampleView(sayMany(sampleState(), 5)));
+    expect(dividerBefore()).toBe("4");
   });
 
   it("isn't placed while the channel isn't the one on screen, and is placed fresh each time it opens", () => {
     const view = sampleView(sayMany(sampleState(), 4));
     const { update } = renderThread(view, false);
     expect(divider()).toBeNull();
-    act(() => store.mark("global", 1));
+    act(() => store.markAll({ global: 1 }));
     update(view, true);
     expect(dividerBefore()).toBe("1");
     update(view, false);
     expect(divider()).toBeNull();
-    act(() => store.mark("global", 3));
+    act(() => store.markAll({ global: 3 }));
     update(view, true);
     expect(dividerBefore()).toBe("3");
   });
 
   it("appears for unread that arrives unmarked when there was none", () => {
     const state = sayMany(sampleState(), 2);
-    act(() => store.mark("global", 2));
+    act(() => store.markAll({ global: 2 }));
     const { update } = renderThread(sampleView(state));
     expect(divider()).toBeNull();
     focused = false;
@@ -156,7 +148,7 @@ describe("placing the divider", () => {
 
   it("doesn't appear for messages that arrive while the reader watches", () => {
     const state = sayMany(sampleState(), 2);
-    act(() => store.mark("global", 2));
+    act(() => store.markAll({ global: 2 }));
     const { update } = renderThread(sampleView(state));
     update(sampleView(sayMany(state, 1)));
     expect(read()).toBe(3);
@@ -165,7 +157,7 @@ describe("placing the divider", () => {
 
   it("doesn't appear above your own message before the server's count arrives", () => {
     const state = sayMany(sampleState(), 2);
-    act(() => store.mark("global", 2));
+    act(() => store.markAll({ global: 2 }));
     const { update } = renderThread(sampleView(state));
     focused = false;
     update(sampleView(sayMany(state, 1, "p0")));
@@ -173,15 +165,15 @@ describe("placing the divider", () => {
   });
 });
 
-describe("dropping the divider", () => {
-  it("sending drops it and marks the channel read", async () => {
+describe("keeping and dropping the divider", () => {
+  it("sending keeps it, and reads nothing else (#513)", async () => {
     const user = userEvent.setup();
     renderThread(sampleView(sayMany(sampleState(), 4)));
     expect(divider()).not.toBeNull();
     await user.type(screen.getByRole("textbox"), "hi{Enter}");
     expect(sent).toEqual(["hi"]);
-    expect(divider()).toBeNull();
-    expect(read()).toBe(4);
+    expect(dividerBefore()).toBe("0");
+    expect(read()).toBe(0);
   });
 
   it("Mark all read drops it", async () => {
@@ -197,7 +189,7 @@ describe("dropping the divider", () => {
 describe("the unread bar", () => {
   it("offers a jump to an earlier page, and goes once there", () => {
     // 101 messages: pages 0, 1 and 2 (seq 100). The view holds pages 1 and 2, so no fetch is needed.
-    act(() => store.mark("global", 60));
+    act(() => store.markAll({ global: 60 }));
     renderThread(sampleView(sayMany(sampleState(), 101)));
     expect(divider()).toBeNull();
     expect(bar()?.textContent).toContain("41 new messages");
@@ -207,7 +199,7 @@ describe("the unread bar", () => {
   });
 
   it("isn't shown while the divider is on the page (and on screen)", () => {
-    act(() => store.mark("global", 1));
+    act(() => store.markAll({ global: 1 }));
     renderThread(sampleView(sayMany(sampleState(), 4)));
     expect(divider()).not.toBeNull();
     expect(bar()).toBeNull();
@@ -216,7 +208,7 @@ describe("the unread bar", () => {
 
 describe("unread chips", () => {
   it("show a channel's unread, in the row's accessible name too, and go when it is read", () => {
-    act(() => store.mark("botany", 1));
+    act(() => store.markAll({ botany: 1 }));
     render(
       withStore(
         <button type="button">
@@ -227,7 +219,10 @@ describe("unread chips", () => {
     );
     expect(document.querySelector(".unread-chip")?.textContent).toBe("3");
     expect(screen.getByRole("button", { name: "Botany 3 unread" })).not.toBeNull();
-    act(() => store.mark("botany", 4));
+    // A message read one at a time comes off it (#513).
+    act(() => store.markSeqs("botany", [3], 4));
+    expect(document.querySelector(".unread-chip")?.textContent).toBe("2");
+    act(() => store.markAll({ botany: 4 }));
     expect(document.querySelector(".unread-chip")).toBeNull();
   });
 });

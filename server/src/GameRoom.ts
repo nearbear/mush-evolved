@@ -1179,8 +1179,11 @@ export class GameRoom extends Server<Env> {
       // A bots' machine line (machineLines.ts) is for code to parse, not a message to answer: no router call, nobody woken.
       // A Radio Piracy spoof (`as`) wakes nobody: its target must never learn of it, and no bot routing may hint at it.
       if (!isMachineLine(moderated.text) && msg.as === undefined) this.wakeBots(playerId, msg.channel, depth);
-      // Posting reads the channel (#400): your own message is never unread, nor anything before it.
-      if (!this.isBotSeat(playerId)) await this.raiseChatRead(playerId, { [msg.channel]: this.game.chatSeq[msg.channel] ?? 0 });
+      // Posting reads only your own message (#513): the count moves past it when everything before it was read, and
+      // older unread messages stay unread. Otherwise the poster's client keeps it in its local set until the count
+      // catches up.
+      const count = this.game.chatSeq[msg.channel] ?? 0;
+      if (!this.isBotSeat(playerId) && (this.chatRead.get(playerId)?.[msg.channel] ?? 0) >= count - 1) await this.raiseChatRead(playerId, { [msg.channel]: count });
     }
     return error;
   }

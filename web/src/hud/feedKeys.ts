@@ -8,8 +8,3 @@ export function rowAfterKey(key: string, from: number, count: number): number | 
   return to === null ? null : Math.max(0, Math.min(count - 1, to));
 }
 
-/** Where tabbing into a feed lands: its first row not yet read (`read` is the channel's count), else the last row. */
-export function firstUnreadRow(seqs: readonly number[], read: number | undefined): number {
-  const i = read === undefined ? -1 : seqs.findIndex((seq) => seq >= read);
-  return i < 0 ? seqs.length - 1 : i;
-}

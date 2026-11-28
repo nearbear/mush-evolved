@@ -5900,3 +5900,15 @@ Step 1 of #502. Added `gender` (`male | female | neutral`) to `CHARACTERS`, take
   shared localStorage and leaked state between tests. The leak-check found no leaks and pointed at an untested branch
   (a Transfer while connected), now tested.
 - **Not done:** screenshots (the play skill runs only on request); step 2 (chat) is separate.
+
+## 2026-11-27: Chat reads one message at a time (#513 step 2)
+
+Chat now uses the same one-message reads as the room log: hovering, tapping or focusing a message reads only that
+message, and so does a message arriving while its channel is on screen (owner's decision). The server's count is kept,
+plus a set on each device of messages read one at a time. Posting reads only your own message. The hover, tap and
+focus handling moved into a hook that both feeds share (`useFeedReading.ts`). The owner changed the unread marker
+from an icon in the top right to a 3px amber bar down the row's right edge, with the icon centred on it. What worked:
+a written handoff note carried the work across a `/clear`, with test commands and the choices the AI made without
+asking listed separately. Still open: whether posting should remove the "New messages" divider.
+Follow-up the same day: the owner decided posting keeps the divider. The marker now hides as soon as the mouse is over
+the row, and the bar stops at the row's padding instead of running its full height.

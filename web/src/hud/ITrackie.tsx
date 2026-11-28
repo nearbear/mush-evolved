@@ -55,6 +55,25 @@ function useUnread(view: Pick<PlayerView, "readChannels" | "chatCounts" | "chatU
   return read ? { tabs: unreadByTab(view, read), features: unreadByFeature(view, read) } : { tabs: NO_UNREAD, features: {} };
 }
 
+/**
+ * Your own messages are never unread (#513): each one in the view goes into the read store, wherever it was posted
+ * from (another device's posts too), so it neither shows the unread icon nor counts in a badge. Posting reads nothing
+ * else.
+ */
+function useOwnMessagesRead(view: Pick<PlayerView, "chat" | "chatCounts" | "chatUnheard" | "you">) {
+  const store = useChatReadStore();
+  const me = view.you.id;
+  useEffect(() => {
+    if (!store) return;
+    const own = new Map<ChannelId, number[]>();
+    for (const m of view.chat) {
+      if (m.system || m.from !== me || m.seq < store.read(m.channel)) continue;
+      own.set(m.channel, [...(own.get(m.channel) ?? []), m.seq]);
+    }
+    for (const [channel, seqs] of own) store.markSeqs(channel, seqs, view.chatCounts[channel] ?? 0, view.chatUnheard?.[channel]);
+  }, [store, view.chat, view.chatCounts, view.chatUnheard, me]);
+}
+
 export function ITrackie({
   view,
   onChat,
@@ -100,6 +119,7 @@ export function ITrackie({
   const alive = view.you.alive;
   const activeTab: TabId = !alive && (tab === "room" || tab === "private") ? "global" : (tab === "mush" && !mush) || (tab === "graveyard" && !graveyard) ? "room" : tab;
   const { tabs: chatUnread, features: featureUnread } = useUnread(view);
+  useOwnMessagesRead(view);
   // The Room tab counts the room log's unread lines (#513), the other tabs their chat.
   const logRead = useLogRead();
   const unread: Record<TabId, number> = { ...chatUnread, room: unreadPositions(view, logRead).length };

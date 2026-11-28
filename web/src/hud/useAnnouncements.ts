@@ -69,7 +69,8 @@ export function useAnnouncements(view: PlayerView, reading: ChannelId | null, qu
       if (m.channel === reading || mention) announce(spoken(m, view, names, label, m.channel !== reading));
       else counts.set(m.channel, (counts.get(m.channel) ?? 0) + 1);
     }
-    for (const [channel, count] of unreadToAnnounce(counts, view.chatCounts, store?.snapshot() ?? null, view.chatUnheard)) announce(t("announce.unreadIn", { count, channel: label(channel) }));
+    const snap = store?.snapshot();
+    for (const [channel, count] of unreadToAnnounce(counts, view.chatCounts, snap?.read ?? null, view.chatUnheard, snap?.local)) announce(t("announce.unreadIn", { count, channel: label(channel) }));
   }, [view]);
 }
 

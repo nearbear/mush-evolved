@@ -6,12 +6,18 @@
 // why it can't leak how far a body's previous mind had read (the reason `logSeen` restarts in `swapMinds`).
 // docs/plans/archive/chat-pages.md, "Read state (#400)".
 
-import { countInRanges } from "./chat.ts";
+import { countInRanges, inRanges } from "./chat.ts";
 import { readableFrom } from "./radioPiracy.ts";
 import type { ChannelId, GameState, PlayerState, SeqRange } from "./types.ts";
 
 /** Messages read per channel: the count read, so 3 means `seq` 0 to 2. Missing means none. */
 export type ChatRead = Partial<Record<ChannelId, number>>;
+
+/**
+ * Messages read one at a time past the count (#513), per channel: kept per device by the client, never sent to the
+ * server. Only `seq`s at or past the channel's count mean anything.
+ */
+export type LocalReads = Partial<Record<ChannelId, readonly number[]>>;
 
 /** Most channels a `chatRead` message may name, so a client can't make the server store a huge object. */
 export const MAX_CHAT_READ_ENTRIES = 256;
@@ -58,16 +64,21 @@ export function pruneChatRead(state: Readonly<GameState>, read: Readonly<ChatRea
 }
 
 /**
- * Messages in `channel` not read yet: its count (`PlayerView.chatCounts`) less the count read, never below 0, and less
- * the ones after it you couldn't hear (`PlayerView.chatUnheard`: Damaged or Destroyed Ears), which never notify.
+ * Messages in `channel` not read yet: its count (`PlayerView.chatCounts`) less the count read, never below 0, less
+ * the ones after it you couldn't hear (`PlayerView.chatUnheard`: Damaged or Destroyed Ears), which never notify, and
+ * less the ones read one at a time past the count (`local`, #513).
  */
 export function unreadCount(
   counts: Readonly<Partial<Record<ChannelId, number>>>,
   read: Readonly<ChatRead>,
   channel: ChannelId,
   unheard?: Readonly<Partial<Record<ChannelId, readonly SeqRange[]>>>,
+  local?: Readonly<LocalReads>,
 ): number {
   const total = counts[channel] ?? 0;
   const from = read[channel] ?? 0;
-  return Math.max(0, total - from - countInRanges(unheard?.[channel], from, total));
+  const ranges = unheard?.[channel];
+  let one = 0;
+  for (const seq of local?.[channel] ?? []) if (seq >= from && seq < total && !inRanges(ranges, seq)) one++;
+  return Math.max(0, total - from - countInRanges(ranges, from, total) - one);
 }

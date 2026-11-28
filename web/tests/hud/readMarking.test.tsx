@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 //
-// Chat read marking in the DOM (#403): `useReadMarking` in Thread.tsx (#400), and Mark all read in ITrackie.tsx. These
+// Chat read marking in the DOM (#403): `useReadMarking` in Thread.tsx (#400, one message at a time since #513), and
+// Mark all read in ITrackie.tsx. These
 // render the real components in jsdom, inside a `ChatReadProvider` with a real store on in-memory storage, and check
 // `store.read(channel)`. The pure parts (feedKeys.ts, `readAllOn`) have their own node tests.
 //
@@ -9,6 +10,7 @@
 //   attribute. The real app hides tabs, features, private channels and the phone panel with CSS (`display: none`),
 //   which this stub doesn't see, so whether those feeds really have no boxes is untested.
 // - Safari not focusing a button on click (why the feed marks on click too): jsdom's clicks never focus anything.
+//   Hover is checked with synthetic pointer events only.
 // - Real `:focus-visible`: jsdom matches it on any focused element, mouse or keyboard, so "a click on the feed's blank
 //   space doesn't jump to a row" isn't checked.
 // - The window being focused and visible: `document.hasFocus` and `visibilityState` are stubbed.
@@ -37,6 +39,7 @@ import "../../src/i18n/index.ts";
 import { ChatReadProvider, createChatReadStore, type ChatReadStore } from "../../src/chatRead.ts";
 import { BottomNav } from "../../src/hud/BottomNav.tsx";
 import { MessageEntry, Thread } from "../../src/hud/Thread.tsx";
+import { HOVER_READ_MS } from "../../src/hud/useFeedReading.ts";
 import { ITrackie } from "../../src/hud/ITrackie.tsx";
 import { ended, sampleState, sampleView, say } from "../../src/designKit/sampleView.ts";
 
@@ -102,26 +105,55 @@ const feed = () => document.querySelector<HTMLOListElement>("ol.feed") as HTMLOL
 const rows = () => Array.from(feed().querySelectorAll<HTMLElement>(":scope > [data-seq]"));
 const read = (channel: ChannelId = "global") => store.read(channel);
 
-describe("focus and click", () => {
-  it("focusing a row marks it and everything before it, and counts never go down", () => {
+/** Every seq read in global, by the count or one at a time. */
+const readSeqs = (n: number, channel: ChannelId = "global") => Array.from({ length: n }, (_, i) => i).filter((q) => q < read(channel) || store.local(channel).includes(q));
+
+describe("hover, tap and focus read one message (#513)", () => {
+  it("focusing a row reads that row alone; reading the oldest moves the count over the read run", () => {
     renderThread(VIEWS[4]);
     act(() => rows()[2]?.focus());
-    expect(read()).toBe(3);
+    expect(readSeqs(4)).toEqual([2]);
+    expect(read()).toBe(0);
+    act(() => rows()[1]?.focus());
     act(() => rows()[0]?.focus());
     expect(read()).toBe(3);
-    act(() => rows()[3]?.focus());
-    expect(read()).toBe(4);
+    expect(store.local("global")).toEqual([]);
   });
 
-  it("clicking a row, or a button inside one, marks it", () => {
+  it("clicking a row, or a button inside one, reads it", () => {
     renderThread(VIEWS[4]);
     fireEvent.click(rows()[1] as HTMLElement);
-    expect(read()).toBe(2);
+    expect(readSeqs(4)).toEqual([1]);
     // p1's message at seq 2 has a "⋯" menu (report).
     const menu = rows()[2]?.querySelector("button.message-menu-button") as HTMLElement;
     expect(menu).not.toBeNull();
     fireEvent.click(menu);
-    expect(read()).toBe(3);
+    expect(readSeqs(4)).toEqual([1, 2]);
+  });
+
+  it("a mouse resting on a row reads it after a moment; passing over it doesn't, nor does a touch", () => {
+    vi.useFakeTimers();
+    renderThread(VIEWS[4]);
+    fireEvent.pointerOver(rows()[0] as HTMLElement, { pointerType: "mouse" });
+    act(() => vi.advanceTimersByTime(HOVER_READ_MS - 1));
+    fireEvent.pointerOver(rows()[2] as HTMLElement, { pointerType: "mouse" });
+    act(() => vi.advanceTimersByTime(HOVER_READ_MS - 1));
+    expect(readSeqs(4)).toEqual([]);
+    act(() => vi.advanceTimersByTime(1));
+    expect(readSeqs(4)).toEqual([2]);
+    fireEvent.pointerOver(rows()[0] as HTMLElement, { pointerType: "touch" });
+    act(() => vi.advanceTimersByTime(HOVER_READ_MS));
+    expect(readSeqs(4)).toEqual([2]);
+    vi.useRealTimers();
+  });
+
+  it("shows the unread icon on unread rows from others only, and clears it when read", () => {
+    renderThread(VIEWS[4]);
+    const icons = () => rows().map((r) => r.querySelector(".entry-unread") !== null);
+    // p0 (the reader) sent seq 1 and 3.
+    expect(icons()).toEqual([true, false, true, false]);
+    act(() => rows()[2]?.focus());
+    expect(icons()).toEqual([true, false, false, false]);
   });
 
   it("a click inside the portalled menu marks nothing else", async () => {
@@ -133,7 +165,7 @@ describe("focus and click", () => {
     const item = await screen.findByRole("menuitem", { name: /report/i });
     expect(feed().contains(item)).toBe(false);
     await user.click(item);
-    expect(read()).toBe(1);
+    expect(readSeqs(4)).toEqual([0]);
   });
 
   it("a thread's starter message (no data-seq) marks nothing", () => {
@@ -149,21 +181,20 @@ describe("focus and click", () => {
 });
 
 describe("keyboard", () => {
-  it("arrows, Home and End move focus between rows and mark the row they land on", async () => {
+  it("arrows, Home and End move focus between rows and read the row they land on", async () => {
     const user = userEvent.setup();
     renderThread(VIEWS[4]);
-    act(() => rows()[0]?.focus());
-    expect(read()).toBe(1);
-    await user.keyboard("{ArrowDown}");
-    expect(document.activeElement).toBe(rows()[1]);
-    expect(read()).toBe(2);
+    act(() => rows()[2]?.focus());
+    expect(readSeqs(4)).toEqual([2]);
     await user.keyboard("{End}");
     expect(document.activeElement).toBe(rows()[3]);
-    expect(read()).toBe(4);
+    expect(readSeqs(4)).toEqual([2, 3]);
     await user.keyboard("{Home}");
     expect(document.activeElement).toBe(rows()[0]);
     await user.keyboard("{ArrowUp}");
     expect(document.activeElement).toBe(rows()[0]);
+    await user.keyboard("{ArrowDown}");
+    expect(document.activeElement).toBe(rows()[1]);
     expect(read()).toBe(4);
   });
 
@@ -180,7 +211,7 @@ describe("keyboard", () => {
   it("tabbing into the feed lands on the first unread row", async () => {
     const user = userEvent.setup();
     renderThread(VIEWS[4]);
-    act(() => store.mark("global", 2));
+    act(() => store.markSeqs("global", [0, 1], 4));
     // The page bar is absent (one page), so the feed is the first tab stop.
     await user.tab();
     expect(document.activeElement).toBe(rows()[2]);
@@ -190,18 +221,22 @@ describe("keyboard", () => {
   it("tabbing into a fully read feed lands on the last row", async () => {
     const user = userEvent.setup();
     renderThread(VIEWS[4]);
-    act(() => store.mark("global", 4));
+    act(() => store.markAll({ global: 4 }));
     await user.tab();
     expect(document.activeElement).toBe(rows()[3]);
   });
 });
 
 describe("arriving in view", () => {
-  it("a new message marks the channel up to its count while the feed is watched", () => {
+  it("a new message is read while the feed is watched, and older unread stay unread (owner, 2026-11-27)", () => {
     const { update } = renderThread(VIEWS[2]);
     expect(read()).toBe(0);
     update(VIEWS[3]);
-    expect(read()).toBe(3);
+    expect(readSeqs(3)).toEqual([2]);
+    // With nothing older unread, the count moves past it.
+    act(() => store.markSeqs("global", [0, 1], 3));
+    update(VIEWS[4]);
+    expect(read()).toBe(4);
   });
 
   it("marks nothing on mount", () => {
@@ -213,30 +248,30 @@ describe("arriving in view", () => {
     const { update } = renderThread(VIEWS[2]);
     focused = false;
     update(VIEWS[3]);
-    expect(read()).toBe(0);
+    expect(readSeqs(3)).toEqual([]);
   });
 
   it("marks nothing when the window is hidden", () => {
     const { update } = renderThread(VIEWS[2]);
     vi.spyOn(document, "visibilityState", "get").mockReturnValue("hidden");
     update(VIEWS[3]);
-    expect(read()).toBe(0);
+    expect(readSeqs(3)).toEqual([]);
   });
 
   it("marks nothing when the feed is hidden", () => {
     const { update } = renderThread(VIEWS[2], { hidden: true });
     update(VIEWS[3]);
-    expect(read()).toBe(0);
+    expect(readSeqs(3)).toEqual([]);
   });
 
   it("marks nothing when a channel's history first becomes readable", () => {
     const unreadable = { ...VIEWS[3], readChannels: VIEWS[3].readChannels.filter((c) => c !== "global") } as PlayerView;
     const { update } = renderThread(unreadable);
     update(VIEWS[3]);
-    expect(read()).toBe(0);
+    expect(readSeqs(3)).toEqual([]);
     // Once readable, the next message does count.
     update(VIEWS[4]);
-    expect(read()).toBe(4);
+    expect(readSeqs(4)).toEqual([3]);
   });
 
   it("marks nothing while the reader is on an older page", () => {
@@ -248,6 +283,14 @@ describe("arriving in view", () => {
     const { update } = renderThread(before);
     fireEvent.click(screen.getByRole("button", { name: /previous/i }));
     update(after);
+    expect(readSeqs(52)).toEqual([]);
+  });
+});
+
+describe("your own messages (#513)", () => {
+  it("the iTrackie reads each of yours in the view, and nothing else", () => {
+    render(withStore(<ITrackie view={VIEWS[4]} roomLogRequest={0} onChat={() => {}} onCreateThread={() => {}} onToggle={() => {}} quiet />));
+    expect(readSeqs(4)).toEqual([1, 3]);
     expect(read()).toBe(0);
   });
 });

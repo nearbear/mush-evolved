@@ -27,20 +27,24 @@ export function dividerPlacement(at: number | null, total: number, shownPage: nu
 }
 
 /**
- * Where a new divider goes: at `read`, the channel's read count, unless every message from there to `total` is the
- * reader's own or one they couldn't hear (`unheard`: Damaged or Destroyed Ears). Your own messages are never unread,
- * but the server's count for them arrives a moment after the view that carries them. `messages` are the channel's
- * messages in the view; one from `read` on that isn't in it, and isn't unheard, counts as someone else's. Unheard
- * messages aren't drawn, so the divider moves past any at `read` to the first one that is.
+ * Where a new divider goes: before the first unread message from `read`, the channel's count, to `total`. Messages
+ * read one at a time past the count (`local`, #513), the reader's own (never unread, though the read for one arrives a
+ * moment after the view that carries it) and those they couldn't hear (`unheard`: Damaged or Destroyed Ears, never
+ * drawn) are skipped. `messages` are the channel's messages in the view; one not in it counts as someone else's. Null
+ * when nothing is unread.
  */
-export function dividerAt(read: number, total: number, messages: readonly Pick<ChatLine, "seq" | "from">[], me: string, unheard?: readonly SeqRange[]): number | null {
-  if (read >= total) return null;
-  let own = 0;
-  for (const m of messages) if (m.seq >= read && m.seq < total && m.from === me) own++;
-  if (own + countInRanges(unheard, read, total) >= total - read) return null;
-  let at = read;
-  while (at < total && inRanges(unheard, at)) at++;
-  return at;
+export function dividerAt(
+  read: number,
+  total: number,
+  messages: readonly Pick<ChatLine, "seq" | "from">[],
+  me: string,
+  unheard?: readonly SeqRange[],
+  local: readonly number[] = [],
+): number | null {
+  const skip = new Set(local);
+  for (const m of messages) if (m.from === me) skip.add(m.seq);
+  for (let at = read; at < total; at++) if (!skip.has(at) && !inRanges(unheard, at)) return at;
+  return null;
 }
 
 /** Bumped by Mark all read in the iTrackie; every feed drops its divider when it changes (owner, 2026-11-08). */

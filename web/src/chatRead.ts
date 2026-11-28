@@ -1,13 +1,16 @@
-// Chat read state on the client (#400, docs/plans/archive/chat-pages.md "Read state (#400)"). Two ideas:
+// Chat read state on the client (#400, #513; docs/plans/archive/chat-pages.md "Read state (#400)"). Two ideas:
 //
 // - **Read**: one high-water count per channel (`ChatRead`, shared/src/chatRead.ts), kept in localStorage and on the
-//   server. Drives the badges, the Mush tab and the page bar. Counts only rise; the store sends what rose to the server
-//   at most every 5 s, and at once when the page is hidden, closed or the socket reconnects.
+//   server, plus the messages past it read one at a time (`LocalReads`, #513), kept on this device only. A message is
+//   read by hover, tap or focus on it alone; when the oldest unread one is read, the count moves past the whole run of
+//   read (and unheard) messages after it and the entries it passes are dropped. Drives the badges, the unread icons,
+//   the Mush tab and the page bar. Counts only rise; the store sends what rose to the server at most every 5 s, and at
+//   once when the page is hidden, closed or the socket reconnects.
 // - **Arrived**: what reached this client since it connected, in memory (`arrivedIn`, `isArrived`). Drives live
 //   announcements, so a reload doesn't replay hours-old speech.
 
 import { createContext, useCallback, useContext, useSyncExternalStore } from "react";
-import type { ChannelId, ChatLine, ChatRead, GameClientMessage, PlayerView } from "@mush2/shared";
+import { inRanges, type ChannelId, type ChatLine, type ChatRead, type GameClientMessage, type LocalReads, type PlayerView, type SeqRange } from "@mush2/shared";
 
 // ---- Arrived -----------------------------------------------------------------
 
@@ -56,18 +59,38 @@ export const chatReadKey = (roomId: string, token: string): string => `${PREFIX}
 interface Stored {
   at: number;
   read: ChatRead;
+  /** Missing in entries saved before #513. */
+  local?: LocalReads;
 }
+
+/** Everything read: the counts and the messages read one at a time past them. */
+export interface ReadSnapshot {
+  read: Readonly<ChatRead>;
+  local: Readonly<LocalReads>;
+}
+
+const NO_SEQS: readonly number[] = [];
+
+/** Whether `seq` in `channel` is read in `snap`. */
+export const isReadIn = (snap: ReadSnapshot, channel: ChannelId, seq: number): boolean =>
+  seq < (snap.read[channel] ?? 0) || (snap.local[channel] ?? NO_SEQS).includes(seq);
 
 export interface ChatReadStore {
   /** The count read in `channel` (0 when none). */
   read: (channel: ChannelId) => number;
-  /** Every count, as one object that keeps its identity until a count changes. */
-  snapshot: () => Readonly<ChatRead>;
-  /** Calls `fn` when `channel`'s count changes, or any count for "*". Returns the unsubscribe. */
+  /** `channel`'s messages read one at a time past its count, ascending; keeps its identity until it changes. */
+  local: (channel: ChannelId) => readonly number[];
+  /** Everything read, as one object that keeps its identity until something changes. */
+  snapshot: () => ReadSnapshot;
+  /** Calls `fn` when `channel`'s read state changes, or any channel's for "*". Returns the unsubscribe. */
   subscribe: (channel: ChannelId | "*", fn: () => void) => () => void;
-  /** Raises `channel` to `count` (never lowers it). */
-  mark: (channel: ChannelId, count: number) => void;
-  /** Raises each channel in `counts`. */
+  /**
+   * Marks these messages of `channel` read, each on its own (#513): never anything before them. When the oldest unread
+   * one is among them, the count moves past the run of read messages, and of `unheard` ones (never shown, so never
+   * hovered), up to `total`, the channel's message count.
+   */
+  markSeqs: (channel: ChannelId, seqs: readonly number[], total: number, unheard?: readonly SeqRange[]) => void;
+  /** Mark all read: raises each channel in `counts`. */
   markAll: (counts: Readonly<ChatRead>) => void;
   /** The server's counts: each channel takes the higher of the two, and a higher local count is sent back. */
   fromServer: (read: Readonly<ChatRead>) => void;
@@ -104,6 +127,19 @@ export function pruneOld(storage: StorageLike, now: number, prefix = PREFIX): vo
   for (const k of old) storage.removeItem(k);
 }
 
+/** A stored local map: per channel, ascending integers at or past its count. */
+function cleanLocal(raw: unknown, read: ChatRead): LocalReads {
+  const local: LocalReads = {};
+  if (!raw || typeof raw !== "object") return local;
+  for (const [c, seqs] of Object.entries(raw)) {
+    if (!Array.isArray(seqs)) continue;
+    const from = read[c as ChannelId] ?? 0;
+    const kept = [...new Set(seqs.filter((n): n is number => Number.isSafeInteger(n) && n >= from))].sort((x, y) => x - y);
+    if (kept.length > 0) local[c as ChannelId] = kept;
+  }
+  return local;
+}
+
 /** A stored count map, keeping only non-negative integer counts. */
 function cleanRead(raw: unknown): ChatRead {
   const read: ChatRead = {};
@@ -123,10 +159,13 @@ export function createChatReadStore({
   storage?: StorageLike | undefined;
 }): ChatReadStore {
   let read: ChatRead = {};
+  let local: LocalReads = {};
   try {
     if (storage) {
       pruneOld(storage, Date.now());
-      read = cleanRead((JSON.parse(storage.getItem(key) ?? "null") as Partial<Stored> | null)?.read);
+      const raw = JSON.parse(storage.getItem(key) ?? "null") as Partial<Stored> | null;
+      read = cleanRead(raw?.read);
+      local = cleanLocal(raw?.local, read);
     }
   } catch {
     // No storage: counts start from the server's.
@@ -136,9 +175,11 @@ export function createChatReadStore({
   let lastSent = Number.NEGATIVE_INFINITY;
   let timer: ReturnType<typeof setTimeout> | undefined;
 
+  let snap: ReadSnapshot = { read, local };
   const save = () => {
+    snap = { read, local };
     try {
-      storage?.setItem(key, JSON.stringify({ at: Date.now(), read } satisfies Stored));
+      storage?.setItem(key, JSON.stringify({ at: Date.now(), read, local } satisfies Stored));
     } catch {
       // Full or blocked: the server's copy still has them once sent.
     }
@@ -166,12 +207,25 @@ export function createChatReadStore({
   const raise = (counts: Readonly<ChatRead>, toServer: boolean): ChannelId[] => {
     const rose: ChannelId[] = [];
     let next = read;
-    for (const [c, n] of Object.entries(counts) as [ChannelId, number][]) {
+    for (const [c, given] of Object.entries(counts) as [ChannelId, number][]) {
+      // A count that reaches messages read one at a time runs on past them.
+      let n = given;
+      if (local[c]) while (local[c]!.includes(n)) n++;
       if (!(n > (next[c] ?? 0))) continue;
       if (next === read) next = { ...read };
       next[c] = n;
       rose.push(c);
       if (toServer) dirty.add(c);
+      // Entries the count passed are dropped.
+      const seqs = local[c];
+      if (seqs) {
+        const kept = seqs.filter((q) => q >= n);
+        if (kept.length !== seqs.length) {
+          local = { ...local };
+          if (kept.length > 0) local[c] = kept;
+          else delete local[c];
+        }
+      }
     }
     if (rose.length === 0) return rose;
     read = next;
@@ -182,14 +236,30 @@ export function createChatReadStore({
 
   return {
     read: (c) => read[c] ?? 0,
-    snapshot: () => read,
+    local: (c) => local[c] ?? NO_SEQS,
+    snapshot: () => snap,
     subscribe: (c, fn) => {
       let set = listeners.get(c);
       if (!set) listeners.set(c, (set = new Set()));
       set.add(fn);
       return () => set.delete(fn);
     },
-    mark: (c, count) => notify(raise({ [c]: count }, true)),
+    markSeqs: (c, seqs, total, unheard) => {
+      const from = read[c] ?? 0;
+      const had = local[c] ?? NO_SEQS;
+      const set = new Set(had);
+      for (const q of seqs) if (Number.isSafeInteger(q) && q >= from && q < total && !inRanges(unheard, q)) set.add(q);
+      if (set.size === had.length) return;
+      let to = from;
+      while (to < total && (set.has(to) || inRanges(unheard, to))) to++;
+      const kept = [...set].filter((q) => q >= to).sort((x, y) => x - y);
+      local = { ...local };
+      if (kept.length > 0) local[c] = kept;
+      else delete local[c];
+      // `raise` saves when the count moved; otherwise only the set changed.
+      if (raise({ [c]: to }, true).length === 0) save();
+      notify([c]);
+    },
     markAll: (counts) => notify(raise(counts, true)),
     fromServer: (server) => {
       const rose = raise(server, false);
@@ -215,7 +285,7 @@ export const ChatReadProvider = ChatReadContext.Provider;
 export const useChatReadStore = (): ChatReadStore | null => useContext(ChatReadContext);
 
 const noop = () => () => {};
-const NONE: Readonly<ChatRead> = {};
+const NONE: ReadSnapshot = { read: {}, local: {} };
 
 /**
  * The count read in `channel`, redrawing only when that channel's count changes. With no store, `fallback`: pass the
@@ -227,8 +297,15 @@ export function useReadCount(channel: ChannelId, fallback: number): number {
   return useSyncExternalStore(subscribe, () => (store ? store.read(channel) : fallback));
 }
 
-/** Every count, redrawing when any changes; null with no store (everything reads as read). */
-export function useReadSnapshot(): Readonly<ChatRead> | null {
+/** `channel`'s messages read one at a time past its count, redrawing only when they change. Empty with no store. */
+export function useLocalReads(channel: ChannelId): readonly number[] {
+  const store = useChatReadStore();
+  const subscribe = useCallback((fn: () => void) => (store ? store.subscribe(channel, fn) : noop()), [store, channel]);
+  return useSyncExternalStore(subscribe, () => (store ? store.local(channel) : NO_SEQS));
+}
+
+/** Everything read, redrawing when anything changes; null with no store (everything reads as read). */
+export function useReadSnapshot(): ReadSnapshot | null {
   const store = useChatReadStore();
   const subscribe = useCallback((fn: () => void) => (store ? store.subscribe("*", fn) : noop()), [store]);
   const snap = useSyncExternalStore(subscribe, () => (store ? store.snapshot() : NONE));

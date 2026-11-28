@@ -568,15 +568,36 @@
   outline-offset: -2px;
 }
 
-/* An unread message's icon (#513): top right, clear of the markers on the left and the body's text. */
+/* An unread message (#513, owner 2026-11-27): a 3px amber bar down the row's right edge, inside its vertical padding,
+   with the icon centred on it. The bar sits behind the row's content (isolation keeps z-index -1 inside the row), so the
+   "⋯" button covers it while shown. Both hide at once on mouse hover; the row is read after HOVER_READ_MS. */
 .feed > li.entry.unread {
   position: relative;
+  isolation: isolate;
   padding-right: 20px;
+}
+.feed > li.entry.unread::after {
+  content: "";
+  position: absolute;
+  top: var(--space-1);
+  bottom: var(--space-1);
+  right: 6.5px;
+  width: 3px;
+  background: var(--gold-mid);
+  z-index: -1;
+  pointer-events: none;
 }
 .feed > li.entry > .entry-unread {
   position: absolute;
-  top: 2px;
-  right: 2px;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
   image-rendering: pixelated;
   pointer-events: none;
+}
+@media (hover: hover) {
+  .feed > li.entry.unread:hover::after,
+  .feed > li.entry.unread:hover > .entry-unread {
+    visibility: hidden;
+  }
 }

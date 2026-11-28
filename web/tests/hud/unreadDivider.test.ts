@@ -30,6 +30,10 @@ describe("dividerAt", () => {
   it("is absent when only your own messages are past the count (the server's count is on its way)", () => {
     expect(dividerAt(2, 4, msgs(["p1", "p1", "p0", "p0"]), "p0")).toBeNull();
   });
+  it("skips messages read one at a time past the count (#513)", () => {
+    expect(dividerAt(2, 5, msgs(["p1", "p1", "p1", "p1", "p1"]), "p0", undefined, [2, 3])).toBe(4);
+    expect(dividerAt(2, 4, msgs(["p1", "p1", "p1", "p1"]), "p0", undefined, [2, 3])).toBeNull();
+  });
   it("counts a message missing from the view as someone else's", () => {
     expect(dividerAt(2, 5, msgs(["p0", "p0"], 3), "p0")).toBe(2);
   });
@@ -48,7 +52,9 @@ describe("unreadByFeature", () => {
       readChannels: ["global", "botany", "astrophysics", "sp-1", "sr-1"] as ChannelId[],
       chatCounts: { global: 9, botany: 3, astrophysics: 2, "sp-1": 4, "sr-1": 1, research: 7 } as Partial<Record<ChannelId, number>>,
     };
-    expect(unreadByFeature(view, { botany: 3, astrophysics: 1, "sp-1": 1 } as Partial<Record<ChannelId, number>>)).toEqual({ astrophysics: 4, expeditions: 1 });
+    expect(unreadByFeature(view, { read: { botany: 3, astrophysics: 1, "sp-1": 1 }, local: {} })).toEqual({ astrophysics: 4, expeditions: 1 });
+    // Messages read one at a time come off (#513).
+    expect(unreadByFeature(view, { read: { botany: 3, astrophysics: 1, "sp-1": 1 }, local: { "sp-1": [2, 3], "sr-1": [0] } })).toEqual({ astrophysics: 2 });
   });
 });
 

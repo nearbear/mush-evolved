@@ -4,7 +4,7 @@
 // per-viewer preference kept in localStorage, like `fogDepth.ts`.
 
 import { useSyncExternalStore } from "react";
-import { DEFAULT_CONFIG, unreadCount, type ChannelId, type ChatLine, type ChatRead, type LogLine, type PlayerView } from "@mush2/shared";
+import { DEFAULT_CONFIG, unreadCount, type ChannelId, type ChatLine, type ChatRead, type LocalReads, type LogLine, type PlayerView } from "@mush2/shared";
 import { arrivedIn, isArrived, type Arrived } from "./chatRead.ts";
 
 export type Urgency = "polite" | "assertive";
@@ -190,10 +190,11 @@ export function unreadToAnnounce(
   counts: PlayerView["chatCounts"],
   read: Readonly<ChatRead> | null,
   unheard?: PlayerView["chatUnheard"],
+  local?: Readonly<LocalReads>,
 ): [ChannelId, number][] {
   if (!read) return [...arrived];
   return [...arrived.keys()].flatMap((c): [ChannelId, number][] => {
-    const n = unreadCount(counts, read, c, unheard);
+    const n = unreadCount(counts, read, c, unheard, local);
     return n > 0 ? [[c, n]] : [];
   });
 }

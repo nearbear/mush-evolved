@@ -1,13 +1,14 @@
-import { Fragment, memo, useCallback, useContext, useLayoutEffect, useRef, useState, useEffect, type FocusEvent, type KeyboardEvent, type MouseEvent, type RefObject } from "react";
+import { Fragment, memo, useCallback, useContext, useLayoutEffect, useRef, useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
 import { Menu } from "@base-ui/react/menu";
-import { chatPageOf, countInRanges, jsonEqual, type CharacterId, type ChannelId, type ChatLine, type PlayerId, type PlayerView, type SeqRange, type ThreadId } from "@mush2/shared";
+import { chatPageOf, jsonEqual, type CharacterId, type ChannelId, type ChatLine, type PlayerId, type PlayerView, type SeqRange, type ThreadId } from "@mush2/shared";
 import { pageItems, useChatPages } from "../chatPages.tsx";
 import { useMobile } from "../useMobile.ts";
-import { messageKey, useChatReadStore, useReadCount } from "../chatRead.ts";
+import { messageKey, useChatReadStore, useLocalReads, useReadCount } from "../chatRead.ts";
 import { Markdown } from "./Markdown.tsx";
-import { firstUnreadRow, rowAfterKey } from "./feedKeys.ts";
+import { useFeedReading } from "./useFeedReading.ts";
+import { useUnreadIn } from "./UnreadChip.tsx";
 import { MarkAllContext, dividerAt, dividerPlacement } from "./unreadDivider.ts";
 import { CycleDivider } from "./CycleDivider.tsx";
 import { FeedEntry, CrewAvatar, InfoMarker, NeronAvatar, NeronName, isNeronMessage } from "./FeedEntry.tsx";
@@ -87,12 +88,11 @@ export const Thread = memo(function Thread({ view, channel, placeholder, onSend,
   const messages = paging.messages ?? live;
   const actions = useHandlers(onSend, onToggle, threadLinks);
   const total = view.chatCounts[channel] ?? 0;
-  // A click or arrow key on a message moves the divider past it; the divider hook is below, so the call goes through a ref.
-  const advance = useRef<(read: number) => void>(() => {});
-  const marking = useReadMarking(channel, total, paging.latest, readable, advance);
+  const unheard = view.chatUnheard?.[channel];
+  const unread = useUnreadSeqs(channel, total, view.you.id);
+  const marking = useReadMarking(channel, total, paging.latest, readable, live, unheard, unread);
   // After `useReadMarking`: its effect marks arrivals in view first, so this one sees them as read.
-  const divider = useUnreadDivider(channel, total, active && readable, live, view.you.id, paging, view.chatUnheard?.[channel]);
-  advance.current = divider.advance;
+  const divider = useUnreadDivider(channel, total, active && readable, live, view.you.id, paging, unheard);
   const rows = readable && messages.length > 0;
   return (
     <div className="thread">
@@ -104,6 +104,8 @@ export const Thread = memo(function Thread({ view, channel, placeholder, onSend,
           ref={marking.feed}
           className="feed"
           tabIndex={rows ? 0 : undefined}
+          onPointerOver={marking.onPointerOver}
+          onPointerLeave={marking.onPointerLeave}
           onFocus={marking.onFocus}
           onClick={marking.onClick}
           onKeyDown={rows ? marking.onKeyDown : undefined}
@@ -127,6 +129,7 @@ export const Thread = memo(function Thread({ view, channel, placeholder, onSend,
                   message={m}
                   character={senderOf(view, m)}
                   mine={mine}
+                  unread={unread(m)}
                   canToggle={mine && enabled}
                   canStartThread={!!threadLinks && !thread && enabled}
                   report={!mine}
@@ -147,10 +150,7 @@ export const Thread = memo(function Thread({ view, channel, placeholder, onSend,
         <ChatInput
           enabled={enabled}
           placeholder={placeholder}
-          onSend={(text) => {
-            divider.clear();
-            actions.send(text, postAs);
-          }}
+          onSend={(text) => actions.send(text, postAs)}
         />
       )}
     </div>
@@ -169,7 +169,7 @@ function usePaging(view: PlayerView, channel: ChannelId) {
   const last = total > 0 ? chatPageOf(total - 1) : 0;
   // The view carries the open page and the tail; without a page cache (no socket) nothing older can be shown.
   const first = pages ? 0 : Math.max(0, last - 1);
-  const read = useReadCount(channel, total);
+  const unread = useUnreadIn(channel, total, view.chatUnheard?.[channel]);
   const [picked, setPicked] = useState<number | null>(null);
   const page = picked !== null && picked < last ? picked : null;
   // The view carries the open page and the tail; anything older comes from the cache.
@@ -181,90 +181,74 @@ function usePaging(view: PlayerView, channel: ChannelId) {
   const shown = page ?? last;
   const messages = older ? (fetched ?? []) : view.chat.filter((m) => m.channel === channel && chatPageOf(m.seq) === shown);
   const go = (to: number | null) => setPicked(to === null || to >= last ? null : Math.max(first, to));
-  return { page: shown, latest: page === null, first, last, newCount: page === null ? 0 : Math.max(0, total - read - countInRanges(view.chatUnheard?.[channel], read, total)), messages, loading: older && !fetched, go };
+  return { page: shown, latest: page === null, first, last, newCount: page === null ? 0 : unread, messages, loading: older && !fetched, go };
 }
 
 type Paging = ReturnType<typeof usePaging>;
 
 /**
- * Marking a channel read (#400; owner, 2026-11-08). Focusing or clicking a message marks it and everything before it;
- * hover and merely being on screen don't. A message that arrives while the feed is on screen, on the latest page, in a
- * visible and focused window, counts as read (Discord's behaviour), so the open channel's badge doesn't grow as people
- * talk. "On screen" is read from the DOM: every hidden tab, feature, private channel and phone panel is hidden with CSS,
- * so a feed with no layout boxes isn't being watched.
- *
- * Keyboard: the feed is one tab stop. Tabbing in moves focus to the first unread message on the page (else the last);
- * ArrowUp/Down, Home and End move between messages.
+ * Whether a message shows as unread (#513): past the channel's count and not read one at a time. Your own messages
+ * never are. With no store nothing is.
  */
-function useReadMarking(channel: ChannelId, total: number, latest: boolean, readable: boolean, advance: RefObject<(read: number) => void>) {
+function useUnreadSeqs(channel: ChannelId, total: number, me: string): (m: Pick<ChatLine, "seq" | "from" | "system">) => boolean {
+  const store = useChatReadStore();
+  const read = useReadCount(channel, total);
+  const local = useLocalReads(channel);
+  return (m) => !!store && m.seq >= read && !local.includes(m.seq) && (m.system !== undefined || m.from !== me);
+}
+
+/**
+ * Marking a channel's messages read (#513, replacing #400's "read everything up to it"). A message is read on its own by
+ * a mouse rest, a tap or keyboard focus (`useFeedReading`). A message that arrives while the feed is on screen, on the
+ * latest page, in a visible and focused window, is read (Discord's behaviour), so the open channel's badge doesn't grow
+ * as people talk; only the arriving messages are, never older unread ones (owner, 2026-11-27). Your own messages are
+ * read wherever you are (`useOwnMessagesRead` in ITrackie.tsx). "On screen" is read from the DOM: every hidden tab, feature, private channel
+ * and phone panel is hidden with CSS, so a feed with no layout boxes isn't being watched.
+ */
+function useReadMarking(
+  channel: ChannelId,
+  total: number,
+  latest: boolean,
+  readable: boolean,
+  live: readonly ChatLine[],
+  unheard: readonly SeqRange[] | undefined,
+  unread: (m: Pick<ChatLine, "seq" | "from" | "system">) => boolean,
+) {
   const store = useChatReadStore();
   const feed = useRef<HTMLOListElement>(null);
   // The count last rendered while readable: history that becomes readable (an iTrackie picked up) didn't arrive.
   const seen = useRef<{ channel: ChannelId; total: number } | null>(null);
+  const latestUnheard = useRef(unheard);
+  latestUnheard.current = unheard;
   useEffect(() => {
     const before = seen.current?.channel === channel ? seen.current.total : null;
     seen.current = readable ? { channel, total } : null;
-    if (!store || !readable || !latest || before === null || total <= before) return;
+    if (!store || !readable || before === null || total <= before) return;
     const el = feed.current;
-    if (el && el.getClientRects().length > 0 && document.visibilityState === "visible" && document.hasFocus()) store.mark(channel, total);
+    const watching = latest && !!el && el.getClientRects().length > 0 && document.visibilityState === "visible" && document.hasFocus();
+    if (!watching) return;
+    const arrived: number[] = [];
+    for (let seq = before; seq < total; seq++) arrived.push(seq);
+    store.markSeqs(channel, arrived, total, latestUnheard.current);
   }, [store, channel, total, latest, readable]);
 
-  const rowsOf = (ol: HTMLOListElement) => Array.from(ol.querySelectorAll<HTMLElement>(":scope > [data-seq]"));
-  const seqOf = (row: HTMLElement) => Number(row.dataset.seq);
-  /** Marks the message `target` is in read up to it; returns the count read, or null when it isn't in a message. */
-  const markRow = (target: EventTarget) => {
-    const row = target instanceof Element ? target.closest<HTMLElement>("[data-seq]") : null;
-    // Menus are portalled: their events bubble here through React but sit outside the feed in the DOM.
-    if (!row || !feed.current?.contains(row)) return null;
-    const seq = seqOf(row);
-    if (!Number.isSafeInteger(seq)) return null;
-    store?.mark(channel, seq + 1);
-    return seq + 1;
-  };
-  return {
-    feed,
-    onFocus: (e: FocusEvent<HTMLOListElement>) => {
-      if (e.target !== e.currentTarget) {
-        markRow(e.target);
-        return;
-      }
-      // Only from the keyboard: a click on the feed's blank space isn't reading anything.
-      if (!e.currentTarget.matches(":focus-visible")) return;
-      const rows = rowsOf(e.currentTarget);
-      rows[firstUnreadRow(rows.map(seqOf), store?.read(channel))]?.focus();
+  const reading = useFeedReading(
+    "seq",
+    (seq) => store?.markSeqs(channel, [seq], total, unheard),
+    (seq) => {
+      const m = live.find((x) => x.seq === seq);
+      return unread(m ?? { seq, from: "", system: undefined });
     },
-    // Safari doesn't focus a button on click, so a click marks too. A click (or a key below) is the reader saying "read
-    // to here", so it also moves the divider; focus alone (tabbing in, Jump) leaves it put.
-    onClick: (e: MouseEvent<HTMLOListElement>) => {
-      const read = markRow(e.target);
-      if (read !== null) advance.current(read);
-    },
-    onKeyDown: (e: KeyboardEvent<HTMLOListElement>) => {
-      const ol = e.currentTarget;
-      const target = e.target as HTMLElement;
-      // Keys inside a message's own controls (a checkbox, a menu) are theirs.
-      if (target !== ol && !(target.parentElement === ol && target.dataset.seq !== undefined)) return;
-      const rows = rowsOf(ol);
-      const to = rowAfterKey(e.key, rows.indexOf(target), rows.length);
-      if (to === null) return;
-      e.preventDefault();
-      const row = rows[to];
-      if (!row) return;
-      row.focus();
-      const seq = seqOf(row);
-      if (Number.isSafeInteger(seq)) advance.current(seq + 1);
-    },
-  };
+  );
+  return { feed, ...reading };
 }
 
 /**
- * The "New messages" divider and the unread bar (#400; owner, 2026-11-09). Opening the channel (`active` turning true)
- * places the divider at the count read then, and it stays put as the reader reads, except that clicking a message
- * below it, or moving to one with the arrow keys, Home or End, moves it to after that message (gone if that was the
- * last). With none placed, unread that
- * arrives and isn't marked (the window wasn't focused) places one. Posting and Mark all read drop it; posting also
- * marks the channel read locally, as the server does, so the divider doesn't come straight back. The bar shows while
- * the divider is out of sight: on an earlier page, or scrolled above the feed. With no read store nothing is placed.
+ * The "New messages" divider and the unread bar (#400, #513; owner, 2026-11-09). Opening the channel (`active` turning
+ * true) places the divider before the first unread message then, and it stays put however the reader reads (#513:
+ * clicking a message no longer moves it). With none placed, unread that arrives and isn't marked (the window wasn't
+ * focused) places one. Mark all read drops it. The bar shows while the divider is out of sight: on an earlier page, or
+ * scrolled above the feed. With no read store nothing is placed.
  */
 function useUnreadDivider(
   channel: ChannelId,
@@ -278,7 +262,7 @@ function useUnreadDivider(
   const store = useChatReadStore();
   const on = !!store && active;
   const [at, setAt] = useState<number | null>(null);
-  const place = () => (store ? dividerAt(store.read(channel), total, live, me, unheard) : null);
+  const place = () => (store ? dividerAt(store.read(channel), total, live, me, unheard, store.local(channel)) : null);
   // biome-ignore lint/correctness/useExhaustiveDependencies: placed when the channel opens, never moved as it is read.
   useEffect(() => {
     setAt(on ? place() : null);
@@ -337,12 +321,6 @@ function useUnreadDivider(
         paging.go(placement.jumpPage);
       } else if (el.current) reveal(el.current, focus);
     },
-    clear: () => {
-      store?.mark(channel, total);
-      setAt(null);
-    },
-    /** A click or key marked the channel read to `read`: a divider above that moves down to it, and goes at the end. */
-    advance: (read: number) => setAt((prev) => (prev === null || read <= prev ? prev : read < total ? read : null)),
   };
 }
 
@@ -438,6 +416,7 @@ export function MessageEntry({
   tools,
   className,
   seq,
+  unread = false,
   children,
 }: {
   /** The sender's character (`senderOf`); unused for the game's own messages. */
@@ -448,8 +427,10 @@ export function MessageEntry({
   onToggle?: ((line: number) => void) | undefined;
   tools?: ReactNode;
   className?: string;
-  /** Set on a feed's rows: focusing or clicking the row marks it read (`useReadMarking`). */
+  /** Set on a feed's rows: hovering, tapping or focusing the row marks it read (`useReadMarking`). */
   seq?: number | undefined;
+  /** Shows the unread icon (#513). */
+  unread?: boolean;
   children?: ReactNode;
 }) {
   const { t } = useTranslation();
@@ -457,13 +438,13 @@ export function MessageEntry({
   if (m.system) {
     if (isNeronMessage(m.system.key)) {
       return (
-        <FeedEntry marker={<NeronAvatar />} name={<NeronName />} at={m.at} className={className} seq={seq}>
+        <FeedEntry marker={<NeronAvatar />} name={<NeronName />} at={m.at} className={className} seq={seq} unread={unread}>
           {names.logLine(m.system)}
         </FeedEntry>
       );
     }
     return (
-      <FeedEntry marker={<InfoMarker />} at={m.at} className={className} seq={seq}>
+      <FeedEntry marker={<InfoMarker />} at={m.at} className={className} seq={seq} unread={unread}>
         {names.logLine(m.system)}
       </FeedEntry>
     );
@@ -481,6 +462,7 @@ export function MessageEntry({
       tools={tools}
       className={className}
       seq={seq}
+      unread={unread}
     >
       <Markdown text={m.text} onToggle={onToggle} />
       {children}
@@ -550,6 +532,7 @@ interface ChatRowProps {
   message: ChatLine;
   character: CharacterId | undefined;
   mine: boolean;
+  unread: boolean;
   canToggle: boolean;
   canStartThread: boolean;
   report: boolean;
@@ -564,7 +547,7 @@ interface ChatRowProps {
  * view arrives as fresh JSON, so messages are compared by content: a move re-renders only rows that changed.
  */
 const ChatRow = memo(
-  function ChatRow({ message: m, character, mine, canToggle, canStartThread, report, threadId, threadName, threadCount, actions }: ChatRowProps) {
+  function ChatRow({ message: m, character, mine, unread, canToggle, canStartThread, report, threadId, threadName, threadCount, actions }: ChatRowProps) {
     const { t } = useTranslation();
     return (
       <MessageEntry
@@ -572,6 +555,7 @@ const ChatRow = memo(
         mine={mine}
         message={m}
         seq={m.seq}
+        unread={unread}
         onToggle={canToggle ? (line) => actions.toggle(m, line) : undefined}
         tools={<MessageMenu onStartThread={canStartThread ? () => actions.start(m) : undefined} report={report} />}
       >

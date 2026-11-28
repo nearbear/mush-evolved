@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { firstUnreadRow, rowAfterKey } from "../../src/hud/feedKeys.ts";
+import { rowAfterKey } from "../../src/hud/feedKeys.ts";
 
 describe("rowAfterKey", () => {
   it("moves between rows and stops at the ends", () => {
@@ -16,15 +16,5 @@ describe("rowAfterKey", () => {
   it("ignores other keys and empty feeds", () => {
     expect(rowAfterKey("Enter", 1, 4)).toBeNull();
     expect(rowAfterKey("ArrowDown", -1, 0)).toBeNull();
-  });
-});
-
-describe("firstUnreadRow", () => {
-  it("lands on the first unread row on the page", () => {
-    expect(firstUnreadRow([50, 51, 52, 53], 52)).toBe(2);
-  });
-  it("lands on the last row when the page is all read, or with no read state", () => {
-    expect(firstUnreadRow([50, 51, 52], 60)).toBe(2);
-    expect(firstUnreadRow([50, 51, 52], undefined)).toBe(2);
   });
 });

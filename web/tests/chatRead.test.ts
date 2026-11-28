@@ -61,16 +61,16 @@ describe("chatReadKey", () => {
 describe("createChatReadStore", () => {
   it("only raises counts", () => {
     const { store } = setup();
-    store.mark("global", 5);
-    store.mark("global", 3);
+    store.markAll({ global: 5 });
+    store.markAll({ global: 3 });
     expect(store.read("global")).toBe(5);
     expect(store.read("mush")).toBe(0);
   });
 
   it("writes localStorage at once, and a new store reads it back", () => {
     const { store, storage } = setup();
-    store.mark("global", 4);
-    expect(JSON.parse((storage as ReturnType<typeof memoryStorage>).getItem(KEY) ?? "")).toEqual({ at: Date.now(), read: { global: 4 } });
+    store.markAll({ global: 4 });
+    expect(JSON.parse((storage as ReturnType<typeof memoryStorage>).getItem(KEY) ?? "")).toEqual({ at: Date.now(), read: { global: 4 }, local: {} });
     expect(setup(storage).store.read("global")).toBe(4);
   });
 
@@ -82,29 +82,29 @@ describe("createChatReadStore", () => {
     store.subscribe("global", global);
     store.subscribe("mush", mush);
     store.subscribe("*", any);
-    store.mark("global", 1);
-    store.mark("global", 1);
+    store.markAll({ global: 1 });
+    store.markAll({ global: 1 });
     expect([global.mock.calls.length, mush.mock.calls.length, any.mock.calls.length]).toEqual([1, 0, 1]);
   });
 
   it("keeps the snapshot's identity until a count changes", () => {
     const { store } = setup();
-    store.mark("global", 2);
+    store.markAll({ global: 2 });
     const before = store.snapshot();
-    store.mark("global", 1);
+    store.markAll({ global: 1 });
     expect(store.snapshot()).toBe(before);
     store.markAll({ global: 3, mush: 1 });
     expect(store.snapshot()).not.toBe(before);
-    expect(store.snapshot()).toEqual({ global: 3, mush: 1 });
+    expect(store.snapshot().read).toEqual({ global: 3, mush: 1 });
   });
 
   it("sends raised counts at most every few seconds", () => {
     const { store, sent } = setup();
-    store.mark("global", 1);
+    store.markAll({ global: 1 });
     vi.advanceTimersByTime(0);
     expect(sent).toEqual([{ type: "chatRead", read: { global: 1 } }]);
-    store.mark("global", 2);
-    store.mark("mush", 1);
+    store.markAll({ global: 2 });
+    store.markAll({ mush: 1 });
     vi.advanceTimersByTime(SEND_EVERY_MS - 1);
     expect(sent).toHaveLength(1);
     vi.advanceTimersByTime(1);
@@ -117,9 +117,9 @@ describe("createChatReadStore", () => {
     const { store, sent } = setup();
     store.flush();
     expect(sent).toEqual([]);
-    store.mark("global", 1);
+    store.markAll({ global: 1 });
     vi.advanceTimersByTime(0);
-    store.mark("global", 2);
+    store.markAll({ global: 2 });
     store.flush();
     expect(sent).toEqual([
       { type: "chatRead", read: { global: 1 } },
@@ -129,16 +129,16 @@ describe("createChatReadStore", () => {
 
   it("takes the higher of each count from the server, and sends back the local ones that are higher", () => {
     const { store, sent } = setup();
-    store.mark("global", 5);
+    store.markAll({ global: 5 });
     store.flush();
     sent.length = 0;
-    store.mark("mush", 2);
+    store.markAll({ mush: 2 });
     store.flush();
     sent.length = 0;
     const any = vi.fn();
     store.subscribe("*", any);
     store.fromServer({ global: 3, "th-1": 4 });
-    expect(store.snapshot()).toEqual({ global: 5, mush: 2, "th-1": 4 });
+    expect(store.snapshot().read).toEqual({ global: 5, mush: 2, "th-1": 4 });
     expect(any).toHaveBeenCalledTimes(1);
     vi.advanceTimersByTime(SEND_EVERY_MS);
     expect(sent).toEqual([{ type: "chatRead", read: { global: 5, mush: 2 } }]);
@@ -167,16 +167,75 @@ describe("createChatReadStore", () => {
 
   it("ignores bad stored counts", () => {
     const storage = memoryStorage({ [KEY]: JSON.stringify({ at: Date.now(), read: { global: -1, mush: 2.5, "th-1": 3 } }) });
-    expect(setup(storage).store.snapshot()).toEqual({ "th-1": 3 });
+    expect(setup(storage).store.snapshot().read).toEqual({ "th-1": 3 });
   });
 
   it("works with storage that throws", () => {
     const { store, sent } = setup(throwing);
-    store.mark("global", 2);
+    store.markAll({ global: 2 });
     store.fromServer({ mush: 1 });
     store.flush();
-    expect(store.snapshot()).toEqual({ global: 2, mush: 1 });
+    expect(store.snapshot().read).toEqual({ global: 2, mush: 1 });
     expect(sent).toEqual([{ type: "chatRead", read: { global: 2 } }]);
+  });
+});
+
+describe("markSeqs (#513)", () => {
+  it("reads one message without anything before it; the count moves only when the oldest unread is read", () => {
+    const { store } = setup();
+    store.markSeqs("global", [3], 6);
+    expect(store.read("global")).toBe(0);
+    expect(store.local("global")).toEqual([3]);
+    store.markSeqs("global", [1, 2], 6);
+    expect(store.local("global")).toEqual([1, 2, 3]);
+    // The oldest: the count runs over the whole read run and drops what it passed.
+    store.markSeqs("global", [0], 6);
+    expect(store.read("global")).toBe(4);
+    expect(store.local("global")).toEqual([]);
+  });
+
+  it("runs over messages you couldn't hear, and ignores reads of them, of read ones and past the count", () => {
+    const { store } = setup();
+    store.markSeqs("global", [2, 7, 9], 8, [[2, 3]]);
+    expect(store.local("global")).toEqual([7]);
+    store.markSeqs("global", [0, 1], 8, [[2, 3]]);
+    expect(store.read("global")).toBe(3);
+    store.markSeqs("global", [1, 3], 8);
+    expect(store.read("global")).toBe(4);
+    expect(store.local("global")).toEqual([7]);
+  });
+
+  it("keeps the set on this device only: it is stored, read back, and never sent", () => {
+    const { store, sent, storage } = setup();
+    store.markSeqs("global", [4, 5], 6);
+    vi.advanceTimersByTime(SEND_EVERY_MS);
+    expect(sent).toEqual([]);
+    expect(setup(storage).store.local("global")).toEqual([4, 5]);
+    // A count that reaches the set, from the server or Mark all read, runs on past it and is sent back.
+    store.fromServer({ global: 4 });
+    expect(store.read("global")).toBe(6);
+    expect(store.local("global")).toEqual([]);
+    store.flush();
+    expect(sent).toEqual([{ type: "chatRead", read: { global: 6 } }]);
+  });
+
+  it("is taken off the badges, and drops bad stored entries", () => {
+    const storage = memoryStorage({ [KEY]: JSON.stringify({ at: Date.now(), read: { global: 3 }, local: { global: [1, 5, 5, "x", 6.5, 8], mush: "no" } }) });
+    const { store } = setup(storage);
+    expect(store.local("global")).toEqual([5, 8]);
+    const view = { readChannels: ["global"] as const, chatCounts: { global: 9 } };
+    expect(totalUnread(view as never, store.snapshot())).toBe(4);
+  });
+
+  it("keeps the snapshot's identity until something changes", () => {
+    const { store } = setup();
+    store.markSeqs("global", [2], 4);
+    const before = store.snapshot();
+    store.markSeqs("global", [2], 4);
+    expect(store.snapshot()).toBe(before);
+    store.markSeqs("global", [3], 4);
+    expect(store.snapshot()).not.toBe(before);
+    expect(store.snapshot()).toEqual({ read: {}, local: { global: [2, 3] } });
   });
 });
 
@@ -186,7 +245,7 @@ describe("unreadByTab", () => {
       readChannels: ["global", "th-1", "th-2", "botany", "pc-1", "mush"] as const,
       chatCounts: { global: 10, "th-1": 3, "th-2": 4, botany: 2, "pc-1": 1, mush: 5, graveyard: 9 },
     };
-    expect(unreadByTab(view as never, { global: 7, "th-1": 3, "th-2": 1, mush: 9 })).toEqual({
+    expect(unreadByTab(view as never, { read: { global: 7, "th-1": 3, "th-2": 1, mush: 9 }, local: {} })).toEqual({
       room: 0,
       global: 3,
       threads: 3,
@@ -195,7 +254,7 @@ describe("unreadByTab", () => {
       mush: 0,
       graveyard: 0,
     });
-    expect(totalUnread(view as never, { global: 7, "th-1": 3, "th-2": 1, mush: 9 })).toBe(9);
+    expect(totalUnread(view as never, { read: { global: 7, "th-1": 3, "th-2": 1, mush: 9 }, local: {} })).toBe(9);
   });
 });
 
