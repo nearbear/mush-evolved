@@ -288,6 +288,7 @@ export interface GameConfig {
   startMp: number; // MP each player wakes up with. Capped by `movement.mpCap` like any other gain.
   apPerCycle: number; // AP gained at the start of each cycle, before modifiers. Unspent AP carries over.
   mpPerCycle: number; // MP gained at the start of each cycle, capped by `movement.mpCap`. Unspent MP carries over.
+  statLogs: boolean; // Whether AP and MP changes write their private log lines (adjustStats.ts). Off only in tests' quiet config.
   // Hours per cycle on the server's UTC clock (#230). The rules never read it; the server clock and the record do.
   cycleHours: number;
   cyclesPerDay: number; // 24 / `cycleHours`: a day is always 24 hours from 00:00 GMT. Cycles in one day. The day ends with the last cycle; every living player then loses `dailyMoraleLoss` (modifiers.ts) morale.

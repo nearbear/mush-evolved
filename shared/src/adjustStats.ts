@@ -20,16 +20,22 @@ export function gainMorale(state: GameState, player: PlayerState, amount: number
   }
 }
 
+/** Each change logs a private line with the amount asked for, even if a cap limited it, like `gainMorale`. */
 export function changeMP(state: GameState, player: PlayerState, amount: number): void {
   if (!player.alive) return;
-  player.mp = Math.min(player.maxMp, player.mp + amount); 
-  player.mp = Math.max(0, player.mp);
+  player.mp = Math.max(0, Math.min(player.maxMp, player.mp + amount));
+  logChange(state, player, amount, "Mp");
 }
 
 export function changeAP(state: GameState, player: PlayerState, amount: number): void {
   if (!player.alive) return;
-  player.ap = Math.min(player.maxAp, player.ap + amount); 
-  player.ap = Math.max(0, player.ap);
+  player.ap = Math.max(0, Math.min(player.maxAp, player.ap + amount));
+  logChange(state, player, amount, "Ap");
+}
+
+function logChange(state: GameState, player: PlayerState, amount: number, stat: "Ap" | "Mp"): void {
+  if (amount === 0 || !state.config.statLogs) return;
+  logPrivate(state, player.id, amount > 0 ? `gain${stat}` : `lose${stat}`, { amount: Math.abs(amount) });
 }
 
 export function updateMaxValues(state: GameState, player: PlayerState){

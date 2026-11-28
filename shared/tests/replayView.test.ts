@@ -80,8 +80,9 @@ describe("stepMarks", () => {
     expect(empty, "some steps change nothing visible").toBeGreaterThan(100);
     const kinds = new Set(marks.map((m) => m.kind));
     for (const k of ["cycle", "chat", "other"] as const) expect(kinds, k).toContain(k);
-    // A whole recorded game: about 6.6s under full-suite load, past Vitest's 5s default.
-  }, 15_000);
+    // A whole recorded game: about 6.6s under full-suite load, past Vitest's 5s default; about three times that since
+    // every AP and MP change logs a line (2026-11-27), as this game runs the default config.
+  }, 45_000);
 
   it("marks a chunk's first step as its cycle, with or without the chunk before", () => {
     for (const { chunk, frames, before } of loaded.slice(1)) {

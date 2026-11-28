@@ -85,7 +85,8 @@ describe("GameRoom cycle clock", () => {
     vi.setSystemTime(Date.UTC(2026, 9, 19, 15));
     await room.onAlarm();
     const pushed = c0.sent.length;
-    const inputs = () => [...storage.data.keys()].filter((k) => k.startsWith("input:")).length;
+    // The test bots repeat their private log lines (each cycle's AP/MP refill too) in chat; those inputs don't count here.
+    const inputs = () => [...storage.data.entries()].filter(([k, v]) => k.startsWith("input:") && (v as { input: { type: string } }).input.type !== "chat").length;
     const before = inputs();
     // Seen at this cycle change already: connecting again in the same cycle records nothing.
     vi.setSystemTime(Date.UTC(2026, 9, 19, 16));

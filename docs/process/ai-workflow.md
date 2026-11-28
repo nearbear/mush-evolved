@@ -5846,3 +5846,15 @@ Asked for tooltips naming planet sectors. Your own planets' sectors already had 
 ## 2026-11-27: Deploy guard for game-version changes
 
 Asked for a loud warning that stops an accidental deploy which bumps the game version. Added `tools/src/ops/deployGuard.ts`, run first in each root `npm run deploy:*`: it reads the live Worker's `RULES_VERSION` via `wrangler deployments status` and `wrangler versions view --json`, reads `STATE_VERSION`/`MIN_STATE_VERSION` from `normalizeState.ts` at that commit (shallow-fetching it in CI), and compares them with the working tree. If `MIN` goes up (every game ends), `STATE` goes up (no rollback past it) or `STATE` goes down (live ships become unavailable), or if the live build can't be read, it prints a red banner and requires typing the env name. Without a TTY it needs `ALLOW_VERSION_CHANGE=<env>`. What worked: checking against the live build instead of the last commit, because that catches bumps spread over several commits. Tested by bumping the constants temporarily and reverting.
+
+## 2026-11-27: Private log lines for AP and MP changes
+
+- Asked for: gaining or losing AP or MP writes a private log line, like morale already does.
+- Done: `changeAP`/`changeMP` (`shared/src/adjustStats.ts`) log `gainAp`/`loseAp`/`gainMp`/`loseMp` with the points actually changed (nothing when a cap or 0 left the stat unchanged), with an optional key override and `null` to stay silent. The cycle refill and callers that already write their own line (Creative refund, Cold, Logistics, Thalasso MP, Commander mission) pass `null` to avoid doubled lines. en/fr/es strings added; test in `adjustStats.test.ts`.
+- Judgment call: unlike `gainMorale`, which logs the requested amount, these log the real delta so a capped gain doesn't claim points the player didn't get.
+
+### Correction (same day): AP/MP log lines match morale exactly
+
+- Owner asked to match `gainMorale` exactly and to log the cycle refill too; no deduplication, so the entry above is superseded. `changeAP`/`changeMP` now log the requested amount, every caller included (effects with their own line now show both).
+- What needed correction: I first patched six tests that assumed a cycle change logs nothing, one by one (a `withoutStatLines` helper, a recount in `logWindow`). The owner pointed out a config switch is simpler: `config.statLogs` (on by default, off in the tests' `QUIET_CONFIG`). Lesson: when a broad change breaks many tests for the same reason, stop and look for one switch before patching each.
+- Cost found: `replayView`'s recorded 16-seat game runs the default config and got about 3x slower (timeout and slow-test allowlist raised). The `GameRoom.joining` test's `LogParrotBot` echoes every private line into chat, so that test now ignores chat inputs.

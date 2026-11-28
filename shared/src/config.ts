@@ -42,6 +42,8 @@ export const DEFAULT_CONFIG: GameConfig = deepFreeze({
   startMp: 12,
   apPerCycle: 1,
   mpPerCycle: 1,
+  // Owner, 2026-11-27: every AP and MP gain or loss logs a private line, like morale (adjustStats.ts).
+  statLogs: true,
   // Confirmed 2026-10-13: 8 cycles per day. Confirmed 2026-10-14: each living player loses 1 morale at day end.
   // Owner, 2026-10-18: that 1 is 2 cut by 1 while Chun (Mankind's Only Hope) lives, so it is 2 once she dies or with no Chun.
   // Owner, 2026-10-25 (#230): a day is always 24 hours from 00:00 GMT, so `resolveConfig` sets this to 24 / `cycleHours`.

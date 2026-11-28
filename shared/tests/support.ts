@@ -52,7 +52,7 @@ export function deepMerge<T>(base: T, overrides: DeepPartial<T>): T {
  * so tests that don't care about it stay unaffected.
  * Character modifiers stay on: turn them off with `noCharacterModifiers`.
  */
-export const QUIET_CONFIG: GameConfig = noIncidents(noHunters({ ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [], startBrokenEquipment: [], infection: { ...DEFAULT_CONFIG.infection, startingContaminated: 0 } }));
+export const QUIET_CONFIG: GameConfig = noIncidents(noHunters({ ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [], startBrokenEquipment: [], statLogs: false, infection: { ...DEFAULT_CONFIG.infection, startingContaminated: 0 } }));
 
 /**
  * `QUIET_CONFIG` with `overrides` deep-merged on top, e.g. `testConfig({ repair: { chance: { COFFEE_DISPENSER: 0 } } })`.
