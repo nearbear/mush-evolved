@@ -106,7 +106,7 @@ type Plan = {
 
 Everything the composer offers comes from the view: channel members, the room list, the research and project catalogs, the item type catalog, living players. It never computes legality; refusals come back from the server.
 
-- **Where:** a "Plan" section above the messages of a private channel on desktop, a Messages | Plan switch on phones. Only the channel's creator sees "New plan"; a channel whose creator is gone shows no planning at all.
+- **Where:** a private channel's ⋯ menu (beside its back button in the iTrackie title row) has Plan, which swaps the messages for the plan on both layouts (back returns to the messages; changed 2026-11-27), and New plan while there is none. Only the channel's creator sees "New plan"; a channel whose creator is gone shows no planning at all.
 - **Composer:** a dialog on desktop (the iTrackie panel is too narrow), a full-screen sheet in the chat tab on phones. Room picker, purpose picker, then slots: "+ On call" (with an optional "reserved for" member picker) and "+ Task" (task type, its target or catalog item, reserved for). Post is disabled with an inline reason while the plan is empty or over the cap; server refusals show as a toast and keep the draft.
 - **Card:** purpose, room, author; one line per slot with Claim, or the holder's name and, for your own, Withdraw (and Done for tasks). The author sees Cancel, and Go while standing in the room, greyed with "go to the room to call" otherwise. After Go, on-call slots show arrived or didn't; your own shows why in the room log's private line. "Expires end of day N" in the header.
 - Phone layout first, en/fr/es, no raw keys (`npm run a11y`).
