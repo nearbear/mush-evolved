@@ -1798,7 +1798,7 @@
       "none": "Not implemented"
     },
     "names": {
-      "engineer": "Engineer",
+      "engineer": "Technician",
       "astrophysician": "Astrophysicist",
       "pilot": "Pilot",
       "gunman": "Shooter",
@@ -1892,7 +1892,7 @@
       "defacer": "Defacer"
     },
     "desc": {
-      "engineer": "The Engineer is qualified to repair the Daedalus's equipment, fittings and hull.",
+      "engineer": "The Technician is qualified to repair the Daedalus's equipment, fittings and hull.",
       "astrophysician": "The Astrophysicist is authorized to run scans to find planets in range or determine their composition.",
       "pilot": "The pilot is an expert at maneuvering the Icarus, Pasiphae and Patrol Ship. Their mastery of flight is impressive.",
       "gunman": "The gunman handles weapons of every kind with great ease.",
