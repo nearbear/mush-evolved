@@ -157,7 +157,8 @@ jobs:
         run: npm ci
 
       # The same script as a manual deploy: build web, apply the test D1
-      # migrations (no confirmation prompt without a terminal), then
+      # migrations (no confirmation prompt without a terminal; a game-version
+      # change stops here unless ALLOW_VERSION_CHANGE=test), then
       # `wrangler deploy --env test` with RULES_VERSION set to the commit hash.
       - name: Deploy to test
         run: npm run deploy:test

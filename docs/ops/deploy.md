@@ -18,6 +18,7 @@ Games in progress survive a deploy (#384): on start, each room runs its stored s
 - **A breaking step lands in a deploy of its own**, not bundled with rule changes you might want to undo, so undoing those never means rolling back across the step. Check with `git log -p -S STATE_VERSION -- shared/src/normalizeState.ts` between the deployed commit (`RULES_VERSION`) and the one going out.
 - **An unreadable snapshot is kept, never deleted.** If the normalizers reject one, or it is newer than the build, the room logs an `UNAVAILABLE` event at level `error` (`observability.md`; search the Worker's logs or `wrangler tail` for it; `npm run ships` lists it with the running ships), refuses players with "Ship unavailable", and changes nothing. The fix is forward: deploy a build whose normalizer or step reads it, and the room loads it on its next start.
 - **Ending every live game on purpose** means raising `MIN_STATE_VERSION`: older snapshots are then dropped on start, their records kept for the replay. The owner decides that.
+- **The deploy guard** (`tools/src/ops/deployGuard.ts`) runs first in every `npm run deploy:*`. It reads the live Worker's `RULES_VERSION` with `wrangler versions view`, compares `STATE_VERSION` and `MIN_STATE_VERSION` at that commit with the build going out, and when either moves (or `STATE_VERSION` goes down, or it can't tell what is live) prints a large warning and stops unless you type the environment's name. Without a terminal, as in CI, it stops unless `ALLOW_VERSION_CHANGE=<env>` is set.
 
 ## Deploying to test from CI
 
