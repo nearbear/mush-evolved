@@ -5912,3 +5912,9 @@ a written handoff note carried the work across a `/clear`, with test commands an
 asking listed separately. Still open: whether posting should remove the "New messages" divider.
 Follow-up the same day: the owner decided posting keeps the divider. The marker now hides as soon as the mouse is over
 the row, and the bar stops at the row's padding instead of running its full height.
+
+## 2026-11-27: eMush bonus skills for the 'plus' NERON projects
+
+- **Decision (owner):** the 9 projects tagged ALL in the original (so they had no skill boost) take eMush's `bonusSkills` from `ProjectConfigData.php`: TRASH_LOAD, CALL_OF_DIRTY, BEAT_BOX, THALASSO, FLOOR_HEATING, NOISE_REDUCER, NERON_TARGETING_ASSIST, PARASITE_ELIM, APERO_KITCHEN. Scrapper maps to `metaliciste`, Nurse to `first_aid`.
+- **What worked:** extracting the list first and confirming it before editing. Pairing names with skills through `npm run emush -- find` by line number kept the clean-room boundary.
+- **Needed correction:** `find` stops at 30 matches, so the first pass silently dropped every project after line ~341; querying skill by skill recovered them.

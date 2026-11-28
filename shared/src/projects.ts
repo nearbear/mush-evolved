@@ -12,8 +12,8 @@ import type { GameState, PlayerState } from "./types.ts";
 /**
  * Every project in the original's live list (`projets.json`, above `$EOF`), each with card art in `Mush/www/img/cards/projects/`
  * (the file is the lowercase id). `skills` speed up work on it, each by `config.project.progress.skillBoost` (owner, 2026-10-27):
- * the original's `tags` column, with CONCEPTOR as `designer`. The 'plus' projects are tagged ALL, a pseudo-skill nobody has, so
- * they have none. `efficiency` is eMush's per-project base efficiency (1–18; owner, 2026-11-23).
+ * the original's `tags` column, with CONCEPTOR as `designer`. The 'plus' projects, tagged ALL there (a pseudo-skill nobody has),
+ * take eMush's `bonusSkills` instead (owner, 2026-11-27). `efficiency` is eMush's per-project base efficiency (1–18; owner, 2026-11-23).
  */
 export const PROJECTS = [
   { id: "PATROL_SHIP_LAUNCHER", skills: ["pilot", "physicist"], efficiency: 12 },
@@ -45,17 +45,17 @@ export const PROJECTS = [
   { id: "EXTRA_DRONE", skills: ["engineer", "robotics"], efficiency: 6 },
   { id: "FISSION_COFFEE_ROASTER", skills: ["caffeinomaniac", "physicist"], efficiency: 6 },
   { id: "TRAIL_REDUCER", skills: ["pilot", "engineer"], efficiency: 3 },
-  { id: "TRASH_LOAD", skills: [], efficiency: 18 },
-  { id: "CALL_OF_DIRTY", skills: [], efficiency: 18 },
-  { id: "BEAT_BOX", skills: [], efficiency: 18 },
-  { id: "THALASSO", skills: [], efficiency: 18 },
-  { id: "FLOOR_HEATING", skills: [], efficiency: 12 },
-  { id: "NOISE_REDUCER", skills: [], efficiency: 18 },
-  { id: "NERON_TARGETING_ASSIST", skills: [], efficiency: 3 },
-  { id: "PARASITE_ELIM", skills: [], efficiency: 6 },
+  { id: "TRASH_LOAD", skills: ["engineer", "metaliciste"], efficiency: 18 },
+  { id: "CALL_OF_DIRTY", skills: ["engineer", "gunman"], efficiency: 18 },
+  { id: "BEAT_BOX", skills: ["radio_expert", "creative"], efficiency: 18 },
+  { id: "THALASSO", skills: ["engineer", "first_aid"], efficiency: 18 },
+  { id: "FLOOR_HEATING", skills: ["engineer", "designer"], efficiency: 12 },
+  { id: "NOISE_REDUCER", skills: ["physicist", "biologist"], efficiency: 18 },
+  { id: "NERON_TARGETING_ASSIST", skills: ["pilot", "gunman"], efficiency: 3 },
+  { id: "PARASITE_ELIM", skills: ["botanic", "robotics"], efficiency: 6 },
   { id: "OXY_MORE", skills: ["engineer", "biologist"], efficiency: 6 },
   { id: "BRIC_BROC", skills: ["designer", "creative"], efficiency: 3 },
-  { id: "APERO_KITCHEN", skills: [], efficiency: 18 },
+  { id: "APERO_KITCHEN", skills: ["cook", "creative"], efficiency: 18 },
 ] as const satisfies readonly { id: string; skills: readonly SkillId[]; efficiency: number }[];
 
 export type ProjectId = (typeof PROJECTS)[number]["id"];

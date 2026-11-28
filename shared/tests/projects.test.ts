@@ -161,6 +161,22 @@ describe("NERON projects", () => {
     expect(mustApply(s, "p0", work("BRIC_BROC")).projects.BRIC_BROC).toBeGreaterThanOrEqual(projectEfficiency("BRIC_BROC") + cfg.skillBoost);
   });
 
+  it("gives the 'plus' projects, tagged ALL in the original, eMush's bonus skills", () => {
+    const plus = ["TRASH_LOAD", "CALL_OF_DIRTY", "BEAT_BOX", "THALASSO", "FLOOR_HEATING", "NOISE_REDUCER", "NERON_TARGETING_ASSIST", "PARASITE_ELIM", "APERO_KITCHEN"];
+    expect(Object.fromEntries(plus.map((id) => [id, projectSkills(id)]))).toEqual({
+      TRASH_LOAD: ["engineer", "metaliciste"],
+      CALL_OF_DIRTY: ["engineer", "gunman"],
+      BEAT_BOX: ["radio_expert", "creative"],
+      THALASSO: ["engineer", "first_aid"],
+      FLOOR_HEATING: ["engineer", "designer"],
+      NOISE_REDUCER: ["physicist", "biologist"],
+      NERON_TARGETING_ASSIST: ["pilot", "gunman"],
+      PARASITE_ELIM: ["botanic", "robotics"],
+      APERO_KITCHEN: ["cook", "creative"],
+    });
+    expect(PROJECTS.filter((p) => p.skills.length === 0)).toEqual([]);
+  });
+
   it("gives a Skilful worker one boost on a Botanist or Biologist project, never stacking with those skills", () => {
     const cfg = DEFAULT_CONFIG.project.progress;
     const s = game();
