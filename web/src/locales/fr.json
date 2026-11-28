@@ -307,6 +307,18 @@
     "in": "Zoom avant",
     "out": "Zoom arrière"
   },
+  "notes": {
+    "button": "Notes",
+    "tabs": "Onglets de notes",
+    "tab": "Note {{n}}",
+    "add": "Nouvel onglet de notes",
+    "mode": "Afficher les notes en",
+    "raw": "Brut",
+    "preview": "Aperçu",
+    "empty": "Rien d'écrit pour l'instant.",
+    "placeholder": "Notes privées, vous seul les voyez. Le Markdown fonctionne : **gras**, - [ ] listes à cocher…",
+    "count": "{{length}} / {{max}}"
+  },
   "inventory": {
     "inRoom": "Dans cette pièce",
     "nothingHere": "Rien ici.",
@@ -631,6 +643,7 @@
     "message_too_long": "Les messages sont limités à {{max}} caractères.",
     "too_many_lines": "Les messages sont limités à {{lines}} lignes.",
     "slow_down": "Doucement.",
+    "note_refused": "Cette note n'a pas pu être enregistrée.",
     "too_many_messages": "Vous envoyez des messages trop vite.",
     "malformed_message": "Cette requête n'a pas été comprise.",
     "no_game": "Aucune partie en cours.",

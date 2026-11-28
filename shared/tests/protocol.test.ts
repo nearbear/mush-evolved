@@ -3,6 +3,7 @@ import type { ActionOf, ActionType } from "../src/actions.ts";
 import { BIOS_OPTIONS } from "../src/bios.ts";
 import { MAX_CHAT_LENGTH } from "../src/chat.ts";
 import { CHEATS, ROLE_CHEATS } from "../src/cheats.ts";
+import { MAX_NOTE_LENGTH, MAX_NOTE_TABS } from "../src/notes.ts";
 import { MAX_NAME_LENGTH, MAX_SETUP_ID_LENGTH, parseGameMessage, parseMatchmakerMessage } from "../src/protocol.ts";
 import { MAX_SHARED_PLANET_LENGTH } from "../src/sharedPlanets.ts";
 import { MUSH_SKILLS, SKILLS } from "../src/skills.ts";
@@ -639,6 +640,27 @@ describe("chatRead (#400)", () => {
     const read = (n: number) => Object.fromEntries(Array.from({ length: n }, (_, i) => [`pc-${i}`, i]));
     expect(parse({ type: "chatRead", read: read(256) })).toEqual({ type: "chatRead", read: read(256) });
     expect(parse({ type: "chatRead", read: read(257) })).toBeNull();
+  });
+});
+
+describe("note (#503)", () => {
+  it("parses a tab and its text, dropping anything extra", () => {
+    expect(parse({ type: "note", tab: 0, text: "hi", seat: "p1" })).toEqual({ type: "note", tab: 0, text: "hi" });
+    expect(parse({ type: "note", tab: MAX_NOTE_TABS - 1, text: "a".repeat(MAX_NOTE_LENGTH) })).toEqual({ type: "note", tab: MAX_NOTE_TABS - 1, text: "a".repeat(MAX_NOTE_LENGTH) });
+  });
+
+  it("refuses a bad tab, a 17th tab, non-text and text over the limit", () => {
+    for (const bad of [
+      { tab: -1, text: "" },
+      { tab: 1.5, text: "" },
+      { tab: "0", text: "" },
+      { tab: MAX_NOTE_TABS, text: "" },
+      { tab: 0, text: 3 },
+      { tab: 0 },
+      { tab: 0, text: "a".repeat(MAX_NOTE_LENGTH + 1) },
+    ]) {
+      expect(parse({ type: "note", ...bad })).toBeNull();
+    }
   });
 });
 

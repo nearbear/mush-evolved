@@ -45,6 +45,9 @@ import {
   chatReadFor,
   mergeChatRead,
   pruneChatRead,
+  applyNoteEdit,
+  cleanNotes,
+  type Note,
   type ChannelId,
   type ChatRead,
   type ChatMessage,
@@ -107,6 +110,11 @@ const CHAT_PAGE_UNAVAILABLE = "chat_page_unavailable";
 /** Where a seat's chat read counts are kept (#400): Durable Object storage, outside the snapshot and the record. */
 const CHAT_READ_PREFIX = "chatRead:";
 const chatReadKey = (seat: PlayerId) => `${CHAT_READ_PREFIX}${seat}`;
+/** Where a seat's private notes are kept (#503): the same storage, outside the snapshot, the record and every view. */
+const NOTES_PREFIX = "notes:";
+const notesKey = (seat: PlayerId) => `${NOTES_PREFIX}${seat}`;
+/** The one refusal for a `note` the rules of notes.ts don't allow (a gap, a 17th tab). */
+const NOTE_REFUSED = "note_refused";
 
 /** Deliberate pacing so bots don't act instantly. */
 const BOT_DELAY_MS = 50;
@@ -323,6 +331,13 @@ export class GameRoom extends Server<Env> {
    * seat (the mind), so they follow a Transfer. Not game state: never in the snapshot, the record or a view.
    */
   private chatRead = new Map<PlayerId, ChatRead>();
+  /** Per seat, note writes (#503). The client saves a tab a second after typing stops, so this is room for a few tabs. */
+  private noteLimiter = new RateLimiter(20, 10_000);
+  /**
+   * Each seat's private notes (#503), all loaded in `onStart` and saved under `notesKey` on every write. Keyed by seat
+   * (the mind), so they follow a Transfer. Not game state: never in the snapshot, the record or a view.
+   */
+  private notes = new Map<PlayerId, Note[]>();
 
   /** This build, stamped on every copy of the view in the history (#384). */
   private get build(): BuildStamp {
@@ -344,6 +359,8 @@ export class GameRoom extends Server<Env> {
     const version = stored?.version ?? 0;
     // Every seat's read counts (#400): at most one small entry per seat, so loaded whole, and kept in step after.
     for (const [key, read] of await this.ctx.storage.list<ChatRead>({ prefix: CHAT_READ_PREFIX })) this.chatRead.set(key.slice(CHAT_READ_PREFIX.length), read);
+    // Every seat's notes (#503): at most 16 × 4,000 characters per seat, so loaded whole too.
+    for (const [key, notes] of await this.ctx.storage.list({ prefix: NOTES_PREFIX })) this.notes.set(key.slice(NOTES_PREFIX.length), cleanNotes(notes));
     if (!stored || version < MIN_STATE_VERSION) {
       // Only the snapshot goes; the record ("setup", "input:*", "blocked:*", "account:*") is kept for the replay (#167).
       if (stored) await this.ctx.storage.delete("game");
@@ -581,6 +598,8 @@ export class GameRoom extends Server<Env> {
     }
     this.chatRead.delete(seat);
     await this.ctx.storage.delete(chatReadKey(seat));
+    this.notes.delete(seat);
+    await this.ctx.storage.delete(notesKey(seat));
     await this.persist();
     for (const conn of this.getConnections<SeatState>()) {
       if (conn.state && dropped.has(conn.state.token)) conn.close(4001, "Left the ship");
@@ -811,6 +830,7 @@ export class GameRoom extends Server<Env> {
       this.wakes.clear();
       this.modelGate = null;
       this.chatRead.clear();
+      this.notes.clear();
       for (const conn of this.getConnections<SeatState>()) conn.close(4001, "Invalid seat token");
     } catch (e) {
       logWarn("reclaim_failed", { roomId: this.name, ...failure(e) });
@@ -891,6 +911,7 @@ export class GameRoom extends Server<Env> {
     this.send(connection, { type: "build", version: this.env.RULES_VERSION ?? "dev" });
     this.sendView(connection, playerId);
     this.sendChatRead(connection, playerId);
+    if (!this.isBotSeat(playerId)) this.send(connection, { type: "notes", notes: this.notes.get(playerId) ?? [] });
     // Connecting is what counts as activity (inactivity.ts, #145).
     await this.markSeen([playerId], true);
   }
@@ -957,6 +978,11 @@ export class GameRoom extends Server<Env> {
     if (msg.type === "chatRead") {
       if (!this.readLimiter.allow(playerId, Date.now(), this.devServer ? DEV_RATE_SCALE : 1)) this.countRateLimited(playerId);
       else if (!this.isBotSeat(playerId)) await this.raiseChatRead(playerId, msg.read, connection);
+      return;
+    }
+    if (msg.type === "note") {
+      const error = await this.writeNote(playerId, msg.tab, msg.text, connection);
+      if (error) this.send(connection, { type: "error", message: error });
       return;
     }
     if (msg.type === "setModel" || msg.type === "clearModel") {
@@ -1027,7 +1053,7 @@ export class GameRoom extends Server<Env> {
   private async social(
     playerId: PlayerId,
     by: PlayerId,
-    msg: Exclude<GameClientMessage, { type: "action" | "clearQueue" | "acknowledgeTransfer" | "walk" | "cheat" | "roleCheat" | "cheatRoom" | "kube" | "setModel" | "clearModel" | "leaveShip" | "chatPage" | "chatRead" }>,
+    msg: Exclude<GameClientMessage, { type: "action" | "clearQueue" | "acknowledgeTransfer" | "walk" | "cheat" | "roleCheat" | "cheatRoom" | "kube" | "setModel" | "clearModel" | "leaveShip" | "chatPage" | "chatRead" | "note" }>,
     /** A chat message's reply depth (`BOT_CHAT_CHAIN_DEPTH`): 0 unless a bot is replying to chat. */
     depth = 0,
   ): Promise<string | null> {
@@ -1401,6 +1427,28 @@ export class GameRoom extends Server<Env> {
       if (conn.state?.playerId === seat && conn.id !== except?.id) this.send(conn, msg);
     }
     await this.ctx.storage.put(chatReadKey(seat), read);
+  }
+
+  /**
+   * Sets one tab of a seat's private notes (#503, `applyNoteEdit`), saves them and sends them to the seat's other
+   * connections, never the sender's (it has them) and never another seat. Bot seats keep none. No moderation: only the
+   * writer ever sees them. Last write wins across a seat's devices. Returns an error code, or null when stored.
+   */
+  private async writeNote(seat: PlayerId, tab: number, text: string, from: Connection): Promise<string | null> {
+    if (this.isBotSeat(seat)) return NOTE_REFUSED;
+    if (!this.noteLimiter.allow(seat, Date.now(), this.devServer ? DEV_RATE_SCALE : 1)) {
+      this.countRateLimited(seat);
+      return "slow_down";
+    }
+    const notes = applyNoteEdit(this.notes.get(seat) ?? [], tab, text);
+    if (!notes) return NOTE_REFUSED;
+    this.notes.set(seat, notes);
+    const msg: GameServerMessage = { type: "notes", notes };
+    for (const conn of this.getConnections<SeatState>()) {
+      if (conn.state?.playerId === seat && conn.id !== from.id) this.send(conn, msg);
+    }
+    await this.ctx.storage.put(notesKey(seat), notes);
+    return null;
   }
 
   /** `playerId` is the seat; it gets its current body's view. */

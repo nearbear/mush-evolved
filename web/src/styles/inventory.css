@@ -207,3 +207,115 @@ button.zoom-button {
   padding: 0;
   border: 0;
 }
+
+/* Private notes (#503, NotesOverlay): a button just left of the sack (on phones, left of the ship button), and a
+   popover in the inventory's band (useBand sets top and bottom inline). Covers the room view like the inventory
+   overlay; only the popup and the button take clicks. */
+.notes-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+.notes-overlay > * {
+  pointer-events: auto;
+}
+.notes-controls {
+  position: absolute;
+  right: calc(0.5rem + 2.5rem + 0.5rem);
+  bottom: calc(0.5rem + var(--peek-clear, 0px));
+}
+/* Dead, there is no sack: the corner is the notes button's. */
+.room-view:not(:has(> .inventory-overlay)) .notes-controls {
+  right: 0.5rem;
+}
+.notes-popup {
+  position: absolute;
+  top: 0.5rem;
+  bottom: calc(0.5rem + var(--peek-clear, 0px));
+  left: 0.5rem;
+  right: 0.5rem;
+  box-sizing: border-box;
+  min-height: 0;
+  background-color: var(--panel-fill);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  overflow: hidden;
+}
+.notes-popup:focus {
+  outline: none;
+}
+/* The numbered tabs (wrapping onto a second row when they don't fit), then the Raw / Preview switch. */
+.notes-bar {
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+.notes-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+button.notes-tab {
+  min-width: 2rem;
+  margin: 0;
+  padding: 0 var(--space-2);
+}
+/* The picked tab and mode use the (static) hover sprite, as the private channel slots do. */
+.notes-tab[aria-pressed="true"],
+.notes-mode button[aria-pressed="true"] {
+  --btn-left: url("../../../Mush/www/img/design/butleftover.png");
+  --btn-mid: url("../../../Mush/www/img/design/butbgover.png");
+  --btn-right: url("../../../Mush/www/img/design/butrightover.png");
+  font-weight: bold;
+}
+.notes-mode {
+  display: flex;
+  gap: var(--space-1);
+}
+.notes-mode button {
+  margin: 0;
+}
+.notes-text,
+.notes-preview {
+  flex: 1 1 0;
+  min-height: 0;
+  box-sizing: border-box;
+  width: 100%;
+}
+.notes-text {
+  resize: none;
+  font: inherit;
+}
+.notes-preview {
+  overflow-y: auto;
+  overflow-wrap: anywhere;
+}
+.notes-count {
+  flex: none;
+  margin: 0;
+  text-align: right;
+}
+
+@media (max-width: 1023px) {
+  /* Phones: left of the ship button, which sits left of the sack. */
+  .notes-controls {
+    right: calc(0.5rem + 2 * (2.5rem + 0.5rem));
+  }
+  /* Where the ship button stands on the sack instead (the patrol cockpit, the Icarus), next to the sack. */
+  .room-view:has(> .patrol-cockpit) .notes-controls,
+  .room-view:has(> .icarus-cabin) .notes-controls {
+    right: calc(0.5rem + 2.5rem + 0.5rem);
+  }
+  /* Dead, the sack's corner is free (the rule above the media query), so the ship button keeps its place. */
+  .room-view:not(:has(> .inventory-overlay)) .notes-controls {
+    right: 0.5rem;
+  }
+}

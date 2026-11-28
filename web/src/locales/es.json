@@ -307,6 +307,18 @@
     "in": "Acercar",
     "out": "Alejar"
   },
+  "notes": {
+    "button": "Notas",
+    "tabs": "Pestañas de notas",
+    "tab": "Nota {{n}}",
+    "add": "Nueva pestaña de notas",
+    "mode": "Mostrar las notas como",
+    "raw": "Texto",
+    "preview": "Vista previa",
+    "empty": "Aún no hay nada escrito.",
+    "placeholder": "Notas privadas, solo tú puedes verlas. Funciona el Markdown: **negrita**, - [ ] listas de tareas…",
+    "count": "{{length}} / {{max}}"
+  },
   "inventory": {
     "inRoom": "En esta sala",
     "nothingHere": "No hay nada aquí.",
@@ -631,6 +643,7 @@
     "message_too_long": "Los mensajes están limitados a {{max}} caracteres.",
     "too_many_lines": "Los mensajes están limitados a {{lines}} líneas.",
     "slow_down": "Más despacio.",
+    "note_refused": "No se pudo guardar esa nota.",
     "too_many_messages": "Estás enviando mensajes demasiado rápido.",
     "malformed_message": "No se entendió esa petición.",
     "no_game": "No hay ninguna partida en curso.",

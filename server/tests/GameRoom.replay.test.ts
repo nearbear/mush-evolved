@@ -296,7 +296,7 @@ describe("GameRoom chat read state (#400)", () => {
   it("sends a connecting seat its counts after the view, as loaded on a restart and clamped to the channel", async () => {
     const { room, storage } = await newRoom();
     const a = connect(room, "tok0");
-    expect(a.messages<GameServerMessage>().map((m) => m.type)).toEqual(["build", "view", "chatRead"]);
+    expect(a.messages<GameServerMessage>().map((m) => m.type)).toEqual(["build", "view", "chatRead", "notes"]);
     expect(reads(a)).toEqual([{ type: "chatRead", read: {} }]);
     await say(room, a, global);
     await storage.put("chatRead:p0", { [global]: 5 });
@@ -398,6 +398,88 @@ describe("GameRoom chat read state (#400)", () => {
     expect(storage.data.get("chatRead:p0")).toEqual({ [crew]: 1 });
     await say(room, a, global);
     expect(storage.data.get("chatRead:p0")).toEqual({ [global]: 1 });
+  });
+});
+
+describe("GameRoom private notes (#503)", () => {
+  const notesOf = (c: Conn) => c.messages<GameServerMessage>().filter((m) => m.type === "notes");
+  const errors = (c: Conn) => c.messages<GameServerMessage>().filter((m) => m.type === "error");
+
+  it("sends a connecting seat its notes after the view, as loaded on a restart", async () => {
+    const { room, storage } = await newRoom();
+    const a = connect(room, "tok0");
+    expect(a.messages<GameServerMessage>().map((m) => m.type)).toEqual(["build", "view", "chatRead", "notes"]);
+    expect(notesOf(a)).toEqual([{ type: "notes", notes: [] }]);
+    await send(room, a, { type: "note", tab: 0, text: "Kuan Ti is Mush" });
+    expect(storage.data.get("notes:p0")).toEqual([{ text: "Kuan Ti is Mush" }]);
+    const revived = asRoom(storage);
+    await revived.onStart();
+    expect(notesOf(connect(revived, "tok0"))).toEqual([{ type: "notes", notes: [{ text: "Kuan Ti is Mush" }] }]);
+  });
+
+  it("sends a write to the seat's other connections only, never answering the sender", async () => {
+    const { room } = await newRoom();
+    const [a, a2, b] = [connect(room, "tok0", "a"), connect(room, "tok0", "a2"), connect(room, "tok1", "b")];
+    const sentA = a.sent.length;
+    await send(room, a, { type: "note", tab: 0, text: "secret" });
+    await send(room, a, { type: "note", tab: 1, text: "two" });
+    expect(notesOf(a2).at(-1)).toEqual({ type: "notes", notes: [{ text: "secret" }, { text: "two" }] });
+    expect(a.sent.length).toBe(sentA);
+    expect(notesOf(b)).toEqual([{ type: "notes", notes: [] }]);
+    expect(JSON.stringify(b.sent)).not.toContain("secret");
+    // Not in the game state, so never in a view or the record.
+    expect(JSON.stringify(gameOf(room))).not.toContain("secret");
+  });
+
+  it("refuses a gap or a 17th tab, storing nothing", async () => {
+    const { room, storage } = await newRoom();
+    const a = connect(room, "tok0");
+    await send(room, a, { type: "note", tab: 1, text: "gap" });
+    expect(errors(a).at(-1)).toEqual({ type: "error", message: "note_refused" });
+    expect(storage.data.has("notes:p0")).toBe(false);
+    await storage.put("notes:p0", Array.from({ length: 16 }, () => ({ text: "" })));
+    const revived = asRoom(storage);
+    await revived.onStart();
+    const again = connect(revived, "tok0");
+    await send(revived, again, { type: "note", tab: 15, text: "last" });
+    expect(errors(again)).toEqual([]);
+    expect(storage.data.get("notes:p0")).toHaveLength(16);
+  });
+
+  it("keeps nothing for a bot seat", async () => {
+    const { room, storage } = await newRoom();
+    gameOf(room).players[1]!.isBot = true;
+    const b = connect(room, "tok1");
+    await send(room, b, { type: "note", tab: 0, text: "x" });
+    expect(storage.data.has("notes:p1")).toBe(false);
+    expect(notesOf(b)).toEqual([]);
+  });
+
+  it("follows the mind through a Transfer; the victim gets none of it", async () => {
+    const { room, storage } = await newRoom(3, new FakeStorage(), {}, { p0: "mush", p1: "human" });
+    const game = gameOf(room);
+    const [mush, victim] = [game.players[0]!, game.players[1]!];
+    mush.mushSkills.push("transfert");
+    mush.room = victim.room = "LABORATORY";
+    for (const o of game.players.slice(2)) o.room = "REFECTORY";
+    game.contamination[victim.id] = 1;
+    const [mushConn, victimConn] = [connect(room, "tok0"), connect(room, "tok1")];
+    await send(room, mushConn, { type: "note", tab: 0, text: "plan" });
+    await send(room, victimConn, { type: "note", tab: 0, text: "victim's" });
+    await send(room, mushConn, { type: "action", action: { type: "body_transfer", target: victim.id } });
+    const [again, victimAgain] = [connect(room, "tok0", "again"), connect(room, "tok1", "victim")];
+    expect(notesOf(again)).toEqual([{ type: "notes", notes: [{ text: "plan" }] }]);
+    expect(notesOf(victimAgain)).toEqual([{ type: "notes", notes: [{ text: "victim's" }] }]);
+    expect(storage.data.get("notes:p0")).toEqual([{ text: "plan" }]);
+  });
+
+  it("Leave ship deletes the seat's notes", async () => {
+    const { room, storage } = await newRoom(3, new FakeStorage(), CHEATS);
+    const a = connect(room, "tok0");
+    await send(room, a, { type: "note", tab: 0, text: "x" });
+    expect(storage.data.has("notes:p0")).toBe(true);
+    await send(room, a, { type: "leaveShip" });
+    expect(storage.data.has("notes:p0")).toBe(false);
   });
 });
 

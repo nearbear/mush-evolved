@@ -299,6 +299,18 @@
     "in": "Zoom in",
     "out": "Zoom out"
   },
+  "notes": {
+    "button": "Notes",
+    "tabs": "Note tabs",
+    "tab": "Note {{n}}",
+    "add": "New note tab",
+    "mode": "Show notes as",
+    "raw": "Raw",
+    "preview": "Preview",
+    "empty": "Nothing written yet.",
+    "placeholder": "Private notes, only you can see them. Markdown works: **bold**, - [ ] checklists…",
+    "count": "{{length}} / {{max}}"
+  },
   "inventory": {
     "inRoom": "In this room",
     "nothingHere": "Nothing here.",
@@ -616,6 +628,7 @@
     "message_too_long": "Messages are limited to {{max}} characters.",
     "too_many_lines": "Messages are limited to {{lines}} lines.",
     "slow_down": "Slow down.",
+    "note_refused": "That note couldn't be saved.",
     "too_many_messages": "You're sending messages too quickly.",
     "malformed_message": "That request wasn't understood.",
     "no_game": "There is no game running.",

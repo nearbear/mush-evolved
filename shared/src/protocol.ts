@@ -7,6 +7,7 @@ import { isKubeOp, type KubeOpId } from "./kube.ts";
 import { isCharacterId, type CharacterId } from "./characters.ts";
 import { MAX_CHAT_LENGTH, privateChannelId } from "./chat.ts";
 import { MAX_CHAT_READ_ENTRIES, type ChatRead } from "./chatRead.ts";
+import { MAX_NOTE_LENGTH, MAX_NOTE_TABS, type Note } from "./notes.ts";
 import { isRecord } from "./helpers.ts";
 import { parsePlanDraft } from "./plans.ts";
 import { PLANET_TAGS, type PlanetTag } from "./planets.ts";
@@ -109,6 +110,9 @@ export type GameClientMessage =
   // How far the seat has read each channel (#400, chatRead.ts). Never answered: a refusal, a rate limit and a count
   // that is no news all look the same. Not an input, never recorded.
   | { type: "chatRead"; read: ChatRead }
+  // Sets one tab of the seat's private notes (#503, notes.ts); `tab` one past the last adds a tab. Not answered when
+  // stored. Not an input, never recorded.
+  | { type: "note"; tab: number; text: string }
   | { type: "createChannel"; name?: string; members?: PlayerId[] }
   // A thread under global chat, started from the global message whose `seq` is `from`, or on its own.
   | { type: "createThread"; name: string; from?: number }
@@ -164,6 +168,9 @@ export type GameServerMessage =
   // The seat's read counts for the channels its body reads now (#400, `chatReadFor`): on connect after the view, and to
   // the seat's other connections when they rise. Only ever to that seat.
   | { type: "chatRead"; read: ChatRead }
+  // The seat's private notes (#503): on connect after the view, and to the seat's other connections when one changes.
+  // Only ever to that seat.
+  | { type: "notes"; notes: Note[] }
   | BuildMessage
   | { type: "error"; message: string };
 
@@ -208,6 +215,12 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
   if (msg?.type === "chatRead") {
     const read = parseChatRead(msg.read);
     return read && { type: "chatRead", read };
+  }
+  if (msg?.type === "note") {
+    const { tab, text } = msg;
+    return Number.isSafeInteger(tab) && (tab as number) >= 0 && (tab as number) < MAX_NOTE_TABS && typeof text === "string" && text.length <= MAX_NOTE_LENGTH
+      ? { type: "note", tab: tab as number, text }
+      : null;
   }
   if (msg?.type === "createChannel") {
     if (msg.name !== undefined && (typeof msg.name !== "string" || msg.name.length > MAX_NAME_LENGTH * 4)) return null;

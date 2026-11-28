@@ -27,8 +27,8 @@ export const defaultRoomZoom = (): number =>
 
 /** Your ID card: the desktop's (SelfHud) or the phone's (PlayerSummary in .room-top-left). */
 const ID_CARD = ".self-hud-top, .room-top-left > .nameplate";
-/** What the panel stays above: the location plate with the minimap, and the zoom buttons and sack. */
-const BELOW = ".room-corner, .inventory-controls";
+/** What the panel stays above: the location plate with the minimap, the zoom buttons and sack, and the notes button. */
+const BELOW = ".room-corner, .inventory-controls, .notes-controls";
 /** The panel's distance from the room view's edges and from the cards it sits between, in px (0.5rem). */
 const MARGIN = 8;
 
@@ -37,7 +37,7 @@ const MARGIN = 8;
  * and the sack, or the room view's own edges where one isn't shown (the Icarus, a lost place). Measured on layout and
  * whenever the room view, the cards or the phone's peek bar resize (the minimap grows when expanded).
  */
-function useBand(open: boolean, rootRef: RefObject<HTMLElement | null>): CSSProperties | undefined {
+export function useBand(open: boolean, rootRef: RefObject<HTMLElement | null>): CSSProperties | undefined {
   const [band, setBand] = useState<{ top: number; bottom: number }>();
   const measure = useCallback(() => {
     const room = rootRef.current?.closest(".room-view");

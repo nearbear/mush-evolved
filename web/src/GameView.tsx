@@ -1,7 +1,7 @@
 // Thin view layer: renders a PlayerView and emits intents. No game logic here;
 // the server decides what is legal and sends it in view.actions. No socket either: see GameScreen.
 
-import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
 import { CHEAT_ROOM, CORPSE_ITEM, SUPPORT_DRONE_ITEM, doorId, doorOtherRoom, isLostPlace, legalIn, type Action, type BotPause, type CharacterId, type Cheat, type GameClientMessage, type KubeOpId, type PlayerView, type RoleCheat, type RoomId, type Spot, type Target } from "@mush2/shared";
 import { useTranslation } from "react-i18next";
 import { Hint } from "./hud/IconButton.tsx";
@@ -12,6 +12,7 @@ import { DeathNotice } from "./hud/DeathNotice.tsx";
 import { RoomList } from "./hud/RoomList.tsx";
 import { InspectPanel } from "./hud/InspectPanel.tsx";
 import { defaultRoomZoom, InventoryOverlay, stepZoom } from "./hud/InventoryOverlay.tsx";
+import { NotesOverlay } from "./hud/NotesOverlay.tsx";
 import { ShipOverlay } from "./hud/ShipOverlay.tsx";
 import { Announcer } from "./hud/Announcer.tsx";
 import { ITrackie } from "./hud/ITrackie.tsx";
@@ -86,6 +87,16 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
   const post = (msg: GameClientMessage) => send?.(msg);
   const [zoom, setZoom] = useState(defaultRoomZoom);
   const [inventoryOpen, setInventoryOpen] = useState(false);
+  // The notes popover (#503) opens in the inventory's band, so opening one closes the other.
+  const [notesOpen, setNotesOpen] = useState(false);
+  const openInventory = useCallback((open: boolean) => {
+    setInventoryOpen(open);
+    if (open) setNotesOpen(false);
+  }, []);
+  const openNotes = useCallback((open: boolean) => {
+    setNotesOpen(open);
+    if (open) setInventoryOpen(false);
+  }, []);
   const names = useNames();
   const layout = useCheatRoom(useShipLayout(), view.you.room === CHEAT_ROOM);
   const roomTitleId = useId();
@@ -338,7 +349,7 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
                 onSelect={select}
                 onClear={() => select(null)}
                 onDoorTap={tapDoor}
-                onOpenInventory={() => setInventoryOpen(true)}
+                onOpenInventory={() => openInventory(true)}
                 inventoryOpen={inventoryOpen}
                 bubbles={bubbles}
                 pilgredRepaired={view.pilgredRepaired}
@@ -388,9 +399,11 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
                 zoom={zoom}
                 onZoom={setZoom}
                 open={inventoryOpen}
-                onOpenChange={setInventoryOpen}
+                onOpenChange={openInventory}
               />
             )}
+            {/* Dead or alive (#503); nothing in a replay, which has no notes store. */}
+            <NotesOverlay open={notesOpen} onOpenChange={openNotes} />
             {/* Bottom-left: one card (amber, red on fire, Mush pink on a spore trap or Fairy Ring) holding your room's name with the minimap under it.
                 Not in the Icarus or while lost (owner, 2026-11-20, 2026-11-21): its panel takes the whole room view. */}
             {!inExpeditionScreen && (
