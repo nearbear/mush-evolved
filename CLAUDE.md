@@ -4,7 +4,7 @@ Project context for Claude Code. This file summarizes decisions made during plan
 
 ## What this project is
 
-**Mush: Evolved** (name decided 2026-11-22, [#43](https://github.com/nearbear/mush2/issues/43)) is a turn-based, browser-based social deduction game inspired by **eMush**, the open-source remake (by the nonprofit Eternaltwin) of **Mush** by Motion Twin. In the original, players wake up on a spaceship (the Daedalus), a small number of them are infected "Mush," and the humans have to survive and unmask them. The original runs 16 players with 2 Mush, as asynchronous games lasting a few days.
+**Mush: Evolved** (name decided 2026-11-22, [#43](https://github.com/nearbear/mush-evolved/issues/43)) is a turn-based, browser-based social deduction game inspired by **eMush**, the open-source remake (by the nonprofit Eternaltwin) of **Mush** by Motion Twin. In the original, players wake up on a spaceship (the Daedalus), a small number of them are infected "Mush," and the humans have to survive and unmask them. The original runs 16 players with 2 Mush, as asynchronous games lasting a few days.
 
 It is a complete, playable game heading into a private beta, not a full clone of the original. The goals are:
 
@@ -71,7 +71,7 @@ These are non-negotiable unless I say otherwise.
 - **Checks and the log happen once, at the very end of a task.** While iterating, run only the tests you need (`npm test -w shared -- rules.test.ts -t "name"`), not the full suite, typecheck or lint after each step. When the whole task is done, run `npm run verify` once (plus `npm run build` if `web` changed) — or `npm run verify:web` for a `web`-only UI change — and append one `docs/process/ai-workflow.md` entry for the whole task, not one per sub-step. Rerun `verify` only if you edit code after it passed.
 - **Other sessions may be editing this checkout.** If `verify` fails in a file this task didn't touch, don't investigate. Name the failing test in one line, say it looks like someone else's work, and stop.
 - Explain tradeoffs when there is a real choice; I want to understand the code, not just receive it.
-- When you mention a GitHub issue to me, always make it a clickable link to the issue, e.g. [#216](https://github.com/nearbear/mush2/issues/216). The `#216` shorthand is fine as link text, but it must point at the full URL so I can Ctrl+click it.
+- When you mention a GitHub issue to me, always make it a clickable link to the issue, e.g. [#216](https://github.com/nearbear/mush-evolved/issues/216). The `#216` shorthand is fine as link text, but it must point at the full URL so I can Ctrl+click it.
 - Ignore the files in the `docs/scratchpad` folder unless otherwise directed; they are for notes and planning, not part of the main codebase.
 - Do not use AI capabilities to generate any non-text assets or files without explicit approval.
 
