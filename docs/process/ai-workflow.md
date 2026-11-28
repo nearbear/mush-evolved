@@ -6015,3 +6015,22 @@ Owner asked for public log lines on lying down and getting out of bed, reusing t
 - Follow-up the same day: an open channel's members are character busts (16px icons drawn at 2x), each named in a hover/tap popover as the status icons are. A span with `tabIndex` failed lint (noNoninteractiveTabindex), so the trigger is a reset button. Free slots became `.list-row` rows with the plus icon instead of Mush buttons; `.list-row` gained a disabled look.
 - Second follow-up: `.list-row` hover/press now tint the band as `TerminalCollapsible`'s trigger does (an overlay gradient over `--terminal-header-bg`, so the band colour survives), which also changes thread and Comms rows. Free slots moved into the same list as the channels (two lists lost their gap: `.thread-rows`' later `margin: 0` beat the gap rule). Member count is muted caption text; Invite uses `icons/ui/invite.png`.
 - Third follow-up: an open channel's title row is now just ← and a ⋯ menu (`ChannelMenu`: Plan or New plan, Invite, Mark all read, Leave). The Messages | Plan switch and the desktop's pinned plan card are gone; Plan swaps the messages for the plan on both layouts, and ← steps plan → messages → list. Pane and composer state moved up into `ITrackie`. The plan tests now drive the menu through a small harness that wires `ChannelMenu` and `PrivateChannels` as `ITrackie` does; testing-library's `getByPlaceholderText` ignores `hidden`, so the hidden-thread check looks for a `[hidden]` ancestor.
+
+
+### 2026-11-28: Disorder thresholds by sanity
+
+- **Decision (owner):** a disorder can only be gained while sanity is below its threshold: Depression and Agoraphobia 100, Kleptophobia and Aquaphobia 95, Pyromania and Addiction 85. Built as `config.sanity.disorderThresholds` and `availableDisorders` in `shared/src/sanity.ts`.
+- **What worked:** the owner asked not to build anything that would need a special redeploy. `GameConfig` is resolved from `DEFAULT_CONFIG` on every load and isn't stored, so a new knob needs no `STATE_VERSION` step and live games pick it up on the next normal deploy. The Kube debug tool can still give any disorder; only the sanity roll is limited.
+- **Needed correction:** Claude's first roll test called `nextCycle` without using what it returned (it returns a new state), so the test checked nothing. Fixed it to keep the returned state and to assert that at least one disorder was rolled.
+
+### 2026-11-28: Kinesiophobia disorder
+
+- **Decision (owner):** a new disorder, Kinesiophobia, with a sanity threshold of 95: each AP-to-MP conversion costs 1 morale. Claude followed the existing disorders for the rest: it does nothing to a Mush or while calmed, it logs a private morale line, and the en/fr/es text mirrors Aquaphobia's.
+- **What worked:** conversion only ever happens inside a move, and no `actionCost` hook raises a move's AP (Agoraphobia leaves moves alone), so "the move cost AP" is exactly "it converted". It's a new `onConvert` modifier hook called from `actions/move.ts`, the same check the scooter's charge uses. A new config knob and registry id need no state upgrade step.
+- **Needed correction:** Claude guessed config paths (`config.apPerConversion`, `config.maxMp`) in the first test draft; they are under `config.movement`. During verify, the replay tests timed out under machine load (the suite took 424 s) and passed when run alone in about 11 s; the 16-seat `replayView` test also times out on clean `main`.
+
+### 2026-11-28: Scopophobia disorder
+
+- **Decision (owner):** a new disorder, Scopophobia, with a sanity threshold of 100: while a camera or another crewmate is in the room, success is 10% lower. Asked with three questions; the owner took the recommended answers: relative (×0.9, like Addiction's ×0.75), a working installed camera only (the same one the log uses), and any other living player, Mush included, so the penalty never hints at a role.
+- **What worked:** the existing `actionSucessRate` hook was enough (one hook, no change to actions), and `actionSuccessRate` already keeps a 100% action certain. Leak check: everyone in the room already sees its equipment and whether it is broken, so the lower odds reveal nothing new.
+- **Needed correction:** none in the code. Verify went past the 10-minute limit under machine load and was rerun in the background.
